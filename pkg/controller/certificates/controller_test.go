@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	flags "github.com/appscode/go-flags"
+	"github.com/appscode/go/flags"
 	aci "github.com/appscode/k8s-addons/api"
 	acs "github.com/appscode/k8s-addons/client/clientset"
 	"github.com/appscode/k8s-addons/client/clientset/fake"

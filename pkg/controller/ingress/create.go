@@ -6,9 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/appscode/go-encoding/yaml"
-
 	"github.com/appscode/errors"
+	"github.com/appscode/go/encoding/yaml"
 	"github.com/appscode/log"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"

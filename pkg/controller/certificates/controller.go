@@ -9,14 +9,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/appscode/voyager/pkg/controller/certificates/providers"
-
 	"github.com/appscode/errors"
-	stringutil "github.com/appscode/go-strings"
+	"github.com/appscode/go/strings"
 	aci "github.com/appscode/k8s-addons/api"
 	acs "github.com/appscode/k8s-addons/client/clientset"
 	"github.com/appscode/k8s-addons/pkg/events"
 	"github.com/appscode/log"
+	"github.com/appscode/voyager/pkg/controller/certificates/providers"
 	"github.com/xenolf/lego/acme"
 	"k8s.io/kubernetes/pkg/api"
 	k8serr "k8s.io/kubernetes/pkg/api/errors"
@@ -179,7 +178,7 @@ func (c *CertificateController) handleIngressEvent(e *events.Event) error {
 				for _, rule := range ingress.Spec.Rules {
 					found := false
 					for _, tls := range ingress.Spec.TLS {
-						if stringutil.Contains(tls.Hosts, rule.Host) {
+						if strings.Contains(tls.Hosts, rule.Host) {
 							found = true
 						}
 					}

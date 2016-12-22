@@ -4,12 +4,12 @@ import (
 	"time"
 
 	"github.com/appscode/errors"
+	"github.com/appscode/go/runtime"
 	_ "github.com/appscode/k8s-addons/api/install"
 	acs "github.com/appscode/k8s-addons/client/clientset"
 	acw "github.com/appscode/k8s-addons/pkg/watcher"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/cmd/voyager/app/options"
-	"github.com/appscode/voyager/util/runtime"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	clientcmdapi "k8s.io/kubernetes/pkg/client/unversioned/clientcmd/api"

@@ -6,11 +6,11 @@ import (
 
 	"github.com/appscode/errors"
 	err_logger "github.com/appscode/errors/h/log"
+	v "github.com/appscode/go/version"
 	"github.com/appscode/log"
 	logs "github.com/appscode/log/golog"
 	"github.com/appscode/voyager/cmd/voyager/app"
 	"github.com/appscode/voyager/cmd/voyager/app/options"
-	v "github.com/appscode/voyager/util/version"
 	"github.com/mikespook/golib/signal"
 	"github.com/spf13/pflag"
 	"k8s.io/kubernetes/pkg/util/flag"

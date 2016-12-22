@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/appscode/errors"
-	stringutil "github.com/appscode/go-strings"
+	stringutil "github.com/appscode/go/strings"
 	aci "github.com/appscode/k8s-addons/api"
 	_ "github.com/appscode/k8s-addons/api/install"
 	acs "github.com/appscode/k8s-addons/client/clientset"

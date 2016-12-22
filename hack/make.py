@@ -75,18 +75,17 @@ def version():
 
 
 def fmt():
-    die(call('goimports -w cmd pkg util'))
-    call('gofmt -s -w cmd pkg util')
+    die(call('goimports -w cmd pkg'))
+    call('gofmt -s -w cmd pkg')
 
 
 def vet():
-    call('go vet ./cmd/... ./pkg/... ./util/...')
+    call('go vet ./cmd/... ./pkg/...')
 
 
 def lint():
     call('golint ./cmd/...')
     call('golint ./pkg/...')
-    call('golint ./util/...')
 
 
 def gen():

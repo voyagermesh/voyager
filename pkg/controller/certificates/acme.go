@@ -9,12 +9,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/appscode/voyager/pkg/controller/certificates/providers"
-
-	stringutil "github.com/appscode/go-strings"
-
 	"github.com/appscode/errors"
+	stringutil "github.com/appscode/go/strings"
 	"github.com/appscode/log"
+	"github.com/appscode/voyager/pkg/controller/certificates/providers"
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/providers/dns/cloudflare"
 	"github.com/xenolf/lego/providers/dns/digitalocean"

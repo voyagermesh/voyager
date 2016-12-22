@@ -1,18 +1,16 @@
 package ingress
 
 import (
+	"encoding/json"
 	"strconv"
 	"strings"
 
-	arrays "github.com/appscode/go-arrays"
-	random "github.com/appscode/go-random"
-	stringutil "github.com/appscode/go-strings"
-	"github.com/flosch/pongo2"
-
-	"encoding/json"
-
 	"github.com/appscode/errors"
+	"github.com/appscode/go/arrays"
+	"github.com/appscode/go/crypto/rand"
+	stringutil "github.com/appscode/go/strings"
 	"github.com/appscode/log"
+	"github.com/flosch/pongo2"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/util/intstr"
 )
@@ -182,7 +180,7 @@ func (lbc *EngressController) parseEngressSpec() {
 		if rule.HTTP != nil {
 			for _, svc := range rule.HTTP.Paths {
 				def := &Service{
-					Name:     "service-" + random.Characters(6),
+					Name:     "service-" + rand.Characters(6),
 					Host:     host,
 					AclMatch: svc.Path,
 				}
@@ -190,7 +188,7 @@ func (lbc *EngressController) parseEngressSpec() {
 				eps, err := lbc.serviceEndpoints(svc.Backend.ServiceName, svc.Backend.ServicePort)
 
 				def.Backends = &Backend{
-					Name:      "backend-" + random.Characters(5),
+					Name:      "backend-" + rand.Characters(5),
 					Endpoints: eps,
 
 					RewriteRules: svc.Backend.RewriteRule,
@@ -212,7 +210,7 @@ func (lbc *EngressController) parseEngressSpec() {
 		// adding tcp service to the parser.
 		for _, tcpSvc := range rule.TCP {
 			def := &TCPService{
-				Name: "service-" + random.Characters(6),
+				Name: "service-" + rand.Characters(6),
 				Host: host,
 
 				Port: tcpSvc.Port.String(),
@@ -223,7 +221,7 @@ func (lbc *EngressController) parseEngressSpec() {
 			log.Infoln(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort)
 			eps, err := lbc.serviceEndpoints(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort)
 			def.Backends = &Backend{
-				Name:      "backend-" + random.Characters(5),
+				Name:      "backend-" + rand.Characters(5),
 				Endpoints: eps,
 			}
 

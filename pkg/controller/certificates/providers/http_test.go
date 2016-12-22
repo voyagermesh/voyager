@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	flags "github.com/appscode/go-flags"
+	"github.com/appscode/go/flags"
 )
 
 func init() {

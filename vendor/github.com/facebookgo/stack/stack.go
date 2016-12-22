@@ -166,15 +166,13 @@ func numDigits(i int) int {
 	}
 }
 
-var (
-	// This can be set by a build script. It will be the colon separated equivalent
-	// of the environment variable.
-	gopath string
+// This can be set by a build script. It will be the colon separated equivalent
+// of the environment variable.
+var gopath string
 
-	// This is the processed version based on either the above variable set by the
-	// build or from the GOPATH environment variable.
-	gopaths []string
-)
+// This is the processed version based on either the above variable set by the
+// build or from the GOPATH environment variable.
+var gopaths []string
 
 func init() {
 	// prefer the variable set at build time, otherwise fallback to the
@@ -182,7 +180,15 @@ func init() {
 	if gopath == "" {
 		gopath = os.Getenv("GOPATH")
 	}
-	SetGOPATH(gopath)
+
+	for _, p := range strings.Split(gopath, ":") {
+		if p != "" {
+			gopaths = append(gopaths, filepath.Join(p, "src")+"/")
+		}
+	}
+
+	// Also strip GOROOT for maximum cleanliness
+	gopaths = append(gopaths, filepath.Join(runtime.GOROOT(), "src", "pkg")+"/")
 }
 
 // StripGOPATH strips the GOPATH prefix from the file path f.
@@ -199,21 +205,6 @@ func StripGOPATH(f string) string {
 		}
 	}
 	return f
-}
-
-// SetGOPATH configures the GOPATH to enable relative paths in stack traces.
-func SetGOPATH(gp string) {
-	gopath = gp
-	gopaths = nil
-
-	for _, p := range strings.Split(gopath, ":") {
-		if p != "" {
-			gopaths = append(gopaths, filepath.Join(p, "src")+"/")
-		}
-	}
-
-	// Also strip GOROOT for maximum cleanliness
-	gopaths = append(gopaths, filepath.Join(runtime.GOROOT(), "src", "pkg")+"/")
 }
 
 // StripPackage strips the package name from the given Func.Name.

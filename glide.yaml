@@ -9,16 +9,12 @@ import:
 - package: google.golang.org/grpc
   version: v1.0.4
 - package: github.com/appscode/errors
-- package: github.com/appscode/go-arrays
-- package: github.com/appscode/go-encoding
-- package: github.com/appscode/go-flags
-- package: github.com/appscode/go-random
-- package: github.com/appscode/go-strings
+- package: github.com/appscode/go
 - package: github.com/appscode/k8s-addons
   version: 1.5
 - package: github.com/appscode/log
 - package: github.com/flosch/pongo2
-  version: v3.0
+  version: 22499f94d3d56c7238591344a6902715d0b8fbbf
 - package: github.com/mikespook/golib
 - package: github.com/spf13/cobra
 - package: github.com/spf13/pflag
@@ -26,7 +22,6 @@ import:
   repo: git@github.com:appscode/lego.git
   vcs: git
   version: daf180ad8a39e22ba6c3190300e44f8acfb2996a
-
 - package: github.com/aws/aws-sdk-go
   version: v1.1.36
 - package: github.com/Azure/azure-sdk-for-go
@@ -36,7 +31,6 @@ import:
   version: e0c77ecbe74311e03f2a629834d2110f031f1453
 - package: cloud.google.com/go
   version: v0.2.0
-
 - package: k8s.io/kubernetes
   repo: git@github.com:appscode/kubernetes.git
   vcs: git
