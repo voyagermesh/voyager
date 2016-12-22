@@ -115,7 +115,6 @@ def build(name=None):
         cfg = libbuild.BIN_MATRIX[name]
         if cfg['type'] == 'go':
             gen()
-            fmt()
             build_cmd(name)
     else:
         build_cmds()
