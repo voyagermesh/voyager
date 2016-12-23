@@ -4,7 +4,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-LIB_ROOT=$(dirname "${BASH_SOURCE}")/..
+LIB_ROOT=$(dirname "${BASH_SOURCE}")/../..
 source "$LIB_ROOT/libbuild/common/lib.sh"
 source "$LIB_ROOT/libbuild/common/public_image.sh"
 
@@ -12,33 +12,33 @@ GOPATH=$(go env GOPATH)
 SRC=$GOPATH/src
 BIN=$GOPATH/bin
 ROOT=$GOPATH
+REPO_ROOT=$GOPATH/src/github.com/appscode/voyager
 
 APPSCODE_ENV=${APPSCODE_ENV:-dev}
 IMG=voyager
 
-DIST=$GOPATH/src/github.com/appscode/voyager/dist
-mkdir -p $DIST
-if [ -f "$DIST/.tag" ]; then
-	export $(cat $DIST/.tag | xargs)
+mkdir -p $REPO_ROOT/dist
+if [ -f "$REPO_ROOT/dist/.tag" ]; then
+	export $(cat $REPO_ROOT/dist/.tag | xargs)
 fi
 
 clean() {
-    pushd $GOPATH/src/github.com/appscode/voyager/hack/docker
+    pushd $REPO_ROOT/hack/docker/voyager
 	rm -rf voyager
 	popd
 }
 
 build_binary() {
-	pushd $GOPATH/src/github.com/appscode/voyager
+	pushd $REPO_ROOT
 	./hack/builddeps.sh
     ./hack/make.py build voyager
-	detect_tag $DIST/.tag
+	detect_tag $REPO_ROOT/dist/.tag
 	popd
 }
 
 build_docker() {
-	pushd $GOPATH/src/github.com/appscode/voyager/hack/docker
-	cp $DIST/voyager/voyager-linux-amd64 voyager
+	pushd $REPO_ROOT/hack/docker/voyager
+	cp $REPO_ROOT/dist/voyager/voyager-linux-amd64 voyager
 	chmod 755 voyager
 
 	cat >Dockerfile <<EOL

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+source /etc/envvars
+
+haproxy -c -f /etc/haproxy/haproxy.cfg
+sv reload haproxy

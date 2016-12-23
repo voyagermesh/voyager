@@ -41,7 +41,7 @@ libbuild.BIN_MATRIX = {
     'voyager': {
         'type': 'go',
         'go_version': True,
-        'use_cgo': True,
+        'use_cgo': False,
         'distro': {
             'linux': ['amd64']
         }
