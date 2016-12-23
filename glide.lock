@@ -1,6 +1,8 @@
 hash: e78acbcc88ecfc11fe0aef5a116a0bf2dc7f60a8e1c46eb9507865c6b39833ae
-updated: 2016-12-22T14:32:01.730392184-08:00
+updated: 2016-12-22T23:19:33.793811969-08:00
 imports:
+- name: bitbucket.org/ww/goautoneg
+  version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
   subpackages:
@@ -11,7 +13,7 @@ imports:
   subpackages:
   - h/log
 - name: github.com/appscode/go
-  version: b5511de621dff8997783fe7eb2c8e9ed22c57968
+  version: a1ba0f9d2aab149758795b6b9c3e3f09fbd7d875
   subpackages:
   - arrays
   - crypto/rand
@@ -21,7 +23,7 @@ imports:
   - strings
   - version
 - name: github.com/appscode/k8s-addons
-  version: de6a405fe6cb52a11930e014500058a8ace2fe77
+  version: 6ee4badc6608343602a15115c2087d11f36f6efa
   subpackages:
   - api
   - api/install
@@ -51,6 +53,9 @@ imports:
   - aws/session
   - private/endpoints
   - private/protocol
+  - private/protocol/ec2query
+  - private/protocol/json/jsonutil
+  - private/protocol/jsonrpc
   - private/protocol/query
   - private/protocol/query/queryutil
   - private/protocol/rest
@@ -58,12 +63,30 @@ imports:
   - private/protocol/xml/xmlutil
   - private/signer/v4
   - private/waiter
+  - service/autoscaling
+  - service/ec2
+  - service/ecr
+  - service/elb
   - service/route53
 - name: github.com/Azure/azure-sdk-for-go
   version: 8316b9060f9c2443ba0864663245695d570a7fa2
   vcs: git
+  subpackages:
+  - arm/compute
+  - arm/network
+  - arm/storage
+  - storage
 - name: github.com/Azure/go-autorest
   version: e0c77ecbe74311e03f2a629834d2110f031f1453
+  subpackages:
+  - autorest
+  - autorest/azure
+  - autorest/date
+  - autorest/to
+- name: github.com/beorn7/perks
+  version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
+  subpackages:
+  - quantile
 - name: github.com/blang/semver
   version: 31b736133b98f26d5e078ec9eb591666edfd091f
 - name: github.com/coreos/go-oidc
@@ -86,11 +109,37 @@ imports:
   version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
   subpackages:
   - spew
+- name: github.com/dgrijalva/jwt-go
+  version: 01aeca54ebda6e0fbfafd0a524d234159c05ec20
 - name: github.com/docker/distribution
   version: cd27f179f2c10c5d300e6d09025b538c475b0d51
   subpackages:
   - digest
   - reference
+- name: github.com/docker/engine-api
+  version: dea108d3aa0c67d7162a3fd8aa65f38a430019fd
+  subpackages:
+  - client
+  - client/transport
+  - client/transport/cancellable
+  - types
+  - types/blkiodev
+  - types/container
+  - types/filters
+  - types/network
+  - types/reference
+  - types/registry
+  - types/strslice
+  - types/time
+  - types/versions
+- name: github.com/docker/go-connections
+  version: f549a9393d05688dff0992ef3efd8bbe6c628aeb
+  subpackages:
+  - nat
+  - sockets
+  - tlsconfig
+- name: github.com/docker/go-units
+  version: 0bbddae09c5a5419a8c6dcdd7ff90da3d450393b
 - name: github.com/emicklei/go-restful
   version: 89ef8af493ab468a45a42bb0d89a06fccdd2fb22
   subpackages:
@@ -174,6 +223,18 @@ imports:
   - buffer
   - jlexer
   - jwriter
+- name: github.com/matttproud/golang_protobuf_extensions
+  version: fc2b8d3a73c4867e51861bbdd5ae3c1f0869dd6a
+  subpackages:
+  - pbutil
+- name: github.com/mesos/mesos-go
+  version: 45c8b08e9af666add36a6f93ff8c1c75812367b0
+  subpackages:
+  - detector
+  - detector/zoo
+  - mesosproto
+  - mesosutil
+  - upid
 - name: github.com/miekg/dns
   version: 5d001d020961ae1c184f9f8152fdc73810481677
 - name: github.com/mikespook/golib
@@ -182,20 +243,83 @@ imports:
   - autoinc
   - idgen
   - signal
+- name: github.com/mitchellh/mapstructure
+  version: 740c764bc6149d3f1806231418adb9f52c11bcbf
 - name: github.com/ovh/go-ovh
   version: 99a1e00db4397517d87ab82c92b9d8cb60e5940b
   subpackages:
   - ovh
 - name: github.com/pborman/uuid
   version: ca53cad383cad2479bbba7f7a1a05797ec1386e4
+- name: github.com/prometheus/client_golang
+  version: e51041b3fa41cece0dca035740ba6411905be473
+  subpackages:
+  - prometheus
+- name: github.com/prometheus/client_model
+  version: fa8ad6fec33561be4280a8f0514318c79d7f6cb6
+  subpackages:
+  - go
+- name: github.com/prometheus/common
+  version: ffe929a3f4c4faeaa10f2b9535c2b1be3ad15650
+  subpackages:
+  - expfmt
+  - model
+- name: github.com/prometheus/procfs
+  version: 454a56f35412459b5e684fd5ec0f9211b94f002a
 - name: github.com/PuerkitoBio/purell
   version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
+- name: github.com/rackspace/gophercloud
+  version: e00690e87603abe613e9f02c816c7c4bef82e063
+  subpackages:
+  - openstack
+  - openstack/blockstorage/v1/volumes
+  - openstack/common/extensions
+  - openstack/compute/v2/extensions/bootfromvolume
+  - openstack/compute/v2/extensions/diskconfig
+  - openstack/compute/v2/extensions/volumeattach
+  - openstack/compute/v2/flavors
+  - openstack/compute/v2/images
+  - openstack/compute/v2/servers
+  - openstack/identity/v2/tenants
+  - openstack/identity/v2/tokens
+  - openstack/identity/v3/extensions/trust
+  - openstack/identity/v3/tokens
+  - openstack/networking/v2/extensions
+  - openstack/networking/v2/extensions/layer3/floatingips
+  - openstack/networking/v2/extensions/lbaas/members
+  - openstack/networking/v2/extensions/lbaas/monitors
+  - openstack/networking/v2/extensions/lbaas/pools
+  - openstack/networking/v2/extensions/lbaas/vips
+  - openstack/networking/v2/extensions/lbaas_v2/listeners
+  - openstack/networking/v2/extensions/lbaas_v2/loadbalancers
+  - openstack/networking/v2/extensions/lbaas_v2/monitors
+  - openstack/networking/v2/extensions/lbaas_v2/pools
+  - openstack/networking/v2/extensions/security/groups
+  - openstack/networking/v2/extensions/security/rules
+  - openstack/networking/v2/ports
+  - openstack/utils
+  - pagination
+  - rackspace
+  - rackspace/blockstorage/v1/volumes
+  - rackspace/compute/v2/servers
+  - rackspace/compute/v2/volumeattach
+  - rackspace/identity/v2/tokens
+  - testhelper
+  - testhelper/client
+- name: github.com/rubiojr/go-vhd
+  version: 0bfd3b39853cdde5762efda92289f14b0ac0491b
+  subpackages:
+  - vhd
+- name: github.com/samuel/go-zookeeper
+  version: 177002e16a0061912f02377e2dd8951a8b3551bc
+  subpackages:
+  - zk
 - name: github.com/spf13/cobra
   version: f62e98d28ab7ad31d707ba837a966378465c7b57
 - name: github.com/spf13/pflag
-  version: c7e63cf4530bcd3ba943729cee0efeff2ebea63f
+  version: 5ccb023bc27df288a957c5e994cd44fd19619465
 - name: github.com/timewasted/linode
   version: 37e84520dcf74488f67654f9c775b9752c232dc1
   subpackages:
@@ -205,10 +329,36 @@ imports:
   subpackages:
   - codec
   - codec/codecgen
+- name: github.com/vmware/govmomi
+  version: b5ee639d7aa4b8dbb48ab4f75dddc19f71b5c514
+  subpackages:
+  - find
+  - list
+  - object
+  - property
+  - session
+  - task
+  - vim25
+  - vim25/debug
+  - vim25/methods
+  - vim25/mo
+  - vim25/progress
+  - vim25/soap
+  - vim25/types
+  - vim25/xml
+- name: github.com/vmware/photon-controller-go-sdk
+  version: dd6be2029ef341cae37b2557ddd302f68176f832
+  subpackages:
+  - photon
+  - photon/lightwave
 - name: github.com/weppos/dnsimple-go
   version: 65c1ca73cb19baf0f8b2b33219b7f57595a3ccb0
   subpackages:
   - dnsimple
+- name: github.com/xanzy/go-cloudstack
+  version: 1e2cbf647e57fa90353612074fdfc42faf5073bf
+  subpackages:
+  - cloudstack
 - name: github.com/xenolf/lego
   version: daf180ad8a39e22ba6c3190300e44f8acfb2996a
   repo: git@github.com:appscode/lego.git
@@ -304,6 +454,12 @@ imports:
   - urlfetch
 - name: google.golang.org/grpc
   version: 777daa17ff9b5daef1cfdf915088a2ada3332bf0
+- name: gopkg.in/gcfg.v1
+  version: 083575c3955c85df16fe9590cceab64d03f5eb6e
+  subpackages:
+  - scanner
+  - token
+  - types
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/ini.v1
@@ -331,6 +487,7 @@ imports:
   - pkg/api/meta
   - pkg/api/meta/metatypes
   - pkg/api/resource
+  - pkg/api/service
   - pkg/api/unversioned
   - pkg/api/v1
   - pkg/api/validation/path
@@ -423,8 +580,21 @@ imports:
   - pkg/client/unversioned/clientcmd/api/latest
   - pkg/client/unversioned/clientcmd/api/v1
   - pkg/cloudprovider
+  - pkg/cloudprovider/providers
+  - pkg/cloudprovider/providers/aws
+  - pkg/cloudprovider/providers/azure
+  - pkg/cloudprovider/providers/cloudstack
+  - pkg/cloudprovider/providers/gce
+  - pkg/cloudprovider/providers/mesos
+  - pkg/cloudprovider/providers/openstack
+  - pkg/cloudprovider/providers/ovirt
+  - pkg/cloudprovider/providers/photon
+  - pkg/cloudprovider/providers/rackspace
+  - pkg/cloudprovider/providers/vsphere
   - pkg/conversion
   - pkg/conversion/queryparams
+  - pkg/credentialprovider
+  - pkg/credentialprovider/aws
   - pkg/fields
   - pkg/genericapiserver/openapi/common
   - pkg/kubelet/qos
@@ -442,20 +612,26 @@ imports:
   - pkg/types
   - pkg/util
   - pkg/util/cert
+  - pkg/util/chmod
+  - pkg/util/chown
   - pkg/util/clock
   - pkg/util/config
   - pkg/util/diff
   - pkg/util/errors
+  - pkg/util/exec
   - pkg/util/flag
   - pkg/util/flowcontrol
   - pkg/util/framer
   - pkg/util/homedir
   - pkg/util/integer
   - pkg/util/intstr
+  - pkg/util/io
   - pkg/util/json
   - pkg/util/jsonpath
   - pkg/util/labels
+  - pkg/util/mount
   - pkg/util/net
+  - pkg/util/net/sets
   - pkg/util/parsers
   - pkg/util/rand
   - pkg/util/runtime
@@ -467,6 +643,8 @@ imports:
   - pkg/util/yaml
   - pkg/version
   - pkg/version/verflag
+  - pkg/volume
+  - pkg/volume/util
   - pkg/watch
   - pkg/watch/versioned
   - plugin/pkg/client/auth
