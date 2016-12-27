@@ -11,7 +11,7 @@ import:
 - package: github.com/appscode/errors
 - package: github.com/appscode/go
 - package: github.com/appscode/k8s-addons
-  version: 1.5
+  version: release-1.5
 - package: github.com/appscode/log
 - package: github.com/flosch/pongo2
   version: 22499f94d3d56c7238591344a6902715d0b8fbbf
