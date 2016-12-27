@@ -14,7 +14,7 @@ type Config struct {
 
 func NewConfig() *Config {
 	return &Config{
-		Master:                "127.0.0.1:8080",
+		Master:                "",
 		KubeConfig:            "",
 		ProviderName:          "",
 		ClusterName:           "",
