@@ -12,6 +12,7 @@ type Region struct {
 	Code         string `json:"regioncode"`
 }
 
+// GetRegions returns a list of all available Vultr regions
 func (c *Client) GetRegions() ([]Region, error) {
 	var regionMap map[string]Region
 	if err := c.get(`regions/list`, &regionMap); err != nil {

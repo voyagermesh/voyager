@@ -36,6 +36,7 @@ var retryableStatusCodes = map[int]struct{}{
 	500: {}, // Internal server error. Try again at a later time.
 }
 
+// Client represents the Vultr API client
 type Client struct {
 	// HTTP client for communication with the Vultr API
 	client *http.Client
@@ -56,6 +57,7 @@ type Client struct {
 	bucket *ratelimit.Bucket
 }
 
+// Options represents optional settings and flags that can be passed to NewClient
 type Options struct {
 	// HTTP client for communication with the Vultr API
 	HTTPClient *http.Client

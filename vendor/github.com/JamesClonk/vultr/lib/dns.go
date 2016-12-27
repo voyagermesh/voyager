@@ -5,14 +5,14 @@ import (
 	"net/url"
 )
 
-// DNS Domain
-type DnsDomain struct {
+// DNSDomain represents a DNS domain on Vultr
+type DNSDomain struct {
 	Domain  string `json:"domain"`
 	Created string `json:"date_created"`
 }
 
-// DNS Record
-type DnsRecord struct {
+// DNSRecord represents a DNS record on Vultr
+type DNSRecord struct {
 	RecordID int    `json:"RECORDID"`
 	Type     string `json:"type"`
 	Name     string `json:"name"`
@@ -21,14 +21,16 @@ type DnsRecord struct {
 	TTL      int    `json:"ttl"`
 }
 
-func (c *Client) GetDnsDomains() (dnsdomains []DnsDomain, err error) {
+// GetDNSDomains returns a list of available domains on Vultr account
+func (c *Client) GetDNSDomains() (dnsdomains []DNSDomain, err error) {
 	if err := c.get(`dns/list`, &dnsdomains); err != nil {
 		return nil, err
 	}
 	return dnsdomains, nil
 }
 
-func (c *Client) CreateDnsDomain(domain, serverip string) error {
+// CreateDNSDomain creates a new DNS domain name on Vultr
+func (c *Client) CreateDNSDomain(domain, serverip string) error {
 	values := url.Values{
 		"domain":   {domain},
 		"serverip": {serverip},
@@ -40,7 +42,8 @@ func (c *Client) CreateDnsDomain(domain, serverip string) error {
 	return nil
 }
 
-func (c *Client) DeleteDnsDomain(domain string) error {
+// DeleteDNSDomain deletes an existing DNS domain name
+func (c *Client) DeleteDNSDomain(domain string) error {
 	values := url.Values{
 		"domain": {domain},
 	}
@@ -51,14 +54,16 @@ func (c *Client) DeleteDnsDomain(domain string) error {
 	return nil
 }
 
-func (c *Client) GetDnsRecords(domain string) (dnsrecords []DnsRecord, err error) {
+// GetDNSRecords returns a list of all DNS records of a particular domain
+func (c *Client) GetDNSRecords(domain string) (dnsrecords []DNSRecord, err error) {
 	if err := c.get(`dns/records?domain=`+domain, &dnsrecords); err != nil {
 		return nil, err
 	}
 	return dnsrecords, nil
 }
 
-func (c *Client) CreateDnsRecord(domain, name, rtype, data string, priority, ttl int) error {
+// CreateDNSRecord creates a new DNS record
+func (c *Client) CreateDNSRecord(domain, name, rtype, data string, priority, ttl int) error {
 	values := url.Values{
 		"domain":   {domain},
 		"name":     {name},
@@ -74,7 +79,8 @@ func (c *Client) CreateDnsRecord(domain, name, rtype, data string, priority, ttl
 	return nil
 }
 
-func (c *Client) UpdateDnsRecord(domain string, dnsrecord DnsRecord) error {
+// UpdateDNSRecord updates an existing DNS record
+func (c *Client) UpdateDNSRecord(domain string, dnsrecord DNSRecord) error {
 	values := url.Values{
 		"domain":   {domain},
 		"RECORDID": {fmt.Sprintf("%v", dnsrecord.RecordID)},
@@ -99,7 +105,8 @@ func (c *Client) UpdateDnsRecord(domain string, dnsrecord DnsRecord) error {
 	return nil
 }
 
-func (c *Client) DeleteDnsRecord(domain string, recordID int) error {
+// DeleteDNSRecord deletes an existing DNS record
+func (c *Client) DeleteDNSRecord(domain string, recordID int) error {
 	values := url.Values{
 		"domain":   {domain},
 		"RECORDID": {fmt.Sprintf("%v", recordID)},

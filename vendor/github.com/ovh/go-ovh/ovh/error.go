@@ -8,6 +8,8 @@ type APIError struct {
 	Message string
 	// HTTP code.
 	Code int
+	// ID of the request
+	QueryID string
 }
 
 func (err *APIError) Error() string {

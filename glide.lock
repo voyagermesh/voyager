@@ -1,5 +1,5 @@
-hash: e78acbcc88ecfc11fe0aef5a116a0bf2dc7f60a8e1c46eb9507865c6b39833ae
-updated: 2016-12-22T23:19:33.793811969-08:00
+hash: 29d8b2df022314576a0332f5f901813317e71cba012c45c7e33e5c17253201f8
+updated: 2016-12-27T01:54:16.144557006-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -13,7 +13,7 @@ imports:
   subpackages:
   - h/log
 - name: github.com/appscode/go
-  version: a1ba0f9d2aab149758795b6b9c3e3f09fbd7d875
+  version: 7995bcb0419b6ed977ca66d4482c3a625847270e
   subpackages:
   - arrays
   - crypto/rand
@@ -23,7 +23,7 @@ imports:
   - strings
   - version
 - name: github.com/appscode/k8s-addons
-  version: 6ee4badc6608343602a15115c2087d11f36f6efa
+  version: 05da01ad537cf3fbc57257425a71908ac249b2a8
   subpackages:
   - api
   - api/install
@@ -208,7 +208,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/JamesClonk/vultr
-  version: f28dc156b83a7b9069ca4bd6ff7738c50c8a9ad6
+  version: 776892977e0b1f987d75256446db16dcf92aaaad
   subpackages:
   - lib
 - name: github.com/jmespath/go-jmespath
@@ -246,7 +246,7 @@ imports:
 - name: github.com/mitchellh/mapstructure
   version: 740c764bc6149d3f1806231418adb9f52c11bcbf
 - name: github.com/ovh/go-ovh
-  version: 99a1e00db4397517d87ab82c92b9d8cb60e5940b
+  version: a8a4c0bc40e56322142649bda7b2b4bb15145b6e
   subpackages:
   - ovh
 - name: github.com/pborman/uuid
@@ -317,9 +317,9 @@ imports:
   subpackages:
   - zk
 - name: github.com/spf13/cobra
-  version: f62e98d28ab7ad31d707ba837a966378465c7b57
+  version: 9c28e4bbd74e5c3ed7aacbc552b2cab7cfdfe744
 - name: github.com/spf13/pflag
-  version: 5ccb023bc27df288a957c5e994cd44fd19619465
+  version: c7e63cf4530bcd3ba943729cee0efeff2ebea63f
 - name: github.com/timewasted/linode
   version: 37e84520dcf74488f67654f9c775b9752c232dc1
   subpackages:
@@ -360,7 +360,7 @@ imports:
   subpackages:
   - cloudstack
 - name: github.com/xenolf/lego
-  version: daf180ad8a39e22ba6c3190300e44f8acfb2996a
+  version: 0ed6e886bbaec583c1d2caef5096dec303a47ba5
   repo: git@github.com:appscode/lego.git
   vcs: git
   subpackages:
@@ -619,7 +619,6 @@ imports:
   - pkg/util/diff
   - pkg/util/errors
   - pkg/util/exec
-  - pkg/util/flag
   - pkg/util/flowcontrol
   - pkg/util/framer
   - pkg/util/homedir

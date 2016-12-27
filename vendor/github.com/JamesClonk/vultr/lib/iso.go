@@ -9,6 +9,7 @@ type ISO struct {
 	MD5sum   string `json:"md5sum"`
 }
 
+// GetISO returns a list of all ISO images on Vultr account
 func (c *Client) GetISO() ([]ISO, error) {
 	var isoMap map[string]ISO
 	if err := c.get(`iso/list`, &isoMap); err != nil {

@@ -11,6 +11,7 @@ type Snapshot struct {
 	Created     string `json:"date_created"`
 }
 
+// GetSnapshots retrieves a list of all snapshots on Vultr account
 func (c *Client) GetSnapshots() (snapshots []Snapshot, err error) {
 	var snapshotMap map[string]Snapshot
 	if err := c.get(`snapshot/list`, &snapshotMap); err != nil {
@@ -23,6 +24,7 @@ func (c *Client) GetSnapshots() (snapshots []Snapshot, err error) {
 	return snapshots, nil
 }
 
+// CreateSnapshot creates a new virtual machine snapshot
 func (c *Client) CreateSnapshot(id, description string) (Snapshot, error) {
 	values := url.Values{
 		"SUBID":       {id},
@@ -38,6 +40,7 @@ func (c *Client) CreateSnapshot(id, description string) (Snapshot, error) {
 	return snapshot, nil
 }
 
+// DeleteSnapshot deletes an existing virtual machine snapshot
 func (c *Client) DeleteSnapshot(id string) error {
 	values := url.Values{
 		"SNAPSHOTID": {id},

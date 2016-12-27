@@ -10,6 +10,7 @@ type SSHKey struct {
 	Created string `json:"date_created"`
 }
 
+// GetSSHKeys returns a list of SSHKeys from Vultr account
 func (c *Client) GetSSHKeys() (keys []SSHKey, err error) {
 	var keyMap map[string]SSHKey
 	if err := c.get(`sshkey/list`, &keyMap); err != nil {
@@ -22,6 +23,7 @@ func (c *Client) GetSSHKeys() (keys []SSHKey, err error) {
 	return keys, nil
 }
 
+// CreateSSHKey creates new SSHKey on Vultr
 func (c *Client) CreateSSHKey(name, key string) (SSHKey, error) {
 	values := url.Values{
 		"name":    {name},
@@ -38,6 +40,7 @@ func (c *Client) CreateSSHKey(name, key string) (SSHKey, error) {
 	return sshKey, nil
 }
 
+// UpdateSSHKey updates an existing SSHKey entry
 func (c *Client) UpdateSSHKey(key SSHKey) error {
 	values := url.Values{
 		"SSHKEYID": {key.ID},
@@ -55,6 +58,7 @@ func (c *Client) UpdateSSHKey(key SSHKey) error {
 	return nil
 }
 
+// DeleteSSHKey deletes an existing SSHKey from Vultr account
 func (c *Client) DeleteSSHKey(id string) error {
 	values := url.Values{
 		"SSHKEYID": {id},

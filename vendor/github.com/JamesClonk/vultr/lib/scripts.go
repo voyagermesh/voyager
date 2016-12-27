@@ -14,7 +14,7 @@ type StartupScript struct {
 	Content string `json:"script"`
 }
 
-// Implements json.Unmarshaller on StartupScript.
+// UnmarshalJSON implements json.Unmarshaller on StartupScript.
 // Necessary because the SCRIPTID field has inconsistent types.
 func (s *StartupScript) UnmarshalJSON(data []byte) (err error) {
 	if s == nil {
@@ -34,6 +34,7 @@ func (s *StartupScript) UnmarshalJSON(data []byte) (err error) {
 	return
 }
 
+// GetStartupScripts returns a list of all startup scripts on the current Vultr account
 func (c *Client) GetStartupScripts() (scripts []StartupScript, err error) {
 	var scriptMap map[string]StartupScript
 	if err := c.get(`startupscript/list`, &scriptMap); err != nil {
@@ -49,6 +50,7 @@ func (c *Client) GetStartupScripts() (scripts []StartupScript, err error) {
 	return scripts, nil
 }
 
+// GetStartupScript returns the startup script with the given ID
 func (c *Client) GetStartupScript(id string) (StartupScript, error) {
 	scripts, err := c.GetStartupScripts()
 	if err != nil {
@@ -63,6 +65,7 @@ func (c *Client) GetStartupScript(id string) (StartupScript, error) {
 	return StartupScript{}, nil
 }
 
+// CreateStartupScript creates a new startup script
 func (c *Client) CreateStartupScript(name, content, scriptType string) (StartupScript, error) {
 	values := url.Values{
 		"name":   {name},
@@ -81,6 +84,7 @@ func (c *Client) CreateStartupScript(name, content, scriptType string) (StartupS
 	return script, nil
 }
 
+// UpdateStartupScript updates an existing startup script
 func (c *Client) UpdateStartupScript(script StartupScript) error {
 	values := url.Values{
 		"SCRIPTID": {script.ID},
@@ -98,6 +102,7 @@ func (c *Client) UpdateStartupScript(script StartupScript) error {
 	return nil
 }
 
+// DeleteStartupScript deletes an existing startup script from Vultr account
 func (c *Client) DeleteStartupScript(id string) error {
 	values := url.Values{
 		"SCRIPTID": {id},

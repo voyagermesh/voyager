@@ -10,6 +10,7 @@ type OS struct {
 	Surcharge string `json:"surcharge"`
 }
 
+// GetOS returns a list of all available operating systems on Vultr
 func (c *Client) GetOS() ([]OS, error) {
 	var osMap map[string]OS
 	if err := c.get(`os/list`, &osMap); err != nil {

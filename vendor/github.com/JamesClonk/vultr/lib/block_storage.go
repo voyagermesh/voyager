@@ -19,7 +19,7 @@ type BlockStorage struct {
 	AttachedTo string `json:"attached_to_SUBID"`
 }
 
-// Implements json.Unmarshaller on BlockStorage.
+// UnmarshalJSON implements json.Unmarshaller on BlockStorage.
 // This is needed because the Vultr API is inconsistent in it's JSON responses.
 // Some fields can change type, from JSON number to JSON string and vice-versa.
 func (b *BlockStorage) UnmarshalJSON(data []byte) (err error) {
@@ -82,6 +82,7 @@ func (b *BlockStorage) UnmarshalJSON(data []byte) (err error) {
 	return
 }
 
+// GetBlockStorages returns a list of all active block storages on Vultr account
 func (c *Client) GetBlockStorages() (storages []BlockStorage, err error) {
 	if err := c.get(`block/list`, &storages); err != nil {
 		return nil, err
@@ -89,6 +90,7 @@ func (c *Client) GetBlockStorages() (storages []BlockStorage, err error) {
 	return storages, nil
 }
 
+// GetBlockStorage returns block storage with given ID
 func (c *Client) GetBlockStorage(id string) (BlockStorage, error) {
 	storages, err := c.GetBlockStorages()
 	if err != nil {
@@ -100,9 +102,10 @@ func (c *Client) GetBlockStorage(id string) (BlockStorage, error) {
 			return s, nil
 		}
 	}
-	return BlockStorage{}, nil
+	return BlockStorage{}, fmt.Errorf("BlockStorage with ID %v not found", id)
 }
 
+// CreateBlockStorage creates a new block storage on Vultr account
 func (c *Client) CreateBlockStorage(name string, regionID, size int) (BlockStorage, error) {
 	values := url.Values{
 		"label":   {name},
@@ -121,6 +124,7 @@ func (c *Client) CreateBlockStorage(name string, regionID, size int) (BlockStora
 	return storage, nil
 }
 
+// ResizeBlockStorage resizes an existing block storage
 func (c *Client) ResizeBlockStorage(id string, size int) error {
 	values := url.Values{
 		"SUBID":   {id},
@@ -133,6 +137,7 @@ func (c *Client) ResizeBlockStorage(id string, size int) error {
 	return nil
 }
 
+// LabelBlockStorage changes the label on an existing block storage
 func (c *Client) LabelBlockStorage(id, name string) error {
 	values := url.Values{
 		"SUBID": {id},
@@ -145,10 +150,11 @@ func (c *Client) LabelBlockStorage(id, name string) error {
 	return nil
 }
 
-func (c *Client) AttachBlockStorage(id, serverId string) error {
+// AttachBlockStorage attaches block storage to an existing virtual machine
+func (c *Client) AttachBlockStorage(id, serverID string) error {
 	values := url.Values{
 		"SUBID":           {id},
-		"attach_to_SUBID": {serverId},
+		"attach_to_SUBID": {serverID},
 	}
 
 	if err := c.post(`block/attach`, values, nil); err != nil {
@@ -157,6 +163,7 @@ func (c *Client) AttachBlockStorage(id, serverId string) error {
 	return nil
 }
 
+// DetachBlockStorage detaches block storage from virtual machine
 func (c *Client) DetachBlockStorage(id string) error {
 	values := url.Values{
 		"SUBID": {id},
@@ -168,6 +175,7 @@ func (c *Client) DetachBlockStorage(id string) error {
 	return nil
 }
 
+// DeleteBlockStorage deletes an existing block storage
 func (c *Client) DeleteBlockStorage(id string) error {
 	values := url.Values{
 		"SUBID": {id},

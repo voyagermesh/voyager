@@ -25,6 +25,7 @@ type ReverseDNSIPv6 struct {
 	ReverseDNS string `json:"reverse"`
 }
 
+// ListIPv4 lists the IPv4 information of a virtual machine
 func (c *Client) ListIPv4(id string) (list []IPv4, err error) {
 	var ipMap map[string][]IPv4
 	if err := c.get(`server/list_ipv4?SUBID=`+id, &ipMap); err != nil {
@@ -39,6 +40,7 @@ func (c *Client) ListIPv4(id string) (list []IPv4, err error) {
 	return list, nil
 }
 
+// ListIPv6 lists the IPv4 information of a virtual machine
 func (c *Client) ListIPv6(id string) (list []IPv6, err error) {
 	var ipMap map[string][]IPv6
 	if err := c.get(`server/list_ipv6?SUBID=`+id, &ipMap); err != nil {
@@ -53,6 +55,7 @@ func (c *Client) ListIPv6(id string) (list []IPv6, err error) {
 	return list, nil
 }
 
+// ListIPv6ReverseDNS lists the IPv6 reverse DNS entries of a virtual machine
 func (c *Client) ListIPv6ReverseDNS(id string) (list []ReverseDNSIPv6, err error) {
 	var ipMap map[string][]ReverseDNSIPv6
 	if err := c.get(`server/reverse_list_ipv6?SUBID=`+id, &ipMap); err != nil {
@@ -67,6 +70,7 @@ func (c *Client) ListIPv6ReverseDNS(id string) (list []ReverseDNSIPv6, err error
 	return list, nil
 }
 
+// DeleteIPv6ReverseDNS removes a reverse DNS entry for an IPv6 address of a virtual machine
 func (c *Client) DeleteIPv6ReverseDNS(id string, ip string) error {
 	values := url.Values{
 		"SUBID": {id},
@@ -79,6 +83,7 @@ func (c *Client) DeleteIPv6ReverseDNS(id string, ip string) error {
 	return nil
 }
 
+// SetIPv6ReverseDNS sets a reverse DNS entry for an IPv6 address of a virtual machine
 func (c *Client) SetIPv6ReverseDNS(id, ip, entry string) error {
 	values := url.Values{
 		"SUBID": {id},
@@ -92,6 +97,7 @@ func (c *Client) SetIPv6ReverseDNS(id, ip, entry string) error {
 	return nil
 }
 
+// DefaultIPv4ReverseDNS sets a reverse DNS entry for an IPv4 address of a virtual machine to the original setting
 func (c *Client) DefaultIPv4ReverseDNS(id, ip string) error {
 	values := url.Values{
 		"SUBID": {id},
@@ -104,6 +110,7 @@ func (c *Client) DefaultIPv4ReverseDNS(id, ip string) error {
 	return nil
 }
 
+// SetIPv4ReverseDNS sets a reverse DNS entry for an IPv4 address of a virtual machine
 func (c *Client) SetIPv4ReverseDNS(id, ip, entry string) error {
 	values := url.Values{
 		"SUBID": {id},
