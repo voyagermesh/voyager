@@ -21,7 +21,7 @@ import:
 - package: github.com/xenolf/lego
   repo: git@github.com:appscode/lego.git
   vcs: git
-  version: gcloud-jwt
+  version: e5e71ef12cd6b5babe7bff55760e012d81baac12
 - package: github.com/aws/aws-sdk-go
   version: v1.1.36
 - package: github.com/Azure/azure-sdk-for-go

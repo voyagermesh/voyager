@@ -1,5 +1,5 @@
-hash: 29d8b2df022314576a0332f5f901813317e71cba012c45c7e33e5c17253201f8
-updated: 2016-12-27T01:54:16.144557006-08:00
+hash: 35d1dcb7d4fc0afa6642948a20424605b444ddb4f3cc43da9468a44e705d6ae9
+updated: 2016-12-27T07:00:43.841579122-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -360,7 +360,7 @@ imports:
   subpackages:
   - cloudstack
 - name: github.com/xenolf/lego
-  version: 0ed6e886bbaec583c1d2caef5096dec303a47ba5
+  version: e5e71ef12cd6b5babe7bff55760e012d81baac12
   repo: git@github.com:appscode/lego.git
   vcs: git
   subpackages:
@@ -641,7 +641,6 @@ imports:
   - pkg/util/wait
   - pkg/util/yaml
   - pkg/version
-  - pkg/version/verflag
   - pkg/volume
   - pkg/volume/util
   - pkg/watch

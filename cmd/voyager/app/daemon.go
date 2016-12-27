@@ -12,24 +12,13 @@ import (
 	"github.com/appscode/voyager/cmd/voyager/app/options"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
-	clientcmdapi "k8s.io/kubernetes/pkg/client/unversioned/clientcmd/api"
 )
 
 func Run(config *options.Config) {
 	log.Infoln("Configuration:", config)
 	defer runtime.HandleCrash()
 
-	// ref; https://github.com/kubernetes/kubernetes/blob/ba1666fb7b946febecfc836465d22903b687118e/cmd/kube-proxy/app/server.go#L168
-	// Create a Kube Client
-	// define api config source
-	if config.KubeConfig == "" && config.Master == "" {
-		log.Warningf("Neither --kubeconfig nor --master was specified.  Using default API client.  This might not work.")
-	}
-	// This creates a client, first loading any specified kubeconfig
-	// file, and then overriding the Master flag, if non-empty.
-	c, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		&clientcmd.ClientConfigLoadingRules{ExplicitPath: config.KubeConfig},
-		&clientcmd.ConfigOverrides{ClusterInfo: clientcmdapi.Cluster{Server: config.Master}}).ClientConfig()
+	c, err := clientcmd.BuildConfigFromFlags(config.Master, config.KubeConfig)
 	if err != nil {
 		errors.Exit(err)
 	}

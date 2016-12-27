@@ -239,6 +239,12 @@ func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
 		return zone, nil
 	}
 
+	if zone, err := publicsuffix.EffectiveTLDPlusOne(UnFqdn(fqdn)); err == nil {
+		zone = ToFqdn(zone)
+		fqdnToZone[fqdn] = zone
+		return zone, nil
+	}
+
 	labelIndexes := dns.Split(fqdn)
 	for _, index := range labelIndexes {
 		domain := fqdn[index:]
