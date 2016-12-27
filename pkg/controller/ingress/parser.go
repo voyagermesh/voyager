@@ -13,6 +13,7 @@ import (
 	"github.com/flosch/pongo2"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/util/intstr"
+	"github.com/appscode/voyager/pkg/controller/ingress/templates"
 )
 
 func (lbc *EngressController) parse() error {
@@ -103,7 +104,7 @@ func (lbc *EngressController) generateTemplate() error {
 		return errors.New().WithCause(err).Internal()
 	}
 
-	tpl, err := pongo2.FromString(haproxyTemplate)
+	tpl, err := pongo2.FromString(templates.HaproxyTemplate)
 	if err != nil {
 		return errors.New().WithCause(err).Internal()
 	}

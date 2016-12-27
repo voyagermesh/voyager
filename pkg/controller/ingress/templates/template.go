@@ -1,6 +1,6 @@
-package ingress
+package templates
 
-const haproxyTemplate = `# This file uses golang pongo2 templates to
+const HaproxyTemplate = `# This file uses golang pongo2 templates to
 # dynamically configure the haproxy loadbalancer.
 global
     daemon
