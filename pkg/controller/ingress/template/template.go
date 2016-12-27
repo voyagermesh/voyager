@@ -1,6 +1,6 @@
-package templates
+package template
 
-const HaproxyTemplate = `# This file uses golang pongo2 templates to
+const HAProxyTemplate = `# This file uses golang pongo2 template to
 # dynamically configure the haproxy loadbalancer.
 global
     daemon
