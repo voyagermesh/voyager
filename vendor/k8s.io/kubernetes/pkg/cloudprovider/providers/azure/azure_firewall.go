@@ -26,8 +26,8 @@ func (az *Cloud) EnsureFirewall(service *api.Service, hostname string) error {
 	}
 
 	var nicName string
-	for _, nic := range *machine.Properties.NetworkProfile.NetworkInterfaces {
-		if *nic.Properties.Primary {
+	for _, nic := range *machine.NetworkProfile.NetworkInterfaces {
+		if *nic.Primary {
 			nicName = (*nic.ID)[strings.LastIndex(*nic.ID, "/")+1:]
 			break
 		}
@@ -41,7 +41,7 @@ func (az *Cloud) EnsureFirewall(service *api.Service, hostname string) error {
 	if !exists {
 		return fmt.Errorf("Failed to detect internal ip for host %v", hostname)
 	}
-	internlIP := *(*nic.Properties.IPConfigurations)[0].Properties.PrivateIPAddress
+	internlIP := *(*nic.IPConfigurations)[0].PrivateIPAddress
 
 	sg, err := az.SecurityGroupsClient.Get(az.ResourceGroup, az.SecurityGroupName, "")
 	if err != nil {
@@ -113,7 +113,7 @@ func (az *Cloud) reconcileFirewall(sg network.SecurityGroup, service *api.Servic
 
 		expectedSecurityRules[i] = network.SecurityRule{
 			Name: to.StringPtr(securityRuleName),
-			Properties: &network.SecurityRulePropertiesFormat{
+			SecurityRulePropertiesFormat: &network.SecurityRulePropertiesFormat{
 				Protocol:                 securityProto,
 				SourcePortRange:          to.StringPtr("*"),
 				DestinationPortRange:     to.StringPtr(strconv.Itoa(int(port.NodePort))),
@@ -128,8 +128,8 @@ func (az *Cloud) reconcileFirewall(sg network.SecurityGroup, service *api.Servic
 	// update security rules
 	dirtySg := false
 	var updatedRules []network.SecurityRule
-	if sg.Properties.SecurityRules != nil {
-		updatedRules = *sg.Properties.SecurityRules
+	if sg.SecurityRules != nil {
+		updatedRules = *sg.SecurityRules
 	}
 	// update security rules: remove unwanted
 	for i := len(updatedRules) - 1; i >= 0; i-- {
@@ -163,13 +163,13 @@ func (az *Cloud) reconcileFirewall(sg network.SecurityGroup, service *api.Servic
 				return sg, false, err
 			}
 
-			expectedRule.Properties.Priority = to.Int32Ptr(nextAvailablePriority)
+			expectedRule.Priority = to.Int32Ptr(nextAvailablePriority)
 			updatedRules = append(updatedRules, expectedRule)
 			dirtySg = true
 		}
 	}
 	if dirtySg {
-		sg.Properties.SecurityRules = &updatedRules
+		sg.SecurityRules = &updatedRules
 	}
 	return sg, dirtySg, nil
 }

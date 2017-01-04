@@ -14,7 +14,7 @@ const (
 	External                      = "EXTERNAL"
 	Failed                        = "FAILED"
 	Internal                      = "INTERNAL"
-	InvalidData                   = "INVALIED_DATA"
+	InvalidData                   = "INVALID_DATA"
 	InvalidPaymentInformation     = "INVALID_PAYMENT_INFORMATION"
 	InvalidQuota                  = "INVALID_QUOTA"
 	NotFound                      = "NOT_FOUND"

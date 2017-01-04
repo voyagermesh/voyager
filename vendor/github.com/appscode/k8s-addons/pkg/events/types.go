@@ -56,6 +56,26 @@ func (e EventType) Is(event string) bool {
 	return strings.EqualFold(e.String(), event)
 }
 
+type EventReason string
+
+const (
+	EventReasonAlertAcknowledgement EventReason = "AlertAcknowledgement"
+)
+
+func (r EventReason) String() string {
+	return string(r)
+}
+
+type ObjectKind string
+
+const (
+	ObjectKindAlert ObjectKind = "Alert"
+)
+
+func (o ObjectKind) String() string {
+	return string(o)
+}
+
 type ObjectType string
 
 const (
@@ -76,6 +96,7 @@ const (
 	Deployments     ObjectType = "deployments"
 	Service         ObjectType = "services"
 	Unknown         ObjectType = "unknown"
+	AlertEvent      ObjectType = "alertevents"
 )
 
 func (o ObjectType) String() string {
@@ -156,6 +177,8 @@ func detectObjectType(o interface{}) ObjectType {
 		return Alert
 	case aci.Certificate, *aci.Certificate:
 		return Certificate
+	case kapi.Event, *kapi.Event:
+		return AlertEvent
 	}
 	return Unknown
 }
@@ -182,6 +205,8 @@ func objectMetadata(o interface{}, t ObjectType) kapi.ObjectMeta {
 		return o.(*aci.Certificate).ObjectMeta
 	case Endpoint:
 		return o.(*kapi.Endpoints).ObjectMeta
+	case AlertEvent:
+		return o.(*kapi.Event).ObjectMeta
 	}
 	return kapi.ObjectMeta{}
 }

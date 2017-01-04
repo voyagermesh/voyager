@@ -6,7 +6,6 @@ import (
 
 	aci "github.com/appscode/k8s-addons/api"
 	"github.com/appscode/k8s-addons/client/clientset/fake"
-
 	"github.com/stretchr/testify/assert"
 	kapi "k8s.io/kubernetes/pkg/api"
 )

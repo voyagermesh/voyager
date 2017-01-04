@@ -10,10 +10,10 @@ import (
 	"github.com/appscode/go/crypto/rand"
 	stringutil "github.com/appscode/go/strings"
 	"github.com/appscode/log"
+	"github.com/appscode/voyager/pkg/controller/ingress/template"
 	"github.com/flosch/pongo2"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/util/intstr"
-	"github.com/appscode/voyager/pkg/controller/ingress/template"
 )
 
 func (lbc *EngressController) parse() error {

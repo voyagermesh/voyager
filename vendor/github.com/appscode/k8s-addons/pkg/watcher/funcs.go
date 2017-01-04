@@ -2,8 +2,10 @@ package watcher
 
 import (
 	acs "github.com/appscode/k8s-addons/client/clientset"
+	"github.com/appscode/k8s-addons/pkg/events"
 	kapi "k8s.io/kubernetes/pkg/api"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+	"k8s.io/kubernetes/pkg/fields"
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/watch"
 )
@@ -89,5 +91,33 @@ func CertificateListFunc(c acs.AppsCodeExtensionInterface) func(kapi.ListOptions
 func CertificateWatchFunc(c acs.AppsCodeExtensionInterface) func(options kapi.ListOptions) (watch.Interface, error) {
 	return func(options kapi.ListOptions) (watch.Interface, error) {
 		return c.Certificate(kapi.NamespaceAll).Watch(options)
+	}
+}
+
+func AlertEventListFunc(c clientset.Interface) func(kapi.ListOptions) (runtime.Object, error) {
+	return func(opts kapi.ListOptions) (runtime.Object, error) {
+		sets := fields.Set{
+			kapi.EventTypeField:         kapi.EventTypeNormal,
+			kapi.EventReasonField:       events.EventReasonAlertAcknowledgement.String(),
+			kapi.EventInvolvedKindField: events.ObjectKindAlert.String(),
+		}
+		fieldSelector := fields.SelectorFromSet(sets)
+
+		opts.FieldSelector = fieldSelector
+		return c.Core().Events(kapi.NamespaceAll).List(opts)
+	}
+}
+
+func AlertEventWatchFunc(c clientset.Interface) func(options kapi.ListOptions) (watch.Interface, error) {
+	return func(options kapi.ListOptions) (watch.Interface, error) {
+		sets := fields.Set{
+			kapi.EventTypeField:         kapi.EventTypeNormal,
+			kapi.EventReasonField:       events.EventReasonAlertAcknowledgement.String(),
+			kapi.EventInvolvedKindField: events.ObjectKindAlert.String(),
+		}
+		fieldSelector := fields.SelectorFromSet(sets)
+
+		options.FieldSelector = fieldSelector
+		return c.Core().Events(kapi.NamespaceAll).Watch(options)
 	}
 }

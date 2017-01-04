@@ -1,4 +1,4 @@
-package client
+package clientset
 
 // These imports are the API groups the client will support.
 import (

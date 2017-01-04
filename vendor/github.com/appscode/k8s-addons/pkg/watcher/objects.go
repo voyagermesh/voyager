@@ -123,3 +123,13 @@ func (k *Watcher) Certificate() {
 	_, controller := k.Cache(events.Certificate, &aci.Certificate{}, lw)
 	go controller.Run(wait.NeverStop)
 }
+
+func (k *Watcher) AlertEvent() {
+	log.Debugln("watching", events.AlertEvent.String())
+	lw := &cache.ListWatch{
+		ListFunc:  AlertEventListFunc(k.Client),
+		WatchFunc: AlertEventWatchFunc(k.Client),
+	}
+	_, controller := k.Cache(events.AlertEvent, &kapi.Event{}, lw)
+	go controller.Run(wait.NeverStop)
+}

@@ -29,11 +29,19 @@ func (c *Client) GetDNSDomains() (dnsdomains []DNSDomain, err error) {
 	return dnsdomains, nil
 }
 
+// GetDNSRecords returns a list of all DNS records of a particular domain
+func (c *Client) GetDNSRecords(domain string) (dnsrecords []DNSRecord, err error) {
+	if err := c.get(`dns/records?domain=`+domain, &dnsrecords); err != nil {
+		return nil, err
+	}
+	return dnsrecords, nil
+}
+
 // CreateDNSDomain creates a new DNS domain name on Vultr
-func (c *Client) CreateDNSDomain(domain, serverip string) error {
+func (c *Client) CreateDNSDomain(domain, serverIP string) error {
 	values := url.Values{
 		"domain":   {domain},
-		"serverip": {serverip},
+		"serverIP": {serverIP},
 	}
 
 	if err := c.post(`dns/create_domain`, values, nil); err != nil {
@@ -52,14 +60,6 @@ func (c *Client) DeleteDNSDomain(domain string) error {
 		return err
 	}
 	return nil
-}
-
-// GetDNSRecords returns a list of all DNS records of a particular domain
-func (c *Client) GetDNSRecords(domain string) (dnsrecords []DNSRecord, err error) {
-	if err := c.get(`dns/records?domain=`+domain, &dnsrecords); err != nil {
-		return nil, err
-	}
-	return dnsrecords, nil
 }
 
 // CreateDNSRecord creates a new DNS record

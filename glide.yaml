@@ -5,7 +5,7 @@ import:
 - package: github.com/grpc-ecosystem/grpc-gateway
   repo: git@github.com:appscode/grpc-gateway.git
   vcs: git
-  version: 93cde5d82c4bca62da70d631a348542eb2d44cd3
+  version: master
 - package: google.golang.org/grpc
   version: v1.0.4
 - package: github.com/appscode/errors
@@ -14,19 +14,19 @@ import:
   version: release-1.5
 - package: github.com/appscode/log
 - package: github.com/flosch/pongo2
-  version: 22499f94d3d56c7238591344a6902715d0b8fbbf
+  version: master
 - package: github.com/mikespook/golib
 - package: github.com/spf13/cobra
 - package: github.com/spf13/pflag
 - package: github.com/xenolf/lego
   repo: git@github.com:appscode/lego.git
   vcs: git
-  version: e5e71ef12cd6b5babe7bff55760e012d81baac12
+  version: master
 - package: github.com/aws/aws-sdk-go
   version: v1.1.36
 - package: github.com/Azure/azure-sdk-for-go
   vcs: git
-  version: 8316b9060f9c2443ba0864663245695d570a7fa2
+  version: v7.0.1-beta
 - package: github.com/Azure/go-autorest
   version: e0c77ecbe74311e03f2a629834d2110f031f1453
 - package: cloud.google.com/go
@@ -34,7 +34,7 @@ import:
 - package: k8s.io/kubernetes
   repo: git@github.com:appscode/kubernetes.git
   vcs: git
-  version: 1.5.1-ac
+  version: 1.5.2-ac
 testImport:
 - package: github.com/stretchr/testify
   version: v1.1.4

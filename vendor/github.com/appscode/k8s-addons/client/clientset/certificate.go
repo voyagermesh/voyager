@@ -1,4 +1,4 @@
-package client
+package clientset
 
 import (
 	aci "github.com/appscode/k8s-addons/api"

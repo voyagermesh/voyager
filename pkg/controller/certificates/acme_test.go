@@ -3,11 +3,10 @@ package certificates
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"fmt"
-	"testing"
-
 	"crypto/x509"
 	"encoding/pem"
+	"fmt"
+	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/xenolf/lego/acme"
