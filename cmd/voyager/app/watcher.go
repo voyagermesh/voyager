@@ -46,6 +46,7 @@ func (watch *Watcher) Run() {
 
 func (w *Watcher) setup() {
 	lbc.SetLoadbalancerImage(w.LoadbalancerImage)
+	w.Watcher.Dispatch = w.Dispatch
 }
 
 func (w *Watcher) Dispatch(e *events.Event) error {
