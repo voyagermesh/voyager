@@ -1,5 +1,5 @@
 hash: 5869ba2a8ca3c63999d0f71cd2ba73f501042602d5a34104ae356ddc08d3fcf1
-updated: 2017-01-14T12:42:55.542136185-08:00
+updated: 2017-01-19T02:54:09.250770472-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -13,7 +13,7 @@ imports:
   subpackages:
   - h/log
 - name: github.com/appscode/go
-  version: c69e23742f9631e337197faa35c6d7ee1a93ee6c
+  version: 10a1572c8fec8c70fe11a05cf6cf2d0034c3ea2a
   subpackages:
   - arrays
   - crypto/rand
@@ -199,7 +199,7 @@ imports:
 - name: github.com/google/gofuzz
   version: bbcb9da2d746f8bdbd6a936686a0a6067ada0ec5
 - name: github.com/grpc-ecosystem/grpc-gateway
-  version: 0df7af644065817a5e7f6dfdb4c52ddca56e3c92
+  version: 9e2ec49480d7da3e5cae8a52821467c790ca496d
   repo: git@github.com:appscode/grpc-gateway.git
   vcs: git
 - name: github.com/howeyc/gopass
@@ -361,7 +361,7 @@ imports:
   subpackages:
   - cloudstack
 - name: github.com/xenolf/lego
-  version: efdf264cb25e03b7adab3401648e6daa7fbe8ebc
+  version: e35b0ffcf7c5217ab2b605ab0f266547ad26021e
   repo: git@github.com:appscode/lego.git
   vcs: git
   subpackages:
@@ -478,7 +478,7 @@ imports:
 - name: gopkg.in/yaml.v2
   version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/kubernetes
-  version: 486680add704e854c69b0d58889d30adf811394f
+  version: ab1ec7840931d698a3705a341ffff360d3838b15
   repo: git@github.com:appscode/kubernetes.git
   vcs: git
   subpackages:
