@@ -205,7 +205,21 @@ func (lbc *EngressController) createDaemonLB() error {
 						{
 							Name:  "haproxy",
 							Image: GetLoadbalancerImage(),
-
+							Env: []kapi.EnvVar{
+								{
+									Name: "KUBE_NAMESPACE",
+									ValueFrom: &kapi.EnvVarSource{
+										FieldRef: &kapi.ObjectFieldSelector{
+											FieldPath: "metadata.namespace",
+										},
+									},
+								},
+							},
+							Args: []string{
+								"--config-map=" + lbc.Options.ConfigMapName,
+								"--mount-location=" + "/etc/haproxy",
+								"--boot-cmd=" + "/etc/sv/reloader/reload",
+							},
 							Ports: []kapi.ContainerPort{
 								{
 									ContainerPort: 80,
@@ -356,6 +370,21 @@ func (lbc *EngressController) createLoadBalancerLB() error {
 						{
 							Name:  "haproxy",
 							Image: GetLoadbalancerImage(),
+							Env: []kapi.EnvVar{
+								{
+									Name: "KUBE_NAMESPACE",
+									ValueFrom: &kapi.EnvVarSource{
+										FieldRef: &kapi.ObjectFieldSelector{
+											FieldPath: "metadata.namespace",
+										},
+									},
+								},
+							},
+							Args: []string{
+								"--config-map=" + lbc.Options.ConfigMapName,
+								"--mount-location=" + "/etc/haproxy",
+								"--boot-cmd=" + "/etc/sv/reloader/reload",
+							},
 							Ports: []kapi.ContainerPort{
 								{
 									ContainerPort: 80,
@@ -481,20 +510,8 @@ func nodeSelector(name string) map[string]string {
 }
 
 func Volumes(o *KubeOptions) []kapi.Volume {
-	configVolume := kapi.Volume{
-		Name: "haproxy-configs",
-		VolumeSource: kapi.VolumeSource{
-			ConfigMap: &kapi.ConfigMapVolumeSource{
-				LocalObjectReference: kapi.LocalObjectReference{
-					Name: o.ConfigMapName,
-				},
-			},
-		},
-	}
-
 	skipper := make(map[string]bool)
 	vs := make([]kapi.Volume, 0)
-	vs = append(vs, configVolume)
 	for _, s := range o.SecretNames {
 		if strings.TrimSpace(s) == "" {
 			continue
@@ -517,13 +534,8 @@ func Volumes(o *KubeOptions) []kapi.Volume {
 }
 
 func VolumeMounts(o *KubeOptions) []kapi.VolumeMount {
-	configMount := kapi.VolumeMount{
-		Name:      "haproxy-configs",
-		MountPath: "/etc/haproxy",
-	}
 	skipper := make(map[string]bool)
 	ms := make([]kapi.VolumeMount, 0)
-	ms = append(ms, configMount)
 	for _, s := range o.SecretNames {
 		if strings.TrimSpace(s) == "" {
 			continue
