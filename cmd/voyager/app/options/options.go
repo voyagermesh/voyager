@@ -31,5 +31,5 @@ func (s *Config) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&s.ClusterName, "cluster-name", "k", s.ClusterName, "Name of Kubernetes cluster")
 	fs.StringVarP(&s.LoadbalancerImageName, "haproxy-image", "h", s.LoadbalancerImageName, "haproxy image name to be run")
 
-	fs.StringVar(&s.IngressClass, "ingress-class", "", "ingress class this controller handles")
+	fs.StringVar(&s.IngressClass, "ingress-class", "", "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress-class=voyager.")
 }
