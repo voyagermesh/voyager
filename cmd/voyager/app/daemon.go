@@ -32,6 +32,7 @@ func Run(config *options.Config) {
 		ProviderName:      config.ProviderName,
 		ClusterName:       config.ClusterName,
 		LoadbalancerImage: config.LoadbalancerImageName,
+		IngressClass:      config.IngressClass,
 	}
 
 	log.Infoln("configuration loadded, running watcher")

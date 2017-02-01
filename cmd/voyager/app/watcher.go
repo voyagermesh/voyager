@@ -23,6 +23,8 @@ type Watcher struct {
 
 	// Loadbalancer image name that will be used to create the LoadBalancer.
 	LoadbalancerImage string
+
+	IngressClass string
 }
 
 func (watch *Watcher) Run() {
@@ -61,7 +63,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 			w.ProviderName,
 			w.Client,
 			w.AppsCodeExtensionClient,
-			w.Storage).Handle(e)
+			w.Storage, w.IngressClass).Handle(e)
 
 		// Check the Ingress or Extended Ingress Annotations. To Work for auto certificate
 		// operations.
@@ -86,7 +88,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 				w.ProviderName,
 				w.Client,
 				w.AppsCodeExtensionClient,
-				w.Storage)
+				w.Storage, w.IngressClass)
 		}
 	}
 
@@ -103,7 +105,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 					w.ProviderName,
 					w.Client,
 					w.AppsCodeExtensionClient,
-					w.Storage)
+					w.Storage, w.IngressClass)
 			}
 		}
 	}
