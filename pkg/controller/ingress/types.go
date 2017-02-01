@@ -20,27 +20,27 @@ const (
 	DaemonSetPrefix  = "lb-dm-"
 	ConfigMapPrefix  = "lb-cm-"
 
-	stickySession = "lb.appscode.com/stickySession"
+	stickySession = "ingress.appscode.com/stickySession"
 
 	// LB stats options
 	StatPort      = 1936
-	StatsOn       = "lb.appscode.com/stats"
-	StatsUser     = "lb.appscode.com/stats.user"
-	StatsPassword = "lb.appscode.com/stats.password"
+	StatsOn       = "ingress.appscode.com/stats"
+	StatsUser     = "ingress.appscode.com/stats.user"
+	StatsPassword = "ingress.appscode.com/stats.password"
 
 	// Daemon, Persistent, LoadBalancer
-	LBName         = "lb.appscode.com/name"
-	LBType         = "lb.appscode.com/type"
+	LBName         = "ingress.appscode.com/name"
+	LBType         = "ingress.appscode.com/type"
 	LBDaemon       = "Daemon"
 	LBLoadBalancer = "LoadBalancer" // default
 
 	// Runs on a specific set of a hosts via DaemonSet. This is needed to work around the issue that master node is registered but not scheduable.
-	DaemonHostname = "lb.appscode.com/daemon.hostname"
+	DaemonHostname = "ingress.appscode.com/daemon.hostname"
 
 	// LoadBalancer mode exposes HAProxy via a type=LoadBalancer service. This is the original version implemented by @sadlil
 	// Uses nodeport and Cloud LoadBalancer exists beyond single HAProxy run
-	LoadBalancerIP      = "lb.appscode.com/ip"                   // external_ip or loadbalancer_ip "" or a "ipv4"
-	LoadBalancerPersist = "lb.appscode.com/loadbalancer.persist" // "" or a "ipv4"
+	LoadBalancerIP      = "ingress.appscode.com/ip"                   // external_ip or loadbalancer_ip "" or a "ipv4"
+	LoadBalancerPersist = "ingress.appscode.com/loadbalancer.persist" // "" or a "ipv4"
 )
 
 type annotation map[string]string
