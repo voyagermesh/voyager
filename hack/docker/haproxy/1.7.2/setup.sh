@@ -13,11 +13,11 @@ TAG=1.7.2-k8s
 
 build() {
 	pushd $(dirname "${BASH_SOURCE}")
-	gsutil cp gs://appscode-dev/binaries/reloader/0.3/reloader-linux-amd64 reloader
-	chmod +x reloader
+	wget -O kloader https://cdn.appscode.com/binaries/kloader/1.5.0/kloader-linux-amd64
+	chmod +x kloader
 	local cmd="docker build -t appscode/$IMG:$TAG ."
 	echo $cmd; $cmd
-	rm reloader
+	rm kloader
 	popd
 }
 

@@ -4,4 +4,4 @@ exec 2> >(logger -s -p daemon.error -t ${PWD##*/})
 source /etc/envvars
 
 echo "Starting HAProxy configuration watcher and reloader ..."
-exec /reloader --object='/etc/haproxy/haproxy.cfg' --boot-cmd='/etc/sv/reloader/reload' --v=5
+exec /kloader --object='/etc/haproxy/haproxy.cfg' --boot-cmd='/etc/sv/reloader/reload' --v=5

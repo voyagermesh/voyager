@@ -33,7 +33,7 @@ RUN buildDeps='ca-certificates curl gcc libc6-dev libpcre3-dev libssl-dev make' 
   && apt-get purge -y --auto-remove $buildDeps \
   && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man /tmp/*
 
-COPY reloader /reloader
+COPY kloader /kloader
 
 # COPY haproxy.cfg /etc/haproxy/haproxy.cfg
 RUN touch /var/run/haproxy.pid
