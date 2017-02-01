@@ -2,7 +2,7 @@ FROM appscode/base:8.6
 
 RUN set -x \
   && apt-get update \
-  && apt-get install -y libssl1.0.0 libpcre3 socat --no-install-recommends \
+  && apt-get install -y libssl1.0.0 libpcre3 socat sed --no-install-recommends \
   && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man /tmp/*
 
 ENV HAPROXY_MAJOR 1.7
@@ -33,7 +33,7 @@ RUN buildDeps='ca-certificates curl gcc libc6-dev libpcre3-dev libssl-dev make' 
   && apt-get purge -y --auto-remove $buildDeps \
   && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man /tmp/*
 
-COPY reloader /reloader
+COPY kloader /kloader
 
 # COPY haproxy.cfg /etc/haproxy/haproxy.cfg
 RUN touch /var/run/haproxy.pid
