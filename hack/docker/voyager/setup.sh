@@ -4,15 +4,15 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-LIB_ROOT=$(dirname "${BASH_SOURCE}")/../..
-source "$LIB_ROOT/libbuild/common/lib.sh"
-source "$LIB_ROOT/libbuild/common/public_image.sh"
-
 GOPATH=$(go env GOPATH)
 SRC=$GOPATH/src
 BIN=$GOPATH/bin
 ROOT=$GOPATH
 REPO_ROOT=$GOPATH/src/github.com/appscode/voyager
+
+LIB_ROOT="$REPO_ROOT/hack/docker"
+source "$LIB_ROOT/libbuild/common/lib.sh"
+source "$LIB_ROOT/libbuild/common/public_image.sh"
 
 APPSCODE_ENV=${APPSCODE_ENV:-dev}
 IMG=voyager

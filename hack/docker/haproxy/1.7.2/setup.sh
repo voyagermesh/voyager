@@ -4,12 +4,16 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-LIB_ROOT=$(dirname "${BASH_SOURCE}")/../../../..
-source "$LIB_ROOT/hack/libbuild/common/lib.sh"
-source "$LIB_ROOT/hack/libbuild/common/public_image.sh"
+GOPATH=$(go env GOPATH)
+REPO_ROOT=$GOPATH/src/github.com/appscode/voyager
+
+source "$REPO_ROOT/hack/libbuild/common/lib.sh"
+source "$REPO_ROOT/hack/libbuild/common/public_image.sh"
+
+detect_tag $REPO_ROOT/dist/.tag
 
 IMG=haproxy
-TAG=1.7.2-k8s
+TAG=1.7.2-$TAG
 
 build() {
 	pushd $(dirname "${BASH_SOURCE}")
