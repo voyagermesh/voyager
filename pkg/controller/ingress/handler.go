@@ -23,7 +23,8 @@ import (
 func NewEngressController(clusterName, providerName string,
 	kubeClient clientset.Interface,
 	acExtClient acs.AppsCodeExtensionInterface,
-	store *stash.Storage) *EngressController {
+	store *stash.Storage,
+	ingressClass string) *EngressController {
 	h := &EngressController{
 		KubeClient:        kubeClient,
 		Storage:           store,
@@ -36,6 +37,7 @@ func NewEngressController(clusterName, providerName string,
 		// expects it to be set.
 		Parsed:        &HAProxyOptions{},
 		EndpointStore: store.EndpointStore,
+		IngressClass:  ingressClass,
 	}
 	log.Infoln("Initializing cloud manager for provider", providerName)
 	if providerName == "aws" {
@@ -66,7 +68,11 @@ func getGCEClient() cloudprovider.Interface {
 	return cloudInterface
 }
 
-func UpgradeAllEngress(service, clusterName, providerName string, kubeClient clientset.Interface, acExtClient acs.AppsCodeExtensionInterface, store *stash.Storage) error {
+func UpgradeAllEngress(service, clusterName, providerName string,
+	kubeClient clientset.Interface,
+	acExtClient acs.AppsCodeExtensionInterface,
+	store *stash.Storage,
+	ingressClass string) error {
 	ing, err := kubeClient.Extensions().Ingresses(kapi.NamespaceAll).List(kapi.ListOptions{
 		LabelSelector: labels.Everything(),
 	})
@@ -93,34 +99,36 @@ func UpgradeAllEngress(service, clusterName, providerName string, kubeClient cli
 	log.Infoln("Updating All Ingress, got total", len(items))
 	for i, item := range items {
 		engress := &items[i]
-		log.Infoln("Checking for service", service, "to be used to loadbalnace by ingress", item.Name, item.Namespace)
-		if ok, name, namespace := isEngressHaveService(engress, service); ok {
-			lbc := NewEngressController(clusterName, providerName, kubeClient, acExtClient, store)
-			lbc.Config = &items[i]
-			log.Infoln("Trying to Update Ingress", item.Name, item.Namespace)
-			if lbc.IsExists() {
-				// Loadbalancer resource for this ingress is found in its place,
-				// so no need to create the resources. First trying to update
-				// the configMap only for the rules.
-				// In case of any failure in soft update we will make hard update
-				// to the resource. If hard update encounters errors then we will
-				// recreate the resource from scratch.
-				log.Infoln("Loadbalancer is exists, trying to update")
-				softUpdateErr := lbc.Update(UpdateTypeSoft)
-				if softUpdateErr != nil {
-					log.Warningln("Loadbalancer is exists but Soft Update failed. Retring Hard Update")
-					hardUpdateErr := lbc.Update(UpdateTypeHard)
-					if hardUpdateErr != nil {
-						log.Warningln("Loadbalancer is exists, But Hard Update is also failed, recreating with a cleanup")
-						lbc.Create()
+		if shouldHandleIngress(engress, ingressClass) {
+			log.Infoln("Checking for service", service, "to be used to loadbalnace by ingress", item.Name, item.Namespace)
+			if ok, name, namespace := isEngressHaveService(engress, service); ok {
+				lbc := NewEngressController(clusterName, providerName, kubeClient, acExtClient, store, ingressClass)
+				lbc.Config = &items[i]
+				log.Infoln("Trying to Update Ingress", item.Name, item.Namespace)
+				if lbc.IsExists() {
+					// Loadbalancer resource for this ingress is found in its place,
+					// so no need to create the resources. First trying to update
+					// the configMap only for the rules.
+					// In case of any failure in soft update we will make hard update
+					// to the resource. If hard update encounters errors then we will
+					// recreate the resource from scratch.
+					log.Infoln("Loadbalancer is exists, trying to update")
+					softUpdateErr := lbc.Update(UpdateTypeSoft)
+					if softUpdateErr != nil {
+						log.Warningln("Loadbalancer is exists but Soft Update failed. Retring Hard Update")
+						hardUpdateErr := lbc.Update(UpdateTypeHard)
+						if hardUpdateErr != nil {
+							log.Warningln("Loadbalancer is exists, But Hard Update is also failed, recreating with a cleanup")
+							lbc.Create()
+						}
 					}
+				} else {
+					// This LB should be there. If it is no there. we should create it
+					log.Infoln("Loadbalancer is not found, recreating with a cleanup")
+					lbc.Create()
 				}
-			} else {
-				// This LB should be there. If it is no there. we should create it
-				log.Infoln("Loadbalancer is not found, recreating with a cleanup")
-				lbc.Create()
+				ensureServiceAnnotations(kubeClient, engress, namespace, name)
 			}
-			ensureServiceAnnotations(kubeClient, engress, namespace, name)
 		}
 	}
 	return nil
@@ -146,38 +154,45 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 
 	if e.EventType.IsAdded() {
 		lbc.Config = engs[0].(*aci.Ingress)
-		if lbc.IsExists() {
-			// Loadbalancer resource for this ingress is found in its place,
-			// so no need to create the resources. First trying to update
-			// the configMap only for the rules.
-			// In case of any failure in soft update we will make hard update
-			// to the resource. If hard update encounters errors then we will
-			// recreate the resource from scratch.
-			log.Infoln("Loadbalancer is exists, trying to update")
-			softUpdateErr := lbc.Update(UpdateTypeSoft)
-			if softUpdateErr != nil {
-				log.Warningln("Loadbalancer is exists but Soft Update failed. Retring Hard Update")
-				hardUpdateErr := lbc.Update(UpdateTypeHard)
-				if hardUpdateErr != nil {
-					log.Warningln("Loadbalancer is exists, But Hard Update is also failed, recreating with a cleanup")
-					lbc.Create()
+		if shouldHandleIngress(lbc.Config, lbc.IngressClass) {
+			if lbc.IsExists() {
+				// Loadbalancer resource for this ingress is found in its place,
+				// so no need to create the resources. First trying to update
+				// the configMap only for the rules.
+				// In case of any failure in soft update we will make hard update
+				// to the resource. If hard update encounters errors then we will
+				// recreate the resource from scratch.
+				log.Infoln("Loadbalancer is exists, trying to update")
+				softUpdateErr := lbc.Update(UpdateTypeSoft)
+				if softUpdateErr != nil {
+					log.Warningln("Loadbalancer is exists but Soft Update failed. Retring Hard Update")
+					hardUpdateErr := lbc.Update(UpdateTypeHard)
+					if hardUpdateErr != nil {
+						log.Warningln("Loadbalancer is exists, But Hard Update is also failed, recreating with a cleanup")
+						lbc.Create()
+					}
 				}
+				return nil
 			}
-			return nil
+			lbc.Create()
 		}
-		lbc.Create()
 	} else if e.EventType.IsDeleted() {
 		lbc.Config = engs[0].(*aci.Ingress)
-		lbc.Delete()
+		if shouldHandleIngress(lbc.Config, lbc.IngressClass) {
+			lbc.Delete()
+		}
 	} else if e.EventType.IsUpdated() {
 		if reflect.DeepEqual(engs[0].(*aci.Ingress).Spec, engs[1].(*aci.Ingress).Spec) {
 			return nil
 		}
+
 		lbc.Config = engs[1].(*aci.Ingress)
-		if isNewPortOpened(engs[0], engs[1]) || isNewSecretAdded(engs[0], engs[1]) {
-			lbc.Update(UpdateTypeHard)
-		} else {
-			lbc.Update(UpdateTypeSoft)
+		if shouldHandleIngress(lbc.Config, lbc.IngressClass) {
+			if isNewPortOpened(engs[0], engs[1]) || isNewSecretAdded(engs[0], engs[1]) {
+				lbc.Update(UpdateTypeHard)
+			} else {
+				lbc.Update(UpdateTypeSoft)
+			}
 		}
 	}
 	svcs, err := lbc.KubeClient.Core().Services(kapi.NamespaceAll).List(kapi.ListOptions{})
@@ -196,6 +211,23 @@ type IngressValue struct {
 
 type IngressValueList struct {
 	Items []IngressValue `json:"items"`
+}
+
+const (
+	engressClassAnnotationKey   = "kubernetes.io/ingress.class"
+	engressClassAnnotationValue = "voyager"
+)
+
+// if flag == "voyager", the you only handle  ingress that has voyager annotation
+// if flag == "", then handle no annotaion or voyager annotation
+func shouldHandleIngress(engress *aci.Ingress, ingressClass string) bool {
+	// https://github.com/appscode/k8s-addons/blob/master/api/conversion_v1beta1.go#L44
+	if engress.Annotations[aci.ExtendedIngressRealTypeKey] != "ingress" {
+		// Resource Type is Extended Ingress So we should always Handle this
+		return true
+	}
+	kubeAnnotation := engress.Annotations[engressClassAnnotationKey]
+	return kubeAnnotation == ingressClass || kubeAnnotation == engressClassAnnotationValue
 }
 
 func ensureServiceAnnotations(client clientset.Interface, ing *aci.Ingress, namespace, name string) {

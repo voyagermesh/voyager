@@ -110,6 +110,8 @@ type EngressController struct {
 	LoadbalancerImage string
 
 	sync.Mutex
+
+	IngressClass string
 }
 
 type KubeOptions struct {
