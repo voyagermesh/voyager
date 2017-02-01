@@ -221,6 +221,11 @@ const (
 // if flag == "voyager", the you only handle  ingress that has voyager annotation
 // if flag == "", then handle no annotaion or voyager annotation
 func shouldHandleIngress(engress *aci.Ingress, ingressClass string) bool {
+	// https://github.com/appscode/k8s-addons/blob/master/api/conversion_v1beta1.go#L44
+	if engress.Annotations[aci.ExtendedIngressRealTypeKey] != "ingress" {
+		// Resource Type is Extended Ingress So we should always Handle this
+		return true
+	}
 	kubeAnnotation := engress.Annotations[engressClassAnnotationKey]
 	return kubeAnnotation == ingressClass || kubeAnnotation == engressClassAnnotationValue
 }
