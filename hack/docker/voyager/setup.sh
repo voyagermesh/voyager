@@ -10,9 +10,8 @@ BIN=$GOPATH/bin
 ROOT=$GOPATH
 REPO_ROOT=$GOPATH/src/github.com/appscode/voyager
 
-LIB_ROOT="$REPO_ROOT/hack/docker"
-source "$LIB_ROOT/libbuild/common/lib.sh"
-source "$LIB_ROOT/libbuild/common/public_image.sh"
+source "$REPO_ROOT/hack/libbuild/common/lib.sh"
+source "$REPO_ROOT/hack/libbuild/common/public_image.sh"
 
 APPSCODE_ENV=${APPSCODE_ENV:-dev}
 IMG=voyager
