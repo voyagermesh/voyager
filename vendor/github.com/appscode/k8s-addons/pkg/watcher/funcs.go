@@ -121,3 +121,75 @@ func AlertEventWatchFunc(c clientset.Interface) func(options kapi.ListOptions) (
 		return c.Core().Events(kapi.NamespaceAll).Watch(options)
 	}
 }
+
+func NamespaceListFunc(c clientset.Interface) func(kapi.ListOptions) (runtime.Object, error) {
+	return func(opts kapi.ListOptions) (runtime.Object, error) {
+		return c.Core().Namespaces().List(opts)
+	}
+}
+
+func NamespaceWatchFunc(c clientset.Interface) func(options kapi.ListOptions) (watch.Interface, error) {
+	return func(options kapi.ListOptions) (watch.Interface, error) {
+		return c.Core().Namespaces().Watch(options)
+	}
+}
+
+func PodListFunc(c clientset.Interface) func(kapi.ListOptions) (runtime.Object, error) {
+	return func(opts kapi.ListOptions) (runtime.Object, error) {
+		return c.Core().Pods(kapi.NamespaceAll).List(opts)
+	}
+}
+
+func PodWatchFunc(c clientset.Interface) func(options kapi.ListOptions) (watch.Interface, error) {
+	return func(options kapi.ListOptions) (watch.Interface, error) {
+		return c.Core().Pods(kapi.NamespaceAll).Watch(options)
+	}
+}
+
+func ServiceListFunc(c clientset.Interface) func(kapi.ListOptions) (runtime.Object, error) {
+	return func(opts kapi.ListOptions) (runtime.Object, error) {
+		return c.Core().Services(kapi.NamespaceAll).List(opts)
+	}
+}
+
+func ServiceWatchFunc(c clientset.Interface) func(options kapi.ListOptions) (watch.Interface, error) {
+	return func(options kapi.ListOptions) (watch.Interface, error) {
+		return c.Core().Services(kapi.NamespaceAll).Watch(options)
+	}
+}
+
+func ReplicationControllerWatchFunc(c clientset.Interface) func(options kapi.ListOptions) (watch.Interface, error) {
+	return func(options kapi.ListOptions) (watch.Interface, error) {
+		return c.Core().ReplicationControllers(kapi.NamespaceAll).Watch(options)
+	}
+}
+
+func ReplicationControllerListFunc(c clientset.Interface) func(kapi.ListOptions) (runtime.Object, error) {
+	return func(opts kapi.ListOptions) (runtime.Object, error) {
+		return c.Core().ReplicationControllers(kapi.NamespaceAll).List(opts)
+	}
+}
+
+func EndpointListFunc(c clientset.Interface) func(kapi.ListOptions) (runtime.Object, error) {
+	return func(opts kapi.ListOptions) (runtime.Object, error) {
+		return c.Core().Endpoints(kapi.NamespaceAll).List(opts)
+	}
+}
+
+func EndpointWatchFunc(c clientset.Interface) func(options kapi.ListOptions) (watch.Interface, error) {
+	return func(options kapi.ListOptions) (watch.Interface, error) {
+		return c.Core().Endpoints(kapi.NamespaceAll).Watch(options)
+	}
+}
+
+func NodeListFunc(c clientset.Interface) func(kapi.ListOptions) (runtime.Object, error) {
+	return func(opts kapi.ListOptions) (runtime.Object, error) {
+		return c.Core().Nodes().List(opts)
+	}
+}
+
+func NodeWatchFunc(c clientset.Interface) func(options kapi.ListOptions) (watch.Interface, error) {
+	return func(options kapi.ListOptions) (watch.Interface, error) {
+		return c.Core().Nodes().Watch(options)
+	}
+}

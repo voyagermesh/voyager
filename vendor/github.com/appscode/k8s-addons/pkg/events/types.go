@@ -8,6 +8,7 @@ import (
 	aci "github.com/appscode/k8s-addons/api"
 	"github.com/appscode/log"
 	kapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 )
 
@@ -179,6 +180,12 @@ func detectObjectType(o interface{}) ObjectType {
 		return Certificate
 	case kapi.Event, *kapi.Event:
 		return AlertEvent
+	case extensions.ReplicaSet, *extensions.ReplicaSet:
+		return ReplicaSet
+	case apps.StatefulSet, *apps.StatefulSet:
+		return StatefulSet
+	case extensions.DaemonSet, *extensions.DaemonSet:
+		return DaemonSet
 	}
 	return Unknown
 }
@@ -207,6 +214,14 @@ func objectMetadata(o interface{}, t ObjectType) kapi.ObjectMeta {
 		return o.(*kapi.Endpoints).ObjectMeta
 	case AlertEvent:
 		return o.(*kapi.Event).ObjectMeta
+	case Alert:
+		return o.(*aci.Alert).ObjectMeta
+	case ReplicaSet:
+		return o.(*extensions.ReplicaSet).ObjectMeta
+	case StatefulSet:
+		return o.(*apps.StatefulSet).ObjectMeta
+	case DaemonSet:
+		return o.(*extensions.DaemonSet).ObjectMeta
 	}
 	return kapi.ObjectMeta{}
 }
