@@ -3,9 +3,10 @@
 # voyager
 voyager provides controller for [Ingress](#ingress) and [Certificates](#certificate) for Kubernetes developed by [AppsCode](https://appscode.com).
 
-#### Ingress
+
+### Ingress
 In here we call it ExtendedIngress.
-An extended plugin of Kubernetes [Ingress](https://kubernetes.io/docs/user-guide/ingress/) by AppsCode, to support both L7 and L4 load balancing via a single ingress.
+An extended plugin of Kubernetes [Ingress](https://kubernetes.io/docs/user-guide/ingress/) by AppsCode, to support both L7 and L4 loadbalancing via a single ingress.
 This is built on top of the HAProxy, to support high availability, sticky sessions, name and path-based virtual hosting.
 This also support configurable application ports with all the features available in Kubernetes [Ingress](https://kubernetes.io/docs/user-guide/ingress/).
 
@@ -19,7 +20,8 @@ This also support configurable application ports with all the features available
 - Wildcard Name based virtual hosting,
 - Persistent sessions, Loadbalancer stats.
 
-#### Certificate
+
+### Certificate
 Kubernetes Controller to manage TLS Certificate.
 
 **Feautures**
@@ -30,8 +32,10 @@ Kubernetes Controller to manage TLS Certificate.
 - Auto Renew Certificates,
 - Use issued Certificates with Ingress to Secure Communications.
 
+
 ## Supported Versions
 Kubernetes 1.3+
+
 
 ## User Guide
 To deploy voyager in Kubernetes follow this [guide](docs/user-guide/README.md). In short this contains those two steps
@@ -41,17 +45,19 @@ To deploy voyager in Kubernetes follow this [guide](docs/user-guide/README.md). 
 
 
 ## Developer Guide
-Want to learn whats happening under the hood, read [this](docs/developer-guide/README.md).
+Want to learn whats happening under the hood, read [the developer guide](docs/developer-guide/README.md).
+
 
 ## Contribution
-If you're interested in being a contributor, read [this](docs/contribution/README.md).
+If you're interested in being a contributor, read [the contribution guide](docs/contribution/README.md).
+
 
 ## Building voyager
 Read [Build Instructions](docs/developer-guide/build.md) to build voyager.
 
+
 ## Support
 If you have any questions, you can reach out to us.
-
 * [Slack](https://slack.appscode.com)
 * [Forum](https://discuss.appscode.com)
 * [Twitter](https://twitter.com/AppsCodeHQ)
