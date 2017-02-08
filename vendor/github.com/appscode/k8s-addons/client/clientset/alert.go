@@ -16,7 +16,7 @@ type AlertInterface interface {
 	Get(name string) (*aci.Alert, error)
 	Create(Alert *aci.Alert) (*aci.Alert, error)
 	Update(Alert *aci.Alert) (*aci.Alert, error)
-	Delete(name string, options *api.DeleteOptions) error
+	Delete(name string) error
 	Watch(opts api.ListOptions) (watch.Interface, error)
 	UpdateStatus(Alert *aci.Alert) (*aci.Alert, error)
 }
@@ -75,12 +75,11 @@ func (c *AlertImpl) Update(alert *aci.Alert) (result *aci.Alert, err error) {
 	return
 }
 
-func (c *AlertImpl) Delete(name string, options *api.DeleteOptions) (err error) {
+func (c *AlertImpl) Delete(name string) (err error) {
 	return c.r.Delete().
 		Namespace(c.ns).
 		Resource("alerts").
 		Name(name).
-		Body(options).
 		Do().
 		Error()
 }

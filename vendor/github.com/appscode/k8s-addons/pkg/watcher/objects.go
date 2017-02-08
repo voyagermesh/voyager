@@ -157,3 +157,14 @@ func (k *Watcher) AlertEvent() {
 	_, controller := k.Cache(events.AlertEvent, &kapi.Event{}, lw)
 	go controller.Run(wait.NeverStop)
 }
+
+func (k *Watcher) Deployment() {
+	log.Debugln("watching", events.Deployments.String())
+	lw := &cache.ListWatch{
+		ListFunc:  DeploymentListFunc(k.Client),
+		WatchFunc: DeploymentWatchFunc(k.Client),
+	}
+	indexer, controller := k.CacheIndexer(events.Deployments, &ext.Deployment{}, lw, nil)
+	go controller.Run(wait.NeverStop)
+	k.Storage.DeploymentStore = cache.StoreToDeploymentLister{indexer}
+}
