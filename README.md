@@ -31,4 +31,28 @@ Kubernetes Controller to manage TLS Certificate.
 - Use issued Certificates with Ingress to Secure Communications.
 
 ## Supported Versions
-Kubernetes 1.4+
+Kubernetes 1.3+
+
+## User Guide
+To deploy voyager in Kubernetes follow this [guide](docs/user-guide/README.md). In short this contains those two steps
+
+1. Create `ingress.appscode.com` and `certificate.appscode.com` Third Party Resource
+2. Deploy voyager to kubernetes.
+
+
+## Developer Guide
+Want to learn whats happening under the hood, read [this](docs/developer-guide/README.md).
+
+## Contribution
+If you're interested in being a contributor, read [this](docs/contribution/README.md).
+
+## Building voyager
+Read [Build Instructions](docs/developer-guide/build.md) to build voyager.
+
+## Support
+If you have any questions, you can reach out to us.
+
+* [Slack](https://slack.appscode.com)
+* [Forum](https://discuss.appscode.com)
+* [Twitter](https://twitter.com/AppsCodeHQ)
+* [Website](https://appscode.com)
