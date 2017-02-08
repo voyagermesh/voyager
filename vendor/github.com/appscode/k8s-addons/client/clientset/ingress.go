@@ -18,7 +18,7 @@ type IngressInterface interface {
 	Get(name string) (*aci.Ingress, error)
 	Create(ExtendedIngress *aci.Ingress) (*aci.Ingress, error)
 	Update(ExtendedIngress *aci.Ingress) (*aci.Ingress, error)
-	Delete(name string, options *api.DeleteOptions) error
+	Delete(name string) error
 	Watch(opts api.ListOptions) (watch.Interface, error)
 	UpdateStatus(ExtendedIngress *aci.Ingress) (*aci.Ingress, error)
 }
@@ -84,12 +84,11 @@ func (c *IngressImpl) Update(extendedIngress *aci.Ingress) (result *aci.Ingress,
 }
 
 // Delete deletes a ExtendedIngress, returns error if one occurs.
-func (c *IngressImpl) Delete(name string, options *api.DeleteOptions) (err error) {
+func (c *IngressImpl) Delete(name string) (err error) {
 	return c.r.Delete().
 		Namespace(c.ns).
 		Resource("ingresses").
 		Name(name).
-		Body(options).
 		Do().
 		Error()
 }

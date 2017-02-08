@@ -40,7 +40,6 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&CertificateList{},
 
 		&api.ListOptions{},
-		&api.DeleteOptions{},
 	)
 	return nil
 }
