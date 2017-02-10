@@ -33,3 +33,9 @@ $ docker push <image>:<tag>
 $ docker tag appscode/voyager:default sadlil/voyager:default
 $ docker push sadlil/voyager:default
 ```
+
+## Build HAProxy
+```sh
+$ ./hack/docker/haproxy/<version>/setup.sh
+```
+Specific version of HAProxy can be used with Voyager via `--haproxy-image`. This packages HAProxy and [kloader](https://github.com/appscode/kloader) into a Debian jessie Docker image.
