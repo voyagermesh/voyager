@@ -8,7 +8,7 @@ This guide will walk you through deploying the Voyager controller.
 ## Deploying Voyager
 
 ### Create the Third Party Resources
-`Voyager` depends on two Third Party Resource Object `ingress.appscode.com` and `certificate.appscode.com`. Those two objects
+`voyager` depends on two Third Party Resource Object `ingress.appscode.com` and `certificate.appscode.com`. Those two objects
 can be created using following data.
 
 ```yaml
@@ -45,7 +45,7 @@ to handle corresponding events.
 ```sh
 $ export CLOUD_PROVIDER=<provider-name> // values in gce, aws
 $ export CLUSTER_NAME=clustername
-$ curl https://raw.githubusercontent.com/appscode/Voyager/master/hack/deploy/deployments.yaml | \
+$ curl https://raw.githubusercontent.com/appscode/voyager/master/hack/deploy/deployments.yaml | \
         envsubst | \
         kubectl apply -f -
 ```
@@ -175,8 +175,8 @@ along side with other controllers.
 
 ```sh
   --ingress-class
-  // this flag can be set to 'Voyager' to handle only ingress
-  // with annotation kubernetes.io/ingress.class=Voyager.
+  // this flag can be set to 'voyager' to handle only ingress
+  // with annotation kubernetes.io/ingress.class=voyager.
 
   // If unset, Voyager will also handle ingress without ingress-class annotation.
 ```
