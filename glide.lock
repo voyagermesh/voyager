@@ -1,5 +1,5 @@
 hash: 5869ba2a8ca3c63999d0f71cd2ba73f501042602d5a34104ae356ddc08d3fcf1
-updated: 2017-02-06T23:03:48.410315901-08:00
+updated: 2017-02-07T23:57:57.7189201-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -23,7 +23,7 @@ imports:
   - strings
   - version
 - name: github.com/appscode/k8s-addons
-  version: 911e98ca1147df0fce024ccd2ea1ce874da875a7
+  version: b7b5a31530be7e8fc686e3b529f69f2baac4ea0c
   subpackages:
   - api
   - api/install
@@ -478,7 +478,7 @@ imports:
 - name: gopkg.in/yaml.v2
   version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/kubernetes
-  version: 91142132e6899a63b40810561b59708ba79e9d88
+  version: 25a4447d7c2f3a6ee9d9be5f74213d9f5dab4f08
   repo: git@github.com:appscode/kubernetes.git
   vcs: git
   subpackages:

@@ -12,4 +12,5 @@ type Storage struct {
 	DaemonSetStore   cache.StoreToDaemonSetLister
 	ServiceStore     cache.StoreToServiceLister
 	EndpointStore    cache.StoreToEndpointsLister
+	DeploymentStore  cache.StoreToDeploymentLister
 }

@@ -16,7 +16,7 @@ type CertificateInterface interface {
 	Get(name string) (*aci.Certificate, error)
 	Create(certificate *aci.Certificate) (*aci.Certificate, error)
 	Update(certificate *aci.Certificate) (*aci.Certificate, error)
-	Delete(name string, options *api.DeleteOptions) error
+	Delete(name string) error
 	Watch(opts api.ListOptions) (watch.Interface, error)
 	UpdateStatus(certificate *aci.Certificate) (*aci.Certificate, error)
 }
@@ -75,12 +75,11 @@ func (c *CertificateImpl) Update(certificate *aci.Certificate) (result *aci.Cert
 	return
 }
 
-func (c *CertificateImpl) Delete(name string, options *api.DeleteOptions) (err error) {
+func (c *CertificateImpl) Delete(name string) (err error) {
 	return c.r.Delete().
 		Namespace(c.ns).
 		Resource("certificates").
 		Name(name).
-		Body(options).
 		Do().
 		Error()
 }

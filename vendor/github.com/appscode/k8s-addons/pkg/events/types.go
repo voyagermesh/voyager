@@ -186,6 +186,8 @@ func detectObjectType(o interface{}) ObjectType {
 		return StatefulSet
 	case extensions.DaemonSet, *extensions.DaemonSet:
 		return DaemonSet
+	case extensions.Deployment, *extensions.Deployment:
+		return Deployments
 	}
 	return Unknown
 }
@@ -222,6 +224,8 @@ func objectMetadata(o interface{}, t ObjectType) kapi.ObjectMeta {
 		return o.(*apps.StatefulSet).ObjectMeta
 	case DaemonSet:
 		return o.(*extensions.DaemonSet).ObjectMeta
+	case Deployments:
+		return o.(*extensions.Deployment).ObjectMeta
 	}
 	return kapi.ObjectMeta{}
 }
