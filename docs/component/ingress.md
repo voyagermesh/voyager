@@ -35,7 +35,7 @@ via service the traffic will bypass service and go directly to pod.
 AppsCode Ingress can also be configured to give services externally-reachable urls, load balance traffic,
 terminate SSL, offer name based virtual hosting etc.
 
-This resource Type is backed by an controller called voyager which monitors and manages the resources of AppsCode Ingress Kind.
+This resource Type is backed by an controller called Voyager which monitors and manages the resources of AppsCode Ingress Kind.
 Which is used for maintain and HAProxy backed loadbalancer to the cluster for open communications inside cluster
 from internet via the loadbalancer.<br>
 Even when a resource for AppsCode Ingress type is created, the controller will treat it as a new loadbalancer
