@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    run: appscode-voyager
+  name: appscode-voyager
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: appscode-voyager
+  template:
+    metadata:
+      labels:
+        run: appscode-voyager
+    spec:
+      containers:
+      - name: appscode-voyager
+        args:
+        - --cloud-provider=$CLOUD_PROVIDER
+        - --cluster-name=$CLUSTER_NAME
+        image: appscode/voyager:1.5.0
+        imagePullPolicy: Always

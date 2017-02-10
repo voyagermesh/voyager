@@ -1,0 +1,169 @@
+# User Guide
+This guide will walk you through deploying the voyager controller.
+
+## High Level Tasks
+* Create `ingress.appscode.com` and `certificate.appscode.com` Third Party Resource
+* Create voyager Deployment
+
+## Deploying voyager
+
+### Create the Third Party Resources
+`voyager` depends on two Third Party Resource Object `ingress.appscode.com` and `certificate.appscode.com`. Those two objects
+can be created using following data.
+
+```yaml
+metadata:
+  name: ingress.appscode.com
+apiVersion: extensions/v1beta1
+kind: ThirdPartyResource
+description: "Extended ingress support for Kubernetes by appscode.com"
+versions:
+  - name: v1beta1
+```
+
+```yaml
+metadata:
+  name: certificate.appscode.com
+apiVersion: extensions/v1beta1
+kind: ThirdPartyResource
+description: "A specification of a Let's Encrypt Certificate to manage."
+versions:
+  - name: v1beta1
+```
+
+```sh
+# Create Third Party Resource
+$ kubectl apply -f https://raw.githubusercontent.com/appscode/k8s-addons/master/api/extensions/ingress.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/appscode/k8s-addons/master/api/extensions/certificate.yaml
+```
+
+
+### Deploy Controller
+voyager controller communicates with kube-apiserver at inCluster mode if no master or kubeconfig is provided. It watches Ingress and Certificate resource
+to handle corresponding events.
+
+```sh
+$ export CLOUD_PROVIDER=<provider-name> // values in gce, aws
+$ export CLUSTER_NAME=clustername
+$ curl https://raw.githubusercontent.com/appscode/voyager/master/hack/deploy/deployments.yaml | \
+        envsubst | \
+        kubectl apply -f -
+```
+
+## Ingress
+This resource Type is backed by an controller which monitors and manages the resources of AppsCode Ingress Kind. Which is used for maintain and HAProxy backed loadbalancer to the cluster for open communications inside cluster from internet via the loadbalancer.
+Even when a resource for AppsCode Ingress type is created, the controller will treat it as a new load balancer request and will create a new load balancer, based on the configurations.
+
+### Resource
+A minimal AppsCode Ingress resource Looks like at the kubernetes level:
+
+```yaml
+apiVersion: appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: test-ingress
+  namespace: default
+spec:
+  rules:
+  - host: appscode.example.com
+    http:
+      paths:
+      - path: "/testPath"
+        backend:
+          serviceName: test-service
+          servicePort: '80'
+          headerRule:
+          - X-Forwarded-Host %[base]
+          rewriteRule:
+          - "^([^\\ :]*)\\ /(.*)$ \\1\\ /testings/\\2"
+```
+
+POSTing this to Kubernetes, API server will need to create a loadbalancer.
+
+**Line 1-3**: With all other Kubernetes config, AppsCode Ingress resource needs `apiVersion`, `kind` and `metadata` fields.
+`apiVersion` and `kind` needs to be exactly same as `appscode.com/v1beta1`, and, `specific version` currently as `v1beta1`, to identify the resource
+as AppsCode Ingress. In metadata the `name` and `namespace` indicates the resource identifying name and its Kubernetes namespace.
+
+
+**Line 6**: Ingress spec has all the information needed to configure a loadbalancer. Most importantly, it contains
+a list of rules matched against all incoming requests.
+
+**Line 9**: Each `http rule` contains the following information: A host (eg: foo.bar.com, defaults to *), a
+list of paths (eg: /testPath), each of which has a backend associated (test:80). Both the host and path must
+match content of an incoming request before the loadbalancer directs traffic to backend.
+
+**Line 12-13**: A backend is a service:port combination as described in the services doc. Ingress traffic is
+typically sent directly to the endpoints matching a backend.
+
+**Line 14-15**: `headerRule` are a list of rules applied to the `request header` before sending it to desired backend. For simplicity the header rules are formatted with respect to HAProxy.
+
+**Line 16-17**: `rewriteRule` are a list of rules to be applied in the request URL. It can append, truncate or rewrite
+the request URL. These rules also follow `HAProxy` rewrite rule formats.
+
+**Other Parameters**: For the sake of simplicity, the example Ingress has no global config parameters,
+tcp load balancer and tls terminations. We will discuss those later. One can specify a global **default backend**
+in absence of those requests which doesn’t match a rule in spec, are sent to the default backend.
+
+### The Endpoints are like:
+
+|  VERB   |                     ENDPOINT                                | ACTION | BODY
+|---------|-------------------------------------------------------------|--------|-------
+|  GET    | /apis/appscode.com/v1beta1/namespace/`ns`/certificates          | LIST   | nil
+|  GET    | /apis/appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | GET    | nil
+|  POST   | /apis/appscode.com/v1beta1/namespace/`ns`/certificates          | CREATE | JSON
+|  PUT    | /apis/appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | UPDATE | JSON
+|  DELETE | /apis/appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | DELETE | nil
+
+### Dive into Ingress
+You Can Learn more about `ingress.appscode.com` by reading [this doc](../component/ingress.md).
+
+
+## Certificate
+Certificate objects are used to declare one or more Let's Encrypt issued TLS certificates. Cetificate objects are consumed by the voyager controller.
+Before you can create a Certificate object you must create the Certificate Third Party Resource in your Kubernetes cluster.
+
+### Resource
+A minimal Certificate resource Looks like at the kubernetes level:
+
+```yaml
+apiVersion: appscode.com/v1beta1
+kind: Certificate
+metadata:
+  name: test-cert
+  namespace: default
+spec:
+  domains:
+  - foo.example.com
+  - bar.example.com
+  email: jon.doe@example.com
+  provider: googlecloud
+  providerCredentialSecretName: test-gcp-secret
+```
+
+POSTing this to Kubernetes, API server will create a certificate and store it as a secret that can be used to SSL with ingress.
+
+**Line 1-3**: With all other Kubernetes config, AppsCode Ingress resource needs `apiVersion`, `kind` and `metadata` fields.
+`apiVersion` and `kind` needs to be exactly same as `appscode.com/v1beta1`, and, `specific version` currently as `v1beta1`, to identify the resource
+as AppsCode Ingress. In metadata the `name` and `namespace` indicates the resource identifying name and its Kubernetes namespace.
+
+**Line 7-9**: domains specifies the domain list that the certificate needs to be issued. First on the list will be used as the
+certificate common name.
+
+**Line 10**: The email address used for a user registration.
+
+**Line 11**: The name of the dns provider.
+
+**Line 12**: DNS provider credential that will be used to configure the domains.
+
+### The Endpoints are like:
+
+|  VERB   |                     ENDPOINT                                    | ACTION | BODY
+|---------|-----------------------------------------------------------------|--------|-------
+|  GET    | /apis/appscode.com/v1beta1/namespace/`ns`/certificates          | LIST   | nil
+|  GET    | /apis/appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | GET    | nil
+|  POST   | /apis/appscode.com/v1beta1/namespace/`ns`/certificates          | CREATE | JSON
+|  PUT    | /apis/appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | UPDATE | JSON
+|  DELETE | /apis/appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | DELETE | nil
+
+### Dive into Certificates
+You Can Learn more about `certificate.appscode.com` by reading [this doc](../component/certificate.md).
