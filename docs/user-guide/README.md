@@ -1,11 +1,11 @@
 # User Guide
-This guide will walk you through deploying the voyager controller.
+This guide will walk you through deploying the Voyager controller.
 
 ## High Level Tasks
 * Create `ingress.appscode.com` and `certificate.appscode.com` Third Party Resource
-* Create voyager Deployment
+* Create Voyager Deployment
 
-## Deploying voyager
+## Deploying Voyager
 
 ### Create the Third Party Resources
 `voyager` depends on two Third Party Resource Object `ingress.appscode.com` and `certificate.appscode.com`. Those two objects
@@ -39,7 +39,7 @@ $ kubectl apply -f https://raw.githubusercontent.com/appscode/k8s-addons/master/
 
 
 ### Deploy Controller
-voyager controller communicates with kube-apiserver at inCluster mode if no master or kubeconfig is provided. It watches Ingress and Certificate resource
+Voyager controller communicates with kube-apiserver at inCluster mode if no master or kubeconfig is provided. It watches Ingress and Certificate resource
 to handle corresponding events.
 
 ```sh
@@ -119,7 +119,7 @@ You Can Learn more about `ingress.appscode.com` by reading [this doc](../compone
 
 
 ## Certificate
-Certificate objects are used to declare one or more Let's Encrypt issued TLS certificates. Cetificate objects are consumed by the voyager controller.
+Certificate objects are used to declare one or more Let's Encrypt issued TLS certificates. Cetificate objects are consumed by the Voyager controller.
 Before you can create a Certificate object you must create the Certificate Third Party Resource in your Kubernetes cluster.
 
 ### Resource
@@ -169,8 +169,8 @@ certificate common name.
 You Can Learn more about `certificate.appscode.com` by reading [this doc](../component/certificate.md).
 
 
-## Running voyager alongside with other ingress controller
-voyager can be configured to handle default kubernetes ingress or only ingress.appscode.com. voyager can also be run
+## Running Voyager alongside with other ingress controller
+Voyager can be configured to handle default kubernetes ingress or only ingress.appscode.com. Voyager can also be run
 along side with other controllers.
 
 ```sh
@@ -178,6 +178,6 @@ along side with other controllers.
   // this flag can be set to 'voyager' to handle only ingress
   // with annotation kubernetes.io/ingress.class=voyager.
 
-  // If unset, voyager will also handle ingress without ingress-class annotation.
+  // If unset, Voyager will also handle ingress without ingress-class annotation.
 ```
-Other ingress controller can be run alongside voyager to handle specific classed ingress.
+Other ingress controller can be run alongside Voyager to handle specific classed ingress.

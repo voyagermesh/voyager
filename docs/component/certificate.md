@@ -1,5 +1,5 @@
 ## Certificates
-voyager manages certificates objects to create Certificates default from Let's Encrypt.
+Voyager manages certificates objects to create Certificates default from Let's Encrypt.
 
 ### Core features of AppsCode Certificates:
   - Creates and stores Certificate from Let's Encrypt ot any custom provider supports ACME protocol
@@ -67,7 +67,7 @@ type CertificateStatus struct {
 
 ## Using Certificate with Ingress
 For sakes of simply managing ingress with TLS termination we can create a ingress with some Annotation that can be used
-to create and or manage a certificate resource with voyager controller
+to create and or manage a certificate resource with Voyager controller
 
 ```
 certificate.appscode.com/enabled         // Enable certifiacte with ingress
