@@ -38,4 +38,4 @@ $ docker push sadlil/voyager:default
 ```sh
 $ ./hack/docker/haproxy/<version>/setup.sh
 ```
-Specific version of HAProxy can be used with voyager controller via `--haproxy-image`. This build is depending upon [kloader](https://github.com/appscode/kloader).
+Specific version of HAProxy can be used with Voyager via `--haproxy-image`. This packages HAProxy and [kloader](https://github.com/appscode/kloader) into a Debian jessie Docker image.
