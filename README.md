@@ -67,7 +67,7 @@ Read [Build Instructions](docs/developer-guide/build.md) to build voyager.
 
 ## Acknowledgement
  - kubernetes/contrib https://github.com/kubernetes/contrib/tree/master/service-loadbalancer
- - xenolf/lego https://github.com/xenolf/lego
+ - appscode/lego https://github.com/appscode/lego
  - kelseyhightower/kube-cert-manager https://github.com/kelseyhightower/kube-cert-manager
  - PalmStoneGames/kube-cert-manager https://github.com/PalmStoneGames/kube-cert-manager
 
