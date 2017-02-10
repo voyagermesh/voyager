@@ -2,7 +2,7 @@
 Want to hack on voyager?
 
 ## Developer Guide
-We have a [Developer's Guide](docs/developer-guide/README.md) that outlines everything you need to know from setting up your
+We have a [Developer's Guide](../developer-guide/README.md) that outlines everything you need to know from setting up your
 dev environment to how to get faster Pull Request reviews. If you find something undocumented or incorrect along the way,
 please feel free to send a Pull Request.
 
@@ -25,4 +25,4 @@ If you fix a bug or developed a new feature feel free to submit a PR.
 If your patch Depends on new packagees, add that to vendor with glide.
 
 ### Building voyager
-Read [build instruction](docs/developer-guide/build.md) to build voyager.
+Read [build instruction](../developer-guide/build.md) to build voyager.

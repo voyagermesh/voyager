@@ -16,9 +16,9 @@ spec:
         run: appscode-voyager
     spec:
       containers:
-      - args:
-        - --cloud-provider={{}}
-        - --cluster-name{{}}
+      - name: appscode-voyager
+        args:
+        - --cloud-provider=$CLOUD_PROVIDER
+        - --cluster-name=$CLUSTER_NAME
         image: appscode/voyager:1.5.0
         imagePullPolicy: Always
-        name: appscode-voyager

@@ -43,7 +43,6 @@ To deploy voyager in Kubernetes follow this [guide](docs/user-guide/README.md). 
 1. Create `ingress.appscode.com` and `certificate.appscode.com` Third Party Resource
 2. Deploy voyager to kubernetes.
 
-
 ## Developer Guide
 Want to learn whats happening under the hood, read [the developer guide](docs/developer-guide/README.md).
 
