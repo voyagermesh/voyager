@@ -178,6 +178,6 @@ along side with other controllers.
   // this flag can be set to 'voyager' to handle only ingress
   // with annotation kubernetes.io/ingress.class=voyager.
 
-  // unsetting ingress-class will result in handling all ingress types.
+  // If unset, voyager will also handle ingress without ingress-class annotation.
 ```
 Other ingress controller can be run alongside voyager to handle specific classed ingress.
