@@ -33,7 +33,8 @@ voyager works by implementing third party resource data watcher for kubernetes. 
 for specific events as ADD, UPDATE and DELETE. and perform required operations.
 
 Ingress watcher generates the configuration for HAProxy and stores it as a ConfigMaps and creates a RC with
-specified HAProxy - that is configured with auto reload while any changes happens to ConfigMap data. voyager
-keeps the ingress resource and the configuration in sync by performing processing on the resources.
+specified HAProxy - that is configured with auto reload while any changes happens to ConfigMap data. This is handled via
+[kloader](https://github.com/appscode/kloader). Voyager keeps the ingress resource and the configuration in sync
+by performing processing on the resources.
 
 Certificate watcher watch and process certificates third party data and obtain a ACME certificates.

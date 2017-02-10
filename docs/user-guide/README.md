@@ -167,3 +167,17 @@ certificate common name.
 
 ### Dive into Certificates
 You Can Learn more about `certificate.appscode.com` by reading [this doc](../component/certificate.md).
+
+
+## Running voyager alongside with other ingress controller
+voyager can be configured to handle default kubernetes ingress or only ingress.appscode.com. voyager can also be run
+along side with other controllers.
+
+```sh
+  --ingress-class
+  // this flag can be set to 'voyager' to handle only ingress
+  // with annotation kubernetes.io/ingress.class=voyager.
+
+  // If unset, voyager will also handle ingress without ingress-class annotation.
+```
+Other ingress controller can be run alongside voyager to handle specific classed ingress.
