@@ -127,8 +127,8 @@ same ingress resource. Learn more by reading the certificate doc.
 
 
 ## Example
-Check out examples for [complex ingress configurations](../../../../hack/exampl/ingress.yaml).
-This example generates to a HAProxy Configuration like [this](../../../../hack/exampl/haproxy_generated.cfg).
+Check out examples for [complex ingress configurations](../../../../hack/example/ingress.yaml).
+This example generates to a HAProxy Configuration like [this](../../../../hack/example/haproxy_generated.cfg).
 
 ## Other CURD Operations
 Applying other operation like update, delete to AppsCode Ingress is regular kubernetes resource operation.
