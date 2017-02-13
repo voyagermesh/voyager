@@ -68,6 +68,7 @@ for a high-availability loadbalancer, inside a kubernetes cluster.
 |  PUT    | /apis/appscode.com/v1beta1/namespace/`ns`/ingresss/`name`   | UPDATE | JSON
 |  DELETE | /apis/appscode.com/v1beta1/namespace/`ns`/ingresss/`name`   | DELETE | nil
 
+
 ### Configurations Options
 AppsCode Ingress have some global configurations passed via the `annotaion` field of Ingress Metadata,
 and those configuration will be applicable on load balancer globally. Annotation keys and its actions are as follows:
@@ -124,6 +125,10 @@ same ingress resource. Learn more by reading the certificate doc.
 - [TCP Loadbalancing](tcp.md)
 - [TLS Termination](tls.md)
 
+
+## Example
+Check out examples for [complex ingress configurations](../../../../hack/exampl/ingress.yaml).
+This example generates to a HAProxy Configuration like [this](../../../../hack/exampl/haproxy_generated.cfg).
 
 ## Other CURD Operations
 Applying other operation like update, delete to AppsCode Ingress is regular kubernetes resource operation.
