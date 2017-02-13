@@ -1,0 +1,179 @@
+apiVersion: appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: haproxy
+  namespace: default
+spec:
+  backend:
+    headerRule:
+    - X-Forwarded-Host %[req.hdr(Host)]
+    - X-Forwarded-Port %[dst_port]
+    - X-Forwarded-Proto https
+    serviceName: phabricator
+    servicePort: "80"
+  rules:
+  - host: maven.example.com
+    http:
+      paths:
+      - backend:
+          rewriteRule:
+          - ^([^\ :]*)\ /(.*)$ \1\ /maven/\2
+          serviceName: artifact-server
+          servicePort: "80"
+  - host: composer.example.com
+    http:
+      paths:
+      - backend:
+          rewriteRule:
+          - ^([^\ :]*)\ /(.*)$ \1\ /composer/\2
+          serviceName: artifact-server
+          servicePort: "80"
+  - host: npm.example.com
+    http:
+      paths:
+      - backend:
+          rewriteRule:
+          - ^([^\ :]*)\ /(.*)$ \1\ /npm/\2
+          serviceName: artifact-server
+          servicePort: "80"
+  - host: docker.example.com
+    http:
+      paths:
+      - backend:
+          rewriteRule:
+          - ^([^\ :]*)\ /(.*)$ \1\ /docker/\2
+          serviceName: artifact-server
+          servicePort: "80"
+  - host: api.example.com
+    http:
+      paths:
+      - backend:
+          serviceName: authserver
+          servicePort: "9021"
+        path: /kubernetes/v1beta1/webhooks
+  - host: auth.example.com
+    http:
+      paths:
+      - backend:
+          serviceName: example-loginserver
+          servicePort: "7070"
+        path: /oauth
+  - host: auth.example.com
+    http:
+      paths:
+      - backend:
+          headerRule:
+          - X-Client-IP %[src]
+          rewriteRule:
+          - ^([^\ ]*)\ /client-ip/(.*)     \1\ /\2
+          serviceName: client-ip
+          servicePort: "60010"
+        path: /client-ip
+  - host: '*.example.info'
+    http:
+      paths:
+      - backend:
+          serviceName: aphlictserver
+          servicePort: "22280"
+        path: /_org/ws
+  - host: api.example.com
+    http:
+      paths:
+      - backend:
+          rewriteRule:
+          - ^([^\ :]*)\ /(.*)$ \1\ /_org/api/\2
+          serviceName: example-apis
+          servicePort: "9866"
+        path: /onebox
+  - host: api.example.com
+    http:
+      paths:
+      - backend:
+          rewriteRule:
+          - ^([^\ :]*)\ /(.*)$ \1\ /_org/api/\2
+          serviceName: apiserver
+          servicePort: "9877"
+  - host: '*.example.info'
+    http:
+      paths:
+      - backend:
+          serviceName: apiserver
+          servicePort: "9877"
+        path: /_org/api
+  - host: '*.example.info'
+    http:
+      paths:
+      - backend:
+          serviceName: ui-server
+          servicePort: "80"
+        path: /artifactory
+  - host: '*.example.info'
+    http:
+      paths:
+      - backend:
+          serviceName: ui-server
+          servicePort: "80"
+        path: /ui-server
+  - host: '*.example.info'
+    http:
+      paths:
+      - backend:
+          serviceName: ui-server
+          servicePort: "80"
+        path: /ci
+  - host: '*.example.info'
+    http:
+      paths:
+      - backend:
+          serviceName: grafana
+          servicePort: "3000"
+        path: /grafana
+  - host: '*.example.info'
+    http:
+      paths:
+      - backend:
+          headerRule:
+          - Cache-Control public
+          serviceName: ui-server
+          servicePort: "80"
+        path: /_org/assets
+  - host: jenkins.example.com
+    http:
+      paths:
+      - backend:
+          serviceName: jenkins-service
+          servicePort: "80"
+  - host: api.example.com
+    tcp:
+    - backend:
+        serviceName: apiserver
+        servicePort: "50077"
+      port: "3443"
+      secretName: cert-example-com
+  - host: api.example.com
+    tcp:
+    - backend:
+        serviceName: example-apis
+        servicePort: "50066"
+      port: "3553"
+      secretName: cert-example-com
+  - host: diffusion.example.com
+    tcp:
+    - backend:
+        serviceName: phabricator
+        servicePort: "22"
+      port: "22"
+  tls:
+  - hosts:
+    - auth.example.com
+    - maven.example.com
+    - composer.example.com
+    - npm.example.com
+    - docker.example.com
+    - api.example.com
+    - jenkins.example.com
+    - '*.example.info'
+    secretName: cert-example-com
+  - hosts:
+    - '*.example.info'
+    secretName: cert-example-info
