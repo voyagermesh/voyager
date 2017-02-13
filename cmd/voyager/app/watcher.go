@@ -8,6 +8,10 @@ import (
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/pkg/controller/certificates"
 	lbc "github.com/appscode/voyager/pkg/controller/ingress"
+	kapi "k8s.io/kubernetes/pkg/api"
+	k8serrors "k8s.io/kubernetes/pkg/api/errors"
+	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/cache"
 	"k8s.io/kubernetes/pkg/util/wait"
 )
@@ -47,8 +51,42 @@ func (watch *Watcher) Run() {
 }
 
 func (w *Watcher) setup() {
+	w.ensureResource()
 	lbc.SetLoadbalancerImage(w.LoadbalancerImage)
 	w.Watcher.Dispatch = w.Dispatch
+}
+
+var resourceList []string = []string{
+	"ingress",
+	"certificate",
+}
+
+func (w *Watcher) ensureResource() {
+	for _, resource := range resourceList {
+		// This is version dependent
+		_, err := w.Client.Extensions().ThirdPartyResources().Get(resource + "." + aci.V1beta1SchemeGroupVersion.Group)
+		if k8serrors.IsNotFound(err) {
+			tpr := &extensions.ThirdPartyResource{
+				TypeMeta: unversioned.TypeMeta{
+					APIVersion: "extensions/v1beta1",
+					Kind:       "ThirdPartyResource",
+				},
+				ObjectMeta: kapi.ObjectMeta{
+					Name: resource + "." + aci.V1beta1SchemeGroupVersion.Group,
+				},
+				Versions: []extensions.APIVersion{
+					{
+						Name: aci.V1beta1SchemeGroupVersion.Version,
+					},
+				},
+			}
+			_, err := w.Client.Extensions().ThirdPartyResources().Create(tpr)
+			if err != nil {
+				// This should fail if there is one third party resource data missing.
+				log.Fatalln(tpr.Name, "failed to create, causes", err.Error())
+			}
+		}
+	}
 }
 
 func (w *Watcher) Dispatch(e *events.Event) error {
