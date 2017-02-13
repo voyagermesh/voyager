@@ -20,6 +20,18 @@ This also support configurable application ports with all the features available
 - Wildcard Name based virtual hosting,
 - Persistent sessions, Loadbalancer stats.
 
+### Comparison with Kubernetes
+| Feauture | Kube Ingress | AppsCode Ingress |
+|----------|--------------|------------------|
+| HTTP Loadbalancing| :heavy_check_mark: | :heavy_check_mark: |
+| TCP Loadbalincing | :heavy_multiplication_x: | :heavy_check_mark: |
+| TLS Termination | :heavy_check_mark: | :heavy_check_mark: |
+| Name and Path based virtual hosting | :heavy_multiplication_x: | :heavy_check_mark: |
+| Cross Namespace service support | :heavy_multiplication_x: | :heavy_check_mark: |
+| URL and Header rewriting | :heavy_multiplication_x: | :heavy_check_mark: |
+| Wildcard name virtual hosting | :heavy_multiplication_x: | :heavy_check_mark: |
+| Loadbalncer statistics | :heavy_multiplication_x: | :heavy_check_mark: |
+
 
 ### Certificate
 Kubernetes Controller to manage TLS Certificate.
