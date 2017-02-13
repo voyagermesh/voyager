@@ -115,7 +115,7 @@ in absence of those requests which doesn’t match a rule in spec, are sent to t
 |  DELETE | /apis/appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | DELETE | nil
 
 ### Dive into Ingress
-You Can Learn more about `ingress.appscode.com` by reading [this doc](../component/ingress.md).
+You Can Learn more about `ingress.appscode.com` by reading [this doc](component/ingress/README.md).
 
 
 ## Certificate
@@ -166,7 +166,7 @@ certificate common name.
 |  DELETE | /apis/appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | DELETE | nil
 
 ### Dive into Certificates
-You Can Learn more about `certificate.appscode.com` by reading [this doc](../component/certificate.md).
+You Can Learn more about `certificate.appscode.com` by reading [this doc](component/certificate/README.md).
 
 
 ## Running Voyager alongside with other ingress controller
