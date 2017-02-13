@@ -1,7 +1,7 @@
 [Website](https://appscode.com) • [Slack](https://slack.appscode.com) • [Forum](https://discuss.appscode.com) • [Twitter](https://twitter.com/AppsCodeHQ)
 
 # voyager
-voyager provides controller for [Ingress](#ingress) and [Certificates](#certificate) for Kubernetes developed by [AppsCode](https://appscode.com).
+Voyager provides controller for [Ingress](#ingress) and [Certificates](#certificate) for Kubernetes developed by [AppsCode](https://appscode.com).
 
 
 ### Ingress
@@ -80,6 +80,7 @@ If you're interested in being a contributor, read [the contribution guide](docs/
 Read [Build Instructions](docs/developer-guide/build.md) to build voyager.
 
 ## Acknowledgement
+ - docker-library/haproxy https://github.com/docker-library/haproxy
  - kubernetes/contrib https://github.com/kubernetes/contrib/tree/master/service-loadbalancer
  - appscode/lego https://github.com/appscode/lego
  - kelseyhightower/kube-cert-manager https://github.com/kelseyhightower/kube-cert-manager
