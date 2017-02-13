@@ -11,14 +11,16 @@ This is built on top of the HAProxy, to support high availability, sticky sessio
 This also support configurable application ports with all the features available in Kubernetes [Ingress](https://kubernetes.io/docs/user-guide/ingress/).
 
 **Feautures**
-- HTTP and TCP load balancing,
-- TLS Termination,
-- Multi-cloud supports,
-- Name and Path based virtual hosting,
-- Cross namespace routing support,
-- URL and Request Header Re-writing,
-- Wildcard Name based virtual hosting,
-- Persistent sessions, Loadbalancer stats.
+
+  - [HTTP](docs/user-guide/component/ingress/single-service.md) and [TCP](docs/user-guide/component/ingress/tcp.md) loadbalancing,
+  - [TLS Termination](docs/user-guide/component/ingress/tls.md),
+  - Multi-cloud supports,
+  - [Name and Path based virtual hosting](docs/user-guide/component/ingress/named-virtual-hosting.md),
+  - [Cross namespace routing support](docs/user-guide/component/ingress/named-virtual-hosting.md),
+  - [URL and Request Header Re-writing](docs/user-guide/component/ingress/header-rewrite.md),
+  - [Wildcard Name based virtual hosting](docs/user-guide/component/ingress/named-virtual-hosting.md),
+  - Persistent sessions, Loadbalancer stats.
+
 
 ### Comparison with Kubernetes
 | Feauture | Kube Ingress | AppsCode Ingress |
