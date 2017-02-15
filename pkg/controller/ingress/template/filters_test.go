@@ -1,7 +1,6 @@
 package template
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/flosch/pongo2"
@@ -23,7 +22,6 @@ hello
 hello
 	`
 	assert.Equal(t, res, exp)
-	fmt.Println(res)
 }
 
 func TestHostNameFilter(t *testing.T) {
@@ -41,7 +39,6 @@ hdr(host) -i appscode.com
 hdr_end(host) -i .appscode.com
 	`
 	assert.Equal(t, res, exp)
-	fmt.Println(res)
 }
 
 func render(ctx *pongo2.Context, temp string) (string, error) {

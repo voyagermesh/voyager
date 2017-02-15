@@ -13,13 +13,13 @@ import (
 // a filter, make Sender equals 'filter:yourfilter'; same goes for tags: 'tag:mytag').
 // It's okay if you only fill in ErrorMsg if you don't have any other details at hand.
 type Error struct {
-	Template *Template
-	Filename string
-	Line     int
-	Column   int
-	Token    *Token
-	Sender   string
-	ErrorMsg string
+	Template  *Template
+	Filename  string
+	Line      int
+	Column    int
+	Token     *Token
+	Sender    string
+	OrigError error
 }
 
 func (e *Error) updateFromTokenIfNeeded(template *Template, t *Token) *Error {
@@ -54,14 +54,14 @@ func (e *Error) Error() string {
 		}
 	}
 	s += "] "
-	s += e.ErrorMsg
+	s += e.OrigError.Error()
 	return s
 }
 
 // RawLine returns the affected line from the original template, if available.
-func (e *Error) RawLine() (line string, available bool) {
+func (e *Error) RawLine() (line string, available bool, outErr error) {
 	if e.Line <= 0 || e.Filename == "<string>" {
-		return "", false
+		return "", false, nil
 	}
 
 	filename := e.Filename
@@ -70,12 +70,12 @@ func (e *Error) RawLine() (line string, available bool) {
 	}
 	file, err := os.Open(filename)
 	if err != nil {
-		panic(err)
+		return "", false, err
 	}
 	defer func() {
 		err := file.Close()
-		if err != nil {
-			panic(err)
+		if err != nil && outErr == nil {
+			outErr = err
 		}
 	}()
 
@@ -84,8 +84,8 @@ func (e *Error) RawLine() (line string, available bool) {
 	for scanner.Scan() {
 		l++
 		if l == e.Line {
-			return scanner.Text(), true
+			return scanner.Text(), true, nil
 		}
 	}
-	return "", false
+	return "", false, nil
 }

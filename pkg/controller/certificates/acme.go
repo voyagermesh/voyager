@@ -252,7 +252,7 @@ func (c *ACMECertData) ToSecret(name, namespace string) *api.Secret {
 	log.Infoln("Certificate cert length", len(c.Cert), "private key length", len(c.PrivateKey))
 	return &api.Secret{
 		TypeMeta: unversioned.TypeMeta{
-			APIVersion: "api",
+			APIVersion: "",
 			Kind:       "Secret",
 		},
 		Data: data,

@@ -28,12 +28,13 @@ check_antipackage()
 # ref: https://github.com/ellisonbg/antipackage
 import antipackage
 from github.appscode.libbuild import libbuild
+from github.sadlil.pydotenv import pydotenv
 
 import os
 import os.path
 import subprocess
 import sys
-from os.path import expandvars
+from os.path import expandvars, join, dirname
 
 libbuild.REPO_ROOT = expandvars('$GOPATH') + '/src/github.com/appscode/voyager'
 BUILD_METADATA = libbuild.metadata(libbuild.REPO_ROOT)
@@ -47,6 +48,7 @@ libbuild.BIN_MATRIX = {
         }
     }
 }
+
 libbuild.BUCKET_MATRIX = {
     'prod': 'gs://appscode-cdn',
     'dev': 'gs://appscode-dev'
@@ -147,6 +149,22 @@ def update_registry():
 def install():
     die(call('GO15VENDOREXPERIMENT=1 ' + libbuild.GOC + ' install ./cmd/...'))
 
+
+def test(type='unit'):
+    pydotenv.load_dotenv(join(dirname(__file__), 'configs/.env'))
+    if type == 'unit':
+        unit_test()
+    elif type == 'e2e':
+        e2e_test()
+    else:
+        unit_test()
+        e2e_test()
+
+def unit_test():
+    die(call(libbuild.GOC + ' test -v ./cmd/... ./pkg/... -args -v=5 -real-token=true'))
+
+def e2e_test():
+    die(call(libbuild.GOC + ' test -v ./test/e2e/... -args -v=5'))
 
 def default():
     gen()

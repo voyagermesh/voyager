@@ -1,13 +1,5 @@
 package: github.com/appscode/voyager
 import:
-- package: github.com/golang/protobuf
-  version: 8ee79997227bf9b34611aee7946ae64735e6fd93
-- package: github.com/grpc-ecosystem/grpc-gateway
-  repo: git@github.com:appscode/grpc-gateway.git
-  vcs: git
-  version: master
-- package: google.golang.org/grpc
-  version: v1.0.4
 - package: github.com/appscode/errors
 - package: github.com/appscode/go
 - package: github.com/appscode/k8s-addons
@@ -32,9 +24,15 @@ import:
 - package: cloud.google.com/go
   version: v0.2.0
 - package: k8s.io/kubernetes
-  repo: git@github.com:appscode/kubernetes.git
+  repo: https://github.com/appscode/kubernetes.git
   vcs: git
   version: 1.5.2-ac
 testImport:
 - package: github.com/stretchr/testify
   version: v1.1.4
+- package: k8s.io/kubernetes
+  repo: https://github.com/appscode/kubernetes.git
+  vcs: git
+  version: 1.5.2-ac
+- package: github.com/appscode/k8s-addons
+  version: release-1.5
