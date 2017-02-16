@@ -58,11 +58,10 @@ func (s *HTTPProviderServer) serve() {
 	// The handler validates the HOST header and request type.
 	// For validation it then writes the token the server returned with the challenge
 	var wg sync.WaitGroup
-	wg.Add(1)
 	go s.once.Do(
 		func() {
 			defer wg.Done()
-
+			wg.Add(1)
 			mux := http.NewServeMux()
 			mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 				token := strings.TrimRight(r.RequestURI, "/")

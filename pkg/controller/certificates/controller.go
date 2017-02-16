@@ -253,10 +253,10 @@ func (c *CertificateController) renew() error {
 func (c *CertificateController) ensureACMEClient() error {
 	var acmeUserInfo *ACMEUserData
 	acmeUserRegistered := false
-	log.Errorln("trying to retrive acmeUser data")
+	log.Infoln("trying to retrive acmeUser data")
 
 	var userSecret *api.Secret
-	err := errors.New().NotFound()
+	err := errors.New().WithMessage("Setting error Not found").NotFound()
 	if c.certificate.Spec.ACMEUserSecretName != "" {
 		// ACMEUser secret name is provided.
 		userSecret, err = c.KubeClient.Core().Secrets(c.certificate.Namespace).Get(c.certificate.Spec.ACMEUserSecretName)
@@ -350,7 +350,7 @@ func (c *CertificateController) ensureACMEClient() error {
 			secret.Name = defaultUserSecretPrefix + c.certificate.Name
 		}
 		c.userSecretName = secret.Name
-		log.Debugln("User Registered saving User Informations")
+		log.Debugln("User Registered saving User Informations with Secret name", c.userSecretName)
 		_, err = c.KubeClient.Core().Secrets(c.certificate.Namespace).Create(secret)
 		if err != nil {
 			errors.New().WithCause(err).Internal()

@@ -1,17 +1,14 @@
 package ingress
-/*
 
 import (
-	"fmt"
-	"testing"
-
-	aci "github.com/appscode/k8s-addons/api"
-	"github.com/appscode/k8s-addons/client/clientset/fake"
-	"github.com/stretchr/testify/assert"
-	kapi "k8s.io/kubernetes/pkg/api"
+	"github.com/appscode/voyager/test/testframework"
 )
 
-func TestEnsureServiceAnnotation(t *testing.T) {
+func init() {
+	testframework.Initialize()
+}
+
+/*func TestEnsureServiceAnnotation(t *testing.T) {
 	fakeClient := fake.NewFakeClient()
 	_, err := fakeClient.Core().Services("a").Get("b")
 	assert.NotNil(t, err)

@@ -161,10 +161,10 @@ def test(type='unit'):
         e2e_test()
 
 def unit_test():
-    die(call(libbuild.GOC + ' test -v ./cmd/... ./pkg/... -args -v=5 -real-token=true'))
+    die(call(libbuild.GOC + ' test -v ./cmd/... ./pkg/... -args -v=5 -verbose=true -mode=unit'))
 
 def e2e_test():
-    die(call(libbuild.GOC + ' test -v ./test/e2e/... -args -v=5'))
+    die(call(libbuild.GOC + ' test -v ./test/e2e/... -args -v=5 -verbose=true -mode=e2e'))
 
 def default():
     gen()

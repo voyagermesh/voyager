@@ -5,13 +5,12 @@ import (
 	"net/http"
 	"testing"
 
-	"time"
-	"github.com/appscode/go/flags"
+	"github.com/appscode/voyager/test/testframework"
 )
 
 func init() {
-	flags.SetLogLevel(5)
-	time.Sleep(time.Second*5)
+	testframework.Initialize()
+	defaultHTTPProvider.serve()
 }
 
 func TestNotFound(t *testing.T) {

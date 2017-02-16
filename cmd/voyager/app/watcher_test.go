@@ -3,13 +3,18 @@ package app
 import (
 	"testing"
 
+	aci "github.com/appscode/k8s-addons/api"
 	acw "github.com/appscode/k8s-addons/pkg/watcher"
+	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
-	aci "github.com/appscode/k8s-addons/api"
 )
+
+func init() {
+	testframework.Initialize()
+}
 
 func TestEnsureResource(t *testing.T) {
 	w := &Watcher{

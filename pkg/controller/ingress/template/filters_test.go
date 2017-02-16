@@ -3,9 +3,14 @@ package template
 import (
 	"testing"
 
+	"github.com/appscode/voyager/test/testframework"
 	"github.com/flosch/pongo2"
 	"github.com/stretchr/testify/assert"
 )
+
+func init() {
+	testframework.Initialize()
+}
 
 func TestHeaderNameFilter(t *testing.T) {
 	temp := `

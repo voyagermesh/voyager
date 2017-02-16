@@ -5,19 +5,15 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"os"
 	"testing"
 
+	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
 	"github.com/xenolf/lego/acme"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
-	"github.com/appscode/go/flags"
 )
-
-func init() {
-	flags.SetLogLevel(5)
-	flags.InitFlags()
-}
 
 func TestNewDomainCollection(t *testing.T) {
 	d := NewDomainCollection("a.com")
@@ -36,7 +32,7 @@ func TestACMECertData(t *testing.T) {
 			Name:      defaultCertPrefix + "hello",
 			Namespace: "default",
 			Labels: map[string]string{
-				certificateKey: "true",
+				certificateKey:              "true",
 				certificateKey + "/domains": NewDomainCollection("appscode.com").String(),
 			},
 			Annotations: map[string]string{
@@ -66,7 +62,7 @@ func TestACMECertDataError(t *testing.T) {
 			Name:      defaultCertPrefix + "hello",
 			Namespace: "default",
 			Labels: map[string]string{
-				certificateKey: "true",
+				certificateKey:              "true",
 				certificateKey + "/domains": NewDomainCollection("appscode.com").String(),
 			},
 			Annotations: map[string]string{
@@ -81,7 +77,7 @@ func TestACMECertDataError(t *testing.T) {
 
 	_, err := NewACMECertDataFromSecret(certificateSecret)
 	assert.NotNil(t, err)
-	assert.Equal(t, "INTERNAL:Could not find key tls.crt in secret " + defaultCertPrefix + "hello", err.Error())
+	assert.Equal(t, "INTERNAL:Could not find key tls.crt in secret "+defaultCertPrefix+"hello", err.Error())
 
 }
 
@@ -106,4 +102,17 @@ func TestClient(t *testing.T) {
 	}
 	_, err = NewACMEClient(config)
 	assert.Nil(t, err)
+
+	if testframework.TestContext.Verbose {
+		config := &ACMEConfig{
+			Provider: "http",
+			UserData: user,
+			ProviderCredentials: map[string][]byte{
+				"GCE_SERVICE_ACCOUNT_DATA": []byte(os.Getenv("TEST_GCE_SERVICE_ACCOUNT_DATA")),
+				"GCE_PROJECT":              []byte(os.Getenv("TEST_GCE_PROJECT")),
+			},
+		}
+		_, err = NewACMEClient(config)
+		assert.Nil(t, err)
+	}
 }
