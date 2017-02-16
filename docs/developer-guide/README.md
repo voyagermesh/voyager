@@ -20,6 +20,26 @@ To install glide follow [these instructions](https://github.com/Masterminds/glid
 
 Currently the project includes all its required dependencies inside `vendor` to make things easier.
 
+### Run Test
+#### Run Short Unit Test by running
+```sh
+go test -v ./cmd/... ./pkg/...
+```
+
+#### Run Full Test
+To Run Full unit test You need to provide some secret in `hack/configs/.env` file. Or You may add them as
+environment variables.
+```sh
+TEST_GCE_SERVICE_ACCOUNT_DATA
+TEST_GCE_PROJECT
+TEST_ACME_USER_EMAIL
+TEST_DNS_DOMAINS
+```
+Then run
+```sh
+$ ./hack/make.py test
+```
+
 ### Local Build
 To build Voyager using your local Go development environment (generate linux binaries):
 ```sh
