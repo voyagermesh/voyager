@@ -27,8 +27,7 @@ check_antipackage()
 
 # ref: https://github.com/ellisonbg/antipackage
 import antipackage
-from github.appscode.libbuild import libbuild
-from github.sadlil.pydotenv import pydotenv
+from github.appscode.libbuild import libbuild, pydotenv
 
 import os
 import os.path
