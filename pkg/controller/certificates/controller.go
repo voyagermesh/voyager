@@ -317,44 +317,49 @@ func (c *CertificateController) ensureACMEClient() error {
 	c.acmeClient = acmeClient
 
 	if !acmeUserRegistered {
-		log.Debugln("ACME user not registered, registering new ACME user")
-		registration, err := acmeClient.Register()
-		if err != nil {
-			return errors.New().WithCause(err).WithMessage("Failed to registering user for new domain").Internal()
-		}
-		c.acmeClientConfig.UserData.Registration = registration
-		if err := acmeClient.AgreeToTOS(); err != nil {
-			return errors.New().WithCause(err).WithMessage("Failed to registering user for new domain").Internal()
-		}
+		return c.registerACMEUser(acmeClient)
+	}
+	return nil
+}
 
-		// Acme User registered Create The acmeUserSecret
-		secret := &api.Secret{
-			ObjectMeta: api.ObjectMeta{
-				Name:      c.certificate.Spec.ACMEUserSecretName,
-				Namespace: c.certificate.Namespace,
-				Labels: map[string]string{
-					certificateKey + "/user-info": "true",
-					certificateKey + "/cert-name": c.certificate.Name,
-				},
-				Annotations: map[string]string{
-					certificateKey + "/user-info": "true",
-					certificateKey + "/cert-name": c.certificate.Name,
-				},
+func (c *CertificateController) registerACMEUser(acmeClient *ACMEClient) error {
+	log.Debugln("ACME user not registered, registering new ACME user")
+	registration, err := acmeClient.Register()
+	if err != nil {
+		return errors.New().WithCause(err).WithMessage("Failed to registering user for new domain").Internal()
+	}
+	c.acmeClientConfig.UserData.Registration = registration
+	if err := acmeClient.AgreeToTOS(); err != nil {
+		return errors.New().WithCause(err).WithMessage("Failed to registering user for new domain").Internal()
+	}
+
+	// Acme User registered Create The acmeUserSecret
+	secret := &api.Secret{
+		ObjectMeta: api.ObjectMeta{
+			Name:      c.certificate.Spec.ACMEUserSecretName,
+			Namespace: c.certificate.Namespace,
+			Labels: map[string]string{
+				certificateKey + "/user-info": "true",
+				certificateKey + "/cert-name": c.certificate.Name,
 			},
-			Data: map[string][]byte{
-				"user-info": c.acmeClientConfig.UserData.Json(),
+			Annotations: map[string]string{
+				certificateKey + "/user-info": "true",
+				certificateKey + "/cert-name": c.certificate.Name,
 			},
-			Type: "certificate.appscode.com/acme-user-info",
-		}
-		if secret.Name == "" {
-			secret.Name = defaultUserSecretPrefix + c.certificate.Name
-		}
-		c.userSecretName = secret.Name
-		log.Debugln("User Registered saving User Informations with Secret name", c.userSecretName)
-		_, err = c.KubeClient.Core().Secrets(c.certificate.Namespace).Create(secret)
-		if err != nil {
-			errors.New().WithCause(err).Internal()
-		}
+		},
+		Data: map[string][]byte{
+			"user-info": c.acmeClientConfig.UserData.Json(),
+		},
+		Type: "certificate.appscode.com/acme-user-info",
+	}
+	if secret.Name == "" {
+		secret.Name = defaultUserSecretPrefix + c.certificate.Name
+	}
+	c.userSecretName = secret.Name
+	log.Debugln("User Registered saving User Informations with Secret name", c.userSecretName)
+	_, err = c.KubeClient.Core().Secrets(c.certificate.Namespace).Create(secret)
+	if err != nil {
+		return errors.New().WithCause(err).Internal()
 	}
 	return nil
 }

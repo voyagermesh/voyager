@@ -4,16 +4,18 @@ import (
 	"io/ioutil"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/appscode/voyager/test/testframework"
 )
 
 func init() {
 	testframework.Initialize()
-	defaultHTTPProvider.serve()
 }
 
 func TestNotFound(t *testing.T) {
+	defaultHTTPProvider.serve()
+	time.Sleep(time.Second * 5)
 	resp, err := http.Get("http://127.0.0.1:56789" + URLPrefix + "token")
 	if err != nil {
 		t.Fatal("expected Nil, found", err)
@@ -34,6 +36,8 @@ func TestNotFound(t *testing.T) {
 }
 
 func TestFound(t *testing.T) {
+	defaultHTTPProvider.serve()
+	time.Sleep(time.Second * 5)
 	defaultHTTPProvider.Present("127.0.0.1:56789", "token", "key")
 	resp, err := http.Get("http://127.0.0.1:56789" + URLPrefix + "token")
 	if err != nil {
