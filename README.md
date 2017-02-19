@@ -9,7 +9,7 @@ In here we call it ExtendedIngress.
 An extended plugin of Kubernetes [Ingress](https://kubernetes.io/docs/user-guide/ingress/) by AppsCode, to support both L7 and L4 loadbalancing via a single ingress.
 This is built on top of the HAProxy, to support high availability, sticky sessions, name and path-based virtual hosting.
 This also support configurable application ports with all the features available in Kubernetes [Ingress](https://kubernetes.io/docs/user-guide/ingress/). Here 
-is a [complex ingress configurations](hack/example/ingress.yaml) that shows how various features can be used.
+is a [complex ingress example](hack/example/ingress.yaml) that shows how various features can be used.
 You can find the generated HAProxy Configuration [here](hack/example/haproxy_generated.cfg).
 
 **Feautures**
