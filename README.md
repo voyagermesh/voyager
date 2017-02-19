@@ -26,13 +26,13 @@ This also support configurable application ports with all the features available
 | Feauture | Kube Ingress | AppsCode Ingress |
 |----------|--------------|------------------|
 | HTTP Loadbalancing| :white_check_mark: | :white_check_mark: |
-| TCP Loadbalincing | :x: | :white_check_mark: |
+| TCP Loadbalancing | :x: | :white_check_mark: |
 | TLS Termination | :white_check_mark: | :white_check_mark: |
 | Name and Path based virtual hosting | :x: | :white_check_mark: |
 | Cross Namespace service support | :x: | :white_check_mark: |
 | URL and Header rewriting | :x: | :white_check_mark: |
 | Wildcard name virtual hosting | :x: | :white_check_mark: |
-| Loadbalncer statistics | :x: | :white_check_mark: |
+| Loadbalancer statistics | :x: | :white_check_mark: |
 
 
 ### Certificate
