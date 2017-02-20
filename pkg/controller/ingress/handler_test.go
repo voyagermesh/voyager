@@ -1,21 +1,29 @@
 package ingress
 
 import (
+	"fmt"
+	"testing"
+
+	aci "github.com/appscode/k8s-addons/api"
 	"github.com/appscode/voyager/test/testframework"
+	"github.com/stretchr/testify/assert"
+	kapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
 )
 
 func init() {
 	testframework.Initialize()
 }
 
-/*func TestEnsureServiceAnnotation(t *testing.T) {
-	fakeClient := fake.NewFakeClient()
+func TestEnsureServiceAnnotation(t *testing.T) {
+	fakeClient := fake.NewSimpleClientset()
 	_, err := fakeClient.Core().Services("a").Get("b")
 	assert.NotNil(t, err)
 
 	svc, err := fakeClient.Core().Services("test-namespace").Create(&kapi.Service{
 		ObjectMeta: kapi.ObjectMeta{
 			Name: "test-service",
+			Namespace: "test-namespace",
 		},
 	})
 
@@ -68,4 +76,3 @@ func init() {
 	assert.Contains(t, svc.Annotations, aci.ExtendedIngressKey)
 	fmt.Println(svc.Annotations)
 }
-*/

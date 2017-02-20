@@ -8,7 +8,12 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
+	"github.com/appscode/voyager/test/testframework"
 )
+
+func init() {
+	testframework.Initialize()
+}
 
 var testCases = map[*EngressController]bool{
 	{
