@@ -278,6 +278,7 @@ func (lbc *EngressController) parseOptions() {
 	log.Infoln("Got LBType", lbc.Options.LBType)
 }
 
+// ref: https://github.com/kubernetes/kubernetes/blob/078238a461a0872a8eacb887fbb3d0085714604c/staging/src/k8s.io/apiserver/pkg/apis/example/v1/types.go#L134
 func parseNodeSelector(labels string) map[string]string {
 	selectorMap := make(map[string]string)
 	for _, label := range strings.Split(labels, ",") {
