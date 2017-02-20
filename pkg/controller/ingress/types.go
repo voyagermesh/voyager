@@ -23,10 +23,9 @@ const (
 	stickySession = "ingress.appscode.com/stickySession"
 
 	// LB stats options
-	StatPort      = 1936
-	StatsOn       = "ingress.appscode.com/stats"
-	StatsUser     = "ingress.appscode.com/stats.user"
-	StatsPassword = "ingress.appscode.com/stats.password"
+	StatPort    = 1936
+	StatsOn     = "ingress.appscode.com/stats"
+	StatsSecret = "ingress.appscode.com/stats.secretName"
 
 	// Daemon, Persistent, LoadBalancer
 	LBName         = "ingress.appscode.com/name"
@@ -35,7 +34,7 @@ const (
 	LBLoadBalancer = "LoadBalancer" // default
 
 	// Runs on a specific set of a hosts via DaemonSet. This is needed to work around the issue that master node is registered but not scheduable.
-	DaemonHostname = "ingress.appscode.com/daemon.hostname"
+	DaemonNodeSelector = "ingress.appscode.com/daemon.nodeSelector"
 
 	// LoadBalancer mode exposes HAProxy via a type=LoadBalancer service. This is the original version implemented by @sadlil
 	// Uses nodeport and Cloud LoadBalancer exists beyond single HAProxy run
@@ -55,13 +54,8 @@ func (s annotation) Stats() bool {
 	return ok
 }
 
-func (s annotation) StatsUser() string {
-	v, _ := s[StatsUser]
-	return v
-}
-
-func (s annotation) StatsPassword() string {
-	v, _ := s[StatsPassword]
+func (s annotation) StatsSecretName() string {
+	v, _ := s[StatsSecret]
 	return v
 }
 
@@ -72,8 +66,8 @@ func (s annotation) LBType() string {
 	return LBLoadBalancer
 }
 
-func (s annotation) DaemonHostname() string {
-	v, _ := s[DaemonHostname]
+func (s annotation) DaemonNodeSelector() string {
+	v, _ := s[DaemonNodeSelector]
 	return v
 }
 
@@ -129,8 +123,9 @@ type KubeOptions struct {
 	// port list the pods needs and service needs to listen to.
 	Ports []int
 
-	LBType              string
-	DaemonHostname      string
+	LBType string
+
+	DaemonNodeSelector  map[string]string
 	LoadBalancerIP      string
 	LoadBalancerPersist bool
 }
