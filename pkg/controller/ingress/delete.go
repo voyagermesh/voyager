@@ -38,13 +38,13 @@ func (lbc *EngressController) deleteLB() error {
 	if err != nil {
 		return errors.New().WithCause(err).Internal()
 	}
-	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(ServicePrefix + lbc.Config.Name)
+	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
 	if err != nil {
 		return errors.New().WithCause(err).Internal()
 	}
 
 	// delete service
-	err = lbc.KubeClient.Core().Services(lbc.Config.Namespace).Delete(ServicePrefix+lbc.Config.Name, &kapi.DeleteOptions{})
+	err = lbc.KubeClient.Core().Services(lbc.Config.Namespace).Delete(VoyagerPrefix+lbc.Config.Name, &kapi.DeleteOptions{})
 	if err != nil {
 		return errors.New().WithCause(err).Internal()
 	}
@@ -74,11 +74,11 @@ func (lbc *EngressController) deleteLB() error {
 }
 
 func (lbc *EngressController) deleteDaemonSets() error {
-	d, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Get(DaemonSetPrefix + lbc.Config.Name)
+	d, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
 	if err != nil {
 		return nil
 	}
-	err = lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Delete(DaemonSetPrefix+lbc.Config.Name, &kapi.DeleteOptions{})
+	err = lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Delete(VoyagerPrefix+lbc.Config.Name, &kapi.DeleteOptions{})
 	if err != nil {
 		return errors.New().WithCause(err).Internal()
 	}
@@ -109,7 +109,7 @@ func (lbc *EngressController) deleteDaemonSets() error {
 }
 
 func (lbc *EngressController) deleteRc() error {
-	rc, err := lbc.KubeClient.Core().ReplicationControllers(lbc.Config.Namespace).Get(ControllerPrefix + lbc.Config.Name)
+	rc, err := lbc.KubeClient.Core().ReplicationControllers(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
 	if err != nil {
 		return errors.New().WithCause(err).Internal()
 	}
@@ -124,7 +124,7 @@ func (lbc *EngressController) deleteRc() error {
 	time.Sleep(time.Second * 10)
 	// if update failed still trying to delete the controller.
 	falseVar := false
-	err = lbc.KubeClient.Core().ReplicationControllers(lbc.Config.Namespace).Delete(ControllerPrefix+lbc.Config.Name, &kapi.DeleteOptions{
+	err = lbc.KubeClient.Core().ReplicationControllers(lbc.Config.Namespace).Delete(VoyagerPrefix+lbc.Config.Name, &kapi.DeleteOptions{
 		OrphanDependents: &falseVar,
 	})
 	if err != nil {
@@ -134,7 +134,7 @@ func (lbc *EngressController) deleteRc() error {
 }
 
 func (lbc *EngressController) deleteConfigMap() error {
-	err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Delete(ConfigMapPrefix+lbc.Config.Name, &kapi.DeleteOptions{})
+	err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Delete(VoyagerPrefix+lbc.Config.Name, &kapi.DeleteOptions{})
 	if err != nil {
 		return errors.New().WithCause(err).Internal()
 	}

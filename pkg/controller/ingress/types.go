@@ -1,24 +1,19 @@
 package ingress
 
 import (
-	"os/exec"
 	"strings"
 	"sync"
 
 	aci "github.com/appscode/k8s-addons/api"
 	acs "github.com/appscode/k8s-addons/client/clientset"
 	"github.com/appscode/k8s-addons/pkg/stash"
-	"github.com/appscode/log"
 	"k8s.io/kubernetes/pkg/client/cache"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/cloudprovider"
 )
 
 const (
-	ServicePrefix    = "lb-svc-"
-	ControllerPrefix = "lb-c-"
-	DaemonSetPrefix  = "lb-dm-"
-	ConfigMapPrefix  = "lb-cm-"
+	VoyagerPrefix = "vgr-"
 
 	stickySession = "ingress.appscode.com/stickySession"
 
@@ -196,23 +191,4 @@ func SetLoadbalancerImage(i string) {
 
 func GetLoadbalancerImage() string {
 	return loadbalancerImage
-}
-
-func fullyQualifiedNodeName(nodeName string) (string, error) {
-	if idx := strings.Index(nodeName, "."); idx >= 0 {
-		nodeName = nodeName[0:idx]
-	}
-
-	// Returns master's fqdn since kubed uses host network
-	name, err := exec.Command("hostname", "-f").Output()
-	if err != nil {
-		return "", err
-	}
-	fqdn := strings.TrimSpace(string(name))
-	log.Debugln("Found fqdn:", fqdn)
-	firstDotIndex := strings.Index(fqdn, ".")
-	if firstDotIndex >= 0 {
-		return nodeName + fqdn[firstDotIndex:], nil
-	}
-	return nodeName, nil
 }
