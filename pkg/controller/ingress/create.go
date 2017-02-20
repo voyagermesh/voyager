@@ -11,7 +11,8 @@ import (
 	"github.com/appscode/log"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
-	extensions "k8s.io/kubernetes/pkg/apis/extensions"
+	"k8s.io/kubernetes/pkg/apis/extensions"
+	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/util/intstr"
 )
 
@@ -94,35 +95,13 @@ func (lbc *EngressController) createLB() error {
 }
 
 func (lbc *EngressController) createDaemonLB() error {
-	log.Infoln("Creating Daemon type lb for host name = ", lbc.Options.DaemonHostname)
-	daemonNode, err := lbc.KubeClient.Core().Nodes().Get(lbc.Options.DaemonHostname)
+	log.Infoln("Creating Daemon type lb for nodeSelector = ", lbc.Options.DaemonNodeSelector)
+	daemonNodes, err := lbc.KubeClient.Core().Nodes().List(kapi.ListOptions{
+		LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Options.DaemonNodeSelector)),
+	})
 	if err != nil {
-		log.Infoln("node not found with host name", err)
-		if lbc.Options.ProviderName == "aws" {
-			log.Infoln("provider is aws, trying to get suffix")
-			hostName := ""
-			hostName, err = fullyQualifiedNodeName(lbc.Options.DaemonHostname)
-			if err != nil {
-				log.Errorln("Error getting host name", err)
-			} else {
-				log.Infoln("host name found with", hostName)
-				daemonNode, err = lbc.KubeClient.Core().Nodes().Get(hostName)
-				if err != nil {
-					log.Infoln("node still not found")
-				}
-			}
-		}
-		if err != nil {
-			return errors.New().WithCause(err).Internal()
-		}
-	}
-	// detect IP when CloudManager is found.
-	if lbc.Options.LoadBalancerIP == "" {
-		for _, addr := range daemonNode.Status.Addresses {
-			if addr.Type == kapi.NodeInternalIP {
-				lbc.Options.LoadBalancerIP = addr.Address
-			}
-		}
+		log.Infoln("node not found with nodeSelector, cause", err)
+		return errors.New().WithCause(err).Internal()
 	}
 
 	// Create a Headless service without selectors
@@ -137,28 +116,10 @@ func (lbc *EngressController) createDaemonLB() error {
 			},
 		},
 
-		// default opening port 80 and 443 for the service.
 		Spec: kapi.ServiceSpec{
 			Type:      kapi.ServiceTypeClusterIP,
 			ClusterIP: "None",
-			Ports: []kapi.ServicePort{
-				{
-					Name:       "http",
-					Protocol:   "TCP",
-					Port:       80,
-					TargetPort: intstr.FromInt(80),
-				},
-				{
-					Name:       "https",
-					Protocol:   "TCP",
-					Port:       443,
-					TargetPort: intstr.FromInt(443),
-				},
-			},
-			// Selector: labelsFor(lbc.Config.Name),
-			// ExternalIPs: []string{
-			//	lbc.Options.LoadBalancerIP,
-			// },
+			Ports:     []kapi.ServicePort{},
 		},
 	}
 
@@ -200,7 +161,7 @@ func (lbc *EngressController) createDaemonLB() error {
 					Labels: labelsFor(lbc.Config.Name),
 				},
 				Spec: kapi.PodSpec{
-					NodeSelector: nodeSelector(lbc.Options.DaemonHostname),
+					NodeSelector: lbc.Options.DaemonNodeSelector,
 					Containers: []kapi.Container{
 						{
 							Name:  "haproxy",
@@ -268,13 +229,13 @@ func (lbc *EngressController) createDaemonLB() error {
 		log.Debugln("cloud manager not nil")
 		if fw, ok := lbc.CloudManager.Firewall(); ok {
 			log.Debugln("firewalls found")
-			b2, err := json.MarshalIndent(daemonNode, "", " ")
-			log.Infoln(">>>> ---- ", string(b2))
 			convertedSvc := &kapi.Service{}
 			kapi.Scheme.Convert(svc, convertedSvc, nil)
-			err = fw.EnsureFirewall(convertedSvc, daemonNode.Name) // lbc.Config.ObjectMeta.Annotations
-			if err != nil {
-				return errors.New().WithCause(err).Internal()
+			for _, node := range daemonNodes.Items {
+				err = fw.EnsureFirewall(convertedSvc, node.Name)
+				if err != nil {
+					log.Errorln("Failed to ensure loadbalancer for node", node.Name, "cause", err)
+				}
 			}
 			log.Debugln("getting firewalls for cloud manager failed")
 		}
@@ -295,22 +256,8 @@ func (lbc *EngressController) createLoadBalancerLB() error {
 			},
 		},
 
-		// default opening port 80 and 443 for the service.
 		Spec: kapi.ServiceSpec{
-			Ports: []kapi.ServicePort{
-				{
-					Name:       "http",
-					Protocol:   "TCP",
-					Port:       80,
-					TargetPort: intstr.FromInt(80),
-				},
-				{
-					Name:       "https",
-					Protocol:   "TCP",
-					Port:       443,
-					TargetPort: intstr.FromInt(443),
-				},
-			},
+			Ports:    []kapi.ServicePort{},
 			Selector: labelsFor(lbc.Config.Name),
 		},
 	}
@@ -468,7 +415,7 @@ func (lbc *EngressController) createLoadBalancerLB() error {
 	return nil
 }
 
-func (lbc *EngressController) updateEngressIP() error {
+func (lbc *EngressController) updateStatus() error {
 	var serviceExtIp string
 	for {
 		time.Sleep(time.Second * 60)

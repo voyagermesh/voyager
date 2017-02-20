@@ -22,8 +22,8 @@ func (lbc *EngressController) parse() error {
 		log.Warningln("Config is nil, nothing to parse")
 		return errors.New().WithMessage("no config found").NotFound()
 	}
-	lbc.parseEngressOptions()
-	lbc.parseEngressSpec()
+	lbc.parseOptions()
+	lbc.parseSpec()
 	return nil
 }
 
@@ -149,7 +149,7 @@ func getTargetPort(servicePort *kapi.ServicePort) int {
 	return servicePort.TargetPort.IntValue()
 }
 
-func (lbc *EngressController) parseEngressSpec() {
+func (lbc *EngressController) parseSpec() {
 	log.Infoln("Parsing Engress specs")
 	lbc.Options.Ports = make([]int, 0)
 	if lbc.Config.Spec.Backend != nil {
@@ -187,7 +187,6 @@ func (lbc *EngressController) parseEngressSpec() {
 				}
 
 				eps, err := lbc.serviceEndpoints(svc.Backend.ServiceName, svc.Backend.ServicePort)
-
 				def.Backends = &Backend{
 					Name:      "backend-" + rand.Characters(5),
 					Endpoints: eps,
@@ -235,13 +234,21 @@ func (lbc *EngressController) parseEngressSpec() {
 		}
 	}
 
+	if len(lbc.Parsed.HttpService) > 0 || lbc.Config.Spec.Backend != nil {
+		lbc.Options.Ports = append(lbc.Options.Ports, 80)
+	}
+
+	if len(lbc.Parsed.HttpsService) > 0 {
+		lbc.Options.Ports = append(lbc.Options.Ports, 443)
+	}
+
 	//parse stat
 	if lbc.Parsed.Stats {
 		lbc.Options.Ports = append(lbc.Options.Ports, StatPort)
 	}
 }
 
-func (lbc *EngressController) parseEngressOptions() {
+func (lbc *EngressController) parseOptions() {
 	if lbc.Config == nil {
 		log.Infoln("Config is nil, nothing to parse")
 		return
@@ -255,13 +262,35 @@ func (lbc *EngressController) parseEngressOptions() {
 
 	lbc.Parsed.Stats = opts.Stats()
 	if lbc.Parsed.Stats {
-		lbc.Parsed.StatsUserName = opts.StatsUser()
-		lbc.Parsed.StatsPassWord = opts.StatsPassword()
+		secret, err := lbc.KubeClient.Core().Secrets(lbc.Config.ObjectMeta.Namespace).Get(opts.StatsSecretName())
+		if err == nil {
+			lbc.Parsed.StatsUserName = string(secret.Data["username"])
+			lbc.Parsed.StatsPassWord = string(secret.Data["password"])
+		} else {
+			log.Errorln("Error encountered while loading secret,", err)
+		}
 	}
 
 	lbc.Options.LBType = opts.LBType()
-	lbc.Options.DaemonHostname = opts.DaemonHostname()
+	lbc.Options.DaemonNodeSelector = parseNodeSelector(opts.DaemonNodeSelector())
 	lbc.Options.LoadBalancerIP = opts.LoadBalancerIP()
 	lbc.Options.LoadBalancerPersist = opts.LoadBalancerPersist()
 	log.Infoln("Got LBType", lbc.Options.LBType)
+}
+
+// ref: https://github.com/kubernetes/kubernetes/blob/078238a461a0872a8eacb887fbb3d0085714604c/staging/src/k8s.io/apiserver/pkg/apis/example/v1/types.go#L134
+func parseNodeSelector(labels string) map[string]string {
+	selectorMap := make(map[string]string)
+	for _, label := range strings.Split(labels, ",") {
+		label = strings.TrimSpace(label)
+		if len(label) > 0 && strings.Contains(label, "=") {
+			data := strings.SplitN(label, "=", 2)
+			if len(data) >= 2 {
+				if len(data[0]) > 0 && len(data[1]) > 0 {
+					selectorMap[data[0]] = data[1]
+				}
+			}
+		}
+	}
+	return selectorMap
 }
