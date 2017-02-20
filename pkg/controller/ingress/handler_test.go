@@ -1,6 +1,6 @@
 package ingress
 
-import (
+/*import (
 	"fmt"
 	"testing"
 
@@ -70,3 +70,4 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 	assert.Contains(t, svc.Annotations, aci.ExtendedIngressKey)
 	fmt.Println(svc.Annotations)
 }
+*/
