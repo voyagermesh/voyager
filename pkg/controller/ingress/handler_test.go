@@ -15,6 +15,55 @@ func init() {
 	testframework.Initialize()
 }
 
+func TestShouldHandleIngress(t *testing.T) {
+	dataTables := map[*aci.Ingress]map[string]bool{
+		{
+			ObjectMeta: kapi.ObjectMeta{
+				Annotations: map[string]string{
+					"kubernetes.io/ingress.class": "voyager",
+				},
+			},
+		}: {
+			"voyager": true,
+			"":        true,
+			"gce":     true,
+			"aws":     true,
+		},
+
+		{
+			ObjectMeta: kapi.ObjectMeta{
+				Annotations: map[string]string{
+					"ingress.appscode.com/realtype": "extendedIngress",
+				},
+			},
+		}: {
+			"voyager": true,
+			"":        true,
+			"gce":     true,
+			"aws":     true,
+		},
+
+		{
+			ObjectMeta: kapi.ObjectMeta{
+				Annotations: map[string]string{},
+			},
+		}: {
+			"voyager": false,
+			"":        true,
+			"gce":     false,
+			"aws":     false,
+		},
+	}
+
+	for k, v := range dataTables {
+		for ingressClass, result := range v {
+			if !assert.Equal(t, shouldHandleIngress(k, ingressClass), result) {
+				t.Log("Ingress", *k, "IngressClass", ingressClass, "Expected", result)
+			}
+		}
+	}
+}
+
 func TestEnsureServiceAnnotation(t *testing.T) {
 	fakeClient := fake.NewSimpleClientset()
 	_, err := fakeClient.Core().Services("a").Get("b")
@@ -22,7 +71,7 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 
 	svc, err := fakeClient.Core().Services("test-namespace").Create(&kapi.Service{
 		ObjectMeta: kapi.ObjectMeta{
-			Name: "test-service",
+			Name:      "test-service",
 			Namespace: "test-namespace",
 		},
 	})

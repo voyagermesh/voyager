@@ -16,8 +16,6 @@ import (
 	"k8s.io/kubernetes/pkg/util/intstr"
 )
 
-const NodeSelectorKey = "kubernetes.io/hostname"
-
 func (lbc *EngressController) Create() error {
 	log.Debugln("Starting createing lb. got engress with", lbc.Config.ObjectMeta)
 	err := lbc.parse()
@@ -447,12 +445,6 @@ func labelsFor(name string) map[string]string {
 		"target":      "eng-" + name,
 		"meta":        "eng-" + name + "-applbc",
 		"engressName": name,
-	}
-}
-
-func nodeSelector(name string) map[string]string {
-	return map[string]string{
-		NodeSelectorKey: name,
 	}
 }
 

@@ -17,6 +17,7 @@ import (
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/cloudprovider"
 	_ "k8s.io/kubernetes/pkg/cloudprovider/providers"
+	fakecloudprovider "k8s.io/kubernetes/pkg/cloudprovider/providers/fake"
 	"k8s.io/kubernetes/pkg/labels"
 )
 
@@ -44,6 +45,8 @@ func NewEngressController(clusterName, providerName string,
 		h.CloudManager = getAWSClient()
 	} else if providerName == "gce" {
 		h.CloudManager = getGCEClient()
+	} else if providerName == "minikube" {
+		h.CloudManager = getMiniKubeClient()
 	}
 	return h
 }
@@ -66,6 +69,10 @@ func getGCEClient() cloudprovider.Interface {
 	}
 	log.Infoln("Initialized GCE cloud provider", cloudInterface)
 	return cloudInterface
+}
+
+func getMiniKubeClient() cloudprovider.Interface {
+	return &fakecloudprovider.FakeCloud{}
 }
 
 func UpgradeAllEngress(service, clusterName, providerName string,
@@ -218,15 +225,15 @@ const (
 	engressClassAnnotationValue = "voyager"
 )
 
-// if flag == "voyager", the you only handle  ingress that has voyager annotation
-// if flag == "", then handle no annotaion or voyager annotation
+// if ingressClass == "voyager", then only handle ingress that has voyager annotation
+// if ingressClass == "", then handle no annotaion or voyager annotation
 func shouldHandleIngress(engress *aci.Ingress, ingressClass string) bool {
 	// https://github.com/appscode/k8s-addons/blob/master/api/conversion_v1beta1.go#L44
-	if engress.Annotations[aci.ExtendedIngressRealTypeKey] != "ingress" {
+	if engress.Annotations[aci.ExtendedIngressRealTypeKey] == "extendedIngress" {
 		// Resource Type is Extended Ingress So we should always Handle this
 		return true
 	}
-	kubeAnnotation := engress.Annotations[engressClassAnnotationKey]
+	kubeAnnotation, _ := engress.Annotations[engressClassAnnotationKey]
 	return kubeAnnotation == ingressClass || kubeAnnotation == engressClassAnnotationValue
 }
 

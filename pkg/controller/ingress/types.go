@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	VoyagerPrefix = "vgr-"
+	VoyagerPrefix = "voyager-"
 
 	stickySession = "ingress.appscode.com/stickySession"
 
