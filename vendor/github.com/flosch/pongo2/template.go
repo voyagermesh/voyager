@@ -2,8 +2,9 @@ package pongo2
 
 import (
 	"bytes"
-	"fmt"
 	"io"
+
+	"github.com/juju/errors"
 )
 
 type TemplateWriter interface {
@@ -112,9 +113,9 @@ func (tpl *Template) execute(context Context, writer TemplateWriter) error {
 				_, has := tpl.exportedMacros[k]
 				if has {
 					return &Error{
-						Filename: tpl.name,
-						Sender:   "execution",
-						ErrorMsg: fmt.Sprintf("Context key name '%s' clashes with macro '%s'.", k, k),
+						Filename:  tpl.name,
+						Sender:    "execution",
+						OrigError: errors.Errorf("context key name '%s' clashes with macro '%s'", k, k),
 					}
 				}
 			}

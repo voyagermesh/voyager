@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/juju/errors"
 )
 
 const (
@@ -111,11 +113,11 @@ func lex(name string, input string) ([]*Token, *Error) {
 	if l.errored {
 		errtoken := l.tokens[len(l.tokens)-1]
 		return nil, &Error{
-			Filename: name,
-			Line:     errtoken.Line,
-			Column:   errtoken.Col,
-			Sender:   "lexer",
-			ErrorMsg: errtoken.Val,
+			Filename:  name,
+			Line:      errtoken.Line,
+			Column:    errtoken.Col,
+			Sender:    "lexer",
+			OrigError: errors.New(errtoken.Val),
 		}
 	}
 	return l.tokens, nil
@@ -370,6 +372,11 @@ func (l *lexer) stateIdentifier() lexerStateFn {
 
 func (l *lexer) stateNumber() lexerStateFn {
 	l.acceptRun(tokenDigits)
+	if l.accept(tokenIdentifierCharsWithDigits) {
+		// This seems to be an identifier starting with a number.
+		// See https://github.com/flosch/pongo2/issues/151
+		return l.stateIdentifier()
+	}
 	/*
 		Maybe context-sensitive number lexing?
 		* comments.0.Text // first comment

@@ -3,6 +3,8 @@ package pongo2
 import (
 	"fmt"
 	"strings"
+
+	"github.com/juju/errors"
 )
 
 type INode interface {
@@ -174,7 +176,7 @@ func (p *Parser) GetR(shift int) *Token {
 	return p.Get(i)
 }
 
-// Produces a nice error message and returns an error-object.
+// Error produces a nice error message and returns an error-object.
 // The 'token'-argument is optional. If provided, it will take
 // the token's position information. If not provided, it will
 // automatically use the CURRENT token's position information.
@@ -195,13 +197,13 @@ func (p *Parser) Error(msg string, token *Token) *Error {
 		col = token.Col
 	}
 	return &Error{
-		Template: p.template,
-		Filename: p.name,
-		Sender:   "parser",
-		Line:     line,
-		Column:   col,
-		Token:    token,
-		ErrorMsg: msg,
+		Template:  p.template,
+		Filename:  p.name,
+		Sender:    "parser",
+		Line:      line,
+		Column:    col,
+		Token:     token,
+		OrigError: errors.New(msg),
 	}
 }
 
