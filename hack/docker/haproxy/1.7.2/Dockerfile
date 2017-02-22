@@ -1,4 +1,4 @@
-FROM appscode/base:8.7
+FROM appscode/ubuntu:16.04
 
 RUN set -x \
   && apt-get update \
