@@ -86,7 +86,7 @@ backend default-backend
 {% if HttpsService %}
 # https service
 frontend https-frontend
-    bind *:443 ssl no-sslv3 no-tlsv10 crt /etc/ssl/private/haproxy/
+    bind *:443 ssl no-sslv3 no-tlsv10 crt /etc/ssl/private/haproxy/ alpn h2,http/1.1
     rspadd  Strict-Transport-Security:\ max-age=15768000
 
     mode http
@@ -156,7 +156,7 @@ backend http-{{ svc.Name }}
 # tcp service
 {% for svc in TCPService %}
 frontend tcp-frontend-key-{{ svc.Port }}
-    bind *:{{ svc.Port }} {% if svc.SecretName %}ssl no-sslv3 no-tlsv10 crt /etc/ssl/private/haproxy/{{ svc.SecretName }}.pem{% endif %}
+    bind *:{{ svc.Port }} {% if svc.SecretName %}ssl no-sslv3 no-tlsv10 crt /etc/ssl/private/haproxy/{{ svc.SecretName }}.pem alpn h2,http/1.1{% endif %}
     mode tcp
 
     default_backend tcp-{{ svc.Name }}
