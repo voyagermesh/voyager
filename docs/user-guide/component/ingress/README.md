@@ -84,9 +84,11 @@ ingress.appscode.com/type                  = indicates loadbalancer type to run 
                                          - LoadBalancer (default)
                                          - Daemon
 
-ingress.appscode.com/daemon.hostname       = only applicatble when lb.appscode.com/type is set to Daemon,
-                                      this hostname will indicate which host the load balancer
+ingress.appscode.com/daemon.nodeSelector       = only applicatble when lb.appscode.com/type is set to Daemon,
+                                      this nodeSelector will indicate which host the load balancer
                                       needs to run.
+                                      The format of providing nodeSelector is -
+                                      `foo=bar,foo2=bar2`
 
 
 ingress.appscode.com/ip                    = provide ip to run loadbalancer on the ip, it will only work
@@ -100,9 +102,9 @@ ingress.appscode.com/loadbalancer.persist  = if set to true load balancer will r
 ingress.appscode.com/stats                 = if set to true it will open HAProxy stats in IP's 1936 port.
                                       defaults to false.
 
-ingress.appscode.com/stats.user
-ingress.appscode.com/stats.password        = if the stats is on the username and password, to authenticate
-                                      with, for stats.
+ingress.appscode.com/stats.secretName      = if the stats is on then this kubernetes secret will
+                                      be used as stats basic auth. This secret must contain two data `username`
+                                      and `password` which will be used.
 
 
 
