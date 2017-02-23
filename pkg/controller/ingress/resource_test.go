@@ -5,7 +5,7 @@ import (
 
 	aci "github.com/appscode/k8s-addons/api"
 	"github.com/appscode/voyager/test/testframework"
-	"gopkg.in/go-playground/assert.v1"
+	"github.com/bmizerany/assert"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"

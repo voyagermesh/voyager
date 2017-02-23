@@ -1,5 +1,5 @@
-hash: 43f22cffc90716b9b6a0dcc50ea9d8af770934fd6fa7f2b5ceeef4954268be27
-updated: 2017-02-14T23:45:15.382251366-08:00
+hash: e8c0b51216912d3ad2ad8f7a4dbaaea2cd3cb96a5d24675db38e6a93efa54860
+updated: 2017-02-22T16:04:45.321777821-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -84,6 +84,8 @@ imports:
   - autorest/date
   - autorest/to
   - autorest/validation
+- name: github.com/benbjohnson/clock
+  version: 7dc76406b6d3c05b5f71a86293cbcf3c4ea03b19
 - name: github.com/beorn7/perks
   version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
   subpackages:
@@ -147,11 +149,11 @@ imports:
   - log
   - swagger
 - name: github.com/facebookgo/stack
-  version: d9d227395bc3d7a635388c75b2e3b3a750e11888
+  version: 751773369052141c013c6e827a71e8f35c07879c
 - name: github.com/flosch/pongo2
   version: 17d7c034174b22592c187661011b02fd7e7c3a83
 - name: github.com/ghodss/yaml
-  version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
+  version: 04f313413ffd65ce25f2541bfd2b2ceec5c0908c
 - name: github.com/go-ini/ini
   version: 2e44421e256d82ebbf3d4d4fcabe8930b905eff3
 - name: github.com/go-openapi/jsonpointer
@@ -191,7 +193,7 @@ imports:
   - vanity
   - vanity/command
 - name: github.com/golang/glog
-  version: 44145f04b68cf362d9c4df2182967c2275eaefed
+  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
 - name: github.com/golang/protobuf
   version: 8616e8ee5e20a1704615e6c8d7afcdac06087a67
   subpackages:
@@ -317,9 +319,9 @@ imports:
   subpackages:
   - zk
 - name: github.com/spf13/cobra
-  version: 9c28e4bbd74e5c3ed7aacbc552b2cab7cfdfe744
+  version: ee4055870c2d5f7ce112642377e32c9929c3bbaf
 - name: github.com/spf13/pflag
-  version: c7e63cf4530bcd3ba943729cee0efeff2ebea63f
+  version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
 - name: github.com/timewasted/linode
   version: 37e84520dcf74488f67654f9c775b9752c232dc1
   subpackages:
@@ -360,7 +362,7 @@ imports:
   subpackages:
   - cloudstack
 - name: github.com/xenolf/lego
-  version: e35b0ffcf7c5217ab2b605ab0f266547ad26021e
+  version: 9daa55c337f252e32554e849cb399ae12c9fa21a
   repo: git@github.com:appscode/lego.git
   vcs: git
   subpackages:
@@ -461,7 +463,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/ini.v1
-  version: 6e4869b434bd001f6983749881c7ead3545887d8
+  version: 74bdc99692c3408cb103221e38675ce8fda0a718
 - name: gopkg.in/mgo.v2
   version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
   subpackages:
@@ -475,7 +477,7 @@ imports:
 - name: gopkg.in/yaml.v2
   version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/kubernetes
-  version: 2313bfced083dfa27435af688e04d52b4edba3ab
+  version: 38628be52fd4fec3ed20f37c05c038ecbbff3842
   repo: https://github.com/appscode/kubernetes.git
   vcs: git
   subpackages:
@@ -568,6 +570,7 @@ imports:
   - pkg/cloudprovider/providers/aws
   - pkg/cloudprovider/providers/azure
   - pkg/cloudprovider/providers/cloudstack
+  - pkg/cloudprovider/providers/fake
   - pkg/cloudprovider/providers/gce
   - pkg/cloudprovider/providers/mesos
   - pkg/cloudprovider/providers/openstack
@@ -643,3 +646,5 @@ testImports:
   version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
   subpackages:
   - assert
+- name: gopkg.in/go-playground/assert.v1
+  version: 4f4dfbc7d1c48336cf93399deae81aa9067e88af
