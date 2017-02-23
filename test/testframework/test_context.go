@@ -6,11 +6,13 @@ import (
 
 	"github.com/appscode/go/flags"
 	"github.com/appscode/log"
+	"github.com/appscode/errors"
+	logginghandler "github.com/appscode/errors/h/log"
 )
 
 func init() {
 	InitTestFlags()
-	//errors.Handlers.Add(logginghandler.LogHandler{})
+	errors.Handlers.Add(logginghandler.LogHandler{})
 }
 
 func Initialize() {
@@ -23,14 +25,24 @@ type TestContextType struct {
 }
 
 type testConfig struct {
-	Mode    string
-	Verbose bool
+	Mode       string
+	Verbose    bool
+	E2EConfigs E2EConfig
+}
+
+type E2EConfig struct {
+	Master                string
+	KubeConfig            string
+	ProviderName          string
+	ClusterName           string
+	LoadbalancerImageName string
+	IngressClass          string
 }
 
 var TestContext TestContextType
 var once sync.Once
 
-func RegisterFlags() {
+func registerCommonFlags() {
 	log.Infoln("Registering Test flags")
 	flag.StringVar(&TestContext.Mode, "mode", "unit", "Running test mode")
 	flag.BoolVar(&TestContext.Verbose, "verbose", false, "Run test in verbose mode")
@@ -38,7 +50,8 @@ func RegisterFlags() {
 
 func InitTestFlags() {
 	once.Do(func() {
-		RegisterFlags()
+		registerCommonFlags()
+		registerE2EFlags()
 		registerLogLevel()
 		flag.Parse()
 	})
@@ -54,4 +67,13 @@ func registerLogLevel() {
 		}
 	}
 	flags.SetLogLevel(5)
+}
+
+func registerE2EFlags() {
+	flag.StringVar(&TestContext.E2EConfigs.Master, "master", "", "The address of the Kubernetes API server (overrides any value in kubeconfig)")
+	flag.StringVar(&TestContext.E2EConfigs.KubeConfig, "kubeconfig", "", "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
+	flag.StringVar(&TestContext.E2EConfigs.ProviderName, "cloud-provider", "", "Name of cloud provider")
+	flag.StringVar(&TestContext.E2EConfigs.ClusterName, "cluster-name", "", "Name of Kubernetes cluster")
+	flag.StringVar(&TestContext.E2EConfigs.LoadbalancerImageName, "haproxy-image", "appscode/haproxy:1.7.2-1.5.0", "haproxy image name to be run")
+	flag.StringVar(&TestContext.E2EConfigs.IngressClass, "ingress-class", "", "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
 }

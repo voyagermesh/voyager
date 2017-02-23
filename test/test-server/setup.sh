@@ -38,6 +38,9 @@ case "$1" in
 		go install ./...
 		test-server
 		;;
+	docker)
+	    build_docker
+	    ;;
 	push)
 		build
 		build_docker

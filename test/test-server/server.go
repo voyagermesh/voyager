@@ -10,25 +10,6 @@ import (
 	"syscall"
 )
 
-func main() {
-	go RunHTTPServerOnPort(":8080")
-	go RunHTTPServerOnPort(":8989")
-	go RunHTTPServerOnPort(":9090")
-
-	go RunTCPServerOnPort(":4343")
-	go RunTCPServerOnPort(":4545")
-	go RunTCPServerOnPort(":5656")
-
-	hold()
-}
-
-func hold() {
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	<-c
-	os.Exit(0)
-}
-
 type Response struct {
 	Type       string      `json:"type,omitempty"`
 	Host       string      `json:"host,omitempty"`
@@ -92,4 +73,23 @@ func RunTCPServerOnPort(port string) {
 		h := TCPServerHandler{port}
 		go h.ServeTCP(con)
 	}
+}
+
+func main() {
+	go RunHTTPServerOnPort(":8080")
+	go RunHTTPServerOnPort(":8989")
+	go RunHTTPServerOnPort(":9090")
+
+	go RunTCPServerOnPort(":4343")
+	go RunTCPServerOnPort(":4545")
+	go RunTCPServerOnPort(":5656")
+
+	hold()
+}
+
+func hold() {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	<-c
+	os.Exit(0)
 }

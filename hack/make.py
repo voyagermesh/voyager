@@ -149,21 +149,28 @@ def install():
     die(call('GO15VENDOREXPERIMENT=1 ' + libbuild.GOC + ' install ./cmd/...'))
 
 
-def test(type='unit'):
+def test(type, *args):
+    die(call(libbuild.GOC + ' install ./cmd/...'))
     pydotenv.load_dotenv(join(dirname(__file__), 'configs/.env'))
     if type == 'unit':
         unit_test()
     elif type == 'e2e':
-        e2e_test()
+        e2e_test(args)
+    elif type == 'minikube':
+        e2e_test_minikube()
     else:
         unit_test()
-        e2e_test()
+        e2e_test(args)
 
 def unit_test():
-    die(call(libbuild.GOC + ' test -v ./cmd/... ./pkg/... -args -v=5 -verbose=true -mode=unit'))
+    die(call(libbuild.GOC + ' test -v ./cmd/... ./pkg/... -args -v=3 -verbose=true -mode=unit'))
 
-def e2e_test():
-    die(call(libbuild.GOC + ' test -v ./test/e2e/... -args -v=5 -verbose=true -mode=e2e'))
+def e2e_test(args):
+    st = ' '.join(args)
+    die(call(libbuild.GOC + ' test -v ./test/e2e/... -args -v=3 -verbose=true -mode=e2e ' + st))
+
+def e2e_test_minikube():
+    die(call(libbuild.GOC + ' test -v ./test/e2e/... -args -v=3 -verbose=true -mode=e2e -cloud-provider=minikube -cluster-name=minikube'))
 
 def default():
     gen()

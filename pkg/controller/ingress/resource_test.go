@@ -5,7 +5,7 @@ import (
 
 	aci "github.com/appscode/k8s-addons/api"
 	"github.com/appscode/voyager/test/testframework"
-	"github.com/bmizerany/assert"
+	"github.com/stretchr/testify/assert"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
