@@ -12,7 +12,10 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/util/intstr"
 	"net/http"
+	"strings"
 )
+
+const maxRetries = 50
 
 func (i *IngressTestSuit) TestIngressEnsureTPR() error {
 	var err error
@@ -68,7 +71,7 @@ func (ing *IngressTestSuit) TestIngressCreate() error {
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 10)
 	var svc *api.Service
-	for i := 0; i < 20; i++ {
+	for i := 0; i < maxRetries; i++ {
 		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
 		if err == nil {
 			break
@@ -80,13 +83,13 @@ func (ing *IngressTestSuit) TestIngressCreate() error {
 		return err
 	}
 	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
-	for i := 0; i < 20; i++ {
-		_, err = ing.t.KubeClient.Core().Endpoints(svc.Namespace).Get(ingress.VoyagerPrefix + svc.Name)
+	for i := 0; i < maxRetries; i++ {
+		_, err = ing.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
 		if err == nil {
 			break
 		}
 		time.Sleep(time.Second * 5)
-		log.Infoln("Waiting for service to be created")
+		log.Infoln("Waiting for endpoints to be created")
 	}
 	if err != nil {
 		return err
@@ -98,9 +101,9 @@ func (ing *IngressTestSuit) TestIngressCreate() error {
 		if err != nil {
 			return err
 		}
-		serverAddr = string(out)
+		serverAddr = strings.TrimSpace(string(out))
 	} else {
-		for i := 0; i < 20; i++ {
+		for i := 0; i < maxRetries; i++ {
 			svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
 			if err == nil {
 				if len(svc.Status.LoadBalancer.Ingress) > 0 {
