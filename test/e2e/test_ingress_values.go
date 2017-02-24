@@ -52,6 +52,9 @@ var testServerSvc = &api.Service{
 				Protocol:   "TCP",
 			},
 		},
+		Selector: map[string]string{
+			"app": "test-server",
+		},
 	},
 }
 
