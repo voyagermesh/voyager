@@ -40,32 +40,16 @@ func NewEngressController(clusterName, providerName string,
 		IngressClass:  ingressClass,
 	}
 	log.Infoln("Initializing cloud manager for provider", providerName)
-	if providerName == "aws" {
-		h.CloudManager = getAWSClient()
-	} else if providerName == "gce" {
-		h.CloudManager = getGCEClient()
+	if providerName == "aws" || providerName == "gce" || providerName == "azure" {
+		cloudInterface, err := cloudprovider.GetCloudProvider(providerName, nil)
+		if err != nil {
+			log.Errorln("Failed to initialize cloud provider:"+providerName, err)
+		} else {
+			log.Infoln("Initialized cloud provider: "+providerName, cloudInterface)
+			h.CloudManager = cloudInterface
+		}
 	}
 	return h
-}
-
-func getAWSClient() cloudprovider.Interface {
-	cloudInterface, err := cloudprovider.GetCloudProvider("aws", nil)
-	if err != nil {
-		log.Errorln("initializing AWS cloud provider", err)
-		return nil
-	}
-	log.Errorln("Initialized AWS cloud provider", cloudInterface)
-	return cloudInterface
-}
-
-func getGCEClient() cloudprovider.Interface {
-	cloudInterface, err := cloudprovider.GetCloudProvider("gce", nil)
-	if err != nil {
-		log.Errorln("initializing GCE cloud provider", err)
-		return nil
-	}
-	log.Infoln("Initialized GCE cloud provider", cloudInterface)
-	return cloudInterface
 }
 
 func UpgradeAllEngress(service, clusterName, providerName string,
