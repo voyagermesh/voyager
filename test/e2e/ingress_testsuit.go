@@ -1,14 +1,13 @@
 package e2e
 
 import (
-	"fmt"
-
-	"go/parser"
-	"go/token"
+	"reflect"
+	"strings"
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	"k8s.io/kubernetes/pkg/api"
+	k8serr "k8s.io/kubernetes/pkg/api/errors"
 )
 
 type IngressTestSuit struct {
@@ -22,10 +21,10 @@ func NewIngressTestSuit(t TestSuit) *IngressTestSuit {
 }
 
 func (i *IngressTestSuit) Test() error {
-	/*if err := i.setUp(); err != nil {
+	if err := i.setUp(); err != nil {
 		return err
 	}
-	defer i.cleanUp()*/
+	defer i.cleanUp()
 
 	if err := i.runTests(); err != nil {
 		return err
@@ -36,12 +35,12 @@ func (i *IngressTestSuit) Test() error {
 
 func (i *IngressTestSuit) setUp() error {
 	_, err := i.t.KubeClient.Core().ReplicationControllers("default").Create(testServerRc)
-	if err == nil {
+	if err != nil && !k8serr.IsAlreadyExists(err) {
 		return errors.New().WithCause(err).Internal()
 	}
 
 	_, err = i.t.KubeClient.Core().Services("default").Create(testServerSvc)
-	if err == nil {
+	if err != nil && !k8serr.IsAlreadyExists(err) {
 		return errors.New().WithCause(err).Internal()
 	}
 
@@ -55,24 +54,31 @@ func (i *IngressTestSuit) cleanUp() {
 }
 
 func (i *IngressTestSuit) runTests() error {
-	fset := token.NewFileSet()
-	f, err := parser.ParseFile(fset, "ingress.go", nil, parser.SpuriousErrors)
-	if err != nil {
-		return err
-	}
-
-	for _, s := range f.Decls {
-		fmt.Println(s.Pos().IsValid())
-	}
-
-	/*ingType := reflect.ValueOf(i)
-	fmt.Println("=================================", ingType.NumMethod())
+	ingType := reflect.ValueOf(i)
+	serializedMethodName := make([]string, 0)
 	for i := 0; i < ingType.NumMethod(); i++ {
 		method := ingType.Type().Method(i)
-		results := ingType.MethodByName(method.Name).Call([]reflect.Value{})
-		if len(results) == 1 {
-			return results[0].Interface().(error)
+		if strings.HasPrefix(method.Name, "TestIngress") {
+			if strings.Contains(method.Name, "Ensure") {
+				serializedMethodName = append([]string{method.Name}, serializedMethodName...)
+			} else {
+				serializedMethodName = append(serializedMethodName, method.Name)
+			}
 		}
-	}*/
+	}
+
+	for _, name := range serializedMethodName {
+		log.Infoln("Running Test", name)
+		shouldCall := ingType.MethodByName(name)
+		if shouldCall.IsValid() {
+			results := shouldCall.Call([]reflect.Value{})
+			if len(results) == 1 {
+				err, castOk := results[0].Interface().(error)
+				if castOk {
+					return err
+				}
+			}
+		}
+	}
 	return nil
 }
