@@ -49,12 +49,12 @@ func NewEngressController(clusterName, providerName string,
 			log.Infoln("Initialized cloud provider: "+providerName, cloudInterface)
 			h.CloudManager = cloudInterface
 		}
+	} else if providerName == "minikube" {
+		h.CloudManager = &fakecloudprovider.FakeCloud{}
+	} else {
+		log.Infoln("No cloud manager found for provider", providerName)
 	}
 	return h
-}
-
-func getMiniKubeClient() cloudprovider.Interface {
-	return &fakecloudprovider.FakeCloud{}
 }
 
 func UpgradeAllEngress(service, clusterName, providerName string,

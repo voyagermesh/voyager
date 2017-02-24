@@ -80,7 +80,8 @@ func (lbc *EngressController) createLB() error {
 	} else {
 		if lbc.Options.ProviderName == "aws" ||
 			lbc.Options.ProviderName == "gce" ||
-			lbc.Options.ProviderName == "azure" {
+			lbc.Options.ProviderName == "azure" ||
+			lbc.Options.ProviderName == "minikube" {
 			err = lbc.createLoadBalancerLB()
 		} else {
 			err = errors.New().WithMessage("LoadBalancer type ingress is unsupported for cloud provider:", lbc.Options.ProviderName).BadRequest()
