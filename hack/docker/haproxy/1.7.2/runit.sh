@@ -5,7 +5,7 @@ export > /etc/envvars
 [[ $DEBUG == true ]] && set -x
 
 # propagate kloader args
-sed -i "s/__KLOADER_ARGS__/$@/g" /etc/sv/reloader/run
+sed -i "s|__KLOADER_ARGS__|$@|g" /etc/sv/reloader/run
 
 CERT_DIR=/etc/ssl/private/haproxy
 mkdir -p /etc/ssl/private/haproxy
