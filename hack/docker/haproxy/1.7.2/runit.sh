@@ -5,6 +5,9 @@ export > /etc/envvars
 
 [[ $DEBUG == true ]] && set -x
 
+# create haproxy.cfg dir
+mkdir /etc/haproxy
+
 CERT_DIR=/etc/ssl/private/haproxy
 mkdir -p /etc/ssl/private/haproxy
 
