@@ -122,3 +122,89 @@ func (ing *IngressTestSuit) TestIngressCreate() error {
 
 	return nil
 }
+
+func (ing *IngressTestSuit) TestIngressDaemonCreate() error {
+	var nodeSelector = func() string {
+		if ing.t.config.ProviderName == "minikube" {
+			return "kubernetes.io/hostname=minikube"
+		} else {
+			return "kubernetes.io/hostname=" + ing.t.config.ClusterName + "-master"
+		}
+		return ""
+	}
+
+	baseDaemonIngress := &aci.Ingress{
+		ObjectMeta: api.ObjectMeta{
+			Name:      "base-d-ingress",
+			Namespace: "default",
+			Annotations: map[string]string{
+				ingress.LBType:             ingress.LBDaemon,
+				ingress.DaemonNodeSelector: nodeSelector(),
+			},
+		},
+		Spec: aci.ExtendedIngressSpec{
+			Rules: []aci.ExtendedIngressRule{
+				{
+					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
+						HTTP: &aci.HTTPExtendedIngressRuleValue{
+							Paths: []aci.HTTPExtendedIngressPath{
+								{
+									Path: "/testpath",
+									Backend: aci.ExtendedIngressBackend{
+										ServiceName: testServerSvc.Name,
+										ServicePort: intstr.FromInt(80),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, err := ing.t.ExtensionClient.Ingress(baseDaemonIngress.Namespace).Create(baseDaemonIngress)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if ing.t.config.Cleanup {
+			ing.t.ExtensionClient.Ingress(baseDaemonIngress.Namespace).Delete(baseDaemonIngress.Name)
+		}
+	}()
+
+	// Wait sometime to loadbalancer be opened up.
+	time.Sleep(time.Second * 10)
+	for i := 0; i < maxRetries; i++ {
+		_, err := ing.t.KubeClient.Core().Services(baseDaemonIngress.Namespace).Get(ingress.VoyagerPrefix + baseDaemonIngress.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for service to be created")
+	}
+	if err != nil {
+		return errors.New().WithCause(err).Internal()
+	}
+
+	serverAddr, err := ing.getDaemonURLs(baseDaemonIngress)
+	if err != nil {
+		return err
+	}
+	log.Infoln("Loadbalancer created, calling http endpoints for test, Total url found", len(serverAddr))
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").Do()
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+		}
+		log.Infoln("Response", *resp)
+		if resp.Method != http.MethodGet {
+			return errors.New().WithMessage("Method did not matched").Internal()
+		}
+
+		if resp.Path != "/testpath/ok" {
+			return errors.New().WithMessage("Path did not matched").Internal()
+		}
+	}
+	return nil
+}

@@ -12,6 +12,7 @@ import (
 	"github.com/appscode/log"
 	ingresscontroller "github.com/appscode/voyager/pkg/controller/ingress"
 	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/labels"
 )
 
 func (ing *IngressTestSuit) getURLs(baseIngress *aci.Ingress) ([]string, error) {
@@ -85,6 +86,66 @@ func (ing *IngressTestSuit) getURLs(baseIngress *aci.Ingress) ([]string, error) 
 		}
 		if err != nil {
 			return nil, errors.New().WithCause(err).Internal()
+		}
+	}
+	return serverAddr, nil
+}
+
+func (ing *IngressTestSuit) getDaemonURLs(baseIngress *aci.Ingress) ([]string, error) {
+	serverAddr := make([]string, 0)
+	nodes, err := ing.t.KubeClient.Core().Nodes().List(api.ListOptions{
+		LabelSelector: labels.SelectorFromSet(
+			ingresscontroller.ParseNodeSelector(
+				baseIngress.Annotations[ingresscontroller.DaemonNodeSelector],
+			),
+		),
+	})
+	if err != nil {
+		return nil, errors.New().WithCause(err).Internal()
+	}
+
+	var svc *api.Service
+	var ports []int32
+	for i := 0; i < maxRetries; i++ {
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingresscontroller.VoyagerPrefix + baseIngress.Name)
+		if err == nil {
+			if len(svc.Spec.Ports) > 0 {
+				for _, port := range svc.Spec.Ports {
+					ports = append(ports, port.Port)
+				}
+			}
+			break
+		}
+		time.Sleep(time.Second * 10)
+		log.Infoln("Waiting for service to be created")
+	}
+	if err != nil {
+		return nil, errors.New().WithCause(err).Internal()
+	}
+
+	for _, node := range nodes.Items {
+		for _, addr := range node.Status.Addresses {
+			if addr.Type == api.NodeLegacyHostIP || addr.Type == api.NodeExternalIP {
+				for _, port := range ports {
+					var doc bytes.Buffer
+					err = defaultUrlTemplate.Execute(&doc, struct {
+						IP   string
+						Port int32
+					}{
+						addr.Address,
+						port,
+					})
+					if err != nil {
+						return nil, errors.New().WithCause(err).Internal()
+					}
+
+					u, err := url.Parse(doc.String())
+					if err != nil {
+						return nil, errors.New().WithCause(err).Internal()
+					}
+					serverAddr = append(serverAddr, u.String())
+				}
+			}
 		}
 	}
 	return serverAddr, nil

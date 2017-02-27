@@ -14,7 +14,7 @@ hard() {
 
 soft() {
     kubectl delete ingress.appscode.com base-ingress
-    kubectl delete rc/voyager-base-ingress svc/voyager-base-ingress configmap/voyager-base-ingress
+    kubectl delete rc/voyager-base-ingress svc/voyager-base-ingress configmap/voyager-base-ingress daemonset/voyager-base-d-ingress svc/voyager-base-d-ingress configmap/voyager-base-d-ingress
 }
 
 if [ $# -eq 0 ]; then

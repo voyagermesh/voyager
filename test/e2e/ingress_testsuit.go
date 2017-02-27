@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"strings"
 
+	"time"
+
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	"k8s.io/kubernetes/pkg/api"
@@ -43,14 +45,16 @@ func (i *IngressTestSuit) setUp() error {
 	if err != nil && !k8serr.IsAlreadyExists(err) {
 		return errors.New().WithCause(err).Internal()
 	}
-
+	time.Sleep(time.Second * 30)
 	log.Infoln("Ingress Test Setup Complete")
 	return nil
 }
 
 func (i *IngressTestSuit) cleanUp() {
 	if i.t.config.Cleanup {
-		i.t.KubeClient.Core().Services("default").Delete(testServerRc.Name, &api.DeleteOptions{})
+		i.t.KubeClient.Core().Services("default").Delete(testServerRc.Name, &api.DeleteOptions{
+			OrphanDependents: &i.t.config.Cleanup,
+		})
 		i.t.KubeClient.Core().ReplicationControllers("default").Delete(testServerSvc.Name, &api.DeleteOptions{})
 	}
 }
