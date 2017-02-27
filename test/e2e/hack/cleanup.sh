@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+RETVAL=0
+ROOT=$PWD
+
+hard() {
+    minikube delete
+    minikube start
+}
+
+soft() {
+    kubectl delete ingress.appscode.com base-ingress
+    kubectl delete rc/voyager-base-ingress svc/voyager-base-ingress configmap/voyager-base-ingress
+}
+
+if [ $# -eq 0 ]; then
+	soft
+	exit $RETVAL
+fi
+
+case "$1" in
+  hard)
+      hard
+      ;;
+  soft)
+      soft
+	  ;;
+  *)  echo $"Usage: $0 {soft|hard}"
+      RETVAL=1
+      ;;
+esac
+exit $RETVAL

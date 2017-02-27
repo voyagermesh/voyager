@@ -136,7 +136,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 			}
 		}
 	default:
-		log.Infoln("Event is not handleable by voyager")
+		log.Infof("Event %s/%s is not handleable by voyager", e.EventType, e.ResourceType)
 	}
 	return nil
 }

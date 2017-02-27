@@ -4,10 +4,10 @@ import (
 	"flag"
 	"sync"
 
-	"github.com/appscode/go/flags"
-	"github.com/appscode/log"
 	"github.com/appscode/errors"
 	logginghandler "github.com/appscode/errors/h/log"
+	"github.com/appscode/go/flags"
+	"github.com/appscode/log"
 )
 
 func init() {
@@ -37,6 +37,7 @@ type E2EConfig struct {
 	ClusterName           string
 	LoadbalancerImageName string
 	IngressClass          string
+	Cleanup               bool
 }
 
 var TestContext TestContextType
@@ -76,4 +77,5 @@ func registerE2EFlags() {
 	flag.StringVar(&TestContext.E2EConfigs.ClusterName, "cluster-name", "", "Name of Kubernetes cluster")
 	flag.StringVar(&TestContext.E2EConfigs.LoadbalancerImageName, "haproxy-image", "appscode/haproxy:1.7.2-1.5.0", "haproxy image name to be run")
 	flag.StringVar(&TestContext.E2EConfigs.IngressClass, "ingress-class", "", "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
+	flag.BoolVar(&TestContext.E2EConfigs.Cleanup, "cleanup", true, "")
 }

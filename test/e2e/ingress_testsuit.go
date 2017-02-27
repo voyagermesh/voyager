@@ -49,8 +49,10 @@ func (i *IngressTestSuit) setUp() error {
 }
 
 func (i *IngressTestSuit) cleanUp() {
-	i.t.KubeClient.Core().Services("default").Delete(testServerRc.Name, &api.DeleteOptions{})
-	i.t.KubeClient.Core().ReplicationControllers("default").Delete(testServerSvc.Name, &api.DeleteOptions{})
+	if i.t.config.Cleanup {
+		i.t.KubeClient.Core().Services("default").Delete(testServerRc.Name, &api.DeleteOptions{})
+		i.t.KubeClient.Core().ReplicationControllers("default").Delete(testServerSvc.Name, &api.DeleteOptions{})
+	}
 }
 
 func (i *IngressTestSuit) runTests() error {

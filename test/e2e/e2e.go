@@ -53,6 +53,7 @@ func NewE2ETestSuit() *TestSuit {
 
 func (t *TestSuit) Run() error {
 	go t.Voyager.Run()
+	defer time.Sleep(time.Second*30)
 	// Wait some time to initialize voyager watcher
 	time.Sleep(time.Second*10)
 	ingTestSuit := NewIngressTestSuit(*t)

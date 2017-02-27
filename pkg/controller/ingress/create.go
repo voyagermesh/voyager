@@ -180,19 +180,7 @@ func (lbc *EngressController) createDaemonLB() error {
 								"--mount-location=" + "/etc/haproxy",
 								"--boot-cmd=" + "/etc/sv/reloader/reload",
 							},
-							Ports: []kapi.ContainerPort{
-								{
-									ContainerPort: 80,
-									HostPort:      80,
-									Protocol:      "TCP",
-								},
-								{
-									ContainerPort: 443,
-									HostPort:      443,
-									Protocol:      "TCP",
-								},
-							},
-
+							Ports: []kapi.ContainerPort{},
 							VolumeMounts: vms,
 						},
 					},
@@ -254,7 +242,6 @@ func (lbc *EngressController) createLoadBalancerLB() error {
 				LBType: LBLoadBalancer,
 			},
 		},
-
 		Spec: kapi.ServiceSpec{
 			Ports:    []kapi.ServicePort{},
 			Selector: labelsFor(lbc.Config.Name),
@@ -272,17 +259,19 @@ func (lbc *EngressController) createLoadBalancerLB() error {
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
 
-	if lbc.Options.ProviderName == "gce" {
+	switch lbc.Options.ProviderName {
+	case "gce":
 		svc.Spec.Type = kapi.ServiceTypeLoadBalancer
 		svc.Spec.LoadBalancerIP = lbc.Options.LoadBalancerIP
-	}
-	if lbc.Options.ProviderName == "aws" {
+	case "aws":
 		if lbc.Options.LoadBalancerPersist {
 			// We are going manage the loadbalancer directly
 			svc.Spec.Type = kapi.ServiceTypeNodePort
 		} else {
 			svc.Spec.Type = kapi.ServiceTypeLoadBalancer
 		}
+	case "minikube":
+		svc.Spec.Type = kapi.ServiceTypeLoadBalancer
 	}
 
 	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Create(svc)
@@ -331,17 +320,7 @@ func (lbc *EngressController) createLoadBalancerLB() error {
 								"--mount-location=" + "/etc/haproxy",
 								"--boot-cmd=" + "/etc/sv/reloader/reload",
 							},
-							Ports: []kapi.ContainerPort{
-								{
-									ContainerPort: 80,
-									Protocol:      "TCP",
-								},
-								{
-									ContainerPort: 443,
-									Protocol:      "TCP",
-								},
-							},
-
+							Ports: []kapi.ContainerPort{},
 							VolumeMounts: vms,
 						},
 					},

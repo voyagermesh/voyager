@@ -1,7 +1,8 @@
 package e2e
 
 import (
-	"os/exec"
+	"net/http"
+	"text/template"
 	"time"
 
 	"github.com/appscode/errors"
@@ -11,11 +12,13 @@ import (
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/util/intstr"
-	"net/http"
-	"strings"
 )
 
 const maxRetries = 50
+
+var (
+	defaultUrlTemplate = template.Must(template.New("svc-template").Parse("http://{{.IP}}:{{.Port}}"))
+)
 
 func (i *IngressTestSuit) TestIngressEnsureTPR() error {
 	var err error
@@ -65,7 +68,9 @@ func (ing *IngressTestSuit) TestIngressCreate() error {
 		return err
 	}
 	defer func() {
-		ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		if ing.t.config.Cleanup {
+			ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		}
 	}()
 
 	// Wait sometime to loadbalancer be opened up.
@@ -95,41 +100,24 @@ func (ing *IngressTestSuit) TestIngressCreate() error {
 		return err
 	}
 
-	var serverAddr string
-	if ing.t.config.ProviderName == "minikube" {
-		out, err := exec.Command("minikube", "service", svc.Name, "--url").Output()
-		if err != nil {
-			return err
-		}
-		serverAddr = strings.TrimSpace(string(out))
-	} else {
-		for i := 0; i < maxRetries; i++ {
-			svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
-			if err == nil {
-				if len(svc.Status.LoadBalancer.Ingress) > 0 {
-					serverAddr = "http://" + svc.Status.LoadBalancer.Ingress[0].IP + ":80"
-					break
-				}
-			}
-			time.Sleep(time.Second * 5)
-			log.Infoln("Waiting for service to be created")
-		}
-		if err != nil {
-			return err
-		}
-	}
-	log.Infoln("Loadbalancer created, calling http")
-	resp, err := testserverclient.NewTestHTTPClient(serverAddr).Method("GET").Path("/testpath/ok").Do()
+	serverAddr, err := ing.getURLs(baseIngress)
 	if err != nil {
 		return err
 	}
-	log.Infoln("Response", *resp)
-	if resp.Method != http.MethodGet {
-		return errors.New().WithMessage("Method did not matched").Internal()
-	}
+	log.Infoln("Loadbalancer created, calling http")
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").Do()
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+		}
+		log.Infoln("Response", *resp)
+		if resp.Method != http.MethodGet {
+			return errors.New().WithMessage("Method did not matched").Internal()
+		}
 
-	if resp.Path != "/testpath/ok" {
-		return errors.New().WithMessage("Path did not matched").Internal()
+		if resp.Path != "/testpath/ok" {
+			return errors.New().WithMessage("Path did not matched").Internal()
+		}
 	}
 
 	return nil
