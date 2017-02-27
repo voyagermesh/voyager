@@ -1,11 +1,12 @@
 #!/bin/bash
 
+export KLOADER_ARGS="$@"
 export > /etc/envvars
 
 [[ $DEBUG == true ]] && set -x
 
-# propagate kloader args
-sed -i "s/__KLOADER_ARGS__/$@/g" /etc/sv/reloader/run
+# create haproxy.cfg dir
+mkdir /etc/haproxy
 
 CERT_DIR=/etc/ssl/private/haproxy
 mkdir -p /etc/ssl/private/haproxy
