@@ -37,13 +37,24 @@ TEST_DNS_DOMAINS
 ```
 Then run
 ```sh
-$ ./hack/make.py test
+$ ./hack/make.py test unit
+```
+
+#### Run e2e Test
+```
+$ ./hack/make.py test minikube // Run Test against minikube, this requires minikube to be set up and started.
+
+$ ./hack/make.py test e2e -cloud-provider=gce -cluster-name=autobots // Test e2e against gce cluster
+
+$ ./hack/make.py test integration -cloud-provider=gce -cluster-name=autobots // Run Integration test against gce
+                                                                     // This requires voyager to be deployed in the cluster.
+
 ```
 
 ### Local Build
 To build Voyager using your local Go development environment (generate linux binaries):
 ```sh
-$ ./hack/make.py build Voyager
+$ ./hack/make.py build
 ```
 Read full [Build instructions](build.md).
 
