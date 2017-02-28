@@ -41,7 +41,10 @@ func NewEngressFromIngress(ing interface{}) (*Ingress, error) {
 	if err != nil {
 		return nil, err
 	}
-	engress.Annotations[ExtendedIngressRealTypeKey] = "ingress"
+	if engress.Annotations == nil {
+		engress.Annotations = make(map[string]string)
+	}
+	engress.Annotations[EngressKind] = "ingress"
 	return engress, nil
 }
 
@@ -55,6 +58,9 @@ func NewIngressFromEngress(ing interface{}) (*extensions.Ingress, error) {
 	if err != nil {
 		return nil, err
 	}
-	engress.Annotations[ExtendedIngressRealTypeKey] = "extendedIngress"
+	if engress.Annotations == nil {
+		engress.Annotations = make(map[string]string)
+	}
+	engress.Annotations[EngressKind] = V1beta1SchemeGroupVersion.String()
 	return engress, nil
 }

@@ -38,7 +38,7 @@ func (lbc *EngressController) Update(Type updateType) error {
 		if err != nil {
 			return errors.New().WithCause(err).Internal()
 		}
-		serviceName := ServicePrefix + lbc.Config.Name
+		serviceName := VoyagerPrefix + lbc.Config.Name
 		svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(serviceName)
 		if err != nil {
 			return errors.New().WithCause(err).Internal()
@@ -71,7 +71,7 @@ func (lbc *EngressController) Update(Type updateType) error {
 
 func (lbc *EngressController) updateConfigMap() error {
 	log.Infoln()
-	cMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Get(ConfigMapPrefix + lbc.Config.Name)
+	cMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
 	if err != nil {
 		return errors.New().WithCause(err).Internal()
 	}

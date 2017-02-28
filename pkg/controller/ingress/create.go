@@ -16,8 +16,6 @@ import (
 	"k8s.io/kubernetes/pkg/util/intstr"
 )
 
-const NodeSelectorKey = "kubernetes.io/hostname"
-
 func (lbc *EngressController) Create() error {
 	log.Debugln("Starting createing lb. got engress with", lbc.Config.ObjectMeta)
 	err := lbc.parse()
@@ -59,7 +57,7 @@ func (lbc *EngressController) createConfigMap() error {
 	log.Infoln("creating cmap for engress")
 	cMap := &kapi.ConfigMap{
 		ObjectMeta: kapi.ObjectMeta{
-			Name:      ConfigMapPrefix + lbc.Config.Name,
+			Name:      VoyagerPrefix + lbc.Config.Name,
 			Namespace: lbc.Config.Namespace,
 		},
 		Data: map[string]string{
@@ -82,7 +80,8 @@ func (lbc *EngressController) createLB() error {
 	} else {
 		if lbc.Options.ProviderName == "aws" ||
 			lbc.Options.ProviderName == "gce" ||
-			lbc.Options.ProviderName == "azure" {
+			lbc.Options.ProviderName == "azure" ||
+			lbc.Options.ProviderName == "minikube" {
 			err = lbc.createLoadBalancerLB()
 		} else {
 			err = errors.New().WithMessage("LoadBalancer type ingress is unsupported for cloud provider:", lbc.Options.ProviderName).BadRequest()
@@ -108,7 +107,7 @@ func (lbc *EngressController) createDaemonLB() error {
 	// We just want kubernetes to assign a stable UID to the service. This is used inside EnsureFirewall()
 	svc := &kapi.Service{
 		ObjectMeta: kapi.ObjectMeta{
-			Name:      ServicePrefix + lbc.Config.Name,
+			Name:      VoyagerPrefix + lbc.Config.Name,
 			Namespace: lbc.Config.Namespace,
 			Annotations: map[string]string{
 				LBName: lbc.Config.GetName(),
@@ -145,7 +144,7 @@ func (lbc *EngressController) createDaemonLB() error {
 	// ignoring errors and trying to create controllers
 	daemon := &extensions.DaemonSet{
 		ObjectMeta: kapi.ObjectMeta{
-			Name:      DaemonSetPrefix + lbc.Config.Name,
+			Name:      VoyagerPrefix + lbc.Config.Name,
 			Namespace: lbc.Config.Namespace,
 			Labels:    labelsFor(lbc.Config.Name),
 		},
@@ -180,20 +179,9 @@ func (lbc *EngressController) createDaemonLB() error {
 								"--config-map=" + lbc.Options.ConfigMapName,
 								"--mount-location=" + "/etc/haproxy",
 								"--boot-cmd=" + "/etc/sv/reloader/reload",
+								"--v=4",
 							},
-							Ports: []kapi.ContainerPort{
-								{
-									ContainerPort: 80,
-									HostPort:      80,
-									Protocol:      "TCP",
-								},
-								{
-									ContainerPort: 443,
-									HostPort:      443,
-									Protocol:      "TCP",
-								},
-							},
-
+							Ports:        []kapi.ContainerPort{},
 							VolumeMounts: vms,
 						},
 					},
@@ -248,14 +236,13 @@ func (lbc *EngressController) createLoadBalancerLB() error {
 	// creating service as typeLoadBalancer
 	svc := &kapi.Service{
 		ObjectMeta: kapi.ObjectMeta{
-			Name:      ServicePrefix + lbc.Config.Name,
+			Name:      VoyagerPrefix + lbc.Config.Name,
 			Namespace: lbc.Config.Namespace,
 			Annotations: map[string]string{
 				LBName: lbc.Config.GetName(),
 				LBType: LBLoadBalancer,
 			},
 		},
-
 		Spec: kapi.ServiceSpec{
 			Ports:    []kapi.ServicePort{},
 			Selector: labelsFor(lbc.Config.Name),
@@ -273,17 +260,19 @@ func (lbc *EngressController) createLoadBalancerLB() error {
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
 
-	if lbc.Options.ProviderName == "gce" {
+	switch lbc.Options.ProviderName {
+	case "gce":
 		svc.Spec.Type = kapi.ServiceTypeLoadBalancer
 		svc.Spec.LoadBalancerIP = lbc.Options.LoadBalancerIP
-	}
-	if lbc.Options.ProviderName == "aws" {
+	case "aws":
 		if lbc.Options.LoadBalancerPersist {
 			// We are going manage the loadbalancer directly
 			svc.Spec.Type = kapi.ServiceTypeNodePort
 		} else {
 			svc.Spec.Type = kapi.ServiceTypeLoadBalancer
 		}
+	case "minikube":
+		svc.Spec.Type = kapi.ServiceTypeLoadBalancer
 	}
 
 	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Create(svc)
@@ -297,7 +286,7 @@ func (lbc *EngressController) createLoadBalancerLB() error {
 	// ignoring errors and trying to create controllers
 	rc := &kapi.ReplicationController{
 		ObjectMeta: kapi.ObjectMeta{
-			Name:      ControllerPrefix + lbc.Config.Name,
+			Name:      VoyagerPrefix + lbc.Config.Name,
 			Namespace: lbc.Config.Namespace,
 			Labels:    labelsFor(lbc.Config.Name),
 		},
@@ -331,18 +320,9 @@ func (lbc *EngressController) createLoadBalancerLB() error {
 								"--config-map=" + lbc.Options.ConfigMapName,
 								"--mount-location=" + "/etc/haproxy",
 								"--boot-cmd=" + "/etc/sv/reloader/reload",
+								"--v=4",
 							},
-							Ports: []kapi.ContainerPort{
-								{
-									ContainerPort: 80,
-									Protocol:      "TCP",
-								},
-								{
-									ContainerPort: 443,
-									Protocol:      "TCP",
-								},
-							},
-
+							Ports:        []kapi.ContainerPort{},
 							VolumeMounts: vms,
 						},
 					},
@@ -368,7 +348,7 @@ func (lbc *EngressController) createLoadBalancerLB() error {
 	}
 
 	if svc.Spec.Type == kapi.ServiceTypeNodePort && lbc.CloudManager != nil {
-		log.Debugln("cloud manager not il, getting hosts")
+		log.Debugln("cloud manager not nil, getting hosts")
 		hosts := make([]string, 0)
 		if ins, ok := lbc.CloudManager.Instances(); ok {
 			// TODO(tamal): Does it return all hosts?
@@ -382,7 +362,7 @@ func (lbc *EngressController) createLoadBalancerLB() error {
 		// Wait for nodePort to be assigned
 		timeoutAt := time.Now().Add(time.Second * 600)
 		for {
-			svc, _ := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(ServicePrefix + lbc.Config.Name)
+			svc, _ := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
 			nodePortReady := true
 			for _, p := range svc.Spec.Ports {
 				if p.NodePort <= 0 {
@@ -421,7 +401,7 @@ func (lbc *EngressController) updateStatus() error {
 		time.Sleep(time.Second * 60)
 		if svc, err := lbc.KubeClient.Core().
 			Services(lbc.Config.Namespace).
-			Get(ServicePrefix + lbc.Config.Name); err == nil {
+			Get(VoyagerPrefix + lbc.Config.Name); err == nil {
 			if len(svc.Status.LoadBalancer.Ingress) >= 1 {
 				serviceExtIp = svc.Status.LoadBalancer.Ingress[0].IP
 				break
@@ -447,12 +427,6 @@ func labelsFor(name string) map[string]string {
 		"target":      "eng-" + name,
 		"meta":        "eng-" + name + "-applbc",
 		"engressName": name,
-	}
-}
-
-func nodeSelector(name string) map[string]string {
-	return map[string]string{
-		NodeSelectorKey: name,
 	}
 }
 

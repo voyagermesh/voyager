@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: test-server
+  labels:
+    app: test-server
+spec:
+  replicas: 3
+  selector:
+    app: test-server
+  template:
+    metadata:
+      labels:
+        app: test-server
+    spec:
+      containers:
+        - name: server
+          image: appscode/test-server:1.0
+          ports:
+            - name: http-1
+              containerPort: 8080
+            - name: http-2
+              containerPort: 8989
+            - name: http-3
+              containerPort: 9090
+            - name: tcp-1
+              containerPort: 4343
+            - name: tcp-2
+              containerPort: 4545
+            - name: tcp-3
+              containerPort: 5656

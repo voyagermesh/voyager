@@ -86,7 +86,7 @@ const (
 	ConfigMap       ObjectType = "configmaps"
 	DaemonSet       ObjectType = "daemonsets"
 	Endpoint        ObjectType = "endpoints"
-	ExtendedIngress ObjectType = "ingresses"
+	ExtendedIngress ObjectType = "extendedingresses"
 	Ingress         ObjectType = "ingresses"
 	Namespace       ObjectType = "namespaces"
 	Node            ObjectType = "nodes"
@@ -205,11 +205,9 @@ func objectMetadata(o interface{}, t ObjectType) kapi.ObjectMeta {
 	case Node:
 		return o.(*kapi.Node).ObjectMeta
 	case Ingress:
-		if i, ok := o.(*extensions.Ingress); ok {
-			return i.ObjectMeta
-		} else {
-			return o.(*aci.Ingress).ObjectMeta
-		}
+		return o.(*extensions.Ingress).ObjectMeta
+	case ExtendedIngress:
+		return o.(*aci.Ingress).ObjectMeta
 	case Certificate:
 		return o.(*aci.Certificate).ObjectMeta
 	case Endpoint:

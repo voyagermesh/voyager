@@ -1,12 +1,16 @@
 package template
 
 import (
-	"fmt"
 	"testing"
 
+	"github.com/appscode/voyager/test/testframework"
 	"github.com/flosch/pongo2"
 	"github.com/stretchr/testify/assert"
 )
+
+func init() {
+	testframework.Initialize()
+}
 
 func TestHeaderNameFilter(t *testing.T) {
 	temp := `
@@ -23,7 +27,6 @@ hello
 hello
 	`
 	assert.Equal(t, res, exp)
-	fmt.Println(res)
 }
 
 func TestHostNameFilter(t *testing.T) {
@@ -41,7 +44,6 @@ hdr(host) -i appscode.com
 hdr_end(host) -i .appscode.com
 	`
 	assert.Equal(t, res, exp)
-	fmt.Println(res)
 }
 
 func render(ctx *pongo2.Context, temp string) (string, error) {

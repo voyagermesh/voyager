@@ -272,14 +272,14 @@ func (lbc *EngressController) parseOptions() {
 	}
 
 	lbc.Options.LBType = opts.LBType()
-	lbc.Options.DaemonNodeSelector = parseNodeSelector(opts.DaemonNodeSelector())
+	lbc.Options.DaemonNodeSelector = ParseNodeSelector(opts.DaemonNodeSelector())
 	lbc.Options.LoadBalancerIP = opts.LoadBalancerIP()
 	lbc.Options.LoadBalancerPersist = opts.LoadBalancerPersist()
 	log.Infoln("Got LBType", lbc.Options.LBType)
 }
 
 // ref: https://github.com/kubernetes/kubernetes/blob/078238a461a0872a8eacb887fbb3d0085714604c/staging/src/k8s.io/apiserver/pkg/apis/example/v1/types.go#L134
-func parseNodeSelector(labels string) map[string]string {
+func ParseNodeSelector(labels string) map[string]string {
 	selectorMap := make(map[string]string)
 	for _, label := range strings.Split(labels, ",") {
 		label = strings.TrimSpace(label)

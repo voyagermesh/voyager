@@ -1,5 +1,5 @@
-hash: 5869ba2a8ca3c63999d0f71cd2ba73f501042602d5a34104ae356ddc08d3fcf1
-updated: 2017-02-22T15:50:21.023724721-08:00
+hash: e8c0b51216912d3ad2ad8f7a4dbaaea2cd3cb96a5d24675db38e6a93efa54860
+updated: 2017-02-28T10:12:31.342982901-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -23,7 +23,7 @@ imports:
   - strings
   - version
 - name: github.com/appscode/k8s-addons
-  version: b7b5a31530be7e8fc686e3b529f69f2baac4ea0c
+  version: efc6a8ade8d4d0378480277dc561c87730acf3c7
   subpackages:
   - api
   - api/install
@@ -84,6 +84,8 @@ imports:
   - autorest/date
   - autorest/to
   - autorest/validation
+- name: github.com/benbjohnson/clock
+  version: 7dc76406b6d3c05b5f71a86293cbcf3c4ea03b19
 - name: github.com/beorn7/perks
   version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
   subpackages:
@@ -147,11 +149,11 @@ imports:
   - log
   - swagger
 - name: github.com/facebookgo/stack
-  version: d9d227395bc3d7a635388c75b2e3b3a750e11888
+  version: 751773369052141c013c6e827a71e8f35c07879c
 - name: github.com/flosch/pongo2
-  version: 17d7c034174b22592c187661011b02fd7e7c3a83
+  version: 1d0f0d3af150c4a65dfd424d742f7374819e7d29
 - name: github.com/ghodss/yaml
-  version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
+  version: 04f313413ffd65ce25f2541bfd2b2ceec5c0908c
 - name: github.com/go-ini/ini
   version: 2e44421e256d82ebbf3d4d4fcabe8930b905eff3
 - name: github.com/go-openapi/jsonpointer
@@ -191,17 +193,14 @@ imports:
   - vanity
   - vanity/command
 - name: github.com/golang/glog
-  version: 44145f04b68cf362d9c4df2182967c2275eaefed
+  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
 - name: github.com/golang/protobuf
-  version: 8ee79997227bf9b34611aee7946ae64735e6fd93
+  version: 8616e8ee5e20a1704615e6c8d7afcdac06087a67
   subpackages:
+  - jsonpb
   - proto
 - name: github.com/google/gofuzz
   version: bbcb9da2d746f8bdbd6a936686a0a6067ada0ec5
-- name: github.com/grpc-ecosystem/grpc-gateway
-  version: 9e2ec49480d7da3e5cae8a52821467c790ca496d
-  repo: git@github.com:appscode/grpc-gateway.git
-  vcs: git
 - name: github.com/howeyc/gopass
   version: 3ca23474a7c7203e0a0a070fd33508f6efdb9b3d
 - name: github.com/imdario/mergo
@@ -320,9 +319,9 @@ imports:
   subpackages:
   - zk
 - name: github.com/spf13/cobra
-  version: 9c28e4bbd74e5c3ed7aacbc552b2cab7cfdfe744
+  version: 92ea23a837e66f46ac9e7d04fa826602b7b0a42d
 - name: github.com/spf13/pflag
-  version: c7e63cf4530bcd3ba943729cee0efeff2ebea63f
+  version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
 - name: github.com/timewasted/linode
   version: 37e84520dcf74488f67654f9c775b9752c232dc1
   subpackages:
@@ -363,7 +362,7 @@ imports:
   subpackages:
   - cloudstack
 - name: github.com/xenolf/lego
-  version: 05521809bdac9656003d92cd69d123af2a2a460f
+  version: 9daa55c337f252e32554e849cb399ae12c9fa21a
   repo: git@github.com:appscode/lego.git
   vcs: git
   subpackages:
@@ -455,8 +454,6 @@ imports:
   - internal/remote_api
   - internal/urlfetch
   - urlfetch
-- name: google.golang.org/grpc
-  version: 777daa17ff9b5daef1cfdf915088a2ada3332bf0
 - name: gopkg.in/gcfg.v1
   version: 083575c3955c85df16fe9590cceab64d03f5eb6e
   subpackages:
@@ -466,7 +463,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/ini.v1
-  version: 6e4869b434bd001f6983749881c7ead3545887d8
+  version: 74bdc99692c3408cb103221e38675ce8fda0a718
 - name: gopkg.in/mgo.v2
   version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
   subpackages:
@@ -480,8 +477,8 @@ imports:
 - name: gopkg.in/yaml.v2
   version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/kubernetes
-  version: 38628be52fd4fec3ed20f37c05c038ecbbff3842
-  repo: git@github.com:appscode/kubernetes.git
+  version: 15ed08dc1a36bb7c5595ddbb01828aabe7982ae5
+  repo: https://github.com/appscode/kubernetes.git
   vcs: git
   subpackages:
   - pkg/api
@@ -534,22 +531,35 @@ imports:
   - pkg/auth/user
   - pkg/client/cache
   - pkg/client/clientset_generated/internalclientset
+  - pkg/client/clientset_generated/internalclientset/fake
   - pkg/client/clientset_generated/internalclientset/typed/apps/internalversion
+  - pkg/client/clientset_generated/internalclientset/typed/apps/internalversion/fake
   - pkg/client/clientset_generated/internalclientset/typed/authentication/internalversion
+  - pkg/client/clientset_generated/internalclientset/typed/authentication/internalversion/fake
   - pkg/client/clientset_generated/internalclientset/typed/authorization/internalversion
+  - pkg/client/clientset_generated/internalclientset/typed/authorization/internalversion/fake
   - pkg/client/clientset_generated/internalclientset/typed/autoscaling/internalversion
+  - pkg/client/clientset_generated/internalclientset/typed/autoscaling/internalversion/fake
   - pkg/client/clientset_generated/internalclientset/typed/batch/internalversion
+  - pkg/client/clientset_generated/internalclientset/typed/batch/internalversion/fake
   - pkg/client/clientset_generated/internalclientset/typed/certificates/internalversion
+  - pkg/client/clientset_generated/internalclientset/typed/certificates/internalversion/fake
   - pkg/client/clientset_generated/internalclientset/typed/core/internalversion
+  - pkg/client/clientset_generated/internalclientset/typed/core/internalversion/fake
   - pkg/client/clientset_generated/internalclientset/typed/extensions/internalversion
+  - pkg/client/clientset_generated/internalclientset/typed/extensions/internalversion/fake
   - pkg/client/clientset_generated/internalclientset/typed/policy/internalversion
+  - pkg/client/clientset_generated/internalclientset/typed/policy/internalversion/fake
   - pkg/client/clientset_generated/internalclientset/typed/rbac/internalversion
+  - pkg/client/clientset_generated/internalclientset/typed/rbac/internalversion/fake
   - pkg/client/clientset_generated/internalclientset/typed/storage/internalversion
+  - pkg/client/clientset_generated/internalclientset/typed/storage/internalversion/fake
   - pkg/client/metrics
   - pkg/client/restclient
   - pkg/client/testing/core
   - pkg/client/transport
   - pkg/client/typed/discovery
+  - pkg/client/typed/discovery/fake
   - pkg/client/unversioned/auth
   - pkg/client/unversioned/clientcmd
   - pkg/client/unversioned/clientcmd/api
@@ -560,6 +570,7 @@ imports:
   - pkg/cloudprovider/providers/aws
   - pkg/cloudprovider/providers/azure
   - pkg/cloudprovider/providers/cloudstack
+  - pkg/cloudprovider/providers/fake
   - pkg/cloudprovider/providers/gce
   - pkg/cloudprovider/providers/mesos
   - pkg/cloudprovider/providers/openstack

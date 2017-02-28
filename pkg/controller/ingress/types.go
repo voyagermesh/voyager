@@ -1,24 +1,19 @@
 package ingress
 
 import (
-	"os/exec"
 	"strings"
 	"sync"
 
 	aci "github.com/appscode/k8s-addons/api"
 	acs "github.com/appscode/k8s-addons/client/clientset"
 	"github.com/appscode/k8s-addons/pkg/stash"
-	"github.com/appscode/log"
 	"k8s.io/kubernetes/pkg/client/cache"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/cloudprovider"
 )
 
 const (
-	ServicePrefix    = "lb-svc-"
-	ControllerPrefix = "lb-c-"
-	DaemonSetPrefix  = "lb-dm-"
-	ConfigMapPrefix  = "lb-cm-"
+	VoyagerPrefix = "voyager-"
 
 	stickySession = "ingress.appscode.com/stickySession"
 
@@ -39,7 +34,7 @@ const (
 	// LoadBalancer mode exposes HAProxy via a type=LoadBalancer service. This is the original version implemented by @sadlil
 	// Uses nodeport and Cloud LoadBalancer exists beyond single HAProxy run
 	LoadBalancerIP      = "ingress.appscode.com/ip"                   // external_ip or loadbalancer_ip "" or a "ipv4"
-	LoadBalancerPersist = "ingress.appscode.com/loadbalancer.persist" // "" or a "ipv4"
+	LoadBalancerPersist = "ingress.appscode.com/loadbalancer.persist" // "" or a "true"
 )
 
 type annotation map[string]string
@@ -196,23 +191,4 @@ func SetLoadbalancerImage(i string) {
 
 func GetLoadbalancerImage() string {
 	return loadbalancerImage
-}
-
-func fullyQualifiedNodeName(nodeName string) (string, error) {
-	if idx := strings.Index(nodeName, "."); idx >= 0 {
-		nodeName = nodeName[0:idx]
-	}
-
-	// Returns master's fqdn since kubed uses host network
-	name, err := exec.Command("hostname", "-f").Output()
-	if err != nil {
-		return "", err
-	}
-	fqdn := strings.TrimSpace(string(name))
-	log.Debugln("Found fqdn:", fqdn)
-	firstDotIndex := strings.Index(fqdn, ".")
-	if firstDotIndex >= 0 {
-		return nodeName + fqdn[firstDotIndex:], nil
-	}
-	return nodeName, nil
 }

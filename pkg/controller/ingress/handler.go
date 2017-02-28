@@ -17,6 +17,7 @@ import (
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/cloudprovider"
 	_ "k8s.io/kubernetes/pkg/cloudprovider/providers"
+	fakecloudprovider "k8s.io/kubernetes/pkg/cloudprovider/providers/fake"
 	"k8s.io/kubernetes/pkg/labels"
 )
 
@@ -48,6 +49,10 @@ func NewEngressController(clusterName, providerName string,
 			log.Infoln("Initialized cloud provider: "+providerName, cloudInterface)
 			h.CloudManager = cloudInterface
 		}
+	} else if providerName == "minikube" {
+		h.CloudManager = &fakecloudprovider.FakeCloud{}
+	} else {
+		log.Infoln("No cloud manager found for provider", providerName)
 	}
 	return h
 }
@@ -119,14 +124,14 @@ func UpgradeAllEngress(service, clusterName, providerName string,
 }
 
 func (lbc *EngressController) Handle(e *events.Event) error {
-	log.Infoln("Engress event occered", e.EventType, e.MetaData.Name)
+	log.Infof("Engress event %s/%s occured for %s", e.EventType, e.ResourceType, e.MetaData.Name)
 	// convert to extended ingress and then handle
 	var engs []interface{}
 	if e.ResourceType == events.ExtendedIngress {
 		engs = e.RuntimeObj
 	} else if e.ResourceType == events.Ingress {
 		// convert to extended ingress and then handle
-		engs := make([]interface{}, len(e.RuntimeObj))
+		engs = make([]interface{}, len(e.RuntimeObj))
 		for i, ing := range e.RuntimeObj {
 			engress, err := aci.NewEngressFromIngress(ing)
 			if err != nil {
@@ -135,7 +140,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 			engs[i] = engress
 		}
 	}
-
+	log.Infoln("Size of engs", len(engs), "Size of RuntimeObj", len(e.RuntimeObj))
 	if e.EventType.IsAdded() {
 		lbc.Config = engs[0].(*aci.Ingress)
 		if shouldHandleIngress(lbc.Config, lbc.IngressClass) {
@@ -202,15 +207,15 @@ const (
 	engressClassAnnotationValue = "voyager"
 )
 
-// if flag == "voyager", the you only handle  ingress that has voyager annotation
-// if flag == "", then handle no annotaion or voyager annotation
+// if ingressClass == "voyager", then only handle ingress that has voyager annotation
+// if ingressClass == "", then handle no annotaion or voyager annotation
 func shouldHandleIngress(engress *aci.Ingress, ingressClass string) bool {
 	// https://github.com/appscode/k8s-addons/blob/master/api/conversion_v1beta1.go#L44
-	if engress.Annotations[aci.ExtendedIngressRealTypeKey] != "ingress" {
+	if engress.Annotations[aci.EngressKind] == aci.V1beta1SchemeGroupVersion.String() {
 		// Resource Type is Extended Ingress So we should always Handle this
 		return true
 	}
-	kubeAnnotation := engress.Annotations[engressClassAnnotationKey]
+	kubeAnnotation, _ := engress.Annotations[engressClassAnnotationKey]
 	return kubeAnnotation == ingressClass || kubeAnnotation == engressClassAnnotationValue
 }
 
@@ -219,7 +224,7 @@ func ensureServiceAnnotations(client clientset.Interface, ing *aci.Ingress, name
 	if err == nil {
 		if ok, _, _ := isEngressHaveService(ing, name+"."+namespace); ok {
 			list := &IngressValueList{}
-			val, ok := svc.Annotations[aci.ExtendedIngressKey]
+			val, ok := svc.Annotations[aci.EngressKey]
 			if ok {
 				err := json.Unmarshal([]byte(val), list)
 				if err == nil {
@@ -250,13 +255,13 @@ func ensureServiceAnnotations(client clientset.Interface, ing *aci.Ingress, name
 				if svc.Annotations == nil {
 					svc.Annotations = make(map[string]string)
 				}
-				svc.Annotations[aci.ExtendedIngressKey] = string(data)
+				svc.Annotations[aci.EngressKey] = string(data)
 			}
 
 			client.Core().Services(namespace).Update(svc)
 		} else {
 			// Lets check if service still have the annotation for this ingress.
-			val, ok := svc.Annotations[aci.ExtendedIngressKey]
+			val, ok := svc.Annotations[aci.EngressKey]
 			if ok {
 				list := &IngressValueList{}
 				err := json.Unmarshal([]byte(val), list)
@@ -272,7 +277,7 @@ func ensureServiceAnnotations(client clientset.Interface, ing *aci.Ingress, name
 						if svc.Annotations == nil {
 							svc.Annotations = make(map[string]string)
 						}
-						svc.Annotations[aci.ExtendedIngressKey] = string(data)
+						svc.Annotations[aci.EngressKey] = string(data)
 					}
 				}
 				client.Core().Services(namespace).Update(svc)

@@ -1,7 +1,6 @@
 package providers
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"sync"
@@ -58,9 +57,11 @@ func (s *HTTPProviderServer) CleanUp(domain, token, keyAuth string) error {
 func (s *HTTPProviderServer) serve() {
 	// The handler validates the HOST header and request type.
 	// For validation it then writes the token the server returned with the challenge
-	ready := make(chan struct{})
+	var wg sync.WaitGroup
 	go s.once.Do(
 		func() {
+			defer wg.Done()
+			wg.Add(1)
 			mux := http.NewServeMux()
 			mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 				token := strings.TrimRight(r.RequestURI, "/")
@@ -73,7 +74,6 @@ func (s *HTTPProviderServer) serve() {
 				defer s.mu.Unlock()
 				keyAuth, ok := s.ChallengeHolders[token+"@"+r.Host]
 
-				fmt.Println(token, r.Host, r.RequestURI)
 				if ok && r.Method == "GET" {
 					w.Header().Add("Content-Type", "text/plain")
 					w.Write([]byte(keyAuth))
@@ -93,11 +93,7 @@ func (s *HTTPProviderServer) serve() {
 			log.Infoln("Running http server provider...")
 			httpServer.SetKeepAlivesEnabled(false)
 			go httpServer.ListenAndServe()
-			ready <- struct{}{}
 		},
 	)
-	select {
-	case <-ready:
-		return
-	}
+	wg.Wait()
 }

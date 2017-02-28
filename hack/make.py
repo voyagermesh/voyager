@@ -27,13 +27,13 @@ check_antipackage()
 
 # ref: https://github.com/ellisonbg/antipackage
 import antipackage
-from github.appscode.libbuild import libbuild
+from github.appscode.libbuild import libbuild, pydotenv
 
 import os
 import os.path
 import subprocess
 import sys
-from os.path import expandvars
+from os.path import expandvars, join, dirname
 
 libbuild.REPO_ROOT = expandvars('$GOPATH') + '/src/github.com/appscode/voyager'
 BUILD_METADATA = libbuild.metadata(libbuild.REPO_ROOT)
@@ -47,6 +47,7 @@ libbuild.BIN_MATRIX = {
         }
     }
 }
+
 libbuild.BUCKET_MATRIX = {
     'prod': 'gs://appscode-cdn',
     'dev': 'gs://appscode-dev'
@@ -146,6 +147,41 @@ def update_registry():
 
 def install():
     die(call('GO15VENDOREXPERIMENT=1 ' + libbuild.GOC + ' install ./cmd/...'))
+
+
+def test(type, *args):
+    die(call(libbuild.GOC + ' install ./cmd/...'))
+    pydotenv.load_dotenv(join(dirname(__file__), 'configs/.env'))
+    if type == 'unit':
+        unit_test()
+    elif type == 'e2e':
+        e2e_test(args)
+    elif type == 'minikube':
+        e2e_test_minikube(args)
+    elif type == 'integration' or type == 'intg':
+        integration(args)
+    elif type == 'clean':
+        e2e_test_clean()
+    else:
+        print '{test unit|minikube|e2e|clean}'
+
+def unit_test():
+    die(call(libbuild.GOC + ' test -v ./cmd/... ./pkg/... -args -v=3 -verbose=true -mode=unit'))
+
+def e2e_test(args):
+    st = ' '.join(args)
+    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -v=3 -verbose=true -mode=e2e ' + st))
+
+def e2e_test_minikube(args):
+    st = ' '.join(args)
+    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -v=3 -verbose=true -mode=e2e -cloud-provider=minikube -cluster-name=minikube ' + st))
+
+def integration(args):
+    st = ' '.join(args)
+    die(call(libbuild.GOC + ' test -v ./test/integration/... -timeout 10h -args -v=3 -verbose=true -mode=e2e -in-cluster=true' + st))
+
+def e2e_test_clean():
+    die(call('./test/hack/cleanup.sh'))
 
 
 def default():
