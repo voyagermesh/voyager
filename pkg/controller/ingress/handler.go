@@ -211,7 +211,7 @@ const (
 // if ingressClass == "", then handle no annotaion or voyager annotation
 func shouldHandleIngress(engress *aci.Ingress, ingressClass string) bool {
 	// https://github.com/appscode/k8s-addons/blob/master/api/conversion_v1beta1.go#L44
-	if engress.Annotations[aci.ExtendedIngressRealTypeKey] == aci.V1beta1SchemeGroupVersion.String() {
+	if engress.Annotations[aci.EngressKind] == aci.V1beta1SchemeGroupVersion.String() {
 		// Resource Type is Extended Ingress So we should always Handle this
 		return true
 	}
@@ -224,7 +224,7 @@ func ensureServiceAnnotations(client clientset.Interface, ing *aci.Ingress, name
 	if err == nil {
 		if ok, _, _ := isEngressHaveService(ing, name+"."+namespace); ok {
 			list := &IngressValueList{}
-			val, ok := svc.Annotations[aci.ExtendedIngressKey]
+			val, ok := svc.Annotations[aci.EngressKey]
 			if ok {
 				err := json.Unmarshal([]byte(val), list)
 				if err == nil {
@@ -255,13 +255,13 @@ func ensureServiceAnnotations(client clientset.Interface, ing *aci.Ingress, name
 				if svc.Annotations == nil {
 					svc.Annotations = make(map[string]string)
 				}
-				svc.Annotations[aci.ExtendedIngressKey] = string(data)
+				svc.Annotations[aci.EngressKey] = string(data)
 			}
 
 			client.Core().Services(namespace).Update(svc)
 		} else {
 			// Lets check if service still have the annotation for this ingress.
-			val, ok := svc.Annotations[aci.ExtendedIngressKey]
+			val, ok := svc.Annotations[aci.EngressKey]
 			if ok {
 				list := &IngressValueList{}
 				err := json.Unmarshal([]byte(val), list)
@@ -277,7 +277,7 @@ func ensureServiceAnnotations(client clientset.Interface, ing *aci.Ingress, name
 						if svc.Annotations == nil {
 							svc.Annotations = make(map[string]string)
 						}
-						svc.Annotations[aci.ExtendedIngressKey] = string(data)
+						svc.Annotations[aci.EngressKey] = string(data)
 					}
 				}
 				client.Core().Services(namespace).Update(svc)
