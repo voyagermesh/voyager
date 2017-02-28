@@ -10,7 +10,7 @@
 $ glide slow
 
 # Build
-$ ./hack/make.py build voyager
+$ ./hack/make.py build
 ```
 
 ## Build Docker

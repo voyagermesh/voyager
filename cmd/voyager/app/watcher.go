@@ -7,7 +7,7 @@ import (
 	acw "github.com/appscode/k8s-addons/pkg/watcher"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/pkg/controller/certificates"
-	lbc "github.com/appscode/voyager/pkg/controller/ingress"
+	ingresscontroller "github.com/appscode/voyager/pkg/controller/ingress"
 	kapi "k8s.io/kubernetes/pkg/api"
 	k8serrors "k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/unversioned"
@@ -33,26 +33,19 @@ type Watcher struct {
 
 func (watch *Watcher) Run() {
 	watch.setup()
-	watch.Storage = &stash.Storage{}
 	watch.Pod()
-	watch.StatefulSet()
-	watch.DaemonSet()
-	watch.ReplicaSet()
-	watch.Namespace()
-	watch.Node()
 	watch.Service()
-	watch.RC()
 	watch.Endpoint()
 
 	watch.ExtendedIngress()
 	watch.Ingress()
-	watch.Alert()
 	watch.Certificate()
 }
 
 func (w *Watcher) setup() {
 	w.ensureResource()
-	lbc.SetLoadbalancerImage(w.LoadbalancerImage)
+	w.Storage = &stash.Storage{}
+	ingresscontroller.SetLoadbalancerImage(w.LoadbalancerImage)
 	w.Watcher.Dispatch = w.Dispatch
 }
 
@@ -94,10 +87,10 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 		return nil
 	}
 	log.Debugln("Dispatching event with resource", e.ResourceType, "event", e.EventType)
-
-	if e.ResourceType == events.Ingress || e.ResourceType == events.ExtendedIngress {
+	switch e.ResourceType {
+	case events.Ingress, events.ExtendedIngress:
 		// Handle Ingress first
-		err := lbc.NewEngressController(w.ClusterName,
+		err := ingresscontroller.NewEngressController(w.ClusterName,
 			w.ProviderName,
 			w.Client,
 			w.AppsCodeExtensionClient,
@@ -110,27 +103,22 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 			certController.Handle(e)
 		}
 		return err
-	}
-
-	if e.ResourceType == events.Certificate {
+	case events.Certificate:
 		if e.EventType.IsAdded() || e.EventType.IsUpdated() {
 			certController := certificates.NewController(w.Client, w.AppsCodeExtensionClient)
 			certController.Handle(e)
 		}
-	}
-
-	if e.ResourceType == events.Service {
+	case events.Service:
 		if e.EventType.IsAdded() || e.EventType.IsDeleted() {
-			return lbc.UpgradeAllEngress(e.MetaData.Name+"."+e.MetaData.Namespace,
+			return ingresscontroller.UpgradeAllEngress(
+				e.MetaData.Name+"."+e.MetaData.Namespace,
 				w.ClusterName,
 				w.ProviderName,
 				w.Client,
 				w.AppsCodeExtensionClient,
 				w.Storage, w.IngressClass)
 		}
-	}
-
-	if e.ResourceType == events.Endpoint {
+	case events.Endpoint:
 		// Checking if this endpoint have a service or not. If
 		// this do not have a Service we do not want to update our ingress
 		_, err := w.Client.Core().Services(e.MetaData.Namespace).Get(e.MetaData.Name)
@@ -138,7 +126,8 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 			log.Infoln("Endpoint has an service with name", e.MetaData.Name, e.MetaData.Namespace, "Event type", e.EventType.String())
 			// Service exists. So we should process.
 			if e.EventType.IsUpdated() {
-				return lbc.UpgradeAllEngress(e.MetaData.Name+"."+e.MetaData.Namespace,
+				return ingresscontroller.UpgradeAllEngress(
+					e.MetaData.Name+"."+e.MetaData.Namespace,
 					w.ClusterName,
 					w.ProviderName,
 					w.Client,
@@ -146,8 +135,9 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 					w.Storage, w.IngressClass)
 			}
 		}
+	default:
+		log.Infof("Event %s/%s is not handleable by voyager", e.EventType, e.ResourceType)
 	}
-
 	return nil
 }
 
