@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	ExtendedIngressKey         = "ingress.appscode.com"
-	ExtendedIngressRealTypeKey = "ingress.appscode.com/realtype"
+	EngressKey  = "ingress.appscode.com"
+	EngressKind = EngressKey + "/kind"
 )
 
 // ExtendedIngress types for appscode.
