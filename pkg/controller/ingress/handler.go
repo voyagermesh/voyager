@@ -124,14 +124,14 @@ func UpgradeAllEngress(service, clusterName, providerName string,
 }
 
 func (lbc *EngressController) Handle(e *events.Event) error {
-	log.Infoln("Engress event occered", e.EventType, e.MetaData.Name)
+	log.Infof("Engress event %s/%s occured for %s", e.EventType, e.ResourceType, e.MetaData.Name)
 	// convert to extended ingress and then handle
 	var engs []interface{}
 	if e.ResourceType == events.ExtendedIngress {
 		engs = e.RuntimeObj
 	} else if e.ResourceType == events.Ingress {
 		// convert to extended ingress and then handle
-		engs := make([]interface{}, len(e.RuntimeObj))
+		engs = make([]interface{}, len(e.RuntimeObj))
 		for i, ing := range e.RuntimeObj {
 			engress, err := aci.NewEngressFromIngress(ing)
 			if err != nil {
@@ -140,7 +140,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 			engs[i] = engress
 		}
 	}
-
+	log.Infoln("Size of engs", len(engs), "Size of RuntimeObj", len(e.RuntimeObj))
 	if e.EventType.IsAdded() {
 		lbc.Config = engs[0].(*aci.Ingress)
 		if shouldHandleIngress(lbc.Config, lbc.IngressClass) {
@@ -211,7 +211,7 @@ const (
 // if ingressClass == "", then handle no annotaion or voyager annotation
 func shouldHandleIngress(engress *aci.Ingress, ingressClass string) bool {
 	// https://github.com/appscode/k8s-addons/blob/master/api/conversion_v1beta1.go#L44
-	if engress.Annotations[aci.ExtendedIngressRealTypeKey] == "extendedIngress" {
+	if engress.Annotations[aci.ExtendedIngressRealTypeKey] == aci.V1beta1SchemeGroupVersion.String() {
 		// Resource Type is Extended Ingress So we should always Handle this
 		return true
 	}

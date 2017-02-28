@@ -17,6 +17,7 @@ func init() {
 
 func Initialize() {
 	InitTestFlags()
+	validate()
 }
 
 type TestContextType struct {
@@ -31,6 +32,7 @@ type testConfig struct {
 }
 
 type E2EConfig struct {
+	InCluster             bool
 	Master                string
 	KubeConfig            string
 	ProviderName          string
@@ -38,6 +40,9 @@ type E2EConfig struct {
 	LoadbalancerImageName string
 	IngressClass          string
 	Cleanup               bool
+	DaemonHostName        string
+	LBPersistIP           string
+	RunOnly               string
 }
 
 var TestContext TestContextType
@@ -78,4 +83,22 @@ func registerE2EFlags() {
 	flag.StringVar(&TestContext.E2EConfigs.LoadbalancerImageName, "haproxy-image", "appscode/haproxy:1.7.2-1.5.0", "haproxy image name to be run")
 	flag.StringVar(&TestContext.E2EConfigs.IngressClass, "ingress-class", "", "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
 	flag.BoolVar(&TestContext.E2EConfigs.Cleanup, "cleanup", true, "")
+	flag.BoolVar(&TestContext.E2EConfigs.InCluster, "in-cluster", false, "")
+	flag.StringVar(&TestContext.E2EConfigs.DaemonHostName, "daemon-host-name", "", "Daemon host name to run daemon hosts")
+	flag.StringVar(&TestContext.E2EConfigs.RunOnly, "test-only", "", "Daemon host name to run daemon hosts")
+	flag.StringVar(&TestContext.E2EConfigs.LBPersistIP, "lb-ip", "", "LB Persistant IP")
+}
+
+func validate() {
+	if !TestContext.E2EConfigs.Cleanup && len(TestContext.E2EConfigs.RunOnly) == 0 {
+		log.Fatal("cleanup is not requried, only one test can be run")
+	}
+
+	if TestContext.E2EConfigs.ProviderName == "" {
+		log.Fatal("Provider name required, not provided")
+	}
+
+	if TestContext.E2EConfigs.ClusterName == "" {
+		log.Fatal("Cluster name required, not provided")
+	}
 }

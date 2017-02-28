@@ -36,27 +36,27 @@ func (i *IngressTestSuit) Test() error {
 }
 
 func (i *IngressTestSuit) setUp() error {
-	_, err := i.t.KubeClient.Core().ReplicationControllers("default").Create(testServerRc)
+	_, err := i.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Create(testServerRc)
 	if err != nil && !k8serr.IsAlreadyExists(err) {
 		return errors.New().WithCause(err).Internal()
 	}
 
-	_, err = i.t.KubeClient.Core().Services("default").Create(testServerSvc)
+	_, err = i.t.KubeClient.Core().Services(testServerSvc.Namespace).Create(testServerSvc)
 	if err != nil && !k8serr.IsAlreadyExists(err) {
 		return errors.New().WithCause(err).Internal()
 	}
 
-	for it:=0; it<maxRetries; it++ {
-		ep, err := i.t.KubeClient.Core().Endpoints("default").Get(testServerSvc.Name)
+	for it := 0; it < maxRetries; it++ {
+		ep, err := i.t.KubeClient.Core().Endpoints(testServerSvc.Namespace).Get(testServerSvc.Name)
 		if err == nil {
 			if len(ep.Subsets) > 0 {
-				if len(ep.Subsets[0].Addresses) == 3 {
+				if len(ep.Subsets[0].Addresses) == 1 {
 					break
 				}
 			}
 		}
-		log.Infoln("Waiting for endpoint to be ready")
-		time.Sleep(time.Second*20)
+		log.Infoln("Waiting for endpoint to be ready for testServer")
+		time.Sleep(time.Second * 20)
 	}
 
 	log.Infoln("Ingress Test Setup Complete")
@@ -64,30 +64,36 @@ func (i *IngressTestSuit) setUp() error {
 }
 
 func (i *IngressTestSuit) cleanUp() {
-	if i.t.config.Cleanup {
-		i.t.KubeClient.Core().Services("default").Delete(testServerRc.Name, &api.DeleteOptions{
-			OrphanDependents: &i.t.config.Cleanup,
+	if i.t.Config.Cleanup {
+		i.t.KubeClient.Core().Services(testServerSvc.Namespace).Delete(testServerRc.Name, &api.DeleteOptions{
+			OrphanDependents: &i.t.Config.Cleanup,
 		})
-		i.t.KubeClient.Core().ReplicationControllers("default").Delete(testServerSvc.Name, &api.DeleteOptions{})
+		i.t.KubeClient.Core().ReplicationControllers(testServerSvc.Namespace).Delete(testServerSvc.Name, &api.DeleteOptions{
+			OrphanDependents: &i.t.Config.Cleanup,
+		})
 	}
 }
 
 func (i *IngressTestSuit) runTests() error {
 	ingType := reflect.ValueOf(i)
 	serializedMethodName := make([]string, 0)
-	for i := 0; i < ingType.NumMethod(); i++ {
-		method := ingType.Type().Method(i)
-		if strings.HasPrefix(method.Name, "TestIngress") {
-			if strings.Contains(method.Name, "Ensure") {
-				serializedMethodName = append([]string{method.Name}, serializedMethodName...)
-			} else {
-				serializedMethodName = append(serializedMethodName, method.Name)
+	if len(i.t.Config.RunOnly) > 0 {
+		serializedMethodName = append(serializedMethodName, "TestIngress"+i.t.Config.RunOnly)
+	} else {
+		for it := 0; it < ingType.NumMethod(); it++ {
+			method := ingType.Type().Method(it)
+			if strings.HasPrefix(method.Name, "TestIngress") {
+				if strings.Contains(method.Name, "Ensure") {
+					serializedMethodName = append([]string{method.Name}, serializedMethodName...)
+				} else {
+					serializedMethodName = append(serializedMethodName, method.Name)
+				}
 			}
 		}
 	}
 
 	for _, name := range serializedMethodName {
-		log.Infoln("Running Test", name)
+		log.Infoln("================== Running Test ====================", name)
 		shouldCall := ingType.MethodByName(name)
 		if shouldCall.IsValid() {
 			results := shouldCall.Call([]reflect.Value{})

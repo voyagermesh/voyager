@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-set -o errexit
 set -o nounset
 set -o pipefail
 
@@ -14,6 +13,8 @@ hard() {
 
 soft() {
     kubectl delete ingress.appscode.com base-ingress
+    kubectl delete ingress.appscode.com base-d-ingress
+    kubectl delete ingress base-ingress
     kubectl delete rc/voyager-base-ingress svc/voyager-base-ingress configmap/voyager-base-ingress daemonset/voyager-base-d-ingress svc/voyager-base-d-ingress configmap/voyager-base-d-ingress
 }
 

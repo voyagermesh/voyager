@@ -158,9 +158,12 @@ def test(type, *args):
         e2e_test(args)
     elif type == 'minikube':
         e2e_test_minikube(args)
+    elif type == 'integration' or type == 'intg':
+        integration(args)
+    elif type == 'clean':
+        e2e_test_clean()
     else:
-        unit_test()
-        e2e_test(args)
+        print '{test unit|minikube|e2e|clean}'
 
 def unit_test():
     die(call(libbuild.GOC + ' test -v ./cmd/... ./pkg/... -args -v=3 -verbose=true -mode=unit'))
@@ -173,8 +176,12 @@ def e2e_test_minikube(args):
     st = ' '.join(args)
     die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -v=3 -verbose=true -mode=e2e -cloud-provider=minikube -cluster-name=minikube ' + st))
 
+def integration(args):
+    st = ' '.join(args)
+    die(call(libbuild.GOC + ' test -v ./test/integration/... -timeout 10h -args -v=3 -verbose=true -mode=e2e -in-cluster=true' + st))
+
 def e2e_test_clean():
-    die(call('./test/e2e/hack/cleanup.sh'))
+    die(call('./test/hack/cleanup.sh'))
 
 
 def default():

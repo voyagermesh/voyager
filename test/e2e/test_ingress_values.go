@@ -8,7 +8,7 @@ import (
 var testServerSvc = &api.Service{
 	ObjectMeta: api.ObjectMeta{
 		Name:      "test-server",
-		Namespace: "default",
+		Namespace: TestNamespace,
 		Labels: map[string]string{
 			"app": "test-server",
 		},
@@ -61,13 +61,13 @@ var testServerSvc = &api.Service{
 var testServerRc = &api.ReplicationController{
 	ObjectMeta: api.ObjectMeta{
 		Name:      "test-server",
-		Namespace: "default",
+		Namespace: TestNamespace,
 		Labels: map[string]string{
 			"app": "test-server",
 		},
 	},
 	Spec: api.ReplicationControllerSpec{
-		Replicas: 3,
+		Replicas: 1,
 		Selector: map[string]string{
 			"app": "test-server",
 		},

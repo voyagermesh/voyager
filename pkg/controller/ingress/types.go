@@ -34,7 +34,7 @@ const (
 	// LoadBalancer mode exposes HAProxy via a type=LoadBalancer service. This is the original version implemented by @sadlil
 	// Uses nodeport and Cloud LoadBalancer exists beyond single HAProxy run
 	LoadBalancerIP      = "ingress.appscode.com/ip"                   // external_ip or loadbalancer_ip "" or a "ipv4"
-	LoadBalancerPersist = "ingress.appscode.com/loadbalancer.persist" // "" or a "ipv4"
+	LoadBalancerPersist = "ingress.appscode.com/loadbalancer.persist" // "" or a "true"
 )
 
 type annotation map[string]string

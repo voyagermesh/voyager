@@ -179,6 +179,7 @@ func (lbc *EngressController) createDaemonLB() error {
 								"--config-map=" + lbc.Options.ConfigMapName,
 								"--mount-location=" + "/etc/haproxy",
 								"--boot-cmd=" + "/etc/sv/reloader/reload",
+								"--v=4",
 							},
 							Ports:        []kapi.ContainerPort{},
 							VolumeMounts: vms,
@@ -319,6 +320,7 @@ func (lbc *EngressController) createLoadBalancerLB() error {
 								"--config-map=" + lbc.Options.ConfigMapName,
 								"--mount-location=" + "/etc/haproxy",
 								"--boot-cmd=" + "/etc/sv/reloader/reload",
+								"--v=4",
 							},
 							Ports:        []kapi.ContainerPort{},
 							VolumeMounts: vms,
@@ -346,7 +348,7 @@ func (lbc *EngressController) createLoadBalancerLB() error {
 	}
 
 	if svc.Spec.Type == kapi.ServiceTypeNodePort && lbc.CloudManager != nil {
-		log.Debugln("cloud manager not il, getting hosts")
+		log.Debugln("cloud manager not nil, getting hosts")
 		hosts := make([]string, 0)
 		if ins, ok := lbc.CloudManager.Instances(); ok {
 			// TODO(tamal): Does it return all hosts?

@@ -17,7 +17,7 @@ import (
 )
 
 type TestSuit struct {
-	config          testframework.E2EConfig
+	Config          testframework.E2EConfig
 	KubeClient      internalclientset.Interface
 	ExtensionClient clientset.AppsCodeExtensionInterface
 	Voyager         *app.Watcher
@@ -34,7 +34,7 @@ func NewE2ETestSuit() *TestSuit {
 		log.Fatalln("Failed to load Kube Config", err)
 	}
 	return &TestSuit{
-		config: testframework.TestContext.E2EConfigs,
+		Config: testframework.TestContext.E2EConfigs,
 		Voyager: &app.Watcher{
 			Watcher: acw.Watcher{
 				Client:                  internalclientset.NewForConfigOrDie(c),
@@ -52,7 +52,9 @@ func NewE2ETestSuit() *TestSuit {
 }
 
 func (t *TestSuit) Run() error {
-	go t.Voyager.Run()
+	if !t.Config.InCluster {
+		go t.Voyager.Run()
+	}
 	defer time.Sleep(time.Second * 30)
 	defer log.Flush()
 	// Wait some time to initialize voyager watcher

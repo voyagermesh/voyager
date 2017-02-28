@@ -18,7 +18,7 @@ import (
 func (ing *IngressTestSuit) getURLs(baseIngress *aci.Ingress) ([]string, error) {
 	serverAddr := make([]string, 0)
 	var err error
-	if ing.t.config.ProviderName == "minikube" {
+	if ing.t.Config.ProviderName == "minikube" {
 		for i := 0; i < maxRetries; i++ {
 			var outputs []byte
 			log.Infoln("Running Command", "`minikube", "service", ingresscontroller.VoyagerPrefix+baseIngress.Name+" --url`")

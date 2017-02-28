@@ -56,6 +56,10 @@ func (t *httpClient) Do() (*Response, error) {
 		return nil, err
 	}
 
+	for k, v := range t.header {
+		req.Header.Add(k, v)
+	}
+
 	resp, err := t.client.Do(req)
 	if err != nil {
 		return nil, err

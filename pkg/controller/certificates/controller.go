@@ -160,7 +160,6 @@ func (c *CertificateController) handleIngressEvent(e *events.Event) error {
 						ProviderCredentialSecretName: ingress.Annotations[certificateAnnotationKeyProviderCredentialSecretName],
 						HTTPProviderIngressReference: api.ObjectReference{
 							Kind:            "Ingress",
-							APIVersion:      "appscode.com/v1",
 							Name:            ingress.Name,
 							Namespace:       ingress.Namespace,
 							ResourceVersion: ingress.ResourceVersion,
@@ -173,6 +172,8 @@ func (c *CertificateController) handleIngressEvent(e *events.Event) error {
 				if v, ok := ingress.Annotations[aci.ExtendedIngressRealTypeKey]; ok {
 					if v == "ingress" {
 						newCertificate.Spec.HTTPProviderIngressReference.APIVersion = "extensions/v1beta1"
+					} else {
+						newCertificate.Spec.HTTPProviderIngressReference.APIVersion = "appscode.com/v1beta1"
 					}
 				}
 				for _, rule := range ingress.Spec.Rules {
