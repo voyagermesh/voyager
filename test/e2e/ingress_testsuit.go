@@ -45,7 +45,20 @@ func (i *IngressTestSuit) setUp() error {
 	if err != nil && !k8serr.IsAlreadyExists(err) {
 		return errors.New().WithCause(err).Internal()
 	}
-	time.Sleep(time.Second * 30)
+
+	for it:=0; it<maxRetries; it++ {
+		ep, err := i.t.KubeClient.Core().Endpoints("default").Get(testServerSvc.Name)
+		if err == nil {
+			if len(ep.Subsets) > 0 {
+				if len(ep.Subsets[0].Addresses) == 3 {
+					break
+				}
+			}
+		}
+		log.Infoln("Waiting for endpoint to be ready")
+		time.Sleep(time.Second*20)
+	}
+
 	log.Infoln("Ingress Test Setup Complete")
 	return nil
 }
