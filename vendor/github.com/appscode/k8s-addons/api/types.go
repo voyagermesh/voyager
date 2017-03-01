@@ -143,6 +143,16 @@ type TCPExtendedIngressRuleValue struct {
 
 	// Backend to forward the requests.
 	Backend IngressBackend `json:"backend,omitempty"`
+
+	// Application-Layer Protocol Negotiation (ALPN) is a Transport Layer Security (TLS)
+	// extension for application layer protocol negotiation. ALPN allows the application
+	// layer to negotiate which protocol should be performed over a secure connection in a
+	// manner which avoids additional round trips and which is independent of the application
+	// layer protocols. It is used by HTTP/2.
+	// If provided a list of alpn will be added to port as alpn option1,option2,...
+	// If SecretName is Provided this secret will be used to terminate SSL with alpn options.
+	// If Secret name is not provided backend server is responsible for handling SSL.
+	ALPN []string `json:"alpn,omitempty"`
 }
 
 // HTTPExtendedIngressPath associates a path regex with a backend. Incoming urls matching

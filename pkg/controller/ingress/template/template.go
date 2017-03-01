@@ -122,8 +122,6 @@ backend https-{{ svc.Name }}
 frontend http-frontend
     bind *:80
     mode http
-
-    mode http
     option httplog
     option forwardfor
 
@@ -156,9 +154,8 @@ backend http-{{ svc.Name }}
 # tcp service
 {% for svc in TCPService %}
 frontend tcp-frontend-key-{{ svc.Port }}
-    bind *:{{ svc.Port }} {% if svc.SecretName %}ssl no-sslv3 no-tlsv10 crt /etc/ssl/private/haproxy/{{ svc.SecretName }}.pem alpn h2,http/1.1{% endif %}
+    bind *:{{ svc.Port }} {% if svc.SecretName %}ssl no-sslv3 no-tlsv10 crt /etc/ssl/private/haproxy/{{ svc.SecretName }}.pem{% endif %} {%if svc.ALPNOptions %} {{svc.ALPNOptions}}{% endif %}
     mode tcp
-
     default_backend tcp-{{ svc.Name }}
 {% endfor %}
 {% endif %}

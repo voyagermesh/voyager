@@ -209,10 +209,10 @@ func (lbc *EngressController) parseSpec() {
 		// adding tcp service to the parser.
 		for _, tcpSvc := range rule.TCP {
 			def := &TCPService{
-				Name: "service-" + rand.Characters(6),
-				Host: host,
-				Port: tcpSvc.Port.String(),
-				SecretName: tcpSvc.SecretName,
+				Name:        "service-" + rand.Characters(6),
+				Host:        host,
+				Port:        tcpSvc.Port.String(),
+				SecretName:  tcpSvc.SecretName,
 				ALPNOptions: parseALPNOptions(tcpSvc.ALPN),
 			}
 			log.Infoln(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort)
@@ -292,7 +292,7 @@ func ParseNodeSelector(labels string) map[string]string {
 	return selectorMap
 }
 
-func parseALPNOptions(opt []string) string{
+func parseALPNOptions(opt []string) string {
 	if len(opt) <= 0 {
 		return ""
 	}

@@ -91,7 +91,7 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 	svc, err = fakeClient.Core().Services("test-namespace").Get("test-service")
 	assert.Nil(t, err)
 	assert.NotNil(t, svc.Annotations)
-	assert.Contains(t, svc.Annotations, aci.ExtendedIngressKey)
+	assert.Contains(t, svc.Annotations, aci.EngressKey)
 	fmt.Println(svc.Annotations)
 
 	ensureServiceAnnotations(fakeClient, &aci.Ingress{
@@ -109,7 +109,7 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 	svc, err = fakeClient.Core().Services("test-namespace").Get("test-service")
 	assert.Nil(t, err)
 	assert.NotNil(t, svc.Annotations)
-	assert.Contains(t, svc.Annotations, aci.ExtendedIngressKey)
+	assert.Contains(t, svc.Annotations, aci.EngressKey)
 	fmt.Println(svc.Annotations)
 
 	ensureServiceAnnotations(fakeClient, &aci.Ingress{
@@ -122,6 +122,6 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 	svc, err = fakeClient.Core().Services("test-namespace").Get("test-service")
 	assert.Nil(t, err)
 	assert.NotNil(t, svc.Annotations)
-	assert.Contains(t, svc.Annotations, aci.ExtendedIngressKey)
+	assert.Contains(t, svc.Annotations, aci.EngressKey)
 	fmt.Println(svc.Annotations)
 }
