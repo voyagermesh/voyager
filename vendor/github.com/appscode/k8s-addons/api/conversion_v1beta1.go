@@ -61,6 +61,6 @@ func NewIngressFromEngress(ing interface{}) (*extensions.Ingress, error) {
 	if engress.Annotations == nil {
 		engress.Annotations = make(map[string]string)
 	}
-	engress.Annotations[EngressKind] = V1beta1SchemeGroupVersion.String()
+	engress.Annotations[EngressKind] = EngressKey + "/" + V1beta1SchemeGroupVersion.Version
 	return engress, nil
 }

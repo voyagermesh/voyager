@@ -33,7 +33,7 @@ func TestShouldHandleIngress(t *testing.T) {
 		{
 			ObjectMeta: kapi.ObjectMeta{
 				Annotations: map[string]string{
-					"ingress.appscode.com/realtype": "extendedIngress",
+					"ingress.appscode.com/kind": "ingress.appscode.com/v1beta1",
 				},
 			},
 		}: {
