@@ -61,23 +61,14 @@ $ curl https://raw.githubusercontent.com/appscode/voyager/master/hack/deploy/dep
                   // ingress with annotation kubernetes.io/ingress.class=voyager.
 ```
 
-`cloude-provider` and `cluster-name` flags are required to run voyager.
-Voyager can run HAProxy in 2 different modes. These are:
+Voyager can run HAProxy in 2 different modes. `cloude-provider` and `cluster-name` flags should be set appropriately depending on the mode. These modes are:
 
-- DaemonSet: In this mode, HAProxy is run as DaemonSet using nodeSelector and hostNetwork:true.
-In this mode, HAProxy's IP will be same as the IP address for nodes where it is running.
-This is supported on any cloud provider (known or unknown to Kubernetes).
-Voyager will open firewall if it is a known provider: aws, gce and passed as a flag. If cloud provider is unknown
-(say running on DigitalOcean), `--cluster-name` is not used in this mode.
-Users are required to configure firewall as needed for cloud providers unknown to Kubernetes,
+- DaemonSet: In this mode, HAProxy is run as DaemonSet using nodeSelector and hostNetwork:true. As a result, HAProxy's IP will be same as the IP address for nodes where it is running. This is supported on any cloud provider (known or unknown to Kubernetes). Voyager will open firewall, if a `cloud-provider` is one of `aws`, `gce` or `azure`. If cloud provider is unknown (say, running on DigitalOcean), users are required to configure firewall as needed. `--cluster-name` is not used in this mode.
 
 - Loadbalancer: In this mode, a Kubernetes LoadBalancer type service is used to expose HAProxy to the internet.
-This is supported for cloud providers known to Kubernetes (aws, gce), `--cloud-provider` and `--cluster-name` is
-required to properly setup this loadbalancer. This can give you elastic IP (aws) or reserved IP (gce).
+This is supported for cloud providers known to Kubernetes (`aws`, `gce` and `azure`), `--cloud-provider` and `--cluster-name` is required to properly setup this loadbalancer. This mode supports reserved ip on GCE.
 
-You can choose the mode in your Ingress YAML using labels: https://github.com/appscode/voyager/tree/master/docs/user-guide/component/ingress#configurations-options
-
-By known and unknown cloud provider, I mean providers that have implemented Loadbalancer() and Firewall() interface: https://github.com/appscode/kubernetes/tree/1.5.2-ac/pkg/cloudprovider/providers
+You can choose the mode in your Ingress YAML using label: [ingress.appscode.com/type](/docs/user-guide/component/ingress#configurations-options)
 
 ## Ingress
 This resource Type is backed by an controller which monitors and manages the resources of AppsCode Ingress Kind. Which is used for maintain and HAProxy backed loadbalancer to the cluster for open communications inside cluster from internet via the loadbalancer.
