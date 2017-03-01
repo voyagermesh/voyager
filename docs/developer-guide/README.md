@@ -47,7 +47,21 @@ $ ./hack/make.py test minikube // Run Test against minikube, this requires minik
 $ ./hack/make.py test e2e -cloud-provider=gce -cluster-name=autobots // Test e2e against gce cluster
 
 $ ./hack/make.py test integration -cloud-provider=gce -cluster-name=autobots // Run Integration test against gce
-                                                                     // This requires voyager to be deployed in the cluster.
+                                                                             // This requires voyager to be deployed in the cluster.
+
+```
+
+```
+- Run only one e2e test
+$ ./hack/make.py test e2e -cloud-provider=gce -cluster-name=autobot -test-only=CoreIngress
+
+
+- Run One test but do not delete all resource that are created
+$ ./hack/make.py test minikube -cloud-provider=gce -cluster-name=autobot -test-only=CoreIngress -cleanup=false
+
+
+- Run Service IP Persist test with provided IP
+$ ./hack/make.py test e2e -cloud-provider=gce -cluster-name=autobot -test-only=CreateIPPersist -lb-ip=35.184.104.215
 
 ```
 
