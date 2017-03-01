@@ -160,6 +160,7 @@ type TCPService struct {
 	SecretName string
 	PEMName    string
 	Backends   *Backend
+	ALPNOptions string
 }
 
 type Backend struct {
