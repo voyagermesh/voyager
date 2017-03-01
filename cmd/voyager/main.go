@@ -13,6 +13,9 @@ import (
 	"github.com/appscode/voyager/cmd/voyager/app/options"
 	"github.com/mikespook/golib/signal"
 	"github.com/spf13/pflag"
+	// Add fake package as a dependency to add this under vendor
+	_ "github.com/appscode/k8s-addons/client/clientset/fake"
+	_ "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
 )
 
 func main() {
@@ -33,7 +36,6 @@ func main() {
 
 	log.Infoln("Starting Voyager Controller...")
 	go app.Run(config)
-
 	sig := signal.New(nil)
 	sig.Bind(os.Interrupt, func() uint { return signal.BreakExit })
 	sig.Wait()
