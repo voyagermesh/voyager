@@ -17,7 +17,9 @@ func init() {
 
 func Initialize() {
 	InitTestFlags()
-	validate()
+	if TestContext.Mode != "unit" {
+		validate()
+	}
 }
 
 type TestContextType struct {

@@ -1,5 +1,5 @@
 hash: e8c0b51216912d3ad2ad8f7a4dbaaea2cd3cb96a5d24675db38e6a93efa54860
-updated: 2017-02-28T10:12:31.342982901-08:00
+updated: 2017-03-01T13:45:15.541772321-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -23,7 +23,7 @@ imports:
   - strings
   - version
 - name: github.com/appscode/k8s-addons
-  version: efc6a8ade8d4d0378480277dc561c87730acf3c7
+  version: 2feea95b0d62ad215bef8d0789978be7c9d58d06
   subpackages:
   - api
   - api/install
@@ -319,7 +319,7 @@ imports:
   subpackages:
   - zk
 - name: github.com/spf13/cobra
-  version: 92ea23a837e66f46ac9e7d04fa826602b7b0a42d
+  version: fcd0c5a1df88f5d6784cb4feead962c3f3d0b66c
 - name: github.com/spf13/pflag
   version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
 - name: github.com/timewasted/linode
@@ -477,7 +477,7 @@ imports:
 - name: gopkg.in/yaml.v2
   version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/kubernetes
-  version: 15ed08dc1a36bb7c5595ddbb01828aabe7982ae5
+  version: f537547bcfbcb61b645540e9394b4b7b4df93e6b
   repo: https://github.com/appscode/kubernetes.git
   vcs: git
   subpackages:

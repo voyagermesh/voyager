@@ -154,12 +154,13 @@ type Service struct {
 }
 
 type TCPService struct {
-	Name       string
-	Host       string
-	Port       string
-	SecretName string
-	PEMName    string
-	Backends   *Backend
+	Name        string
+	Host        string
+	Port        string
+	SecretName  string
+	PEMName     string
+	Backends    *Backend
+	ALPNOptions string
 }
 
 type Backend struct {

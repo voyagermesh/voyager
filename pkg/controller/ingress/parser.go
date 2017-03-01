@@ -175,7 +175,6 @@ func (lbc *EngressController) parseSpec() {
 	lbc.Parsed.HttpService = make([]*Service, 0)
 	lbc.Parsed.HttpsService = make([]*Service, 0)
 	lbc.Parsed.TCPService = make([]*TCPService, 0)
-
 	for _, rule := range lbc.Config.Spec.Rules {
 		host := rule.Host
 		if rule.HTTP != nil {
@@ -210,14 +209,12 @@ func (lbc *EngressController) parseSpec() {
 		// adding tcp service to the parser.
 		for _, tcpSvc := range rule.TCP {
 			def := &TCPService{
-				Name: "service-" + rand.Characters(6),
-				Host: host,
-
-				Port: tcpSvc.Port.String(),
-
-				SecretName: tcpSvc.SecretName,
+				Name:        "service-" + rand.Characters(6),
+				Host:        host,
+				Port:        tcpSvc.Port.String(),
+				SecretName:  tcpSvc.SecretName,
+				ALPNOptions: parseALPNOptions(tcpSvc.ALPN),
 			}
-
 			log.Infoln(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort)
 			eps, err := lbc.serviceEndpoints(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort)
 			def.Backends = &Backend{
@@ -293,4 +290,11 @@ func ParseNodeSelector(labels string) map[string]string {
 		}
 	}
 	return selectorMap
+}
+
+func parseALPNOptions(opt []string) string {
+	if len(opt) <= 0 {
+		return ""
+	}
+	return "alpn " + strings.Join(opt, ",")
 }
