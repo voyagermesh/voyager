@@ -41,7 +41,7 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
 Kubernetes Controller to manage TLS Certificate.
 
 **Feautures**
-- Manage Kubernetes TLS secrets backed by Custom Certificate Provider, Users Let's Encrypt by default,
+- Manage Kubernetes TLS secrets backed by Custom Certificate Provider, uses Let's Encrypt by default,
 - Manage issued certificates based on Kubernetes ThirdParty Resources,
 - Domain validation using ACME dns-01 challenges,
 - Support for multiple DNS providers,
