@@ -31,13 +31,13 @@ hosting. This plugin also support configurable application ports with all the fe
 | Feauture | Kube Ingress | AppsCode Ingress |
 |----------|--------------|------------------|
 | HTTP Loadbalancing| :white_check_mark: | :white_check_mark: |
-| TCP Loadbalincing | :x: | :white_check_mark: |
+| TCP Loadbalancing | :x: | :white_check_mark: |
 | TLS Termination | :white_check_mark: | :white_check_mark: |
 | Name and Path based virtual hosting | :x: | :white_check_mark: |
 | Cross Namespace service support | :x: | :white_check_mark: |
 | URL and Header rewriting | :x: | :white_check_mark: |
 | Wildcard name virtual hosting | :x: | :white_check_mark: |
-| Loadbalncer statistics | :x: | :white_check_mark: |
+| Loadbalancer statistics | :x: | :white_check_mark: |
 
 ## AppsCode Ingress Flow
 Typically, services and pods have IPs only routable by the cluster network. All traffic that ends up at an
@@ -71,7 +71,7 @@ for a high-availability loadbalancer, inside a kubernetes cluster.
 
 ### Configurations Options
 AppsCode Ingress have some global configurations passed via the `annotaion` field of Ingress Metadata,
-and those configuration will be applicable on load balancer globally. Annotation keys and its actions are as follows:
+and those configuration will be applicable on loadbalancer globally. Annotation keys and its actions are as follows:
 
 ```
 ingress.appscode.com/stickySession         = indicates the session affinity for the traffic, is set
