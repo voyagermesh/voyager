@@ -19,8 +19,8 @@ spec:
     spec:
       containers:
       - args:
-        - --cloud-provider=$CLOUD_PROVIDER
-        - --cluster-name=$CLUSTER_NAME
+        - --cloud-provider={{.Values.cloudProvider}}
+        - --cluster-name={{.Values.clustername}}
         image: "{{.Values.image}}:{{.Values.imageTag}}"
         imagePullPolicy: "{{.Values.imagePullPolicy}}"
         name: {{ template "name" . }}
