@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  generation: 1
+  labels:
+    app: test-server
+  name: test-server
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    app: test-server
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: test-server
+    spec:
+      containers:
+      - image: appscode/test-server:1.0
+        imagePullPolicy: IfNotPresent
+        name: server
+        ports:
+        - containerPort: 8080
+          name: http-1
+          protocol: TCP
+        - containerPort: 8989
+          name: http-2
+          protocol: TCP
+        - containerPort: 9090
+          name: http-3
+          protocol: TCP
+        - containerPort: 4343
+          name: tcp-1
+          protocol: TCP
+        - containerPort: 4545
+          name: tcp-2
+          protocol: TCP
+        - containerPort: 5656
+          name: tcp-3
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: test-server
+  name: test-server
+  namespace: default
+spec:
+  ports:
+  - name: http-1
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  - name: http-2
+    port: 8989
+    protocol: TCP
+    targetPort: 8989
+  - name: http-3
+    port: 9090
+    protocol: TCP
+    targetPort: 9090
+  - name: tcp-1
+    port: 4343
+    protocol: TCP
+    targetPort: 4343
+  - name: tcp-2
+    port: 4545
+    protocol: TCP
+    targetPort: 4545
+  - name: tcp-3
+    port: 5656
+    protocol: TCP
+    targetPort: 5656
+  selector:
+    app: test-server
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: test-ingress
+  namespace: default
+spec:
+  rules:
+  - host: appscode.example.com
+    http:
+      paths:
+      - path: "/testPath"
+        backend:
+          serviceName: test-server
+          servicePort: '8080'
