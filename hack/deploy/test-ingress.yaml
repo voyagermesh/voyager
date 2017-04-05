@@ -46,10 +46,6 @@ metadata:
   name: test-ingress
   namespace: default
 spec:
-  rules:
-  - host: appscode.example.com
-    http:
-      paths:
-      - backend:
-          serviceName: test-server
-          servicePort: 80
+  backend:
+    serviceName: test-server
+    servicePort: 80
