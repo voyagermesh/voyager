@@ -178,7 +178,7 @@ def e2e_test_minikube(args):
 
 def integration(args):
     st = ' '.join(args)
-    die(call(libbuild.GOC + ' test -v ./test/integration/... -timeout 10h -args -v=3 -verbose=true -mode=e2e -in-cluster=true' + st))
+    die(call(libbuild.GOC + ' test -v ./test/integration/... -timeout 10h -args -v=3 -verbose=true -mode=e2e -in-cluster=true ' + st))
 
 def e2e_test_clean():
     die(call('./test/hack/cleanup.sh'))
