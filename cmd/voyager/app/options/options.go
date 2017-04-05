@@ -19,7 +19,7 @@ func NewConfig() *Config {
 		KubeConfig:            "",
 		ProviderName:          "",
 		ClusterName:           "",
-		LoadbalancerImageName: "appscode/haproxy:1.7.2-1.5.0",
+		LoadbalancerImageName: "appscode/haproxy:1.7.2-1.5.1",
 	}
 }
 

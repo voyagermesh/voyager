@@ -82,7 +82,7 @@ func registerE2EFlags() {
 	flag.StringVar(&TestContext.E2EConfigs.KubeConfig, "kubeconfig", "", "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
 	flag.StringVar(&TestContext.E2EConfigs.ProviderName, "cloud-provider", "", "Name of cloud provider")
 	flag.StringVar(&TestContext.E2EConfigs.ClusterName, "cluster-name", "", "Name of Kubernetes cluster")
-	flag.StringVar(&TestContext.E2EConfigs.LoadbalancerImageName, "haproxy-image", "appscode/haproxy:1.7.2-1.5.0", "haproxy image name to be run")
+	flag.StringVar(&TestContext.E2EConfigs.LoadbalancerImageName, "haproxy-image", "appscode/haproxy:1.7.2-1.5.1", "haproxy image name to be run")
 	flag.StringVar(&TestContext.E2EConfigs.IngressClass, "ingress-class", "", "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
 	flag.BoolVar(&TestContext.E2EConfigs.Cleanup, "cleanup", true, "")
 	flag.BoolVar(&TestContext.E2EConfigs.InCluster, "in-cluster", false, "")
