@@ -80,6 +80,7 @@ func (lbc *EngressController) createLB() error {
 	} else {
 		if lbc.Options.ProviderName == "aws" ||
 			lbc.Options.ProviderName == "gce" ||
+			lbc.Options.ProviderName == "gke" ||
 			lbc.Options.ProviderName == "azure" ||
 			lbc.Options.ProviderName == "minikube" {
 			err = lbc.createLoadBalancerLB()
@@ -261,7 +262,7 @@ func (lbc *EngressController) createLoadBalancerLB() error {
 	}
 
 	switch lbc.Options.ProviderName {
-	case "gce":
+	case "gce", "gke":
 		svc.Spec.Type = kapi.ServiceTypeLoadBalancer
 		svc.Spec.LoadBalancerIP = lbc.Options.LoadBalancerIP
 	case "aws":

@@ -460,7 +460,10 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 }
 
 func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
-	if len(ing.t.Config.LBPersistIP) > 0 && (ing.t.Config.ProviderName == "gce" || (ing.t.Config.ProviderName == "aws" && ing.t.Config.InCluster)) {
+	if len(ing.t.Config.LBPersistIP) > 0 &&
+		(ing.t.Config.ProviderName == "gce" ||
+			ing.t.Config.ProviderName == "gke" ||
+			(ing.t.Config.ProviderName == "aws" && ing.t.Config.InCluster)) {
 		baseIngress := &aci.Ingress{
 			ObjectMeta: api.ObjectMeta{
 				Name:      "base-ingress",

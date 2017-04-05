@@ -27,6 +27,7 @@ func TestShouldHandleIngress(t *testing.T) {
 			"voyager": true,
 			"":        true,
 			"gce":     true,
+			"gke":     true,
 			"aws":     true,
 		},
 
@@ -40,6 +41,7 @@ func TestShouldHandleIngress(t *testing.T) {
 			"voyager": true,
 			"":        true,
 			"gce":     true,
+			"gke":     true,
 			"aws":     true,
 		},
 
@@ -51,6 +53,7 @@ func TestShouldHandleIngress(t *testing.T) {
 			"voyager": false,
 			"":        true,
 			"gce":     false,
+			"gke":     false,
 			"aws":     false,
 		},
 	}
