@@ -43,8 +43,8 @@ Voyager controller communicates with kube-apiserver at inCluster mode if no mast
 to handle corresponding events.
 
 ```sh
-$ export CLOUD_PROVIDER=<provider-name> // values in gce, aws
-$ export CLUSTER_NAME=<clustername>
+$ export CLOUD_PROVIDER=<provider-name> // eg: gce, gke, aws, azure
+$ export CLUSTER_NAME=<clustername>     // eg: Name of your GKE cluster. This is used to create firewall rules.
 $ curl https://raw.githubusercontent.com/appscode/voyager/master/hack/deploy/deployments.yaml | \
         envsubst | \
         kubectl apply -f -
