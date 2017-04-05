@@ -50,8 +50,6 @@ spec:
   - host: appscode.example.com
     http:
       paths:
-      - path: "/testPath"
-        backend:
+      - backend:
           serviceName: test-server
           servicePort: 80
-
