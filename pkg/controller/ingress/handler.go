@@ -49,6 +49,14 @@ func NewEngressController(clusterName, providerName string,
 			log.Infoln("Initialized cloud provider: "+providerName, cloudInterface)
 			h.CloudManager = cloudInterface
 		}
+	} else if providerName == "gke" {
+		cloudInterface, err := cloudprovider.GetCloudProvider("gce", nil)
+		if err != nil {
+			log.Errorln("Failed to initialize cloud provider:"+providerName, err)
+		} else {
+			log.Infoln("Initialized cloud provider: "+providerName, cloudInterface)
+			h.CloudManager = cloudInterface
+		}
 	} else if providerName == "minikube" {
 		h.CloudManager = &fakecloudprovider.FakeCloud{}
 	} else {
