@@ -1,0 +1,26 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    chart: {{.Chart.Name}}-{{.Chart.Version}}
+    heritage: {{.Release.Service}}
+    release: {{.Release.Name}}
+    run: {{ template "fullname" . }}
+  name: {{ template "fullname" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: {{ template "fullname" . }}
+  template:
+    metadata:
+      labels:
+        run: {{ template "fullname" . }}
+    spec:
+      containers:
+      - args:
+        - --cloud-provider={{.Values.cloudProvider}}
+        - --cluster-name={{.Values.clustername}}
+        image: "{{.Values.image}}:{{.Values.imageTag}}"
+        imagePullPolicy: "{{.Values.imagePullPolicy}}"
+        name: {{ template "name" . }}
