@@ -103,6 +103,8 @@ func (i *IngressTestSuit) runTests() error {
 					return err
 				}
 			}
+			log.Infoln("Wait a bit for things to be clean up inside cluster")
+			time.Sleep(time.Second*20)
 		}
 	}
 	return nil
