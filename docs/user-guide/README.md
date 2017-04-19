@@ -70,6 +70,9 @@ This is supported for cloud providers known to Kubernetes (`aws`, `gce` and `azu
 
 You can choose the mode in your Ingress YAML using label: [ingress.appscode.com/type](/docs/user-guide/component/ingress#configurations-options)
 
+## Run with helm
+One can deploy the controller with helm by following this [guide](/hack/chart/voyager/README.md)
+
 ## Ingress
 This resource Type is backed by an controller which monitors and manages the resources of AppsCode Ingress Kind. Which is used for maintain and HAProxy backed loadbalancer to the cluster for open communications inside cluster from internet via the loadbalancer.
 Even when a resource for AppsCode Ingress type is created, the controller will treat it as a new load balancer request and will create a new load balancer, based on the configurations.
