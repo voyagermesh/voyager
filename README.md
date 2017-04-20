@@ -18,7 +18,7 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
   - [TLS Termination](docs/user-guide/component/ingress/tls.md),
   - Multi-cloud supports,
   - [Name and Path based virtual hosting](docs/user-guide/component/ingress/named-virtual-hosting.md),
-  - [Cross namespace routing support](docs/user-guide/component/ingress/named-virtual-hosting.md),
+  - [Cross namespace routing support](docs/user-guide/component/ingress/named-virtual-hosting.md#cross-namespace-traffic-routing),
   - [URL and Request Header Re-writing](docs/user-guide/component/ingress/header-rewrite.md),
   - [Wildcard Name based virtual hosting](docs/user-guide/component/ingress/named-virtual-hosting.md),
   - Persistent sessions, Loadbalancer stats.
