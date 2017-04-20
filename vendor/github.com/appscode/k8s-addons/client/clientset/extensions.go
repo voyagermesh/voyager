@@ -17,6 +17,7 @@ type AppsCodeExtensionInterface interface {
 	IngressNamespacer
 	AlertNamespacer
 	CertificateNamespacer
+	BackupNamespacer
 }
 
 // AppsCodeExtensionsClient is used to interact with experimental Kubernetes features.
@@ -36,6 +37,10 @@ func (a *AppsCodeExtensionsClient) Alert(namespace string) AlertInterface {
 
 func (a *AppsCodeExtensionsClient) Certificate(namespace string) CertificateInterface {
 	return newCertificate(a, namespace)
+}
+
+func (a *AppsCodeExtensionsClient) Backups(namespace string) BackupInterface {
+	return newBackup(a, namespace)
 }
 
 // NewAppsCodeExtensions creates a new AppsCodeExtensionsClient for the given config. This client

@@ -80,7 +80,7 @@ func (e *extendedCodec) Decode(data []byte, gvk *schema.GroupVersionKind, obj ru
 		log.V(7).Infoln("Detected metadata type for nil object, got", metadata.APIVersion, metadata.Kind)
 		obj, err = setDefaultType(metadata)
 		if err != nil {
-			log.Errorln("faild to create type", err)
+			return obj, gvk, err
 		}
 	}
 	err := json.Unmarshal(data, obj)
@@ -102,6 +102,9 @@ func (e *extendedCodec) Encode(obj runtime.Object, w io.Writer) error {
 			return err
 		}
 		_, err = w.Write(data)
+		if err != nil {
+			return err
+		}
 	}
 
 	if e.pretty {

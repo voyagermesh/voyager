@@ -15,7 +15,6 @@ type Clock interface {
 	After(d time.Duration) <-chan time.Time
 	AfterFunc(d time.Duration, f func()) *Timer
 	Now() time.Time
-	Since(t time.Time) time.Duration
 	Sleep(d time.Duration)
 	Tick(d time.Duration) <-chan time.Time
 	Ticker(d time.Duration) *Ticker
@@ -37,8 +36,6 @@ func (c *clock) AfterFunc(d time.Duration, f func()) *Timer {
 }
 
 func (c *clock) Now() time.Time { return time.Now() }
-
-func (c *clock) Since(t time.Time) time.Duration { return time.Since(t) }
 
 func (c *clock) Sleep(d time.Duration) { time.Sleep(d) }
 
@@ -90,7 +87,7 @@ func (m *Mock) Add(d time.Duration) {
 	gosched()
 }
 
-// Set sets the current time of the mock clock to a specific one.
+// Sets the current time of the mock clock to a specific one.
 // This should only be called from a single goroutine at a time.
 func (m *Mock) Set(t time.Time) {
 	// Continue to execute timers until there are no more before the new time.
@@ -159,11 +156,6 @@ func (m *Mock) Now() time.Time {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	return m.now
-}
-
-// Since returns time since the mock clocks wall time.
-func (m *Mock) Since(t time.Time) time.Duration {
-	return m.Now().Sub(t)
 }
 
 // Sleep pauses the goroutine for the given duration on the mock clock.

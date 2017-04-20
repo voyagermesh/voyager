@@ -1,5 +1,5 @@
 hash: e8c0b51216912d3ad2ad8f7a4dbaaea2cd3cb96a5d24675db38e6a93efa54860
-updated: 2017-03-01T13:45:15.541772321-08:00
+updated: 2017-04-20T14:09:48.332470456-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -9,11 +9,11 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/errors
-  version: 6a668ba07d02064c06707b7d8b0f5239db707045
+  version: 87fb529db75df5295ccccd15cb038587cd5a9dd2
   subpackages:
   - h/log
 - name: github.com/appscode/go
-  version: 7ba1c0a441c6c319a501e54db6e93deaff5fe0dd
+  version: bd371af23fb2398b60c065a9e07df5084422d6ad
   subpackages:
   - arrays
   - crypto/rand
@@ -23,7 +23,7 @@ imports:
   - strings
   - version
 - name: github.com/appscode/k8s-addons
-  version: 2feea95b0d62ad215bef8d0789978be7c9d58d06
+  version: 4d09e2d4774d66c1b0a13f5d893a5d0e90d060b3
   subpackages:
   - api
   - api/install
@@ -85,7 +85,7 @@ imports:
   - autorest/to
   - autorest/validation
 - name: github.com/benbjohnson/clock
-  version: 7dc76406b6d3c05b5f71a86293cbcf3c4ea03b19
+  version: a620c1cc9866f84a2550ad53f4f353ec030fa26b
 - name: github.com/beorn7/perks
   version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
   subpackages:
@@ -114,6 +114,10 @@ imports:
   - spew
 - name: github.com/dgrijalva/jwt-go
   version: 01aeca54ebda6e0fbfafd0a524d234159c05ec20
+- name: github.com/dnsimple/dnsimple-go
+  version: 5a5b427618a76f9eed5ede0f3e6306fbd9311d2e
+  subpackages:
+  - dnsimple
 - name: github.com/docker/distribution
   version: cd27f179f2c10c5d300e6d09025b538c475b0d51
   subpackages:
@@ -149,11 +153,11 @@ imports:
   - log
   - swagger
 - name: github.com/facebookgo/stack
-  version: 751773369052141c013c6e827a71e8f35c07879c
+  version: d9d227395bc3d7a635388c75b2e3b3a750e11888
 - name: github.com/flosch/pongo2
   version: 1d0f0d3af150c4a65dfd424d742f7374819e7d29
 - name: github.com/ghodss/yaml
-  version: 04f313413ffd65ce25f2541bfd2b2ceec5c0908c
+  version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/go-ini/ini
   version: 2e44421e256d82ebbf3d4d4fcabe8930b905eff3
 - name: github.com/go-openapi/jsonpointer
@@ -193,12 +197,16 @@ imports:
   - vanity
   - vanity/command
 - name: github.com/golang/glog
-  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
+  version: 44145f04b68cf362d9c4df2182967c2275eaefed
 - name: github.com/golang/protobuf
   version: 8616e8ee5e20a1704615e6c8d7afcdac06087a67
   subpackages:
   - jsonpb
   - proto
+- name: github.com/google/go-querystring
+  version: 547ef5ac979778feb2f760cdb5f4eae1a2207b86
+  subpackages:
+  - query
 - name: github.com/google/gofuzz
   version: bbcb9da2d746f8bdbd6a936686a0a6067ada0ec5
 - name: github.com/howeyc/gopass
@@ -208,7 +216,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/JamesClonk/vultr
-  version: 9ec0427d51411407c0402b093a1771cb75af9679
+  version: 0f156dd232bc4ebf8a32ba83fec57c0e4c9db69f
   subpackages:
   - lib
 - name: github.com/jmespath/go-jmespath
@@ -319,9 +327,9 @@ imports:
   subpackages:
   - zk
 - name: github.com/spf13/cobra
-  version: fcd0c5a1df88f5d6784cb4feead962c3f3d0b66c
+  version: 10f6b9d7e1631a54ad07c5c0fb71c28a1abfd3c2
 - name: github.com/spf13/pflag
-  version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
+  version: 2300d0f8576fe575f71aaa5b9bbe4e1b0dc2eb51
 - name: github.com/timewasted/linode
   version: 37e84520dcf74488f67654f9c775b9752c232dc1
   subpackages:
@@ -353,16 +361,12 @@ imports:
   subpackages:
   - photon
   - photon/lightwave
-- name: github.com/weppos/dnsimple-go
-  version: 65c1ca73cb19baf0f8b2b33219b7f57595a3ccb0
-  subpackages:
-  - dnsimple
 - name: github.com/xanzy/go-cloudstack
   version: 1e2cbf647e57fa90353612074fdfc42faf5073bf
   subpackages:
   - cloudstack
 - name: github.com/xenolf/lego
-  version: 9daa55c337f252e32554e849cb399ae12c9fa21a
+  version: 5ee956d6ca4ffbd8b940fc3ecb6e109c99d9a68a
   repo: git@github.com:appscode/lego.git
   vcs: git
   subpackages:
@@ -463,7 +467,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/ini.v1
-  version: 74bdc99692c3408cb103221e38675ce8fda0a718
+  version: 6e4869b434bd001f6983749881c7ead3545887d8
 - name: gopkg.in/mgo.v2
   version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
   subpackages:
@@ -477,7 +481,7 @@ imports:
 - name: gopkg.in/yaml.v2
   version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/kubernetes
-  version: f537547bcfbcb61b645540e9394b4b7b4df93e6b
+  version: cca88f5474de73be840be28d7a715a93f464b894
   repo: https://github.com/appscode/kubernetes.git
   vcs: git
   subpackages:
