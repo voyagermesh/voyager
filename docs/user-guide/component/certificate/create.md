@@ -93,4 +93,26 @@ spec:
     Name: base-ingress
 ```
 
-You need to set your domain's A Record to that Ingress Access point. That way you can create certificate with http providers.
+You need to set your domain's A Record to that Ingress IP / CNAME. That way you can create certificate with http providers.
+Your Ingress must present before an certificate create request via that Ingress.
+
+```yaml
+apiVersion: appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: base-ingress
+  namespace: foo
+spec:
+  tls:
+    - secretName: cert-test-cert
+      hosts:
+      - foo.example.com
+  rules:
+  - host: foo.example.com
+    http:
+      paths:
+      - backend:
+          serviceName: test-service
+          servicePort: 80
+```
+
