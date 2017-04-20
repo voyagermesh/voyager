@@ -64,6 +64,9 @@ type CertificateStatus struct {
   - spec.acmeUserSecretName - acme user information to use for obtaining certificates. If none is provided one will be created
   - spec.acmeStagingURL - server to obtain a certificate from. Default uses Let's Encrypt.
 
+### Supported Providers
+[This Providers](provider.md) are supported as domain's DNS provider. The `providerCredentialSecretName` Must match the
+format.
 
 ## Usage
 - [Creating a Certificate](create.md)
