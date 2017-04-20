@@ -39,6 +39,9 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&Certificate{},
 		&CertificateList{},
 
+		&Backup{},
+		&BackupList{},
+
 		&api.ListOptions{},
 	)
 	return nil
@@ -52,3 +55,6 @@ func (obj *AlertList) GetObjectKind() schema.ObjectKind { return &obj.TypeMeta }
 
 func (obj *Certificate) GetObjectKind() schema.ObjectKind     { return &obj.TypeMeta }
 func (obj *CertificateList) GetObjectKind() schema.ObjectKind { return &obj.TypeMeta }
+
+func (obj *Backup) GetObjectKind() schema.ObjectKind     { return &obj.TypeMeta }
+func (obj *BackupList) GetObjectKind() schema.ObjectKind { return &obj.TypeMeta }

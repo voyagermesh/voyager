@@ -43,10 +43,6 @@ func Contains(a []string, e string) bool {
 	return false
 }
 
-func EqualIgnoreCase(a, b string) bool {
-	return strings.EqualFold(a, b)
-}
-
 // Allowed char: [a-z0-9]([a-z0-9-]*[a-z0-9])?
 // Makes it safe as a subdomain
 func DomainForm(s string) string {

@@ -19,6 +19,7 @@ import (
 	"github.com/xenolf/lego/acme"
 	"k8s.io/kubernetes/pkg/api"
 	k8serr "k8s.io/kubernetes/pkg/api/errors"
+	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/util/intstr"
@@ -393,9 +394,10 @@ func (c *CertificateController) save(cert acme.CertificateResource) error {
 	}
 
 	// Update certificate data to add Details Information
+	t := unversioned.Now()
 	k8sCert.Status = aci.CertificateStatus{
 		CertificateObtained: true,
-		Created:             time.Now(),
+		CreationTime:        &t,
 		ACMEUserSecretName:  c.userSecretName,
 		Details: aci.ACMECertificateDetails{
 			Domain:        cert.Domain,
