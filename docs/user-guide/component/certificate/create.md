@@ -21,6 +21,19 @@ spec:
   providerCredentialSecretName: test-gcp-secret
 ```
 
+In this example the domains DNS providers are `googlecloude`. Example Test `test-gcp-secret` should look like
+```yaml
+kind: Secret
+metadata:
+  name: ssl-appscode-io
+  namespace: default
+data:
+  GCE_PROJECT: <project-name>
+  GOOGLE_APPLICATION_CREDENTIALS: <credential>
+```
+
+See the Supported Providers List [here](provider.md)
+
 ```sh
 kubectl create -f example.yaml
 ```

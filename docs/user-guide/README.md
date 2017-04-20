@@ -1,54 +1,28 @@
 # User Guide
 This guide will walk you through deploying the Voyager controller.
 
-## High Level Tasks
-* Create `ingress.appscode.com` and `certificate.appscode.com` Third Party Resource
-* Create Voyager Deployment
-
-## Deploying Voyager
-
-### Create the Third Party Resources
-`voyager` depends on two Third Party Resource Object `ingress.appscode.com` and `certificate.appscode.com`. Those two objects
-can be created using following data.
-
-```yaml
-metadata:
-  name: ingress.appscode.com
-apiVersion: extensions/v1beta1
-kind: ThirdPartyResource
-description: "Extended ingress support for Kubernetes by appscode.com"
-versions:
-  - name: v1beta1
-```
-
-```yaml
-metadata:
-  name: certificate.appscode.com
-apiVersion: extensions/v1beta1
-kind: ThirdPartyResource
-description: "A specification of a Let's Encrypt Certificate to manage."
-versions:
-  - name: v1beta1
-```
-
-```sh
-# Create Third Party Resource
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/k8s-addons/master/api/extensions/ingress.yaml
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/k8s-addons/master/api/extensions/certificate.yaml
-```
-
-
-### Deploy Controller
+### Deploying Voyager
 Voyager controller communicates with kube-apiserver at inCluster mode if no master or kubeconfig is provided. It watches Ingress and Certificate resource
 to handle corresponding events.
 
 ```sh
-$ export CLOUD_PROVIDER=<provider-name> // eg: gce, gke, aws, azure
-$ export CLUSTER_NAME=<clustername>     // eg: Name of your GKE cluster. This is used to create firewall rules.
+$ export CLOUD_PROVIDER=<provider-name> // ie:
+                                        // - gce
+                                        // - gke
+                                        // - aws
+                                        // - azure
+
+$ export CLUSTER_NAME=<clustername>     // eg: Name of your cluster. This is used to create firewall rules.
+
 $ curl https://raw.githubusercontent.com/appscode/voyager/master/hack/deploy/deployments.yaml | \
         envsubst | \
         kubectl apply -f -
 ```
+
+Once Controller is *Running* It will create the [required ThirdPartyResources for ingress and certificates](/docs/developer-guide#third-party-resources).
+Check the Controller is running or not via `kubectl get pods` there should be a pod nameed `appscode-voyager-xxxxxxxxxx-xxxxx`.
+Now Create Your Ingress/Certificated.
+
 
 #### Configuration Options
 ```
@@ -91,14 +65,14 @@ spec:
   - host: appscode.example.com
     http:
       paths:
-      - path: "/testPath"
+      - path: '/testPath'
         backend:
           serviceName: test-service
           servicePort: '80'
           headerRule:
           - X-Forwarded-Host %[base]
           rewriteRule:
-          - "^([^\\ :]*)\\ /(.*)$ \\1\\ /testings/\\2"
+          - '^([^\\ :]*)\\ /(.*)$ \\1\\ /testings/\\2'
 ```
 
 POSTing this to Kubernetes, API server will need to create a loadbalancer.

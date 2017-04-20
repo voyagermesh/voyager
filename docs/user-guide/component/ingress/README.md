@@ -122,7 +122,7 @@ same ingress resource. Learn more by reading the certificate doc.
 ## Next Reading
 - [Single Service example](single-service.md)
 - [Simple Fanout](simple-fanout.md)
-- [Virtual Hosting](named-virtual-hostin.md)
+- [Virtual Hosting](named-virtual-hosting.md)
 - [URL and Header Rewriting](header-rewrite.md)
 - [TCP Loadbalancing](tcp.md)
 - [TLS Termination](tls.md)
