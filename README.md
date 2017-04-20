@@ -50,7 +50,7 @@ Kubernetes Controller to manage TLS Certificate.
 
 
 ### Supported Domain Providers
-Read more about Supported DNS Providers [here](/docs/user-guide/component/certificate/provider.md)
+Read more about supported DNS Providers [here](/docs/user-guide/component/certificate/provider.md)
 
 ## Supported Versions
 Kubernetes 1.3+
@@ -63,7 +63,7 @@ To deploy voyager in Kubernetes follow this [guide](docs/user-guide/README.md). 
 2. Deploy voyager to kubernetes.
 
 ## Running voyager alongside with other ingress controller
-voyager can be configured to handle default kubernetes ingress or only ingress.appscode.com. voyager can also be run
+Voyager can be configured to handle default kubernetes ingress or only ingress.appscode.com. voyager can also be run
 along side with other controllers.
 
 ```sh
