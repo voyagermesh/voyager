@@ -19,7 +19,7 @@ $ curl https://raw.githubusercontent.com/appscode/voyager/master/hack/deploy/dep
         kubectl apply -f -
 ```
 
-Once Controller is *Running* It will create the [required ThirdPartyResources for ingress and certificates](/docs/developer-guide#third-party-resource).
+Once Controller is *Running* It will create the [required ThirdPartyResources for ingress and certificates](/docs/developer-guide#third-party-resources).
 Check the Controller is running or not via `kubectl get pods` there should be a pod nameed `appscode-voyager-xxxxxxxxxx-xxxxx`.
 Now Create Your Ingress/Certificated.
 
