@@ -1,5 +1,7 @@
 [![CLA assistant](https://cla-assistant.io/readme/badge/appscode/libbuild)](https://cla-assistant.io/appscode/libbuild)
 
+[Website](https://appscode.com) • [Slack](https://slack.appscode.com) • [Forum](https://discuss.appscode.com) • [Twitter](https://twitter.com/AppsCodeHQ)
+
 Common build scripts used by AppsCode repositories.
 
 ## Installing
@@ -57,6 +59,10 @@ check_antipackage()
 import antipackage
 from github.appscode.libbuild import libbuild
 ```
+
+## Acknowledgement
+- `pydotenv` is a fork of [python-dotenv](https://github.com/theskumar/python-dotenv). This provides support of [antipackage](https://github.com/ellisonbg/antipackage)
+for python-dotenv.
 
 ## License
 `libbuild` is licensed under the Apache 2.0 license. See the LICENSE file for details.
