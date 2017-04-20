@@ -34,6 +34,26 @@ spec:
 If the `host` field is set to `*.bar.com`, Ingress will forward traffic for any subdomain of `bar.com`.
 so `foo.bar.com` or `test.bar.com` will forward traffic to the desired backends.
 
+### Cross Namespace traffic routing
+If your ingress in namespace `foo` and your application is in namespace `bar` you can still forward traffic.
+
+```yaml
+apiVersion: appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: test-ingress
+  namespace: foo
+spec:
+  rules:
+  - host: foo.bar.com
+    http:
+      paths:
+      - backend:
+          serviceName: s1.bar # serviceName.Namespace
+          servicePort: '80'
+```
+
+
 ## Next Reading
 - [URL and Header Rewriting](header-rewrite.md)
 - [TCP Loadbalancing](tcp.md)
