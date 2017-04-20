@@ -70,3 +70,27 @@ Data
 tls.crt:        3411 bytes
 tls.key:        1679 bytes
 ```
+
+### Create Certificate with HTTP Provider
+
+To Create a certificate with HTTP Provider you need to provide a ingress reference to certificate.
+```yaml
+apiVersion: appscode.com/v1beta1
+kind: Certificate
+metadata:
+  name: test-cert
+  namespace: default
+spec:
+  domains:
+  - foo.example.com
+  - bar.example.com
+  email: jon.doe@example.com
+  provider: http
+  httpProviderIngressReference:
+    apiVersion: appscode.com/v1beta1
+    kind: Ingress
+    Namespace: foo
+    Name: base-ingress
+```
+
+You need to set your domain's A Record to that Ingress Access point. That way you can create certificate with http providers.

@@ -8,6 +8,7 @@ The Secret will need the Key name exactly provided.
 ### HTTP (beta)
 HTTP Provider will requires an [Ingress](/docs/user-guide/component/ingress) reference to resolve with.
 Reference an Ingress name for http provider. Ingress IP should be setted as domain A record in its provider.
+Read how to create certificate using [HTTP Provider](/docs/user-guide/certificate/create.md#create-certificate-with-http-provider)
 
 ### Cloudflare
 `CLOUDFLARE_EMAIL`: The email of the cloudflare user <br>
