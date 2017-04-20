@@ -4,10 +4,12 @@
 from __future__ import absolute_import
 
 import datetime
+import fnmatch
 import io
 import json
 import os
 import os.path
+import re
 import socket
 import subprocess
 import sys
@@ -107,9 +109,8 @@ def read_json(name):
 
 
 def write_json(obj, name):
-    with io.open(name, 'w') as f:
-        data = json.dumps(obj, indent=2, separators=(',', ': '), ensure_ascii=False)
-        f.write(data)
+    with io.open(name, 'w', encoding='utf-8') as f:
+        f.write(unicode(json.dumps(obj, indent=2, separators=(',', ': '), ensure_ascii=False)))
 
 
 def call(cmd, stdin=None, cwd=None):
@@ -127,6 +128,17 @@ def check_output(cmd, stdin=None, cwd=None):
     return subprocess.check_output([expandvars(cmd)], shell=True, stdin=stdin, cwd=cwd)
 
 
+def deps():
+    die(call('go get -u golang.org/x/tools/cmd/goimports'))
+    die(call('go get -u golang.org/x/tools/cmd/stringer'))
+    die(call('go get -u github.com/Masterminds/glide'))
+    die(call('go get -u github.com/sgotti/glide-vc'))
+    die(call('go get -u github.com/jteeuwen/go-bindata/...'))
+    die(call('go get -u github.com/progrium/go-extpoints'))
+    die(call('go get -u github.com/tools/godep'))
+    die(call('go get -u github.com/uber/go-torch'))
+
+
 def to_upper_camel(lower_snake):
     components = lower_snake.split('_')
     # We capitalize the first letter of each component
@@ -137,9 +149,10 @@ def to_upper_camel(lower_snake):
 # ref: https://golang.org/cmd/go/
 def go_build(name, goos, goarch, main):
     linker_opts = []
-    for k, v in metadata(REPO_ROOT, goos, goarch).items():
-        linker_opts.append('-X')
-        linker_opts.append('main.' + to_upper_camel(k) + '=' + v)
+    if BIN_MATRIX[name].get('go_version', False):
+        for k, v in metadata(REPO_ROOT, goos, goarch).items():
+            linker_opts.append('-X')
+            linker_opts.append('main.' + to_upper_camel(k) + '=' + v)
 
     cgo_env = 'CGO_ENABLED=0'
     cgo = ''
@@ -224,8 +237,46 @@ def update_registry(version):
     lf = dist + '/latest.txt'
     write_file(lf, version)
     for name in os.listdir(dist):
+        if os.path.isfile(dist + '/' + name):
+            continue
         if name not in BIN_MATRIX:
-            return
+            continue
         call("gsutil cp {2} {0}/binaries/{1}/latest.txt".format(bucket, name, lf), cwd=REPO_ROOT)
         if BIN_MATRIX[name].get('release', False):
             call('gsutil acl ch -u AllUsers:R -r {0}/binaries/{1}/latest.txt'.format(bucket, name), cwd=REPO_ROOT)
+
+
+def ungroup_go_imports(*paths):
+    for p in paths:
+        if os.path.isfile(p):
+            print('Ungrouping imports of file: ' + p)
+            _ungroup_go_imports(p)
+        elif os.path.isdir(p):
+            print('Ungrouping imports of dir: ' + p)
+            for dir, _, files in os.walk(p):
+                for f in fnmatch.filter(files, '*.go'):
+                    _ungroup_go_imports(dir + '/' + f)
+
+
+BEGIN_IMPORT_REGEX = ur'import \(\s*'
+END_IMPORT_REGEX = ur'\)\s*'
+
+
+def _ungroup_go_imports(fname):
+    with open(fname, 'r+') as f:
+        content = f.readlines()
+        out = []
+        import_block = False
+        for line in content:
+            c = line.strip()
+            if import_block:
+                if c == '':
+                    continue
+                elif re.match(END_IMPORT_REGEX, c) is not None:
+                    import_block = False
+            elif re.match(BEGIN_IMPORT_REGEX, c) is not None:
+                    import_block = True
+            out.append(line)
+        f.seek(0)
+        f.writelines(out)
+        f.truncate()
