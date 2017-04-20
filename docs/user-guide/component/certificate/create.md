@@ -73,17 +73,8 @@ tls.key:        1679 bytes
 
 ### Create Certificate with HTTP Provider
 
-Your ingress must be present before a certificate create request. Your ingress must contains the required [TLS](/docs/user-guide/ingress/tls.md) fields.
-```
-  tls:
-    - secretName: cert-test-cert
-      hosts:
-      - foo.example.com
-  rules:
-  - host: foo.example.com
-```
+Your ingress must be present before a certificate can be issues from Let's Encrypt using HTTP validation. Your ingress must terminate SSL(/docs/user-guide/ingress/tls.md) for the desired domains. Here is an example ingress definition:
 
-As an example
 ```yaml
 apiVersion: appscode.com/v1beta1
 kind: Ingress
@@ -103,10 +94,10 @@ spec:
           serviceName: test-service
           servicePort: 80
 ```
-When Your Ingress in ready. Set ingress IP/CNAME as your domain's A record. And Create a
-certificate resource.
+Now create the ingress. Once the ingress is configured, it will show a IP address or CNAME in the ingres status. Now, go to your domain registrar's website and set IP/CNAME for your domain(s). Now, you are ready to issue a SSL certificate using HTTP provier.
 
-To Create a certificate with HTTP Provider you need to provide a ingress reference to certificate.
+Below is an example certificate definition. Please note that to use HTTP Provider, you need to point to the ingress created in above.
+
 ```yaml
 apiVersion: appscode.com/v1beta1
 kind: Certificate
@@ -126,7 +117,7 @@ spec:
     Name: base-ingress
 ```
 
-When Your Certificate is ready you can find it out following these steps.
+When your certificate is issued, you will see a `kubernetes.io/tls` type secret.
 
 ```sh
 kubectl get secrets cert-test-cert
