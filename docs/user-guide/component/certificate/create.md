@@ -73,8 +73,17 @@ tls.key:        1679 bytes
 
 ### Create Certificate with HTTP Provider
 
-Your Ingress must present before an certificate create request via that Ingress.
+Your ingress must be present before a certificate create request. Your ingress must contains the required [TLS](/docs/user-guide/ingress/tls.md) fields.
+```
+  tls:
+    - secretName: cert-test-cert
+      hosts:
+      - foo.example.com
+  rules:
+  - host: foo.example.com
+```
 
+As an example
 ```yaml
 apiVersion: appscode.com/v1beta1
 kind: Ingress
@@ -94,6 +103,8 @@ spec:
           serviceName: test-service
           servicePort: 80
 ```
+When Your Ingress in ready. Set ingress IP/CNAME as your domain's A record. And Create a
+certificate resource.
 
 To Create a certificate with HTTP Provider you need to provide a ingress reference to certificate.
 ```yaml
@@ -115,4 +126,13 @@ spec:
     Name: base-ingress
 ```
 
-You need to set your domain's A Record to that Ingress IP / CNAME. That way you can create certificate with http providers.
+When Your Certificate is ready you can find it out following these steps.
+
+```sh
+kubectl get secrets cert-test-cert
+```
+
+```
+NAME      TYPE                DATA      AGE
+cert-test-cert    kubernetes.io/tls   2         20m
+```
