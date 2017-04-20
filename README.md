@@ -49,6 +49,9 @@ Kubernetes Controller to manage TLS Certificate.
 - Use issued Certificates with Ingress to Secure Communications.
 
 
+### Supported Domain Providers
+Read more about Supported DNS Providers [here](/docs/user-guide/component/certificate/provider.md)
+
 ## Supported Versions
 Kubernetes 1.3+
 
