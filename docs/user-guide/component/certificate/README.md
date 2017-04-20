@@ -74,8 +74,12 @@ format.
 - [Consuming Certificates](consume.md)
 
 ## Using Certificate with Ingress
+
 For sakes of simply managing ingress with TLS termination we can create a ingress with some Annotation that can be used
 to create and or manage a certificate resource with Voyager controller. Read More with [Ingress](../ingress/tls.md)
+
+Read the example how to use [HTTP Provider](/docs/user-guide/certificate/create.md#create-certificate-with-http-provider)
+for certificate.
 
 ```
 certificate.appscode.com/enabled         // Enable certifiacte with ingress
