@@ -2,9 +2,8 @@
 ## Voyager chart configuration
 ##
 image: appscode/voyager
-imagePullPolicy: Always
-imageTag: 1.5.0
+imageTag: 1.5.1
 ## Use cloud provider here. Read details https://github.com/appscode/voyager/blob/master/docs/user-guide/README.md
-cloudProvider: "gce"
+cloudProvider: cloud_provider
 ## Use cluster name here. Read details https://github.com/appscode/voyager/blob/master/docs/user-guide/README.md
-clustername: "appscode-cluster"
+clustername: cluster_name
