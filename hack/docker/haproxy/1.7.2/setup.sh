@@ -7,7 +7,6 @@ set -o pipefail
 GOPATH=$(go env GOPATH)
 REPO_ROOT=$GOPATH/src/github.com/appscode/voyager
 
-source "$REPO_ROOT/hack/libbuild/common/lib.sh"
 source "$REPO_ROOT/hack/libbuild/common/public_image.sh"
 
 detect_tag $REPO_ROOT/dist/.tag
