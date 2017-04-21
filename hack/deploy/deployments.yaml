@@ -20,5 +20,23 @@ spec:
         args:
         - --cloud-provider=$CLOUD_PROVIDER
         - --cluster-name=$CLUSTER_NAME
+        - --v=3
         image: appscode/voyager:1.5.2
-        imagePullPolicy: Always
+        ports:
+        - containerPort: 1234
+          name: zero
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: appscode-voyager
+  name: appscode-voyager
+spec:
+  ports:
+  - name: zero
+    port: 1234
+    targetPort: zero
+  selector:
+    run: appscode-voyager
