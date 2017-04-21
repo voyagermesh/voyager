@@ -21,5 +21,6 @@ spec:
       - args:
         - --cloud-provider={{.Values.cloudProvider}}
         - --cluster-name={{.Values.clusterName}}
+        - --v=3
         image: "{{.Values.image}}:{{.Values.imageTag}}"
         name: {{ template "name" . }}
