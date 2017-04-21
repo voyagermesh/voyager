@@ -20,6 +20,6 @@ spec:
       containers:
       - args:
         - --cloud-provider={{.Values.cloudProvider}}
-        - --cluster-name={{.Values.clustername}}
+        - --cluster-name={{.Values.clusterName}}
         image: "{{.Values.image}}:{{.Values.imageTag}}"
         name: {{ template "name" . }}
