@@ -1,3 +1,5 @@
+Set cloudProvider, clustername for installing voyager
+
 To verify that voyager controller has started, run:
 
   kubectl --namespace={{ .Release.Namespace }} get deployments -l "release={{ .Release.Name }}, run={{ template "fullname" . }}"

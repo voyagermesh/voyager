@@ -39,8 +39,7 @@ The command removes all the Kubernetes components associated with the chart and 
 The following tables lists the configurable parameters of the Voyager chart and their default values.
 
 
-| Parameter                  | Description                                | Default                                                    |
-| -----------------------    | ----------------------------------         | ---------------------------------------------------------- |
+| Parameter                  | Description                  | Default              |
+| -----------------------    | ---------------------------- | -------------------- |
 | `image`                    |  Container image to run      | `appscode/voyager`   |
-| `imagePullPolicy`          |  Image pull policy           | `Always`   |
-| `imageTag`                 |  Image tag of contianer      | `1.5.0`   |
+| `imageTag`                 |  Image tag of container      | `1.5.1`              |
