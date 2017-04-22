@@ -3,7 +3,7 @@
 ## TL;DR;
 
 ```bash
-$ helm install hack/chart/voyager
+$ helm install chart/voyager
 ```
 
 ## Introduction
@@ -13,12 +13,12 @@ This chart bootstraps a [controller](https://github.com/appscode/voyager) deploy
 
 ## Prerequisites
 
-- Kubernetes 1.3+ 
+- Kubernetes 1.3+
 
 ## Installing the Chart
 To install the chart with the release name `my-release`:
 ```bash
-$ helm install --name my-release hack/chart/voyager
+$ helm install --name my-release chart/voyager
 ```
 The command deploys Voyager Controller on the Kubernetes cluster in the default configuration. The [configuration](#configuration) section lists the parameters that can be configured during installation.
 
