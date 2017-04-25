@@ -45,7 +45,7 @@ spec:
 
 ```
 This Ingress will open an `https` listener to secure the channel from the client to the loadbalancer,
-terminate TLS at load balancer with the secret retried via SIN and forward unencrypted traffic to the
+terminate TLS at load balancer with the secret retried via SNI and forward unencrypted traffic to the
 `test-service`.
 
 ### TCP TLS
