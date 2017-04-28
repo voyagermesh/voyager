@@ -214,7 +214,7 @@ func (c *CertificateController) create() error {
 	}
 	cert, errs := c.acmeClient.ObtainCertificate(c.certificate.Spec.Domains, true, nil, true)
 	for k, v := range errs {
-		log.Errorf("Error occured for %s, reason %s", k, v.Error())
+		log.Errorf("Error occurred for %s, reason %s", k, v.Error())
 	}
 	if len(cert.PrivateKey) > 0 {
 		return c.save(cert)
@@ -542,7 +542,7 @@ func (c *CertificateController) processHTTPCertificate(revert chan struct{}) err
 			}
 		}()
 	default:
-		return errors.New().WithMessage("HTTP Certificate resolver do not have any ingress refrence or invalid ingress refrences").NotFound()
+		return errors.New().WithMessage("HTTP Certificate resolver do not have any ingress reference or invalid ingress reference").NotFound()
 	}
 	return nil
 }

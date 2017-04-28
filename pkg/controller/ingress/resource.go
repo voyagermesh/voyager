@@ -6,7 +6,7 @@ import (
 )
 
 func (lbc *EngressController) IsExists() bool {
-	log.Infoln("Checking Ingress existance", lbc.Config.ObjectMeta)
+	log.Infoln("Checking Ingress existence", lbc.Config.ObjectMeta)
 	var err error
 	if lbc.Options.LBType == LBDaemon {
 		_, err = lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)

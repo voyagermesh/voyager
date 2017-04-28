@@ -132,7 +132,7 @@ func UpgradeAllEngress(service, clusterName, providerName string,
 }
 
 func (lbc *EngressController) Handle(e *events.Event) error {
-	log.Infof("Engress event %s/%s occured for %s", e.EventType, e.ResourceType, e.MetaData.Name)
+	log.Infof("Engress event %s/%s occurred for %s", e.EventType, e.ResourceType, e.MetaData.Name)
 	// convert to extended ingress and then handle
 	var engs []interface{}
 	if e.ResourceType == events.ExtendedIngress {

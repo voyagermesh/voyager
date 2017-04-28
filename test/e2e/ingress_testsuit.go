@@ -3,7 +3,6 @@ package e2e
 import (
 	"reflect"
 	"strings"
-
 	"time"
 
 	"github.com/appscode/errors"
@@ -104,7 +103,7 @@ func (i *IngressTestSuit) runTests() error {
 				}
 			}
 			log.Infoln("Wait a bit for things to be clean up inside cluster")
-			time.Sleep(time.Second*20)
+			time.Sleep(time.Second * 20)
 		}
 	}
 	return nil

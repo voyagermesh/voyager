@@ -214,7 +214,7 @@ func (ing *IngressTestSuit) TestIngressDaemonCreate() error {
 			if err == nil {
 				break
 			}
-			time.Sleep(time.Second*2)
+			time.Sleep(time.Second * 2)
 		}
 		if err != nil {
 			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()

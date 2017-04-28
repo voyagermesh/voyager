@@ -88,12 +88,12 @@ func registerE2EFlags() {
 	flag.BoolVar(&TestContext.E2EConfigs.InCluster, "in-cluster", false, "")
 	flag.StringVar(&TestContext.E2EConfigs.DaemonHostName, "daemon-host-name", "", "Daemon host name to run daemon hosts")
 	flag.StringVar(&TestContext.E2EConfigs.RunOnly, "test-only", "", "Daemon host name to run daemon hosts")
-	flag.StringVar(&TestContext.E2EConfigs.LBPersistIP, "lb-ip", "", "LB Persistant IP")
+	flag.StringVar(&TestContext.E2EConfigs.LBPersistIP, "lb-ip", "", "LB persistent IP")
 }
 
 func validate() {
 	if !TestContext.E2EConfigs.Cleanup && len(TestContext.E2EConfigs.RunOnly) == 0 {
-		log.Fatal("cleanup is not requried, only one test can be run")
+		log.Fatal("cleanup is not required, only one test can be run")
 	}
 
 	if TestContext.E2EConfigs.ProviderName == "" {
