@@ -881,7 +881,15 @@ func (ing *IngressTestSuit) TestIngressCoreIngress() error {
 	time.Sleep(time.Second * 30)
 	log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
 	for _, url := range serverAddr {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").Do()
+		var resp *testserverclient.Response
+		var err error
+		for i := 0; i < maxRetries; i++ {
+			resp, err = testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").Do()
+			if err == nil {
+				break
+			}
+			time.Sleep(time.Second * 2)
+		}
 		if err != nil {
 			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
 		}
