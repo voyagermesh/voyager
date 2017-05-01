@@ -80,11 +80,16 @@ func getKubeConfig() (*restclient.Config, error) {
 			testframework.TestContext.E2EConfigs.KubeConfig = clientcmd.RecommendedHomeFile
 		} else {
 			k8sConfig := os.Getenv("TEST_KUBE_CONFIG")
-			k8sConfigDir := os.TempDir() + "/.kube/config"
-			err := ioutil.WriteFile(k8sConfigDir, []byte(k8sConfig), os.ModePerm)
-			if err == nil {
-				testframework.TestContext.E2EConfigs.KubeConfig = k8sConfigDir
+			if k8sConfig == "" {
+				testframework.TestContext.E2EConfigs.KubeConfig = os.Getenv("HOME") + "/.kube/config"
+			} else {
+				k8sConfigDir := os.TempDir() + "/.kube/config"
+				err = ioutil.WriteFile(k8sConfigDir, []byte(k8sConfig), os.ModePerm)
+				if err == nil {
+					testframework.TestContext.E2EConfigs.KubeConfig = k8sConfigDir
+				}
 			}
+
 		}
 	}
 
