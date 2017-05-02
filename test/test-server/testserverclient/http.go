@@ -50,7 +50,20 @@ func (t *httpClient) Header(h map[string]string) *httpClient {
 	return t
 }
 
-func (t *httpClient) Do() (*Response, error) {
+func (t *httpClient) DoWithRetry(limit int) (*Response, error) {
+	var resp *Response
+	var err error
+	for i := 1; i <= limit; i++ {
+		resp, err = t.do()
+		if err == nil {
+			return resp, err
+		}
+		time.Sleep(time.Second * 5)
+	}
+	return resp, err
+}
+
+func (t *httpClient) do() (*Response, error) {
 	req, err := http.NewRequest(t.method, t.baseURL+"/"+t.path, nil)
 	if err != nil {
 		return nil, err

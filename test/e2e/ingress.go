@@ -111,7 +111,7 @@ func (ing *IngressTestSuit) TestIngressCreate() error {
 	time.Sleep(time.Second * 30)
 	log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
 	for _, url := range serverAddr {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").Do()
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(100)
 		if err != nil {
 			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
 		}
@@ -207,15 +207,7 @@ func (ing *IngressTestSuit) TestIngressDaemonCreate() error {
 	time.Sleep(time.Second * 20)
 	log.Infoln("Loadbalancer created, calling http endpoints for test, Total url found", len(serverAddr))
 	for _, url := range serverAddr {
-		var resp *testserverclient.Response
-		var err error
-		for i := 0; i < maxRetries; i++ {
-			resp, err = testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").Do()
-			if err == nil {
-				break
-			}
-			time.Sleep(time.Second * 2)
-		}
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
 		if err != nil {
 			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
 		}
@@ -302,7 +294,7 @@ func (ing *IngressTestSuit) TestIngressDelete() error {
 	time.Sleep(time.Second * 20)
 	log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
 	for _, url := range serverAddr {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").Do()
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
 		if err != nil {
 			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
 		}
@@ -337,7 +329,7 @@ func (ing *IngressTestSuit) TestIngressDelete() error {
 	newServerAddr, err := ing.getURLs(baseIngress)
 	if err == nil {
 		if len(newServerAddr) != 0 {
-			return errors.New().WithMessage("Server address found")
+			return errors.New().WithMessage("Server address found").Internal()
 		}
 	}
 	return nil
@@ -414,7 +406,7 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 	time.Sleep(time.Second * 20)
 	log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
 	for _, url := range serverAddr {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").Do()
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
 		if err != nil {
 			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
 		}
@@ -446,12 +438,12 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 	time.Sleep(time.Second * 20)
 	log.Infoln("Loadbalancer created, calling http endpoints for updated path, Total", len(serverAddr))
 	for _, url := range serverAddr {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").Do()
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(1)
 		if err == nil {
 			return errors.New().WithCause(err).WithMessage("Connected with old prefix").Internal()
 		}
 		log.Infoln("Expected exception, faild to connect with old path, calling new paths.")
-		resp, err = testserverclient.NewTestHTTPClient(url).Method("GET").Path("/newTestpath/ok").Do()
+		resp, err = testserverclient.NewTestHTTPClient(url).Method("GET").Path("/newTestpath/ok").DoWithRetry(50)
 		if err != nil {
 			return errors.New().WithCause(err).WithMessage("Failed to Connect With New Prefix").Internal()
 		}
@@ -546,7 +538,7 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 		time.Sleep(time.Second * 30)
 		log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
 		for _, url := range serverAddr {
-			resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").Do()
+			resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
 			if err != nil {
 				return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
 			}
@@ -645,7 +637,7 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 		time.Sleep(time.Second * 30)
 		log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
 		for _, url := range serverAddr {
-			resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").Do()
+			resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
 			if err != nil {
 				return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
 			}
@@ -759,7 +751,7 @@ func (ing *IngressTestSuit) TestIngressCreateWithOptions() error {
 	time.Sleep(time.Second * 30)
 	log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
 	for _, url := range serverAddr {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").Do()
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
 		if err != nil {
 			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
 		}
@@ -783,7 +775,7 @@ func (ing *IngressTestSuit) TestIngressCreateWithOptions() error {
 			Header(map[string]string{
 				"X-Ingress-Test-Header": "ingress.appscode.com/v1beta1",
 			}).
-			Path("/testpath/ok").Do()
+			Path("/testpath/ok").DoWithRetry(50)
 		if err != nil {
 			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
 		}
@@ -881,15 +873,7 @@ func (ing *IngressTestSuit) TestIngressCoreIngress() error {
 	time.Sleep(time.Second * 30)
 	log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
 	for _, url := range serverAddr {
-		var resp *testserverclient.Response
-		var err error
-		for i := 0; i < maxRetries; i++ {
-			resp, err = testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").Do()
-			if err == nil {
-				break
-			}
-			time.Sleep(time.Second * 2)
-		}
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
 		if err != nil {
 			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
 		}
