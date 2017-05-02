@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"bytes"
+	"math/rand"
 	"net/url"
 	"os/exec"
 	"strings"
@@ -149,4 +150,18 @@ func (ing *IngressTestSuit) getDaemonURLs(baseIngress *aci.Ingress) ([]string, e
 		}
 	}
 	return serverAddr, nil
+}
+
+func testIngressName() string {
+	return "test-ing-" + randString(5)
+}
+
+var alphanums = []rune("abcdefghijklmnopqrstuvwxz0123456789")
+
+func randString(length int) string {
+	b := make([]rune, length)
+	for i := range b {
+		b[i] = alphanums[rand.Intn(len(alphanums))]
+	}
+	return string(b)
 }

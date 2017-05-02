@@ -43,7 +43,7 @@ func (i *IngressTestSuit) TestIngressEnsureTPR() error {
 func (ing *IngressTestSuit) TestIngressCreate() error {
 	baseIngress := &aci.Ingress{
 		ObjectMeta: api.ObjectMeta{
-			Name:      "base-ingress",
+			Name:      testIngressName(),
 			Namespace: TestNamespace,
 		},
 		Spec: aci.ExtendedIngressSpec{
@@ -148,7 +148,7 @@ func (ing *IngressTestSuit) TestIngressDaemonCreate() error {
 
 	baseDaemonIngress := &aci.Ingress{
 		ObjectMeta: api.ObjectMeta{
-			Name:      "base-d-ingress",
+			Name:      testIngressName(),
 			Namespace: TestNamespace,
 			Annotations: map[string]string{
 				ingress.LBType:             ingress.LBDaemon,
@@ -234,7 +234,7 @@ func (ing *IngressTestSuit) TestIngressDaemonCreate() error {
 func (ing *IngressTestSuit) TestIngressDelete() error {
 	baseIngress := &aci.Ingress{
 		ObjectMeta: api.ObjectMeta{
-			Name:      "base-ingress",
+			Name:      testIngressName(),
 			Namespace: TestNamespace,
 		},
 		Spec: aci.ExtendedIngressSpec{
@@ -346,7 +346,7 @@ func (ing *IngressTestSuit) TestIngressDelete() error {
 func (ing *IngressTestSuit) TestIngressUpdate() error {
 	baseIngress := &aci.Ingress{
 		ObjectMeta: api.ObjectMeta{
-			Name:      "base-ingress",
+			Name:      testIngressName(),
 			Namespace: TestNamespace,
 		},
 		Spec: aci.ExtendedIngressSpec{
@@ -474,7 +474,7 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 			(ing.t.Config.ProviderName == "aws" && ing.t.Config.InCluster)) {
 		baseIngress := &aci.Ingress{
 			ObjectMeta: api.ObjectMeta{
-				Name:      "base-ingress",
+				Name:      testIngressName(),
 				Namespace: TestNamespace,
 				Annotations: map[string]string{
 					ingress.LoadBalancerPersist: "true",
@@ -574,7 +574,7 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 		time.Sleep(time.Second * 30)
 		baseIngress = &aci.Ingress{
 			ObjectMeta: api.ObjectMeta{
-				Name:      "base-ingress",
+				Name:      testIngressName(),
 				Namespace: TestNamespace,
 				Annotations: map[string]string{
 					ingress.LoadBalancerPersist: "true",
@@ -686,7 +686,7 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 func (ing *IngressTestSuit) TestIngressCreateWithOptions() error {
 	baseIngress := &aci.Ingress{
 		ObjectMeta: api.ObjectMeta{
-			Name:      "base-ingress",
+			Name:      testIngressName(),
 			Namespace: TestNamespace,
 		},
 		Spec: aci.ExtendedIngressSpec{
@@ -806,7 +806,7 @@ func (ing *IngressTestSuit) TestIngressCreateWithOptions() error {
 func (ing *IngressTestSuit) TestIngressCoreIngress() error {
 	baseIngress := &extensions.Ingress{
 		ObjectMeta: api.ObjectMeta{
-			Name:      "base-ingress",
+			Name:      testIngressName(),
 			Namespace: TestNamespace,
 			Annotations: map[string]string{
 				"kubernetes.io/ingress.class": "voyager",
