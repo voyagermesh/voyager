@@ -25,7 +25,8 @@ hosting. This plugin also support configurable application ports with all the fe
   - [Cross namespace routing support](named-virtual-hosting.md),
   - [URL and Request Header Re-writing](header-rewrite.md),
   - [Wildcard Name based virtual hosting](named-virtual-hosting.md),
-  - Persistent sessions, Loadbalancer stats.
+  - Persistent sessions, Loadbalancer stats,
+  - [Route Traffic to StatefulSet Pods Based on Host Name](statefulset-pod.md)
 
 ### Comparison with Kubernetes
 | Feauture | Kube Ingress | AppsCode Ingress |
@@ -38,6 +39,7 @@ hosting. This plugin also support configurable application ports with all the fe
 | URL and Header rewriting | :x: | :white_check_mark: |
 | Wildcard name virtual hosting | :x: | :white_check_mark: |
 | Loadbalancer statistics | :x: | :white_check_mark: |
+| Route Traffic to StatefulSet Pods Based on Host Name | :x: | :white_check_mark: |
 
 ## AppsCode Ingress Flow
 Typically, services and pods have IPs only routable by the cluster network. All traffic that ends up at an
@@ -126,6 +128,7 @@ same ingress resource. Learn more by reading the certificate doc.
 - [URL and Header Rewriting](header-rewrite.md)
 - [TCP Loadbalancing](tcp.md)
 - [TLS Termination](tls.md)
+- [Route Traffic to StatefulSet Pods Based on Host Name](statefulset-pod.md)
 
 
 ## Example
