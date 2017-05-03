@@ -7,6 +7,7 @@ import (
 	"github.com/appscode/errors"
 	err_logger "github.com/appscode/errors/h/log"
 	"github.com/appscode/go/flags"
+	stringz "github.com/appscode/go/strings"
 	"github.com/appscode/log"
 	logs "github.com/appscode/log/golog"
 	"github.com/appscode/voyager/cmd/voyager/app"
@@ -28,10 +29,11 @@ func main() {
 	errors.Handlers.Add(err_logger.LogHandler{})
 	flags.DumpAll()
 
-	if config.ProviderName == "" ||
-		config.ClusterName == "" ||
-		config.LoadbalancerImageName == "" {
-		log.Fatalln("Required flag not provided.")
+	if config.LoadbalancerImageName == "" {
+		log.Fatalln("Missing required flag --haproxy-image")
+	}
+	if stringz.Contains([]string{"aws", "gce", "gke", "azure"}, config.ProviderName) && config.ClusterName == "" {
+		log.Fatalln("--cluster-name flag must be set when --cloud-provider={aws,gce,gke,azure}")
 	}
 
 	log.Infoln("Starting Voyager Controller...")
