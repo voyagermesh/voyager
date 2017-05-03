@@ -86,7 +86,7 @@ func (lbc *EngressController) getEndpoints(s *kapi.Service, servicePort *kapi.Se
 
 			log.Infoln("targert port", targetPort)
 			for _, epAddress := range ss.Addresses {
-				if isIncludeAbleAddress(hostNames, epAddress.Hostname) {
+				if isForwardable(hostNames, epAddress.Hostname) {
 					eps = append(eps, &Endpoint{
 						Name: "server-" + epAddress.IP,
 						IP:   epAddress.IP,
@@ -99,7 +99,7 @@ func (lbc *EngressController) getEndpoints(s *kapi.Service, servicePort *kapi.Se
 	return
 }
 
-func isIncludeAbleAddress(hostNames []string, hostName string) bool {
+func isForwardable(hostNames []string, hostName string) bool {
 	if len(hostNames) <= 0 {
 		return true
 	}
