@@ -888,3 +888,109 @@ func (ing *IngressTestSuit) TestIngressCoreIngress() error {
 	}
 	return nil
 }
+
+func (ing *IngressTestSuit) TestIngressHostNames() error {
+	headlessSvc, err := ing.t.KubeClient.Core().Services("default").Create(testStatefulSetSvc)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if ing.t.Config.Cleanup {
+			ing.t.KubeClient.Core().Services("default").Delete(headlessSvc.Name, nil)
+		}
+	}()
+
+	ss, err := ing.t.KubeClient.Apps().StatefulSets("default").Create(testServerStatefulSet)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if ing.t.Config.Cleanup {
+			ing.t.KubeClient.Apps().StatefulSets("default").Delete(ss.Name, nil)
+		}
+	}()
+
+	baseIngress := &aci.Ingress{
+		ObjectMeta: api.ObjectMeta{
+			Name:      testIngressName(),
+			Namespace: TestNamespace,
+		},
+		Spec: aci.ExtendedIngressSpec{
+			Rules: []aci.ExtendedIngressRule{
+				{
+					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
+						HTTP: &aci.HTTPExtendedIngressRuleValue{
+							Paths: []aci.HTTPExtendedIngressPath{
+								{
+									Path: "/testpath",
+									Backend: aci.ExtendedIngressBackend{
+										HostNames:   []string{testServerStatefulSet.Name + "-0"},
+										ServiceName: headlessSvc.Name,
+										ServicePort: intstr.FromInt(80),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	_, err = ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if ing.t.Config.Cleanup {
+			ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		}
+	}()
+
+	// Wait sometime to loadbalancer be opened up.
+	time.Sleep(time.Second * 10)
+	var svc *api.Service
+	for i := 0; i < maxRetries; i++ {
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for service to be created")
+	}
+	if err != nil {
+		return err
+	}
+	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
+	for i := 0; i < maxRetries; i++ {
+		_, err = ing.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for endpoints to be created")
+	}
+	if err != nil {
+		return err
+	}
+
+	serverAddr, err := ing.getURLs(baseIngress)
+	if err != nil {
+		return err
+	}
+	time.Sleep(time.Second * 30)
+	log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath").DoWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+		}
+		log.Infoln("Response", *resp)
+		if resp.Method != http.MethodGet {
+			return errors.New().WithMessage("Method did not matched").Internal()
+		}
+		if resp.PodName != ss.Name+"-0" {
+			return errors.New().WithMessage("PodName did not matched").Internal()
+		}
+	}
+	return nil
+}

@@ -16,6 +16,11 @@ spec:
       containers:
         - name: server
           image: appscode/test-server:1.0
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
           ports:
             - name: http-1
               containerPort: 8080
