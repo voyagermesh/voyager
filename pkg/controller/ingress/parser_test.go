@@ -43,3 +43,31 @@ func TestALPNOptions(t *testing.T) {
 		assert.Equal(t, k, parseALPNOptions(v))
 	}
 }
+
+func TestIsIncludeAbleOptions(t *testing.T) {
+	dataTable := map[string]map[bool][]string{
+		"web-0": {
+			true: {
+				"web",
+				"web-0",
+			},
+		},
+
+		"web-1": {
+			true: {},
+		},
+
+		"web-2": {
+			false: {
+				"web",
+				"web-0",
+			},
+		},
+	}
+
+	for k, v := range dataTable {
+		for key, val := range v {
+			assert.Equal(t, key, isIncludeAbleAddress(val, k))
+		}
+	}
+}

@@ -27,7 +27,7 @@ func (lbc *EngressController) parse() error {
 	return nil
 }
 
-func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrString) ([]*Endpoint, error) {
+func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrString, hostNames []string) ([]*Endpoint, error) {
 	log.Infoln("getting endpoints for ", lbc.Config.Namespace, name, "port", port)
 
 	// the following lines giving support to
@@ -48,10 +48,10 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 	if !ok {
 		return nil, errors.New().WithMessage("service port unavaiable").NotFound()
 	}
-	return lbc.getEndpoints(service, p)
+	return lbc.getEndpoints(service, p, hostNames)
 }
 
-func (lbc *EngressController) getEndpoints(s *kapi.Service, servicePort *kapi.ServicePort) (eps []*Endpoint, err error) {
+func (lbc *EngressController) getEndpoints(s *kapi.Service, servicePort *kapi.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
 	ep, err := lbc.EndpointStore.GetServiceEndpoints(s)
 	if err != nil {
 		return nil, errors.New().WithCause(err).Internal()
@@ -86,15 +86,30 @@ func (lbc *EngressController) getEndpoints(s *kapi.Service, servicePort *kapi.Se
 
 			log.Infoln("targert port", targetPort)
 			for _, epAddress := range ss.Addresses {
-				eps = append(eps, &Endpoint{
-					Name: "server-" + epAddress.IP,
-					IP:   epAddress.IP,
-					Port: targetPort,
-				})
+				if isForwardable(hostNames, epAddress.Hostname) {
+					eps = append(eps, &Endpoint{
+						Name: "server-" + epAddress.IP,
+						IP:   epAddress.IP,
+						Port: targetPort,
+					})
+				}
 			}
 		}
 	}
 	return
+}
+
+func isForwardable(hostNames []string, hostName string) bool {
+	if len(hostNames) <= 0 {
+		return true
+	}
+
+	for _, name := range hostNames {
+		if strings.EqualFold(name, hostName) {
+			return true
+		}
+	}
+	return false
 }
 
 func (lbc *EngressController) generateTemplate() error {
@@ -154,7 +169,7 @@ func (lbc *EngressController) parseSpec() {
 	lbc.Options.Ports = make([]int, 0)
 	if lbc.Config.Spec.Backend != nil {
 		log.Debugln("generating defulat backend", lbc.Config.Spec.Backend.RewriteRule, lbc.Config.Spec.Backend.HeaderRule)
-		eps, _ := lbc.serviceEndpoints(lbc.Config.Spec.Backend.ServiceName, lbc.Config.Spec.Backend.ServicePort)
+		eps, _ := lbc.serviceEndpoints(lbc.Config.Spec.Backend.ServiceName, lbc.Config.Spec.Backend.ServicePort, lbc.Config.Spec.Backend.HostNames)
 		lbc.Parsed.DefaultBackend = &Backend{
 			Name:      "default-backend",
 			Endpoints: eps,
@@ -185,7 +200,7 @@ func (lbc *EngressController) parseSpec() {
 					AclMatch: svc.Path,
 				}
 
-				eps, err := lbc.serviceEndpoints(svc.Backend.ServiceName, svc.Backend.ServicePort)
+				eps, err := lbc.serviceEndpoints(svc.Backend.ServiceName, svc.Backend.ServicePort, svc.Backend.HostNames)
 				def.Backends = &Backend{
 					Name:      "backend-" + rand.Characters(5),
 					Endpoints: eps,
@@ -216,7 +231,7 @@ func (lbc *EngressController) parseSpec() {
 				ALPNOptions: parseALPNOptions(tcpSvc.ALPN),
 			}
 			log.Infoln(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort)
-			eps, err := lbc.serviceEndpoints(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort)
+			eps, err := lbc.serviceEndpoints(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort, tcpSvc.Backend.HostNames)
 			def.Backends = &Backend{
 				Name:      "backend-" + rand.Characters(5),
 				Endpoints: eps,

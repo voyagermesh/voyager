@@ -18,6 +18,7 @@ type httpClient struct {
 type Response struct {
 	Status     int         `json:"-"`
 	Type       string      `json:"type,omitempty"`
+	PodName    string      `json:"podName,omitempty"`
 	Host       string      `json:"host,omitempty"`
 	ServerPort string      `json:"serverPort,omitempty"`
 	Path       string      `json:"path,omitempty"`

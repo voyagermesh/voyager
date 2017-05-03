@@ -13,6 +13,7 @@ import (
 type Response struct {
 	Type       string      `json:"type,omitempty"`
 	Host       string      `json:"host,omitempty"`
+	PodName    string      `json:"podName,omitempty"`
 	ServerPort string      `json:"serverPort,omitempty"`
 	Path       string      `json:"path,omitempty"`
 	Method     string      `json:"method,omitempty"`
@@ -27,6 +28,7 @@ type HttpServerHandler struct {
 func (h HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	resp := &Response{
 		Type:       "http",
+		PodName:    os.Getenv("POD_NAME"),
 		Host:       r.Host,
 		ServerPort: h.port,
 		Path:       r.URL.Path,
