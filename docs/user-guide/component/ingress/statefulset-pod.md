@@ -64,7 +64,7 @@ backend:
 That will forward traffic to your StatefulSets Pods.
 
 
-#### Forward Traffic to specific Pods of StatefulSet
+#### Forward Traffic to specific Pods of a StatefulSet
 There is a way to send traffic to all or specific pod of a StatefulSet using voyager. You can set
 `hostNames` field in `Backend`, traffic will only forwarded to those pods.
 
