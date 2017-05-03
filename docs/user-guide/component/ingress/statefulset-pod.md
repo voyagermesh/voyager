@@ -96,5 +96,4 @@ spec:
 ```
 
 Viola. Now all `/testPath` traffic will be sent to pod web-0 only. There is no extra service also.
-The StatefulSet's Headless Service is enough.
-By using all the hostNames You can forward traffic to all pod.
+The StatefulSet's Headless Service is enough. By using all the hostNames You can forward traffic to all pods.
