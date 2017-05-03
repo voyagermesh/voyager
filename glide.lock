@@ -1,5 +1,5 @@
 hash: e8c0b51216912d3ad2ad8f7a4dbaaea2cd3cb96a5d24675db38e6a93efa54860
-updated: 2017-04-20T14:09:48.332470456-07:00
+updated: 2017-05-03T16:25:15.13269025-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -13,7 +13,7 @@ imports:
   subpackages:
   - h/log
 - name: github.com/appscode/go
-  version: bd371af23fb2398b60c065a9e07df5084422d6ad
+  version: 16dae34745b8c485f42293ad6d16ea7d6c129564
   subpackages:
   - arrays
   - crypto/rand
@@ -23,7 +23,7 @@ imports:
   - strings
   - version
 - name: github.com/appscode/k8s-addons
-  version: 4d09e2d4774d66c1b0a13f5d893a5d0e90d060b3
+  version: 8861b7938c5626baa96ebeb5c4146342806cd591
   subpackages:
   - api
   - api/install
@@ -157,7 +157,7 @@ imports:
 - name: github.com/flosch/pongo2
   version: 1d0f0d3af150c4a65dfd424d742f7374819e7d29
 - name: github.com/ghodss/yaml
-  version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
+  version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/go-ini/ini
   version: 2e44421e256d82ebbf3d4d4fcabe8930b905eff3
 - name: github.com/go-openapi/jsonpointer
@@ -216,7 +216,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/JamesClonk/vultr
-  version: 0f156dd232bc4ebf8a32ba83fec57c0e4c9db69f
+  version: 7047a71e8edb5ccaa98e20cefe37a118dd7bfcb0
   subpackages:
   - lib
 - name: github.com/jmespath/go-jmespath
@@ -327,9 +327,9 @@ imports:
   subpackages:
   - zk
 - name: github.com/spf13/cobra
-  version: 10f6b9d7e1631a54ad07c5c0fb71c28a1abfd3c2
+  version: 8f0203be891287870100e4af46262cdf4a4261d1
 - name: github.com/spf13/pflag
-  version: 2300d0f8576fe575f71aaa5b9bbe4e1b0dc2eb51
+  version: c990990ab4981d84da820b7b00c85139ca150b5f
 - name: github.com/timewasted/linode
   version: 37e84520dcf74488f67654f9c775b9752c232dc1
   subpackages:
@@ -481,7 +481,7 @@ imports:
 - name: gopkg.in/yaml.v2
   version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/kubernetes
-  version: cca88f5474de73be840be28d7a715a93f464b894
+  version: 5198505f3c52bb19bdbad05992f9678a12706706
   repo: https://github.com/appscode/kubernetes.git
   vcs: git
   subpackages:
