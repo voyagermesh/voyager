@@ -2,21 +2,21 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   labels:
-    run: appscode-voyager
-  name: appscode-voyager
+    run: voyager-operator
+  name: voyager-operator
   namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      run: appscode-voyager
+      run: voyager-operator
   template:
     metadata:
       labels:
-        run: appscode-voyager
+        run: voyager-operator
     spec:
       containers:
-      - name: appscode-voyager
+      - name: voyager-operator
         args:
         - --cloud-provider=$CLOUD_PROVIDER
         - --cluster-name=$CLUSTER_NAME
@@ -31,12 +31,12 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    run: appscode-voyager
-  name: appscode-voyager
+    run: voyager-operator
+  name: voyager-operator
 spec:
   ports:
   - name: zero
     port: 1234
     targetPort: zero
   selector:
-    run: appscode-voyager
+    run: voyager-operator
