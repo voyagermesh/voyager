@@ -994,3 +994,131 @@ func (ing *IngressTestSuit) TestIngressHostNames() error {
 	}
 	return nil
 }
+
+func (ing *IngressTestSuit) TestIngressDaemonRestart() error {
+	if !ing.t.Config.InCluster && ing.t.Config.ProviderName != "minikube" {
+		log.Infoln("Test is Running from outside of cluster skipping test")
+		return nil
+	}
+
+	var nodeSelector = func() string {
+		if ing.t.Config.ProviderName == "minikube" {
+			return "kubernetes.io/hostname=minikube"
+		} else {
+			if len(ing.t.Config.DaemonHostName) > 0 {
+				return "kubernetes.io/hostname=" + ing.t.Config.DaemonHostName
+			}
+			return "kubernetes.io/hostname=" + ing.t.Config.ClusterName + "-master"
+		}
+		return ""
+	}
+
+	baseDaemonIngress := &aci.Ingress{
+		ObjectMeta: api.ObjectMeta{
+			Name:      testIngressName(),
+			Namespace: TestNamespace,
+			Annotations: map[string]string{
+				ingress.LBType:             ingress.LBDaemon,
+				ingress.DaemonNodeSelector: nodeSelector(),
+			},
+		},
+		Spec: aci.ExtendedIngressSpec{
+			Rules: []aci.ExtendedIngressRule{
+				{
+					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
+						HTTP: &aci.HTTPExtendedIngressRuleValue{
+							Paths: []aci.HTTPExtendedIngressPath{
+								{
+									Path: "/testpath",
+									Backend: aci.ExtendedIngressBackend{
+										ServiceName: testServerSvc.Name,
+										ServicePort: intstr.FromInt(80),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, err := ing.t.ExtensionClient.Ingress(baseDaemonIngress.Namespace).Create(baseDaemonIngress)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if ing.t.Config.Cleanup {
+			ing.t.ExtensionClient.Ingress(baseDaemonIngress.Namespace).Delete(baseDaemonIngress.Name)
+		}
+	}()
+
+	// Wait sometime to loadbalancer be opened up.
+	time.Sleep(time.Second * 10)
+	for i := 0; i < maxRetries; i++ {
+		_, err := ing.t.KubeClient.Core().Services(baseDaemonIngress.Namespace).Get(ingress.VoyagerPrefix + baseDaemonIngress.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for service to be created")
+	}
+	if err != nil {
+		return errors.New().WithCause(err).Internal()
+	}
+
+	serverAddr, err := ing.getDaemonURLs(baseDaemonIngress)
+	if err != nil {
+		return err
+	}
+	time.Sleep(time.Second * 20)
+	log.Infoln("Loadbalancer created, calling http endpoints for test, Total url found", len(serverAddr))
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+		}
+		log.Infoln("Response", *resp)
+		if resp.Method != http.MethodGet {
+			return errors.New().WithMessage("Method did not matched").Internal()
+		}
+
+		if resp.Path != "/testpath/ok" {
+			return errors.New().WithMessage("Path did not matched").Internal()
+		}
+	}
+
+	// Teardown and then again create one pod of the backend
+	// And Make sure The DS does not gets deleted.
+	_, err = ing.t.KubeClient.Extensions().DaemonSets(baseDaemonIngress.Namespace).Get(ingress.VoyagerPrefix + baseDaemonIngress.Name)
+	if err != nil {
+		return err
+	}
+	rc, err := ing.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name)
+	if err != nil {
+		return err
+	}
+	rc.Spec.Replicas -= 1
+	rc, err = ing.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Update(rc)
+	if err != nil {
+		return err
+	}
+	_, err = ing.t.KubeClient.Extensions().DaemonSets(baseDaemonIngress.Namespace).Get(ingress.VoyagerPrefix + baseDaemonIngress.Name)
+	if err != nil {
+		return err
+	}
+	rc, err = ing.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name)
+	if err != nil {
+		return err
+	}
+	rc.Spec.Replicas += 1
+	rc, err = ing.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Update(rc)
+	if err != nil {
+		return err
+	}
+	_, err = ing.t.KubeClient.Extensions().DaemonSets(baseDaemonIngress.Namespace).Get(ingress.VoyagerPrefix + baseDaemonIngress.Name)
+	if err != nil {
+		return err
+	}
+	return nil
+}
