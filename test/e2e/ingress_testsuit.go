@@ -49,7 +49,7 @@ func (i *IngressTestSuit) setUp() error {
 		ep, err := i.t.KubeClient.Core().Endpoints(testServerSvc.Namespace).Get(testServerSvc.Name)
 		if err == nil {
 			if len(ep.Subsets) > 0 {
-				if len(ep.Subsets[0].Addresses) == 1 {
+				if len(ep.Subsets[0].Addresses) > 0 {
 					break
 				}
 			}

@@ -68,7 +68,7 @@ var testServerRc = &api.ReplicationController{
 		},
 	},
 	Spec: api.ReplicationControllerSpec{
-		Replicas: 1,
+		Replicas: 2,
 		Selector: map[string]string{
 			"app": "test-server",
 		},
