@@ -185,6 +185,11 @@ type IngressBackend struct {
 
 	// Specifies the port of the referenced service.
 	ServicePort intstr.IntOrString `json:"servicePort,omitempty"`
+
+	// Serialized HAProxy rules to apply on server backend including
+	// request, response or header rewrite. acls also can be used.
+	// https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#1
+	BackendRule []string `json:"backendRule,omitempty"`
 }
 
 // ExtendedIngressBackend describes all endpoints for a given service and port.
@@ -206,10 +211,19 @@ type ExtendedIngressBackend struct {
 	// Specifies the port of the referenced service.
 	ServicePort intstr.IntOrString `json:"servicePort,omitempty"`
 
+	// Serialized HAProxy rules to apply on server backend including
+	// request, response or header rewrite. acls also can be used.
+	// https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#1
+	BackendRule []string `json:"backendRule,omitempty"`
+
 	// Path rewrite rules with haproxy formatted regex.
+	//
+	// Deprecated: Use backendRule, will be removed.
 	RewriteRule []string `json:"rewriteRule,omitempty"`
 
 	// Header rules to modifies the header.
+	//
+	// Deprecated: Use backendRule, will be removed.
 	HeaderRule []string `json:"headerRule,omitempty"`
 }
 
