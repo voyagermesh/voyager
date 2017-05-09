@@ -170,7 +170,10 @@ type TCPService struct {
 
 type Backend struct {
 	Name         string      `json:"Name,omitempty"`
+	BackendRules []string    `json:"BackendRules,omitempty"`
+	// Deprecated
 	RewriteRules []string    `json:"RewriteRules,omitempty"`
+	// Deprecated
 	HeaderRules  []string    `json:"HeaderRules,omitempty"`
 	Endpoints    []*Endpoint `json:"Endpoints,omitempty"`
 }
