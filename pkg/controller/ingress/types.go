@@ -35,6 +35,11 @@ const (
 	// Uses nodeport and Cloud LoadBalancer exists beyond single HAProxy run
 	LoadBalancerIP      = "ingress.appscode.com/ip"                   // external_ip or loadbalancer_ip "" or a "ipv4"
 	LoadBalancerPersist = "ingress.appscode.com/loadbalancer.persist" // "" or a "true"
+
+	// LoadBalancerBackendWeightKey is the weight value of a Pod that was
+	// addressed by the Endpoint, this weight will be added to server backend.
+	// Traffic will be forwarded according to there weight.
+	LoadBalancerBackendWeight = "ingress.appscode.com/backend.weight"
 )
 
 type annotation map[string]string
@@ -171,9 +176,10 @@ type Backend struct {
 }
 
 type Endpoint struct {
-	Name string
-	IP   string
-	Port string
+	Name   string
+	IP     string
+	Port   string
+	Weight int
 }
 
 // Loadbalancer image is an almost constant type.
