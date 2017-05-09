@@ -1352,3 +1352,128 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 	}
 	return nil
 }
+
+func (ing *IngressTestSuit) TestIngressBackendRule() error {
+	baseIngress := &aci.Ingress{
+		ObjectMeta: api.ObjectMeta{
+			Name:      testIngressName(),
+			Namespace: TestNamespace,
+		},
+		Spec: aci.ExtendedIngressSpec{
+			Backend: &aci.ExtendedIngressBackend{
+				ServiceName: testServerSvc.Name,
+				ServicePort: intstr.FromInt(80),
+				BackendRule: []string{
+					"",
+				},
+			},
+			Rules: []aci.ExtendedIngressRule{
+				{
+					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
+						HTTP: &aci.HTTPExtendedIngressRuleValue{
+							Paths: []aci.HTTPExtendedIngressPath{
+								{
+									Path: "/test-head",
+									Backend: aci.ExtendedIngressBackend{
+										ServiceName: testServerSvc.Name,
+										ServicePort: intstr.FromInt(80),
+										BackendRule: []string{
+											"",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, err := ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if ing.t.Config.Cleanup {
+			ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		}
+	}()
+
+	// Wait sometime to loadbalancer be opened up.
+	time.Sleep(time.Second * 10)
+	var svc *api.Service
+	for i := 0; i < maxRetries; i++ {
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for service to be created")
+	}
+	if err != nil {
+		return err
+	}
+	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
+	for i := 0; i < maxRetries; i++ {
+		_, err = ing.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for endpoints to be created")
+	}
+	if err != nil {
+		return err
+	}
+
+	serverAddr, err := ing.getURLs(baseIngress)
+	if err != nil {
+		return err
+	}
+	time.Sleep(time.Second * 30)
+	log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+		}
+		log.Infoln("Response", *resp)
+		if resp.Method != http.MethodGet {
+			return errors.New().WithMessage("Method did not matched").Internal()
+		}
+
+		if resp.Path != "/override/testpath/ok" {
+			return errors.New().WithMessage("Path did not matched").Internal()
+		}
+
+		if resp.Headers.Get("X-Ingress-Test-Header") != "ingress.appscode.com" {
+			return errors.New().WithMessage("Header did not matched").Internal()
+		}
+	}
+
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).
+			Method("GET").
+			Header(map[string]string{
+			"X-Ingress-Test-Header": "ingress.appscode.com/v1beta1",
+		}).
+			Path("/testpath/ok").DoWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+		}
+		log.Infoln("Response", *resp)
+		if resp.Method != http.MethodGet {
+			return errors.New().WithMessage("Method did not matched").Internal()
+		}
+
+		if resp.Path != "/override/testpath/ok" {
+			return errors.New().WithMessage("Path did not matched").Internal()
+		}
+
+		if resp.Headers.Get("X-Ingress-Test-Header") != "ingress.appscode.com/v1beta1" {
+			return errors.New().WithMessage("Header did not matched").Internal()
+		}
+	}
+	return nil
+}
