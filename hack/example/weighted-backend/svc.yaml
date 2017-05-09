@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: deployment-svc
+  namespace: default
+spec:
+  ports:
+  - name: http-1
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: deployment

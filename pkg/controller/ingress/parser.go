@@ -87,11 +87,24 @@ func (lbc *EngressController) getEndpoints(s *kapi.Service, servicePort *kapi.Se
 			log.Infoln("targert port", targetPort)
 			for _, epAddress := range ss.Addresses {
 				if isForwardable(hostNames, epAddress.Hostname) {
-					eps = append(eps, &Endpoint{
+					ep := &Endpoint{
 						Name: "server-" + epAddress.IP,
 						IP:   epAddress.IP,
 						Port: targetPort,
-					})
+					}
+					if epAddress.TargetRef != nil {
+						pod, err := lbc.Storage.PodStore.Pods(epAddress.TargetRef.Namespace).Get(epAddress.TargetRef.Name)
+						if err != nil {
+							log.Errorln("Error getting endpoind pod", err)
+						} else {
+							if pod.Labels != nil {
+								if val, ok := pod.Labels[LoadBalancerBackendWeight]; ok {
+									ep.Weight, _ = strconv.Atoi(val)
+								}
+							}
+						}
+					}
+					eps = append(eps, ep)
 				}
 			}
 		}

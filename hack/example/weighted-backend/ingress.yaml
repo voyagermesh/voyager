@@ -1,0 +1,13 @@
+apiVersion: appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: test-ing
+  namespace: default
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: deployment-svc
+          servicePort: 80
+        path: /testpath
