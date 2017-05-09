@@ -11,7 +11,7 @@ import:
 - package: github.com/spf13/cobra
 - package: github.com/spf13/pflag
 - package: github.com/xenolf/lego
-  repo: git@github.com:appscode/lego.git
+  repo: https://github.com/appscode/lego.git
   vcs: git
   version: master
 - package: github.com/aws/aws-sdk-go
