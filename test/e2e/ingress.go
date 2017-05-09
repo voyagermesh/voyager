@@ -12,8 +12,10 @@ import (
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	"k8s.io/kubernetes/pkg/api"
 	k8serr "k8s.io/kubernetes/pkg/api/errors"
+	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/util/intstr"
+	"strings"
 )
 
 const maxRetries = 50
@@ -1119,6 +1121,234 @@ func (ing *IngressTestSuit) TestIngressDaemonRestart() error {
 	_, err = ing.t.KubeClient.Extensions().DaemonSets(baseDaemonIngress.Namespace).Get(ingress.VoyagerPrefix + baseDaemonIngress.Name)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (ing *IngressTestSuit) TestIngressBackendWeight() error {
+	dp1, err := ing.t.KubeClient.Extensions().Deployments(TestNamespace).Create(&extensions.Deployment{
+		ObjectMeta: api.ObjectMeta{
+			Name:      "deploymet-1-" + randString(4),
+			Namespace: TestNamespace,
+		},
+		Spec: extensions.DeploymentSpec{
+			Replicas: 1,
+			Selector: &unversioned.LabelSelector{
+				MatchLabels: map[string]string{
+					"app":         "deployment",
+					"app-version": "v1",
+				},
+			},
+			Template: api.PodTemplateSpec{
+				ObjectMeta: api.ObjectMeta{
+					Labels: map[string]string{
+						"app":         "deployment",
+						"app-version": "v1",
+						ingress.LoadBalancerBackendWeight: "90",
+					},
+				},
+				Spec: api.PodSpec{
+					Containers: []api.Container{
+						{
+							Name:  "server",
+							Image: "appscode/test-server:1.1",
+							Env: []api.EnvVar{
+								{
+									Name: "POD_NAME",
+									ValueFrom: &api.EnvVarSource{
+										FieldRef: &api.ObjectFieldSelector{
+											FieldPath: "metadata.name",
+										},
+									},
+								},
+							},
+							Ports: []api.ContainerPort{
+								{
+									Name:          "http-1",
+									ContainerPort: 8080,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	dp2, err := ing.t.KubeClient.Extensions().Deployments(TestNamespace).Create(&extensions.Deployment{
+		ObjectMeta: api.ObjectMeta{
+			Name:      "deploymet-2-" + randString(4),
+			Namespace: TestNamespace,
+		},
+		Spec: extensions.DeploymentSpec{
+			Replicas: 1,
+			Selector: &unversioned.LabelSelector{
+				MatchLabels: map[string]string{
+					"app":         "deployment",
+					"app-version": "v2",
+				},
+			},
+			Template: api.PodTemplateSpec{
+				ObjectMeta: api.ObjectMeta{
+					Labels: map[string]string{
+						"app":         "deployment",
+						"app-version": "v2",
+						ingress.LoadBalancerBackendWeight: "10",
+					},
+				},
+				Spec: api.PodSpec{
+					Containers: []api.Container{
+						{
+							Name:  "server",
+							Image: "appscode/test-server:1.1",
+							Env: []api.EnvVar{
+								{
+									Name: "POD_NAME",
+									ValueFrom: &api.EnvVarSource{
+										FieldRef: &api.ObjectFieldSelector{
+											FieldPath: "metadata.name",
+										},
+									},
+								},
+							},
+							Ports: []api.ContainerPort{
+								{
+									Name:          "http-1",
+									ContainerPort: 8080,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	svc, err := ing.t.KubeClient.Core().Services(TestNamespace).Create(&api.Service{
+		ObjectMeta: api.ObjectMeta{
+			Name: "deployment-svc",
+			Namespace: TestNamespace,
+		},
+		Spec: api.ServiceSpec{
+			Ports: []api.ServicePort{
+				{
+					Name:       "http-1",
+					Port:       80,
+					TargetPort: intstr.FromInt(8080),
+					Protocol:   "TCP",
+				},
+			},
+			Selector: map[string]string{
+				"app": "deployment",
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	baseIngress := &aci.Ingress{
+		ObjectMeta: api.ObjectMeta{
+			Name:      testIngressName(),
+			Namespace: TestNamespace,
+		},
+		Spec: aci.ExtendedIngressSpec{
+			Rules: []aci.ExtendedIngressRule{
+				{
+					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
+						HTTP: &aci.HTTPExtendedIngressRuleValue{
+							Paths: []aci.HTTPExtendedIngressPath{
+								{
+									Path: "/testpath",
+									Backend: aci.ExtendedIngressBackend{
+										ServiceName: svc.Name,
+										ServicePort: intstr.FromInt(80),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, err = ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if ing.t.Config.Cleanup {
+			ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		}
+	}()
+
+	time.Sleep(time.Second * 10)
+	for i := 0; i < maxRetries; i++ {
+		_, err := ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for service to be created")
+	}
+	if err != nil {
+		return errors.New().WithCause(err).Internal()
+	}
+
+	serverAddr, err := ing.getURLs(baseIngress)
+	if err != nil {
+		return err
+	}
+	time.Sleep(time.Second * 20)
+	log.Infoln("Loadbalancer created, calling http endpoints for test, Total url found", len(serverAddr))
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+		}
+		log.Infoln("Response", *resp)
+		if resp.Method != http.MethodGet {
+			return errors.New().WithMessage("Method did not matched").Internal()
+		}
+
+		if resp.Path != "/testpath/ok" {
+			return errors.New().WithMessage("Path did not matched").Internal()
+		}
+	}
+	var deploymentCounter1, deploymentCounter2 int
+	for cnt := 0; cnt < 100; cnt++ {
+		for _, url := range serverAddr {
+			resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
+			if err != nil {
+				return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+			}
+			log.Infoln("Response", *resp)
+			if resp.Method != http.MethodGet {
+				return errors.New().WithMessage("Method did not matched").Internal()
+			}
+
+			if strings.HasPrefix(resp.PodName, dp1.Name) {
+				deploymentCounter1++
+			} else if strings.HasPrefix(resp.PodName, dp2.Name) {
+				deploymentCounter2++
+			}
+		}
+	}
+
+	if deploymentCounter2 != 10 {
+		return errors.New().WithMessagef("Expected %v Actual %v", 10, deploymentCounter2).Internal()
+	}
+
+
+	if deploymentCounter1 != 90 {
+		return errors.New().WithMessagef("Expected %v Actual %v", 90, deploymentCounter1).Internal()
 	}
 	return nil
 }

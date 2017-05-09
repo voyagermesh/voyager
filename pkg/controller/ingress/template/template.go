@@ -145,7 +145,7 @@ backend http-{{ svc.Name }}
     http-request add-header {{ rule }} unless h_xff_exists
     {% endfor %}
     {% for e in svc.Backends.Endpoints %}
-    server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weighte|integer }} {% endif %} {% if Sticky %}cookie {{ e.Name }} {% endif %}
+    server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %} {% if Sticky %}cookie {{ e.Name }} {% endif %}
     {% endfor %}
 {% endfor %}
 
@@ -168,7 +168,7 @@ backend tcp-{{ svc.Name }}
     stick on src
     {% endif %}
     {% for e in svc.Backends.Endpoints %}
-    server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weighte|integer }} {% endif %}
+    server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %}
     {% endfor %}
 {% endfor %}
 
