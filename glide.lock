@@ -1,5 +1,5 @@
-hash: e8c0b51216912d3ad2ad8f7a4dbaaea2cd3cb96a5d24675db38e6a93efa54860
-updated: 2017-05-03T16:25:15.13269025-07:00
+hash: c14ebc4c1cf8a72e5ba9505aae0e53df1c87262e23728b42b1afd81990c7d691
+updated: 2017-05-10T07:42:06.260072791-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -9,11 +9,11 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/errors
-  version: 87fb529db75df5295ccccd15cb038587cd5a9dd2
+  version: 61db995d0bb9fc75cc7be1f772759a56e59ae4d3
   subpackages:
   - h/log
 - name: github.com/appscode/go
-  version: 16dae34745b8c485f42293ad6d16ea7d6c129564
+  version: 496a78e678c2a161788f53f94bdb0ab9c812231f
   subpackages:
   - arrays
   - crypto/rand
@@ -224,7 +224,7 @@ imports:
 - name: github.com/jonboulle/clockwork
   version: 72f9bd7c4e0c2a40055ab3d0f09654f730cce982
 - name: github.com/juju/errors
-  version: 6f54ff6318409d31ff16261533ce2c8381a4fd5d
+  version: 8234c829496aaeae67c5c71235a2cbcc289e960a
 - name: github.com/juju/ratelimit
   version: 77ed1c8a01217656d2080ad51981f6e99adaa177
 - name: github.com/mailru/easyjson
@@ -327,9 +327,9 @@ imports:
   subpackages:
   - zk
 - name: github.com/spf13/cobra
-  version: 8f0203be891287870100e4af46262cdf4a4261d1
+  version: 9c28e4bbd74e5c3ed7aacbc552b2cab7cfdfe744
 - name: github.com/spf13/pflag
-  version: c990990ab4981d84da820b7b00c85139ca150b5f
+  version: c7e63cf4530bcd3ba943729cee0efeff2ebea63f
 - name: github.com/timewasted/linode
   version: 37e84520dcf74488f67654f9c775b9752c232dc1
   subpackages:
@@ -367,7 +367,7 @@ imports:
   - cloudstack
 - name: github.com/xenolf/lego
   version: 5ee956d6ca4ffbd8b940fc3ecb6e109c99d9a68a
-  repo: git@github.com:appscode/lego.git
+  repo: https://github.com/appscode/lego.git
   vcs: git
   subpackages:
   - acme

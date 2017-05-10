@@ -28,7 +28,7 @@ func (c *CertificateSyncer) RunSync() error {
 		case <-c.Time.After(time.Hour * 24):
 			certificates, err := c.ACExtensionClient.Certificate(api.NamespaceAll).List(api.ListOptions{})
 			if err != nil {
-				return errors.New().WithCause(err).Internal()
+				return errors.New().WithCause(err).Err()
 			}
 			for _, cert := range certificates.Items {
 				c.process(&cert)
