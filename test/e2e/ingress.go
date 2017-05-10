@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"net/http"
+	"strings"
 	"text/template"
 	"time"
 
@@ -15,7 +16,6 @@ import (
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/util/intstr"
-	"strings"
 )
 
 const maxRetries = 50
@@ -35,7 +35,7 @@ func (i *IngressTestSuit) TestIngressEnsureTPR() error {
 			log.Infoln("Found tpr for ingress with name", tpr.Name)
 			break
 		}
-		err = errors.New().WithCause(err).Internal()
+		err = errors.New().WithCause(err).Err()
 		time.Sleep(time.Second * 5)
 		continue
 	}
@@ -115,15 +115,15 @@ func (ing *IngressTestSuit) TestIngressCreate() error {
 	for _, url := range serverAddr {
 		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(100)
 		if err != nil {
-			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
 		}
 		log.Infoln("Response", *resp)
 		if resp.Method != http.MethodGet {
-			return errors.New().WithMessage("Method did not matched").Internal()
+			return errors.New().WithMessage("Method did not matched").Err()
 		}
 
 		if resp.Path != "/testpath/ok" {
-			return errors.New().WithMessage("Path did not matched").Internal()
+			return errors.New().WithMessage("Path did not matched").Err()
 		}
 	}
 
@@ -199,7 +199,7 @@ func (ing *IngressTestSuit) TestIngressDaemonCreate() error {
 		log.Infoln("Waiting for service to be created")
 	}
 	if err != nil {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 
 	serverAddr, err := ing.getDaemonURLs(baseDaemonIngress)
@@ -211,15 +211,15 @@ func (ing *IngressTestSuit) TestIngressDaemonCreate() error {
 	for _, url := range serverAddr {
 		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
 		if err != nil {
-			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
 		}
 		log.Infoln("Response", *resp)
 		if resp.Method != http.MethodGet {
-			return errors.New().WithMessage("Method did not matched").Internal()
+			return errors.New().WithMessage("Method did not matched").Err()
 		}
 
 		if resp.Path != "/testpath/ok" {
-			return errors.New().WithMessage("Path did not matched").Internal()
+			return errors.New().WithMessage("Path did not matched").Err()
 		}
 	}
 	return nil
@@ -298,21 +298,21 @@ func (ing *IngressTestSuit) TestIngressDelete() error {
 	for _, url := range serverAddr {
 		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
 		if err != nil {
-			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
 		}
 		log.Infoln("Response", *resp)
 		if resp.Method != http.MethodGet {
-			return errors.New().WithMessage("Method did not matched").Internal()
+			return errors.New().WithMessage("Method did not matched").Err()
 		}
 
 		if resp.Path != "/testpath/ok" {
-			return errors.New().WithMessage("Path did not matched").Internal()
+			return errors.New().WithMessage("Path did not matched").Err()
 		}
 	}
 
 	err = ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
 	if err != nil {
-		return errors.New().WithCause(err).WithMessage("Failed to delete").Internal()
+		return errors.New().WithCause(err).WithMessage("Failed to delete").Err()
 	}
 
 	// Wait until everything is deleted
@@ -331,7 +331,7 @@ func (ing *IngressTestSuit) TestIngressDelete() error {
 	newServerAddr, err := ing.getURLs(baseIngress)
 	if err == nil {
 		if len(newServerAddr) != 0 {
-			return errors.New().WithMessage("Server address found").Internal()
+			return errors.New().WithMessage("Server address found").Err()
 		}
 	}
 	return nil
@@ -366,7 +366,7 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 
 	_, err := ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 	defer func() {
 		if ing.t.Config.Cleanup {
@@ -410,26 +410,26 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 	for _, url := range serverAddr {
 		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
 		if err != nil {
-			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
 		}
 		log.Infoln("Response", *resp)
 		if resp.Method != http.MethodGet {
-			return errors.New().WithMessage("Method did not matched").Internal()
+			return errors.New().WithMessage("Method did not matched").Err()
 		}
 
 		if resp.Path != "/testpath/ok" {
-			return errors.New().WithMessage("Path did not matched").Internal()
+			return errors.New().WithMessage("Path did not matched").Err()
 		}
 	}
 
 	updatedBaseIngress, err := ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
 	if err != nil {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 	updatedBaseIngress.Spec.Rules[0].HTTP.Paths[0].Path = "/newTestpath"
 	_, err = ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Update(updatedBaseIngress)
 	if err != nil {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 
 	time.Sleep(time.Second * 30)
@@ -442,20 +442,20 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 	for _, url := range serverAddr {
 		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(1)
 		if err == nil {
-			return errors.New().WithCause(err).WithMessage("Connected with old prefix").Internal()
+			return errors.New().WithCause(err).WithMessage("Connected with old prefix").Err()
 		}
 		log.Infoln("Expected exception, faild to connect with old path, calling new paths.")
 		resp, err = testserverclient.NewTestHTTPClient(url).Method("GET").Path("/newTestpath/ok").DoWithRetry(50)
 		if err != nil {
-			return errors.New().WithCause(err).WithMessage("Failed to Connect With New Prefix").Internal()
+			return errors.New().WithCause(err).WithMessage("Failed to Connect With New Prefix").Err()
 		}
 		log.Infoln("Response", *resp)
 		if resp.Method != http.MethodGet {
-			return errors.New().WithMessage("Method did not matched").Internal()
+			return errors.New().WithMessage("Method did not matched").Err()
 		}
 
 		if resp.Path != "/newTestpath/ok" {
-			return errors.New().WithMessage("Path did not matched").Internal()
+			return errors.New().WithMessage("Path did not matched").Err()
 		}
 	}
 	return nil
@@ -542,27 +542,27 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 		for _, url := range serverAddr {
 			resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
 			if err != nil {
-				return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+				return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
 			}
 			log.Infoln("Response", *resp)
 			if resp.Method != http.MethodGet {
-				return errors.New().WithMessage("Method did not matched").Internal()
+				return errors.New().WithMessage("Method did not matched").Err()
 			}
 
 			if resp.Path != "/testpath/ok" {
-				return errors.New().WithMessage("Path did not matched").Internal()
+				return errors.New().WithMessage("Path did not matched").Err()
 			}
 		}
 
 		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
 		if err != nil {
-			return errors.New().WithCause(err).Internal()
+			return errors.New().WithCause(err).Err()
 		}
 		oldServiceIP := svc.Status.LoadBalancer.Ingress[0].IP
 
 		err = ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
 		if err != nil {
-			return errors.New().WithCause(err).Internal()
+			return errors.New().WithCause(err).Err()
 		}
 
 		time.Sleep(time.Second * 30)
@@ -641,21 +641,21 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 		for _, url := range serverAddr {
 			resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
 			if err != nil {
-				return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+				return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
 			}
 			log.Infoln("Response", *resp)
 			if resp.Method != http.MethodGet {
-				return errors.New().WithMessage("Method did not matched").Internal()
+				return errors.New().WithMessage("Method did not matched").Err()
 			}
 
 			if resp.Path != "/testpath/ok" {
-				return errors.New().WithMessage("Path did not matched").Internal()
+				return errors.New().WithMessage("Path did not matched").Err()
 			}
 		}
 
 		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
 		if err != nil {
-			return errors.New().WithCause(err).Internal()
+			return errors.New().WithCause(err).Err()
 		}
 
 		found := false
@@ -669,7 +669,7 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 
 		if !found {
 			log.Infoln("Service Ip not matched with previous IP")
-			return errors.New().WithMessage("Service Ip not matched with previous IP").Internal()
+			return errors.New().WithMessage("Service Ip not matched with previous IP").Err()
 		}
 	} else {
 		log.Infoln("Test Skipped")
@@ -755,19 +755,19 @@ func (ing *IngressTestSuit) TestIngressCreateWithOptions() error {
 	for _, url := range serverAddr {
 		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
 		if err != nil {
-			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
 		}
 		log.Infoln("Response", *resp)
 		if resp.Method != http.MethodGet {
-			return errors.New().WithMessage("Method did not matched").Internal()
+			return errors.New().WithMessage("Method did not matched").Err()
 		}
 
 		if resp.Path != "/override/testpath/ok" {
-			return errors.New().WithMessage("Path did not matched").Internal()
+			return errors.New().WithMessage("Path did not matched").Err()
 		}
 
 		if resp.Headers.Get("X-Ingress-Test-Header") != "ingress.appscode.com" {
-			return errors.New().WithMessage("Header did not matched").Internal()
+			return errors.New().WithMessage("Header did not matched").Err()
 		}
 	}
 
@@ -779,19 +779,19 @@ func (ing *IngressTestSuit) TestIngressCreateWithOptions() error {
 			}).
 			Path("/testpath/ok").DoWithRetry(50)
 		if err != nil {
-			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
 		}
 		log.Infoln("Response", *resp)
 		if resp.Method != http.MethodGet {
-			return errors.New().WithMessage("Method did not matched").Internal()
+			return errors.New().WithMessage("Method did not matched").Err()
 		}
 
 		if resp.Path != "/override/testpath/ok" {
-			return errors.New().WithMessage("Path did not matched").Internal()
+			return errors.New().WithMessage("Path did not matched").Err()
 		}
 
 		if resp.Headers.Get("X-Ingress-Test-Header") != "ingress.appscode.com/v1beta1" {
-			return errors.New().WithMessage("Header did not matched").Internal()
+			return errors.New().WithMessage("Header did not matched").Err()
 		}
 	}
 	return nil
@@ -866,7 +866,7 @@ func (ing *IngressTestSuit) TestIngressCoreIngress() error {
 
 	baseExtIngress, err := aci.NewEngressFromIngress(baseIngress)
 	if err != nil {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 	serverAddr, err := ing.getURLs(baseExtIngress)
 	if err != nil {
@@ -877,15 +877,15 @@ func (ing *IngressTestSuit) TestIngressCoreIngress() error {
 	for _, url := range serverAddr {
 		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
 		if err != nil {
-			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
 		}
 		log.Infoln("Response", *resp)
 		if resp.Method != http.MethodGet {
-			return errors.New().WithMessage("Method did not matched").Internal()
+			return errors.New().WithMessage("Method did not matched").Err()
 		}
 
 		if resp.Path != "/testpath/ok" {
-			return errors.New().WithMessage("Path did not matched").Internal()
+			return errors.New().WithMessage("Path did not matched").Err()
 		}
 	}
 	return nil
@@ -984,14 +984,14 @@ func (ing *IngressTestSuit) TestIngressHostNames() error {
 	for _, url := range serverAddr {
 		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath").DoWithRetry(50)
 		if err != nil {
-			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
 		}
 		log.Infoln("Response", *resp)
 		if resp.Method != http.MethodGet {
-			return errors.New().WithMessage("Method did not matched").Internal()
+			return errors.New().WithMessage("Method did not matched").Err()
 		}
 		if resp.PodName != ss.Name+"-0" {
-			return errors.New().WithMessage("PodName did not matched").Internal()
+			return errors.New().WithMessage("PodName did not matched").Err()
 		}
 	}
 	return nil
@@ -1066,7 +1066,7 @@ func (ing *IngressTestSuit) TestIngressDaemonRestart() error {
 		log.Infoln("Waiting for service to be created")
 	}
 	if err != nil {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 
 	serverAddr, err := ing.getDaemonURLs(baseDaemonIngress)
@@ -1078,15 +1078,15 @@ func (ing *IngressTestSuit) TestIngressDaemonRestart() error {
 	for _, url := range serverAddr {
 		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
 		if err != nil {
-			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
 		}
 		log.Infoln("Response", *resp)
 		if resp.Method != http.MethodGet {
-			return errors.New().WithMessage("Method did not matched").Internal()
+			return errors.New().WithMessage("Method did not matched").Err()
 		}
 
 		if resp.Path != "/testpath/ok" {
-			return errors.New().WithMessage("Path did not matched").Internal()
+			return errors.New().WithMessage("Path did not matched").Err()
 		}
 	}
 
@@ -1142,8 +1142,8 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 			Template: api.PodTemplateSpec{
 				ObjectMeta: api.ObjectMeta{
 					Labels: map[string]string{
-						"app":         "deployment",
-						"app-version": "v1",
+						"app":                             "deployment",
+						"app-version":                     "v1",
 						ingress.LoadBalancerBackendWeight: "90",
 					},
 				},
@@ -1194,8 +1194,8 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 			Template: api.PodTemplateSpec{
 				ObjectMeta: api.ObjectMeta{
 					Labels: map[string]string{
-						"app":         "deployment",
-						"app-version": "v2",
+						"app":                             "deployment",
+						"app-version":                     "v2",
 						ingress.LoadBalancerBackendWeight: "10",
 					},
 				},
@@ -1232,7 +1232,7 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 
 	svc, err := ing.t.KubeClient.Core().Services(TestNamespace).Create(&api.Service{
 		ObjectMeta: api.ObjectMeta{
-			Name: "deployment-svc",
+			Name:      "deployment-svc",
 			Namespace: TestNamespace,
 		},
 		Spec: api.ServiceSpec{
@@ -1299,7 +1299,7 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 		log.Infoln("Waiting for service to be created")
 	}
 	if err != nil {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 
 	serverAddr, err := ing.getURLs(baseIngress)
@@ -1311,15 +1311,15 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 	for _, url := range serverAddr {
 		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
 		if err != nil {
-			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
 		}
 		log.Infoln("Response", *resp)
 		if resp.Method != http.MethodGet {
-			return errors.New().WithMessage("Method did not matched").Internal()
+			return errors.New().WithMessage("Method did not matched").Err()
 		}
 
 		if resp.Path != "/testpath/ok" {
-			return errors.New().WithMessage("Path did not matched").Internal()
+			return errors.New().WithMessage("Path did not matched").Err()
 		}
 	}
 	var deploymentCounter1, deploymentCounter2 int
@@ -1327,11 +1327,11 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 		for _, url := range serverAddr {
 			resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
 			if err != nil {
-				return errors.New().WithCause(err).WithMessage("Failed to connect with server").Internal()
+				return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
 			}
 			log.Infoln("Response", *resp)
 			if resp.Method != http.MethodGet {
-				return errors.New().WithMessage("Method did not matched").Internal()
+				return errors.New().WithMessage("Method did not matched").Err()
 			}
 
 			if strings.HasPrefix(resp.PodName, dp1.Name) {
@@ -1343,12 +1343,11 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 	}
 
 	if deploymentCounter2 != 10 {
-		return errors.New().WithMessagef("Expected %v Actual %v", 10, deploymentCounter2).Internal()
+		return errors.New().WithMessagef("Expected %v Actual %v", 10, deploymentCounter2).Err()
 	}
 
-
 	if deploymentCounter1 != 90 {
-		return errors.New().WithMessagef("Expected %v Actual %v", 90, deploymentCounter1).Internal()
+		return errors.New().WithMessagef("Expected %v Actual %v", 90, deploymentCounter1).Err()
 	}
 	return nil
 }

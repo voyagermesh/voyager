@@ -20,28 +20,28 @@ func (lbc *EngressController) Update(Type updateType) error {
 	if Type == UpdateTypeHard {
 		err := lbc.Delete()
 		if err != nil {
-			return errors.New().WithCause(err).Internal()
+			return errors.New().WithCause(err).Err()
 		}
 		time.Sleep(time.Second * 10)
 		err = lbc.Create()
 		if err != nil {
-			return errors.New().WithCause(err).Internal()
+			return errors.New().WithCause(err).Err()
 		}
 	} else {
 		lbc.parse()
 		err := lbc.generateTemplate()
 		if err != nil {
-			return errors.New().WithCause(err).Internal()
+			return errors.New().WithCause(err).Err()
 		}
 		// update config config map updates an existing map data.
 		err = lbc.updateConfigMap()
 		if err != nil {
-			return errors.New().WithCause(err).Internal()
+			return errors.New().WithCause(err).Err()
 		}
 		serviceName := VoyagerPrefix + lbc.Config.Name
 		svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(serviceName)
 		if err != nil {
-			return errors.New().WithCause(err).Internal()
+			return errors.New().WithCause(err).Err()
 		}
 		log.Infoln("Loadbalancer CloudeManager", lbc.CloudManager, "serviceType", svc.Spec.Type)
 		if svc.Spec.Type == kapi.ServiceTypeNodePort && lbc.CloudManager != nil {
@@ -60,7 +60,7 @@ func (lbc *EngressController) Update(Type updateType) error {
 				kapi.Scheme.Convert(svc, convertedSvc, nil)
 				err := lb.UpdateLoadBalancer(lbc.Options.ClusterName, convertedSvc, hosts)
 				if err != nil {
-					return errors.New().WithCause(err).Internal()
+					return errors.New().WithCause(err).Err()
 				}
 			}
 			log.Errorln("loadbalancer interface not found, reached dead blocks.")
@@ -73,7 +73,7 @@ func (lbc *EngressController) updateConfigMap() error {
 	log.Infoln()
 	cMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
 	if err != nil {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 	if cMap.Data["haproxy.cfg"] != lbc.Options.ConfigData {
 		log.Infoln("Specs have been changed updating config map data for HAProxy templates")
@@ -81,7 +81,7 @@ func (lbc *EngressController) updateConfigMap() error {
 
 		_, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Update(cMap)
 		if err != nil {
-			return errors.New().WithCause(err).Internal()
+			return errors.New().WithCause(err).Err()
 		}
 		log.Infoln("Config Map Updated, HAProxy will restart itself now via reloader")
 	}

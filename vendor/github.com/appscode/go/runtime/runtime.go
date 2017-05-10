@@ -19,7 +19,10 @@ package runtime
 import (
 	"fmt"
 	"log"
+	"os"
+	"os/exec"
 	"runtime"
+	"strings"
 )
 
 var (
@@ -124,4 +127,16 @@ func RecoverFromPanic(err *error) {
 			*err,
 			callers)
 	}
+}
+
+func GOPath() string {
+	gopath := os.Getenv("GOPATH")
+	if gopath != "" {
+		return gopath
+	}
+	out, err := exec.Command("go", "env", "GOPATH").Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return strings.TrimSpace(string(out))
 }
