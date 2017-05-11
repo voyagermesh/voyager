@@ -26,17 +26,17 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
   - Persistent sessions, Loadbalancer stats.
 
 
-### Comparison with Kubernetes
+### Comparison with Kubernetes' Nginx Ingress Controller
 | Feauture | Kube Ingress | AppsCode Ingress |
 |----------|--------------|------------------|
 | HTTP Loadbalancing| :white_check_mark: | :white_check_mark: |
-| TCP Loadbalancing | :x: | :white_check_mark: |
+| TCP Loadbalancing | :white_check_mark:<sup>[1](https://github.com/kubernetes/ingress/blob/488d89db18/controllers/nginx/README.md#exposing-tcp-services)</sup> | :white_check_mark: |
 | TLS Termination | :white_check_mark: | :white_check_mark: |
-| Name and Path based virtual hosting | :x: | :white_check_mark: |
-| Cross Namespace service support | :x: | :white_check_mark: |
-| URL and Header rewriting | :x: | :white_check_mark: |
+| Name and Path based virtual hosting | :white_check_mark: | :white_check_mark: |
+| Cross Namespace service support | :white_check_mark: | :white_check_mark: |
+| URL and Header rewriting | :white_check_mark:<sup>[2](https://github.com/kubernetes/ingress/blob/0.9.1/controllers/nginx/configuration.md#rewrite)</sup> | :white_check_mark: |
 | Wildcard name virtual hosting | :x: | :white_check_mark: |
-| Loadbalancer statistics | :x: | :white_check_mark: |
+| Loadbalancer statistics | :white_check_mark:<sup>[3](https://github.com/kubernetes/ingress/blob/488d89db18/controllers/nginx/README.md#nginx-status-page),[4](https://github.com/kubernetes/ingress/pull/36)</sup> | :white_check_mark: |
 
 
 ### Certificate
