@@ -1142,8 +1142,10 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 			Template: api.PodTemplateSpec{
 				ObjectMeta: api.ObjectMeta{
 					Labels: map[string]string{
-						"app":                             "deployment",
-						"app-version":                     "v1",
+						"app":         "deployment",
+						"app-version": "v1",
+					},
+					Annotations: map[string]string{
 						ingress.LoadBalancerBackendWeight: "90",
 					},
 				},
@@ -1196,6 +1198,8 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 					Labels: map[string]string{
 						"app":                             "deployment",
 						"app-version":                     "v2",
+					},
+					Annotations: map[string]string{
 						ingress.LoadBalancerBackendWeight: "10",
 					},
 				},
