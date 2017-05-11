@@ -27,6 +27,8 @@ hosting. This plugin also support configurable application ports with all the fe
   - [Wildcard Name based virtual hosting](named-virtual-hosting.md),
   - Persistent sessions, Loadbalancer stats,
   - [Route Traffic to StatefulSet Pods Based on Host Name](statefulset-pod.md)
+  - [Weighted Loadbalancing for Canary Deployment](docs/user-guide/component/ingress/weighted.md)
+  - [Customize generated HAProxy config via BackendRule](docs/user-guide/component/ingress/backend-rule.md)
 
 ### Comparison with Kubernetes
 | Feauture | Kube Ingress | AppsCode Ingress |
@@ -40,6 +42,8 @@ hosting. This plugin also support configurable application ports with all the fe
 | Wildcard name virtual hosting | :x: | :white_check_mark: |
 | Loadbalancer statistics | :x: | :white_check_mark: |
 | Route Traffic to StatefulSet Pods Based on Host Name | :x: | :white_check_mark: |
+| Weighted Loadbalancing on Canary Deployment| :x: | :white_check_mark: |
+| Supports full Spectrum of HAProxy backend rules | :x: | :white_check_mark: |
 
 ## AppsCode Ingress Flow
 Typically, services and pods have IPs only routable by the cluster network. All traffic that ends up at an
@@ -129,7 +133,8 @@ same ingress resource. Learn more by reading the certificate doc.
 - [TCP Loadbalancing](tcp.md)
 - [TLS Termination](tls.md)
 - [Route Traffic to StatefulSet Pods Based on Host Name](statefulset-pod.md)
-
+- [Weighted Loadbalancing on Canary Deployment](weighted.md)
+- [Supports full HAProxy Spectrum via BackendRule](backend-rule.md)
 
 ## Example
 Check out examples for [complex ingress configurations](../../../../hack/example/ingress.yaml).

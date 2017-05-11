@@ -6,7 +6,7 @@
 Voyager provides controller for [Ingress](#ingress) and [Certificates](#certificate) for Kubernetes developed by [AppsCode](https://appscode.com).
 
 
-### Ingress
+## Ingress
 In here we call it ExtendedIngress.
 An extended plugin of Kubernetes [Ingress](https://kubernetes.io/docs/user-guide/ingress/) by AppsCode, to support both L7 and L4 loadbalancing via a single ingress.
 This is built on top of the [HAProxy](http://www.haproxy.org/), to support high availability, sticky sessions, name and path-based virtual hosting.
@@ -24,7 +24,9 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
   - [URL and Request Header Re-writing](docs/user-guide/component/ingress/header-rewrite.md),
   - [Wildcard Name based virtual hosting](docs/user-guide/component/ingress/named-virtual-hosting.md),
   - Persistent sessions, Loadbalancer stats.
-
+  - [Route Traffic to StatefulSet Pods Based on Host Name](docs/user-guide/component/ingress/statefulset-pod.md)
+  - [Weighted Loadbalancing for Canary Deployment](docs/user-guide/component/ingress/weighted.md)
+  - [Customize generated HAProxy config via BackendRule](docs/user-guide/component/ingress/backend-rule.md)
 
 ### Comparison with Kubernetes
 | Feauture | Kube Ingress | AppsCode Ingress |
@@ -37,9 +39,11 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
 | URL and Header rewriting | :x: | :white_check_mark: |
 | Wildcard name virtual hosting | :x: | :white_check_mark: |
 | Loadbalancer statistics | :x: | :white_check_mark: |
+| Route Traffic to StatefulSet Pods Based on Host Name | :x: | :white_check_mark: |
+| Weighted Loadbalancing for Canary Deployment| :x: | :white_check_mark: |
 
 
-### Certificate
+## Certificate
 Kubernetes Controller to manage TLS Certificate.
 
 **Feautures**
