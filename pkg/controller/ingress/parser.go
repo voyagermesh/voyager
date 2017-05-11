@@ -97,8 +97,8 @@ func (lbc *EngressController) getEndpoints(s *kapi.Service, servicePort *kapi.Se
 						if err != nil {
 							log.Errorln("Error getting endpoind pod", err)
 						} else {
-							if pod.Labels != nil {
-								if val, ok := pod.Labels[LoadBalancerBackendWeight]; ok {
+							if pod.Annotations != nil {
+								if val, ok := pod.Annotations[LoadBalancerBackendWeight]; ok {
 									ep.Weight, _ = strconv.Atoi(val)
 								}
 							}
