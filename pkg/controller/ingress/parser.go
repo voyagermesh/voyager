@@ -187,6 +187,7 @@ func (lbc *EngressController) parseSpec() {
 			Name:      "default-backend",
 			Endpoints: eps,
 
+			BackendRules: lbc.Config.Spec.Backend.BackendRule,
 			RewriteRules: lbc.Config.Spec.Backend.RewriteRule,
 			HeaderRules:  lbc.Config.Spec.Backend.HeaderRule,
 		}
@@ -215,9 +216,9 @@ func (lbc *EngressController) parseSpec() {
 
 				eps, err := lbc.serviceEndpoints(svc.Backend.ServiceName, svc.Backend.ServicePort, svc.Backend.HostNames)
 				def.Backends = &Backend{
-					Name:      "backend-" + rand.Characters(5),
-					Endpoints: eps,
-
+					Name:         "backend-" + rand.Characters(5),
+					Endpoints:    eps,
+					BackendRules: svc.Backend.BackendRule,
 					RewriteRules: svc.Backend.RewriteRule,
 					HeaderRules:  svc.Backend.HeaderRule,
 				}
@@ -246,8 +247,9 @@ func (lbc *EngressController) parseSpec() {
 			log.Infoln(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort)
 			eps, err := lbc.serviceEndpoints(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort, tcpSvc.Backend.HostNames)
 			def.Backends = &Backend{
-				Name:      "backend-" + rand.Characters(5),
-				Endpoints: eps,
+				Name:         "backend-" + rand.Characters(5),
+				BackendRules: tcpSvc.Backend.BackendRule,
+				Endpoints:    eps,
 			}
 
 			lbc.Options.Ports = append(lbc.Options.Ports, tcpSvc.Port.IntValue())

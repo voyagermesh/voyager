@@ -71,13 +71,20 @@ listen stats
 # default backend
 backend default-backend
     {% if Sticky %}cookie SERVERID insert indirect nocache{% endif %}
+
+    {% for rule in DefaultBackend.BackendRules %}
+    {{ rule }}
+    {% endfor %}
+
     {% for rule in DefaultBackend.RewriteRules %}
     reqrep {{ rule }}
     {% endfor %}
+
     {% for rule in DefaultBackend.HeaderRules %}
-    acl h_x_{{ forloop.Counter }}_exists req.hdr({{ rule|header_name }}) -m found
-    http-request add-header {{ rule }} unless h_x_{{ forloop.Counter }}_exists
+    acl ___header_x_{{ forloop.Counter }}_exists req.hdr({{ rule|header_name }}) -m found
+    http-request add-header {{ rule }} unless ___header_x_{{ forloop.Counter }}_exists
     {% endfor %}
+
     {% for e in DefaultBackend.Endpoints %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %} {% if Sticky %}cookie {{ e.Name }} {% endif %}
     {% endfor %}
@@ -105,13 +112,20 @@ frontend https-frontend
 {% for svc in HttpsService %}
 backend https-{{ svc.Name }}
     {% if Sticky %}cookie SERVERID insert indirect nocache{% endif %}
+
+    {% for rule in svc.Backends.BackendRules %}
+    {{ rule }}
+    {% endfor %}
+
     {% for rule in svc.Backends.RewriteRules %}
     reqrep {{ rule }}
     {% endfor %}
+
     {% for rule in svc.Backends.HeaderRules %}
-    acl h_x_{{ forloop.Counter }}_exists req.hdr({{ rule|header_name }}) -m found
-    http-request add-header {{ rule }} unless h_x_{{ forloop.Counter }}_exists
+    acl ___header_x_{{ forloop.Counter }}_exists req.hdr({{ rule|header_name }}) -m found
+    http-request add-header {{ rule }} unless ___header_x_{{ forloop.Counter }}_exists
     {% endfor %}
+
     {% for e in svc.Backends.Endpoints %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %} {% if Sticky %} cookie {{ e.Name }} {% endif %}
     {% endfor %}
@@ -137,13 +151,20 @@ frontend http-frontend
 {% for svc in HttpService %}
 backend http-{{ svc.Name }}
     {% if Sticky %}cookie SERVERID insert indirect nocache{% endif %}
+
+    {% for rule in svc.Backends.BackendRules %}
+    {{ rule }}
+    {% endfor %}
+
     {% for rule in svc.Backends.RewriteRules %}
     reqrep {{ rule }}
     {% endfor %}
+
     {% for rule in svc.Backends.HeaderRules %}
-    acl h_xff_exists req.hdr({{ rule|header_name }}) -m found
-    http-request add-header {{ rule }} unless h_xff_exists
+    acl ___header_x_{{ forloop.Counter }}_exists req.hdr({{ rule|header_name }}) -m found
+    http-request add-header {{ rule }} unless ___header_x_{{ forloop.Counter }}_exists
     {% endfor %}
+
     {% for e in svc.Backends.Endpoints %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %} {% if Sticky %}cookie {{ e.Name }} {% endif %}
     {% endfor %}
@@ -163,10 +184,16 @@ frontend tcp-frontend-key-{{ svc.Port }}
 {% for svc in TCPService %}
 backend tcp-{{ svc.Name }}
     mode tcp
+
+    {% for rule in svc.Backends.BackendRules %}
+    {{ rule }}
+    {% endfor %}
+
     {% if Sticky %}
     stick-table type ip size 100k expire 30m
     stick on src
     {% endif %}
+
     {% for e in svc.Backends.Endpoints %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %}
     {% endfor %}

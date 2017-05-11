@@ -766,7 +766,7 @@ func (ing *IngressTestSuit) TestIngressCreateWithOptions() error {
 			return errors.New().WithMessage("Path did not matched").Err()
 		}
 
-		if resp.Headers.Get("X-Ingress-Test-Header") != "ingress.appscode.com" {
+		if resp.RequestHeaders.Get("X-Ingress-Test-Header") != "ingress.appscode.com" {
 			return errors.New().WithMessage("Header did not matched").Err()
 		}
 	}
@@ -790,7 +790,7 @@ func (ing *IngressTestSuit) TestIngressCreateWithOptions() error {
 			return errors.New().WithMessage("Path did not matched").Err()
 		}
 
-		if resp.Headers.Get("X-Ingress-Test-Header") != "ingress.appscode.com/v1beta1" {
+		if resp.RequestHeaders.Get("X-Ingress-Test-Header") != "ingress.appscode.com/v1beta1" {
 			return errors.New().WithMessage("Header did not matched").Err()
 		}
 	}
@@ -1348,6 +1348,165 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 
 	if deploymentCounter1 != 90 {
 		return errors.New().WithMessagef("Expected %v Actual %v", 90, deploymentCounter1).Err()
+	}
+	return nil
+}
+
+func (ing *IngressTestSuit) TestIngressBackendRule() error {
+	baseIngress := &aci.Ingress{
+		ObjectMeta: api.ObjectMeta{
+			Name:      testIngressName(),
+			Namespace: TestNamespace,
+		},
+		Spec: aci.ExtendedIngressSpec{
+			Rules: []aci.ExtendedIngressRule{
+				{
+					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
+						HTTP: &aci.HTTPExtendedIngressRuleValue{
+							Paths: []aci.HTTPExtendedIngressPath{
+								{
+									Path: "/old",
+									Backend: aci.ExtendedIngressBackend{
+										ServiceName: testServerSvc.Name,
+										ServicePort: intstr.FromInt(80),
+										BackendRule: []string{
+											"acl add_url capture.req.uri -m beg /old/add/now",
+											`http-response set-header X-Added-From-Proxy added-from-proxy if add_url`,
+
+											"acl rep_url path_beg /old/replace",
+											`reqrep ^([^\ :]*)\ /(.*)$ \1\ /rewrited/from/proxy/\2 if rep_url`,
+										},
+									},
+								},
+								{
+									Path: "/test-second",
+									Backend: aci.ExtendedIngressBackend{
+										ServiceName: testServerSvc.Name,
+										ServicePort: intstr.FromInt(80),
+										BackendRule: []string{
+											"acl add_url capture.req.uri -m beg /test-second",
+											`http-response set-header X-Added-From-Proxy added-from-proxy if add_url`,
+
+											"acl rep_url path_beg /test-second",
+											`reqrep ^([^\ :]*)\ /(.*)$ \1\ /rewrited/from/proxy/\2 if rep_url`,
+										},
+										HeaderRule: []string{
+											"X-Ingress-Test-Header ingress.appscode.com",
+										},
+										RewriteRule: []string{
+											`^([^\ :]*)\ /(.*)$ \1\ /override/\2`,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, err := ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if ing.t.Config.Cleanup {
+			ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		}
+	}()
+
+	// Wait sometime to loadbalancer be opened up.
+	time.Sleep(time.Second * 10)
+	var svc *api.Service
+	for i := 0; i < maxRetries; i++ {
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for service to be created")
+	}
+	if err != nil {
+		return err
+	}
+	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
+	for i := 0; i < maxRetries; i++ {
+		_, err = ing.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for endpoints to be created")
+	}
+	if err != nil {
+		return err
+	}
+
+	serverAddr, err := ing.getURLs(baseIngress)
+	if err != nil {
+		return err
+	}
+	time.Sleep(time.Second * 30)
+	log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/old/replace").DoWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
+		}
+		log.Infoln("Response", *resp)
+		if resp.Method != http.MethodGet {
+			return errors.New().WithMessage("Method did not matched").Err()
+		}
+
+		if resp.Path != "/rewrited/from/proxy/old/replace" {
+			return errors.New().WithMessage("Path did not matched").Err()
+		}
+	}
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/old/add/now").DoWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
+		}
+		log.Infoln("Response", *resp)
+		if resp.Method != http.MethodGet {
+			return errors.New().WithMessage("Method did not matched").Err()
+		}
+
+		if resp.Path != "/old/add/now" {
+			return errors.New().WithMessage("Path did not matched").Err()
+		}
+
+		if resp.ResponseHeader.Get("X-Added-From-Proxy") != "added-from-proxy" {
+			return errors.New().WithMessage("Header did not matched").Err()
+		}
+	}
+
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/test-second").DoWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
+		}
+		log.Infoln("Response", *resp)
+		if resp.Method != http.MethodGet {
+			return errors.New().WithMessage("Metho/replaced did not matched").Err()
+		}
+
+		if resp.RequestHeaders.Get("X-Ingress-Test-Header") != "ingress.appscode.com" {
+			return errors.New().WithMessage("Header did not matched").Err()
+		}
+
+		if resp.ResponseHeader.Get("X-Added-From-Proxy") != "added-from-proxy" {
+			return errors.New().WithMessage("Header did not matched").Err()
+		}
+
+		if resp.RequestHeaders.Get("X-Ingress-Test-Header") != "ingress.appscode.com" {
+			return errors.New().WithMessage("Header did not matched").Err()
+		}
+
+		if resp.Path != "/override/rewrited/from/proxy/test-second" {
+			return errors.New().WithMessage("Path did not matched").Err()
+		}
 	}
 	return nil
 }
