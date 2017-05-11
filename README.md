@@ -40,7 +40,7 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
 | Wildcard name virtual hosting | :x: | :white_check_mark: |
 | Loadbalancer statistics | :x: | :white_check_mark: |
 | Route Traffic to StatefulSet Pods Based on Host Name | :x: | :white_check_mark: |
-| Weighted Loadbalancing on Canary Deployment| :x: | :white_check_mark: |
+| Weighted Loadbalancing for Canary Deployment| :x: | :white_check_mark: |
 
 
 ## Certificate
