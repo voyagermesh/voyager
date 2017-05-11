@@ -26,7 +26,7 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
   - Persistent sessions, Loadbalancer stats.
   - [Route Traffic to StatefulSet Pods Based on Host Name](docs/user-guide/component/ingress/statefulset-pod.md)
   - [Weighted Loadbalancing for Canary Deployment](docs/user-guide/component/ingress/weighted.md)
-  - [Unleash full power of HAProxy via BackendRule](docs/user-guide/component/ingress/backend-rule.md)
+  - [Customize generated HAProxy config via BackendRule](docs/user-guide/component/ingress/backend-rule.md)
 
 ### Comparison with Kubernetes
 | Feauture | Kube Ingress | AppsCode Ingress |
