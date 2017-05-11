@@ -152,7 +152,7 @@ frontend http-frontend
 backend http-{{ svc.Name }}
     {% if Sticky %}cookie SERVERID insert indirect nocache{% endif %}
 
-	{% for rule in svc.Backends.BackendRules %}
+    {% for rule in svc.Backends.BackendRules %}
     {{ rule }}
     {% endfor %}
 
