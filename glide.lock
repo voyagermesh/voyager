@@ -1,5 +1,5 @@
 hash: c14ebc4c1cf8a72e5ba9505aae0e53df1c87262e23728b42b1afd81990c7d691
-updated: 2017-05-10T07:42:06.260072791-07:00
+updated: 2017-05-11T04:13:03.255701604-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -23,7 +23,7 @@ imports:
   - strings
   - version
 - name: github.com/appscode/k8s-addons
-  version: 8861b7938c5626baa96ebeb5c4146342806cd591
+  version: a710ffd2f413cb9fb766ee5a71c835fca23f9ca0
   subpackages:
   - api
   - api/install

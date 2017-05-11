@@ -75,8 +75,8 @@ func (lbc *EngressController) createConfigMap() error {
 
 func (lbc *EngressController) createLB() error {
 	var err error
-	if lbc.Options.LBType == LBDaemon {
-		err = lbc.createDaemonLB()
+	if lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort {
+		err = lbc.createHostPortLB()
 	} else {
 		if lbc.Options.ProviderName == "aws" ||
 			lbc.Options.ProviderName == "gce" ||
@@ -94,7 +94,7 @@ func (lbc *EngressController) createLB() error {
 	return nil
 }
 
-func (lbc *EngressController) createDaemonLB() error {
+func (lbc *EngressController) createHostPortLB() error {
 	log.Infoln("Creating Daemon type lb for nodeSelector = ", lbc.Options.DaemonNodeSelector)
 	daemonNodes, err := lbc.KubeClient.Core().Nodes().List(kapi.ListOptions{
 		LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Options.DaemonNodeSelector)),
@@ -112,7 +112,7 @@ func (lbc *EngressController) createDaemonLB() error {
 			Namespace: lbc.Config.Namespace,
 			Annotations: map[string]string{
 				LBName: lbc.Config.GetName(),
-				LBType: LBDaemon,
+				LBType: LBHostPort,
 			},
 		},
 

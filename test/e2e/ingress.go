@@ -153,7 +153,7 @@ func (ing *IngressTestSuit) TestIngressDaemonCreate() error {
 			Name:      testIngressName(),
 			Namespace: TestNamespace,
 			Annotations: map[string]string{
-				ingress.LBType:             ingress.LBDaemon,
+				ingress.LBType:             ingress.LBHostPort,
 				ingress.DaemonNodeSelector: nodeSelector(),
 			},
 		},
@@ -1020,7 +1020,7 @@ func (ing *IngressTestSuit) TestIngressDaemonRestart() error {
 			Name:      testIngressName(),
 			Namespace: TestNamespace,
 			Annotations: map[string]string{
-				ingress.LBType:             ingress.LBDaemon,
+				ingress.LBType:             ingress.LBHostPort,
 				ingress.DaemonNodeSelector: nodeSelector(),
 			},
 		},
@@ -1196,8 +1196,8 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 			Template: api.PodTemplateSpec{
 				ObjectMeta: api.ObjectMeta{
 					Labels: map[string]string{
-						"app":                             "deployment",
-						"app-version":                     "v2",
+						"app":         "deployment",
+						"app-version": "v2",
 					},
 					Annotations: map[string]string{
 						ingress.LoadBalancerBackendWeight: "10",

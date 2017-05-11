@@ -88,9 +88,9 @@ ingress.appscode.com/type                  = indicates loadbalancer type to run 
                                       Load balancer or in Node Port Mode.
                                       Values in:
                                          - LoadBalancer (default)
-                                         - Daemon
+                                         - HostPort (previously called Daemon)
 
-ingress.appscode.com/daemon.nodeSelector       = only applicatble when lb.appscode.com/type is set to Daemon,
+ingress.appscode.com/daemon.nodeSelector       = only applicatble when lb.appscode.com/type is set to HostPort (previously called Daemon),
                                       this nodeSelector will indicate which host the load balancer
                                       needs to run.
                                       The format of providing nodeSelector is -

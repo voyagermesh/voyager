@@ -19,7 +19,7 @@ func TestResourceIsExists(t *testing.T) {
 	testCases := map[*EngressController]bool{
 		{
 			Options: &KubeOptions{
-				LBType: LBDaemon,
+				LBType: LBHostPort,
 			},
 			Config: &aci.Ingress{
 				ObjectMeta: api.ObjectMeta{
@@ -53,7 +53,7 @@ func TestResourceIsExists(t *testing.T) {
 
 		{
 			Options: &KubeOptions{
-				LBType: LBDaemon,
+				LBType: LBHostPort,
 			},
 			Config: &aci.Ingress{
 				ObjectMeta: api.ObjectMeta{
@@ -87,7 +87,7 @@ func TestResourceIsExists(t *testing.T) {
 
 		{
 			Options: &KubeOptions{
-				LBType: LBDaemon,
+				LBType: LBHostPort,
 			},
 			Config: &aci.Ingress{
 				ObjectMeta: api.ObjectMeta{
@@ -121,7 +121,7 @@ func TestResourceIsExists(t *testing.T) {
 
 		{
 			Options: &KubeOptions{
-				LBType: LBDaemon,
+				LBType: LBHostPort,
 			},
 			Config: &aci.Ingress{
 				ObjectMeta: api.ObjectMeta{
@@ -155,7 +155,7 @@ func TestResourceIsExists(t *testing.T) {
 
 		{
 			Options: &KubeOptions{
-				LBType: LBDaemon,
+				LBType: LBHostPort,
 			},
 			Config: &aci.Ingress{
 				ObjectMeta: api.ObjectMeta{

@@ -30,7 +30,7 @@ func (lbc *EngressController) Delete() error {
 
 func (lbc *EngressController) deleteLB() error {
 	var err error
-	if lbc.Options.LBType == LBDaemon {
+	if lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort {
 		err = lbc.deleteDaemonSets()
 	} else {
 		err = lbc.deleteRc()
@@ -49,7 +49,7 @@ func (lbc *EngressController) deleteLB() error {
 		return errors.New().WithCause(err).Err()
 	}
 
-	if lbc.Options.LBType == LBDaemon && lbc.CloudManager != nil {
+	if (lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort) && lbc.CloudManager != nil {
 		if fw, ok := lbc.CloudManager.Firewall(); ok {
 			convertedSvc := &kapi.Service{}
 			kapi.Scheme.Convert(svc, convertedSvc, nil)

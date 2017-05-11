@@ -23,8 +23,10 @@ const (
 	StatsSecret = "ingress.appscode.com/stats.secretName"
 
 	// Daemon, Persistent, LoadBalancer
-	LBName         = "ingress.appscode.com/name"
-	LBType         = "ingress.appscode.com/type"
+	LBName     = "ingress.appscode.com/name"
+	LBType     = "ingress.appscode.com/type"
+	LBHostPort = "HostPort"
+	// Deprecated, use LBHostPort
 	LBDaemon       = "Daemon"
 	LBLoadBalancer = "LoadBalancer" // default
 
@@ -169,13 +171,13 @@ type TCPService struct {
 }
 
 type Backend struct {
-	Name         string      `json:"Name,omitempty"`
-	BackendRules []string    `json:"BackendRules,omitempty"`
+	Name         string   `json:"Name,omitempty"`
+	BackendRules []string `json:"BackendRules,omitempty"`
 	// Deprecated
-	RewriteRules []string    `json:"RewriteRules,omitempty"`
+	RewriteRules []string `json:"RewriteRules,omitempty"`
 	// Deprecated
-	HeaderRules  []string    `json:"HeaderRules,omitempty"`
-	Endpoints    []*Endpoint `json:"Endpoints,omitempty"`
+	HeaderRules []string    `json:"HeaderRules,omitempty"`
+	Endpoints   []*Endpoint `json:"Endpoints,omitempty"`
 }
 
 type Endpoint struct {
