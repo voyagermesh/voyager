@@ -101,7 +101,7 @@ typically sent directly to the endpoints matching a backend.
 the request URL. These rules also follow `HAProxy` rewrite rule formats.
 
 **Line 18-20**: `backendRule` are a list of rules to be applied in the backend. It supports full
-Spectrum of HAProxy rules.
+spectrum of HAProxy rules.
 
 **Other Parameters**: For the sake of simplicity, the example Ingress has no global config parameters,
 tcp load balancer and tls terminations. We will discuss those later. One can specify a global **default backend**
