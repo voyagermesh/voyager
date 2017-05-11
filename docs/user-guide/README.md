@@ -73,6 +73,9 @@ spec:
           - X-Forwarded-Host %[base]
           rewriteRule:
           - '^([^\\ :]*)\\ /(.*)$ \\1\\ /testings/\\2'
+          backendRule:
+          - 'acl add_url capture.req.uri -m beg /test-second'
+          - 'http-response set-header X-Added-From-Proxy added-from-proxy if add_url'
 ```
 
 POSTing this to Kubernetes, API server will need to create a loadbalancer.
@@ -96,6 +99,9 @@ typically sent directly to the endpoints matching a backend.
 
 **Line 16-17**: `rewriteRule` are a list of rules to be applied in the request URL. It can append, truncate or rewrite
 the request URL. These rules also follow `HAProxy` rewrite rule formats.
+
+**Line 18-20**: `backendRule` are a list of rules to be applied in the backend. It supports full
+spectrum of HAProxy rules.
 
 **Other Parameters**: For the sake of simplicity, the example Ingress has no global config parameters,
 tcp load balancer and tls terminations. We will discuss those later. One can specify a global **default backend**
