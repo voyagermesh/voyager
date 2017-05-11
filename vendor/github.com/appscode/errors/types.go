@@ -1,29 +1,11 @@
 package errors
 
 import (
+	"bytes"
 	"context"
-	"strings"
 	"sync"
 
 	"github.com/facebookgo/stack"
-)
-
-// Basic error codes supported by appscode.
-const (
-	BadRequest                    = "BADREQUEST"
-	External                      = "EXTERNAL"
-	Failed                        = "FAILED"
-	Internal                      = "INTERNAL"
-	InvalidData                   = "INVALID_DATA"
-	InvalidPaymentInformation     = "INVALID_PAYMENT_INFORMATION"
-	InvalidQuota                  = "INVALID_QUOTA"
-	NotFound                      = "NOT_FOUND"
-	PaymentInformationUnavailable = "PAYMENT_INFORMATION_UNAVAILABLE"
-	PermissionDenied              = "PERMISSION_DENIED"
-	QuotaLimitExceed              = "QUOTA_LIMIT_EXCEED"
-	Unauthorized                  = "UNAUTHORIZED"
-	Unimplemented                 = "UNIMPLEMENTED"
-	Unknown                       = "UNKNOWN_ERROR"
 )
 
 // traceableError contains the error types that holds the errors
@@ -31,43 +13,29 @@ const (
 // messages and the underlying contexts that provide additional
 // support with the error.
 type traceableError struct {
-	// represents the error error code as string literal
-	code string
-
 	// User facing error message that contains all the messages in order
-	messages []string
+	msg string
 
 	// Underlying original error
-	err error
+	cause error
 
 	// Stacktrace
 	trace *stack.Multi
-
-	// Additional help messages
-	help *Help
 
 	// Formatter function formats the underlying message collection
 	// as string message that can be used for Error().
 	formatter formatterFunc
 
 	// Context values that this error holds to
-	context Context
+	ctx Context
 
 	// Custom error handlers that work with
 	handler []Handler
 
+	handled bool
+
 	// Mutex lock to provide thread safety.
 	lock sync.Mutex
-
-	handled bool
-}
-
-// Provides links to documentation or for performing an out of band action.
-type Help struct {
-	// Describe what link offers
-	Description string `json:"description,omitempty"`
-	// The URL of The link.
-	Url string `json:"url,omitempty"`
 }
 
 // Formatter functions format error for the error types satisfying
@@ -81,13 +49,13 @@ type formatterFunc func(error) string
 // a user provided formatter
 var defaultFormatter = func(e error) string {
 	if err, ok := e.(*traceableError); ok {
-		if err.err != nil {
-			return err.code + ":" + err.err.Error()
+		var buf bytes.Buffer
+		buf.WriteString(err.msg)
+		if err.cause != nil {
+			buf.WriteString("\nCaused By:")
+			buf.WriteString(err.cause.Error())
 		}
-		if len(err.messages) > 0 {
-			return err.code + ":" + strings.Join(err.messages, ";")
-		}
-		return err.code
+		return buf.String()
 	}
 	if e != nil {
 		return e.Error()
@@ -110,40 +78,17 @@ func (t *traceableError) Error() string {
 	return t.formatter(t)
 }
 
-// Error satisfies the error interface
-func (t *traceableError) Handled() bool {
-	t.lock.Lock()
-	defer t.lock.Unlock()
-	return t.handled
-}
-
-func (t *traceableError) Code() string {
-	t.lock.Lock()
-	defer t.lock.Unlock()
-	return t.code
-}
-
 func (t *traceableError) Message() string {
 	t.lock.Lock()
 	defer t.lock.Unlock()
-	last := len(t.messages) - 1
-	if last >= 0 {
-		return t.messages[last]
-	}
-	return ""
-}
-
-func (t *traceableError) Messages() []string {
-	t.lock.Lock()
-	defer t.lock.Unlock()
-	return t.messages
+	return t.msg
 }
 
 // Returns underlying original error
-func (t *traceableError) Err() error {
+func (t *traceableError) Cause() error {
 	t.lock.Lock()
 	defer t.lock.Unlock()
-	return t.err
+	return t.cause
 }
 
 func (t *traceableError) Trace() *stack.Multi {
@@ -158,16 +103,10 @@ func (t *traceableError) TraceString() string {
 	return t.trace.String()
 }
 
-func (t *traceableError) Help() *Help {
-	t.lock.Lock()
-	defer t.lock.Unlock()
-	return t.help
-}
-
 func (t *traceableError) Context() Context {
 	t.lock.Lock()
 	defer t.lock.Unlock()
-	return t.context
+	return t.ctx
 }
 
 type goContextWrapper struct {

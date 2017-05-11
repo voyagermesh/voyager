@@ -15,15 +15,15 @@ func (lbc *EngressController) Delete() error {
 	log.Infoln("Starting deleting lb. got engress with", lbc.Config.ObjectMeta)
 	err := lbc.parse()
 	if err != nil {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 	err = lbc.deleteLB()
 	if err != nil {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 	err = lbc.deleteConfigMap()
 	if err != nil {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 	return nil
 }
@@ -36,17 +36,17 @@ func (lbc *EngressController) deleteLB() error {
 		err = lbc.deleteRc()
 	}
 	if err != nil {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
 	if err != nil {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 
 	// delete service
 	err = lbc.KubeClient.Core().Services(lbc.Config.Namespace).Delete(VoyagerPrefix+lbc.Config.Name, &kapi.DeleteOptions{})
 	if err != nil {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 
 	if lbc.Options.LBType == LBDaemon && lbc.CloudManager != nil {
@@ -55,7 +55,7 @@ func (lbc *EngressController) deleteLB() error {
 			kapi.Scheme.Convert(svc, convertedSvc, nil)
 			err = fw.EnsureFirewallDeleted(convertedSvc)
 			if err != nil {
-				return errors.New().WithCause(err).Internal()
+				return errors.New().WithCause(err).Err()
 			}
 		}
 	}
@@ -66,7 +66,7 @@ func (lbc *EngressController) deleteLB() error {
 			kapi.Scheme.Convert(svc, convertedSvc, nil)
 			err = lb.EnsureLoadBalancerDeleted(lbc.Options.ClusterName, convertedSvc)
 			if err != nil {
-				return errors.New().WithCause(err).Internal()
+				return errors.New().WithCause(err).Err()
 			}
 		}
 	}
@@ -80,7 +80,7 @@ func (lbc *EngressController) deleteDaemonSets() error {
 	}
 	err = lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Delete(VoyagerPrefix+lbc.Config.Name, &kapi.DeleteOptions{})
 	if err != nil {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 
 	lb := labels.NewSelector()
@@ -88,7 +88,7 @@ func (lbc *EngressController) deleteDaemonSets() error {
 		s := sets.NewString(value)
 		ls, err := labels.NewRequirement(key, selection.Equals, s.List())
 		if err != nil {
-			return errors.New().WithCause(err).Internal()
+			return errors.New().WithCause(err).Err()
 		}
 		lb = lb.Add(*ls)
 	}
@@ -102,7 +102,7 @@ func (lbc *EngressController) deleteDaemonSets() error {
 	for _, pod := range pods.Items {
 		err = lbc.KubeClient.Core().Pods(lbc.Config.Namespace).Delete(pod.Name, &kapi.DeleteOptions{})
 		if err != nil {
-			return errors.New().WithCause(err).Internal()
+			return errors.New().WithCause(err).Err()
 		}
 	}
 	return nil
@@ -111,13 +111,13 @@ func (lbc *EngressController) deleteDaemonSets() error {
 func (lbc *EngressController) deleteRc() error {
 	rc, err := lbc.KubeClient.Core().ReplicationControllers(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
 	if err != nil {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 	// resize the controller to zero (effectively deleting all pods) before deleting it.
 	rc.Spec.Replicas = 0
 	_, err = lbc.KubeClient.Core().ReplicationControllers(lbc.Config.Namespace).Update(rc)
 	if err != nil {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 
 	log.Debugln("Waiting before delete the RC")
@@ -128,7 +128,7 @@ func (lbc *EngressController) deleteRc() error {
 		OrphanDependents: &falseVar,
 	})
 	if err != nil {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 	return nil
 }
@@ -136,7 +136,7 @@ func (lbc *EngressController) deleteRc() error {
 func (lbc *EngressController) deleteConfigMap() error {
 	err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Delete(VoyagerPrefix+lbc.Config.Name, &kapi.DeleteOptions{})
 	if err != nil {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 	return nil
 }

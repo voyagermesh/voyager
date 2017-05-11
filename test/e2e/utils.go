@@ -37,7 +37,7 @@ func (ing *IngressTestSuit) getURLs(baseIngress *aci.Ingress) ([]string, error) 
 			time.Sleep(time.Second * 10)
 		}
 		if err != nil {
-			return nil, errors.New().WithCause(err).WithMessage("Failed to load service from minikube").Internal()
+			return nil, errors.New().WithCause(err).WithMessage("Failed to load service from minikube").Err()
 		}
 	} else {
 		var svc *api.Service
@@ -68,12 +68,12 @@ func (ing *IngressTestSuit) getURLs(baseIngress *aci.Ingress) ([]string, error) 
 								port,
 							})
 							if err != nil {
-								return nil, errors.New().WithCause(err).Internal()
+								return nil, errors.New().WithCause(err).Err()
 							}
 
 							u, err := url.Parse(doc.String())
 							if err != nil {
-								return nil, errors.New().WithCause(err).Internal()
+								return nil, errors.New().WithCause(err).Err()
 							}
 
 							serverAddr = append(serverAddr, u.String())
@@ -86,7 +86,7 @@ func (ing *IngressTestSuit) getURLs(baseIngress *aci.Ingress) ([]string, error) 
 			log.Infoln("Waiting for service to be created")
 		}
 		if err != nil {
-			return nil, errors.New().WithCause(err).Internal()
+			return nil, errors.New().WithCause(err).Err()
 		}
 	}
 	return serverAddr, nil
@@ -102,7 +102,7 @@ func (ing *IngressTestSuit) getDaemonURLs(baseIngress *aci.Ingress) ([]string, e
 		),
 	})
 	if err != nil {
-		return nil, errors.New().WithCause(err).Internal()
+		return nil, errors.New().WithCause(err).Err()
 	}
 
 	var svc *api.Service
@@ -121,7 +121,7 @@ func (ing *IngressTestSuit) getDaemonURLs(baseIngress *aci.Ingress) ([]string, e
 		log.Infoln("Waiting for service to be created")
 	}
 	if err != nil {
-		return nil, errors.New().WithCause(err).Internal()
+		return nil, errors.New().WithCause(err).Err()
 	}
 
 	for _, node := range nodes.Items {
@@ -137,12 +137,12 @@ func (ing *IngressTestSuit) getDaemonURLs(baseIngress *aci.Ingress) ([]string, e
 						port,
 					})
 					if err != nil {
-						return nil, errors.New().WithCause(err).Internal()
+						return nil, errors.New().WithCause(err).Err()
 					}
 
 					u, err := url.Parse(doc.String())
 					if err != nil {
-						return nil, errors.New().WithCause(err).Internal()
+						return nil, errors.New().WithCause(err).Err()
 					}
 					serverAddr = append(serverAddr, u.String())
 				}

@@ -37,12 +37,12 @@ func (i *IngressTestSuit) Test() error {
 func (i *IngressTestSuit) setUp() error {
 	_, err := i.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Create(testServerRc)
 	if err != nil && !k8serr.IsAlreadyExists(err) {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 
 	_, err = i.t.KubeClient.Core().Services(testServerSvc.Namespace).Create(testServerSvc)
 	if err != nil && !k8serr.IsAlreadyExists(err) {
-		return errors.New().WithCause(err).Internal()
+		return errors.New().WithCause(err).Err()
 	}
 
 	for it := 0; it < maxRetries; it++ {

@@ -52,16 +52,16 @@ func NewACMEClient(config *ACMEConfig) (*ACMEClient, error) {
 
 	client, err := acme.NewClient(providerUrl, config.UserData, acme.RSA2048)
 	if err != nil {
-		return nil, errors.New().WithCause(err).Internal()
+		return nil, errors.New().WithCause(err).Err()
 	}
 
 	initDNSProvider := func(provider acme.ChallengeProvider, err error) (*ACMEClient, error) {
 		if err != nil {
-			return nil, errors.New().WithCause(err).Internal()
+			return nil, errors.New().WithCause(err).Err()
 		}
 
 		if err := client.SetChallengeProvider(acme.DNS01, provider); err != nil {
-			return nil, errors.New().WithCause(err).Internal()
+			return nil, errors.New().WithCause(err).Err()
 		}
 
 		client.ExcludeChallenges([]acme.Challenge{acme.HTTP01, acme.TLSSNI01})
@@ -94,7 +94,7 @@ func NewACMEClient(config *ACMEConfig) (*ACMEClient, error) {
 			acme.HTTP01,
 			defaultProvider,
 		); err != nil {
-			return nil, errors.New().WithCause(err).Internal()
+			return nil, errors.New().WithCause(err).Err()
 		}
 		client.ExcludeChallenges([]acme.Challenge{acme.DNS01, acme.TLSSNI01})
 		return &ACMEClient{
@@ -116,7 +116,7 @@ func NewACMEClient(config *ACMEConfig) (*ACMEClient, error) {
 		projectName := config.ProviderCredentials["GCE_PROJECT"]
 		serviceAccountData := config.ProviderCredentials["GCE_SERVICE_ACCOUNT_DATA"]
 		if len(serviceAccountData) <= 0 {
-			return nil, errors.New().WithMessage("GCE_SERVICE_ACCOUNT_DATA is missing").Internal()
+			return nil, errors.New("GCE_SERVICE_ACCOUNT_DATA is missing").Err()
 		}
 		return initDNSProvider(googlecloud.NewDNSProviderCredentials(string(projectName), serviceAccountData))
 	case "linode":
@@ -134,7 +134,7 @@ func NewACMEClient(config *ACMEConfig) (*ACMEClient, error) {
 	case "vultr":
 		return initDNSProvider(vultr.NewDNSProvider())
 	default:
-		return nil, errors.New().WithMessage("Unknown provider specified").NotFound()
+		return nil, errors.New("Unknown provider specified").Err()
 	}
 }
 
@@ -230,11 +230,11 @@ func NewACMECertDataFromSecret(s *api.Secret) (ACMECertData, error) {
 	acmeCertData.Domains = NewDomainCollection().FromString(s.Labels[certificateKey+"/domains"])
 	acmeCertData.Cert, ok = s.Data[api.TLSCertKey]
 	if !ok {
-		return acmeCertData, errors.New().WithMessagef("Could not find key tls.crt in secret %v", s.Name).Internal()
+		return acmeCertData, errors.New().WithMessagef("Could not find key tls.crt in secret %v", s.Name).Err()
 	}
 	acmeCertData.PrivateKey, ok = s.Data[api.TLSPrivateKeyKey]
 	if !ok {
-		return acmeCertData, errors.New().WithMessagef("Could not find key tls.key in secret %v", s.Name).Internal()
+		return acmeCertData, errors.New().WithMessagef("Could not find key tls.key in secret %v", s.Name).Err()
 	}
 	return acmeCertData, nil
 }

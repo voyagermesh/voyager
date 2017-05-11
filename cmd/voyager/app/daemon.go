@@ -1,9 +1,10 @@
 package app
 
 import (
+	"fmt"
+	"os"
 	"time"
 
-	"github.com/appscode/errors"
 	"github.com/appscode/go/runtime"
 	_ "github.com/appscode/k8s-addons/api/install"
 	acs "github.com/appscode/k8s-addons/client/clientset"
@@ -20,7 +21,8 @@ func Run(config *options.Config) {
 
 	c, err := clientcmd.BuildConfigFromFlags(config.Master, config.KubeConfig)
 	if err != nil {
-		errors.Exit(err)
+		fmt.Fprint(os.Stderr, err)
+		os.Exit(1)
 	}
 
 	w := &Watcher{
