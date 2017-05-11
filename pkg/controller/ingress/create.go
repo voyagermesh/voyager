@@ -11,7 +11,7 @@ import (
 	"github.com/appscode/log"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
-	"k8s.io/kubernetes/pkg/apis/extensions"
+	kepi "k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/util/intstr"
 )
@@ -74,9 +74,8 @@ func (lbc *EngressController) createConfigMap() error {
 }
 
 func (lbc *EngressController) createLB() error {
-	var err error
 	if lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort {
-		err = lbc.createHostPortPods()
+		err := lbc.createHostPortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -85,9 +84,23 @@ func (lbc *EngressController) createLB() error {
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
+	} else if lbc.Options.LBType == LBNodePort {
+		err := lbc.createNodePortPods()
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
+		time.Sleep(time.Second * 10)
+		err = lbc.createNodePortSvc()
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
 	} else {
 		if lbc.Options.SupportsLoadBalancerType() {
-			err = lbc.createLoadBalancerPods()
+			err := lbc.deleteRCPods()
+			if err != nil {
+				return errors.FromErr(err).Err()
+			}
+			err = lbc.createNodePortPods()
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
@@ -97,11 +110,8 @@ func (lbc *EngressController) createLB() error {
 				return errors.FromErr(err).Err()
 			}
 		} else {
-			err = errors.New("LoadBalancer type ingress is unsupported for cloud provider:", lbc.Options.ProviderName).Err()
+			return errors.New("LoadBalancer type ingress is unsupported for cloud provider:", lbc.Options.ProviderName).Err()
 		}
-	}
-	if err != nil {
-		return errors.FromErr(err).Err()
 	}
 	return nil
 }
@@ -175,14 +185,14 @@ func (lbc *EngressController) createHostPortPods() error {
 	vs := Volumes(lbc.Options)
 	vms := VolumeMounts(lbc.Options)
 	// ignoring errors and trying to create controllers
-	daemon := &extensions.DaemonSet{
+	daemon := &kepi.DaemonSet{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      VoyagerPrefix + lbc.Config.Name,
 			Namespace: lbc.Config.Namespace,
 			Labels:    labelsFor(lbc.Config.Name),
 		},
 
-		Spec: extensions.DaemonSetSpec{
+		Spec: kepi.DaemonSetSpec{
 			Selector: &unversioned.LabelSelector{
 				MatchLabels: labelsFor(lbc.Config.Name),
 			},
@@ -246,7 +256,115 @@ func (lbc *EngressController) createHostPortPods() error {
 	return nil
 }
 
+func (lbc *EngressController) createNodePortSvc() error {
+	log.Infoln("creating NodePort type lb")
+	// creating service as type NodePort
+	svc := &kapi.Service{
+		ObjectMeta: kapi.ObjectMeta{
+			Name:      VoyagerPrefix + lbc.Config.Name,
+			Namespace: lbc.Config.Namespace,
+			Annotations: map[string]string{
+				LBName: lbc.Config.GetName(),
+				LBType: LBNodePort,
+			},
+		},
+		Spec: kapi.ServiceSpec{
+			Type:     kapi.ServiceTypeNodePort,
+			Ports:    []kapi.ServicePort{},
+			Selector: labelsFor(lbc.Config.Name),
+		},
+	}
+
+	// opening other tcp ports
+	for _, port := range lbc.Options.Ports {
+		p := kapi.ServicePort{
+			Name:       "tcp-" + strconv.Itoa(port),
+			Protocol:   "TCP",
+			Port:       int32(port),
+			TargetPort: intstr.FromInt(port),
+		}
+		svc.Spec.Ports = append(svc.Spec.Ports, p)
+	}
+
+	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Create(svc)
+	if err != nil {
+		return errors.FromErr(err).Err()
+	}
+	return nil
+}
+
+func (lbc *EngressController) createNodePortPods() error {
+	log.Infoln("creating NodePort deployment")
+	vs := Volumes(lbc.Options)
+	vms := VolumeMounts(lbc.Options)
+	// ignoring errors and trying to create controllers
+	d := &kepi.Deployment{
+		ObjectMeta: kapi.ObjectMeta{
+			Name:      VoyagerPrefix + lbc.Config.Name,
+			Namespace: lbc.Config.Namespace,
+			Labels:    labelsFor(lbc.Config.Name),
+		},
+
+		Spec: kepi.DeploymentSpec{
+			Replicas: lbc.Options.Replicas,
+			Selector: &unversioned.LabelSelector{
+				MatchLabels: labelsFor(lbc.Config.Name),
+			},
+			// pod templates.
+			Template: kapi.PodTemplateSpec{
+				ObjectMeta: kapi.ObjectMeta{
+					Labels: labelsFor(lbc.Config.Name),
+				},
+
+				Spec: kapi.PodSpec{
+					Containers: []kapi.Container{
+						{
+							Name:  "haproxy",
+							Image: GetLoadbalancerImage(),
+							Env: []kapi.EnvVar{
+								{
+									Name: "KUBE_NAMESPACE",
+									ValueFrom: &kapi.EnvVarSource{
+										FieldRef: &kapi.ObjectFieldSelector{
+											FieldPath: "metadata.namespace",
+										},
+									},
+								},
+							},
+							Args: []string{
+								"--config-map=" + lbc.Options.ConfigMapName,
+								"--mount-location=" + "/etc/haproxy",
+								"--boot-cmd=" + "/etc/sv/reloader/reload",
+								"--v=4",
+							},
+							Ports:        []kapi.ContainerPort{},
+							VolumeMounts: vms,
+						},
+					},
+					Volumes: vs,
+				},
+			},
+		},
+	}
+
+	// adding tcp ports to pod template
+	for _, port := range lbc.Options.Ports {
+		p := kapi.ContainerPort{
+			Name:          "tcp-" + strconv.Itoa(port),
+			Protocol:      "TCP",
+			ContainerPort: int32(port),
+		}
+		d.Spec.Template.Spec.Containers[0].Ports = append(d.Spec.Template.Spec.Containers[0].Ports, p)
+	}
+	_, err := lbc.KubeClient.Extensions().Deployments(lbc.Config.Namespace).Create(d)
+	if err != nil {
+		return errors.FromErr(err).Err()
+	}
+	return nil
+}
+
 func (lbc *EngressController) createLoadBalancerSvc() error {
+	log.Infoln("creating LoadBalancer type lb")
 	// creating service as typeLoadBalancer
 	svc := &kapi.Service{
 		ObjectMeta: kapi.ObjectMeta{
@@ -340,76 +458,6 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 				return errors.FromErr(err).Err()
 			}
 		}
-	}
-	return nil
-}
-
-func (lbc *EngressController) createLoadBalancerPods() error {
-	log.Infoln("creating LoadBalancer type lb")
-	vs := Volumes(lbc.Options)
-	vms := VolumeMounts(lbc.Options)
-	// ignoring errors and trying to create controllers
-	rc := &kapi.ReplicationController{
-		ObjectMeta: kapi.ObjectMeta{
-			Name:      VoyagerPrefix + lbc.Config.Name,
-			Namespace: lbc.Config.Namespace,
-			Labels:    labelsFor(lbc.Config.Name),
-		},
-
-		Spec: kapi.ReplicationControllerSpec{
-			Replicas: 1,
-			Selector: labelsFor(lbc.Config.Name),
-
-			// pod templates.
-			Template: &kapi.PodTemplateSpec{
-				ObjectMeta: kapi.ObjectMeta{
-					Labels: labelsFor(lbc.Config.Name),
-				},
-
-				Spec: kapi.PodSpec{
-					Containers: []kapi.Container{
-						{
-							Name:  "haproxy",
-							Image: GetLoadbalancerImage(),
-							Env: []kapi.EnvVar{
-								{
-									Name: "KUBE_NAMESPACE",
-									ValueFrom: &kapi.EnvVarSource{
-										FieldRef: &kapi.ObjectFieldSelector{
-											FieldPath: "metadata.namespace",
-										},
-									},
-								},
-							},
-							Args: []string{
-								"--config-map=" + lbc.Options.ConfigMapName,
-								"--mount-location=" + "/etc/haproxy",
-								"--boot-cmd=" + "/etc/sv/reloader/reload",
-								"--v=4",
-							},
-							Ports:        []kapi.ContainerPort{},
-							VolumeMounts: vms,
-						},
-					},
-					Volumes: vs,
-				},
-			},
-		},
-	}
-
-	// adding tcp ports to pod template
-	for _, port := range lbc.Options.Ports {
-		p := kapi.ContainerPort{
-			Name:          "tcp-" + strconv.Itoa(port),
-			Protocol:      "TCP",
-			ContainerPort: int32(port),
-		}
-		rc.Spec.Template.Spec.Containers[0].Ports = append(rc.Spec.Template.Spec.Containers[0].Ports, p)
-	}
-	log.Debugln("creating replication controller")
-	_, err := lbc.KubeClient.Core().ReplicationControllers(lbc.Config.Namespace).Create(rc)
-	if err != nil {
-		return errors.FromErr(err).Err()
 	}
 	return nil
 }

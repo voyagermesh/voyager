@@ -13,6 +13,11 @@ func (lbc *EngressController) IsExists() bool {
 		if k8error.IsNotFound(err) {
 			return false
 		}
+	} else if lbc.Options.LBType == LBNodePort {
+		_, err := lbc.KubeClient.Extensions().Deployments(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+		if k8error.IsNotFound(err) {
+			return false
+		}
 	} else {
 		_, err := lbc.KubeClient.Core().ReplicationControllers(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
 		if k8error.IsNotFound(err) {
