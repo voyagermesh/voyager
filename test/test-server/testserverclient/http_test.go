@@ -25,12 +25,12 @@ type testHTTPHandler struct {
 
 func (h testHTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	resp := &Response{
-		Type:       "http",
-		Host:       r.Host,
-		ServerPort: h.port,
-		Path:       r.URL.Path,
-		Method:     r.Method,
-		Headers:    r.Header,
+		Type:           "http",
+		Host:           r.Host,
+		ServerPort:     h.port,
+		Path:           r.URL.Path,
+		Method:         r.Method,
+		RequestHeaders: r.Header,
 	}
 	log.Infoln("Handling HTTP Request")
 	json.NewEncoder(w).Encode(resp)

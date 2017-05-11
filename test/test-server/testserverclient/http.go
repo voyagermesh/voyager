@@ -16,15 +16,16 @@ type httpClient struct {
 }
 
 type Response struct {
-	Status     int         `json:"-"`
-	Type       string      `json:"type,omitempty"`
-	PodName    string      `json:"podName,omitempty"`
-	Host       string      `json:"host,omitempty"`
-	ServerPort string      `json:"serverPort,omitempty"`
-	Path       string      `json:"path,omitempty"`
-	Method     string      `json:"method,omitempty"`
-	Headers    http.Header `json:"headers,omitempty"`
-	Body       string      `json:"body,omitempty"`
+	Status         int         `json:"-"`
+	ResponseHeader http.Header `json:"-"`
+	Type           string      `json:"type,omitempty"`
+	PodName        string      `json:"podName,omitempty"`
+	Host           string      `json:"host,omitempty"`
+	ServerPort     string      `json:"serverPort,omitempty"`
+	Path           string      `json:"path,omitempty"`
+	Method         string      `json:"method,omitempty"`
+	RequestHeaders http.Header `json:"headers,omitempty"`
+	Body           string      `json:"body,omitempty"`
 }
 
 func NewTestHTTPClient(url string) *httpClient {
@@ -80,7 +81,8 @@ func (t *httpClient) do() (*Response, error) {
 	}
 
 	responseStruct := &Response{
-		Status: resp.StatusCode,
+		Status:         resp.StatusCode,
+		ResponseHeader: resp.Header,
 	}
 	err = json.NewDecoder(resp.Body).Decode(responseStruct)
 	if err != nil {
