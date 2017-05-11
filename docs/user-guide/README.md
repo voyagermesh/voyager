@@ -37,9 +37,13 @@ Now Create Your Ingress/Certificated.
 
 Voyager can run HAProxy in 2 different modes. `cloude-provider` and `cluster-name` flags should be set appropriately depending on the mode. These modes are:
 
-- DaemonSet: In this mode, HAProxy is run as DaemonSet using nodeSelector and hostNetwork:true. As a result, HAProxy's IP will be same as the IP address for nodes where it is running. This is supported on any cloud provider (known or unknown to Kubernetes). Voyager will open firewall, if a `cloud-provider` is one of `aws`, `gce` or `azure`. If cloud provider is unknown (say, running on DigitalOcean), users are required to configure firewall as needed. `--cluster-name` is not used in this mode.
+- HostPort: In this mode, HAProxy is run as DaemonSet using nodeSelector and hostNetwork:true. As a result,
+HAProxy's IP will be same as the IP address for nodes where it is running. This is supported on any cloud provider
+(known or unknown to Kubernetes). Voyager will open firewall, if a `cloud-provider` is one of `aws`, `gce`, `gke` or
+`azure`. If cloud provider is unknown (say, running on DigitalOcean), users are required to configure firewall as needed.
+`--cluster-name` is not used in this mode. This mode used to be called `Daemon`. We recommend using `HostPort` for new setups.
 
-- Loadbalancer: In this mode, a Kubernetes LoadBalancer type service is used to expose HAProxy to the internet.
+- LoadBalancer: In this mode, a Kubernetes LoadBalancer type service is used to expose HAProxy to the internet.
 This is supported for cloud providers known to Kubernetes (`aws`, `gce` and `azure`), `--cloud-provider` and `--cluster-name` is required to properly setup this loadbalancer. This mode supports reserved ip on GCE.
 
 You can choose the mode in your Ingress YAML using label: [ingress.appscode.com/type](/docs/user-guide/component/ingress#configurations-options)
