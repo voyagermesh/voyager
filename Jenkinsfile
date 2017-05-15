@@ -9,13 +9,8 @@ node("master") {
         env.PATH = "${env.GOROOT}/bin:${env.PATH}:$GOPATH:$GOBIN"
         sh "mkdir -p ${env.GOBIN}"
     }
-    stage('builddeps') {
-        sh 'sudo apt update &&\
-        sudo apt install -y software-properties-common python-software-properties python-dev libyaml-dev python-pip build-essential libsqlite3-dev &&\
-        sudo pip install git+https://github.com/ellisonbg/antipackage.git#egg=antipackage &&\
-        sudo apt install curl'
-    }
     stage("go setup") {
+        sh "sudo apt update && sudo apt-get -y install curl"
         try {
             sh "go version"
         } catch (e) {
@@ -24,35 +19,21 @@ node("master") {
           rm -rf go${go_version}.linux-amd64.tar.gz"
         }
     }
-    stage("dependency") {
-        sh "go get -u github.com/jteeuwen/go-bindata &&\
-          go install github.com/jteeuwen/go-bindata/... &&\
-          go get -u github.com/progrium/go-extpoints &&\
-          go install github.com/progrium/go-extpoints &&\
-          go get -u golang.org/x/tools/cmd/goimports &&\
-          go install golang.org/x/tools/cmd/goimports"
-    }
-    stage("install glide") {
-        sh "curl https://glide.sh/get | sh"
-    }
-    stage("checkout") {
-        dir("${project_dir}") {
+    dir("${project_dir}") {
+        stage("checkout") {
             checkout scm
         }
-    }
-    stage("build binary") {
-        dir("${project_dir}") {
+        stage('builddeps') {
+            sh "go version"
+            sh "sudo ./hack/builddeps.sh"
+        }
+        stage("build binary") {
             sh "glide slow"
             sh "./hack/make.py"
         }
-    }
-    stage("build docker") {
-        dir("${project_dir}") {
+        stage("build docker") {
             sh "./hack/docker/voyager/setup.sh"
         }
-    }
-    stage("docker push") {
-
     }
 /*    stage("test") {
         dir("${project_dir}") {
