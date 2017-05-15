@@ -77,6 +77,14 @@ func (lbc *EngressController) createLB() error {
 	var err error
 	if lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort {
 		err = lbc.createHostPortLB()
+		if err != nil {
+			return errors.New().WithCause(err).Err()
+		}
+		time.Sleep(time.Second*10)
+		err = lbc.createHostPortLBSvc()
+		if err != nil {
+			return errors.New().WithCause(err).Err()
+		}
 	} else {
 		if lbc.Options.ProviderName == "aws" ||
 			lbc.Options.ProviderName == "gce" ||
@@ -84,6 +92,14 @@ func (lbc *EngressController) createLB() error {
 			lbc.Options.ProviderName == "azure" ||
 			lbc.Options.ProviderName == "minikube" {
 			err = lbc.createLoadBalancerLB()
+			if err != nil {
+				return errors.New().WithCause(err).Err()
+			}
+			time.Sleep(time.Second*10)
+			err = lbc.createLoadBalancerLBSvc()
+			if err != nil {
+				return errors.New().WithCause(err).Err()
+			}
 		} else {
 			err = errors.New("LoadBalancer type ingress is unsupported for cloud provider:", lbc.Options.ProviderName).Err()
 		}
@@ -94,16 +110,7 @@ func (lbc *EngressController) createLB() error {
 	return nil
 }
 
-func (lbc *EngressController) createHostPortLB() error {
-	log.Infoln("Creating Daemon type lb for nodeSelector = ", lbc.Options.DaemonNodeSelector)
-	daemonNodes, err := lbc.KubeClient.Core().Nodes().List(kapi.ListOptions{
-		LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Options.DaemonNodeSelector)),
-	})
-	if err != nil {
-		log.Infoln("node not found with nodeSelector, cause", err)
-		return errors.New().WithCause(err).Err()
-	}
-
+func (lbc *EngressController) createHostPortLBSvc() error {
 	// Create a Headless service without selectors
 	// We just want kubernetes to assign a stable UID to the service. This is used inside EnsureFirewall()
 	svc := &kapi.Service{
@@ -134,12 +141,41 @@ func (lbc *EngressController) createHostPortLB() error {
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
 
-	svc, err = lbc.KubeClient.Core().Services(lbc.Config.Namespace).Create(svc)
+	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Create(svc)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 
-	log.Infoln("creating daemonset")
+	daemonNodes, err := lbc.KubeClient.Core().Nodes().List(kapi.ListOptions{
+		LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Options.DaemonNodeSelector)),
+	})
+	if err != nil {
+		log.Infoln("node not found with nodeSelector, cause", err)
+		return errors.New().WithCause(err).Err()
+	}
+	// open up firewall
+	log.Debugln("Checking cloud manager", lbc.CloudManager)
+	if lbc.CloudManager != nil {
+		log.Debugln("cloud manager not nil")
+		if fw, ok := lbc.CloudManager.Firewall(); ok {
+			log.Debugln("firewalls found")
+			convertedSvc := &kapi.Service{}
+			kapi.Scheme.Convert(svc, convertedSvc, nil)
+			for _, node := range daemonNodes.Items {
+				err = fw.EnsureFirewall(convertedSvc, node.Name)
+				if err != nil {
+					log.Errorln("Failed to ensure loadbalancer for node", node.Name, "cause", err)
+				}
+			}
+			log.Debugln("getting firewalls for cloud manager failed")
+		}
+	}
+	return nil
+}
+
+func (lbc *EngressController) createHostPortLB() error {
+	log.Infoln("Creating Daemon type lb for nodeSelector = ", lbc.Options.DaemonNodeSelector)
+
 	vs := Volumes(lbc.Options)
 	vms := VolumeMounts(lbc.Options)
 	// ignoring errors and trying to create controllers
@@ -206,34 +242,15 @@ func (lbc *EngressController) createHostPortLB() error {
 		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, p)
 	}
 	log.Infoln("creating deamonsets controller")
-	_, err = lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Create(daemon)
+	_, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Create(daemon)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	log.V(5).Infoln("DeamonSet Created with\n", yaml.ToString(daemon))
-
-	// open up firewall
-	log.Debugln("Checking cloud manager", lbc.CloudManager)
-	if lbc.CloudManager != nil {
-		log.Debugln("cloud manager not nil")
-		if fw, ok := lbc.CloudManager.Firewall(); ok {
-			log.Debugln("firewalls found")
-			convertedSvc := &kapi.Service{}
-			kapi.Scheme.Convert(svc, convertedSvc, nil)
-			for _, node := range daemonNodes.Items {
-				err = fw.EnsureFirewall(convertedSvc, node.Name)
-				if err != nil {
-					log.Errorln("Failed to ensure loadbalancer for node", node.Name, "cause", err)
-				}
-			}
-			log.Debugln("getting firewalls for cloud manager failed")
-		}
-	}
 	return nil
 }
 
-func (lbc *EngressController) createLoadBalancerLB() error {
-	log.Infoln("creating LoadBalancer type lb")
+func (lbc *EngressController) createLoadBalancerLBSvc() error {
 	// creating service as typeLoadBalancer
 	svc := &kapi.Service{
 		ObjectMeta: kapi.ObjectMeta{
@@ -281,7 +298,56 @@ func (lbc *EngressController) createLoadBalancerLB() error {
 		return errors.New().WithCause(err).Err()
 	}
 
-	log.Infoln("creating replication controller")
+	if svc.Spec.Type == kapi.ServiceTypeNodePort && lbc.CloudManager != nil {
+		log.Debugln("cloud manager not nil, getting hosts")
+		hosts := make([]string, 0)
+		if ins, ok := lbc.CloudManager.Instances(); ok {
+			// TODO(tamal): Does it return all hosts?
+			nodes, _ := ins.List("")
+			for _, node := range nodes {
+				hosts = append(hosts, string(node))
+			}
+		}
+
+		log.Debugln("hosts found", hosts)
+		// Wait for nodePort to be assigned
+		timeoutAt := time.Now().Add(time.Second * 600)
+		for {
+			svc, _ := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+			nodePortReady := true
+			for _, p := range svc.Spec.Ports {
+				if p.NodePort <= 0 {
+					nodePortReady = false
+					break
+				}
+			}
+			if nodePortReady {
+				break
+			}
+
+			if time.Now().After(timeoutAt) {
+				return errors.New("timed out creating node port service").Err()
+			}
+
+			log.Info("Waiting for nodeport service to be ready")
+
+			time.Sleep(10 * time.Second)
+		}
+		if lb, ok := lbc.CloudManager.LoadBalancer(); ok {
+			log.Debugln("loadbalancer for cloud manager updating")
+			convertedSvc := &kapi.Service{}
+			kapi.Scheme.Convert(svc, convertedSvc, nil)
+			_, err = lb.EnsureLoadBalancer(lbc.Options.ClusterName, convertedSvc, hosts) // lbc.Config.Annotations
+			if err != nil {
+				return errors.New().WithCause(err).Err()
+			}
+		}
+	}
+	return nil
+}
+
+func (lbc *EngressController) createLoadBalancerLB() error {
+	log.Infoln("creating LoadBalancer type lb")
 	vs := Volumes(lbc.Options)
 	vms := VolumeMounts(lbc.Options)
 	// ignoring errors and trying to create controllers
@@ -343,55 +409,9 @@ func (lbc *EngressController) createLoadBalancerLB() error {
 		rc.Spec.Template.Spec.Containers[0].Ports = append(rc.Spec.Template.Spec.Containers[0].Ports, p)
 	}
 	log.Debugln("creating replication controller")
-	_, err = lbc.KubeClient.Core().ReplicationControllers(lbc.Config.Namespace).Create(rc)
+	_, err := lbc.KubeClient.Core().ReplicationControllers(lbc.Config.Namespace).Create(rc)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
-	}
-
-	if svc.Spec.Type == kapi.ServiceTypeNodePort && lbc.CloudManager != nil {
-		log.Debugln("cloud manager not nil, getting hosts")
-		hosts := make([]string, 0)
-		if ins, ok := lbc.CloudManager.Instances(); ok {
-			// TODO(tamal): Does it return all hosts?
-			nodes, _ := ins.List("")
-			for _, node := range nodes {
-				hosts = append(hosts, string(node))
-			}
-		}
-
-		log.Debugln("hosts found", hosts)
-		// Wait for nodePort to be assigned
-		timeoutAt := time.Now().Add(time.Second * 600)
-		for {
-			svc, _ := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
-			nodePortReady := true
-			for _, p := range svc.Spec.Ports {
-				if p.NodePort <= 0 {
-					nodePortReady = false
-					break
-				}
-			}
-			if nodePortReady {
-				break
-			}
-
-			if time.Now().After(timeoutAt) {
-				return errors.New("timed out creating node port service").Err()
-			}
-
-			log.Info("Waiting for nodeport service to be ready")
-
-			time.Sleep(10 * time.Second)
-		}
-		if lb, ok := lbc.CloudManager.LoadBalancer(); ok {
-			log.Debugln("loadbalancer for cloud manager updating")
-			convertedSvc := &kapi.Service{}
-			kapi.Scheme.Convert(svc, convertedSvc, nil)
-			_, err = lb.EnsureLoadBalancer(lbc.Options.ClusterName, convertedSvc, hosts) // lbc.Config.Annotations
-			if err != nil {
-				return errors.New().WithCause(err).Err()
-			}
-		}
 	}
 	return nil
 }

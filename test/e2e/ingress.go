@@ -296,7 +296,7 @@ func (ing *IngressTestSuit) TestIngressDelete() error {
 	time.Sleep(time.Second * 20)
 	log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
 	for _, url := range serverAddr {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(5)
 		if err != nil {
 			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
 		}
@@ -440,12 +440,12 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 	time.Sleep(time.Second * 20)
 	log.Infoln("Loadbalancer created, calling http endpoints for updated path, Total", len(serverAddr))
 	for _, url := range serverAddr {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(1)
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(5)
 		if err == nil {
 			return errors.New().WithCause(err).WithMessage("Connected with old prefix").Err()
 		}
 		log.Infoln("Expected exception, faild to connect with old path, calling new paths.")
-		resp, err = testserverclient.NewTestHTTPClient(url).Method("GET").Path("/newTestpath/ok").DoWithRetry(50)
+		resp, err = testserverclient.NewTestHTTPClient(url).Method("GET").Path("/newTestpath/ok").DoWithRetry(5)
 		if err != nil {
 			return errors.New().WithCause(err).WithMessage("Failed to Connect With New Prefix").Err()
 		}
