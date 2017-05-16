@@ -2,6 +2,7 @@ package ingress
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
@@ -13,12 +14,13 @@ import (
 type updateType int
 
 const (
-	UpdateTypeSoft updateType = iota
-	UpdateTypeHard
+	UpdateConfig updateType = iota
+	RestartHAProxy
+	UpdatePorts
 )
 
-func (lbc *EngressController) Update(Type updateType) error {
-	log.Debugln("updating engress specs with type", Type)
+func (lbc *EngressController) Update(t updateType) error {
+	log.Debugln("updating engress specs with type", t)
 	lbc.parse()
 	err := lbc.generateTemplate()
 	if err != nil {
@@ -30,15 +32,86 @@ func (lbc *EngressController) Update(Type updateType) error {
 		return errors.FromErr(err).Err()
 	}
 
-	if Type == UpdateTypeHard {
-		err := lbc.hardUpdate()
+	if t == UpdatePorts || t == RestartHAProxy {
+		err := lbc.recreatePods()
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
 	}
+	if t == UpdatePorts {
+		return lbc.updateLBSvc()
+	}
+	return nil
+}
 
-	serviceName := VoyagerPrefix + lbc.Config.Name
-	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(serviceName)
+func (lbc *EngressController) updateConfigMap() error {
+	cMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+	if err != nil {
+		return errors.FromErr(err).Err()
+	}
+	if cMap.Data["haproxy.cfg"] != lbc.Options.ConfigData {
+		log.Infoln("Specs have been changed updating config map data for HAProxy templates")
+		cMap.Data["haproxy.cfg"] = lbc.Options.ConfigData
+
+		_, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Update(cMap)
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
+		log.Infoln("Config Map Updated, HAProxy will restart itself now via reloader")
+	}
+	return nil
+}
+
+func (lbc *EngressController) recreatePods() error {
+	if lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort {
+		err := lbc.deleteHostPortPods()
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
+		err = lbc.createHostPortPods()
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
+	} else {
+		if lbc.Options.SupportsLoadBalancerType() {
+			err := lbc.deleteLoadBalancerPods()
+			if err != nil {
+				return errors.FromErr(err).Err()
+			}
+			err = lbc.createLoadBalancerPods()
+			if err != nil {
+				return errors.FromErr(err).Err()
+			}
+		} else {
+			return errors.New("LoadBalancer type ingress is unsupported for cloud provider:", lbc.Options.ProviderName).Err()
+		}
+	}
+	return nil
+}
+
+func (lbc *EngressController) updateLBSvc() error {
+	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+	if err != nil {
+		return errors.FromErr(err).Err()
+	}
+	curPorts := make(map[int32]kapi.ServicePort)
+	for _, p := range svc.Spec.Ports {
+		curPorts[p.Port] = p
+	}
+	svc.Spec.Ports = make([]kapi.ServicePort, 0)
+	for _, port := range lbc.Options.Ports {
+		if sp, found := curPorts[int32(port)]; found {
+			svc.Spec.Ports = append(svc.Spec.Ports, sp)
+		} else {
+			svc.Spec.Ports = append(svc.Spec.Ports, kapi.ServicePort{
+				Name:       "tcp-" + strconv.Itoa(port),
+				Protocol:   "TCP",
+				Port:       int32(port),
+				TargetPort: intstr.FromInt(port),
+			})
+		}
+	}
+	svc, err = lbc.KubeClient.Core().Services(lbc.Config.Namespace).Update(svc)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -75,6 +148,34 @@ func (lbc *EngressController) Update(Type updateType) error {
 		lbc.CloudManager != nil {
 		log.Infof("Service Type is %s, needs to update underlying cloud loadbalancers", svc.Spec.Type)
 		if lb, ok := lbc.CloudManager.LoadBalancer(); ok {
+			// Wait for nodePort to be assigned
+			timeoutAt := time.Now().Add(time.Second * 600)
+			for {
+				svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+				if err != nil {
+					return errors.FromErr(err).Err()
+				}
+
+				nodePortReady := true
+				for _, p := range svc.Spec.Ports {
+					if p.NodePort <= 0 {
+						nodePortReady = false
+						break
+					}
+				}
+				if nodePortReady {
+					break
+				}
+
+				if time.Now().After(timeoutAt) {
+					return errors.New("timed out creating node port service").Err()
+				}
+
+				log.Info("Waiting for nodeport service to be ready")
+
+				time.Sleep(10 * time.Second)
+			}
+
 			hosts := make([]string, 0)
 			if ins, ok := lbc.CloudManager.Instances(); ok {
 				nodes, _ := ins.List("")
@@ -93,74 +194,6 @@ func (lbc *EngressController) Update(Type updateType) error {
 			}
 		}
 		log.Errorln("loadbalancer interface not found, reached dead blocks.")
-	}
-	return nil
-}
-
-func (lbc *EngressController) updateConfigMap() error {
-	log.Infoln()
-	cMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
-	if cMap.Data["haproxy.cfg"] != lbc.Options.ConfigData {
-		log.Infoln("Specs have been changed updating config map data for HAProxy templates")
-		cMap.Data["haproxy.cfg"] = lbc.Options.ConfigData
-
-		_, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Update(cMap)
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
-		log.Infoln("Config Map Updated, HAProxy will restart itself now via reloader")
-	}
-	return nil
-}
-
-func (lbc *EngressController) hardUpdate() error {
-	var err error
-	if lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort {
-		err = lbc.deleteHostPortPods()
-	} else {
-		err = lbc.deleteLoadBalancerPods()
-	}
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
-
-	if lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort {
-		err = lbc.createHostPortPods()
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
-	} else {
-		if lbc.Options.SupportsLoadBalancerType() {
-			err = lbc.createLoadBalancerPods()
-			if err != nil {
-				return errors.FromErr(err).Err()
-			}
-		} else {
-			err = errors.New("LoadBalancer type ingress is unsupported for cloud provider:", lbc.Options.ProviderName).Err()
-		}
-	}
-
-	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
-	svc.Spec.Ports = make([]kapi.ServicePort, 0)
-	for _, port := range lbc.Options.Ports {
-		p := kapi.ServicePort{
-			Name:       "tcp-" + strconv.Itoa(port),
-			Protocol:   "TCP",
-			Port:       int32(port),
-			TargetPort: intstr.FromInt(port),
-		}
-		svc.Spec.Ports = append(svc.Spec.Ports, p)
-	}
-
-	svc, err = lbc.KubeClient.Core().Services(lbc.Config.Namespace).Update(svc)
-	if err != nil {
-		return errors.FromErr(err).Err()
 	}
 	return nil
 }

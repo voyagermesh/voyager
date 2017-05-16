@@ -295,30 +295,35 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 	}
 
 	if svc.Spec.Type == kapi.ServiceTypeNodePort && lbc.CloudManager != nil {
-		// Wait for nodePort to be assigned
-		timeoutAt := time.Now().Add(time.Second * 600)
-		for {
-			svc, _ := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
-			nodePortReady := true
-			for _, p := range svc.Spec.Ports {
-				if p.NodePort <= 0 {
-					nodePortReady = false
+		if lb, ok := lbc.CloudManager.LoadBalancer(); ok {
+			// Wait for nodePort to be assigned
+			timeoutAt := time.Now().Add(time.Second * 600)
+			for {
+				svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+				if err != nil {
+					return errors.FromErr(err).Err()
+				}
+
+				nodePortReady := true
+				for _, p := range svc.Spec.Ports {
+					if p.NodePort <= 0 {
+						nodePortReady = false
+						break
+					}
+				}
+				if nodePortReady {
 					break
 				}
-			}
-			if nodePortReady {
-				break
+
+				if time.Now().After(timeoutAt) {
+					return errors.New("timed out creating node port service").Err()
+				}
+
+				log.Info("Waiting for nodeport service to be ready")
+
+				time.Sleep(10 * time.Second)
 			}
 
-			if time.Now().After(timeoutAt) {
-				return errors.New("timed out creating node port service").Err()
-			}
-
-			log.Info("Waiting for nodeport service to be ready")
-
-			time.Sleep(10 * time.Second)
-		}
-		if lb, ok := lbc.CloudManager.LoadBalancer(); ok {
 			hosts := make([]string, 0)
 			if ins, ok := lbc.CloudManager.Instances(); ok {
 				// TODO(tamal): Does it return all hosts?
