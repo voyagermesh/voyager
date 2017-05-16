@@ -295,17 +295,6 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 	}
 
 	if svc.Spec.Type == kapi.ServiceTypeNodePort && lbc.CloudManager != nil {
-		log.Debugln("cloud manager not nil, getting hosts")
-		hosts := make([]string, 0)
-		if ins, ok := lbc.CloudManager.Instances(); ok {
-			// TODO(tamal): Does it return all hosts?
-			nodes, _ := ins.List("")
-			for _, node := range nodes {
-				hosts = append(hosts, string(node))
-			}
-		}
-
-		log.Debugln("hosts found", hosts)
 		// Wait for nodePort to be assigned
 		timeoutAt := time.Now().Add(time.Second * 600)
 		for {
@@ -330,6 +319,14 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 			time.Sleep(10 * time.Second)
 		}
 		if lb, ok := lbc.CloudManager.LoadBalancer(); ok {
+			hosts := make([]string, 0)
+			if ins, ok := lbc.CloudManager.Instances(); ok {
+				// TODO(tamal): Does it return all hosts?
+				nodes, _ := ins.List("")
+				for _, node := range nodes {
+					hosts = append(hosts, string(node))
+				}
+			}
 			log.Debugln("loadbalancer for cloud manager updating")
 			convertedSvc := &kapi.Service{}
 			kapi.Scheme.Convert(svc, convertedSvc, nil)
