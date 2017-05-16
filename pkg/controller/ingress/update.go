@@ -6,6 +6,7 @@ import (
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	kapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/util/intstr"
 )
 
@@ -41,27 +42,56 @@ func (lbc *EngressController) Update(Type updateType) error {
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
-	log.Infoln("Loadbalancer CloudeManager", lbc.CloudManager, "serviceType", svc.Spec.Type)
-	if (svc.Spec.Type == kapi.ServiceTypeNodePort) && lbc.CloudManager != nil {
-		log.Infof("Service Type is %s, needs to update underlying cloud loadbalancers", svc.Spec.Type)
-		hosts := make([]string, 0)
-		if ins, ok := lbc.CloudManager.Instances(); ok {
-			nodes, _ := ins.List("")
-			for _, node := range nodes {
-				hosts = append(hosts, string(node))
+
+	// open up firewall
+	log.Infoln("Loadbalancer CloudManager", lbc.CloudManager, "serviceType", svc.Spec.Type)
+	if (lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort) && lbc.CloudManager != nil {
+		daemonNodes, err := lbc.KubeClient.Core().Nodes().List(kapi.ListOptions{
+			LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Options.DaemonNodeSelector)),
+		})
+		if err != nil {
+			log.Infoln("node not found with nodeSelector, cause", err)
+			return errors.New().WithCause(err).Err()
+		}
+		// open up firewall
+		log.Debugln("Checking cloud manager", lbc.CloudManager)
+		if lbc.CloudManager != nil {
+			log.Debugln("cloud manager not nil")
+			if fw, ok := lbc.CloudManager.Firewall(); ok {
+				log.Debugln("firewalls found")
+				convertedSvc := &kapi.Service{}
+				kapi.Scheme.Convert(svc, convertedSvc, nil)
+				for _, node := range daemonNodes.Items {
+					err = fw.EnsureFirewall(convertedSvc, node.Name)
+					if err != nil {
+						log.Errorln("Failed to ensure loadbalancer for node", node.Name, "cause", err)
+					}
+				}
+				log.Debugln("getting firewalls for cloud manager failed")
 			}
 		}
-		log.Infoln("Got hosts", hosts)
-		if lb, ok := lbc.CloudManager.LoadBalancer(); ok {
-			log.Infoln("Loadbalancer interface found, caling UpdateLoadBalancer() with", svc, "and host", hosts)
-			convertedSvc := &kapi.Service{}
-			kapi.Scheme.Convert(svc, convertedSvc, nil)
-			err := lb.UpdateLoadBalancer(lbc.Options.ClusterName, convertedSvc, hosts)
-			if err != nil {
-				return errors.New().WithCause(err).Err()
+	} else if lbc.Options.LBType == LBLoadBalancer && lbc.CloudManager != nil {
+		if svc.Spec.Type == kapi.ServiceTypeNodePort {
+			log.Infof("Service Type is %s, needs to update underlying cloud loadbalancers", svc.Spec.Type)
+			hosts := make([]string, 0)
+			if ins, ok := lbc.CloudManager.Instances(); ok {
+				nodes, _ := ins.List("")
+				for _, node := range nodes {
+					hosts = append(hosts, string(node))
+				}
 			}
+			log.Infoln("Got hosts", hosts)
+			if lb, ok := lbc.CloudManager.LoadBalancer(); ok {
+				log.Infoln("Loadbalancer interface found, calling UpdateLoadBalancer() with", svc, "and host", hosts)
+				convertedSvc := &kapi.Service{}
+				kapi.Scheme.Convert(svc, convertedSvc, nil)
+				err := lb.UpdateLoadBalancer(lbc.Options.ClusterName, convertedSvc, hosts)
+				if err != nil {
+					return errors.New().WithCause(err).Err()
+				}
+			}
+			log.Errorln("loadbalancer interface not found, reached dead blocks.")
 		}
-		log.Errorln("loadbalancer interface not found, reached dead blocks.")
 	}
 	return nil
 }

@@ -3,8 +3,8 @@ package testserverclient
 import (
 	"encoding/json"
 	"net"
-	"time"
 	"strings"
+	"time"
 )
 
 type tcpClient struct {

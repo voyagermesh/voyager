@@ -1,8 +1,8 @@
 package testserverclient
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 )
 
 func TestTCPService(t *testing.T) {
