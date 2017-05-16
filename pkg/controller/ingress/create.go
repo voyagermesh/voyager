@@ -76,12 +76,12 @@ func (lbc *EngressController) createConfigMap() error {
 func (lbc *EngressController) createLB() error {
 	var err error
 	if lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort {
-		err = lbc.createHostPortLB()
+		err = lbc.createHostPortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
 		time.Sleep(time.Second * 10)
-		err = lbc.createHostPortLBSvc()
+		err = lbc.createHostPortSvc()
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -91,12 +91,12 @@ func (lbc *EngressController) createLB() error {
 			lbc.Options.ProviderName == "gke" ||
 			lbc.Options.ProviderName == "azure" ||
 			lbc.Options.ProviderName == "minikube" {
-			err = lbc.createLoadBalancerLB()
+			err = lbc.createLoadBalancerPods()
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
 			time.Sleep(time.Second * 10)
-			err = lbc.createLoadBalancerLBSvc()
+			err = lbc.createLoadBalancerSvc()
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
@@ -110,7 +110,7 @@ func (lbc *EngressController) createLB() error {
 	return nil
 }
 
-func (lbc *EngressController) createHostPortLBSvc() error {
+func (lbc *EngressController) createHostPortSvc() error {
 	// Create a Headless service without selectors
 	// We just want kubernetes to assign a stable UID to the service. This is used inside EnsureFirewall()
 	svc := &kapi.Service{
@@ -173,7 +173,7 @@ func (lbc *EngressController) createHostPortLBSvc() error {
 	return nil
 }
 
-func (lbc *EngressController) createHostPortLB() error {
+func (lbc *EngressController) createHostPortPods() error {
 	log.Infoln("Creating Daemon type lb for nodeSelector = ", lbc.Options.DaemonNodeSelector)
 
 	vs := Volumes(lbc.Options)
@@ -250,7 +250,7 @@ func (lbc *EngressController) createHostPortLB() error {
 	return nil
 }
 
-func (lbc *EngressController) createLoadBalancerLBSvc() error {
+func (lbc *EngressController) createLoadBalancerSvc() error {
 	// creating service as typeLoadBalancer
 	svc := &kapi.Service{
 		ObjectMeta: kapi.ObjectMeta{
@@ -346,7 +346,7 @@ func (lbc *EngressController) createLoadBalancerLBSvc() error {
 	return nil
 }
 
-func (lbc *EngressController) createLoadBalancerLB() error {
+func (lbc *EngressController) createLoadBalancerPods() error {
 	log.Infoln("creating LoadBalancer type lb")
 	vs := Volumes(lbc.Options)
 	vms := VolumeMounts(lbc.Options)

@@ -33,7 +33,7 @@ func (lbc *EngressController) deleteLB() error {
 	if lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort {
 		err = lbc.deleteHostPortPods()
 	} else {
-		err = lbc.deleteLBPods()
+		err = lbc.deleteLoadBalancerPods()
 	}
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -108,7 +108,7 @@ func (lbc *EngressController) deleteHostPortPods() error {
 	return nil
 }
 
-func (lbc *EngressController) deleteLBPods() error {
+func (lbc *EngressController) deleteLoadBalancerPods() error {
 	rc, err := lbc.KubeClient.Core().ReplicationControllers(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
 	if err != nil {
 		return errors.FromErr(err).Err()

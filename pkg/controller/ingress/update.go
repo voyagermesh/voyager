@@ -120,14 +120,14 @@ func (lbc *EngressController) hardUpdate() error {
 	if lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort {
 		err = lbc.deleteHostPortPods()
 	} else {
-		err = lbc.deleteLBPods()
+		err = lbc.deleteLoadBalancerPods()
 	}
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 
 	if lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort {
-		err = lbc.createHostPortLB()
+		err = lbc.createHostPortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -137,7 +137,7 @@ func (lbc *EngressController) hardUpdate() error {
 			lbc.Options.ProviderName == "gke" ||
 			lbc.Options.ProviderName == "azure" ||
 			lbc.Options.ProviderName == "minikube" {
-			err = lbc.createLoadBalancerLB()
+			err = lbc.createLoadBalancerPods()
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
