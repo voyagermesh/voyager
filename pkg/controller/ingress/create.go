@@ -86,11 +86,7 @@ func (lbc *EngressController) createLB() error {
 			return errors.FromErr(err).Err()
 		}
 	} else {
-		if lbc.Options.ProviderName == "aws" ||
-			lbc.Options.ProviderName == "gce" ||
-			lbc.Options.ProviderName == "gke" ||
-			lbc.Options.ProviderName == "azure" ||
-			lbc.Options.ProviderName == "minikube" {
+		if lbc.Options.SupportsLoadBalancerType() {
 			err = lbc.createLoadBalancerPods()
 			if err != nil {
 				return errors.FromErr(err).Err()

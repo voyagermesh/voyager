@@ -132,6 +132,14 @@ type KubeOptions struct {
 	LoadBalancerPersist bool
 }
 
+func (o KubeOptions) SupportsLoadBalancerType() bool {
+	return o.ProviderName == "aws" ||
+		o.ProviderName == "gce" ||
+		o.ProviderName == "gke" ||
+		o.ProviderName == "azure" ||
+		o.ProviderName == "minikube"
+}
+
 type HAProxyOptions struct {
 	Timestamp int64
 	// those options are get from annotations. applied globally
