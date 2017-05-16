@@ -17,10 +17,10 @@ import (
 )
 
 func (lbc *EngressController) Create() error {
-	log.Debugln("Starting createing lb. got engress with", lbc.Config.ObjectMeta)
+	log.Debugln("Starting creating lb. got engress with", lbc.Config.ObjectMeta)
 	err := lbc.parse()
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	if b, err := json.MarshalIndent(lbc.Options, "", "  "); err != nil {
 		log.Infoln("Parsed LB controller options: ", string(b))
@@ -28,7 +28,7 @@ func (lbc *EngressController) Create() error {
 
 	err = lbc.generateTemplate()
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 
 	// This methods clean up any unwanted resource that will cause in errors
@@ -36,11 +36,11 @@ func (lbc *EngressController) Create() error {
 
 	err = lbc.createConfigMap()
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	err = lbc.createLB()
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	return nil
 }
@@ -66,7 +66,7 @@ func (lbc *EngressController) createConfigMap() error {
 	}
 	cMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Create(cMap)
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	lbc.Options.ConfigMapName = cMap.Name
 	time.Sleep(time.Second * 20)
@@ -78,12 +78,12 @@ func (lbc *EngressController) createLB() error {
 	if lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort {
 		err = lbc.createHostPortLB()
 		if err != nil {
-			return errors.New().WithCause(err).Err()
+			return errors.FromErr(err).Err()
 		}
 		time.Sleep(time.Second * 10)
 		err = lbc.createHostPortLBSvc()
 		if err != nil {
-			return errors.New().WithCause(err).Err()
+			return errors.FromErr(err).Err()
 		}
 	} else {
 		if lbc.Options.ProviderName == "aws" ||
@@ -93,19 +93,19 @@ func (lbc *EngressController) createLB() error {
 			lbc.Options.ProviderName == "minikube" {
 			err = lbc.createLoadBalancerLB()
 			if err != nil {
-				return errors.New().WithCause(err).Err()
+				return errors.FromErr(err).Err()
 			}
 			time.Sleep(time.Second * 10)
 			err = lbc.createLoadBalancerLBSvc()
 			if err != nil {
-				return errors.New().WithCause(err).Err()
+				return errors.FromErr(err).Err()
 			}
 		} else {
 			err = errors.New("LoadBalancer type ingress is unsupported for cloud provider:", lbc.Options.ProviderName).Err()
 		}
 	}
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	return nil
 }
@@ -143,7 +143,7 @@ func (lbc *EngressController) createHostPortLBSvc() error {
 
 	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Create(svc)
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 
 	daemonNodes, err := lbc.KubeClient.Core().Nodes().List(kapi.ListOptions{
@@ -151,7 +151,7 @@ func (lbc *EngressController) createHostPortLBSvc() error {
 	})
 	if err != nil {
 		log.Infoln("node not found with nodeSelector, cause", err)
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	// open up firewall
 	log.Debugln("Checking cloud manager", lbc.CloudManager)
@@ -244,7 +244,7 @@ func (lbc *EngressController) createHostPortLB() error {
 	log.Infoln("creating deamonsets controller")
 	_, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Create(daemon)
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	log.V(5).Infoln("DeamonSet Created with\n", yaml.ToString(daemon))
 	return nil
@@ -295,7 +295,7 @@ func (lbc *EngressController) createLoadBalancerLBSvc() error {
 
 	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Create(svc)
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 
 	if svc.Spec.Type == kapi.ServiceTypeNodePort && lbc.CloudManager != nil {
@@ -339,7 +339,7 @@ func (lbc *EngressController) createLoadBalancerLBSvc() error {
 			kapi.Scheme.Convert(svc, convertedSvc, nil)
 			_, err = lb.EnsureLoadBalancer(lbc.Options.ClusterName, convertedSvc, hosts) // lbc.Config.Annotations
 			if err != nil {
-				return errors.New().WithCause(err).Err()
+				return errors.FromErr(err).Err()
 			}
 		}
 	}
@@ -411,7 +411,7 @@ func (lbc *EngressController) createLoadBalancerLB() error {
 	log.Debugln("creating replication controller")
 	_, err := lbc.KubeClient.Core().ReplicationControllers(lbc.Config.Namespace).Create(rc)
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	return nil
 }
@@ -436,7 +436,7 @@ func (lbc *EngressController) updateStatus() error {
 	lbc.Config.Status.LoadBalancer.Ingress = append(lbc.Config.Status.LoadBalancer.Ingress, kapi.LoadBalancerIngress{IP: serviceExtIp})
 	_, err := lbc.ACExtensionClient.Ingress(lbc.Config.Namespace).Update(lbc.Config)
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	return nil
 }

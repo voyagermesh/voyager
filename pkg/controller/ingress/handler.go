@@ -74,14 +74,14 @@ func UpgradeAllEngress(service, clusterName, providerName string,
 		LabelSelector: labels.Everything(),
 	})
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 
 	eng, err := acExtClient.Ingress(kapi.NamespaceAll).List(kapi.ListOptions{
 		LabelSelector: labels.Everything(),
 	})
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 
 	items := make([]aci.Ingress, len(ing.Items))
@@ -143,7 +143,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 		for i, ing := range e.RuntimeObj {
 			engress, err := aci.NewEngressFromIngress(ing)
 			if err != nil {
-				return errors.New().WithCause(err).Err()
+				return errors.FromErr(err).Err()
 			}
 			engs[i] = engress
 		}

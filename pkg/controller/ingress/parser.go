@@ -43,7 +43,7 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 	log.Infoln("looking for services in namespace", namespace, "with name", name)
 	service, err := lbc.KubeClient.Core().Services(namespace).Get(name)
 	if err != nil {
-		return nil, errors.New().WithCause(err).Err()
+		return nil, errors.FromErr(err).Err()
 	}
 	p, ok := getSpecifiedPort(service.Spec.Ports, port)
 	if !ok {
@@ -55,7 +55,7 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 func (lbc *EngressController) getEndpoints(s *kapi.Service, servicePort *kapi.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
 	ep, err := lbc.EndpointStore.GetServiceEndpoints(s)
 	if err != nil {
-		return nil, errors.New().WithCause(err).Err()
+		return nil, errors.FromErr(err).Err()
 	}
 
 	// The intent here is to create a union of all subsets that match a targetPort.
@@ -130,21 +130,21 @@ func (lbc *EngressController) generateTemplate() error {
 	log.Infoln("Generating Ingress template.")
 	ctx, err := Context(lbc.Parsed)
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 
 	tpl, err := pongo2.FromString(template.HAProxyTemplate)
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	r, err := tpl.Execute(ctx)
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 
 	lbc.Options.ConfigData = stringutil.Fmt(r)
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	log.Infoln("Template genareted for HAProxy")
 	log.Infoln(lbc.Options.ConfigData)
@@ -159,7 +159,7 @@ func Context(s interface{}) (pongo2.Context, error) {
 	}
 	err = json.Unmarshal(d, &ctx)
 	if err != nil {
-		return ctx, errors.New().WithCause(err).Err()
+		return ctx, errors.FromErr(err).Err()
 	}
 	return ctx, nil
 }

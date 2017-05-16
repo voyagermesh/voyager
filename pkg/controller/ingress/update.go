@@ -22,25 +22,25 @@ func (lbc *EngressController) Update(Type updateType) error {
 	lbc.parse()
 	err := lbc.generateTemplate()
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	// update config config map updates an existing map data.
 	err = lbc.updateConfigMap()
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 
 	if Type == UpdateTypeHard {
 		err := lbc.hardUpdate()
 		if err != nil {
-			return errors.New().WithCause(err).Err()
+			return errors.FromErr(err).Err()
 		}
 	}
 
 	serviceName := VoyagerPrefix + lbc.Config.Name
 	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(serviceName)
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 
 	// open up firewall
@@ -51,7 +51,7 @@ func (lbc *EngressController) Update(Type updateType) error {
 		})
 		if err != nil {
 			log.Infoln("node not found with nodeSelector, cause", err)
-			return errors.New().WithCause(err).Err()
+			return errors.FromErr(err).Err()
 		}
 		// open up firewall
 		log.Debugln("Checking cloud manager", lbc.CloudManager)
@@ -87,7 +87,7 @@ func (lbc *EngressController) Update(Type updateType) error {
 				kapi.Scheme.Convert(svc, convertedSvc, nil)
 				err := lb.UpdateLoadBalancer(lbc.Options.ClusterName, convertedSvc, hosts)
 				if err != nil {
-					return errors.New().WithCause(err).Err()
+					return errors.FromErr(err).Err()
 				}
 			}
 			log.Errorln("loadbalancer interface not found, reached dead blocks.")
@@ -100,7 +100,7 @@ func (lbc *EngressController) updateConfigMap() error {
 	log.Infoln()
 	cMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	if cMap.Data["haproxy.cfg"] != lbc.Options.ConfigData {
 		log.Infoln("Specs have been changed updating config map data for HAProxy templates")
@@ -108,7 +108,7 @@ func (lbc *EngressController) updateConfigMap() error {
 
 		_, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Update(cMap)
 		if err != nil {
-			return errors.New().WithCause(err).Err()
+			return errors.FromErr(err).Err()
 		}
 		log.Infoln("Config Map Updated, HAProxy will restart itself now via reloader")
 	}
@@ -118,18 +118,18 @@ func (lbc *EngressController) updateConfigMap() error {
 func (lbc *EngressController) hardUpdate() error {
 	var err error
 	if lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort {
-		err = lbc.deleteDaemonSets()
+		err = lbc.deleteHostPortPods()
 	} else {
-		err = lbc.deleteRc()
+		err = lbc.deleteLBPods()
 	}
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 
 	if lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort {
 		err = lbc.createHostPortLB()
 		if err != nil {
-			return errors.New().WithCause(err).Err()
+			return errors.FromErr(err).Err()
 		}
 	} else {
 		if lbc.Options.ProviderName == "aws" ||
@@ -139,7 +139,7 @@ func (lbc *EngressController) hardUpdate() error {
 			lbc.Options.ProviderName == "minikube" {
 			err = lbc.createLoadBalancerLB()
 			if err != nil {
-				return errors.New().WithCause(err).Err()
+				return errors.FromErr(err).Err()
 			}
 		} else {
 			err = errors.New("LoadBalancer type ingress is unsupported for cloud provider:", lbc.Options.ProviderName).Err()
@@ -148,7 +148,7 @@ func (lbc *EngressController) hardUpdate() error {
 
 	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	svc.Spec.Ports = make([]kapi.ServicePort, 0)
 	for _, port := range lbc.Options.Ports {
@@ -163,7 +163,7 @@ func (lbc *EngressController) hardUpdate() error {
 
 	svc, err = lbc.KubeClient.Core().Services(lbc.Config.Namespace).Update(svc)
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	return nil
 }

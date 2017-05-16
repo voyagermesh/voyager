@@ -102,14 +102,14 @@ func (c *CertificateController) process(cert *aci.Certificate) error {
 		var err error
 		c.acmeCert, err = NewACMECertDataFromSecret(secret)
 		if err != nil {
-			return errors.New().WithCause(err).WithMessage("Error decoding acme certificate").Err()
+			return errors.FromErr(err).WithMessage("Error decoding acme certificate").Err()
 		}
 
 		// Decode cert
 		pemBlock, _ := pem.Decode(c.acmeCert.Cert)
 		c.parsedCertificate, err = x509.ParseCertificate(pemBlock.Bytes)
 		if err != nil {
-			return errors.New().WithCause(err).WithMessage("Error decoding x509 encoded certificate").Err()
+			return errors.FromErr(err).WithMessage("Error decoding x509 encoded certificate").Err()
 		}
 		if !c.parsedCertificate.NotAfter.After(time.Now().Add(time.Hour * 24 * 7)) {
 			log.Infoln("certificate is expiring in 7 days, attempting renew")
@@ -190,7 +190,7 @@ func (c *CertificateController) handleIngressEvent(e *events.Event) error {
 				}
 				_, err := c.ACExtensionClient.Certificate(newCertificate.Namespace).Create(newCertificate)
 				if err != nil {
-					errors.New().WithCause(err).Err()
+					errors.FromErr(err).Err()
 				}
 			}
 		}
@@ -200,7 +200,7 @@ func (c *CertificateController) handleIngressEvent(e *events.Event) error {
 
 func (c *CertificateController) create() error {
 	if err := c.ensureACMEClient(); err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	if c.certificate.Spec.Provider == "http" {
 		done := make(chan struct{})
@@ -224,7 +224,7 @@ func (c *CertificateController) create() error {
 
 func (c *CertificateController) renew() error {
 	if err := c.ensureACMEClient(); err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 
 	if c.certificate.Spec.Provider == "http" {
@@ -247,7 +247,7 @@ func (c *CertificateController) renew() error {
 	}
 	cert, err := c.acmeClient.RenewCertificate(acmeCert, true, true)
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	return c.update(cert)
 }
@@ -294,7 +294,7 @@ func (c *CertificateController) ensureACMEClient() error {
 		log.Errorln("No ACME user found, Generate a new ACME user")
 		userKey, err := rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
-			return errors.New().WithCause(err).WithMessage("Failed to generate Key for New Acme User")
+			return errors.FromErr(err).WithMessage("Failed to generate Key for New Acme User")
 		}
 		acmeUserInfo = &ACMEUserData{
 			Email: c.certificate.Spec.Email,
@@ -308,13 +308,13 @@ func (c *CertificateController) ensureACMEClient() error {
 	c.acmeClientConfig.UserData = acmeUserInfo
 	// Initiate ACME Client for config.
 	if err := c.loadProviderCredential(); err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 
 	log.V(9).Infoln("Getting NewACMECLient with config", c.acmeClientConfig)
 	acmeClient, err := NewACMEClient(c.acmeClientConfig)
 	if err != nil {
-		return errors.New().WithCause(err).WithMessage("Failed to create acme client").Err()
+		return errors.FromErr(err).WithMessage("Failed to create acme client").Err()
 	}
 	c.acmeClient = acmeClient
 
@@ -328,11 +328,11 @@ func (c *CertificateController) registerACMEUser(acmeClient *ACMEClient) error {
 	log.Debugln("ACME user not registered, registering new ACME user")
 	registration, err := acmeClient.Register()
 	if err != nil {
-		return errors.New().WithCause(err).WithMessage("Failed to registering user for new domain").Err()
+		return errors.FromErr(err).WithMessage("Failed to registering user for new domain").Err()
 	}
 	c.acmeClientConfig.UserData.Registration = registration
 	if err := acmeClient.AgreeToTOS(); err != nil {
-		return errors.New().WithCause(err).WithMessage("Failed to registering user for new domain").Err()
+		return errors.FromErr(err).WithMessage("Failed to registering user for new domain").Err()
 	}
 
 	// Acme User registered Create The acmeUserSecret
@@ -361,7 +361,7 @@ func (c *CertificateController) registerACMEUser(acmeClient *ACMEClient) error {
 	log.Debugln("User Registered saving User Informations with Secret name", c.userSecretName)
 	_, err = c.KubeClient.Core().Secrets(c.certificate.Namespace).Create(secret)
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	return nil
 }
@@ -369,7 +369,7 @@ func (c *CertificateController) registerACMEUser(acmeClient *ACMEClient) error {
 func (c *CertificateController) loadProviderCredential() error {
 	cred, err := c.KubeClient.Core().Secrets(c.certificate.Namespace).Get(c.certificate.Spec.ProviderCredentialSecretName)
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	c.acmeClientConfig.ProviderCredentials = cred.Data
 	return nil
@@ -385,7 +385,7 @@ func (c *CertificateController) save(cert acme.CertificateResource) error {
 	secret := certData.ToSecret(c.certificate.Name, c.certificate.Namespace)
 	_, err := c.KubeClient.Core().Secrets(c.certificate.Namespace).Create(secret)
 	if err != nil {
-		errors.New().WithCause(err).Err()
+		errors.FromErr(err).Err()
 	}
 
 	k8sCert, err := c.ACExtensionClient.Certificate(c.certificate.Namespace).Get(c.certificate.Name)
@@ -420,12 +420,12 @@ func (c *CertificateController) update(cert acme.CertificateResource) error {
 	secret := certData.ToSecret(c.certificate.Name, c.certificate.Namespace)
 	oldSecret, err := c.KubeClient.Core().Secrets(c.certificate.Namespace).Get(secret.Name)
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	oldSecret.Data = secret.Data
 	_, err = c.KubeClient.Core().Secrets(c.certificate.Namespace).Update(oldSecret)
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 	return nil
 }
@@ -440,7 +440,7 @@ func (c *CertificateController) processHTTPCertificate(revert chan struct{}) err
 		i, err := c.ACExtensionClient.Ingress(c.certificate.Spec.HTTPProviderIngressReference.Namespace).
 			Get(c.certificate.Spec.HTTPProviderIngressReference.Name)
 		if err != nil {
-			return errors.New().WithCause(err).Err()
+			return errors.FromErr(err).Err()
 		}
 		// make a copy of previous spec.
 		prevSpecs := i.Spec
@@ -466,7 +466,7 @@ func (c *CertificateController) processHTTPCertificate(revert chan struct{}) err
 		}
 		_, err = c.ACExtensionClient.Ingress(c.certificate.Namespace).Update(i)
 		if err != nil {
-			return errors.New().WithCause(err).Err()
+			return errors.FromErr(err).Err()
 		}
 		revertRequired = true
 		// After All is done revert everything
@@ -493,7 +493,7 @@ func (c *CertificateController) processHTTPCertificate(revert chan struct{}) err
 		i, err := c.KubeClient.Extensions().Ingresses(c.certificate.Spec.HTTPProviderIngressReference.Namespace).
 			Get(c.certificate.Spec.HTTPProviderIngressReference.Name)
 		if err != nil {
-			return errors.New().WithCause(err).Err()
+			return errors.FromErr(err).Err()
 		}
 		// make a copy of previous spec.
 		prevSpecs := i.Spec
@@ -519,7 +519,7 @@ func (c *CertificateController) processHTTPCertificate(revert chan struct{}) err
 		}
 		_, err = c.KubeClient.Extensions().Ingresses(c.certificate.Namespace).Update(i)
 		if err != nil {
-			return errors.New().WithCause(err).Err()
+			return errors.FromErr(err).Err()
 		}
 		revertRequired = true
 		// After All is done revert everything
