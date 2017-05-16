@@ -24,6 +24,7 @@ func (lbc *EngressController) parse() error {
 	}
 	lbc.parseOptions()
 	lbc.parseSpec()
+	lbc.Options.ConfigMapName = VoyagerPrefix + lbc.Config.Name
 	return nil
 }
 

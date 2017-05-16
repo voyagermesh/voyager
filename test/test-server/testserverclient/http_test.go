@@ -12,7 +12,7 @@ import (
 
 func TestNewTestHTTPClient(t *testing.T) {
 	sv := httptest.NewServer(testHTTPHandler{})
-	resp, err := NewTestHTTPClient(sv.URL).Method("GET").Path("/hello/world").Do()
+	resp, err := NewTestHTTPClient(sv.URL).Method("GET").Path("/hello/world").DoWithRetry(1)
 	if assert.Nil(t, err) {
 		assert.Equal(t, resp.Method, "GET")
 		assert.Equal(t, resp.Path, "/hello/world")

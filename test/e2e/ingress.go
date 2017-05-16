@@ -437,10 +437,10 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 	if err != nil {
 		return err
 	}
-	time.Sleep(time.Second * 20)
+	time.Sleep(time.Second * 30)
 	log.Infoln("Loadbalancer created, calling http endpoints for updated path, Total", len(serverAddr))
 	for _, url := range serverAddr {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(5)
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(1)
 		if err == nil {
 			return errors.New().WithCause(err).WithMessage("Connected with old prefix").Err()
 		}
@@ -456,6 +456,71 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 
 		if resp.Path != "/newTestpath/ok" {
 			return errors.New().WithMessage("Path did not matched").Err()
+		}
+	}
+
+	// Open New Port
+	updatedBaseIngress, err = ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+
+	if ing.t.Config.ProviderName != "minikube" {
+		updatedBaseIngress.Spec.Rules[0].HTTP = nil
+		updatedBaseIngress.Spec.Rules[0].TCP = []aci.TCPExtendedIngressRuleValue{
+			{
+				Port: intstr.FromString("4545"),
+				Backend: aci.IngressBackend{
+					ServiceName: testServerSvc.Name,
+					ServicePort: intstr.FromString("4545"),
+				},
+			},
+		}
+		_, err = ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Update(updatedBaseIngress)
+		if err != nil {
+			return errors.New().WithCause(err).Err()
+		}
+		time.Sleep(time.Second * 30)
+
+		found := false
+		for i := 1; i <= maxRetries; i++ {
+			svc, err := ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+			if err != nil {
+				continue
+			}
+			log.Infoln("Got Service", svc.Name)
+			for _, port := range svc.Spec.Ports {
+				log.Infoln(port)
+				if port.Port == 4545 {
+					found = true
+					break
+				}
+			}
+			if found {
+				break
+			}
+			time.Sleep(time.Second * 5)
+		}
+
+		if !found {
+			return errors.New().WithMessage("Service not found").Err()
+		}
+
+		serverAddr, err = ing.getURLs(baseIngress)
+		if err != nil {
+			return err
+		}
+		time.Sleep(time.Second * 30)
+		log.Infoln("Loadbalancer created, calling http endpoints for updated path, Total", len(serverAddr))
+		for _, url := range serverAddr {
+			resp, err := testserverclient.NewTestTCPClient(url).DoWithRetry(50)
+			if err != nil {
+				return errors.New().WithCause(err).WithMessage("Failed to Connect With New Prefix").Err()
+			}
+			log.Infoln("Response", *resp)
+			if resp.ServerPort != ":4545" {
+				return errors.New().WithMessage("Port did not matched").Err()
+			}
 		}
 	}
 	return nil
@@ -892,23 +957,28 @@ func (ing *IngressTestSuit) TestIngressCoreIngress() error {
 }
 
 func (ing *IngressTestSuit) TestIngressHostNames() error {
-	headlessSvc, err := ing.t.KubeClient.Core().Services("default").Create(testStatefulSetSvc)
+	headlessSvc, err := ing.t.KubeClient.Core().Services(TestNamespace).Create(testStatefulSetSvc)
 	if err != nil {
 		return err
 	}
+	orphan := false
 	defer func() {
 		if ing.t.Config.Cleanup {
-			ing.t.KubeClient.Core().Services("default").Delete(headlessSvc.Name, nil)
+			ing.t.KubeClient.Core().Services(TestNamespace).Delete(headlessSvc.Name, &api.DeleteOptions{
+				OrphanDependents: &orphan,
+			})
 		}
 	}()
 
-	ss, err := ing.t.KubeClient.Apps().StatefulSets("default").Create(testServerStatefulSet)
+	ss, err := ing.t.KubeClient.Apps().StatefulSets(TestNamespace).Create(testServerStatefulSet)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if ing.t.Config.Cleanup {
-			ing.t.KubeClient.Apps().StatefulSets("default").Delete(ss.Name, nil)
+			ing.t.KubeClient.Apps().StatefulSets(TestNamespace).Delete(ss.Name, &api.DeleteOptions{
+				OrphanDependents: &orphan,
+			})
 		}
 	}()
 
@@ -1282,6 +1352,23 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 			},
 		},
 	}
+
+	defer func() {
+		if ing.t.Config.Cleanup {
+			orphan := false
+			ing.t.KubeClient.Extensions().Deployments(dp1.Namespace).Delete(dp1.Name, &api.DeleteOptions{
+				OrphanDependents: &orphan,
+			})
+
+			ing.t.KubeClient.Extensions().Deployments(dp2.Namespace).Delete(dp2.Name, &api.DeleteOptions{
+				OrphanDependents: &orphan,
+			})
+
+			ing.t.KubeClient.Core().Services(svc.Namespace).Delete(svc.Name, &api.DeleteOptions{
+				OrphanDependents: &orphan,
+			})
+		}
+	}()
 
 	_, err = ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {

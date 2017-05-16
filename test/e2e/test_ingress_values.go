@@ -82,7 +82,7 @@ var testServerRc = &api.ReplicationController{
 				Containers: []api.Container{
 					{
 						Name:  "server",
-						Image: "appscode/test-server:1.1",
+						Image: "appscode/test-server:1.4",
 						Env: []api.EnvVar{
 							{
 								Name: "POD_NAME",

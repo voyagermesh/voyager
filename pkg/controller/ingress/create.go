@@ -80,7 +80,7 @@ func (lbc *EngressController) createLB() error {
 		if err != nil {
 			return errors.New().WithCause(err).Err()
 		}
-		time.Sleep(time.Second*10)
+		time.Sleep(time.Second * 10)
 		err = lbc.createHostPortLBSvc()
 		if err != nil {
 			return errors.New().WithCause(err).Err()
@@ -95,7 +95,7 @@ func (lbc *EngressController) createLB() error {
 			if err != nil {
 				return errors.New().WithCause(err).Err()
 			}
-			time.Sleep(time.Second*10)
+			time.Sleep(time.Second * 10)
 			err = lbc.createLoadBalancerLBSvc()
 			if err != nil {
 				return errors.New().WithCause(err).Err()
