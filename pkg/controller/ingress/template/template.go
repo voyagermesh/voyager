@@ -93,7 +93,10 @@ backend default-backend
 {% if HttpsService %}
 # https service
 frontend https-frontend
-    bind *:443 ssl no-sslv3 no-tlsv10 crt /etc/ssl/private/haproxy/ alpn http/1.1
+    bind *:443 ssl no-sslv3 no-tlsv10 no-tls-tickets crt /etc/ssl/private/haproxy/ alpn http/1.1
+    # Mark all cookies as secure
+    rsprep ^Set-Cookie:\ (.*) Set-Cookie:\ \1;\ Secure
+    # Add the HSTS header with a 6 month max-age
     rspadd  Strict-Transport-Security:\ max-age=15768000
 
     mode http
@@ -175,7 +178,7 @@ backend http-{{ svc.Name }}
 # tcp service
 {% for svc in TCPService %}
 frontend tcp-frontend-key-{{ svc.Port }}
-    bind *:{{ svc.Port }} {% if svc.SecretName %}ssl no-sslv3 no-tlsv10 crt /etc/ssl/private/haproxy/{{ svc.SecretName }}.pem{% endif %} {%if svc.ALPNOptions %} {{svc.ALPNOptions}}{% endif %}
+    bind *:{{ svc.Port }} {% if svc.SecretName %}ssl no-sslv3 no-tlsv10 no-tls-tickets crt /etc/ssl/private/haproxy/{{ svc.SecretName }}.pem{% endif %} {%if svc.ALPNOptions %} {{svc.ALPNOptions}}{% endif %}
     mode tcp
     default_backend tcp-{{ svc.Name }}
 {% endfor %}
