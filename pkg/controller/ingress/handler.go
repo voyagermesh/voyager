@@ -186,7 +186,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 		lbc.Config = engs[1].(*aci.Ingress)
 		if shouldHandleIngress(lbc.Config, lbc.IngressClass) {
 			if isNewPortOpened(engs[0], engs[1]) {
-				lbc.Update(UpdatePorts)
+				lbc.Update(UpdateFirewall)
 			} else if isNewSecretAdded(engs[0], engs[1]) {
 				lbc.Update(RestartHAProxy)
 			} else {

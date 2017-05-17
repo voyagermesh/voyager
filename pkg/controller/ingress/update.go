@@ -16,7 +16,7 @@ type updateType int
 const (
 	UpdateConfig updateType = iota
 	RestartHAProxy
-	UpdatePorts
+	UpdateFirewall
 )
 
 func (lbc *EngressController) Update(t updateType) error {
@@ -26,19 +26,19 @@ func (lbc *EngressController) Update(t updateType) error {
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
-	// update config config map updates an existing map data.
+	// Update HAProxy config
 	err = lbc.updateConfigMap()
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 
-	if t == UpdatePorts || t == RestartHAProxy {
+	if t == UpdateFirewall || t == RestartHAProxy {
 		err := lbc.recreatePods()
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
 	}
-	if t == UpdatePorts {
+	if t == UpdateFirewall {
 		return lbc.updateLBSvc()
 	}
 	return nil
