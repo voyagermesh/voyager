@@ -12,9 +12,9 @@ $ cd ~/go/src/github.com/appscode/voyager
 ```
 - Build and push haproxy image:
 ```sh
-./hack/docker/haproxy/1.7.2/setup.sh; ./hack/docker/haproxy/1.7.2/setup.sh release
+./hack/docker/haproxy/1.7.5/setup.sh; ./hack/docker/haproxy/1.7.5/setup.sh release
 ```
-Note that, HAProxy image bundles [kloader](https://github.com/appscode/kloader). If you need to update kloader version, modify the setup.sh file for HAProxy. See [here](/hack/docker/haproxy/1.7.2/setup.sh#L20) for an example.
+Note that, HAProxy image bundles [kloader](https://github.com/appscode/kloader). If you need to update kloader version, modify the setup.sh file for HAProxy. See [here](/hack/docker/haproxy/1.7.5/setup.sh#L20) for an example.
 
 - Now, update the release notes in Github. See previous release notes to get an idea what to include there.
 
