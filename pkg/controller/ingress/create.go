@@ -96,7 +96,7 @@ func (lbc *EngressController) createLB() error {
 		}
 	} else {
 		if lbc.Options.SupportsLoadBalancerType() {
-			err := lbc.deleteRCPods()
+			err := lbc.deleteResidualPods()
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}

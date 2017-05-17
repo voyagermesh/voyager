@@ -41,7 +41,7 @@ func (lbc *EngressController) deleteLB() error {
 			return errors.FromErr(err).Err()
 		}
 	} else {
-		err := lbc.deleteRCPods()
+		err := lbc.deleteResidualPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -147,7 +147,7 @@ func (lbc *EngressController) deleteNodePortPods() error {
 }
 
 // Deprecated, creating pods using RC is now deprecated.
-func (lbc *EngressController) deleteRCPods() error {
+func (lbc *EngressController) deleteResidualPods() error {
 	rc, err := lbc.KubeClient.Core().ReplicationControllers(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
 	if err != nil {
 		return errors.FromErr(err).Err()
