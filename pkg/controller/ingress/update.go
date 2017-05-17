@@ -14,9 +14,9 @@ import (
 type updateType int
 
 const (
-	UpdateConfig updateType = iota
-	RestartHAProxy
-	UpdateFirewall
+	UpdateConfig updateType = iota // only reset haproxy config
+	RestartHAProxy // secret changes, ports unchanged
+	UpdateFirewall // ports changed
 )
 
 func (lbc *EngressController) Update(t updateType) error {
