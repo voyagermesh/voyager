@@ -72,13 +72,26 @@ func (lbc *EngressController) recreatePods() error {
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
+	} else if lbc.Options.LBType == LBNodePort {
+		err := lbc.deleteNodePortPods()
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
+		err = lbc.createNodePortPods()
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
 	} else {
 		if lbc.Options.SupportsLoadBalancerType() {
-			err := lbc.deleteLoadBalancerPods()
+			err := lbc.deleteResidualPods()
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
-			err = lbc.createLoadBalancerPods()
+			err = lbc.deleteNodePortPods()
+			if err != nil {
+				return errors.FromErr(err).Err()
+			}
+			err = lbc.createNodePortPods()
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}

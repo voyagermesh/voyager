@@ -300,6 +300,7 @@ func (lbc *EngressController) parseOptions() {
 	}
 
 	lbc.Options.LBType = opts.LBType()
+	lbc.Options.Replicas = opts.Replicas()
 	lbc.Options.DaemonNodeSelector = ParseNodeSelector(opts.DaemonNodeSelector())
 	lbc.Options.LoadBalancerIP = opts.LoadBalancerIP()
 	lbc.Options.LoadBalancerPersist = opts.LoadBalancerPersist()

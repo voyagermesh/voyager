@@ -1,6 +1,7 @@
 package ingress
 
 import (
+	"strconv"
 	"strings"
 	"sync"
 
@@ -25,6 +26,7 @@ const (
 	// Daemon, Persistent, LoadBalancer
 	LBName     = "ingress.appscode.com/name"
 	LBType     = "ingress.appscode.com/type"
+	LBNodePort = "NodePort"
 	LBHostPort = "HostPort"
 	// Deprecated, use LBHostPort
 	LBDaemon       = "Daemon"
@@ -33,10 +35,13 @@ const (
 	// Runs on a specific set of a hosts via DaemonSet. This is needed to work around the issue that master node is registered but not scheduable.
 	DaemonNodeSelector = "ingress.appscode.com/daemon.nodeSelector"
 
+	// Replicas specify # of HAProxy pods run (default 1)
+	Replicas = "ingress.appscode.com/replicas"
+
 	// LoadBalancer mode exposes HAProxy via a type=LoadBalancer service. This is the original version implemented by @sadlil
 	// Uses nodeport and Cloud LoadBalancer exists beyond single HAProxy run
-	LoadBalancerIP      = "ingress.appscode.com/ip"                   // external_ip or loadbalancer_ip "" or a "ipv4"
-	LoadBalancerPersist = "ingress.appscode.com/loadbalancer.persist" // "" or a "true"
+	LoadBalancerIP      = "ingress.appscode.com/ip"      // external_ip or loadbalancer_ip "" or a "ipv4"
+	LoadBalancerPersist = "ingress.appscode.com/persist" // "" or a "true"
 
 	// LoadBalancerBackendWeightKey is the weight value of a Pod that was
 	// addressed by the Endpoint, this weight will be added to server backend.
@@ -66,6 +71,16 @@ func (s annotation) LBType() string {
 		return v
 	}
 	return LBLoadBalancer
+}
+
+func (s annotation) Replicas() int32 {
+	if v, ok := s[Replicas]; ok {
+		if n, err := strconv.Atoi(v); err == nil {
+			return int32(n)
+		}
+		return 1
+	}
+	return 1
 }
 
 func (s annotation) DaemonNodeSelector() string {
@@ -125,8 +140,8 @@ type KubeOptions struct {
 	// port list the pods needs and service needs to listen to.
 	Ports []int
 
-	LBType string
-
+	LBType              string
+	Replicas            int32
 	DaemonNodeSelector  map[string]string
 	LoadBalancerIP      string
 	LoadBalancerPersist bool
