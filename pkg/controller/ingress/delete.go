@@ -95,29 +95,7 @@ func (lbc *EngressController) deleteHostPortPods() error {
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
-
-	lb := labels.NewSelector()
-	for key, value := range d.Spec.Selector.MatchLabels {
-		s := sets.NewString(value)
-		ls, err := labels.NewRequirement(key, selection.Equals, s.List())
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
-		lb = lb.Add(*ls)
-	}
-	pods, err := lbc.KubeClient.Core().Pods(lbc.Config.Namespace).List(kapi.ListOptions{
-		LabelSelector: lb,
-	})
-
-	if len(pods.Items) > 1 {
-		log.Warningln("load balancer delete request, pods are gretter than one.")
-	}
-	for _, pod := range pods.Items {
-		err = lbc.KubeClient.Core().Pods(lbc.Config.Namespace).Delete(pod.Name, &kapi.DeleteOptions{})
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
-	}
+	lbc.deletePodsForSelector(d.Spec.Selector.MatchLabels)
 	return nil
 }
 
@@ -134,7 +112,7 @@ func (lbc *EngressController) deleteNodePortPods() error {
 	}
 
 	log.Debugln("Waiting before delete the RC")
-	time.Sleep(time.Second * 10)
+	time.Sleep(time.Second * 5)
 	// if update failed still trying to delete the controller.
 	falseVar := false
 	err = lbc.KubeClient.Extensions().Deployments(lbc.Config.Namespace).Delete(VoyagerPrefix+lbc.Config.Name, &kapi.DeleteOptions{
@@ -143,6 +121,7 @@ func (lbc *EngressController) deleteNodePortPods() error {
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
+	lbc.deletePodsForSelector(d.Spec.Selector.MatchLabels)
 	return nil
 }
 
@@ -160,7 +139,7 @@ func (lbc *EngressController) deleteResidualPods() error {
 	}
 
 	log.Debugln("Waiting before delete the RC")
-	time.Sleep(time.Second * 10)
+	time.Sleep(time.Second * 5)
 	// if update failed still trying to delete the controller.
 	falseVar := false
 	err = lbc.KubeClient.Core().ReplicationControllers(lbc.Config.Namespace).Delete(VoyagerPrefix+lbc.Config.Name, &kapi.DeleteOptions{
@@ -169,6 +148,7 @@ func (lbc *EngressController) deleteResidualPods() error {
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
+	lbc.deletePodsForSelector(rc.Spec.Selector)
 	return nil
 }
 
@@ -178,4 +158,33 @@ func (lbc *EngressController) deleteConfigMap() error {
 		return errors.FromErr(err).Err()
 	}
 	return nil
+}
+
+// Ensures deleting all pods if its still exits.
+func (lbc *EngressController) deletePodsForSelector(s map[string]string) {
+	lb := labels.NewSelector()
+	for key, value := range s {
+		s := sets.NewString(value)
+		ls, err := labels.NewRequirement(key, selection.Equals, s.List())
+		if err != nil {
+			log.Warningln(err)
+		}
+		lb = lb.Add(*ls)
+	}
+	pods, err := lbc.KubeClient.Core().Pods(lbc.Config.Namespace).List(kapi.ListOptions{
+		LabelSelector: lb,
+	})
+
+	if len(pods.Items) > 1 {
+		log.Warningln("load balancer delete request, pods are greater than one.")
+	}
+	gracePeriods := int64(0)
+	for _, pod := range pods.Items {
+		err = lbc.KubeClient.Core().Pods(lbc.Config.Namespace).Delete(pod.Name, &kapi.DeleteOptions{
+			GracePeriodSeconds: &gracePeriods,
+		})
+		if err != nil {
+			log.Warningln(err)
+		}
+	}
 }
