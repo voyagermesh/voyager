@@ -52,16 +52,16 @@ func NewACMEClient(config *ACMEConfig) (*ACMEClient, error) {
 
 	client, err := acme.NewClient(providerUrl, config.UserData, acme.RSA2048)
 	if err != nil {
-		return nil, errors.New().WithCause(err).Err()
+		return nil, errors.FromErr(err).Err()
 	}
 
 	initDNSProvider := func(provider acme.ChallengeProvider, err error) (*ACMEClient, error) {
 		if err != nil {
-			return nil, errors.New().WithCause(err).Err()
+			return nil, errors.FromErr(err).Err()
 		}
 
 		if err := client.SetChallengeProvider(acme.DNS01, provider); err != nil {
-			return nil, errors.New().WithCause(err).Err()
+			return nil, errors.FromErr(err).Err()
 		}
 
 		client.ExcludeChallenges([]acme.Challenge{acme.HTTP01, acme.TLSSNI01})
@@ -94,7 +94,7 @@ func NewACMEClient(config *ACMEConfig) (*ACMEClient, error) {
 			acme.HTTP01,
 			defaultProvider,
 		); err != nil {
-			return nil, errors.New().WithCause(err).Err()
+			return nil, errors.FromErr(err).Err()
 		}
 		client.ExcludeChallenges([]acme.Challenge{acme.DNS01, acme.TLSSNI01})
 		return &ACMEClient{

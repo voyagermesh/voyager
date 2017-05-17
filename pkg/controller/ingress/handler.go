@@ -74,14 +74,14 @@ func UpgradeAllEngress(service, clusterName, providerName string,
 		LabelSelector: labels.Everything(),
 	})
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 
 	eng, err := acExtClient.Ingress(kapi.NamespaceAll).List(kapi.ListOptions{
 		LabelSelector: labels.Everything(),
 	})
 	if err != nil {
-		return errors.New().WithCause(err).Err()
+		return errors.FromErr(err).Err()
 	}
 
 	items := make([]aci.Ingress, len(ing.Items))
@@ -110,11 +110,11 @@ func UpgradeAllEngress(service, clusterName, providerName string,
 					// to the resource. If hard update encounters errors then we will
 					// recreate the resource from scratch.
 					log.Infoln("Loadbalancer is exists, trying to update")
-					softUpdateErr := lbc.Update(UpdateTypeSoft)
-					if softUpdateErr != nil {
+					cfgErr := lbc.Update(UpdateConfig)
+					if cfgErr != nil {
 						log.Warningln("Loadbalancer is exists but Soft Update failed. Retring Hard Update")
-						hardUpdateErr := lbc.Update(UpdateTypeHard)
-						if hardUpdateErr != nil {
+						restartErr := lbc.Update(RestartHAProxy)
+						if restartErr != nil {
 							log.Warningln("Loadbalancer is exists, But Hard Update is also failed, recreating with a cleanup")
 							lbc.Create()
 						}
@@ -143,7 +143,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 		for i, ing := range e.RuntimeObj {
 			engress, err := aci.NewEngressFromIngress(ing)
 			if err != nil {
-				return errors.New().WithCause(err).Err()
+				return errors.FromErr(err).Err()
 			}
 			engs[i] = engress
 		}
@@ -160,11 +160,11 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 				// to the resource. If hard update encounters errors then we will
 				// recreate the resource from scratch.
 				log.Infoln("Loadbalancer is exists, trying to update")
-				softUpdateErr := lbc.Update(UpdateTypeSoft)
-				if softUpdateErr != nil {
-					log.Warningln("Loadbalancer is exists but Soft Update failed. Retring Hard Update")
-					hardUpdateErr := lbc.Update(UpdateTypeHard)
-					if hardUpdateErr != nil {
+				cfgErr := lbc.Update(UpdateConfig)
+				if cfgErr != nil {
+					log.Warningln("Loadbalancer is exists but Soft Update failed. Retrying Hard Update")
+					restartErr := lbc.Update(RestartHAProxy)
+					if restartErr != nil {
 						log.Warningln("Loadbalancer is exists, But Hard Update is also failed, recreating with a cleanup")
 						lbc.Create()
 					}
@@ -185,10 +185,12 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 
 		lbc.Config = engs[1].(*aci.Ingress)
 		if shouldHandleIngress(lbc.Config, lbc.IngressClass) {
-			if isNewPortOpened(engs[0], engs[1]) || isNewSecretAdded(engs[0], engs[1]) {
-				lbc.Update(UpdateTypeHard)
+			if isNewPortOpened(engs[0], engs[1]) {
+				lbc.Update(UpdateFirewall)
+			} else if isNewSecretAdded(engs[0], engs[1]) {
+				lbc.Update(RestartHAProxy)
 			} else {
-				lbc.Update(UpdateTypeSoft)
+				lbc.Update(UpdateConfig)
 			}
 		}
 	}

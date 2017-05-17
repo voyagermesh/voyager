@@ -1,51 +1,181 @@
 package ingress
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	kapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/labels"
+	"k8s.io/kubernetes/pkg/util/intstr"
 )
 
 type updateType int
 
 const (
-	UpdateTypeSoft updateType = iota
-	UpdateTypeHard
+	UpdateConfig updateType = iota
+	RestartHAProxy
+	UpdateFirewall
 )
 
-func (lbc *EngressController) Update(Type updateType) error {
-	log.Debugln("updating engress specs with type", Type)
-	if Type == UpdateTypeHard {
-		err := lbc.Delete()
+func (lbc *EngressController) Update(t updateType) error {
+	log.Debugln("updating engress specs with type", t)
+	lbc.parse()
+	err := lbc.generateTemplate()
+	if err != nil {
+		return errors.FromErr(err).Err()
+	}
+	// Update HAProxy config
+	err = lbc.updateConfigMap()
+	if err != nil {
+		return errors.FromErr(err).Err()
+	}
+
+	if t == UpdateFirewall || t == RestartHAProxy {
+		err := lbc.recreatePods()
 		if err != nil {
-			return errors.New().WithCause(err).Err()
+			return errors.FromErr(err).Err()
 		}
-		time.Sleep(time.Second * 10)
-		err = lbc.Create()
+	}
+	if t == UpdateFirewall {
+		return lbc.updateLBSvc()
+	}
+	return nil
+}
+
+func (lbc *EngressController) updateConfigMap() error {
+	cMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+	if err != nil {
+		return errors.FromErr(err).Err()
+	}
+	if cMap.Data["haproxy.cfg"] != lbc.Options.ConfigData {
+		log.Infoln("Specs have been changed updating config map data for HAProxy templates")
+		cMap.Data["haproxy.cfg"] = lbc.Options.ConfigData
+
+		_, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Update(cMap)
 		if err != nil {
-			return errors.New().WithCause(err).Err()
+			return errors.FromErr(err).Err()
+		}
+		log.Infoln("Config Map Updated, HAProxy will restart itself now via reloader")
+	}
+	return nil
+}
+
+func (lbc *EngressController) recreatePods() error {
+	if lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort {
+		err := lbc.deleteHostPortPods()
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
+		err = lbc.createHostPortPods()
+		if err != nil {
+			return errors.FromErr(err).Err()
 		}
 	} else {
-		lbc.parse()
-		err := lbc.generateTemplate()
-		if err != nil {
-			return errors.New().WithCause(err).Err()
+		if lbc.Options.SupportsLoadBalancerType() {
+			err := lbc.deleteLoadBalancerPods()
+			if err != nil {
+				return errors.FromErr(err).Err()
+			}
+			err = lbc.createLoadBalancerPods()
+			if err != nil {
+				return errors.FromErr(err).Err()
+			}
+		} else {
+			return errors.New("LoadBalancer type ingress is unsupported for cloud provider:", lbc.Options.ProviderName).Err()
 		}
-		// update config config map updates an existing map data.
-		err = lbc.updateConfigMap()
-		if err != nil {
-			return errors.New().WithCause(err).Err()
+	}
+	return nil
+}
+
+func (lbc *EngressController) updateLBSvc() error {
+	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+	if err != nil {
+		return errors.FromErr(err).Err()
+	}
+	curPorts := make(map[int32]kapi.ServicePort)
+	for _, p := range svc.Spec.Ports {
+		curPorts[p.Port] = p
+	}
+	svc.Spec.Ports = make([]kapi.ServicePort, 0)
+	for _, port := range lbc.Options.Ports {
+		if sp, found := curPorts[int32(port)]; found {
+			svc.Spec.Ports = append(svc.Spec.Ports, sp)
+		} else {
+			svc.Spec.Ports = append(svc.Spec.Ports, kapi.ServicePort{
+				Name:       "tcp-" + strconv.Itoa(port),
+				Protocol:   "TCP",
+				Port:       int32(port),
+				TargetPort: intstr.FromInt(port),
+			})
 		}
-		serviceName := VoyagerPrefix + lbc.Config.Name
-		svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(serviceName)
+	}
+	svc, err = lbc.KubeClient.Core().Services(lbc.Config.Namespace).Update(svc)
+	if err != nil {
+		return errors.FromErr(err).Err()
+	}
+
+	// open up firewall
+	log.Infoln("Loadbalancer CloudManager", lbc.CloudManager, "serviceType", svc.Spec.Type)
+	if (lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort) && lbc.CloudManager != nil {
+		daemonNodes, err := lbc.KubeClient.Core().Nodes().List(kapi.ListOptions{
+			LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Options.DaemonNodeSelector)),
+		})
 		if err != nil {
-			return errors.New().WithCause(err).Err()
+			log.Infoln("node not found with nodeSelector, cause", err)
+			return errors.FromErr(err).Err()
 		}
-		log.Infoln("Loadbalancer CloudeManager", lbc.CloudManager, "serviceType", svc.Spec.Type)
-		if svc.Spec.Type == kapi.ServiceTypeNodePort && lbc.CloudManager != nil {
-			log.Infoln("Service Type is Nodeport, needs to update underlying cloude loadbalancers")
+		// open up firewall
+		log.Debugln("Checking cloud manager", lbc.CloudManager)
+		if lbc.CloudManager != nil {
+			log.Debugln("cloud manager not nil")
+			if fw, ok := lbc.CloudManager.Firewall(); ok {
+				log.Debugln("firewalls found")
+				convertedSvc := &kapi.Service{}
+				kapi.Scheme.Convert(svc, convertedSvc, nil)
+				for _, node := range daemonNodes.Items {
+					err = fw.EnsureFirewall(convertedSvc, node.Name)
+					if err != nil {
+						log.Errorln("Failed to ensure loadbalancer for node", node.Name, "cause", err)
+					}
+				}
+				log.Debugln("getting firewalls for cloud manager failed")
+			}
+		}
+	} else if lbc.Options.LBType == LBLoadBalancer &&
+		svc.Spec.Type == kapi.ServiceTypeNodePort &&
+		lbc.CloudManager != nil {
+		log.Infof("Service Type is %s, needs to update underlying cloud loadbalancers", svc.Spec.Type)
+		if lb, ok := lbc.CloudManager.LoadBalancer(); ok {
+			// Wait for nodePort to be assigned
+			timeoutAt := time.Now().Add(time.Second * 600)
+			for {
+				svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+				if err != nil {
+					return errors.FromErr(err).Err()
+				}
+
+				nodePortReady := true
+				for _, p := range svc.Spec.Ports {
+					if p.NodePort <= 0 {
+						nodePortReady = false
+						break
+					}
+				}
+				if nodePortReady {
+					break
+				}
+
+				if time.Now().After(timeoutAt) {
+					return errors.New("timed out creating node port service").Err()
+				}
+
+				log.Info("Waiting for nodeport service to be ready")
+
+				time.Sleep(10 * time.Second)
+			}
+
 			hosts := make([]string, 0)
 			if ins, ok := lbc.CloudManager.Instances(); ok {
 				nodes, _ := ins.List("")
@@ -54,36 +184,16 @@ func (lbc *EngressController) Update(Type updateType) error {
 				}
 			}
 			log.Infoln("Got hosts", hosts)
-			if lb, ok := lbc.CloudManager.LoadBalancer(); ok {
-				log.Infoln("Loadbalancer interface found, caling UpdateLoadBalancer() with", svc, "and host", hosts)
-				convertedSvc := &kapi.Service{}
-				kapi.Scheme.Convert(svc, convertedSvc, nil)
-				err := lb.UpdateLoadBalancer(lbc.Options.ClusterName, convertedSvc, hosts)
-				if err != nil {
-					return errors.New().WithCause(err).Err()
-				}
+
+			log.Infoln("Loadbalancer interface found, calling UpdateLoadBalancer() with", svc, "and host", hosts)
+			convertedSvc := &kapi.Service{}
+			kapi.Scheme.Convert(svc, convertedSvc, nil)
+			err := lb.UpdateLoadBalancer(lbc.Options.ClusterName, convertedSvc, hosts)
+			if err != nil {
+				return errors.FromErr(err).Err()
 			}
-			log.Errorln("loadbalancer interface not found, reached dead blocks.")
 		}
-	}
-	return nil
-}
-
-func (lbc *EngressController) updateConfigMap() error {
-	log.Infoln()
-	cMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
-	if err != nil {
-		return errors.New().WithCause(err).Err()
-	}
-	if cMap.Data["haproxy.cfg"] != lbc.Options.ConfigData {
-		log.Infoln("Specs have been changed updating config map data for HAProxy templates")
-		cMap.Data["haproxy.cfg"] = lbc.Options.ConfigData
-
-		_, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Update(cMap)
-		if err != nil {
-			return errors.New().WithCause(err).Err()
-		}
-		log.Infoln("Config Map Updated, HAProxy will restart itself now via reloader")
+		log.Errorln("loadbalancer interface not found, reached dead blocks.")
 	}
 	return nil
 }

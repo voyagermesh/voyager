@@ -52,8 +52,12 @@ var defaultFormatter = func(e error) string {
 		var buf bytes.Buffer
 		buf.WriteString(err.msg)
 		if err.cause != nil {
-			buf.WriteString("\nCaused By:")
+			buf.WriteString("\nCaused By:\n")
 			buf.WriteString(err.cause.Error())
+		}
+		if err.trace != nil {
+			buf.WriteString("\nStack trace:\n")
+			buf.WriteString(err.trace.String())
 		}
 		return buf.String()
 	}

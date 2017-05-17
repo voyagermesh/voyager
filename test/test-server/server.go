@@ -56,7 +56,6 @@ func (h TCPServerHandler) ServeTCP(con net.Conn) {
 		ServerPort: h.port,
 	}
 	json.NewEncoder(con).Encode(resp)
-	con.Close()
 }
 
 func RunTCPServerOnPort(port string) {
