@@ -178,7 +178,7 @@ backend http-{{ svc.Name }}
 # tcp service
 {% for svc in TCPService %}
 frontend tcp-frontend-key-{{ svc.Port }}
-    bind *:{{ svc.Port }} {% if svc.SecretName %}ssl no-sslv3 no-tlsv10 crt /etc/ssl/private/haproxy/{{ svc.SecretName }}.pem{% endif %} {%if svc.ALPNOptions %} {{svc.ALPNOptions}}{% endif %}
+    bind *:{{ svc.Port }} {% if svc.SecretName %}ssl no-sslv3 no-tlsv10 no-tls-tickets crt /etc/ssl/private/haproxy/{{ svc.SecretName }}.pem{% endif %} {%if svc.ALPNOptions %} {{svc.ALPNOptions}}{% endif %}
     mode tcp
     default_backend tcp-{{ svc.Name }}
 {% endfor %}
