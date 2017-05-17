@@ -12,4 +12,5 @@ source /etc/envvars
 
 socat /tmp/haproxy - <<< "show servers state" > /var/state/haproxy/global
 
+# haproxy-systemd-wrapper performs a soft reload
 exec "$(which haproxy-systemd-wrapper)" -f /etc/haproxy/haproxy.cfg -p /var/run/haproxy.pid
