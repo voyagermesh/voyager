@@ -8,29 +8,25 @@ import (
 func (lbc *EngressController) IsExists() bool {
 	lbc.parse()
 	log.Infoln("Checking Ingress existence", lbc.Config.ObjectMeta)
+	name := VoyagerPrefix + lbc.Config.Name
 	if lbc.Options.LBType == LBHostPort {
-		_, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
-		if k8error.IsNotFound(err) {
-			return false
-		}
-	} else if lbc.Options.LBType == LBNodePort {
-		_, err := lbc.KubeClient.Extensions().Deployments(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+		_, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Get(name)
 		if k8error.IsNotFound(err) {
 			return false
 		}
 	} else {
-		_, err := lbc.KubeClient.Core().ReplicationControllers(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+		_, err := lbc.KubeClient.Extensions().Deployments(lbc.Config.Namespace).Get(name)
 		if k8error.IsNotFound(err) {
 			return false
 		}
 	}
 
-	_, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+	_, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(name)
 	if k8error.IsNotFound(err) {
 		return false
 	}
 
-	_, err = lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+	_, err = lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Get(name)
 	if k8error.IsNotFound(err) {
 		return false
 	}
