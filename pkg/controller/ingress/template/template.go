@@ -93,7 +93,7 @@ backend default-backend
 {% if HttpsService %}
 # https service
 frontend https-frontend
-    bind *:443 ssl no-sslv3 no-tlsv10 crt /etc/ssl/private/haproxy/ alpn http/1.1
+    bind *:443 ssl no-sslv3 no-tlsv10 no-tls-tickets crt /etc/ssl/private/haproxy/ alpn http/1.1
     rspadd  Strict-Transport-Security:\ max-age=15768000
 
     mode http
