@@ -13,12 +13,21 @@ work just fine out-of-the-box.
 Voyager is written in the go programming language. The release is built and tested on **go 1.7.5**. If you haven't set up a Go
 development environment, please follow [these instructions](https://golang.org/doc/code.html) to install the go tools.
 
+```sh
+go get github.com/appscode/voyager
+cd $GOPATH/src/github.com/appscode/voyager
+```
+
 ### Dependency management
 Voyager build and test scripts use glide to manage dependencies.
 
 To install glide follow [these instructions](https://github.com/Masterminds/glide#install).
 
 Currently the project includes all its required dependencies inside `vendor` to make things easier.
+
+```sh
+glide slow
+```
 
 ### Run Test
 #### Run Short Unit Test by running
