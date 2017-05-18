@@ -182,7 +182,7 @@ func (lbc *EngressController) parseSpec() {
 	log.Infoln("Parsing Engress specs")
 	lbc.Options.Ports = make([]int, 0)
 	if lbc.Config.Spec.Backend != nil {
-		log.Debugln("generating defulat backend", lbc.Config.Spec.Backend.RewriteRule, lbc.Config.Spec.Backend.HeaderRule)
+		log.Debugln("generating default backend", lbc.Config.Spec.Backend.RewriteRule, lbc.Config.Spec.Backend.HeaderRule)
 		eps, _ := lbc.serviceEndpoints(lbc.Config.Spec.Backend.ServiceName, lbc.Config.Spec.Backend.ServicePort, lbc.Config.Spec.Backend.HostNames)
 		lbc.Parsed.DefaultBackend = &Backend{
 			Name:      "default-backend",
@@ -205,9 +205,17 @@ func (lbc *EngressController) parseSpec() {
 	lbc.Parsed.HttpService = make([]*Service, 0)
 	lbc.Parsed.HttpsService = make([]*Service, 0)
 	lbc.Parsed.TCPService = make([]*TCPService, 0)
+
+	var httpCount, httpsCount int
 	for _, rule := range lbc.Config.Spec.Rules {
 		host := rule.Host
 		if rule.HTTP != nil {
+			if ok, _ := arrays.Contains(lbc.HostFilter, host); ok {
+				httpsCount++
+			} else {
+				httpCount++
+			}
+
 			for _, svc := range rule.HTTP.Paths {
 				def := &Service{
 					Name:     "service-" + rand.Characters(6),
@@ -238,6 +246,7 @@ func (lbc *EngressController) parseSpec() {
 
 		// adding tcp service to the parser.
 		for _, tcpSvc := range rule.TCP {
+			lbc.Options.Ports = append(lbc.Options.Ports, tcpSvc.Port.IntValue())
 			def := &TCPService{
 				Name:        "service-" + rand.Characters(6),
 				Host:        host,
@@ -253,7 +262,6 @@ func (lbc *EngressController) parseSpec() {
 				Endpoints:    eps,
 			}
 
-			lbc.Options.Ports = append(lbc.Options.Ports, tcpSvc.Port.IntValue())
 			log.Debugln("Got endpoints", len(eps))
 			if len(eps) > 0 && err == nil {
 				lbc.Parsed.TCPService = append(lbc.Parsed.TCPService, def)
@@ -262,11 +270,11 @@ func (lbc *EngressController) parseSpec() {
 		}
 	}
 
-	if len(lbc.Parsed.HttpService) > 0 || lbc.Config.Spec.Backend != nil {
+	if httpCount > 0 || (lbc.Config.Spec.Backend != nil && httpsCount == 0) {
 		lbc.Options.Ports = append(lbc.Options.Ports, 80)
 	}
 
-	if len(lbc.Parsed.HttpsService) > 0 {
+	if httpsCount > 0 {
 		lbc.Options.Ports = append(lbc.Options.Ports, 443)
 	}
 

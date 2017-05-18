@@ -15,6 +15,7 @@ import (
 	k8serr "k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apis/extensions"
+	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/util/intstr"
 )
 
@@ -475,6 +476,13 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 					ServicePort: intstr.FromString("4545"),
 				},
 			},
+			{
+				Port: intstr.FromString("4949"),
+				Backend: aci.IngressBackend{
+					ServiceName: testServerSvc.Name,
+					ServicePort: intstr.FromString("4545"),
+				},
+			},
 		}
 		_, err = ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Update(updatedBaseIngress)
 		if err != nil {
@@ -520,6 +528,61 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 			log.Infoln("Response", *resp)
 			if resp.ServerPort != ":4545" {
 				return errors.New().WithMessage("Port did not matched").Err()
+			}
+		}
+
+		log.Infoln("Checking NodePort Assignments")
+		rc, err := ing.t.KubeClient.Core().ReplicationControllers(TestNamespace).Get(testServerRc.Name)
+		if err == nil {
+
+			svc, err := ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+			if err != nil {
+				return errors.New().WithMessage("Service get encountered error").Err()
+			}
+			// Removing pods so that endpoints get updated
+			rc.Spec.Replicas = 0
+			ing.t.KubeClient.Core().ReplicationControllers(TestNamespace).Update(rc)
+
+			for {
+				pods, _ := ing.t.KubeClient.Core().Pods(TestNamespace).List(api.ListOptions{
+					LabelSelector: labels.SelectorFromSet(labels.Set(rc.Spec.Selector)),
+				})
+				if len(pods.Items) <= 0 {
+					break
+				}
+				time.Sleep(time.Second * 5)
+			}
+			svcUpdated, err := ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+			if err != nil {
+				return errors.New().WithMessage("Service get encountered error").Err()
+			}
+
+			for _, oldPort := range svc.Spec.Ports {
+				for _, newPort := range svcUpdated.Spec.Ports {
+					if oldPort.Port == newPort.Port {
+						if oldPort.NodePort != newPort.NodePort {
+							return errors.New().WithMessage("Node Port Mismatched").Err()
+						}
+					}
+				}
+			}
+
+			rc.Spec.Replicas = 2
+			ing.t.KubeClient.Core().ReplicationControllers(TestNamespace).Update(rc)
+
+			svcUpdated, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+			if err != nil {
+				return errors.New().WithMessage("Service get encountered error").Err()
+			}
+
+			for _, oldPort := range svc.Spec.Ports {
+				for _, newPort := range svcUpdated.Spec.Ports {
+					if oldPort.Port == newPort.Port {
+						if oldPort.NodePort != newPort.NodePort {
+							return errors.New().WithMessage("Node Port Mismatched").Err()
+						}
+					}
+				}
 			}
 		}
 	}

@@ -14,9 +14,9 @@ import (
 type updateType int
 
 const (
-	UpdateConfig updateType = iota // only reset haproxy config
-	RestartHAProxy // secret changes, ports unchanged
-	UpdateFirewall // ports changed
+	UpdateConfig   updateType = iota // only reset haproxy config
+	RestartHAProxy                   // secret changes, ports unchanged
+	UpdateFirewall                   // ports changed
 )
 
 func (lbc *EngressController) Update(t updateType) error {
@@ -83,11 +83,9 @@ func (lbc *EngressController) recreatePods() error {
 		}
 	} else {
 		if lbc.Options.SupportsLoadBalancerType() {
-			err := lbc.deleteResidualPods()
-			if err != nil {
-				return errors.FromErr(err).Err()
-			}
-			err = lbc.deleteNodePortPods()
+			// Ignore Error.
+			lbc.deleteResidualPods()
+			err := lbc.deleteNodePortPods()
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
