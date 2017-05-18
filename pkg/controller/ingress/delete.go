@@ -41,11 +41,9 @@ func (lbc *EngressController) deleteLB() error {
 			return errors.FromErr(err).Err()
 		}
 	} else {
-		err := lbc.deleteResidualPods()
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
-		err = lbc.deleteNodePortPods()
+		// Ignore Error.
+		lbc.deleteResidualPods()
+		err := lbc.deleteNodePortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}

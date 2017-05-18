@@ -137,7 +137,9 @@ type KubeOptions struct {
 	// contains raw configMap data parsed from the cfg file.
 	ConfigData string
 
-	// port list the pods needs and service needs to listen to.
+	// Ports contains all the ports needed to be opened for the ingress.
+	// Those ports will be used to open loadbalancer/firewall.
+	// So any interference with underlying endpoints will not cause network update.
 	Ports []int
 
 	LBType              string

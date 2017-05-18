@@ -96,11 +96,10 @@ func (lbc *EngressController) createLB() error {
 		}
 	} else {
 		if lbc.Options.SupportsLoadBalancerType() {
-			err := lbc.deleteResidualPods()
-			if err != nil {
-				return errors.FromErr(err).Err()
-			}
-			err = lbc.createNodePortPods()
+			// deleteResidualPods is a safety checking deletation of previous version RC
+			// This should Ignore error.
+			lbc.deleteResidualPods()
+			err := lbc.createNodePortPods()
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
