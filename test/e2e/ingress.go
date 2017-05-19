@@ -1860,3 +1860,80 @@ func (ing *IngressTestSuit) TestIngressBackendRule() error {
 	}
 	return nil
 }
+
+func (ing *IngressTestSuit) TestIngressNodePort() error {
+	baseDaemonIngress := &aci.Ingress{
+		ObjectMeta: api.ObjectMeta{
+			Name:      testIngressName(),
+			Namespace: TestNamespace,
+			Annotations: map[string]string{
+				ingress.LBType:             ingress.LBNodePort,
+			},
+		},
+		Spec: aci.ExtendedIngressSpec{
+			Rules: []aci.ExtendedIngressRule{
+				{
+					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
+						HTTP: &aci.HTTPExtendedIngressRuleValue{
+							Paths: []aci.HTTPExtendedIngressPath{
+								{
+									Path: "/testpath",
+									Backend: aci.ExtendedIngressBackend{
+										ServiceName: testServerSvc.Name,
+										ServicePort: intstr.FromInt(80),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, err := ing.t.ExtensionClient.Ingress(baseDaemonIngress.Namespace).Create(baseDaemonIngress)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if ing.t.Config.Cleanup {
+			ing.t.ExtensionClient.Ingress(baseDaemonIngress.Namespace).Delete(baseDaemonIngress.Name)
+		}
+	}()
+
+	// Wait sometime to loadbalancer be opened up.
+	time.Sleep(time.Second * 10)
+	for i := 0; i < maxRetries; i++ {
+		_, err := ing.t.KubeClient.Core().Services(baseDaemonIngress.Namespace).Get(ingress.VoyagerPrefix + baseDaemonIngress.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for service to be created")
+	}
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+
+	serverAddr, err := ing.getDaemonURLs(baseDaemonIngress)
+	if err != nil {
+		return err
+	}
+	time.Sleep(time.Second * 20)
+	log.Infoln("Loadbalancer created, calling http endpoints for test, Total url found", len(serverAddr))
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
+		}
+		log.Infoln("Response", *resp)
+		if resp.Method != http.MethodGet {
+			return errors.New().WithMessage("Method did not matched").Err()
+		}
+
+		if resp.Path != "/testpath/ok" {
+			return errors.New().WithMessage("Path did not matched").Err()
+		}
+	}
+	return nil
+}
