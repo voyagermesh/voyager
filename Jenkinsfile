@@ -4,15 +4,23 @@ node("master") {
     stage("set env") {
         env.GOPATH = "${PWD}"
         env.GOBIN = "${GOPATH}/bin"
-        env.PATH = "$env.PATH:${env.GOBIN}"
+        env.PATH = "$env.PATH:${env.GOBIN}:/usr/local/go/bin"
         sh "mkdir -p ${env.GOBIN}"
+    }
+    stage('builddeps') {
+        sh 'sudo apt update &&\
+        sudo apt install -y software-properties-common python-software-properties python-dev libyaml-dev python-pip build-essential curl &&\
+        sudo pip install git+https://github.com/ellisonbg/antipackage.git#egg=antipackage &&\
+        go get -u golang.org/x/tools/cmd/goimports &&\
+        go get -u github.com/sgotti/glide-vc &&\
+        curl https://glide.sh/get | sh'
     }
     dir("${project_dir}") {
         stage("checkout") {
             checkout scm
         }
         stage("builddeps") {
-            sh "./hack/builddeps.sh"
+            sh "sudo ./hack/builddeps.sh"
         }
         stage("dependency") {
             sh "glide slow"
