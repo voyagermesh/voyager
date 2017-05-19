@@ -1,6 +1,8 @@
 node("master") {
     def PWD = pwd()
     def project_dir = "${PWD}/src/github.com/appscode/voyager"
+    def docker_image_name = "appscode/voyager"
+    def docker_tag
     stage("set env") {
         env.GOPATH = "${PWD}"
         env.GOBIN = "${GOPATH}/bin"
@@ -30,6 +32,13 @@ node("master") {
         }
         stage("build docker") {
             sh "./hack/docker/voyager/setup.sh"
+        }
+        stage("set env") {
+            docker_tag =  sh (
+                script: ". ./hack/libbuild/common/lib.sh && detect_tag > /dev/null && echo $TAG",
+                returnStdout: true
+            ).trim()
+            sh "docker run -it -d $docker_image_name:$docker_tag tail -f /dev/null"
         }
     }
 }
