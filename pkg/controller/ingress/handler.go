@@ -179,11 +179,16 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 			lbc.Delete()
 		}
 	} else if e.EventType.IsUpdated() {
+		lbc.Config = engs[1].(*aci.Ingress)
+		if !reflect.DeepEqual(engs[0].(*aci.Ingress).ObjectMeta.Annotations, engs[1].(*aci.Ingress).ObjectMeta.Annotations) {
+			// Ingress Annotations Changed, Apply Changes to Targets
+			lbc.UpdateTargetAnnotations(engs[0].(*aci.Ingress).ObjectMeta.Annotations, engs[1].(*aci.Ingress).ObjectMeta.Annotations)
+		}
+
 		if reflect.DeepEqual(engs[0].(*aci.Ingress).Spec, engs[1].(*aci.Ingress).Spec) {
 			return nil
 		}
 
-		lbc.Config = engs[1].(*aci.Ingress)
 		if shouldHandleIngress(lbc.Config, lbc.IngressClass) {
 			if isNewPortOpened(engs[0], engs[1]) {
 				lbc.Update(UpdateFirewall)
