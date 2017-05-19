@@ -18,18 +18,20 @@ import (
 const (
 	VoyagerPrefix = "voyager-"
 
-	AppsCodeIngressAnnotationKey = "ingress.appscode.com"
+	AnnotationPrefix = "ingress.appscode.com/"
 
-	stickySession = "ingress.appscode.com/stickySession"
+	stickySession = AnnotationPrefix + "stickySession"
 
 	// LB stats options
 	StatPort    = 1936
-	StatsOn     = "ingress.appscode.com/stats"
-	StatsSecret = "ingress.appscode.com/stats.secretName"
+	StatsOn     = AnnotationPrefix + "stats"
+	StatsSecret = AnnotationPrefix + "stats.secretName"
+
+	LBName     = AnnotationPrefix + "name"
 
 	// Daemon, Persistent, LoadBalancer
-	LBName     = "ingress.appscode.com/name"
-	LBType     = "ingress.appscode.com/type"
+	LBType     = AnnotationPrefix + "type"
+
 	LBNodePort = "NodePort"
 	LBHostPort = "HostPort"
 	// Deprecated, use LBHostPort
@@ -37,31 +39,31 @@ const (
 	LBLoadBalancer = "LoadBalancer" // default
 
 	// Runs on a specific set of a hosts via DaemonSet. This is needed to work around the issue that master node is registered but not scheduable.
-	DaemonNodeSelector = "ingress.appscode.com/daemon.nodeSelector"
+	DaemonNodeSelector = AnnotationPrefix + "daemon.nodeSelector"
 
 	// Replicas specify # of HAProxy pods run (default 1)
-	Replicas = "ingress.appscode.com/replicas"
+	Replicas = AnnotationPrefix + "replicas"
 
 	// LoadBalancer mode exposes HAProxy via a type=LoadBalancer service. This is the original version implemented by @sadlil
 	// Uses nodeport and Cloud LoadBalancer exists beyond single HAProxy run
-	LoadBalancerIP      = "ingress.appscode.com/ip"      // external_ip or loadbalancer_ip "" or a "ipv4"
-	LoadBalancerPersist = "ingress.appscode.com/persist" // "" or a "true"
+	LoadBalancerIP      = AnnotationPrefix + "ip"      // external_ip or loadbalancer_ip "" or a "ipv4"
+	LoadBalancerPersist = AnnotationPrefix + "persist" // "" or a "true"
 
 	// LoadBalancerBackendWeightKey is the weight value of a Pod that was
 	// addressed by the Endpoint, this weight will be added to server backend.
 	// Traffic will be forwarded according to there weight.
-	LoadBalancerBackendWeight = "ingress.appscode.com/backend.weight"
+	LoadBalancerBackendWeight = AnnotationPrefix + "backend.weight"
 
 	// https://github.com/appscode/voyager/issues/103
 	// LoadBalancerServiceAnnotation is user provided annotations map that will be
 	// applied to the service of that LoadBalancer.
 	// ex: "ingress.appscode.com/service.annotation": {"key": "val"}
-	LoadBalancerServiceAnnotation = "ingress.appscode.com/annotations.service"
+	LoadBalancerServiceAnnotation = AnnotationPrefix + "annotations.service"
 
 	// LoadBalancerPodsAnnotation is user provided annotations map that will be
 	// applied to the Pods (Deployment/ DaemonSet) of that LoadBalancer.
 	// ex: "ingress.appscode.com/service.annotation": {"key": "val"}
-	LoadBalancerPodsAnnotation = "ingress.appscode.com/annotations.pod"
+	LoadBalancerPodsAnnotation = AnnotationPrefix + "annotations.pod"
 )
 
 type annotation map[string]string
@@ -133,7 +135,7 @@ func getTargetAnnotations(s annotation, key string) (map[string]string, bool) {
 		// Filter all annotation keys that starts with ingress.appscode.com
 		filteredMap := make(map[string]string)
 		for k, v := range ans {
-			if !strings.HasPrefix(strings.TrimSpace(k), AppsCodeIngressAnnotationKey) {
+			if !strings.HasPrefix(strings.TrimSpace(k), AnnotationPrefix) {
 				filteredMap[k] = v
 			}
 		}

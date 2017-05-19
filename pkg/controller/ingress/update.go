@@ -276,10 +276,8 @@ func mergeAnnotations(obj, old, new map[string]string) map[string]string {
 		obj = make(map[string]string)
 	}
 
-	for k  := range old {
-		if _, ok := new[k]; !ok {
-			delete(obj, k)
-		}
+	for k := range old {
+		delete(obj, k)
 	}
 
 	for k, v := range new {
