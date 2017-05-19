@@ -1,6 +1,7 @@
 package ingress
 
 import (
+	"reflect"
 	"strconv"
 	"time"
 
@@ -205,6 +206,73 @@ func (lbc *EngressController) updateLBSvc() error {
 			}
 		}
 		log.Errorln("loadbalancer interface not found, reached dead blocks.")
+	}
+	return nil
+}
+
+func (lbc *EngressController) UpdateTargetAnnotations(old annotation, new annotation) error {
+	lbc.parse()
+	if newSvcAns, newOk := new.ServiceAnnotations(); newOk {
+		if oldSvcAns, oldOk := old.ServiceAnnotations(); oldOk {
+			if !reflect.DeepEqual(oldSvcAns, newSvcAns) {
+				svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+				if err != nil {
+					return errors.FromErr(err).Err()
+				}
+
+				// Copy LBName and LBType Annotation that are set at creation time.
+				newSvcAns[LBName] = svc.Annotations[LBName]
+				newSvcAns[LBType] = svc.Annotations[LBType]
+
+				// Override old annotations with new one
+				svc.Annotations = newSvcAns
+
+				svc, err = lbc.KubeClient.Core().Services(lbc.Config.Namespace).Update(svc)
+				if err != nil {
+					return errors.FromErr(err).Err()
+				}
+			}
+		}
+	}
+
+	if newPodAns, newOk := new.PodsAnnotations(); newOk {
+		if oldPodAns, oldOk := old.PodsAnnotations(); oldOk {
+			if !reflect.DeepEqual(oldPodAns, newPodAns) {
+				if lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort {
+					daemonset, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+					if err != nil {
+						return errors.FromErr(err).Err()
+					}
+					daemonset.Spec.Template.Annotations = newPodAns
+					daemonset, err = lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Update(daemonset)
+					if err != nil {
+						return errors.FromErr(err).Err()
+					}
+					if daemonset.Spec.Selector != nil {
+						pods, _ := lbc.KubeClient.Core().Pods(lbc.Config.Namespace).List(kapi.ListOptions{
+							LabelSelector: labels.SelectorFromSet(daemonset.Spec.Selector.MatchLabels),
+						})
+						for _, pod := range pods.Items {
+							pod.Annotations = daemonset.Spec.Template.Annotations
+							_, err := lbc.KubeClient.Core().Pods(lbc.Config.Namespace).Update(&pod)
+							if err != nil {
+								log.Errorln("Failed to Update Pods", err)
+							}
+						}
+					}
+				} else {
+					dep, err := lbc.KubeClient.Extensions().Deployments(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+					if err != nil {
+						return errors.FromErr(err).Err()
+					}
+					dep.Spec.Template.Annotations = newPodAns
+					_, err = lbc.KubeClient.Extensions().Deployments(lbc.Config.Namespace).Update(dep)
+					if err != nil {
+						return errors.FromErr(err).Err()
+					}
+				}
+			}
+		}
 	}
 	return nil
 }

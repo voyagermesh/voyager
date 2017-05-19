@@ -290,15 +290,15 @@ func (lbc *EngressController) parseOptions() {
 		return
 	}
 	log.Infoln("Parsing annotations.")
-	opts := annotation(lbc.Config.ObjectMeta.Annotations)
-	lbc.Parsed.Sticky = opts.StickySession()
+	lbc.Options.annotations = annotation(lbc.Config.ObjectMeta.Annotations)
+	lbc.Parsed.Sticky = lbc.Options.annotations.StickySession()
 	if len(lbc.Config.Spec.TLS) > 0 {
 		lbc.Parsed.SSLCert = true
 	}
 
-	lbc.Parsed.Stats = opts.Stats()
+	lbc.Parsed.Stats = lbc.Options.annotations.Stats()
 	if lbc.Parsed.Stats {
-		secret, err := lbc.KubeClient.Core().Secrets(lbc.Config.ObjectMeta.Namespace).Get(opts.StatsSecretName())
+		secret, err := lbc.KubeClient.Core().Secrets(lbc.Config.ObjectMeta.Namespace).Get(lbc.Options.annotations.StatsSecretName())
 		if err == nil {
 			lbc.Parsed.StatsUserName = string(secret.Data["username"])
 			lbc.Parsed.StatsPassWord = string(secret.Data["password"])
@@ -307,11 +307,11 @@ func (lbc *EngressController) parseOptions() {
 		}
 	}
 
-	lbc.Options.LBType = opts.LBType()
-	lbc.Options.Replicas = opts.Replicas()
-	lbc.Options.DaemonNodeSelector = ParseNodeSelector(opts.DaemonNodeSelector())
-	lbc.Options.LoadBalancerIP = opts.LoadBalancerIP()
-	lbc.Options.LoadBalancerPersist = opts.LoadBalancerPersist()
+	lbc.Options.LBType = lbc.Options.annotations.LBType()
+	lbc.Options.Replicas = lbc.Options.annotations.Replicas()
+	lbc.Options.DaemonNodeSelector = ParseNodeSelector(lbc.Options.annotations.DaemonNodeSelector())
+	lbc.Options.LoadBalancerIP = lbc.Options.annotations.LoadBalancerIP()
+	lbc.Options.LoadBalancerPersist = lbc.Options.annotations.LoadBalancerPersist()
 	log.Infoln("Got LBType", lbc.Options.LBType)
 }
 

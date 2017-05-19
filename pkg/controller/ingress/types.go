@@ -1,6 +1,7 @@
 package ingress
 
 import (
+	"encoding/json"
 	"strconv"
 	"strings"
 	"sync"
@@ -8,6 +9,7 @@ import (
 	aci "github.com/appscode/k8s-addons/api"
 	acs "github.com/appscode/k8s-addons/client/clientset"
 	"github.com/appscode/k8s-addons/pkg/stash"
+	"github.com/appscode/log"
 	"k8s.io/kubernetes/pkg/client/cache"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/cloudprovider"
@@ -47,6 +49,17 @@ const (
 	// addressed by the Endpoint, this weight will be added to server backend.
 	// Traffic will be forwarded according to there weight.
 	LoadBalancerBackendWeight = "ingress.appscode.com/backend.weight"
+
+	// https://github.com/appscode/voyager/issues/103
+	// LoadBalancerServiceAnnotation is user provided annotations map that will be
+	// applied to the service of that LoadBalancer.
+	// ex: "ingress.appscode.com/service.annotation": {"key": "val"}
+	LoadBalancerServiceAnnotation = "ingress.appscode.com/service.annotation"
+
+	// LoadBalancerPodsAnnotation is user provided annotations map that will be
+	// applied to the Pods (Deployment/ DaemonSet) of that LoadBalancer.
+	// ex: "ingress.appscode.com/service.annotation": {"key": "val"}
+	LoadBalancerPodsAnnotation = "ingress.appscode.com/pod.annotation"
 )
 
 type annotation map[string]string
@@ -98,6 +111,27 @@ func (s annotation) LoadBalancerPersist() bool {
 	return strings.ToLower(v) == "true"
 }
 
+func (s annotation) ServiceAnnotations() (map[string]string, bool) {
+	return getTargetAnnotations(s, LoadBalancerServiceAnnotation)
+}
+
+func (s annotation) PodsAnnotations() (map[string]string, bool) {
+	return getTargetAnnotations(s, LoadBalancerPodsAnnotation)
+}
+
+func getTargetAnnotations(s annotation, key string) (map[string]string, bool) {
+	ans := make(map[string]string)
+	if v, ok := s[key]; ok {
+		v = strings.TrimSpace(v)
+		if err := json.Unmarshal([]byte(v), &ans); err != nil {
+			log.Errorln("Failed to Unmarshal", key, err)
+			return ans, false
+		}
+		return ans, true
+	}
+	return ans, false
+}
+
 type EngressController struct {
 	// kubernetes client
 	KubeClient        clientset.Interface
@@ -147,6 +181,8 @@ type KubeOptions struct {
 	DaemonNodeSelector  map[string]string
 	LoadBalancerIP      string
 	LoadBalancerPersist bool
+
+	annotations annotation
 }
 
 func (o KubeOptions) SupportsLoadBalancerType() bool {
