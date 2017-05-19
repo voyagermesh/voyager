@@ -219,13 +219,7 @@ func (lbc *EngressController) UpdateTargetAnnotations(old annotation, new annota
 				if err != nil {
 					return errors.FromErr(err).Err()
 				}
-
-				// Copy LBName and LBType Annotation that are set at creation time.
-				newSvcAns[LBName] = svc.Annotations[LBName]
-				newSvcAns[LBType] = svc.Annotations[LBType]
-
-				// Override old annotations with new one
-				svc.Annotations = newSvcAns
+				svc.Annotations = mergeAnnotations(svc.Annotations, oldSvcAns, newSvcAns)
 
 				svc, err = lbc.KubeClient.Core().Services(lbc.Config.Namespace).Update(svc)
 				if err != nil {
@@ -253,7 +247,7 @@ func (lbc *EngressController) UpdateTargetAnnotations(old annotation, new annota
 							LabelSelector: labels.SelectorFromSet(daemonset.Spec.Selector.MatchLabels),
 						})
 						for _, pod := range pods.Items {
-							pod.Annotations = daemonset.Spec.Template.Annotations
+							pod.Annotations = mergeAnnotations(pod.Annotations, oldPodAns, newPodAns)
 							_, err := lbc.KubeClient.Core().Pods(lbc.Config.Namespace).Update(&pod)
 							if err != nil {
 								log.Errorln("Failed to Update Pods", err)
@@ -265,7 +259,7 @@ func (lbc *EngressController) UpdateTargetAnnotations(old annotation, new annota
 					if err != nil {
 						return errors.FromErr(err).Err()
 					}
-					dep.Spec.Template.Annotations = newPodAns
+					dep.Spec.Template.Annotations = mergeAnnotations(dep.Spec.Template.Annotations, oldPodAns, newPodAns)
 					_, err = lbc.KubeClient.Extensions().Deployments(lbc.Config.Namespace).Update(dep)
 					if err != nil {
 						return errors.FromErr(err).Err()
@@ -275,4 +269,21 @@ func (lbc *EngressController) UpdateTargetAnnotations(old annotation, new annota
 		}
 	}
 	return nil
+}
+
+func mergeAnnotations(obj, old, new map[string]string) map[string]string {
+	if obj == nil {
+		obj = make(map[string]string)
+	}
+
+	for k  := range old {
+		if _, ok := new[k]; !ok {
+			delete(obj, k)
+		}
+	}
+
+	for k, v := range new {
+		obj[k] = v
+	}
+	return obj
 }

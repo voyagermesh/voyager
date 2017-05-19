@@ -18,6 +18,8 @@ import (
 const (
 	VoyagerPrefix = "voyager-"
 
+	AppsCodeIngressAnnotationKey = "ingress.appscode.com"
+
 	stickySession = "ingress.appscode.com/stickySession"
 
 	// LB stats options
@@ -54,12 +56,12 @@ const (
 	// LoadBalancerServiceAnnotation is user provided annotations map that will be
 	// applied to the service of that LoadBalancer.
 	// ex: "ingress.appscode.com/service.annotation": {"key": "val"}
-	LoadBalancerServiceAnnotation = "ingress.appscode.com/service.annotation"
+	LoadBalancerServiceAnnotation = "ingress.appscode.com/annotations.service"
 
 	// LoadBalancerPodsAnnotation is user provided annotations map that will be
 	// applied to the Pods (Deployment/ DaemonSet) of that LoadBalancer.
 	// ex: "ingress.appscode.com/service.annotation": {"key": "val"}
-	LoadBalancerPodsAnnotation = "ingress.appscode.com/pod.annotation"
+	LoadBalancerPodsAnnotation = "ingress.appscode.com/annotations.pod"
 )
 
 type annotation map[string]string
@@ -127,7 +129,15 @@ func getTargetAnnotations(s annotation, key string) (map[string]string, bool) {
 			log.Errorln("Failed to Unmarshal", key, err)
 			return ans, false
 		}
-		return ans, true
+
+		// Filter all annotation keys that starts with ingress.appscode.com
+		filteredMap := make(map[string]string)
+		for k, v := range ans {
+			if !strings.HasPrefix(strings.TrimSpace(k), AppsCodeIngressAnnotationKey) {
+				filteredMap[k] = v
+			}
+		}
+		return filteredMap, true
 	}
 	return ans, false
 }
