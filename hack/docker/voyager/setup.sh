@@ -40,14 +40,15 @@ build_docker() {
 	chmod 755 voyager
 
 	cat >Dockerfile <<EOL
-FROM appscode/ubuntu:16.04
+FROM alpine
 
 RUN set -x \
-  && apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates \
-  && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man /tmp/*
+    && apk --update upgrade \
+    && apk add ca-certificates \
+    && rm -rf /var/cache/apk/*
 
 COPY voyager /voyager
+USER nobody:nobody
 ENTRYPOINT ["/voyager"]
 EOL
 	local cmd="docker build -t appscode/$IMG:$TAG ."
