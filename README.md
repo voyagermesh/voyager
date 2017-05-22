@@ -3,14 +3,13 @@
 [Website](https://appscode.com) • [Slack](https://slack.appscode.com) • [Forum](https://discuss.appscode.com) • [Twitter](https://twitter.com/AppsCodeHQ)
 
 # voyager
-Voyager provides controller for [Ingress](#ingress) and [Certificates](#certificate) for Kubernetes developed by [AppsCode](https://appscode.com).
+Voyager is a [HAProxy](http://www.haproxy.org/) backed [secure](#certificate) L7 and L4 [ingress](#ingress) controller for Kubernetes developed by
+[AppsCode](https://appscode.com). This can be used with any Kubernetes cloud providers including aws, gce, gke, azure. This can also be used with bare metal Kubernetes clusters.
 
 
 ## Ingress
-In here we call it ExtendedIngress.
-An extended plugin of Kubernetes [Ingress](https://kubernetes.io/docs/user-guide/ingress/) by AppsCode, to support both L7 and L4 loadbalancing via a single ingress.
-This is built on top of the [HAProxy](http://www.haproxy.org/), to support high availability, sticky sessions, name and path-based virtual hosting.
-This also support configurable application ports with all the features available in Kubernetes [Ingress](https://kubernetes.io/docs/user-guide/ingress/). Here 
+Voyager provides L7 and L4 loadbalancing using a custom Kubernetes [Ingress](docs/user-guide/component/ingress) resource. This is built on top of the [HAProxy](http://www.haproxy.org/) to support high availability, sticky sessions, name and path-based virtual hosting.
+This also support configurable application ports with all the options available in a standard Kubernetes [Ingress](https://kubernetes.io/docs/user-guide/ingress/). Here 
 is a [complex ingress example](hack/example/ingress.yaml) that shows how various features can be used.
 You can find the generated HAProxy Configuration [here](hack/example/haproxy_generated.cfg).
 
@@ -45,11 +44,11 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
 
 
 ## Certificate
-Kubernetes Controller to manage TLS Certificate.
+Voyager can automaticallty provision and refresh SSL certificates issued from Let's Encrypt using a custom Kubernetes [Certificate](docs/user-guide/component/certificate) resource. 
 
 **Feautures**
-- Manage Kubernetes TLS secrets backed by Custom Certificate Provider, uses Let's Encrypt by default,
-- Manage issued certificates based on Kubernetes ThirdParty Resources,
+- Provision free TLS certificates from Let's Encrypt,
+- Manage issued certificates using a Kubernetes Third Party Resource,
 - Domain validation using ACME dns-01 challenges,
 - Support for multiple DNS providers,
 - Auto Renew Certificates,
