@@ -3,7 +3,7 @@
 [Website](https://appscode.com) • [Slack](https://slack.appscode.com) • [Forum](https://discuss.appscode.com) • [Twitter](https://twitter.com/AppsCodeHQ)
 
 # voyager
-Voyager is a [HAProxy](http://www.haproxy.org/) based [secure](#certificate) L7 and L4 [ingress](#ingress) controller for Kubernetes developed by
+Voyager is a [HAProxy](http://www.haproxy.org/) backed [secure](#certificate) L7 and L4 [ingress](#ingress) controller for Kubernetes developed by
 [AppsCode](https://appscode.com). This can be used with any Kubernetes cloud providers including aws, gce, gke, azure. This can be also
 used with bare metal Kubernetes clusters.
 
