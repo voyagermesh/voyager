@@ -2124,6 +2124,7 @@ func (ing *IngressTestSuit) TestIngressNodePort() error {
 
 	// We do not open any firewall for node ports, so we can not check the traffic
 	// for testing. So check if all the ports are assigned a nodeport.
+	time.Sleep(time.Second * 120)
 	for _, port := range svc.Spec.Ports {
 		if port.NodePort <= 0 {
 			return errors.New().WithMessagef("NodePort not Assigned for Port %v -> %v", port.Port, port.NodePort).Err()
