@@ -42,4 +42,4 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | Parameter                  | Description                  | Default              |
 | -----------------------    | ---------------------------- | -------------------- |
 | `image`                    |  Container image to run      | `appscode/voyager`   |
-| `imageTag`                 |  Image tag of container      | `1.5.4`              |
+| `imageTag`                 |  Image tag of container      | `1.5.5`              |
