@@ -27,10 +27,10 @@ const (
 	StatsOn     = AnnotationPrefix + "stats"
 	StatsSecret = AnnotationPrefix + "stats.secretName"
 
-	LBName     = AnnotationPrefix + "name"
+	LBName = AnnotationPrefix + "name"
 
 	// Daemon, Persistent, LoadBalancer
-	LBType     = AnnotationPrefix + "type"
+	LBType = AnnotationPrefix + "type"
 
 	LBNodePort = "NodePort"
 	LBHostPort = "HostPort"

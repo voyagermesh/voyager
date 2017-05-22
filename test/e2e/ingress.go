@@ -2061,3 +2061,75 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 	}
 	return nil
 }
+
+func (ing *IngressTestSuit) TestIngressNodePort() error {
+	baseDaemonIngress := &aci.Ingress{
+		ObjectMeta: api.ObjectMeta{
+			Name:      testIngressName(),
+			Namespace: TestNamespace,
+			Annotations: map[string]string{
+				ingress.LBType: ingress.LBNodePort,
+			},
+		},
+		Spec: aci.ExtendedIngressSpec{
+			Rules: []aci.ExtendedIngressRule{
+				{
+					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
+						HTTP: &aci.HTTPExtendedIngressRuleValue{
+							Paths: []aci.HTTPExtendedIngressPath{
+								{
+									Path: "/testpath",
+									Backend: aci.ExtendedIngressBackend{
+										ServiceName: testServerSvc.Name,
+										ServicePort: intstr.FromInt(80),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, err := ing.t.ExtensionClient.Ingress(baseDaemonIngress.Namespace).Create(baseDaemonIngress)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if ing.t.Config.Cleanup {
+			ing.t.ExtensionClient.Ingress(baseDaemonIngress.Namespace).Delete(baseDaemonIngress.Name)
+		}
+	}()
+
+	// Wait sometime to loadbalancer be opened up.
+	var svc *api.Service
+	time.Sleep(time.Second * 10)
+	for i := 0; i < maxRetries; i++ {
+		var err error
+		svc, err = ing.t.KubeClient.Core().Services(baseDaemonIngress.Namespace).Get(ingress.VoyagerPrefix + baseDaemonIngress.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for service to be created")
+	}
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+
+	if svc.Spec.Type != api.ServiceTypeNodePort {
+		return errors.New().WithMessage("ServiceType Not NodePort").Err()
+	}
+
+	// We do not open any firewall for node ports, so we can not check the traffic
+	// for testing. So check if all the ports are assigned a nodeport.
+	time.Sleep(time.Second * 120)
+	for _, port := range svc.Spec.Ports {
+		if port.NodePort <= 0 {
+			return errors.New().WithMessagef("NodePort not Assigned for Port %v -> %v", port.Port, port.NodePort).Err()
+		}
+	}
+
+	return nil
+}

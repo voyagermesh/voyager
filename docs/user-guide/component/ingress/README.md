@@ -27,8 +27,9 @@ hosting. This plugin also support configurable application ports with all the fe
   - [Wildcard Name based virtual hosting](named-virtual-hosting.md),
   - Persistent sessions, Loadbalancer stats,
   - [Route Traffic to StatefulSet Pods Based on Host Name](statefulset-pod.md)
-  - [Weighted Loadbalancing for Canary Deployment](docs/user-guide/component/ingress/weighted.md)
-  - [Customize generated HAProxy config via BackendRule](docs/user-guide/component/ingress/backend-rule.md)
+  - [Weighted Loadbalancing for Canary Deployment](weighted.md)
+  - [Customize generated HAProxy config via BackendRule](backend-rule.md)
+  - [Add Custom Annotation to LoadBalancer Service and Pods](annotations.md)
 
 ### Comparison with Kubernetes
 | Feauture | Kube Ingress | AppsCode Ingress |
@@ -113,6 +114,10 @@ ingress.appscode.com/stats.secretName      = if the stats is on then this kubern
                                       and `password` which will be used.
 
 
+ingress.appscode.com/annotations.service   = Json encoded annotations to be applied in LoadBalancer Service
+
+
+ingress.appscode.com/annotations.pod       = Json encoded annotations to be applied in LoadBalancer Pods
 
 The following annotations can be applied in an Ingress if we want to manage Certificate with the
 same ingress resource. Learn more by reading the certificate doc.
