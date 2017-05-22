@@ -8,7 +8,7 @@ Voyager is a [HAProxy](http://www.haproxy.org/) backed [secure](#certificate) L7
 
 
 ## Ingress
-Voyager provides L7 and L4 loadbalancing using a custom Kubernetes [Ingress](docs/user-guide/component/ingress) resource. This is built on top of the [HAProxy](http://www.haproxy.org/), to support high availability, sticky sessions, name and path-based virtual hosting.
+Voyager provides L7 and L4 loadbalancing using a custom Kubernetes [Ingress](docs/user-guide/component/ingress) resource. This is built on top of the [HAProxy](http://www.haproxy.org/) to support high availability, sticky sessions, name and path-based virtual hosting.
 This also support configurable application ports with all the options available in a standard Kubernetes [Ingress](https://kubernetes.io/docs/user-guide/ingress/). Here 
 is a [complex ingress example](hack/example/ingress.yaml) that shows how various features can be used.
 You can find the generated HAProxy Configuration [here](hack/example/haproxy_generated.cfg).
