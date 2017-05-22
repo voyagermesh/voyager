@@ -35,7 +35,7 @@ Now Create Your Ingress/Certificated.
                   // ingress with annotation kubernetes.io/ingress.class=voyager.
 ```
 
-Voyager can run HAProxy in 2 different modes. `cloude-provider` and `cluster-name` flags should be set appropriately depending on the mode. These modes are:
+Voyager can run HAProxy in 3 different modes. `cloude-provider` and `cluster-name` flags should be set appropriately depending on the mode. These modes are:
 
 - HostPort: In this mode, HAProxy is run as DaemonSet using nodeSelector and hostNetwork:true. As a result,
 HAProxy's IP will be same as the IP address for nodes where it is running. This is supported on any cloud provider
@@ -45,6 +45,9 @@ HAProxy's IP will be same as the IP address for nodes where it is running. This 
 
 - LoadBalancer: In this mode, a Kubernetes LoadBalancer type service is used to expose HAProxy to the internet.
 This is supported for cloud providers known to Kubernetes (`aws`, `gce` and `azure`), `--cloud-provider` and `--cluster-name` is required to properly setup this loadbalancer. This mode supports reserved ip on GCE.
+
+- NodePort: In this mode, a Kubernetes NodePort type service is used to expose HAProxy to the internet. This is supported on any cloud provider including
+baremetal clusters. Users are required to configure firewall as needed.
 
 You can choose the mode in your Ingress YAML using label: [ingress.appscode.com/type](/docs/user-guide/component/ingress#configurations-options)
 
