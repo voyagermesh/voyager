@@ -1861,6 +1861,207 @@ func (ing *IngressTestSuit) TestIngressBackendRule() error {
 	return nil
 }
 
+func (ing *IngressTestSuit) TestIngressAnnotations() error {
+	baseIngress := &aci.Ingress{
+		ObjectMeta: api.ObjectMeta{
+			Name:      testIngressName(),
+			Namespace: TestNamespace,
+			Annotations: map[string]string{
+				ingress.LoadBalancerServiceAnnotation: `{"foo": "bar", "service-annotation": "set"}`,
+				ingress.LoadBalancerPodsAnnotation:    `{"foo": "bar", "pod-annotation": "set"}`,
+			},
+		},
+		Spec: aci.ExtendedIngressSpec{
+			Rules: []aci.ExtendedIngressRule{
+				{
+					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
+						HTTP: &aci.HTTPExtendedIngressRuleValue{
+							Paths: []aci.HTTPExtendedIngressPath{
+								{
+									Backend: aci.ExtendedIngressBackend{
+										ServiceName: testServerSvc.Name,
+										ServicePort: intstr.FromInt(80),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, err := ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if ing.t.Config.Cleanup {
+			ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		}
+	}()
+
+	// Wait sometime to loadbalancer be opened up.
+	time.Sleep(time.Second * 10)
+	var svc *api.Service
+	for i := 0; i < maxRetries; i++ {
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for service to be created")
+	}
+	if err != nil {
+		return err
+	}
+
+	if svc.Annotations == nil {
+		return errors.New().WithMessage("Service annotations nil").Err()
+	}
+
+	if val := svc.Annotations["foo"]; val != "bar" {
+		return errors.New().WithMessage("Service annotations didn't matched").Err()
+	}
+
+	if val := svc.Annotations["service-annotation"]; val != "set" {
+		return errors.New().WithMessage("Service annotations didn't matched").Err()
+	}
+
+	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
+	for i := 0; i < maxRetries; i++ {
+		_, err = ing.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for endpoints to be created")
+	}
+	if err != nil {
+		return err
+	}
+
+	pods, err := ing.t.KubeClient.Core().Pods(svc.Namespace).List(api.ListOptions{
+		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
+	})
+	if err == nil {
+		for _, pod := range pods.Items {
+			if pod.Annotations == nil {
+				return errors.New().WithCause(err).WithMessagef("Pods %s annotations nil", pod.Name).Err()
+			}
+
+			if val := pod.Annotations["foo"]; val != "bar" {
+				return errors.New().WithMessage("Service annotations didn't matched").Err()
+			}
+
+			if val := pod.Annotations["pod-annotation"]; val != "set" {
+				return errors.New().WithMessage("Service annotations didn't matched").Err()
+			}
+		}
+	}
+
+	// Check Service Annotation Change only Update Service
+	ings, err := ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+	if err != nil {
+		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
+	}
+	ings.Annotations[ingress.LoadBalancerServiceAnnotation] = `{"bar": "foo", "second-service-annotation": "set"}`
+	ings, err = ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Update(ings)
+	if err != nil {
+		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
+	}
+
+	time.Sleep(time.Second * 10)
+	svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+	if err != nil {
+		return errors.New().WithCause(err).WithMessage("Service encountered an error").Err()
+	}
+	if svc.Annotations == nil {
+		return errors.New().WithMessage("Service annotations nil").Err()
+	}
+	if _, ok := svc.Annotations["foo"]; ok {
+		return errors.New().WithMessage("Service annotations didn't matched").Err()
+	}
+	if val := svc.Annotations["second-service-annotation"]; val != "set" {
+		return errors.New().WithMessage("Service annotations didn't matched").Err()
+	}
+	if val := svc.Annotations["bar"]; val != "foo" {
+		return errors.New().WithMessage("Service annotations didn't matched").Err()
+	}
+
+	pods, err = ing.t.KubeClient.Core().Pods(svc.Namespace).List(api.ListOptions{
+		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
+	})
+	if err == nil {
+		for _, pod := range pods.Items {
+			if pod.Annotations == nil {
+				return errors.New().WithCause(err).WithMessagef("Pods %s annotations nil", pod.Name).Err()
+			}
+
+			if val := pod.Annotations["foo"]; val != "bar" {
+				return errors.New().WithMessage("Pod annotations didn't matched").Err()
+			}
+
+			if val := pod.Annotations["pod-annotation"]; val != "set" {
+				return errors.New().WithMessage("Pod annotations didn't matched").Err()
+			}
+		}
+	}
+
+	// Check Pod Annotation Change only Update Pods
+	ings, err = ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+	if err != nil {
+		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
+	}
+	ings.Annotations[ingress.LoadBalancerPodsAnnotation] = `{"bar": "foo", "second-pod-annotation": "set"}`
+	ings, err = ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Update(ings)
+	if err != nil {
+		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
+	}
+
+	time.Sleep(time.Second * 10)
+	svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+	if err != nil {
+		return errors.New().WithCause(err).WithMessage("Service encountered an error").Err()
+	}
+	if svc.Annotations == nil {
+		return errors.New().WithMessage("Service annotations nil").Err()
+	}
+	if _, ok := svc.Annotations["foo"]; ok {
+		return errors.New().WithMessage("Service annotations didn't matched").Err()
+	}
+	if val := svc.Annotations["second-service-annotation"]; val != "set" {
+		return errors.New().WithMessage("Service annotations didn't matched").Err()
+	}
+	if val := svc.Annotations["bar"]; val != "foo" {
+		return errors.New().WithMessage("Service annotations didn't matched").Err()
+	}
+
+	pods, err = ing.t.KubeClient.Core().Pods(svc.Namespace).List(api.ListOptions{
+		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
+	})
+	if err == nil {
+		for _, pod := range pods.Items {
+			if pod.Annotations == nil {
+				return errors.New().WithCause(err).WithMessagef("Pods %s annotations nil", pod.Name).Err()
+			}
+
+			if _, ok := pod.Annotations["foo"]; ok {
+				return errors.New().WithMessage("Pod annotations didn't matched").Err()
+			}
+
+			if val := pod.Annotations["bar"]; val != "foo" {
+				return errors.New().WithMessage("Pod annotations didn't matched").Err()
+			}
+
+			if val := pod.Annotations["second-pod-annotation"]; val != "set" {
+				return errors.New().WithMessage("Pod annotations didn't matched").Err()
+			}
+		}
+	}
+	return nil
+}
+
 func (ing *IngressTestSuit) TestIngressNodePort() error {
 	baseDaemonIngress := &aci.Ingress{
 		ObjectMeta: api.ObjectMeta{

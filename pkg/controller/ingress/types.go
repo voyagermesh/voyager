@@ -1,6 +1,7 @@
 package ingress
 
 import (
+	"encoding/json"
 	"strconv"
 	"strings"
 	"sync"
@@ -8,6 +9,7 @@ import (
 	aci "github.com/appscode/k8s-addons/api"
 	acs "github.com/appscode/k8s-addons/client/clientset"
 	"github.com/appscode/k8s-addons/pkg/stash"
+	"github.com/appscode/log"
 	"k8s.io/kubernetes/pkg/client/cache"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/cloudprovider"
@@ -16,16 +18,20 @@ import (
 const (
 	VoyagerPrefix = "voyager-"
 
-	stickySession = "ingress.appscode.com/stickySession"
+	AnnotationPrefix = "ingress.appscode.com/"
+
+	stickySession = AnnotationPrefix + "stickySession"
 
 	// LB stats options
 	StatPort    = 1936
-	StatsOn     = "ingress.appscode.com/stats"
-	StatsSecret = "ingress.appscode.com/stats.secretName"
+	StatsOn     = AnnotationPrefix + "stats"
+	StatsSecret = AnnotationPrefix + "stats.secretName"
+
+	LBName     = AnnotationPrefix + "name"
 
 	// Daemon, Persistent, LoadBalancer
-	LBName     = "ingress.appscode.com/name"
-	LBType     = "ingress.appscode.com/type"
+	LBType     = AnnotationPrefix + "type"
+
 	LBNodePort = "NodePort"
 	LBHostPort = "HostPort"
 	// Deprecated, use LBHostPort
@@ -33,20 +39,31 @@ const (
 	LBLoadBalancer = "LoadBalancer" // default
 
 	// Runs on a specific set of a hosts via DaemonSet. This is needed to work around the issue that master node is registered but not scheduable.
-	DaemonNodeSelector = "ingress.appscode.com/daemon.nodeSelector"
+	DaemonNodeSelector = AnnotationPrefix + "daemon.nodeSelector"
 
 	// Replicas specify # of HAProxy pods run (default 1)
-	Replicas = "ingress.appscode.com/replicas"
+	Replicas = AnnotationPrefix + "replicas"
 
 	// LoadBalancer mode exposes HAProxy via a type=LoadBalancer service. This is the original version implemented by @sadlil
 	// Uses nodeport and Cloud LoadBalancer exists beyond single HAProxy run
-	LoadBalancerIP      = "ingress.appscode.com/ip"      // external_ip or loadbalancer_ip "" or a "ipv4"
-	LoadBalancerPersist = "ingress.appscode.com/persist" // "" or a "true"
+	LoadBalancerIP      = AnnotationPrefix + "ip"      // external_ip or loadbalancer_ip "" or a "ipv4"
+	LoadBalancerPersist = AnnotationPrefix + "persist" // "" or a "true"
 
 	// LoadBalancerBackendWeightKey is the weight value of a Pod that was
 	// addressed by the Endpoint, this weight will be added to server backend.
 	// Traffic will be forwarded according to there weight.
-	LoadBalancerBackendWeight = "ingress.appscode.com/backend.weight"
+	LoadBalancerBackendWeight = AnnotationPrefix + "backend.weight"
+
+	// https://github.com/appscode/voyager/issues/103
+	// LoadBalancerServiceAnnotation is user provided annotations map that will be
+	// applied to the service of that LoadBalancer.
+	// ex: "ingress.appscode.com/service.annotation": {"key": "val"}
+	LoadBalancerServiceAnnotation = AnnotationPrefix + "annotations.service"
+
+	// LoadBalancerPodsAnnotation is user provided annotations map that will be
+	// applied to the Pods (Deployment/ DaemonSet) of that LoadBalancer.
+	// ex: "ingress.appscode.com/service.annotation": {"key": "val"}
+	LoadBalancerPodsAnnotation = AnnotationPrefix + "annotations.pod"
 )
 
 type annotation map[string]string
@@ -98,6 +115,35 @@ func (s annotation) LoadBalancerPersist() bool {
 	return strings.ToLower(v) == "true"
 }
 
+func (s annotation) ServiceAnnotations() (map[string]string, bool) {
+	return getTargetAnnotations(s, LoadBalancerServiceAnnotation)
+}
+
+func (s annotation) PodsAnnotations() (map[string]string, bool) {
+	return getTargetAnnotations(s, LoadBalancerPodsAnnotation)
+}
+
+func getTargetAnnotations(s annotation, key string) (map[string]string, bool) {
+	ans := make(map[string]string)
+	if v, ok := s[key]; ok {
+		v = strings.TrimSpace(v)
+		if err := json.Unmarshal([]byte(v), &ans); err != nil {
+			log.Errorln("Failed to Unmarshal", key, err)
+			return ans, false
+		}
+
+		// Filter all annotation keys that starts with ingress.appscode.com
+		filteredMap := make(map[string]string)
+		for k, v := range ans {
+			if !strings.HasPrefix(strings.TrimSpace(k), AnnotationPrefix) {
+				filteredMap[k] = v
+			}
+		}
+		return filteredMap, true
+	}
+	return ans, false
+}
+
 type EngressController struct {
 	// kubernetes client
 	KubeClient        clientset.Interface
@@ -147,6 +193,8 @@ type KubeOptions struct {
 	DaemonNodeSelector  map[string]string
 	LoadBalancerIP      string
 	LoadBalancerPersist bool
+
+	annotations annotation
 }
 
 func (o KubeOptions) SupportsLoadBalancerType() bool {

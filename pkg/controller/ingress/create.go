@@ -146,6 +146,12 @@ func (lbc *EngressController) createHostPortSvc() error {
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
 
+	if ans, ok := lbc.Options.annotations.ServiceAnnotations(); ok {
+		for k, v := range ans {
+			svc.Annotations[k] = v
+		}
+	}
+
 	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Create(svc)
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -246,12 +252,17 @@ func (lbc *EngressController) createHostPortPods() error {
 		}
 		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, p)
 	}
-	log.Infoln("creating deamonsets controller")
+
+	if ans, ok := lbc.Options.annotations.PodsAnnotations(); ok {
+		daemon.Spec.Template.Annotations = ans
+	}
+
+	log.Infoln("creating DaemonSets controller")
 	_, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Create(daemon)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
-	log.V(5).Infoln("DeamonSet Created with\n", yaml.ToString(daemon))
+	log.V(5).Infoln("DaemonSet Created with\n", yaml.ToString(daemon))
 	return nil
 }
 
@@ -283,6 +294,12 @@ func (lbc *EngressController) createNodePortSvc() error {
 			TargetPort: intstr.FromInt(port),
 		}
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
+	}
+
+	if ans, ok := lbc.Options.annotations.ServiceAnnotations(); ok {
+		for k, v := range ans {
+			svc.Annotations[k] = v
+		}
 	}
 
 	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Create(svc)
@@ -355,6 +372,11 @@ func (lbc *EngressController) createNodePortPods() error {
 		}
 		d.Spec.Template.Spec.Containers[0].Ports = append(d.Spec.Template.Spec.Containers[0].Ports, p)
 	}
+
+	if ans, ok := lbc.Options.annotations.PodsAnnotations(); ok {
+		d.Spec.Template.Annotations = ans
+	}
+
 	_, err := lbc.KubeClient.Extensions().Deployments(lbc.Config.Namespace).Create(d)
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -389,6 +411,12 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 			TargetPort: intstr.FromInt(port),
 		}
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
+	}
+
+	if ans, ok := lbc.Options.annotations.ServiceAnnotations(); ok {
+		for k, v := range ans {
+			svc.Annotations[k] = v
+		}
 	}
 
 	switch lbc.Options.ProviderName {
