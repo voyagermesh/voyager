@@ -98,8 +98,8 @@ ingress.appscode.com/daemon.nodeSelector   = only applicatble when lb.appscode.c
                                       The format of providing nodeSelector is -
                                       `foo=bar,foo2=bar2`
 
-ingress.appscode.com/ip                    = This only applies to "gce" and "gke" cloud providers. This should be a static IP that will be
-                                      assigned loadbalancer used to expose HAProxy.
+ingress.appscode.com/ip                    = This only applies to "gce" and "gke" cloud providers. If set, it will be
+                                      assigned loadbalancer used to expose HAProxy. Usually this is set to a static IP preserve DNS configuration.
 
 ingress.appscode.com/persist               = This only applies to "aws" cloud provider. If set to true, AWS load balancer will
                                       not be deleted when the ingress resource is deleted.
