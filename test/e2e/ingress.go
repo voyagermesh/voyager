@@ -2068,7 +2068,7 @@ func (ing *IngressTestSuit) TestIngressNodePort() error {
 			Name:      testIngressName(),
 			Namespace: TestNamespace,
 			Annotations: map[string]string{
-				ingress.LBType:             ingress.LBNodePort,
+				ingress.LBType: ingress.LBNodePort,
 			},
 		},
 		Spec: aci.ExtendedIngressSpec{
@@ -2103,9 +2103,11 @@ func (ing *IngressTestSuit) TestIngressNodePort() error {
 	}()
 
 	// Wait sometime to loadbalancer be opened up.
+	var svc *api.Service
 	time.Sleep(time.Second * 10)
 	for i := 0; i < maxRetries; i++ {
-		_, err := ing.t.KubeClient.Core().Services(baseDaemonIngress.Namespace).Get(ingress.VoyagerPrefix + baseDaemonIngress.Name)
+		var err error
+		svc, err = ing.t.KubeClient.Core().Services(baseDaemonIngress.Namespace).Get(ingress.VoyagerPrefix + baseDaemonIngress.Name)
 		if err == nil {
 			break
 		}
@@ -2116,25 +2118,17 @@ func (ing *IngressTestSuit) TestIngressNodePort() error {
 		return errors.New().WithCause(err).Err()
 	}
 
-	serverAddr, err := ing.getDaemonURLs(baseDaemonIngress)
-	if err != nil {
-		return err
+	if svc.Spec.Type != api.ServiceTypeNodePort {
+		return errors.New().WithMessage("ServiceType Not NodePort").Err()
 	}
-	time.Sleep(time.Second * 20)
-	log.Infoln("Loadbalancer created, calling http endpoints for test, Total url found", len(serverAddr))
-	for _, url := range serverAddr {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(50)
-		if err != nil {
-			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
-		}
-		log.Infoln("Response", *resp)
-		if resp.Method != http.MethodGet {
-			return errors.New().WithMessage("Method did not matched").Err()
-		}
 
-		if resp.Path != "/testpath/ok" {
-			return errors.New().WithMessage("Path did not matched").Err()
+	// We do not open any firewall for node ports, so we can not check the traffic
+	// for testing. So check if all the ports are assigned a nodeport.
+	for _, port := range svc.Spec.Ports {
+		if port.NodePort <= 0 {
+			return errors.New().WithMessagef("NodePort not Assigned for Port %v -> %v", port.Port, port.NodePort).Err()
 		}
 	}
+
 	return nil
 }
