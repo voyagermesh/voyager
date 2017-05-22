@@ -85,26 +85,24 @@ ingress.appscode.com/stickySession         = indicates the session affinity for 
                                       session affinity will apply to all the rulses set.
                                       defaults to false
 
-ingress.appscode.com/type                  = indicates loadbalancer type to run via Kubernets Service
-                                      Load balancer or in Node Port Mode.
-                                      Values in:
+ingress.appscode.com/type                  = indicates type of service used to expose HAproxy to the internet. Possible values are:
                                          - LoadBalancer (default)
                                          - HostPort (previously called Daemon)
+                                         - NodePort
 
-ingress.appscode.com/daemon.nodeSelector       = only applicatble when lb.appscode.com/type is set to HostPort (previously called Daemon),
+ingress.appscode.com/replicas              = indicates number of replicas of HAProxy is run. The default value is 1.
+
+ingress.appscode.com/daemon.nodeSelector   = only applicatble when lb.appscode.com/type is set to HostPort (previously called Daemon),
                                       this nodeSelector will indicate which host the load balancer
                                       needs to run.
                                       The format of providing nodeSelector is -
                                       `foo=bar,foo2=bar2`
 
+ingress.appscode.com/ip                    = This only applies to "gce" and "gke" cloud providers. If set, it will be
+                                      assigned loadbalancer used to expose HAProxy. Usually this is set to a static IP preserve DNS configuration.
 
-ingress.appscode.com/ip                    = provide ip to run loadbalancer on the ip, it will only work
-                                      if the ip is available to the clod provider. Works best with
-                                      a persistance ip from the underlying cloud provider
-                                      and set the ip as the value.
-
-ingress.appscode.com/loadbalancer.persist  = if set to true load balancer will run in node port mode.
-
+ingress.appscode.com/persist               = This only applies to "aws" cloud provider. If set to true, AWS load balancer will
+                                      not be deleted when the ingress resource is deleted.
 
 ingress.appscode.com/stats                 = if set to true it will open HAProxy stats in IP's 1936 port.
                                       defaults to false.
