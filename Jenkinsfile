@@ -2,7 +2,6 @@ node("master") {
     def PWD = pwd()
     def project_dir = "${PWD}/src/github.com/appscode/voyager"
     def IMAGE = "appscode/voyager"
-    def TAG = "jenkins-latest"
     def INTERNAL_TAG
     stage("set env") {
         env.GOPATH = "${PWD}"
@@ -42,8 +41,7 @@ node("master") {
                 ).trim()
             }
             stage("docker push") {
-                sh "docker tag $IMAGE:$INTERNAL_TAG $IMAGE:$TAG"
-                sh "docker push $IMAGE:$TAG"
+                sh "docker push $IMAGE:$INTERNAL_TAG"
             }
         }
         currentBuild.result = 'SUCCESS'
@@ -51,6 +49,6 @@ node("master") {
         currentBuild.result = 'FAILURE'
     } finally {
         deleteDir()
-        sh "docker rmi -f $IMAGE:$INTERNAL_TAG $IMAGE:$TAG"
+        sh "docker rmi -f $IMAGE:$INTERNAL_TAG"
     }
 }
