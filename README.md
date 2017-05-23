@@ -29,7 +29,7 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
   - [Add Custom Annotation to LoadBalancer Service and Pods](docs/user-guide/component/ingress/annotations.md)
 
 ### Comparison with Kubernetes
-| Feauture | Kube Ingress | AppsCode Ingress |
+| Feauture | [Kube Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) | AppsCode Ingress |
 |----------|--------------|------------------|
 | HTTP Loadbalancing| :white_check_mark: | :white_check_mark: |
 | TCP Loadbalancing | :x: | :white_check_mark: |
