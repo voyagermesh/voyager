@@ -5,6 +5,7 @@ node("master") {
     def INTERNAL_TAG
     def CLOUD_PROVIDER = "gce"
     def CLUSTER_NAME = "clusterc"
+    def NODE
 
     stage("set env") {
         env.GOPATH = "${PWD}"
@@ -44,6 +45,12 @@ node("master") {
             }
             stage("docker push") {
                 sh "docker push $IMAGE:$INTERNAL_TAG"
+            }
+            stage("get node name") {
+                NODE = sh(
+                        script: "kubectl get nodes --selector=kubernetes.io/role=node -o jsonpath='{.items[0].metadata.name}'",
+                        returnStdout: true
+                ).trim()
             }
             stage("deploy in cluster") {
                 deployment_yaml = "apiVersion: extensions/v1beta1\n" +
@@ -91,7 +98,7 @@ node("master") {
                 sh "echo '$deployment_yaml' | kubectl create -f -"
             }
             stage("integration test") {
-                sh "./hack/make.py test integration -cloud-provider=$CLOUD_PROVIDER -cluster-name=$CLUSTER_NAME"
+                sh "./hack/make.py test integration -cloud-provider=$CLOUD_PROVIDER -cluster-name=$CLUSTER_NAME -daemon-host-name=$NODE"
             }
         }
         currentBuild.result = 'SUCCESS'
