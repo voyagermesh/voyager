@@ -3,8 +3,8 @@ node("master") {
     def project_dir = "${PWD}/src/github.com/appscode/voyager"
     def IMAGE = "appscode/voyager"
     def INTERNAL_TAG
-    def cloud_provier = "gce"
-    def cluster_name = "clusterc"
+    def CLOUD_PROVIDER = "gce"
+    def CLUSTER_NAME = "clusterc"
 
     stage("set env") {
         env.GOPATH = "${PWD}"
@@ -17,9 +17,9 @@ node("master") {
             sh 'sudo apt update &&\
         sudo apt install -y software-properties-common python-software-properties python-dev libyaml-dev python-pip build-essential curl &&\
         sudo pip install git+https://github.com/ellisonbg/antipackage.git#egg=antipackage &&\
-        go get -u golang.org/x/tools/cmd/goimports &&\
-        go get -u github.com/sgotti/glide-vc &&\
-        curl https://glide.sh/get | sh'
+        go get -u golang.org/x/tools/cmd/goimports'
+//      go get -u github.com/sgotti/glide-vc &&\
+//      curl https://glide.sh/get | sh'
         }
         dir("${project_dir}") {
             stage("checkout") {
@@ -28,9 +28,9 @@ node("master") {
             stage("builddeps") {
                 sh "sudo ./hack/builddeps.sh"
             }
-            stage("dependency") {
-                sh "glide slow"
-            }
+//          stage("dependency") {
+//              sh "glide slow"
+//          }
             stage("build binary") {
                 sh "./hack/make.py"
             }
@@ -91,13 +91,11 @@ node("master") {
                         "    targetPort: zero\n" +
                         "  selector:\n" +
                         "    run: voyager-operator"
-                sh "echo $deployment_yaml | kubectl create -f -"
-                println($deployment_yaml)
+                sh "echo '$deployment_yaml' | kubectl create -f -"
             }
-            stage("e2e test" {
-                sh "./hack/make.py test e2e -cloud-provider=$cloud_provier -cluster-name=$cluster_name"
-            })
-
+            stage("integration test") {
+                sh "./hack/make.py test integration -cloud-provider=$CLOUD_PROVIDER -cluster-name=$CLUSTER_NAME"
+            }
         }
         currentBuild.result = 'SUCCESS'
     } catch (Exception err) {
