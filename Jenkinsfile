@@ -100,7 +100,7 @@ node("master") {
     } finally {
         deleteDir()
         sh "kubectl delete deployments voyager-operator"
-        sh "kubectl delete kubectl delete svc voyager-operator"
+        sh "kubectl delete svc voyager-operator"
         sh "docker rmi -f $IMAGE:$INTERNAL_TAG"
     }
 }
