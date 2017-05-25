@@ -21,7 +21,7 @@ spec:
 
 ```
 
-For this configuration, the loadbalancer will listen to `9899` port for incoming connections, and will
+For this configuration, the loadbalancer will listen to `9898` port for incoming connections, and will
 pass any request coming to it to the desired backend.
 
 > For one Ingress Type you cannot have multiple rules listening to same port, even if they do not have
