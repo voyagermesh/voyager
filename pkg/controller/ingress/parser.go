@@ -280,7 +280,8 @@ func (lbc *EngressController) parseSpec() {
 
 	//parse stat
 	if lbc.Parsed.Stats {
-		lbc.Options.Ports = append(lbc.Options.Ports, StatPort)
+		// TODO Do not add Ports when we create a *-stats service for stats endpoint
+		lbc.Options.Ports = append(lbc.Options.Ports, lbc.Parsed.StatsPort)
 	}
 }
 
@@ -298,6 +299,7 @@ func (lbc *EngressController) parseOptions() {
 
 	lbc.Parsed.Stats = lbc.Options.annotations.Stats()
 	if lbc.Parsed.Stats {
+		lbc.Parsed.StatsPort = lbc.Options.annotations.StatsPort()
 		secret, err := lbc.KubeClient.Core().Secrets(lbc.Config.ObjectMeta.Namespace).Get(lbc.Options.annotations.StatsSecretName())
 		if err == nil {
 			lbc.Parsed.StatsUserName = string(secret.Data["username"])

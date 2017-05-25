@@ -59,7 +59,7 @@ defaults
 
 {% if Stats %}
 listen stats
-    bind *:1936
+    bind *:{{ StatsPort }}
     mode http
     stats enable
     stats realm Haproxy\ Statistics

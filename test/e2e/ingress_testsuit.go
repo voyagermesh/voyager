@@ -9,7 +9,13 @@ import (
 	"github.com/appscode/log"
 	"k8s.io/kubernetes/pkg/api"
 	k8serr "k8s.io/kubernetes/pkg/api/errors"
+	"sync"
+	"runtime"
 )
+
+func init()  {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+}
 
 type IngressTestSuit struct {
 	t TestSuit
@@ -64,12 +70,15 @@ func (i *IngressTestSuit) setUp() error {
 
 func (i *IngressTestSuit) cleanUp() {
 	if i.t.Config.Cleanup {
-		i.t.KubeClient.Core().Services(testServerSvc.Namespace).Delete(testServerRc.Name, &api.DeleteOptions{
-			OrphanDependents: &i.t.Config.Cleanup,
-		})
-		i.t.KubeClient.Core().ReplicationControllers(testServerSvc.Namespace).Delete(testServerSvc.Name, &api.DeleteOptions{
-			OrphanDependents: &i.t.Config.Cleanup,
-		})
+		log.Infoln("Cleaning up Test Resources")
+		i.t.KubeClient.Core().Services(testServerSvc.Namespace).Delete(testServerSvc.Name, &api.DeleteOptions{})
+		rc, err := i.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name)
+		if err == nil {
+			rc.Spec.Replicas = 0
+			i.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Update(rc)
+			time.Sleep(time.Second*5)
+		}
+		i.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Delete(testServerRc.Name, &api.DeleteOptions{})
 	}
 }
 
@@ -91,20 +100,56 @@ func (i *IngressTestSuit) runTests() error {
 		}
 	}
 
+	startTime := time.Now()
+
+	errChan := make(chan error)
+	var wg sync.WaitGroup
 	for _, name := range serializedMethodName {
-		log.Infoln("================== Running Test ====================", name)
 		shouldCall := ingType.MethodByName(name)
 		if shouldCall.IsValid() {
-			results := shouldCall.Call([]reflect.Value{})
-			if len(results) == 1 {
-				err, castOk := results[0].Interface().(error)
-				if castOk {
-					return err
+			wg.Add(1)
+			// Run Test in separate goroutine
+			go func (fun reflect.Value, n string) {
+				defer func() {
+					log.Infoln("Test", n, "FINISHED")
+					wg.Done()
+				}()
+
+				log.Infoln("================== Running Test ====================", n)
+				results := fun.Call([]reflect.Value{})
+				if len(results) == 1 {
+					err, castOk := results[0].Interface().(error)
+					if castOk {
+						log.Infoln("Test", n, "FAILED with Cause", err)
+						errChan <- errors.FromErr(err).WithMessagef("Test Name %s", n).Err()
+					}
 				}
-			}
-			log.Infoln("Wait a bit for things to be clean up inside cluster")
-			time.Sleep(time.Second * 20)
+			}(shouldCall, name)
 		}
+	}
+
+	// ReadLoop
+	errs := make([]error, 0)
+	go func() {
+		for err := range errChan {
+			errs = append(errs, err)
+		}
+	}()
+
+	// Wait For All to Be DONE
+	wg.Wait()
+
+	log.Infoln("======================================")
+	log.Infoln("TOTAL", len(serializedMethodName))
+	log.Infoln("PASSED", len(serializedMethodName) - len(errs))
+	log.Infoln("FAILED", len(errs))
+	log.Infoln("Time Elapsed", time.Since(startTime).Minutes(), "minutes")
+	log.Infoln("======================================")
+	if len(errs) > 0 {
+		for _, err := range errs {
+			log.Infoln("Log\n", err)
+		}
+		return errs[0]
 	}
 	return nil
 }

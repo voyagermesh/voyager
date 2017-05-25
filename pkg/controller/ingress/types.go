@@ -23,20 +23,21 @@ const (
 	stickySession = AnnotationPrefix + "stickySession"
 
 	// LB stats options
-	StatPort    = 1936
-	StatsOn     = AnnotationPrefix + "stats"
-	StatsSecret = AnnotationPrefix + "stats.secretName"
+	StatsOn          = AnnotationPrefix + "stats"
+	StatsPort        = AnnotationPrefix + "stats.port"
+	StatsSecret      = AnnotationPrefix + "stats.secretName"
+	DefaultStatsPort = 1936
 
 	LBName = AnnotationPrefix + "name"
 
 	// Daemon, Persistent, LoadBalancer
 	LBType = AnnotationPrefix + "type"
 
-	LBNodePort = "NodePort"
-	LBHostPort = "HostPort"
-	// Deprecated, use LBHostPort
-	LBDaemon       = "Daemon"
-	LBLoadBalancer = "LoadBalancer" // default
+	LBTypeNodePort = "NodePort"
+	LBTypeHostPort = "HostPort"
+	// Deprecated, use LBTypeHostPort
+	LBTypeDaemon       = "Daemon"
+	LBTypeLoadBalancer = "LoadBalancer" // default
 
 	// Runs on a specific set of a hosts via DaemonSet. This is needed to work around the issue that master node is registered but not scheduable.
 	DaemonNodeSelector = AnnotationPrefix + "daemon.nodeSelector"
@@ -83,11 +84,22 @@ func (s annotation) StatsSecretName() string {
 	return v
 }
 
+func (s annotation) StatsPort() int {
+	v, ok := s[StatsPort]
+	if !ok {
+		return DefaultStatsPort
+	}
+	if port, err := strconv.Atoi(v); err == nil {
+		return port
+	}
+	return DefaultStatsPort
+}
+
 func (s annotation) LBType() string {
 	if v, ok := s[LBType]; ok {
 		return v
 	}
-	return LBLoadBalancer
+	return LBTypeLoadBalancer
 }
 
 func (s annotation) Replicas() int32 {
@@ -219,6 +231,7 @@ type HAProxyOptions struct {
 	// Basic auth to lb stats
 	StatsUserName string
 	StatsPassWord string
+	StatsPort     int
 
 	DefaultBackend *Backend
 	HttpsService   []*Service

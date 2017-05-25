@@ -23,7 +23,14 @@ func (ing *IngressTestSuit) getURLs(baseIngress *aci.Ingress) ([]string, error) 
 		for i := 0; i < maxRetries; i++ {
 			var outputs []byte
 			log.Infoln("Running Command", "`minikube", "service", ingresscontroller.VoyagerPrefix+baseIngress.Name+" --url`")
-			outputs, err = exec.Command("/usr/local/bin/minikube", "service", ingresscontroller.VoyagerPrefix+baseIngress.Name, "--url").CombinedOutput()
+			outputs, err = exec.Command(
+				"/usr/local/bin/minikube",
+				"service",
+				ingresscontroller.VoyagerPrefix+baseIngress.Name,
+				"--url",
+				"-n",
+				baseIngress.Namespace,
+			).CombinedOutput()
 			if err == nil {
 				log.Infoln("Output\n", string(outputs))
 				for _, output := range strings.Split(string(outputs), "\n") {
@@ -153,7 +160,7 @@ func (ing *IngressTestSuit) getDaemonURLs(baseIngress *aci.Ingress) ([]string, e
 }
 
 func testIngressName() string {
-	return "test-ing-" + randString(5)
+	return "test-ings-" + randString(8)
 }
 
 var alphanums = []rune("abcdefghijklmnopqrstuvwxz0123456789")

@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/facebookgo/stack"
+	"fmt"
 )
 
 // traceableError contains the error types that holds the errors
@@ -55,6 +56,7 @@ var defaultFormatter = func(e error) string {
 			buf.WriteString("\nCaused By:\n")
 			buf.WriteString(err.cause.Error())
 		}
+		fmt.Println(err.msg)
 		if err.trace != nil {
 			buf.WriteString("\nStack trace:\n")
 			buf.WriteString(err.trace.String())
