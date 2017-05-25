@@ -74,7 +74,7 @@ func (lbc *EngressController) createConfigMap() error {
 }
 
 func (lbc *EngressController) createLB() error {
-	if lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort {
+	if lbc.Options.LBType == LBTypeDaemon || lbc.Options.LBType == LBTypeHostPort {
 		err := lbc.createHostPortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -84,7 +84,7 @@ func (lbc *EngressController) createLB() error {
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
-	} else if lbc.Options.LBType == LBNodePort {
+	} else if lbc.Options.LBType == LBTypeNodePort {
 		err := lbc.createNodePortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -124,7 +124,7 @@ func (lbc *EngressController) createHostPortSvc() error {
 			Namespace: lbc.Config.Namespace,
 			Annotations: map[string]string{
 				LBName: lbc.Config.GetName(),
-				LBType: LBHostPort,
+				LBType: LBTypeHostPort,
 			},
 		},
 
@@ -275,7 +275,7 @@ func (lbc *EngressController) createNodePortSvc() error {
 			Namespace: lbc.Config.Namespace,
 			Annotations: map[string]string{
 				LBName: lbc.Config.GetName(),
-				LBType: LBNodePort,
+				LBType: LBTypeNodePort,
 			},
 		},
 		Spec: kapi.ServiceSpec{
@@ -393,7 +393,7 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 			Namespace: lbc.Config.Namespace,
 			Annotations: map[string]string{
 				LBName: lbc.Config.GetName(),
-				LBType: LBLoadBalancer,
+				LBType: LBTypeLoadBalancer,
 			},
 		},
 		Spec: kapi.ServiceSpec{

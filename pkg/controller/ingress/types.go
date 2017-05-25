@@ -32,11 +32,11 @@ const (
 	// Daemon, Persistent, LoadBalancer
 	LBType = AnnotationPrefix + "type"
 
-	LBNodePort = "NodePort"
-	LBHostPort = "HostPort"
-	// Deprecated, use LBHostPort
-	LBDaemon       = "Daemon"
-	LBLoadBalancer = "LoadBalancer" // default
+	LBTypeNodePort = "NodePort"
+	LBTypeHostPort = "HostPort"
+	// Deprecated, use LBTypeHostPort
+	LBTypeDaemon       = "Daemon"
+	LBTypeLoadBalancer = "LoadBalancer" // default
 
 	// Runs on a specific set of a hosts via DaemonSet. This is needed to work around the issue that master node is registered but not scheduable.
 	DaemonNodeSelector = AnnotationPrefix + "daemon.nodeSelector"
@@ -87,7 +87,7 @@ func (s annotation) LBType() string {
 	if v, ok := s[LBType]; ok {
 		return v
 	}
-	return LBLoadBalancer
+	return LBTypeLoadBalancer
 }
 
 func (s annotation) Replicas() int32 {

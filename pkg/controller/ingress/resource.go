@@ -9,7 +9,7 @@ func (lbc *EngressController) IsExists() bool {
 	lbc.parse()
 	log.Infoln("Checking Ingress existence", lbc.Config.ObjectMeta)
 	name := VoyagerPrefix + lbc.Config.Name
-	if lbc.Options.LBType == LBHostPort {
+	if lbc.Options.LBType == LBTypeHostPort {
 		_, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Get(name)
 		if k8error.IsNotFound(err) {
 			return false
