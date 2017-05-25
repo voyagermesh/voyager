@@ -64,7 +64,7 @@ func (lbc *EngressController) updateConfigMap() error {
 }
 
 func (lbc *EngressController) recreatePods() error {
-	if lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort {
+	if lbc.Options.LBType == LBTypeDaemon || lbc.Options.LBType == LBTypeHostPort {
 		err := lbc.deleteHostPortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -73,7 +73,7 @@ func (lbc *EngressController) recreatePods() error {
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
-	} else if lbc.Options.LBType == LBNodePort {
+	} else if lbc.Options.LBType == LBTypeNodePort {
 		err := lbc.deleteNodePortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -130,7 +130,7 @@ func (lbc *EngressController) updateLBSvc() error {
 
 	// open up firewall
 	log.Infoln("Loadbalancer CloudManager", lbc.CloudManager, "serviceType", svc.Spec.Type)
-	if (lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort) && lbc.CloudManager != nil {
+	if (lbc.Options.LBType == LBTypeDaemon || lbc.Options.LBType == LBTypeHostPort) && lbc.CloudManager != nil {
 		daemonNodes, err := lbc.KubeClient.Core().Nodes().List(kapi.ListOptions{
 			LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Options.DaemonNodeSelector)),
 		})
@@ -155,7 +155,7 @@ func (lbc *EngressController) updateLBSvc() error {
 				log.Debugln("getting firewalls for cloud manager failed")
 			}
 		}
-	} else if lbc.Options.LBType == LBLoadBalancer &&
+	} else if lbc.Options.LBType == LBTypeLoadBalancer &&
 		svc.Spec.Type == kapi.ServiceTypeNodePort &&
 		lbc.CloudManager != nil {
 		log.Infof("Service Type is %s, needs to update underlying cloud loadbalancers", svc.Spec.Type)
@@ -212,6 +212,9 @@ func (lbc *EngressController) updateLBSvc() error {
 
 func (lbc *EngressController) UpdateTargetAnnotations(old annotation, new annotation) error {
 	lbc.parse()
+
+
+	// Check for changes in ingress.appscode.com/annotations.service
 	if newSvcAns, newOk := new.ServiceAnnotations(); newOk {
 		if oldSvcAns, oldOk := old.ServiceAnnotations(); oldOk {
 			if !reflect.DeepEqual(oldSvcAns, newSvcAns) {
@@ -229,10 +232,11 @@ func (lbc *EngressController) UpdateTargetAnnotations(old annotation, new annota
 		}
 	}
 
+	// Check for changes in ingress.appscode.com/annotations.pod
 	if newPodAns, newOk := new.PodsAnnotations(); newOk {
 		if oldPodAns, oldOk := old.PodsAnnotations(); oldOk {
 			if !reflect.DeepEqual(oldPodAns, newPodAns) {
-				if lbc.Options.LBType == LBDaemon || lbc.Options.LBType == LBHostPort {
+				if lbc.Options.LBType == LBTypeDaemon || lbc.Options.LBType == LBTypeHostPort {
 					daemonset, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
 					if err != nil {
 						return errors.FromErr(err).Err()

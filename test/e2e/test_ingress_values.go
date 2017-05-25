@@ -4,12 +4,13 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/util/intstr"
+	"github.com/appscode/voyager/test/testframework"
 )
 
 var testServerSvc = &api.Service{
 	ObjectMeta: api.ObjectMeta{
 		Name:      "test-server",
-		Namespace: TestNamespace,
+		Namespace: testframework.TestContext.E2EConfigs.TestNamespace,
 		Labels: map[string]string{
 			"app": "test-server",
 		},
@@ -55,6 +56,7 @@ var testServerSvc = &api.Service{
 		},
 		Selector: map[string]string{
 			"app": "test-server",
+			"name": "test-rc",
 		},
 	},
 }
@@ -62,9 +64,10 @@ var testServerSvc = &api.Service{
 var testServerRc = &api.ReplicationController{
 	ObjectMeta: api.ObjectMeta{
 		Name:      "test-server",
-		Namespace: TestNamespace,
+		Namespace: testframework.TestContext.E2EConfigs.TestNamespace,
 		Labels: map[string]string{
 			"app": "test-server",
+			"name": "test-rc",
 		},
 	},
 	Spec: api.ReplicationControllerSpec{
@@ -76,6 +79,7 @@ var testServerRc = &api.ReplicationController{
 			ObjectMeta: api.ObjectMeta{
 				Labels: map[string]string{
 					"app": "test-server",
+					"name": "test-rc",
 				},
 			},
 			Spec: api.PodSpec{
@@ -129,7 +133,7 @@ var testServerRc = &api.ReplicationController{
 var testStatefulSetSvc = &api.Service{
 	ObjectMeta: api.ObjectMeta{
 		Name:      "ss-svc",
-		Namespace: TestNamespace,
+		Namespace: testframework.TestContext.E2EConfigs.TestNamespace,
 		Labels: map[string]string{
 			"app": "e2e-test",
 		},
@@ -176,6 +180,7 @@ var testStatefulSetSvc = &api.Service{
 		},
 		Selector: map[string]string{
 			"app": "e2e-test",
+			"name": "test-ss",
 		},
 	},
 }
@@ -183,9 +188,10 @@ var testStatefulSetSvc = &api.Service{
 var testServerStatefulSet = &apps.StatefulSet{
 	ObjectMeta: api.ObjectMeta{
 		Name:      "test-ss",
-		Namespace: TestNamespace,
+		Namespace: testframework.TestContext.E2EConfigs.TestNamespace,
 		Labels: map[string]string{
 			"app": "e2e-test",
+			"name": "test-ss",
 		},
 	},
 	Spec: apps.StatefulSetSpec{
