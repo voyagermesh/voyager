@@ -61,7 +61,7 @@ node("master") {
             }
             stage("integration test") {
                 sh "kubectl create namespace $NAMESPACE"
-                sh "./hack/make.py test integration -cloud-provider=$CLOUD_PROVIDER -cluster-name=$CLUSTER_NAME -daemon-host-name=$NODE -namespace=$NAMESPACE"
+                sh "./hack/make.py test integration -cloud-provider=$CLOUD_PROVIDER -cluster-name=$CLUSTER_NAME -daemon-host-name=$NODE -namespace=$NAMESPACE -max-test=4"
             }
         }
         currentBuild.result = 'SUCCESS'
