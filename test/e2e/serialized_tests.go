@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/appscode/errors"
@@ -11,7 +12,6 @@ import (
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/util/intstr"
-	"sync"
 )
 
 // DaemonSet Tests can not run more than once at a time.

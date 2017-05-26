@@ -254,14 +254,14 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 	for _, url := range serverAddr {
 		var resp *testserverclient.Response
 		notFound := false
-		for i:= 0; i<maxRetries; i++ {
+		for i := 0; i < maxRetries; i++ {
 			var err error
 			resp, err = testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath/ok").DoWithRetry(1)
 			if err != nil {
 				notFound = true
 				break
 			}
-			time.Sleep(time.Second*5)
+			time.Sleep(time.Second * 5)
 			log.Infoln("Expected exception, faild to connect with old path, calling new paths.")
 		}
 		if !notFound {
@@ -1121,7 +1121,7 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 				dp2.Spec.Replicas = 0
 				ing.t.KubeClient.Extensions().Deployments(dp2.Namespace).Update(dp2)
 			}
-			time.Sleep(time.Second*5)
+			time.Sleep(time.Second * 5)
 			orphan := false
 			ing.t.KubeClient.Extensions().Deployments(dp1.Namespace).Delete(dp1.Name, &api.DeleteOptions{
 				OrphanDependents: &orphan,
@@ -1480,7 +1480,7 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 	}
 
 	time.Sleep(time.Second * 60)
-	for i:=0; i<maxRetries; i++ {
+	for i := 0; i < maxRetries; i++ {
 		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
 		if err != nil {
 			err = errors.New().WithCause(err).WithMessage("Service encountered an error").Err()
@@ -1500,7 +1500,7 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 		if err == nil {
 			break
 		}
-		time.Sleep(time.Second*5)
+		time.Sleep(time.Second * 5)
 	}
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -1537,7 +1537,7 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 	}
 
 	time.Sleep(time.Second * 60)
-	for i:=0; i<maxRetries; i++ {
+	for i := 0; i < maxRetries; i++ {
 		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
 		if err != nil {
 			err = errors.New().WithCause(err).WithMessage("Service encountered an error").Err()
@@ -1556,7 +1556,7 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 			if err == nil {
 				break
 			}
-			time.Sleep(time.Second*5)
+			time.Sleep(time.Second * 5)
 		}
 		if err != nil {
 			return errors.FromErr(err).Err()
