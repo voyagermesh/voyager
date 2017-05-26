@@ -936,7 +936,7 @@ func (ing *IngressTestSuit) TestIngressHostNames() error {
 	time.Sleep(time.Second * 60)
 	log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
 	for _, url := range serverAddr {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath").DoWithRetry(50)
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath").DoWithRetry(100)
 		if err != nil {
 			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
 		}
