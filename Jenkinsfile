@@ -14,9 +14,6 @@ node("master") {
         env.PATH = "$env.PATH:${env.GOBIN}:/usr/local/go/bin"
     }
     try {
-        stage('builddeps') {
-            sh 'go get -u golang.org/x/tools/cmd/goimports'
-        }
         dir("${project_dir}") {
             stage("checkout") {
                 checkout scm
