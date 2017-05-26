@@ -21,7 +21,7 @@ spec:
         - --cloud-provider=$CLOUD_PROVIDER
         - --cluster-name=$CLUSTER_NAME
         - --v=3
-        image: appscode/voyager:1.5.5
+        image: appscode/voyager:$TAG
         ports:
         - containerPort: 1234
           name: zero
