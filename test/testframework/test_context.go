@@ -2,13 +2,13 @@ package testframework
 
 import (
 	"flag"
+	"strings"
 	"sync"
 
 	"github.com/appscode/errors"
 	logginghandler "github.com/appscode/errors/h/log"
 	"github.com/appscode/go/flags"
 	"github.com/appscode/log"
-	"strings"
 )
 
 func init() {
@@ -47,6 +47,7 @@ type E2EConfig struct {
 	LBPersistIP           string
 	RunOnly               string
 	TestNamespace         string
+	MaxConcurrentTest     int
 }
 
 var TestContext TestContextType
@@ -92,6 +93,7 @@ func registerE2EFlags() {
 	flag.StringVar(&TestContext.E2EConfigs.RunOnly, "test-only", "", "Daemon host name to run daemon hosts")
 	flag.StringVar(&TestContext.E2EConfigs.LBPersistIP, "lb-ip", "", "LB persistent IP")
 	flag.StringVar(&TestContext.E2EConfigs.TestNamespace, "namespace", "test-ing", "Run tests in this namespaces")
+	flag.IntVar(&TestContext.E2EConfigs.MaxConcurrentTest, "max-test", 5, "Max Tests to run concurrently")
 }
 
 func validate() {

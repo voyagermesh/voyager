@@ -2,18 +2,18 @@ package e2e
 
 import (
 	"reflect"
+	"runtime"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	"k8s.io/kubernetes/pkg/api"
 	k8serr "k8s.io/kubernetes/pkg/api/errors"
-	"sync"
-	"runtime"
 )
 
-func init()  {
+func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 }
 
@@ -76,7 +76,7 @@ func (i *IngressTestSuit) cleanUp() {
 		if err == nil {
 			rc.Spec.Replicas = 0
 			i.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Update(rc)
-			time.Sleep(time.Second*5)
+			time.Sleep(time.Second * 5)
 		}
 		i.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Delete(testServerRc.Name, &api.DeleteOptions{})
 	}
@@ -104,13 +104,16 @@ func (i *IngressTestSuit) runTests() error {
 
 	errChan := make(chan error)
 	var wg sync.WaitGroup
+	limit := make(chan bool, i.t.Config.MaxConcurrentTest)
 	for _, name := range serializedMethodName {
 		shouldCall := ingType.MethodByName(name)
 		if shouldCall.IsValid() {
+			limit <- true
 			wg.Add(1)
 			// Run Test in separate goroutine
-			go func (fun reflect.Value, n string) {
+			go func(fun reflect.Value, n string) {
 				defer func() {
+					<-limit
 					log.Infoln("Test", n, "FINISHED")
 					wg.Done()
 				}()
@@ -141,7 +144,7 @@ func (i *IngressTestSuit) runTests() error {
 
 	log.Infoln("======================================")
 	log.Infoln("TOTAL", len(serializedMethodName))
-	log.Infoln("PASSED", len(serializedMethodName) - len(errs))
+	log.Infoln("PASSED", len(serializedMethodName)-len(errs))
 	log.Infoln("FAILED", len(errs))
 	log.Infoln("Time Elapsed", time.Since(startTime).Minutes(), "minutes")
 	log.Infoln("======================================")
@@ -149,7 +152,7 @@ func (i *IngressTestSuit) runTests() error {
 		for _, err := range errs {
 			log.Infoln("Log\n", err)
 		}
-		return errs[0]
+		return errors.New().WithMessage("Test FAILED").Err()
 	}
 	return nil
 }
