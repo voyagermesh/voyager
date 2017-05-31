@@ -26,6 +26,7 @@ const (
 	StatsOn          = AnnotationPrefix + "stats"
 	StatsPort        = AnnotationPrefix + "stats.port"
 	StatsSecret      = AnnotationPrefix + "stats.secretName"
+	StatsServiceName = AnnotationPrefix + "stats.serviceName"
 	DefaultStatsPort = 1936
 
 	LBName = AnnotationPrefix + "name"
@@ -93,6 +94,14 @@ func (s annotation) StatsPort() int {
 		return port
 	}
 	return DefaultStatsPort
+}
+
+func (s annotation) StatsServiceName(ingName string) string {
+	v, ok := s[StatsServiceName]
+	if !ok {
+		return ingName + "-stats"
+	}
+	return v
 }
 
 func (s annotation) LBType() string {

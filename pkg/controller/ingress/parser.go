@@ -277,12 +277,6 @@ func (lbc *EngressController) parseSpec() {
 	if httpsCount > 0 {
 		lbc.Options.Ports = append(lbc.Options.Ports, 443)
 	}
-
-	//parse stat
-	if lbc.Parsed.Stats {
-		// TODO Do not add Ports when we create a *-stats service for stats endpoint
-		lbc.Options.Ports = append(lbc.Options.Ports, lbc.Parsed.StatsPort)
-	}
 }
 
 func (lbc *EngressController) parseOptions() {
@@ -305,7 +299,7 @@ func (lbc *EngressController) parseOptions() {
 			lbc.Parsed.StatsUserName = string(secret.Data["username"])
 			lbc.Parsed.StatsPassWord = string(secret.Data["password"])
 		} else {
-			log.Errorln("Error encountered while loading secret,", err)
+			log.Errorln("Error encountered while loading stats secret", err)
 		}
 	}
 

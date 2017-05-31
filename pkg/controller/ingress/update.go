@@ -38,6 +38,11 @@ func (lbc *EngressController) Update(t updateType) error {
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
+		if lbc.Parsed.Stats {
+			lbc.createStats()
+		} else {
+			lbc.deleteStats()
+		}
 	}
 	if t == UpdateFirewall {
 		return lbc.updateLBSvc()

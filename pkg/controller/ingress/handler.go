@@ -185,6 +185,12 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 			lbc.UpdateTargetAnnotations(engs[0].(*aci.Ingress).ObjectMeta.Annotations, engs[1].(*aci.Ingress).ObjectMeta.Annotations)
 		}
 
+		// Check If Stats Annotations are changed.
+		if isStatsChanged(engs[0], engs[1]) {
+			lbc.Update(RestartHAProxy)
+		}
+
+
 		if reflect.DeepEqual(engs[0].(*aci.Ingress).Spec, engs[1].(*aci.Ingress).Spec) {
 			return nil
 		}
@@ -346,6 +352,29 @@ func isNewSecretAdded(old interface{}, new interface{}) bool {
 	for _, rs := range n.Spec.TLS {
 		if !stringutil.Contains(oldSecretLists, rs.SecretName) {
 			return true
+		}
+	}
+	return false
+}
+
+func isStatsChanged(old interface{}, new interface{}) bool {
+	if o, ok := old.(*aci.Ingress); ok {
+		if n, ok := new.(*aci.Ingress); ok {
+			if o.Annotations[StatsOn] != n.Annotations[StatsOn] {
+				return true
+			}
+
+			if o.Annotations[StatsPort] != n.Annotations[StatsPort] {
+				return true
+			}
+
+			if o.Annotations[StatsServiceName] != n.Annotations[StatsServiceName] {
+				return true
+			}
+
+			if o.Annotations[StatsSecret] != n.Annotations[StatsSecret] {
+				return true
+			}
 		}
 	}
 	return false

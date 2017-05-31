@@ -26,6 +26,11 @@ func (lbc *EngressController) Delete() error {
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
+
+	if lbc.Parsed.Stats {
+		lbc.deleteStats()
+	}
+
 	return nil
 }
 
@@ -184,5 +189,17 @@ func (lbc *EngressController) deletePodsForSelector(s map[string]string) {
 		if err != nil {
 			log.Warningln(err)
 		}
+	}
+}
+
+func (lbc *EngressController) deleteStats() {
+	err := lbc.KubeClient.Core().
+		Services(lbc.Config.Namespace).
+		Delete(
+			lbc.Options.annotations.StatsServiceName(lbc.Config.GetName()),
+			&kapi.DeleteOptions{},
+		)
+	if err != nil {
+		log.Errorln("Failed to delete Stats service", err)
 	}
 }
