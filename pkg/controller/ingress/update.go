@@ -18,6 +18,7 @@ const (
 	UpdateConfig   updateType = iota // only reset haproxy config
 	RestartHAProxy                   // secret changes, ports unchanged
 	UpdateFirewall                   // ports changed
+	UpdateStats // Update things for stats update
 )
 
 func (lbc *EngressController) Update(t updateType) error {
@@ -33,20 +34,24 @@ func (lbc *EngressController) Update(t updateType) error {
 		return errors.FromErr(err).Err()
 	}
 
-	if t == UpdateFirewall || t == RestartHAProxy {
+	if t == UpdateFirewall || t == RestartHAProxy || t == UpdateStats {
 		err := lbc.recreatePods()
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
+	}
+	if t == UpdateFirewall {
+		return lbc.updateLBSvc()
+	}
+
+	if t == UpdateStats {
 		if lbc.Parsed.Stats {
 			lbc.createStats()
 		} else {
 			lbc.deleteStats()
 		}
 	}
-	if t == UpdateFirewall {
-		return lbc.updateLBSvc()
-	}
+
 	return nil
 }
 

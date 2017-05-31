@@ -187,7 +187,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 
 		// Check If Stats Annotations are changed.
 		if isStatsChanged(engs[0], engs[1]) {
-			lbc.Update(RestartHAProxy)
+			lbc.Update(UpdateStats)
 		}
 
 

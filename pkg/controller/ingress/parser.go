@@ -294,12 +294,15 @@ func (lbc *EngressController) parseOptions() {
 	lbc.Parsed.Stats = lbc.Options.annotations.Stats()
 	if lbc.Parsed.Stats {
 		lbc.Parsed.StatsPort = lbc.Options.annotations.StatsPort()
-		secret, err := lbc.KubeClient.Core().Secrets(lbc.Config.ObjectMeta.Namespace).Get(lbc.Options.annotations.StatsSecretName())
-		if err == nil {
-			lbc.Parsed.StatsUserName = string(secret.Data["username"])
-			lbc.Parsed.StatsPassWord = string(secret.Data["password"])
-		} else {
-			log.Errorln("Error encountered while loading stats secret", err)
+		if name := lbc.Options.annotations.StatsSecretName(); len(name) > 0 {
+			secret, err := lbc.KubeClient.Core().Secrets(lbc.Config.ObjectMeta.Namespace).Get(name)
+			if err == nil {
+				lbc.Parsed.StatsUserName = string(secret.Data["username"])
+				lbc.Parsed.StatsPassWord = string(secret.Data["password"])
+			} else {
+				lbc.Parsed.Stats = false
+				log.Errorln("Error encountered while loading Stats secret", err)
+			}
 		}
 	}
 
