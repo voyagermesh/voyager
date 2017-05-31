@@ -3,7 +3,7 @@ node("master") {
     def project_dir = "${PWD}/src/github.com/appscode/voyager"
     def INTERNAL_TAG
     def CLOUD_PROVIDER = "gce"
-    def CLUSTER_NAME = "clusterc"
+    def CLUSTER_NAME = "ci-space"
     def DEPLOYMENT_YAML
     def NODE
     def NAMESPACE
