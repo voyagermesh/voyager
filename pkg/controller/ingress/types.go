@@ -23,9 +23,11 @@ const (
 	stickySession = AnnotationPrefix + "stickySession"
 
 	// LB stats options
-	StatPort    = 1936
-	StatsOn     = AnnotationPrefix + "stats"
-	StatsSecret = AnnotationPrefix + "stats.secretName"
+	StatsOn          = AnnotationPrefix + "stats"
+	StatsPort        = AnnotationPrefix + "stats.port"
+	StatsSecret      = AnnotationPrefix + "stats.secretName"
+	StatsServiceName = AnnotationPrefix + "stats.serviceName"
+	DefaultStatsPort = 1936
 
 	LBName = AnnotationPrefix + "name"
 
@@ -80,6 +82,25 @@ func (s annotation) Stats() bool {
 
 func (s annotation) StatsSecretName() string {
 	v, _ := s[StatsSecret]
+	return v
+}
+
+func (s annotation) StatsPort() int {
+	v, ok := s[StatsPort]
+	if !ok {
+		return DefaultStatsPort
+	}
+	if port, err := strconv.Atoi(v); err == nil {
+		return port
+	}
+	return DefaultStatsPort
+}
+
+func (s annotation) StatsServiceName(ingName string) string {
+	v, ok := s[StatsServiceName]
+	if !ok {
+		return ingName + "-stats"
+	}
 	return v
 }
 
@@ -219,6 +240,7 @@ type HAProxyOptions struct {
 	// Basic auth to lb stats
 	StatsUserName string
 	StatsPassWord string
+	StatsPort     int
 
 	DefaultBackend *Backend
 	HttpsService   []*Service

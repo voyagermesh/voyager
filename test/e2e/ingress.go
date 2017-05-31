@@ -1659,3 +1659,106 @@ func (ing *IngressTestSuit) TestIngressNodePort() error {
 
 	return nil
 }
+
+func (ing *IngressTestSuit) TestIngressStats() error {
+	baseIng := &aci.Ingress{
+		ObjectMeta: api.ObjectMeta{
+			Name:      testIngressName(),
+			Namespace: ing.t.Config.TestNamespace,
+			Annotations: map[string]string{
+				ingress.StatsOn:   "true",
+				ingress.StatsPort: "8787",
+			},
+		},
+		Spec: aci.ExtendedIngressSpec{
+			Rules: []aci.ExtendedIngressRule{
+				{
+					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
+						HTTP: &aci.HTTPExtendedIngressRuleValue{
+							Paths: []aci.HTTPExtendedIngressPath{
+								{
+									Path: "/testpath",
+									Backend: aci.ExtendedIngressBackend{
+										ServiceName: testServerSvc.Name,
+										ServicePort: intstr.FromInt(80),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, err := ing.t.ExtensionClient.Ingress(baseIng.Namespace).Create(baseIng)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if ing.t.Config.Cleanup {
+			ing.t.ExtensionClient.Ingress(baseIng.Namespace).Delete(baseIng.Name)
+		}
+	}()
+
+	// Wait sometime to loadbalancer be opened up.
+	time.Sleep(time.Second * 60)
+	for i := 0; i < maxRetries; i++ {
+		var err error
+		_, err = ing.t.KubeClient.Core().Services(baseIng.Namespace).Get(ingress.VoyagerPrefix + baseIng.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for service to be created")
+	}
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+
+	// Check if all Stats Things are open
+	var svc *api.Service
+	for i := 0; i < maxRetries; i++ {
+		var err error
+		svc, err = ing.t.KubeClient.Core().Services(baseIng.Namespace).Get(baseIng.Name + "-stats")
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for service to be created")
+	}
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+
+	if svc.Spec.Ports[0].Port != 8787 {
+		return errors.New().WithMessage("Service port mismatched").Err()
+	}
+
+	// Remove Stats From Annotation and Check if the service gets deleted
+	baseIng, err = ing.t.ExtensionClient.Ingress(baseIng.Namespace).Get(baseIng.Name)
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+	delete(baseIng.Annotations, ingress.StatsOn)
+	baseIng, err = ing.t.ExtensionClient.Ingress(baseIng.Namespace).Update(baseIng)
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+
+	time.Sleep(time.Second * 60)
+	var deleteErr error
+	for i := 0; i < maxRetries; i++ {
+		_, deleteErr = ing.t.KubeClient.Core().Services(baseIng.Namespace).Get(baseIng.Name + "-stats")
+		if deleteErr != nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for service to be Deleted")
+	}
+	if deleteErr == nil {
+		return errors.New().WithMessage("Stats Service Should Be deleted").Err()
+	}
+
+	return nil
+}

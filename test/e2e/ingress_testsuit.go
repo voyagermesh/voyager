@@ -123,8 +123,10 @@ func (i *IngressTestSuit) runTests() error {
 				if len(results) == 1 {
 					err, castOk := results[0].Interface().(error)
 					if castOk {
-						log.Infoln("Test", n, "FAILED with Cause", err)
-						errChan <- errors.FromErr(err).WithMessagef("Test Name %s", n).Err()
+						if err != nil {
+							log.Infoln("Test", n, "FAILED with Cause", err)
+							errChan <- errors.FromErr(err).WithMessagef("Test Name %s", n).Err()
+						}
 					}
 				}
 			}(shouldCall, name)
@@ -135,7 +137,9 @@ func (i *IngressTestSuit) runTests() error {
 	errs := make([]error, 0)
 	go func() {
 		for err := range errChan {
-			errs = append(errs, err)
+			if err != nil {
+				errs = append(errs, err)
+			}
 		}
 	}()
 
@@ -150,9 +154,11 @@ func (i *IngressTestSuit) runTests() error {
 	log.Infoln("======================================")
 	if len(errs) > 0 {
 		for _, err := range errs {
-			log.Infoln("Log\n", err)
+			if err != nil {
+				log.Infoln("Log\n", err)
+			}
 		}
-		return errors.New().WithMessage("Test FAILED").Err()
+		return errors.New().WithMessage("Test FAILED").WithCause(errs[0]).Err()
 	}
 	return nil
 }

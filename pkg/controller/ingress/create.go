@@ -42,6 +42,10 @@ func (lbc *EngressController) Create() error {
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
+
+	if lbc.Parsed.Stats {
+		lbc.ensureStatsService()
+	}
 	return nil
 }
 
@@ -253,6 +257,15 @@ func (lbc *EngressController) createHostPortPods() error {
 		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, p)
 	}
 
+	if lbc.Parsed.Stats {
+		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, kapi.ContainerPort{
+			Name:          "stats",
+			Protocol:      "TCP",
+			ContainerPort: int32(lbc.Parsed.StatsPort),
+			HostPort:      int32(lbc.Parsed.StatsPort),
+		})
+	}
+
 	if ans, ok := lbc.Options.annotations.PodsAnnotations(); ok {
 		daemon.Spec.Template.Annotations = ans
 	}
@@ -373,6 +386,15 @@ func (lbc *EngressController) createNodePortPods() error {
 		d.Spec.Template.Spec.Containers[0].Ports = append(d.Spec.Template.Spec.Containers[0].Ports, p)
 	}
 
+	if lbc.Parsed.Stats {
+		d.Spec.Template.Spec.Containers[0].Ports = append(d.Spec.Template.Spec.Containers[0].Ports, kapi.ContainerPort{
+			Name:          "stats",
+			Protocol:      "TCP",
+			ContainerPort: int32(lbc.Parsed.StatsPort),
+			HostPort:      int32(lbc.Parsed.StatsPort),
+		})
+	}
+
 	if ans, ok := lbc.Options.annotations.PodsAnnotations(); ok {
 		d.Spec.Template.Annotations = ans
 	}
@@ -487,6 +509,35 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 		}
 	}
 	return nil
+}
+
+func (lbc *EngressController) ensureStatsService() {
+	svc := &kapi.Service{
+		ObjectMeta: kapi.ObjectMeta{
+			Name:      lbc.Options.annotations.StatsServiceName(lbc.Config.GetName()),
+			Namespace: lbc.Config.Namespace,
+			Annotations: map[string]string{
+				LBName: lbc.Config.GetName(),
+			},
+		},
+		Spec: kapi.ServiceSpec{
+			Ports: []kapi.ServicePort{
+				{
+
+					Name:       "stats",
+					Protocol:   "TCP",
+					Port:       int32(lbc.Parsed.StatsPort),
+					TargetPort: intstr.FromInt(lbc.Parsed.StatsPort),
+				},
+			},
+			Selector: labelsFor(lbc.Config.Name),
+		},
+	}
+
+	_, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Create(svc)
+	if err != nil {
+		log.Errorln("Failed to create Stats Service", err)
+	}
 }
 
 func (lbc *EngressController) updateStatus() error {

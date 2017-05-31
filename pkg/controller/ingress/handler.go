@@ -160,8 +160,31 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 				// to the resource. If hard update encounters errors then we will
 				// recreate the resource from scratch.
 				log.Infoln("Loadbalancer is exists, trying to update")
-				cfgErr := lbc.Update(UpdateConfig)
-				if cfgErr != nil {
+
+				if svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name); err == nil {
+					// check port
+					curPorts := make(map[int]int)
+					for _, p := range svc.Spec.Ports {
+						curPorts[int(p.Port)] = 1
+					}
+
+					var updateFW bool
+					for _, p := range lbc.Options.Ports {
+						if _, ok := curPorts[p]; !ok {
+							updateFW = true // new port has to be opened
+							break
+						} else {
+							delete(curPorts, p)
+						}
+					}
+					updateFW = len(curPorts) > 0 // additional port was open previously
+
+					if updateFW {
+						lbc.Update(UpdateFirewall | UpdateStats)
+					} else {
+						lbc.Update(UpdateConfig | UpdateStats)
+					}
+				} else {
 					log.Warningln("Loadbalancer is exists but Soft Update failed. Retrying Hard Update")
 					restartErr := lbc.Update(RestartHAProxy)
 					if restartErr != nil {
@@ -185,12 +208,17 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 			lbc.UpdateTargetAnnotations(engs[0].(*aci.Ingress).ObjectMeta.Annotations, engs[1].(*aci.Ingress).ObjectMeta.Annotations)
 		}
 
+		// Check If Stats Annotations are changed.
+		if isStatsChanged(engs[0], engs[1]) {
+			lbc.Update(UpdateStats)
+		}
+
 		if reflect.DeepEqual(engs[0].(*aci.Ingress).Spec, engs[1].(*aci.Ingress).Spec) {
 			return nil
 		}
 
 		if shouldHandleIngress(lbc.Config, lbc.IngressClass) {
-			if isNewPortOpened(engs[0], engs[1]) {
+			if isNewPortChanged(engs[0], engs[1]) {
 				lbc.Update(UpdateFirewall)
 			} else if isNewSecretAdded(engs[0], engs[1]) {
 				lbc.Update(RestartHAProxy)
@@ -301,7 +329,7 @@ func ensureServiceAnnotations(client clientset.Interface, ing *aci.Ingress, name
 	}
 }
 
-func isNewPortOpened(old interface{}, new interface{}) bool {
+func isNewPortChanged(old interface{}, new interface{}) bool {
 	o := old.(*aci.Ingress)
 	n := new.(*aci.Ingress)
 
@@ -346,6 +374,29 @@ func isNewSecretAdded(old interface{}, new interface{}) bool {
 	for _, rs := range n.Spec.TLS {
 		if !stringutil.Contains(oldSecretLists, rs.SecretName) {
 			return true
+		}
+	}
+	return false
+}
+
+func isStatsChanged(old interface{}, new interface{}) bool {
+	if o, ok := old.(*aci.Ingress); ok {
+		if n, ok := new.(*aci.Ingress); ok {
+			if o.Annotations[StatsOn] != n.Annotations[StatsOn] {
+				return true
+			}
+
+			if o.Annotations[StatsPort] != n.Annotations[StatsPort] {
+				return true
+			}
+
+			if o.Annotations[StatsServiceName] != n.Annotations[StatsServiceName] {
+				return true
+			}
+
+			if o.Annotations[StatsSecret] != n.Annotations[StatsSecret] {
+				return true
+			}
 		}
 	}
 	return false

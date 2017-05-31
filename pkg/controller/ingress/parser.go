@@ -277,11 +277,6 @@ func (lbc *EngressController) parseSpec() {
 	if httpsCount > 0 {
 		lbc.Options.Ports = append(lbc.Options.Ports, 443)
 	}
-
-	//parse stat
-	if lbc.Parsed.Stats {
-		lbc.Options.Ports = append(lbc.Options.Ports, StatPort)
-	}
 }
 
 func (lbc *EngressController) parseOptions() {
@@ -298,12 +293,16 @@ func (lbc *EngressController) parseOptions() {
 
 	lbc.Parsed.Stats = lbc.Options.annotations.Stats()
 	if lbc.Parsed.Stats {
-		secret, err := lbc.KubeClient.Core().Secrets(lbc.Config.ObjectMeta.Namespace).Get(lbc.Options.annotations.StatsSecretName())
-		if err == nil {
-			lbc.Parsed.StatsUserName = string(secret.Data["username"])
-			lbc.Parsed.StatsPassWord = string(secret.Data["password"])
-		} else {
-			log.Errorln("Error encountered while loading secret,", err)
+		lbc.Parsed.StatsPort = lbc.Options.annotations.StatsPort()
+		if name := lbc.Options.annotations.StatsSecretName(); len(name) > 0 {
+			secret, err := lbc.KubeClient.Core().Secrets(lbc.Config.ObjectMeta.Namespace).Get(name)
+			if err == nil {
+				lbc.Parsed.StatsUserName = string(secret.Data["username"])
+				lbc.Parsed.StatsPassWord = string(secret.Data["password"])
+			} else {
+				lbc.Parsed.Stats = false
+				log.Errorln("Error encountered while loading Stats secret", err)
+			}
 		}
 	}
 
