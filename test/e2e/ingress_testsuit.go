@@ -148,7 +148,7 @@ func (i *IngressTestSuit) runTests() error {
 
 	log.Infoln("======================================")
 	log.Infoln("TOTAL", len(serializedMethodName))
-	log.Infoln("PASSED", len(serializedMethodName) - len(errs))
+	log.Infoln("PASSED", len(serializedMethodName)-len(errs))
 	log.Infoln("FAILED", len(errs))
 	log.Infoln("Time Elapsed", time.Since(startTime).Minutes(), "minutes")
 	log.Infoln("======================================")

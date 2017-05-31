@@ -44,7 +44,7 @@ func (lbc *EngressController) Create() error {
 	}
 
 	if lbc.Parsed.Stats {
-		lbc.createStats()
+		lbc.ensureStatsService()
 	}
 	return nil
 }
@@ -511,7 +511,7 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 	return nil
 }
 
-func (lbc *EngressController) createStats() {
+func (lbc *EngressController) ensureStatsService() {
 	svc := &kapi.Service{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      lbc.Options.annotations.StatsServiceName(lbc.Config.GetName()),

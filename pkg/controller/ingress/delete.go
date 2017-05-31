@@ -28,7 +28,7 @@ func (lbc *EngressController) Delete() error {
 	}
 
 	if lbc.Parsed.Stats {
-		lbc.deleteStats()
+		lbc.ensureStatsServiceDeleted()
 	}
 
 	return nil
@@ -192,7 +192,7 @@ func (lbc *EngressController) deletePodsForSelector(s map[string]string) {
 	}
 }
 
-func (lbc *EngressController) deleteStats() {
+func (lbc *EngressController) ensureStatsServiceDeleted() {
 	err := lbc.KubeClient.Core().
 		Services(lbc.Config.Namespace).
 		Delete(

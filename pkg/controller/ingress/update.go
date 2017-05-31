@@ -15,10 +15,10 @@ import (
 type updateType int
 
 const (
-	UpdateConfig   updateType = iota // only reset haproxy config
-	RestartHAProxy                   // secret changes, ports unchanged
-	UpdateFirewall                   // ports changed
-	UpdateStats // Update things for stats update
+	UpdateConfig   updateType = 1 << iota // only reset haproxy config
+	RestartHAProxy                        // secret changes, ports unchanged
+	UpdateFirewall                        // ports changed
+	UpdateStats                           // Update things for stats update
 )
 
 func (lbc *EngressController) Update(t updateType) error {
@@ -34,21 +34,23 @@ func (lbc *EngressController) Update(t updateType) error {
 		return errors.FromErr(err).Err()
 	}
 
-	if t == UpdateFirewall || t == RestartHAProxy || t == UpdateStats {
+	if t&UpdateFirewall > 0 ||
+		t&RestartHAProxy > 0 ||
+		t&UpdateStats > 0 {
 		err := lbc.recreatePods()
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
 	}
-	if t == UpdateFirewall {
+	if t&UpdateFirewall > 0 {
 		return lbc.updateLBSvc()
 	}
 
-	if t == UpdateStats {
+	if t&UpdateStats > 0 {
 		if lbc.Parsed.Stats {
-			lbc.createStats()
+			lbc.ensureStatsService()
 		} else {
-			lbc.deleteStats()
+			lbc.ensureStatsServiceDeleted()
 		}
 	}
 
