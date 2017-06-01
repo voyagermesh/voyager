@@ -11,6 +11,7 @@ type Config struct {
 	ClusterName           string
 	LoadbalancerImageName string
 	IngressClass          string
+	EnableAnalytics       bool
 }
 
 func NewConfig() *Config {
@@ -20,6 +21,7 @@ func NewConfig() *Config {
 		ProviderName:          "",
 		ClusterName:           "",
 		LoadbalancerImageName: "appscode/haproxy:1.7.5-1.5.5",
+		EnableAnalytics:       true,
 	}
 }
 
@@ -32,4 +34,6 @@ func (s *Config) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&s.LoadbalancerImageName, "haproxy-image", "h", s.LoadbalancerImageName, "haproxy image name to be run")
 
 	fs.StringVar(&s.IngressClass, "ingress-class", "", "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
+
+	fs.BoolVar(&s.EnableAnalytics, "analytics", s.EnableAnalytics, "Send analytical event to Google Analytics")
 }

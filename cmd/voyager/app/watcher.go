@@ -1,11 +1,14 @@
 package app
 
 import (
+	"strings"
+
 	aci "github.com/appscode/k8s-addons/api"
 	"github.com/appscode/k8s-addons/pkg/events"
 	"github.com/appscode/k8s-addons/pkg/stash"
 	acw "github.com/appscode/k8s-addons/pkg/watcher"
 	"github.com/appscode/log"
+	"github.com/appscode/voyager/pkg/analytics"
 	"github.com/appscode/voyager/pkg/controller/certificates"
 	ingresscontroller "github.com/appscode/voyager/pkg/controller/ingress"
 	kapi "k8s.io/kubernetes/pkg/api"
@@ -13,6 +16,7 @@ import (
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/cache"
+	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/util/wait"
 )
 
@@ -102,12 +106,15 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 			certController := certificates.NewController(w.Client, w.AppsCodeExtensionClient)
 			certController.Handle(e)
 		}
+		sendAnalytics(e, err)
 		return err
 	case events.Certificate:
+		var err error
 		if e.EventType.IsAdded() || e.EventType.IsUpdated() {
 			certController := certificates.NewController(w.Client, w.AppsCodeExtensionClient)
-			certController.Handle(e)
+			err = certController.Handle(e)
 		}
+		sendAnalytics(e, err)
 	case events.Service:
 		if e.EventType.IsAdded() || e.EventType.IsDeleted() {
 			return ingresscontroller.UpgradeAllEngress(
@@ -151,4 +158,39 @@ func (w *Watcher) Certificate() {
 	go controller.Run(wait.NeverStop)
 
 	go certificates.NewCertificateSyncer(w.Client, w.AppsCodeExtensionClient).RunSync()
+}
+
+func sendAnalytics(e *events.Event, err error) {
+	switch e.ResourceType {
+	case events.Ingress, events.ExtendedIngress, events.Certificate:
+		if e.EventType.IsAdded() || e.EventType.IsDeleted() {
+			gv := ""
+			runtimeObj, ok := e.RuntimeObj[0].(runtime.Object)
+			if ok {
+				gvk := runtimeObj.GetObjectKind().GroupVersionKind()
+				if len(gvk.Group) > 0 && len(gvk.Version) > 0 {
+					gv = strings.Join([]string{gvk.Group, gvk.Version}, "/") + "/"
+				}
+			}
+
+			// Group Version is empty. Try Getting from SelfLink.
+			if len(gv) <= 0 {
+				// we extract group version from resource SelfLink. This guaranties
+				// having GroupVersion.
+				gv = e.MetaData.GetSelfLink()
+				if len(gv) > 0 {
+					tokens := strings.Split(strings.Trim(gv, "/"), "/")
+					if len(tokens) >= 3 {
+						gv = tokens[1] + "/" + tokens[2] + "/"
+					}
+				}
+			}
+
+			label := "success"
+			if err != nil {
+				label = "fail"
+			}
+			go analytics.Send(gv+e.ResourceType.String(), strings.ToLower(e.EventType.String()), label)
+		}
+	}
 }
