@@ -2,7 +2,7 @@ package main
 
 import (
 	_ "net/http/pprof"
-	"os"
+	"syscall"
 
 	"github.com/appscode/errors"
 	err_logger "github.com/appscode/errors/h/log"
@@ -12,6 +12,7 @@ import (
 	logs "github.com/appscode/log/golog"
 	"github.com/appscode/voyager/cmd/voyager/app"
 	"github.com/appscode/voyager/cmd/voyager/app/options"
+	"github.com/appscode/voyager/pkg/analytics"
 	"github.com/mikespook/golib/signal"
 	"github.com/spf13/pflag"
 	// Add fake package as a dependency to add this under vendor
@@ -38,7 +39,14 @@ func main() {
 
 	log.Infoln("Starting Voyager Controller...")
 	go app.Run(config)
+
 	sig := signal.New(nil)
-	sig.Bind(os.Interrupt, func() uint { return signal.BreakExit })
+	sig.Bind(syscall.SIGTERM, exit)
+	sig.Bind(syscall.SIGINT, exit)
 	sig.Wait()
+}
+
+func exit() uint {
+	analytics.VoyagerStopped()
+	return signal.BreakExit
 }

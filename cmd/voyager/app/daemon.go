@@ -11,6 +11,7 @@ import (
 	acw "github.com/appscode/k8s-addons/pkg/watcher"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/cmd/voyager/app/options"
+	"github.com/appscode/voyager/pkg/analytics"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 )
@@ -18,6 +19,10 @@ import (
 func Run(config *options.Config) {
 	log.Infoln("Configuration:", config)
 	defer runtime.HandleCrash()
+
+	if config.EnableAnalytics {
+		analytics.Enable()
+	}
 
 	c, err := clientcmd.BuildConfigFromFlags(config.Master, config.KubeConfig)
 	if err != nil {
@@ -39,4 +44,6 @@ func Run(config *options.Config) {
 
 	log.Infoln("configuration loadded, running watcher")
 	go w.Run()
+
+	analytics.VoyagerStarted()
 }
