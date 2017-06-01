@@ -1,5 +1,5 @@
 hash: c14ebc4c1cf8a72e5ba9505aae0e53df1c87262e23728b42b1afd81990c7d691
-updated: 2017-05-26T04:46:13.754223678-07:00
+updated: 2017-06-01T02:54:01.536095102-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -13,7 +13,7 @@ imports:
   subpackages:
   - h/log
 - name: github.com/appscode/go
-  version: 04abd631dc552c01c9448db0763611932590cbc4
+  version: 5eabd32a8a0fe824b5e12c37dc53a0afea8507c9
   subpackages:
   - arrays
   - crypto/rand
@@ -157,7 +157,7 @@ imports:
 - name: github.com/flosch/pongo2
   version: 1d0f0d3af150c4a65dfd424d742f7374819e7d29
 - name: github.com/ghodss/yaml
-  version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
+  version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/go-ini/ini
   version: 2e44421e256d82ebbf3d4d4fcabe8930b905eff3
 - name: github.com/go-openapi/jsonpointer
@@ -216,13 +216,15 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/JamesClonk/vultr
-  version: 7047a71e8edb5ccaa98e20cefe37a118dd7bfcb0
+  version: d1ca9b7e9284f7f18d38d82f65c35e87225a2791
   subpackages:
   - lib
 - name: github.com/jmespath/go-jmespath
   version: 3433f3ea46d9f8019119e7dd41274e112a2359a9
 - name: github.com/jonboulle/clockwork
   version: 72f9bd7c4e0c2a40055ab3d0f09654f730cce982
+- name: github.com/jpillora/go-ogle-analytics
+  version: 2fcc54fe85cce40ab0d9ce84d974f3be9948b9c0
 - name: github.com/juju/errors
   version: 8234c829496aaeae67c5c71235a2cbcc289e960a
 - name: github.com/juju/ratelimit
@@ -327,9 +329,9 @@ imports:
   subpackages:
   - zk
 - name: github.com/spf13/cobra
-  version: ca57f0f5dba473a8a58765d16d7e811fb8027add
+  version: 9c28e4bbd74e5c3ed7aacbc552b2cab7cfdfe744
 - name: github.com/spf13/pflag
-  version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
+  version: c7e63cf4530bcd3ba943729cee0efeff2ebea63f
 - name: github.com/timewasted/linode
   version: 37e84520dcf74488f67654f9c775b9752c232dc1
   subpackages:
@@ -467,7 +469,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/ini.v1
-  version: 36da989cdc560b989d8f195aec46214d33665d20
+  version: 6e4869b434bd001f6983749881c7ead3545887d8
 - name: gopkg.in/mgo.v2
   version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
   subpackages:
