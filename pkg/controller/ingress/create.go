@@ -8,6 +8,7 @@ import (
 
 	"github.com/appscode/errors"
 	"github.com/appscode/go/encoding/yaml"
+	"github.com/appscode/k8s-addons/api"
 	"github.com/appscode/log"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
@@ -112,6 +113,7 @@ func (lbc *EngressController) createLB() error {
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
+			go lbc.updateStatus()
 		} else {
 			return errors.New("LoadBalancer type ingress is unsupported for cloud provider:", lbc.Options.ProviderName).Err()
 		}
@@ -541,26 +543,45 @@ func (lbc *EngressController) ensureStatsService() {
 }
 
 func (lbc *EngressController) updateStatus() error {
-	var serviceExtIp string
-	for {
-		time.Sleep(time.Second * 60)
+	if lbc.Options.LBType != LBTypeLoadBalancer {
+		return nil
+	}
+
+	var statuses []kapi.LoadBalancerIngress
+	for i := 0; i < 50; i++ {
+		time.Sleep(time.Second * 10)
 		if svc, err := lbc.KubeClient.Core().
 			Services(lbc.Config.Namespace).
 			Get(VoyagerPrefix + lbc.Config.Name); err == nil {
 			if len(svc.Status.LoadBalancer.Ingress) >= 1 {
-				serviceExtIp = svc.Status.LoadBalancer.Ingress[0].IP
+				statuses = svc.Status.LoadBalancer.Ingress
 				break
 			}
 		}
 	}
-	if len(lbc.Config.Status.LoadBalancer.Ingress) <= 0 {
-		lbc.Config.Status.LoadBalancer.Ingress = make([]kapi.LoadBalancerIngress, 0)
-	}
-	log.Infoln("Updating engress")
-	lbc.Config.Status.LoadBalancer.Ingress = append(lbc.Config.Status.LoadBalancer.Ingress, kapi.LoadBalancerIngress{IP: serviceExtIp})
-	_, err := lbc.ACExtensionClient.Ingress(lbc.Config.Namespace).Update(lbc.Config)
-	if err != nil {
-		return errors.FromErr(err).Err()
+
+	if len(statuses) > 0 {
+		if lbc.Config.Annotations[api.EngressKind] == "ingress" {
+			ing, err := lbc.KubeClient.Extensions().Ingresses(lbc.Config.Namespace).Get(lbc.Config.Name)
+			if err != nil {
+				return errors.FromErr(err).Err()
+			}
+			ing.Status.LoadBalancer.Ingress = statuses
+			_, err = lbc.KubeClient.Extensions().Ingresses(lbc.Config.Namespace).Update(ing)
+			if err != nil {
+				return errors.FromErr(err).Err()
+			}
+		} else {
+			ing, err := lbc.ACExtensionClient.Ingress(lbc.Config.Namespace).Get(lbc.Config.Name)
+			if err != nil {
+				return errors.FromErr(err).Err()
+			}
+			ing.Status.LoadBalancer.Ingress = statuses
+			_, err = lbc.ACExtensionClient.Ingress(lbc.Config.Namespace).Update(ing)
+			if err != nil {
+				return errors.FromErr(err).Err()
+			}
+		}
 	}
 	return nil
 }
