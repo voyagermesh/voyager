@@ -1,11 +1,14 @@
 package app
 
 import (
+	"strings"
+
 	aci "github.com/appscode/k8s-addons/api"
 	"github.com/appscode/k8s-addons/pkg/events"
 	"github.com/appscode/k8s-addons/pkg/stash"
 	acw "github.com/appscode/k8s-addons/pkg/watcher"
 	"github.com/appscode/log"
+	"github.com/appscode/voyager/pkg/analytics"
 	"github.com/appscode/voyager/pkg/controller/certificates"
 	ingresscontroller "github.com/appscode/voyager/pkg/controller/ingress"
 	kapi "k8s.io/kubernetes/pkg/api"
@@ -102,12 +105,15 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 			certController := certificates.NewController(w.Client, w.AppsCodeExtensionClient)
 			certController.Handle(e)
 		}
+		sendAnalytics(e, err)
 		return err
 	case events.Certificate:
+		var err error
 		if e.EventType.IsAdded() || e.EventType.IsUpdated() {
 			certController := certificates.NewController(w.Client, w.AppsCodeExtensionClient)
-			certController.Handle(e)
+			err = certController.Handle(e)
 		}
+		sendAnalytics(e, err)
 	case events.Service:
 		if e.EventType.IsAdded() || e.EventType.IsDeleted() {
 			return ingresscontroller.UpgradeAllEngress(
@@ -151,4 +157,32 @@ func (w *Watcher) Certificate() {
 	go controller.Run(wait.NeverStop)
 
 	go certificates.NewCertificateSyncer(w.Client, w.AppsCodeExtensionClient).RunSync()
+}
+
+func sendAnalytics(e *events.Event, err error) {
+	switch e.ResourceType {
+	case events.Ingress, events.ExtendedIngress, events.Certificate:
+		if e.EventType.IsAdded() || e.EventType.IsDeleted() {
+			// without converting to specific type for each resource, we
+			// extract group version from resource SelfLink. This guaranties
+			// having GroupVersion.
+			gvk := e.MetaData.GetSelfLink()
+			if len(gvk) > 0 {
+				gvk = strings.TrimPrefix(gvk, "/apis/")
+				idx := strings.Index(gvk, "/namespace")
+				if idx > 0 {
+					gvk = gvk[0:idx]
+				}
+				if len(gvk) > 0 && !strings.HasSuffix(gvk, "/") {
+					gvk += "/"
+				}
+			}
+
+			label := "success"
+			if err != nil {
+				label = "fail"
+			}
+			go analytics.Send(gvk+e.ResourceType.String(), strings.ToLower(e.EventType.String()), label)
+		}
+	}
 }
