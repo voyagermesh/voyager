@@ -126,6 +126,22 @@ func (ing *IngressTestSuit) TestIngressCreateDelete() error {
 		}
 	}
 
+	if ing.t.Voyager.ProviderName != "minikube" {
+		// Check Status for ingress
+		baseIngress, err := ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
+		if len(svc.Status.LoadBalancer.Ingress) > 0 {
+			if len(baseIngress.Status.LoadBalancer.Ingress) != len(svc.Status.LoadBalancer.Ingress) {
+				return errors.New().WithMessage("Statuses didn't matched").Err()
+			}
+			if baseIngress.Status.LoadBalancer.Ingress[0] != svc.Status.LoadBalancer.Ingress[0] {
+				return errors.New().WithMessage("Statuses didn't matched").Err()
+			}
+		}
+	}
+
 	err = ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Failed to delete").Err()

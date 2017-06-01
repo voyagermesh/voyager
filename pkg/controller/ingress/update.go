@@ -43,7 +43,12 @@ func (lbc *EngressController) Update(t updateType) error {
 		}
 	}
 	if t&UpdateFirewall > 0 {
-		return lbc.updateLBSvc()
+		err := lbc.updateLBSvc()
+		if err != nil {
+			// Only update if the service is updated.
+			go lbc.updateStatus()
+		}
+		return err
 	}
 
 	if t&UpdateStats > 0 {
