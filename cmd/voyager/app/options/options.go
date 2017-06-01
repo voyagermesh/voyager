@@ -35,5 +35,5 @@ func (s *Config) AddFlags(fs *pflag.FlagSet) {
 
 	fs.StringVar(&s.IngressClass, "ingress-class", "", "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
 
-	fs.BoolVar(&s.EnableAnalytics, "analytics", true, "Send analytical event to Google Analytics")
+	fs.BoolVar(&s.EnableAnalytics, "analytics", s.EnableAnalytics, "Send analytical event to Google Analytics")
 }

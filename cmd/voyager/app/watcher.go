@@ -16,6 +16,7 @@ import (
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/cache"
+	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/util/wait"
 )
 
@@ -163,18 +164,25 @@ func sendAnalytics(e *events.Event, err error) {
 	switch e.ResourceType {
 	case events.Ingress, events.ExtendedIngress, events.Certificate:
 		if e.EventType.IsAdded() || e.EventType.IsDeleted() {
-			// without converting to specific type for each resource, we
-			// extract group version from resource SelfLink. This guaranties
-			// having GroupVersion.
-			gvk := e.MetaData.GetSelfLink()
-			if len(gvk) > 0 {
-				gvk = strings.TrimPrefix(gvk, "/apis/")
-				idx := strings.Index(gvk, "/namespace")
-				if idx > 0 {
-					gvk = gvk[0:idx]
+			gv := ""
+			runtimeObj, ok := e.RuntimeObj[0].(runtime.Object)
+			if ok {
+				gvk := runtimeObj.GetObjectKind().GroupVersionKind()
+				if len(gvk.Group) > 0 && len(gvk.Version) > 0 {
+					gv = strings.Join([]string{gvk.Group, gvk.Version}, "/") + "/"
 				}
-				if len(gvk) > 0 && !strings.HasSuffix(gvk, "/") {
-					gvk += "/"
+			}
+
+			// Group Version is empty. Try Getting from SelfLink.
+			if len(gv) <= 0 {
+				// we extract group version from resource SelfLink. This guaranties
+				// having GroupVersion.
+				gv = e.MetaData.GetSelfLink()
+				if len(gv) > 0 {
+					tokens := strings.Split(strings.Trim(gv, "/"), "/")
+					if len(tokens) >= 3 {
+						gv = tokens[1] + "/" + tokens[2] + "/"
+					}
 				}
 			}
 
@@ -182,7 +190,7 @@ func sendAnalytics(e *events.Event, err error) {
 			if err != nil {
 				label = "fail"
 			}
-			go analytics.Send(gvk+e.ResourceType.String(), strings.ToLower(e.EventType.String()), label)
+			go analytics.Send(gv+e.ResourceType.String(), strings.ToLower(e.EventType.String()), label)
 		}
 	}
 }
