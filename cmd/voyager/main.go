@@ -16,7 +16,7 @@ import (
 	"github.com/mikespook/golib/signal"
 	"github.com/spf13/pflag"
 	// Add fake package as a dependency to add this under vendor
-	_ "github.com/appscode/k8s-addons/client/clientset/fake"
+	_ "github.com/appscode/voyager/client/clientset/fake"
 	_ "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
 )
 
