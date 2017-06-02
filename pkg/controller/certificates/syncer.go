@@ -26,7 +26,7 @@ func (c *CertificateSyncer) RunSync() error {
 	for {
 		select {
 		case <-c.Time.After(time.Hour * 24):
-			certificates, err := c.ACExtensionClient.Certificate(api.NamespaceAll).List(api.ListOptions{})
+			certificates, err := c.ExtClient.Certificate(api.NamespaceAll).List(api.ListOptions{})
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}

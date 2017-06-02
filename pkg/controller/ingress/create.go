@@ -594,12 +594,12 @@ func (lbc *EngressController) updateStatus() error {
 				return errors.FromErr(err).Err()
 			}
 		} else {
-			ing, err := lbc.ACExtensionClient.Ingress(lbc.Config.Namespace).Get(lbc.Config.Name)
+			ing, err := lbc.ExtClient.Ingress(lbc.Config.Namespace).Get(lbc.Config.Name)
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
 			ing.Status.LoadBalancer.Ingress = statuses
-			_, err = lbc.ACExtensionClient.Ingress(lbc.Config.Namespace).Update(ing)
+			_, err = lbc.ExtClient.Ingress(lbc.Config.Namespace).Update(ing)
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}

@@ -17,10 +17,10 @@ import (
 )
 
 type TestSuit struct {
-	Config          testframework.E2EConfig
-	KubeClient      internalclientset.Interface
-	ExtensionClient clientset.ExtensionInterface
-	Voyager         *app.Watcher
+	Config     testframework.E2EConfig
+	KubeClient internalclientset.Interface
+	ExtClient  clientset.ExtensionInterface
+	Voyager    *app.Watcher
 }
 
 func init() {
@@ -46,8 +46,8 @@ func NewE2ETestSuit() *TestSuit {
 			LoadbalancerImage: testframework.TestContext.E2EConfigs.LoadbalancerImageName,
 			IngressClass:      testframework.TestContext.E2EConfigs.IngressClass,
 		},
-		KubeClient:      internalclientset.NewForConfigOrDie(c),
-		ExtensionClient: acs.NewForConfigOrDie(c),
+		KubeClient: internalclientset.NewForConfigOrDie(c),
+		ExtClient:  acs.NewForConfigOrDie(c),
 	}
 }
 

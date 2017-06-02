@@ -167,9 +167,9 @@ func getTargetAnnotations(s annotation, key string) (map[string]string, bool) {
 
 type EngressController struct {
 	// kubernetes client
-	KubeClient        clientset.Interface
-	ACExtensionClient acs.ExtensionInterface
-	CloudManager      cloudprovider.Interface
+	KubeClient   clientset.Interface
+	ExtClient    acs.ExtensionInterface
+	CloudManager cloudprovider.Interface
 
 	// Engress object that created or updated.
 	Config  *aci.Ingress
