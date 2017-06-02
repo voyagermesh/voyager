@@ -23,5 +23,11 @@ do
 	cat $dir/tls.key >> $CERT_DIR/$secret.pem
 done
 
+echo "Checking HAProxy configuration ..."
+cmd="exec /kloader check $KLOADER_ARGS"
+echo $cmd
+$cmd
+rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+
 echo "Starting runit..."
 exec /usr/sbin/runsvdir-start
