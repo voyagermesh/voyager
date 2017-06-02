@@ -21,14 +21,8 @@ func v1addKnownTypes(scheme *runtime.Scheme) error {
 		&Ingress{},
 		&IngressList{},
 
-		&Alert{},
-		&AlertList{},
-
 		&Certificate{},
 		&CertificateList{},
-
-		&Backup{},
-		&BackupList{},
 
 		&v1.ListOptions{},
 	)

@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/appscode/errors"
-	aci "github.com/appscode/k8s-addons/api"
 	"github.com/appscode/log"
+	aci "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/controller/ingress"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	"k8s.io/kubernetes/pkg/api"
@@ -68,13 +68,13 @@ func (ing *IngressTestSuit) TestIngressDaemonCreate() error {
 		},
 	}
 
-	_, err := ing.t.ExtensionClient.Ingress(baseDaemonIngress.Namespace).Create(baseDaemonIngress)
+	_, err := ing.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Create(baseDaemonIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if ing.t.Config.Cleanup {
-			ing.t.ExtensionClient.Ingress(baseDaemonIngress.Namespace).Delete(baseDaemonIngress.Name)
+			ing.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Delete(baseDaemonIngress.Name)
 		}
 	}()
 
@@ -165,13 +165,13 @@ func (ing *IngressTestSuit) TestIngressDaemonUpdate() error {
 		},
 	}
 
-	_, err := ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err := ing.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	defer func() {
 		if ing.t.Config.Cleanup {
-			ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+			ing.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
@@ -210,12 +210,12 @@ func (ing *IngressTestSuit) TestIngressDaemonUpdate() error {
 		}
 	}
 
-	updatedBaseIngress, err := ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+	updatedBaseIngress, err := ing.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	updatedBaseIngress.Spec.Rules[0].HTTP.Paths[0].Path = "/newTestpath"
-	_, err = ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Update(updatedBaseIngress)
+	_, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Update(updatedBaseIngress)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
@@ -258,7 +258,7 @@ func (ing *IngressTestSuit) TestIngressDaemonUpdate() error {
 	}
 
 	// Open New Port
-	updatedBaseIngress, err = ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+	updatedBaseIngress, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
@@ -274,7 +274,7 @@ func (ing *IngressTestSuit) TestIngressDaemonUpdate() error {
 				},
 			},
 		}
-		_, err = ing.t.ExtensionClient.Ingress(baseIngress.Namespace).Update(updatedBaseIngress)
+		_, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Update(updatedBaseIngress)
 		if err != nil {
 			return errors.New().WithCause(err).Err()
 		}
@@ -374,13 +374,13 @@ func (ing *IngressTestSuit) TestIngressDaemonRestart() error {
 		},
 	}
 
-	_, err := ing.t.ExtensionClient.Ingress(baseDaemonIngress.Namespace).Create(baseDaemonIngress)
+	_, err := ing.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Create(baseDaemonIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if ing.t.Config.Cleanup {
-			ing.t.ExtensionClient.Ingress(baseDaemonIngress.Namespace).Delete(baseDaemonIngress.Name)
+			ing.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Delete(baseDaemonIngress.Name)
 		}
 	}()
 

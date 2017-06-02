@@ -6,10 +6,10 @@ import (
 	"strings"
 	"sync"
 
-	aci "github.com/appscode/k8s-addons/api"
-	acs "github.com/appscode/k8s-addons/client/clientset"
-	"github.com/appscode/k8s-addons/pkg/stash"
 	"github.com/appscode/log"
+	aci "github.com/appscode/voyager/api"
+	acs "github.com/appscode/voyager/client/clientset"
+	"github.com/appscode/voyager/pkg/stash"
 	"k8s.io/kubernetes/pkg/client/cache"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/cloudprovider"
@@ -167,9 +167,9 @@ func getTargetAnnotations(s annotation, key string) (map[string]string, bool) {
 
 type EngressController struct {
 	// kubernetes client
-	KubeClient        clientset.Interface
-	ACExtensionClient acs.AppsCodeExtensionInterface
-	CloudManager      cloudprovider.Interface
+	KubeClient   clientset.Interface
+	ExtClient    acs.ExtensionInterface
+	CloudManager cloudprovider.Interface
 
 	// Engress object that created or updated.
 	Config  *aci.Ingress

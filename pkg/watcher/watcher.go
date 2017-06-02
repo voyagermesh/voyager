@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
-	acs "github.com/appscode/k8s-addons/client/clientset"
-	"github.com/appscode/k8s-addons/pkg/events"
-	"github.com/appscode/k8s-addons/pkg/stash"
+	acs "github.com/appscode/voyager/client/clientset"
+	"github.com/appscode/voyager/pkg/events"
+	"github.com/appscode/voyager/pkg/stash"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/client/cache"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
@@ -20,7 +20,7 @@ type Watcher struct {
 	Client clientset.Interface
 
 	// client for getting the appscode extensions
-	AppsCodeExtensionClient acs.AppsCodeExtensionInterface
+	AppsCodeExtensionClient acs.ExtensionInterface
 
 	// sync time to sync the list.
 	SyncPeriod time.Duration

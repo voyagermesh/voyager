@@ -3,8 +3,8 @@ package app
 import (
 	"testing"
 
-	aci "github.com/appscode/k8s-addons/api"
-	acw "github.com/appscode/k8s-addons/pkg/watcher"
+	aci "github.com/appscode/voyager/api"
+	acw "github.com/appscode/voyager/pkg/watcher"
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
 	kapi "k8s.io/kubernetes/pkg/api"

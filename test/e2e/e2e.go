@@ -5,11 +5,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/appscode/k8s-addons/client/clientset"
-	acs "github.com/appscode/k8s-addons/client/clientset"
-	acw "github.com/appscode/k8s-addons/pkg/watcher"
 	"github.com/appscode/log"
+	"github.com/appscode/voyager/client/clientset"
+	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/cmd/voyager/app"
+	acw "github.com/appscode/voyager/pkg/watcher"
 	"github.com/appscode/voyager/test/testframework"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/client/restclient"
@@ -17,10 +17,10 @@ import (
 )
 
 type TestSuit struct {
-	Config          testframework.E2EConfig
-	KubeClient      internalclientset.Interface
-	ExtensionClient clientset.AppsCodeExtensionInterface
-	Voyager         *app.Watcher
+	Config     testframework.E2EConfig
+	KubeClient internalclientset.Interface
+	ExtClient  clientset.ExtensionInterface
+	Voyager    *app.Watcher
 }
 
 func init() {
@@ -38,7 +38,7 @@ func NewE2ETestSuit() *TestSuit {
 		Voyager: &app.Watcher{
 			Watcher: acw.Watcher{
 				Client:                  internalclientset.NewForConfigOrDie(c),
-				AppsCodeExtensionClient: acs.NewACExtensionsForConfigOrDie(c),
+				AppsCodeExtensionClient: acs.NewForConfigOrDie(c),
 				SyncPeriod:              time.Minute * 5,
 			},
 			ProviderName:      testframework.TestContext.E2EConfigs.ProviderName,
@@ -46,8 +46,8 @@ func NewE2ETestSuit() *TestSuit {
 			LoadbalancerImage: testframework.TestContext.E2EConfigs.LoadbalancerImageName,
 			IngressClass:      testframework.TestContext.E2EConfigs.IngressClass,
 		},
-		KubeClient:      internalclientset.NewForConfigOrDie(c),
-		ExtensionClient: acs.NewACExtensionsForConfigOrDie(c),
+		KubeClient: internalclientset.NewForConfigOrDie(c),
+		ExtClient:  acs.NewForConfigOrDie(c),
 	}
 }
 

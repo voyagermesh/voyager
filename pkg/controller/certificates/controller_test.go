@@ -13,10 +13,10 @@ import (
 	"strings"
 	"testing"
 
-	aci "github.com/appscode/k8s-addons/api"
-	acs "github.com/appscode/k8s-addons/client/clientset"
-	"github.com/appscode/k8s-addons/client/clientset/fake"
 	"github.com/appscode/log"
+	aci "github.com/appscode/voyager/api"
+	acs "github.com/appscode/voyager/client/clientset"
+	"github.com/appscode/voyager/client/clientset/fake"
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
 	"github.com/xenolf/lego/acme"
@@ -172,7 +172,7 @@ func TestCreate(t *testing.T) {
 				ProviderCredentialSecretName: "fakesecret",
 			},
 		}
-		fakeController.ACExtensionClient.Certificate("bar").Create(fakeController.certificate)
+		fakeController.ExtClient.Certificate("bar").Create(fakeController.certificate)
 
 		fakeController.acmeClientConfig = &ACMEConfig{
 			ProviderCredentials: make(map[string][]byte),
@@ -217,7 +217,7 @@ func TestCreate(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, "true", value)
 
-		certificate, err := fakeController.ACExtensionClient.Certificate("bar").Get("foo")
+		certificate, err := fakeController.ExtClient.Certificate("bar").Get("foo")
 		if err != nil {
 			t.Fatal(err)
 		}

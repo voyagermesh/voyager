@@ -1,5 +1,5 @@
-hash: c14ebc4c1cf8a72e5ba9505aae0e53df1c87262e23728b42b1afd81990c7d691
-updated: 2017-06-01T02:54:01.536095102-07:00
+hash: edc1b01206ae62343e19740aaaf11c0b74b21d4b7483e25e5a7e5331e4d25f65
+updated: 2017-06-02T15:02:47.471001255-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -22,16 +22,6 @@ imports:
   - runtime
   - strings
   - version
-- name: github.com/appscode/k8s-addons
-  version: a710ffd2f413cb9fb766ee5a71c835fca23f9ca0
-  subpackages:
-  - api
-  - api/install
-  - client/clientset
-  - client/clientset/fake
-  - pkg/events
-  - pkg/stash
-  - pkg/watcher
 - name: github.com/appscode/log
   version: 68e0e42e42c01371f3950571fc87c2298a51dd8f
   subpackages:
@@ -224,7 +214,7 @@ imports:
 - name: github.com/jonboulle/clockwork
   version: 72f9bd7c4e0c2a40055ab3d0f09654f730cce982
 - name: github.com/jpillora/go-ogle-analytics
-  version: 2fcc54fe85cce40ab0d9ce84d974f3be9948b9c0
+  version: 14b04e0594ef6a9fd943363b135656f0ec8c9d0e
 - name: github.com/juju/errors
   version: 8234c829496aaeae67c5c71235a2cbcc289e960a
 - name: github.com/juju/ratelimit
@@ -329,9 +319,9 @@ imports:
   subpackages:
   - zk
 - name: github.com/spf13/cobra
-  version: 9c28e4bbd74e5c3ed7aacbc552b2cab7cfdfe744
+  version: f62e98d28ab7ad31d707ba837a966378465c7b57
 - name: github.com/spf13/pflag
-  version: c7e63cf4530bcd3ba943729cee0efeff2ebea63f
+  version: 5ccb023bc27df288a957c5e994cd44fd19619465
 - name: github.com/timewasted/linode
   version: 37e84520dcf74488f67654f9c775b9752c232dc1
   subpackages:

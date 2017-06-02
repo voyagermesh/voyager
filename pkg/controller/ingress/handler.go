@@ -7,12 +7,12 @@ import (
 
 	"github.com/appscode/errors"
 	stringutil "github.com/appscode/go/strings"
-	aci "github.com/appscode/k8s-addons/api"
-	_ "github.com/appscode/k8s-addons/api/install"
-	acs "github.com/appscode/k8s-addons/client/clientset"
-	"github.com/appscode/k8s-addons/pkg/events"
-	"github.com/appscode/k8s-addons/pkg/stash"
 	"github.com/appscode/log"
+	aci "github.com/appscode/voyager/api"
+	_ "github.com/appscode/voyager/api/install"
+	acs "github.com/appscode/voyager/client/clientset"
+	"github.com/appscode/voyager/pkg/events"
+	"github.com/appscode/voyager/pkg/stash"
 	kapi "k8s.io/kubernetes/pkg/api"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/cloudprovider"
@@ -23,13 +23,13 @@ import (
 
 func NewEngressController(clusterName, providerName string,
 	kubeClient clientset.Interface,
-	acExtClient acs.AppsCodeExtensionInterface,
+	extClient acs.ExtensionInterface,
 	store *stash.Storage,
 	ingressClass string) *EngressController {
 	h := &EngressController{
-		KubeClient:        kubeClient,
-		Storage:           store,
-		ACExtensionClient: acExtClient,
+		KubeClient: kubeClient,
+		Storage:    store,
+		ExtClient:  extClient,
 		Options: &KubeOptions{
 			ClusterName:  clusterName,
 			ProviderName: providerName,
@@ -67,7 +67,7 @@ func NewEngressController(clusterName, providerName string,
 
 func UpgradeAllEngress(service, clusterName, providerName string,
 	kubeClient clientset.Interface,
-	acExtClient acs.AppsCodeExtensionInterface,
+	extClient acs.ExtensionInterface,
 	store *stash.Storage,
 	ingressClass string) error {
 	ing, err := kubeClient.Extensions().Ingresses(kapi.NamespaceAll).List(kapi.ListOptions{
@@ -77,7 +77,7 @@ func UpgradeAllEngress(service, clusterName, providerName string,
 		return errors.FromErr(err).Err()
 	}
 
-	eng, err := acExtClient.Ingress(kapi.NamespaceAll).List(kapi.ListOptions{
+	eng, err := extClient.Ingress(kapi.NamespaceAll).List(kapi.ListOptions{
 		LabelSelector: labels.Everything(),
 	})
 	if err != nil {
@@ -99,7 +99,7 @@ func UpgradeAllEngress(service, clusterName, providerName string,
 		if shouldHandleIngress(engress, ingressClass) {
 			log.Infoln("Checking for service", service, "to be used to loadbalnace by ingress", item.Name, item.Namespace)
 			if ok, name, namespace := isEngressHaveService(engress, service); ok {
-				lbc := NewEngressController(clusterName, providerName, kubeClient, acExtClient, store, ingressClass)
+				lbc := NewEngressController(clusterName, providerName, kubeClient, extClient, store, ingressClass)
 				lbc.Config = &items[i]
 				log.Infoln("Trying to Update Ingress", item.Name, item.Namespace)
 				if lbc.IsExists() {

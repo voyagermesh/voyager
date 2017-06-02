@@ -3,14 +3,14 @@ package app
 import (
 	"strings"
 
-	aci "github.com/appscode/k8s-addons/api"
-	"github.com/appscode/k8s-addons/pkg/events"
-	"github.com/appscode/k8s-addons/pkg/stash"
-	acw "github.com/appscode/k8s-addons/pkg/watcher"
 	"github.com/appscode/log"
+	aci "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/analytics"
 	"github.com/appscode/voyager/pkg/controller/certificates"
 	ingresscontroller "github.com/appscode/voyager/pkg/controller/ingress"
+	"github.com/appscode/voyager/pkg/events"
+	"github.com/appscode/voyager/pkg/stash"
+	acw "github.com/appscode/voyager/pkg/watcher"
 	kapi "k8s.io/kubernetes/pkg/api"
 	k8serrors "k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/unversioned"

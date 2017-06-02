@@ -1,12 +1,13 @@
 package fake
 
 import (
-	aci "github.com/appscode/k8s-addons/api"
+	aci "github.com/appscode/voyager/api"
 	"k8s.io/kubernetes/pkg/api"
 	schema "k8s.io/kubernetes/pkg/api/unversioned"
 	testing "k8s.io/kubernetes/pkg/client/testing/core"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/watch"
+	"github.com/appscode/voyager/client/clientset"
 )
 
 type FakeCertificate struct {
@@ -15,6 +16,8 @@ type FakeCertificate struct {
 }
 
 var certResource = schema.GroupVersionResource{Group: "appscode.com", Version: "v1beta1", Resource: "certificates"}
+
+var _ clientset.CertificateInterface = &FakeCertificate{}
 
 // Get returns the Certificate by name.
 func (mock *FakeCertificate) Get(name string) (*aci.Certificate, error) {

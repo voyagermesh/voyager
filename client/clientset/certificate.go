@@ -1,7 +1,7 @@
 package clientset
 
 import (
-	aci "github.com/appscode/k8s-addons/api"
+	aci "github.com/appscode/voyager/api"
 	"k8s.io/kubernetes/pkg/api"
 	rest "k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/watch"
@@ -26,7 +26,9 @@ type CertificateImpl struct {
 	ns string
 }
 
-func newCertificate(c *AppsCodeExtensionsClient, namespace string) *CertificateImpl {
+var _ CertificateInterface = &CertificateImpl{}
+
+func newCertificate(c *ExtensionClient, namespace string) *CertificateImpl {
 	return &CertificateImpl{c.restClient, namespace}
 }
 

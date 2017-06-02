@@ -8,8 +8,8 @@ import (
 
 	"github.com/appscode/errors"
 	"github.com/appscode/go/encoding/yaml"
-	"github.com/appscode/k8s-addons/api"
 	"github.com/appscode/log"
+	"github.com/appscode/voyager/api"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	kepi "k8s.io/kubernetes/pkg/apis/extensions"
@@ -594,12 +594,12 @@ func (lbc *EngressController) updateStatus() error {
 				return errors.FromErr(err).Err()
 			}
 		} else {
-			ing, err := lbc.ACExtensionClient.Ingress(lbc.Config.Namespace).Get(lbc.Config.Name)
+			ing, err := lbc.ExtClient.Ingress(lbc.Config.Namespace).Get(lbc.Config.Name)
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
 			ing.Status.LoadBalancer.Ingress = statuses
-			_, err = lbc.ACExtensionClient.Ingress(lbc.Config.Namespace).Update(ing)
+			_, err = lbc.ExtClient.Ingress(lbc.Config.Namespace).Update(ing)
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
