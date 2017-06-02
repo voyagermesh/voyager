@@ -1,8 +1,8 @@
 package watcher
 
 import (
-	acs "github.com/appscode/k8s-addons/client/clientset"
-	"github.com/appscode/k8s-addons/pkg/events"
+	acs "github.com/appscode/voyager/client/clientset"
+	"github.com/appscode/voyager/pkg/events"
 	kapi "k8s.io/kubernetes/pkg/api"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/fields"

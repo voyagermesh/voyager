@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/appscode/go/runtime"
-	_ "github.com/appscode/k8s-addons/api/install"
-	acs "github.com/appscode/k8s-addons/client/clientset"
-	acw "github.com/appscode/k8s-addons/pkg/watcher"
+	_ "github.com/appscode/voyager/api/install"
+	acs "github.com/appscode/voyager/client/clientset"
+	acw "github.com/appscode/voyager/pkg/watcher"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/cmd/voyager/app/options"
 	"github.com/appscode/voyager/pkg/analytics"

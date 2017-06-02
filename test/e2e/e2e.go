@@ -5,9 +5,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/appscode/k8s-addons/client/clientset"
-	acs "github.com/appscode/k8s-addons/client/clientset"
-	acw "github.com/appscode/k8s-addons/pkg/watcher"
+	"github.com/appscode/voyager/client/clientset"
+	acs "github.com/appscode/voyager/client/clientset"
+	acw "github.com/appscode/voyager/pkg/watcher"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/cmd/voyager/app"
 	"github.com/appscode/voyager/test/testframework"

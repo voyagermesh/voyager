@@ -13,9 +13,9 @@ import (
 	"strings"
 	"testing"
 
-	aci "github.com/appscode/k8s-addons/api"
-	acs "github.com/appscode/k8s-addons/client/clientset"
-	"github.com/appscode/k8s-addons/client/clientset/fake"
+	aci "github.com/appscode/voyager/api"
+	acs "github.com/appscode/voyager/client/clientset"
+	"github.com/appscode/voyager/client/clientset/fake"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"

@@ -11,9 +11,9 @@ import (
 
 	"github.com/appscode/errors"
 	"github.com/appscode/go/strings"
-	aci "github.com/appscode/k8s-addons/api"
-	acs "github.com/appscode/k8s-addons/client/clientset"
-	"github.com/appscode/k8s-addons/pkg/events"
+	aci "github.com/appscode/voyager/api"
+	acs "github.com/appscode/voyager/client/clientset"
+	"github.com/appscode/voyager/pkg/events"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/pkg/controller/certificates/providers"
 	"github.com/xenolf/lego/acme"

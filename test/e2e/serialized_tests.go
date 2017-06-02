@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/appscode/errors"
-	aci "github.com/appscode/k8s-addons/api"
+	aci "github.com/appscode/voyager/api"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/pkg/controller/ingress"
 	"github.com/appscode/voyager/test/test-server/testserverclient"

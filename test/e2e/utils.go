@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/appscode/errors"
-	aci "github.com/appscode/k8s-addons/api"
+	aci "github.com/appscode/voyager/api"
 	"github.com/appscode/log"
 	ingresscontroller "github.com/appscode/voyager/pkg/controller/ingress"
 	"k8s.io/kubernetes/pkg/api"

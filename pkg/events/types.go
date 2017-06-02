@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	aci "github.com/appscode/k8s-addons/api"
+	aci "github.com/appscode/voyager/api"
 	"github.com/appscode/log"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/apis/apps"

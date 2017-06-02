@@ -1,7 +1,7 @@
 package fake
 
 import (
-	aci "github.com/appscode/k8s-addons/api"
+	aci "github.com/appscode/voyager/api"
 	"k8s.io/kubernetes/pkg/api"
 	schema "k8s.io/kubernetes/pkg/api/unversioned"
 	testing "k8s.io/kubernetes/pkg/client/testing/core"

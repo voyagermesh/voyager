@@ -6,9 +6,9 @@ import (
 	"strings"
 	"sync"
 
-	aci "github.com/appscode/k8s-addons/api"
-	acs "github.com/appscode/k8s-addons/client/clientset"
-	"github.com/appscode/k8s-addons/pkg/stash"
+	aci "github.com/appscode/voyager/api"
+	acs "github.com/appscode/voyager/client/clientset"
+	"github.com/appscode/voyager/pkg/stash"
 	"github.com/appscode/log"
 	"k8s.io/kubernetes/pkg/client/cache"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"

@@ -1,7 +1,7 @@
 package install
 
 import (
-	aci "github.com/appscode/k8s-addons/api"
+	aci "github.com/appscode/voyager/api"
 	"k8s.io/kubernetes/pkg/apimachinery/announced"
 	"k8s.io/kubernetes/pkg/util/sets"
 )
@@ -11,7 +11,7 @@ func init() {
 		&announced.GroupMetaFactoryArgs{
 			GroupName:                  aci.GroupName,
 			VersionPreferenceOrder:     []string{aci.V1beta1SchemeGroupVersion.Version},
-			ImportPrefix:               "github.com/appscode/k8s-addons/api",
+			ImportPrefix:               "github.com/appscode/voyager/api",
 			RootScopedKinds:            sets.NewString("PodSecurityPolicy", "ThirdPartyResource"),
 			AddInternalObjectsToScheme: aci.AddToScheme,
 		},

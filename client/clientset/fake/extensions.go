@@ -1,7 +1,7 @@
 package fake
 
 import (
-	"github.com/appscode/k8s-addons/client/clientset"
+	"github.com/appscode/voyager/client/clientset"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/apimachinery/registered"
 	rest "k8s.io/kubernetes/pkg/client/restclient"
@@ -44,10 +44,6 @@ func (a *FakeExtensionClient) Alert(namespace string) clientset.AlertInterface {
 
 func (m *FakeExtensionClient) Certificate(ns string) clientset.CertificateInterface {
 	return &FakeCertificate{m.Fake, ns}
-}
-
-func (m *FakeExtensionClient) Backups(ns string) clientset.BackupInterface {
-	return &FakeBackup{m.Fake, ns}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

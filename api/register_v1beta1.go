@@ -27,9 +27,6 @@ func v1addKnownTypes(scheme *runtime.Scheme) error {
 		&Certificate{},
 		&CertificateList{},
 
-		&Backup{},
-		&BackupList{},
-
 		&v1.ListOptions{},
 	)
 	versionedwatch.AddToGroupVersion(scheme, V1beta1SchemeGroupVersion)

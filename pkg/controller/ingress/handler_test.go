@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	aci "github.com/appscode/k8s-addons/api"
+	aci "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
 	kapi "k8s.io/kubernetes/pkg/api"

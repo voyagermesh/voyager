@@ -8,7 +8,7 @@ import (
 
 	"github.com/appscode/errors"
 	"github.com/appscode/go/encoding/yaml"
-	"github.com/appscode/k8s-addons/api"
+	"github.com/appscode/voyager/api"
 	"github.com/appscode/log"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
