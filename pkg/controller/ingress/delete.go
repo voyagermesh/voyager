@@ -6,7 +6,6 @@ import (
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	kapi "k8s.io/kubernetes/pkg/api"
-	kerr "k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/selection"
 	"k8s.io/kubernetes/pkg/util/sets"
@@ -53,7 +52,10 @@ func (lbc *EngressController) deleteLB() error {
 			return errors.FromErr(err).Err()
 		}
 	}
+	return lbc.deleteLBSvc()
+}
 
+func (lbc *EngressController) deleteLBSvc() error {
 	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
 	if err == nil {
 		// delete service
@@ -83,8 +85,6 @@ func (lbc *EngressController) deleteLB() error {
 				}
 			}
 		}
-	} else if !kerr.IsNotFound(err) {
-		return errors.FromErr(err).Err()
 	}
 	return nil
 }
@@ -132,13 +132,15 @@ func (lbc *EngressController) deleteNodePortPods() error {
 func (lbc *EngressController) deleteResidualPods() error {
 	rc, err := lbc.KubeClient.Core().ReplicationControllers(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
 	if err != nil {
-		return errors.FromErr(err).Err()
+		log.Warningln(err)
+		return err
 	}
 	// resize the controller to zero (effectively deleting all pods) before deleting it.
 	rc.Spec.Replicas = 0
 	_, err = lbc.KubeClient.Core().ReplicationControllers(lbc.Config.Namespace).Update(rc)
 	if err != nil {
-		return errors.FromErr(err).Err()
+		log.Warningln(err)
+		return err
 	}
 
 	log.Debugln("Waiting before delete the RC")
@@ -149,7 +151,8 @@ func (lbc *EngressController) deleteResidualPods() error {
 		OrphanDependents: &falseVar,
 	})
 	if err != nil {
-		return errors.FromErr(err).Err()
+		log.Warningln(err)
+		return err
 	}
 	lbc.deletePodsForSelector(rc.Spec.Selector)
 	return nil

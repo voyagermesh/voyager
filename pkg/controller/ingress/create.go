@@ -54,8 +54,30 @@ func (lbc *EngressController) ensureResources() {
 	// if there is already an resource with this name
 	// delete those resource and create the new resource.
 	log.Debugln("trying to delete already existing resources.")
-	lbc.deleteConfigMap()
-	lbc.deleteLB()
+	_, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+	if err == nil {
+		lbc.deleteConfigMap()
+	}
+	if lbc.Options.LBType == LBTypeDaemon || lbc.Options.LBType == LBTypeHostPort {
+		_, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+		if err == nil {
+			lbc.deleteHostPortPods()
+		}
+	} else if lbc.Options.LBType == LBTypeNodePort {
+		_, err := lbc.KubeClient.Extensions().Deployments(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+		if err == nil {
+			lbc.deleteNodePortPods()
+
+		}
+	} else {
+		// Ignore Error.
+		lbc.deleteResidualPods()
+		_, err := lbc.KubeClient.Extensions().Deployments(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+		if err == nil {
+			lbc.deleteNodePortPods()
+		}
+	}
+	lbc.deleteLBSvc()
 }
 
 func (lbc *EngressController) createConfigMap() error {
