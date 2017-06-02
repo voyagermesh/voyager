@@ -1,9 +1,9 @@
 package watcher
 
 import (
+	"github.com/appscode/log"
 	aci "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/events"
-	"github.com/appscode/log"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/apis/apps"
 	ext "k8s.io/kubernetes/pkg/apis/extensions"

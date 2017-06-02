@@ -11,11 +11,11 @@ import (
 
 	"github.com/appscode/errors"
 	"github.com/appscode/go/strings"
+	"github.com/appscode/log"
 	aci "github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
-	"github.com/appscode/voyager/pkg/events"
-	"github.com/appscode/log"
 	"github.com/appscode/voyager/pkg/controller/certificates/providers"
+	"github.com/appscode/voyager/pkg/events"
 	"github.com/xenolf/lego/acme"
 	"k8s.io/kubernetes/pkg/api"
 	k8serr "k8s.io/kubernetes/pkg/api/errors"
@@ -41,7 +41,7 @@ const (
 type CertificateController struct {
 	// kubernetes clients
 	KubeClient        clientset.Interface
-	ACExtensionClient acs.AppsCodeExtensionInterface
+	ACExtensionClient acs.ExtensionInterface
 
 	certificate       *aci.Certificate
 	acmeCert          ACMECertData
@@ -54,7 +54,7 @@ type CertificateController struct {
 	userSecretName string
 }
 
-func NewController(c clientset.Interface, a acs.AppsCodeExtensionInterface) *CertificateController {
+func NewController(c clientset.Interface, a acs.ExtensionInterface) *CertificateController {
 	return &CertificateController{
 		KubeClient:        c,
 		ACExtensionClient: a,

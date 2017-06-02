@@ -22,8 +22,6 @@ imports:
   - runtime
   - strings
   - version
-- name: github.com/appscode/k8s-addons
-  version: a710ffd2f413cb9fb766ee5a71c835fca23f9ca0
 - name: github.com/appscode/log
   version: 68e0e42e42c01371f3950571fc87c2298a51dd8f
   subpackages:

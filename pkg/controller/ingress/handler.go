@@ -7,12 +7,12 @@ import (
 
 	"github.com/appscode/errors"
 	stringutil "github.com/appscode/go/strings"
+	"github.com/appscode/log"
 	aci "github.com/appscode/voyager/api"
 	_ "github.com/appscode/voyager/api/install"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/events"
 	"github.com/appscode/voyager/pkg/stash"
-	"github.com/appscode/log"
 	kapi "k8s.io/kubernetes/pkg/api"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/cloudprovider"
@@ -23,7 +23,7 @@ import (
 
 func NewEngressController(clusterName, providerName string,
 	kubeClient clientset.Interface,
-	acExtClient acs.AppsCodeExtensionInterface,
+	acExtClient acs.ExtensionInterface,
 	store *stash.Storage,
 	ingressClass string) *EngressController {
 	h := &EngressController{
@@ -67,7 +67,7 @@ func NewEngressController(clusterName, providerName string,
 
 func UpgradeAllEngress(service, clusterName, providerName string,
 	kubeClient clientset.Interface,
-	acExtClient acs.AppsCodeExtensionInterface,
+	acExtClient acs.ExtensionInterface,
 	store *stash.Storage,
 	ingressClass string) error {
 	ing, err := kubeClient.Extensions().Ingresses(kapi.NamespaceAll).List(kapi.ListOptions{

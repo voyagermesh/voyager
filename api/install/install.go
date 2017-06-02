@@ -12,7 +12,7 @@ func init() {
 			GroupName:                  aci.GroupName,
 			VersionPreferenceOrder:     []string{aci.V1beta1SchemeGroupVersion.Version},
 			ImportPrefix:               "github.com/appscode/voyager/api",
-			RootScopedKinds:            sets.NewString("PodSecurityPolicy", "ThirdPartyResource"),
+			RootScopedKinds:            sets.NewString("ThirdPartyResource"),
 			AddInternalObjectsToScheme: aci.AddToScheme,
 		},
 		announced.VersionToSchemeFunc{

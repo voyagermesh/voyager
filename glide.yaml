@@ -3,8 +3,6 @@ import:
 - package: github.com/appscode/errors
   version: v2
 - package: github.com/appscode/go
-- package: github.com/appscode/k8s-addons
-  version: release-1.5
 - package: github.com/appscode/log
 - package: github.com/flosch/pongo2
   version: master
@@ -35,5 +33,3 @@ testImport:
   repo: https://github.com/appscode/kubernetes.git
   vcs: git
   version: 1.5.2-ac
-- package: github.com/appscode/k8s-addons
-  version: release-1.5

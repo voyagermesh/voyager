@@ -20,7 +20,7 @@ type Watcher struct {
 	Client clientset.Interface
 
 	// client for getting the appscode extensions
-	AppsCodeExtensionClient acs.AppsCodeExtensionInterface
+	AppsCodeExtensionClient acs.ExtensionInterface
 
 	// sync time to sync the list.
 	SyncPeriod time.Duration

@@ -14,7 +14,7 @@ type FakeExtensionClient struct {
 	*testing.Fake
 }
 
-var _ clientset.AppsCodeExtensionInterface = &FakeExtensionClient{}
+var _ clientset.ExtensionInterface = &FakeExtensionClient{}
 
 func NewFakeExtensionClient(objects ...runtime.Object) *FakeExtensionClient {
 	o := testing.NewObjectTracker(api.Scheme, api.Codecs.UniversalDecoder())
@@ -34,16 +34,12 @@ func NewFakeExtensionClient(objects ...runtime.Object) *FakeExtensionClient {
 	return &FakeExtensionClient{&fakePtr}
 }
 
-func (a *FakeExtensionClient) Ingress(namespace string) clientset.IngressInterface {
-	return &FakeIngress{a.Fake, namespace}
+func (c *FakeExtensionClient) Ingress(namespace string) clientset.IngressInterface {
+	return &FakeIngress{c.Fake, namespace}
 }
 
-func (a *FakeExtensionClient) Alert(namespace string) clientset.AlertInterface {
-	return &FakeAlert{a.Fake, namespace}
-}
-
-func (m *FakeExtensionClient) Certificate(ns string) clientset.CertificateInterface {
-	return &FakeCertificate{m.Fake, ns}
+func (c *FakeExtensionClient) Certificate(ns string) clientset.CertificateInterface {
+	return &FakeCertificate{c.Fake, ns}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

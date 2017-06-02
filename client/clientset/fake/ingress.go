@@ -7,6 +7,7 @@ import (
 	testing "k8s.io/kubernetes/pkg/client/testing/core"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/watch"
+	"github.com/appscode/voyager/client/clientset"
 )
 
 type FakeIngress struct {
@@ -15,6 +16,8 @@ type FakeIngress struct {
 }
 
 var ingressResource = schema.GroupVersionResource{Group: "appscode.com", Version: "v1beta1", Resource: "ingresses"}
+
+var _ clientset.IngressInterface = &FakeIngress{}
 
 // Get returns the Ingress by name.
 func (mock *FakeIngress) Get(name string) (*aci.Ingress, error) {

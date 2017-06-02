@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	aci "github.com/appscode/voyager/api"
 	"github.com/appscode/log"
+	aci "github.com/appscode/voyager/api"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/apis/extensions"
@@ -80,7 +80,6 @@ func (o ObjectKind) String() string {
 type ObjectType string
 
 const (
-	Alert           ObjectType = "alerts"
 	Certificate     ObjectType = "certificates"
 	Cluster         ObjectType = "cluster"
 	ConfigMap       ObjectType = "configmaps"
@@ -97,7 +96,6 @@ const (
 	Deployments     ObjectType = "deployments"
 	Service         ObjectType = "services"
 	Unknown         ObjectType = "unknown"
-	AlertEvent      ObjectType = "alertevents"
 )
 
 func (o ObjectType) String() string {
@@ -174,12 +172,8 @@ func detectObjectType(o interface{}) ObjectType {
 		return Endpoint
 	case aci.Ingress, *aci.Ingress:
 		return ExtendedIngress
-	case aci.Alert, *aci.Alert:
-		return Alert
 	case aci.Certificate, *aci.Certificate:
 		return Certificate
-	case kapi.Event, *kapi.Event:
-		return AlertEvent
 	case extensions.ReplicaSet, *extensions.ReplicaSet:
 		return ReplicaSet
 	case apps.StatefulSet, *apps.StatefulSet:
@@ -212,10 +206,6 @@ func objectMetadata(o interface{}, t ObjectType) kapi.ObjectMeta {
 		return o.(*aci.Certificate).ObjectMeta
 	case Endpoint:
 		return o.(*kapi.Endpoints).ObjectMeta
-	case AlertEvent:
-		return o.(*kapi.Event).ObjectMeta
-	case Alert:
-		return o.(*aci.Alert).ObjectMeta
 	case ReplicaSet:
 		return o.(*extensions.ReplicaSet).ObjectMeta
 	case StatefulSet:

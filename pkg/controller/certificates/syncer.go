@@ -15,7 +15,7 @@ type CertificateSyncer struct {
 	Time clock.Clock
 }
 
-func NewCertificateSyncer(c clientset.Interface, a acs.AppsCodeExtensionInterface) *CertificateSyncer {
+func NewCertificateSyncer(c clientset.Interface, a acs.ExtensionInterface) *CertificateSyncer {
 	return &CertificateSyncer{
 		CertificateController: *NewController(c, a),
 		Time: clock.New(),

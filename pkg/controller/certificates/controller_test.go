@@ -13,10 +13,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/appscode/log"
 	aci "github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/client/clientset/fake"
-	"github.com/appscode/log"
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
 	"github.com/xenolf/lego/acme"

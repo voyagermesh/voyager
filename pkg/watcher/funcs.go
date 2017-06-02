@@ -22,13 +22,13 @@ func IngressWatchFunc(c clientset.Interface) func(options kapi.ListOptions) (wat
 	}
 }
 
-func ExtendedIngressListFunc(c acs.AppsCodeExtensionInterface) func(kapi.ListOptions) (runtime.Object, error) {
+func ExtendedIngressListFunc(c acs.ExtensionInterface) func(kapi.ListOptions) (runtime.Object, error) {
 	return func(opts kapi.ListOptions) (runtime.Object, error) {
 		return c.Ingress(kapi.NamespaceAll).List(opts)
 	}
 }
 
-func ExtendedIngressWatchFunc(c acs.AppsCodeExtensionInterface) func(options kapi.ListOptions) (watch.Interface, error) {
+func ExtendedIngressWatchFunc(c acs.ExtensionInterface) func(options kapi.ListOptions) (watch.Interface, error) {
 	return func(options kapi.ListOptions) (watch.Interface, error) {
 		return c.Ingress(kapi.NamespaceAll).Watch(options)
 	}
@@ -70,25 +70,25 @@ func StatefulSetWatchFunc(c clientset.Interface) func(options kapi.ListOptions) 
 	}
 }
 
-func AlertListFunc(c acs.AppsCodeExtensionInterface) func(kapi.ListOptions) (runtime.Object, error) {
+func AlertListFunc(c acs.ExtensionInterface) func(kapi.ListOptions) (runtime.Object, error) {
 	return func(opts kapi.ListOptions) (runtime.Object, error) {
 		return c.Alert(kapi.NamespaceAll).List(opts)
 	}
 }
 
-func AlertWatchFunc(c acs.AppsCodeExtensionInterface) func(options kapi.ListOptions) (watch.Interface, error) {
+func AlertWatchFunc(c acs.ExtensionInterface) func(options kapi.ListOptions) (watch.Interface, error) {
 	return func(options kapi.ListOptions) (watch.Interface, error) {
 		return c.Alert(kapi.NamespaceAll).Watch(options)
 	}
 }
 
-func CertificateListFunc(c acs.AppsCodeExtensionInterface) func(kapi.ListOptions) (runtime.Object, error) {
+func CertificateListFunc(c acs.ExtensionInterface) func(kapi.ListOptions) (runtime.Object, error) {
 	return func(opts kapi.ListOptions) (runtime.Object, error) {
 		return c.Certificate(kapi.NamespaceAll).List(opts)
 	}
 }
 
-func CertificateWatchFunc(c acs.AppsCodeExtensionInterface) func(options kapi.ListOptions) (watch.Interface, error) {
+func CertificateWatchFunc(c acs.ExtensionInterface) func(options kapi.ListOptions) (watch.Interface, error) {
 	return func(options kapi.ListOptions) (watch.Interface, error) {
 		return c.Certificate(kapi.NamespaceAll).Watch(options)
 	}

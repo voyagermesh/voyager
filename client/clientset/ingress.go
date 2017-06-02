@@ -29,8 +29,10 @@ type IngressImpl struct {
 	ns string
 }
 
+var _ IngressInterface = &IngressImpl{}
+
 // newExtendedIngress returns a ExtendedIngress
-func newExtendedIngress(c *AppsCodeExtensionsClient, namespace string) *IngressImpl {
+func newExtendedIngress(c *ExtensionClient, namespace string) *IngressImpl {
 	return &IngressImpl{c.restClient, namespace}
 }
 

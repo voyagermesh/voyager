@@ -33,9 +33,6 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&Ingress{},
 		&IngressList{},
 
-		&Alert{},
-		&AlertList{},
-
 		&Certificate{},
 		&CertificateList{},
 
@@ -46,9 +43,6 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 
 func (obj *Ingress) GetObjectKind() schema.ObjectKind     { return &obj.TypeMeta }
 func (obj *IngressList) GetObjectKind() schema.ObjectKind { return &obj.TypeMeta }
-
-func (obj *Alert) GetObjectKind() schema.ObjectKind     { return &obj.TypeMeta }
-func (obj *AlertList) GetObjectKind() schema.ObjectKind { return &obj.TypeMeta }
 
 func (obj *Certificate) GetObjectKind() schema.ObjectKind     { return &obj.TypeMeta }
 func (obj *CertificateList) GetObjectKind() schema.ObjectKind { return &obj.TypeMeta }

@@ -26,7 +26,9 @@ type CertificateImpl struct {
 	ns string
 }
 
-func newCertificate(c *AppsCodeExtensionsClient, namespace string) *CertificateImpl {
+var _ CertificateInterface = &CertificateImpl{}
+
+func newCertificate(c *ExtensionClient, namespace string) *CertificateImpl {
 	return &CertificateImpl{c.restClient, namespace}
 }
 
