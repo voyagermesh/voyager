@@ -70,18 +70,6 @@ func StatefulSetWatchFunc(c clientset.Interface) func(options kapi.ListOptions) 
 	}
 }
 
-func AlertListFunc(c acs.ExtensionInterface) func(kapi.ListOptions) (runtime.Object, error) {
-	return func(opts kapi.ListOptions) (runtime.Object, error) {
-		return c.Alert(kapi.NamespaceAll).List(opts)
-	}
-}
-
-func AlertWatchFunc(c acs.ExtensionInterface) func(options kapi.ListOptions) (watch.Interface, error) {
-	return func(options kapi.ListOptions) (watch.Interface, error) {
-		return c.Alert(kapi.NamespaceAll).Watch(options)
-	}
-}
-
 func CertificateListFunc(c acs.ExtensionInterface) func(kapi.ListOptions) (runtime.Object, error) {
 	return func(opts kapi.ListOptions) (runtime.Object, error) {
 		return c.Certificate(kapi.NamespaceAll).List(opts)
