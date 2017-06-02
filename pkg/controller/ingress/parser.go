@@ -2,6 +2,7 @@ package ingress
 
 import (
 	"encoding/json"
+	goerr "errors"
 	"strconv"
 	"strings"
 
@@ -43,11 +44,13 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 	log.Infoln("looking for services in namespace", namespace, "with name", name)
 	service, err := lbc.KubeClient.Core().Services(namespace).Get(name)
 	if err != nil {
-		return nil, errors.FromErr(err).Err()
+		log.Warningln(err)
+		return nil, err
 	}
 	p, ok := getSpecifiedPort(service.Spec.Ports, port)
 	if !ok {
-		return nil, errors.New("service port unavaiable").Err()
+		log.Warningln("service port unavailable")
+		return nil, goerr.New("service port unavailable")
 	}
 	return lbc.getEndpoints(service, p, hostNames)
 }
@@ -55,7 +58,8 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 func (lbc *EngressController) getEndpoints(s *kapi.Service, servicePort *kapi.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
 	ep, err := lbc.EndpointStore.GetServiceEndpoints(s)
 	if err != nil {
-		return nil, errors.FromErr(err).Err()
+		log.Warningln(err)
+		return nil, err
 	}
 
 	// The intent here is to create a union of all subsets that match a targetPort.
