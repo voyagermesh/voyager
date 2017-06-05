@@ -11,6 +11,11 @@ const (
 	EngressKind = EngressKey + "/kind"
 )
 
+var (
+	TypeEngress = EngressKey + "/" + V1beta1SchemeGroupVersion.Version
+	TypeIngress = "ingress"
+)
+
 // ExtendedIngress types for appscode.
 type Ingress struct {
 	unversioned.TypeMeta `json:",inline"`

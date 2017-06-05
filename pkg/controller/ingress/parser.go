@@ -11,6 +11,7 @@ import (
 	"github.com/appscode/go/crypto/rand"
 	stringutil "github.com/appscode/go/strings"
 	"github.com/appscode/log"
+	"github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/controller/ingress/template"
 	"github.com/flosch/pongo2"
 	kapi "k8s.io/kubernetes/pkg/api"
@@ -26,6 +27,15 @@ func (lbc *EngressController) parse() error {
 	lbc.parseOptions()
 	lbc.parseSpec()
 	lbc.Options.ConfigMapName = VoyagerPrefix + lbc.Config.Name
+
+	// Set loadbalancer source kind, default ingress.appscode.com
+	lbc.kind = api.TypeEngress
+	if val, ok := lbc.Config.Annotations[api.EngressKind]; ok {
+		if val == api.TypeIngress {
+			lbc.kind = api.TypeIngress
+		}
+	}
+
 	return nil
 }
 

@@ -84,13 +84,13 @@ func UpgradeAllEngress(service, clusterName, providerName string,
 		return errors.FromErr(err).Err()
 	}
 
-	items := make([]aci.Ingress, len(ing.Items))
-	for i, item := range ing.Items {
+	items := make([]aci.Ingress, 0)
+	for _, item := range ing.Items {
 		e, err := aci.NewEngressFromIngress(item)
 		if err != nil {
 			continue
 		}
-		items[i] = *e
+		items = append(items, *e)
 	}
 	items = append(items, eng.Items...)
 	log.Infoln("Updating All Ingress, got total", len(items))
