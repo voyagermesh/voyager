@@ -41,6 +41,12 @@ func (watch *Watcher) Run() {
 	watch.Service()
 	watch.Endpoint()
 
+	// Watch for kubernetes resource, and restore resources that are created for
+	// an ingress and the source ingress are not still deleted.
+	watch.Deployment()
+	watch.DaemonSet()
+	watch.ConfigMap()
+
 	watch.ExtendedIngress()
 	watch.Ingress()
 	watch.Certificate()
@@ -117,6 +123,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 		sendAnalytics(e, err)
 	case events.Service:
 		if e.EventType.IsAdded() || e.EventType.IsDeleted() {
+			w.restoreResourceIfRequired(e)
 			return ingresscontroller.UpgradeAllEngress(
 				e.MetaData.Name+"."+e.MetaData.Namespace,
 				w.ClusterName,
@@ -142,6 +149,8 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 					w.Storage, w.IngressClass)
 			}
 		}
+	case events.ConfigMap, events.DaemonSet, events.Deployments:
+		w.restoreResourceIfRequired(e)
 	default:
 		log.Infof("Event %s/%s is not handleable by voyager", e.EventType, e.ResourceType)
 	}
@@ -158,6 +167,30 @@ func (w *Watcher) Certificate() {
 	go controller.Run(wait.NeverStop)
 
 	go certificates.NewCertificateSyncer(w.Client, w.AppsCodeExtensionClient).RunSync()
+}
+
+func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
+	switch e.ResourceType {
+	case events.ConfigMap, events.DaemonSet, events.Deployments, events.Service:
+		if e.EventType.IsDeleted() && e.MetaData.Annotations != nil {
+			sourceName, sourceNameFound := e.MetaData.Annotations[ingresscontroller.LoadBalancerSourceName]
+			sourceType, sourceTypeFound := e.MetaData.Annotations[ingresscontroller.LoadBalancerSourceType]
+			if sourceNameFound && sourceTypeFound {
+				// deleted resource have source reference
+				var err error
+				if sourceType == aci.TypeIngress {
+					_, err = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
+				} else {
+					_, err = w.AppsCodeExtensionClient.Ingress(e.MetaData.Namespace).Get(sourceName)
+				}
+				// Ingress get didn't encountered not found err
+				if !k8serrors.IsNotFound(err) {
+					// Ingress Still exists, restore resource
+					// TODO RESTORE
+				}
+			}
+		}
+	}
 }
 
 func sendAnalytics(e *events.Event, err error) {

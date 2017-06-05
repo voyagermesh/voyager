@@ -228,7 +228,7 @@ func (lbc *EngressController) createHostPortPods() error {
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      VoyagerPrefix + lbc.Config.Name,
 			Namespace: lbc.Config.Namespace,
-			Labels:    lbc.labelsFor(lbc.Config.Name),
+			Labels:    labelsFor(lbc.Config.Name),
 			Annotations: map[string]string{
 				LoadBalancerSourceType: lbc.kind,
 				LoadBalancerSourceName: lbc.Config.GetName(),
@@ -237,13 +237,13 @@ func (lbc *EngressController) createHostPortPods() error {
 
 		Spec: kepi.DaemonSetSpec{
 			Selector: &unversioned.LabelSelector{
-				MatchLabels: lbc.labelsFor(lbc.Config.Name),
+				MatchLabels: labelsFor(lbc.Config.Name),
 			},
 
 			// pod templates.
 			Template: kapi.PodTemplateSpec{
 				ObjectMeta: kapi.ObjectMeta{
-					Labels: lbc.labelsFor(lbc.Config.Name),
+					Labels: labelsFor(lbc.Config.Name),
 				},
 				Spec: kapi.PodSpec{
 					NodeSelector: lbc.Options.DaemonNodeSelector,
@@ -330,7 +330,7 @@ func (lbc *EngressController) createNodePortSvc() error {
 		Spec: kapi.ServiceSpec{
 			Type:     kapi.ServiceTypeNodePort,
 			Ports:    []kapi.ServicePort{},
-			Selector: lbc.labelsFor(lbc.Config.Name),
+			Selector: labelsFor(lbc.Config.Name),
 		},
 	}
 
@@ -367,7 +367,7 @@ func (lbc *EngressController) createNodePortPods() error {
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      VoyagerPrefix + lbc.Config.Name,
 			Namespace: lbc.Config.Namespace,
-			Labels:    lbc.labelsFor(lbc.Config.Name),
+			Labels:    labelsFor(lbc.Config.Name),
 			Annotations: map[string]string{
 				LoadBalancerSourceType: lbc.kind,
 				LoadBalancerSourceName: lbc.Config.GetName(),
@@ -377,12 +377,12 @@ func (lbc *EngressController) createNodePortPods() error {
 		Spec: kepi.DeploymentSpec{
 			Replicas: lbc.Options.Replicas,
 			Selector: &unversioned.LabelSelector{
-				MatchLabels: lbc.labelsFor(lbc.Config.Name),
+				MatchLabels: labelsFor(lbc.Config.Name),
 			},
 			// pod templates.
 			Template: kapi.PodTemplateSpec{
 				ObjectMeta: kapi.ObjectMeta{
-					Labels: lbc.labelsFor(lbc.Config.Name),
+					Labels: labelsFor(lbc.Config.Name),
 				},
 
 				Spec: kapi.PodSpec{
@@ -462,7 +462,7 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 		},
 		Spec: kapi.ServiceSpec{
 			Ports:    []kapi.ServicePort{},
-			Selector: lbc.labelsFor(lbc.Config.Name),
+			Selector: labelsFor(lbc.Config.Name),
 		},
 	}
 
@@ -574,7 +574,7 @@ func (lbc *EngressController) ensureStatsService() {
 					TargetPort: intstr.FromInt(lbc.Parsed.StatsPort),
 				},
 			},
-			Selector: lbc.labelsFor(lbc.Config.Name),
+			Selector: labelsFor(lbc.Config.Name),
 		},
 	}
 
@@ -628,15 +628,13 @@ func (lbc *EngressController) updateStatus() error {
 	return nil
 }
 
-func (lbc *EngressController) labelsFor(name string) map[string]string {
+func labelsFor(name string) map[string]string {
 	return map[string]string{
-		"appType":              "ext-applbc-" + name,
-		"type":                 "ext-lbc-" + name,
-		"target":               "eng-" + name,
-		"meta":                 "eng-" + name + "-applbc",
-		"engressName":          name,
-		LoadBalancerSourceType: lbc.kind,
-		LoadBalancerSourceName: name,
+		"appType":     "ext-applbc-" + name,
+		"type":        "ext-lbc-" + name,
+		"target":      "eng-" + name,
+		"meta":        "eng-" + name + "-applbc",
+		"engressName": name,
 	}
 }
 
