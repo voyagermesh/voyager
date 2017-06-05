@@ -208,11 +208,6 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 			lbc.UpdateTargetAnnotations(engs[0].(*aci.Ingress).ObjectMeta.Annotations, engs[1].(*aci.Ingress).ObjectMeta.Annotations)
 		}
 
-		// Check If Stats Annotations are changed.
-		if isStatsChanged(engs[0], engs[1]) {
-			lbc.Update(UpdateStats)
-		}
-
 		if reflect.DeepEqual(engs[0].(*aci.Ingress).Spec, engs[1].(*aci.Ingress).Spec) {
 			return nil
 		}
@@ -379,25 +374,37 @@ func isNewSecretAdded(old interface{}, new interface{}) bool {
 	return false
 }
 
-func isStatsChanged(old interface{}, new interface{}) bool {
-	if o, ok := old.(*aci.Ingress); ok {
-		if n, ok := new.(*aci.Ingress); ok {
-			if o.Annotations[StatsOn] != n.Annotations[StatsOn] {
-				return true
-			}
+func isStatsChanged(old annotation, new annotation) bool {
+	if isMapKeyChanged(old, new, StatsOn) {
+		return true
+	}
 
-			if o.Annotations[StatsPort] != n.Annotations[StatsPort] {
-				return true
-			}
+	if isMapKeyChanged(old, new, StatsPort) {
+		return true
+	}
 
-			if o.Annotations[StatsServiceName] != n.Annotations[StatsServiceName] {
-				return true
-			}
+	if isMapKeyChanged(old, new, StatsServiceName) {
+		return true
+	}
 
-			if o.Annotations[StatsSecret] != n.Annotations[StatsSecret] {
-				return true
-			}
-		}
+	if isMapKeyChanged(old, new, StatsSecret) {
+		return true
+	}
+	return false
+}
+
+func isAcceptProxyChanged(old annotation, new annotation) bool {
+	if isMapKeyChanged(old, new, LoadBalancerAcceptProxy) {
+		return true
+	}
+	return false
+}
+
+func isMapKeyChanged(oldMap map[string]string, newMap map[string]string, key string) bool {
+	oldValue, oldOk := oldMap[key]
+	newValue, newOk := newMap[key]
+	if oldOk != newOk || oldValue != newValue {
+		return true
 	}
 	return false
 }
