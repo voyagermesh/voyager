@@ -339,6 +339,11 @@ func (lbc *EngressController) createNodePortSvc() error {
 		}
 	}
 
+	if lbc.Options.ProviderName == "aws" && lbc.Options.annotations.AcceptProxy() {
+		// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
+		svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
+	}
+
 	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Create(svc)
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -463,6 +468,11 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 		for k, v := range ans {
 			svc.Annotations[k] = v
 		}
+	}
+
+	if lbc.Options.ProviderName == "aws" && lbc.Options.annotations.AcceptProxy() {
+		// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
+		svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
 	}
 
 	switch lbc.Options.ProviderName {
