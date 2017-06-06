@@ -205,21 +205,34 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 		lbc.Config = engs[1].(*aci.Ingress)
 		if !reflect.DeepEqual(engs[0].(*aci.Ingress).ObjectMeta.Annotations, engs[1].(*aci.Ingress).ObjectMeta.Annotations) {
 			// Ingress Annotations Changed, Apply Changes to Targets
+			// The following method do not update to HAProxy config or restart pod. It only sets the annotations
+			// to the required targets.
 			lbc.UpdateTargetAnnotations(engs[0].(*aci.Ingress).ObjectMeta.Annotations, engs[1].(*aci.Ingress).ObjectMeta.Annotations)
 		}
 
-		if reflect.DeepEqual(engs[0].(*aci.Ingress).Spec, engs[1].(*aci.Ingress).Spec) {
-			return nil
+		updateMode := updateType(0)
+		if isAcceptProxyChanged(engs[0].(*aci.Ingress).ObjectMeta.Annotations, engs[1].(*aci.Ingress).ObjectMeta.Annotations) {
+			updateMode |= UpdateConfig
 		}
 
-		if shouldHandleIngress(lbc.Config, lbc.IngressClass) {
-			if isNewPortChanged(engs[0], engs[1]) {
-				lbc.Update(UpdateFirewall)
-			} else if isNewSecretAdded(engs[0], engs[1]) {
-				lbc.Update(RestartHAProxy)
-			} else {
-				lbc.Update(UpdateConfig)
+		if isStatsChanged(engs[0].(*aci.Ingress).ObjectMeta.Annotations, engs[1].(*aci.Ingress).ObjectMeta.Annotations) {
+			updateMode |= UpdateStats
+		}
+
+		if !reflect.DeepEqual(engs[0].(*aci.Ingress).Spec, engs[1].(*aci.Ingress).Spec) {
+			if shouldHandleIngress(lbc.Config, lbc.IngressClass) {
+				if isNewPortChanged(engs[0], engs[1]) {
+					updateMode |= UpdateFirewall
+				} else if isNewSecretAdded(engs[0], engs[1]) {
+					updateMode |= RestartHAProxy
+				} else {
+					updateMode |= UpdateConfig
+				}
 			}
+		}
+		if updateMode > 0 {
+			// For ingress update update HAProxy once
+			lbc.Update(updateMode)
 		}
 	}
 	svcs, err := lbc.KubeClient.Core().Services(kapi.NamespaceAll).List(kapi.ListOptions{})
