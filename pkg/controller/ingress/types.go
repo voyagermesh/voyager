@@ -80,10 +80,6 @@ const (
 	// usable. See also "tcp-request connection expect-proxy" for a finer-grained
 	// setting of which client is allowed to use the protocol.
 	LoadBalancerAcceptProxy = AnnotationPrefix + "accept-proxy"
-
-	// annotations applied to created resources for any ingress
-	LoadBalancerSourceType = AnnotationPrefix + "source.type"
-	LoadBalancerSourceName = AnnotationPrefix + "source.name"
 )
 
 type annotation map[string]string
@@ -163,8 +159,8 @@ func (s annotation) PodsAnnotations() (map[string]string, bool) {
 }
 
 func (s annotation) AcceptProxy() bool {
-	_, ok := s[LoadBalancerAcceptProxy]
-	return ok
+	v, _ := s[LoadBalancerAcceptProxy]
+	return strings.ToLower(v) == "true"
 }
 
 func getTargetAnnotations(s annotation, key string) (map[string]string, bool) {
@@ -196,7 +192,6 @@ type EngressController struct {
 
 	// Engress object that created or updated.
 	Config  *aci.Ingress
-	kind    string
 	Options *KubeOptions
 	// contains all the https host names.
 	HostFilter []string
