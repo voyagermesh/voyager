@@ -388,10 +388,7 @@ func isAcceptProxyChanged(old annotation, new annotation) bool {
 func isMapKeyChanged(oldMap map[string]string, newMap map[string]string, key string) bool {
 	oldValue, oldOk := oldMap[key]
 	newValue, newOk := newMap[key]
-	if oldOk != newOk || oldValue != newValue {
-		return true
-	}
-	return false
+	return oldOk != newOk || oldValue != newValue
 }
 
 func isEngressHaveService(ing *aci.Ingress, service string) (bool, string, string) {
