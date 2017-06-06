@@ -215,6 +215,8 @@ func objectMetadata(o interface{}, t ObjectType) kapi.ObjectMeta {
 		return o.(*extensions.DaemonSet).ObjectMeta
 	case Deployments:
 		return o.(*extensions.Deployment).ObjectMeta
+	case ConfigMap:
+		return o.(*kapi.ConfigMap).ObjectMeta
 	}
 	return kapi.ObjectMeta{}
 }

@@ -172,6 +172,7 @@ func (w *Watcher) Certificate() {
 }
 
 func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
+	log.Debugln("Dispatching event with resource", e.ResourceType, "event", e.EventType)
 	switch e.ResourceType {
 	case events.ConfigMap, events.DaemonSet, events.Deployments, events.Service:
 		if e.EventType.IsDeleted() && e.MetaData.Annotations != nil {
