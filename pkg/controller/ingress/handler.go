@@ -97,7 +97,7 @@ func UpgradeAllEngress(service, clusterName, providerName string,
 	for i, item := range items {
 		engress := &items[i]
 		if shouldHandleIngress(engress, ingressClass) {
-			log.Infoln("Checking for service", service, "to be used to loadbalnace by ingress", item.Name, item.Namespace)
+			log.Infoln("Checking for service", service, "to be used to load balance via ingress", item.Name, item.Namespace)
 			if ok, name, namespace := isEngressHaveService(engress, service); ok {
 				lbc := NewEngressController(clusterName, providerName, kubeClient, extClient, store, ingressClass)
 				lbc.Config = &items[i]
@@ -375,29 +375,14 @@ func isNewSecretAdded(old interface{}, new interface{}) bool {
 }
 
 func isStatsChanged(old annotation, new annotation) bool {
-	if isMapKeyChanged(old, new, StatsOn) {
-		return true
-	}
-
-	if isMapKeyChanged(old, new, StatsPort) {
-		return true
-	}
-
-	if isMapKeyChanged(old, new, StatsServiceName) {
-		return true
-	}
-
-	if isMapKeyChanged(old, new, StatsSecret) {
-		return true
-	}
-	return false
+	return isMapKeyChanged(old, new, StatsOn) ||
+		isMapKeyChanged(old, new, StatsPort) ||
+		isMapKeyChanged(old, new, StatsServiceName) ||
+		isMapKeyChanged(old, new, StatsSecret)
 }
 
 func isAcceptProxyChanged(old annotation, new annotation) bool {
-	if isMapKeyChanged(old, new, LoadBalancerAcceptProxy) {
-		return true
-	}
-	return false
+	return isMapKeyChanged(old, new, LoadBalancerAcceptProxy)
 }
 
 func isMapKeyChanged(oldMap map[string]string, newMap map[string]string, key string) bool {
