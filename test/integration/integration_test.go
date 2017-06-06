@@ -15,7 +15,6 @@ func init() {
 func TestIntegration(t *testing.T) {
 	log.Infoln("Integration test needs the current voyager to be deployed inside cluster")
 	testsuit := e2e.NewE2ETestSuit()
-	testsuit.Voyager = nil
 	testsuit.Config.InCluster = true
 
 	err := testsuit.Run()

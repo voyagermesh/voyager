@@ -66,6 +66,20 @@ const (
 	// applied to the Pods (Deployment/ DaemonSet) of that LoadBalancer.
 	// ex: "ingress.appscode.com/service.annotation": {"key": "val"}
 	LoadBalancerPodsAnnotation = AnnotationPrefix + "annotations.pod"
+
+	// Enforces the use of the PROXY protocol over any connection accepted by any of
+	// the sockets declared on the same line. Versions 1 and 2 of the PROXY protocol
+	// are supported and correctly detected. The PROXY protocol dictates the layer
+	// 3/4 addresses of the incoming connection to be used everywhere an address is
+	// used, with the only exception of "tcp-request connection" rules which will
+	// only see the real connection address. Logs will reflect the addresses
+	// indicated in the protocol, unless it is violated, in which case the real
+	// address will still be used.  This keyword combined with support from external
+	// components can be used as an efficient and reliable alternative to the
+	// X-Forwarded-For mechanism which is not always reliable and not even always
+	// usable. See also "tcp-request connection expect-proxy" for a finer-grained
+	// setting of which client is allowed to use the protocol.
+	LoadBalancerAcceptProxy = AnnotationPrefix + "accept-proxy"
 )
 
 type annotation map[string]string
@@ -142,6 +156,11 @@ func (s annotation) ServiceAnnotations() (map[string]string, bool) {
 
 func (s annotation) PodsAnnotations() (map[string]string, bool) {
 	return getTargetAnnotations(s, LoadBalancerPodsAnnotation)
+}
+
+func (s annotation) AcceptProxy() bool {
+	v, _ := s[LoadBalancerAcceptProxy]
+	return strings.ToLower(v) == "true"
 }
 
 func getTargetAnnotations(s annotation, key string) (map[string]string, bool) {
@@ -241,6 +260,9 @@ type HAProxyOptions struct {
 	StatsUserName string
 	StatsPassWord string
 	StatsPort     int
+
+	// Add accept-proxy to bind statements
+	AcceptProxy bool
 
 	DefaultBackend *Backend
 	HttpsService   []*Service

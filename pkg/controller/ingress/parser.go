@@ -309,7 +309,7 @@ func (lbc *EngressController) parseOptions() {
 			}
 		}
 	}
-
+	lbc.Parsed.AcceptProxy = lbc.Options.annotations.AcceptProxy()
 	lbc.Options.LBType = lbc.Options.annotations.LBType()
 	lbc.Options.Replicas = lbc.Options.annotations.Replicas()
 	lbc.Options.DaemonNodeSelector = ParseNodeSelector(lbc.Options.annotations.DaemonNodeSelector())

@@ -126,7 +126,7 @@ func (ing *IngressTestSuit) TestIngressCreateDelete() error {
 		}
 	}
 
-	if ing.t.Voyager.ProviderName != "minikube" {
+	if ing.t.Voyager != nil && ing.t.Voyager.ProviderName != "minikube" {
 		// Check Status for ingress
 		baseIngress, err := ing.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
 		if err != nil {
@@ -1776,5 +1776,80 @@ func (ing *IngressTestSuit) TestIngressStats() error {
 		return errors.New().WithMessage("Stats Service Should Be deleted").Err()
 	}
 
+	return nil
+}
+
+func (ing *IngressTestSuit) TestIngressAcceptProxy() error {
+	baseIngress := &aci.Ingress{
+		ObjectMeta: api.ObjectMeta{
+			Name:      testIngressName(),
+			Namespace: ing.t.Config.TestNamespace,
+			Annotations: map[string]string{
+				ingress.LoadBalancerAcceptProxy: "true",
+			},
+		},
+		Spec: aci.ExtendedIngressSpec{
+			Rules: []aci.ExtendedIngressRule{
+				{
+					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
+						HTTP: &aci.HTTPExtendedIngressRuleValue{
+							Paths: []aci.HTTPExtendedIngressPath{
+								{
+									Path: "/testpath",
+									Backend: aci.ExtendedIngressBackend{
+										ServiceName: testServerSvc.Name,
+										ServicePort: intstr.FromInt(80),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, err := ing.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if ing.t.Config.Cleanup {
+			ing.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		}
+	}()
+
+	// Wait sometime to loadbalancer be opened up.
+	time.Sleep(time.Second * 60)
+	var svc *api.Service
+	for i := 0; i < maxRetries; i++ {
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for service to be created")
+	}
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
+	for i := 0; i < maxRetries; i++ {
+		_, err = ing.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for endpoints to be created")
+	}
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+
+	serverAddr, err := ing.getURLs(baseIngress)
+	if err != nil {
+		return err
+	}
+	log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
 	return nil
 }

@@ -97,7 +97,7 @@ func UpgradeAllEngress(service, clusterName, providerName string,
 	for i, item := range items {
 		engress := &items[i]
 		if shouldHandleIngress(engress, ingressClass) {
-			log.Infoln("Checking for service", service, "to be used to loadbalnace by ingress", item.Name, item.Namespace)
+			log.Infoln("Checking for service", service, "to be used to load balance via ingress", item.Name, item.Namespace)
 			if ok, name, namespace := isEngressHaveService(engress, service); ok {
 				lbc := NewEngressController(clusterName, providerName, kubeClient, extClient, store, ingressClass)
 				lbc.Config = &items[i]
@@ -205,26 +205,34 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 		lbc.Config = engs[1].(*aci.Ingress)
 		if !reflect.DeepEqual(engs[0].(*aci.Ingress).ObjectMeta.Annotations, engs[1].(*aci.Ingress).ObjectMeta.Annotations) {
 			// Ingress Annotations Changed, Apply Changes to Targets
+			// The following method do not update to HAProxy config or restart pod. It only sets the annotations
+			// to the required targets.
 			lbc.UpdateTargetAnnotations(engs[0].(*aci.Ingress).ObjectMeta.Annotations, engs[1].(*aci.Ingress).ObjectMeta.Annotations)
 		}
 
-		// Check If Stats Annotations are changed.
-		if isStatsChanged(engs[0], engs[1]) {
-			lbc.Update(UpdateStats)
+		updateMode := updateType(0)
+		if isAcceptProxyChanged(engs[0].(*aci.Ingress).ObjectMeta.Annotations, engs[1].(*aci.Ingress).ObjectMeta.Annotations) {
+			updateMode |= UpdateConfig
 		}
 
-		if reflect.DeepEqual(engs[0].(*aci.Ingress).Spec, engs[1].(*aci.Ingress).Spec) {
-			return nil
+		if isStatsChanged(engs[0].(*aci.Ingress).ObjectMeta.Annotations, engs[1].(*aci.Ingress).ObjectMeta.Annotations) {
+			updateMode |= UpdateStats
 		}
 
-		if shouldHandleIngress(lbc.Config, lbc.IngressClass) {
-			if isNewPortChanged(engs[0], engs[1]) {
-				lbc.Update(UpdateFirewall)
-			} else if isNewSecretAdded(engs[0], engs[1]) {
-				lbc.Update(RestartHAProxy)
-			} else {
-				lbc.Update(UpdateConfig)
+		if !reflect.DeepEqual(engs[0].(*aci.Ingress).Spec, engs[1].(*aci.Ingress).Spec) {
+			if shouldHandleIngress(lbc.Config, lbc.IngressClass) {
+				if isNewPortChanged(engs[0], engs[1]) {
+					updateMode |= UpdateFirewall
+				} else if isNewSecretAdded(engs[0], engs[1]) {
+					updateMode |= RestartHAProxy
+				} else {
+					updateMode |= UpdateConfig
+				}
 			}
+		}
+		if updateMode > 0 {
+			// For ingress update update HAProxy once
+			lbc.Update(updateMode)
 		}
 	}
 	svcs, err := lbc.KubeClient.Core().Services(kapi.NamespaceAll).List(kapi.ListOptions{})
@@ -379,27 +387,21 @@ func isNewSecretAdded(old interface{}, new interface{}) bool {
 	return false
 }
 
-func isStatsChanged(old interface{}, new interface{}) bool {
-	if o, ok := old.(*aci.Ingress); ok {
-		if n, ok := new.(*aci.Ingress); ok {
-			if o.Annotations[StatsOn] != n.Annotations[StatsOn] {
-				return true
-			}
+func isStatsChanged(old annotation, new annotation) bool {
+	return isMapKeyChanged(old, new, StatsOn) ||
+		isMapKeyChanged(old, new, StatsPort) ||
+		isMapKeyChanged(old, new, StatsServiceName) ||
+		isMapKeyChanged(old, new, StatsSecret)
+}
 
-			if o.Annotations[StatsPort] != n.Annotations[StatsPort] {
-				return true
-			}
+func isAcceptProxyChanged(old annotation, new annotation) bool {
+	return isMapKeyChanged(old, new, LoadBalancerAcceptProxy)
+}
 
-			if o.Annotations[StatsServiceName] != n.Annotations[StatsServiceName] {
-				return true
-			}
-
-			if o.Annotations[StatsSecret] != n.Annotations[StatsSecret] {
-				return true
-			}
-		}
-	}
-	return false
+func isMapKeyChanged(oldMap map[string]string, newMap map[string]string, key string) bool {
+	oldValue, oldOk := oldMap[key]
+	newValue, newOk := newMap[key]
+	return oldOk != newOk || oldValue != newValue
 }
 
 func isEngressHaveService(ing *aci.Ingress, service string) (bool, string, string) {
