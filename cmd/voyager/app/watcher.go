@@ -18,6 +18,8 @@ import (
 	"k8s.io/kubernetes/pkg/client/cache"
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/util/wait"
+	"k8s.io/kubernetes/pkg/client/restclient"
+	"reflect"
 )
 
 type Watcher struct {
@@ -186,7 +188,47 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 				// Ingress get didn't encountered not found err
 				if !k8serrors.IsNotFound(err) {
 					// Ingress Still exists, restore resource
-					// TODO RESTORE
+					log.Infof("%s/%s required restore", e.EventType, e.ResourceType)
+					obj, true := e.GetRuntimeObject()
+					if true {
+						var client restclient.Interface
+						switch e.ResourceType {
+						case events.ConfigMap, events.Service:
+							client = w.Client.Core().RESTClient()
+						case events.Deployments, events.DaemonSet:
+							client = w.Client.Extensions().RESTClient()
+						}
+
+						// Clean Default generated values
+						metadata := reflect.ValueOf(obj).Elem().FieldByName("ObjectMeta")
+						objectMeta, ok := metadata.Interface().(kapi.ObjectMeta)
+						if ok {
+							objectMeta.SetSelfLink("")
+							objectMeta.SetResourceVersion("")
+							metadata.Set(reflect.ValueOf(objectMeta))
+						}
+
+						// Special treatment for Deployment
+						if e.ResourceType == events.Deployments {
+							dp, ok := obj.(*extensions.Deployment)
+							if ok {
+								dp.Spec.Paused = false
+								if dp.Spec.Replicas < 1 {
+									dp.Spec.Replicas = 1
+								}
+							}
+						}
+
+						resp, err := client.Post().
+							Namespace(e.MetaData.Namespace).
+							Resource(e.ResourceType.String()).
+							Body(obj).
+							Do().Raw()
+						if err != nil {
+							log.Errorln("Failed to create resource", e.ResourceType.String(), err)
+							log.Errorln(string(resp))
+						}
+					}
 				}
 			}
 		}

@@ -10,6 +10,7 @@ import (
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/apis/extensions"
+	"k8s.io/kubernetes/pkg/runtime"
 )
 
 type EventType string
@@ -235,4 +236,14 @@ func (e *Event) Ignorable() bool {
 		}
 	}
 	return false
+}
+
+func (e *Event) GetRuntimeObject() (runtime.Object, bool) {
+	if len(e.RuntimeObj) > 0 {
+		obj := e.RuntimeObj[0]
+		if ro, ok := obj.(runtime.Object); ok {
+			return ro, true
+		}
+	}
+	return nil, false
 }
