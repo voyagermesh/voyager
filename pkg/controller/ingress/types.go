@@ -159,8 +159,8 @@ func (s annotation) PodsAnnotations() (map[string]string, bool) {
 }
 
 func (s annotation) AcceptProxy() bool {
-	_, ok := s[LoadBalancerAcceptProxy]
-	return ok
+	v, _ := s[LoadBalancerAcceptProxy]
+	return strings.ToLower(v) == "true"
 }
 
 func getTargetAnnotations(s annotation, key string) (map[string]string, bool) {
