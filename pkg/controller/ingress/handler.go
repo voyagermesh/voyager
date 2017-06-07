@@ -2,6 +2,7 @@ package ingress
 
 import (
 	"encoding/json"
+	"net"
 	"reflect"
 	"strings"
 
@@ -221,7 +222,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 
 		if !reflect.DeepEqual(engs[0].(*aci.Ingress).Spec, engs[1].(*aci.Ingress).Spec) {
 			if shouldHandleIngress(lbc.Config, lbc.IngressClass) {
-				if isNewPortChanged(engs[0], engs[1]) {
+				if isNewPortChanged(engs[0], engs[1]) || isLoadBalancerSourceRangeChanged(engs[0], engs[1]) {
 					updateMode |= UpdateFirewall
 				} else if isNewSecretAdded(engs[0], engs[1]) {
 					updateMode |= RestartHAProxy
@@ -385,6 +386,47 @@ func isNewSecretAdded(old interface{}, new interface{}) bool {
 		}
 	}
 	return false
+}
+
+func isLoadBalancerSourceRangeChanged(old interface{}, new interface{}) bool {
+	oldObj, oldOk := old.(*aci.Ingress)
+	newObj, newOk := new.(*aci.Ingress)
+
+	if oldOk && newOk {
+		oldipset := make(map[string]bool)
+		for _, oldrange := range oldObj.Spec.LoadBalancerSourceRanges {
+			k, ok := ipnet(oldrange)
+			if ok {
+				oldipset[k] = true
+			}
+		}
+
+		newipset := make(map[string]bool)
+		for _, newrange := range newObj.Spec.LoadBalancerSourceRanges {
+			k, ok := ipnet(newrange)
+			if ok {
+				newipset[k] = true
+				if _, found := oldipset[k]; !found {
+					return true
+				}
+			}
+		}
+
+		if len(newipset) != len(oldipset) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func ipnet(spec string) (string, bool) {
+	spec = strings.TrimSpace(spec)
+	_, ipnet, err := net.ParseCIDR(spec)
+	if err != nil {
+		return "", false
+	}
+	return ipnet.String(), true
 }
 
 func isStatsChanged(old annotation, new annotation) bool {
