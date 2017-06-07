@@ -23,7 +23,7 @@ import (
 	"net/http"
 	"sync"
 
-	"k8s.io/kubernetes/pkg/cloudprovider"
+	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 )
 
 const instanceInfoURL = "http://169.254.169.254/metadata/v1/InstanceInfo"

@@ -33,7 +33,7 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	apiservice "k8s.io/kubernetes/pkg/api/service"
 	"k8s.io/kubernetes/pkg/api/unversioned"
-	"k8s.io/kubernetes/pkg/cloudprovider"
+	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	"k8s.io/kubernetes/pkg/types"
 	utilerrors "k8s.io/kubernetes/pkg/util/errors"
 	"k8s.io/kubernetes/pkg/util/flowcontrol"

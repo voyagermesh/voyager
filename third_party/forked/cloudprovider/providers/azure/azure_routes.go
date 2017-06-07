@@ -19,7 +19,7 @@ package azure
 import (
 	"fmt"
 
-	"k8s.io/kubernetes/pkg/cloudprovider"
+	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 
 	"github.com/Azure/azure-sdk-for-go/arm/network"
 	"github.com/Azure/go-autorest/autorest/to"

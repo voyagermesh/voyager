@@ -9,7 +9,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/cloudprovider"
+	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	"k8s.io/kubernetes/pkg/types"
 )
 

@@ -21,7 +21,7 @@ import (
 	"regexp"
 
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/cloudprovider"
+	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"k8s.io/kubernetes/pkg/types"
