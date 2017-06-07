@@ -49,7 +49,7 @@ func (c *PrometheusController) AddMonitor(meta kapi.ObjectMeta, spec *MonitorSpe
 	if !c.SupportsCoreOSOperator() {
 		return errors.New("Cluster does not support CoreOS Prometheus operator")
 	}
-	err := c.ensureExporter(meta)
+	err := c.ensureExporter()
 	if err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func (c *PrometheusController) UpdateMonitor(meta kapi.ObjectMeta, old, new *Mon
 	if !c.SupportsCoreOSOperator() {
 		return errors.New("Cluster does not support CoreOS Prometheus operator")
 	}
-	err := c.ensureExporter(meta)
+	err := c.ensureExporter()
 	if err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func (c *PrometheusController) SupportsCoreOSOperator() bool {
 	return true
 }
 
-func (c *PrometheusController) ensureExporter(meta kapi.ObjectMeta) error {
+func (c *PrometheusController) ensureExporter() error {
 	if err := c.ensureExporterPods(); err != nil {
 		return err
 	}
@@ -255,5 +255,5 @@ func getTypeFromSelfLink(selfLink string) string {
 }
 
 func getServiceMonitorName(meta kapi.ObjectMeta) string {
-	return fmt.Sprintf("kubedb-%s-%s", meta.Namespace, meta.Name)
+	return fmt.Sprintf("%s-%s", meta.Namespace, meta.Name)
 }
