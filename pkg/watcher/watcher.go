@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	rt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
 	aci "github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
@@ -32,8 +33,8 @@ type Watcher struct {
 	// name of the cluster the daemon running.
 	ClusterName string
 
-	// Loadbalancer image name that will be used to create the LoadBalancer.
-	LoadbalancerImage string
+	// HAProxyImage is used to create HAProxy pods.
+	HAProxyImage string
 
 	IngressClass string
 
@@ -53,6 +54,7 @@ type Watcher struct {
 }
 
 func (w *Watcher) Run() {
+	defer rt.HandleCrash()
 	w.setup()
 	w.Pod()
 	w.Service()
@@ -72,7 +74,7 @@ func (w *Watcher) Run() {
 func (w *Watcher) setup() {
 	w.ensureResource()
 	w.Storage = &stash.Storage{}
-	ingresscontroller.SetLoadbalancerImage(w.LoadbalancerImage)
+	ingresscontroller.SetLoadbalancerImage(w.HAProxyImage)
 }
 
 var resourceList []string = []string{

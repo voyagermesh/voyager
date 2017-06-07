@@ -8,7 +8,6 @@ import (
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/client/clientset"
 	acs "github.com/appscode/voyager/client/clientset"
-	"github.com/appscode/voyager/cmd/voyager/app"
 	acw "github.com/appscode/voyager/pkg/watcher"
 	"github.com/appscode/voyager/test/testframework"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
@@ -20,7 +19,7 @@ type TestSuit struct {
 	Config     testframework.E2EConfig
 	KubeClient internalclientset.Interface
 	ExtClient  clientset.ExtensionInterface
-	Voyager    *app.Watcher
+	Voyager    *acw.Watcher
 }
 
 func init() {
@@ -35,16 +34,14 @@ func NewE2ETestSuit() *TestSuit {
 	}
 	return &TestSuit{
 		Config: testframework.TestContext.E2EConfigs,
-		Voyager: &app.Watcher{
-			Watcher: acw.Watcher{
-				KubeClient: internalclientset.NewForConfigOrDie(c),
-				ExtClient:  acs.NewForConfigOrDie(c),
-				SyncPeriod: time.Minute * 5,
-			},
-			ProviderName:      testframework.TestContext.E2EConfigs.ProviderName,
-			ClusterName:       testframework.TestContext.E2EConfigs.ClusterName,
-			LoadbalancerImage: testframework.TestContext.E2EConfigs.LoadbalancerImageName,
-			IngressClass:      testframework.TestContext.E2EConfigs.IngressClass,
+		Voyager: &acw.Watcher{
+			KubeClient:   internalclientset.NewForConfigOrDie(c),
+			ExtClient:    acs.NewForConfigOrDie(c),
+			SyncPeriod:   time.Minute * 5,
+			ProviderName: testframework.TestContext.E2EConfigs.ProviderName,
+			ClusterName:  testframework.TestContext.E2EConfigs.ClusterName,
+			HAProxyImage: testframework.TestContext.E2EConfigs.LoadbalancerImageName,
+			IngressClass: testframework.TestContext.E2EConfigs.IngressClass,
 		},
 		KubeClient: internalclientset.NewForConfigOrDie(c),
 		ExtClient:  acs.NewForConfigOrDie(c),

@@ -36,8 +36,8 @@ metadata:
   name: voyager-operator
 spec:
   ports:
-  - name: zero
-    port: 1234
-    targetPort: zero
+  - name: web
+    port: 8080
+    targetPort: web
   selector:
     run: voyager-operator

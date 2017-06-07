@@ -120,6 +120,6 @@ versions:
 
 ```sh
 # Create Third Party Resource
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/k8s-addons/master/api/extensions/ingress.yaml
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/k8s-addons/master/api/extensions/certificate.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/master/api/extensions/ingress.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/master/api/extensions/certificate.yaml
 ```
