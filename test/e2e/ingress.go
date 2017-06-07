@@ -1917,7 +1917,6 @@ func (ing *IngressTestSuit) TestIngressLBSourceRange() error {
 		return errors.New().WithMessage("LBSource range did not matched").Err()
 	}
 
-
 	tobeUpdated, err := ing.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
 	if err != nil {
 		return errors.New().WithCause(err).Err()

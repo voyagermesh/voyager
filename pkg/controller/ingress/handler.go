@@ -2,6 +2,7 @@ package ingress
 
 import (
 	"encoding/json"
+	"net"
 	"reflect"
 	"strings"
 
@@ -392,24 +393,40 @@ func isLoadBalancerSourceRangeChanged(old interface{}, new interface{}) bool {
 	newObj, newOk := new.(*aci.Ingress)
 
 	if oldOk && newOk {
-		if len(oldObj.Spec.LoadBalancerSourceRanges) != len(newObj.Spec.LoadBalancerSourceRanges) {
-			return true
+		oldipset := make(map[string]bool)
+		for _, oldrange := range oldObj.Spec.LoadBalancerSourceRanges {
+			k, ok := ipnet(oldrange)
+			if ok {
+				oldipset[k] = true
+			}
 		}
 
+		newipset := make(map[string]bool)
 		for _, newrange := range newObj.Spec.LoadBalancerSourceRanges {
-			found := false
-			for _, oldrange := range oldObj.Spec.LoadBalancerSourceRanges {
-				if oldrange == newrange {
-					found = true
+			k, ok := ipnet(newrange)
+			if ok {
+				newipset[k] = true
+				if _, found := oldipset[k]; !found {
+					return true
 				}
 			}
-			if !found {
-				return true
-			}
+		}
+
+		if len(newipset) != len(oldipset) {
+			return true
 		}
 	}
 
 	return false
+}
+
+func ipnet(spec string) (string, bool) {
+	spec = strings.TrimSpace(spec)
+	_, ipnet, err := net.ParseCIDR(spec)
+	if err != nil {
+		return "", false
+	}
+	return ipnet.String(), true
 }
 
 func isStatsChanged(old annotation, new annotation) bool {
