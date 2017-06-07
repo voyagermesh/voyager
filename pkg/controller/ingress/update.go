@@ -230,14 +230,6 @@ func (lbc *EngressController) updateLBSvc() error {
 func (lbc *EngressController) UpdateTargetAnnotations(old annotation, new annotation) error {
 	lbc.parse()
 
-	// Check If Stats Annotations are changed.
-	if isStatsChanged(old, new) {
-		lbc.Update(UpdateStats)
-	}
-
-	if isAcceptProxyChanged(old, new) {
-		lbc.Update(UpdateConfig)
-	}
 	// Check for changes in ingress.appscode.com/annotations.service
 	if newSvcAns, newOk := new.ServiceAnnotations(); newOk {
 		if oldSvcAns, oldOk := old.ServiceAnnotations(); oldOk {
