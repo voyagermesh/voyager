@@ -55,7 +55,12 @@ type ExtendedIngressSpec struct {
 	// A list of host rules used to configure the ExtendedIngress. If unspecified, or
 	// no rule matches, all traffic is sent to the default backend.
 	Rules []ExtendedIngressRule `json:"rules,omitempty"`
-	// TODO: Add the ability to specify load-balancer IP through claims
+
+	// Optional: If specified and supported by the platform, this will restrict traffic through the cloud-provider
+	// load-balancer will be restricted to the specified client IPs. This field will be ignored if the
+	// cloud-provider does not support the feature.
+	// https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/
+	LoadBalancerSourceRanges []string `json:"loadBalancerSourceRanges,omitempty"`
 }
 
 // ExtendedIngressTLS describes the transport layer security associated with an ExtendedIngress.

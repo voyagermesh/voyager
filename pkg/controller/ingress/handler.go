@@ -221,7 +221,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 
 		if !reflect.DeepEqual(engs[0].(*aci.Ingress).Spec, engs[1].(*aci.Ingress).Spec) {
 			if shouldHandleIngress(lbc.Config, lbc.IngressClass) {
-				if isNewPortChanged(engs[0], engs[1]) {
+				if isNewPortChanged(engs[0], engs[1]) || isLoadBalancerSourceRangeChanged(engs[0], engs[1]) {
 					updateMode |= UpdateFirewall
 				} else if isNewSecretAdded(engs[0], engs[1]) {
 					updateMode |= RestartHAProxy
@@ -384,6 +384,31 @@ func isNewSecretAdded(old interface{}, new interface{}) bool {
 			return true
 		}
 	}
+	return false
+}
+
+func isLoadBalancerSourceRangeChanged(old interface{}, new interface{}) bool {
+	oldObj, oldOk := old.(*aci.Ingress)
+	newObj, newOk := new.(*aci.Ingress)
+
+	if oldOk && newOk {
+		if len(oldObj.Spec.LoadBalancerSourceRanges) != len(newObj.Spec.LoadBalancerSourceRanges) {
+			return true
+		}
+
+		for _, newrange := range newObj.Spec.LoadBalancerSourceRanges {
+			found := false
+			for _, oldrange := range oldObj.Spec.LoadBalancerSourceRanges {
+				if oldrange == newrange {
+					found = true
+				}
+			}
+			if !found {
+				return true
+			}
+		}
+	}
+
 	return false
 }
 
