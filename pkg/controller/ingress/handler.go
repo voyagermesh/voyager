@@ -26,7 +26,9 @@ func NewEngressController(clusterName, providerName string,
 	kubeClient clientset.Interface,
 	extClient acs.ExtensionInterface,
 	store *stash.Storage,
-	ingressClass string) *EngressController {
+	ingressClass string,
+	exporterNamespace string,
+	exporterTag string) *EngressController {
 	h := &EngressController{
 		KubeClient: kubeClient,
 		Storage:    store,
@@ -37,9 +39,11 @@ func NewEngressController(clusterName, providerName string,
 		},
 		// Parsed must be set to an empty Options struct. parse()
 		// expects it to be set.
-		Parsed:        &HAProxyOptions{},
-		EndpointStore: store.EndpointStore,
-		IngressClass:  ingressClass,
+		Parsed:            &HAProxyOptions{},
+		EndpointStore:     store.EndpointStore,
+		IngressClass:      ingressClass,
+		ExporterNamespace: exporterNamespace,
+		ExporterTag:       exporterTag,
 	}
 	log.Infoln("Initializing cloud manager for provider", providerName)
 	if providerName == "aws" || providerName == "gce" || providerName == "azure" {
@@ -70,7 +74,9 @@ func UpgradeAllEngress(service, clusterName, providerName string,
 	kubeClient clientset.Interface,
 	extClient acs.ExtensionInterface,
 	store *stash.Storage,
-	ingressClass string) error {
+	ingressClass string,
+	exporterNamespace string,
+	exporterTag string) error {
 	ing, err := kubeClient.Extensions().Ingresses(kapi.NamespaceAll).List(kapi.ListOptions{
 		LabelSelector: labels.Everything(),
 	})
@@ -100,7 +106,7 @@ func UpgradeAllEngress(service, clusterName, providerName string,
 		if shouldHandleIngress(engress, ingressClass) {
 			log.Infoln("Checking for service", service, "to be used to load balance via ingress", item.Name, item.Namespace)
 			if ok, name, namespace := isEngressHaveService(engress, service); ok {
-				lbc := NewEngressController(clusterName, providerName, kubeClient, extClient, store, ingressClass)
+				lbc := NewEngressController(clusterName, providerName, kubeClient, extClient, store, ingressClass, exporterNamespace, exporterTag)
 				lbc.Config = &items[i]
 				log.Infoln("Trying to Update Ingress", item.Name, item.Namespace)
 				if lbc.IsExists() {

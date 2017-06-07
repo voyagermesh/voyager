@@ -9,6 +9,7 @@ import (
 	"github.com/appscode/log"
 	aci "github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
+	"github.com/appscode/voyager/pkg/monitor"
 	"github.com/appscode/voyager/pkg/stash"
 	"k8s.io/kubernetes/pkg/client/cache"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
@@ -28,6 +29,12 @@ const (
 	StatsSecret      = AnnotationPrefix + "stats.secretName"
 	StatsServiceName = AnnotationPrefix + "stats.serviceName"
 	DefaultStatsPort = 1936
+
+	// Monitoring options
+	MonitoringAgent          = AnnotationPrefix + "monitoring.agent" // Only valid value: Prometheus
+	PrometheusNamespace      = AnnotationPrefix + "prometheus.namespace"
+	PrometheusLabels         = AnnotationPrefix + "prometheus.labels" // map[string]string
+	PrometheusScrapeInterval = AnnotationPrefix + "prometheus.interval"
 
 	LBName = AnnotationPrefix + "name"
 
@@ -119,6 +126,45 @@ func (s annotation) StatsServiceName(ingName string) string {
 	if !ok {
 		return ingName + "-stats"
 	}
+	return v
+}
+
+func (s annotation) MonitoringAgent() (string, bool) {
+	v, ok := s[MonitoringAgent]
+	if ok && strings.EqualFold(v, "Prometheus") {
+		return "Prometheus", true
+	}
+	return "", false
+}
+
+func (s annotation) PrometheusNamespace() (string, bool) {
+	v, ok := s[PrometheusNamespace]
+	return v, ok
+}
+
+func (s annotation) PrometheusLabels() (map[string]string, bool) {
+	ans := make(map[string]string)
+	if v, ok := s[PrometheusLabels]; ok {
+		v = strings.TrimSpace(v)
+		if err := json.Unmarshal([]byte(v), &ans); err != nil {
+			log.Errorln("Failed to Unmarshal", PrometheusLabels, err)
+			return ans, false
+		}
+
+		// Filter all annotation keys that starts with ingress.appscode.com
+		filteredMap := make(map[string]string)
+		for k, v := range ans {
+			if !strings.HasPrefix(strings.TrimSpace(k), AnnotationPrefix) {
+				filteredMap[k] = v
+			}
+		}
+		return filteredMap, true
+	}
+	return ans, false
+}
+
+func (s annotation) PrometheusScrapeInterval() string {
+	v, _ := s[PrometheusScrapeInterval]
 	return v
 }
 
@@ -214,6 +260,14 @@ type EngressController struct {
 	sync.Mutex
 
 	IngressClass string
+
+	// Exporter namespace
+	ExporterNamespace string
+	// Tag of Exporter
+	ExporterTag string
+
+	// Monitor is used monitor HAProxy instance
+	Monitor *monitor.MonitorSpec
 }
 
 type KubeOptions struct {

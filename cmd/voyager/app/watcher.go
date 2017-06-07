@@ -35,6 +35,11 @@ type Watcher struct {
 	LoadbalancerImage string
 
 	IngressClass string
+
+	// Exporter namespace
+	ExporterNamespace string
+	// Tag of Exporter
+	ExporterTag string
 }
 
 func (watch *Watcher) Run() {
@@ -106,7 +111,9 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 			w.ProviderName,
 			w.Client,
 			w.ExtClient,
-			w.Storage, w.IngressClass).Handle(e)
+			w.Storage,
+			w.IngressClass,
+			w.ExporterNamespace, w.ExporterTag).Handle(e)
 
 		// Check the Ingress or Extended Ingress Annotations. To Work for auto certificate
 		// operations.
@@ -132,7 +139,9 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 				w.ProviderName,
 				w.Client,
 				w.ExtClient,
-				w.Storage, w.IngressClass)
+				w.Storage,
+				w.IngressClass,
+				w.ExporterNamespace, w.ExporterTag)
 		}
 	case events.Endpoint:
 		// Checking if this endpoint have a service or not. If
@@ -148,7 +157,9 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 					w.ProviderName,
 					w.Client,
 					w.ExtClient,
-					w.Storage, w.IngressClass)
+					w.Storage,
+					w.IngressClass,
+					w.ExporterNamespace, w.ExporterTag)
 			}
 		}
 	case events.ConfigMap, events.DaemonSet, events.Deployments:

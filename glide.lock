@@ -1,5 +1,5 @@
-hash: edc1b01206ae62343e19740aaaf11c0b74b21d4b7483e25e5a7e5331e4d25f65
-updated: 2017-06-02T15:02:47.471001255-07:00
+hash: 74be4ae33eda1bd4168b71f6aa62ec9e8f9cdf10c3baba3a68e7fa9ec5f1cf04
+updated: 2017-06-07T03:12:25.762199484-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -17,6 +17,7 @@ imports:
   subpackages:
   - arrays
   - crypto/rand
+  - encoding/json/types
   - encoding/yaml
   - flags
   - runtime
@@ -98,6 +99,12 @@ imports:
   - health
   - httputil
   - timeutil
+- name: github.com/coreos/prometheus-operator
+  version: 6d45d8c65343a5e6cbe23e7ef17aafbd64b29f03
+  repo: https://github.com/appscode/prometheus-operator.git
+  vcs: git
+  subpackages:
+  - pkg/client/monitoring/v1alpha1
 - name: github.com/davecgh/go-spew
   version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
   subpackages:
@@ -219,6 +226,10 @@ imports:
   version: 8234c829496aaeae67c5c71235a2cbcc289e960a
 - name: github.com/juju/ratelimit
   version: 77ed1c8a01217656d2080ad51981f6e99adaa177
+- name: github.com/k8sdb/apimachinery
+  version: 8c85cd38db3cb92b63cc6b4e1ae84573af9a0026
+  subpackages:
+  - api
 - name: github.com/mailru/easyjson
   version: d5b7844b561a7bc640052f1b935f7b800330d7e0
   subpackages:
@@ -358,7 +369,7 @@ imports:
   subpackages:
   - cloudstack
 - name: github.com/xenolf/lego
-  version: 5ee956d6ca4ffbd8b940fc3ecb6e109c99d9a68a
+  version: e1e824640f726118b9d74d43b7c50a024e7a26af
   repo: https://github.com/appscode/lego.git
   vcs: git
   subpackages:
@@ -472,6 +483,66 @@ imports:
   - json
 - name: gopkg.in/yaml.v2
   version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
+- name: k8s.io/apimachinery
+  version: 75b8dd260ef0469d96d578705a87cffd0e09dab8
+  subpackages:
+  - pkg/api/errors
+  - pkg/api/meta
+  - pkg/api/resource
+  - pkg/apimachinery
+  - pkg/apimachinery/announced
+  - pkg/apimachinery/registered
+  - pkg/apis/meta/v1
+  - pkg/apis/meta/v1/unstructured
+  - pkg/conversion
+  - pkg/conversion/queryparams
+  - pkg/fields
+  - pkg/labels
+  - pkg/openapi
+  - pkg/runtime
+  - pkg/runtime/schema
+  - pkg/runtime/serializer
+  - pkg/runtime/serializer/json
+  - pkg/runtime/serializer/protobuf
+  - pkg/runtime/serializer/recognizer
+  - pkg/runtime/serializer/streaming
+  - pkg/runtime/serializer/versioning
+  - pkg/selection
+  - pkg/types
+  - pkg/util/errors
+  - pkg/util/framer
+  - pkg/util/intstr
+  - pkg/util/json
+  - pkg/util/net
+  - pkg/util/rand
+  - pkg/util/runtime
+  - pkg/util/sets
+  - pkg/util/validation
+  - pkg/util/validation/field
+  - pkg/util/wait
+  - pkg/util/yaml
+  - pkg/version
+  - pkg/watch
+  - third_party/forked/golang/reflect
+- name: k8s.io/client-go
+  version: 3627aeb7d4f6ade38f995d2c923e459146493c7e
+  subpackages:
+  - dynamic
+  - pkg/api
+  - pkg/api/v1
+  - pkg/apis/extensions
+  - pkg/util
+  - pkg/util/parsers
+  - pkg/version
+  - rest
+  - rest/watch
+  - tools/clientcmd/api
+  - tools/metrics
+  - transport
+  - util/cert
+  - util/clock
+  - util/flowcontrol
+  - util/integer
 - name: k8s.io/kubernetes
   version: 5198505f3c52bb19bdbad05992f9678a12706706
   repo: https://github.com/appscode/kubernetes.git

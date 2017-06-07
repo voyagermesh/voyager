@@ -26,6 +26,16 @@ import:
   repo: https://github.com/appscode/kubernetes.git
   vcs: git
   version: 1.5.2-ac
+- package: github.com/coreos/prometheus-operator
+  repo: https://github.com/appscode/prometheus-operator.git
+  vcs: git
+  version: off-car-exporter
+- package: k8s.io/apimachinery/pkg/api/errors
+  version: 75b8dd260ef0469d96d578705a87cffd0e09dab8
+- package: k8s.io/client-go
+  version: v3.0.0-beta.0
+- package: github.com/jpillora/go-ogle-analytics
+  version: master
 testImport:
 - package: github.com/stretchr/testify
   version: v1.1.4
