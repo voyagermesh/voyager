@@ -17,7 +17,7 @@ func init() {
 
 func TestEnsureResource(t *testing.T) {
 	w := &Watcher{
-		Client: clientset.NewSimpleClientset(
+		KubeClient: clientset.NewSimpleClientset(
 			&extensions.ThirdPartyResource{
 				ObjectMeta: kapi.ObjectMeta{
 					Name: "foo",
@@ -32,16 +32,16 @@ func TestEnsureResource(t *testing.T) {
 	}
 	w.ensureResource()
 
-	data, err := w.Client.Extensions().ThirdPartyResources().List(kapi.ListOptions{})
+	data, err := w.KubeClient.Extensions().ThirdPartyResources().List(kapi.ListOptions{})
 	assert.Nil(t, err)
 	if data == nil {
 		t.Fatal("Item list should not be nil")
 	}
 	assert.Equal(t, 3, len(data.Items))
 
-	_, err = w.Client.Extensions().ThirdPartyResources().Get("ingress." + aci.V1beta1SchemeGroupVersion.Group)
+	_, err = w.KubeClient.Extensions().ThirdPartyResources().Get("ingress." + aci.V1beta1SchemeGroupVersion.Group)
 	assert.Nil(t, err)
 
-	_, err = w.Client.Extensions().ThirdPartyResources().Get("certificate." + aci.V1beta1SchemeGroupVersion.Group)
+	_, err = w.KubeClient.Extensions().ThirdPartyResources().Get("certificate." + aci.V1beta1SchemeGroupVersion.Group)
 	assert.Nil(t, err)
 }

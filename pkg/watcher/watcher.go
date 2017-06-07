@@ -38,7 +38,7 @@ type Watcher struct {
 	IngressClass string
 
 	// kubernetes client to apiserver
-	Client clientset.Interface
+	KubeClient clientset.Interface
 
 	// client for getting the appscode extensions
 	ExtClient acs.ExtensionInterface
@@ -83,7 +83,7 @@ var resourceList []string = []string{
 func (w *Watcher) ensureResource() {
 	for _, resource := range resourceList {
 		// This is version dependent
-		_, err := w.Client.Extensions().ThirdPartyResources().Get(resource + "." + aci.V1beta1SchemeGroupVersion.Group)
+		_, err := w.KubeClient.Extensions().ThirdPartyResources().Get(resource + "." + aci.V1beta1SchemeGroupVersion.Group)
 		if k8serrors.IsNotFound(err) {
 			tpr := &extensions.ThirdPartyResource{
 				TypeMeta: unversioned.TypeMeta{
@@ -99,7 +99,7 @@ func (w *Watcher) ensureResource() {
 					},
 				},
 			}
-			_, err := w.Client.Extensions().ThirdPartyResources().Create(tpr)
+			_, err := w.KubeClient.Extensions().ThirdPartyResources().Create(tpr)
 			if err != nil {
 				// This should fail if there is one third party resource data missing.
 				log.Fatalln(tpr.Name, "failed to create, causes", err.Error())
@@ -118,14 +118,14 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 		// Handle Ingress first
 		err := ingresscontroller.NewEngressController(w.ClusterName,
 			w.ProviderName,
-			w.Client,
+			w.KubeClient,
 			w.ExtClient,
 			w.Storage, w.IngressClass).Handle(e)
 
 		// Check the Ingress or Extended Ingress Annotations. To Work for auto certificate
 		// operations.
 		if err == nil {
-			certController := certificates.NewController(w.Client, w.ExtClient)
+			certController := certificates.NewController(w.KubeClient, w.ExtClient)
 			certController.Handle(e)
 		}
 		sendAnalytics(e, err)
@@ -133,7 +133,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 	case events.Certificate:
 		var err error
 		if e.EventType.IsAdded() || e.EventType.IsUpdated() {
-			certController := certificates.NewController(w.Client, w.ExtClient)
+			certController := certificates.NewController(w.KubeClient, w.ExtClient)
 			err = certController.Handle(e)
 		}
 		sendAnalytics(e, err)
@@ -144,14 +144,14 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 				e.MetaData.Name+"."+e.MetaData.Namespace,
 				w.ClusterName,
 				w.ProviderName,
-				w.Client,
+				w.KubeClient,
 				w.ExtClient,
 				w.Storage, w.IngressClass)
 		}
 	case events.Endpoint:
 		// Checking if this endpoint have a service or not. If
 		// this do not have a Service we do not want to update our ingress
-		_, err := w.Client.Core().Services(e.MetaData.Namespace).Get(e.MetaData.Name)
+		_, err := w.KubeClient.Core().Services(e.MetaData.Namespace).Get(e.MetaData.Name)
 		if err == nil {
 			log.Infoln("Endpoint has an service with name", e.MetaData.Name, e.MetaData.Namespace, "Event type", e.EventType.String())
 			// Service exists. So we should process.
@@ -160,7 +160,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 					e.MetaData.Name+"."+e.MetaData.Namespace,
 					w.ClusterName,
 					w.ProviderName,
-					w.Client,
+					w.KubeClient,
 					w.ExtClient,
 					w.Storage, w.IngressClass)
 			}
@@ -195,11 +195,11 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 				var ingressErr error
 				var detectedAPIGroup string
 				if sourceType == aci.APIGroupIngress {
-					_, ingressErr = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
+					_, ingressErr = w.KubeClient.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
 				} else if sourceType == aci.APIGroupEngress {
 					_, ingressErr = w.ExtClient.Ingress(e.MetaData.Namespace).Get(sourceName)
 				} else if !sourceTypeFound {
-					_, ingressErr = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
+					_, ingressErr = w.KubeClient.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
 					if ingressErr != nil {
 						_, ingressErr = w.ExtClient.Ingress(e.MetaData.Namespace).Get(sourceName)
 						if ingressErr == nil {
@@ -221,9 +221,9 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 					var client restclient.Interface
 					switch e.ResourceType {
 					case events.ConfigMap, events.Service:
-						client = w.Client.Core().RESTClient()
+						client = w.KubeClient.Core().RESTClient()
 					case events.Deployments, events.DaemonSet:
-						client = w.Client.Extensions().RESTClient()
+						client = w.KubeClient.Extensions().RESTClient()
 					}
 
 					// Clean Default generated values
@@ -312,7 +312,7 @@ func (w *Watcher) Cache(resource events.ObjectType, object runtime.Object, lw *c
 	if lw != nil {
 		listWatch = lw
 	} else {
-		listWatch = cache.NewListWatchFromClient(w.Client.Core().RESTClient(), resource.String(), kapi.NamespaceAll, fields.Everything())
+		listWatch = cache.NewListWatchFromClient(w.KubeClient.Core().RESTClient(), resource.String(), kapi.NamespaceAll, fields.Everything())
 	}
 
 	return cache.NewInformer(
@@ -325,7 +325,7 @@ func (w *Watcher) Cache(resource events.ObjectType, object runtime.Object, lw *c
 
 func (w *Watcher) CacheStore(resource events.ObjectType, object runtime.Object, lw *cache.ListWatch) (cache.Store, *cache.Controller) {
 	if lw == nil {
-		lw = cache.NewListWatchFromClient(w.Client.Core().RESTClient(), resource.String(), kapi.NamespaceAll, fields.Everything())
+		lw = cache.NewListWatchFromClient(w.KubeClient.Core().RESTClient(), resource.String(), kapi.NamespaceAll, fields.Everything())
 	}
 
 	return stash.NewInformerPopulated(
@@ -338,7 +338,7 @@ func (w *Watcher) CacheStore(resource events.ObjectType, object runtime.Object, 
 
 func (w *Watcher) CacheIndexer(resource events.ObjectType, object runtime.Object, lw *cache.ListWatch, indexers cache.Indexers) (cache.Indexer, *cache.Controller) {
 	if lw == nil {
-		lw = cache.NewListWatchFromClient(w.Client.Core().RESTClient(), resource.String(), kapi.NamespaceAll, fields.Everything())
+		lw = cache.NewListWatchFromClient(w.KubeClient.Core().RESTClient(), resource.String(), kapi.NamespaceAll, fields.Everything())
 	}
 	if indexers == nil {
 		indexers = cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}

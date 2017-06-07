@@ -14,8 +14,8 @@ import (
 func (w *Watcher) Pod() {
 	log.Debugln("watching", events.Pod.String())
 	lw := &cache.ListWatch{
-		ListFunc:  PodListFunc(w.Client),
-		WatchFunc: PodWatchFunc(w.Client),
+		ListFunc:  PodListFunc(w.KubeClient),
+		WatchFunc: PodWatchFunc(w.KubeClient),
 	}
 	indexer, controller := w.CacheIndexer(events.Pod, &kapi.Pod{}, lw, nil)
 	go controller.Run(wait.NeverStop)
@@ -25,8 +25,8 @@ func (w *Watcher) Pod() {
 func (w *Watcher) Service() {
 	log.Debugln("watching", events.Service.String())
 	lw := &cache.ListWatch{
-		ListFunc:  ServiceListFunc(w.Client),
-		WatchFunc: ServiceWatchFunc(w.Client),
+		ListFunc:  ServiceListFunc(w.KubeClient),
+		WatchFunc: ServiceWatchFunc(w.KubeClient),
 	}
 	indexer, controller := w.CacheIndexer(events.Service, &kapi.Service{}, lw, nil)
 	go controller.Run(wait.NeverStop)
@@ -36,8 +36,8 @@ func (w *Watcher) Service() {
 func (w *Watcher) Endpoint() {
 	log.Debugln("watching", events.Endpoint.String())
 	lw := &cache.ListWatch{
-		ListFunc:  EndpointListFunc(w.Client),
-		WatchFunc: EndpointWatchFunc(w.Client),
+		ListFunc:  EndpointListFunc(w.KubeClient),
+		WatchFunc: EndpointWatchFunc(w.KubeClient),
 	}
 	store, controller := w.CacheStore(events.Endpoint, &kapi.Endpoints{}, lw)
 	go controller.Run(wait.NeverStop)
@@ -47,8 +47,8 @@ func (w *Watcher) Endpoint() {
 func (w *Watcher) Deployment() {
 	log.Debugln("watching", events.Deployments.String())
 	lw := &cache.ListWatch{
-		ListFunc:  DeploymentListFunc(w.Client),
-		WatchFunc: DeploymentWatchFunc(w.Client),
+		ListFunc:  DeploymentListFunc(w.KubeClient),
+		WatchFunc: DeploymentWatchFunc(w.KubeClient),
 	}
 	indexer, controller := w.CacheIndexer(events.Deployments, &ext.Deployment{}, lw, nil)
 	go controller.Run(wait.NeverStop)
@@ -58,8 +58,8 @@ func (w *Watcher) Deployment() {
 func (w *Watcher) DaemonSet() {
 	log.Debugln("watching", events.DaemonSet.String())
 	lw := &cache.ListWatch{
-		ListFunc:  DaemonSetListFunc(w.Client),
-		WatchFunc: DaemonSetWatchFunc(w.Client),
+		ListFunc:  DaemonSetListFunc(w.KubeClient),
+		WatchFunc: DaemonSetWatchFunc(w.KubeClient),
 	}
 	indexer, controller := w.CacheIndexer(events.DaemonSet, &ext.DaemonSet{}, lw, nil)
 	go controller.Run(wait.NeverStop)
@@ -69,8 +69,8 @@ func (w *Watcher) DaemonSet() {
 func (w *Watcher) ConfigMap() {
 	log.Debugln("watching", events.ConfigMap.String())
 	lw := &cache.ListWatch{
-		ListFunc:  ConfigMapListFunc(w.Client),
-		WatchFunc: ConfigMapWatchFunc(w.Client),
+		ListFunc:  ConfigMapListFunc(w.KubeClient),
+		WatchFunc: ConfigMapWatchFunc(w.KubeClient),
 	}
 	_, controller := w.CacheIndexer(events.ConfigMap, &kapi.ConfigMap{}, lw, nil)
 	go controller.Run(wait.NeverStop)
@@ -79,8 +79,8 @@ func (w *Watcher) ConfigMap() {
 func (w *Watcher) Ingress() {
 	log.Debugln("watching", events.Ingress.String())
 	lw := &cache.ListWatch{
-		ListFunc:  IngressListFunc(w.Client),
-		WatchFunc: IngressWatchFunc(w.Client),
+		ListFunc:  IngressListFunc(w.KubeClient),
+		WatchFunc: IngressWatchFunc(w.KubeClient),
 	}
 	_, controller := w.Cache(events.Ingress, &ext.Ingress{}, lw)
 	go controller.Run(wait.NeverStop)
@@ -105,5 +105,5 @@ func (w *Watcher) Certificate() {
 	_, controller := w.Cache(events.Certificate, &aci.Certificate{}, lw)
 	go controller.Run(wait.NeverStop)
 
-	go certificates.NewCertificateSyncer(w.Client, w.ExtClient).RunSync()
+	go certificates.NewCertificateSyncer(w.KubeClient, w.ExtClient).RunSync()
 }

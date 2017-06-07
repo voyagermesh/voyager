@@ -23,11 +23,11 @@ var (
 	masterURL      string
 	kubeconfigPath string
 
-	ProviderName          string
-	ClusterName           string
-	LoadbalancerImageName string = "appscode/haproxy:1.7.5-1.5.5"
-	IngressClass          string
-	EnableAnalytics       bool = true
+	providerName    string
+	clusterName     string
+	HAProxyImage    string = "appscode/haproxy:1.7.5-1.5.5"
+	ingressClass    string
+	enableAnalytics bool = true
 
 	kubeClient clientset.Interface
 	extClient  acs.ExtensionInterface
@@ -36,7 +36,7 @@ var (
 func NewCmdRun() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "run",
-		Short: "Run kubedb operator in Kubernetes",
+		Short: "Run operator",
 		Run: func(cmd *cobra.Command, args []string) {
 			run()
 		},
@@ -44,29 +44,26 @@ func NewCmdRun() *cobra.Command {
 
 	cmd.Flags().StringVar(&masterURL, "master", masterURL, "The address of the Kubernetes API server (overrides any value in kubeconfig)")
 	cmd.Flags().StringVar(&kubeconfigPath, "kubeconfig", kubeconfigPath, "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
-
-	cmd.Flags().StringVarP(&ProviderName, "cloud-provider", "c", ProviderName, "Name of cloud provider")
-	cmd.Flags().StringVarP(&ClusterName, "cluster-name", "k", ClusterName, "Name of Kubernetes cluster")
-	cmd.Flags().StringVarP(&LoadbalancerImageName, "haproxy-image", "h", LoadbalancerImageName, "haproxy image name to be run")
-
-	cmd.Flags().StringVar(&IngressClass, "ingress-class", "", "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
-
-	cmd.Flags().BoolVar(&EnableAnalytics, "analytics", EnableAnalytics, "Send analytical event to Google Analytics")
+	cmd.Flags().StringVarP(&providerName, "cloud-provider", "c", providerName, "Name of cloud provider")
+	cmd.Flags().StringVarP(&clusterName, "cluster-name", "k", clusterName, "Name of Kubernetes cluster")
+	cmd.Flags().StringVarP(&HAProxyImage, "haproxy-image", "h", HAProxyImage, "haproxy image name to be run")
+	cmd.Flags().StringVar(&ingressClass, "ingress-class", "", "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
+	cmd.Flags().BoolVar(&enableAnalytics, "analytics", enableAnalytics, "Send analytical event to Google Analytics")
 
 	return cmd
 }
 
 func run() {
-	if LoadbalancerImageName == "" {
+	if HAProxyImage == "" {
 		log.Fatalln("Missing required flag --haproxy-image")
 	}
-	if stringz.Contains([]string{"aws", "gce", "gke", "azure"}, ProviderName) && ClusterName == "" {
+	if stringz.Contains([]string{"aws", "gce", "gke", "azure"}, providerName) && clusterName == "" {
 		log.Fatalln("--cluster-name flag must be set when --cloud-provider={aws,gce,gke,azure}")
 	}
 
 	defer runtime.HandleCrash()
 
-	if EnableAnalytics {
+	if enableAnalytics {
 		analytics.Enable()
 	}
 
@@ -79,13 +76,13 @@ func run() {
 	extClient = acs.NewForConfigOrDie(config)
 
 	w := &watcher.Watcher{
-		Client:            kubeClient,
+		KubeClient:        kubeClient,
 		ExtClient:         extClient,
 		SyncPeriod:        time.Minute * 2,
-		ProviderName:      ProviderName,
-		ClusterName:       ClusterName,
-		LoadbalancerImage: LoadbalancerImageName,
-		IngressClass:      IngressClass,
+		ProviderName:      providerName,
+		ClusterName:       clusterName,
+		LoadbalancerImage: HAProxyImage,
+		IngressClass:      ingressClass,
 	}
 
 	log.Infoln("Starting Voyager Controller...")

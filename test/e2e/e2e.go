@@ -37,7 +37,7 @@ func NewE2ETestSuit() *TestSuit {
 		Config: testframework.TestContext.E2EConfigs,
 		Voyager: &app.Watcher{
 			Watcher: acw.Watcher{
-				Client:     internalclientset.NewForConfigOrDie(c),
+				KubeClient: internalclientset.NewForConfigOrDie(c),
 				ExtClient:  acs.NewForConfigOrDie(c),
 				SyncPeriod: time.Minute * 5,
 			},

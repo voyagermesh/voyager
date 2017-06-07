@@ -14,7 +14,7 @@ func main() {
 	defer logs.FlushLogs()
 	rootCmd := &cobra.Command{
 		Use:   "voyager [command]",
-		Short: `Voyager operator by AppsCode`,
+		Short: `Voyager - Secure Ingress Controller for Kubernetes by AppsCode`,
 		PersistentPreRun: func(c *cobra.Command, args []string) {
 			c.Flags().VisitAll(func(flag *pflag.Flag) {
 				log.Printf("FLAG: --%s=%q", flag.Name, flag.Value)
