@@ -1,10 +1,9 @@
-package app
+package watcher
 
 import (
 	"testing"
 
 	aci "github.com/appscode/voyager/api"
-	acw "github.com/appscode/voyager/pkg/watcher"
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
 	kapi "k8s.io/kubernetes/pkg/api"
@@ -18,20 +17,18 @@ func init() {
 
 func TestEnsureResource(t *testing.T) {
 	w := &Watcher{
-		Watcher: acw.Watcher{
-			Client: clientset.NewSimpleClientset(
-				&extensions.ThirdPartyResource{
-					ObjectMeta: kapi.ObjectMeta{
-						Name: "foo",
-					},
-					Versions: []extensions.APIVersion{
-						{
-							Name: "v1",
-						},
+		Client: clientset.NewSimpleClientset(
+			&extensions.ThirdPartyResource{
+				ObjectMeta: kapi.ObjectMeta{
+					Name: "foo",
+				},
+				Versions: []extensions.APIVersion{
+					{
+						Name: "v1",
 					},
 				},
-			),
-		},
+			},
+		),
 	}
 	w.ensureResource()
 
