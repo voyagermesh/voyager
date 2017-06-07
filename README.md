@@ -8,25 +8,25 @@ Voyager is a [HAProxy](http://www.haproxy.org/) backed [secure](#certificate) L7
 
 
 ## Ingress
-Voyager provides L7 and L4 loadbalancing using a custom Kubernetes [Ingress](docs/user-guide/component/ingress) resource. This is built on top of the [HAProxy](http://www.haproxy.org/) to support high availability, sticky sessions, name and path-based virtual hosting.
+Voyager provides L7 and L4 loadbalancing using a custom Kubernetes [Ingress](docs/user-guide/ingress) resource. This is built on top of the [HAProxy](http://www.haproxy.org/) to support high availability, sticky sessions, name and path-based virtual hosting.
 This also support configurable application ports with all the options available in a standard Kubernetes [Ingress](https://kubernetes.io/docs/user-guide/ingress/). Here 
 is a [complex ingress example](hack/example/ingress.yaml) that shows how various features can be used.
 You can find the generated HAProxy Configuration [here](hack/example/haproxy_generated.cfg).
 
 **Feautures**
 
-  - [HTTP](docs/user-guide/component/ingress/single-service.md) and [TCP](docs/user-guide/component/ingress/tcp.md) loadbalancing,
-  - [TLS Termination](docs/user-guide/component/ingress/tls.md),
+  - [HTTP](docs/user-guide/ingress/single-service.md) and [TCP](docs/user-guide/ingress/tcp.md) loadbalancing,
+  - [TLS Termination](docs/user-guide/ingress/tls.md),
   - Multi-cloud supports,
-  - [Name and Path based virtual hosting](docs/user-guide/component/ingress/named-virtual-hosting.md),
-  - [Cross namespace routing support](docs/user-guide/component/ingress/named-virtual-hosting.md#cross-namespace-traffic-routing),
-  - [URL and Request Header Re-writing](docs/user-guide/component/ingress/header-rewrite.md),
-  - [Wildcard Name based virtual hosting](docs/user-guide/component/ingress/named-virtual-hosting.md),
+  - [Name and Path based virtual hosting](docs/user-guide/ingress/named-virtual-hosting.md),
+  - [Cross namespace routing support](docs/user-guide/ingress/named-virtual-hosting.md#cross-namespace-traffic-routing),
+  - [URL and Request Header Re-writing](docs/user-guide/ingress/header-rewrite.md),
+  - [Wildcard Name based virtual hosting](docs/user-guide/ingress/named-virtual-hosting.md),
   - Persistent sessions, Loadbalancer stats.
-  - [Route Traffic to StatefulSet Pods Based on Host Name](docs/user-guide/component/ingress/statefulset-pod.md)
-  - [Weighted Loadbalancing for Canary Deployment](docs/user-guide/component/ingress/weighted.md)
-  - [Customize generated HAProxy config via BackendRule](docs/user-guide/component/ingress/backend-rule.md) (can be used for [http rewriting](https://www.haproxy.com/doc/aloha/7.0/haproxy/http_rewriting.html), add [health checks](https://www.haproxy.com/doc/aloha/7.0/haproxy/healthchecks.html), etc.)
-  - [Add Custom Annotation to LoadBalancer Service and Pods](docs/user-guide/component/ingress/annotations.md)
+  - [Route Traffic to StatefulSet Pods Based on Host Name](docs/user-guide/ingress/statefulset-pod.md)
+  - [Weighted Loadbalancing for Canary Deployment](docs/user-guide/ingress/weighted.md)
+  - [Customize generated HAProxy config via BackendRule](docs/user-guide/ingress/backend-rule.md) (can be used for [http rewriting](https://www.haproxy.com/doc/aloha/7.0/haproxy/http_rewriting.html), add [health checks](https://www.haproxy.com/doc/aloha/7.0/haproxy/healthchecks.html), etc.)
+  - [Add Custom Annotation to LoadBalancer Service and Pods](docs/user-guide/ingress/annotations.md)
 
 ### Comparison with Kubernetes
 | Feauture | [Kube Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) | AppsCode Ingress |
@@ -44,7 +44,7 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
 
 
 ## Certificate
-Voyager can automaticallty provision and refresh SSL certificates issued from Let's Encrypt using a custom Kubernetes [Certificate](docs/user-guide/component/certificate) resource. 
+Voyager can automaticallty provision and refresh SSL certificates issued from Let's Encrypt using a custom Kubernetes [Certificate](docs/user-guide/certificate) resource. 
 
 **Feautures**
 - Provision free TLS certificates from Let's Encrypt,
@@ -56,7 +56,7 @@ Voyager can automaticallty provision and refresh SSL certificates issued from Le
 
 
 ### Supported Domain Providers
-Read more about supported DNS Providers [here](/docs/user-guide/component/certificate/provider.md)
+Read more about supported DNS Providers [here](/docs/user-guide/certificate/provider.md)
 
 ## Supported Versions
 Kubernetes 1.3+
