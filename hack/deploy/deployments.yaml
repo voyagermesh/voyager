@@ -24,8 +24,8 @@ spec:
         - --v=3
         image: appscode/voyager:$TAG
         ports:
-        - containerPort: 1234
-          name: zero
+        - containerPort: 8080
+          name: web
           protocol: TCP
 ---
 apiVersion: v1

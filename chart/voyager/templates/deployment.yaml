@@ -19,14 +19,15 @@ spec:
     spec:
       containers:
       - args:
+        - run
         - --cloud-provider={{.Values.cloudProvider}}
         - --cluster-name={{.Values.clusterName}}
         - --v=3
         image: "{{.Values.image}}:{{.Values.imageTag}}"
         name: {{ template "name" . }}
         ports:
-        - containerPort: 1234
-          name: zero
+        - containerPort: 8080
+          name: web
           protocol: TCP
 
 
