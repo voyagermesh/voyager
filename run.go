@@ -84,13 +84,13 @@ func run() {
 	extClient = acs.NewForConfigOrDie(config)
 
 	w := &watcher.Watcher{
-		KubeClient:        kubeClient,
-		ExtClient:         extClient,
-		SyncPeriod:        time.Minute * 2,
-		ProviderName:      providerName,
-		ClusterName:       clusterName,
-		LoadbalancerImage: haProxyImage,
-		IngressClass:      ingressClass,
+		KubeClient:   kubeClient,
+		ExtClient:    extClient,
+		SyncPeriod:   time.Minute * 2,
+		ProviderName: providerName,
+		ClusterName:  clusterName,
+		HAProxyImage: haProxyImage,
+		IngressClass: ingressClass,
 	}
 
 	log.Infoln("Starting Voyager Controller...")

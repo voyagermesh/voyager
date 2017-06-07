@@ -33,8 +33,8 @@ type Watcher struct {
 	// name of the cluster the daemon running.
 	ClusterName string
 
-	// Loadbalancer image name that will be used to create the LoadBalancer.
-	LoadbalancerImage string
+	// HAProxyImage is used to create HAProxy pods.
+	HAProxyImage string
 
 	IngressClass string
 
@@ -74,7 +74,7 @@ func (w *Watcher) Run() {
 func (w *Watcher) setup() {
 	w.ensureResource()
 	w.Storage = &stash.Storage{}
-	ingresscontroller.SetLoadbalancerImage(w.LoadbalancerImage)
+	ingresscontroller.SetLoadbalancerImage(w.HAProxyImage)
 }
 
 var resourceList []string = []string{
