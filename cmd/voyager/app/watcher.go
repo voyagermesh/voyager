@@ -192,19 +192,19 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 				// deleted resource have source reference
 				var err error
 				var detectedKind string
-				if sourceType == aci.TypeIngressAPIGroup {
+				if sourceType == aci.APIGroupIngress {
 					_, err = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
-				} else if sourceType == aci.TypeEngressAPIGroup {
+				} else if sourceType == aci.APIGroupEngress {
 					_, err = w.AppsCodeExtensionClient.Ingress(e.MetaData.Namespace).Get(sourceName)
 				} else if !sourceTypeFound {
 					_, err = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
 					if err != nil {
 						_, err = w.AppsCodeExtensionClient.Ingress(e.MetaData.Namespace).Get(sourceName)
 						if err == nil {
-							detectedKind = aci.TypeEngressAPIGroup
+							detectedKind = aci.APIGroupEngress
 						}
 					} else {
-						detectedKind = aci.TypeIngressAPIGroup
+						detectedKind = aci.APIGroupIngress
 					}
 				}
 				// Ingress get didn't encountered not found err

@@ -159,7 +159,6 @@ func (lbc *EngressController) updateLBSvc() error {
 		svc.Spec.LoadBalancerSourceRanges = lbc.Config.Spec.LoadBalancerSourceRanges
 	}
 
-
 	if svc.Annotations == nil {
 		// This is a safety check, annotations will not be nil
 		svc.Annotations = make(map[string]string)
