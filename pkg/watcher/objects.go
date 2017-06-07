@@ -121,8 +121,8 @@ func (k *Watcher) Ingress() {
 func (k *Watcher) ExtendedIngress() {
 	log.Debugln("watching", events.ExtendedIngress.String())
 	lw := &cache.ListWatch{
-		ListFunc:  ExtendedIngressListFunc(k.AppsCodeExtensionClient),
-		WatchFunc: ExtendedIngressWatchFunc(k.AppsCodeExtensionClient),
+		ListFunc:  ExtendedIngressListFunc(k.ExtClient),
+		WatchFunc: ExtendedIngressWatchFunc(k.ExtClient),
 	}
 	_, controller := k.Cache(events.ExtendedIngress, &aci.Ingress{}, lw)
 	go controller.Run(wait.NeverStop)
@@ -131,8 +131,8 @@ func (k *Watcher) ExtendedIngress() {
 func (k *Watcher) Certificate() {
 	log.Debugln("watching", events.Certificate.String())
 	lw := &cache.ListWatch{
-		ListFunc:  CertificateListFunc(k.AppsCodeExtensionClient),
-		WatchFunc: CertificateWatchFunc(k.AppsCodeExtensionClient),
+		ListFunc:  CertificateListFunc(k.ExtClient),
+		WatchFunc: CertificateWatchFunc(k.ExtClient),
 	}
 	_, controller := k.Cache(events.Certificate, &aci.Certificate{}, lw)
 	go controller.Run(wait.NeverStop)
