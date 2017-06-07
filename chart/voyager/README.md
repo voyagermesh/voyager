@@ -3,12 +3,12 @@
 ## TL;DR;
 
 ```bash
-$ helm install chart/voyager
+$ helm install stable/voyager
 ```
 
 ## Introduction
 
-This chart bootstraps a [controller](https://github.com/appscode/voyager) deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
+This chart bootstraps an [ingress controller](https://github.com/appscode/voyager) deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
 
 
 ## Prerequisites
@@ -18,7 +18,7 @@ This chart bootstraps a [controller](https://github.com/appscode/voyager) deploy
 ## Installing the Chart
 To install the chart with the release name `my-release`:
 ```bash
-$ helm install --name my-release chart/voyager
+$ helm install --name my-release stable/voyager
 ```
 The command deploys Voyager Controller on the Kubernetes cluster in the default configuration. The [configuration](#configuration) section lists the parameters that can be configured during installation.
 
@@ -43,3 +43,6 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | -----------------------    | ---------------------------- | -------------------- |
 | `image`                    |  Container image to run      | `appscode/voyager`   |
 | `imageTag`                 |  Image tag of container      | `1.5.5`              |
+| `cloudProvider`            |  Name of cloud provider      | ``                   |
+| `clusterName`              |  Name of Kubernetes cluster  | ``                   |
+| `logLevel`                 |  Log level for voyager       | `3`                  |
