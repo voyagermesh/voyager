@@ -33,7 +33,7 @@ const (
 	// Monitoring options
 	MonitoringAgent          = AnnotationPrefix + "monitoring.agent" // Only valid value: Prometheus
 	PrometheusNamespace      = AnnotationPrefix + "prometheus.namespace"
-	PrometheusLabels         = AnnotationPrefix + "prometheus.labels"
+	PrometheusLabels         = AnnotationPrefix + "prometheus.labels" // map[string]string
 	PrometheusScrapeInterval = AnnotationPrefix + "prometheus.interval"
 
 	LBName = AnnotationPrefix + "name"
