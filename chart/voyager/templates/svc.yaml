@@ -9,8 +9,8 @@ metadata:
   name: {{ template "fullname" . }}
 spec:
   ports:
-  - name: zero
-    port: 1234
-    targetPort: zero
+  - name: web
+    port: 8080
+    targetPort: web
   selector:
     run: "{{ template "fullname" . }}"
