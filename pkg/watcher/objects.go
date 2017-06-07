@@ -148,3 +148,13 @@ func (k *Watcher) Deployment() {
 	go controller.Run(wait.NeverStop)
 	k.Storage.DeploymentStore = cache.StoreToDeploymentLister{indexer}
 }
+
+func (k *Watcher) ConfigMap() {
+	log.Debugln("watching", events.ConfigMap.String())
+	lw := &cache.ListWatch{
+		ListFunc:  ConfigMapListFunc(k.Client),
+		WatchFunc: ConfigMapWatchFunc(k.Client),
+	}
+	_, controller := k.CacheIndexer(events.ConfigMap, &kapi.ConfigMap{}, lw, nil)
+	go controller.Run(wait.NeverStop)
+}

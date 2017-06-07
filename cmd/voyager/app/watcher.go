@@ -1,6 +1,7 @@
 package app
 
 import (
+	"reflect"
 	"strings"
 
 	"github.com/appscode/log"
@@ -16,6 +17,7 @@ import (
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/cache"
+	"k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/util/wait"
 )
@@ -40,6 +42,12 @@ func (watch *Watcher) Run() {
 	watch.Pod()
 	watch.Service()
 	watch.Endpoint()
+
+	// Watch for kubernetes resource, and restore resources that are created for
+	// an ingress and the source ingress are not still deleted.
+	watch.Deployment()
+	watch.DaemonSet()
+	watch.ConfigMap()
 
 	watch.ExtendedIngress()
 	watch.Ingress()
@@ -117,6 +125,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 		sendAnalytics(e, err)
 	case events.Service:
 		if e.EventType.IsAdded() || e.EventType.IsDeleted() {
+			w.restoreResourceIfRequired(e)
 			return ingresscontroller.UpgradeAllEngress(
 				e.MetaData.Name+"."+e.MetaData.Namespace,
 				w.ClusterName,
@@ -142,6 +151,8 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 					w.Storage, w.IngressClass)
 			}
 		}
+	case events.ConfigMap, events.DaemonSet, events.Deployments:
+		w.restoreResourceIfRequired(e)
 	default:
 		log.Infof("Event %s/%s is not handleable by voyager", e.EventType, e.ResourceType)
 	}
@@ -158,6 +169,105 @@ func (w *Watcher) Certificate() {
 	go controller.Run(wait.NeverStop)
 
 	go certificates.NewCertificateSyncer(w.Client, w.AppsCodeExtensionClient).RunSync()
+}
+
+func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
+	log.Debugln("Dispatching event with resource", e.ResourceType, "event", e.EventType)
+	switch e.ResourceType {
+	case events.ConfigMap, events.DaemonSet, events.Deployments, events.Service:
+		if e.EventType.IsDeleted() && e.MetaData.Annotations != nil {
+			sourceName, sourceNameFound := e.MetaData.Annotations[ingresscontroller.LoadBalancerSourceName]
+			sourceType, sourceTypeFound := e.MetaData.Annotations[ingresscontroller.LoadBalancerSourceAPIGroup]
+
+			noAnnotationResource := false
+			if !sourceNameFound && !sourceTypeFound {
+				// Lets Check if those are old Ingress resource
+				if strings.HasPrefix(e.MetaData.Name, ingresscontroller.VoyagerPrefix) {
+					noAnnotationResource = true
+					sourceName, sourceNameFound = e.MetaData.Name[len(ingresscontroller.VoyagerPrefix):], true
+				}
+			}
+
+			if sourceNameFound {
+				// deleted resource have source reference
+				var ingressErr error
+				var detectedAPIGroup string
+				if sourceType == aci.APIGroupIngress {
+					_, ingressErr = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
+				} else if sourceType == aci.APIGroupEngress {
+					_, ingressErr = w.AppsCodeExtensionClient.Ingress(e.MetaData.Namespace).Get(sourceName)
+				} else if !sourceTypeFound {
+					_, ingressErr = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
+					if ingressErr != nil {
+						_, ingressErr = w.AppsCodeExtensionClient.Ingress(e.MetaData.Namespace).Get(sourceName)
+						if ingressErr == nil {
+							detectedAPIGroup = aci.APIGroupEngress
+						}
+					} else {
+						detectedAPIGroup = aci.APIGroupIngress
+					}
+				}
+
+				if ingressErr != nil {
+					return
+				}
+
+				// Ingress Still exists, restore resource
+				log.Infof("%s/%s required restore", e.EventType, e.ResourceType)
+				obj, true := e.GetRuntimeObject()
+				if true {
+					var client restclient.Interface
+					switch e.ResourceType {
+					case events.ConfigMap, events.Service:
+						client = w.Client.Core().RESTClient()
+					case events.Deployments, events.DaemonSet:
+						client = w.Client.Extensions().RESTClient()
+					}
+
+					// Clean Default generated values
+					metadata := reflect.ValueOf(obj).Elem().FieldByName("ObjectMeta")
+					objectMeta, ok := metadata.Interface().(kapi.ObjectMeta)
+					if ok {
+						objectMeta.SetSelfLink("")
+						objectMeta.SetResourceVersion("")
+
+						if noAnnotationResource {
+							// Old resource and annotations are missing so we need to add the annotations
+							annotation := objectMeta.GetAnnotations()
+							if annotation == nil {
+								annotation = make(map[string]string)
+							}
+							annotation[ingresscontroller.LoadBalancerSourceAPIGroup] = detectedAPIGroup
+							annotation[ingresscontroller.LoadBalancerSourceName] = sourceName
+
+						}
+						metadata.Set(reflect.ValueOf(objectMeta))
+					}
+
+					// Special treatment for Deployment
+					if e.ResourceType == events.Deployments {
+						dp, ok := obj.(*extensions.Deployment)
+						if ok {
+							dp.Spec.Paused = false
+							if dp.Spec.Replicas < 1 {
+								dp.Spec.Replicas = 1
+							}
+						}
+					}
+
+					resp, err := client.Post().
+						Namespace(e.MetaData.Namespace).
+						Resource(e.ResourceType.String()).
+						Body(obj).
+						Do().Raw()
+					if err != nil {
+						log.Errorln("Failed to create resource", e.ResourceType.String(), err)
+						log.Errorln(string(resp))
+					}
+				}
+			}
+		}
+	}
 }
 
 func sendAnalytics(e *events.Event, err error) {

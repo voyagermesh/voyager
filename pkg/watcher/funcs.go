@@ -193,3 +193,15 @@ func DeploymentWatchFunc(c clientset.Interface) func(options kapi.ListOptions) (
 		return c.Extensions().Deployments(kapi.NamespaceAll).Watch(options)
 	}
 }
+
+func ConfigMapListFunc(c clientset.Interface) func(kapi.ListOptions) (runtime.Object, error) {
+	return func(opts kapi.ListOptions) (runtime.Object, error) {
+		return c.Core().ConfigMaps(kapi.NamespaceAll).List(opts)
+	}
+}
+
+func ConfigMapWatchFunc(c clientset.Interface) func(options kapi.ListOptions) (watch.Interface, error) {
+	return func(options kapi.ListOptions) (watch.Interface, error) {
+		return c.Core().ConfigMaps(kapi.NamespaceAll).Watch(options)
+	}
+}

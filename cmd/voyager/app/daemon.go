@@ -34,7 +34,7 @@ func Run(config *options.Config) {
 		Watcher: acw.Watcher{
 			Client:                  clientset.NewForConfigOrDie(c),
 			AppsCodeExtensionClient: acs.NewForConfigOrDie(c),
-			SyncPeriod:              time.Minute * 5,
+			SyncPeriod:              time.Minute * 2,
 		},
 		ProviderName:      config.ProviderName,
 		ClusterName:       config.ClusterName,

@@ -80,6 +80,10 @@ const (
 	// usable. See also "tcp-request connection expect-proxy" for a finer-grained
 	// setting of which client is allowed to use the protocol.
 	LoadBalancerAcceptProxy = AnnotationPrefix + "accept-proxy"
+
+	// annotations applied to created resources for any ingress
+	LoadBalancerSourceAPIGroup = AnnotationPrefix + "source.apiGroup"
+	LoadBalancerSourceName     = AnnotationPrefix + "source.name"
 )
 
 type annotation map[string]string
@@ -191,8 +195,9 @@ type EngressController struct {
 	CloudManager cloudprovider.Interface
 
 	// Engress object that created or updated.
-	Config  *aci.Ingress
-	Options *KubeOptions
+	Config   *aci.Ingress
+	apiGroup string
+	Options  *KubeOptions
 	// contains all the https host names.
 	HostFilter []string
 

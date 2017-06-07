@@ -86,6 +86,10 @@ func (lbc *EngressController) createConfigMap() error {
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      VoyagerPrefix + lbc.Config.Name,
 			Namespace: lbc.Config.Namespace,
+			Annotations: map[string]string{
+				LoadBalancerSourceAPIGroup: lbc.apiGroup,
+				LoadBalancerSourceName:     lbc.Config.GetName(),
+			},
 		},
 		Data: map[string]string{
 			"haproxy.cfg": lbc.Options.ConfigData,
@@ -153,6 +157,8 @@ func (lbc *EngressController) createHostPortSvc() error {
 			Annotations: map[string]string{
 				LBName: lbc.Config.GetName(),
 				LBType: LBTypeHostPort,
+				LoadBalancerSourceAPIGroup: lbc.apiGroup,
+				LoadBalancerSourceName:     lbc.Config.GetName(),
 			},
 		},
 
@@ -223,6 +229,10 @@ func (lbc *EngressController) createHostPortPods() error {
 			Name:      VoyagerPrefix + lbc.Config.Name,
 			Namespace: lbc.Config.Namespace,
 			Labels:    labelsFor(lbc.Config.Name),
+			Annotations: map[string]string{
+				LoadBalancerSourceAPIGroup: lbc.apiGroup,
+				LoadBalancerSourceName:     lbc.Config.GetName(),
+			},
 		},
 
 		Spec: kepi.DaemonSetSpec{
@@ -313,6 +323,8 @@ func (lbc *EngressController) createNodePortSvc() error {
 			Annotations: map[string]string{
 				LBName: lbc.Config.GetName(),
 				LBType: LBTypeNodePort,
+				LoadBalancerSourceAPIGroup: lbc.apiGroup,
+				LoadBalancerSourceName:     lbc.Config.GetName(),
 			},
 		},
 		Spec: kapi.ServiceSpec{
@@ -363,6 +375,10 @@ func (lbc *EngressController) createNodePortPods() error {
 			Name:      VoyagerPrefix + lbc.Config.Name,
 			Namespace: lbc.Config.Namespace,
 			Labels:    labelsFor(lbc.Config.Name),
+			Annotations: map[string]string{
+				LoadBalancerSourceAPIGroup: lbc.apiGroup,
+				LoadBalancerSourceName:     lbc.Config.GetName(),
+			},
 		},
 
 		Spec: kepi.DeploymentSpec{
@@ -447,6 +463,8 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 			Annotations: map[string]string{
 				LBName: lbc.Config.GetName(),
 				LBType: LBTypeLoadBalancer,
+				LoadBalancerSourceAPIGroup: lbc.apiGroup,
+				LoadBalancerSourceName:     lbc.Config.GetName(),
 			},
 		},
 		Spec: kapi.ServiceSpec{
@@ -555,6 +573,8 @@ func (lbc *EngressController) ensureStatsService() {
 			Namespace: lbc.Config.Namespace,
 			Annotations: map[string]string{
 				LBName: lbc.Config.GetName(),
+				LoadBalancerSourceAPIGroup: lbc.apiGroup,
+				LoadBalancerSourceName:     lbc.Config.GetName(),
 			},
 		},
 		Spec: kapi.ServiceSpec{
@@ -596,7 +616,7 @@ func (lbc *EngressController) updateStatus() error {
 	}
 
 	if len(statuses) > 0 {
-		if lbc.Config.Annotations[api.EngressKind] == "ingress" {
+		if lbc.apiGroup == api.APIGroupIngress {
 			ing, err := lbc.KubeClient.Extensions().Ingresses(lbc.Config.Namespace).Get(lbc.Config.Name)
 			if err != nil {
 				return errors.FromErr(err).Err()
