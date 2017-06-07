@@ -2,18 +2,18 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   labels:
-    run: voyager-operator
+    app: voyager-operator
   name: voyager-operator
   namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      run: voyager-operator
+      app: voyager-operator
   template:
     metadata:
       labels:
-        run: voyager-operator
+        app: voyager-operator
     spec:
       containers:
       - name: voyager-operator
@@ -25,19 +25,19 @@ spec:
         image: appscode/voyager:$TAG
         ports:
         - containerPort: 8080
-          name: web
+          name: http
           protocol: TCP
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    run: voyager-operator
+    app: voyager-operator
   name: voyager-operator
 spec:
   ports:
-  - name: web
+  - name: http
     port: 8080
     targetPort: web
   selector:
-    run: voyager-operator
+    app: voyager-operator

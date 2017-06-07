@@ -6,7 +6,7 @@ selector, and use the service name as Backend ServiceName. By following:
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
-  name: web
+  name: http
 spec:
   serviceName: "nginx-set"
   replicas: 2
@@ -20,7 +20,7 @@ spec:
         image: gcr.io/google_containers/nginx-slim:0.8
         ports:
         - containerPort: 80
-          name: web
+          name: http
 ----
 apiVersion: v1
 kind: Service
@@ -31,7 +31,7 @@ metadata:
 spec:
   ports:
   - port: 80
-    name: web
+    name: http
   clusterIP: None
   selector:
     app: nginx
@@ -48,7 +48,7 @@ metadata:
 spec:
   ports:
   - port: 80
-    name: web
+    name: http
   selector:
     app: nginx
 
