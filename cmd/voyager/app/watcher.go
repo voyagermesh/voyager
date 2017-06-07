@@ -105,13 +105,13 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 		err := ingresscontroller.NewEngressController(w.ClusterName,
 			w.ProviderName,
 			w.Client,
-			w.AppsCodeExtensionClient,
+			w.ExtClient,
 			w.Storage, w.IngressClass).Handle(e)
 
 		// Check the Ingress or Extended Ingress Annotations. To Work for auto certificate
 		// operations.
 		if err == nil {
-			certController := certificates.NewController(w.Client, w.AppsCodeExtensionClient)
+			certController := certificates.NewController(w.Client, w.ExtClient)
 			certController.Handle(e)
 		}
 		sendAnalytics(e, err)
@@ -119,7 +119,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 	case events.Certificate:
 		var err error
 		if e.EventType.IsAdded() || e.EventType.IsUpdated() {
-			certController := certificates.NewController(w.Client, w.AppsCodeExtensionClient)
+			certController := certificates.NewController(w.Client, w.ExtClient)
 			err = certController.Handle(e)
 		}
 		sendAnalytics(e, err)
@@ -131,7 +131,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 				w.ClusterName,
 				w.ProviderName,
 				w.Client,
-				w.AppsCodeExtensionClient,
+				w.ExtClient,
 				w.Storage, w.IngressClass)
 		}
 	case events.Endpoint:
@@ -147,7 +147,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 					w.ClusterName,
 					w.ProviderName,
 					w.Client,
-					w.AppsCodeExtensionClient,
+					w.ExtClient,
 					w.Storage, w.IngressClass)
 			}
 		}
@@ -162,13 +162,13 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 func (w *Watcher) Certificate() {
 	log.Debugln("watching", events.Certificate.String())
 	lw := &cache.ListWatch{
-		ListFunc:  acw.CertificateListFunc(w.AppsCodeExtensionClient),
-		WatchFunc: acw.CertificateWatchFunc(w.AppsCodeExtensionClient),
+		ListFunc:  acw.CertificateListFunc(w.ExtClient),
+		WatchFunc: acw.CertificateWatchFunc(w.ExtClient),
 	}
 	_, controller := w.Cache(events.Certificate, &aci.Certificate{}, lw)
 	go controller.Run(wait.NeverStop)
 
-	go certificates.NewCertificateSyncer(w.Client, w.AppsCodeExtensionClient).RunSync()
+	go certificates.NewCertificateSyncer(w.Client, w.ExtClient).RunSync()
 }
 
 func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
@@ -195,11 +195,11 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 				if sourceType == aci.APIGroupIngress {
 					_, ingressErr = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
 				} else if sourceType == aci.APIGroupEngress {
-					_, ingressErr = w.AppsCodeExtensionClient.Ingress(e.MetaData.Namespace).Get(sourceName)
+					_, ingressErr = w.ExtClient.Ingress(e.MetaData.Namespace).Get(sourceName)
 				} else if !sourceTypeFound {
 					_, ingressErr = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
 					if ingressErr != nil {
-						_, ingressErr = w.AppsCodeExtensionClient.Ingress(e.MetaData.Namespace).Get(sourceName)
+						_, ingressErr = w.ExtClient.Ingress(e.MetaData.Namespace).Get(sourceName)
 						if ingressErr == nil {
 							detectedAPIGroup = aci.APIGroupEngress
 						}
