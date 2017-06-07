@@ -13,6 +13,7 @@ import (
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/controller/ingress/template"
+	"github.com/appscode/voyager/pkg/monitor"
 	"github.com/flosch/pongo2"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/util/intstr"
@@ -326,6 +327,19 @@ func (lbc *EngressController) parseOptions() {
 	lbc.Options.LoadBalancerIP = lbc.Options.annotations.LoadBalancerIP()
 	lbc.Options.LoadBalancerPersist = lbc.Options.annotations.LoadBalancerPersist()
 	log.Infoln("Got LBType", lbc.Options.LBType)
+
+	_, agentFound := lbc.Options.annotations.MonitoringAgent()
+	promNS, promNSFound := lbc.Options.annotations.PrometheusNamespace()
+	promLabels, promLabelsFound := lbc.Options.annotations.PrometheusLabels()
+	if agentFound && promNSFound && promLabelsFound {
+		lbc.Monitor = &monitor.MonitorSpec{
+			Prometheus: &monitor.PrometheusSpec{
+				Namespace: promNS,
+				Labels:    promLabels,
+				Interval:  lbc.Options.annotations.PrometheusScrapeInterval(),
+			},
+		}
+	}
 }
 
 // ref: https://github.com/kubernetes/kubernetes/blob/078238a461a0872a8eacb887fbb3d0085714604c/staging/src/k8s.io/apiserver/pkg/apis/example/v1/types.go#L134
