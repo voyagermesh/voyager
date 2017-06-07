@@ -140,6 +140,12 @@ func (lbc *EngressController) updateLBSvc() error {
 			})
 		}
 	}
+
+	if svc.Spec.Type == kapi.ServiceTypeLoadBalancer {
+		// Update Source Range
+		svc.Spec.LoadBalancerSourceRanges = lbc.Config.Spec.LoadBalancerSourceRanges
+	}
+
 	svc, err = lbc.KubeClient.Core().Services(lbc.Config.Namespace).Update(svc)
 	if err != nil {
 		return errors.FromErr(err).Err()

@@ -319,6 +319,8 @@ func (lbc *EngressController) createNodePortSvc() error {
 			Type:     kapi.ServiceTypeNodePort,
 			Ports:    []kapi.ServicePort{},
 			Selector: labelsFor(lbc.Config.Name),
+			// https://github.com/kubernetes/kubernetes/issues/33586
+			// LoadBalancerSourceRanges: lbc.Config.Spec.LoadBalancerSourceRanges,
 		},
 	}
 
@@ -448,8 +450,9 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 			},
 		},
 		Spec: kapi.ServiceSpec{
-			Ports:    []kapi.ServicePort{},
-			Selector: labelsFor(lbc.Config.Name),
+			Ports:                    []kapi.ServicePort{},
+			Selector:                 labelsFor(lbc.Config.Name),
+			LoadBalancerSourceRanges: lbc.Config.Spec.LoadBalancerSourceRanges,
 		},
 	}
 
