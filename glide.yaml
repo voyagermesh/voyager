@@ -23,13 +23,9 @@ import:
 - package: cloud.google.com/go
   version: v0.2.0
 - package: k8s.io/kubernetes
-  repo: https://github.com/appscode/kubernetes.git
-  vcs: git
-  version: 1.5.2-ac
+  version: ~1.5.0
 testImport:
 - package: github.com/stretchr/testify
   version: v1.1.4
 - package: k8s.io/kubernetes
-  repo: https://github.com/appscode/kubernetes.git
-  vcs: git
-  version: 1.5.2-ac
+  version: ~1.5.0

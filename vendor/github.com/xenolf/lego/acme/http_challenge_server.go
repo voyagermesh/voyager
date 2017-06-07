@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // HTTPProviderServer implements ChallengeProvider for `http-01` challenge
@@ -38,6 +39,14 @@ func (s *HTTPProviderServer) Present(domain, token, keyAuth string) error {
 
 	s.done = make(chan bool)
 	go s.serve(domain, token, keyAuth)
+	client := &http.Client{Timeout: time.Second}
+	for {
+		time.Sleep(time.Millisecond * 50)
+		resp, err := client.Get(fmt.Sprintf("http://%s/.well-known/acme-challenge/%s", domain, token))
+		if err == nil && resp.StatusCode == http.StatusOK {
+			break
+		}
+	}
 	return nil
 }
 

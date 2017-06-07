@@ -96,6 +96,7 @@ Read [Build Instructions](docs/developer-guide/build.md) to build voyager.
  - appscode/lego https://github.com/appscode/lego
  - kelseyhightower/kube-cert-manager https://github.com/kelseyhightower/kube-cert-manager
  - PalmStoneGames/kube-cert-manager https://github.com/PalmStoneGames/kube-cert-manager
+ - [Kubernetes cloudprovider implementation](https://github.com/kubernetes/kubernetes/tree/master/pkg/cloudprovider) 
 
 ## Support
 If you have any questions, you can reach out to us.

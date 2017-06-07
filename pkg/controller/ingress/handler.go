@@ -14,11 +14,11 @@ import (
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/events"
 	"github.com/appscode/voyager/pkg/stash"
+	"github.com/appscode/voyager/third_party/forked/cloudprovider"
+	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
+	fakecloudprovider "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
 	kapi "k8s.io/kubernetes/pkg/api"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/cloudprovider"
-	_ "k8s.io/kubernetes/pkg/cloudprovider/providers"
-	fakecloudprovider "k8s.io/kubernetes/pkg/cloudprovider/providers/fake"
 	"k8s.io/kubernetes/pkg/labels"
 )
 
