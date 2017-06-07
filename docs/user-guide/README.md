@@ -51,7 +51,7 @@ This is supported for cloud providers known to Kubernetes (`aws`, `gce` and `azu
 - NodePort: In this mode, a Kubernetes NodePort type service is used to expose HAProxy to the internet. This is supported on any cloud provider including
 baremetal clusters. Users are required to configure firewall as needed.
 
-You can choose the mode in your Ingress YAML using label: [ingress.appscode.com/type](/docs/user-guide/component/ingress#configurations-options)
+You can choose the mode in your Ingress YAML using label: [ingress.appscode.com/type](/docs/user-guide/ingress#configurations-options)
 
 ## Run with helm
 One can deploy the controller with helm by following this [guide](/hack/chart/voyager/README.md)
@@ -127,7 +127,7 @@ in absence of those requests which doesn’t match a rule in spec, are sent to t
 |  DELETE | /apis/appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | DELETE | nil
 
 ### Dive into Ingress
-You Can Learn more about `ingress.appscode.com` by reading [this doc](component/ingress/README.md).
+You Can Learn more about `ingress.appscode.com` by reading [this doc](ingress/README.md).
 
 
 ## Certificate
@@ -178,7 +178,7 @@ certificate common name.
 |  DELETE | /apis/appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | DELETE | nil
 
 ### Dive into Certificates
-You Can Learn more about `certificate.appscode.com` by reading [this doc](component/certificate/README.md).
+You Can Learn more about `certificate.appscode.com` by reading [this doc](certificate/README.md).
 
 ## Running Voyager alongside with other ingress controller
 Voyager can be configured to handle default kubernetes ingress or only ingress.appscode.com. Voyager can also be run
