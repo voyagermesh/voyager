@@ -6,21 +6,10 @@ import (
 	"github.com/appscode/voyager/pkg/controller/certificates"
 	"github.com/appscode/voyager/pkg/events"
 	kapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/apis/apps"
 	ext "k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/cache"
 	"k8s.io/kubernetes/pkg/util/wait"
 )
-
-func (w *Watcher) Namespace() {
-	log.Debugln("watching", events.Namespace.String())
-	lw := &cache.ListWatch{
-		ListFunc:  NamespaceListFunc(w.Client),
-		WatchFunc: NamespaceWatchFunc(w.Client),
-	}
-	_, controller := w.Cache(events.Namespace, &kapi.Namespace{}, lw)
-	go controller.Run(wait.NeverStop)
-}
 
 func (w *Watcher) Pod() {
 	log.Debugln("watching", events.Pod.String())
@@ -44,37 +33,26 @@ func (w *Watcher) Service() {
 	w.Storage.ServiceStore = cache.StoreToServiceLister{indexer}
 }
 
-func (w *Watcher) RC() {
-	log.Debugln("watching", events.RC.String())
+func (w *Watcher) Endpoint() {
+	log.Debugln("watching", events.Endpoint.String())
 	lw := &cache.ListWatch{
-		ListFunc:  ReplicationControllerListFunc(w.Client),
-		WatchFunc: ReplicationControllerWatchFunc(w.Client),
+		ListFunc:  EndpointListFunc(w.Client),
+		WatchFunc: EndpointWatchFunc(w.Client),
 	}
-	indexer, controller := w.CacheIndexer(events.RC, &kapi.ReplicationController{}, lw, nil)
+	store, controller := w.CacheStore(events.Endpoint, &kapi.Endpoints{}, lw)
 	go controller.Run(wait.NeverStop)
-	w.Storage.RcStore = cache.StoreToReplicationControllerLister{indexer}
+	w.Storage.EndpointStore = cache.StoreToEndpointsLister{store}
 }
 
-func (w *Watcher) ReplicaSet() {
-	log.Debugln("watching", events.ReplicaSet.String())
+func (w *Watcher) Deployment() {
+	log.Debugln("watching", events.Deployments.String())
 	lw := &cache.ListWatch{
-		ListFunc:  ReplicaSetListFunc(w.Client),
-		WatchFunc: ReplicaSetWatchFunc(w.Client),
+		ListFunc:  DeploymentListFunc(w.Client),
+		WatchFunc: DeploymentWatchFunc(w.Client),
 	}
-	indexer, controller := w.CacheIndexer(events.ReplicaSet, &ext.ReplicaSet{}, lw, nil)
+	indexer, controller := w.CacheIndexer(events.Deployments, &ext.Deployment{}, lw, nil)
 	go controller.Run(wait.NeverStop)
-	w.Storage.ReplicaSetStore = cache.StoreToReplicaSetLister{indexer}
-}
-
-func (w *Watcher) StatefulSet() {
-	log.Debugln("watching", events.StatefulSet.String())
-	lw := &cache.ListWatch{
-		ListFunc:  StatefulSetListFunc(w.Client),
-		WatchFunc: StatefulSetWatchFunc(w.Client),
-	}
-	indexer, controller := w.CacheIndexer(events.StatefulSet, &apps.StatefulSet{}, lw, nil)
-	go controller.Run(wait.NeverStop)
-	w.Storage.StatefulSetStore = cache.StoreToStatefulSetLister{indexer}
+	w.Storage.DeploymentStore = cache.StoreToDeploymentLister{indexer}
 }
 
 func (w *Watcher) DaemonSet() {
@@ -88,24 +66,13 @@ func (w *Watcher) DaemonSet() {
 	w.Storage.DaemonSetStore = cache.StoreToDaemonSetLister{indexer}
 }
 
-func (w *Watcher) Endpoint() {
-	log.Debugln("watching", events.Endpoint.String())
+func (w *Watcher) ConfigMap() {
+	log.Debugln("watching", events.ConfigMap.String())
 	lw := &cache.ListWatch{
-		ListFunc:  EndpointListFunc(w.Client),
-		WatchFunc: EndpointWatchFunc(w.Client),
+		ListFunc:  ConfigMapListFunc(w.Client),
+		WatchFunc: ConfigMapWatchFunc(w.Client),
 	}
-	store, controller := w.CacheStore(events.Endpoint, &kapi.Endpoints{}, lw)
-	go controller.Run(wait.NeverStop)
-	w.Storage.EndpointStore = cache.StoreToEndpointsLister{store}
-}
-
-func (w *Watcher) Node() {
-	log.Debugln("watching", events.Node.String())
-	lw := &cache.ListWatch{
-		ListFunc:  NodeListFunc(w.Client),
-		WatchFunc: NodeWatchFunc(w.Client),
-	}
-	_, controller := w.CacheStore(events.Node, &kapi.Node{}, lw)
+	_, controller := w.CacheIndexer(events.ConfigMap, &kapi.ConfigMap{}, lw, nil)
 	go controller.Run(wait.NeverStop)
 }
 
@@ -139,25 +106,4 @@ func (w *Watcher) Certificate() {
 	go controller.Run(wait.NeverStop)
 
 	go certificates.NewCertificateSyncer(w.Client, w.ExtClient).RunSync()
-}
-
-func (w *Watcher) Deployment() {
-	log.Debugln("watching", events.Deployments.String())
-	lw := &cache.ListWatch{
-		ListFunc:  DeploymentListFunc(w.Client),
-		WatchFunc: DeploymentWatchFunc(w.Client),
-	}
-	indexer, controller := w.CacheIndexer(events.Deployments, &ext.Deployment{}, lw, nil)
-	go controller.Run(wait.NeverStop)
-	w.Storage.DeploymentStore = cache.StoreToDeploymentLister{indexer}
-}
-
-func (w *Watcher) ConfigMap() {
-	log.Debugln("watching", events.ConfigMap.String())
-	lw := &cache.ListWatch{
-		ListFunc:  ConfigMapListFunc(w.Client),
-		WatchFunc: ConfigMapWatchFunc(w.Client),
-	}
-	_, controller := w.CacheIndexer(events.ConfigMap, &kapi.ConfigMap{}, lw, nil)
-	go controller.Run(wait.NeverStop)
 }
