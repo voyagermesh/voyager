@@ -171,7 +171,7 @@ func (c *CertificateController) handleIngressEvent(e *events.Event) error {
 					},
 				}
 				if v, ok := ingress.Annotations[aci.EngressKind]; ok {
-					if v == aci.TypeIngress {
+					if v == aci.TypeIngressAPIGroup {
 						newCertificate.Spec.HTTPProviderIngressReference.APIVersion = "extensions/v1beta1"
 					} else {
 						newCertificate.Spec.HTTPProviderIngressReference.APIVersion = "appscode.com/v1beta1"

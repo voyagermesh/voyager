@@ -73,10 +73,10 @@ func (lbc *EngressController) updateConfigMap() error {
 		cMap.Annotations = make(map[string]string)
 	}
 	_, sourceNameFound := cMap.Annotations[LoadBalancerSourceName]
-	_, sourceTypeFound := cMap.Annotations[LoadBalancerSourceType]
+	_, sourceTypeFound := cMap.Annotations[LoadBalancerSourceAPIGroup]
 	if !sourceNameFound && !sourceTypeFound {
 		// Old version object
-		cMap.Annotations[LoadBalancerSourceType] = lbc.kind
+		cMap.Annotations[LoadBalancerSourceAPIGroup] = lbc.kind
 		cMap.Annotations[LoadBalancerSourceName] = lbc.Config.GetName()
 	}
 
@@ -159,10 +159,10 @@ func (lbc *EngressController) updateLBSvc() error {
 		svc.Annotations = make(map[string]string)
 	}
 	_, sourceNameFound := svc.Annotations[LoadBalancerSourceName]
-	_, sourceTypeFound := svc.Annotations[LoadBalancerSourceType]
+	_, sourceTypeFound := svc.Annotations[LoadBalancerSourceAPIGroup]
 	if !sourceNameFound && !sourceTypeFound {
 		// Old version object
-		svc.Annotations[LoadBalancerSourceType] = lbc.kind
+		svc.Annotations[LoadBalancerSourceAPIGroup] = lbc.kind
 		svc.Annotations[LoadBalancerSourceName] = lbc.Config.GetName()
 	}
 

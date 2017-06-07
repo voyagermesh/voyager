@@ -29,10 +29,10 @@ func (lbc *EngressController) parse() error {
 	lbc.Options.ConfigMapName = VoyagerPrefix + lbc.Config.Name
 
 	// Set loadbalancer source kind, default ingress.appscode.com
-	lbc.kind = api.TypeEngress
+	lbc.kind = api.TypeEngressAPIGroup
 	if val, ok := lbc.Config.Annotations[api.EngressKind]; ok {
-		if val == api.TypeIngress {
-			lbc.kind = api.TypeIngress
+		if val == api.TypeIngressAPIGroup {
+			lbc.kind = api.TypeIngressAPIGroup
 		}
 	}
 

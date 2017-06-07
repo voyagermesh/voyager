@@ -12,8 +12,8 @@ const (
 )
 
 var (
-	TypeEngress = "appscode.com/v1beta1/ingress"
-	TypeIngress = "extension/v1beta1/ingress"
+	TypeEngressAPIGroup = "appscode.com/v1beta1"
+	TypeIngressAPIGroup = "extension/v1beta1"
 )
 
 // ExtendedIngress types for appscode.

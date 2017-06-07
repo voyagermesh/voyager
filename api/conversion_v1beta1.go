@@ -44,7 +44,7 @@ func NewEngressFromIngress(ing interface{}) (*Ingress, error) {
 	if engress.Annotations == nil {
 		engress.Annotations = make(map[string]string)
 	}
-	engress.Annotations[EngressKind] = TypeIngress
+	engress.Annotations[EngressKind] = TypeIngressAPIGroup
 	return engress, nil
 }
 
@@ -61,6 +61,6 @@ func NewIngressFromEngress(ing interface{}) (*extensions.Ingress, error) {
 	if engress.Annotations == nil {
 		engress.Annotations = make(map[string]string)
 	}
-	engress.Annotations[EngressKind] = TypeEngress
+	engress.Annotations[EngressKind] = TypeEngressAPIGroup
 	return engress, nil
 }

@@ -177,7 +177,7 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 	case events.ConfigMap, events.DaemonSet, events.Deployments, events.Service:
 		if e.EventType.IsDeleted() && e.MetaData.Annotations != nil {
 			sourceName, sourceNameFound := e.MetaData.Annotations[ingresscontroller.LoadBalancerSourceName]
-			sourceType, sourceTypeFound := e.MetaData.Annotations[ingresscontroller.LoadBalancerSourceType]
+			sourceType, sourceTypeFound := e.MetaData.Annotations[ingresscontroller.LoadBalancerSourceAPIGroup]
 
 			oldResourceObject := false
 			if !sourceNameFound && !sourceTypeFound {
@@ -192,19 +192,19 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 				// deleted resource have source reference
 				var err error
 				var detectedKind string
-				if sourceType == aci.TypeIngress {
+				if sourceType == aci.TypeIngressAPIGroup {
 					_, err = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
-				} else if sourceType == aci.TypeEngress {
+				} else if sourceType == aci.TypeEngressAPIGroup {
 					_, err = w.AppsCodeExtensionClient.Ingress(e.MetaData.Namespace).Get(sourceName)
 				} else if !sourceTypeFound {
 					_, err = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
 					if err != nil {
 						_, err = w.AppsCodeExtensionClient.Ingress(e.MetaData.Namespace).Get(sourceName)
 						if err == nil {
-							detectedKind = aci.TypeEngress
+							detectedKind = aci.TypeEngressAPIGroup
 						}
 					} else {
-						detectedKind = aci.TypeIngress
+						detectedKind = aci.TypeIngressAPIGroup
 					}
 				}
 				// Ingress get didn't encountered not found err
@@ -234,7 +234,7 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 								if annotation == nil {
 									annotation = make(map[string]string)
 								}
-								annotation[ingresscontroller.LoadBalancerSourceType] = detectedKind
+								annotation[ingresscontroller.LoadBalancerSourceAPIGroup] = detectedKind
 								annotation[ingresscontroller.LoadBalancerSourceName] = sourceName
 
 							}

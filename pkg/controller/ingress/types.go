@@ -82,8 +82,8 @@ const (
 	LoadBalancerAcceptProxy = AnnotationPrefix + "accept-proxy"
 
 	// annotations applied to created resources for any ingress
-	LoadBalancerSourceType = AnnotationPrefix + "source.type"
-	LoadBalancerSourceName = AnnotationPrefix + "source.name"
+	LoadBalancerSourceAPIGroup = AnnotationPrefix + "source.apiGroup"
+	LoadBalancerSourceName     = AnnotationPrefix + "source.name"
 )
 
 type annotation map[string]string
