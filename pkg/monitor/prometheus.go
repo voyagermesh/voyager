@@ -9,7 +9,6 @@ import (
 	"github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	_ "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
-	tapi "github.com/k8sdb/apimachinery/api"
 	cgerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kapi "k8s.io/kubernetes/pkg/api"
