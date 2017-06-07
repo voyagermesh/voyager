@@ -1,11 +1,10 @@
-package app
+package main
 
 import (
 	"errors"
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
-	"time"
 
 	hpe "github.com/appscode/haproxy_exporter/exporter"
 	"github.com/appscode/pat"
@@ -17,16 +16,8 @@ import (
 	"github.com/prometheus/common/version"
 	kapi "k8s.io/kubernetes/pkg/api"
 	kerr "k8s.io/kubernetes/pkg/api/errors"
-	"github.com/appscode/voyager/cmd/voyager/app/options"
+	"strconv"
 )
-
-type Options struct {
-	masterURL                 string
-	kubeconfigPath            string
-	address                   string
-	haProxyServerMetricFields string
-	haProxyTimeout            time.Duration
-}
 
 const (
 	ParamAPIGroup  = ":apiGroup"
@@ -40,31 +31,6 @@ var (
 
 	registerers = cmap.New() // URL.path => *prometheus.Registry
 )
-
-func RunExporter(opt options.Config) {
-	//config, err := clientcmd.BuildConfigFromFlags(opt.masterURL, opt.kubeconfigPath)
-	//if err != nil {
-	//	log.Fatal("Failed to connect to Kubernetes", err)
-	//}
-	//kubeClient = clientset.NewForConfigOrDie(config)
-	//acClient = acs.NewACExtensionsForConfigOrDie(config)
-
-	var err error
-	selectedServerMetrics, err = hpe.FilterServerMetrics(opt.HAProxyServerMetricFields)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	m := pat.New()
-	m.Get("/metrics", promhttp.Handler())
-	pattern := fmt.Sprintf("/%s/v1beta1/namespaces/%s/ingresses/%s/pods/%s/metrics", ParamAPIGroup, ParamNamespace, ParamName, ParamPodIP)
-	log.Infof("URL pattern: %s", pattern)
-	m.Get(pattern, http.HandlerFunc(ExportMetrics))
-	m.Del(pattern, http.HandlerFunc(DeleteRegistry))
-	http.Handle("/", m)
-	log.Infoln("Listening on", opt.Address)
-	log.Fatal(http.ListenAndServe(opt.Address, nil))
-}
 
 func DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 	registerers.Remove(r.URL.Path)
@@ -123,7 +89,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				exporter, err := hpe.NewExporter(scrapeURL, selectedServerMetrics, opt.haProxyTimeout)
+				exporter, err := hpe.NewExporter(scrapeURL, selectedServerMetrics, haProxyTimeout)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -145,7 +111,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 				reg = r2.(*prometheus.Registry)
 			} else {
 				log.Infof("Configuring exporter for appscode ingress %s in namespace %s", name, namespace)
-				ingress, err := acClient.Ingress(namespace).Get(name)
+				ingress, err := extClient.Ingress(namespace).Get(name)
 				if kerr.IsNotFound(err) {
 					http.NotFound(w, r)
 					return
@@ -158,7 +124,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				exporter, err := hpe.NewExporter(scrapeURL, selectedServerMetrics, opt.haProxyTimeout)
+				exporter, err := hpe.NewExporter(scrapeURL, selectedServerMetrics, haProxyTimeout)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -177,9 +143,15 @@ func getScrapeURL(meta kapi.ObjectMeta, podIP string) (string, error) {
 	if _, ok := meta.Annotations[ingress.StatsOn]; !ok {
 		return "", errors.New("Stats not exposed")
 	}
+	statsPort := ingress.DefaultStatsPort
+	if v, ok := meta.Annotations[ingress.StatsPort]; ok {
+		if port, err := strconv.Atoi(v); err == nil {
+			statsPort = port
+		}
+	}
 	secretName, ok := meta.Annotations[ingress.StatsSecret]
 	if !ok {
-		return fmt.Sprintf("http://%s:%d?stats;csv", podIP, ingress.StatPort), nil
+		return fmt.Sprintf("http://%s:%d?stats;csv", podIP, statsPort), nil
 	}
 	secret, err := kubeClient.Core().Secrets(meta.Namespace).Get(secretName)
 	if err != nil {
@@ -187,5 +159,5 @@ func getScrapeURL(meta kapi.ObjectMeta, podIP string) (string, error) {
 	}
 	userName := string(secret.Data["username"])
 	passWord := string(secret.Data["password"])
-	return fmt.Sprintf("http://%s:%s@%s:%d?stats;csv", userName, passWord, podIP, ingress.StatPort), nil
+	return fmt.Sprintf("http://%s:%s@%s:%d?stats;csv", userName, passWord, podIP, statsPort), nil
 }
