@@ -8,7 +8,6 @@ import (
 	"time"
 
 	hpe "github.com/appscode/haproxy_exporter/exporter"
-	acs "github.com/appscode/k8s-addons/client/clientset"
 	"github.com/appscode/pat"
 	"github.com/appscode/voyager/pkg/controller/ingress"
 	"github.com/orcaman/concurrent-map"
@@ -18,7 +17,7 @@ import (
 	"github.com/prometheus/common/version"
 	kapi "k8s.io/kubernetes/pkg/api"
 	kerr "k8s.io/kubernetes/pkg/api/errors"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+	"github.com/appscode/voyager/cmd/voyager/app/options"
 )
 
 type Options struct {
@@ -37,15 +36,12 @@ const (
 )
 
 var (
-	opt                   Options
 	selectedServerMetrics map[int]*prometheus.GaugeVec
 
 	registerers = cmap.New() // URL.path => *prometheus.Registry
-	kubeClient  clientset.Interface
-	acClient    acs.AppsCodeExtensionInterface
 )
 
-func RunExporter() {
+func RunExporter(opt options.Config) {
 	//config, err := clientcmd.BuildConfigFromFlags(opt.masterURL, opt.kubeconfigPath)
 	//if err != nil {
 	//	log.Fatal("Failed to connect to Kubernetes", err)
@@ -53,19 +49,21 @@ func RunExporter() {
 	//kubeClient = clientset.NewForConfigOrDie(config)
 	//acClient = acs.NewACExtensionsForConfigOrDie(config)
 
-	selectedServerMetrics, err := hpe.FilterServerMetrics(opt.haProxyServerMetricFields)
+	var err error
+	selectedServerMetrics, err = hpe.FilterServerMetrics(opt.HAProxyServerMetricFields)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	m := pat.New()
+	m.Get("/metrics", promhttp.Handler())
 	pattern := fmt.Sprintf("/%s/v1beta1/namespaces/%s/ingresses/%s/pods/%s/metrics", ParamAPIGroup, ParamNamespace, ParamName, ParamPodIP)
 	log.Infof("URL pattern: %s", pattern)
 	m.Get(pattern, http.HandlerFunc(ExportMetrics))
 	m.Del(pattern, http.HandlerFunc(DeleteRegistry))
 	http.Handle("/", m)
-	log.Infoln("Listening on", opt.address)
-	log.Fatal(http.ListenAndServe(opt.address, nil))
+	log.Infoln("Listening on", opt.Address)
+	log.Fatal(http.ListenAndServe(opt.Address, nil))
 }
 
 func DeleteRegistry(w http.ResponseWriter, r *http.Request) {

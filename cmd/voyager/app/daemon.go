@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"time"
+	acs "github.com/appscode/voyager/client/clientset"
+	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/log"
@@ -14,6 +16,11 @@ import (
 	acw "github.com/appscode/voyager/pkg/watcher"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
+)
+
+var (
+	kubeClient  clientset.Interface
+	acClient    acs.ExtensionInterface
 )
 
 func Run(config *options.Config) {

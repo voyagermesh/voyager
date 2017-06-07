@@ -16,8 +16,8 @@ type Config struct {
 	IngressClass              string
 	EnableAnalytics           bool
 	Address                   string
-	haProxyServerMetricFields string
-	haProxyTimeout            time.Duration
+	HAProxyServerMetricFields string
+	HAProxyTimeout            time.Duration
 }
 
 func NewConfig() *Config {
@@ -45,6 +45,6 @@ func (s *Config) AddFlags(fs *pflag.FlagSet) {
 	fs.BoolVar(&s.EnableAnalytics, "analytics", s.EnableAnalytics, "Send analytical event to Google Analytics")
 
 	fs.StringVar(&s.Address, "address", s.Address, "Address to listen on for web interface and telemetry.")
-	fs.StringVar(&s.haProxyServerMetricFields, "haproxy.server-metric-fields", hpe.ServerMetrics.String(), "Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1")
-	fs.DurationVar(&s.haProxyTimeout, "haproxy.timeout", 5*time.Second, "Timeout for trying to get stats from HAProxy.")
+	fs.StringVar(&s.HAProxyServerMetricFields, "haproxy.server-metric-fields", hpe.ServerMetrics.String(), "Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1")
+	fs.DurationVar(&s.HAProxyTimeout, "haproxy.timeout", 5*time.Second, "Timeout for trying to get stats from HAProxy.")
 }
