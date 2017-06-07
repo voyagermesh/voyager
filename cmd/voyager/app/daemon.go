@@ -40,6 +40,8 @@ func Run(config *options.Config) {
 		ClusterName:       config.ClusterName,
 		LoadbalancerImage: config.LoadbalancerImageName,
 		IngressClass:      config.IngressClass,
+		ExporterNamespace: config.ExporterNamespace,
+		ExporterTag:       config.ExporterTag,
 	}
 
 	log.Infoln("configuration loadded, running watcher")

@@ -214,6 +214,11 @@ type EngressController struct {
 	sync.Mutex
 
 	IngressClass string
+
+	// Exporter namespace
+	ExporterNamespace string
+	// Tag of Exporter
+	ExporterTag string
 }
 
 type KubeOptions struct {
