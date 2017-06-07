@@ -1,6 +1,7 @@
 package app
 
 import (
+	"reflect"
 	"strings"
 
 	"github.com/appscode/log"
@@ -16,10 +17,9 @@ import (
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/cache"
+	"k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/util/wait"
-	"k8s.io/kubernetes/pkg/client/restclient"
-	"reflect"
 )
 
 type Watcher struct {
@@ -178,13 +178,34 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 		if e.EventType.IsDeleted() && e.MetaData.Annotations != nil {
 			sourceName, sourceNameFound := e.MetaData.Annotations[ingresscontroller.LoadBalancerSourceName]
 			sourceType, sourceTypeFound := e.MetaData.Annotations[ingresscontroller.LoadBalancerSourceType]
-			if sourceNameFound && sourceTypeFound {
+
+			oldResourceObject := false
+			if !sourceNameFound && !sourceTypeFound {
+				// Lets Check if those are old Ingress resource
+				if strings.HasPrefix(e.MetaData.Name, ingresscontroller.VoyagerPrefix) {
+					oldResourceObject = true
+					sourceName, sourceNameFound = e.MetaData.Name[len(ingresscontroller.VoyagerPrefix):], true
+				}
+			}
+
+			if sourceNameFound {
 				// deleted resource have source reference
 				var err error
+				var detectedKind string
 				if sourceType == aci.TypeIngress {
 					_, err = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
-				} else {
+				} else if sourceType == aci.TypeEngress {
 					_, err = w.AppsCodeExtensionClient.Ingress(e.MetaData.Namespace).Get(sourceName)
+				} else if !sourceTypeFound {
+					_, err = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
+					if err != nil {
+						_, err = w.AppsCodeExtensionClient.Ingress(e.MetaData.Namespace).Get(sourceName)
+						if err == nil {
+							detectedKind = aci.TypeEngress
+						}
+					} else {
+						detectedKind = aci.TypeIngress
+					}
 				}
 				// Ingress get didn't encountered not found err
 				if !k8serrors.IsNotFound(err) {
@@ -206,6 +227,17 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 						if ok {
 							objectMeta.SetSelfLink("")
 							objectMeta.SetResourceVersion("")
+
+							if oldResourceObject {
+								// Old resource and annotations are missing so we need to add the annotations
+								annotation := objectMeta.GetAnnotations()
+								if annotation == nil {
+									annotation = make(map[string]string)
+								}
+								annotation[ingresscontroller.LoadBalancerSourceType] = detectedKind
+								annotation[ingresscontroller.LoadBalancerSourceName] = sourceName
+
+							}
 							metadata.Set(reflect.ValueOf(objectMeta))
 						}
 

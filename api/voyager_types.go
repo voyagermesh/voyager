@@ -12,8 +12,8 @@ const (
 )
 
 var (
-	TypeEngress = EngressKey + "/" + V1beta1SchemeGroupVersion.Version
-	TypeIngress = "ingress"
+	TypeEngress = "appscode.com/v1beta1/ingress"
+	TypeIngress = "extension/v1beta1/ingress"
 )
 
 // ExtendedIngress types for appscode.

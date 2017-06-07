@@ -67,6 +67,19 @@ func (lbc *EngressController) updateConfigMap() error {
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
+
+	if cMap.Annotations == nil {
+		// This is a safety check, annotations will not be nil
+		cMap.Annotations = make(map[string]string)
+	}
+	_, sourceNameFound := cMap.Annotations[LoadBalancerSourceName]
+	_, sourceTypeFound := cMap.Annotations[LoadBalancerSourceType]
+	if !sourceNameFound && !sourceTypeFound {
+		// Old version object
+		cMap.Annotations[LoadBalancerSourceType] = lbc.kind
+		cMap.Annotations[LoadBalancerSourceName] = lbc.Config.GetName()
+	}
+
 	if cMap.Data["haproxy.cfg"] != lbc.Options.ConfigData {
 		log.Infoln("Specs have been changed updating config map data for HAProxy templates")
 		cMap.Data["haproxy.cfg"] = lbc.Options.ConfigData
@@ -140,6 +153,19 @@ func (lbc *EngressController) updateLBSvc() error {
 			})
 		}
 	}
+
+	if svc.Annotations == nil {
+		// This is a safety check, annotations will not be nil
+		svc.Annotations = make(map[string]string)
+	}
+	_, sourceNameFound := svc.Annotations[LoadBalancerSourceName]
+	_, sourceTypeFound := svc.Annotations[LoadBalancerSourceType]
+	if !sourceNameFound && !sourceTypeFound {
+		// Old version object
+		svc.Annotations[LoadBalancerSourceType] = lbc.kind
+		svc.Annotations[LoadBalancerSourceName] = lbc.Config.GetName()
+	}
+
 	svc, err = lbc.KubeClient.Core().Services(lbc.Config.Namespace).Update(svc)
 	if err != nil {
 		return errors.FromErr(err).Err()
