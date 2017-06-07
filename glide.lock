@@ -1,5 +1,5 @@
 hash: 265f35a5855ce6353e66d9ed3ea568863622cad806ed829feafaedc04616979d
-updated: 2017-06-07T12:39:18.003571595-07:00
+updated: 2017-06-07T14:17:24.131936068-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -24,12 +24,6 @@ imports:
   version: 5ffa4ef4d44b3959a3afeb59227fdec8a892cab2
   subpackages:
   - exporter
-- name: github.com/appscode/k8s-addons
-  version: a710ffd2f413cb9fb766ee5a71c835fca23f9ca0
-  subpackages:
-  - api
-  - api/install
-  - client/clientset
 - name: github.com/appscode/log
   version: 68e0e42e42c01371f3950571fc87c2298a51dd8f
   subpackages:
@@ -244,10 +238,6 @@ imports:
   version: 5d001d020961ae1c184f9f8152fdc73810481677
 - name: github.com/mikespook/golib
   version: 38fe6917d34b267a79c3432369e7dcc379e2d5b3
-  subpackages:
-  - autoinc
-  - idgen
-  - signal
 - name: github.com/orcaman/concurrent-map
   version: 2ae17bc4c860c83513ee50feb9746f3e50d7515d
 - name: github.com/ovh/go-ovh
@@ -283,14 +273,14 @@ imports:
   version: 0bfd3b39853cdde5762efda92289f14b0ac0491b
   subpackages:
   - vhd
+- name: github.com/Sirupsen/logrus
+  version: 4b6ea7319e214d98c938f12692336f7ca9348d6b
 - name: github.com/sirupsen/logrus
   version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
-- name: github.com/Sirupsen/logrus
-  version: 51fe59aca108dc5680109e7b2051cbdcfa5a253c
 - name: github.com/spf13/cobra
-  version: f62e98d28ab7ad31d707ba837a966378465c7b57
+  version: 99ff9334bda26384b5ef4a4aaa4d444d29bdde73
 - name: github.com/spf13/pflag
-  version: 5ccb023bc27df288a957c5e994cd44fd19619465
+  version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
 - name: github.com/timewasted/linode
   version: 37e84520dcf74488f67654f9c775b9752c232dc1
   subpackages:
@@ -406,11 +396,6 @@ imports:
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/ini.v1
   version: 6e4869b434bd001f6983749881c7ead3545887d8
-- name: gopkg.in/mgo.v2
-  version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
-  subpackages:
-  - bson
-  - internal/json
 - name: gopkg.in/square/go-jose.v1
   version: aa2e30fdd1fe9dd3394119af66451ae790d50e0d
   subpackages:

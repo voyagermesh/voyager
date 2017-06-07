@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
+	"strconv"
 
 	hpe "github.com/appscode/haproxy_exporter/exporter"
 	"github.com/appscode/pat"
@@ -16,7 +17,6 @@ import (
 	"github.com/prometheus/common/version"
 	kapi "k8s.io/kubernetes/pkg/api"
 	kerr "k8s.io/kubernetes/pkg/api/errors"
-	"strconv"
 )
 
 const (

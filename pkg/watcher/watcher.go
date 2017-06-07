@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	rt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
 	aci "github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
@@ -53,6 +54,7 @@ type Watcher struct {
 }
 
 func (w *Watcher) Run() {
+	defer rt.HandleCrash()
 	w.setup()
 	w.Pod()
 	w.Service()

@@ -6,7 +6,6 @@ import (
 	_ "net/http/pprof"
 	"time"
 
-	"github.com/appscode/go/runtime"
 	stringz "github.com/appscode/go/strings"
 	hpe "github.com/appscode/haproxy_exporter/exporter"
 	"github.com/appscode/log"
@@ -72,8 +71,6 @@ func run() {
 		log.Fatalln("--cluster-name flag must be set when --cloud-provider={aws,gce,gke,azure}")
 	}
 
-	defer runtime.HandleCrash()
-
 	if enableAnalytics {
 		analytics.Enable()
 	}
@@ -97,15 +94,13 @@ func run() {
 	}
 
 	log.Infoln("Starting Voyager Controller...")
-	go w.Run()
-
 	analytics.VoyagerStarted()
+	go w.Run()
 
 	selectedServerMetrics, err = hpe.FilterServerMetrics(haProxyServerMetricFields)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	m := pat.New()
 	m.Get("/metrics", promhttp.Handler())
 	pattern := fmt.Sprintf("/%s/v1beta1/namespaces/%s/ingresses/%s/pods/%s/metrics", ParamAPIGroup, ParamNamespace, ParamName, ParamPodIP)
