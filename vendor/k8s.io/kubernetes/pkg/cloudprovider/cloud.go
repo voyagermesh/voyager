@@ -27,8 +27,6 @@ import (
 
 // Interface is an abstract, pluggable interface for cloud providers.
 type Interface interface {
-	// Firewall returns a firewall interface. Also returns true if the interface is supported, false otherwise.
-	Firewall() (Firewall, bool)
 	// LoadBalancer returns a balancer interface. Also returns true if the interface is supported, false otherwise.
 	LoadBalancer() (LoadBalancer, bool)
 	// Instances returns an instances interface. Also returns true if the interface is supported, false otherwise.
@@ -76,22 +74,6 @@ func GetInstanceProviderID(cloud Interface, nodeName types.NodeName) (string, er
 		return "", fmt.Errorf("failed to get instance ID from cloud provider: %v", err)
 	}
 	return cloud.ProviderName() + "://" + instanceID, nil
-}
-
-// Firewall is an abstract, pluggable interface for firewalls.
-type Firewall interface {
-	// EnsureFirewall creates and/or update firewall rules.
-	// Implementations must treat the *api.Service parameter as read-only and not modify it.
-	EnsureFirewall(service *api.Service, hostname string) error
-
-	// EnsureFirewallDeleted deletes the specified firewall if it
-	// exists, returning nil if the firewall specified either didn't exist or
-	// was successfully deleted.
-	// This construction is useful because many cloud providers' firewall
-	// have multiple underlying components, meaning a Get could say that the firewall
-	// doesn't exist even if some part of it is still laying around.
-	// Implementations must treat the *api.Service parameter as read-only and not modify it.
-	EnsureFirewallDeleted(service *api.Service) error
 }
 
 // LoadBalancer is an abstract, pluggable interface for load balancers.
