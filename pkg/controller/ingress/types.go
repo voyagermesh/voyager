@@ -195,9 +195,9 @@ type EngressController struct {
 	CloudManager cloudprovider.Interface
 
 	// Engress object that created or updated.
-	Config  *aci.Ingress
-	kind    string
-	Options *KubeOptions
+	Config   *aci.Ingress
+	apiGroup string
+	Options  *KubeOptions
 	// contains all the https host names.
 	HostFilter []string
 

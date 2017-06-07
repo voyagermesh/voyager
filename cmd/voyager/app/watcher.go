@@ -179,36 +179,41 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 			sourceName, sourceNameFound := e.MetaData.Annotations[ingresscontroller.LoadBalancerSourceName]
 			sourceType, sourceTypeFound := e.MetaData.Annotations[ingresscontroller.LoadBalancerSourceAPIGroup]
 
-			oldResourceObject := false
+			noAnnotationResource := false
 			if !sourceNameFound && !sourceTypeFound {
 				// Lets Check if those are old Ingress resource
 				if strings.HasPrefix(e.MetaData.Name, ingresscontroller.VoyagerPrefix) {
-					oldResourceObject = true
+					noAnnotationResource = true
 					sourceName, sourceNameFound = e.MetaData.Name[len(ingresscontroller.VoyagerPrefix):], true
 				}
 			}
 
 			if sourceNameFound {
 				// deleted resource have source reference
-				var err error
-				var detectedKind string
+				var ingressNotFoundErr error
+				var detectedAPIGroup string
 				if sourceType == aci.APIGroupIngress {
-					_, err = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
+					_, ingressNotFoundErr = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
 				} else if sourceType == aci.APIGroupEngress {
-					_, err = w.AppsCodeExtensionClient.Ingress(e.MetaData.Namespace).Get(sourceName)
+					_, ingressNotFoundErr = w.AppsCodeExtensionClient.Ingress(e.MetaData.Namespace).Get(sourceName)
 				} else if !sourceTypeFound {
-					_, err = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
-					if err != nil {
-						_, err = w.AppsCodeExtensionClient.Ingress(e.MetaData.Namespace).Get(sourceName)
-						if err == nil {
-							detectedKind = aci.APIGroupEngress
+					_, ingressNotFoundErr = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
+					if ingressNotFoundErr != nil {
+						_, ingressNotFoundErr = w.AppsCodeExtensionClient.Ingress(e.MetaData.Namespace).Get(sourceName)
+						if ingressNotFoundErr == nil {
+							detectedAPIGroup = aci.APIGroupEngress
 						}
 					} else {
-						detectedKind = aci.APIGroupIngress
+						detectedAPIGroup = aci.APIGroupIngress
 					}
 				}
-				// Ingress get didn't encountered not found err
-				if !k8serrors.IsNotFound(err) {
+
+				if k8serrors.IsNotFound(ingressNotFoundErr) {
+					return
+				}
+
+				// Ingress get didn't encountered not found ingressNotFoundErr
+				if ingressNotFoundErr == nil {
 					// Ingress Still exists, restore resource
 					log.Infof("%s/%s required restore", e.EventType, e.ResourceType)
 					obj, true := e.GetRuntimeObject()
@@ -228,13 +233,13 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 							objectMeta.SetSelfLink("")
 							objectMeta.SetResourceVersion("")
 
-							if oldResourceObject {
+							if noAnnotationResource {
 								// Old resource and annotations are missing so we need to add the annotations
 								annotation := objectMeta.GetAnnotations()
 								if annotation == nil {
 									annotation = make(map[string]string)
 								}
-								annotation[ingresscontroller.LoadBalancerSourceAPIGroup] = detectedKind
+								annotation[ingresscontroller.LoadBalancerSourceAPIGroup] = detectedAPIGroup
 								annotation[ingresscontroller.LoadBalancerSourceName] = sourceName
 
 							}

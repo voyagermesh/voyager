@@ -87,7 +87,7 @@ func (lbc *EngressController) createConfigMap() error {
 			Name:      VoyagerPrefix + lbc.Config.Name,
 			Namespace: lbc.Config.Namespace,
 			Annotations: map[string]string{
-				LoadBalancerSourceAPIGroup: lbc.kind,
+				LoadBalancerSourceAPIGroup: lbc.apiGroup,
 				LoadBalancerSourceName:     lbc.Config.GetName(),
 			},
 		},
@@ -157,7 +157,7 @@ func (lbc *EngressController) createHostPortSvc() error {
 			Annotations: map[string]string{
 				LBName: lbc.Config.GetName(),
 				LBType: LBTypeHostPort,
-				LoadBalancerSourceAPIGroup: lbc.kind,
+				LoadBalancerSourceAPIGroup: lbc.apiGroup,
 				LoadBalancerSourceName:     lbc.Config.GetName(),
 			},
 		},
@@ -230,7 +230,7 @@ func (lbc *EngressController) createHostPortPods() error {
 			Namespace: lbc.Config.Namespace,
 			Labels:    labelsFor(lbc.Config.Name),
 			Annotations: map[string]string{
-				LoadBalancerSourceAPIGroup: lbc.kind,
+				LoadBalancerSourceAPIGroup: lbc.apiGroup,
 				LoadBalancerSourceName:     lbc.Config.GetName(),
 			},
 		},
@@ -323,7 +323,7 @@ func (lbc *EngressController) createNodePortSvc() error {
 			Annotations: map[string]string{
 				LBName: lbc.Config.GetName(),
 				LBType: LBTypeNodePort,
-				LoadBalancerSourceAPIGroup: lbc.kind,
+				LoadBalancerSourceAPIGroup: lbc.apiGroup,
 				LoadBalancerSourceName:     lbc.Config.GetName(),
 			},
 		},
@@ -376,7 +376,7 @@ func (lbc *EngressController) createNodePortPods() error {
 			Namespace: lbc.Config.Namespace,
 			Labels:    labelsFor(lbc.Config.Name),
 			Annotations: map[string]string{
-				LoadBalancerSourceAPIGroup: lbc.kind,
+				LoadBalancerSourceAPIGroup: lbc.apiGroup,
 				LoadBalancerSourceName:     lbc.Config.GetName(),
 			},
 		},
@@ -463,7 +463,7 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 			Annotations: map[string]string{
 				LBName: lbc.Config.GetName(),
 				LBType: LBTypeLoadBalancer,
-				LoadBalancerSourceAPIGroup: lbc.kind,
+				LoadBalancerSourceAPIGroup: lbc.apiGroup,
 				LoadBalancerSourceName:     lbc.Config.GetName(),
 			},
 		},
@@ -573,7 +573,7 @@ func (lbc *EngressController) ensureStatsService() {
 			Namespace: lbc.Config.Namespace,
 			Annotations: map[string]string{
 				LBName: lbc.Config.GetName(),
-				LoadBalancerSourceAPIGroup: lbc.kind,
+				LoadBalancerSourceAPIGroup: lbc.apiGroup,
 				LoadBalancerSourceName:     lbc.Config.GetName(),
 			},
 		},
@@ -616,7 +616,7 @@ func (lbc *EngressController) updateStatus() error {
 	}
 
 	if len(statuses) > 0 {
-		if lbc.kind == api.APIGroupIngress {
+		if lbc.apiGroup == api.APIGroupIngress {
 			ing, err := lbc.KubeClient.Extensions().Ingresses(lbc.Config.Namespace).Get(lbc.Config.Name)
 			if err != nil {
 				return errors.FromErr(err).Err()
