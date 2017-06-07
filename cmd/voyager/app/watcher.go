@@ -190,17 +190,17 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 
 			if sourceNameFound {
 				// deleted resource have source reference
-				var ingressNotFoundErr error
+				var ingressErr error
 				var detectedAPIGroup string
 				if sourceType == aci.APIGroupIngress {
-					_, ingressNotFoundErr = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
+					_, ingressErr = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
 				} else if sourceType == aci.APIGroupEngress {
-					_, ingressNotFoundErr = w.AppsCodeExtensionClient.Ingress(e.MetaData.Namespace).Get(sourceName)
+					_, ingressErr = w.AppsCodeExtensionClient.Ingress(e.MetaData.Namespace).Get(sourceName)
 				} else if !sourceTypeFound {
-					_, ingressNotFoundErr = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
-					if ingressNotFoundErr != nil {
-						_, ingressNotFoundErr = w.AppsCodeExtensionClient.Ingress(e.MetaData.Namespace).Get(sourceName)
-						if ingressNotFoundErr == nil {
+					_, ingressErr = w.Client.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
+					if ingressErr != nil {
+						_, ingressErr = w.AppsCodeExtensionClient.Ingress(e.MetaData.Namespace).Get(sourceName)
+						if ingressErr == nil {
 							detectedAPIGroup = aci.APIGroupEngress
 						}
 					} else {
@@ -208,7 +208,7 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 					}
 				}
 
-				if ingressNotFoundErr != nil {
+				if ingressErr != nil {
 					return
 				}
 
