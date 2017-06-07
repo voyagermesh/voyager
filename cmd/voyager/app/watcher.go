@@ -208,64 +208,61 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 					}
 				}
 
-				if k8serrors.IsNotFound(ingressNotFoundErr) {
+				if ingressNotFoundErr != nil {
 					return
 				}
 
-				// Ingress get didn't encountered not found ingressNotFoundErr
-				if ingressNotFoundErr == nil {
-					// Ingress Still exists, restore resource
-					log.Infof("%s/%s required restore", e.EventType, e.ResourceType)
-					obj, true := e.GetRuntimeObject()
-					if true {
-						var client restclient.Interface
-						switch e.ResourceType {
-						case events.ConfigMap, events.Service:
-							client = w.Client.Core().RESTClient()
-						case events.Deployments, events.DaemonSet:
-							client = w.Client.Extensions().RESTClient()
-						}
+				// Ingress Still exists, restore resource
+				log.Infof("%s/%s required restore", e.EventType, e.ResourceType)
+				obj, true := e.GetRuntimeObject()
+				if true {
+					var client restclient.Interface
+					switch e.ResourceType {
+					case events.ConfigMap, events.Service:
+						client = w.Client.Core().RESTClient()
+					case events.Deployments, events.DaemonSet:
+						client = w.Client.Extensions().RESTClient()
+					}
 
-						// Clean Default generated values
-						metadata := reflect.ValueOf(obj).Elem().FieldByName("ObjectMeta")
-						objectMeta, ok := metadata.Interface().(kapi.ObjectMeta)
+					// Clean Default generated values
+					metadata := reflect.ValueOf(obj).Elem().FieldByName("ObjectMeta")
+					objectMeta, ok := metadata.Interface().(kapi.ObjectMeta)
+					if ok {
+						objectMeta.SetSelfLink("")
+						objectMeta.SetResourceVersion("")
+
+						if noAnnotationResource {
+							// Old resource and annotations are missing so we need to add the annotations
+							annotation := objectMeta.GetAnnotations()
+							if annotation == nil {
+								annotation = make(map[string]string)
+							}
+							annotation[ingresscontroller.LoadBalancerSourceAPIGroup] = detectedAPIGroup
+							annotation[ingresscontroller.LoadBalancerSourceName] = sourceName
+
+						}
+						metadata.Set(reflect.ValueOf(objectMeta))
+					}
+
+					// Special treatment for Deployment
+					if e.ResourceType == events.Deployments {
+						dp, ok := obj.(*extensions.Deployment)
 						if ok {
-							objectMeta.SetSelfLink("")
-							objectMeta.SetResourceVersion("")
-
-							if noAnnotationResource {
-								// Old resource and annotations are missing so we need to add the annotations
-								annotation := objectMeta.GetAnnotations()
-								if annotation == nil {
-									annotation = make(map[string]string)
-								}
-								annotation[ingresscontroller.LoadBalancerSourceAPIGroup] = detectedAPIGroup
-								annotation[ingresscontroller.LoadBalancerSourceName] = sourceName
-
-							}
-							metadata.Set(reflect.ValueOf(objectMeta))
-						}
-
-						// Special treatment for Deployment
-						if e.ResourceType == events.Deployments {
-							dp, ok := obj.(*extensions.Deployment)
-							if ok {
-								dp.Spec.Paused = false
-								if dp.Spec.Replicas < 1 {
-									dp.Spec.Replicas = 1
-								}
+							dp.Spec.Paused = false
+							if dp.Spec.Replicas < 1 {
+								dp.Spec.Replicas = 1
 							}
 						}
+					}
 
-						resp, err := client.Post().
-							Namespace(e.MetaData.Namespace).
-							Resource(e.ResourceType.String()).
-							Body(obj).
-							Do().Raw()
-						if err != nil {
-							log.Errorln("Failed to create resource", e.ResourceType.String(), err)
-							log.Errorln(string(resp))
-						}
+					resp, err := client.Post().
+						Namespace(e.MetaData.Namespace).
+						Resource(e.ResourceType.String()).
+						Body(obj).
+						Do().Raw()
+					if err != nil {
+						log.Errorln("Failed to create resource", e.ResourceType.String(), err)
+						log.Errorln(string(resp))
 					}
 				}
 			}
