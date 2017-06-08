@@ -181,7 +181,7 @@ func (lbc *EngressController) createHostPortSvc() error {
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
 
-	if ans, ok := lbc.Options.annotations.ServiceAnnotations(); ok {
+	if ans, ok := lbc.Options.annotations.ServiceAnnotations(lbc.Options.ProviderName, lbc.Options.LBType); ok {
 		for k, v := range ans {
 			svc.Annotations[k] = v
 		}
@@ -348,13 +348,13 @@ func (lbc *EngressController) createNodePortSvc() error {
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
 
-	if ans, ok := lbc.Options.annotations.ServiceAnnotations(); ok {
+	if ans, ok := lbc.Options.annotations.ServiceAnnotations(lbc.Options.ProviderName, lbc.Options.LBType); ok {
 		for k, v := range ans {
 			svc.Annotations[k] = v
 		}
 	}
 
-	if lbc.Options.ProviderName == "aws" && lbc.Options.annotations.AcceptProxy() {
+	if lbc.Options.ProviderName == "aws" && lbc.Options.annotations.KeepSourceIP() {
 		// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
 		svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
 	}
@@ -487,15 +487,10 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
 
-	if ans, ok := lbc.Options.annotations.ServiceAnnotations(); ok {
+	if ans, ok := lbc.Options.annotations.ServiceAnnotations(lbc.Options.ProviderName, lbc.Options.LBType); ok {
 		for k, v := range ans {
 			svc.Annotations[k] = v
 		}
-	}
-
-	if lbc.Options.ProviderName == "aws" && lbc.Options.annotations.AcceptProxy() {
-		// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
-		svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
 	}
 
 	switch lbc.Options.ProviderName {

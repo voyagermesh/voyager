@@ -1779,13 +1779,13 @@ func (ing *IngressTestSuit) TestIngressStats() error {
 	return nil
 }
 
-func (ing *IngressTestSuit) TestIngressAcceptProxy() error {
+func (ing *IngressTestSuit) TestIngressKeepSource() error {
 	baseIngress := &aci.Ingress{
 		ObjectMeta: api.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 			Annotations: map[string]string{
-				ingress.LoadBalancerAcceptProxy: "true",
+				ingress.LoadBalancerKeepSourceIP: "true",
 			},
 		},
 		Spec: aci.ExtendedIngressSpec{
@@ -1860,7 +1860,7 @@ func (ing *IngressTestSuit) TestIngressLBSourceRange() error {
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 			Annotations: map[string]string{
-				ingress.LoadBalancerAcceptProxy: "true",
+				ingress.LoadBalancerKeepSourceIP: "true",
 			},
 		},
 		Spec: aci.ExtendedIngressSpec{

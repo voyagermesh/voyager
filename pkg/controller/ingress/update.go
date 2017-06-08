@@ -262,8 +262,8 @@ func (lbc *EngressController) UpdateTargetAnnotations(old annotation, new annota
 	lbc.parse()
 
 	// Check for changes in ingress.appscode.com/annotations.service
-	if newSvcAns, newOk := new.ServiceAnnotations(); newOk {
-		if oldSvcAns, oldOk := old.ServiceAnnotations(); oldOk {
+	if newSvcAns, newOk := new.ServiceAnnotations(lbc.Options.ProviderName, lbc.Options.LBType); newOk {
+		if oldSvcAns, oldOk := old.ServiceAnnotations(lbc.Options.ProviderName, lbc.Options.LBType); oldOk {
 			if !reflect.DeepEqual(oldSvcAns, newSvcAns) {
 				svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
 				if err != nil {

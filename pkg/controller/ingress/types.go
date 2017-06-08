@@ -66,7 +66,14 @@ const (
 	// ex: "ingress.appscode.com/service.annotation": {"key": "val"}
 	LoadBalancerPodsAnnotation = AnnotationPrefix + "annotations.pod"
 
-	// Enforces the use of the PROXY protocol over any connection accepted by any of
+	// Preserves source IP for LoadBalancer type ingresses. The actual configuration
+	// generated depends on the underlying cloud provider.
+	//
+	//  - gce, gke, azure: Adds annotation service.beta.kubernetes.io/external-traffic: OnlyLocal
+	// to services used to expose HAProxy.
+	// ref: https://kubernetes.io/docs/tutorials/services/source-ip/#source-ip-for-services-with-typeloadbalancer
+	//
+	// - aws: Enforces the use of the PROXY protocol over any connection accepted by any of
 	// the sockets declared on the same line. Versions 1 and 2 of the PROXY protocol
 	// are supported and correctly detected. The PROXY protocol dictates the layer
 	// 3/4 addresses of the incoming connection to be used everywhere an address is
@@ -78,7 +85,8 @@ const (
 	// X-Forwarded-For mechanism which is not always reliable and not even always
 	// usable. See also "tcp-request connection expect-proxy" for a finer-grained
 	// setting of which client is allowed to use the protocol.
-	LoadBalancerAcceptProxy = AnnotationPrefix + "accept-proxy"
+	// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
+	LoadBalancerKeepSourceIP = AnnotationPrefix + "keep-source-ip"
 
 	// annotations applied to created resources for any ingress
 	LoadBalancerSourceAPIGroup = AnnotationPrefix + "source.apiGroup"
@@ -154,16 +162,27 @@ func (s annotation) LoadBalancerPersist() string {
 	return v
 }
 
-func (s annotation) ServiceAnnotations() (map[string]string, bool) {
-	return getTargetAnnotations(s, LoadBalancerServiceAnnotation)
+func (s annotation) ServiceAnnotations(provider, lbType string) (map[string]string, bool) {
+	m, ok := getTargetAnnotations(s, LoadBalancerServiceAnnotation)
+	if ok && lbType == LBTypeLoadBalancer && s.KeepSourceIP() {
+		switch provider {
+		case "aws":
+			// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
+			m["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
+		case "gce", "gke", "azure":
+			// ref: https://kubernetes.io/docs/tutorials/services/source-ip/#source-ip-for-services-with-typeloadbalancer
+			m["service.beta.kubernetes.io/external-traffic"] = "OnlyLocal"
+		}
+	}
+	return m, ok
 }
 
 func (s annotation) PodsAnnotations() (map[string]string, bool) {
 	return getTargetAnnotations(s, LoadBalancerPodsAnnotation)
 }
 
-func (s annotation) AcceptProxy() bool {
-	v, _ := s[LoadBalancerAcceptProxy]
+func (s annotation) KeepSourceIP() bool {
+	v, _ := s[LoadBalancerKeepSourceIP]
 	return strings.ToLower(v) == "true"
 }
 
@@ -185,7 +204,7 @@ func getTargetAnnotations(s annotation, key string) (map[string]string, bool) {
 		}
 		return filteredMap, true
 	}
-	return ans, false
+	return ans, true
 }
 
 type EngressController struct {

@@ -212,7 +212,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 		}
 
 		updateMode := updateType(0)
-		if isAcceptProxyChanged(engs[0].(*aci.Ingress).ObjectMeta.Annotations, engs[1].(*aci.Ingress).ObjectMeta.Annotations) {
+		if lbc.isKeepSourceChanged(engs[0].(*aci.Ingress).ObjectMeta.Annotations, engs[1].(*aci.Ingress).ObjectMeta.Annotations) {
 			updateMode |= UpdateConfig
 		}
 
@@ -436,8 +436,10 @@ func isStatsChanged(old annotation, new annotation) bool {
 		isMapKeyChanged(old, new, StatsSecret)
 }
 
-func isAcceptProxyChanged(old annotation, new annotation) bool {
-	return isMapKeyChanged(old, new, LoadBalancerAcceptProxy)
+func (lbc *EngressController) isKeepSourceChanged(old annotation, new annotation) bool {
+	return lbc.Options.ProviderName == "aws" &&
+		lbc.Options.LBType == LBTypeLoadBalancer &&
+		isMapKeyChanged(old, new, LoadBalancerKeepSourceIP)
 }
 
 func isMapKeyChanged(oldMap map[string]string, newMap map[string]string, key string) bool {
