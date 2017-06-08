@@ -8,10 +8,10 @@ import (
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
-	aci "github.com/appscode/voyager/api"
+	api "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/controller/ingress"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
-	"k8s.io/kubernetes/pkg/api"
+	kapi "k8s.io/kubernetes/pkg/api"
 	k8serr "k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apis/extensions"
@@ -42,20 +42,20 @@ func (i *IngressTestSuit) TestIngressEnsureTPR() error {
 }
 
 func (ing *IngressTestSuit) TestIngressCreateDelete() error {
-	baseIngress := &aci.Ingress{
-		ObjectMeta: api.ObjectMeta{
+	baseIngress := &api.Ingress{
+		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 		},
-		Spec: aci.ExtendedIngressSpec{
-			Rules: []aci.ExtendedIngressRule{
+		Spec: api.ExtendedIngressSpec{
+			Rules: []api.ExtendedIngressRule{
 				{
-					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
-						HTTP: &aci.HTTPExtendedIngressRuleValue{
-							Paths: []aci.HTTPExtendedIngressPath{
+					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
+						HTTP: &api.HTTPExtendedIngressRuleValue{
+							Paths: []api.HTTPExtendedIngressPath{
 								{
 									Path: "/testpath",
-									Backend: aci.ExtendedIngressBackend{
+									Backend: api.ExtendedIngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 									},
@@ -80,9 +80,9 @@ func (ing *IngressTestSuit) TestIngressCreateDelete() error {
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 60)
-	var svc *api.Service
+	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -150,7 +150,7 @@ func (ing *IngressTestSuit) TestIngressCreateDelete() error {
 	// Wait until everything is deleted
 	time.Sleep(time.Second * 60)
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err != nil {
 			if k8serr.IsNotFound(err) {
 				break
@@ -166,20 +166,20 @@ func (ing *IngressTestSuit) TestIngressCreateDelete() error {
 }
 
 func (ing *IngressTestSuit) TestIngressUpdate() error {
-	baseIngress := &aci.Ingress{
-		ObjectMeta: api.ObjectMeta{
+	baseIngress := &api.Ingress{
+		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 		},
-		Spec: aci.ExtendedIngressSpec{
-			Rules: []aci.ExtendedIngressRule{
+		Spec: api.ExtendedIngressSpec{
+			Rules: []api.ExtendedIngressRule{
 				{
-					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
-						HTTP: &aci.HTTPExtendedIngressRuleValue{
-							Paths: []aci.HTTPExtendedIngressPath{
+					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
+						HTTP: &api.HTTPExtendedIngressRuleValue{
+							Paths: []api.HTTPExtendedIngressPath{
 								{
 									Path: "/testpath",
-									Backend: aci.ExtendedIngressBackend{
+									Backend: api.ExtendedIngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 									},
@@ -204,9 +204,9 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 40)
-	var svc *api.Service
+	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -305,17 +305,17 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 
 	if ing.t.Config.ProviderName != "minikube" {
 		updatedBaseIngress.Spec.Rules[0].HTTP = nil
-		updatedBaseIngress.Spec.Rules[0].TCP = []aci.TCPExtendedIngressRuleValue{
+		updatedBaseIngress.Spec.Rules[0].TCP = []api.TCPExtendedIngressRuleValue{
 			{
 				Port: intstr.FromString("4545"),
-				Backend: aci.IngressBackend{
+				Backend: api.IngressBackend{
 					ServiceName: testServerSvc.Name,
 					ServicePort: intstr.FromString("4545"),
 				},
 			},
 			{
 				Port: intstr.FromString("4949"),
-				Backend: aci.IngressBackend{
+				Backend: api.IngressBackend{
 					ServiceName: testServerSvc.Name,
 					ServicePort: intstr.FromString("4545"),
 				},
@@ -329,7 +329,7 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 
 		found := false
 		for i := 1; i <= maxRetries; i++ {
-			svc, err := ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+			svc, err := ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 			if err != nil {
 				continue
 			}
@@ -372,7 +372,7 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 		rc, err := ing.t.KubeClient.Core().ReplicationControllers(ing.t.Config.TestNamespace).Get(testServerRc.Name)
 		if err == nil {
 
-			svc, err := ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+			svc, err := ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 			if err != nil {
 				return errors.New().WithMessage("Service get encountered error").Err()
 			}
@@ -381,7 +381,7 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 			ing.t.KubeClient.Core().ReplicationControllers(ing.t.Config.TestNamespace).Update(rc)
 
 			for {
-				pods, _ := ing.t.KubeClient.Core().Pods(ing.t.Config.TestNamespace).List(api.ListOptions{
+				pods, _ := ing.t.KubeClient.Core().Pods(ing.t.Config.TestNamespace).List(kapi.ListOptions{
 					LabelSelector: labels.SelectorFromSet(labels.Set(rc.Spec.Selector)),
 				})
 				if len(pods.Items) <= 0 {
@@ -389,7 +389,7 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 				}
 				time.Sleep(time.Second * 5)
 			}
-			svcUpdated, err := ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+			svcUpdated, err := ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 			if err != nil {
 				return errors.New().WithMessage("Service get encountered error").Err()
 			}
@@ -407,7 +407,7 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 			rc.Spec.Replicas = 2
 			ing.t.KubeClient.Core().ReplicationControllers(ing.t.Config.TestNamespace).Update(rc)
 
-			svcUpdated, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+			svcUpdated, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 			if err != nil {
 				return errors.New().WithMessage("Service get encountered error").Err()
 			}
@@ -431,24 +431,23 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 		(ing.t.Config.ProviderName == "gce" ||
 			ing.t.Config.ProviderName == "gke" ||
 			(ing.t.Config.ProviderName == "aws" && ing.t.Config.InCluster)) {
-		baseIngress := &aci.Ingress{
-			ObjectMeta: api.ObjectMeta{
+		baseIngress := &api.Ingress{
+			ObjectMeta: kapi.ObjectMeta{
 				Name:      testIngressName(),
 				Namespace: ing.t.Config.TestNamespace,
 				Annotations: map[string]string{
-					ingress.LoadBalancerPersist: "true",
-					ingress.LoadBalancerIP:      ing.t.Config.LBPersistIP,
+					api.LoadBalancerPersist: ing.t.Config.LBPersistIP,
 				},
 			},
-			Spec: aci.ExtendedIngressSpec{
-				Rules: []aci.ExtendedIngressRule{
+			Spec: api.ExtendedIngressSpec{
+				Rules: []api.ExtendedIngressRule{
 					{
-						ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
-							HTTP: &aci.HTTPExtendedIngressRuleValue{
-								Paths: []aci.HTTPExtendedIngressPath{
+						ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
+							HTTP: &api.HTTPExtendedIngressRuleValue{
+								Paths: []api.HTTPExtendedIngressPath{
 									{
 										Path: "/testpath",
-										Backend: aci.ExtendedIngressBackend{
+										Backend: api.ExtendedIngressBackend{
 											ServiceName: testServerSvc.Name,
 											ServicePort: intstr.FromInt(80),
 										},
@@ -473,9 +472,9 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 
 		// Wait sometime to loadbalancer be opened up.
 		time.Sleep(time.Second * 10)
-		var svc *api.Service
+		var svc *kapi.Service
 		for i := 0; i < maxRetries; i++ {
-			svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+			svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 			if err == nil {
 				break
 			}
@@ -519,7 +518,7 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 			}
 		}
 
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err != nil {
 			return errors.New().WithCause(err).Err()
 		}
@@ -531,24 +530,23 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 		}
 
 		time.Sleep(time.Second * 30)
-		baseIngress = &aci.Ingress{
-			ObjectMeta: api.ObjectMeta{
+		baseIngress = &api.Ingress{
+			ObjectMeta: kapi.ObjectMeta{
 				Name:      testIngressName(),
 				Namespace: ing.t.Config.TestNamespace,
 				Annotations: map[string]string{
-					ingress.LoadBalancerPersist: "true",
-					ingress.LoadBalancerIP:      oldServiceIP,
+					api.LoadBalancerPersist: oldServiceIP,
 				},
 			},
-			Spec: aci.ExtendedIngressSpec{
-				Rules: []aci.ExtendedIngressRule{
+			Spec: api.ExtendedIngressSpec{
+				Rules: []api.ExtendedIngressRule{
 					{
-						ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
-							HTTP: &aci.HTTPExtendedIngressRuleValue{
-								Paths: []aci.HTTPExtendedIngressPath{
+						ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
+							HTTP: &api.HTTPExtendedIngressRuleValue{
+								Paths: []api.HTTPExtendedIngressPath{
 									{
 										Path: "/testpath",
-										Backend: aci.ExtendedIngressBackend{
+										Backend: api.ExtendedIngressBackend{
 											ServiceName: testServerSvc.Name,
 											ServicePort: intstr.FromInt(80),
 										},
@@ -574,7 +572,7 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 		// Wait sometime to loadbalancer be opened up.
 		time.Sleep(time.Second * 10)
 		for i := 0; i < maxRetries; i++ {
-			svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+			svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 			if err == nil {
 				break
 			}
@@ -618,7 +616,7 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 			}
 		}
 
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err != nil {
 			return errors.New().WithCause(err).Err()
 		}
@@ -643,19 +641,19 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 }
 
 func (ing *IngressTestSuit) TestIngressCreateWithOptions() error {
-	baseIngress := &aci.Ingress{
-		ObjectMeta: api.ObjectMeta{
+	baseIngress := &api.Ingress{
+		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 		},
-		Spec: aci.ExtendedIngressSpec{
-			Rules: []aci.ExtendedIngressRule{
+		Spec: api.ExtendedIngressSpec{
+			Rules: []api.ExtendedIngressRule{
 				{
-					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
-						HTTP: &aci.HTTPExtendedIngressRuleValue{
-							Paths: []aci.HTTPExtendedIngressPath{
+					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
+						HTTP: &api.HTTPExtendedIngressRuleValue{
+							Paths: []api.HTTPExtendedIngressPath{
 								{
-									Backend: aci.ExtendedIngressBackend{
+									Backend: api.ExtendedIngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 										HeaderRule: []string{
@@ -686,9 +684,9 @@ func (ing *IngressTestSuit) TestIngressCreateWithOptions() error {
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 10)
-	var svc *api.Service
+	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -764,7 +762,7 @@ func (ing *IngressTestSuit) TestIngressCreateWithOptions() error {
 
 func (ing *IngressTestSuit) TestIngressCoreIngress() error {
 	baseIngress := &extensions.Ingress{
-		ObjectMeta: api.ObjectMeta{
+		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 			Annotations: map[string]string{
@@ -798,15 +796,15 @@ func (ing *IngressTestSuit) TestIngressCoreIngress() error {
 	}
 	defer func() {
 		if ing.t.Config.Cleanup {
-			ing.t.KubeClient.Extensions().Ingresses(baseIngress.Namespace).Delete(baseIngress.Name, &api.DeleteOptions{})
+			ing.t.KubeClient.Extensions().Ingresses(baseIngress.Namespace).Delete(baseIngress.Name, &kapi.DeleteOptions{})
 		}
 	}()
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 10)
-	var svc *api.Service
+	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(api.VoyagerPrefix + baseIngress.Name)
 		if err == nil {
 			break
 		}
@@ -829,7 +827,7 @@ func (ing *IngressTestSuit) TestIngressCoreIngress() error {
 		return err
 	}
 
-	baseExtIngress, err := aci.NewEngressFromIngress(baseIngress)
+	baseExtIngress, err := api.NewEngressFromIngress(baseIngress)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
@@ -864,7 +862,7 @@ func (ing *IngressTestSuit) TestIngressHostNames() error {
 	orphan := false
 	defer func() {
 		if ing.t.Config.Cleanup {
-			ing.t.KubeClient.Core().Services(ing.t.Config.TestNamespace).Delete(headlessSvc.Name, &api.DeleteOptions{
+			ing.t.KubeClient.Core().Services(ing.t.Config.TestNamespace).Delete(headlessSvc.Name, &kapi.DeleteOptions{
 				OrphanDependents: &orphan,
 			})
 		}
@@ -876,26 +874,26 @@ func (ing *IngressTestSuit) TestIngressHostNames() error {
 	}
 	defer func() {
 		if ing.t.Config.Cleanup {
-			ing.t.KubeClient.Apps().StatefulSets(ing.t.Config.TestNamespace).Delete(ss.Name, &api.DeleteOptions{
+			ing.t.KubeClient.Apps().StatefulSets(ing.t.Config.TestNamespace).Delete(ss.Name, &kapi.DeleteOptions{
 				OrphanDependents: &orphan,
 			})
 		}
 	}()
 
-	baseIngress := &aci.Ingress{
-		ObjectMeta: api.ObjectMeta{
+	baseIngress := &api.Ingress{
+		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 		},
-		Spec: aci.ExtendedIngressSpec{
-			Rules: []aci.ExtendedIngressRule{
+		Spec: api.ExtendedIngressSpec{
+			Rules: []api.ExtendedIngressRule{
 				{
-					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
-						HTTP: &aci.HTTPExtendedIngressRuleValue{
-							Paths: []aci.HTTPExtendedIngressPath{
+					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
+						HTTP: &api.HTTPExtendedIngressRuleValue{
+							Paths: []api.HTTPExtendedIngressPath{
 								{
 									Path: "/testpath",
-									Backend: aci.ExtendedIngressBackend{
+									Backend: api.ExtendedIngressBackend{
 										HostNames:   []string{testServerStatefulSet.Name + "-0"},
 										ServiceName: headlessSvc.Name,
 										ServicePort: intstr.FromInt(80),
@@ -920,9 +918,9 @@ func (ing *IngressTestSuit) TestIngressHostNames() error {
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 60)
-	var svc *api.Service
+	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -969,7 +967,7 @@ func (ing *IngressTestSuit) TestIngressHostNames() error {
 
 func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 	dp1, err := ing.t.KubeClient.Extensions().Deployments(ing.t.Config.TestNamespace).Create(&extensions.Deployment{
-		ObjectMeta: api.ObjectMeta{
+		ObjectMeta: kapi.ObjectMeta{
 			Name:      "deploymet-1-" + randString(4),
 			Namespace: ing.t.Config.TestNamespace,
 		},
@@ -981,32 +979,32 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 					"app-version": "v1",
 				},
 			},
-			Template: api.PodTemplateSpec{
-				ObjectMeta: api.ObjectMeta{
+			Template: kapi.PodTemplateSpec{
+				ObjectMeta: kapi.ObjectMeta{
 					Labels: map[string]string{
 						"app":         "deployment",
 						"app-version": "v1",
 					},
 					Annotations: map[string]string{
-						ingress.BackendWeight: "90",
+						api.BackendWeight: "90",
 					},
 				},
-				Spec: api.PodSpec{
-					Containers: []api.Container{
+				Spec: kapi.PodSpec{
+					Containers: []kapi.Container{
 						{
 							Name:  "server",
 							Image: "appscode/test-server:1.1",
-							Env: []api.EnvVar{
+							Env: []kapi.EnvVar{
 								{
 									Name: "POD_NAME",
-									ValueFrom: &api.EnvVarSource{
-										FieldRef: &api.ObjectFieldSelector{
+									ValueFrom: &kapi.EnvVarSource{
+										FieldRef: &kapi.ObjectFieldSelector{
 											FieldPath: "metadata.name",
 										},
 									},
 								},
 							},
-							Ports: []api.ContainerPort{
+							Ports: []kapi.ContainerPort{
 								{
 									Name:          "http-1",
 									ContainerPort: 8080,
@@ -1023,7 +1021,7 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 	}
 
 	dp2, err := ing.t.KubeClient.Extensions().Deployments(ing.t.Config.TestNamespace).Create(&extensions.Deployment{
-		ObjectMeta: api.ObjectMeta{
+		ObjectMeta: kapi.ObjectMeta{
 			Name:      "deploymet-2-" + randString(4),
 			Namespace: ing.t.Config.TestNamespace,
 		},
@@ -1035,32 +1033,32 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 					"app-version": "v2",
 				},
 			},
-			Template: api.PodTemplateSpec{
-				ObjectMeta: api.ObjectMeta{
+			Template: kapi.PodTemplateSpec{
+				ObjectMeta: kapi.ObjectMeta{
 					Labels: map[string]string{
 						"app":         "deployment",
 						"app-version": "v2",
 					},
 					Annotations: map[string]string{
-						ingress.BackendWeight: "10",
+						api.BackendWeight: "10",
 					},
 				},
-				Spec: api.PodSpec{
-					Containers: []api.Container{
+				Spec: kapi.PodSpec{
+					Containers: []kapi.Container{
 						{
 							Name:  "server",
 							Image: "appscode/test-server:1.1",
-							Env: []api.EnvVar{
+							Env: []kapi.EnvVar{
 								{
 									Name: "POD_NAME",
-									ValueFrom: &api.EnvVarSource{
-										FieldRef: &api.ObjectFieldSelector{
+									ValueFrom: &kapi.EnvVarSource{
+										FieldRef: &kapi.ObjectFieldSelector{
 											FieldPath: "metadata.name",
 										},
 									},
 								},
 							},
-							Ports: []api.ContainerPort{
+							Ports: []kapi.ContainerPort{
 								{
 									Name:          "http-1",
 									ContainerPort: 8080,
@@ -1076,13 +1074,13 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 		return err
 	}
 
-	svc, err := ing.t.KubeClient.Core().Services(ing.t.Config.TestNamespace).Create(&api.Service{
-		ObjectMeta: api.ObjectMeta{
+	svc, err := ing.t.KubeClient.Core().Services(ing.t.Config.TestNamespace).Create(&kapi.Service{
+		ObjectMeta: kapi.ObjectMeta{
 			Name:      "deployment-svc",
 			Namespace: ing.t.Config.TestNamespace,
 		},
-		Spec: api.ServiceSpec{
-			Ports: []api.ServicePort{
+		Spec: kapi.ServiceSpec{
+			Ports: []kapi.ServicePort{
 				{
 					Name:       "http-1",
 					Port:       80,
@@ -1099,20 +1097,20 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 		return err
 	}
 
-	baseIngress := &aci.Ingress{
-		ObjectMeta: api.ObjectMeta{
+	baseIngress := &api.Ingress{
+		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 		},
-		Spec: aci.ExtendedIngressSpec{
-			Rules: []aci.ExtendedIngressRule{
+		Spec: api.ExtendedIngressSpec{
+			Rules: []api.ExtendedIngressRule{
 				{
-					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
-						HTTP: &aci.HTTPExtendedIngressRuleValue{
-							Paths: []aci.HTTPExtendedIngressPath{
+					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
+						HTTP: &api.HTTPExtendedIngressRuleValue{
+							Paths: []api.HTTPExtendedIngressPath{
 								{
 									Path: "/testpath",
-									Backend: aci.ExtendedIngressBackend{
+									Backend: api.ExtendedIngressBackend{
 										ServiceName: svc.Name,
 										ServicePort: intstr.FromInt(80),
 									},
@@ -1139,15 +1137,15 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 			}
 			time.Sleep(time.Second * 5)
 			orphan := false
-			ing.t.KubeClient.Extensions().Deployments(dp1.Namespace).Delete(dp1.Name, &api.DeleteOptions{
+			ing.t.KubeClient.Extensions().Deployments(dp1.Namespace).Delete(dp1.Name, &kapi.DeleteOptions{
 				OrphanDependents: &orphan,
 			})
 
-			ing.t.KubeClient.Extensions().Deployments(dp2.Namespace).Delete(dp2.Name, &api.DeleteOptions{
+			ing.t.KubeClient.Extensions().Deployments(dp2.Namespace).Delete(dp2.Name, &kapi.DeleteOptions{
 				OrphanDependents: &orphan,
 			})
 
-			ing.t.KubeClient.Core().Services(svc.Namespace).Delete(svc.Name, &api.DeleteOptions{
+			ing.t.KubeClient.Core().Services(svc.Namespace).Delete(svc.Name, &kapi.DeleteOptions{
 				OrphanDependents: &orphan,
 			})
 		}
@@ -1165,7 +1163,7 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 
 	time.Sleep(time.Second * 10)
 	for i := 0; i < maxRetries; i++ {
-		_, err := ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		_, err := ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -1227,20 +1225,20 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 }
 
 func (ing *IngressTestSuit) TestIngressBackendRule() error {
-	baseIngress := &aci.Ingress{
-		ObjectMeta: api.ObjectMeta{
+	baseIngress := &api.Ingress{
+		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 		},
-		Spec: aci.ExtendedIngressSpec{
-			Rules: []aci.ExtendedIngressRule{
+		Spec: api.ExtendedIngressSpec{
+			Rules: []api.ExtendedIngressRule{
 				{
-					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
-						HTTP: &aci.HTTPExtendedIngressRuleValue{
-							Paths: []aci.HTTPExtendedIngressPath{
+					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
+						HTTP: &api.HTTPExtendedIngressRuleValue{
+							Paths: []api.HTTPExtendedIngressPath{
 								{
 									Path: "/old",
-									Backend: aci.ExtendedIngressBackend{
+									Backend: api.ExtendedIngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 										BackendRule: []string{
@@ -1254,7 +1252,7 @@ func (ing *IngressTestSuit) TestIngressBackendRule() error {
 								},
 								{
 									Path: "/test-second",
-									Backend: aci.ExtendedIngressBackend{
+									Backend: api.ExtendedIngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 										BackendRule: []string{
@@ -1292,9 +1290,9 @@ func (ing *IngressTestSuit) TestIngressBackendRule() error {
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 10)
-	var svc *api.Service
+	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -1386,23 +1384,23 @@ func (ing *IngressTestSuit) TestIngressBackendRule() error {
 }
 
 func (ing *IngressTestSuit) TestIngressAnnotations() error {
-	baseIngress := &aci.Ingress{
-		ObjectMeta: api.ObjectMeta{
+	baseIngress := &api.Ingress{
+		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 			Annotations: map[string]string{
-				ingress.ServiceAnnotations: `{"foo": "bar", "service-annotation": "set"}`,
-				ingress.PodAnnotations:     `{"foo": "bar", "pod-annotation": "set"}`,
+				api.ServiceAnnotations: `{"foo": "bar", "service-annotation": "set"}`,
+				api.PodAnnotations:     `{"foo": "bar", "pod-annotation": "set"}`,
 			},
 		},
-		Spec: aci.ExtendedIngressSpec{
-			Rules: []aci.ExtendedIngressRule{
+		Spec: api.ExtendedIngressSpec{
+			Rules: []api.ExtendedIngressRule{
 				{
-					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
-						HTTP: &aci.HTTPExtendedIngressRuleValue{
-							Paths: []aci.HTTPExtendedIngressPath{
+					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
+						HTTP: &api.HTTPExtendedIngressRuleValue{
+							Paths: []api.HTTPExtendedIngressPath{
 								{
-									Backend: aci.ExtendedIngressBackend{
+									Backend: api.ExtendedIngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 									},
@@ -1427,9 +1425,9 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 60)
-	var svc *api.Service
+	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -1465,7 +1463,7 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 		return errors.New().WithCause(err).Err()
 	}
 
-	pods, err := ing.t.KubeClient.Core().Pods(svc.Namespace).List(api.ListOptions{
+	pods, err := ing.t.KubeClient.Core().Pods(svc.Namespace).List(kapi.ListOptions{
 		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
 	})
 	if err == nil {
@@ -1489,7 +1487,7 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
 	}
-	ings.Annotations[ingress.ServiceAnnotations] = `{"bar": "foo", "second-service-annotation": "set"}`
+	ings.Annotations[api.ServiceAnnotations] = `{"bar": "foo", "second-service-annotation": "set"}`
 	ings, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Update(ings)
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
@@ -1497,7 +1495,7 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 
 	time.Sleep(time.Second * 60)
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err != nil {
 			err = errors.New().WithCause(err).WithMessage("Service encountered an error").Err()
 		}
@@ -1522,7 +1520,7 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 		return errors.FromErr(err).Err()
 	}
 
-	pods, err = ing.t.KubeClient.Core().Pods(svc.Namespace).List(api.ListOptions{
+	pods, err = ing.t.KubeClient.Core().Pods(svc.Namespace).List(kapi.ListOptions{
 		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
 	})
 	if err == nil {
@@ -1546,7 +1544,7 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
 	}
-	ings.Annotations[ingress.PodAnnotations] = `{"bar": "foo", "second-pod-annotation": "set"}`
+	ings.Annotations[api.PodAnnotations] = `{"bar": "foo", "second-pod-annotation": "set"}`
 	ings, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Update(ings)
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
@@ -1554,7 +1552,7 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 
 	time.Sleep(time.Second * 60)
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err != nil {
 			err = errors.New().WithCause(err).WithMessage("Service encountered an error").Err()
 		}
@@ -1579,7 +1577,7 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 		}
 	}
 
-	pods, err = ing.t.KubeClient.Core().Pods(svc.Namespace).List(api.ListOptions{
+	pods, err = ing.t.KubeClient.Core().Pods(svc.Namespace).List(kapi.ListOptions{
 		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
 	})
 	if err == nil {
@@ -1605,23 +1603,23 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 }
 
 func (ing *IngressTestSuit) TestIngressNodePort() error {
-	baseDaemonIngress := &aci.Ingress{
-		ObjectMeta: api.ObjectMeta{
+	baseDaemonIngress := &api.Ingress{
+		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 			Annotations: map[string]string{
-				ingress.LBType: ingress.LBTypeNodePort,
+				api.LBType: api.LBTypeNodePort,
 			},
 		},
-		Spec: aci.ExtendedIngressSpec{
-			Rules: []aci.ExtendedIngressRule{
+		Spec: api.ExtendedIngressSpec{
+			Rules: []api.ExtendedIngressRule{
 				{
-					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
-						HTTP: &aci.HTTPExtendedIngressRuleValue{
-							Paths: []aci.HTTPExtendedIngressPath{
+					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
+						HTTP: &api.HTTPExtendedIngressRuleValue{
+							Paths: []api.HTTPExtendedIngressPath{
 								{
 									Path: "/testpath",
-									Backend: aci.ExtendedIngressBackend{
+									Backend: api.ExtendedIngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 									},
@@ -1645,11 +1643,11 @@ func (ing *IngressTestSuit) TestIngressNodePort() error {
 	}()
 
 	// Wait sometime to loadbalancer be opened up.
-	var svc *api.Service
+	var svc *kapi.Service
 	time.Sleep(time.Second * 60)
 	for i := 0; i < maxRetries; i++ {
 		var err error
-		svc, err = ing.t.KubeClient.Core().Services(baseDaemonIngress.Namespace).Get(ingress.VoyagerPrefix + baseDaemonIngress.Name)
+		svc, err = ing.t.KubeClient.Core().Services(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -1660,7 +1658,7 @@ func (ing *IngressTestSuit) TestIngressNodePort() error {
 		return errors.New().WithCause(err).Err()
 	}
 
-	if svc.Spec.Type != api.ServiceTypeNodePort {
+	if svc.Spec.Type != kapi.ServiceTypeNodePort {
 		return errors.New().WithMessage("ServiceType Not NodePort").Err()
 	}
 
@@ -1677,24 +1675,24 @@ func (ing *IngressTestSuit) TestIngressNodePort() error {
 }
 
 func (ing *IngressTestSuit) TestIngressStats() error {
-	baseIng := &aci.Ingress{
-		ObjectMeta: api.ObjectMeta{
+	baseIng := &api.Ingress{
+		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 			Annotations: map[string]string{
-				ingress.StatsOn:   "true",
-				ingress.StatsPort: "8787",
+				api.StatsOn:   "true",
+				api.StatsPort: "8787",
 			},
 		},
-		Spec: aci.ExtendedIngressSpec{
-			Rules: []aci.ExtendedIngressRule{
+		Spec: api.ExtendedIngressSpec{
+			Rules: []api.ExtendedIngressRule{
 				{
-					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
-						HTTP: &aci.HTTPExtendedIngressRuleValue{
-							Paths: []aci.HTTPExtendedIngressPath{
+					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
+						HTTP: &api.HTTPExtendedIngressRuleValue{
+							Paths: []api.HTTPExtendedIngressPath{
 								{
 									Path: "/testpath",
-									Backend: aci.ExtendedIngressBackend{
+									Backend: api.ExtendedIngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 									},
@@ -1721,7 +1719,7 @@ func (ing *IngressTestSuit) TestIngressStats() error {
 	time.Sleep(time.Second * 60)
 	for i := 0; i < maxRetries; i++ {
 		var err error
-		_, err = ing.t.KubeClient.Core().Services(baseIng.Namespace).Get(ingress.VoyagerPrefix + baseIng.Name)
+		_, err = ing.t.KubeClient.Core().Services(baseIng.Namespace).Get(baseIng.OffshootName())
 		if err == nil {
 			break
 		}
@@ -1733,7 +1731,7 @@ func (ing *IngressTestSuit) TestIngressStats() error {
 	}
 
 	// Check if all Stats Things are open
-	var svc *api.Service
+	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
 		var err error
 		svc, err = ing.t.KubeClient.Core().Services(baseIng.Namespace).Get(baseIng.Name + "-stats")
@@ -1756,7 +1754,7 @@ func (ing *IngressTestSuit) TestIngressStats() error {
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
-	delete(baseIng.Annotations, ingress.StatsOn)
+	delete(baseIng.Annotations, api.StatsOn)
 	baseIng, err = ing.t.ExtClient.Ingress(baseIng.Namespace).Update(baseIng)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
@@ -1780,23 +1778,23 @@ func (ing *IngressTestSuit) TestIngressStats() error {
 }
 
 func (ing *IngressTestSuit) TestIngressKeepSource() error {
-	baseIngress := &aci.Ingress{
-		ObjectMeta: api.ObjectMeta{
+	baseIngress := &api.Ingress{
+		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 			Annotations: map[string]string{
-				ingress.KeepSourceIP: "true",
+				api.KeepSourceIP: "true",
 			},
 		},
-		Spec: aci.ExtendedIngressSpec{
-			Rules: []aci.ExtendedIngressRule{
+		Spec: api.ExtendedIngressSpec{
+			Rules: []api.ExtendedIngressRule{
 				{
-					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
-						HTTP: &aci.HTTPExtendedIngressRuleValue{
-							Paths: []aci.HTTPExtendedIngressPath{
+					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
+						HTTP: &api.HTTPExtendedIngressRuleValue{
+							Paths: []api.HTTPExtendedIngressPath{
 								{
 									Path: "/testpath",
-									Backend: aci.ExtendedIngressBackend{
+									Backend: api.ExtendedIngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 									},
@@ -1821,9 +1819,9 @@ func (ing *IngressTestSuit) TestIngressKeepSource() error {
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 60)
-	var svc *api.Service
+	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -1855,27 +1853,27 @@ func (ing *IngressTestSuit) TestIngressKeepSource() error {
 }
 
 func (ing *IngressTestSuit) TestIngressLBSourceRange() error {
-	baseIngress := &aci.Ingress{
-		ObjectMeta: api.ObjectMeta{
+	baseIngress := &api.Ingress{
+		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 			Annotations: map[string]string{
 				ingress.KeepSourceIP: "true",
 			},
 		},
-		Spec: aci.ExtendedIngressSpec{
+		Spec: api.ExtendedIngressSpec{
 			LoadBalancerSourceRanges: []string{
 				"192.101.0.0/16",
 				"192.0.0.0/24",
 			},
-			Rules: []aci.ExtendedIngressRule{
+			Rules: []api.ExtendedIngressRule{
 				{
-					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
-						HTTP: &aci.HTTPExtendedIngressRuleValue{
-							Paths: []aci.HTTPExtendedIngressPath{
+					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
+						HTTP: &api.HTTPExtendedIngressRuleValue{
+							Paths: []api.HTTPExtendedIngressPath{
 								{
 									Path: "/testpath",
-									Backend: aci.ExtendedIngressBackend{
+									Backend: api.ExtendedIngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 									},
@@ -1900,9 +1898,9 @@ func (ing *IngressTestSuit) TestIngressLBSourceRange() error {
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 60)
-	var svc *api.Service
+	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -1929,7 +1927,7 @@ func (ing *IngressTestSuit) TestIngressLBSourceRange() error {
 
 	time.Sleep(time.Second * 60)
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
