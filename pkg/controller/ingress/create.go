@@ -96,9 +96,20 @@ func (lbc *EngressController) createConfigMap() error {
 			"haproxy.cfg": lbc.Options.ConfigData,
 		},
 	}
-	cMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Create(cMap)
+
+	getcMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Get(cMap.Name)
 	if err != nil {
-		return errors.FromErr(err).Err()
+		cMap, err = lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Create(cMap)
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
+	} else {
+		getcMap.Annotations = cMap.Annotations
+		getcMap.Data = cMap.Data
+		_, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Update(getcMap)
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
 	}
 	lbc.Options.ConfigMapName = cMap.Name
 	time.Sleep(time.Second * 20)
