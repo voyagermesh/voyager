@@ -98,13 +98,13 @@ func (r Ingress) OffshootName() string {
 }
 
 func (r Ingress) StickySession() bool {
-	_, ok := r.Annotations[StickySession]
-	return ok
+	v, _ := strconv.ParseBool(r.Annotations[StickySession])
+	return v
 }
 
 func (r Ingress) Stats() bool {
-	_, ok := r.Annotations[StatsOn]
-	return ok
+	v, _ := strconv.ParseBool(r.Annotations[StatsOn])
+	return v
 }
 
 func (r Ingress) StatsSecretName() string {
@@ -184,8 +184,8 @@ func (r Ingress) PodsAnnotations() (map[string]string, bool) {
 }
 
 func (r Ingress) KeepSourceIP() bool {
-	v, _ := r.Annotations[KeepSourceIP]
-	return strings.ToLower(v) == "true"
+	v, _ := strconv.ParseBool(r.Annotations[KeepSourceIP])
+	return v
 }
 
 func (r Ingress) getTargetAnnotations(key string) (map[string]string, bool) {
