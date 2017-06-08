@@ -211,7 +211,6 @@ type EngressController struct {
 
 	ClusterName  string
 	ProviderName string
-	HAProxyImage string
 	IngressClass string
 
 	// Engress object that created or updated.
