@@ -1391,8 +1391,8 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 			Annotations: map[string]string{
-				ingress.LoadBalancerServiceAnnotation: `{"foo": "bar", "service-annotation": "set"}`,
-				ingress.LoadBalancerPodsAnnotation:    `{"foo": "bar", "pod-annotation": "set"}`,
+				ingress.LoadBalancerServiceAnnotations: `{"foo": "bar", "service-annotation": "set"}`,
+				ingress.LoadBalancerPodAnnotations:     `{"foo": "bar", "pod-annotation": "set"}`,
 			},
 		},
 		Spec: aci.ExtendedIngressSpec{
@@ -1489,7 +1489,7 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
 	}
-	ings.Annotations[ingress.LoadBalancerServiceAnnotation] = `{"bar": "foo", "second-service-annotation": "set"}`
+	ings.Annotations[ingress.LoadBalancerServiceAnnotations] = `{"bar": "foo", "second-service-annotation": "set"}`
 	ings, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Update(ings)
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
@@ -1546,7 +1546,7 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
 	}
-	ings.Annotations[ingress.LoadBalancerPodsAnnotation] = `{"bar": "foo", "second-pod-annotation": "set"}`
+	ings.Annotations[ingress.LoadBalancerPodAnnotations] = `{"bar": "foo", "second-pod-annotation": "set"}`
 	ings, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Update(ings)
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Ingress error").Err()

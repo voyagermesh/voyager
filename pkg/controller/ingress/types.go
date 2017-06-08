@@ -59,12 +59,12 @@ const (
 	// LoadBalancerServiceAnnotation is user provided annotations map that will be
 	// applied to the service of that LoadBalancer.
 	// ex: "ingress.appscode.com/service.annotation": {"key": "val"}
-	LoadBalancerServiceAnnotation = AnnotationPrefix + "annotations-service"
+	LoadBalancerServiceAnnotations = AnnotationPrefix + "annotations-service"
 
 	// LoadBalancerPodsAnnotation is user provided annotations map that will be
 	// applied to the Pods (Deployment/ DaemonSet) of that LoadBalancer.
 	// ex: "ingress.appscode.com/service.annotation": {"key": "val"}
-	LoadBalancerPodsAnnotation = AnnotationPrefix + "annotations-pod"
+	LoadBalancerPodAnnotations = AnnotationPrefix + "annotations-pod"
 
 	// Preserves source IP for LoadBalancer type ingresses. The actual configuration
 	// generated depends on the underlying cloud provider.
@@ -89,8 +89,8 @@ const (
 	LoadBalancerKeepSourceIP = AnnotationPrefix + "keep-source-ip"
 
 	// annotations applied to created resources for any ingress
-	LoadBalancerSourceAPIGroup = AnnotationPrefix + "source-api-group"
-	LoadBalancerSourceName     = AnnotationPrefix + "source-name"
+	LoadBalancerOwnerAPIGroup = AnnotationPrefix + "owner-api-group"
+	LoadBalancerOwnerName     = AnnotationPrefix + "owner-name"
 )
 
 type annotation map[string]string
@@ -163,7 +163,7 @@ func (s annotation) LoadBalancerPersist() string {
 }
 
 func (s annotation) ServiceAnnotations(provider, lbType string) (map[string]string, bool) {
-	m, ok := getTargetAnnotations(s, LoadBalancerServiceAnnotation)
+	m, ok := getTargetAnnotations(s, LoadBalancerServiceAnnotations)
 	if ok && lbType == LBTypeLoadBalancer && s.KeepSourceIP() {
 		switch provider {
 		case "aws":
@@ -178,7 +178,7 @@ func (s annotation) ServiceAnnotations(provider, lbType string) (map[string]stri
 }
 
 func (s annotation) PodsAnnotations() (map[string]string, bool) {
-	return getTargetAnnotations(s, LoadBalancerPodsAnnotation)
+	return getTargetAnnotations(s, LoadBalancerPodAnnotations)
 }
 
 func (s annotation) KeepSourceIP() bool {

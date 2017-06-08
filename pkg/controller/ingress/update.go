@@ -72,12 +72,12 @@ func (lbc *EngressController) updateConfigMap() error {
 		// This is a safety check, annotations will not be nil
 		cMap.Annotations = make(map[string]string)
 	}
-	_, sourceNameFound := cMap.Annotations[LoadBalancerSourceName]
-	_, sourceTypeFound := cMap.Annotations[LoadBalancerSourceAPIGroup]
+	_, sourceNameFound := cMap.Annotations[LoadBalancerOwnerName]
+	_, sourceTypeFound := cMap.Annotations[LoadBalancerOwnerAPIGroup]
 	if !sourceNameFound && !sourceTypeFound {
 		// Old version object
-		cMap.Annotations[LoadBalancerSourceAPIGroup] = lbc.apiGroup
-		cMap.Annotations[LoadBalancerSourceName] = lbc.Resource.GetName()
+		cMap.Annotations[LoadBalancerOwnerAPIGroup] = lbc.apiGroup
+		cMap.Annotations[LoadBalancerOwnerName] = lbc.Resource.GetName()
 	}
 
 	if cMap.Data["haproxy.cfg"] != lbc.Options.ConfigData {
@@ -163,12 +163,12 @@ func (lbc *EngressController) updateLBSvc() error {
 		// This is a safety check, annotations will not be nil
 		svc.Annotations = make(map[string]string)
 	}
-	_, sourceNameFound := svc.Annotations[LoadBalancerSourceName]
-	_, sourceTypeFound := svc.Annotations[LoadBalancerSourceAPIGroup]
+	_, sourceNameFound := svc.Annotations[LoadBalancerOwnerName]
+	_, sourceTypeFound := svc.Annotations[LoadBalancerOwnerAPIGroup]
 	if !sourceNameFound && !sourceTypeFound {
 		// Old version object
-		svc.Annotations[LoadBalancerSourceAPIGroup] = lbc.apiGroup
-		svc.Annotations[LoadBalancerSourceName] = lbc.Resource.GetName()
+		svc.Annotations[LoadBalancerOwnerAPIGroup] = lbc.apiGroup
+		svc.Annotations[LoadBalancerOwnerName] = lbc.Resource.GetName()
 	}
 
 	svc, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Update(svc)
