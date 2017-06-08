@@ -255,20 +255,20 @@ type IngressValueList struct {
 }
 
 const (
-	engressClassAnnotationKey   = "kubernetes.io/ingress.class"
-	engressClassAnnotationValue = "voyager"
+	ingressClassAnnotationKey   = "kubernetes.io/ingress.class"
+	ingressClassAnnotationValue = "voyager"
 )
 
 // if ingressClass == "voyager", then only handle ingress that has voyager annotation
 // if ingressClass == "", then handle no annotaion or voyager annotation
-func shouldHandleIngress(engress *aci.Ingress, ingressClass string) bool {
+func shouldHandleIngress(resource *aci.Ingress, ingressClass string) bool {
 	// https://github.com/appscode/voyager/blob/master/api/conversion_v1beta1.go#L44
-	if engress.Annotations[aci.APIGroup] == aci.EngressKey+"/"+aci.V1beta1SchemeGroupVersion.Version {
+	if resource.Annotations[aci.APIGroup] == aci.EngressKey+"/"+aci.V1beta1SchemeGroupVersion.Version {
 		// Resource Type is Extended Ingress So we should always Handle this
 		return true
 	}
-	kubeAnnotation, _ := engress.Annotations[engressClassAnnotationKey]
-	return kubeAnnotation == ingressClass || kubeAnnotation == engressClassAnnotationValue
+	kubeAnnotation, _ := resource.Annotations[ingressClassAnnotationKey]
+	return kubeAnnotation == ingressClass || kubeAnnotation == ingressClassAnnotationValue
 }
 
 func ensureServiceAnnotations(client clientset.Interface, ing *aci.Ingress, namespace, name string) {

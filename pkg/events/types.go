@@ -82,7 +82,6 @@ type ObjectType string
 
 const (
 	Certificate     ObjectType = "certificates"
-	Cluster         ObjectType = "cluster"
 	ConfigMap       ObjectType = "configmaps"
 	DaemonSet       ObjectType = "daemonsets"
 	Endpoint        ObjectType = "endpoints"
