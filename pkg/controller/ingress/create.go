@@ -36,6 +36,7 @@ func (lbc *EngressController) Create() error {
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
+	time.Sleep(time.Second * 5)
 	err = lbc.createLB()
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -79,7 +80,6 @@ func (lbc *EngressController) ensureResources() {
 
 func (lbc *EngressController) createConfigMap() error {
 	log.Infoln("creating cmap for engress")
-
 	cm, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
 	if kerr.IsNotFound(err) {
 		cm = &kapi.ConfigMap{
