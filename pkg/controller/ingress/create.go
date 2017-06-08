@@ -354,7 +354,7 @@ func (lbc *EngressController) createNodePortSvc() error {
 		}
 	}
 
-	if lbc.Options.ProviderName == "aws" && lbc.Options.annotations.KeepSource() {
+	if lbc.Options.ProviderName == "aws" && lbc.Options.annotations.KeepSourceIP() {
 		// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
 		svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
 	}

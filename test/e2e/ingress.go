@@ -1785,7 +1785,7 @@ func (ing *IngressTestSuit) TestIngressKeepSource() error {
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 			Annotations: map[string]string{
-				ingress.LoadBalancerKeepSource: "true",
+				ingress.LoadBalancerKeepSourceIP: "true",
 			},
 		},
 		Spec: aci.ExtendedIngressSpec{
@@ -1860,7 +1860,7 @@ func (ing *IngressTestSuit) TestIngressLBSourceRange() error {
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 			Annotations: map[string]string{
-				ingress.LoadBalancerKeepSource: "true",
+				ingress.LoadBalancerKeepSourceIP: "true",
 			},
 		},
 		Spec: aci.ExtendedIngressSpec{

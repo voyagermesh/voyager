@@ -78,7 +78,7 @@ const (
 	// X-Forwarded-For mechanism which is not always reliable and not even always
 	// usable. See also "tcp-request connection expect-proxy" for a finer-grained
 	// setting of which client is allowed to use the protocol.
-	LoadBalancerKeepSource = AnnotationPrefix + "keepSource"
+	LoadBalancerKeepSourceIP = AnnotationPrefix + "keep-source-ip"
 
 	// annotations applied to created resources for any ingress
 	LoadBalancerSourceAPIGroup = AnnotationPrefix + "source.apiGroup"
@@ -156,7 +156,7 @@ func (s annotation) LoadBalancerPersist() string {
 
 func (s annotation) ServiceAnnotations(provider, lbType string) (map[string]string, bool) {
 	m, ok := getTargetAnnotations(s, LoadBalancerServiceAnnotation)
-	if ok && lbType == LBTypeLoadBalancer && s.KeepSource() {
+	if ok && lbType == LBTypeLoadBalancer && s.KeepSourceIP() {
 		switch provider {
 		case "aws":
 			// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
@@ -173,8 +173,8 @@ func (s annotation) PodsAnnotations() (map[string]string, bool) {
 	return getTargetAnnotations(s, LoadBalancerPodsAnnotation)
 }
 
-func (s annotation) KeepSource() bool {
-	v, _ := s[LoadBalancerKeepSource]
+func (s annotation) KeepSourceIP() bool {
+	v, _ := s[LoadBalancerKeepSourceIP]
 	return strings.ToLower(v) == "true"
 }
 

@@ -322,7 +322,7 @@ func (lbc *EngressController) parseOptions() {
 	lbc.Options.LBType = lbc.Options.annotations.LBType()
 
 	if lbc.Options.ProviderName == "aws" && lbc.Options.LBType == LBTypeLoadBalancer {
-		lbc.Parsed.AcceptProxy = lbc.Options.annotations.KeepSource()
+		lbc.Parsed.AcceptProxy = lbc.Options.annotations.KeepSourceIP()
 	}
 	lbc.Options.Replicas = lbc.Options.annotations.Replicas()
 	lbc.Options.NodeSelector = ParseNodeSelector(lbc.Options.annotations.NodeSelector())
