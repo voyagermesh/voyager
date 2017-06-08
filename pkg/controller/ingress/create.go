@@ -192,7 +192,7 @@ func (lbc *EngressController) createHostPortSvc() error {
 	}
 
 	daemonNodes, err := lbc.KubeClient.Core().Nodes().List(kapi.ListOptions{
-		LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Options.DaemonNodeSelector)),
+		LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Options.NodeSelector)),
 	})
 	if err != nil {
 		log.Infoln("node not found with nodeSelector, cause", err)
@@ -219,7 +219,7 @@ func (lbc *EngressController) createHostPortSvc() error {
 }
 
 func (lbc *EngressController) createHostPortPods() error {
-	log.Infoln("Creating Daemon type lb for nodeSelector = ", lbc.Options.DaemonNodeSelector)
+	log.Infoln("Creating Daemon type lb for nodeSelector = ", lbc.Options.NodeSelector)
 
 	vs := Volumes(lbc.Options)
 	vms := VolumeMounts(lbc.Options)
@@ -246,7 +246,7 @@ func (lbc *EngressController) createHostPortPods() error {
 					Labels: labelsFor(lbc.Config.Name),
 				},
 				Spec: kapi.PodSpec{
-					NodeSelector: lbc.Options.DaemonNodeSelector,
+					NodeSelector: lbc.Options.NodeSelector,
 					Containers: []kapi.Container{
 						{
 							Name:  "haproxy",
@@ -393,6 +393,7 @@ func (lbc *EngressController) createNodePortPods() error {
 				},
 
 				Spec: kapi.PodSpec{
+					NodeSelector: lbc.Options.NodeSelector,
 					Containers: []kapi.Container{
 						{
 							Name:  "haproxy",

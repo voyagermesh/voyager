@@ -180,7 +180,7 @@ func (lbc *EngressController) updateLBSvc() error {
 	log.Infoln("Loadbalancer CloudManager", lbc.CloudManager, "serviceType", svc.Spec.Type)
 	if (lbc.Options.LBType == LBTypeDaemon || lbc.Options.LBType == LBTypeHostPort) && lbc.CloudManager != nil {
 		daemonNodes, err := lbc.KubeClient.Core().Nodes().List(kapi.ListOptions{
-			LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Options.DaemonNodeSelector)),
+			LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Options.NodeSelector)),
 		})
 		if err != nil {
 			log.Infoln("node not found with nodeSelector, cause", err)

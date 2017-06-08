@@ -43,8 +43,8 @@ func (ing *IngressTestSuit) TestIngressDaemonCreate() error {
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 			Annotations: map[string]string{
-				ingress.LBType:             ingress.LBTypeHostPort,
-				ingress.DaemonNodeSelector: nodeSelector(),
+				ingress.LBType:       ingress.LBTypeHostPort,
+				ingress.NodeSelector: nodeSelector(),
 			},
 		},
 		Spec: aci.ExtendedIngressSpec{
@@ -140,8 +140,8 @@ func (ing *IngressTestSuit) TestIngressDaemonUpdate() error {
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 			Annotations: map[string]string{
-				ingress.LBType:             ingress.LBTypeHostPort,
-				ingress.DaemonNodeSelector: nodeSelector(),
+				ingress.LBType:       ingress.LBTypeHostPort,
+				ingress.NodeSelector: nodeSelector(),
 			},
 		},
 		Spec: aci.ExtendedIngressSpec{
@@ -349,8 +349,8 @@ func (ing *IngressTestSuit) TestIngressDaemonRestart() error {
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 			Annotations: map[string]string{
-				ingress.LBType:             ingress.LBTypeHostPort,
-				ingress.DaemonNodeSelector: nodeSelector(),
+				ingress.LBType:       ingress.LBTypeHostPort,
+				ingress.NodeSelector: nodeSelector(),
 			},
 		},
 		Spec: aci.ExtendedIngressSpec{
