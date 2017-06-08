@@ -56,7 +56,7 @@ func (t *httpClient) DoWithRetry(limit int) (*Response, error) {
 	var resp *Response
 	var err error
 	for i := 1; i <= limit; i++ {
-		resp, err = t.do()
+		resp, err = t.do(true)
 		if err == nil {
 			return resp, err
 		}
@@ -65,7 +65,39 @@ func (t *httpClient) DoWithRetry(limit int) (*Response, error) {
 	return resp, err
 }
 
-func (t *httpClient) do() (*Response, error) {
+func (t *httpClient) DoTestRedirectWithRetry(limit int) (*Response, error) {
+	var resp *Response
+	var err error
+
+	// Do Not redirect
+	t.client.CheckRedirect =  func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+
+	for i := 1; i <= limit; i++ {
+		resp, err = t.do(false)
+		if err == nil {
+			return resp, err
+		}
+		time.Sleep(time.Second * 5)
+	}
+	return resp, err
+}
+
+func (t *httpClient) DoStatusWithRetry(limit int) (*Response, error) {
+	var resp *Response
+	var err error
+	for i := 1; i <= limit; i++ {
+		resp, err = t.do(false)
+		if err == nil {
+			return resp, err
+		}
+		time.Sleep(time.Second * 5)
+	}
+	return resp, err
+}
+
+func (t *httpClient) do(parse bool) (*Response, error) {
 	req, err := http.NewRequest(t.method, t.baseURL+"/"+t.path, nil)
 	if err != nil {
 		return nil, err
@@ -84,10 +116,11 @@ func (t *httpClient) do() (*Response, error) {
 		Status:         resp.StatusCode,
 		ResponseHeader: resp.Header,
 	}
-	err = json.NewDecoder(resp.Body).Decode(responseStruct)
-	if err != nil {
-		return nil, err
+	if parse {
+		err = json.NewDecoder(resp.Body).Decode(responseStruct)
+		if err != nil {
+			return nil, err
+		}
 	}
-
 	return responseStruct, nil
 }

@@ -436,8 +436,7 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 				Name:      testIngressName(),
 				Namespace: ing.t.Config.TestNamespace,
 				Annotations: map[string]string{
-					ingress.LoadBalancerPersist: "true",
-					ingress.LoadBalancerIP:      ing.t.Config.LBPersistIP,
+					ingress.LoadBalancerPersist: ing.t.Config.LBPersistIP,
 				},
 			},
 			Spec: aci.ExtendedIngressSpec{
@@ -536,8 +535,7 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 				Name:      testIngressName(),
 				Namespace: ing.t.Config.TestNamespace,
 				Annotations: map[string]string{
-					ingress.LoadBalancerPersist: "true",
-					ingress.LoadBalancerIP:      oldServiceIP,
+					ingress.LoadBalancerPersist: oldServiceIP,
 				},
 			},
 			Spec: aci.ExtendedIngressSpec{
@@ -919,7 +917,7 @@ func (ing *IngressTestSuit) TestIngressHostNames() error {
 	}()
 
 	// Wait sometime to loadbalancer be opened up.
-	time.Sleep(time.Second * 60)
+	time.Sleep(time.Second * 120)
 	var svc *api.Service
 	for i := 0; i < maxRetries; i++ {
 		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
@@ -1942,6 +1940,216 @@ func (ing *IngressTestSuit) TestIngressLBSourceRange() error {
 
 	if len(svc.Spec.LoadBalancerSourceRanges) != 1 {
 		return errors.New().WithMessage("LBSource range did not matched").Err()
+	}
+	return nil
+}
+
+func (ing *IngressTestSuit) TestIngressExternalName() error {
+	extSvc := &api.Service{
+		ObjectMeta: api.ObjectMeta{
+			Name: "external-svc-non-dns",
+			Namespace: ing.t.Config.TestNamespace,
+		},
+		Spec: api.ServiceSpec{
+			Type: api.ServiceTypeExternalName,
+			ExternalName: "google.com",
+		},
+	}
+
+	_, err := ing.t.KubeClient.Core().Services(extSvc.Namespace).Create(extSvc)
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+	defer func() {
+		if ing.t.Config.Cleanup {
+			ing.t.KubeClient.Core().Services(extSvc.Namespace).Delete(extSvc.Name, nil)
+		}
+	}()
+
+	baseIngress := &aci.Ingress{
+		ObjectMeta: api.ObjectMeta{
+			Name:      testIngressName(),
+			Namespace: ing.t.Config.TestNamespace,
+		},
+		Spec: aci.ExtendedIngressSpec{
+			Rules: []aci.ExtendedIngressRule{
+				{
+					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
+						HTTP: &aci.HTTPExtendedIngressRuleValue{
+							Paths: []aci.HTTPExtendedIngressPath{
+								{
+									Path: "/testpath",
+									Backend: aci.ExtendedIngressBackend{
+										ServiceName: extSvc.Name,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+	defer func() {
+		if ing.t.Config.Cleanup {
+			ing.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		}
+	}()
+
+	// Wait sometime to loadbalancer be opened up.
+	time.Sleep(time.Second * 10)
+	var svc *api.Service
+	for i := 0; i < maxRetries; i++ {
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for service to be created")
+	}
+	if err != nil {
+		return err
+	}
+	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
+	for i := 0; i < maxRetries; i++ {
+		_, err = ing.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for endpoints to be created")
+	}
+	if err != nil {
+		return err
+	}
+
+	serverAddr, err := ing.getURLs(baseIngress)
+	if err != nil {
+		return err
+	}
+	time.Sleep(time.Second * 60)
+	log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath").DoTestRedirectWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
+		}
+		if resp.Status != 301 {
+			return errors.New().WithMessage("Path did not matched").Err()
+		}
+		if resp.ResponseHeader.Get("Location") != "http://google.com" {
+			return errors.New().WithMessage("Location did not matched").Err()
+		}
+	}
+	return nil
+}
+
+func (ing *IngressTestSuit) TestIngressExternalNameResolver() error {
+	extSvc := &api.Service{
+		ObjectMeta: api.ObjectMeta{
+			Name: "external-svc-dns",
+			Namespace: ing.t.Config.TestNamespace,
+			Annotations: map[string]string{
+				ingress.ExternalDNSResolvers: `{"nameserver": [{"mode": "dnsmasq", "address": "8.8.8.8:53"}]}`,
+			},
+		},
+		Spec: api.ServiceSpec{
+			Type: api.ServiceTypeExternalName,
+			ExternalName: "google.com",
+		},
+	}
+
+	_, err := ing.t.KubeClient.Core().Services(extSvc.Namespace).Create(extSvc)
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+	defer func() {
+		if ing.t.Config.Cleanup {
+			ing.t.KubeClient.Core().Services(extSvc.Namespace).Delete(extSvc.Name, nil)
+		}
+	}()
+
+	baseIngress := &aci.Ingress{
+		ObjectMeta: api.ObjectMeta{
+			Name:      testIngressName(),
+			Namespace: ing.t.Config.TestNamespace,
+		},
+		Spec: aci.ExtendedIngressSpec{
+			Rules: []aci.ExtendedIngressRule{
+				{
+					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
+						HTTP: &aci.HTTPExtendedIngressRuleValue{
+							Paths: []aci.HTTPExtendedIngressPath{
+								{
+									Path: "/testpath",
+									Backend: aci.ExtendedIngressBackend{
+										ServiceName: extSvc.Name,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+	defer func() {
+		if ing.t.Config.Cleanup {
+			ing.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		}
+	}()
+
+	// Wait sometime to loadbalancer be opened up.
+	time.Sleep(time.Second * 10)
+	var svc *api.Service
+	for i := 0; i < maxRetries; i++ {
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for service to be created")
+	}
+	if err != nil {
+		return err
+	}
+	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
+	for i := 0; i < maxRetries; i++ {
+		_, err = ing.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for endpoints to be created")
+	}
+	if err != nil {
+		return err
+	}
+
+	serverAddr, err := ing.getURLs(baseIngress)
+	if err != nil {
+		return err
+	}
+	time.Sleep(time.Second * 60)
+	log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath").DoStatusWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
+		}
+		if resp.Status != 404 {
+			return errors.New().WithMessage("Path did not matched").Err()
+		}
 	}
 	return nil
 }

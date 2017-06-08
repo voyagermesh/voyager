@@ -83,6 +83,8 @@ const (
 	// annotations applied to created resources for any ingress
 	LoadBalancerSourceAPIGroup = AnnotationPrefix + "source.apiGroup"
 	LoadBalancerSourceName     = AnnotationPrefix + "source.name"
+
+	ExternalDNSResolvers = AnnotationPrefix + "external-dns-resolvers"
 )
 
 type annotation map[string]string
@@ -272,6 +274,20 @@ type HAProxyOptions struct {
 	HttpsService   []*Service
 	HttpService    []*Service
 	TCPService     []*TCPService
+	DNSResolvers   []*DNSResolver
+}
+
+type DNSResolver struct {
+	Name       string
+	NameServer []NameServer `json:"nameserver"`
+}
+
+type NameServer struct {
+	// dnsmasq, vpc
+	Mode string `json:"mode"`
+
+	// ip:port
+	Address string `json:"address"`
 }
 
 type Service struct {
@@ -302,10 +318,17 @@ type Backend struct {
 }
 
 type Endpoint struct {
-	Name   string
-	IP     string
-	Port   string
-	Weight int
+	Name                   string
+	IP                     string
+	Port                   string
+	Weight                 int
+	ExternalName           string
+	ExternalRedirect       bool
+	ExternalServiceOptions ExternalServiceOptions
+}
+
+type ExternalServiceOptions struct {
+	Resolver string
 }
 
 // Loadbalancer image is an almost constant type.
