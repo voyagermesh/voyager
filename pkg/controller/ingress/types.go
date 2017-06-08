@@ -204,11 +204,6 @@ func getTargetAnnotations(s annotation, key string) (map[string]string, bool) {
 }
 
 type EngressController struct {
-	// kubernetes client
-	KubeClient   clientset.Interface
-	ExtClient    acs.ExtensionInterface
-	CloudManager cloudprovider.Interface
-
 	ClusterName  string
 	ProviderName string
 	IngressClass string
@@ -217,22 +212,22 @@ type EngressController struct {
 	Resource *aci.Ingress
 	// kube options data
 	SecretNames []string
-
 	// contains raw configMap data parsed from the cfg file.
 	ConfigData string
-
 	// Ports contains all the ports needed to be opened for the ingress.
 	// Those ports will be used to open loadbalancer/firewall.
 	// So any interference with underlying endpoints will not cause network update.
 	Ports []int
 	// contains all the https host names.
 	HostFilter []string
-
 	// parsed ingress.
 	Parsed *HAProxyOptions
 
-	// endpoint cache store. contains all endpoints will be
-	// search with respect to services.
+	// kubernetes client
+	KubeClient   clientset.Interface
+	ExtClient    acs.ExtensionInterface
+	CloudManager cloudprovider.Interface
+	// endpoint cache store. contains all endpoints will be search with respect to services.
 	Storage       *stash.Storage
 	EndpointStore cache.StoreToEndpointsLister
 	sync.Mutex
