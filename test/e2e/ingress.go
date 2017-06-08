@@ -9,7 +9,6 @@ import (
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	api "github.com/appscode/voyager/api"
-	"github.com/appscode/voyager/pkg/controller/ingress"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	kapi "k8s.io/kubernetes/pkg/api"
 	k8serr "k8s.io/kubernetes/pkg/api/errors"
@@ -1858,7 +1857,7 @@ func (ing *IngressTestSuit) TestIngressLBSourceRange() error {
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 			Annotations: map[string]string{
-				ingress.KeepSourceIP: "true",
+				api.KeepSourceIP: "true",
 			},
 		},
 		Spec: api.ExtendedIngressSpec{
@@ -1945,13 +1944,13 @@ func (ing *IngressTestSuit) TestIngressLBSourceRange() error {
 }
 
 func (ing *IngressTestSuit) TestIngressExternalName() error {
-	extSvc := &api.Service{
-		ObjectMeta: api.ObjectMeta{
-			Name: "external-svc-non-dns",
+	extSvc := &kapi.Service{
+		ObjectMeta: kapi.ObjectMeta{
+			Name:      "external-svc-non-dns",
 			Namespace: ing.t.Config.TestNamespace,
 		},
-		Spec: api.ServiceSpec{
-			Type: api.ServiceTypeExternalName,
+		Spec: kapi.ServiceSpec{
+			Type:         kapi.ServiceTypeExternalName,
 			ExternalName: "google.com",
 		},
 	}
@@ -1966,20 +1965,20 @@ func (ing *IngressTestSuit) TestIngressExternalName() error {
 		}
 	}()
 
-	baseIngress := &aci.Ingress{
-		ObjectMeta: api.ObjectMeta{
+	baseIngress := &api.Ingress{
+		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 		},
-		Spec: aci.ExtendedIngressSpec{
-			Rules: []aci.ExtendedIngressRule{
+		Spec: api.ExtendedIngressSpec{
+			Rules: []api.ExtendedIngressRule{
 				{
-					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
-						HTTP: &aci.HTTPExtendedIngressRuleValue{
-							Paths: []aci.HTTPExtendedIngressPath{
+					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
+						HTTP: &api.HTTPExtendedIngressRuleValue{
+							Paths: []api.HTTPExtendedIngressPath{
 								{
 									Path: "/testpath",
-									Backend: aci.ExtendedIngressBackend{
+									Backend: api.ExtendedIngressBackend{
 										ServiceName: extSvc.Name,
 									},
 								},
@@ -2003,9 +2002,9 @@ func (ing *IngressTestSuit) TestIngressExternalName() error {
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 10)
-	var svc *api.Service
+	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -2050,16 +2049,16 @@ func (ing *IngressTestSuit) TestIngressExternalName() error {
 }
 
 func (ing *IngressTestSuit) TestIngressExternalNameResolver() error {
-	extSvc := &api.Service{
-		ObjectMeta: api.ObjectMeta{
-			Name: "external-svc-dns",
+	extSvc := &kapi.Service{
+		ObjectMeta: kapi.ObjectMeta{
+			Name:      "external-svc-dns",
 			Namespace: ing.t.Config.TestNamespace,
 			Annotations: map[string]string{
-				ingress.ExternalDNSResolvers: `{"nameserver": [{"mode": "dnsmasq", "address": "8.8.8.8:53"}]}`,
+				api.ExternalDNSResolvers: `{"nameserver": [{"mode": "dnsmasq", "address": "8.8.8.8:53"}]}`,
 			},
 		},
-		Spec: api.ServiceSpec{
-			Type: api.ServiceTypeExternalName,
+		Spec: kapi.ServiceSpec{
+			Type:         kapi.ServiceTypeExternalName,
 			ExternalName: "google.com",
 		},
 	}
@@ -2074,20 +2073,20 @@ func (ing *IngressTestSuit) TestIngressExternalNameResolver() error {
 		}
 	}()
 
-	baseIngress := &aci.Ingress{
-		ObjectMeta: api.ObjectMeta{
+	baseIngress := &api.Ingress{
+		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 		},
-		Spec: aci.ExtendedIngressSpec{
-			Rules: []aci.ExtendedIngressRule{
+		Spec: api.ExtendedIngressSpec{
+			Rules: []api.ExtendedIngressRule{
 				{
-					ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
-						HTTP: &aci.HTTPExtendedIngressRuleValue{
-							Paths: []aci.HTTPExtendedIngressPath{
+					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
+						HTTP: &api.HTTPExtendedIngressRuleValue{
+							Paths: []api.HTTPExtendedIngressPath{
 								{
 									Path: "/testpath",
-									Backend: aci.ExtendedIngressBackend{
+									Backend: api.ExtendedIngressBackend{
 										ServiceName: extSvc.Name,
 									},
 								},
@@ -2111,9 +2110,9 @@ func (ing *IngressTestSuit) TestIngressExternalNameResolver() error {
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 10)
-	var svc *api.Service
+	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingress.VoyagerPrefix + baseIngress.Name)
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}

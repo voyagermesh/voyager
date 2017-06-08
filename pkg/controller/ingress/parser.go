@@ -3,10 +3,10 @@ package ingress
 import (
 	"encoding/json"
 	goerr "errors"
+	"fmt"
 	"strconv"
 	"strings"
 
-	"fmt"
 	"github.com/appscode/errors"
 	"github.com/appscode/go/arrays"
 	"github.com/appscode/go/crypto/rand"
@@ -74,7 +74,7 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 		}
 
 		dnsResolved := false
-		if val, ok := service.Annotations[ExternalDNSResolvers]; ok {
+		if val, ok := service.Annotations[api.ExternalDNSResolvers]; ok {
 			resolver := &DNSResolver{}
 			err := json.Unmarshal([]byte(val), resolver)
 			if err == nil && len(resolver.NameServer) > 0 {

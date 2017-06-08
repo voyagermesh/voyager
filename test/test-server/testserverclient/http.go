@@ -70,7 +70,7 @@ func (t *httpClient) DoTestRedirectWithRetry(limit int) (*Response, error) {
 	var err error
 
 	// Do Not redirect
-	t.client.CheckRedirect =  func(req *http.Request, via []*http.Request) error {
+	t.client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse
 	}
 
