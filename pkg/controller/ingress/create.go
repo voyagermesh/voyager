@@ -32,7 +32,7 @@ func (lbc *EngressController) Create() error {
 	// This methods clean up any unwanted resource that will cause in errors
 	lbc.ensureResources()
 
-	err = lbc.createConfigMap()
+	err = lbc.ensureConfigMap()
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -78,7 +78,7 @@ func (lbc *EngressController) ensureResources() {
 	lbc.deleteLBSvc()
 }
 
-func (lbc *EngressController) createConfigMap() error {
+func (lbc *EngressController) ensureConfigMap() error {
 	log.Infoln("creating cmap for engress")
 	cm, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
 	if kerr.IsNotFound(err) {
