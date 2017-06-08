@@ -162,7 +162,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 				// recreate the resource from scratch.
 				log.Infoln("Loadbalancer is exists, trying to update")
 
-				if svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(VoyagerPrefix + lbc.Resource.Name); err == nil {
+				if svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.OffshootName()); err == nil {
 					// check port
 					curPorts := make(map[int]int)
 					for _, p := range svc.Spec.Ports {

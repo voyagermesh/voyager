@@ -63,7 +63,7 @@ func (lbc *EngressController) Update(t updateType) error {
 }
 
 func (lbc *EngressController) updateConfigMap() error {
-	cMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Get(VoyagerPrefix + lbc.Resource.Name)
+	cMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Get(lbc.OffshootName())
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -132,7 +132,7 @@ func (lbc *EngressController) recreatePods() error {
 }
 
 func (lbc *EngressController) updateLBSvc() error {
-	svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(VoyagerPrefix + lbc.Resource.Name)
+	svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.OffshootName())
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -211,7 +211,7 @@ func (lbc *EngressController) updateLBSvc() error {
 			// Wait for nodePort to be assigned
 			timeoutAt := time.Now().Add(time.Second * 600)
 			for {
-				svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(VoyagerPrefix + lbc.Resource.Name)
+				svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.OffshootName())
 				if err != nil {
 					return errors.FromErr(err).Err()
 				}
@@ -265,7 +265,7 @@ func (lbc *EngressController) UpdateTargetAnnotations(old annotation, new annota
 	if newSvcAns, newOk := new.ServiceAnnotations(lbc.Options.ProviderName, lbc.Options.LBType); newOk {
 		if oldSvcAns, oldOk := old.ServiceAnnotations(lbc.Options.ProviderName, lbc.Options.LBType); oldOk {
 			if !reflect.DeepEqual(oldSvcAns, newSvcAns) {
-				svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(VoyagerPrefix + lbc.Resource.Name)
+				svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.OffshootName())
 				if err != nil {
 					return errors.FromErr(err).Err()
 				}
@@ -284,7 +284,7 @@ func (lbc *EngressController) UpdateTargetAnnotations(old annotation, new annota
 		if oldPodAns, oldOk := old.PodsAnnotations(); oldOk {
 			if !reflect.DeepEqual(oldPodAns, newPodAns) {
 				if lbc.Options.LBType == LBTypeDaemon || lbc.Options.LBType == LBTypeHostPort {
-					daemonset, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Get(VoyagerPrefix + lbc.Resource.Name)
+					daemonset, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Get(lbc.OffshootName())
 					if err != nil {
 						return errors.FromErr(err).Err()
 					}
@@ -306,7 +306,7 @@ func (lbc *EngressController) UpdateTargetAnnotations(old annotation, new annota
 						}
 					}
 				} else {
-					dep, err := lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Get(VoyagerPrefix + lbc.Resource.Name)
+					dep, err := lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Get(lbc.OffshootName())
 					if err != nil {
 						return errors.FromErr(err).Err()
 					}

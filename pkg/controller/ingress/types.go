@@ -18,8 +18,6 @@ import (
 const (
 	VoyagerPrefix = "voyager-"
 
-	//aci.EngressKey + "/" = "ingress.appscode.com/"
-
 	stickySession = aci.EngressKey + "/" + "stickySession"
 
 	// LB stats options
@@ -241,7 +239,6 @@ type KubeOptions struct {
 	// kube options data
 	SecretNames []string
 
-	ConfigMapName string
 	// contains raw configMap data parsed from the cfg file.
 	ConfigData string
 

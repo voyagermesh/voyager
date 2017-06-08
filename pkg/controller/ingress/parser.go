@@ -18,6 +18,10 @@ import (
 	"k8s.io/kubernetes/pkg/util/intstr"
 )
 
+func (lbc *EngressController) OffshootName() string {
+	return VoyagerPrefix + lbc.Resource.Name
+}
+
 func (lbc *EngressController) parse() error {
 	log.Infoln("Parsing new engress")
 	if lbc.Resource == nil {
@@ -26,7 +30,6 @@ func (lbc *EngressController) parse() error {
 	}
 	lbc.parseOptions()
 	lbc.parseSpec()
-	lbc.Options.ConfigMapName = VoyagerPrefix + lbc.Resource.Name
 
 	// Set loadbalancer source apiGroup, default ingress.appscode.com
 	lbc.apiGroup = api.APIGroupEngress
