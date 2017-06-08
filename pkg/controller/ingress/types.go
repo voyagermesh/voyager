@@ -40,8 +40,8 @@ const (
 	LBTypeDaemon       = "Daemon"
 	LBTypeLoadBalancer = "LoadBalancer" // default
 
-	// Runs on a specific set of a hosts via DaemonSet. This is needed to work around the issue that master node is registered but not scheduable.
-	DaemonNodeSelector = AnnotationPrefix + "daemon.nodeSelector"
+	// Runs HAProxy on a specific set of a hosts.
+	NodeSelector = AnnotationPrefix + "nodeSelector"
 
 	// Replicas specify # of HAProxy pods run (default 1)
 	Replicas = AnnotationPrefix + "replicas"
@@ -139,8 +139,11 @@ func (s annotation) Replicas() int32 {
 	return 1
 }
 
-func (s annotation) DaemonNodeSelector() string {
-	v, _ := s[DaemonNodeSelector]
+func (s annotation) NodeSelector() string {
+	if v, ok := s[NodeSelector]; ok {
+		return v
+	}
+	v, _ := s[AnnotationPrefix+"daemon.nodeSelector"]
 	return v
 }
 
@@ -235,7 +238,7 @@ type KubeOptions struct {
 
 	LBType              string
 	Replicas            int32
-	DaemonNodeSelector  map[string]string
+	NodeSelector        map[string]string
 	LoadBalancerIP      string
 	LoadBalancerPersist bool
 

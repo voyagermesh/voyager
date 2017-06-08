@@ -104,7 +104,7 @@ func (ing *IngressTestSuit) getDaemonURLs(baseIngress *aci.Ingress) ([]string, e
 	nodes, err := ing.t.KubeClient.Core().Nodes().List(api.ListOptions{
 		LabelSelector: labels.SelectorFromSet(
 			ingresscontroller.ParseNodeSelector(
-				baseIngress.Annotations[ingresscontroller.DaemonNodeSelector],
+				baseIngress.Annotations[ingresscontroller.NodeSelector],
 			),
 		),
 	})

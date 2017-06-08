@@ -322,7 +322,7 @@ func (lbc *EngressController) parseOptions() {
 	lbc.Parsed.AcceptProxy = lbc.Options.annotations.AcceptProxy()
 	lbc.Options.LBType = lbc.Options.annotations.LBType()
 	lbc.Options.Replicas = lbc.Options.annotations.Replicas()
-	lbc.Options.DaemonNodeSelector = ParseNodeSelector(lbc.Options.annotations.DaemonNodeSelector())
+	lbc.Options.NodeSelector = ParseNodeSelector(lbc.Options.annotations.NodeSelector())
 	lbc.Options.LoadBalancerIP = lbc.Options.annotations.LoadBalancerIP()
 	lbc.Options.LoadBalancerPersist = lbc.Options.annotations.LoadBalancerPersist()
 	log.Infoln("Got LBType", lbc.Options.LBType)
