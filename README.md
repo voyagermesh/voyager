@@ -92,7 +92,7 @@ Read [Build Instructions](docs/developer-guide/build.md) to build voyager.
 
 ## Versioning Policy
 There are 2 parts to versioning policy:
- - Operator version: Voyager __does not follow semver__, rather the major.minor version of operator points to the
+ - Operator version: Voyager __does not follow semver__, rather the _major.minor_ version of operator points to the
 Kubernetes client version. You can verify this from the `glide.yaml` file. This means there might be breaking changes
 between point releases of the operator. This generally manifest as changed annotation keys or their meaning.
 Please always check the release notes for upgrade instructions.
