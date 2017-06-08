@@ -27,7 +27,7 @@ var (
 
 	providerName    string
 	clusterName     string
-	haProxyImage    string = "appscode/haproxy:1.7.5-1.5.5"
+	haProxyImage    string = "appscode/haproxy:1.7.5-1.5.6"
 	ingressClass    string
 	enableAnalytics bool = true
 
