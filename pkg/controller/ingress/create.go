@@ -492,11 +492,11 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 	switch lbc.Options.ProviderName {
 	case "gce", "gke":
 		svc.Spec.Type = kapi.ServiceTypeLoadBalancer
-		if ip := net.ParseIP(lbc.Annotations().LoadBalancerPersist()); ip != nil {
+		if ip := net.ParseIP(lbc.Annotations().Persist()); ip != nil {
 			svc.Spec.LoadBalancerIP = ip.String()
 		}
 	case "aws":
-		if lbc.Annotations().LoadBalancerPersist() != "" {
+		if lbc.Annotations().Persist() != "" {
 			// We are going manage the loadbalancer directly
 			svc.Spec.Type = kapi.ServiceTypeNodePort
 		} else {

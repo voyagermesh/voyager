@@ -150,7 +150,7 @@ func (s annotation) NodeSelector() map[string]string {
 	return ParseNodeSelector(v)
 }
 
-func (s annotation) LoadBalancerPersist() string {
+func (s annotation) Persist() string {
 	if v, ok := s[aci.EngressKey+"/"+"ip"]; ok {
 		return v
 	}
@@ -243,11 +243,6 @@ type KubeOptions struct {
 	// Those ports will be used to open loadbalancer/firewall.
 	// So any interference with underlying endpoints will not cause network update.
 	Ports []int
-
-	// NodeSelector        map[string]string
-	// LoadBalancerPersist string
-
-	// annotations annotation
 }
 
 func (o KubeOptions) SupportsLoadBalancerType() bool {
