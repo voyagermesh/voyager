@@ -1,12 +1,8 @@
 package ingress
 
 import (
-	"encoding/json"
-	"strconv"
-	"strings"
 	"sync"
 
-	"github.com/appscode/log"
 	aci "github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/stash"
@@ -88,120 +84,6 @@ const (
 	OriginAPISchema = aci.EngressKey + "/" + "origin-api-schema" // APISchema = {APIGroup}/{APIVersion}
 	OriginName      = aci.EngressKey + "/" + "origin-name"
 )
-
-type annotation map[string]string
-
-func (s annotation) StickySession() bool {
-	_, ok := s[stickySession]
-	return ok
-}
-
-func (s annotation) Stats() bool {
-	_, ok := s[StatsOn]
-	return ok
-}
-
-func (s annotation) StatsSecretName() string {
-	v, _ := s[StatsSecret]
-	return v
-}
-
-func (s annotation) StatsPort() int {
-	v, ok := s[StatsPort]
-	if !ok {
-		return DefaultStatsPort
-	}
-	if port, err := strconv.Atoi(v); err == nil {
-		return port
-	}
-	return DefaultStatsPort
-}
-
-func (s annotation) StatsServiceName(ingName string) string {
-	v, ok := s[StatsServiceName]
-	if !ok {
-		return ingName + "-stats"
-	}
-	return v
-}
-
-func (s annotation) LBType() string {
-	if v, ok := s[LBType]; ok {
-		return v
-	}
-	return LBTypeLoadBalancer
-}
-
-func (s annotation) Replicas() int32 {
-	if v, ok := s[Replicas]; ok {
-		if n, err := strconv.Atoi(v); err == nil {
-			return int32(n)
-		}
-		return 1
-	}
-	return 1
-}
-
-func (s annotation) NodeSelector() map[string]string {
-	if v, ok := s[NodeSelector]; ok {
-		return ParseNodeSelector(v)
-	}
-	v, _ := s[aci.EngressKey+"/"+"daemon.nodeSelector"]
-	return ParseNodeSelector(v)
-}
-
-func (s annotation) Persist() string {
-	if v, ok := s[aci.EngressKey+"/"+"ip"]; ok {
-		return v
-	}
-	v, _ := s[LoadBalancerPersist]
-	return v
-}
-
-func (s annotation) ServiceAnnotations(provider, lbType string) (map[string]string, bool) {
-	m, ok := getTargetAnnotations(s, ServiceAnnotations)
-	if ok && lbType == LBTypeLoadBalancer && s.KeepSourceIP() {
-		switch provider {
-		case "aws":
-			// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
-			m["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
-		case "gce", "gke", "azure":
-			// ref: https://kubernetes.io/docs/tutorials/services/source-ip/#source-ip-for-services-with-typeloadbalancer
-			m["service.beta.kubernetes.io/external-traffic"] = "OnlyLocal"
-		}
-	}
-	return m, ok
-}
-
-func (s annotation) PodsAnnotations() (map[string]string, bool) {
-	return getTargetAnnotations(s, PodAnnotations)
-}
-
-func (s annotation) KeepSourceIP() bool {
-	v, _ := s[KeepSourceIP]
-	return strings.ToLower(v) == "true"
-}
-
-func getTargetAnnotations(s annotation, key string) (map[string]string, bool) {
-	ans := make(map[string]string)
-	if v, ok := s[key]; ok {
-		v = strings.TrimSpace(v)
-		if err := json.Unmarshal([]byte(v), &ans); err != nil {
-			log.Errorln("Failed to Unmarshal", key, err)
-			return ans, false
-		}
-
-		// Filter all annotation keys that starts with ingress.appscode.com
-		filteredMap := make(map[string]string)
-		for k, v := range ans {
-			if !strings.HasPrefix(strings.TrimSpace(k), aci.EngressKey+"/") {
-				filteredMap[k] = v
-			}
-		}
-		return filteredMap, true
-	}
-	return ans, true
-}
 
 type EngressController struct {
 	ClusterName  string

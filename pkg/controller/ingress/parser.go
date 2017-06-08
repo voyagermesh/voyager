@@ -37,10 +37,6 @@ func (lbc *EngressController) SupportsLoadBalancerType() bool {
 		lbc.ProviderName == "minikube"
 }
 
-func (lbc *EngressController) Annotations() annotation {
-	return annotation(lbc.Resource.ObjectMeta.Annotations)
-}
-
 func (lbc *EngressController) parse() error {
 	log.Infoln("Parsing new engress")
 	if lbc.Resource == nil {
@@ -312,15 +308,15 @@ func (lbc *EngressController) parseOptions() {
 		return
 	}
 	log.Infoln("Parsing annotations.")
-	lbc.Parsed.Sticky = lbc.Annotations().StickySession()
+	lbc.Parsed.Sticky = lbc.Resource.StickySession()
 	if len(lbc.Resource.Spec.TLS) > 0 {
 		lbc.Parsed.SSLCert = true
 	}
 
-	lbc.Parsed.Stats = lbc.Annotations().Stats()
+	lbc.Parsed.Stats = lbc.Resource.Stats()
 	if lbc.Parsed.Stats {
-		lbc.Parsed.StatsPort = lbc.Annotations().StatsPort()
-		if name := lbc.Annotations().StatsSecretName(); len(name) > 0 {
+		lbc.Parsed.StatsPort = lbc.Resource.StatsPort()
+		if name := lbc.Resource.StatsSecretName(); len(name) > 0 {
 			secret, err := lbc.KubeClient.Core().Secrets(lbc.Resource.ObjectMeta.Namespace).Get(name)
 			if err == nil {
 				lbc.Parsed.StatsUserName = string(secret.Data["username"])
@@ -332,26 +328,9 @@ func (lbc *EngressController) parseOptions() {
 		}
 	}
 
-	if lbc.ProviderName == "aws" && lbc.Annotations().LBType() == LBTypeLoadBalancer {
-		lbc.Parsed.AcceptProxy = lbc.Annotations().KeepSourceIP()
+	if lbc.ProviderName == "aws" && lbc.Resource.LBType() == LBTypeLoadBalancer {
+		lbc.Parsed.AcceptProxy = lbc.Resource.KeepSourceIP()
 	}
-}
-
-// ref: https://github.com/kubernetes/kubernetes/blob/078238a461a0872a8eacb887fbb3d0085714604c/staging/src/k8s.io/apiserver/pkg/apis/example/v1/types.go#L134
-func ParseNodeSelector(labels string) map[string]string {
-	selectorMap := make(map[string]string)
-	for _, label := range strings.Split(labels, ",") {
-		label = strings.TrimSpace(label)
-		if len(label) > 0 && strings.Contains(label, "=") {
-			data := strings.SplitN(label, "=", 2)
-			if len(data) >= 2 {
-				if len(data[0]) > 0 && len(data[1]) > 0 {
-					selectorMap[data[0]] = data[1]
-				}
-			}
-		}
-	}
-	return selectorMap
 }
 
 func parseALPNOptions(opt []string) string {

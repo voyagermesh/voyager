@@ -203,15 +203,15 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 			// Ingress Annotations Changed, Apply Changes to Targets
 			// The following method do not update to HAProxy config or restart pod. It only sets the annotations
 			// to the required targets.
-			lbc.UpdateTargetAnnotations(engs[0].(*aci.Ingress).ObjectMeta.Annotations, engs[1].(*aci.Ingress).ObjectMeta.Annotations)
+			lbc.UpdateTargetAnnotations(engs[0].(*aci.Ingress), engs[1].(*aci.Ingress))
 		}
 
 		updateMode := updateType(0)
-		if lbc.isKeepSourceChanged(engs[0].(*aci.Ingress).ObjectMeta.Annotations, engs[1].(*aci.Ingress).ObjectMeta.Annotations) {
+		if lbc.isKeepSourceChanged(engs[0].(*aci.Ingress), engs[1].(*aci.Ingress)) {
 			updateMode |= UpdateConfig
 		}
 
-		if isStatsChanged(engs[0].(*aci.Ingress).ObjectMeta.Annotations, engs[1].(*aci.Ingress).ObjectMeta.Annotations) {
+		if isStatsChanged(engs[0].(*aci.Ingress), engs[1].(*aci.Ingress)) {
 			updateMode |= UpdateStats
 		}
 
@@ -424,17 +424,17 @@ func ipnet(spec string) (string, bool) {
 	return ipnet.String(), true
 }
 
-func isStatsChanged(old annotation, new annotation) bool {
-	return isMapKeyChanged(old, new, StatsOn) ||
-		isMapKeyChanged(old, new, StatsPort) ||
-		isMapKeyChanged(old, new, StatsServiceName) ||
-		isMapKeyChanged(old, new, StatsSecret)
+func isStatsChanged(old *aci.Ingress, new *aci.Ingress) bool {
+	return isMapKeyChanged(old.Annotations, new.Annotations, StatsOn) ||
+		isMapKeyChanged(old.Annotations, new.Annotations, StatsPort) ||
+		isMapKeyChanged(old.Annotations, new.Annotations, StatsServiceName) ||
+		isMapKeyChanged(old.Annotations, new.Annotations, StatsSecret)
 }
 
-func (lbc *EngressController) isKeepSourceChanged(old annotation, new annotation) bool {
+func (lbc *EngressController) isKeepSourceChanged(old *aci.Ingress, new *aci.Ingress) bool {
 	return lbc.ProviderName == "aws" &&
-		lbc.Annotations().LBType() == LBTypeLoadBalancer &&
-		isMapKeyChanged(old, new, KeepSourceIP)
+		lbc.Resource.LBType() == LBTypeLoadBalancer &&
+		isMapKeyChanged(old.Annotations, new.Annotations, KeepSourceIP)
 }
 
 func isMapKeyChanged(oldMap map[string]string, newMap map[string]string, key string) bool {

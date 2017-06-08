@@ -7,6 +7,7 @@ import (
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
+	aci "github.com/appscode/voyager/api"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/util/intstr"
@@ -94,7 +95,7 @@ func (lbc *EngressController) updateConfigMap() error {
 }
 
 func (lbc *EngressController) recreatePods() error {
-	if lbc.Annotations().LBType() == LBTypeDaemon || lbc.Annotations().LBType() == LBTypeHostPort {
+	if lbc.Resource.LBType() == LBTypeDaemon || lbc.Resource.LBType() == LBTypeHostPort {
 		err := lbc.deleteHostPortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -103,7 +104,7 @@ func (lbc *EngressController) recreatePods() error {
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
-	} else if lbc.Annotations().LBType() == LBTypeNodePort {
+	} else if lbc.Resource.LBType() == LBTypeNodePort {
 		err := lbc.deleteNodePortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -178,9 +179,9 @@ func (lbc *EngressController) updateLBSvc() error {
 
 	// open up firewall
 	log.Infoln("Loadbalancer CloudManager", lbc.CloudManager, "serviceType", svc.Spec.Type)
-	if (lbc.Annotations().LBType() == LBTypeDaemon || lbc.Annotations().LBType() == LBTypeHostPort) && lbc.CloudManager != nil {
+	if (lbc.Resource.LBType() == LBTypeDaemon || lbc.Resource.LBType() == LBTypeHostPort) && lbc.CloudManager != nil {
 		daemonNodes, err := lbc.KubeClient.Core().Nodes().List(kapi.ListOptions{
-			LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Annotations().NodeSelector())),
+			LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Resource.NodeSelector())),
 		})
 		if err != nil {
 			log.Infoln("node not found with nodeSelector, cause", err)
@@ -203,7 +204,7 @@ func (lbc *EngressController) updateLBSvc() error {
 				log.Debugln("getting firewalls for cloud manager failed")
 			}
 		}
-	} else if lbc.Annotations().LBType() == LBTypeLoadBalancer &&
+	} else if lbc.Resource.LBType() == LBTypeLoadBalancer &&
 		svc.Spec.Type == kapi.ServiceTypeNodePort &&
 		lbc.CloudManager != nil {
 		log.Infof("Service Type is %s, needs to update underlying cloud loadbalancers", svc.Spec.Type)
@@ -258,12 +259,12 @@ func (lbc *EngressController) updateLBSvc() error {
 	return nil
 }
 
-func (lbc *EngressController) UpdateTargetAnnotations(old annotation, new annotation) error {
+func (lbc *EngressController) UpdateTargetAnnotations(old *aci.Ingress, new *aci.Ingress) error {
 	lbc.parse()
 
 	// Check for changes in ingress.appscode.com/annotations-service
-	if newSvcAns, newOk := new.ServiceAnnotations(lbc.ProviderName, lbc.Annotations().LBType()); newOk {
-		if oldSvcAns, oldOk := old.ServiceAnnotations(lbc.ProviderName, lbc.Annotations().LBType()); oldOk {
+	if newSvcAns, newOk := new.ServiceAnnotations(lbc.ProviderName); newOk {
+		if oldSvcAns, oldOk := old.ServiceAnnotations(lbc.ProviderName); oldOk {
 			if !reflect.DeepEqual(oldSvcAns, newSvcAns) {
 				svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.OffshootName())
 				if err != nil {
@@ -283,7 +284,7 @@ func (lbc *EngressController) UpdateTargetAnnotations(old annotation, new annota
 	if newPodAns, newOk := new.PodsAnnotations(); newOk {
 		if oldPodAns, oldOk := old.PodsAnnotations(); oldOk {
 			if !reflect.DeepEqual(oldPodAns, newPodAns) {
-				if lbc.Annotations().LBType() == LBTypeDaemon || lbc.Annotations().LBType() == LBTypeHostPort {
+				if lbc.Resource.LBType() == LBTypeDaemon || lbc.Resource.LBType() == LBTypeHostPort {
 					daemonset, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Get(lbc.OffshootName())
 					if err != nil {
 						return errors.FromErr(err).Err()
