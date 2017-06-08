@@ -63,7 +63,7 @@ func (lbc *EngressController) Update(t updateType) error {
 }
 
 func (lbc *EngressController) updateConfigMap() error {
-	cMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+	cMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Get(VoyagerPrefix + lbc.Resource.Name)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -77,14 +77,14 @@ func (lbc *EngressController) updateConfigMap() error {
 	if !sourceNameFound && !sourceTypeFound {
 		// Old version object
 		cMap.Annotations[LoadBalancerSourceAPIGroup] = lbc.apiGroup
-		cMap.Annotations[LoadBalancerSourceName] = lbc.Config.GetName()
+		cMap.Annotations[LoadBalancerSourceName] = lbc.Resource.GetName()
 	}
 
 	if cMap.Data["haproxy.cfg"] != lbc.Options.ConfigData {
 		log.Infoln("Specs have been changed updating config map data for HAProxy templates")
 		cMap.Data["haproxy.cfg"] = lbc.Options.ConfigData
 
-		_, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Update(cMap)
+		_, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Update(cMap)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -132,7 +132,7 @@ func (lbc *EngressController) recreatePods() error {
 }
 
 func (lbc *EngressController) updateLBSvc() error {
-	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+	svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(VoyagerPrefix + lbc.Resource.Name)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -156,7 +156,7 @@ func (lbc *EngressController) updateLBSvc() error {
 
 	if svc.Spec.Type == kapi.ServiceTypeLoadBalancer {
 		// Update Source Range
-		svc.Spec.LoadBalancerSourceRanges = lbc.Config.Spec.LoadBalancerSourceRanges
+		svc.Spec.LoadBalancerSourceRanges = lbc.Resource.Spec.LoadBalancerSourceRanges
 	}
 
 	if svc.Annotations == nil {
@@ -168,10 +168,10 @@ func (lbc *EngressController) updateLBSvc() error {
 	if !sourceNameFound && !sourceTypeFound {
 		// Old version object
 		svc.Annotations[LoadBalancerSourceAPIGroup] = lbc.apiGroup
-		svc.Annotations[LoadBalancerSourceName] = lbc.Config.GetName()
+		svc.Annotations[LoadBalancerSourceName] = lbc.Resource.GetName()
 	}
 
-	svc, err = lbc.KubeClient.Core().Services(lbc.Config.Namespace).Update(svc)
+	svc, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Update(svc)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -211,7 +211,7 @@ func (lbc *EngressController) updateLBSvc() error {
 			// Wait for nodePort to be assigned
 			timeoutAt := time.Now().Add(time.Second * 600)
 			for {
-				svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+				svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(VoyagerPrefix + lbc.Resource.Name)
 				if err != nil {
 					return errors.FromErr(err).Err()
 				}
@@ -265,13 +265,13 @@ func (lbc *EngressController) UpdateTargetAnnotations(old annotation, new annota
 	if newSvcAns, newOk := new.ServiceAnnotations(lbc.Options.ProviderName, lbc.Options.LBType); newOk {
 		if oldSvcAns, oldOk := old.ServiceAnnotations(lbc.Options.ProviderName, lbc.Options.LBType); oldOk {
 			if !reflect.DeepEqual(oldSvcAns, newSvcAns) {
-				svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+				svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(VoyagerPrefix + lbc.Resource.Name)
 				if err != nil {
 					return errors.FromErr(err).Err()
 				}
 				svc.Annotations = mergeAnnotations(svc.Annotations, oldSvcAns, newSvcAns)
 
-				svc, err = lbc.KubeClient.Core().Services(lbc.Config.Namespace).Update(svc)
+				svc, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Update(svc)
 				if err != nil {
 					return errors.FromErr(err).Err()
 				}
@@ -284,34 +284,34 @@ func (lbc *EngressController) UpdateTargetAnnotations(old annotation, new annota
 		if oldPodAns, oldOk := old.PodsAnnotations(); oldOk {
 			if !reflect.DeepEqual(oldPodAns, newPodAns) {
 				if lbc.Options.LBType == LBTypeDaemon || lbc.Options.LBType == LBTypeHostPort {
-					daemonset, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+					daemonset, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Get(VoyagerPrefix + lbc.Resource.Name)
 					if err != nil {
 						return errors.FromErr(err).Err()
 					}
 					daemonset.Spec.Template.Annotations = newPodAns
-					daemonset, err = lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Update(daemonset)
+					daemonset, err = lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Update(daemonset)
 					if err != nil {
 						return errors.FromErr(err).Err()
 					}
 					if daemonset.Spec.Selector != nil {
-						pods, _ := lbc.KubeClient.Core().Pods(lbc.Config.Namespace).List(kapi.ListOptions{
+						pods, _ := lbc.KubeClient.Core().Pods(lbc.Resource.Namespace).List(kapi.ListOptions{
 							LabelSelector: labels.SelectorFromSet(daemonset.Spec.Selector.MatchLabels),
 						})
 						for _, pod := range pods.Items {
 							pod.Annotations = mergeAnnotations(pod.Annotations, oldPodAns, newPodAns)
-							_, err := lbc.KubeClient.Core().Pods(lbc.Config.Namespace).Update(&pod)
+							_, err := lbc.KubeClient.Core().Pods(lbc.Resource.Namespace).Update(&pod)
 							if err != nil {
 								log.Errorln("Failed to Update Pods", err)
 							}
 						}
 					}
 				} else {
-					dep, err := lbc.KubeClient.Extensions().Deployments(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+					dep, err := lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Get(VoyagerPrefix + lbc.Resource.Name)
 					if err != nil {
 						return errors.FromErr(err).Err()
 					}
 					dep.Spec.Template.Annotations = mergeAnnotations(dep.Spec.Template.Annotations, oldPodAns, newPodAns)
-					_, err = lbc.KubeClient.Extensions().Deployments(lbc.Config.Namespace).Update(dep)
+					_, err = lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Update(dep)
 					if err != nil {
 						return errors.FromErr(err).Err()
 					}

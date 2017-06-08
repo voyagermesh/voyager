@@ -101,7 +101,7 @@ func UpgradeAllEngress(service, clusterName, providerName string,
 			log.Infoln("Checking for service", service, "to be used to load balance via ingress", item.Name, item.Namespace)
 			if ok, name, namespace := isEngressHaveService(engress, service); ok {
 				lbc := NewEngressController(clusterName, providerName, kubeClient, extClient, store, ingressClass)
-				lbc.Config = &items[i]
+				lbc.Resource = &items[i]
 				log.Infoln("Trying to Update Ingress", item.Name, item.Namespace)
 				if lbc.IsExists() {
 					// Loadbalancer resource for this ingress is found in its place,
@@ -151,8 +151,8 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 	}
 	log.Infoln("Size of engs", len(engs), "Size of RuntimeObj", len(e.RuntimeObj))
 	if e.EventType.IsAdded() {
-		lbc.Config = engs[0].(*aci.Ingress)
-		if shouldHandleIngress(lbc.Config, lbc.IngressClass) {
+		lbc.Resource = engs[0].(*aci.Ingress)
+		if shouldHandleIngress(lbc.Resource, lbc.IngressClass) {
 			if lbc.IsExists() {
 				// Loadbalancer resource for this ingress is found in its place,
 				// so no need to create the resources. First trying to update
@@ -162,7 +162,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 				// recreate the resource from scratch.
 				log.Infoln("Loadbalancer is exists, trying to update")
 
-				if svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name); err == nil {
+				if svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(VoyagerPrefix + lbc.Resource.Name); err == nil {
 					// check port
 					curPorts := make(map[int]int)
 					for _, p := range svc.Spec.Ports {
@@ -198,12 +198,12 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 			lbc.Create()
 		}
 	} else if e.EventType.IsDeleted() {
-		lbc.Config = engs[0].(*aci.Ingress)
-		if shouldHandleIngress(lbc.Config, lbc.IngressClass) {
+		lbc.Resource = engs[0].(*aci.Ingress)
+		if shouldHandleIngress(lbc.Resource, lbc.IngressClass) {
 			lbc.Delete()
 		}
 	} else if e.EventType.IsUpdated() {
-		lbc.Config = engs[1].(*aci.Ingress)
+		lbc.Resource = engs[1].(*aci.Ingress)
 		if !reflect.DeepEqual(engs[0].(*aci.Ingress).ObjectMeta.Annotations, engs[1].(*aci.Ingress).ObjectMeta.Annotations) {
 			// Ingress Annotations Changed, Apply Changes to Targets
 			// The following method do not update to HAProxy config or restart pod. It only sets the annotations
@@ -221,7 +221,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 		}
 
 		if !reflect.DeepEqual(engs[0].(*aci.Ingress).Spec, engs[1].(*aci.Ingress).Spec) {
-			if shouldHandleIngress(lbc.Config, lbc.IngressClass) {
+			if shouldHandleIngress(lbc.Resource, lbc.IngressClass) {
 				if isNewPortChanged(engs[0], engs[1]) || isLoadBalancerSourceRangeChanged(engs[0], engs[1]) {
 					updateMode |= UpdateFirewall
 				} else if isNewSecretAdded(engs[0], engs[1]) {
@@ -239,7 +239,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 	svcs, err := lbc.KubeClient.Core().Services(kapi.NamespaceAll).List(kapi.ListOptions{})
 	if err == nil {
 		for _, svc := range svcs.Items {
-			ensureServiceAnnotations(lbc.KubeClient, lbc.Config, svc.Namespace, svc.Name)
+			ensureServiceAnnotations(lbc.KubeClient, lbc.Resource, svc.Namespace, svc.Name)
 		}
 	}
 	return nil
