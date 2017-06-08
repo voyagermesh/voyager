@@ -56,6 +56,14 @@ defaults
     # errorloc 503 https://appscode.com/errors/503
     # errorloc 504 https://appscode.com/errors/504
 
+{% if DNSResolvers %}
+{% for resolver in DNSResolvers %}
+resolvers {{ resolver.Name }}
+	{% for ns in resolver.nameserver %}
+    nameserver {{ ns.mode }} {{ ns.address}}
+    {% endfor %}
+{% endfor %}
+{% endif %}
 
 {% if Stats %}
 listen stats
@@ -86,7 +94,11 @@ backend default-backend
     {% endfor %}
 
     {% for e in DefaultBackend.Endpoints %}
+    {% if e.ExternalName %}
+    {% if e.ExternalRedirect %} http-request redirect location http://{{e.ExternalName}} code 301 {% else %} server {{ e.Name }} {{e.ExternalName}} resolvers {{e.ExternalServiceOptions.Resolver}} {% endif %}
+    {% else %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %} {% if Sticky %}cookie {{ e.Name }} {% endif %}
+    {% endif %}
     {% endfor %}
 {% endif %}
 
@@ -130,7 +142,11 @@ backend https-{{ svc.Name }}
     {% endfor %}
 
     {% for e in svc.Backends.Endpoints %}
+    {% if e.ExternalName %}
+    {% if e.ExternalRedirect %} http-request redirect location https://{{e.ExternalName}} code 301 {% else %} server {{ e.Name }} {{e.ExternalName}} resolvers {{e.ExternalServiceOptions.Resolver}} {% endif %}
+    {% else %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %} {% if Sticky %} cookie {{ e.Name }} {% endif %}
+    {% endif %}
     {% endfor %}
 {% endfor %}
 
@@ -169,7 +185,11 @@ backend http-{{ svc.Name }}
     {% endfor %}
 
     {% for e in svc.Backends.Endpoints %}
+    {% if e.ExternalName %}
+    {% if e.ExternalRedirect %} http-request redirect location http://{{e.ExternalName}} code 301 {% else %} server {{ e.Name }} {{e.ExternalName}} resolvers {{e.ExternalServiceOptions.Resolver}} {% endif %}
+    {% else %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %} {% if Sticky %}cookie {{ e.Name }} {% endif %}
+    {% endif %}
     {% endfor %}
 {% endfor %}
 
@@ -198,7 +218,11 @@ backend tcp-{{ svc.Name }}
     {% endif %}
 
     {% for e in svc.Backends.Endpoints %}
+    {% if e.ExternalName %}
+    server {{ e.Name }} {% if e.ExternalRedirect %} {{e.ExternalName}} {% else %} {{e.ExternalName}} resolvers {{e.ExternalServiceOptions.Resolver}} {% endif %}
+    {% else %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %}
+    {% endif %}
     {% endfor %}
 {% endfor %}
 

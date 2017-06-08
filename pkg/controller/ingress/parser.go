@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"fmt"
 	"github.com/appscode/errors"
 	"github.com/appscode/go/arrays"
 	"github.com/appscode/go/crypto/rand"
@@ -62,12 +63,60 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 		log.Warningln(err)
 		return nil, err
 	}
-	p, ok := getSpecifiedPort(service.Spec.Ports, port)
-	if !ok {
-		log.Warningln("service port unavailable")
-		return nil, goerr.New("service port unavailable")
+
+	p, portFound := getSpecifiedPort(service.Spec.Ports, port)
+	if service.Spec.Type == kapi.ServiceTypeExternalName {
+		eps := make([]*Endpoint, 0)
+
+		name := service.Spec.ExternalName
+		if portFound {
+			name += fmt.Sprintf(":%d", p.Port)
+		}
+
+		dnsResolved := false
+		if val, ok := service.Annotations[ExternalDNSResolvers]; ok {
+			resolver := &DNSResolver{}
+			err := json.Unmarshal([]byte(val), resolver)
+			if err == nil && len(resolver.NameServer) > 0 {
+				dnsResolved = true
+				resolver.Name = "___resolver-" + rand.Characters(10)
+
+				for i := range resolver.NameServer {
+					if len(resolver.NameServer[i].Mode) > 0 {
+						resolver.NameServer[i].Mode = "dnsmasq"
+					}
+				}
+
+				lbc.Parsed.DNSResolvers = append(lbc.Parsed.DNSResolvers, resolver)
+
+				eps = append(eps, &Endpoint{
+					Name:         "server-ext-" + service.Spec.ExternalName,
+					ExternalName: name,
+					ExternalServiceOptions: ExternalServiceOptions{
+						Resolver: resolver.Name,
+					},
+				})
+			} else {
+				log.Errorln("Failed to parse dns resolver", err)
+			}
+		}
+
+		if !dnsResolved {
+			log.Infoln("DNS resolver not configured, using redirect")
+			eps = append(eps, &Endpoint{
+				Name:             "server-ext-" + service.Spec.ExternalName,
+				ExternalName:     name,
+				ExternalRedirect: true,
+			})
+		}
+		return eps, nil
+	} else {
+		if !portFound {
+			log.Warningln("service port unavailable")
+			return nil, goerr.New("service port unavailable")
+		}
+		return lbc.getEndpoints(service, p, hostNames)
 	}
-	return lbc.getEndpoints(service, p, hostNames)
 }
 
 func (lbc *EngressController) getEndpoints(s *kapi.Service, servicePort *kapi.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
@@ -200,6 +249,9 @@ func getTargetPort(servicePort *kapi.ServicePort) int {
 func (lbc *EngressController) parseSpec() {
 	log.Infoln("Parsing Engress specs")
 	lbc.Ports = make([]int, 0)
+
+	lbc.Parsed.DNSResolvers = make([]*DNSResolver, 0)
+
 	if lbc.Resource.Spec.Backend != nil {
 		log.Debugln("generating default backend", lbc.Resource.Spec.Backend.RewriteRule, lbc.Resource.Spec.Backend.HeaderRule)
 		eps, _ := lbc.serviceEndpoints(lbc.Resource.Spec.Backend.ServiceName, lbc.Resource.Spec.Backend.ServicePort, lbc.Resource.Spec.Backend.HostNames)
