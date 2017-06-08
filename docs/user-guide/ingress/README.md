@@ -81,7 +81,7 @@ AppsCode Ingress have some global configurations passed via the `annotaion` fiel
 and those configuration will be applicable on loadbalancer globally. Annotation keys and its actions are as follows:
 
 ```
-ingress.appscode.com/stickySession         = indicates the session affinity for the traffic, is set
+ingress.appscode.com/sticky-session         = indicates the session affinity for the traffic, is set
                                       session affinity will apply to all the rulses set.
                                       defaults to false
 

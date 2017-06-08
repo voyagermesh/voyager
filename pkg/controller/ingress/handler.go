@@ -439,7 +439,7 @@ func isStatsChanged(old annotation, new annotation) bool {
 func (lbc *EngressController) isKeepSourceChanged(old annotation, new annotation) bool {
 	return lbc.Options.ProviderName == "aws" &&
 		lbc.Options.LBType == LBTypeLoadBalancer &&
-		isMapKeyChanged(old, new, LoadBalancerKeepSourceIP)
+		isMapKeyChanged(old, new, KeepSourceIP)
 }
 
 func isMapKeyChanged(oldMap map[string]string, newMap map[string]string, key string) bool {

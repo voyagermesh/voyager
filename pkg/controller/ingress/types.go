@@ -18,7 +18,7 @@ import (
 const (
 	VoyagerPrefix = "voyager-"
 
-	stickySession = aci.EngressKey + "/" + "stickySession"
+	stickySession = aci.EngressKey + "/" + "sticky-session"
 
 	// LB stats options
 	StatsOn          = aci.EngressKey + "/" + "stats"
@@ -46,21 +46,21 @@ const (
 	// Uses nodeport and Cloud LoadBalancer exists beyond single HAProxy run
 	LoadBalancerPersist = aci.EngressKey + "/" + "persist" // "" or IP or non-empty
 
-	// LoadBalancerBackendWeightKey is the weight value of a Pod that was
+	// BackendWeight is the weight value of a Pod that was
 	// addressed by the Endpoint, this weight will be added to server backend.
 	// Traffic will be forwarded according to there weight.
-	LoadBalancerBackendWeight = aci.EngressKey + "/" + "backend-weight"
+	BackendWeight = aci.EngressKey + "/" + "backend-weight"
 
 	// https://github.com/appscode/voyager/issues/103
-	// LoadBalancerServiceAnnotation is user provided annotations map that will be
+	// ServiceAnnotations is user provided annotations map that will be
 	// applied to the service of that LoadBalancer.
 	// ex: "ingress.appscode.com/service.annotation": {"key": "val"}
-	LoadBalancerServiceAnnotations = aci.EngressKey + "/" + "annotations-service"
+	ServiceAnnotations = aci.EngressKey + "/" + "annotations-service"
 
-	// LoadBalancerPodsAnnotation is user provided annotations map that will be
+	// PodAnnotations is user provided annotations map that will be
 	// applied to the Pods (Deployment/ DaemonSet) of that LoadBalancer.
 	// ex: "ingress.appscode.com/service.annotation": {"key": "val"}
-	LoadBalancerPodAnnotations = aci.EngressKey + "/" + "annotations-pod"
+	PodAnnotations = aci.EngressKey + "/" + "annotations-pod"
 
 	// Preserves source IP for LoadBalancer type ingresses. The actual configuration
 	// generated depends on the underlying cloud provider.
@@ -82,7 +82,7 @@ const (
 	// usable. See also "tcp-request connection expect-proxy" for a finer-grained
 	// setting of which client is allowed to use the protocol.
 	// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
-	LoadBalancerKeepSourceIP = aci.EngressKey + "/" + "keep-source-ip"
+	KeepSourceIP = aci.EngressKey + "/" + "keep-source-ip"
 
 	// Annotations applied to resources offshoot from an ingress
 	OriginAPISchema = aci.EngressKey + "/" + "origin-api-schema" // APISchema = {APIGroup}/{APIVersion}
@@ -159,7 +159,7 @@ func (s annotation) LoadBalancerPersist() string {
 }
 
 func (s annotation) ServiceAnnotations(provider, lbType string) (map[string]string, bool) {
-	m, ok := getTargetAnnotations(s, LoadBalancerServiceAnnotations)
+	m, ok := getTargetAnnotations(s, ServiceAnnotations)
 	if ok && lbType == LBTypeLoadBalancer && s.KeepSourceIP() {
 		switch provider {
 		case "aws":
@@ -174,11 +174,11 @@ func (s annotation) ServiceAnnotations(provider, lbType string) (map[string]stri
 }
 
 func (s annotation) PodsAnnotations() (map[string]string, bool) {
-	return getTargetAnnotations(s, LoadBalancerPodAnnotations)
+	return getTargetAnnotations(s, PodAnnotations)
 }
 
 func (s annotation) KeepSourceIP() bool {
-	v, _ := s[LoadBalancerKeepSourceIP]
+	v, _ := s[KeepSourceIP]
 	return strings.ToLower(v) == "true"
 }
 

@@ -988,7 +988,7 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 						"app-version": "v1",
 					},
 					Annotations: map[string]string{
-						ingress.LoadBalancerBackendWeight: "90",
+						ingress.BackendWeight: "90",
 					},
 				},
 				Spec: api.PodSpec{
@@ -1042,7 +1042,7 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 						"app-version": "v2",
 					},
 					Annotations: map[string]string{
-						ingress.LoadBalancerBackendWeight: "10",
+						ingress.BackendWeight: "10",
 					},
 				},
 				Spec: api.PodSpec{
@@ -1391,8 +1391,8 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 			Annotations: map[string]string{
-				ingress.LoadBalancerServiceAnnotations: `{"foo": "bar", "service-annotation": "set"}`,
-				ingress.LoadBalancerPodAnnotations:     `{"foo": "bar", "pod-annotation": "set"}`,
+				ingress.ServiceAnnotations: `{"foo": "bar", "service-annotation": "set"}`,
+				ingress.PodAnnotations:     `{"foo": "bar", "pod-annotation": "set"}`,
 			},
 		},
 		Spec: aci.ExtendedIngressSpec{
@@ -1489,7 +1489,7 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
 	}
-	ings.Annotations[ingress.LoadBalancerServiceAnnotations] = `{"bar": "foo", "second-service-annotation": "set"}`
+	ings.Annotations[ingress.ServiceAnnotations] = `{"bar": "foo", "second-service-annotation": "set"}`
 	ings, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Update(ings)
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
@@ -1546,7 +1546,7 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
 	}
-	ings.Annotations[ingress.LoadBalancerPodAnnotations] = `{"bar": "foo", "second-pod-annotation": "set"}`
+	ings.Annotations[ingress.PodAnnotations] = `{"bar": "foo", "second-pod-annotation": "set"}`
 	ings, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Update(ings)
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
@@ -1785,7 +1785,7 @@ func (ing *IngressTestSuit) TestIngressKeepSource() error {
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 			Annotations: map[string]string{
-				ingress.LoadBalancerKeepSourceIP: "true",
+				ingress.KeepSourceIP: "true",
 			},
 		},
 		Spec: aci.ExtendedIngressSpec{
@@ -1860,7 +1860,7 @@ func (ing *IngressTestSuit) TestIngressLBSourceRange() error {
 			Name:      testIngressName(),
 			Namespace: ing.t.Config.TestNamespace,
 			Annotations: map[string]string{
-				ingress.LoadBalancerKeepSourceIP: "true",
+				ingress.KeepSourceIP: "true",
 			},
 		},
 		Spec: aci.ExtendedIngressSpec{
