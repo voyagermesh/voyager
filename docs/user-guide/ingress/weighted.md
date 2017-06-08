@@ -11,7 +11,7 @@ metadata:
     app: deployment
     app-version: v1
   annotations:
-    ingress.appscode.com/backend.weight: "90"
+    ingress.appscode.com/backend-weight: "90"
   name: deploymet-1
   namespace: default
 spec:
@@ -26,7 +26,7 @@ spec:
         app: deployment
         app-version: v1
       annotations:
-          ingress.appscode.com/backend.weight: "90"
+          ingress.appscode.com/backend-weight: "90"
     spec:
       containers:
       - env:
@@ -50,7 +50,7 @@ metadata:
     app: deployment
     app-version: v2
   annotations:
-      ingress.appscode.com/backend.weight: "10"
+      ingress.appscode.com/backend-weight: "10"
   name: deploymet-2
   namespace: default
 spec:
@@ -65,7 +65,7 @@ spec:
         app: deployment
         app-version: v2
       annotations:
-            ingress.appscode.com/backend.weight: "10"
+            ingress.appscode.com/backend-weight: "10"
     spec:
       containers:
       - env:
@@ -84,7 +84,7 @@ spec:
 
 ```
 
-Two different workload with the annotation `ingress.appscode.com/backend.weight` and one single service pointing to them
+Two different workload with the annotation `ingress.appscode.com/backend-weight` and one single service pointing to them
 
 ```yaml
 apiVersion: v1
