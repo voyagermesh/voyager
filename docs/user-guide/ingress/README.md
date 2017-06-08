@@ -92,7 +92,7 @@ ingress.appscode.com/type                  = indicates type of service used to e
 
 ingress.appscode.com/replicas              = indicates number of replicas of HAProxy is run. The default value is 1.
 
-ingress.appscode.com/nodeSelector          = This nodeSelector will indicate which host the HAProxy is going to run. This is 
+ingress.appscode.com/node-selector          = This nodeSelector will indicate which host the HAProxy is going to run. This is 
                                             a required annotation for `HostPort` type ingress. The value of this annotation should 
                                             be formatted as `foo=bar,foo2=bar2`. This used to be called `ingress.appscode.com/daemon.nodeSelector`.
                                             We recommend you use the new key going forward. Any existing ingress with previous annotation
@@ -117,10 +117,10 @@ ingress.appscode.com/stats.secretName      = if the stats is on then this kubern
                                       and `password` which will be used.
 
 
-ingress.appscode.com/annotations.service   = Json encoded annotations to be applied in LoadBalancer Service
+ingress.appscode.com/annotations-service   = Json encoded annotations to be applied in LoadBalancer Service
 
 
-ingress.appscode.com/annotations.pod       = Json encoded annotations to be applied in LoadBalancer Pods
+ingress.appscode.com/annotations-pod       = Json encoded annotations to be applied in LoadBalancer Pods
 
 The following annotations can be applied in an Ingress if we want to manage Certificate with the
 same ingress resource. Learn more by reading the certificate doc.

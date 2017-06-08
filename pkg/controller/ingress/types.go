@@ -41,7 +41,7 @@ const (
 	LBTypeLoadBalancer = "LoadBalancer" // default
 
 	// Runs HAProxy on a specific set of a hosts.
-	NodeSelector = AnnotationPrefix + "nodeSelector"
+	NodeSelector = AnnotationPrefix + "node-selector"
 
 	// Replicas specify # of HAProxy pods run (default 1)
 	Replicas = AnnotationPrefix + "replicas"
@@ -53,18 +53,18 @@ const (
 	// LoadBalancerBackendWeightKey is the weight value of a Pod that was
 	// addressed by the Endpoint, this weight will be added to server backend.
 	// Traffic will be forwarded according to there weight.
-	LoadBalancerBackendWeight = AnnotationPrefix + "backend.weight"
+	LoadBalancerBackendWeight = AnnotationPrefix + "backend-weight"
 
 	// https://github.com/appscode/voyager/issues/103
 	// LoadBalancerServiceAnnotation is user provided annotations map that will be
 	// applied to the service of that LoadBalancer.
 	// ex: "ingress.appscode.com/service.annotation": {"key": "val"}
-	LoadBalancerServiceAnnotation = AnnotationPrefix + "annotations.service"
+	LoadBalancerServiceAnnotation = AnnotationPrefix + "annotations-service"
 
 	// LoadBalancerPodsAnnotation is user provided annotations map that will be
 	// applied to the Pods (Deployment/ DaemonSet) of that LoadBalancer.
 	// ex: "ingress.appscode.com/service.annotation": {"key": "val"}
-	LoadBalancerPodsAnnotation = AnnotationPrefix + "annotations.pod"
+	LoadBalancerPodsAnnotation = AnnotationPrefix + "annotations-pod"
 
 	// Preserves source IP for LoadBalancer type ingresses. The actual configuration
 	// generated depends on the underlying cloud provider.
@@ -89,8 +89,8 @@ const (
 	LoadBalancerKeepSourceIP = AnnotationPrefix + "keep-source-ip"
 
 	// annotations applied to created resources for any ingress
-	LoadBalancerSourceAPIGroup = AnnotationPrefix + "source.apiGroup"
-	LoadBalancerSourceName     = AnnotationPrefix + "source.name"
+	LoadBalancerSourceAPIGroup = AnnotationPrefix + "source-api-group"
+	LoadBalancerSourceName     = AnnotationPrefix + "source-name"
 )
 
 type annotation map[string]string

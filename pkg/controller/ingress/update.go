@@ -261,7 +261,7 @@ func (lbc *EngressController) updateLBSvc() error {
 func (lbc *EngressController) UpdateTargetAnnotations(old annotation, new annotation) error {
 	lbc.parse()
 
-	// Check for changes in ingress.appscode.com/annotations.service
+	// Check for changes in ingress.appscode.com/annotations-service
 	if newSvcAns, newOk := new.ServiceAnnotations(lbc.Options.ProviderName, lbc.Options.LBType); newOk {
 		if oldSvcAns, oldOk := old.ServiceAnnotations(lbc.Options.ProviderName, lbc.Options.LBType); oldOk {
 			if !reflect.DeepEqual(oldSvcAns, newSvcAns) {
@@ -279,7 +279,7 @@ func (lbc *EngressController) UpdateTargetAnnotations(old annotation, new annota
 		}
 	}
 
-	// Check for changes in ingress.appscode.com/annotations.pod
+	// Check for changes in ingress.appscode.com/annotations-pod
 	if newPodAns, newOk := new.PodsAnnotations(); newOk {
 		if oldPodAns, oldOk := old.PodsAnnotations(); oldOk {
 			if !reflect.DeepEqual(oldPodAns, newPodAns) {
