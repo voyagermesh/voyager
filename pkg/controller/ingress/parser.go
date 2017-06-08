@@ -161,12 +161,12 @@ func (lbc *EngressController) generateTemplate() error {
 		return errors.FromErr(err).Err()
 	}
 
-	lbc.Options.ConfigData = stringutil.Fmt(r)
+	lbc.ConfigData = stringutil.Fmt(r)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 	log.Infoln("Template genareted for HAProxy")
-	log.Infoln(lbc.Options.ConfigData)
+	log.Infoln(lbc.ConfigData)
 	return nil
 }
 
@@ -199,7 +199,7 @@ func getTargetPort(servicePort *kapi.ServicePort) int {
 
 func (lbc *EngressController) parseSpec() {
 	log.Infoln("Parsing Engress specs")
-	lbc.Options.Ports = make([]int, 0)
+	lbc.Ports = make([]int, 0)
 	if lbc.Resource.Spec.Backend != nil {
 		log.Debugln("generating default backend", lbc.Resource.Spec.Backend.RewriteRule, lbc.Resource.Spec.Backend.HeaderRule)
 		eps, _ := lbc.serviceEndpoints(lbc.Resource.Spec.Backend.ServiceName, lbc.Resource.Spec.Backend.ServicePort, lbc.Resource.Spec.Backend.HostNames)
@@ -213,10 +213,10 @@ func (lbc *EngressController) parseSpec() {
 		}
 	}
 	if len(lbc.Resource.Spec.TLS) > 0 {
-		lbc.Options.SecretNames = make([]string, 0)
+		lbc.SecretNames = make([]string, 0)
 		lbc.HostFilter = make([]string, 0)
 		for _, secret := range lbc.Resource.Spec.TLS {
-			lbc.Options.SecretNames = append(lbc.Options.SecretNames, secret.SecretName)
+			lbc.SecretNames = append(lbc.SecretNames, secret.SecretName)
 			lbc.HostFilter = append(lbc.HostFilter, secret.Hosts...)
 		}
 	}
@@ -265,7 +265,7 @@ func (lbc *EngressController) parseSpec() {
 
 		// adding tcp service to the parser.
 		for _, tcpSvc := range rule.TCP {
-			lbc.Options.Ports = append(lbc.Options.Ports, tcpSvc.Port.IntValue())
+			lbc.Ports = append(lbc.Ports, tcpSvc.Port.IntValue())
 			def := &TCPService{
 				Name:        "service-" + rand.Characters(6),
 				Host:        host,
@@ -284,17 +284,17 @@ func (lbc *EngressController) parseSpec() {
 			log.Debugln("Got endpoints", len(eps))
 			if len(eps) > 0 && err == nil {
 				lbc.Parsed.TCPService = append(lbc.Parsed.TCPService, def)
-				lbc.Options.SecretNames = append(lbc.Options.SecretNames, def.SecretName)
+				lbc.SecretNames = append(lbc.SecretNames, def.SecretName)
 			}
 		}
 	}
 
 	if httpCount > 0 || (lbc.Resource.Spec.Backend != nil && httpsCount == 0) {
-		lbc.Options.Ports = append(lbc.Options.Ports, 80)
+		lbc.Ports = append(lbc.Ports, 80)
 	}
 
 	if httpsCount > 0 {
-		lbc.Options.Ports = append(lbc.Options.Ports, 443)
+		lbc.Ports = append(lbc.Ports, 443)
 	}
 }
 
@@ -324,7 +324,7 @@ func (lbc *EngressController) parseOptions() {
 		}
 	}
 
-	if lbc.Options.ProviderName == "aws" && lbc.Annotations().LBType() == LBTypeLoadBalancer {
+	if lbc.ProviderName == "aws" && lbc.Annotations().LBType() == LBTypeLoadBalancer {
 		lbc.Parsed.AcceptProxy = lbc.Annotations().KeepSourceIP()
 	}
 }

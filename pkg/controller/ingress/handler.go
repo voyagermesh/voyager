@@ -28,13 +28,11 @@ func NewEngressController(clusterName, providerName string,
 	store *stash.Storage,
 	ingressClass string) *EngressController {
 	h := &EngressController{
-		KubeClient: kubeClient,
-		Storage:    store,
-		ExtClient:  extClient,
-		Options: &KubeOptions{
-			ClusterName:  clusterName,
-			ProviderName: providerName,
-		},
+		KubeClient:   kubeClient,
+		Storage:      store,
+		ExtClient:    extClient,
+		ClusterName:  clusterName,
+		ProviderName: providerName,
 		// Parsed must be set to an empty Options struct. parse()
 		// expects it to be set.
 		Parsed:        &HAProxyOptions{},
@@ -170,7 +168,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 					}
 
 					var updateFW bool
-					for _, p := range lbc.Options.Ports {
+					for _, p := range lbc.Ports {
 						if _, ok := curPorts[p]; !ok {
 							updateFW = true // new port has to be opened
 							break
@@ -437,7 +435,7 @@ func isStatsChanged(old annotation, new annotation) bool {
 }
 
 func (lbc *EngressController) isKeepSourceChanged(old annotation, new annotation) bool {
-	return lbc.Options.ProviderName == "aws" &&
+	return lbc.ProviderName == "aws" &&
 		lbc.Annotations().LBType() == LBTypeLoadBalancer &&
 		isMapKeyChanged(old, new, KeepSourceIP)
 }

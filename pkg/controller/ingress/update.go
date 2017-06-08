@@ -80,9 +80,9 @@ func (lbc *EngressController) updateConfigMap() error {
 		cMap.Annotations[OriginName] = lbc.Resource.GetName()
 	}
 
-	if cMap.Data["haproxy.cfg"] != lbc.Options.ConfigData {
+	if cMap.Data["haproxy.cfg"] != lbc.ConfigData {
 		log.Infoln("Specs have been changed updating config map data for HAProxy templates")
-		cMap.Data["haproxy.cfg"] = lbc.Options.ConfigData
+		cMap.Data["haproxy.cfg"] = lbc.ConfigData
 
 		_, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Update(cMap)
 		if err != nil {
@@ -113,7 +113,7 @@ func (lbc *EngressController) recreatePods() error {
 			return errors.FromErr(err).Err()
 		}
 	} else {
-		if lbc.Options.SupportsLoadBalancerType() {
+		if lbc.SupportsLoadBalancerType() {
 			// Ignore Error.
 			lbc.deleteResidualPods()
 			err := lbc.deleteNodePortPods()
@@ -125,7 +125,7 @@ func (lbc *EngressController) recreatePods() error {
 				return errors.FromErr(err).Err()
 			}
 		} else {
-			return errors.New("LoadBalancer type ingress is unsupported for cloud provider:", lbc.Options.ProviderName).Err()
+			return errors.New("LoadBalancer type ingress is unsupported for cloud provider:", lbc.ProviderName).Err()
 		}
 	}
 	return nil
@@ -141,7 +141,7 @@ func (lbc *EngressController) updateLBSvc() error {
 		curPorts[p.Port] = p
 	}
 	svc.Spec.Ports = make([]kapi.ServicePort, 0)
-	for _, port := range lbc.Options.Ports {
+	for _, port := range lbc.Ports {
 		if sp, found := curPorts[int32(port)]; found {
 			svc.Spec.Ports = append(svc.Spec.Ports, sp)
 		} else {
@@ -248,7 +248,7 @@ func (lbc *EngressController) updateLBSvc() error {
 			log.Infoln("Loadbalancer interface found, calling UpdateLoadBalancer() with", svc, "and host", hosts)
 			convertedSvc := &kapi.Service{}
 			kapi.Scheme.Convert(svc, convertedSvc, nil)
-			err := lb.UpdateLoadBalancer(lbc.Options.ClusterName, convertedSvc, hosts)
+			err := lb.UpdateLoadBalancer(lbc.ClusterName, convertedSvc, hosts)
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
@@ -262,8 +262,8 @@ func (lbc *EngressController) UpdateTargetAnnotations(old annotation, new annota
 	lbc.parse()
 
 	// Check for changes in ingress.appscode.com/annotations-service
-	if newSvcAns, newOk := new.ServiceAnnotations(lbc.Options.ProviderName, lbc.Annotations().LBType()); newOk {
-		if oldSvcAns, oldOk := old.ServiceAnnotations(lbc.Options.ProviderName, lbc.Annotations().LBType()); oldOk {
+	if newSvcAns, newOk := new.ServiceAnnotations(lbc.ProviderName, lbc.Annotations().LBType()); newOk {
+		if oldSvcAns, oldOk := old.ServiceAnnotations(lbc.ProviderName, lbc.Annotations().LBType()); oldOk {
 			if !reflect.DeepEqual(oldSvcAns, newSvcAns) {
 				svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.OffshootName())
 				if err != nil {

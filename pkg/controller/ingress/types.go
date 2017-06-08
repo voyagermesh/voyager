@@ -209,12 +209,23 @@ type EngressController struct {
 	ExtClient    acs.ExtensionInterface
 	CloudManager cloudprovider.Interface
 
+	ClusterName  string
+	ProviderName string
 	HAProxyImage string
 	IngressClass string
 
 	// Engress object that created or updated.
 	Resource *aci.Ingress
-	Options  *KubeOptions
+	// kube options data
+	SecretNames []string
+
+	// contains raw configMap data parsed from the cfg file.
+	ConfigData string
+
+	// Ports contains all the ports needed to be opened for the ingress.
+	// Those ports will be used to open loadbalancer/firewall.
+	// So any interference with underlying endpoints will not cause network update.
+	Ports []int
 	// contains all the https host names.
 	HostFilter []string
 
@@ -245,12 +256,12 @@ type KubeOptions struct {
 	Ports []int
 }
 
-func (o KubeOptions) SupportsLoadBalancerType() bool {
-	return o.ProviderName == "aws" ||
-		o.ProviderName == "gce" ||
-		o.ProviderName == "gke" ||
-		o.ProviderName == "azure" ||
-		o.ProviderName == "minikube"
+func (lbc *EngressController) SupportsLoadBalancerType() bool {
+	return lbc.ProviderName == "aws" ||
+		lbc.ProviderName == "gce" ||
+		lbc.ProviderName == "gke" ||
+		lbc.ProviderName == "azure" ||
+		lbc.ProviderName == "minikube"
 }
 
 type HAProxyOptions struct {

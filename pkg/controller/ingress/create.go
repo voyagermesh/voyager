@@ -1,7 +1,6 @@
 package ingress
 
 import (
-	"encoding/json"
 	"net"
 	"strconv"
 	"strings"
@@ -24,10 +23,6 @@ func (lbc *EngressController) Create() error {
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
-	if b, err := json.MarshalIndent(lbc.Options, "", "  "); err != nil {
-		log.Infoln("Parsed LB controller options: ", string(b))
-	}
-
 	err = lbc.generateTemplate()
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -93,7 +88,7 @@ func (lbc *EngressController) createConfigMap() error {
 			},
 		},
 		Data: map[string]string{
-			"haproxy.cfg": lbc.Options.ConfigData,
+			"haproxy.cfg": lbc.ConfigData,
 		},
 	}
 	cMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Create(cMap)
@@ -126,7 +121,7 @@ func (lbc *EngressController) createLB() error {
 			return errors.FromErr(err).Err()
 		}
 	} else {
-		if lbc.Options.SupportsLoadBalancerType() {
+		if lbc.SupportsLoadBalancerType() {
 			// deleteResidualPods is a safety checking deletation of previous version RC
 			// This should Ignore error.
 			lbc.deleteResidualPods()
@@ -141,7 +136,7 @@ func (lbc *EngressController) createLB() error {
 			}
 			go lbc.updateStatus()
 		} else {
-			return errors.New("LoadBalancer type ingress is unsupported for cloud provider:", lbc.Options.ProviderName).Err()
+			return errors.New("LoadBalancer type ingress is unsupported for cloud provider:", lbc.ProviderName).Err()
 		}
 	}
 	return nil
@@ -168,7 +163,7 @@ func (lbc *EngressController) createHostPortSvc() error {
 	}
 
 	// opening other tcp ports
-	for _, port := range lbc.Options.Ports {
+	for _, port := range lbc.Ports {
 		p := kapi.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(port),
 			Protocol:   "TCP",
@@ -178,7 +173,7 @@ func (lbc *EngressController) createHostPortSvc() error {
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
 
-	if ans, ok := lbc.Annotations().ServiceAnnotations(lbc.Options.ProviderName, lbc.Annotations().LBType()); ok {
+	if ans, ok := lbc.Annotations().ServiceAnnotations(lbc.ProviderName, lbc.Annotations().LBType()); ok {
 		for k, v := range ans {
 			svc.Annotations[k] = v
 		}
@@ -222,8 +217,8 @@ func (lbc *EngressController) createHostPortPods() error {
 	}
 	log.Infoln("Creating Daemon type lb for nodeSelector = ", lbc.Annotations().NodeSelector())
 
-	vs := Volumes(lbc.Options)
-	vms := VolumeMounts(lbc.Options)
+	vs := Volumes(lbc.SecretNames)
+	vms := VolumeMounts(lbc.SecretNames)
 	// ignoring errors and trying to create controllers
 	daemon := &kepi.DaemonSet{
 		ObjectMeta: kapi.ObjectMeta{
@@ -282,7 +277,7 @@ func (lbc *EngressController) createHostPortPods() error {
 	}
 
 	// adding tcp ports to pod template
-	for _, port := range lbc.Options.Ports {
+	for _, port := range lbc.Ports {
 		p := kapi.ContainerPort{
 			Name:          "tcp-" + strconv.Itoa(port),
 			Protocol:      "TCP",
@@ -336,7 +331,7 @@ func (lbc *EngressController) createNodePortSvc() error {
 	}
 
 	// opening other tcp ports
-	for _, port := range lbc.Options.Ports {
+	for _, port := range lbc.Ports {
 		p := kapi.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(port),
 			Protocol:   "TCP",
@@ -346,13 +341,13 @@ func (lbc *EngressController) createNodePortSvc() error {
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
 
-	if ans, ok := lbc.Annotations().ServiceAnnotations(lbc.Options.ProviderName, lbc.Annotations().LBType()); ok {
+	if ans, ok := lbc.Annotations().ServiceAnnotations(lbc.ProviderName, lbc.Annotations().LBType()); ok {
 		for k, v := range ans {
 			svc.Annotations[k] = v
 		}
 	}
 
-	if lbc.Options.ProviderName == "aws" && lbc.Annotations().KeepSourceIP() {
+	if lbc.ProviderName == "aws" && lbc.Annotations().KeepSourceIP() {
 		// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
 		svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
 	}
@@ -366,8 +361,8 @@ func (lbc *EngressController) createNodePortSvc() error {
 
 func (lbc *EngressController) createNodePortPods() error {
 	log.Infoln("creating NodePort deployment")
-	vs := Volumes(lbc.Options)
-	vms := VolumeMounts(lbc.Options)
+	vs := Volumes(lbc.SecretNames)
+	vms := VolumeMounts(lbc.SecretNames)
 	// ignoring errors and trying to create controllers
 	d := &kepi.Deployment{
 		ObjectMeta: kapi.ObjectMeta{
@@ -424,7 +419,7 @@ func (lbc *EngressController) createNodePortPods() error {
 	}
 
 	// adding tcp ports to pod template
-	for _, port := range lbc.Options.Ports {
+	for _, port := range lbc.Ports {
 		p := kapi.ContainerPort{
 			Name:          "tcp-" + strconv.Itoa(port),
 			Protocol:      "TCP",
@@ -473,7 +468,7 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 	}
 
 	// opening other tcp ports
-	for _, port := range lbc.Options.Ports {
+	for _, port := range lbc.Ports {
 		p := kapi.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(port),
 			Protocol:   "TCP",
@@ -483,13 +478,13 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
 
-	if ans, ok := lbc.Annotations().ServiceAnnotations(lbc.Options.ProviderName, lbc.Annotations().LBType()); ok {
+	if ans, ok := lbc.Annotations().ServiceAnnotations(lbc.ProviderName, lbc.Annotations().LBType()); ok {
 		for k, v := range ans {
 			svc.Annotations[k] = v
 		}
 	}
 
-	switch lbc.Options.ProviderName {
+	switch lbc.ProviderName {
 	case "gce", "gke":
 		svc.Spec.Type = kapi.ServiceTypeLoadBalancer
 		if ip := net.ParseIP(lbc.Annotations().Persist()); ip != nil {
@@ -552,7 +547,7 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 			log.Debugln("loadbalancer for cloud manager updating")
 			convertedSvc := &kapi.Service{}
 			kapi.Scheme.Convert(svc, convertedSvc, nil)
-			_, err = lb.EnsureLoadBalancer(lbc.Options.ClusterName, convertedSvc, hosts) // lbc.Config.Annotations
+			_, err = lb.EnsureLoadBalancer(lbc.ClusterName, convertedSvc, hosts) // lbc.Config.Annotations
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
@@ -645,10 +640,10 @@ func labelsFor(name string) map[string]string {
 	}
 }
 
-func Volumes(o *KubeOptions) []kapi.Volume {
+func Volumes(secretNames []string) []kapi.Volume {
 	skipper := make(map[string]bool)
 	vs := make([]kapi.Volume, 0)
-	for _, s := range o.SecretNames {
+	for _, s := range secretNames {
 		if strings.TrimSpace(s) == "" {
 			continue
 		}
@@ -669,10 +664,10 @@ func Volumes(o *KubeOptions) []kapi.Volume {
 	return vs
 }
 
-func VolumeMounts(o *KubeOptions) []kapi.VolumeMount {
+func VolumeMounts(secretNames []string) []kapi.VolumeMount {
 	skipper := make(map[string]bool)
 	ms := make([]kapi.VolumeMount, 0)
-	for _, s := range o.SecretNames {
+	for _, s := range secretNames {
 		if strings.TrimSpace(s) == "" {
 			continue
 		}
