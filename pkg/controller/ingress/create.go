@@ -11,6 +11,7 @@ import (
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	kapi "k8s.io/kubernetes/pkg/api"
+	kerr "k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	kepi "k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/labels"
@@ -78,35 +79,36 @@ func (lbc *EngressController) ensureResources() {
 
 func (lbc *EngressController) createConfigMap() error {
 	log.Infoln("creating cmap for engress")
-	cMap := &kapi.ConfigMap{
-		ObjectMeta: kapi.ObjectMeta{
-			Name:      lbc.Resource.OffshootName(),
-			Namespace: lbc.Resource.Namespace,
-			Annotations: map[string]string{
-				api.OriginAPISchema: lbc.Resource.APISchema(),
-				api.OriginName:      lbc.Resource.GetName(),
+
+	cm, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
+	if kerr.IsNotFound(err) {
+		cm = &kapi.ConfigMap{
+			ObjectMeta: kapi.ObjectMeta{
+				Name:      lbc.Resource.OffshootName(),
+				Namespace: lbc.Resource.Namespace,
+				Annotations: map[string]string{
+					api.OriginAPISchema: lbc.Resource.APISchema(),
+					api.OriginName:      lbc.Resource.GetName(),
+				},
 			},
-		},
-		Data: map[string]string{
-			"haproxy.cfg": lbc.ConfigData,
-		},
-	}
-	getcMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Get(cMap.Name)
-	if err != nil {
-		cMap, err = lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Create(cMap)
-		if err != nil {
-			return errors.FromErr(err).Err()
+			Data: map[string]string{
+				"haproxy.cfg": lbc.ConfigData,
+			},
 		}
-	} else {
-		getcMap.Annotations = cMap.Annotations
-		getcMap.Data = cMap.Data
-		_, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Update(getcMap)
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
+		_, err = lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Create(cm)
+		return err
+	} else if err != nil {
+		return err
 	}
-	time.Sleep(time.Second * 20)
-	return nil
+	cm.Annotations = map[string]string{
+		api.OriginAPISchema: lbc.Resource.APISchema(),
+		api.OriginName:      lbc.Resource.GetName(),
+	}
+	cm.Data = map[string]string{
+		"haproxy.cfg": lbc.ConfigData,
+	}
+	_, err = lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Update(cm)
+	return err
 }
 
 func (lbc *EngressController) createLB() error {

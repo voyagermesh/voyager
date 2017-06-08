@@ -56,14 +56,12 @@ defaults
     # errorloc 503 https://appscode.com/errors/503
     # errorloc 504 https://appscode.com/errors/504
 
-{% if DNSResolvers %}
 {% for resolver in DNSResolvers %}
 resolvers {{ resolver.Name }}
     {% for ns in resolver.nameserver %}
     nameserver {{ ns.mode }} {{ ns.address}}
     {% endfor %}
 {% endfor %}
-{% endif %}
 
 {% if Stats %}
 listen stats
