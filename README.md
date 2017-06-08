@@ -90,6 +90,15 @@ If you're interested in being a contributor, read [the contribution guide](docs/
 ## Building voyager
 Read [Build Instructions](docs/developer-guide/build.md) to build voyager.
 
+## Versioning Policy
+There are 2 parts to versioning policy:
+ - Operator version: Voyager __does not follow semver__, rather the _major.minor_ version of operator points to the
+Kubernetes client version. You can verify this from the `glide.yaml` file. This means there might be breaking changes
+between point releases of the operator. This generally manifests as changed annotation keys or their meaning.
+Please always check the release notes for upgrade instructions.
+ - TPR version: appscode.com/v1beta1 is considered in beta. This means any changes to the YAML format will be backward
+compatible among different versions of the operator.
+
 ## Acknowledgement
  - docker-library/haproxy https://github.com/docker-library/haproxy
  - kubernetes/contrib https://github.com/kubernetes/contrib/tree/master/service-loadbalancer
