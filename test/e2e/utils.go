@@ -15,10 +15,10 @@ import (
 	"k8s.io/kubernetes/pkg/labels"
 )
 
-func (ing *IngressTestSuit) getURLs(baseIngress *api.Ingress) ([]string, error) {
+func (s *IngressTestSuit) getURLs(baseIngress *api.Ingress) ([]string, error) {
 	serverAddr := make([]string, 0)
 	var err error
-	if ing.t.Config.ProviderName == "minikube" {
+	if s.t.Config.ProviderName == "minikube" {
 		for i := 0; i < maxRetries; i++ {
 			var outputs []byte
 			log.Infoln("Running Command", "`minikube", "service", baseIngress.OffshootName()+" --url`")
@@ -48,7 +48,7 @@ func (ing *IngressTestSuit) getURLs(baseIngress *api.Ingress) ([]string, error) 
 	} else {
 		var svc *kapi.Service
 		for i := 0; i < maxRetries; i++ {
-			svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+			svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 			if err == nil {
 				if len(svc.Status.LoadBalancer.Ingress) != 0 {
 					ips := make([]string, 0)
@@ -98,9 +98,9 @@ func (ing *IngressTestSuit) getURLs(baseIngress *api.Ingress) ([]string, error) 
 	return serverAddr, nil
 }
 
-func (ing *IngressTestSuit) getDaemonURLs(baseIngress *api.Ingress) ([]string, error) {
+func (s *IngressTestSuit) getDaemonURLs(baseIngress *api.Ingress) ([]string, error) {
 	serverAddr := make([]string, 0)
-	nodes, err := ing.t.KubeClient.Core().Nodes().List(kapi.ListOptions{
+	nodes, err := s.t.KubeClient.Core().Nodes().List(kapi.ListOptions{
 		LabelSelector: labels.SelectorFromSet(
 			api.ParseNodeSelector(baseIngress.Annotations[api.NodeSelector]),
 		),
@@ -112,7 +112,7 @@ func (ing *IngressTestSuit) getDaemonURLs(baseIngress *api.Ingress) ([]string, e
 	var svc *kapi.Service
 	var ports []int32
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			if len(svc.Spec.Ports) > 0 {
 				for _, port := range svc.Spec.Ports {

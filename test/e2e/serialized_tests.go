@@ -16,23 +16,23 @@ import (
 // DaemonSet Tests can not run more than once at a time.
 var daemonTestLock sync.Mutex
 
-func (ing *IngressTestSuit) TestIngressDaemonCreate() error {
+func (s *IngressTestSuit) TestIngressDaemonCreate() error {
 	daemonTestLock.Lock()
 	defer daemonTestLock.Unlock()
 
-	if !ing.t.Config.InCluster && ing.t.Config.ProviderName != "minikube" {
+	if !s.t.Config.InCluster && s.t.Config.ProviderName != "minikube" {
 		log.Infoln("Test is Running from outside of cluster skipping test")
 		return nil
 	}
 
 	var nodeSelector = func() string {
-		if ing.t.Config.ProviderName == "minikube" {
+		if s.t.Config.ProviderName == "minikube" {
 			return "kubernetes.io/hostname=minikube"
 		} else {
-			if len(ing.t.Config.DaemonHostName) > 0 {
-				return "kubernetes.io/hostname=" + ing.t.Config.DaemonHostName
+			if len(s.t.Config.DaemonHostName) > 0 {
+				return "kubernetes.io/hostname=" + s.t.Config.DaemonHostName
 			}
-			return "kubernetes.io/hostname=" + ing.t.Config.ClusterName + "-master"
+			return "kubernetes.io/hostname=" + s.t.Config.ClusterName + "-master"
 		}
 		return ""
 	}
@@ -40,7 +40,7 @@ func (ing *IngressTestSuit) TestIngressDaemonCreate() error {
 	baseDaemonIngress := &api.Ingress{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
-			Namespace: ing.t.Config.TestNamespace,
+			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
 				api.LBType:       api.LBTypeHostPort,
 				api.NodeSelector: nodeSelector(),
@@ -67,20 +67,20 @@ func (ing *IngressTestSuit) TestIngressDaemonCreate() error {
 		},
 	}
 
-	_, err := ing.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Create(baseDaemonIngress)
+	_, err := s.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Create(baseDaemonIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		if ing.t.Config.Cleanup {
-			ing.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Delete(baseDaemonIngress.Name)
+		if s.t.Config.Cleanup {
+			s.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Delete(baseDaemonIngress.Name)
 		}
 	}()
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 30)
 	for i := 0; i < maxRetries; i++ {
-		_, err := ing.t.KubeClient.Core().Services(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName())
+		_, err := s.t.KubeClient.Core().Services(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -91,7 +91,7 @@ func (ing *IngressTestSuit) TestIngressDaemonCreate() error {
 		return errors.New().WithCause(err).Err()
 	}
 
-	serverAddr, err := ing.getDaemonURLs(baseDaemonIngress)
+	serverAddr, err := s.getDaemonURLs(baseDaemonIngress)
 	if err != nil {
 		return err
 	}
@@ -114,30 +114,30 @@ func (ing *IngressTestSuit) TestIngressDaemonCreate() error {
 	return nil
 }
 
-func (ing *IngressTestSuit) TestIngressDaemonUpdate() error {
+func (s *IngressTestSuit) TestIngressDaemonUpdate() error {
 	daemonTestLock.Lock()
 	defer daemonTestLock.Unlock()
 
-	if !ing.t.Config.InCluster && ing.t.Config.ProviderName != "minikube" {
+	if !s.t.Config.InCluster && s.t.Config.ProviderName != "minikube" {
 		log.Infoln("Test is Running from outside of cluster skipping test")
 		return nil
 	}
 
 	var nodeSelector = func() string {
-		if ing.t.Config.ProviderName == "minikube" {
+		if s.t.Config.ProviderName == "minikube" {
 			return "kubernetes.io/hostname=minikube"
 		} else {
-			if len(ing.t.Config.DaemonHostName) > 0 {
-				return "kubernetes.io/hostname=" + ing.t.Config.DaemonHostName
+			if len(s.t.Config.DaemonHostName) > 0 {
+				return "kubernetes.io/hostname=" + s.t.Config.DaemonHostName
 			}
-			return "kubernetes.io/hostname=" + ing.t.Config.ClusterName + "-master"
+			return "kubernetes.io/hostname=" + s.t.Config.ClusterName + "-master"
 		}
 		return ""
 	}
 	baseIngress := &api.Ingress{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
-			Namespace: ing.t.Config.TestNamespace,
+			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
 				api.LBType:       api.LBTypeHostPort,
 				api.NodeSelector: nodeSelector(),
@@ -164,20 +164,20 @@ func (ing *IngressTestSuit) TestIngressDaemonUpdate() error {
 		},
 	}
 
-	_, err := ing.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	defer func() {
-		if ing.t.Config.Cleanup {
-			ing.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		if s.t.Config.Cleanup {
+			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 10)
 	for i := 0; i < maxRetries; i++ {
-		_, err := ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		_, err := s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -188,7 +188,7 @@ func (ing *IngressTestSuit) TestIngressDaemonUpdate() error {
 		return err
 	}
 
-	serverAddr, err := ing.getDaemonURLs(baseIngress)
+	serverAddr, err := s.getDaemonURLs(baseIngress)
 	if err != nil {
 		return err
 	}
@@ -209,18 +209,18 @@ func (ing *IngressTestSuit) TestIngressDaemonUpdate() error {
 		}
 	}
 
-	updatedBaseIngress, err := ing.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+	updatedBaseIngress, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	updatedBaseIngress.Spec.Rules[0].HTTP.Paths[0].Path = "/newTestpath"
-	_, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Update(updatedBaseIngress)
+	_, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Update(updatedBaseIngress)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 
 	time.Sleep(time.Second * 30)
-	serverAddr, err = ing.getDaemonURLs(baseIngress)
+	serverAddr, err = s.getDaemonURLs(baseIngress)
 	if err != nil {
 		return err
 	}
@@ -257,12 +257,12 @@ func (ing *IngressTestSuit) TestIngressDaemonUpdate() error {
 	}
 
 	// Open New Port
-	updatedBaseIngress, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+	updatedBaseIngress, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 
-	if ing.t.Config.ProviderName != "minikube" {
+	if s.t.Config.ProviderName != "minikube" {
 		updatedBaseIngress.Spec.Rules[0].HTTP = nil
 		updatedBaseIngress.Spec.Rules[0].TCP = []api.TCPExtendedIngressRuleValue{
 			{
@@ -273,14 +273,14 @@ func (ing *IngressTestSuit) TestIngressDaemonUpdate() error {
 				},
 			},
 		}
-		_, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Update(updatedBaseIngress)
+		_, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Update(updatedBaseIngress)
 		if err != nil {
 			return errors.New().WithCause(err).Err()
 		}
 		time.Sleep(time.Second * 60)
 		found := false
 		for i := 1; i <= maxRetries; i++ {
-			svc, err := ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+			svc, err := s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 			if err != nil {
 				continue
 			}
@@ -302,7 +302,7 @@ func (ing *IngressTestSuit) TestIngressDaemonUpdate() error {
 			return errors.New().WithMessage("Service not found").Err()
 		}
 
-		serverAddr, err = ing.getDaemonURLs(baseIngress)
+		serverAddr, err = s.getDaemonURLs(baseIngress)
 		if err != nil {
 			return err
 		}
@@ -322,23 +322,23 @@ func (ing *IngressTestSuit) TestIngressDaemonUpdate() error {
 	return nil
 }
 
-func (ing *IngressTestSuit) TestIngressDaemonRestart() error {
+func (s *IngressTestSuit) TestIngressDaemonRestart() error {
 	daemonTestLock.Lock()
 	defer daemonTestLock.Unlock()
 
-	if !ing.t.Config.InCluster && ing.t.Config.ProviderName != "minikube" {
+	if !s.t.Config.InCluster && s.t.Config.ProviderName != "minikube" {
 		log.Infoln("Test is Running from outside of cluster skipping test")
 		return nil
 	}
 
 	var nodeSelector = func() string {
-		if ing.t.Config.ProviderName == "minikube" {
+		if s.t.Config.ProviderName == "minikube" {
 			return "kubernetes.io/hostname=minikube"
 		} else {
-			if len(ing.t.Config.DaemonHostName) > 0 {
-				return "kubernetes.io/hostname=" + ing.t.Config.DaemonHostName
+			if len(s.t.Config.DaemonHostName) > 0 {
+				return "kubernetes.io/hostname=" + s.t.Config.DaemonHostName
 			}
-			return "kubernetes.io/hostname=" + ing.t.Config.ClusterName + "-master"
+			return "kubernetes.io/hostname=" + s.t.Config.ClusterName + "-master"
 		}
 		return ""
 	}
@@ -346,7 +346,7 @@ func (ing *IngressTestSuit) TestIngressDaemonRestart() error {
 	baseDaemonIngress := &api.Ingress{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
-			Namespace: ing.t.Config.TestNamespace,
+			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
 				api.LBType:       api.LBTypeHostPort,
 				api.NodeSelector: nodeSelector(),
@@ -373,20 +373,20 @@ func (ing *IngressTestSuit) TestIngressDaemonRestart() error {
 		},
 	}
 
-	_, err := ing.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Create(baseDaemonIngress)
+	_, err := s.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Create(baseDaemonIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		if ing.t.Config.Cleanup {
-			ing.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Delete(baseDaemonIngress.Name)
+		if s.t.Config.Cleanup {
+			s.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Delete(baseDaemonIngress.Name)
 		}
 	}()
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 10)
 	for i := 0; i < maxRetries; i++ {
-		_, err := ing.t.KubeClient.Core().Services(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName())
+		_, err := s.t.KubeClient.Core().Services(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -397,7 +397,7 @@ func (ing *IngressTestSuit) TestIngressDaemonRestart() error {
 		return errors.New().WithCause(err).Err()
 	}
 
-	serverAddr, err := ing.getDaemonURLs(baseDaemonIngress)
+	serverAddr, err := s.getDaemonURLs(baseDaemonIngress)
 	if err != nil {
 		return err
 	}
@@ -420,37 +420,37 @@ func (ing *IngressTestSuit) TestIngressDaemonRestart() error {
 
 	// Teardown and then again create one pod of the backend
 	// And Make sure The DS does not gets deleted.
-	_, err = ing.t.KubeClient.Extensions().DaemonSets(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName())
+	_, err = s.t.KubeClient.Extensions().DaemonSets(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName())
 	if err != nil {
 		return err
 	}
-	rc, err := ing.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name)
+	rc, err := s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 	rc.Spec.Replicas += 1
-	ing.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Update(rc)
+	s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Update(rc)
 
-	rc, err = ing.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name)
+	rc, err = s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 	rc.Spec.Replicas -= 1
-	ing.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Update(rc)
+	s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Update(rc)
 
-	_, err = ing.t.KubeClient.Extensions().DaemonSets(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName())
+	_, err = s.t.KubeClient.Extensions().DaemonSets(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName())
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 
-	rc, err = ing.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name)
+	rc, err = s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 	rc.Spec.Replicas += 1
-	ing.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Update(rc)
+	s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Update(rc)
 
-	_, err = ing.t.KubeClient.Extensions().DaemonSets(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName())
+	_, err = s.t.KubeClient.Extensions().DaemonSets(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName())
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
