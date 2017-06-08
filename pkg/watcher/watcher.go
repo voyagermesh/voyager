@@ -180,8 +180,8 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 	switch e.ResourceType {
 	case events.ConfigMap, events.DaemonSet, events.Deployments, events.Service:
 		if e.EventType.IsDeleted() && e.MetaData.Annotations != nil {
-			sourceName, sourceNameFound := e.MetaData.Annotations[ingresscontroller.LoadBalancerOwnerName]
-			sourceType, sourceTypeFound := e.MetaData.Annotations[ingresscontroller.LoadBalancerOwnerAPIGroup]
+			sourceName, sourceNameFound := e.MetaData.Annotations[ingresscontroller.LoadBalancerOriginName]
+			sourceType, sourceTypeFound := e.MetaData.Annotations[ingresscontroller.LoadBalancerOriginAPIGroup]
 
 			noAnnotationResource := false
 			if !sourceNameFound && !sourceTypeFound {
@@ -241,8 +241,8 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 							if annotation == nil {
 								annotation = make(map[string]string)
 							}
-							annotation[ingresscontroller.LoadBalancerOwnerAPIGroup] = detectedAPIGroup
-							annotation[ingresscontroller.LoadBalancerOwnerName] = sourceName
+							annotation[ingresscontroller.LoadBalancerOriginAPIGroup] = detectedAPIGroup
+							annotation[ingresscontroller.LoadBalancerOriginName] = sourceName
 
 						}
 						metadata.Set(reflect.ValueOf(objectMeta))

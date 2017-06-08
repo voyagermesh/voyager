@@ -86,9 +86,9 @@ const (
 	// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
 	LoadBalancerKeepSourceIP = aci.EngressKey + "/" + "keep-source-ip"
 
-	// annotations applied to created resources for any ingress
-	LoadBalancerOwnerAPIGroup = aci.EngressKey + "/" + "owner-api-group"
-	LoadBalancerOwnerName     = aci.EngressKey + "/" + "owner-name"
+	// Annotations applied to resources offshoot from an ingress
+	LoadBalancerOriginAPIGroup = aci.EngressKey + "/" + "origin-api-group"
+	LoadBalancerOriginName     = aci.EngressKey + "/" + "origin-name"
 )
 
 type annotation map[string]string
