@@ -59,7 +59,7 @@ defaults
 {% if DNSResolvers %}
 {% for resolver in DNSResolvers %}
 resolvers {{ resolver.Name }}
-	{% for ns in resolver.nameserver %}
+    {% for ns in resolver.nameserver %}
     nameserver {{ ns.mode }} {{ ns.address}}
     {% endfor %}
 {% endfor %}
