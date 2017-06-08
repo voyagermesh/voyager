@@ -94,7 +94,9 @@ ingress.appscode.com/replicas              = indicates number of replicas of HAP
 
 ingress.appscode.com/nodeSelector          = This nodeSelector will indicate which host the HAProxy is going to run. This is 
                                             a required annotation for `HostPort` type ingress. The value of this annotation should 
-                                            be formatted as `foo=bar,foo2=bar2`.
+                                            be formatted as `foo=bar,foo2=bar2`. This used to be called `ingress.appscode.com/daemon.nodeSelector`.
+                                            We recommend you use the new key going forward. Any existing ingress with previous annotation
+                                            will continue to function as expected.
 
 ingress.appscode.com/ip                    = This only applies to "gce" and "gke" cloud providers. If set, it will be
                                       assigned loadbalancer used to expose HAProxy. Usually this is set to a static IP preserve DNS configuration.
