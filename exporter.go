@@ -9,7 +9,7 @@ import (
 
 	hpe "github.com/appscode/haproxy_exporter/exporter"
 	"github.com/appscode/pat"
-	"github.com/appscode/voyager/pkg/controller/ingress"
+	"github.com/appscode/voyager/api"
 	"github.com/orcaman/concurrent-map"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -140,16 +140,16 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 }
 
 func getScrapeURL(meta kapi.ObjectMeta, podIP string) (string, error) {
-	if _, ok := meta.Annotations[ingress.StatsOn]; !ok {
+	if _, ok := meta.Annotations[api.StatsOn]; !ok {
 		return "", errors.New("Stats not exposed")
 	}
-	statsPort := ingress.DefaultStatsPort
-	if v, ok := meta.Annotations[ingress.StatsPort]; ok {
+	statsPort := api.DefaultStatsPort
+	if v, ok := meta.Annotations[api.StatsPort]; ok {
 		if port, err := strconv.Atoi(v); err == nil {
 			statsPort = port
 		}
 	}
-	secretName, ok := meta.Annotations[ingress.StatsSecret]
+	secretName, ok := meta.Annotations[api.StatsSecret]
 	if !ok {
 		return fmt.Sprintf("http://%s:%d?stats;csv", podIP, statsPort), nil
 	}

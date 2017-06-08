@@ -9,7 +9,7 @@ import (
 	"github.com/appscode/errors"
 	stringutil "github.com/appscode/go/strings"
 	"github.com/appscode/log"
-	aci "github.com/appscode/voyager/api"
+	"github.com/appscode/voyager/api"
 	_ "github.com/appscode/voyager/api/install"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/events"
@@ -80,9 +80,9 @@ func UpgradeAllEngress(service, clusterName, providerName string,
 		return errors.FromErr(err).Err()
 	}
 
-	items := make([]aci.Ingress, len(ing.Items))
+	items := make([]api.Ingress, len(ing.Items))
 	for i, item := range ing.Items {
-		e, err := aci.NewEngressFromIngress(item)
+		e, err := api.NewEngressFromIngress(item)
 		if err != nil {
 			continue
 		}
@@ -137,7 +137,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 		// convert to extended ingress and then handle
 		engs = make([]interface{}, len(e.RuntimeObj))
 		for i, ing := range e.RuntimeObj {
-			engress, err := aci.NewEngressFromIngress(ing)
+			engress, err := api.NewEngressFromIngress(ing)
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
@@ -146,7 +146,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 	}
 	log.Infoln("Size of engs", len(engs), "Size of RuntimeObj", len(e.RuntimeObj))
 	if e.EventType.IsAdded() {
-		lbc.Resource = engs[0].(*aci.Ingress)
+		lbc.Resource = engs[0].(*api.Ingress)
 		if shouldHandleIngress(lbc.Resource, lbc.IngressClass) {
 			if lbc.IsExists() {
 				// Loadbalancer resource for this ingress is found in its place,
@@ -157,7 +157,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 				// recreate the resource from scratch.
 				log.Infoln("Loadbalancer is exists, trying to update")
 
-				if svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.OffshootName()); err == nil {
+				if svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName()); err == nil {
 					// check port
 					curPorts := make(map[int]int)
 					for _, p := range svc.Spec.Ports {
@@ -193,29 +193,29 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 			lbc.Create()
 		}
 	} else if e.EventType.IsDeleted() {
-		lbc.Resource = engs[0].(*aci.Ingress)
+		lbc.Resource = engs[0].(*api.Ingress)
 		if shouldHandleIngress(lbc.Resource, lbc.IngressClass) {
 			lbc.Delete()
 		}
 	} else if e.EventType.IsUpdated() {
-		lbc.Resource = engs[1].(*aci.Ingress)
-		if !reflect.DeepEqual(engs[0].(*aci.Ingress).ObjectMeta.Annotations, engs[1].(*aci.Ingress).ObjectMeta.Annotations) {
+		lbc.Resource = engs[1].(*api.Ingress)
+		if !reflect.DeepEqual(engs[0].(*api.Ingress).ObjectMeta.Annotations, engs[1].(*api.Ingress).ObjectMeta.Annotations) {
 			// Ingress Annotations Changed, Apply Changes to Targets
 			// The following method do not update to HAProxy config or restart pod. It only sets the annotations
 			// to the required targets.
-			lbc.UpdateTargetAnnotations(engs[0].(*aci.Ingress), engs[1].(*aci.Ingress))
+			lbc.UpdateTargetAnnotations(engs[0].(*api.Ingress), engs[1].(*api.Ingress))
 		}
 
 		updateMode := updateType(0)
-		if lbc.isKeepSourceChanged(engs[0].(*aci.Ingress), engs[1].(*aci.Ingress)) {
+		if lbc.isKeepSourceChanged(engs[0].(*api.Ingress), engs[1].(*api.Ingress)) {
 			updateMode |= UpdateConfig
 		}
 
-		if isStatsChanged(engs[0].(*aci.Ingress), engs[1].(*aci.Ingress)) {
+		if isStatsChanged(engs[0].(*api.Ingress), engs[1].(*api.Ingress)) {
 			updateMode |= UpdateStats
 		}
 
-		if !reflect.DeepEqual(engs[0].(*aci.Ingress).Spec, engs[1].(*aci.Ingress).Spec) {
+		if !reflect.DeepEqual(engs[0].(*api.Ingress).Spec, engs[1].(*api.Ingress).Spec) {
 			if shouldHandleIngress(lbc.Resource, lbc.IngressClass) {
 				if isNewPortChanged(engs[0], engs[1]) || isLoadBalancerSourceRangeChanged(engs[0], engs[1]) {
 					updateMode |= UpdateFirewall
@@ -256,9 +256,9 @@ const (
 
 // if ingressClass == "voyager", then only handle ingress that has voyager annotation
 // if ingressClass == "", then handle no annotaion or voyager annotation
-func shouldHandleIngress(resource *aci.Ingress, ingressClass string) bool {
+func shouldHandleIngress(resource *api.Ingress, ingressClass string) bool {
 	// https://github.com/appscode/voyager/blob/master/api/conversion_v1beta1.go#L44
-	if resource.Annotations[aci.APISchema] == aci.EngressKey+"/"+aci.V1beta1SchemeGroupVersion.Version {
+	if resource.Annotations[api.APISchema] == api.EngressKey+"/"+api.V1beta1SchemeGroupVersion.Version {
 		// Resource Type is Extended Ingress So we should always Handle this
 		return true
 	}
@@ -266,12 +266,12 @@ func shouldHandleIngress(resource *aci.Ingress, ingressClass string) bool {
 	return kubeAnnotation == ingressClass || kubeAnnotation == ingressClassAnnotationValue
 }
 
-func ensureServiceAnnotations(client clientset.Interface, ing *aci.Ingress, namespace, name string) {
+func ensureServiceAnnotations(client clientset.Interface, ing *api.Ingress, namespace, name string) {
 	svc, err := client.Core().Services(namespace).Get(name)
 	if err == nil {
 		if ok, _, _ := isEngressHaveService(ing, name+"."+namespace); ok {
 			list := &IngressValueList{}
-			val, ok := svc.Annotations[aci.EngressKey]
+			val, ok := svc.Annotations[api.EngressKey]
 			if ok {
 				err := json.Unmarshal([]byte(val), list)
 				if err == nil {
@@ -302,13 +302,13 @@ func ensureServiceAnnotations(client clientset.Interface, ing *aci.Ingress, name
 				if svc.Annotations == nil {
 					svc.Annotations = make(map[string]string)
 				}
-				svc.Annotations[aci.EngressKey] = string(data)
+				svc.Annotations[api.EngressKey] = string(data)
 			}
 
 			client.Core().Services(namespace).Update(svc)
 		} else {
 			// Lets check if service still have the annotation for this ingress.
-			val, ok := svc.Annotations[aci.EngressKey]
+			val, ok := svc.Annotations[api.EngressKey]
 			if ok {
 				list := &IngressValueList{}
 				err := json.Unmarshal([]byte(val), list)
@@ -324,7 +324,7 @@ func ensureServiceAnnotations(client clientset.Interface, ing *aci.Ingress, name
 						if svc.Annotations == nil {
 							svc.Annotations = make(map[string]string)
 						}
-						svc.Annotations[aci.EngressKey] = string(data)
+						svc.Annotations[api.EngressKey] = string(data)
 					}
 				}
 				client.Core().Services(namespace).Update(svc)
@@ -334,8 +334,8 @@ func ensureServiceAnnotations(client clientset.Interface, ing *aci.Ingress, name
 }
 
 func isNewPortChanged(old interface{}, new interface{}) bool {
-	o := old.(*aci.Ingress)
-	n := new.(*aci.Ingress)
+	o := old.(*api.Ingress)
+	n := new.(*api.Ingress)
 
 	oldPortLists := make([]string, 0)
 	for _, rs := range o.Spec.Rules {
@@ -355,8 +355,8 @@ func isNewPortChanged(old interface{}, new interface{}) bool {
 }
 
 func isNewSecretAdded(old interface{}, new interface{}) bool {
-	o := old.(*aci.Ingress)
-	n := new.(*aci.Ingress)
+	o := old.(*api.Ingress)
+	n := new.(*api.Ingress)
 
 	oldSecretLists := make([]string, 0)
 	for _, rs := range o.Spec.TLS {
@@ -384,8 +384,8 @@ func isNewSecretAdded(old interface{}, new interface{}) bool {
 }
 
 func isLoadBalancerSourceRangeChanged(old interface{}, new interface{}) bool {
-	oldObj, oldOk := old.(*aci.Ingress)
-	newObj, newOk := new.(*aci.Ingress)
+	oldObj, oldOk := old.(*api.Ingress)
+	newObj, newOk := new.(*api.Ingress)
 
 	if oldOk && newOk {
 		oldipset := make(map[string]bool)
@@ -424,17 +424,17 @@ func ipnet(spec string) (string, bool) {
 	return ipnet.String(), true
 }
 
-func isStatsChanged(old *aci.Ingress, new *aci.Ingress) bool {
-	return isMapKeyChanged(old.Annotations, new.Annotations, StatsOn) ||
-		isMapKeyChanged(old.Annotations, new.Annotations, StatsPort) ||
-		isMapKeyChanged(old.Annotations, new.Annotations, StatsServiceName) ||
-		isMapKeyChanged(old.Annotations, new.Annotations, StatsSecret)
+func isStatsChanged(old *api.Ingress, new *api.Ingress) bool {
+	return isMapKeyChanged(old.Annotations, new.Annotations, api.StatsOn) ||
+		isMapKeyChanged(old.Annotations, new.Annotations, api.StatsPort) ||
+		isMapKeyChanged(old.Annotations, new.Annotations, api.StatsServiceName) ||
+		isMapKeyChanged(old.Annotations, new.Annotations, api.StatsSecret)
 }
 
-func (lbc *EngressController) isKeepSourceChanged(old *aci.Ingress, new *aci.Ingress) bool {
+func (lbc *EngressController) isKeepSourceChanged(old *api.Ingress, new *api.Ingress) bool {
 	return lbc.ProviderName == "aws" &&
-		lbc.Resource.LBType() == LBTypeLoadBalancer &&
-		isMapKeyChanged(old.Annotations, new.Annotations, KeepSourceIP)
+		lbc.Resource.LBType() == api.LBTypeLoadBalancer &&
+		isMapKeyChanged(old.Annotations, new.Annotations, api.KeepSourceIP)
 }
 
 func isMapKeyChanged(oldMap map[string]string, newMap map[string]string, key string) bool {
@@ -443,7 +443,7 @@ func isMapKeyChanged(oldMap map[string]string, newMap map[string]string, key str
 	return oldOk != newOk || oldValue != newValue
 }
 
-func isEngressHaveService(ing *aci.Ingress, service string) (bool, string, string) {
+func isEngressHaveService(ing *api.Ingress, service string) (bool, string, string) {
 	serviceNotWithDefault := service
 	if strings.HasSuffix(serviceNotWithDefault, "."+ing.Namespace) {
 		serviceNotWithDefault = serviceNotWithDefault[:strings.Index(serviceNotWithDefault, "."+ing.Namespace)]

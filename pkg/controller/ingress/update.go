@@ -7,7 +7,7 @@ import (
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
-	aci "github.com/appscode/voyager/api"
+	"github.com/appscode/voyager/api"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/util/intstr"
@@ -64,7 +64,7 @@ func (lbc *EngressController) Update(t updateType) error {
 }
 
 func (lbc *EngressController) updateConfigMap() error {
-	cMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Get(lbc.OffshootName())
+	cMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -73,12 +73,12 @@ func (lbc *EngressController) updateConfigMap() error {
 		// This is a safety check, annotations will not be nil
 		cMap.Annotations = make(map[string]string)
 	}
-	_, sourceNameFound := cMap.Annotations[OriginName]
-	_, sourceTypeFound := cMap.Annotations[OriginAPISchema]
+	_, sourceNameFound := cMap.Annotations[api.OriginName]
+	_, sourceTypeFound := cMap.Annotations[api.OriginAPISchema]
 	if !sourceNameFound && !sourceTypeFound {
 		// Old version object
-		cMap.Annotations[OriginAPISchema] = lbc.APISchema()
-		cMap.Annotations[OriginName] = lbc.Resource.GetName()
+		cMap.Annotations[api.OriginAPISchema] = lbc.Resource.APISchema()
+		cMap.Annotations[api.OriginName] = lbc.Resource.GetName()
 	}
 
 	if cMap.Data["haproxy.cfg"] != lbc.ConfigData {
@@ -95,7 +95,7 @@ func (lbc *EngressController) updateConfigMap() error {
 }
 
 func (lbc *EngressController) recreatePods() error {
-	if lbc.Resource.LBType() == LBTypeDaemon || lbc.Resource.LBType() == LBTypeHostPort {
+	if lbc.Resource.LBType() == api.LBTypeDaemon || lbc.Resource.LBType() == api.LBTypeHostPort {
 		err := lbc.deleteHostPortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -104,7 +104,7 @@ func (lbc *EngressController) recreatePods() error {
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
-	} else if lbc.Resource.LBType() == LBTypeNodePort {
+	} else if lbc.Resource.LBType() == api.LBTypeNodePort {
 		err := lbc.deleteNodePortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -133,7 +133,7 @@ func (lbc *EngressController) recreatePods() error {
 }
 
 func (lbc *EngressController) updateLBSvc() error {
-	svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.OffshootName())
+	svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -164,12 +164,12 @@ func (lbc *EngressController) updateLBSvc() error {
 		// This is a safety check, annotations will not be nil
 		svc.Annotations = make(map[string]string)
 	}
-	_, sourceNameFound := svc.Annotations[OriginName]
-	_, sourceTypeFound := svc.Annotations[OriginAPISchema]
+	_, sourceNameFound := svc.Annotations[api.OriginName]
+	_, sourceTypeFound := svc.Annotations[api.OriginAPISchema]
 	if !sourceNameFound && !sourceTypeFound {
 		// Old version object
-		svc.Annotations[OriginAPISchema] = lbc.APISchema()
-		svc.Annotations[OriginName] = lbc.Resource.GetName()
+		svc.Annotations[api.OriginAPISchema] = lbc.Resource.APISchema()
+		svc.Annotations[api.OriginName] = lbc.Resource.GetName()
 	}
 
 	svc, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Update(svc)
@@ -179,7 +179,7 @@ func (lbc *EngressController) updateLBSvc() error {
 
 	// open up firewall
 	log.Infoln("Loadbalancer CloudManager", lbc.CloudManager, "serviceType", svc.Spec.Type)
-	if (lbc.Resource.LBType() == LBTypeDaemon || lbc.Resource.LBType() == LBTypeHostPort) && lbc.CloudManager != nil {
+	if (lbc.Resource.LBType() == api.LBTypeDaemon || lbc.Resource.LBType() == api.LBTypeHostPort) && lbc.CloudManager != nil {
 		daemonNodes, err := lbc.KubeClient.Core().Nodes().List(kapi.ListOptions{
 			LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Resource.NodeSelector())),
 		})
@@ -204,7 +204,7 @@ func (lbc *EngressController) updateLBSvc() error {
 				log.Debugln("getting firewalls for cloud manager failed")
 			}
 		}
-	} else if lbc.Resource.LBType() == LBTypeLoadBalancer &&
+	} else if lbc.Resource.LBType() == api.LBTypeLoadBalancer &&
 		svc.Spec.Type == kapi.ServiceTypeNodePort &&
 		lbc.CloudManager != nil {
 		log.Infof("Service Type is %s, needs to update underlying cloud loadbalancers", svc.Spec.Type)
@@ -212,7 +212,7 @@ func (lbc *EngressController) updateLBSvc() error {
 			// Wait for nodePort to be assigned
 			timeoutAt := time.Now().Add(time.Second * 600)
 			for {
-				svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.OffshootName())
+				svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
 				if err != nil {
 					return errors.FromErr(err).Err()
 				}
@@ -259,14 +259,14 @@ func (lbc *EngressController) updateLBSvc() error {
 	return nil
 }
 
-func (lbc *EngressController) UpdateTargetAnnotations(old *aci.Ingress, new *aci.Ingress) error {
+func (lbc *EngressController) UpdateTargetAnnotations(old *api.Ingress, new *api.Ingress) error {
 	lbc.parse()
 
 	// Check for changes in ingress.appscode.com/annotations-service
 	if newSvcAns, newOk := new.ServiceAnnotations(lbc.ProviderName); newOk {
 		if oldSvcAns, oldOk := old.ServiceAnnotations(lbc.ProviderName); oldOk {
 			if !reflect.DeepEqual(oldSvcAns, newSvcAns) {
-				svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.OffshootName())
+				svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
 				if err != nil {
 					return errors.FromErr(err).Err()
 				}
@@ -284,8 +284,8 @@ func (lbc *EngressController) UpdateTargetAnnotations(old *aci.Ingress, new *aci
 	if newPodAns, newOk := new.PodsAnnotations(); newOk {
 		if oldPodAns, oldOk := old.PodsAnnotations(); oldOk {
 			if !reflect.DeepEqual(oldPodAns, newPodAns) {
-				if lbc.Resource.LBType() == LBTypeDaemon || lbc.Resource.LBType() == LBTypeHostPort {
-					daemonset, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Get(lbc.OffshootName())
+				if lbc.Resource.LBType() == api.LBTypeDaemon || lbc.Resource.LBType() == api.LBTypeHostPort {
+					daemonset, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
 					if err != nil {
 						return errors.FromErr(err).Err()
 					}
@@ -307,7 +307,7 @@ func (lbc *EngressController) UpdateTargetAnnotations(old *aci.Ingress, new *aci
 						}
 					}
 				} else {
-					dep, err := lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Get(lbc.OffshootName())
+					dep, err := lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
 					if err != nil {
 						return errors.FromErr(err).Err()
 					}

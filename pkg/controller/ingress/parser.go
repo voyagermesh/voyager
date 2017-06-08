@@ -25,10 +25,6 @@ func (lbc *EngressController) APISchema() string {
 	return api.APISchemaEngress
 }
 
-func (lbc *EngressController) OffshootName() string {
-	return VoyagerPrefix + lbc.Resource.Name
-}
-
 func (lbc *EngressController) SupportsLoadBalancerType() bool {
 	return lbc.ProviderName == "aws" ||
 		lbc.ProviderName == "gce" ||
@@ -122,7 +118,7 @@ func (lbc *EngressController) getEndpoints(s *kapi.Service, servicePort *kapi.Se
 							log.Errorln("Error getting endpoind pod", err)
 						} else {
 							if pod.Annotations != nil {
-								if val, ok := pod.Annotations[BackendWeight]; ok {
+								if val, ok := pod.Annotations[api.BackendWeight]; ok {
 									ep.Weight, _ = strconv.Atoi(val)
 								}
 							}
@@ -328,7 +324,7 @@ func (lbc *EngressController) parseOptions() {
 		}
 	}
 
-	if lbc.ProviderName == "aws" && lbc.Resource.LBType() == LBTypeLoadBalancer {
+	if lbc.ProviderName == "aws" && lbc.Resource.LBType() == api.LBTypeLoadBalancer {
 		lbc.Parsed.AcceptProxy = lbc.Resource.KeepSourceIP()
 	}
 }

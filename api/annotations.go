@@ -15,7 +15,7 @@ const (
 
 	VoyagerPrefix = "voyager-"
 
-	stickySession = EngressKey + "/" + "sticky-session"
+	StickySession = EngressKey + "/" + "sticky-session"
 
 	// LB stats options
 	StatsOn          = EngressKey + "/" + "stats"
@@ -86,14 +86,19 @@ const (
 	OriginName      = EngressKey + "/" + "origin-name"
 )
 
-//type options struct {
-//	resourceName string
-//	lbType       string
-//	annotations  map[string]string
-//}
+func (r Ingress) APISchema() string {
+	if v, ok := r.Annotations[APISchema]; ok {
+		return v
+	}
+	return APISchemaEngress
+}
+
+func (r Ingress) OffshootName() string {
+	return VoyagerPrefix + r.Name
+}
 
 func (r Ingress) StickySession() bool {
-	_, ok := r.Annotations[stickySession]
+	_, ok := r.Annotations[StickySession]
 	return ok
 }
 
