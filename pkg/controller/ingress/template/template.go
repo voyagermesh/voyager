@@ -93,7 +93,7 @@ backend default-backend
 {% if HttpsService %}
 # https service
 frontend https-frontend
-    bind *:443 {% if AcceptProxy %}accept-proxy{% endif %} ssl no-sslv3 no-tlsv10 no-tls-tickets crt /etc/ssl/private/haproxy/ alpn http/1.1
+    bind *:443 {% if KeepSource %}accept-proxy{% endif %} ssl no-sslv3 no-tlsv10 no-tls-tickets crt /etc/ssl/private/haproxy/ alpn http/1.1
     # Mark all cookies as secure
     rsprep ^Set-Cookie:\ (.*) Set-Cookie:\ \1;\ Secure
     # Add the HSTS header with a 6 month max-age
@@ -137,7 +137,7 @@ backend https-{{ svc.Name }}
 {% if HttpService %}
 # http services.
 frontend http-frontend
-    bind *:80 {% if AcceptProxy %}accept-proxy{% endif %}
+    bind *:80 {% if KeepSource %}accept-proxy{% endif %}
     mode http
     option httplog
     option forwardfor
@@ -178,7 +178,7 @@ backend http-{{ svc.Name }}
 # tcp service
 {% for svc in TCPService %}
 frontend tcp-frontend-key-{{ svc.Port }}
-    bind *:{{ svc.Port }} {% if AcceptProxy %}accept-proxy{% endif %} {% if svc.SecretName %}ssl no-sslv3 no-tlsv10 no-tls-tickets crt /etc/ssl/private/haproxy/{{ svc.SecretName }}.pem{% endif %} {%if svc.ALPNOptions %} {{svc.ALPNOptions}}{% endif %}
+    bind *:{{ svc.Port }} {% if KeepSource %}accept-proxy{% endif %} {% if svc.SecretName %}ssl no-sslv3 no-tlsv10 no-tls-tickets crt /etc/ssl/private/haproxy/{{ svc.SecretName }}.pem{% endif %} {%if svc.ALPNOptions %} {{svc.ALPNOptions}}{% endif %}
     mode tcp
     default_backend tcp-{{ svc.Name }}
 {% endfor %}
@@ -204,7 +204,7 @@ backend tcp-{{ svc.Name }}
 
 {% if !HttpService and !HttpsService and DefaultBackend %}
 frontend http-frontend
-    bind *:80 {% if AcceptProxy %}accept-proxy{% endif %}
+    bind *:80 {% if KeepSource %}accept-proxy{% endif %}
     mode http
 
     option forwardfor
