@@ -155,7 +155,6 @@ func (lbc *EngressController) createHostPortSvc() error {
 			Name:      lbc.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
-				LBName:          lbc.Resource.GetName(),
 				LBType:          LBTypeHostPort,
 				OriginAPISchema: lbc.APISchema(),
 				OriginName:      lbc.Resource.GetName(),
@@ -324,7 +323,6 @@ func (lbc *EngressController) createNodePortSvc() error {
 			Name:      lbc.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
-				LBName:          lbc.Resource.GetName(),
 				LBType:          LBTypeNodePort,
 				OriginAPISchema: lbc.APISchema(),
 				OriginName:      lbc.Resource.GetName(),
@@ -465,7 +463,6 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 			Name:      lbc.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
-				LBName:          lbc.Resource.GetName(),
 				LBType:          LBTypeLoadBalancer,
 				OriginAPISchema: lbc.APISchema(),
 				OriginName:      lbc.Resource.GetName(),
@@ -573,7 +570,6 @@ func (lbc *EngressController) ensureStatsService() {
 			Name:      lbc.Options.annotations.StatsServiceName(lbc.Resource.GetName()),
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
-				LBName:          lbc.Resource.GetName(),
 				OriginAPISchema: lbc.APISchema(),
 				OriginName:      lbc.Resource.GetName(),
 			},

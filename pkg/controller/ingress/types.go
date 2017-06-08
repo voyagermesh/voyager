@@ -27,8 +27,6 @@ const (
 	StatsServiceName = aci.EngressKey + "/" + "stats-service-name"
 	DefaultStatsPort = 1936
 
-	LBName = aci.EngressKey + "/" + "name"
-
 	// Daemon, Persistent, LoadBalancer
 	LBType = aci.EngressKey + "/" + "type"
 
