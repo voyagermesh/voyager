@@ -29,6 +29,10 @@ func (lbc *EngressController) OffshootName() string {
 	return VoyagerPrefix + lbc.Resource.Name
 }
 
+func (lbc *EngressController) Annotations() annotation {
+	return annotation(lbc.Resource.ObjectMeta.Annotations)
+}
+
 func (lbc *EngressController) parse() error {
 	log.Infoln("Parsing new engress")
 	if lbc.Resource == nil {
