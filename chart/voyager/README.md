@@ -3,7 +3,7 @@
 ## TL;DR;
 
 ```bash
-$ helm install stable/voyager
+$ helm install chart/voyager
 ```
 
 ## Introduction
@@ -18,7 +18,7 @@ This chart bootstraps an [ingress controller](https://github.com/appscode/voyage
 ## Installing the Chart
 To install the chart with the release name `my-release`:
 ```bash
-$ helm install --name my-release stable/voyager
+$ helm install --name my-release chart/voyager
 ```
 The command deploys Voyager Controller on the Kubernetes cluster in the default configuration. The [configuration](#configuration) section lists the parameters that can be configured during installation.
 

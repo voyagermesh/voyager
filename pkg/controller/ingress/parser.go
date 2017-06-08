@@ -20,17 +20,17 @@ import (
 
 func (lbc *EngressController) parse() error {
 	log.Infoln("Parsing new engress")
-	if lbc.Config == nil {
+	if lbc.Resource == nil {
 		log.Warningln("Config is nil, nothing to parse")
 		return errors.New("no config found").Err()
 	}
 	lbc.parseOptions()
 	lbc.parseSpec()
-	lbc.Options.ConfigMapName = VoyagerPrefix + lbc.Config.Name
+	lbc.Options.ConfigMapName = VoyagerPrefix + lbc.Resource.Name
 
 	// Set loadbalancer source apiGroup, default ingress.appscode.com
 	lbc.apiGroup = api.APIGroupEngress
-	if val, ok := lbc.Config.Annotations[api.APIGroup]; ok {
+	if val, ok := lbc.Resource.Annotations[api.APIGroup]; ok {
 		if val == api.APIGroupIngress {
 			lbc.apiGroup = api.APIGroupIngress
 		}
@@ -40,12 +40,12 @@ func (lbc *EngressController) parse() error {
 }
 
 func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrString, hostNames []string) ([]*Endpoint, error) {
-	log.Infoln("getting endpoints for ", lbc.Config.Namespace, name, "port", port)
+	log.Infoln("getting endpoints for ", lbc.Resource.Namespace, name, "port", port)
 
 	// the following lines giving support to
 	// serviceName.namespaceName or serviceName in the same namespace to the
 	// ingress
-	var namespace string = lbc.Config.Namespace
+	var namespace string = lbc.Resource.Namespace
 	if strings.Contains(name, ".") {
 		namespace = name[strings.Index(name, ".")+1:]
 		name = name[:strings.Index(name, ".")]
@@ -195,22 +195,22 @@ func getTargetPort(servicePort *kapi.ServicePort) int {
 func (lbc *EngressController) parseSpec() {
 	log.Infoln("Parsing Engress specs")
 	lbc.Options.Ports = make([]int, 0)
-	if lbc.Config.Spec.Backend != nil {
-		log.Debugln("generating default backend", lbc.Config.Spec.Backend.RewriteRule, lbc.Config.Spec.Backend.HeaderRule)
-		eps, _ := lbc.serviceEndpoints(lbc.Config.Spec.Backend.ServiceName, lbc.Config.Spec.Backend.ServicePort, lbc.Config.Spec.Backend.HostNames)
+	if lbc.Resource.Spec.Backend != nil {
+		log.Debugln("generating default backend", lbc.Resource.Spec.Backend.RewriteRule, lbc.Resource.Spec.Backend.HeaderRule)
+		eps, _ := lbc.serviceEndpoints(lbc.Resource.Spec.Backend.ServiceName, lbc.Resource.Spec.Backend.ServicePort, lbc.Resource.Spec.Backend.HostNames)
 		lbc.Parsed.DefaultBackend = &Backend{
 			Name:      "default-backend",
 			Endpoints: eps,
 
-			BackendRules: lbc.Config.Spec.Backend.BackendRule,
-			RewriteRules: lbc.Config.Spec.Backend.RewriteRule,
-			HeaderRules:  lbc.Config.Spec.Backend.HeaderRule,
+			BackendRules: lbc.Resource.Spec.Backend.BackendRule,
+			RewriteRules: lbc.Resource.Spec.Backend.RewriteRule,
+			HeaderRules:  lbc.Resource.Spec.Backend.HeaderRule,
 		}
 	}
-	if len(lbc.Config.Spec.TLS) > 0 {
+	if len(lbc.Resource.Spec.TLS) > 0 {
 		lbc.Options.SecretNames = make([]string, 0)
 		lbc.HostFilter = make([]string, 0)
-		for _, secret := range lbc.Config.Spec.TLS {
+		for _, secret := range lbc.Resource.Spec.TLS {
 			lbc.Options.SecretNames = append(lbc.Options.SecretNames, secret.SecretName)
 			lbc.HostFilter = append(lbc.HostFilter, secret.Hosts...)
 		}
@@ -221,7 +221,7 @@ func (lbc *EngressController) parseSpec() {
 	lbc.Parsed.TCPService = make([]*TCPService, 0)
 
 	var httpCount, httpsCount int
-	for _, rule := range lbc.Config.Spec.Rules {
+	for _, rule := range lbc.Resource.Spec.Rules {
 		host := rule.Host
 		if rule.HTTP != nil {
 			if ok, _ := arrays.Contains(lbc.HostFilter, host); ok {
@@ -284,7 +284,7 @@ func (lbc *EngressController) parseSpec() {
 		}
 	}
 
-	if httpCount > 0 || (lbc.Config.Spec.Backend != nil && httpsCount == 0) {
+	if httpCount > 0 || (lbc.Resource.Spec.Backend != nil && httpsCount == 0) {
 		lbc.Options.Ports = append(lbc.Options.Ports, 80)
 	}
 
@@ -294,14 +294,14 @@ func (lbc *EngressController) parseSpec() {
 }
 
 func (lbc *EngressController) parseOptions() {
-	if lbc.Config == nil {
+	if lbc.Resource == nil {
 		log.Infoln("Config is nil, nothing to parse")
 		return
 	}
 	log.Infoln("Parsing annotations.")
-	lbc.Options.annotations = annotation(lbc.Config.ObjectMeta.Annotations)
+	lbc.Options.annotations = annotation(lbc.Resource.ObjectMeta.Annotations)
 	lbc.Parsed.Sticky = lbc.Options.annotations.StickySession()
-	if len(lbc.Config.Spec.TLS) > 0 {
+	if len(lbc.Resource.Spec.TLS) > 0 {
 		lbc.Parsed.SSLCert = true
 	}
 
@@ -309,7 +309,7 @@ func (lbc *EngressController) parseOptions() {
 	if lbc.Parsed.Stats {
 		lbc.Parsed.StatsPort = lbc.Options.annotations.StatsPort()
 		if name := lbc.Options.annotations.StatsSecretName(); len(name) > 0 {
-			secret, err := lbc.KubeClient.Core().Secrets(lbc.Config.ObjectMeta.Namespace).Get(name)
+			secret, err := lbc.KubeClient.Core().Secrets(lbc.Resource.ObjectMeta.Namespace).Get(name)
 			if err == nil {
 				lbc.Parsed.StatsUserName = string(secret.Data["username"])
 				lbc.Parsed.StatsPassWord = string(secret.Data["password"])

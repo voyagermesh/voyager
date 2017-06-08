@@ -213,8 +213,11 @@ type EngressController struct {
 	ExtClient    acs.ExtensionInterface
 	CloudManager cloudprovider.Interface
 
+	HAProxyImage string
+	IngressClass string
+
 	// Engress object that created or updated.
-	Config   *aci.Ingress
+	Resource *aci.Ingress
 	apiGroup string
 	Options  *KubeOptions
 	// contains all the https host names.
@@ -227,12 +230,7 @@ type EngressController struct {
 	// search with respect to services.
 	Storage       *stash.Storage
 	EndpointStore cache.StoreToEndpointsLister
-
-	LoadbalancerImage string
-
 	sync.Mutex
-
-	IngressClass string
 }
 
 type KubeOptions struct {
