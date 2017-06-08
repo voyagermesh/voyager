@@ -233,31 +233,6 @@ type EngressController struct {
 	sync.Mutex
 }
 
-type KubeOptions struct {
-	// name of the cluster the daemon running.
-	ClusterName string
-
-	ProviderName string
-	// kube options data
-	SecretNames []string
-
-	// contains raw configMap data parsed from the cfg file.
-	ConfigData string
-
-	// Ports contains all the ports needed to be opened for the ingress.
-	// Those ports will be used to open loadbalancer/firewall.
-	// So any interference with underlying endpoints will not cause network update.
-	Ports []int
-}
-
-func (lbc *EngressController) SupportsLoadBalancerType() bool {
-	return lbc.ProviderName == "aws" ||
-		lbc.ProviderName == "gce" ||
-		lbc.ProviderName == "gke" ||
-		lbc.ProviderName == "azure" ||
-		lbc.ProviderName == "minikube"
-}
-
 type HAProxyOptions struct {
 	Timestamp int64
 	// those options are get from annotations. applied globally

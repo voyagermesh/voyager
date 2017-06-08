@@ -29,6 +29,14 @@ func (lbc *EngressController) OffshootName() string {
 	return VoyagerPrefix + lbc.Resource.Name
 }
 
+func (lbc *EngressController) SupportsLoadBalancerType() bool {
+	return lbc.ProviderName == "aws" ||
+		lbc.ProviderName == "gce" ||
+		lbc.ProviderName == "gke" ||
+		lbc.ProviderName == "azure" ||
+		lbc.ProviderName == "minikube"
+}
+
 func (lbc *EngressController) Annotations() annotation {
 	return annotation(lbc.Resource.ObjectMeta.Annotations)
 }
