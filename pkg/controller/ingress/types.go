@@ -221,7 +221,7 @@ type EngressController struct {
 	// contains all the https host names.
 	HostFilter []string
 	// parsed ingress.
-	Parsed *HAProxyOptions
+	Parsed HAProxyOptions
 
 	// kubernetes client
 	KubeClient   clientset.Interface

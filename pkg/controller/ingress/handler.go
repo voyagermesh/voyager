@@ -28,16 +28,13 @@ func NewEngressController(clusterName, providerName string,
 	store *stash.Storage,
 	ingressClass string) *EngressController {
 	h := &EngressController{
-		KubeClient:   kubeClient,
-		Storage:      store,
-		ExtClient:    extClient,
-		ClusterName:  clusterName,
-		ProviderName: providerName,
-		// Parsed must be set to an empty Options struct. parse()
-		// expects it to be set.
-		Parsed:        &HAProxyOptions{},
-		EndpointStore: store.EndpointStore,
+		ClusterName:   clusterName,
+		ProviderName:  providerName,
 		IngressClass:  ingressClass,
+		KubeClient:    kubeClient,
+		ExtClient:     extClient,
+		Storage:       store,
+		EndpointStore: store.EndpointStore,
 	}
 	log.Infoln("Initializing cloud manager for provider", providerName)
 	if providerName == "aws" || providerName == "gce" || providerName == "azure" {
