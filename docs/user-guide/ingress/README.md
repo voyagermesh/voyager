@@ -98,11 +98,16 @@ ingress.appscode.com/nodeSelector          = This nodeSelector will indicate whi
                                             We recommend you use the new key going forward. Any existing ingress with previous annotation
                                             will continue to function as expected.
 
-ingress.appscode.com/ip                    = This only applies to "gce" and "gke" cloud providers. If set, it will be
-                                      assigned loadbalancer used to expose HAProxy. Usually this is set to a static IP preserve DNS configuration.
+ingress.appscode.com/ip                    = This key is deprecated. Going forward, use `ingress.appscode.com/persist`. Any existing ingress with
+                                            this annotation key will continue to work as expetced.
 
-ingress.appscode.com/persist               = This only applies to "aws" cloud provider. If set to true, AWS load balancer will
-                                      not be deleted when the ingress resource is deleted.
+ingress.appscode.com/persist               = For "aws" cloud provider, if this annotation is set (non-empty), 
+                                        AWS load balancer will not be deleted when the ingress resource is deleted. If an ingress with same 
+                                        name is recreated, the existing loadbalancer will be reused.
+                                      
+                                            For "gce" and "gke" cloud provider, if this value is set to an valid IPv4 address, 
+                                            it will be assigned to Google cloud network loadbalancer used to expose HAProxy.
+                                            Usually this is set to a static IP to preserve DNS configuration.
 
 ingress.appscode.com/stats                 = if set to true it will open HAProxy stats in IP's 1936 port.
                                       defaults to false.
