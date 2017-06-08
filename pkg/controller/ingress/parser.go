@@ -22,7 +22,7 @@ func (lbc *EngressController) APISchema() string {
 	if v, ok := lbc.Resource.Annotations[api.APISchema]; ok {
 		return v
 	}
-	return api.APIGroupEngress
+	return api.APISchemaEngress
 }
 
 func (lbc *EngressController) OffshootName() string {

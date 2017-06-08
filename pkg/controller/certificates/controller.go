@@ -171,10 +171,10 @@ func (c *CertificateController) handleIngressEvent(e *events.Event) error {
 					},
 				}
 				if v, ok := ingress.Annotations[aci.APISchema]; ok {
-					if v == aci.APIGroupIngress {
-						newCertificate.Spec.HTTPProviderIngressReference.APIVersion = aci.APIGroupIngress
+					if v == aci.APISchemaIngress {
+						newCertificate.Spec.HTTPProviderIngressReference.APIVersion = aci.APISchemaIngress
 					} else {
-						newCertificate.Spec.HTTPProviderIngressReference.APIVersion = aci.APIGroupEngress
+						newCertificate.Spec.HTTPProviderIngressReference.APIVersion = aci.APISchemaEngress
 					}
 				}
 				for _, rule := range ingress.Spec.Rules {

@@ -9,11 +9,9 @@ import (
 const (
 	EngressKey = "ingress.appscode.com"
 	APISchema  = EngressKey + "/" + "api-schema" // APISchema = APIGroup + "/" + APIVersion
-)
 
-var (
-	APIGroupEngress = "appscode.com/v1beta1"
-	APIGroupIngress = "extension/v1beta1"
+	APISchemaEngress = "appscode.com/v1beta1"
+	APISchemaIngress = "extension/v1beta1"
 )
 
 // ExtendedIngress types for appscode.

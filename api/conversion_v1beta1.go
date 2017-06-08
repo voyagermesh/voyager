@@ -43,6 +43,6 @@ func NewEngressFromIngress(ing interface{}) (*Ingress, error) {
 	if engress.Annotations == nil {
 		engress.Annotations = make(map[string]string)
 	}
-	engress.Annotations[APISchema] = APIGroupIngress
+	engress.Annotations[APISchema] = APISchemaIngress
 	return engress, nil
 }

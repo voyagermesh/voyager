@@ -617,7 +617,7 @@ func (lbc *EngressController) updateStatus() error {
 	}
 
 	if len(statuses) > 0 {
-		if lbc.APISchema() == api.APIGroupIngress {
+		if lbc.APISchema() == api.APISchemaIngress {
 			ing, err := lbc.KubeClient.Extensions().Ingresses(lbc.Resource.Namespace).Get(lbc.Resource.Name)
 			if err != nil {
 				return errors.FromErr(err).Err()
