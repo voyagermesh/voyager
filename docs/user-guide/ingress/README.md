@@ -112,7 +112,7 @@ ingress.appscode.com/persist               = For "aws" cloud provider, if this a
 ingress.appscode.com/stats                 = if set to true it will open HAProxy stats in IP's 1936 port.
                                       defaults to false.
 
-ingress.appscode.com/stats.secretName      = if the stats is on then this kubernetes secret will
+ingress.appscode.com/stats-secret-name      = if the stats is on then this kubernetes secret will
                                       be used as stats basic auth. This secret must contain two data `username`
                                       and `password` which will be used.
 

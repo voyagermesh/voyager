@@ -18,21 +18,21 @@ import (
 const (
 	VoyagerPrefix = "voyager-"
 
-	AnnotationPrefix = "ingress.appscode.com/"
+	//aci.EngressKey + "/" = "ingress.appscode.com/"
 
-	stickySession = AnnotationPrefix + "stickySession"
+	stickySession = aci.EngressKey + "/" + "stickySession"
 
 	// LB stats options
-	StatsOn          = AnnotationPrefix + "stats"
-	StatsPort        = AnnotationPrefix + "stats.port"
-	StatsSecret      = AnnotationPrefix + "stats.secretName"
-	StatsServiceName = AnnotationPrefix + "stats.serviceName"
+	StatsOn          = aci.EngressKey + "/" + "stats"
+	StatsPort        = aci.EngressKey + "/" + "stats-port"
+	StatsSecret      = aci.EngressKey + "/" + "stats-secret-name"
+	StatsServiceName = aci.EngressKey + "/" + "stats-service-name"
 	DefaultStatsPort = 1936
 
-	LBName = AnnotationPrefix + "name"
+	LBName = aci.EngressKey + "/" + "name"
 
 	// Daemon, Persistent, LoadBalancer
-	LBType = AnnotationPrefix + "type"
+	LBType = aci.EngressKey + "/" + "type"
 
 	LBTypeNodePort = "NodePort"
 	LBTypeHostPort = "HostPort"
@@ -41,30 +41,30 @@ const (
 	LBTypeLoadBalancer = "LoadBalancer" // default
 
 	// Runs HAProxy on a specific set of a hosts.
-	NodeSelector = AnnotationPrefix + "node-selector"
+	NodeSelector = aci.EngressKey + "/" + "node-selector"
 
 	// Replicas specify # of HAProxy pods run (default 1)
-	Replicas = AnnotationPrefix + "replicas"
+	Replicas = aci.EngressKey + "/" + "replicas"
 
 	// LoadBalancer mode exposes HAProxy via a type=LoadBalancer service. This is the original version implemented by @sadlil
 	// Uses nodeport and Cloud LoadBalancer exists beyond single HAProxy run
-	LoadBalancerPersist = AnnotationPrefix + "persist" // "" or IP or non-empty
+	LoadBalancerPersist = aci.EngressKey + "/" + "persist" // "" or IP or non-empty
 
 	// LoadBalancerBackendWeightKey is the weight value of a Pod that was
 	// addressed by the Endpoint, this weight will be added to server backend.
 	// Traffic will be forwarded according to there weight.
-	LoadBalancerBackendWeight = AnnotationPrefix + "backend-weight"
+	LoadBalancerBackendWeight = aci.EngressKey + "/" + "backend-weight"
 
 	// https://github.com/appscode/voyager/issues/103
 	// LoadBalancerServiceAnnotation is user provided annotations map that will be
 	// applied to the service of that LoadBalancer.
 	// ex: "ingress.appscode.com/service.annotation": {"key": "val"}
-	LoadBalancerServiceAnnotations = AnnotationPrefix + "annotations-service"
+	LoadBalancerServiceAnnotations = aci.EngressKey + "/" + "annotations-service"
 
 	// LoadBalancerPodsAnnotation is user provided annotations map that will be
 	// applied to the Pods (Deployment/ DaemonSet) of that LoadBalancer.
 	// ex: "ingress.appscode.com/service.annotation": {"key": "val"}
-	LoadBalancerPodAnnotations = AnnotationPrefix + "annotations-pod"
+	LoadBalancerPodAnnotations = aci.EngressKey + "/" + "annotations-pod"
 
 	// Preserves source IP for LoadBalancer type ingresses. The actual configuration
 	// generated depends on the underlying cloud provider.
@@ -86,11 +86,11 @@ const (
 	// usable. See also "tcp-request connection expect-proxy" for a finer-grained
 	// setting of which client is allowed to use the protocol.
 	// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
-	LoadBalancerKeepSourceIP = AnnotationPrefix + "keep-source-ip"
+	LoadBalancerKeepSourceIP = aci.EngressKey + "/" + "keep-source-ip"
 
 	// annotations applied to created resources for any ingress
-	LoadBalancerOwnerAPIGroup = AnnotationPrefix + "owner-api-group"
-	LoadBalancerOwnerName     = AnnotationPrefix + "owner-name"
+	LoadBalancerOwnerAPIGroup = aci.EngressKey + "/" + "owner-api-group"
+	LoadBalancerOwnerName     = aci.EngressKey + "/" + "owner-name"
 )
 
 type annotation map[string]string
@@ -150,12 +150,12 @@ func (s annotation) NodeSelector() string {
 	if v, ok := s[NodeSelector]; ok {
 		return v
 	}
-	v, _ := s[AnnotationPrefix+"daemon.nodeSelector"]
+	v, _ := s[aci.EngressKey+"/"+"daemon.nodeSelector"]
 	return v
 }
 
 func (s annotation) LoadBalancerPersist() string {
-	if v, ok := s[AnnotationPrefix+"ip"]; ok {
+	if v, ok := s[aci.EngressKey+"/"+"ip"]; ok {
 		return v
 	}
 	v, _ := s[LoadBalancerPersist]
@@ -198,7 +198,7 @@ func getTargetAnnotations(s annotation, key string) (map[string]string, bool) {
 		// Filter all annotation keys that starts with ingress.appscode.com
 		filteredMap := make(map[string]string)
 		for k, v := range ans {
-			if !strings.HasPrefix(strings.TrimSpace(k), AnnotationPrefix) {
+			if !strings.HasPrefix(strings.TrimSpace(k), aci.EngressKey+"/") {
 				filteredMap[k] = v
 			}
 		}

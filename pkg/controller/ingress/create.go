@@ -156,8 +156,8 @@ func (lbc *EngressController) createHostPortSvc() error {
 			Name:      VoyagerPrefix + lbc.Resource.Name,
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
-				LBName:                    lbc.Resource.GetName(),
-				LBType:                    LBTypeHostPort,
+				LBName: lbc.Resource.GetName(),
+				LBType: LBTypeHostPort,
 				LoadBalancerOwnerAPIGroup: lbc.apiGroup,
 				LoadBalancerOwnerName:     lbc.Resource.GetName(),
 			},
@@ -325,8 +325,8 @@ func (lbc *EngressController) createNodePortSvc() error {
 			Name:      VoyagerPrefix + lbc.Resource.Name,
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
-				LBName:                    lbc.Resource.GetName(),
-				LBType:                    LBTypeNodePort,
+				LBName: lbc.Resource.GetName(),
+				LBType: LBTypeNodePort,
 				LoadBalancerOwnerAPIGroup: lbc.apiGroup,
 				LoadBalancerOwnerName:     lbc.Resource.GetName(),
 			},
@@ -466,8 +466,8 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 			Name:      VoyagerPrefix + lbc.Resource.Name,
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
-				LBName:                    lbc.Resource.GetName(),
-				LBType:                    LBTypeLoadBalancer,
+				LBName: lbc.Resource.GetName(),
+				LBType: LBTypeLoadBalancer,
 				LoadBalancerOwnerAPIGroup: lbc.apiGroup,
 				LoadBalancerOwnerName:     lbc.Resource.GetName(),
 			},
@@ -574,7 +574,7 @@ func (lbc *EngressController) ensureStatsService() {
 			Name:      lbc.Options.annotations.StatsServiceName(lbc.Resource.GetName()),
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
-				LBName:                    lbc.Resource.GetName(),
+				LBName: lbc.Resource.GetName(),
 				LoadBalancerOwnerAPIGroup: lbc.apiGroup,
 				LoadBalancerOwnerName:     lbc.Resource.GetName(),
 			},
