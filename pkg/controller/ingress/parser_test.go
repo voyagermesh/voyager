@@ -3,6 +3,7 @@ package ingress
 import (
 	"testing"
 
+	"github.com/appscode/voyager/api"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,7 +25,7 @@ func TestNodeSelector(t *testing.T) {
 	}
 
 	for k, v := range dataTable {
-		assert.Equal(t, v, ParseNodeSelector(k))
+		assert.Equal(t, v, api.ParseNodeSelector(k))
 	}
 }
 
@@ -41,33 +42,5 @@ func TestALPNOptions(t *testing.T) {
 
 	for k, v := range dataTable {
 		assert.Equal(t, k, parseALPNOptions(v))
-	}
-}
-
-func TestIsIncludeAbleOptions(t *testing.T) {
-	dataTable := map[string]map[bool][]string{
-		"web-0": {
-			true: {
-				"web",
-				"web-0",
-			},
-		},
-
-		"web-1": {
-			true: {},
-		},
-
-		"web-2": {
-			false: {
-				"web",
-				"web-0",
-			},
-		},
-	}
-
-	for k, v := range dataTable {
-		for key, val := range v {
-			assert.Equal(t, key, isIncludeAbleAddress(val, k))
-		}
 	}
 }

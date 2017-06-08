@@ -41,7 +41,7 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 	return nil
 }
 
-func (obj *Ingress) GetObjectKind() schema.ObjectKind     { return &obj.TypeMeta }
+func (r *Ingress) GetObjectKind() schema.ObjectKind       { return &r.TypeMeta }
 func (obj *IngressList) GetObjectKind() schema.ObjectKind { return &obj.TypeMeta }
 
 func (obj *Certificate) GetObjectKind() schema.ObjectKind     { return &obj.TypeMeta }

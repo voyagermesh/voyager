@@ -170,11 +170,11 @@ func (c *CertificateController) handleIngressEvent(e *events.Event) error {
 						ACMEServerURL:      ingress.Annotations[certificateAnnotationKeyACMEServerURL],
 					},
 				}
-				if v, ok := ingress.Annotations[aci.APIGroup]; ok {
-					if v == aci.APIGroupIngress {
-						newCertificate.Spec.HTTPProviderIngressReference.APIVersion = "extensions/v1beta1"
+				if v, ok := ingress.Annotations[aci.APISchema]; ok {
+					if v == aci.APISchemaIngress {
+						newCertificate.Spec.HTTPProviderIngressReference.APIVersion = aci.APISchemaIngress
 					} else {
-						newCertificate.Spec.HTTPProviderIngressReference.APIVersion = "appscode.com/v1beta1"
+						newCertificate.Spec.HTTPProviderIngressReference.APIVersion = aci.APISchemaEngress
 					}
 				}
 				for _, rule := range ingress.Spec.Rules {

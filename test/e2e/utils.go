@@ -10,23 +10,22 @@ import (
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
-	aci "github.com/appscode/voyager/api"
-	ingresscontroller "github.com/appscode/voyager/pkg/controller/ingress"
-	"k8s.io/kubernetes/pkg/api"
+	api "github.com/appscode/voyager/api"
+	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/labels"
 )
 
-func (ing *IngressTestSuit) getURLs(baseIngress *aci.Ingress) ([]string, error) {
+func (ing *IngressTestSuit) getURLs(baseIngress *api.Ingress) ([]string, error) {
 	serverAddr := make([]string, 0)
 	var err error
 	if ing.t.Config.ProviderName == "minikube" {
 		for i := 0; i < maxRetries; i++ {
 			var outputs []byte
-			log.Infoln("Running Command", "`minikube", "service", ingresscontroller.VoyagerPrefix+baseIngress.Name+" --url`")
+			log.Infoln("Running Command", "`minikube", "service", baseIngress.OffshootName()+" --url`")
 			outputs, err = exec.Command(
 				"/usr/local/bin/minikube",
 				"service",
-				ingresscontroller.VoyagerPrefix+baseIngress.Name,
+				baseIngress.OffshootName(),
 				"--url",
 				"-n",
 				baseIngress.Namespace,
@@ -47,9 +46,9 @@ func (ing *IngressTestSuit) getURLs(baseIngress *aci.Ingress) ([]string, error) 
 			return nil, errors.New().WithCause(err).WithMessage("Failed to load service from minikube").Err()
 		}
 	} else {
-		var svc *api.Service
+		var svc *kapi.Service
 		for i := 0; i < maxRetries; i++ {
-			svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingresscontroller.VoyagerPrefix + baseIngress.Name)
+			svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 			if err == nil {
 				if len(svc.Status.LoadBalancer.Ingress) != 0 {
 					ips := make([]string, 0)
@@ -99,23 +98,21 @@ func (ing *IngressTestSuit) getURLs(baseIngress *aci.Ingress) ([]string, error) 
 	return serverAddr, nil
 }
 
-func (ing *IngressTestSuit) getDaemonURLs(baseIngress *aci.Ingress) ([]string, error) {
+func (ing *IngressTestSuit) getDaemonURLs(baseIngress *api.Ingress) ([]string, error) {
 	serverAddr := make([]string, 0)
-	nodes, err := ing.t.KubeClient.Core().Nodes().List(api.ListOptions{
+	nodes, err := ing.t.KubeClient.Core().Nodes().List(kapi.ListOptions{
 		LabelSelector: labels.SelectorFromSet(
-			ingresscontroller.ParseNodeSelector(
-				baseIngress.Annotations[ingresscontroller.NodeSelector],
-			),
+			api.ParseNodeSelector(baseIngress.Annotations[api.NodeSelector]),
 		),
 	})
 	if err != nil {
 		return nil, errors.New().WithCause(err).Err()
 	}
 
-	var svc *api.Service
+	var svc *kapi.Service
 	var ports []int32
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(ingresscontroller.VoyagerPrefix + baseIngress.Name)
+		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			if len(svc.Spec.Ports) > 0 {
 				for _, port := range svc.Spec.Ports {
@@ -133,7 +130,7 @@ func (ing *IngressTestSuit) getDaemonURLs(baseIngress *aci.Ingress) ([]string, e
 
 	for _, node := range nodes.Items {
 		for _, addr := range node.Status.Addresses {
-			if addr.Type == api.NodeLegacyHostIP || addr.Type == api.NodeExternalIP {
+			if addr.Type == kapi.NodeLegacyHostIP || addr.Type == kapi.NodeExternalIP {
 				for _, port := range ports {
 					var doc bytes.Buffer
 					err = defaultUrlTemplate.Execute(&doc, struct {

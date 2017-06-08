@@ -6,17 +6,7 @@ import (
 	"k8s.io/kubernetes/pkg/util/intstr"
 )
 
-const (
-	EngressKey = "ingress.appscode.com"
-	APIGroup   = EngressKey + "/apiGroup"
-)
-
-var (
-	APIGroupEngress = "appscode.com/v1beta1"
-	APIGroupIngress = "extension/v1beta1"
-)
-
-// ExtendedIngress types for appscode.
+// Custom Ingress type for Voyager.
 type Ingress struct {
 	unversioned.TypeMeta `json:",inline"`
 	// Standard object's metadata.

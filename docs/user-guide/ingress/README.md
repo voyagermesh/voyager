@@ -81,7 +81,7 @@ AppsCode Ingress have some global configurations passed via the `annotaion` fiel
 and those configuration will be applicable on loadbalancer globally. Annotation keys and its actions are as follows:
 
 ```
-ingress.appscode.com/stickySession         = indicates the session affinity for the traffic, is set
+ingress.appscode.com/sticky-session         = indicates the session affinity for the traffic, is set
                                       session affinity will apply to all the rulses set.
                                       defaults to false
 
@@ -92,7 +92,7 @@ ingress.appscode.com/type                  = indicates type of service used to e
 
 ingress.appscode.com/replicas              = indicates number of replicas of HAProxy is run. The default value is 1.
 
-ingress.appscode.com/nodeSelector          = This nodeSelector will indicate which host the HAProxy is going to run. This is 
+ingress.appscode.com/node-selector          = This nodeSelector will indicate which host the HAProxy is going to run. This is 
                                             a required annotation for `HostPort` type ingress. The value of this annotation should 
                                             be formatted as `foo=bar,foo2=bar2`. This used to be called `ingress.appscode.com/daemon.nodeSelector`.
                                             We recommend you use the new key going forward. Any existing ingress with previous annotation
@@ -112,15 +112,15 @@ ingress.appscode.com/persist               = For "aws" cloud provider, if this a
 ingress.appscode.com/stats                 = if set to true it will open HAProxy stats in IP's 1936 port.
                                       defaults to false.
 
-ingress.appscode.com/stats.secretName      = if the stats is on then this kubernetes secret will
+ingress.appscode.com/stats-secret-name      = if the stats is on then this kubernetes secret will
                                       be used as stats basic auth. This secret must contain two data `username`
                                       and `password` which will be used.
 
 
-ingress.appscode.com/annotations.service   = Json encoded annotations to be applied in LoadBalancer Service
+ingress.appscode.com/annotations-service   = Json encoded annotations to be applied in LoadBalancer Service
 
 
-ingress.appscode.com/annotations.pod       = Json encoded annotations to be applied in LoadBalancer Pods
+ingress.appscode.com/annotations-pod       = Json encoded annotations to be applied in LoadBalancer Pods
 
 The following annotations can be applied in an Ingress if we want to manage Certificate with the
 same ingress resource. Learn more by reading the certificate doc.

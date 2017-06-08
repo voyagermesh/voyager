@@ -18,6 +18,21 @@ import (
 	"k8s.io/kubernetes/pkg/util/intstr"
 )
 
+func (lbc *EngressController) APISchema() string {
+	if v, ok := lbc.Resource.Annotations[api.APISchema]; ok {
+		return v
+	}
+	return api.APISchemaEngress
+}
+
+func (lbc *EngressController) SupportsLoadBalancerType() bool {
+	return lbc.ProviderName == "aws" ||
+		lbc.ProviderName == "gce" ||
+		lbc.ProviderName == "gke" ||
+		lbc.ProviderName == "azure" ||
+		lbc.ProviderName == "minikube"
+}
+
 func (lbc *EngressController) parse() error {
 	log.Infoln("Parsing new engress")
 	if lbc.Resource == nil {
@@ -26,16 +41,6 @@ func (lbc *EngressController) parse() error {
 	}
 	lbc.parseOptions()
 	lbc.parseSpec()
-	lbc.Options.ConfigMapName = VoyagerPrefix + lbc.Resource.Name
-
-	// Set loadbalancer source apiGroup, default ingress.appscode.com
-	lbc.apiGroup = api.APIGroupEngress
-	if val, ok := lbc.Resource.Annotations[api.APIGroup]; ok {
-		if val == api.APIGroupIngress {
-			lbc.apiGroup = api.APIGroupIngress
-		}
-	}
-
 	return nil
 }
 
@@ -113,7 +118,7 @@ func (lbc *EngressController) getEndpoints(s *kapi.Service, servicePort *kapi.Se
 							log.Errorln("Error getting endpoind pod", err)
 						} else {
 							if pod.Annotations != nil {
-								if val, ok := pod.Annotations[LoadBalancerBackendWeight]; ok {
+								if val, ok := pod.Annotations[api.BackendWeight]; ok {
 									ep.Weight, _ = strconv.Atoi(val)
 								}
 							}
@@ -156,12 +161,12 @@ func (lbc *EngressController) generateTemplate() error {
 		return errors.FromErr(err).Err()
 	}
 
-	lbc.Options.ConfigData = stringutil.Fmt(r)
+	lbc.ConfigData = stringutil.Fmt(r)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 	log.Infoln("Template genareted for HAProxy")
-	log.Infoln(lbc.Options.ConfigData)
+	log.Infoln(lbc.ConfigData)
 	return nil
 }
 
@@ -194,7 +199,7 @@ func getTargetPort(servicePort *kapi.ServicePort) int {
 
 func (lbc *EngressController) parseSpec() {
 	log.Infoln("Parsing Engress specs")
-	lbc.Options.Ports = make([]int, 0)
+	lbc.Ports = make([]int, 0)
 	if lbc.Resource.Spec.Backend != nil {
 		log.Debugln("generating default backend", lbc.Resource.Spec.Backend.RewriteRule, lbc.Resource.Spec.Backend.HeaderRule)
 		eps, _ := lbc.serviceEndpoints(lbc.Resource.Spec.Backend.ServiceName, lbc.Resource.Spec.Backend.ServicePort, lbc.Resource.Spec.Backend.HostNames)
@@ -208,10 +213,10 @@ func (lbc *EngressController) parseSpec() {
 		}
 	}
 	if len(lbc.Resource.Spec.TLS) > 0 {
-		lbc.Options.SecretNames = make([]string, 0)
+		lbc.SecretNames = make([]string, 0)
 		lbc.HostFilter = make([]string, 0)
 		for _, secret := range lbc.Resource.Spec.TLS {
-			lbc.Options.SecretNames = append(lbc.Options.SecretNames, secret.SecretName)
+			lbc.SecretNames = append(lbc.SecretNames, secret.SecretName)
 			lbc.HostFilter = append(lbc.HostFilter, secret.Hosts...)
 		}
 	}
@@ -260,7 +265,7 @@ func (lbc *EngressController) parseSpec() {
 
 		// adding tcp service to the parser.
 		for _, tcpSvc := range rule.TCP {
-			lbc.Options.Ports = append(lbc.Options.Ports, tcpSvc.Port.IntValue())
+			lbc.Ports = append(lbc.Ports, tcpSvc.Port.IntValue())
 			def := &TCPService{
 				Name:        "service-" + rand.Characters(6),
 				Host:        host,
@@ -279,17 +284,17 @@ func (lbc *EngressController) parseSpec() {
 			log.Debugln("Got endpoints", len(eps))
 			if len(eps) > 0 && err == nil {
 				lbc.Parsed.TCPService = append(lbc.Parsed.TCPService, def)
-				lbc.Options.SecretNames = append(lbc.Options.SecretNames, def.SecretName)
+				lbc.SecretNames = append(lbc.SecretNames, def.SecretName)
 			}
 		}
 	}
 
 	if httpCount > 0 || (lbc.Resource.Spec.Backend != nil && httpsCount == 0) {
-		lbc.Options.Ports = append(lbc.Options.Ports, 80)
+		lbc.Ports = append(lbc.Ports, 80)
 	}
 
 	if httpsCount > 0 {
-		lbc.Options.Ports = append(lbc.Options.Ports, 443)
+		lbc.Ports = append(lbc.Ports, 443)
 	}
 }
 
@@ -299,16 +304,15 @@ func (lbc *EngressController) parseOptions() {
 		return
 	}
 	log.Infoln("Parsing annotations.")
-	lbc.Options.annotations = annotation(lbc.Resource.ObjectMeta.Annotations)
-	lbc.Parsed.Sticky = lbc.Options.annotations.StickySession()
+	lbc.Parsed.Sticky = lbc.Resource.StickySession()
 	if len(lbc.Resource.Spec.TLS) > 0 {
 		lbc.Parsed.SSLCert = true
 	}
 
-	lbc.Parsed.Stats = lbc.Options.annotations.Stats()
+	lbc.Parsed.Stats = lbc.Resource.Stats()
 	if lbc.Parsed.Stats {
-		lbc.Parsed.StatsPort = lbc.Options.annotations.StatsPort()
-		if name := lbc.Options.annotations.StatsSecretName(); len(name) > 0 {
+		lbc.Parsed.StatsPort = lbc.Resource.StatsPort()
+		if name := lbc.Resource.StatsSecretName(); len(name) > 0 {
 			secret, err := lbc.KubeClient.Core().Secrets(lbc.Resource.ObjectMeta.Namespace).Get(name)
 			if err == nil {
 				lbc.Parsed.StatsUserName = string(secret.Data["username"])
@@ -319,32 +323,10 @@ func (lbc *EngressController) parseOptions() {
 			}
 		}
 	}
-	lbc.Options.LBType = lbc.Options.annotations.LBType()
 
-	if lbc.Options.ProviderName == "aws" && lbc.Options.LBType == LBTypeLoadBalancer {
-		lbc.Parsed.AcceptProxy = lbc.Options.annotations.KeepSourceIP()
+	if lbc.ProviderName == "aws" && lbc.Resource.LBType() == api.LBTypeLoadBalancer {
+		lbc.Parsed.AcceptProxy = lbc.Resource.KeepSourceIP()
 	}
-	lbc.Options.Replicas = lbc.Options.annotations.Replicas()
-	lbc.Options.NodeSelector = ParseNodeSelector(lbc.Options.annotations.NodeSelector())
-	lbc.Options.LoadBalancerPersist = lbc.Options.annotations.LoadBalancerPersist()
-	log.Infoln("Got LBType", lbc.Options.LBType)
-}
-
-// ref: https://github.com/kubernetes/kubernetes/blob/078238a461a0872a8eacb887fbb3d0085714604c/staging/src/k8s.io/apiserver/pkg/apis/example/v1/types.go#L134
-func ParseNodeSelector(labels string) map[string]string {
-	selectorMap := make(map[string]string)
-	for _, label := range strings.Split(labels, ",") {
-		label = strings.TrimSpace(label)
-		if len(label) > 0 && strings.Contains(label, "=") {
-			data := strings.SplitN(label, "=", 2)
-			if len(data) >= 2 {
-				if len(data[0]) > 0 && len(data[1]) > 0 {
-					selectorMap[data[0]] = data[1]
-				}
-			}
-		}
-	}
-	return selectorMap
 }
 
 func parseALPNOptions(opt []string) string {

@@ -5,17 +5,15 @@ import (
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
-	"strconv"
 
 	hpe "github.com/appscode/haproxy_exporter/exporter"
 	"github.com/appscode/pat"
-	"github.com/appscode/voyager/pkg/controller/ingress"
+	"github.com/appscode/voyager/api"
 	"github.com/orcaman/concurrent-map"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
 	"github.com/prometheus/common/version"
-	kapi "k8s.io/kubernetes/pkg/api"
 	kerr "k8s.io/kubernetes/pkg/api/errors"
 )
 
@@ -84,7 +82,12 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				scrapeURL, err := getScrapeURL(ingress.ObjectMeta, podIP)
+				engress, err := api.NewEngressFromIngress(ingress)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				scrapeURL, err := getScrapeURL(engress, podIP)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -111,7 +114,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 				reg = r2.(*prometheus.Registry)
 			} else {
 				log.Infof("Configuring exporter for appscode ingress %s in namespace %s", name, namespace)
-				ingress, err := extClient.Ingress(namespace).Get(name)
+				engress, err := extClient.Ingress(namespace).Get(name)
 				if kerr.IsNotFound(err) {
 					http.NotFound(w, r)
 					return
@@ -119,7 +122,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				scrapeURL, err := getScrapeURL(ingress.ObjectMeta, podIP)
+				scrapeURL, err := getScrapeURL(engress, podIP)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -139,25 +142,18 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 	http.NotFound(w, r)
 }
 
-func getScrapeURL(meta kapi.ObjectMeta, podIP string) (string, error) {
-	if _, ok := meta.Annotations[ingress.StatsOn]; !ok {
+func getScrapeURL(r *api.Ingress, podIP string) (string, error) {
+	if !r.Stats() {
 		return "", errors.New("Stats not exposed")
 	}
-	statsPort := ingress.DefaultStatsPort
-	if v, ok := meta.Annotations[ingress.StatsPort]; ok {
-		if port, err := strconv.Atoi(v); err == nil {
-			statsPort = port
-		}
+	if r.StatsSecretName() != "" {
+		return fmt.Sprintf("http://%s:%d?stats;csv", podIP, r.StatsPort()), nil
 	}
-	secretName, ok := meta.Annotations[ingress.StatsSecret]
-	if !ok {
-		return fmt.Sprintf("http://%s:%d?stats;csv", podIP, statsPort), nil
-	}
-	secret, err := kubeClient.Core().Secrets(meta.Namespace).Get(secretName)
+	secret, err := kubeClient.Core().Secrets(r.Namespace).Get(r.StatsSecretName())
 	if err != nil {
 		return "", err
 	}
 	userName := string(secret.Data["username"])
 	passWord := string(secret.Data["password"])
-	return fmt.Sprintf("http://%s:%s@%s:%d?stats;csv", userName, passWord, podIP, statsPort), nil
+	return fmt.Sprintf("http://%s:%s@%s:%d?stats;csv", userName, passWord, podIP, r.StatsPort()), nil
 }
