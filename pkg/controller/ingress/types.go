@@ -142,12 +142,12 @@ func (s annotation) Replicas() int32 {
 	return 1
 }
 
-func (s annotation) NodeSelector() string {
+func (s annotation) NodeSelector() map[string]string {
 	if v, ok := s[NodeSelector]; ok {
-		return v
+		return ParseNodeSelector(v)
 	}
 	v, _ := s[aci.EngressKey+"/"+"daemon.nodeSelector"]
-	return v
+	return ParseNodeSelector(v)
 }
 
 func (s annotation) LoadBalancerPersist() string {
@@ -244,12 +244,10 @@ type KubeOptions struct {
 	// So any interference with underlying endpoints will not cause network update.
 	Ports []int
 
-	LBType              string
-	Replicas            int32
-	NodeSelector        map[string]string
-	LoadBalancerPersist string
+	// NodeSelector        map[string]string
+	// LoadBalancerPersist string
 
-	annotations annotation
+	// annotations annotation
 }
 
 func (o KubeOptions) SupportsLoadBalancerType() bool {

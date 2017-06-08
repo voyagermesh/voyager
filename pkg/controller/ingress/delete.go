@@ -34,12 +34,12 @@ func (lbc *EngressController) Delete() error {
 }
 
 func (lbc *EngressController) deleteLB() error {
-	if lbc.Options.LBType == LBTypeDaemon || lbc.Options.LBType == LBTypeHostPort {
+	if lbc.Annotations().LBType() == LBTypeDaemon || lbc.Annotations().LBType() == LBTypeHostPort {
 		err := lbc.deleteHostPortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
-	} else if lbc.Options.LBType == LBTypeNodePort {
+	} else if lbc.Annotations().LBType() == LBTypeNodePort {
 		err := lbc.deleteNodePortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -64,7 +64,7 @@ func (lbc *EngressController) deleteLBSvc() error {
 			return errors.FromErr(err).Err()
 		}
 
-		if (lbc.Options.LBType == LBTypeDaemon || lbc.Options.LBType == LBTypeHostPort) && lbc.CloudManager != nil {
+		if (lbc.Annotations().LBType() == LBTypeDaemon || lbc.Annotations().LBType() == LBTypeHostPort) && lbc.CloudManager != nil {
 			if fw, ok := lbc.CloudManager.Firewall(); ok {
 				convertedSvc := &kapi.Service{}
 				kapi.Scheme.Convert(svc, convertedSvc, nil)
@@ -199,7 +199,7 @@ func (lbc *EngressController) ensureStatsServiceDeleted() {
 	err := lbc.KubeClient.Core().
 		Services(lbc.Resource.Namespace).
 		Delete(
-			lbc.Options.annotations.StatsServiceName(lbc.Resource.GetName()),
+			lbc.Annotations().StatsServiceName(lbc.Resource.GetName()),
 			&kapi.DeleteOptions{},
 		)
 	if err != nil {

@@ -304,16 +304,15 @@ func (lbc *EngressController) parseOptions() {
 		return
 	}
 	log.Infoln("Parsing annotations.")
-	lbc.Options.annotations = annotation(lbc.Resource.ObjectMeta.Annotations)
-	lbc.Parsed.Sticky = lbc.Options.annotations.StickySession()
+	lbc.Parsed.Sticky = lbc.Annotations().StickySession()
 	if len(lbc.Resource.Spec.TLS) > 0 {
 		lbc.Parsed.SSLCert = true
 	}
 
-	lbc.Parsed.Stats = lbc.Options.annotations.Stats()
+	lbc.Parsed.Stats = lbc.Annotations().Stats()
 	if lbc.Parsed.Stats {
-		lbc.Parsed.StatsPort = lbc.Options.annotations.StatsPort()
-		if name := lbc.Options.annotations.StatsSecretName(); len(name) > 0 {
+		lbc.Parsed.StatsPort = lbc.Annotations().StatsPort()
+		if name := lbc.Annotations().StatsSecretName(); len(name) > 0 {
 			secret, err := lbc.KubeClient.Core().Secrets(lbc.Resource.ObjectMeta.Namespace).Get(name)
 			if err == nil {
 				lbc.Parsed.StatsUserName = string(secret.Data["username"])
@@ -324,15 +323,10 @@ func (lbc *EngressController) parseOptions() {
 			}
 		}
 	}
-	lbc.Options.LBType = lbc.Options.annotations.LBType()
 
-	if lbc.Options.ProviderName == "aws" && lbc.Options.LBType == LBTypeLoadBalancer {
-		lbc.Parsed.AcceptProxy = lbc.Options.annotations.KeepSourceIP()
+	if lbc.Options.ProviderName == "aws" && lbc.Annotations().LBType() == LBTypeLoadBalancer {
+		lbc.Parsed.AcceptProxy = lbc.Annotations().KeepSourceIP()
 	}
-	lbc.Options.Replicas = lbc.Options.annotations.Replicas()
-	lbc.Options.NodeSelector = ParseNodeSelector(lbc.Options.annotations.NodeSelector())
-	lbc.Options.LoadBalancerPersist = lbc.Options.annotations.LoadBalancerPersist()
-	log.Infoln("Got LBType", lbc.Options.LBType)
 }
 
 // ref: https://github.com/kubernetes/kubernetes/blob/078238a461a0872a8eacb887fbb3d0085714604c/staging/src/k8s.io/apiserver/pkg/apis/example/v1/types.go#L134
