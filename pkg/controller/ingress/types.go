@@ -48,8 +48,7 @@ const (
 
 	// LoadBalancer mode exposes HAProxy via a type=LoadBalancer service. This is the original version implemented by @sadlil
 	// Uses nodeport and Cloud LoadBalancer exists beyond single HAProxy run
-	LoadBalancerIP      = AnnotationPrefix + "ip"      // external_ip or loadbalancer_ip "" or a "ipv4"
-	LoadBalancerPersist = AnnotationPrefix + "persist" // "" or a "true"
+	LoadBalancerPersist = AnnotationPrefix + "persist" // "" or IP or non-empty
 
 	// LoadBalancerBackendWeightKey is the weight value of a Pod that was
 	// addressed by the Endpoint, this weight will be added to server backend.
@@ -147,14 +146,12 @@ func (s annotation) NodeSelector() string {
 	return v
 }
 
-func (s annotation) LoadBalancerIP() string {
-	v, _ := s[LoadBalancerIP]
-	return v
-}
-
-func (s annotation) LoadBalancerPersist() bool {
+func (s annotation) LoadBalancerPersist() string {
+	if v, ok := s[AnnotationPrefix+"ip"]; ok {
+		return v
+	}
 	v, _ := s[LoadBalancerPersist]
-	return strings.ToLower(v) == "true"
+	return v
 }
 
 func (s annotation) ServiceAnnotations() (map[string]string, bool) {
@@ -239,8 +236,7 @@ type KubeOptions struct {
 	LBType              string
 	Replicas            int32
 	NodeSelector        map[string]string
-	LoadBalancerIP      string
-	LoadBalancerPersist bool
+	LoadBalancerPersist string
 
 	annotations annotation
 }
