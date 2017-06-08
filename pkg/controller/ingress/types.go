@@ -140,7 +140,10 @@ func (s annotation) Replicas() int32 {
 }
 
 func (s annotation) NodeSelector() string {
-	v, _ := s[NodeSelector]
+	if v, ok := s[NodeSelector]; ok {
+		return v
+	}
+	v, _ := s[AnnotationPrefix+"daemon.nodeSelector"]
 	return v
 }
 
