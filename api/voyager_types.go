@@ -8,7 +8,7 @@ import (
 
 const (
 	EngressKey = "ingress.appscode.com"
-	APIGroup   = EngressKey + "/apiGroup"
+	APISchema  = EngressKey + "/" + "api-schema" // APISchema = APIGroup + "/" + APIVersion
 )
 
 var (

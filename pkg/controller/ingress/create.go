@@ -88,8 +88,8 @@ func (lbc *EngressController) createConfigMap() error {
 			Name:      lbc.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
-				LoadBalancerOriginAPIGroup: lbc.apiGroup,
-				LoadBalancerOriginName:     lbc.Resource.GetName(),
+				OriginAPISchema: lbc.APISchema(),
+				OriginName:      lbc.Resource.GetName(),
 			},
 		},
 		Data: map[string]string{
@@ -155,10 +155,10 @@ func (lbc *EngressController) createHostPortSvc() error {
 			Name:      lbc.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
-				LBName:                     lbc.Resource.GetName(),
-				LBType:                     LBTypeHostPort,
-				LoadBalancerOriginAPIGroup: lbc.apiGroup,
-				LoadBalancerOriginName:     lbc.Resource.GetName(),
+				LBName:          lbc.Resource.GetName(),
+				LBType:          LBTypeHostPort,
+				OriginAPISchema: lbc.APISchema(),
+				OriginName:      lbc.Resource.GetName(),
 			},
 		},
 
@@ -233,8 +233,8 @@ func (lbc *EngressController) createHostPortPods() error {
 			Namespace: lbc.Resource.Namespace,
 			Labels:    labelsFor(lbc.Resource.Name),
 			Annotations: map[string]string{
-				LoadBalancerOriginAPIGroup: lbc.apiGroup,
-				LoadBalancerOriginName:     lbc.Resource.GetName(),
+				OriginAPISchema: lbc.APISchema(),
+				OriginName:      lbc.Resource.GetName(),
 			},
 		},
 
@@ -324,10 +324,10 @@ func (lbc *EngressController) createNodePortSvc() error {
 			Name:      lbc.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
-				LBName:                     lbc.Resource.GetName(),
-				LBType:                     LBTypeNodePort,
-				LoadBalancerOriginAPIGroup: lbc.apiGroup,
-				LoadBalancerOriginName:     lbc.Resource.GetName(),
+				LBName:          lbc.Resource.GetName(),
+				LBType:          LBTypeNodePort,
+				OriginAPISchema: lbc.APISchema(),
+				OriginName:      lbc.Resource.GetName(),
 			},
 		},
 		Spec: kapi.ServiceSpec{
@@ -379,8 +379,8 @@ func (lbc *EngressController) createNodePortPods() error {
 			Namespace: lbc.Resource.Namespace,
 			Labels:    labelsFor(lbc.Resource.Name),
 			Annotations: map[string]string{
-				LoadBalancerOriginAPIGroup: lbc.apiGroup,
-				LoadBalancerOriginName:     lbc.Resource.GetName(),
+				OriginAPISchema: lbc.APISchema(),
+				OriginName:      lbc.Resource.GetName(),
 			},
 		},
 
@@ -465,10 +465,10 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 			Name:      lbc.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
-				LBName:                     lbc.Resource.GetName(),
-				LBType:                     LBTypeLoadBalancer,
-				LoadBalancerOriginAPIGroup: lbc.apiGroup,
-				LoadBalancerOriginName:     lbc.Resource.GetName(),
+				LBName:          lbc.Resource.GetName(),
+				LBType:          LBTypeLoadBalancer,
+				OriginAPISchema: lbc.APISchema(),
+				OriginName:      lbc.Resource.GetName(),
 			},
 		},
 		Spec: kapi.ServiceSpec{
@@ -573,9 +573,9 @@ func (lbc *EngressController) ensureStatsService() {
 			Name:      lbc.Options.annotations.StatsServiceName(lbc.Resource.GetName()),
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
-				LBName:                     lbc.Resource.GetName(),
-				LoadBalancerOriginAPIGroup: lbc.apiGroup,
-				LoadBalancerOriginName:     lbc.Resource.GetName(),
+				LBName:          lbc.Resource.GetName(),
+				OriginAPISchema: lbc.APISchema(),
+				OriginName:      lbc.Resource.GetName(),
 			},
 		},
 		Spec: kapi.ServiceSpec{
@@ -617,7 +617,7 @@ func (lbc *EngressController) updateStatus() error {
 	}
 
 	if len(statuses) > 0 {
-		if lbc.apiGroup == api.APIGroupIngress {
+		if lbc.APISchema() == api.APIGroupIngress {
 			ing, err := lbc.KubeClient.Extensions().Ingresses(lbc.Resource.Namespace).Get(lbc.Resource.Name)
 			if err != nil {
 				return errors.FromErr(err).Err()

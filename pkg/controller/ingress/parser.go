@@ -18,6 +18,13 @@ import (
 	"k8s.io/kubernetes/pkg/util/intstr"
 )
 
+func (lbc *EngressController) APISchema() string {
+	if v, ok := lbc.Resource.Annotations[api.APISchema]; ok {
+		return v
+	}
+	return api.APIGroupEngress
+}
+
 func (lbc *EngressController) OffshootName() string {
 	return VoyagerPrefix + lbc.Resource.Name
 }
@@ -30,15 +37,6 @@ func (lbc *EngressController) parse() error {
 	}
 	lbc.parseOptions()
 	lbc.parseSpec()
-
-	// Set loadbalancer source apiGroup, default ingress.appscode.com
-	lbc.apiGroup = api.APIGroupEngress
-	if val, ok := lbc.Resource.Annotations[api.APIGroup]; ok {
-		if val == api.APIGroupIngress {
-			lbc.apiGroup = api.APIGroupIngress
-		}
-	}
-
 	return nil
 }
 

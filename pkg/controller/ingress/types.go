@@ -87,8 +87,8 @@ const (
 	LoadBalancerKeepSourceIP = aci.EngressKey + "/" + "keep-source-ip"
 
 	// Annotations applied to resources offshoot from an ingress
-	LoadBalancerOriginAPIGroup = aci.EngressKey + "/" + "origin-api-group"
-	LoadBalancerOriginName     = aci.EngressKey + "/" + "origin-name"
+	OriginAPISchema = aci.EngressKey + "/" + "origin-api-schema" // APISchema = {APIGroup}/{APIVersion}
+	OriginName      = aci.EngressKey + "/" + "origin-name"
 )
 
 type annotation map[string]string
@@ -216,7 +216,6 @@ type EngressController struct {
 
 	// Engress object that created or updated.
 	Resource *aci.Ingress
-	apiGroup string
 	Options  *KubeOptions
 	// contains all the https host names.
 	HostFilter []string
