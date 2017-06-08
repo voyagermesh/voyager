@@ -2,6 +2,7 @@ package ingress
 
 import (
 	"encoding/json"
+	"net"
 	"strconv"
 	"strings"
 	"time"
@@ -500,9 +501,11 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 	switch lbc.Options.ProviderName {
 	case "gce", "gke":
 		svc.Spec.Type = kapi.ServiceTypeLoadBalancer
-		svc.Spec.LoadBalancerIP = lbc.Options.LoadBalancerIP
+		if ip := net.ParseIP(lbc.Options.LoadBalancerPersist); ip != nil {
+			svc.Spec.LoadBalancerIP = ip.String()
+		}
 	case "aws":
-		if lbc.Options.LoadBalancerPersist {
+		if lbc.Options.LoadBalancerPersist != "" {
 			// We are going manage the loadbalancer directly
 			svc.Spec.Type = kapi.ServiceTypeNodePort
 		} else {
