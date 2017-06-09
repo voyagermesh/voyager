@@ -57,30 +57,31 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 	}
 
 	log.Infoln("looking for services in namespace", namespace, "with name", name)
-	svc, err := lbc.KubeClient.Core().Services(namespace).Get(name)
+	service, err := lbc.KubeClient.Core().Services(namespace).Get(name)
 	if err != nil {
+		log.Warningln(err)
 		return nil, err
 	}
 
-	if svc.Spec.Type == kapi.ServiceTypeExternalName {
+	if service.Spec.Type == kapi.ServiceTypeExternalName {
 		ep := Endpoint{
 			Name:         "external",
 			Port:         port.String(),
-			ExternalName: svc.Spec.ExternalName,
+			ExternalName: service.Spec.ExternalName,
 		}
-		if nameservers, useResolver := svc.Annotations[api.DNSResolverNameservers]; useResolver {
+		if nameservers, useResolver := service.Annotations[api.DNSResolverNameservers]; useResolver {
 			var resolver DNSResolver
 			err := json.Unmarshal([]byte(nameservers), &resolver.NameServer)
 			if err != nil {
 				return nil, err
 			}
-			if v, ok := svc.Annotations[api.DNSResolverRetries]; ok {
+			if v, ok := service.Annotations[api.DNSResolverRetries]; ok {
 				resolver.Retries, err = strconv.Atoi(v)
 				if err != nil {
 					return nil, err
 				}
 			}
-			if v, ok := svc.Annotations[api.DNSResolverHold]; ok {
+			if v, ok := service.Annotations[api.DNSResolverHold]; ok {
 				m := make(map[string]string)
 				err = json.Unmarshal([]byte(v), &m)
 				if err != nil {
@@ -88,7 +89,7 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 				}
 				resolver.Hold = m
 			}
-			if v, ok := svc.Annotations[api.DNSResolverTimeout]; ok {
+			if v, ok := service.Annotations[api.DNSResolverTimeout]; ok {
 				m := make(map[string]string)
 				err = json.Unmarshal([]byte(v), &m)
 				if err != nil {
@@ -96,17 +97,17 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 				}
 				resolver.Timeout = m
 			}
-			resolver.Name = svc.Name
+			resolver.Name = service.Name
 			lbc.Parsed.DNSResolvers[resolver.Name] = &resolver
 			ep.DNSResolver = resolver.Name
 		}
 		return []*Endpoint{&ep}, nil
 	}
-	p, ok := getSpecifiedPort(svc.Spec.Ports, port)
+	p, ok := getSpecifiedPort(service.Spec.Ports, port)
 	if !ok {
 		return nil, goerr.New("service port unavailable")
 	}
-	return lbc.getEndpoints(svc, p, hostNames)
+	return lbc.getEndpoints(service, p, hostNames)
 }
 
 func (lbc *EngressController) getEndpoints(s *kapi.Service, servicePort *kapi.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
