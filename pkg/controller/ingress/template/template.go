@@ -102,7 +102,13 @@ backend default-backend
 
     {% for e in DefaultBackend.Endpoints %}
     {% if e.ExternalName %}
-    {% if e.ExternalRedirect %} http-request redirect location http://{{e.ExternalName}} code 301 {% else %} server {{ e.Name }} {{e.ExternalName}} resolvers {{e.ExternalServiceOptions.Resolver}} {% endif %}
+    {% if e.UseDNSResolver %}
+    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} resolve-prefer ipv4 {% if e.DNSResolver %} check resolvers {{ e.DNSResolver }} {% endif %}
+    {% elif not svc.Backends.BackendRules %}
+    acl https ssl_fc
+    http-request redirect location https://{{e.ExternalName}}:{{ e.Port }} code 301 if https
+    http-request redirect location http://{{e.ExternalName}}:{{ e.Port }} code 301 unless https
+    {% endfor %}
     {% else %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %} {% if Sticky %}cookie {{ e.Name }} {% endif %}
     {% endif %}
@@ -151,7 +157,7 @@ backend https-{{ svc.Name }}
     {% for e in svc.Backends.Endpoints %}
     {% if e.ExternalName %}
     {% if e.UseDNSResolver %}
-    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} check resolvers {{ e.DNSResolverName }} resolve-prefer ipv4
+    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} resolve-prefer ipv4 {% if e.DNSResolver %} check resolvers {{ e.DNSResolver }} {% endif %}
     {% elif not svc.Backends.BackendRules %}
     http-request redirect location https://{{e.ExternalName}}:{{ e.Port }} code 301
     {% endfor %}
@@ -197,8 +203,8 @@ backend http-{{ svc.Name }}
 
     {% for e in svc.Backends.Endpoints %}
     {% if e.ExternalName %}
-    {% if e.DNSResolver %}
-    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} check resolvers {{ e.DNSResolver }} resolve-prefer ipv4
+    {% if e.UseDNSResolver %}
+    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} resolve-prefer ipv4 {% if e.DNSResolver %} check resolvers {{ e.DNSResolver }} {% endif %}
     {% elif not svc.Backends.BackendRules %}
     http-request redirect location http://{{e.ExternalName}}:{{ e.Port }} code 301
     {% endfor %}
@@ -233,8 +239,8 @@ backend tcp-{{ svc.Name }}
     {% endif %}
 
     {% for e in svc.Backends.Endpoints %}
-    {% if e.ExternalName and e.DNSResolver %}
-    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} check resolvers {{ e.DNSResolver }} resolve-prefer ipv4
+    {% if e.ExternalName and e.UseDNSResolver %}
+    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} resolve-prefer ipv4 {% if e.DNSResolver %} check resolvers {{ e.DNSResolver }} {% endif %}
     {% else %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %}
     {% endif %}

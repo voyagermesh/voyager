@@ -95,13 +95,13 @@ type Backend struct {
 }
 
 type Endpoint struct {
-	Name            string
-	IP              string
-	Port            string
-	Weight          int
-	ExternalName    string
-	UseDNSResolver  bool
-	DNSResolverName string
+	Name           string
+	IP             string
+	Port           string
+	Weight         int
+	ExternalName   string
+	UseDNSResolver bool
+	DNSResolver    string
 }
 
 // Loadbalancer image is an almost constant type.
