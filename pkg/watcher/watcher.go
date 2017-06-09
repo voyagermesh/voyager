@@ -30,9 +30,6 @@ type Watcher struct {
 	// name of the cloud provider
 	ProviderName string
 
-	// name of the cluster the daemon running.
-	ClusterName string
-
 	// HAProxyImage is used to create HAProxy pods.
 	HAProxyImage string
 
@@ -118,7 +115,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 	switch e.ResourceType {
 	case events.Ingress, events.ExtendedIngress:
 		// Handle Ingress first
-		err := ingresscontroller.NewEngressController(w.ClusterName,
+		err := ingresscontroller.NewEngressController(
 			w.ProviderName,
 			w.KubeClient,
 			w.ExtClient,
@@ -144,7 +141,6 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 			w.restoreResourceIfRequired(e)
 			return ingresscontroller.UpgradeAllEngress(
 				e.MetaData.Name+"."+e.MetaData.Namespace,
-				w.ClusterName,
 				w.ProviderName,
 				w.KubeClient,
 				w.ExtClient,
@@ -160,7 +156,6 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 			if e.EventType.IsUpdated() {
 				return ingresscontroller.UpgradeAllEngress(
 					e.MetaData.Name+"."+e.MetaData.Namespace,
-					w.ClusterName,
 					w.ProviderName,
 					w.KubeClient,
 					w.ExtClient,

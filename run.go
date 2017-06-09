@@ -6,7 +6,6 @@ import (
 	_ "net/http/pprof"
 	"time"
 
-	stringz "github.com/appscode/go/strings"
 	hpe "github.com/appscode/haproxy_exporter/exporter"
 	"github.com/appscode/log"
 	"github.com/appscode/pat"
@@ -26,7 +25,6 @@ var (
 	kubeconfigPath string
 
 	providerName    string
-	clusterName     string
 	haProxyImage    string = "appscode/haproxy:1.7.5-1.5.6"
 	ingressClass    string
 	enableAnalytics bool = true
@@ -51,7 +49,6 @@ func NewCmdRun() *cobra.Command {
 	cmd.Flags().StringVar(&masterURL, "master", masterURL, "The address of the Kubernetes API server (overrides any value in kubeconfig)")
 	cmd.Flags().StringVar(&kubeconfigPath, "kubeconfig", kubeconfigPath, "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
 	cmd.Flags().StringVarP(&providerName, "cloud-provider", "c", providerName, "Name of cloud provider")
-	cmd.Flags().StringVarP(&clusterName, "cluster-name", "k", clusterName, "Name of Kubernetes cluster")
 	cmd.Flags().StringVarP(&haProxyImage, "haproxy-image", "h", haProxyImage, "haproxy image name to be run")
 	cmd.Flags().StringVar(&ingressClass, "ingress-class", "", "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
 	cmd.Flags().BoolVar(&enableAnalytics, "analytics", enableAnalytics, "Send analytical event to Google Analytics")
@@ -66,9 +63,6 @@ func NewCmdRun() *cobra.Command {
 func run() {
 	if haProxyImage == "" {
 		log.Fatalln("Missing required flag --haproxy-image")
-	}
-	if stringz.Contains([]string{"aws", "gce", "gke", "azure"}, providerName) && clusterName == "" {
-		log.Fatalln("--cluster-name flag must be set when --cloud-provider={aws,gce,gke,azure}")
 	}
 
 	if enableAnalytics {
@@ -88,7 +82,6 @@ func run() {
 		ExtClient:    extClient,
 		SyncPeriod:   time.Minute * 2,
 		ProviderName: providerName,
-		ClusterName:  clusterName,
 		HAProxyImage: haProxyImage,
 		IngressClass: ingressClass,
 	}

@@ -20,7 +20,6 @@ spec:
         args:
         - run
         - --cloud-provider=$CLOUD_PROVIDER
-        - --cluster-name=$CLUSTER_NAME
         - --v=3
         image: appscode/voyager:$TAG
         ports:

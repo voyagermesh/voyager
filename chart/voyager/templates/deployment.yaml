@@ -21,7 +21,6 @@ spec:
       - args:
         - run
         - --cloud-provider={{.Values.cloudProvider}}
-        - --cluster-name={{.Values.clusterName}}
         - --v={{.Values.logLevel}}
         image: "{{.Values.image}}:{{.Values.imageTag}}"
         name: voyager

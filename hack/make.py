@@ -173,7 +173,7 @@ def e2e_test(args):
 
 def e2e_test_minikube(args):
     st = ' '.join(args)
-    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -v=3 -verbose=true -mode=e2e -cloud-provider=minikube -cluster-name=minikube ' + st))
+    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -v=3 -verbose=true -mode=e2e -cloud-provider=minikube ' + st))
 
 def integration(args):
     st = ' '.join(args)
