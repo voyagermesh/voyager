@@ -193,10 +193,11 @@ func (lbc *EngressController) generateTemplate() error {
 
 func Context(s interface{}) (pongo2.Context, error) {
 	ctx := pongo2.Context{}
-	d, err := json.Marshal(s)
+	d, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
 		return ctx, err
 	}
+	log.Infoln("Rendering haproxy.cfg using context", string(d))
 	err = json.Unmarshal(d, &ctx)
 	if err != nil {
 		return ctx, errors.FromErr(err).Err()
