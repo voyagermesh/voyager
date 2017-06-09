@@ -62,6 +62,27 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 		log.Warningln(err)
 		return nil, err
 	}
+
+	if service.Spec.Type == kapi.ServiceTypeExternalName {
+		// https://kubernetes.io/docs/concepts/services-networking/service/#services-without-selectors
+		ep := Endpoint{
+			Name:         "external",
+			Port:         port.String(),
+			ExternalName: service.Spec.ExternalName,
+		}
+
+		var resolver *api.DNSResolver
+		var err error
+		ep.UseDNSResolver, resolver, err = api.DNSResolverForService(*service)
+		if err != nil {
+			return nil, err
+		}
+		if ep.UseDNSResolver && resolver != nil {
+			lbc.Parsed.DNSResolvers[resolver.Name] = resolver
+			ep.DNSResolver = resolver.Name
+		}
+		return []*Endpoint{&ep}, nil
+	}
 	p, ok := getSpecifiedPort(service.Spec.Ports, port)
 	if !ok {
 		log.Warningln("service port unavailable")
@@ -172,10 +193,11 @@ func (lbc *EngressController) generateTemplate() error {
 
 func Context(s interface{}) (pongo2.Context, error) {
 	ctx := pongo2.Context{}
-	d, err := json.Marshal(s)
+	d, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
 		return ctx, err
 	}
+	log.Infoln("Rendering haproxy.cfg using context", string(d))
 	err = json.Unmarshal(d, &ctx)
 	if err != nil {
 		return ctx, errors.FromErr(err).Err()
@@ -200,6 +222,8 @@ func getTargetPort(servicePort *kapi.ServicePort) int {
 func (lbc *EngressController) parseSpec() {
 	log.Infoln("Parsing Engress specs")
 	lbc.Ports = make([]int, 0)
+	lbc.Parsed.DNSResolvers = make(map[string]*api.DNSResolver)
+
 	if lbc.Resource.Spec.Backend != nil {
 		log.Debugln("generating default backend", lbc.Resource.Spec.Backend.RewriteRule, lbc.Resource.Spec.Backend.HeaderRule)
 		eps, _ := lbc.serviceEndpoints(lbc.Resource.Spec.Backend.ServiceName, lbc.Resource.Spec.Backend.ServicePort, lbc.Resource.Spec.Backend.HostNames)
@@ -236,23 +260,20 @@ func (lbc *EngressController) parseSpec() {
 			}
 
 			for _, svc := range rule.HTTP.Paths {
-				def := &Service{
-					Name:     "service-" + rand.Characters(6),
-					Host:     host,
-					AclMatch: svc.Path,
-				}
-
-				eps, err := lbc.serviceEndpoints(svc.Backend.ServiceName, svc.Backend.ServicePort, svc.Backend.HostNames)
-				def.Backends = &Backend{
-					Name:         "backend-" + rand.Characters(5),
-					Endpoints:    eps,
-					BackendRules: svc.Backend.BackendRule,
-					RewriteRules: svc.Backend.RewriteRule,
-					HeaderRules:  svc.Backend.HeaderRule,
-				}
-
-				log.Debugln("Got endpoints", len(eps))
-				if len(eps) > 0 && err == nil {
+				eps, _ := lbc.serviceEndpoints(svc.Backend.ServiceName, svc.Backend.ServicePort, svc.Backend.HostNames)
+				if len(eps) > 0 {
+					def := &Service{
+						Name:     "service-" + rand.Characters(6),
+						Host:     host,
+						AclMatch: svc.Path,
+					}
+					def.Backends = &Backend{
+						Name:         "backend-" + rand.Characters(5),
+						Endpoints:    eps,
+						BackendRules: svc.Backend.BackendRule,
+						RewriteRules: svc.Backend.RewriteRule,
+						HeaderRules:  svc.Backend.HeaderRule,
+					}
 					// add the service to http or https filters.
 					if ok, _ := arrays.Contains(lbc.HostFilter, host); ok {
 						lbc.Parsed.HttpsService = append(lbc.Parsed.HttpsService, def)
@@ -266,23 +287,21 @@ func (lbc *EngressController) parseSpec() {
 		// adding tcp service to the parser.
 		for _, tcpSvc := range rule.TCP {
 			lbc.Ports = append(lbc.Ports, tcpSvc.Port.IntValue())
-			def := &TCPService{
-				Name:        "service-" + rand.Characters(6),
-				Host:        host,
-				Port:        tcpSvc.Port.String(),
-				SecretName:  tcpSvc.SecretName,
-				ALPNOptions: parseALPNOptions(tcpSvc.ALPN),
-			}
 			log.Infoln(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort)
-			eps, err := lbc.serviceEndpoints(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort, tcpSvc.Backend.HostNames)
-			def.Backends = &Backend{
-				Name:         "backend-" + rand.Characters(5),
-				BackendRules: tcpSvc.Backend.BackendRule,
-				Endpoints:    eps,
-			}
-
-			log.Debugln("Got endpoints", len(eps))
-			if len(eps) > 0 && err == nil {
+			eps, _ := lbc.serviceEndpoints(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort, tcpSvc.Backend.HostNames)
+			if len(eps) > 0 {
+				def := &TCPService{
+					Name:        "service-" + rand.Characters(6),
+					Host:        host,
+					Port:        tcpSvc.Port.String(),
+					SecretName:  tcpSvc.SecretName,
+					ALPNOptions: parseALPNOptions(tcpSvc.ALPN),
+				}
+				def.Backends = &Backend{
+					Name:         "backend-" + rand.Characters(5),
+					BackendRules: tcpSvc.Backend.BackendRule,
+					Endpoints:    eps,
+				}
 				lbc.Parsed.TCPService = append(lbc.Parsed.TCPService, def)
 				lbc.SecretNames = append(lbc.SecretNames, def.SecretName)
 			}

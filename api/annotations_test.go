@@ -24,7 +24,7 @@ func TestNodeSelector(t *testing.T) {
 	}
 
 	for k, v := range dataTable {
-		assert.Equal(t, v, parseNodeSelector(k))
+		assert.Equal(t, v, parseDaemonNodeSelector(k))
 	}
 }
 

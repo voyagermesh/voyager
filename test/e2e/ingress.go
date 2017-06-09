@@ -9,7 +9,6 @@ import (
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	api "github.com/appscode/voyager/api"
-	"github.com/appscode/voyager/pkg/controller/ingress"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	kapi "k8s.io/kubernetes/pkg/api"
 	k8serr "k8s.io/kubernetes/pkg/api/errors"
@@ -25,11 +24,11 @@ var (
 	defaultUrlTemplate = template.Must(template.New("svc-template").Parse("http://{{.IP}}:{{.Port}}"))
 )
 
-func (i *IngressTestSuit) TestIngressEnsureTPR() error {
+func (s *IngressTestSuit) TestIngressEnsureTPR() error {
 	var err error
 	for it := 0; it < 10; it++ {
 		log.Infoln(it, "Trying to get ingress.appscode.com")
-		tpr, err := i.t.KubeClient.Extensions().ThirdPartyResources().Get("ingress.appscode.com")
+		tpr, err := s.t.KubeClient.Extensions().ThirdPartyResources().Get("ingress.appscode.com")
 		if err == nil {
 			log.Infoln("Found tpr for ingress with name", tpr.Name)
 			break
@@ -41,11 +40,11 @@ func (i *IngressTestSuit) TestIngressEnsureTPR() error {
 	return err
 }
 
-func (ing *IngressTestSuit) TestIngressCreateDelete() error {
+func (s *IngressTestSuit) TestIngressCreateDelete() error {
 	baseIngress := &api.Ingress{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
-			Namespace: ing.t.Config.TestNamespace,
+			Namespace: s.t.Config.TestNamespace,
 		},
 		Spec: api.ExtendedIngressSpec{
 			Rules: []api.ExtendedIngressRule{
@@ -68,13 +67,13 @@ func (ing *IngressTestSuit) TestIngressCreateDelete() error {
 		},
 	}
 
-	_, err := ing.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		if ing.t.Config.Cleanup {
-			ing.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		if s.t.Config.Cleanup {
+			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
@@ -82,7 +81,7 @@ func (ing *IngressTestSuit) TestIngressCreateDelete() error {
 	time.Sleep(time.Second * 60)
 	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -94,7 +93,7 @@ func (ing *IngressTestSuit) TestIngressCreateDelete() error {
 	}
 	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 	for i := 0; i < maxRetries; i++ {
-		_, err = ing.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
 		if err == nil {
 			break
 		}
@@ -105,7 +104,7 @@ func (ing *IngressTestSuit) TestIngressCreateDelete() error {
 		return errors.New().WithCause(err).Err()
 	}
 
-	serverAddr, err := ing.getURLs(baseIngress)
+	serverAddr, err := s.getURLs(baseIngress)
 	if err != nil {
 		return err
 	}
@@ -126,9 +125,9 @@ func (ing *IngressTestSuit) TestIngressCreateDelete() error {
 		}
 	}
 
-	if ing.t.Voyager != nil && ing.t.Voyager.ProviderName != "minikube" {
+	if s.t.Voyager != nil && s.t.Voyager.ProviderName != "minikube" {
 		// Check Status for ingress
-		baseIngress, err := ing.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+		baseIngress, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -142,7 +141,7 @@ func (ing *IngressTestSuit) TestIngressCreateDelete() error {
 		}
 	}
 
-	err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+	err = s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Failed to delete").Err()
 	}
@@ -150,7 +149,7 @@ func (ing *IngressTestSuit) TestIngressCreateDelete() error {
 	// Wait until everything is deleted
 	time.Sleep(time.Second * 60)
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err != nil {
 			if k8serr.IsNotFound(err) {
 				break
@@ -165,11 +164,11 @@ func (ing *IngressTestSuit) TestIngressCreateDelete() error {
 	return nil
 }
 
-func (ing *IngressTestSuit) TestIngressUpdate() error {
+func (s *IngressTestSuit) TestIngressUpdate() error {
 	baseIngress := &api.Ingress{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
-			Namespace: ing.t.Config.TestNamespace,
+			Namespace: s.t.Config.TestNamespace,
 		},
 		Spec: api.ExtendedIngressSpec{
 			Rules: []api.ExtendedIngressRule{
@@ -192,13 +191,13 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 		},
 	}
 
-	_, err := ing.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	defer func() {
-		if ing.t.Config.Cleanup {
-			ing.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		if s.t.Config.Cleanup {
+			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
@@ -206,7 +205,7 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 	time.Sleep(time.Second * 40)
 	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -218,7 +217,7 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 	}
 	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 	for i := 0; i < maxRetries; i++ {
-		_, err = ing.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
 		if err == nil {
 			break
 		}
@@ -229,7 +228,7 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 		return err
 	}
 
-	serverAddr, err := ing.getURLs(baseIngress)
+	serverAddr, err := s.getURLs(baseIngress)
 	if err != nil {
 		return err
 	}
@@ -250,18 +249,18 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 		}
 	}
 
-	updatedBaseIngress, err := ing.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+	updatedBaseIngress, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	updatedBaseIngress.Spec.Rules[0].HTTP.Paths[0].Path = "/newTestpath"
-	_, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Update(updatedBaseIngress)
+	_, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Update(updatedBaseIngress)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 
 	time.Sleep(time.Second * 30)
-	serverAddr, err = ing.getURLs(baseIngress)
+	serverAddr, err = s.getURLs(baseIngress)
 	if err != nil {
 		return err
 	}
@@ -298,12 +297,12 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 	}
 
 	// Open New Port
-	updatedBaseIngress, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+	updatedBaseIngress, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 
-	if ing.t.Config.ProviderName != "minikube" {
+	if s.t.Config.ProviderName != "minikube" {
 		updatedBaseIngress.Spec.Rules[0].HTTP = nil
 		updatedBaseIngress.Spec.Rules[0].TCP = []api.TCPExtendedIngressRuleValue{
 			{
@@ -321,7 +320,7 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 				},
 			},
 		}
-		_, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Update(updatedBaseIngress)
+		_, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Update(updatedBaseIngress)
 		if err != nil {
 			return errors.New().WithCause(err).Err()
 		}
@@ -329,7 +328,7 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 
 		found := false
 		for i := 1; i <= maxRetries; i++ {
-			svc, err := ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+			svc, err := s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 			if err != nil {
 				continue
 			}
@@ -351,7 +350,7 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 			return errors.New().WithMessage("Service not found").Err()
 		}
 
-		serverAddr, err = ing.getURLs(baseIngress)
+		serverAddr, err = s.getURLs(baseIngress)
 		if err != nil {
 			return err
 		}
@@ -369,19 +368,19 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 		}
 
 		log.Infoln("Checking NodePort Assignments")
-		rc, err := ing.t.KubeClient.Core().ReplicationControllers(ing.t.Config.TestNamespace).Get(testServerRc.Name)
+		rc, err := s.t.KubeClient.Core().ReplicationControllers(s.t.Config.TestNamespace).Get(testServerRc.Name)
 		if err == nil {
 
-			svc, err := ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+			svc, err := s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 			if err != nil {
 				return errors.New().WithMessage("Service get encountered error").Err()
 			}
 			// Removing pods so that endpoints get updated
 			rc.Spec.Replicas = 0
-			ing.t.KubeClient.Core().ReplicationControllers(ing.t.Config.TestNamespace).Update(rc)
+			s.t.KubeClient.Core().ReplicationControllers(s.t.Config.TestNamespace).Update(rc)
 
 			for {
-				pods, _ := ing.t.KubeClient.Core().Pods(ing.t.Config.TestNamespace).List(kapi.ListOptions{
+				pods, _ := s.t.KubeClient.Core().Pods(s.t.Config.TestNamespace).List(kapi.ListOptions{
 					LabelSelector: labels.SelectorFromSet(labels.Set(rc.Spec.Selector)),
 				})
 				if len(pods.Items) <= 0 {
@@ -389,7 +388,7 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 				}
 				time.Sleep(time.Second * 5)
 			}
-			svcUpdated, err := ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+			svcUpdated, err := s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 			if err != nil {
 				return errors.New().WithMessage("Service get encountered error").Err()
 			}
@@ -405,9 +404,9 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 			}
 
 			rc.Spec.Replicas = 2
-			ing.t.KubeClient.Core().ReplicationControllers(ing.t.Config.TestNamespace).Update(rc)
+			s.t.KubeClient.Core().ReplicationControllers(s.t.Config.TestNamespace).Update(rc)
 
-			svcUpdated, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+			svcUpdated, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 			if err != nil {
 				return errors.New().WithMessage("Service get encountered error").Err()
 			}
@@ -426,17 +425,17 @@ func (ing *IngressTestSuit) TestIngressUpdate() error {
 	return nil
 }
 
-func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
-	if len(ing.t.Config.LBPersistIP) > 0 &&
-		(ing.t.Config.ProviderName == "gce" ||
-			ing.t.Config.ProviderName == "gke" ||
-			(ing.t.Config.ProviderName == "aws" && ing.t.Config.InCluster)) {
+func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
+	if len(s.t.Config.LBPersistIP) > 0 &&
+		(s.t.Config.ProviderName == "gce" ||
+			s.t.Config.ProviderName == "gke" ||
+			(s.t.Config.ProviderName == "aws" && s.t.Config.InCluster)) {
 		baseIngress := &api.Ingress{
 			ObjectMeta: kapi.ObjectMeta{
 				Name:      testIngressName(),
-				Namespace: ing.t.Config.TestNamespace,
+				Namespace: s.t.Config.TestNamespace,
 				Annotations: map[string]string{
-					api.LoadBalancerPersist: ing.t.Config.LBPersistIP,
+					api.LoadBalancerPersist: s.t.Config.LBPersistIP,
 				},
 			},
 			Spec: api.ExtendedIngressSpec{
@@ -460,13 +459,13 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 			},
 		}
 
-		_, err := ing.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+		_, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
 		if err != nil {
 			return err
 		}
 		defer func() {
-			if ing.t.Config.Cleanup {
-				ing.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+			if s.t.Config.Cleanup {
+				s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
 			}
 		}()
 
@@ -474,7 +473,7 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 		time.Sleep(time.Second * 10)
 		var svc *kapi.Service
 		for i := 0; i < maxRetries; i++ {
-			svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+			svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 			if err == nil {
 				break
 			}
@@ -486,7 +485,7 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 		}
 		log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 		for i := 0; i < maxRetries; i++ {
-			_, err = ing.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+			_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
 			if err == nil {
 				break
 			}
@@ -497,7 +496,7 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 			return err
 		}
 
-		serverAddr, err := ing.getURLs(baseIngress)
+		serverAddr, err := s.getURLs(baseIngress)
 		if err != nil {
 			return err
 		}
@@ -518,13 +517,13 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 			}
 		}
 
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err != nil {
 			return errors.New().WithCause(err).Err()
 		}
 		oldServiceIP := svc.Status.LoadBalancer.Ingress[0].IP
 
-		err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		err = s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
 		if err != nil {
 			return errors.New().WithCause(err).Err()
 		}
@@ -533,7 +532,7 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 		baseIngress = &api.Ingress{
 			ObjectMeta: kapi.ObjectMeta{
 				Name:      testIngressName(),
-				Namespace: ing.t.Config.TestNamespace,
+				Namespace: s.t.Config.TestNamespace,
 				Annotations: map[string]string{
 					api.LoadBalancerPersist: oldServiceIP,
 				},
@@ -559,20 +558,20 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 			},
 		}
 
-		_, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+		_, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
 		if err != nil {
 			return err
 		}
 		defer func() {
-			if ing.t.Config.Cleanup {
-				ing.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+			if s.t.Config.Cleanup {
+				s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
 			}
 		}()
 
 		// Wait sometime to loadbalancer be opened up.
 		time.Sleep(time.Second * 10)
 		for i := 0; i < maxRetries; i++ {
-			svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+			svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 			if err == nil {
 				break
 			}
@@ -584,7 +583,7 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 		}
 		log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 		for i := 0; i < maxRetries; i++ {
-			_, err = ing.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+			_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
 			if err == nil {
 				break
 			}
@@ -595,7 +594,7 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 			return err
 		}
 
-		serverAddr, err = ing.getURLs(baseIngress)
+		serverAddr, err = s.getURLs(baseIngress)
 		if err != nil {
 			return err
 		}
@@ -616,7 +615,7 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 			}
 		}
 
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err != nil {
 			return errors.New().WithCause(err).Err()
 		}
@@ -640,11 +639,11 @@ func (ing *IngressTestSuit) TestIngressCreateIPPersist() error {
 	return nil
 }
 
-func (ing *IngressTestSuit) TestIngressCreateWithOptions() error {
+func (s *IngressTestSuit) TestIngressCreateWithOptions() error {
 	baseIngress := &api.Ingress{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
-			Namespace: ing.t.Config.TestNamespace,
+			Namespace: s.t.Config.TestNamespace,
 		},
 		Spec: api.ExtendedIngressSpec{
 			Rules: []api.ExtendedIngressRule{
@@ -672,13 +671,13 @@ func (ing *IngressTestSuit) TestIngressCreateWithOptions() error {
 		},
 	}
 
-	_, err := ing.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		if ing.t.Config.Cleanup {
-			ing.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		if s.t.Config.Cleanup {
+			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
@@ -686,7 +685,7 @@ func (ing *IngressTestSuit) TestIngressCreateWithOptions() error {
 	time.Sleep(time.Second * 10)
 	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -698,7 +697,7 @@ func (ing *IngressTestSuit) TestIngressCreateWithOptions() error {
 	}
 	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 	for i := 0; i < maxRetries; i++ {
-		_, err = ing.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
 		if err == nil {
 			break
 		}
@@ -709,7 +708,7 @@ func (ing *IngressTestSuit) TestIngressCreateWithOptions() error {
 		return err
 	}
 
-	serverAddr, err := ing.getURLs(baseIngress)
+	serverAddr, err := s.getURLs(baseIngress)
 	if err != nil {
 		return err
 	}
@@ -760,11 +759,11 @@ func (ing *IngressTestSuit) TestIngressCreateWithOptions() error {
 	return nil
 }
 
-func (ing *IngressTestSuit) TestIngressCoreIngress() error {
+func (s *IngressTestSuit) TestIngressCoreIngress() error {
 	baseIngress := &extensions.Ingress{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
-			Namespace: ing.t.Config.TestNamespace,
+			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
 				"kubernetes.io/ingress.class": "voyager",
 			},
@@ -790,13 +789,13 @@ func (ing *IngressTestSuit) TestIngressCoreIngress() error {
 		},
 	}
 
-	_, err := ing.t.KubeClient.Extensions().Ingresses(baseIngress.Namespace).Create(baseIngress)
+	_, err := s.t.KubeClient.Extensions().Ingresses(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		if ing.t.Config.Cleanup {
-			ing.t.KubeClient.Extensions().Ingresses(baseIngress.Namespace).Delete(baseIngress.Name, &kapi.DeleteOptions{})
+		if s.t.Config.Cleanup {
+			s.t.KubeClient.Extensions().Ingresses(baseIngress.Namespace).Delete(baseIngress.Name, &kapi.DeleteOptions{})
 		}
 	}()
 
@@ -804,7 +803,7 @@ func (ing *IngressTestSuit) TestIngressCoreIngress() error {
 	time.Sleep(time.Second * 10)
 	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(api.VoyagerPrefix + baseIngress.Name)
+		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(api.VoyagerPrefix + baseIngress.Name)
 		if err == nil {
 			break
 		}
@@ -816,7 +815,7 @@ func (ing *IngressTestSuit) TestIngressCoreIngress() error {
 	}
 	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 	for i := 0; i < maxRetries; i++ {
-		_, err = ing.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
 		if err == nil {
 			break
 		}
@@ -831,7 +830,7 @@ func (ing *IngressTestSuit) TestIngressCoreIngress() error {
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
-	serverAddr, err := ing.getURLs(baseExtIngress)
+	serverAddr, err := s.getURLs(baseExtIngress)
 	if err != nil {
 		return err
 	}
@@ -854,27 +853,27 @@ func (ing *IngressTestSuit) TestIngressCoreIngress() error {
 	return nil
 }
 
-func (ing *IngressTestSuit) TestIngressHostNames() error {
-	headlessSvc, err := ing.t.KubeClient.Core().Services(ing.t.Config.TestNamespace).Create(testStatefulSetSvc)
+func (s *IngressTestSuit) TestIngressHostNames() error {
+	headlessSvc, err := s.t.KubeClient.Core().Services(s.t.Config.TestNamespace).Create(testStatefulSetSvc)
 	if err != nil {
 		return err
 	}
 	orphan := false
 	defer func() {
-		if ing.t.Config.Cleanup {
-			ing.t.KubeClient.Core().Services(ing.t.Config.TestNamespace).Delete(headlessSvc.Name, &kapi.DeleteOptions{
+		if s.t.Config.Cleanup {
+			s.t.KubeClient.Core().Services(s.t.Config.TestNamespace).Delete(headlessSvc.Name, &kapi.DeleteOptions{
 				OrphanDependents: &orphan,
 			})
 		}
 	}()
 
-	ss, err := ing.t.KubeClient.Apps().StatefulSets(ing.t.Config.TestNamespace).Create(testServerStatefulSet)
+	ss, err := s.t.KubeClient.Apps().StatefulSets(s.t.Config.TestNamespace).Create(testServerStatefulSet)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		if ing.t.Config.Cleanup {
-			ing.t.KubeClient.Apps().StatefulSets(ing.t.Config.TestNamespace).Delete(ss.Name, &kapi.DeleteOptions{
+		if s.t.Config.Cleanup {
+			s.t.KubeClient.Apps().StatefulSets(s.t.Config.TestNamespace).Delete(ss.Name, &kapi.DeleteOptions{
 				OrphanDependents: &orphan,
 			})
 		}
@@ -883,7 +882,7 @@ func (ing *IngressTestSuit) TestIngressHostNames() error {
 	baseIngress := &api.Ingress{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
-			Namespace: ing.t.Config.TestNamespace,
+			Namespace: s.t.Config.TestNamespace,
 		},
 		Spec: api.ExtendedIngressSpec{
 			Rules: []api.ExtendedIngressRule{
@@ -906,21 +905,21 @@ func (ing *IngressTestSuit) TestIngressHostNames() error {
 			},
 		},
 	}
-	_, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		if ing.t.Config.Cleanup {
-			ing.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		if s.t.Config.Cleanup {
+			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
 	// Wait sometime to loadbalancer be opened up.
-	time.Sleep(time.Second * 60)
+	time.Sleep(time.Second * 120)
 	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -932,7 +931,7 @@ func (ing *IngressTestSuit) TestIngressHostNames() error {
 	}
 	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 	for i := 0; i < maxRetries; i++ {
-		_, err = ing.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
 		if err == nil {
 			break
 		}
@@ -943,7 +942,7 @@ func (ing *IngressTestSuit) TestIngressHostNames() error {
 		return err
 	}
 
-	serverAddr, err := ing.getURLs(baseIngress)
+	serverAddr, err := s.getURLs(baseIngress)
 	if err != nil {
 		return err
 	}
@@ -965,11 +964,11 @@ func (ing *IngressTestSuit) TestIngressHostNames() error {
 	return nil
 }
 
-func (ing *IngressTestSuit) TestIngressBackendWeight() error {
-	dp1, err := ing.t.KubeClient.Extensions().Deployments(ing.t.Config.TestNamespace).Create(&extensions.Deployment{
+func (s *IngressTestSuit) TestIngressBackendWeight() error {
+	dp1, err := s.t.KubeClient.Extensions().Deployments(s.t.Config.TestNamespace).Create(&extensions.Deployment{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      "deploymet-1-" + randString(4),
-			Namespace: ing.t.Config.TestNamespace,
+			Namespace: s.t.Config.TestNamespace,
 		},
 		Spec: extensions.DeploymentSpec{
 			Replicas: 1,
@@ -1020,10 +1019,10 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 		return err
 	}
 
-	dp2, err := ing.t.KubeClient.Extensions().Deployments(ing.t.Config.TestNamespace).Create(&extensions.Deployment{
+	dp2, err := s.t.KubeClient.Extensions().Deployments(s.t.Config.TestNamespace).Create(&extensions.Deployment{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      "deploymet-2-" + randString(4),
-			Namespace: ing.t.Config.TestNamespace,
+			Namespace: s.t.Config.TestNamespace,
 		},
 		Spec: extensions.DeploymentSpec{
 			Replicas: 1,
@@ -1074,10 +1073,10 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 		return err
 	}
 
-	svc, err := ing.t.KubeClient.Core().Services(ing.t.Config.TestNamespace).Create(&kapi.Service{
+	svc, err := s.t.KubeClient.Core().Services(s.t.Config.TestNamespace).Create(&kapi.Service{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      "deployment-svc",
-			Namespace: ing.t.Config.TestNamespace,
+			Namespace: s.t.Config.TestNamespace,
 		},
 		Spec: kapi.ServiceSpec{
 			Ports: []kapi.ServicePort{
@@ -1100,7 +1099,7 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 	baseIngress := &api.Ingress{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
-			Namespace: ing.t.Config.TestNamespace,
+			Namespace: s.t.Config.TestNamespace,
 		},
 		Spec: api.ExtendedIngressSpec{
 			Rules: []api.ExtendedIngressRule{
@@ -1124,46 +1123,46 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 	}
 
 	defer func() {
-		if ing.t.Config.Cleanup {
-			dp1, err := ing.t.KubeClient.Extensions().Deployments(dp1.Namespace).Get(dp1.Name)
+		if s.t.Config.Cleanup {
+			dp1, err := s.t.KubeClient.Extensions().Deployments(dp1.Namespace).Get(dp1.Name)
 			if err == nil {
 				dp1.Spec.Replicas = 0
-				ing.t.KubeClient.Extensions().Deployments(dp1.Namespace).Update(dp1)
+				s.t.KubeClient.Extensions().Deployments(dp1.Namespace).Update(dp1)
 			}
-			dp2, err := ing.t.KubeClient.Extensions().Deployments(dp2.Namespace).Get(dp2.Name)
+			dp2, err := s.t.KubeClient.Extensions().Deployments(dp2.Namespace).Get(dp2.Name)
 			if err == nil {
 				dp2.Spec.Replicas = 0
-				ing.t.KubeClient.Extensions().Deployments(dp2.Namespace).Update(dp2)
+				s.t.KubeClient.Extensions().Deployments(dp2.Namespace).Update(dp2)
 			}
 			time.Sleep(time.Second * 5)
 			orphan := false
-			ing.t.KubeClient.Extensions().Deployments(dp1.Namespace).Delete(dp1.Name, &kapi.DeleteOptions{
+			s.t.KubeClient.Extensions().Deployments(dp1.Namespace).Delete(dp1.Name, &kapi.DeleteOptions{
 				OrphanDependents: &orphan,
 			})
 
-			ing.t.KubeClient.Extensions().Deployments(dp2.Namespace).Delete(dp2.Name, &kapi.DeleteOptions{
+			s.t.KubeClient.Extensions().Deployments(dp2.Namespace).Delete(dp2.Name, &kapi.DeleteOptions{
 				OrphanDependents: &orphan,
 			})
 
-			ing.t.KubeClient.Core().Services(svc.Namespace).Delete(svc.Name, &kapi.DeleteOptions{
+			s.t.KubeClient.Core().Services(svc.Namespace).Delete(svc.Name, &kapi.DeleteOptions{
 				OrphanDependents: &orphan,
 			})
 		}
 	}()
 
-	_, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		if ing.t.Config.Cleanup {
-			ing.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		if s.t.Config.Cleanup {
+			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
 	time.Sleep(time.Second * 10)
 	for i := 0; i < maxRetries; i++ {
-		_, err := ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		_, err := s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -1174,7 +1173,7 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 		return errors.New().WithCause(err).Err()
 	}
 
-	serverAddr, err := ing.getURLs(baseIngress)
+	serverAddr, err := s.getURLs(baseIngress)
 	if err != nil {
 		return err
 	}
@@ -1224,11 +1223,11 @@ func (ing *IngressTestSuit) TestIngressBackendWeight() error {
 	return nil
 }
 
-func (ing *IngressTestSuit) TestIngressBackendRule() error {
+func (s *IngressTestSuit) TestIngressBackendRule() error {
 	baseIngress := &api.Ingress{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
-			Namespace: ing.t.Config.TestNamespace,
+			Namespace: s.t.Config.TestNamespace,
 		},
 		Spec: api.ExtendedIngressSpec{
 			Rules: []api.ExtendedIngressRule{
@@ -1278,13 +1277,13 @@ func (ing *IngressTestSuit) TestIngressBackendRule() error {
 		},
 	}
 
-	_, err := ing.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		if ing.t.Config.Cleanup {
-			ing.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		if s.t.Config.Cleanup {
+			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
@@ -1292,7 +1291,7 @@ func (ing *IngressTestSuit) TestIngressBackendRule() error {
 	time.Sleep(time.Second * 10)
 	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -1304,7 +1303,7 @@ func (ing *IngressTestSuit) TestIngressBackendRule() error {
 	}
 	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 	for i := 0; i < maxRetries; i++ {
-		_, err = ing.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
 		if err == nil {
 			break
 		}
@@ -1315,7 +1314,7 @@ func (ing *IngressTestSuit) TestIngressBackendRule() error {
 		return err
 	}
 
-	serverAddr, err := ing.getURLs(baseIngress)
+	serverAddr, err := s.getURLs(baseIngress)
 	if err != nil {
 		return err
 	}
@@ -1383,11 +1382,11 @@ func (ing *IngressTestSuit) TestIngressBackendRule() error {
 	return nil
 }
 
-func (ing *IngressTestSuit) TestIngressAnnotations() error {
+func (s *IngressTestSuit) TestIngressAnnotations() error {
 	baseIngress := &api.Ingress{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
-			Namespace: ing.t.Config.TestNamespace,
+			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
 				api.ServiceAnnotations: `{"foo": "bar", "service-annotation": "set"}`,
 				api.PodAnnotations:     `{"foo": "bar", "pod-annotation": "set"}`,
@@ -1413,13 +1412,13 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 		},
 	}
 
-	_, err := ing.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		if ing.t.Config.Cleanup {
-			ing.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		if s.t.Config.Cleanup {
+			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
@@ -1427,7 +1426,7 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 	time.Sleep(time.Second * 60)
 	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -1452,7 +1451,7 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 
 	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 	for i := 0; i < maxRetries; i++ {
-		_, err = ing.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
 		if err == nil {
 			break
 		}
@@ -1463,7 +1462,7 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 		return errors.New().WithCause(err).Err()
 	}
 
-	pods, err := ing.t.KubeClient.Core().Pods(svc.Namespace).List(kapi.ListOptions{
+	pods, err := s.t.KubeClient.Core().Pods(svc.Namespace).List(kapi.ListOptions{
 		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
 	})
 	if err == nil {
@@ -1483,19 +1482,19 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 	}
 
 	// Check Service Annotation Change only Update Service
-	ings, err := ing.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+	ings, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
 	}
 	ings.Annotations[api.ServiceAnnotations] = `{"bar": "foo", "second-service-annotation": "set"}`
-	ings, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Update(ings)
+	ings, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Update(ings)
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
 	}
 
 	time.Sleep(time.Second * 60)
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err != nil {
 			err = errors.New().WithCause(err).WithMessage("Service encountered an error").Err()
 		}
@@ -1520,7 +1519,7 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 		return errors.FromErr(err).Err()
 	}
 
-	pods, err = ing.t.KubeClient.Core().Pods(svc.Namespace).List(kapi.ListOptions{
+	pods, err = s.t.KubeClient.Core().Pods(svc.Namespace).List(kapi.ListOptions{
 		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
 	})
 	if err == nil {
@@ -1540,19 +1539,19 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 	}
 
 	// Check Pod Annotation Change only Update Pods
-	ings, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+	ings, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
 	}
 	ings.Annotations[api.PodAnnotations] = `{"bar": "foo", "second-pod-annotation": "set"}`
-	ings, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Update(ings)
+	ings, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Update(ings)
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
 	}
 
 	time.Sleep(time.Second * 60)
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err != nil {
 			err = errors.New().WithCause(err).WithMessage("Service encountered an error").Err()
 		}
@@ -1577,7 +1576,7 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 		}
 	}
 
-	pods, err = ing.t.KubeClient.Core().Pods(svc.Namespace).List(kapi.ListOptions{
+	pods, err = s.t.KubeClient.Core().Pods(svc.Namespace).List(kapi.ListOptions{
 		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
 	})
 	if err == nil {
@@ -1602,11 +1601,11 @@ func (ing *IngressTestSuit) TestIngressAnnotations() error {
 	return nil
 }
 
-func (ing *IngressTestSuit) TestIngressNodePort() error {
+func (s *IngressTestSuit) TestIngressNodePort() error {
 	baseDaemonIngress := &api.Ingress{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
-			Namespace: ing.t.Config.TestNamespace,
+			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
 				api.LBType: api.LBTypeNodePort,
 			},
@@ -1632,13 +1631,13 @@ func (ing *IngressTestSuit) TestIngressNodePort() error {
 		},
 	}
 
-	_, err := ing.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Create(baseDaemonIngress)
+	_, err := s.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Create(baseDaemonIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		if ing.t.Config.Cleanup {
-			ing.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Delete(baseDaemonIngress.Name)
+		if s.t.Config.Cleanup {
+			s.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Delete(baseDaemonIngress.Name)
 		}
 	}()
 
@@ -1647,7 +1646,7 @@ func (ing *IngressTestSuit) TestIngressNodePort() error {
 	time.Sleep(time.Second * 60)
 	for i := 0; i < maxRetries; i++ {
 		var err error
-		svc, err = ing.t.KubeClient.Core().Services(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName())
+		svc, err = s.t.KubeClient.Core().Services(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -1674,11 +1673,11 @@ func (ing *IngressTestSuit) TestIngressNodePort() error {
 	return nil
 }
 
-func (ing *IngressTestSuit) TestIngressStats() error {
+func (s *IngressTestSuit) TestIngressStats() error {
 	baseIng := &api.Ingress{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
-			Namespace: ing.t.Config.TestNamespace,
+			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
 				api.StatsOn:   "true",
 				api.StatsPort: "8787",
@@ -1705,13 +1704,13 @@ func (ing *IngressTestSuit) TestIngressStats() error {
 		},
 	}
 
-	_, err := ing.t.ExtClient.Ingress(baseIng.Namespace).Create(baseIng)
+	_, err := s.t.ExtClient.Ingress(baseIng.Namespace).Create(baseIng)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		if ing.t.Config.Cleanup {
-			ing.t.ExtClient.Ingress(baseIng.Namespace).Delete(baseIng.Name)
+		if s.t.Config.Cleanup {
+			s.t.ExtClient.Ingress(baseIng.Namespace).Delete(baseIng.Name)
 		}
 	}()
 
@@ -1719,7 +1718,7 @@ func (ing *IngressTestSuit) TestIngressStats() error {
 	time.Sleep(time.Second * 60)
 	for i := 0; i < maxRetries; i++ {
 		var err error
-		_, err = ing.t.KubeClient.Core().Services(baseIng.Namespace).Get(baseIng.OffshootName())
+		_, err = s.t.KubeClient.Core().Services(baseIng.Namespace).Get(baseIng.OffshootName())
 		if err == nil {
 			break
 		}
@@ -1734,7 +1733,7 @@ func (ing *IngressTestSuit) TestIngressStats() error {
 	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
 		var err error
-		svc, err = ing.t.KubeClient.Core().Services(baseIng.Namespace).Get(baseIng.Name + "-stats")
+		svc, err = s.t.KubeClient.Core().Services(baseIng.Namespace).Get(baseIng.Name + "-stats")
 		if err == nil {
 			break
 		}
@@ -1750,12 +1749,12 @@ func (ing *IngressTestSuit) TestIngressStats() error {
 	}
 
 	// Remove Stats From Annotation and Check if the service gets deleted
-	baseIng, err = ing.t.ExtClient.Ingress(baseIng.Namespace).Get(baseIng.Name)
+	baseIng, err = s.t.ExtClient.Ingress(baseIng.Namespace).Get(baseIng.Name)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	delete(baseIng.Annotations, api.StatsOn)
-	baseIng, err = ing.t.ExtClient.Ingress(baseIng.Namespace).Update(baseIng)
+	baseIng, err = s.t.ExtClient.Ingress(baseIng.Namespace).Update(baseIng)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
@@ -1763,7 +1762,7 @@ func (ing *IngressTestSuit) TestIngressStats() error {
 	time.Sleep(time.Second * 60)
 	var deleteErr error
 	for i := 0; i < maxRetries; i++ {
-		_, deleteErr = ing.t.KubeClient.Core().Services(baseIng.Namespace).Get(baseIng.Name + "-stats")
+		_, deleteErr = s.t.KubeClient.Core().Services(baseIng.Namespace).Get(baseIng.Name + "-stats")
 		if deleteErr != nil {
 			break
 		}
@@ -1777,11 +1776,11 @@ func (ing *IngressTestSuit) TestIngressStats() error {
 	return nil
 }
 
-func (ing *IngressTestSuit) TestIngressKeepSource() error {
+func (s *IngressTestSuit) TestIngressKeepSource() error {
 	baseIngress := &api.Ingress{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
-			Namespace: ing.t.Config.TestNamespace,
+			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
 				api.KeepSourceIP: "true",
 			},
@@ -1807,13 +1806,13 @@ func (ing *IngressTestSuit) TestIngressKeepSource() error {
 		},
 	}
 
-	_, err := ing.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		if ing.t.Config.Cleanup {
-			ing.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		if s.t.Config.Cleanup {
+			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
@@ -1821,7 +1820,7 @@ func (ing *IngressTestSuit) TestIngressKeepSource() error {
 	time.Sleep(time.Second * 60)
 	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -1833,7 +1832,7 @@ func (ing *IngressTestSuit) TestIngressKeepSource() error {
 	}
 	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 	for i := 0; i < maxRetries; i++ {
-		_, err = ing.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
 		if err == nil {
 			break
 		}
@@ -1844,7 +1843,7 @@ func (ing *IngressTestSuit) TestIngressKeepSource() error {
 		return errors.New().WithCause(err).Err()
 	}
 
-	serverAddr, err := ing.getURLs(baseIngress)
+	serverAddr, err := s.getURLs(baseIngress)
 	if err != nil {
 		return err
 	}
@@ -1852,13 +1851,13 @@ func (ing *IngressTestSuit) TestIngressKeepSource() error {
 	return nil
 }
 
-func (ing *IngressTestSuit) TestIngressLBSourceRange() error {
+func (s *IngressTestSuit) TestIngressLBSourceRange() error {
 	baseIngress := &api.Ingress{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
-			Namespace: ing.t.Config.TestNamespace,
+			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
-				ingress.KeepSourceIP: "true",
+				api.KeepSourceIP: "true",
 			},
 		},
 		Spec: api.ExtendedIngressSpec{
@@ -1886,13 +1885,13 @@ func (ing *IngressTestSuit) TestIngressLBSourceRange() error {
 		},
 	}
 
-	_, err := ing.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	defer func() {
-		if ing.t.Config.Cleanup {
-			ing.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		if s.t.Config.Cleanup {
+			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
@@ -1900,7 +1899,7 @@ func (ing *IngressTestSuit) TestIngressLBSourceRange() error {
 	time.Sleep(time.Second * 60)
 	var svc *kapi.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -1915,19 +1914,19 @@ func (ing *IngressTestSuit) TestIngressLBSourceRange() error {
 		return errors.New().WithMessage("LBSource range did not matched").Err()
 	}
 
-	tobeUpdated, err := ing.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+	tobeUpdated, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	tobeUpdated.Spec.LoadBalancerSourceRanges = []string{"192.10.0.0/24"}
-	_, err = ing.t.ExtClient.Ingress(baseIngress.Namespace).Update(tobeUpdated)
+	_, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Update(tobeUpdated)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 
 	time.Sleep(time.Second * 60)
 	for i := 0; i < maxRetries; i++ {
-		svc, err = ing.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
 			break
 		}
@@ -1940,6 +1939,237 @@ func (ing *IngressTestSuit) TestIngressLBSourceRange() error {
 
 	if len(svc.Spec.LoadBalancerSourceRanges) != 1 {
 		return errors.New().WithMessage("LBSource range did not matched").Err()
+	}
+	return nil
+}
+
+func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
+	extSvcResolvesDNSWithNS := &kapi.Service{
+		ObjectMeta: kapi.ObjectMeta{
+			Name:      "external-svc-dns-with-ns",
+			Namespace: s.t.Config.TestNamespace,
+			Annotations: map[string]string{
+				api.UseDNSResolver:         "true",
+				api.DNSResolverNameservers: `["8.8.8.8:53", "8.8.4.4:53"]`,
+			},
+		},
+		Spec: kapi.ServiceSpec{
+			Type:         kapi.ServiceTypeExternalName,
+			ExternalName: "google.com",
+		},
+	}
+
+	_, err := s.t.KubeClient.Core().Services(extSvcResolvesDNSWithNS.Namespace).Create(extSvcResolvesDNSWithNS)
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+	defer func() {
+		if s.t.Config.Cleanup {
+			s.t.KubeClient.Core().Services(extSvcResolvesDNSWithNS.Namespace).Delete(extSvcResolvesDNSWithNS.Name, nil)
+		}
+	}()
+
+	extSvcNoResolveRedirect := &kapi.Service{
+		ObjectMeta: kapi.ObjectMeta{
+			Name:      "external-svc-non-dns",
+			Namespace: s.t.Config.TestNamespace,
+		},
+		Spec: kapi.ServiceSpec{
+			Type:         kapi.ServiceTypeExternalName,
+			ExternalName: "google.com",
+		},
+	}
+
+	_, err = s.t.KubeClient.Core().Services(extSvcNoResolveRedirect.Namespace).Create(extSvcNoResolveRedirect)
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+	defer func() {
+		if s.t.Config.Cleanup {
+			s.t.KubeClient.Core().Services(extSvcNoResolveRedirect.Namespace).Delete(extSvcNoResolveRedirect.Name, nil)
+		}
+	}()
+
+	extSvcResolvesDNSWithoutNS := &kapi.Service{
+		ObjectMeta: kapi.ObjectMeta{
+			Name:      "external-svc-dns",
+			Namespace: s.t.Config.TestNamespace,
+		},
+		Spec: kapi.ServiceSpec{
+			Type:         kapi.ServiceTypeExternalName,
+			ExternalName: "google.com",
+		},
+	}
+
+	_, err = s.t.KubeClient.Core().Services(extSvcResolvesDNSWithoutNS.Namespace).Create(extSvcResolvesDNSWithoutNS)
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+	defer func() {
+		if s.t.Config.Cleanup {
+			s.t.KubeClient.Core().Services(extSvcResolvesDNSWithoutNS.Namespace).Delete(extSvcResolvesDNSWithoutNS.Name, nil)
+		}
+	}()
+
+	baseIngress := &api.Ingress{
+		ObjectMeta: kapi.ObjectMeta{
+			Name:      testIngressName(),
+			Namespace: s.t.Config.TestNamespace,
+		},
+		Spec: api.ExtendedIngressSpec{
+			Backend: &api.ExtendedIngressBackend{
+				ServiceName: extSvcNoResolveRedirect.Name,
+				ServicePort: intstr.FromString("80"),
+			},
+			Rules: []api.ExtendedIngressRule{
+				{
+					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
+						HTTP: &api.HTTPExtendedIngressRuleValue{
+							Paths: []api.HTTPExtendedIngressPath{
+								{
+									Path: "/test-dns",
+									Backend: api.ExtendedIngressBackend{
+										ServiceName: extSvcResolvesDNSWithNS.Name,
+										ServicePort: intstr.FromString("80"),
+									},
+								},
+								{
+									Path: "/test-no-dns",
+									Backend: api.ExtendedIngressBackend{
+										ServiceName: extSvcNoResolveRedirect.Name,
+										ServicePort: intstr.FromString("80"),
+									},
+								},
+								{
+									Path: "/test-no-backend-redirect",
+									Backend: api.ExtendedIngressBackend{
+										ServiceName: extSvcResolvesDNSWithoutNS.Name,
+										ServicePort: intstr.FromString("80"),
+									},
+								},
+								{
+									Path: "/test-no-backend-rule-redirect",
+									Backend: api.ExtendedIngressBackend{
+										ServiceName: extSvcNoResolveRedirect.Name,
+										ServicePort: intstr.FromString("80"),
+										BackendRule: []string{
+											"http-request redirect location https://google.com code 302",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+	defer func() {
+		if s.t.Config.Cleanup {
+			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		}
+	}()
+
+	// Wait sometime to loadbalancer be opened up.
+	time.Sleep(time.Second * 10)
+	var svc *kapi.Service
+	for i := 0; i < maxRetries; i++ {
+		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for service to be created")
+	}
+	if err != nil {
+		return err
+	}
+	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
+	for i := 0; i < maxRetries; i++ {
+		_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for endpoints to be created")
+	}
+	if err != nil {
+		return err
+	}
+
+	serverAddr, err := s.getURLs(baseIngress)
+	if err != nil {
+		return err
+	}
+	time.Sleep(time.Second * 60)
+	log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
+	// Check Non DNS redirect
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/test-no-dns").DoTestRedirectWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
+		}
+		if resp.Status != 301 {
+			return errors.New().WithMessage("Path did not matched").Err()
+		}
+		if resp.ResponseHeader.Get("Location") != "http://google.com:80" {
+			return errors.New().WithMessage("Location did not matched").Err()
+		}
+	}
+
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/test-no-backend-redirect").DoTestRedirectWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
+		}
+		if resp.Status != 301 {
+			return errors.New().WithMessage("Path did not matched").Err()
+		}
+		if resp.ResponseHeader.Get("Location") != "http://google.com:80" {
+			return errors.New().WithMessage("Location did not matched").Err()
+		}
+	}
+
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/test-no-backend-rule-redirect").DoTestRedirectWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
+		}
+
+		if resp.Status != 302 {
+			return errors.New().WithMessage("Path did not matched").Err()
+		}
+		if resp.ResponseHeader.Get("Location") != "https://google.com" {
+			return errors.New().WithMessage("Location did not matched").Err()
+		}
+	}
+
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/test-dns").DoStatusWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
+		}
+		if resp.Status != 404 {
+			return errors.New().WithMessage("Path did not matched").Err()
+		}
+	}
+
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/default").DoTestRedirectWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
+		}
+		if resp.Status != 301 {
+			return errors.New().WithMessage("Path did not matched").Err()
+		}
+		if resp.ResponseHeader.Get("Location") != "http://google.com:80" {
+			return errors.New().WithMessage("Location did not matched").Err()
+		}
 	}
 	return nil
 }

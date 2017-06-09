@@ -8,8 +8,8 @@ import (
 
 const (
 	EngressKey = "ingress.appscode.com"
-	APISchema  = EngressKey + "/" + "api-schema" // APISchema = {APIGroup}/{APIVersion}
 
+	APISchema        = EngressKey + "/" + "api-schema" // APISchema = {APIGroup}/{APIVersion}
 	APISchemaEngress = "appscode.com/v1beta1"
 	APISchemaIngress = "extension/v1beta1"
 
@@ -24,14 +24,12 @@ const (
 	StatsServiceName = EngressKey + "/" + "stats-service-name"
 	DefaultStatsPort = 1936
 
-	// Daemon, Persistent, LoadBalancer
-	LBType = EngressKey + "/" + "type"
-
-	LBTypeNodePort = "NodePort"
-	LBTypeHostPort = "HostPort"
 	// Deprecated, use LBTypeHostPort
 	LBTypeDaemon       = "Daemon"
+	LBTypeHostPort     = "HostPort"
+	LBTypeNodePort     = "NodePort"
 	LBTypeLoadBalancer = "LoadBalancer" // default
+	LBType             = EngressKey + "/" + "type"
 
 	// Runs HAProxy on a specific set of a hosts.
 	NodeSelector = EngressKey + "/" + "node-selector"
@@ -84,6 +82,8 @@ const (
 	// Annotations applied to resources offshoot from an ingress
 	OriginAPISchema = EngressKey + "/" + "origin-api-schema" // APISchema = {APIGroup}/{APIVersion}
 	OriginName      = EngressKey + "/" + "origin-name"
+
+	EgressPoints = EngressKey + "/" + "egress-points"
 )
 
 func (r Ingress) OffshootName() string {
@@ -91,59 +91,59 @@ func (r Ingress) OffshootName() string {
 }
 
 func (r Ingress) APISchema() string {
-	if v, ok := getString(r.Annotations, APISchema); ok {
+	if v := getString(r.Annotations, APISchema); v != "" {
 		return v
 	}
 	return APISchemaEngress
 }
 
 func (r Ingress) StickySession() bool {
-	return getBool(r.Annotations, StickySession)
-}
-
-func (r Ingress) Stats() bool {
-	return getBool(r.Annotations, StatsOn)
-}
-
-func (r Ingress) StatsSecretName() string {
-	v, _ := getString(r.Annotations, StatsSecret)
+	v, _ := getBool(r.Annotations, StickySession)
 	return v
 }
 
+func (r Ingress) Stats() bool {
+	v, _ := getBool(r.Annotations, StatsOn)
+	return v
+}
+
+func (r Ingress) StatsSecretName() string {
+	return getString(r.Annotations, StatsSecret)
+}
+
 func (r Ingress) StatsPort() int {
-	if v, ok := getInt(r.Annotations, StatsPort); ok {
+	if v, _ := getInt(r.Annotations, StatsPort); v > 0 {
 		return v
 	}
 	return DefaultStatsPort
 }
 
 func (r Ingress) StatsServiceName() string {
-	if v, ok := getString(r.Annotations, StatsServiceName); ok {
+	if v := getString(r.Annotations, StatsServiceName); v != "" {
 		return v
 	}
 	return r.Name + "-stats"
 }
 
 func (r Ingress) LBType() string {
-	if v, ok := getString(r.Annotations, LBType); ok {
+	if v := getString(r.Annotations, LBType); v != "" {
 		return v
 	}
 	return LBTypeLoadBalancer
 }
 
 func (r Ingress) Replicas() int32 {
-	if v, ok := getInt(r.Annotations, Replicas); ok {
+	if v, _ := getInt(r.Annotations, Replicas); v > 0 {
 		return int32(v)
 	}
 	return 1
 }
 
 func (r Ingress) NodeSelector() map[string]string {
-	if v, ok := getMap(r.Annotations, NodeSelector); ok {
+	if v, _ := getMap(r.Annotations, NodeSelector); len(v) > 0 {
 		return v
 	}
-	v, _ := getString(r.Annotations, EngressKey+"/"+"daemon.nodeSelector")
-	return parseNodeSelector(v)
+	return parseDaemonNodeSelector(getString(r.Annotations, EngressKey+"/"+"daemon.nodeSelector"))
 }
 
 func (r Ingress) Persist() string {
@@ -155,8 +155,8 @@ func (r Ingress) Persist() string {
 }
 
 func (r Ingress) ServiceAnnotations(provider string) (map[string]string, bool) {
-	ans, ok := getMap(r.Annotations, ServiceAnnotations)
-	if ok {
+	ans, err := getMap(r.Annotations, ServiceAnnotations)
+	if err == nil {
 		filteredMap := make(map[string]string)
 		for k, v := range ans {
 			if !strings.HasPrefix(strings.TrimSpace(k), EngressKey+"/") {
@@ -175,12 +175,12 @@ func (r Ingress) ServiceAnnotations(provider string) (map[string]string, bool) {
 		}
 		return filteredMap, true
 	}
-	return ans, ok
+	return ans, false
 }
 
 func (r Ingress) PodsAnnotations() (map[string]string, bool) {
-	ans, ok := getMap(r.Annotations, PodAnnotations)
-	if ok {
+	ans, err := getMap(r.Annotations, PodAnnotations)
+	if err == nil {
 		filteredMap := make(map[string]string)
 		for k, v := range ans {
 			if !strings.HasPrefix(strings.TrimSpace(k), EngressKey+"/") {
@@ -189,15 +189,18 @@ func (r Ingress) PodsAnnotations() (map[string]string, bool) {
 		}
 		return filteredMap, true
 	}
-	return ans, ok
+	return ans, false
 }
 
 func (r Ingress) KeepSourceIP() bool {
-	return getBool(r.Annotations, KeepSourceIP)
+	v, _ := getBool(r.Annotations, KeepSourceIP)
+	return v
 }
 
 // ref: https://github.com/kubernetes/kubernetes/blob/078238a461a0872a8eacb887fbb3d0085714604c/staging/src/k8s.io/apiserver/pkg/apis/example/v1/types.go#L134
-func parseNodeSelector(labels string) map[string]string {
+// Deprecated, for newer ones use '{"k1":"v1", "k2", "v2"}' form
+// This expects the form k1=v1,k2=v2
+func parseDaemonNodeSelector(labels string) map[string]string {
 	selectorMap := make(map[string]string)
 	for _, label := range strings.Split(labels, ",") {
 		label = strings.TrimSpace(label)
@@ -213,56 +216,53 @@ func parseNodeSelector(labels string) map[string]string {
 	return selectorMap
 }
 
-func getBool(m map[string]string, key string) bool {
+func getBool(m map[string]string, key string) (bool, error) {
 	if m == nil {
-		return false
+		return false, nil
 	}
-	v, _ := strconv.ParseBool(m[key])
-	return v
+	return strconv.ParseBool(m[key])
 }
 
-func getInt(m map[string]string, key string) (int, bool) {
+func getInt(m map[string]string, key string) (int, error) {
 	if m == nil {
-		return 0, false
+		return 0, nil
 	}
 	s, ok := m[key]
 	if !ok {
-		return 0, false
+		return 0, nil
 	}
-	v, err := strconv.Atoi(s)
-	return v, err == nil
+	return strconv.Atoi(s)
 }
 
-func getString(m map[string]string, key string) (string, bool) {
+func getString(m map[string]string, key string) string {
 	if m == nil {
-		return "", false
+		return ""
 	}
-	v, ok := m[key]
-	return v, ok
+	return m[key]
 }
 
-func getList(m map[string]string, key string) ([]string, bool) {
+func getList(m map[string]string, key string) ([]string, error) {
 	if m == nil {
-		return []string{}, false
+		return []string{}, nil
 	}
 	s, ok := m[key]
 	if !ok {
-		return []string{}, false
+		return []string{}, nil
 	}
 	v := make([]string, 0)
 	err := json.Unmarshal([]byte(s), &v)
-	return v, err == nil
+	return v, err
 }
 
-func getMap(m map[string]string, key string) (map[string]string, bool) {
+func getMap(m map[string]string, key string) (map[string]string, error) {
 	if m == nil {
-		return map[string]string{}, false
+		return map[string]string{}, nil
 	}
 	s, ok := m[key]
 	if !ok {
-		return map[string]string{}, false
+		return map[string]string{}, nil
 	}
 	v := make(map[string]string)
 	err := json.Unmarshal([]byte(s), &v)
-	return v, err == nil
+	return v, err
 }
