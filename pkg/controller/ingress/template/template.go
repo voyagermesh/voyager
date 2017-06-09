@@ -150,8 +150,8 @@ backend https-{{ svc.Name }}
 
     {% for e in svc.Backends.Endpoints %}
     {% if e.ExternalName %}
-    {% if e.DNSResolver %}
-    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} check resolvers {{ e.DNSResolver }} resolve-prefer ipv4
+    {% if e.UseDNSResolver %}
+    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} check resolvers {{ e.DNSResolverName }} resolve-prefer ipv4
     {% elif not svc.Backends.BackendRules %}
     http-request redirect location https://{{e.ExternalName}}:{{ e.Port }} code 301
     {% endfor %}

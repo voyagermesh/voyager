@@ -70,11 +70,14 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 			Port:         port.String(),
 			ExternalName: service.Spec.ExternalName,
 		}
-		resolver, err := api.NewDNSResolver(*service)
+
+		var resolver *api.DNSResolver
+		var err error
+		ep.UseDNSResolver, resolver, err = api.NewDNSResolver(*service)
 		if err != nil {
 			return nil, err
 		}
-		if resolver != nil {
+		if ep.UseDNSResolver && resolver != nil {
 			lbc.Parsed.DNSResolvers[resolver.Name] = resolver
 			ep.DNSResolverName = resolver.Name
 		}

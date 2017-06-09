@@ -295,32 +295,25 @@ type DNSResolver struct {
 	Hold       map[string]string `json:"hold"`
 }
 
-func NewDNSResolver(svc kapi.Service) (*DNSResolver, error) {
-	use, err := getBool(svc.Annotations, UseDNSResolver)
-	if err != nil || !use {
-		return nil, err
+func NewDNSResolver(svc kapi.Service) (useDNSResolver bool, resolver *DNSResolver, err error) {
+	useDNSResolver, err = getBool(svc.Annotations, UseDNSResolver)
+	if err != nil || !useDNSResolver {
+		return
 	}
 
-	resolver := DNSResolver{Name: svc.Name + "." + svc.Namespace}
+	resolver = &DNSResolver{Name: svc.Name + "." + svc.Namespace}
 	resolver.NameServer, err = getList(svc.Annotations, DNSResolverNameservers)
 	if err != nil {
-		return nil, err
+		return
 	}
-
 	resolver.Retries, err = getInt(svc.Annotations, DNSResolverRetries)
 	if err != nil {
-		return nil, err
+		return
 	}
-
 	resolver.Hold, err = getMap(svc.Annotations, DNSResolverHold)
 	if err != nil {
-		return nil, err
+		return
 	}
-
 	resolver.Timeout, err = getMap(svc.Annotations, DNSResolverTimeout)
-	if err != nil {
-		return nil, err
-	}
-
-	return &resolver, nil
+	return
 }
