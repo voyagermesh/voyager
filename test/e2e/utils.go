@@ -101,9 +101,7 @@ func (ing *IngressTestSuit) getURLs(baseIngress *api.Ingress) ([]string, error) 
 func (ing *IngressTestSuit) getDaemonURLs(baseIngress *api.Ingress) ([]string, error) {
 	serverAddr := make([]string, 0)
 	nodes, err := ing.t.KubeClient.Core().Nodes().List(kapi.ListOptions{
-		LabelSelector: labels.SelectorFromSet(
-			api.ParseNodeSelector(baseIngress.Annotations[api.NodeSelector]),
-		),
+		LabelSelector: labels.SelectorFromSet(baseIngress.NodeSelector()),
 	})
 	if err != nil {
 		return nil, errors.New().WithCause(err).Err()

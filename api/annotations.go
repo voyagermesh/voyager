@@ -1,9 +1,9 @@
 package api
 
 import (
-	"strings"
 	"encoding/json"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -86,74 +86,64 @@ const (
 	OriginName      = EngressKey + "/" + "origin-name"
 )
 
+func (r Ingress) OffshootName() string {
+	return VoyagerPrefix + r.Name
+}
+
 func (r Ingress) APISchema() string {
-	if v, ok := r.Annotations[APISchema]; ok {
+	if v, ok := getString(r.Annotations, APISchema); ok {
 		return v
 	}
 	return APISchemaEngress
 }
 
-func (r Ingress) OffshootName() string {
-	return VoyagerPrefix + r.Name
-}
-
 func (r Ingress) StickySession() bool {
-	v, _ := strconv.ParseBool(r.Annotations[StickySession])
-	return v
+	return getBool(r.Annotations, StickySession)
 }
 
 func (r Ingress) Stats() bool {
-	v, _ := strconv.ParseBool(r.Annotations[StatsOn])
-	return v
+	return getBool(r.Annotations, StatsOn)
 }
 
 func (r Ingress) StatsSecretName() string {
-	v, _ := r.Annotations[StatsSecret]
+	v, _ := getString(r.Annotations, StatsSecret)
 	return v
 }
 
 func (r Ingress) StatsPort() int {
-	v, ok := r.Annotations[StatsPort]
-	if !ok {
-		return DefaultStatsPort
-	}
-	if port, err := strconv.Atoi(v); err == nil {
-		return port
+	if v, ok := getInt(r.Annotations, StatsPort); ok {
+		return v
 	}
 	return DefaultStatsPort
 }
 
 func (r Ingress) StatsServiceName() string {
-	v, ok := r.Annotations[StatsServiceName]
-	if !ok {
-		return r.Name + "-stats"
+	if v, ok := getString(r.Annotations, StatsServiceName); ok {
+		return v
 	}
-	return v
+	return r.Name + "-stats"
 }
 
 func (r Ingress) LBType() string {
-	if v, ok := r.Annotations[LBType]; ok {
+	if v, ok := getString(r.Annotations, LBType); ok {
 		return v
 	}
 	return LBTypeLoadBalancer
 }
 
 func (r Ingress) Replicas() int32 {
-	if v, ok := r.Annotations[Replicas]; ok {
-		if n, err := strconv.Atoi(v); err == nil {
-			return int32(n)
-		}
-		return 1
+	if v, ok := getInt(r.Annotations, Replicas); ok {
+		return int32(v)
 	}
 	return 1
 }
 
 func (r Ingress) NodeSelector() map[string]string {
-	if v, ok := r.Annotations[NodeSelector]; ok {
-		return ParseNodeSelector(v)
+	if v, ok := getMap(r.Annotations, NodeSelector); ok {
+		return v
 	}
-	v, _ := r.Annotations[EngressKey+"/"+"daemon.nodeSelector"]
-	return ParseNodeSelector(v)
+	v, _ := getString(r.Annotations, EngressKey+"/"+"daemon.nodeSelector")
+	return parseNodeSelector(v)
 }
 
 func (r Ingress) Persist() string {
@@ -165,38 +155,32 @@ func (r Ingress) Persist() string {
 }
 
 func (r Ingress) ServiceAnnotations(provider string) (map[string]string, bool) {
-	m, ok := r.getTargetAnnotations(ServiceAnnotations)
-	if ok && r.LBType() == LBTypeLoadBalancer && r.KeepSourceIP() {
-		switch provider {
-		case "aws":
-			// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
-			m["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
-		case "gce", "gke", "azure":
-			// ref: https://kubernetes.io/docs/tutorials/services/source-ip/#source-ip-for-services-with-typeloadbalancer
-			m["service.beta.kubernetes.io/external-traffic"] = "OnlyLocal"
+	ans, ok := getMap(r.Annotations, ServiceAnnotations)
+	if ok {
+		filteredMap := make(map[string]string)
+		for k, v := range ans {
+			if !strings.HasPrefix(strings.TrimSpace(k), EngressKey+"/") {
+				filteredMap[k] = v
+			}
 		}
+		if r.LBType() == LBTypeLoadBalancer && r.KeepSourceIP() {
+			switch provider {
+			case "aws":
+				// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
+				filteredMap["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
+			case "gce", "gke", "azure":
+				// ref: https://kubernetes.io/docs/tutorials/services/source-ip/#source-ip-for-services-with-typeloadbalancer
+				filteredMap["service.beta.kubernetes.io/external-traffic"] = "OnlyLocal"
+			}
+		}
+		return filteredMap, true
 	}
-	return m, ok
+	return ans, ok
 }
 
 func (r Ingress) PodsAnnotations() (map[string]string, bool) {
-	return r.getTargetAnnotations(PodAnnotations)
-}
-
-func (r Ingress) KeepSourceIP() bool {
-	v, _ := strconv.ParseBool(r.Annotations[KeepSourceIP])
-	return v
-}
-
-func (r Ingress) getTargetAnnotations(key string) (map[string]string, bool) {
-	ans := make(map[string]string)
-	if v, ok := r.Annotations[key]; ok {
-		v = strings.TrimSpace(v)
-		if err := json.Unmarshal([]byte(v), &ans); err != nil {
-			return ans, false
-		}
-
-		// Filter all annotation keys that starts with ingress.appscode.com
+	ans, ok := getMap(r.Annotations, PodAnnotations)
+	if ok {
 		filteredMap := make(map[string]string)
 		for k, v := range ans {
 			if !strings.HasPrefix(strings.TrimSpace(k), EngressKey+"/") {
@@ -205,11 +189,15 @@ func (r Ingress) getTargetAnnotations(key string) (map[string]string, bool) {
 		}
 		return filteredMap, true
 	}
-	return ans, true
+	return ans, ok
+}
+
+func (r Ingress) KeepSourceIP() bool {
+	return getBool(r.Annotations, KeepSourceIP)
 }
 
 // ref: https://github.com/kubernetes/kubernetes/blob/078238a461a0872a8eacb887fbb3d0085714604c/staging/src/k8s.io/apiserver/pkg/apis/example/v1/types.go#L134
-func ParseNodeSelector(labels string) map[string]string {
+func parseNodeSelector(labels string) map[string]string {
 	selectorMap := make(map[string]string)
 	for _, label := range strings.Split(labels, ",") {
 		label = strings.TrimSpace(label)
@@ -223,4 +211,58 @@ func ParseNodeSelector(labels string) map[string]string {
 		}
 	}
 	return selectorMap
+}
+
+func getBool(m map[string]string, key string) bool {
+	if m == nil {
+		return false
+	}
+	v, _ := strconv.ParseBool(m[key])
+	return v
+}
+
+func getInt(m map[string]string, key string) (int, bool) {
+	if m == nil {
+		return 0, false
+	}
+	s, ok := m[key]
+	if !ok {
+		return 0, false
+	}
+	v, err := strconv.Atoi(s)
+	return v, err == nil
+}
+
+func getString(m map[string]string, key string) (string, bool) {
+	if m == nil {
+		return "", false
+	}
+	v, ok := m[key]
+	return v, ok
+}
+
+func getList(m map[string]string, key string) ([]string, bool) {
+	if m == nil {
+		return []string{}, false
+	}
+	s, ok := m[key]
+	if !ok {
+		return []string{}, false
+	}
+	v := make([]string, 0)
+	err := json.Unmarshal([]byte(s), &v)
+	return v, err == nil
+}
+
+func getMap(m map[string]string, key string) (map[string]string, bool) {
+	if m == nil {
+		return map[string]string{}, false
+	}
+	s, ok := m[key]
+	if !ok {
+		return map[string]string{}, false
+	}
+	v := make(map[string]string)
+	err := json.Unmarshal([]byte(s), &v)
+	return v, err == nil
 }
