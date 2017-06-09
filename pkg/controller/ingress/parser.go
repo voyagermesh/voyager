@@ -97,7 +97,7 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 				resolver.Timeout = m
 			}
 			resolver.Name = svc.Name
-			lbc.Parsed.DNSResolvers = lbc.Parsed.DNSResolvers[resolver.Name] = &resolver
+			lbc.Parsed.DNSResolvers[resolver.Name] = &resolver
 			ep.DNSResolver = resolver.Name
 		}
 		return []*Endpoint{&ep}, nil
