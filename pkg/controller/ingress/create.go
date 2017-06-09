@@ -503,7 +503,8 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 			svc.Spec.LoadBalancerIP = ip.String()
 		}
 	case "aws":
-		if lbc.Resource.Persist() != "" {
+		persist, _ := strconv.ParseBool(lbc.Resource.Persist())
+		if persist {
 			// We are going manage the loadbalancer directly
 			svc.Spec.Type = kapi.ServiceTypeNodePort
 		} else {

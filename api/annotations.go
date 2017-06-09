@@ -1,15 +1,15 @@
 package api
 
 import (
-	"strings"
 	"encoding/json"
 	"strconv"
+	"strings"
 )
 
 const (
 	EngressKey = "ingress.appscode.com"
-	APISchema  = EngressKey + "/" + "api-schema" // APISchema = {APIGroup}/{APIVersion}
 
+	APISchema        = EngressKey + "/" + "api-schema" // APISchema = {APIGroup}/{APIVersion}
 	APISchemaEngress = "appscode.com/v1beta1"
 	APISchemaIngress = "extension/v1beta1"
 
@@ -27,10 +27,10 @@ const (
 	// Daemon, Persistent, LoadBalancer
 	LBType = EngressKey + "/" + "type"
 
-	LBTypeNodePort = "NodePort"
-	LBTypeHostPort = "HostPort"
 	// Deprecated, use LBTypeHostPort
 	LBTypeDaemon       = "Daemon"
+	LBTypeHostPort     = "HostPort"
+	LBTypeNodePort     = "NodePort"
 	LBTypeLoadBalancer = "LoadBalancer" // default
 
 	// Runs HAProxy on a specific set of a hosts.
@@ -85,7 +85,23 @@ const (
 	OriginAPISchema = EngressKey + "/" + "origin-api-schema" // APISchema = {APIGroup}/{APIVersion}
 	OriginName      = EngressKey + "/" + "origin-name"
 
-	ExternalDNSResolvers = EngressKey + "/" + "external-dns-resolvers"
+	/*
+		resolvers mydns
+		  nameserver dns1 10.0.0.1:53
+		  nameserver dns2 10.0.0.2:53
+		  resolve_retries       3
+		  timeout retry         1s
+		  hold other           30s
+		  hold refused         30s
+		  hold nx              30s
+		  hold timeout         30s
+		  hold valid           10s
+	*/
+	ExternalDNSResolvers   = EngressKey + "/" + "external-dns-resolvers"
+	DNSResolverNameservers = EngressKey + "/" + "dns-resolver-nameservers" // ["", ""]
+	DNSResolverRetries     = EngressKey + "/" + "dns-resolver-retries"     // int
+	DNSResolverTimeout     = EngressKey + "/" + "dns-resolver-timeout"     // {"event":"time","event":"time"}
+	DNSResolverHold        = EngressKey + "/" + "dns-resolver-hold"        // {"status":"period","status":"period"}
 )
 
 func (r Ingress) APISchema() string {
