@@ -31,22 +31,21 @@ Now Create Your Ingress/Certificated.
 --master          // The address of the Kubernetes API server (overrides any value in kubeconfig)
 --kubeconfig      // Path to kubeconfig file with authorization information (the master location is set by the master flag)
 --cloude-provider // Name of cloud provider
---cluster-name    // Name of Kubernetes cluster
 --haproxy-image   // Haproxy image name to be run
 --ingress-class   // Ingress class handled by voyager. Unset by default. Set to voyager to only handle
                   // ingress with annotation kubernetes.io/ingress.class=voyager.
 ```
 
-Voyager can run HAProxy in 3 different modes. `cloude-provider` and `cluster-name` flags should be set appropriately depending on the mode. These modes are:
+Voyager can run HAProxy in 3 different modes. `cloude-provider` flag should be set appropriately depending on the mode. These modes are:
 
 - HostPort: In this mode, HAProxy is run as DaemonSet using nodeSelector and hostNetwork:true. As a result,
 HAProxy's IP will be same as the IP address for nodes where it is running. This is supported on any cloud provider
 (known or unknown to Kubernetes). Voyager will open firewall, if a `cloud-provider` is one of `aws`, `gce`, `gke` or
 `azure`. If cloud provider is unknown (say, running on DigitalOcean), users are required to configure firewall as needed.
-`--cluster-name` is not used in this mode. This mode used to be called `Daemon`. We recommend using `HostPort` for new setups.
+This mode used to be called `Daemon`. We recommend using `HostPort` for new setups.
 
 - LoadBalancer: In this mode, a Kubernetes LoadBalancer type service is used to expose HAProxy to the internet.
-This is supported for cloud providers known to Kubernetes (`aws`, `gce` and `azure`), `--cloud-provider` and `--cluster-name` is required to properly setup this loadbalancer. This mode supports reserved ip on GCE.
+This is supported for cloud providers known to Kubernetes (`aws`, `gce` and `azure`), `--cloud-provider` flag is required to properly setup this loadbalancer. This mode supports reserved ip on GCE.
 
 - NodePort: In this mode, a Kubernetes NodePort type service is used to expose HAProxy to the internet. This is supported on any cloud provider including
 baremetal clusters. Users are required to configure firewall as needed.
