@@ -101,13 +101,12 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 			ep.DNSResolver = resolver.Name
 		}
 		return []*Endpoint{&ep}, nil
-	} else {
-		p, portFound := getSpecifiedPort(svc.Spec.Ports, port)
-		if !portFound {
-			return nil, goerr.New("service port unavailable")
-		}
-		return lbc.getEndpoints(svc, p, hostNames)
 	}
+	p, portFound := getSpecifiedPort(svc.Spec.Ports, port)
+	if !portFound {
+		return nil, goerr.New("service port unavailable")
+	}
+	return lbc.getEndpoints(svc, p, hostNames)
 }
 
 func (lbc *EngressController) getEndpoints(s *kapi.Service, servicePort *kapi.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
