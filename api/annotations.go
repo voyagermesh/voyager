@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"strconv"
 	"strings"
+
+	kapi "k8s.io/kubernetes/pkg/api"
 )
 
 const (
@@ -82,23 +84,6 @@ const (
 	// Annotations applied to resources offshoot from an ingress
 	OriginAPISchema = EngressKey + "/" + "origin-api-schema" // APISchema = {APIGroup}/{APIVersion}
 	OriginName      = EngressKey + "/" + "origin-name"
-
-	/*
-		resolvers mydns
-		  nameserver dns1 10.0.0.1:53
-		  nameserver dns2 10.0.0.2:53
-		  resolve_retries       3
-		  timeout retry         1s
-		  hold other           30s
-		  hold refused         30s
-		  hold nx              30s
-		  hold timeout         30s
-		  hold valid           10s
-	*/
-	DNSResolverNameservers = EngressKey + "/" + "dns-resolver-nameservers" // ["", ""]
-	DNSResolverRetries     = EngressKey + "/" + "dns-resolver-retries"     // int
-	DNSResolverTimeout     = EngressKey + "/" + "dns-resolver-timeout"     // {"event":"time","event":"time"}
-	DNSResolverHold        = EngressKey + "/" + "dns-resolver-hold"        // {"status":"period","status":"period"}
 )
 
 func (r Ingress) OffshootName() string {
@@ -106,59 +91,59 @@ func (r Ingress) OffshootName() string {
 }
 
 func (r Ingress) APISchema() string {
-	if v, ok := getString(r.Annotations, APISchema); ok {
+	if v := getString(r.Annotations, APISchema); v != "" {
 		return v
 	}
 	return APISchemaEngress
 }
 
 func (r Ingress) StickySession() bool {
-	return getBool(r.Annotations, StickySession)
-}
-
-func (r Ingress) Stats() bool {
-	return getBool(r.Annotations, StatsOn)
-}
-
-func (r Ingress) StatsSecretName() string {
-	v, _ := getString(r.Annotations, StatsSecret)
+	v, _ := getBool(r.Annotations, StickySession)
 	return v
 }
 
+func (r Ingress) Stats() bool {
+	v, _ := getBool(r.Annotations, StatsOn)
+	return v
+}
+
+func (r Ingress) StatsSecretName() string {
+	return getString(r.Annotations, StatsSecret)
+}
+
 func (r Ingress) StatsPort() int {
-	if v, ok := getInt(r.Annotations, StatsPort); ok {
+	if v, _ := getInt(r.Annotations, StatsPort); v > 0 {
 		return v
 	}
 	return DefaultStatsPort
 }
 
 func (r Ingress) StatsServiceName() string {
-	if v, ok := getString(r.Annotations, StatsServiceName); ok {
+	if v := getString(r.Annotations, StatsServiceName); v != "" {
 		return v
 	}
 	return r.Name + "-stats"
 }
 
 func (r Ingress) LBType() string {
-	if v, ok := getString(r.Annotations, LBType); ok {
+	if v := getString(r.Annotations, LBType); v != "" {
 		return v
 	}
 	return LBTypeLoadBalancer
 }
 
 func (r Ingress) Replicas() int32 {
-	if v, ok := getInt(r.Annotations, Replicas); ok {
+	if v, _ := getInt(r.Annotations, Replicas); v > 0 {
 		return int32(v)
 	}
 	return 1
 }
 
 func (r Ingress) NodeSelector() map[string]string {
-	if v, ok := getMap(r.Annotations, NodeSelector); ok {
+	if v, _ := getMap(r.Annotations, NodeSelector); len(v) > 0 {
 		return v
 	}
-	v, _ := getString(r.Annotations, EngressKey+"/"+"daemon.nodeSelector")
-	return parseDaemonNodeSelector(v)
+	return parseDaemonNodeSelector(getString(r.Annotations, EngressKey+"/"+"daemon.nodeSelector"))
 }
 
 func (r Ingress) Persist() string {
@@ -170,8 +155,8 @@ func (r Ingress) Persist() string {
 }
 
 func (r Ingress) ServiceAnnotations(provider string) (map[string]string, bool) {
-	ans, ok := getMap(r.Annotations, ServiceAnnotations)
-	if ok {
+	ans, err := getMap(r.Annotations, ServiceAnnotations)
+	if err == nil {
 		filteredMap := make(map[string]string)
 		for k, v := range ans {
 			if !strings.HasPrefix(strings.TrimSpace(k), EngressKey+"/") {
@@ -190,12 +175,12 @@ func (r Ingress) ServiceAnnotations(provider string) (map[string]string, bool) {
 		}
 		return filteredMap, true
 	}
-	return ans, ok
+	return ans, false
 }
 
 func (r Ingress) PodsAnnotations() (map[string]string, bool) {
-	ans, ok := getMap(r.Annotations, PodAnnotations)
-	if ok {
+	ans, err := getMap(r.Annotations, PodAnnotations)
+	if err == nil {
 		filteredMap := make(map[string]string)
 		for k, v := range ans {
 			if !strings.HasPrefix(strings.TrimSpace(k), EngressKey+"/") {
@@ -204,11 +189,12 @@ func (r Ingress) PodsAnnotations() (map[string]string, bool) {
 		}
 		return filteredMap, true
 	}
-	return ans, ok
+	return ans, false
 }
 
 func (r Ingress) KeepSourceIP() bool {
-	return getBool(r.Annotations, KeepSourceIP)
+	v, _ := getBool(r.Annotations, KeepSourceIP)
+	return v
 }
 
 // ref: https://github.com/kubernetes/kubernetes/blob/078238a461a0872a8eacb887fbb3d0085714604c/staging/src/k8s.io/apiserver/pkg/apis/example/v1/types.go#L134
@@ -230,56 +216,111 @@ func parseDaemonNodeSelector(labels string) map[string]string {
 	return selectorMap
 }
 
-func getBool(m map[string]string, key string) bool {
+func getBool(m map[string]string, key string) (bool, error) {
 	if m == nil {
-		return false
+		return false, nil
 	}
-	v, _ := strconv.ParseBool(m[key])
-	return v
+	return strconv.ParseBool(m[key])
 }
 
-func getInt(m map[string]string, key string) (int, bool) {
+func getInt(m map[string]string, key string) (int, error) {
 	if m == nil {
-		return 0, false
+		return 0, nil
 	}
 	s, ok := m[key]
 	if !ok {
-		return 0, false
+		return 0, nil
 	}
-	v, err := strconv.Atoi(s)
-	return v, err == nil
+	return strconv.Atoi(s)
 }
 
-func getString(m map[string]string, key string) (string, bool) {
+func getString(m map[string]string, key string) string {
 	if m == nil {
-		return "", false
+		return ""
 	}
-	v, ok := m[key]
-	return v, ok
+	return m[key]
 }
 
-func getList(m map[string]string, key string) ([]string, bool) {
+func getList(m map[string]string, key string) ([]string, error) {
 	if m == nil {
-		return []string{}, false
+		return []string{}, nil
 	}
 	s, ok := m[key]
 	if !ok {
-		return []string{}, false
+		return []string{}, nil
 	}
 	v := make([]string, 0)
 	err := json.Unmarshal([]byte(s), &v)
-	return v, err == nil
+	return v, err
 }
 
-func getMap(m map[string]string, key string) (map[string]string, bool) {
+func getMap(m map[string]string, key string) (map[string]string, error) {
 	if m == nil {
-		return map[string]string{}, false
+		return map[string]string{}, nil
 	}
 	s, ok := m[key]
 	if !ok {
-		return map[string]string{}, false
+		return map[string]string{}, nil
 	}
 	v := make(map[string]string)
 	err := json.Unmarshal([]byte(s), &v)
-	return v, err == nil
+	return v, err
+}
+
+const (
+	/*
+		resolvers mydns
+		  nameserver dns1 10.0.0.1:53
+		  nameserver dns2 10.0.0.2:53
+		  resolve_retries       3
+		  timeout retry         1s
+		  hold other           30s
+		  hold refused         30s
+		  hold nx              30s
+		  hold timeout         30s
+		  hold valid           10s
+	*/
+	UseDNSResolver         = EngressKey + "/" + "use-dns-resolver"         // Bool
+	DNSResolverNameservers = EngressKey + "/" + "dns-resolver-nameservers" // ["", ""]
+	DNSResolverRetries     = EngressKey + "/" + "dns-resolver-retries"     // int
+	DNSResolverTimeout     = EngressKey + "/" + "dns-resolver-timeout"     // {"event":"time","event":"time"}
+	DNSResolverHold        = EngressKey + "/" + "dns-resolver-hold"        // {"status":"period","status":"period"}
+)
+
+type DNSResolver struct {
+	Name       string
+	NameServer []string          `json:"nameserver"`
+	Retries    int               `json:"retries"`
+	Timeout    map[string]string `json:"timeout"`
+	Hold       map[string]string `json:"hold"`
+}
+
+func NewDNSResolver(svc kapi.Service) (*DNSResolver, error) {
+	use, err := getBool(svc.Annotations, UseDNSResolver)
+	if err != nil || !use {
+		return nil, err
+	}
+
+	resolver := DNSResolver{Name: svc.Name + "." + svc.Namespace}
+	resolver.NameServer, err = getList(svc.Annotations, DNSResolverNameservers)
+	if err != nil {
+		return nil, err
+	}
+
+	resolver.Retries, err = getInt(svc.Annotations, DNSResolverRetries)
+	if err != nil {
+		return nil, err
+	}
+
+	resolver.Hold, err = getMap(svc.Annotations, DNSResolverHold)
+	if err != nil {
+		return nil, err
+	}
+
+	resolver.Timeout, err = getMap(svc.Annotations, DNSResolverTimeout)
+	if err != nil {
+		return nil, err
+	}
+
+	return &resolver, nil
 }

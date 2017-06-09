@@ -64,15 +64,7 @@ type HAProxyOptions struct {
 	HttpsService   []*Service
 	HttpService    []*Service
 	TCPService     []*TCPService
-	DNSResolvers   map[string]*DNSResolver
-}
-
-type DNSResolver struct {
-	Name       string
-	NameServer []string          `json:"nameserver"`
-	Retries    int               `json:"retries"`
-	Timeout    map[string]string `json:"timeout"`
-	Hold       map[string]string `json:"hold"`
+	DNSResolvers   map[string]*api.DNSResolver
 }
 
 type Service struct {
@@ -103,12 +95,13 @@ type Backend struct {
 }
 
 type Endpoint struct {
-	Name         string
-	IP           string
-	Port         string
-	Weight       int
-	ExternalName string
-	DNSResolver  string
+	Name            string
+	IP              string
+	Port            string
+	Weight          int
+	ExternalName    string
+	UseDNSResolver  bool
+	DNSResolverName string
 }
 
 // Loadbalancer image is an almost constant type.

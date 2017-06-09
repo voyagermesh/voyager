@@ -70,37 +70,13 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 			Port:         port.String(),
 			ExternalName: service.Spec.ExternalName,
 		}
-		if nameservers, useResolver := service.Annotations[api.DNSResolverNameservers]; useResolver {
-			var resolver DNSResolver
-			err := json.Unmarshal([]byte(nameservers), &resolver.NameServer)
-			if err != nil {
-				return nil, err
-			}
-			if v, ok := service.Annotations[api.DNSResolverRetries]; ok {
-				resolver.Retries, err = strconv.Atoi(v)
-				if err != nil {
-					return nil, err
-				}
-			}
-			if v, ok := service.Annotations[api.DNSResolverHold]; ok {
-				m := make(map[string]string)
-				err = json.Unmarshal([]byte(v), &m)
-				if err != nil {
-					return nil, err
-				}
-				resolver.Hold = m
-			}
-			if v, ok := service.Annotations[api.DNSResolverTimeout]; ok {
-				m := make(map[string]string)
-				err = json.Unmarshal([]byte(v), &m)
-				if err != nil {
-					return nil, err
-				}
-				resolver.Timeout = m
-			}
-			resolver.Name = service.Name
-			lbc.Parsed.DNSResolvers[resolver.Name] = &resolver
-			ep.DNSResolver = resolver.Name
+		resolver, err := api.NewDNSResolver(*service)
+		if err != nil {
+			return nil, err
+		}
+		if resolver != nil {
+			lbc.Parsed.DNSResolvers[resolver.Name] = resolver
+			ep.DNSResolverName = resolver.Name
 		}
 		return []*Endpoint{&ep}, nil
 	}
@@ -242,7 +218,7 @@ func getTargetPort(servicePort *kapi.ServicePort) int {
 func (lbc *EngressController) parseSpec() {
 	log.Infoln("Parsing Engress specs")
 	lbc.Ports = make([]int, 0)
-	lbc.Parsed.DNSResolvers = make(map[string]*DNSResolver)
+	lbc.Parsed.DNSResolvers = make(map[string]*api.DNSResolver)
 
 	if lbc.Resource.Spec.Backend != nil {
 		log.Debugln("generating default backend", lbc.Resource.Spec.Backend.RewriteRule, lbc.Resource.Spec.Backend.HeaderRule)
