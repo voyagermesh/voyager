@@ -435,7 +435,7 @@ func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
 				Name:      testIngressName(),
 				Namespace: s.t.Config.TestNamespace,
 				Annotations: map[string]string{
-					api.LoadBalancerPersist: s.t.Config.LBPersistIP,
+					api.LoadBalancerIP: s.t.Config.LBPersistIP,
 				},
 			},
 			Spec: api.ExtendedIngressSpec{
@@ -534,7 +534,7 @@ func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
 				Name:      testIngressName(),
 				Namespace: s.t.Config.TestNamespace,
 				Annotations: map[string]string{
-					api.LoadBalancerPersist: oldServiceIP,
+					api.LoadBalancerIP: oldServiceIP,
 				},
 			},
 			Spec: api.ExtendedIngressSpec{

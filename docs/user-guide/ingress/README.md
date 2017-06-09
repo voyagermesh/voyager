@@ -98,14 +98,9 @@ ingress.appscode.com/node-selector          = This nodeSelector will indicate wh
                                             We recommend you use the new key going forward. Any existing ingress with previous annotation
                                             will continue to function as expected.
 
-ingress.appscode.com/ip                    = This key is deprecated. Going forward, use `ingress.appscode.com/persist`. Any existing ingress with
-                                            this annotation key will continue to work as expetced.
+ingress.appscode.com/ip                    = This key is deprecated. Going forward, use `ingress.appscode.com/load-balaner-ip`.
 
-ingress.appscode.com/persist               = For "aws" cloud provider, if this annotation is set (non-empty), 
-                                        AWS load balancer will not be deleted when the ingress resource is deleted. If an ingress with same 
-                                        name is recreated, the existing loadbalancer will be reused.
-                                      
-                                            For "gce" and "gke" cloud provider, if this value is set to an valid IPv4 address, 
+ingress.appscode.com/load-balaner-ip       = For "gce" and "gke" cloud provider, if this value is set to an valid IPv4 address, 
                                             it will be assigned to Google cloud network loadbalancer used to expose HAProxy.
                                             Usually this is set to a static IP to preserve DNS configuration.
 
