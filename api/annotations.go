@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"strconv"
 	"strings"
-
-	kapi "k8s.io/kubernetes/pkg/api"
 )
 
 const (
@@ -265,55 +263,4 @@ func getMap(m map[string]string, key string) (map[string]string, error) {
 	v := make(map[string]string)
 	err := json.Unmarshal([]byte(s), &v)
 	return v, err
-}
-
-const (
-	/*
-		resolvers mydns
-		  nameserver dns1 10.0.0.1:53
-		  nameserver dns2 10.0.0.2:53
-		  resolve_retries       3
-		  timeout retry         1s
-		  hold other           30s
-		  hold refused         30s
-		  hold nx              30s
-		  hold timeout         30s
-		  hold valid           10s
-	*/
-	UseDNSResolver         = EngressKey + "/" + "use-dns-resolver"         // Bool
-	DNSResolverNameservers = EngressKey + "/" + "dns-resolver-nameservers" // ["", ""]
-	DNSResolverRetries     = EngressKey + "/" + "dns-resolver-retries"     // int
-	DNSResolverTimeout     = EngressKey + "/" + "dns-resolver-timeout"     // {"event":"time","event":"time"}
-	DNSResolverHold        = EngressKey + "/" + "dns-resolver-hold"        // {"status":"period","status":"period"}
-)
-
-type DNSResolver struct {
-	Name       string
-	NameServer []string          `json:"nameserver"`
-	Retries    int               `json:"retries"`
-	Timeout    map[string]string `json:"timeout"`
-	Hold       map[string]string `json:"hold"`
-}
-
-func NewDNSResolver(svc kapi.Service) (useDNSResolver bool, resolver *DNSResolver, err error) {
-	useDNSResolver, err = getBool(svc.Annotations, UseDNSResolver)
-	if err != nil || !useDNSResolver {
-		return
-	}
-
-	resolver = &DNSResolver{Name: svc.Name + "." + svc.Namespace}
-	resolver.NameServer, err = getList(svc.Annotations, DNSResolverNameservers)
-	if err != nil {
-		return
-	}
-	resolver.Retries, err = getInt(svc.Annotations, DNSResolverRetries)
-	if err != nil {
-		return
-	}
-	resolver.Hold, err = getMap(svc.Annotations, DNSResolverHold)
-	if err != nil {
-		return
-	}
-	resolver.Timeout, err = getMap(svc.Annotations, DNSResolverTimeout)
-	return
 }

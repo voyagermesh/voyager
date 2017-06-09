@@ -73,7 +73,7 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 
 		var resolver *api.DNSResolver
 		var err error
-		ep.UseDNSResolver, resolver, err = api.NewDNSResolver(*service)
+		ep.UseDNSResolver, resolver, err = api.DNSResolverForService(*service)
 		if err != nil {
 			return nil, err
 		}
