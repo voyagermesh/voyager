@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"fmt"
 	"github.com/appscode/errors"
 	"github.com/appscode/go/arrays"
 	"github.com/appscode/go/crypto/rand"
@@ -19,34 +18,39 @@ import (
 	"k8s.io/kubernetes/pkg/util/intstr"
 )
 
+func (lbc *EngressController) APISchema() string {
+	if v, ok := lbc.Resource.Annotations[api.APISchema]; ok {
+		return v
+	}
+	return api.APISchemaEngress
+}
+
+func (lbc *EngressController) SupportsLoadBalancerType() bool {
+	return lbc.ProviderName == "aws" ||
+		lbc.ProviderName == "gce" ||
+		lbc.ProviderName == "gke" ||
+		lbc.ProviderName == "azure" ||
+		lbc.ProviderName == "minikube"
+}
+
 func (lbc *EngressController) parse() error {
 	log.Infoln("Parsing new engress")
-	if lbc.Config == nil {
+	if lbc.Resource == nil {
 		log.Warningln("Config is nil, nothing to parse")
 		return errors.New("no config found").Err()
 	}
 	lbc.parseOptions()
 	lbc.parseSpec()
-	lbc.Options.ConfigMapName = VoyagerPrefix + lbc.Config.Name
-
-	// Set loadbalancer source apiGroup, default ingress.appscode.com
-	lbc.apiGroup = api.APIGroupEngress
-	if val, ok := lbc.Config.Annotations[api.APIGroup]; ok {
-		if val == api.APIGroupIngress {
-			lbc.apiGroup = api.APIGroupIngress
-		}
-	}
-
 	return nil
 }
 
 func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrString, hostNames []string) ([]*Endpoint, error) {
-	log.Infoln("getting endpoints for ", lbc.Config.Namespace, name, "port", port)
+	log.Infoln("getting endpoints for ", lbc.Resource.Namespace, name, "port", port)
 
 	// the following lines giving support to
 	// serviceName.namespaceName or serviceName in the same namespace to the
 	// ingress
-	var namespace string = lbc.Config.Namespace
+	var namespace string = lbc.Resource.Namespace
 	if strings.Contains(name, ".") {
 		namespace = name[strings.Index(name, ".")+1:]
 		name = name[:strings.Index(name, ".")]
@@ -59,59 +63,32 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 		return nil, err
 	}
 
-	p, portFound := getSpecifiedPort(service.Spec.Ports, port)
 	if service.Spec.Type == kapi.ServiceTypeExternalName {
-		eps := make([]*Endpoint, 0)
-
-		name := service.Spec.ExternalName
-		if portFound {
-			name += fmt.Sprintf(":%d", p.Port)
+		// https://kubernetes.io/docs/concepts/services-networking/service/#services-without-selectors
+		ep := Endpoint{
+			Name:         "external",
+			Port:         port.String(),
+			ExternalName: service.Spec.ExternalName,
 		}
 
-		dnsResolved := false
-		if val, ok := service.Annotations[ExternalDNSResolvers]; ok {
-			resolver := &DNSResolver{}
-			err := json.Unmarshal([]byte(val), resolver)
-			if err == nil && len(resolver.NameServer) > 0 {
-				dnsResolved = true
-				resolver.Name = "___resolver-" + rand.Characters(10)
-
-				for i := range resolver.NameServer {
-					if len(resolver.NameServer[i].Mode) > 0 {
-						resolver.NameServer[i].Mode = "dnsmasq"
-					}
-				}
-
-				lbc.Parsed.DNSResolvers = append(lbc.Parsed.DNSResolvers, resolver)
-
-				eps = append(eps, &Endpoint{
-					Name:         "server-ext-" + service.Spec.ExternalName,
-					ExternalName: name,
-					ExternalServiceOptions: ExternalServiceOptions{
-						Resolver: resolver.Name,
-					},
-				})
-			} else {
-				log.Errorln("Failed to parse dns resolver", err)
-			}
+		var resolver *api.DNSResolver
+		var err error
+		ep.UseDNSResolver, resolver, err = api.NewDNSResolver(*service)
+		if err != nil {
+			return nil, err
 		}
-
-		if !dnsResolved {
-			log.Infoln("DNS resolver not configured, using redirect")
-			eps = append(eps, &Endpoint{
-				Name:             "server-ext-" + service.Spec.ExternalName,
-				ExternalName:     name,
-				ExternalRedirect: true,
-			})
+		if ep.UseDNSResolver && resolver != nil {
+			lbc.Parsed.DNSResolvers[resolver.Name] = resolver
+			ep.DNSResolver = resolver.Name
 		}
-		return eps, nil
-	} else {
-		if !portFound {
-			log.Warningln("service port unavailable")
-			return nil, goerr.New("service port unavailable")
-		}
-		return lbc.getEndpoints(service, p, hostNames)
+		return []*Endpoint{&ep}, nil
 	}
+	p, ok := getSpecifiedPort(service.Spec.Ports, port)
+	if !ok {
+		log.Warningln("service port unavailable")
+		return nil, goerr.New("service port unavailable")
+	}
+	return lbc.getEndpoints(service, p, hostNames)
 }
 
 func (lbc *EngressController) getEndpoints(s *kapi.Service, servicePort *kapi.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
@@ -162,7 +139,7 @@ func (lbc *EngressController) getEndpoints(s *kapi.Service, servicePort *kapi.Se
 							log.Errorln("Error getting endpoind pod", err)
 						} else {
 							if pod.Annotations != nil {
-								if val, ok := pod.Annotations[LoadBalancerBackendWeight]; ok {
+								if val, ok := pod.Annotations[api.BackendWeight]; ok {
 									ep.Weight, _ = strconv.Atoi(val)
 								}
 							}
@@ -205,12 +182,12 @@ func (lbc *EngressController) generateTemplate() error {
 		return errors.FromErr(err).Err()
 	}
 
-	lbc.Options.ConfigData = stringutil.Fmt(r)
+	lbc.ConfigData = stringutil.Fmt(r)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 	log.Infoln("Template genareted for HAProxy")
-	log.Infoln(lbc.Options.ConfigData)
+	log.Infoln(lbc.ConfigData)
 	return nil
 }
 
@@ -243,27 +220,26 @@ func getTargetPort(servicePort *kapi.ServicePort) int {
 
 func (lbc *EngressController) parseSpec() {
 	log.Infoln("Parsing Engress specs")
-	lbc.Options.Ports = make([]int, 0)
+	lbc.Ports = make([]int, 0)
+	lbc.Parsed.DNSResolvers = make(map[string]*api.DNSResolver)
 
-	lbc.Parsed.DNSResolvers = make([]*DNSResolver, 0)
-
-	if lbc.Config.Spec.Backend != nil {
-		log.Debugln("generating default backend", lbc.Config.Spec.Backend.RewriteRule, lbc.Config.Spec.Backend.HeaderRule)
-		eps, _ := lbc.serviceEndpoints(lbc.Config.Spec.Backend.ServiceName, lbc.Config.Spec.Backend.ServicePort, lbc.Config.Spec.Backend.HostNames)
+	if lbc.Resource.Spec.Backend != nil {
+		log.Debugln("generating default backend", lbc.Resource.Spec.Backend.RewriteRule, lbc.Resource.Spec.Backend.HeaderRule)
+		eps, _ := lbc.serviceEndpoints(lbc.Resource.Spec.Backend.ServiceName, lbc.Resource.Spec.Backend.ServicePort, lbc.Resource.Spec.Backend.HostNames)
 		lbc.Parsed.DefaultBackend = &Backend{
 			Name:      "default-backend",
 			Endpoints: eps,
 
-			BackendRules: lbc.Config.Spec.Backend.BackendRule,
-			RewriteRules: lbc.Config.Spec.Backend.RewriteRule,
-			HeaderRules:  lbc.Config.Spec.Backend.HeaderRule,
+			BackendRules: lbc.Resource.Spec.Backend.BackendRule,
+			RewriteRules: lbc.Resource.Spec.Backend.RewriteRule,
+			HeaderRules:  lbc.Resource.Spec.Backend.HeaderRule,
 		}
 	}
-	if len(lbc.Config.Spec.TLS) > 0 {
-		lbc.Options.SecretNames = make([]string, 0)
+	if len(lbc.Resource.Spec.TLS) > 0 {
+		lbc.SecretNames = make([]string, 0)
 		lbc.HostFilter = make([]string, 0)
-		for _, secret := range lbc.Config.Spec.TLS {
-			lbc.Options.SecretNames = append(lbc.Options.SecretNames, secret.SecretName)
+		for _, secret := range lbc.Resource.Spec.TLS {
+			lbc.SecretNames = append(lbc.SecretNames, secret.SecretName)
 			lbc.HostFilter = append(lbc.HostFilter, secret.Hosts...)
 		}
 	}
@@ -273,7 +249,7 @@ func (lbc *EngressController) parseSpec() {
 	lbc.Parsed.TCPService = make([]*TCPService, 0)
 
 	var httpCount, httpsCount int
-	for _, rule := range lbc.Config.Spec.Rules {
+	for _, rule := range lbc.Resource.Spec.Rules {
 		host := rule.Host
 		if rule.HTTP != nil {
 			if ok, _ := arrays.Contains(lbc.HostFilter, host); ok {
@@ -283,23 +259,20 @@ func (lbc *EngressController) parseSpec() {
 			}
 
 			for _, svc := range rule.HTTP.Paths {
-				def := &Service{
-					Name:     "service-" + rand.Characters(6),
-					Host:     host,
-					AclMatch: svc.Path,
-				}
-
-				eps, err := lbc.serviceEndpoints(svc.Backend.ServiceName, svc.Backend.ServicePort, svc.Backend.HostNames)
-				def.Backends = &Backend{
-					Name:         "backend-" + rand.Characters(5),
-					Endpoints:    eps,
-					BackendRules: svc.Backend.BackendRule,
-					RewriteRules: svc.Backend.RewriteRule,
-					HeaderRules:  svc.Backend.HeaderRule,
-				}
-
-				log.Debugln("Got endpoints", len(eps))
-				if len(eps) > 0 && err == nil {
+				eps, _ := lbc.serviceEndpoints(svc.Backend.ServiceName, svc.Backend.ServicePort, svc.Backend.HostNames)
+				if len(eps) > 0 {
+					def := &Service{
+						Name:     "service-" + rand.Characters(6),
+						Host:     host,
+						AclMatch: svc.Path,
+					}
+					def.Backends = &Backend{
+						Name:         "backend-" + rand.Characters(5),
+						Endpoints:    eps,
+						BackendRules: svc.Backend.BackendRule,
+						RewriteRules: svc.Backend.RewriteRule,
+						HeaderRules:  svc.Backend.HeaderRule,
+					}
 					// add the service to http or https filters.
 					if ok, _ := arrays.Contains(lbc.HostFilter, host); ok {
 						lbc.Parsed.HttpsService = append(lbc.Parsed.HttpsService, def)
@@ -312,56 +285,53 @@ func (lbc *EngressController) parseSpec() {
 
 		// adding tcp service to the parser.
 		for _, tcpSvc := range rule.TCP {
-			lbc.Options.Ports = append(lbc.Options.Ports, tcpSvc.Port.IntValue())
-			def := &TCPService{
-				Name:        "service-" + rand.Characters(6),
-				Host:        host,
-				Port:        tcpSvc.Port.String(),
-				SecretName:  tcpSvc.SecretName,
-				ALPNOptions: parseALPNOptions(tcpSvc.ALPN),
-			}
+			lbc.Ports = append(lbc.Ports, tcpSvc.Port.IntValue())
 			log.Infoln(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort)
-			eps, err := lbc.serviceEndpoints(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort, tcpSvc.Backend.HostNames)
-			def.Backends = &Backend{
-				Name:         "backend-" + rand.Characters(5),
-				BackendRules: tcpSvc.Backend.BackendRule,
-				Endpoints:    eps,
-			}
-
-			log.Debugln("Got endpoints", len(eps))
-			if len(eps) > 0 && err == nil {
+			eps, _ := lbc.serviceEndpoints(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort, tcpSvc.Backend.HostNames)
+			if len(eps) > 0 {
+				def := &TCPService{
+					Name:        "service-" + rand.Characters(6),
+					Host:        host,
+					Port:        tcpSvc.Port.String(),
+					SecretName:  tcpSvc.SecretName,
+					ALPNOptions: parseALPNOptions(tcpSvc.ALPN),
+				}
+				def.Backends = &Backend{
+					Name:         "backend-" + rand.Characters(5),
+					BackendRules: tcpSvc.Backend.BackendRule,
+					Endpoints:    eps,
+				}
 				lbc.Parsed.TCPService = append(lbc.Parsed.TCPService, def)
-				lbc.Options.SecretNames = append(lbc.Options.SecretNames, def.SecretName)
+				lbc.SecretNames = append(lbc.SecretNames, def.SecretName)
 			}
 		}
 	}
 
-	if httpCount > 0 || (lbc.Config.Spec.Backend != nil && httpsCount == 0) {
-		lbc.Options.Ports = append(lbc.Options.Ports, 80)
+	if httpCount > 0 || (lbc.Resource.Spec.Backend != nil && httpsCount == 0) {
+		lbc.Ports = append(lbc.Ports, 80)
 	}
 
 	if httpsCount > 0 {
-		lbc.Options.Ports = append(lbc.Options.Ports, 443)
+		lbc.Ports = append(lbc.Ports, 443)
 	}
 }
 
 func (lbc *EngressController) parseOptions() {
-	if lbc.Config == nil {
+	if lbc.Resource == nil {
 		log.Infoln("Config is nil, nothing to parse")
 		return
 	}
 	log.Infoln("Parsing annotations.")
-	lbc.Options.annotations = annotation(lbc.Config.ObjectMeta.Annotations)
-	lbc.Parsed.Sticky = lbc.Options.annotations.StickySession()
-	if len(lbc.Config.Spec.TLS) > 0 {
+	lbc.Parsed.Sticky = lbc.Resource.StickySession()
+	if len(lbc.Resource.Spec.TLS) > 0 {
 		lbc.Parsed.SSLCert = true
 	}
 
-	lbc.Parsed.Stats = lbc.Options.annotations.Stats()
+	lbc.Parsed.Stats = lbc.Resource.Stats()
 	if lbc.Parsed.Stats {
-		lbc.Parsed.StatsPort = lbc.Options.annotations.StatsPort()
-		if name := lbc.Options.annotations.StatsSecretName(); len(name) > 0 {
-			secret, err := lbc.KubeClient.Core().Secrets(lbc.Config.ObjectMeta.Namespace).Get(name)
+		lbc.Parsed.StatsPort = lbc.Resource.StatsPort()
+		if name := lbc.Resource.StatsSecretName(); len(name) > 0 {
+			secret, err := lbc.KubeClient.Core().Secrets(lbc.Resource.ObjectMeta.Namespace).Get(name)
 			if err == nil {
 				lbc.Parsed.StatsUserName = string(secret.Data["username"])
 				lbc.Parsed.StatsPassWord = string(secret.Data["password"])
@@ -371,29 +341,10 @@ func (lbc *EngressController) parseOptions() {
 			}
 		}
 	}
-	lbc.Parsed.AcceptProxy = lbc.Options.annotations.AcceptProxy()
-	lbc.Options.LBType = lbc.Options.annotations.LBType()
-	lbc.Options.Replicas = lbc.Options.annotations.Replicas()
-	lbc.Options.NodeSelector = ParseNodeSelector(lbc.Options.annotations.NodeSelector())
-	lbc.Options.LoadBalancerPersist = lbc.Options.annotations.LoadBalancerPersist()
-	log.Infoln("Got LBType", lbc.Options.LBType)
-}
 
-// ref: https://github.com/kubernetes/kubernetes/blob/078238a461a0872a8eacb887fbb3d0085714604c/staging/src/k8s.io/apiserver/pkg/apis/example/v1/types.go#L134
-func ParseNodeSelector(labels string) map[string]string {
-	selectorMap := make(map[string]string)
-	for _, label := range strings.Split(labels, ",") {
-		label = strings.TrimSpace(label)
-		if len(label) > 0 && strings.Contains(label, "=") {
-			data := strings.SplitN(label, "=", 2)
-			if len(data) >= 2 {
-				if len(data[0]) > 0 && len(data[1]) > 0 {
-					selectorMap[data[0]] = data[1]
-				}
-			}
-		}
+	if lbc.ProviderName == "aws" && lbc.Resource.LBType() == api.LBTypeLoadBalancer {
+		lbc.Parsed.AcceptProxy = lbc.Resource.KeepSourceIP()
 	}
-	return selectorMap
 }
 
 func parseALPNOptions(opt []string) string {

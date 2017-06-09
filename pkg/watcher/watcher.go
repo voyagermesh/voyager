@@ -8,7 +8,7 @@ import (
 
 	rt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
-	aci "github.com/appscode/voyager/api"
+	"github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/analytics"
 	"github.com/appscode/voyager/pkg/controller/certificates"
@@ -85,7 +85,7 @@ var resourceList []string = []string{
 func (w *Watcher) ensureResource() {
 	for _, resource := range resourceList {
 		// This is version dependent
-		_, err := w.KubeClient.Extensions().ThirdPartyResources().Get(resource + "." + aci.V1beta1SchemeGroupVersion.Group)
+		_, err := w.KubeClient.Extensions().ThirdPartyResources().Get(resource + "." + api.V1beta1SchemeGroupVersion.Group)
 		if k8serrors.IsNotFound(err) {
 			tpr := &extensions.ThirdPartyResource{
 				TypeMeta: unversioned.TypeMeta{
@@ -93,11 +93,11 @@ func (w *Watcher) ensureResource() {
 					Kind:       "ThirdPartyResource",
 				},
 				ObjectMeta: kapi.ObjectMeta{
-					Name: resource + "." + aci.V1beta1SchemeGroupVersion.Group,
+					Name: resource + "." + api.V1beta1SchemeGroupVersion.Group,
 				},
 				Versions: []extensions.APIVersion{
 					{
-						Name: aci.V1beta1SchemeGroupVersion.Version,
+						Name: api.V1beta1SchemeGroupVersion.Version,
 					},
 				},
 			}
@@ -180,15 +180,15 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 	switch e.ResourceType {
 	case events.ConfigMap, events.DaemonSet, events.Deployments, events.Service:
 		if e.EventType.IsDeleted() && e.MetaData.Annotations != nil {
-			sourceName, sourceNameFound := e.MetaData.Annotations[ingresscontroller.LoadBalancerSourceName]
-			sourceType, sourceTypeFound := e.MetaData.Annotations[ingresscontroller.LoadBalancerSourceAPIGroup]
+			sourceName, sourceNameFound := e.MetaData.Annotations[api.OriginName]
+			sourceType, sourceTypeFound := e.MetaData.Annotations[api.OriginAPISchema]
 
 			noAnnotationResource := false
 			if !sourceNameFound && !sourceTypeFound {
 				// Lets Check if those are old Ingress resource
-				if strings.HasPrefix(e.MetaData.Name, ingresscontroller.VoyagerPrefix) {
+				if strings.HasPrefix(e.MetaData.Name, api.VoyagerPrefix) {
 					noAnnotationResource = true
-					sourceName, sourceNameFound = e.MetaData.Name[len(ingresscontroller.VoyagerPrefix):], true
+					sourceName, sourceNameFound = e.MetaData.Name[len(api.VoyagerPrefix):], true
 				}
 			}
 
@@ -196,19 +196,19 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 				// deleted resource have source reference
 				var ingressErr error
 				var detectedAPIGroup string
-				if sourceType == aci.APIGroupIngress {
+				if sourceType == api.APISchemaIngress {
 					_, ingressErr = w.KubeClient.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
-				} else if sourceType == aci.APIGroupEngress {
+				} else if sourceType == api.APISchemaEngress {
 					_, ingressErr = w.ExtClient.Ingress(e.MetaData.Namespace).Get(sourceName)
 				} else if !sourceTypeFound {
 					_, ingressErr = w.KubeClient.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
 					if ingressErr != nil {
 						_, ingressErr = w.ExtClient.Ingress(e.MetaData.Namespace).Get(sourceName)
 						if ingressErr == nil {
-							detectedAPIGroup = aci.APIGroupEngress
+							detectedAPIGroup = api.APISchemaEngress
 						}
 					} else {
-						detectedAPIGroup = aci.APIGroupIngress
+						detectedAPIGroup = api.APISchemaIngress
 					}
 				}
 
@@ -241,8 +241,8 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 							if annotation == nil {
 								annotation = make(map[string]string)
 							}
-							annotation[ingresscontroller.LoadBalancerSourceAPIGroup] = detectedAPIGroup
-							annotation[ingresscontroller.LoadBalancerSourceName] = sourceName
+							annotation[api.OriginAPISchema] = detectedAPIGroup
+							annotation[api.OriginName] = sourceName
 
 						}
 						metadata.Set(reflect.ValueOf(objectMeta))

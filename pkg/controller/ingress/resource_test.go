@@ -3,10 +3,10 @@ package ingress
 import (
 	"testing"
 
-	aci "github.com/appscode/voyager/api"
+	api "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
-	"k8s.io/kubernetes/pkg/api"
+	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
 )
@@ -18,33 +18,33 @@ func init() {
 func TestResourceIsExists(t *testing.T) {
 	testCases := map[*EngressController]bool{
 		{
-			Options: &KubeOptions{
-				LBType: LBTypeHostPort,
-			},
-			Config: &aci.Ingress{
-				ObjectMeta: api.ObjectMeta{
+			Resource: &api.Ingress{
+				ObjectMeta: kapi.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
+					Annotations: map[string]string{
+						api.LBType: api.LBTypeHostPort,
+					},
 				},
 			},
 			KubeClient: fake.NewSimpleClientset(
 				&extensions.DaemonSet{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "foo",
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
-				&api.Service{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "foo",
+				&kapi.Service{
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
-				&api.ConfigMap{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "foo",
+				&kapi.ConfigMap{
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
@@ -52,33 +52,33 @@ func TestResourceIsExists(t *testing.T) {
 		}: true,
 
 		{
-			Options: &KubeOptions{
-				LBType: LBTypeHostPort,
-			},
-			Config: &aci.Ingress{
-				ObjectMeta: api.ObjectMeta{
+			Resource: &api.Ingress{
+				ObjectMeta: kapi.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
+					Annotations: map[string]string{
+						api.LBType: api.LBTypeHostPort,
+					},
 				},
 			},
 			KubeClient: fake.NewSimpleClientset(
 				&extensions.DaemonSet{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "fake-foo",
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "fake-foo",
 						Namespace: "bar",
 					},
 				},
 
-				&api.Service{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "foo",
+				&kapi.Service{
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
-				&api.ConfigMap{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "foo",
+				&kapi.ConfigMap{
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
@@ -86,33 +86,66 @@ func TestResourceIsExists(t *testing.T) {
 		}: false,
 
 		{
-			Options: &KubeOptions{
-				LBType: LBTypeHostPort,
-			},
-			Config: &aci.Ingress{
-				ObjectMeta: api.ObjectMeta{
+			Resource: &api.Ingress{
+				ObjectMeta: kapi.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
+					Annotations: map[string]string{
+						api.LBType: api.LBTypeHostPort,
+					},
 				},
 			},
 			KubeClient: fake.NewSimpleClientset(
 				&extensions.DaemonSet{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "foo",
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
-				&api.Service{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "fake-foo",
+				&kapi.Service{
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "fake-foo",
 						Namespace: "bar",
 					},
 				},
 
-				&api.ConfigMap{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "foo",
+				&kapi.ConfigMap{
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "foo",
+						Namespace: "bar",
+					},
+				},
+			),
+		}: false,
+		{
+			Resource: &api.Ingress{
+				ObjectMeta: kapi.ObjectMeta{
+					Name:      "foo",
+					Namespace: "bar",
+					Annotations: map[string]string{
+						api.LBType: api.LBTypeHostPort,
+					},
+				},
+			},
+			KubeClient: fake.NewSimpleClientset(
+				&extensions.DaemonSet{
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "foo",
+						Namespace: "bar",
+					},
+				},
+
+				&kapi.Service{
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "foo",
+						Namespace: "bar",
+					},
+				},
+
+				&kapi.ConfigMap{
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "fake-foo",
 						Namespace: "bar",
 					},
 				},
@@ -120,67 +153,33 @@ func TestResourceIsExists(t *testing.T) {
 		}: false,
 
 		{
-			Options: &KubeOptions{
-				LBType: LBTypeHostPort,
-			},
-			Config: &aci.Ingress{
-				ObjectMeta: api.ObjectMeta{
+			Resource: &api.Ingress{
+				ObjectMeta: kapi.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
+					Annotations: map[string]string{
+						api.LBType: api.LBTypeHostPort,
+					},
 				},
 			},
 			KubeClient: fake.NewSimpleClientset(
 				&extensions.DaemonSet{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "foo",
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
-				&api.Service{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "foo",
+				&kapi.Service{
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
-				&api.ConfigMap{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "fake-foo",
-						Namespace: "bar",
-					},
-				},
-			),
-		}: false,
-
-		{
-			Options: &KubeOptions{
-				LBType: LBTypeHostPort,
-			},
-			Config: &aci.Ingress{
-				ObjectMeta: api.ObjectMeta{
-					Name:      "foo",
-					Namespace: "bar",
-				},
-			},
-			KubeClient: fake.NewSimpleClientset(
-				&extensions.DaemonSet{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "foo",
-						Namespace: "bar",
-					},
-				},
-
-				&api.Service{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "foo",
-						Namespace: "bar",
-					},
-				},
-
-				&api.ConfigMap{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "foo",
+				&kapi.ConfigMap{
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
@@ -188,33 +187,33 @@ func TestResourceIsExists(t *testing.T) {
 		}: true,
 
 		{
-			Options: &KubeOptions{
-				LBType: LBTypeLoadBalancer,
-			},
-			Config: &aci.Ingress{
-				ObjectMeta: api.ObjectMeta{
+			Resource: &api.Ingress{
+				ObjectMeta: kapi.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
+					Annotations: map[string]string{
+						api.LBType: api.LBTypeLoadBalancer,
+					},
 				},
 			},
 			KubeClient: fake.NewSimpleClientset(
-				&api.ReplicationController{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "foo",
+				&kapi.ReplicationController{
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
-				&api.Service{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "foo",
+				&kapi.Service{
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
-				&api.ConfigMap{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "foo",
+				&kapi.ConfigMap{
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
@@ -222,33 +221,33 @@ func TestResourceIsExists(t *testing.T) {
 		}: true,
 
 		{
-			Options: &KubeOptions{
-				LBType: LBTypeLoadBalancer,
-			},
-			Config: &aci.Ingress{
-				ObjectMeta: api.ObjectMeta{
+			Resource: &api.Ingress{
+				ObjectMeta: kapi.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
+					Annotations: map[string]string{
+						api.LBType: api.LBTypeLoadBalancer,
+					},
 				},
 			},
 			KubeClient: fake.NewSimpleClientset(
-				&api.ReplicationController{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "fakefoo",
+				&kapi.ReplicationController{
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "fakefoo",
 						Namespace: "bar",
 					},
 				},
 
-				&api.Service{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "foo",
+				&kapi.Service{
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
-				&api.ConfigMap{
-					ObjectMeta: api.ObjectMeta{
-						Name:      VoyagerPrefix + "foo",
+				&kapi.ConfigMap{
+					ObjectMeta: kapi.ObjectMeta{
+						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},

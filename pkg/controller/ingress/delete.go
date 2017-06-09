@@ -5,6 +5,7 @@ import (
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
+	"github.com/appscode/voyager/api"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/selection"
@@ -12,7 +13,7 @@ import (
 )
 
 func (lbc *EngressController) Delete() error {
-	log.Infoln("Starting deleting lb. got engress with", lbc.Config.ObjectMeta)
+	log.Infoln("Starting deleting lb. got engress with", lbc.Resource.ObjectMeta)
 	err := lbc.parse()
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -34,12 +35,12 @@ func (lbc *EngressController) Delete() error {
 }
 
 func (lbc *EngressController) deleteLB() error {
-	if lbc.Options.LBType == LBTypeDaemon || lbc.Options.LBType == LBTypeHostPort {
+	if lbc.Resource.LBType() == api.LBTypeDaemon || lbc.Resource.LBType() == api.LBTypeHostPort {
 		err := lbc.deleteHostPortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
-	} else if lbc.Options.LBType == LBTypeNodePort {
+	} else if lbc.Resource.LBType() == api.LBTypeNodePort {
 		err := lbc.deleteNodePortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -56,15 +57,15 @@ func (lbc *EngressController) deleteLB() error {
 }
 
 func (lbc *EngressController) deleteLBSvc() error {
-	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+	svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
 	if err == nil {
 		// delete service
-		err = lbc.KubeClient.Core().Services(lbc.Config.Namespace).Delete(VoyagerPrefix+lbc.Config.Name, &kapi.DeleteOptions{})
+		err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Delete(lbc.Resource.OffshootName(), &kapi.DeleteOptions{})
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
 
-		if (lbc.Options.LBType == LBTypeDaemon || lbc.Options.LBType == LBTypeHostPort) && lbc.CloudManager != nil {
+		if (lbc.Resource.LBType() == api.LBTypeDaemon || lbc.Resource.LBType() == api.LBTypeHostPort) && lbc.CloudManager != nil {
 			if fw, ok := lbc.CloudManager.Firewall(); ok {
 				convertedSvc := &kapi.Service{}
 				kapi.Scheme.Convert(svc, convertedSvc, nil)
@@ -79,7 +80,7 @@ func (lbc *EngressController) deleteLBSvc() error {
 			if lb, ok := lbc.CloudManager.LoadBalancer(); ok {
 				convertedSvc := &kapi.Service{}
 				kapi.Scheme.Convert(svc, convertedSvc, nil)
-				err = lb.EnsureLoadBalancerDeleted(lbc.Options.ClusterName, convertedSvc)
+				err = lb.EnsureLoadBalancerDeleted(lbc.ClusterName, convertedSvc)
 				if err != nil {
 					return errors.FromErr(err).Err()
 				}
@@ -90,11 +91,11 @@ func (lbc *EngressController) deleteLBSvc() error {
 }
 
 func (lbc *EngressController) deleteHostPortPods() error {
-	d, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+	d, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
 	if err != nil {
 		return nil
 	}
-	err = lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Delete(VoyagerPrefix+lbc.Config.Name, &kapi.DeleteOptions{})
+	err = lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Delete(lbc.Resource.OffshootName(), &kapi.DeleteOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -103,13 +104,13 @@ func (lbc *EngressController) deleteHostPortPods() error {
 }
 
 func (lbc *EngressController) deleteNodePortPods() error {
-	d, err := lbc.KubeClient.Extensions().Deployments(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+	d, err := lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 	// resize the controller to zero (effectively deleting all pods) before deleting it.
 	d.Spec.Replicas = 0
-	_, err = lbc.KubeClient.Extensions().Deployments(lbc.Config.Namespace).Update(d)
+	_, err = lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Update(d)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -118,7 +119,7 @@ func (lbc *EngressController) deleteNodePortPods() error {
 	time.Sleep(time.Second * 5)
 	// if update failed still trying to delete the controller.
 	falseVar := false
-	err = lbc.KubeClient.Extensions().Deployments(lbc.Config.Namespace).Delete(VoyagerPrefix+lbc.Config.Name, &kapi.DeleteOptions{
+	err = lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Delete(lbc.Resource.OffshootName(), &kapi.DeleteOptions{
 		OrphanDependents: &falseVar,
 	})
 	if err != nil {
@@ -130,14 +131,14 @@ func (lbc *EngressController) deleteNodePortPods() error {
 
 // Deprecated, creating pods using RC is now deprecated.
 func (lbc *EngressController) deleteResidualPods() error {
-	rc, err := lbc.KubeClient.Core().ReplicationControllers(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+	rc, err := lbc.KubeClient.Core().ReplicationControllers(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
 	if err != nil {
 		log.Warningln(err)
 		return err
 	}
 	// resize the controller to zero (effectively deleting all pods) before deleting it.
 	rc.Spec.Replicas = 0
-	_, err = lbc.KubeClient.Core().ReplicationControllers(lbc.Config.Namespace).Update(rc)
+	_, err = lbc.KubeClient.Core().ReplicationControllers(lbc.Resource.Namespace).Update(rc)
 	if err != nil {
 		log.Warningln(err)
 		return err
@@ -147,7 +148,7 @@ func (lbc *EngressController) deleteResidualPods() error {
 	time.Sleep(time.Second * 5)
 	// if update failed still trying to delete the controller.
 	falseVar := false
-	err = lbc.KubeClient.Core().ReplicationControllers(lbc.Config.Namespace).Delete(VoyagerPrefix+lbc.Config.Name, &kapi.DeleteOptions{
+	err = lbc.KubeClient.Core().ReplicationControllers(lbc.Resource.Namespace).Delete(lbc.Resource.OffshootName(), &kapi.DeleteOptions{
 		OrphanDependents: &falseVar,
 	})
 	if err != nil {
@@ -159,7 +160,7 @@ func (lbc *EngressController) deleteResidualPods() error {
 }
 
 func (lbc *EngressController) deleteConfigMap() error {
-	err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Delete(VoyagerPrefix+lbc.Config.Name, &kapi.DeleteOptions{})
+	err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Delete(lbc.Resource.OffshootName(), &kapi.DeleteOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -177,7 +178,7 @@ func (lbc *EngressController) deletePodsForSelector(s map[string]string) {
 		}
 		lb = lb.Add(*ls)
 	}
-	pods, err := lbc.KubeClient.Core().Pods(lbc.Config.Namespace).List(kapi.ListOptions{
+	pods, err := lbc.KubeClient.Core().Pods(lbc.Resource.Namespace).List(kapi.ListOptions{
 		LabelSelector: lb,
 	})
 
@@ -186,7 +187,7 @@ func (lbc *EngressController) deletePodsForSelector(s map[string]string) {
 	}
 	gracePeriods := int64(0)
 	for _, pod := range pods.Items {
-		err = lbc.KubeClient.Core().Pods(lbc.Config.Namespace).Delete(pod.Name, &kapi.DeleteOptions{
+		err = lbc.KubeClient.Core().Pods(lbc.Resource.Namespace).Delete(pod.Name, &kapi.DeleteOptions{
 			GracePeriodSeconds: &gracePeriods,
 		})
 		if err != nil {
@@ -197,9 +198,9 @@ func (lbc *EngressController) deletePodsForSelector(s map[string]string) {
 
 func (lbc *EngressController) ensureStatsServiceDeleted() {
 	err := lbc.KubeClient.Core().
-		Services(lbc.Config.Namespace).
+		Services(lbc.Resource.Namespace).
 		Delete(
-			lbc.Options.annotations.StatsServiceName(lbc.Config.GetName()),
+			lbc.Resource.StatsServiceName(),
 			&kapi.DeleteOptions{},
 		)
 	if err != nil {

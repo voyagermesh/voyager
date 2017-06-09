@@ -56,14 +56,21 @@ defaults
     # errorloc 503 https://appscode.com/errors/503
     # errorloc 504 https://appscode.com/errors/504
 
-{% if DNSResolvers %}
-{% for resolver in DNSResolvers %}
-resolvers {{ resolver.Name }}
-	{% for ns in resolver.nameserver %}
-    nameserver {{ ns.mode }} {{ ns.address}}
+{% for name, resolver in DNSResolvers %}
+resolvers {{ name }}
+    {% for ns in resolver.nameserver %}
+    nameserver dns{{ loop.index }} {{ ns }}
+    {% endfor %}
+    {% if resolver.retries|integer %}
+    resolve_retries {{ resolver.retries|integer }}
+    {% endif %}
+    {% for event, time in resolver.timeout %}
+    timeout {{ event }} {{ time }}
+    {% endfor %}
+    {% for status, period in resolver.hold %}
+    hold {{ status }} {{ period }}
     {% endfor %}
 {% endfor %}
-{% endif %}
 
 {% if Stats %}
 listen stats
@@ -95,7 +102,13 @@ backend default-backend
 
     {% for e in DefaultBackend.Endpoints %}
     {% if e.ExternalName %}
-    {% if e.ExternalRedirect %} http-request redirect location http://{{e.ExternalName}} code 301 {% else %} server {{ e.Name }} {{e.ExternalName}} resolvers {{e.ExternalServiceOptions.Resolver}} {% endif %}
+    {% if e.UseDNSResolver %}
+    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} resolve-prefer ipv4 {% if e.DNSResolver %} check resolvers {{ e.DNSResolver }} {% endif %}
+    {% elif not svc.Backends.BackendRules %}
+    acl https ssl_fc
+    http-request redirect location https://{{e.ExternalName}}:{{ e.Port }} code 301 if https
+    http-request redirect location http://{{e.ExternalName}}:{{ e.Port }} code 301 unless https
+    {% endfor %}
     {% else %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %} {% if Sticky %}cookie {{ e.Name }} {% endif %}
     {% endif %}
@@ -143,7 +156,11 @@ backend https-{{ svc.Name }}
 
     {% for e in svc.Backends.Endpoints %}
     {% if e.ExternalName %}
-    {% if e.ExternalRedirect %} http-request redirect location https://{{e.ExternalName}} code 301 {% else %} server {{ e.Name }} {{e.ExternalName}} resolvers {{e.ExternalServiceOptions.Resolver}} {% endif %}
+    {% if e.UseDNSResolver %}
+    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} resolve-prefer ipv4 {% if e.DNSResolver %} check resolvers {{ e.DNSResolver }} {% endif %}
+    {% elif not svc.Backends.BackendRules %}
+    http-request redirect location https://{{e.ExternalName}}:{{ e.Port }} code 301
+    {% endfor %}
     {% else %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %} {% if Sticky %} cookie {{ e.Name }} {% endif %}
     {% endif %}
@@ -186,7 +203,11 @@ backend http-{{ svc.Name }}
 
     {% for e in svc.Backends.Endpoints %}
     {% if e.ExternalName %}
-    {% if e.ExternalRedirect %} http-request redirect location http://{{e.ExternalName}} code 301 {% else %} server {{ e.Name }} {{e.ExternalName}} resolvers {{e.ExternalServiceOptions.Resolver}} {% endif %}
+    {% if e.UseDNSResolver %}
+    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} resolve-prefer ipv4 {% if e.DNSResolver %} check resolvers {{ e.DNSResolver }} {% endif %}
+    {% elif not svc.Backends.BackendRules %}
+    http-request redirect location http://{{e.ExternalName}}:{{ e.Port }} code 301
+    {% endfor %}
     {% else %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %} {% if Sticky %}cookie {{ e.Name }} {% endif %}
     {% endif %}
@@ -218,8 +239,8 @@ backend tcp-{{ svc.Name }}
     {% endif %}
 
     {% for e in svc.Backends.Endpoints %}
-    {% if e.ExternalName %}
-    server {{ e.Name }} {% if e.ExternalRedirect %} {{e.ExternalName}} {% else %} {{e.ExternalName}} resolvers {{e.ExternalServiceOptions.Resolver}} {% endif %}
+    {% if e.ExternalName and e.UseDNSResolver %}
+    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} resolve-prefer ipv4 {% if e.DNSResolver %} check resolvers {{ e.DNSResolver }} {% endif %}
     {% else %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %}
     {% endif %}

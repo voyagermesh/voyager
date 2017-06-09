@@ -76,17 +76,17 @@ def version():
 
 
 def fmt():
-    libbuild.ungroup_go_imports('*.go', 'pkg', 'test')
-    die(call('goimports -w *.go pkg test'))
-    call('gofmt -s -w *.go pkg test')
+    libbuild.ungroup_go_imports('*.go', 'api', 'client', 'pkg', 'test')
+    die(call('goimports -w *.go api client pkg test'))
+    call('gofmt -s -w *.go api client pkg test')
 
 
 def vet():
-    call('go vet *.go ./pkg/... ./test/...')
+    call('go vet *.go ./api/... ./client/... ./pkg/... ./test/...')
 
 
 def lint():
-    call('golint *.go ./pkg/... ./test/...')
+    call('golint *.go ./api/... ./client/... ./pkg/... ./test/...')
 
 
 def gen():

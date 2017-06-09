@@ -1,7 +1,6 @@
 package ingress
 
 import (
-	"encoding/json"
 	"net"
 	"strconv"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	kapi "k8s.io/kubernetes/pkg/api"
+	kerr "k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	kepi "k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/labels"
@@ -19,15 +19,11 @@ import (
 )
 
 func (lbc *EngressController) Create() error {
-	log.Debugln("Starting creating lb. got engress with", lbc.Config.ObjectMeta)
+	log.Debugln("Starting creating lb. got engress with", lbc.Resource.ObjectMeta)
 	err := lbc.parse()
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
-	if b, err := json.MarshalIndent(lbc.Options, "", "  "); err != nil {
-		log.Infoln("Parsed LB controller options: ", string(b))
-	}
-
 	err = lbc.generateTemplate()
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -36,10 +32,11 @@ func (lbc *EngressController) Create() error {
 	// This methods clean up any unwanted resource that will cause in errors
 	lbc.ensureResources()
 
-	err = lbc.createConfigMap()
+	err = lbc.ensureConfigMap()
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
+	time.Sleep(time.Second * 5)
 	err = lbc.createLB()
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -55,17 +52,17 @@ func (lbc *EngressController) ensureResources() {
 	// if there is already an resource with this name
 	// delete those resource and create the new resource.
 	log.Debugln("trying to delete already existing resources.")
-	_, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+	_, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
 	if err == nil {
 		lbc.deleteConfigMap()
 	}
-	if lbc.Options.LBType == LBTypeDaemon || lbc.Options.LBType == LBTypeHostPort {
-		_, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+	if lbc.Resource.LBType() == api.LBTypeDaemon || lbc.Resource.LBType() == api.LBTypeHostPort {
+		_, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
 		if err == nil {
 			lbc.deleteHostPortPods()
 		}
-	} else if lbc.Options.LBType == LBTypeNodePort {
-		_, err := lbc.KubeClient.Extensions().Deployments(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+	} else if lbc.Resource.LBType() == api.LBTypeNodePort {
+		_, err := lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
 		if err == nil {
 			lbc.deleteNodePortPods()
 
@@ -73,7 +70,7 @@ func (lbc *EngressController) ensureResources() {
 	} else {
 		// Ignore Error.
 		lbc.deleteResidualPods()
-		_, err := lbc.KubeClient.Extensions().Deployments(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+		_, err := lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
 		if err == nil {
 			lbc.deleteNodePortPods()
 		}
@@ -81,43 +78,41 @@ func (lbc *EngressController) ensureResources() {
 	lbc.deleteLBSvc()
 }
 
-func (lbc *EngressController) createConfigMap() error {
+func (lbc *EngressController) ensureConfigMap() error {
 	log.Infoln("creating cmap for engress")
-	cMap := &kapi.ConfigMap{
-		ObjectMeta: kapi.ObjectMeta{
-			Name:      VoyagerPrefix + lbc.Config.Name,
-			Namespace: lbc.Config.Namespace,
-			Annotations: map[string]string{
-				LoadBalancerSourceAPIGroup: lbc.apiGroup,
-				LoadBalancerSourceName:     lbc.Config.GetName(),
+	cm, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
+	if kerr.IsNotFound(err) {
+		cm = &kapi.ConfigMap{
+			ObjectMeta: kapi.ObjectMeta{
+				Name:      lbc.Resource.OffshootName(),
+				Namespace: lbc.Resource.Namespace,
+				Annotations: map[string]string{
+					api.OriginAPISchema: lbc.Resource.APISchema(),
+					api.OriginName:      lbc.Resource.GetName(),
+				},
 			},
-		},
-		Data: map[string]string{
-			"haproxy.cfg": lbc.Options.ConfigData,
-		},
-	}
-
-	getcMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Get(cMap.Name)
-	if err != nil {
-		cMap, err = lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Create(cMap)
-		if err != nil {
-			return errors.FromErr(err).Err()
+			Data: map[string]string{
+				"haproxy.cfg": lbc.ConfigData,
+			},
 		}
-	} else {
-		getcMap.Annotations = cMap.Annotations
-		getcMap.Data = cMap.Data
-		_, err := lbc.KubeClient.Core().ConfigMaps(lbc.Config.Namespace).Update(getcMap)
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
+		_, err = lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Create(cm)
+		return err
+	} else if err != nil {
+		return err
 	}
-	lbc.Options.ConfigMapName = cMap.Name
-	time.Sleep(time.Second * 20)
-	return nil
+	cm.Annotations = map[string]string{
+		api.OriginAPISchema: lbc.Resource.APISchema(),
+		api.OriginName:      lbc.Resource.GetName(),
+	}
+	cm.Data = map[string]string{
+		"haproxy.cfg": lbc.ConfigData,
+	}
+	_, err = lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Update(cm)
+	return err
 }
 
 func (lbc *EngressController) createLB() error {
-	if lbc.Options.LBType == LBTypeDaemon || lbc.Options.LBType == LBTypeHostPort {
+	if lbc.Resource.LBType() == api.LBTypeDaemon || lbc.Resource.LBType() == api.LBTypeHostPort {
 		err := lbc.createHostPortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -127,7 +122,7 @@ func (lbc *EngressController) createLB() error {
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
-	} else if lbc.Options.LBType == LBTypeNodePort {
+	} else if lbc.Resource.LBType() == api.LBTypeNodePort {
 		err := lbc.createNodePortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -138,7 +133,7 @@ func (lbc *EngressController) createLB() error {
 			return errors.FromErr(err).Err()
 		}
 	} else {
-		if lbc.Options.SupportsLoadBalancerType() {
+		if lbc.SupportsLoadBalancerType() {
 			// deleteResidualPods is a safety checking deletation of previous version RC
 			// This should Ignore error.
 			lbc.deleteResidualPods()
@@ -153,7 +148,7 @@ func (lbc *EngressController) createLB() error {
 			}
 			go lbc.updateStatus()
 		} else {
-			return errors.New("LoadBalancer type ingress is unsupported for cloud provider:", lbc.Options.ProviderName).Err()
+			return errors.New("LoadBalancer type ingress is unsupported for cloud provider:", lbc.ProviderName).Err()
 		}
 	}
 	return nil
@@ -164,13 +159,11 @@ func (lbc *EngressController) createHostPortSvc() error {
 	// We just want kubernetes to assign a stable UID to the service. This is used inside EnsureFirewall()
 	svc := &kapi.Service{
 		ObjectMeta: kapi.ObjectMeta{
-			Name:      VoyagerPrefix + lbc.Config.Name,
-			Namespace: lbc.Config.Namespace,
+			Name:      lbc.Resource.OffshootName(),
+			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
-				LBName: lbc.Config.GetName(),
-				LBType: LBTypeHostPort,
-				LoadBalancerSourceAPIGroup: lbc.apiGroup,
-				LoadBalancerSourceName:     lbc.Config.GetName(),
+				api.OriginAPISchema: lbc.Resource.APISchema(),
+				api.OriginName:      lbc.Resource.GetName(),
 			},
 		},
 
@@ -182,7 +175,7 @@ func (lbc *EngressController) createHostPortSvc() error {
 	}
 
 	// opening other tcp ports
-	for _, port := range lbc.Options.Ports {
+	for _, port := range lbc.Ports {
 		p := kapi.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(port),
 			Protocol:   "TCP",
@@ -192,19 +185,19 @@ func (lbc *EngressController) createHostPortSvc() error {
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
 
-	if ans, ok := lbc.Options.annotations.ServiceAnnotations(); ok {
+	if ans, ok := lbc.Resource.ServiceAnnotations(lbc.ProviderName); ok {
 		for k, v := range ans {
 			svc.Annotations[k] = v
 		}
 	}
 
-	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Create(svc)
+	svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Create(svc)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 
 	daemonNodes, err := lbc.KubeClient.Core().Nodes().List(kapi.ListOptions{
-		LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Options.NodeSelector)),
+		LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Resource.NodeSelector())),
 	})
 	if err != nil {
 		log.Infoln("node not found with nodeSelector, cause", err)
@@ -231,34 +224,37 @@ func (lbc *EngressController) createHostPortSvc() error {
 }
 
 func (lbc *EngressController) createHostPortPods() error {
-	log.Infoln("Creating Daemon type lb for nodeSelector = ", lbc.Options.NodeSelector)
+	if len(lbc.Resource.NodeSelector()) == 0 {
+		return errors.Newf("%s type ingress %s@%s is missing node selectors.", lbc.Resource.LBType(), lbc.Resource.Name, lbc.Resource.Namespace).Err()
+	}
+	log.Infoln("Creating Daemon type lb for nodeSelector = ", lbc.Resource.NodeSelector())
 
-	vs := Volumes(lbc.Options)
-	vms := VolumeMounts(lbc.Options)
+	vs := Volumes(lbc.SecretNames)
+	vms := VolumeMounts(lbc.SecretNames)
 	// ignoring errors and trying to create controllers
 	daemon := &kepi.DaemonSet{
 		ObjectMeta: kapi.ObjectMeta{
-			Name:      VoyagerPrefix + lbc.Config.Name,
-			Namespace: lbc.Config.Namespace,
-			Labels:    labelsFor(lbc.Config.Name),
+			Name:      lbc.Resource.OffshootName(),
+			Namespace: lbc.Resource.Namespace,
+			Labels:    labelsFor(lbc.Resource.Name),
 			Annotations: map[string]string{
-				LoadBalancerSourceAPIGroup: lbc.apiGroup,
-				LoadBalancerSourceName:     lbc.Config.GetName(),
+				api.OriginAPISchema: lbc.Resource.APISchema(),
+				api.OriginName:      lbc.Resource.GetName(),
 			},
 		},
 
 		Spec: kepi.DaemonSetSpec{
 			Selector: &unversioned.LabelSelector{
-				MatchLabels: labelsFor(lbc.Config.Name),
+				MatchLabels: labelsFor(lbc.Resource.Name),
 			},
 
 			// pod templates.
 			Template: kapi.PodTemplateSpec{
 				ObjectMeta: kapi.ObjectMeta{
-					Labels: labelsFor(lbc.Config.Name),
+					Labels: labelsFor(lbc.Resource.Name),
 				},
 				Spec: kapi.PodSpec{
-					NodeSelector: lbc.Options.NodeSelector,
+					NodeSelector: lbc.Resource.NodeSelector(),
 					Containers: []kapi.Container{
 						{
 							Name:  "haproxy",
@@ -274,7 +270,7 @@ func (lbc *EngressController) createHostPortPods() error {
 								},
 							},
 							Args: []string{
-								"--config-map=" + lbc.Options.ConfigMapName,
+								"--config-map=" + lbc.Resource.OffshootName(),
 								"--mount-location=" + "/etc/haproxy",
 								"--boot-cmd=" + "/etc/sv/reloader/reload",
 								"--v=4",
@@ -293,7 +289,7 @@ func (lbc *EngressController) createHostPortPods() error {
 	}
 
 	// adding tcp ports to pod template
-	for _, port := range lbc.Options.Ports {
+	for _, port := range lbc.Ports {
 		p := kapi.ContainerPort{
 			Name:          "tcp-" + strconv.Itoa(port),
 			Protocol:      "TCP",
@@ -312,12 +308,12 @@ func (lbc *EngressController) createHostPortPods() error {
 		})
 	}
 
-	if ans, ok := lbc.Options.annotations.PodsAnnotations(); ok {
+	if ans, ok := lbc.Resource.PodsAnnotations(); ok {
 		daemon.Spec.Template.Annotations = ans
 	}
 
 	log.Infoln("creating DaemonSets controller")
-	_, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Config.Namespace).Create(daemon)
+	_, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Create(daemon)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -330,26 +326,24 @@ func (lbc *EngressController) createNodePortSvc() error {
 	// creating service as type NodePort
 	svc := &kapi.Service{
 		ObjectMeta: kapi.ObjectMeta{
-			Name:      VoyagerPrefix + lbc.Config.Name,
-			Namespace: lbc.Config.Namespace,
+			Name:      lbc.Resource.OffshootName(),
+			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
-				LBName: lbc.Config.GetName(),
-				LBType: LBTypeNodePort,
-				LoadBalancerSourceAPIGroup: lbc.apiGroup,
-				LoadBalancerSourceName:     lbc.Config.GetName(),
+				api.OriginAPISchema: lbc.Resource.APISchema(),
+				api.OriginName:      lbc.Resource.GetName(),
 			},
 		},
 		Spec: kapi.ServiceSpec{
 			Type:     kapi.ServiceTypeNodePort,
 			Ports:    []kapi.ServicePort{},
-			Selector: labelsFor(lbc.Config.Name),
+			Selector: labelsFor(lbc.Resource.Name),
 			// https://github.com/kubernetes/kubernetes/issues/33586
 			// LoadBalancerSourceRanges: lbc.Config.Spec.LoadBalancerSourceRanges,
 		},
 	}
 
 	// opening other tcp ports
-	for _, port := range lbc.Options.Ports {
+	for _, port := range lbc.Ports {
 		p := kapi.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(port),
 			Protocol:   "TCP",
@@ -359,18 +353,18 @@ func (lbc *EngressController) createNodePortSvc() error {
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
 
-	if ans, ok := lbc.Options.annotations.ServiceAnnotations(); ok {
+	if ans, ok := lbc.Resource.ServiceAnnotations(lbc.ProviderName); ok {
 		for k, v := range ans {
 			svc.Annotations[k] = v
 		}
 	}
 
-	if lbc.Options.ProviderName == "aws" && lbc.Options.annotations.AcceptProxy() {
+	if lbc.ProviderName == "aws" && lbc.Resource.KeepSourceIP() {
 		// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
 		svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
 	}
 
-	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Create(svc)
+	svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Create(svc)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -379,33 +373,33 @@ func (lbc *EngressController) createNodePortSvc() error {
 
 func (lbc *EngressController) createNodePortPods() error {
 	log.Infoln("creating NodePort deployment")
-	vs := Volumes(lbc.Options)
-	vms := VolumeMounts(lbc.Options)
+	vs := Volumes(lbc.SecretNames)
+	vms := VolumeMounts(lbc.SecretNames)
 	// ignoring errors and trying to create controllers
 	d := &kepi.Deployment{
 		ObjectMeta: kapi.ObjectMeta{
-			Name:      VoyagerPrefix + lbc.Config.Name,
-			Namespace: lbc.Config.Namespace,
-			Labels:    labelsFor(lbc.Config.Name),
+			Name:      lbc.Resource.OffshootName(),
+			Namespace: lbc.Resource.Namespace,
+			Labels:    labelsFor(lbc.Resource.Name),
 			Annotations: map[string]string{
-				LoadBalancerSourceAPIGroup: lbc.apiGroup,
-				LoadBalancerSourceName:     lbc.Config.GetName(),
+				api.OriginAPISchema: lbc.Resource.APISchema(),
+				api.OriginName:      lbc.Resource.GetName(),
 			},
 		},
 
 		Spec: kepi.DeploymentSpec{
-			Replicas: lbc.Options.Replicas,
+			Replicas: lbc.Resource.Replicas(),
 			Selector: &unversioned.LabelSelector{
-				MatchLabels: labelsFor(lbc.Config.Name),
+				MatchLabels: labelsFor(lbc.Resource.Name),
 			},
 			// pod templates.
 			Template: kapi.PodTemplateSpec{
 				ObjectMeta: kapi.ObjectMeta{
-					Labels: labelsFor(lbc.Config.Name),
+					Labels: labelsFor(lbc.Resource.Name),
 				},
 
 				Spec: kapi.PodSpec{
-					NodeSelector: lbc.Options.NodeSelector,
+					NodeSelector: lbc.Resource.NodeSelector(),
 					Containers: []kapi.Container{
 						{
 							Name:  "haproxy",
@@ -421,7 +415,7 @@ func (lbc *EngressController) createNodePortPods() error {
 								},
 							},
 							Args: []string{
-								"--config-map=" + lbc.Options.ConfigMapName,
+								"--config-map=" + lbc.Resource.OffshootName(),
 								"--mount-location=" + "/etc/haproxy",
 								"--boot-cmd=" + "/etc/sv/reloader/reload",
 								"--v=4",
@@ -437,7 +431,7 @@ func (lbc *EngressController) createNodePortPods() error {
 	}
 
 	// adding tcp ports to pod template
-	for _, port := range lbc.Options.Ports {
+	for _, port := range lbc.Ports {
 		p := kapi.ContainerPort{
 			Name:          "tcp-" + strconv.Itoa(port),
 			Protocol:      "TCP",
@@ -455,11 +449,11 @@ func (lbc *EngressController) createNodePortPods() error {
 		})
 	}
 
-	if ans, ok := lbc.Options.annotations.PodsAnnotations(); ok {
+	if ans, ok := lbc.Resource.PodsAnnotations(); ok {
 		d.Spec.Template.Annotations = ans
 	}
 
-	_, err := lbc.KubeClient.Extensions().Deployments(lbc.Config.Namespace).Create(d)
+	_, err := lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Create(d)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -471,24 +465,22 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 	// creating service as typeLoadBalancer
 	svc := &kapi.Service{
 		ObjectMeta: kapi.ObjectMeta{
-			Name:      VoyagerPrefix + lbc.Config.Name,
-			Namespace: lbc.Config.Namespace,
+			Name:      lbc.Resource.OffshootName(),
+			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
-				LBName: lbc.Config.GetName(),
-				LBType: LBTypeLoadBalancer,
-				LoadBalancerSourceAPIGroup: lbc.apiGroup,
-				LoadBalancerSourceName:     lbc.Config.GetName(),
+				api.OriginAPISchema: lbc.Resource.APISchema(),
+				api.OriginName:      lbc.Resource.GetName(),
 			},
 		},
 		Spec: kapi.ServiceSpec{
 			Ports:                    []kapi.ServicePort{},
-			Selector:                 labelsFor(lbc.Config.Name),
-			LoadBalancerSourceRanges: lbc.Config.Spec.LoadBalancerSourceRanges,
+			Selector:                 labelsFor(lbc.Resource.Name),
+			LoadBalancerSourceRanges: lbc.Resource.Spec.LoadBalancerSourceRanges,
 		},
 	}
 
 	// opening other tcp ports
-	for _, port := range lbc.Options.Ports {
+	for _, port := range lbc.Ports {
 		p := kapi.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(port),
 			Protocol:   "TCP",
@@ -498,25 +490,21 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
 
-	if ans, ok := lbc.Options.annotations.ServiceAnnotations(); ok {
+	if ans, ok := lbc.Resource.ServiceAnnotations(lbc.ProviderName); ok {
 		for k, v := range ans {
 			svc.Annotations[k] = v
 		}
 	}
 
-	if lbc.Options.ProviderName == "aws" && lbc.Options.annotations.AcceptProxy() {
-		// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
-		svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
-	}
-
-	switch lbc.Options.ProviderName {
+	switch lbc.ProviderName {
 	case "gce", "gke":
 		svc.Spec.Type = kapi.ServiceTypeLoadBalancer
-		if ip := net.ParseIP(lbc.Options.LoadBalancerPersist); ip != nil {
+		if ip := net.ParseIP(lbc.Resource.Persist()); ip != nil {
 			svc.Spec.LoadBalancerIP = ip.String()
 		}
 	case "aws":
-		if lbc.Options.LoadBalancerPersist != "" {
+		persist, _ := strconv.ParseBool(lbc.Resource.Persist())
+		if persist {
 			// We are going manage the loadbalancer directly
 			svc.Spec.Type = kapi.ServiceTypeNodePort
 		} else {
@@ -526,7 +514,7 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 		svc.Spec.Type = kapi.ServiceTypeLoadBalancer
 	}
 
-	svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Create(svc)
+	svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Create(svc)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -536,7 +524,7 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 			// Wait for nodePort to be assigned
 			timeoutAt := time.Now().Add(time.Second * 600)
 			for {
-				svc, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Get(VoyagerPrefix + lbc.Config.Name)
+				svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
 				if err != nil {
 					return errors.FromErr(err).Err()
 				}
@@ -572,7 +560,7 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 			log.Debugln("loadbalancer for cloud manager updating")
 			convertedSvc := &kapi.Service{}
 			kapi.Scheme.Convert(svc, convertedSvc, nil)
-			_, err = lb.EnsureLoadBalancer(lbc.Options.ClusterName, convertedSvc, hosts) // lbc.Config.Annotations
+			_, err = lb.EnsureLoadBalancer(lbc.ClusterName, convertedSvc, hosts) // lbc.Config.Annotations
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
@@ -584,12 +572,11 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 func (lbc *EngressController) ensureStatsService() {
 	svc := &kapi.Service{
 		ObjectMeta: kapi.ObjectMeta{
-			Name:      lbc.Options.annotations.StatsServiceName(lbc.Config.GetName()),
-			Namespace: lbc.Config.Namespace,
+			Name:      lbc.Resource.StatsServiceName(),
+			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
-				LBName: lbc.Config.GetName(),
-				LoadBalancerSourceAPIGroup: lbc.apiGroup,
-				LoadBalancerSourceName:     lbc.Config.GetName(),
+				api.OriginAPISchema: lbc.Resource.APISchema(),
+				api.OriginName:      lbc.Resource.GetName(),
 			},
 		},
 		Spec: kapi.ServiceSpec{
@@ -602,18 +589,18 @@ func (lbc *EngressController) ensureStatsService() {
 					TargetPort: intstr.FromInt(lbc.Parsed.StatsPort),
 				},
 			},
-			Selector: labelsFor(lbc.Config.Name),
+			Selector: labelsFor(lbc.Resource.Name),
 		},
 	}
 
-	_, err := lbc.KubeClient.Core().Services(lbc.Config.Namespace).Create(svc)
+	_, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Create(svc)
 	if err != nil {
 		log.Errorln("Failed to create Stats Service", err)
 	}
 }
 
 func (lbc *EngressController) updateStatus() error {
-	if lbc.Options.LBType != LBTypeLoadBalancer {
+	if lbc.Resource.LBType() != api.LBTypeLoadBalancer {
 		return nil
 	}
 
@@ -621,8 +608,8 @@ func (lbc *EngressController) updateStatus() error {
 	for i := 0; i < 50; i++ {
 		time.Sleep(time.Second * 10)
 		if svc, err := lbc.KubeClient.Core().
-			Services(lbc.Config.Namespace).
-			Get(VoyagerPrefix + lbc.Config.Name); err == nil {
+			Services(lbc.Resource.Namespace).
+			Get(lbc.Resource.OffshootName()); err == nil {
 			if len(svc.Status.LoadBalancer.Ingress) >= 1 {
 				statuses = svc.Status.LoadBalancer.Ingress
 				break
@@ -631,23 +618,23 @@ func (lbc *EngressController) updateStatus() error {
 	}
 
 	if len(statuses) > 0 {
-		if lbc.apiGroup == api.APIGroupIngress {
-			ing, err := lbc.KubeClient.Extensions().Ingresses(lbc.Config.Namespace).Get(lbc.Config.Name)
+		if lbc.Resource.APISchema() == api.APISchemaIngress {
+			ing, err := lbc.KubeClient.Extensions().Ingresses(lbc.Resource.Namespace).Get(lbc.Resource.Name)
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
 			ing.Status.LoadBalancer.Ingress = statuses
-			_, err = lbc.KubeClient.Extensions().Ingresses(lbc.Config.Namespace).Update(ing)
+			_, err = lbc.KubeClient.Extensions().Ingresses(lbc.Resource.Namespace).Update(ing)
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
 		} else {
-			ing, err := lbc.ExtClient.Ingress(lbc.Config.Namespace).Get(lbc.Config.Name)
+			ing, err := lbc.ExtClient.Ingress(lbc.Resource.Namespace).Get(lbc.Resource.Name)
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
 			ing.Status.LoadBalancer.Ingress = statuses
-			_, err = lbc.ExtClient.Ingress(lbc.Config.Namespace).Update(ing)
+			_, err = lbc.ExtClient.Ingress(lbc.Resource.Namespace).Update(ing)
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
@@ -666,10 +653,10 @@ func labelsFor(name string) map[string]string {
 	}
 }
 
-func Volumes(o *KubeOptions) []kapi.Volume {
+func Volumes(secretNames []string) []kapi.Volume {
 	skipper := make(map[string]bool)
 	vs := make([]kapi.Volume, 0)
-	for _, s := range o.SecretNames {
+	for _, s := range secretNames {
 		if strings.TrimSpace(s) == "" {
 			continue
 		}
@@ -690,10 +677,10 @@ func Volumes(o *KubeOptions) []kapi.Volume {
 	return vs
 }
 
-func VolumeMounts(o *KubeOptions) []kapi.VolumeMount {
+func VolumeMounts(secretNames []string) []kapi.VolumeMount {
 	skipper := make(map[string]bool)
 	ms := make([]kapi.VolumeMount, 0)
-	for _, s := range o.SecretNames {
+	for _, s := range secretNames {
 		if strings.TrimSpace(s) == "" {
 			continue
 		}

@@ -27,32 +27,32 @@ func NewIngressTestSuit(t TestSuit) *IngressTestSuit {
 	}
 }
 
-func (i *IngressTestSuit) Test() error {
-	if err := i.setUp(); err != nil {
+func (s *IngressTestSuit) Test() error {
+	if err := s.setUp(); err != nil {
 		return err
 	}
-	defer i.cleanUp()
+	defer s.cleanUp()
 
-	if err := i.runTests(); err != nil {
+	if err := s.runTests(); err != nil {
 		return err
 	}
 	log.Infoln("Ingress Test Passed")
 	return nil
 }
 
-func (i *IngressTestSuit) setUp() error {
-	_, err := i.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Create(testServerRc)
+func (s *IngressTestSuit) setUp() error {
+	_, err := s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Create(testServerRc)
 	if err != nil && !k8serr.IsAlreadyExists(err) {
 		return errors.New().WithCause(err).Err()
 	}
 
-	_, err = i.t.KubeClient.Core().Services(testServerSvc.Namespace).Create(testServerSvc)
+	_, err = s.t.KubeClient.Core().Services(testServerSvc.Namespace).Create(testServerSvc)
 	if err != nil && !k8serr.IsAlreadyExists(err) {
 		return errors.New().WithCause(err).Err()
 	}
 
 	for it := 0; it < maxRetries; it++ {
-		ep, err := i.t.KubeClient.Core().Endpoints(testServerSvc.Namespace).Get(testServerSvc.Name)
+		ep, err := s.t.KubeClient.Core().Endpoints(testServerSvc.Namespace).Get(testServerSvc.Name)
 		if err == nil {
 			if len(ep.Subsets) > 0 {
 				if len(ep.Subsets[0].Addresses) > 0 {
@@ -68,25 +68,25 @@ func (i *IngressTestSuit) setUp() error {
 	return nil
 }
 
-func (i *IngressTestSuit) cleanUp() {
-	if i.t.Config.Cleanup {
+func (s *IngressTestSuit) cleanUp() {
+	if s.t.Config.Cleanup {
 		log.Infoln("Cleaning up Test Resources")
-		i.t.KubeClient.Core().Services(testServerSvc.Namespace).Delete(testServerSvc.Name, &api.DeleteOptions{})
-		rc, err := i.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name)
+		s.t.KubeClient.Core().Services(testServerSvc.Namespace).Delete(testServerSvc.Name, &api.DeleteOptions{})
+		rc, err := s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name)
 		if err == nil {
 			rc.Spec.Replicas = 0
-			i.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Update(rc)
+			s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Update(rc)
 			time.Sleep(time.Second * 5)
 		}
-		i.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Delete(testServerRc.Name, &api.DeleteOptions{})
+		s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Delete(testServerRc.Name, &api.DeleteOptions{})
 	}
 }
 
-func (i *IngressTestSuit) runTests() error {
-	ingType := reflect.ValueOf(i)
+func (s *IngressTestSuit) runTests() error {
+	ingType := reflect.ValueOf(s)
 	serializedMethodName := make([]string, 0)
-	if len(i.t.Config.RunOnly) > 0 {
-		serializedMethodName = append(serializedMethodName, "TestIngress"+i.t.Config.RunOnly)
+	if len(s.t.Config.RunOnly) > 0 {
+		serializedMethodName = append(serializedMethodName, "TestIngress"+s.t.Config.RunOnly)
 	} else {
 		for it := 0; it < ingType.NumMethod(); it++ {
 			method := ingType.Type().Method(it)
@@ -104,7 +104,7 @@ func (i *IngressTestSuit) runTests() error {
 
 	errChan := make(chan error)
 	var wg sync.WaitGroup
-	limit := make(chan bool, i.t.Config.MaxConcurrentTest)
+	limit := make(chan bool, s.t.Config.MaxConcurrentTest)
 	for _, name := range serializedMethodName {
 		shouldCall := ingType.MethodByName(name)
 		if shouldCall.IsValid() {
