@@ -108,7 +108,7 @@ backend default-backend
     acl https ssl_fc
     http-request redirect location https://{{e.ExternalName}}:{{ e.Port }} code 301 if https
     http-request redirect location http://{{e.ExternalName}}:{{ e.Port }} code 301 unless https
-    {% endfor %}
+    {% endif %}
     {% else %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %} {% if Sticky %}cookie {{ e.Name }} {% endif %}
     {% endif %}
@@ -160,7 +160,7 @@ backend https-{{ svc.Name }}
     server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} resolve-prefer ipv4 {% if e.DNSResolver %} check resolvers {{ e.DNSResolver }} {% endif %}
     {% elif not svc.Backends.BackendRules %}
     http-request redirect location https://{{e.ExternalName}}:{{ e.Port }} code 301
-    {% endfor %}
+    {% endif %}
     {% else %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %} {% if Sticky %} cookie {{ e.Name }} {% endif %}
     {% endif %}
@@ -207,7 +207,7 @@ backend http-{{ svc.Name }}
     server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} resolve-prefer ipv4 {% if e.DNSResolver %} check resolvers {{ e.DNSResolver }} {% endif %}
     {% elif not svc.Backends.BackendRules %}
     http-request redirect location http://{{e.ExternalName}}:{{ e.Port }} code 301
-    {% endfor %}
+    {% endif %}
     {% else %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %} {% if Sticky %}cookie {{ e.Name }} {% endif %}
     {% endif %}

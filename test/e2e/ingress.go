@@ -2054,7 +2054,8 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 			Name:      "external-svc-dns",
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
-				api.ExternalDNSResolvers: `{"nameserver": [{"mode": "dnsmasq", "address": "8.8.8.8:53"}]}`,
+				api.UseDNSResolver: "true",
+				api.DNSResolverNameservers: `["8.8.8.8:53"]`,
 			},
 		},
 		Spec: kapi.ServiceSpec{
@@ -2088,6 +2089,7 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 									Path: "/testpath",
 									Backend: api.ExtendedIngressBackend{
 										ServiceName: extSvc.Name,
+										ServicePort: intstr.FromString("8080"),
 									},
 								},
 							},
