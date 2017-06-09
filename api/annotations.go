@@ -97,7 +97,6 @@ const (
 		  hold timeout         30s
 		  hold valid           10s
 	*/
-	ExternalDNSResolvers   = EngressKey + "/" + "external-dns-resolvers"
 	DNSResolverNameservers = EngressKey + "/" + "dns-resolver-nameservers" // ["", ""]
 	DNSResolverRetries     = EngressKey + "/" + "dns-resolver-retries"     // int
 	DNSResolverTimeout     = EngressKey + "/" + "dns-resolver-timeout"     // {"event":"time","event":"time"}
