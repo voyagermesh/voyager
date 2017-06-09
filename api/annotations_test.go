@@ -1,8 +1,9 @@
 package api
-import (
-"testing"
 
-"github.com/stretchr/testify/assert"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNodeSelector(t *testing.T) {
@@ -25,4 +26,13 @@ func TestNodeSelector(t *testing.T) {
 	for k, v := range dataTable {
 		assert.Equal(t, v, parseNodeSelector(k))
 	}
+}
+
+func TestGetMap(t *testing.T) {
+	in := map[string]string{
+		"k1": `{"o1": "v1"}`,
+	}
+
+	actual, _ := getMap(in, "k1")
+	assert.Equal(t, map[string]string{"o1": "v1"}, actual)
 }

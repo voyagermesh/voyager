@@ -1,9 +1,9 @@
 package api
 
 import (
-	"strings"
 	"encoding/json"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -125,7 +125,7 @@ func (r Ingress) StatsServiceName() string {
 }
 
 func (r Ingress) LBType() string {
-	if v, ok := getString(r.Annotations,LBType); ok {
+	if v, ok := getString(r.Annotations, LBType); ok {
 		return v
 	}
 	return LBTypeLoadBalancer
