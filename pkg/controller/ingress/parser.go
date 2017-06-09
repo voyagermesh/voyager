@@ -3,7 +3,6 @@ package ingress
 import (
 	"encoding/json"
 	goerr "errors"
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -58,64 +57,56 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 	}
 
 	log.Infoln("looking for services in namespace", namespace, "with name", name)
-	service, err := lbc.KubeClient.Core().Services(namespace).Get(name)
+	svc, err := lbc.KubeClient.Core().Services(namespace).Get(name)
 	if err != nil {
-		log.Warningln(err)
 		return nil, err
 	}
 
-	p, portFound := getSpecifiedPort(service.Spec.Ports, port)
-	if service.Spec.Type == kapi.ServiceTypeExternalName {
-		eps := make([]*Endpoint, 0)
-
-		name := service.Spec.ExternalName
-		if portFound {
-			name += fmt.Sprintf(":%d", p.Port)
+	if svc.Spec.Type == kapi.ServiceTypeExternalName {
+		ep := Endpoint{
+			Name:         "external",
+			Port:         port.String(),
+			ExternalName: svc.Spec.ExternalName,
 		}
-
-		dnsResolved := false
-		if val, ok := service.Annotations[api.ExternalDNSResolvers]; ok {
-			resolver := &DNSResolver{}
-			err := json.Unmarshal([]byte(val), resolver)
-			if err == nil && len(resolver.NameServer) > 0 {
-				dnsResolved = true
-				resolver.Name = "___resolver-" + rand.Characters(10)
-
-				for i := range resolver.NameServer {
-					if len(resolver.NameServer[i].Mode) > 0 {
-						resolver.NameServer[i].Mode = "dnsmasq"
-					}
-				}
-
-				lbc.Parsed.DNSResolvers = append(lbc.Parsed.DNSResolvers, resolver)
-
-				eps = append(eps, &Endpoint{
-					Name:         "server-ext-" + service.Spec.ExternalName,
-					ExternalName: name,
-					ExternalServiceOptions: ExternalServiceOptions{
-						Resolver: resolver.Name,
-					},
-				})
-			} else {
-				log.Errorln("Failed to parse dns resolver", err)
+		if nameservers, useResolver := svc.Annotations[api.DNSResolverNameservers]; useResolver {
+			var resolver DNSResolver
+			err := json.Unmarshal([]byte(nameservers), &resolver.NameServer)
+			if err != nil {
+				return nil, err
 			}
+			if v, ok := svc.Annotations[api.DNSResolverRetries]; ok {
+				resolver.Retries, err = strconv.Atoi(v)
+				if err != nil {
+					return nil, err
+				}
+			}
+			if v, ok := svc.Annotations[api.DNSResolverHold]; ok {
+				m := make(map[string]string)
+				err = json.Unmarshal([]byte(v), &m)
+				if err != nil {
+					return nil, err
+				}
+				resolver.Hold = m
+			}
+			if v, ok := svc.Annotations[api.DNSResolverTimeout]; ok {
+				m := make(map[string]string)
+				err = json.Unmarshal([]byte(v), &m)
+				if err != nil {
+					return nil, err
+				}
+				resolver.Timeout = m
+			}
+			resolver.Name = "resolver-for-" + svc.Name
+			lbc.Parsed.DNSResolvers = append(lbc.Parsed.DNSResolvers, &resolver)
+			ep.DNSResolver = resolver.Name
 		}
-
-		if !dnsResolved {
-			log.Infoln("DNS resolver not configured, using redirect")
-			eps = append(eps, &Endpoint{
-				Name:             "server-ext-" + service.Spec.ExternalName,
-				ExternalName:     name,
-				ExternalRedirect: true,
-			})
-		}
-		return eps, nil
+		return []*Endpoint{&ep}, nil
 	} else {
+		p, portFound := getSpecifiedPort(svc.Spec.Ports, port)
 		if !portFound {
-			log.Warningln("service port unavailable")
 			return nil, goerr.New("service port unavailable")
 		}
-		return lbc.getEndpoints(service, p, hostNames)
+		return lbc.getEndpoints(svc, p, hostNames)
 	}
 }
 

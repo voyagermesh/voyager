@@ -3,7 +3,7 @@ package ingress
 import (
 	"sync"
 
-	aci "github.com/appscode/voyager/api"
+	api "github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/stash"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
@@ -17,7 +17,7 @@ type EngressController struct {
 	IngressClass string
 
 	// Engress object that created or updated.
-	Resource *aci.Ingress
+	Resource *api.Ingress
 	// kube options data
 	SecretNames []string
 	// contains raw configMap data parsed from the cfg file.
@@ -69,15 +69,10 @@ type HAProxyOptions struct {
 
 type DNSResolver struct {
 	Name       string
-	NameServer []NameServer `json:"nameserver"`
-}
-
-type NameServer struct {
-	// dnsmasq, vpc
-	Mode string `json:"mode"`
-
-	// ip:port
-	Address string `json:"address"`
+	NameServer []string          `json:"nameserver"`
+	Retries    int               `json:"retries"`
+	Timeout    map[string]string `json:"timeout"`
+	Hold       map[string]string `json:"hold"`
 }
 
 type Service struct {
@@ -108,17 +103,12 @@ type Backend struct {
 }
 
 type Endpoint struct {
-	Name                   string
-	IP                     string
-	Port                   string
-	Weight                 int
-	ExternalName           string
-	ExternalRedirect       bool
-	ExternalServiceOptions ExternalServiceOptions
-}
-
-type ExternalServiceOptions struct {
-	Resolver string
+	Name         string
+	IP           string
+	Port         string
+	Weight       int
+	ExternalName string
+	DNSResolver  string
 }
 
 // Loadbalancer image is an almost constant type.
