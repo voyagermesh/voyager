@@ -173,7 +173,7 @@ func (r Ingress) NodeSelector() map[string]string {
 		return m
 	}
 	v, _ := r.Annotations[EngressKey+"/"+"daemon.nodeSelector"]
-	return ParseNodeSelector(v)
+	return parseDaemonNodeSelector(v)
 }
 
 func (r Ingress) Persist() string {
@@ -229,7 +229,9 @@ func (r Ingress) getTargetAnnotations(key string) (map[string]string, bool) {
 }
 
 // ref: https://github.com/kubernetes/kubernetes/blob/078238a461a0872a8eacb887fbb3d0085714604c/staging/src/k8s.io/apiserver/pkg/apis/example/v1/types.go#L134
-func ParseNodeSelector(labels string) map[string]string {
+// Deprecated, for newer ones use '{"k1":"v1", "k2", "v2"}' form
+// This expects the form k1=v1,k2=v2
+func parseDaemonNodeSelector(labels string) map[string]string {
 	selectorMap := make(map[string]string)
 	for _, label := range strings.Split(labels, ",") {
 		label = strings.TrimSpace(label)
