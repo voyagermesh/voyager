@@ -75,17 +75,6 @@ func (lbc *EngressController) deleteLBSvc() error {
 				}
 			}
 		}
-
-		if svc.Spec.Type == kapi.ServiceTypeNodePort && lbc.CloudManager != nil {
-			if lb, ok := lbc.CloudManager.LoadBalancer(); ok {
-				convertedSvc := &kapi.Service{}
-				kapi.Scheme.Convert(svc, convertedSvc, nil)
-				err = lb.EnsureLoadBalancerDeleted(lbc.ClusterName, convertedSvc)
-				if err != nil {
-					return errors.FromErr(err).Err()
-				}
-			}
-		}
 	}
 	return nil
 }

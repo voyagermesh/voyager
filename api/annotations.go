@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"net"
 	"strconv"
 	"strings"
 )
@@ -37,9 +38,8 @@ const (
 	// Replicas specify # of HAProxy pods run (default 1)
 	Replicas = EngressKey + "/" + "replicas"
 
-	// LoadBalancer mode exposes HAProxy via a type=LoadBalancer service. This is the original version implemented by @sadlil
-	// Uses nodeport and Cloud LoadBalancer exists beyond single HAProxy run
-	LoadBalancerPersist = EngressKey + "/" + "persist" // "" or IP or non-empty
+	// IP to be assigned to cloud load balancer
+	LoadBalancerIP = EngressKey + "/" + "load-balancer-ip" // IP or empty
 
 	// BackendWeight is the weight value of a Pod that was
 	// addressed by the Endpoint, this weight will be added to server backend.
@@ -146,12 +146,11 @@ func (r Ingress) NodeSelector() map[string]string {
 	return parseDaemonNodeSelector(getString(r.Annotations, EngressKey+"/"+"daemon.nodeSelector"))
 }
 
-func (r Ingress) Persist() string {
-	if v, ok := r.Annotations[EngressKey+"/"+"ip"]; ok {
-		return v
+func (r Ingress) LoadBalancerIP() net.IP {
+	if v := getString(r.Annotations, LoadBalancerIP); v != "" {
+		return net.ParseIP(v)
 	}
-	v, _ := r.Annotations[LoadBalancerPersist]
-	return v
+	return nil
 }
 
 func (r Ingress) ServiceAnnotations(provider string) (map[string]string, bool) {
