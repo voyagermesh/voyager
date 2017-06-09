@@ -12,7 +12,7 @@ func TestNodeSelector(t *testing.T) {
 			"key": "value",
 		},
 
-		"key1=value1,key2=value2a": {
+		"key1=value1,key2=value2": {
 			"key1": "value1",
 			"key2": "value2",
 		},
@@ -26,4 +26,13 @@ func TestNodeSelector(t *testing.T) {
 	for k, v := range dataTable {
 		assert.Equal(t, v, parseDaemonNodeSelector(k))
 	}
+}
+
+func TestGetMap(t *testing.T) {
+	in := map[string]string{
+		"k1": `{"o1": "v1"}`,
+	}
+
+	actual, _ := getMap(in, "k1")
+	assert.Equal(t, map[string]string{"o1": "v1"}, actual)
 }
