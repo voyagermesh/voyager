@@ -64,6 +64,7 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 	}
 
 	if service.Spec.Type == kapi.ServiceTypeExternalName {
+		// https://kubernetes.io/docs/concepts/services-networking/service/#services-without-selectors
 		ep := Endpoint{
 			Name:         "external",
 			Port:         port.String(),
