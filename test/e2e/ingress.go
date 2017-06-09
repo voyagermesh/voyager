@@ -2054,7 +2054,7 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 			Name:      "external-svc-dns",
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
-				api.UseDNSResolver: "true",
+				api.UseDNSResolver:         "true",
 				api.DNSResolverNameservers: `["8.8.8.8:53"]`,
 			},
 		},

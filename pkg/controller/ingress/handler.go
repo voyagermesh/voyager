@@ -240,13 +240,10 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 	return nil
 }
 
-type IngressValue struct {
+type IngressRef struct {
+	APISchema string `json:"apiSchema"`
 	Name      string `json:"name"`
 	Namespace string `json:"namespace"`
-}
-
-type IngressValueList struct {
-	Items []IngressValue `json:"items"`
 }
 
 const (
@@ -266,70 +263,69 @@ func shouldHandleIngress(resource *api.Ingress, ingressClass string) bool {
 	return kubeAnnotation == ingressClass || kubeAnnotation == ingressClassAnnotationValue
 }
 
-func ensureServiceAnnotations(client clientset.Interface, ing *api.Ingress, namespace, name string) {
+func ensureServiceAnnotations(client clientset.Interface, r *api.Ingress, namespace, name string) {
 	svc, err := client.Core().Services(namespace).Get(name)
-	if err == nil {
-		if ok, _, _ := isEngressHaveService(ing, name+"."+namespace); ok {
-			list := &IngressValueList{}
-			val, ok := svc.Annotations[api.EngressKey]
-			if ok {
-				err := json.Unmarshal([]byte(val), list)
-				if err == nil {
-					found := false
-					for _, engs := range list.Items {
-						if engs.Name == ing.Name && engs.Namespace == ing.Namespace {
-							found = true
-							break
-						}
-					}
-					if !found {
-						list.Items = append(list.Items, IngressValue{
-							Name:      ing.Name,
-							Namespace: ing.Namespace,
-						})
+	if err != nil {
+		return
+	}
+	if svc.Annotations == nil {
+		svc.Annotations = make(map[string]string)
+	}
+
+	if ok, _, _ := isEngressHaveService(r, name+"."+namespace); ok {
+		list := make([]IngressRef, 0)
+		val, ok := svc.Annotations[api.EgressPoints]
+		if ok {
+			err := json.Unmarshal([]byte(val), list)
+			if err == nil {
+				found := false
+				for _, engs := range list {
+					if engs.APISchema == r.APISchema() && engs.Name == r.Name && engs.Namespace == r.Namespace {
+						found = true
+						break
 					}
 				}
-			} else {
-				list.Items = make([]IngressValue, 0)
-				list.Items = append(list.Items, IngressValue{
-					Name:      ing.Name,
-					Namespace: ing.Namespace,
-				})
+				if !found {
+					list = append(list, IngressRef{
+						APISchema: r.APISchema(),
+						Name:      r.Name,
+						Namespace: r.Namespace,
+					})
+				}
 			}
+		} else {
+			list = append(list, IngressRef{
+				APISchema: r.APISchema(),
+				Name:      r.Name,
+				Namespace: r.Namespace,
+			})
+		}
 
+		data, err := json.Marshal(list)
+		if err == nil {
+			svc.Annotations[api.EgressPoints] = string(data)
+		}
+		client.Core().Services(namespace).Update(svc)
+		return
+	}
+	// Lets check if service still have the annotation for this ingress.
+	val, ok := svc.Annotations[api.EgressPoints]
+	if ok {
+		list := make([]IngressRef, 0)
+		err := json.Unmarshal([]byte(val), list)
+		if err == nil {
+			for i, engs := range list {
+				if engs.APISchema == r.APISchema() && engs.Name == r.Name && engs.Namespace == r.Namespace {
+					// remove the annotation key
+					list = append(list[:i], list[i+1:]...)
+				}
+			}
 			data, err := json.Marshal(list)
 			if err == nil {
-				if svc.Annotations == nil {
-					svc.Annotations = make(map[string]string)
-				}
-				svc.Annotations[api.EngressKey] = string(data)
-			}
-
-			client.Core().Services(namespace).Update(svc)
-		} else {
-			// Lets check if service still have the annotation for this ingress.
-			val, ok := svc.Annotations[api.EngressKey]
-			if ok {
-				list := &IngressValueList{}
-				err := json.Unmarshal([]byte(val), list)
-				if err == nil {
-					for i, engs := range list.Items {
-						if engs.Name == ing.Name && engs.Namespace == ing.Namespace {
-							// remove the annotation key
-							list.Items = append(list.Items[:i], list.Items[i+1:]...)
-						}
-					}
-					data, err := json.Marshal(list)
-					if err == nil {
-						if svc.Annotations == nil {
-							svc.Annotations = make(map[string]string)
-						}
-						svc.Annotations[api.EngressKey] = string(data)
-					}
-				}
-				client.Core().Services(namespace).Update(svc)
+				svc.Annotations[api.EgressPoints] = string(data)
 			}
 		}
+		client.Core().Services(namespace).Update(svc)
 	}
 }
 

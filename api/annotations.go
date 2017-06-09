@@ -82,6 +82,8 @@ const (
 	// Annotations applied to resources offshoot from an ingress
 	OriginAPISchema = EngressKey + "/" + "origin-api-schema" // APISchema = {APIGroup}/{APIVersion}
 	OriginName      = EngressKey + "/" + "origin-name"
+
+	EgressPoints = EngressKey + "/" + "egress-points"
 )
 
 func (r Ingress) OffshootName() string {
