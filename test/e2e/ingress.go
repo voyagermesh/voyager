@@ -1943,8 +1943,33 @@ func (s *IngressTestSuit) TestIngressLBSourceRange() error {
 	return nil
 }
 
-func (s *IngressTestSuit) TestIngressExternalName() error {
-	extSvc := &kapi.Service{
+func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
+	extSvcResolvesDNSWithNS := &kapi.Service{
+		ObjectMeta: kapi.ObjectMeta{
+			Name:      "external-svc-dns-with-ns",
+			Namespace: s.t.Config.TestNamespace,
+			Annotations: map[string]string{
+				api.UseDNSResolver:         "true",
+				api.DNSResolverNameservers: `["8.8.8.8:53", "8.8.4.4:53"]`,
+			},
+		},
+		Spec: kapi.ServiceSpec{
+			Type:         kapi.ServiceTypeExternalName,
+			ExternalName: "google.com",
+		},
+	}
+
+	_, err := s.t.KubeClient.Core().Services(extSvcResolvesDNSWithNS.Namespace).Create(extSvcResolvesDNSWithNS)
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+	defer func() {
+		if s.t.Config.Cleanup {
+			s.t.KubeClient.Core().Services(extSvcResolvesDNSWithNS.Namespace).Delete(extSvcResolvesDNSWithNS.Name, nil)
+		}
+	}()
+
+	extSvcNoResolveRedirect := &kapi.Service{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      "external-svc-non-dns",
 			Namespace: s.t.Config.TestNamespace,
@@ -1955,108 +1980,20 @@ func (s *IngressTestSuit) TestIngressExternalName() error {
 		},
 	}
 
-	_, err := s.t.KubeClient.Core().Services(extSvc.Namespace).Create(extSvc)
+	_, err = s.t.KubeClient.Core().Services(extSvcNoResolveRedirect.Namespace).Create(extSvcNoResolveRedirect)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.KubeClient.Core().Services(extSvc.Namespace).Delete(extSvc.Name, nil)
+			s.t.KubeClient.Core().Services(extSvcNoResolveRedirect.Namespace).Delete(extSvcNoResolveRedirect.Name, nil)
 		}
 	}()
 
-	baseIngress := &api.Ingress{
-		ObjectMeta: kapi.ObjectMeta{
-			Name:      testIngressName(),
-			Namespace: s.t.Config.TestNamespace,
-		},
-		Spec: api.ExtendedIngressSpec{
-			Rules: []api.ExtendedIngressRule{
-				{
-					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
-						HTTP: &api.HTTPExtendedIngressRuleValue{
-							Paths: []api.HTTPExtendedIngressPath{
-								{
-									Path: "/testpath",
-									Backend: api.ExtendedIngressBackend{
-										ServiceName: extSvc.Name,
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	_, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
-	if err != nil {
-		return errors.New().WithCause(err).Err()
-	}
-	defer func() {
-		if s.t.Config.Cleanup {
-			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
-		}
-	}()
-
-	// Wait sometime to loadbalancer be opened up.
-	time.Sleep(time.Second * 10)
-	var svc *kapi.Service
-	for i := 0; i < maxRetries; i++ {
-		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
-		if err == nil {
-			break
-		}
-		time.Sleep(time.Second * 5)
-		log.Infoln("Waiting for service to be created")
-	}
-	if err != nil {
-		return err
-	}
-	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
-	for i := 0; i < maxRetries; i++ {
-		_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
-		if err == nil {
-			break
-		}
-		time.Sleep(time.Second * 5)
-		log.Infoln("Waiting for endpoints to be created")
-	}
-	if err != nil {
-		return err
-	}
-
-	serverAddr, err := s.getURLs(baseIngress)
-	if err != nil {
-		return err
-	}
-	time.Sleep(time.Second * 60)
-	log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
-	for _, url := range serverAddr {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath").DoTestRedirectWithRetry(50)
-		if err != nil {
-			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
-		}
-		if resp.Status != 301 {
-			return errors.New().WithMessage("Path did not matched").Err()
-		}
-		if resp.ResponseHeader.Get("Location") != "http://google.com" {
-			return errors.New().WithMessage("Location did not matched").Err()
-		}
-	}
-	return nil
-}
-
-func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
-	extSvc := &kapi.Service{
+	extSvcResolvesDNSWithoutNS := &kapi.Service{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      "external-svc-dns",
 			Namespace: s.t.Config.TestNamespace,
-			Annotations: map[string]string{
-				api.UseDNSResolver:         "true",
-				api.DNSResolverNameservers: `["8.8.8.8:53"]`,
-			},
 		},
 		Spec: kapi.ServiceSpec{
 			Type:         kapi.ServiceTypeExternalName,
@@ -2064,13 +2001,13 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 		},
 	}
 
-	_, err := s.t.KubeClient.Core().Services(extSvc.Namespace).Create(extSvc)
+	_, err = s.t.KubeClient.Core().Services(extSvcResolvesDNSWithoutNS.Namespace).Create(extSvcResolvesDNSWithoutNS)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.KubeClient.Core().Services(extSvc.Namespace).Delete(extSvc.Name, nil)
+			s.t.KubeClient.Core().Services(extSvcResolvesDNSWithoutNS.Namespace).Delete(extSvcResolvesDNSWithoutNS.Name, nil)
 		}
 	}()
 
@@ -2080,16 +2017,44 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 			Namespace: s.t.Config.TestNamespace,
 		},
 		Spec: api.ExtendedIngressSpec{
+			Backend: &api.ExtendedIngressBackend{
+				ServiceName: extSvcNoResolveRedirect.Name,
+				ServicePort: intstr.FromString("80"),
+			},
 			Rules: []api.ExtendedIngressRule{
 				{
 					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
 						HTTP: &api.HTTPExtendedIngressRuleValue{
 							Paths: []api.HTTPExtendedIngressPath{
 								{
-									Path: "/testpath",
+									Path: "/test-dns",
 									Backend: api.ExtendedIngressBackend{
-										ServiceName: extSvc.Name,
-										ServicePort: intstr.FromString("8080"),
+										ServiceName: extSvcResolvesDNSWithNS.Name,
+										ServicePort: intstr.FromString("80"),
+									},
+								},
+								{
+									Path: "/test-no-dns",
+									Backend: api.ExtendedIngressBackend{
+										ServiceName: extSvcNoResolveRedirect.Name,
+										ServicePort: intstr.FromString("80"),
+									},
+								},
+								{
+									Path: "/test-no-backend-redirect",
+									Backend: api.ExtendedIngressBackend{
+										ServiceName: extSvcResolvesDNSWithoutNS.Name,
+										ServicePort: intstr.FromString("80"),
+									},
+								},
+								{
+									Path: "/test-no-backend-rule-redirect",
+									Backend: api.ExtendedIngressBackend{
+										ServiceName: extSvcNoResolveRedirect.Name,
+										ServicePort: intstr.FromString("80"),
+										BackendRule: []string{
+											"http-request redirect location https://google.com code 302",
+										},
 									},
 								},
 							},
@@ -2143,13 +2108,67 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 	}
 	time.Sleep(time.Second * 60)
 	log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
+	// Check Non DNS redirect
 	for _, url := range serverAddr {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath").DoStatusWithRetry(50)
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/test-no-dns").DoTestRedirectWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
+		}
+		if resp.Status != 301 {
+			return errors.New().WithMessage("Path did not matched").Err()
+		}
+		if resp.ResponseHeader.Get("Location") != "http://google.com:80" {
+			return errors.New().WithMessage("Location did not matched").Err()
+		}
+	}
+
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/test-no-backend-redirect").DoTestRedirectWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
+		}
+		if resp.Status != 301 {
+			return errors.New().WithMessage("Path did not matched").Err()
+		}
+		if resp.ResponseHeader.Get("Location") != "http://google.com:80" {
+			return errors.New().WithMessage("Location did not matched").Err()
+		}
+	}
+
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/test-no-backend-rule-redirect").DoTestRedirectWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
+		}
+
+		if resp.Status != 302 {
+			return errors.New().WithMessage("Path did not matched").Err()
+		}
+		if resp.ResponseHeader.Get("Location") != "https://google.com" {
+			return errors.New().WithMessage("Location did not matched").Err()
+		}
+	}
+
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/test-dns").DoStatusWithRetry(50)
 		if err != nil {
 			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
 		}
 		if resp.Status != 404 {
 			return errors.New().WithMessage("Path did not matched").Err()
+		}
+	}
+
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/default").DoTestRedirectWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
+		}
+		if resp.Status != 301 {
+			return errors.New().WithMessage("Path did not matched").Err()
+		}
+		if resp.ResponseHeader.Get("Location") != "http://google.com:80" {
+			return errors.New().WithMessage("Location did not matched").Err()
 		}
 	}
 	return nil

@@ -36,7 +36,7 @@ type DNSResolver struct {
 }
 
 func DNSResolverForService(svc kapi.Service) (useDNSResolver bool, resolver *DNSResolver, err error) {
-	if svc.Spec.Type == kapi.ServiceTypeExternalName {
+	if svc.Spec.Type != kapi.ServiceTypeExternalName {
 		return false, nil, fmt.Errorf("Service %s@%s is expected to be of type ServiceTypeExternalName, actual type %s", svc.Name, svc.Namespace, svc.Spec.Type)
 	}
 	useDNSResolver, err = getBool(svc.Annotations, UseDNSResolver)

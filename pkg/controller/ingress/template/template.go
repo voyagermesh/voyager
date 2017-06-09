@@ -59,7 +59,7 @@ defaults
 {% for name, resolver in DNSResolvers %}
 resolvers {{ name }}
     {% for ns in resolver.nameserver %}
-    nameserver dns{{ loop.index }} {{ ns }}
+    nameserver dns{{ forloop.Counter }} {{ ns }}
     {% endfor %}
     {% if resolver.retries|integer %}
     resolve_retries {{ resolver.retries|integer }}
