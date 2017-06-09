@@ -3,7 +3,6 @@ package ingress
 import (
 	"reflect"
 	"strconv"
-	"time"
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
@@ -204,57 +203,6 @@ func (lbc *EngressController) updateLBSvc() error {
 				log.Debugln("getting firewalls for cloud manager failed")
 			}
 		}
-	} else if lbc.Resource.LBType() == api.LBTypeLoadBalancer &&
-		svc.Spec.Type == kapi.ServiceTypeNodePort &&
-		lbc.CloudManager != nil {
-		log.Infof("Service Type is %s, needs to update underlying cloud loadbalancers", svc.Spec.Type)
-		if lb, ok := lbc.CloudManager.LoadBalancer(); ok {
-			// Wait for nodePort to be assigned
-			timeoutAt := time.Now().Add(time.Second * 600)
-			for {
-				svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
-				if err != nil {
-					return errors.FromErr(err).Err()
-				}
-
-				nodePortReady := true
-				for _, p := range svc.Spec.Ports {
-					if p.NodePort <= 0 {
-						nodePortReady = false
-						break
-					}
-				}
-				if nodePortReady {
-					break
-				}
-
-				if time.Now().After(timeoutAt) {
-					return errors.New("timed out creating node port service").Err()
-				}
-
-				log.Info("Waiting for nodeport service to be ready")
-
-				time.Sleep(10 * time.Second)
-			}
-
-			hosts := make([]string, 0)
-			if ins, ok := lbc.CloudManager.Instances(); ok {
-				nodes, _ := ins.List("")
-				for _, node := range nodes {
-					hosts = append(hosts, string(node))
-				}
-			}
-			log.Infoln("Got hosts", hosts)
-
-			log.Infoln("Loadbalancer interface found, calling UpdateLoadBalancer() with", svc, "and host", hosts)
-			convertedSvc := &kapi.Service{}
-			kapi.Scheme.Convert(svc, convertedSvc, nil)
-			err := lb.UpdateLoadBalancer(lbc.ClusterName, convertedSvc, hosts)
-			if err != nil {
-				return errors.FromErr(err).Err()
-			}
-		}
-		log.Errorln("loadbalancer interface not found, reached dead blocks.")
 	}
 	return nil
 }

@@ -12,7 +12,6 @@ import (
 )
 
 type EngressController struct {
-	ClusterName  string
 	ProviderName string
 	IngressClass string
 

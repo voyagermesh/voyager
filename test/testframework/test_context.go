@@ -35,19 +35,19 @@ type testConfig struct {
 }
 
 type E2EConfig struct {
-	InCluster             bool
-	Master                string
-	KubeConfig            string
-	ProviderName          string
-	ClusterName           string
-	LoadbalancerImageName string
-	IngressClass          string
-	Cleanup               bool
-	DaemonHostName        string
-	LBPersistIP           string
-	RunOnly               string
-	TestNamespace         string
-	MaxConcurrentTest     int
+	InCluster         bool
+	Master            string
+	KubeConfig        string
+	ProviderName      string
+	ClusterName       string
+	HAProxyImageName  string
+	IngressClass      string
+	Cleanup           bool
+	DaemonHostName    string
+	LBPersistIP       string
+	RunOnly           string
+	TestNamespace     string
+	MaxConcurrentTest int
 }
 
 var TestContext TestContextType
@@ -84,8 +84,7 @@ func registerE2EFlags() {
 	flag.StringVar(&TestContext.E2EConfigs.Master, "master", "", "The address of the Kubernetes API server (overrides any value in kubeconfig)")
 	flag.StringVar(&TestContext.E2EConfigs.KubeConfig, "kubeconfig", "", "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
 	flag.StringVar(&TestContext.E2EConfigs.ProviderName, "cloud-provider", "", "Name of cloud provider")
-	flag.StringVar(&TestContext.E2EConfigs.ClusterName, "cluster-name", "", "Name of Kubernetes cluster")
-	flag.StringVar(&TestContext.E2EConfigs.LoadbalancerImageName, "haproxy-image", "appscode/haproxy:1.7.5-1.5.6", "haproxy image name to be run")
+	flag.StringVar(&TestContext.E2EConfigs.HAProxyImageName, "haproxy-image", "appscode/haproxy:1.7.5-1.5.6", "haproxy image name to be run")
 	flag.StringVar(&TestContext.E2EConfigs.IngressClass, "ingress-class", "", "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
 	flag.BoolVar(&TestContext.E2EConfigs.Cleanup, "cleanup", true, "")
 	flag.BoolVar(&TestContext.E2EConfigs.InCluster, "in-cluster", false, "")

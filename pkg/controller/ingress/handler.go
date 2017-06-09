@@ -22,13 +22,12 @@ import (
 	"k8s.io/kubernetes/pkg/labels"
 )
 
-func NewEngressController(clusterName, providerName string,
+func NewEngressController(providerName string,
 	kubeClient clientset.Interface,
 	extClient acs.ExtensionInterface,
 	store *stash.Storage,
 	ingressClass string) *EngressController {
 	h := &EngressController{
-		ClusterName:   clusterName,
 		ProviderName:  providerName,
 		IngressClass:  ingressClass,
 		KubeClient:    kubeClient,
@@ -61,7 +60,7 @@ func NewEngressController(clusterName, providerName string,
 	return h
 }
 
-func UpgradeAllEngress(service, clusterName, providerName string,
+func UpgradeAllEngress(service, providerName string,
 	kubeClient clientset.Interface,
 	extClient acs.ExtensionInterface,
 	store *stash.Storage,
@@ -95,7 +94,7 @@ func UpgradeAllEngress(service, clusterName, providerName string,
 		if shouldHandleIngress(engress, ingressClass) {
 			log.Infoln("Checking for service", service, "to be used to load balance via ingress", item.Name, item.Namespace)
 			if ok, name, namespace := isEngressHaveService(engress, service); ok {
-				lbc := NewEngressController(clusterName, providerName, kubeClient, extClient, store, ingressClass)
+				lbc := NewEngressController(providerName, kubeClient, extClient, store, ingressClass)
 				lbc.Resource = &items[i]
 				log.Infoln("Trying to Update Ingress", item.Name, item.Namespace)
 				if lbc.IsExists() {
