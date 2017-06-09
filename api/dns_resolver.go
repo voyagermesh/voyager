@@ -1,9 +1,9 @@
 package api
 
 import (
-	kapi "k8s.io/kubernetes/pkg/api"
-	"errors"
 	"fmt"
+
+	kapi "k8s.io/kubernetes/pkg/api"
 )
 
 const (
