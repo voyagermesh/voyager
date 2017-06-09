@@ -96,8 +96,8 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 				}
 				resolver.Timeout = m
 			}
-			resolver.Name = "resolver-for-" + svc.Name
-			lbc.Parsed.DNSResolvers = append(lbc.Parsed.DNSResolvers, &resolver)
+			resolver.Name = svc.Name
+			lbc.Parsed.DNSResolvers = lbc.Parsed.DNSResolvers[resolver.Name] = &resolver
 			ep.DNSResolver = resolver.Name
 		}
 		return []*Endpoint{&ep}, nil
@@ -240,8 +240,7 @@ func getTargetPort(servicePort *kapi.ServicePort) int {
 func (lbc *EngressController) parseSpec() {
 	log.Infoln("Parsing Engress specs")
 	lbc.Ports = make([]int, 0)
-
-	lbc.Parsed.DNSResolvers = make([]*DNSResolver, 0)
+	lbc.Parsed.DNSResolvers = make(map[string]*DNSResolver)
 
 	if lbc.Resource.Spec.Backend != nil {
 		log.Debugln("generating default backend", lbc.Resource.Spec.Backend.RewriteRule, lbc.Resource.Spec.Backend.HeaderRule)

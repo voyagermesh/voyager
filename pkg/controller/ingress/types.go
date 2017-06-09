@@ -64,7 +64,7 @@ type HAProxyOptions struct {
 	HttpsService   []*Service
 	HttpService    []*Service
 	TCPService     []*TCPService
-	DNSResolvers   []*DNSResolver
+	DNSResolvers   map[string]*DNSResolver
 }
 
 type DNSResolver struct {
