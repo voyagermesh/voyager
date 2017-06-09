@@ -24,14 +24,12 @@ const (
 	StatsServiceName = EngressKey + "/" + "stats-service-name"
 	DefaultStatsPort = 1936
 
-	// Daemon, Persistent, LoadBalancer
-	LBType = EngressKey + "/" + "type"
-
 	// Deprecated, use LBTypeHostPort
 	LBTypeDaemon       = "Daemon"
 	LBTypeHostPort     = "HostPort"
 	LBTypeNodePort     = "NodePort"
 	LBTypeLoadBalancer = "LoadBalancer" // default
+	LBType             = EngressKey + "/" + "type"
 
 	// Runs HAProxy on a specific set of a hosts.
 	NodeSelector = EngressKey + "/" + "node-selector"
