@@ -102,8 +102,8 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 		}
 		return []*Endpoint{&ep}, nil
 	}
-	p, portFound := getSpecifiedPort(svc.Spec.Ports, port)
-	if !portFound {
+	p, ok := getSpecifiedPort(svc.Spec.Ports, port)
+	if !ok {
 		return nil, goerr.New("service port unavailable")
 	}
 	return lbc.getEndpoints(svc, p, hostNames)
