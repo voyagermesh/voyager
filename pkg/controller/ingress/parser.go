@@ -279,23 +279,20 @@ func (lbc *EngressController) parseSpec() {
 			}
 
 			for _, svc := range rule.HTTP.Paths {
-				def := &Service{
-					Name:     "service-" + rand.Characters(6),
-					Host:     host,
-					AclMatch: svc.Path,
-				}
-
-				eps, err := lbc.serviceEndpoints(svc.Backend.ServiceName, svc.Backend.ServicePort, svc.Backend.HostNames)
-				def.Backends = &Backend{
-					Name:         "backend-" + rand.Characters(5),
-					Endpoints:    eps,
-					BackendRules: svc.Backend.BackendRule,
-					RewriteRules: svc.Backend.RewriteRule,
-					HeaderRules:  svc.Backend.HeaderRule,
-				}
-
-				log.Debugln("Got endpoints", len(eps))
-				if len(eps) > 0 && err == nil {
+				eps, _ := lbc.serviceEndpoints(svc.Backend.ServiceName, svc.Backend.ServicePort, svc.Backend.HostNames)
+				if len(eps) > 0 {
+					def := &Service{
+						Name:     "service-" + rand.Characters(6),
+						Host:     host,
+						AclMatch: svc.Path,
+					}
+					def.Backends = &Backend{
+						Name:         "backend-" + rand.Characters(5),
+						Endpoints:    eps,
+						BackendRules: svc.Backend.BackendRule,
+						RewriteRules: svc.Backend.RewriteRule,
+						HeaderRules:  svc.Backend.HeaderRule,
+					}
 					// add the service to http or https filters.
 					if ok, _ := arrays.Contains(lbc.HostFilter, host); ok {
 						lbc.Parsed.HttpsService = append(lbc.Parsed.HttpsService, def)
@@ -309,23 +306,21 @@ func (lbc *EngressController) parseSpec() {
 		// adding tcp service to the parser.
 		for _, tcpSvc := range rule.TCP {
 			lbc.Ports = append(lbc.Ports, tcpSvc.Port.IntValue())
-			def := &TCPService{
-				Name:        "service-" + rand.Characters(6),
-				Host:        host,
-				Port:        tcpSvc.Port.String(),
-				SecretName:  tcpSvc.SecretName,
-				ALPNOptions: parseALPNOptions(tcpSvc.ALPN),
-			}
 			log.Infoln(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort)
-			eps, err := lbc.serviceEndpoints(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort, tcpSvc.Backend.HostNames)
-			def.Backends = &Backend{
-				Name:         "backend-" + rand.Characters(5),
-				BackendRules: tcpSvc.Backend.BackendRule,
-				Endpoints:    eps,
-			}
-
-			log.Debugln("Got endpoints", len(eps))
-			if len(eps) > 0 && err == nil {
+			eps, _ := lbc.serviceEndpoints(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort, tcpSvc.Backend.HostNames)
+			if len(eps) > 0 {
+				def := &TCPService{
+					Name:        "service-" + rand.Characters(6),
+					Host:        host,
+					Port:        tcpSvc.Port.String(),
+					SecretName:  tcpSvc.SecretName,
+					ALPNOptions: parseALPNOptions(tcpSvc.ALPN),
+				}
+				def.Backends = &Backend{
+					Name:         "backend-" + rand.Characters(5),
+					BackendRules: tcpSvc.Backend.BackendRule,
+					Endpoints:    eps,
+				}
 				lbc.Parsed.TCPService = append(lbc.Parsed.TCPService, def)
 				lbc.SecretNames = append(lbc.SecretNames, def.SecretName)
 			}
