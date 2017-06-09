@@ -168,7 +168,9 @@ func (r Ingress) Replicas() int32 {
 
 func (r Ingress) NodeSelector() map[string]string {
 	if v, ok := r.Annotations[NodeSelector]; ok {
-		return ParseNodeSelector(v)
+		m := make(map[string]string)
+		json.Unmarshal([]byte(v), &m)
+		return m
 	}
 	v, _ := r.Annotations[EngressKey+"/"+"daemon.nodeSelector"]
 	return ParseNodeSelector(v)
