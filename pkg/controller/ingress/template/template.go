@@ -56,10 +56,19 @@ defaults
     # errorloc 503 https://appscode.com/errors/503
     # errorloc 504 https://appscode.com/errors/504
 
-{% for resolver in DNSResolvers %}
-resolvers {{ resolver.Name }}
+{% for name, resolver in DNSResolvers %}
+resolvers {{ name }}
     {% for ns in resolver.nameserver %}
-    nameserver {{ ns.mode }} {{ ns.address}}
+    nameserver dns{{ loop.index }} {{ ns }}
+    {% endfor %}
+    {% if resolver.retries|integer %}
+    resolve_retries {{ resolver.retries|integer }}
+    {% endif %}
+    {% for event, time in resolver.timeout %}
+    timeout {{ event }} {{ time }}
+    {% endfor %}
+    {% for status, period in resolver.hold %}
+    hold {{ status }} {{ period }}
     {% endfor %}
 {% endfor %}
 
