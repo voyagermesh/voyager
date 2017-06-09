@@ -24,7 +24,7 @@ do
 done
 
 echo "Checking HAProxy configuration ..."
-cmd="exec /kloader check $KLOADER_ARGS"
+cmd="/kloader check $KLOADER_ARGS"
 echo $cmd
 $cmd
 rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
