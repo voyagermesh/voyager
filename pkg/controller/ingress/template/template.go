@@ -150,7 +150,11 @@ backend https-{{ svc.Name }}
 
     {% for e in svc.Backends.Endpoints %}
     {% if e.ExternalName %}
-    {% if e.ExternalRedirect %} http-request redirect location https://{{e.ExternalName}} code 301 {% else %} server {{ e.Name }} {{e.ExternalName}} resolvers {{e.ExternalServiceOptions.Resolver}} {% endif %}
+    {% if e.DNSResolver %}
+    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} check resolvers {{ e.DNSResolver }} resolve-prefer ipv4
+    {% elif not svc.Backends.BackendRules %}
+    http-request redirect location https://{{e.ExternalName}}:{{ e.Port }} code 301
+    {% endfor %}
     {% else %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %} {% if Sticky %} cookie {{ e.Name }} {% endif %}
     {% endif %}
@@ -193,7 +197,11 @@ backend http-{{ svc.Name }}
 
     {% for e in svc.Backends.Endpoints %}
     {% if e.ExternalName %}
-    {% if e.ExternalRedirect %} http-request redirect location http://{{e.ExternalName}} code 301 {% else %} server {{ e.Name }} {{e.ExternalName}} resolvers {{e.ExternalServiceOptions.Resolver}} {% endif %}
+    {% if e.DNSResolver %}
+    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} check resolvers {{ e.DNSResolver }} resolve-prefer ipv4
+    {% elif not svc.Backends.BackendRules %}
+    http-request redirect location http://{{e.ExternalName}}:{{ e.Port }} code 301
+    {% endfor %}
     {% else %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %} {% if Sticky %}cookie {{ e.Name }} {% endif %}
     {% endif %}
@@ -225,8 +233,8 @@ backend tcp-{{ svc.Name }}
     {% endif %}
 
     {% for e in svc.Backends.Endpoints %}
-    {% if e.ExternalName %}
-    server {{ e.Name }} {% if e.ExternalRedirect %} {{e.ExternalName}} {% else %} {{e.ExternalName}} resolvers {{e.ExternalServiceOptions.Resolver}} {% endif %}
+    {% if e.ExternalName and e.DNSResolver %}
+    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} check resolvers {{ e.DNSResolver }} resolve-prefer ipv4
     {% else %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %}
     {% endif %}
