@@ -39,7 +39,6 @@ type E2EConfig struct {
 	Master            string
 	KubeConfig        string
 	ProviderName      string
-	ClusterName       string
 	HAProxyImageName  string
 	IngressClass      string
 	Cleanup           bool
@@ -102,10 +101,6 @@ func validate() {
 
 	if TestContext.E2EConfigs.ProviderName == "" {
 		log.Fatal("Provider name required, not provided")
-	}
-
-	if TestContext.E2EConfigs.ClusterName == "" {
-		log.Fatal("Cluster name required, not provided")
 	}
 
 	if !strings.HasPrefix(TestContext.E2EConfigs.TestNamespace, "test-") {

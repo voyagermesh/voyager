@@ -3,7 +3,6 @@ node("master") {
     def project_dir = "${PWD}/src/github.com/appscode/voyager"
     def INTERNAL_TAG
     def CLOUD_PROVIDER = "gce"
-    def CLUSTER_NAME = "ci-space"
     def DEPLOYMENT_YAML
     def NODE
     def NAMESPACE
@@ -41,7 +40,6 @@ node("master") {
                 NAMESPACE =  "test-$rand"
                 DEPLOYMENT_YAML = readFile('./hack/deploy/deployments.yaml').
                         replace('$CLOUD_PROVIDER', CLOUD_PROVIDER).
-                        replace('$CLUSTER_NAME', CLUSTER_NAME).
                         replace('$TAG', INTERNAL_TAG)
             }
             stage("docker push") {
