@@ -32,7 +32,6 @@ func (s *IngressTestSuit) TestIngressDaemonCreate() error {
 			if len(s.t.Config.DaemonHostName) > 0 {
 				return "kubernetes.io/hostname=" + s.t.Config.DaemonHostName
 			}
-			return "kubernetes.io/hostname=" + s.t.Config.ClusterName + "-master"
 		}
 		return ""
 	}
@@ -130,7 +129,6 @@ func (s *IngressTestSuit) TestIngressDaemonUpdate() error {
 			if len(s.t.Config.DaemonHostName) > 0 {
 				return "kubernetes.io/hostname=" + s.t.Config.DaemonHostName
 			}
-			return "kubernetes.io/hostname=" + s.t.Config.ClusterName + "-master"
 		}
 		return ""
 	}
@@ -338,7 +336,6 @@ func (s *IngressTestSuit) TestIngressDaemonRestart() error {
 			if len(s.t.Config.DaemonHostName) > 0 {
 				return "kubernetes.io/hostname=" + s.t.Config.DaemonHostName
 			}
-			return "kubernetes.io/hostname=" + s.t.Config.ClusterName + "-master"
 		}
 		return ""
 	}

@@ -39,7 +39,6 @@ func NewE2ETestSuit() *TestSuit {
 			ExtClient:    acs.NewForConfigOrDie(c),
 			SyncPeriod:   time.Minute * 5,
 			ProviderName: testframework.TestContext.E2EConfigs.ProviderName,
-			ClusterName:  testframework.TestContext.E2EConfigs.ClusterName,
 			HAProxyImage: testframework.TestContext.E2EConfigs.HAProxyImageName,
 			IngressClass: testframework.TestContext.E2EConfigs.IngressClass,
 		},
@@ -65,7 +64,6 @@ func (t *TestSuit) Run() error {
 
 func ensureE2EConfigs() {
 	if testframework.TestContext.E2EConfigs.ProviderName == "" ||
-		testframework.TestContext.E2EConfigs.ClusterName == "" ||
 		testframework.TestContext.E2EConfigs.HAProxyImageName == "" {
 		log.Fatalln("Required flag not provided.")
 	}

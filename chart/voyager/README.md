@@ -44,5 +44,4 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `image`                    |  Container image to run      | `appscode/voyager`   |
 | `imageTag`                 |  Image tag of container      | `1.5.5`              |
 | `cloudProvider`            |  Name of cloud provider      | ``                   |
-| `clusterName`              |  Name of Kubernetes cluster  | ``                   |
 | `logLevel`                 |  Log level for voyager       | `3`                  |

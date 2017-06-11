@@ -12,8 +12,6 @@ $ export CLOUD_PROVIDER=<provider-name> // ie:
                                         // - aws
                                         // - azure
 
-$ export CLUSTER_NAME=<clustername>     // eg: Name of your cluster. This is used to create firewall rules.
-
 $ export TAG=1.5.5                      // Docker image tag for Voyager operator.
 
 $ curl https://raw.githubusercontent.com/appscode/voyager/master/hack/deploy/deployments.yaml | \
