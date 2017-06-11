@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/runtime"
 )
 
@@ -35,14 +36,31 @@ func NewEngressFromIngress(ing interface{}) (*Ingress, error) {
 	if err != nil {
 		return nil, err
 	}
-	engress := &Ingress{}
-	err = json.Unmarshal(data, engress)
+	r := &Ingress{}
+	err = json.Unmarshal(data, r)
 	if err != nil {
 		return nil, err
 	}
-	if engress.Annotations == nil {
-		engress.Annotations = make(map[string]string)
+	if r.Annotations == nil {
+		r.Annotations = make(map[string]string)
 	}
-	engress.Annotations[APISchema] = APISchemaIngress
-	return engress, nil
+	r.Annotations[APISchema] = APISchemaIngress
+	return r, nil
+}
+
+func NewIngressFromEngress(ing interface{}) (*extensions.Ingress, error) {
+	data, err := json.Marshal(ing)
+	if err != nil {
+		return nil, err
+	}
+	r := &extensions.Ingress{}
+	err = json.Unmarshal(data, r)
+	if err != nil {
+		return nil, err
+	}
+	if r.Annotations == nil {
+		r.Annotations = make(map[string]string)
+	}
+	r.Annotations[APISchema] = APISchemaEngress
+	return r, nil
 }
