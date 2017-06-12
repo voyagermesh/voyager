@@ -29,9 +29,9 @@ var (
 	ingressClass    string
 	enableAnalytics bool = true
 
-	address                   string
-	haProxyServerMetricFields string
-	haProxyTimeout            time.Duration
+	address                   string        = ":8080"
+	haProxyServerMetricFields string        = hpe.ServerMetrics.String()
+	haProxyTimeout            time.Duration = 5 * time.Second
 
 	kubeClient clientset.Interface
 	extClient  acs.ExtensionInterface
@@ -49,13 +49,13 @@ func NewCmdRun() *cobra.Command {
 	cmd.Flags().StringVar(&masterURL, "master", masterURL, "The address of the Kubernetes API server (overrides any value in kubeconfig)")
 	cmd.Flags().StringVar(&kubeconfigPath, "kubeconfig", kubeconfigPath, "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
 	cmd.Flags().StringVarP(&providerName, "cloud-provider", "c", providerName, "Name of cloud provider")
-	cmd.Flags().StringVarP(&haProxyImage, "haproxy-image", "h", haProxyImage, "haproxy image name to be run")
+	cmd.Flags().StringVar(&haProxyImage, "haproxy-image", haProxyImage, "haproxy image name to be run")
 	cmd.Flags().StringVar(&ingressClass, "ingress-class", "", "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
 	cmd.Flags().BoolVar(&enableAnalytics, "analytics", enableAnalytics, "Send analytical event to Google Analytics")
 
 	cmd.Flags().StringVar(&address, "address", address, "Address to listen on for web interface and telemetry.")
-	cmd.Flags().StringVar(&haProxyServerMetricFields, "haproxy.server-metric-fields", hpe.ServerMetrics.String(), "Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1")
-	cmd.Flags().DurationVar(&haProxyTimeout, "haproxy.timeout", 5*time.Second, "Timeout for trying to get stats from HAProxy.")
+	cmd.Flags().StringVar(&haProxyServerMetricFields, "haproxy.server-metric-fields", haProxyServerMetricFields, "Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1")
+	cmd.Flags().DurationVar(&haProxyTimeout, "haproxy.timeout", haProxyTimeout, "Timeout for trying to get stats from HAProxy.")
 
 	return cmd
 }
