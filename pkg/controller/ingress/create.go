@@ -721,11 +721,7 @@ func (lbc *EngressController) ensureResourceAnnotations(annotation map[string]st
 	// Copy the given map to avoid updating the original annotations
 	ret := annotation
 	if ret == nil {
-		needsUpdate = true
-		ret = map[string]string{
-			api.OriginAPISchema: lbc.Resource.APISchema(),
-			api.OriginName:      lbc.Resource.GetName(),
-		}
+		ret = make(map[string]string)
 	}
 
 	if val := ret[api.OriginAPISchema]; val != lbc.Resource.APISchema() {
