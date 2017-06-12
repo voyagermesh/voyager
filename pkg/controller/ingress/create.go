@@ -663,7 +663,7 @@ func (lbc *EngressController) ensureStatsService() {
 	}
 
 	if needsUpdate {
-		_, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Update(svc)
+		_, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Update(s)
 		if err != nil {
 			log.Errorln("Failed to update Stats Service", err)
 		}
