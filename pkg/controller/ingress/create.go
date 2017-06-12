@@ -185,23 +185,12 @@ func (lbc *EngressController) createHostPortSvc() error {
 			needsUpdate = true
 		}
 
-		if !reflect.DeepEqual(s.Spec, svc.Spec) {
-			// Check if any port changed
-			oldPorts := make(map[int32]bool)
-			for _, port := range s.Spec.Ports {
-				// We only use TCP protocol so ports are unique for our scenario
-				oldPorts[port.Port] = true
-			}
+		if isServicePortChanged(s.Spec.Ports, svc.Spec.Ports) {
+			needsUpdate = true
+			s.Spec.Ports = svc.Spec.Ports
 
-			for _, port := range svc.Spec.Ports {
-				if _, ok := oldPorts[port.Port]; !ok {
-					s.Spec.Ports = svc.Spec.Ports
-					needsUpdate = true
-
-					// Port specification changed we need to update Firewall
-					updateFW = true
-				}
-			}
+			// Port changed, need to update Firewall
+			updateFW = true
 		}
 
 		if needsUpdate {
@@ -212,7 +201,7 @@ func (lbc *EngressController) createHostPortSvc() error {
 		}
 	}
 
-	if updateFW {
+	if updateFW && lbc.CloudManager != nil {
 		daemonNodes, err := lbc.KubeClient.Core().Nodes().List(kapi.ListOptions{
 			LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Resource.NodeSelector())),
 		})
@@ -222,20 +211,17 @@ func (lbc *EngressController) createHostPortSvc() error {
 		}
 		// open up firewall
 		log.Debugln("Checking cloud manager", lbc.CloudManager)
-		if lbc.CloudManager != nil {
-			log.Debugln("cloud manager not nil")
-			if fw, ok := lbc.CloudManager.Firewall(); ok {
-				log.Debugln("firewalls found")
-				convertedSvc := &kapi.Service{}
-				kapi.Scheme.Convert(svc, convertedSvc, nil)
-				for _, node := range daemonNodes.Items {
-					err = fw.EnsureFirewall(convertedSvc, node.Name)
-					if err != nil {
-						log.Errorln("Failed to ensure loadbalancer for node", node.Name, "cause", err)
-					}
+		if fw, ok := lbc.CloudManager.Firewall(); ok {
+			log.Debugln("firewalls found")
+			convertedSvc := &kapi.Service{}
+			kapi.Scheme.Convert(svc, convertedSvc, nil)
+			for _, node := range daemonNodes.Items {
+				err = fw.EnsureFirewall(convertedSvc, node.Name)
+				if err != nil {
+					log.Errorln("Failed to ensure loadbalancer for node", node.Name, "cause", err)
 				}
-				log.Debugln("getting firewalls for cloud manager failed")
 			}
+			log.Debugln("getting firewalls for cloud manager failed")
 		}
 	}
 	return nil
@@ -422,18 +408,9 @@ func (lbc *EngressController) createNodePortSvc() error {
 		needsUpdate = true
 	}
 
-	// Check if any port changed
-	oldPorts := make(map[int32]bool)
-	for _, port := range s.Spec.Ports {
-		// We only use TCP protocol so ports are unique for our scenario
-		oldPorts[port.Port] = true
-	}
-
-	for _, port := range svc.Spec.Ports {
-		if _, ok := oldPorts[port.Port]; !ok {
-			s.Spec.Ports = svc.Spec.Ports
-			needsUpdate = true
-		}
+	if isServicePortChanged(s.Spec.Ports, svc.Spec.Ports) {
+		needsUpdate = true
+		s.Spec.Ports = svc.Spec.Ports
 	}
 
 	if needsUpdate {
@@ -619,18 +596,9 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 		needsUpdate = true
 	}
 
-	// Check if any port changed
-	oldPorts := make(map[int32]bool)
-	for _, port := range s.Spec.Ports {
-		// We only use TCP protocol so ports are unique for our scenario
-		oldPorts[port.Port] = true
-	}
-
-	for _, port := range svc.Spec.Ports {
-		if _, ok := oldPorts[port.Port]; !ok {
-			s.Spec.Ports = svc.Spec.Ports
-			needsUpdate = true
-		}
+	if isServicePortChanged(s.Spec.Ports, svc.Spec.Ports) {
+		needsUpdate = true
+		s.Spec.Ports = svc.Spec.Ports
 	}
 
 	if needsUpdate {
@@ -643,31 +611,31 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 }
 
 func (lbc *EngressController) ensureStatsService() {
-	svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.Resource.StatsServiceName())
+	svc := &kapi.Service{
+		ObjectMeta: kapi.ObjectMeta{
+			Name:      lbc.Resource.StatsServiceName(),
+			Namespace: lbc.Resource.Namespace,
+			Annotations: map[string]string{
+				api.OriginAPISchema: lbc.Resource.APISchema(),
+				api.OriginName:      lbc.Resource.GetName(),
+			},
+		},
+		Spec: kapi.ServiceSpec{
+			Ports: []kapi.ServicePort{
+				{
+
+					Name:       "stats",
+					Protocol:   "TCP",
+					Port:       int32(lbc.Parsed.StatsPort),
+					TargetPort: intstr.FromInt(lbc.Parsed.StatsPort),
+				},
+			},
+			Selector: labelsFor(lbc.Resource.Name),
+		},
+	}
+
+	s, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.Resource.StatsServiceName())
 	if kerr.IsNotFound(err) {
-		svc := &kapi.Service{
-			ObjectMeta: kapi.ObjectMeta{
-				Name:      lbc.Resource.StatsServiceName(),
-				Namespace: lbc.Resource.Namespace,
-				Annotations: map[string]string{
-					api.OriginAPISchema: lbc.Resource.APISchema(),
-					api.OriginName:      lbc.Resource.GetName(),
-				},
-			},
-			Spec: kapi.ServiceSpec{
-				Ports: []kapi.ServicePort{
-					{
-
-						Name:       "stats",
-						Protocol:   "TCP",
-						Port:       int32(lbc.Parsed.StatsPort),
-						TargetPort: intstr.FromInt(lbc.Parsed.StatsPort),
-					},
-				},
-				Selector: labelsFor(lbc.Resource.Name),
-			},
-		}
-
 		_, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Create(svc)
 		if err != nil {
 			log.Errorln("Failed to create Stats Service", err)
@@ -682,6 +650,11 @@ func (lbc *EngressController) ensureStatsService() {
 	if val, ok := lbc.ensureResourceAnnotations(svc.Annotations); ok {
 		needsUpdate = true
 		svc.Annotations = val
+	}
+
+	if isServicePortChanged(s.Spec.Ports, svc.Spec.Ports) {
+		needsUpdate = true
+		s.Spec.Ports = svc.Spec.Ports
 	}
 
 	if len(svc.Spec.Ports) != 1 {
@@ -832,4 +805,20 @@ func VolumeMounts(secretNames []string) []kapi.VolumeMount {
 		ms = append(ms, sMount)
 	}
 	return ms
+}
+
+func isServicePortChanged(oldPorts, newPorts []kapi.ServicePort) bool {
+	// Check if any port changed
+	ports := make(map[int32]bool)
+	for _, port := range oldPorts {
+		// We only use TCP protocol so ports are unique for our scenario
+		ports[port.Port] = true
+	}
+
+	for _, port := range newPorts {
+		if _, ok := ports[port.Port]; !ok {
+			return true
+		}
+	}
+	return false
 }
