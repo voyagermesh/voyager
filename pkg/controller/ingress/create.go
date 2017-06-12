@@ -47,45 +47,43 @@ func (lbc *EngressController) Create() error {
 func (lbc *EngressController) ensureConfigMap() error {
 	log.Infoln("creating cmap for engress")
 	cm, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
-	if err != nil {
-		if kerr.IsNotFound(err) {
-			cm = &kapi.ConfigMap{
-				ObjectMeta: kapi.ObjectMeta{
-					Name:      lbc.Resource.OffshootName(),
-					Namespace: lbc.Resource.Namespace,
-					Annotations: map[string]string{
-						api.OriginAPISchema: lbc.Resource.APISchema(),
-						api.OriginName:      lbc.Resource.GetName(),
-					},
+	if kerr.IsNotFound(err) {
+		cm = &kapi.ConfigMap{
+			ObjectMeta: kapi.ObjectMeta{
+				Name:      lbc.Resource.OffshootName(),
+				Namespace: lbc.Resource.Namespace,
+				Annotations: map[string]string{
+					api.OriginAPISchema: lbc.Resource.APISchema(),
+					api.OriginName:      lbc.Resource.GetName(),
 				},
-				Data: map[string]string{
-					"haproxy.cfg": lbc.ConfigData,
-				},
-			}
-			_, err = lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Create(cm)
-			return err
-		} else {
-			return errors.FromErr(err).Err()
+			},
+			Data: map[string]string{
+				"haproxy.cfg": lbc.ConfigData,
+			},
 		}
-	} else {
-		needsUpdate := false
-		if val, ok := lbc.ensureResourceAnnotations(cm.Annotations); ok {
-			needsUpdate = true
-			cm.Annotations = val
-		}
+		_, err = lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Create(cm)
+		return err
+	} else if err != nil {
+		return errors.FromErr(err).Err()
+	}
 
-		cmData := map[string]string{
-			"haproxy.cfg": lbc.ConfigData,
-		}
-		if !reflect.DeepEqual(cm.Data, cmData) {
-			needsUpdate = true
-			cm.Data = cmData
-		}
+	needsUpdate := false
+	if val, ok := lbc.ensureResourceAnnotations(cm.Annotations); ok {
+		needsUpdate = true
+		cm.Annotations = val
+	}
 
-		if needsUpdate {
-			_, err = lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Update(cm)
-			return err
-		}
+	cmData := map[string]string{
+		"haproxy.cfg": lbc.ConfigData,
+	}
+	if !reflect.DeepEqual(cm.Data, cmData) {
+		needsUpdate = true
+		cm.Data = cmData
+	}
+
+	if needsUpdate {
+		_, err = lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Update(cm)
+		return err
 	}
 	return nil
 }
@@ -180,37 +178,37 @@ func (lbc *EngressController) createHostPortSvc() error {
 		updateFW = true
 	} else if err != nil {
 		return errors.FromErr(err).Err()
-	}
-
-	needsUpdate := false
-	if val, ok := lbc.ensureResourceAnnotations(s.Annotations); ok {
-		s.Annotations = val
-		needsUpdate = true
-	}
-
-	if !reflect.DeepEqual(s.Spec, svc.Spec) {
-		// Check if any port changed
-		oldPorts := make(map[int32]bool)
-		for _, port := range s.Spec.Ports {
-			// We only use TCP protocol so ports are unique for our scenario
-			oldPorts[port.Port] = true
+	} else {
+		needsUpdate := false
+		if val, ok := lbc.ensureResourceAnnotations(s.Annotations); ok {
+			s.Annotations = val
+			needsUpdate = true
 		}
 
-		for _, port := range svc.Spec.Ports {
-			if _, ok := oldPorts[port.Port]; !ok {
-				s.Spec.Ports = svc.Spec.Ports
-				needsUpdate = true
+		if !reflect.DeepEqual(s.Spec, svc.Spec) {
+			// Check if any port changed
+			oldPorts := make(map[int32]bool)
+			for _, port := range s.Spec.Ports {
+				// We only use TCP protocol so ports are unique for our scenario
+				oldPorts[port.Port] = true
+			}
 
-				// Port specification changed we need to update Firewall
-				updateFW = true
+			for _, port := range svc.Spec.Ports {
+				if _, ok := oldPorts[port.Port]; !ok {
+					s.Spec.Ports = svc.Spec.Ports
+					needsUpdate = true
+
+					// Port specification changed we need to update Firewall
+					updateFW = true
+				}
 			}
 		}
-	}
 
-	if needsUpdate {
-		_, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Update(s)
-		if err != nil {
-			return errors.FromErr(err).Err()
+		if needsUpdate {
+			_, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Update(s)
+			if err != nil {
+				return errors.FromErr(err).Err()
+			}
 		}
 	}
 
@@ -334,32 +332,31 @@ func (lbc *EngressController) createHostPortPods() error {
 
 	log.Infoln("creating DaemonSets controller")
 	dm, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Get(daemon.Name)
-	if err != nil {
-		if kerr.IsNotFound(err) {
-			_, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Create(daemon)
-			if err != nil {
-				return errors.FromErr(err).Err()
-			}
-		} else {
+	if kerr.IsNotFound(err) {
+		_, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Create(daemon)
+		if err != nil {
 			return errors.FromErr(err).Err()
 		}
-	} else {
-		needsUpdate := false
-		if val, ok := lbc.ensureResourceAnnotations(dm.Annotations); ok {
-			needsUpdate = true
-			dm.Annotations = val
-		}
+		return nil
+	} else if err != nil {
+		return errors.FromErr(err).Err()
+	}
 
-		if !reflect.DeepEqual(dm.Spec, daemon.Spec) {
-			needsUpdate = true
-			dm.Spec = daemon.Spec
-		}
+	needsUpdate := false
+	if val, ok := lbc.ensureResourceAnnotations(dm.Annotations); ok {
+		needsUpdate = true
+		dm.Annotations = val
+	}
 
-		if needsUpdate {
-			_, err = lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Update(dm)
-			if err != nil {
-				return errors.FromErr(err).Err()
-			}
+	if !reflect.DeepEqual(dm.Spec, daemon.Spec) {
+		needsUpdate = true
+		dm.Spec = daemon.Spec
+	}
+
+	if needsUpdate {
+		_, err = lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Update(dm)
+		if err != nil {
+			return errors.FromErr(err).Err()
 		}
 	}
 	return nil
@@ -409,43 +406,40 @@ func (lbc *EngressController) createNodePortSvc() error {
 	}
 
 	s, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(svc.Name)
-	if err != nil {
-		if kerr.IsNotFound(err) {
-			svc, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Create(svc)
-			if err != nil {
-				return errors.FromErr(err).Err()
-			}
-		} else {
+	if kerr.IsNotFound(err) {
+		svc, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Create(svc)
+		if err != nil {
 			return errors.FromErr(err).Err()
 		}
-	} else {
-		needsUpdate := false
-		if val, ok := lbc.ensureResourceAnnotations(s.Annotations); ok {
-			s.Annotations = val
+		return nil
+	} else if err != nil {
+		return errors.FromErr(err).Err()
+	}
+
+	needsUpdate := false
+	if val, ok := lbc.ensureResourceAnnotations(s.Annotations); ok {
+		s.Annotations = val
+		needsUpdate = true
+	}
+
+	// Check if any port changed
+	oldPorts := make(map[int32]bool)
+	for _, port := range s.Spec.Ports {
+		// We only use TCP protocol so ports are unique for our scenario
+		oldPorts[port.Port] = true
+	}
+
+	for _, port := range svc.Spec.Ports {
+		if _, ok := oldPorts[port.Port]; !ok {
+			s.Spec.Ports = svc.Spec.Ports
 			needsUpdate = true
 		}
+	}
 
-		if !reflect.DeepEqual(s.Spec, svc.Spec) {
-			// Check if any port changed
-			oldPorts := make(map[int32]bool)
-			for _, port := range s.Spec.Ports {
-				// We only use TCP protocol so ports are unique for our scenario
-				oldPorts[port.Port] = true
-			}
-
-			for _, port := range svc.Spec.Ports {
-				if _, ok := oldPorts[port.Port]; !ok {
-					s.Spec.Ports = svc.Spec.Ports
-					needsUpdate = true
-				}
-			}
-		}
-
-		if needsUpdate {
-			_, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Update(s)
-			if err != nil {
-				return errors.FromErr(err).Err()
-			}
+	if needsUpdate {
+		_, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Update(s)
+		if err != nil {
+			return errors.FromErr(err).Err()
 		}
 	}
 	return nil
@@ -534,32 +528,31 @@ func (lbc *EngressController) createNodePortPods() error {
 	}
 
 	dpl, err := lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Get(deployment.Name)
-	if err != nil {
-		if kerr.IsNotFound(err) {
-			_, err := lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Create(deployment)
-			if err != nil {
-				return errors.FromErr(err).Err()
-			}
-		} else {
+	if kerr.IsNotFound(err) {
+		_, err := lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Create(deployment)
+		if err != nil {
 			return errors.FromErr(err).Err()
 		}
-	} else {
-		needsUpdate := false
-		if val, ok := lbc.ensureResourceAnnotations(dpl.Annotations); ok {
-			needsUpdate = true
-			dpl.Annotations = val
-		}
+		return nil
+	} else if err != nil {
+		return errors.FromErr(err).Err()
+	}
 
-		if !reflect.DeepEqual(dpl.Spec, deployment.Spec) {
-			needsUpdate = true
-			dpl.Spec = deployment.Spec
-		}
+	needsUpdate := false
+	if val, ok := lbc.ensureResourceAnnotations(dpl.Annotations); ok {
+		needsUpdate = true
+		dpl.Annotations = val
+	}
 
-		if needsUpdate {
-			_, err = lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Update(dpl)
-			if err != nil {
-				return errors.FromErr(err).Err()
-			}
+	if !reflect.DeepEqual(dpl.Spec, deployment.Spec) {
+		needsUpdate = true
+		dpl.Spec = deployment.Spec
+	}
+
+	if needsUpdate {
+		_, err = lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Update(dpl)
+		if err != nil {
+			return errors.FromErr(err).Err()
 		}
 	}
 	return nil
@@ -610,43 +603,40 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 	}
 
 	s, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(svc.Name)
-	if err != nil {
-		if kerr.IsNotFound(err) {
-			svc, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Create(svc)
-			if err != nil {
-				return errors.FromErr(err).Err()
-			}
-		} else {
+	if kerr.IsNotFound(err) {
+		svc, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Create(svc)
+		if err != nil {
 			return errors.FromErr(err).Err()
 		}
-	} else {
-		needsUpdate := false
-		if val, ok := lbc.ensureResourceAnnotations(s.Annotations); ok {
-			s.Annotations = val
+		return nil
+	} else if err != nil {
+		return errors.FromErr(err).Err()
+	}
+
+	needsUpdate := false
+	if val, ok := lbc.ensureResourceAnnotations(s.Annotations); ok {
+		s.Annotations = val
+		needsUpdate = true
+	}
+
+	// Check if any port changed
+	oldPorts := make(map[int32]bool)
+	for _, port := range s.Spec.Ports {
+		// We only use TCP protocol so ports are unique for our scenario
+		oldPorts[port.Port] = true
+	}
+
+	for _, port := range svc.Spec.Ports {
+		if _, ok := oldPorts[port.Port]; !ok {
+			s.Spec.Ports = svc.Spec.Ports
 			needsUpdate = true
 		}
+	}
 
-		if !reflect.DeepEqual(s.Spec, svc.Spec) {
-			// Check if any port changed
-			oldPorts := make(map[int32]bool)
-			for _, port := range s.Spec.Ports {
-				// We only use TCP protocol so ports are unique for our scenario
-				oldPorts[port.Port] = true
-			}
-
-			for _, port := range svc.Spec.Ports {
-				if _, ok := oldPorts[port.Port]; !ok {
-					s.Spec.Ports = svc.Spec.Ports
-					needsUpdate = true
-				}
-			}
-		}
-
-		if needsUpdate {
-			_, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Update(s)
-			if err != nil {
-				return errors.FromErr(err).Err()
-			}
+	if needsUpdate {
+		_, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Update(s)
+		if err != nil {
+			return errors.FromErr(err).Err()
 		}
 	}
 	return nil
@@ -654,69 +644,68 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 
 func (lbc *EngressController) ensureStatsService() {
 	svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.Resource.StatsServiceName())
-	if err != nil {
-		if kerr.IsNotFound(err) {
-			svc := &kapi.Service{
-				ObjectMeta: kapi.ObjectMeta{
-					Name:      lbc.Resource.StatsServiceName(),
-					Namespace: lbc.Resource.Namespace,
-					Annotations: map[string]string{
-						api.OriginAPISchema: lbc.Resource.APISchema(),
-						api.OriginName:      lbc.Resource.GetName(),
+	if kerr.IsNotFound(err) {
+		svc := &kapi.Service{
+			ObjectMeta: kapi.ObjectMeta{
+				Name:      lbc.Resource.StatsServiceName(),
+				Namespace: lbc.Resource.Namespace,
+				Annotations: map[string]string{
+					api.OriginAPISchema: lbc.Resource.APISchema(),
+					api.OriginName:      lbc.Resource.GetName(),
+				},
+			},
+			Spec: kapi.ServiceSpec{
+				Ports: []kapi.ServicePort{
+					{
+
+						Name:       "stats",
+						Protocol:   "TCP",
+						Port:       int32(lbc.Parsed.StatsPort),
+						TargetPort: intstr.FromInt(lbc.Parsed.StatsPort),
 					},
 				},
-				Spec: kapi.ServiceSpec{
-					Ports: []kapi.ServicePort{
-						{
-
-							Name:       "stats",
-							Protocol:   "TCP",
-							Port:       int32(lbc.Parsed.StatsPort),
-							TargetPort: intstr.FromInt(lbc.Parsed.StatsPort),
-						},
-					},
-					Selector: labelsFor(lbc.Resource.Name),
-				},
-			}
-
-			_, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Create(svc)
-			if err != nil {
-				log.Errorln("Failed to create Stats Service", err)
-			}
-		} else {
-			log.Errorln(err)
-		}
-	} else {
-		needsUpdate := false
-
-		if val, ok := lbc.ensureResourceAnnotations(svc.Annotations); ok {
-			needsUpdate = true
-			svc.Annotations = val
+				Selector: labelsFor(lbc.Resource.Name),
+			},
 		}
 
-		if len(svc.Spec.Ports) != 1 {
-			needsUpdate = true
-			svc.Spec.Ports = []kapi.ServicePort{
-				{
-
-					Name:       "stats",
-					Protocol:   "TCP",
-					Port:       int32(lbc.Parsed.StatsPort),
-					TargetPort: intstr.FromInt(lbc.Parsed.StatsPort),
-				},
-			}
+		_, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Create(svc)
+		if err != nil {
+			log.Errorln("Failed to create Stats Service", err)
 		}
+		return
+	} else if err != nil {
+		log.Errorln(err)
+		return
+	}
 
-		if !reflect.DeepEqual(svc.Spec.Selector, labelsFor(lbc.Resource.Name)) {
-			needsUpdate = true
-			svc.Spec.Selector = labelsFor(lbc.Resource.Name)
+	needsUpdate := false
+	if val, ok := lbc.ensureResourceAnnotations(svc.Annotations); ok {
+		needsUpdate = true
+		svc.Annotations = val
+	}
+
+	if len(svc.Spec.Ports) != 1 {
+		needsUpdate = true
+		svc.Spec.Ports = []kapi.ServicePort{
+			{
+
+				Name:       "stats",
+				Protocol:   "TCP",
+				Port:       int32(lbc.Parsed.StatsPort),
+				TargetPort: intstr.FromInt(lbc.Parsed.StatsPort),
+			},
 		}
+	}
 
-		if needsUpdate {
-			_, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Update(svc)
-			if err != nil {
-				log.Errorln("Failed to update Stats Service", err)
-			}
+	if !reflect.DeepEqual(svc.Spec.Selector, labelsFor(lbc.Resource.Name)) {
+		needsUpdate = true
+		svc.Spec.Selector = labelsFor(lbc.Resource.Name)
+	}
+
+	if needsUpdate {
+		_, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Update(svc)
+		if err != nil {
+			log.Errorln("Failed to update Stats Service", err)
 		}
 	}
 }
