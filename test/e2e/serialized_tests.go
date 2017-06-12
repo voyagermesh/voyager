@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -12,6 +13,17 @@ import (
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/util/intstr"
 )
+
+func daemonNodeSelector(s *IngressTestSuit) string {
+	if s.t.Config.ProviderName == "minikube" {
+		return `{"kubernetes.io/hostname": "minikube"}`
+	} else {
+		if len(s.t.Config.DaemonHostName) > 0 {
+			return fmt.Sprintf(`{"kubernetes.io/hostname": "%s"}`, s.t.Config.DaemonHostName)
+		}
+	}
+	return "{}"
+}
 
 // DaemonSet Tests can not run more than once at a time.
 var daemonTestLock sync.Mutex
@@ -25,24 +37,13 @@ func (s *IngressTestSuit) TestIngressDaemonCreate() error {
 		return nil
 	}
 
-	var nodeSelector = func() string {
-		if s.t.Config.ProviderName == "minikube" {
-			return "kubernetes.io/hostname=minikube"
-		} else {
-			if len(s.t.Config.DaemonHostName) > 0 {
-				return "kubernetes.io/hostname=" + s.t.Config.DaemonHostName
-			}
-		}
-		return ""
-	}
-
 	baseDaemonIngress := &api.Ingress{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
 				api.LBType:       api.LBTypeHostPort,
-				api.NodeSelector: nodeSelector(),
+				api.NodeSelector: daemonNodeSelector(s),
 			},
 		},
 		Spec: api.ExtendedIngressSpec{
@@ -122,23 +123,13 @@ func (s *IngressTestSuit) TestIngressDaemonUpdate() error {
 		return nil
 	}
 
-	var nodeSelector = func() string {
-		if s.t.Config.ProviderName == "minikube" {
-			return "kubernetes.io/hostname=minikube"
-		} else {
-			if len(s.t.Config.DaemonHostName) > 0 {
-				return "kubernetes.io/hostname=" + s.t.Config.DaemonHostName
-			}
-		}
-		return ""
-	}
 	baseIngress := &api.Ingress{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
 				api.LBType:       api.LBTypeHostPort,
-				api.NodeSelector: nodeSelector(),
+				api.NodeSelector: daemonNodeSelector(s),
 			},
 		},
 		Spec: api.ExtendedIngressSpec{
@@ -329,24 +320,13 @@ func (s *IngressTestSuit) TestIngressDaemonRestart() error {
 		return nil
 	}
 
-	var nodeSelector = func() string {
-		if s.t.Config.ProviderName == "minikube" {
-			return "kubernetes.io/hostname=minikube"
-		} else {
-			if len(s.t.Config.DaemonHostName) > 0 {
-				return "kubernetes.io/hostname=" + s.t.Config.DaemonHostName
-			}
-		}
-		return ""
-	}
-
 	baseDaemonIngress := &api.Ingress{
 		ObjectMeta: kapi.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
 				api.LBType:       api.LBTypeHostPort,
-				api.NodeSelector: nodeSelector(),
+				api.NodeSelector: daemonNodeSelector(s),
 			},
 		},
 		Spec: api.ExtendedIngressSpec{

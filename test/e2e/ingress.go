@@ -2115,7 +2115,7 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
 		}
 		if resp.Status != 301 {
-			return errors.New().WithMessage("Path did not matched").Err()
+			return errors.New().WithMessage("Code did not matched").Err()
 		}
 		if resp.ResponseHeader.Get("Location") != "http://google.com:80" {
 			return errors.New().WithMessage("Location did not matched").Err()
@@ -2128,7 +2128,7 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
 		}
 		if resp.Status != 301 {
-			return errors.New().WithMessage("Path did not matched").Err()
+			return errors.New().WithMessage("Code did not matched").Err()
 		}
 		if resp.ResponseHeader.Get("Location") != "http://google.com:80" {
 			return errors.New().WithMessage("Location did not matched").Err()
@@ -2142,7 +2142,7 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 		}
 
 		if resp.Status != 302 {
-			return errors.New().WithMessage("Path did not matched").Err()
+			return errors.New().WithMessage("Code did not matched").Err()
 		}
 		if resp.ResponseHeader.Get("Location") != "https://google.com" {
 			return errors.New().WithMessage("Location did not matched").Err()
@@ -2155,7 +2155,7 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
 		}
 		if resp.Status != 404 {
-			return errors.New().WithMessage("Path did not matched").Err()
+			return errors.New().WithMessage("Code did not matched").Err()
 		}
 	}
 
@@ -2165,7 +2165,7 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
 		}
 		if resp.Status != 301 {
-			return errors.New().WithMessage("Path did not matched").Err()
+			return errors.New().WithMessage("Code did not matched").Err()
 		}
 		if resp.ResponseHeader.Get("Location") != "http://google.com:80" {
 			return errors.New().WithMessage("Location did not matched").Err()
