@@ -37,7 +37,7 @@ func NewE2ETestSuit() *TestSuit {
 		Voyager: &acw.Watcher{
 			KubeClient:   internalclientset.NewForConfigOrDie(c),
 			ExtClient:    acs.NewForConfigOrDie(c),
-			SyncPeriod:   time.Minute * 5,
+			SyncPeriod:   time.Minute * 2,
 			ProviderName: testframework.TestContext.E2EConfigs.ProviderName,
 			HAProxyImage: testframework.TestContext.E2EConfigs.HAProxyImageName,
 			IngressClass: testframework.TestContext.E2EConfigs.IngressClass,
