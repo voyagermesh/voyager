@@ -657,19 +657,6 @@ func (lbc *EngressController) ensureStatsService() {
 		s.Spec.Ports = svc.Spec.Ports
 	}
 
-	if len(svc.Spec.Ports) != 1 {
-		needsUpdate = true
-		svc.Spec.Ports = []kapi.ServicePort{
-			{
-
-				Name:       "stats",
-				Protocol:   "TCP",
-				Port:       int32(lbc.Parsed.StatsPort),
-				TargetPort: intstr.FromInt(lbc.Parsed.StatsPort),
-			},
-		}
-	}
-
 	if !reflect.DeepEqual(svc.Spec.Selector, labelsFor(lbc.Resource.Name)) {
 		needsUpdate = true
 		svc.Spec.Selector = labelsFor(lbc.Resource.Name)
