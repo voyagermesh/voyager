@@ -29,9 +29,9 @@ var (
 	ingressClass    string
 	enableAnalytics bool = true
 
-	address                   string
-	haProxyServerMetricFields string
-	haProxyTimeout            time.Duration
+	address                   string        = ":8080"
+	haProxyServerMetricFields string        = hpe.ServerMetrics.String()
+	haProxyTimeout            time.Duration = 5 * time.Second
 
 	kubeClient clientset.Interface
 	extClient  acs.ExtensionInterface
@@ -54,8 +54,8 @@ func NewCmdRun() *cobra.Command {
 	cmd.Flags().BoolVar(&enableAnalytics, "analytics", enableAnalytics, "Send analytical event to Google Analytics")
 
 	cmd.Flags().StringVar(&address, "address", address, "Address to listen on for web interface and telemetry.")
-	cmd.Flags().StringVar(&haProxyServerMetricFields, "haproxy.server-metric-fields", hpe.ServerMetrics.String(), "Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1")
-	cmd.Flags().DurationVar(&haProxyTimeout, "haproxy.timeout", 5*time.Second, "Timeout for trying to get stats from HAProxy.")
+	cmd.Flags().StringVar(&haProxyServerMetricFields, "haproxy.server-metric-fields", haProxyServerMetricFields, "Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1")
+	cmd.Flags().DurationVar(&haProxyTimeout, "haproxy.timeout", haProxyTimeout, "Timeout for trying to get stats from HAProxy.")
 
 	return cmd
 }
