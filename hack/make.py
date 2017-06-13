@@ -180,7 +180,7 @@ def integration(args):
     st = ' '.join(args)
     die(call(libbuild.GOC + ' test -v ./test/integration/... -timeout 10h -args -v=3 -verbose=true -mode=e2e -in-cluster=true ' + st))
 
-def testd():
+def testd(provider):
     print yaml.dump({'gold': 10, 'sdfsfds': 34}, default_flow_style=True)
     with open('/home/tamal/go/src/github.com/appscode/voyager/hack/deploy/deployments.yaml', 'r') as f:
         docs = yaml.load_all(f)
@@ -191,7 +191,7 @@ def testd():
                 c['image'] = 'appscode/voyager:' + BUILD_METADATA['version']
                 c['args'] = [
                     'run',
-                    '--cloud-provider=gce',
+                    '--cloud-provider=' + provider,
                     '--v=3',
                     '--analytics=false'
                 ]
