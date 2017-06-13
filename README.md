@@ -99,6 +99,14 @@ Please always check the release notes for upgrade instructions.
  - TPR version: appscode.com/v1beta1 is considered in beta. This means any changes to the YAML format will be backward
 compatible among different versions of the operator.
 
+---
+
+**The voyager operator collects anonymous usage statistics to help us learning
+how the software is being used and how we can improve it. To disable collection,
+run the operator with the flag** `--analytics=false`.
+
+---
+
 ## Acknowledgement
  - docker-library/haproxy https://github.com/docker-library/haproxy
  - kubernetes/contrib https://github.com/kubernetes/contrib/tree/master/service-loadbalancer
