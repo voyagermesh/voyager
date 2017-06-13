@@ -33,6 +33,7 @@ import os
 import os.path
 import subprocess
 import sys
+import yaml
 from os.path import expandvars, join, dirname
 
 libbuild.REPO_ROOT = expandvars('$GOPATH') + '/src/github.com/appscode/voyager'
@@ -178,6 +179,24 @@ def e2e_test_minikube(args):
 def integration(args):
     st = ' '.join(args)
     die(call(libbuild.GOC + ' test -v ./test/integration/... -timeout 10h -args -v=3 -verbose=true -mode=e2e -in-cluster=true ' + st))
+
+def testd():
+    print yaml.dump({'gold': 10, 'sdfsfds': 34}, default_flow_style=True)
+    with open('/home/tamal/go/src/github.com/appscode/voyager/hack/deploy/deployments.yaml', 'r') as f:
+        docs = yaml.load_all(f)
+        result = []
+        for doc in docs:
+            if doc['kind'] == 'Deployment':
+                c = doc['spec']['template']['spec']['containers'][0]
+                c['image'] = 'appscode/voyager:xyzxyz'
+                c['args'] = [
+                    'run',
+                    '--cloud-provider=gce',
+                    '--v=3',
+                    '--analytics=false'
+                ]
+            result.append(doc)
+        print yaml.dump_all(result, default_flow_style=False)
 
 def default():
     gen()
