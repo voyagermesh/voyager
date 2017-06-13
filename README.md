@@ -27,6 +27,8 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
   - [Weighted Loadbalancing for Canary Deployment](docs/user-guide/ingress/weighted.md)
   - [Customize generated HAProxy config via BackendRule](docs/user-guide/ingress/backend-rule.md) (can be used for [http rewriting](https://www.haproxy.com/doc/aloha/7.0/haproxy/http_rewriting.html), add [health checks](https://www.haproxy.com/doc/aloha/7.0/haproxy/healthchecks.html), etc.)
   - [Add Custom Annotation to LoadBalancer Service and Pods](docs/user-guide/ingress/annotations.md)
+  - [Supports Loadbalancer Source Range](docs/user-guide/ingress/source-range.md)
+  - [Supports redirects/DNS resolve for `ServiceTypeExternalName`](docs/user-guide/ingress/external-svc.md)
 
 ### Comparison with Kubernetes
 | Feauture | [Kube Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) | AppsCode Ingress |
@@ -41,6 +43,8 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
 | Loadbalancer statistics | :x: | :white_check_mark: |
 | Route Traffic to StatefulSet Pods Based on Host Name | :x: | :white_check_mark: |
 | Weighted Loadbalancing for Canary Deployment| :x: | :white_check_mark: |
+| Supports Loadbalancer Source Range | :x: | :white_check_mark: |
+| Supports redirects/DNS resolve for `ServiceTypeExternalName` | :x: | :white_check_mark: |
 
 
 ## Certificate

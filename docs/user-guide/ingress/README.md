@@ -30,6 +30,8 @@ hosting. This plugin also support configurable application ports with all the fe
   - [Weighted Loadbalancing for Canary Deployment](weighted.md)
   - [Customize generated HAProxy config via BackendRule](backend-rule.md)
   - [Add Custom Annotation to LoadBalancer Service and Pods](annotations.md)
+  - [Supports Loadbalancer Source Range](source-range.md)
+  - [Supports redirects/DNS resolve for `ServiceTypeExternalName`](external-svc.md)
 
 ### Comparison with Kubernetes
 | Feauture | Kube Ingress | AppsCode Ingress |
@@ -45,6 +47,8 @@ hosting. This plugin also support configurable application ports with all the fe
 | Route Traffic to StatefulSet Pods Based on Host Name | :x: | :white_check_mark: |
 | Weighted Loadbalancing on Canary Deployment| :x: | :white_check_mark: |
 | Supports full Spectrum of HAProxy backend rules | :x: | :white_check_mark: |
+| Supports Loadbalancer Source Range | :x: | :white_check_mark: |
+| Supports redirects/DNS resolve for `ServiceTypeExternalName` | :x: | :white_check_mark: |
 
 ## AppsCode Ingress Flow
 Typically, services and pods have IPs only routable by the cluster network. All traffic that ends up at an
@@ -122,6 +126,10 @@ same ingress resource. Learn more by reading the [certificate doc](../certificat
 - [Route Traffic to StatefulSet Pods Based on Host Name](statefulset-pod.md)
 - [Weighted Loadbalancing on Canary Deployment](weighted.md)
 - [Supports full HAProxy Spectrum via BackendRule](backend-rule.md)
+- [Add Custom Annotation to LoadBalancer Service and Pods](annotations.md)
+- [Supports Loadbalancer Source Range](source-range.md)
+- [Supports redirects/DNS resolve for `ServiceTypeExternalName`](external-svc.md)
+
 
 ## Example
 Check out examples for [complex ingress configurations](../../../../hack/example/ingress.yaml).
