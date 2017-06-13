@@ -29,6 +29,7 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
   - [Add Custom Annotation to LoadBalancer Service and Pods](docs/user-guide/ingress/annotations.md)
   - [Supports Loadbalancer Source Range](docs/user-guide/ingress/source-range.md)
   - [Supports redirects/DNS resolve for `ServiceTypeExternalName`](docs/user-guide/ingress/external-svc.md)
+  - [Expose HAProxy stats and metrics, use prometheus with metrics](docs/user-guide/ingress/stats-and-metrics.md)
 
 ### Comparison with Kubernetes
 | Feauture | [Kube Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) | AppsCode Ingress |
@@ -45,7 +46,7 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
 | Weighted Loadbalancing for Canary Deployment| :x: | :white_check_mark: |
 | Supports Loadbalancer Source Range | :x: | :white_check_mark: |
 | Supports redirects/DNS resolve for `ServiceTypeExternalName` | :x: | :white_check_mark: |
-
+| Expose HAProxy stats and metrics, use prometheus with metrics | :x: | :white_check_mark: |
 
 ## Certificate
 Voyager can automaticallty provision and refresh SSL certificates issued from Let's Encrypt using a custom Kubernetes [Certificate](docs/user-guide/certificate) resource. 
