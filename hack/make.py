@@ -33,6 +33,7 @@ import os
 import os.path
 import subprocess
 import sys
+import yaml
 from os.path import expandvars, join, dirname
 
 libbuild.REPO_ROOT = expandvars('$GOPATH') + '/src/github.com/appscode/voyager'
@@ -178,6 +179,28 @@ def e2e_test_minikube(args):
 def integration(args):
     st = ' '.join(args)
     die(call(libbuild.GOC + ' test -v ./test/integration/... -timeout 10h -args -v=3 -verbose=true -mode=e2e -in-cluster=true ' + st))
+
+def test_deploy(provider):
+    with open(libbuild.REPO_ROOT + '/hack/deploy/deployments.yaml', 'r') as f:
+        docs = yaml.load_all(f)
+        result = []
+        for doc in docs:
+            if doc['kind'] == 'Deployment':
+                c = doc['spec']['template']['spec']['containers'][0]
+                c['image'] = 'appscode/voyager:' + BUILD_METADATA['version']
+                c['args'] = [
+                    'run',
+                    '--cloud-provider=' + provider,
+                    '--v=5',
+                    '--analytics=false'
+                ]
+            result.append(doc)
+        dist = libbuild.REPO_ROOT + '/dist'
+        if not os.path.exists(dist):
+            os.makedirs(dist)
+        with file(dist + '/kube.yaml', 'w') as out:
+            yaml.dump_all(result, out, default_flow_style=False)
+
 
 def default():
     gen()
