@@ -11,3 +11,10 @@ This will create a separate service to expose the HAProxy stats.
 | ingress.appscode.com/stats-service-name | String | `stats-<ingress-name>` | Stats Service Name |
 
 
+## Expose Prometheus Metrics
+(TODO @tamal describe details)
+This will allow monitoring operator & HAProxy pods using Prometheus. The endpoints are:
+
+/metrics: Scrape this to monitor operator.
+/extensions/v1beta1/namespaces/:ns/ingresses/:name/pods/:ip/metrics : Scrape this endpoint to monitor HAProxy running for a Kubernetes ingress
+/appscode.com/v1beta1/namespaces/:ns/ingresses/:name/pods/:ip/metrics: Scrape this endpoint to monitor HAProxy running for an AppsCode extended ingress
