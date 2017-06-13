@@ -67,3 +67,12 @@ backend:
 ```
 If both dns resolver and backendRule is missing then voyager will configure HAProxy to redirect traffic to provided domain and port.
 The redirect code will be 301 (permanent redirect).
+
+### TCP
+If dns resolver is not set for an tcp service the generated HAProxy config will look like following
+
+```
+server server-name google.com:80
+```
+
+So HAProxy will get traffic from the domain and forward to client.
