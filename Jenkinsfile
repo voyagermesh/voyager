@@ -63,13 +63,14 @@ node("master") {
         println(err.getMessage())
         currentBuild.result = 'FAILURE'
     } finally {
-        deleteDir()
         sh "rm ./dist/kube.yaml"
         sh "kubectl delete deployments voyager-operator"
         sh "kubectl delete svc voyager-operator"
         sh "docker rmi -f appscode/voyager:$INTERNAL_TAG"
+        sh "./hack/libbuild/docker.py del_tag appscode voyager $INTERNAL_TAG"
         if (NAMESPACE != null) {
             sh "kubectl delete namespace $NAMESPACE"
         }
+        deleteDir()
     }
 }
