@@ -188,7 +188,7 @@ def testd():
         for doc in docs:
             if doc['kind'] == 'Deployment':
                 c = doc['spec']['template']['spec']['containers'][0]
-                c['image'] = 'appscode/voyager:xyzxyz'
+                c['image'] = 'appscode/voyager:' + BUILD_METADATA['version']
                 c['args'] = [
                     'run',
                     '--cloud-provider=gce',
@@ -196,7 +196,9 @@ def testd():
                     '--analytics=false'
                 ]
             result.append(doc)
-        print yaml.dump_all(result, default_flow_style=False)
+        with file(libbuild.REPO_ROOT + '/dist/out.yaml', 'w') as out:
+            yaml.dump_all(result, out, default_flow_style=False)
+
 
 def default():
     gen()
