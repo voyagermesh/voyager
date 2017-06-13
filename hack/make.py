@@ -196,7 +196,7 @@ def testd(provider):
                     '--analytics=false'
                 ]
             result.append(doc)
-        with file(libbuild.REPO_ROOT + '/dist/out.yaml', 'w') as out:
+        with file(libbuild.REPO_ROOT + '/dist/kube.yaml', 'w') as out:
             yaml.dump_all(result, out, default_flow_style=False)
 
 
