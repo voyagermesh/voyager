@@ -192,7 +192,7 @@ def testd(provider):
                 c['args'] = [
                     'run',
                     '--cloud-provider=' + provider,
-                    '--v=3',
+                    '--v=5',
                     '--analytics=false'
                 ]
             result.append(doc)
