@@ -94,6 +94,7 @@ and those configuration will be applicable on loadbalancer globally. Annotation 
 | ingress.appscode.com/annotations-service | JSON | x | Json encoded annotations to be applied in LoadBalancer Service |
 | ingress.appscode.com/annotations-pod | JSON | x | Json encoded annotations to be applied in LoadBalancer Pods |
 | ingress.appscode.com/stats | true, false | false | if set to true it will open HAProxy stats |
+| ingress.appscode.com/keep-source-ip | true, false | false | Preserves source IP for LoadBalancer type ingresses. The actual configuration generated depends on the underlying cloud provider. For gce, gke, azure: Adds annotation `service.beta.kubernetes.io/external-traffic: OnlyLocal` to services used to expose HAProxy. For aws: Enforces the use of the PROXY protocol over any connection accepted by |
 | ingress.appscode.com/stats-port | Integer | 1936 | HAProxy stats port to open via service |
 | ingress.appscode.com/stats-secret-name | String | x | HAProxy stats secret name to use basic auth. Secret must contain key `username` `password` |
 | ingress.appscode.com/stats-service-name | String | `stats-<ingress-name>` | Stats Service Name |
