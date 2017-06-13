@@ -181,8 +181,7 @@ def integration(args):
     die(call(libbuild.GOC + ' test -v ./test/integration/... -timeout 10h -args -v=3 -verbose=true -mode=e2e -in-cluster=true ' + st))
 
 def test_deploy(provider):
-    print yaml.dump({'gold': 10, 'sdfsfds': 34}, default_flow_style=True)
-    with open('/home/tamal/go/src/github.com/appscode/voyager/hack/deploy/deployments.yaml', 'r') as f:
+    with open(libbuild.REPO_ROOT + '/hack/deploy/deployments.yaml', 'r') as f:
         docs = yaml.load_all(f)
         result = []
         for doc in docs:
@@ -196,7 +195,10 @@ def test_deploy(provider):
                     '--analytics=false'
                 ]
             result.append(doc)
-        with file(libbuild.REPO_ROOT + '/dist/kube.yaml', 'w') as out:
+        dist = libbuild.REPO_ROOT + '/dist'
+        if not os.path.exists(dist):
+            os.makedirs(dist)
+        with file(dist + '/kube.yaml', 'w') as out:
             yaml.dump_all(result, out, default_flow_style=False)
 
 
