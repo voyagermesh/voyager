@@ -105,6 +105,15 @@ and those configuration will be applicable on loadbalancer globally. Annotation 
 | ingress.appscode.com/stats-secret-name | String | x | HAProxy stats secret name to use basic auth. Secret must contain key `username` `password` |
 | ingress.appscode.com/stats-service-name | String | `stats-<ingress-name>` | Stats Service Name |
 
+**Following configuration annotations for ingress are not modifiable. The configuration is done only when create.**
+```
+ingress.appscode.com/type
+ingress.appscode.com/node-selector
+ingress.appscode.com/load-balaner-ip
+```
+The issue is being [tracked here.](https://github.com/appscode/voyager/issues/143)
+
+
 
 The following annotations can be applied in an Ingress if we want to manage Certificate with the
 same ingress resource. Learn more by reading the [certificate doc](../certificate/README.md).
