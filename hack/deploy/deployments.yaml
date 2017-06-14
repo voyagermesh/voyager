@@ -4,7 +4,7 @@ metadata:
   labels:
     app: voyager-operator
   name: voyager-operator
-  namespace: default
+  namespace: kube-system
 spec:
   replicas: 1
   selector:
@@ -33,6 +33,7 @@ metadata:
   labels:
     app: voyager-operator
   name: voyager-operator
+  namespace: kube-system  
 spec:
   ports:
   - name: http
