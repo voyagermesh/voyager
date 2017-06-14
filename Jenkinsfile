@@ -38,9 +38,8 @@ node("master") {
                         returnStdout: true
                 ).trim()
                 NAMESPACE =  "test-$rand"
-                DEPLOYMENT_YAML = readFile('./hack/deploy/deployments.yaml').
-                        replace('$CLOUD_PROVIDER', CLOUD_PROVIDER).
-                        replace('$TAG', INTERNAL_TAG)
+                sh "./hack/make.py test_deploy $CLOUD_PROVIDER"
+                DEPLOYMENT_YAML = readFile('./dist/kube.yaml')
             }
             stage("docker push") {
                 sh "docker push appscode/voyager:$INTERNAL_TAG"
@@ -64,12 +63,14 @@ node("master") {
         println(err.getMessage())
         currentBuild.result = 'FAILURE'
     } finally {
-        deleteDir()
+        sh "rm ./dist/kube.yaml"
         sh "kubectl delete deployments voyager-operator"
         sh "kubectl delete svc voyager-operator"
         sh "docker rmi -f appscode/voyager:$INTERNAL_TAG"
+        sh "./hack/libbuild/docker.py del_tag appscode voyager $INTERNAL_TAG"
         if (NAMESPACE != null) {
             sh "kubectl delete namespace $NAMESPACE"
         }
+        deleteDir()
     }
 }
