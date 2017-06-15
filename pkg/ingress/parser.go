@@ -12,7 +12,7 @@ import (
 	stringutil "github.com/appscode/go/strings"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
-	"github.com/appscode/voyager/pkg/controller/ingress/template"
+	"github.com/appscode/voyager/pkg/ingress/template"
 	"github.com/flosch/pongo2"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/util/intstr"

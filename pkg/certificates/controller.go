@@ -14,7 +14,7 @@ import (
 	"github.com/appscode/log"
 	aci "github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
-	"github.com/appscode/voyager/pkg/controller/certificates/providers"
+	"github.com/appscode/voyager/pkg/certificates/providers"
 	"github.com/appscode/voyager/pkg/events"
 	"github.com/xenolf/lego/acme"
 	"k8s.io/kubernetes/pkg/api"
