@@ -9,7 +9,7 @@ add the following annotations to Ingress;
     }
 ```
 
-Voyager operator will apply these annotation on `LoadBalancer` service used to expose HAProxy to internet. This service will also (logically) listen on port 443 and forward to port 80 on HAProxy pods.
+Voyager operator will apply these annotation on `LoadBalancer` service used to expose HAProxy to internet. This service will (logically) listen on port 443 and forward to port 80 on HAProxy pods.
 
 ```
 apiVersion: v1
