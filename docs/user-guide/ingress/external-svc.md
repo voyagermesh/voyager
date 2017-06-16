@@ -1,8 +1,21 @@
-voyager supports `ServiceTypeExternalName` with redirect or by resolving DNS at runtime.
+Voyager supports `ServiceTypeExternalName` services via redirect or dns resolution.
 
-## Resolve DNS
-voyager can forward traffic in both HTTP and TCP mode to the named domain in the external name
-service via resolving the dns at runtime.
+## DNS Resolution
+Voyager can forward traffic in both HTTP and TCP mode to the named domain in the external name
+service by resolving dns. For static resolution of DNS address at the HAProxy config is parsed,
+only use the `ingress.appscode.com/use-dns-resolver: "true"` on respective service. To periodically resolve
+dns, [DNS resolvers](https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#5.3) must be configured using annotations on the service name.
+
+|  Keys  |   Value  |  Default |  Description |
+|--------|-----------|----------|-------------|
+| ingress.appscode.com/use-dns-resolver | bool | false | If set, DNS resolution will be used |
+| ingress.appscode.com/dns-resolver-nameservers | array | | If set to an array of DNS nameservers, these will be used HAProxy to periodically resolve DNS |
+| ingress.appscode.com/dns-resolver-retries | integer | | If set, this defines the number of queries to send to resolve a server name before
+giving up. If not set, default value pre-configured by HAProxy is used. |
+| ingress.appscode.com/dns-resolver-timeout | map | | If set, defines timeouts related to name resolution. The format is '{ "event": "time" }'. For a list of valid events, please consult [HAProxy documentation](https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#5.3.2-timeout). |
+| ingress.appscode.com/dns-resolver-hold | integer | 1936 | Port used to expose HAProxy stats |
+| ingress.appscode.com/dns-resolver-timeout | map | | If set, Defines period during which the last name resolution should be kept based
+on last resolution status. The format is '{ "status": "period" }'. For a list of valid status, please consult [HAProxy documentation](https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#5.3.2-hold). |
 
 Following example illustrates the scenario.
 

@@ -1,7 +1,7 @@
 ## Exposing HAProxy Stats
 To expose HAProxy stats, please use the following annotations: 
 
-### Stats options
+### Stats annotations
 |  Keys  |   Value  |  Default |  Description |
 |--------|-----------|----------|-------------|
 | ingress.appscode.com/stats | bool | false | If set, HAProxy stats will be exposed |
