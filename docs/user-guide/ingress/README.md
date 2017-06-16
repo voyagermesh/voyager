@@ -130,7 +130,17 @@ Below is the full list of supported annotation keys:
 | ingress.appscode.com/stats | bool | false | if set to true it will open HAProxy stats |
 | ingress.appscode.com/stats-port | integer | 1936 | HAProxy stats port to open via service |
 | ingress.appscode.com/stats-secret-name | string | x | HAProxy stats secret name to use basic auth. Secret must contain key `username` `password` |
-| ingress.appscode.com/stats-service-name | string | `stats-<ingress-name>` | Stats Service Name |
+| ingress.appscode.com/stats-service-name | string | `<ingress-name>-stats` | Stats Service Name |
+| ingress.appscode.com/ip |  |  | Removed since 1.5.6. Use `ingress.appscode.com/load-balaner-ip` |
+| ingress.appscode.com/daemon.nodeSelector | |  | Removed since 1.5.6. Use `ingress.appscode.com/node-selector` |
+| ingress.appscode.com/sticky-session | |  | Removed since 1.5.6. Use `ingress.appscode.com/node-selector` |
+| ingress.appscode.com/annotations-service | map | x | Json encoded annotations to be applied in LoadBalancer Service |
+| ingress.appscode.com/annotations-pod | map | x | Json encoded annotations to be applied in LoadBalancer Pods |
+| ingress.appscode.com/keep-source-ip | bool | false | Preserves source IP for LoadBalancer type ingresses. The actual configuration generated depends on the underlying cloud provider. For gce, gke, azure: Adds annotation `service.beta.kubernetes.io/external-traffic: OnlyLocal` to services used to expose HAProxy. For aws: Enforces the use of the PROXY protocol over any connection accepted by |
+| ingress.appscode.com/stats | bool | false | if set to true it will open HAProxy stats |
+| ingress.appscode.com/stats-port | integer | 1936 | HAProxy stats port to open via service |
+| ingress.appscode.com/stats-secret-name | string | x | HAProxy stats secret name to use basic auth. Secret must contain key `username` `password` |
+| ingress.appscode.com/stats-service-name | string | `<ingress-name>-stats` | Stats Service Name |
 
 | ingress.appscode.com/ip | IP | x | This key is deprecated. Going forward, use `ingress.appscode.com/load-balaner-ip` |
 
