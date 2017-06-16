@@ -86,8 +86,8 @@ If an ingress is created as `ingress.appscode.com/type: LoadBalancer` the ingres
 the ip/host name for that LoadBalancer. For `HostPort` mode the ingress will open ports on the nodes selected to run HAProxy.
 
 ### Configuration Options
-Voyager operator allows customization of Ingress resource using annotations under `ingress.appscode.com/` prefix. The ingress annotaiton keys are always
-string. Annotation values ca have the following data types:
+Voyager operator allows customization of Ingress resource using annotation keys with `ingress.appscode.com/` prefix.
+The ingress annotaiton keys are always string. Annotation values might have the following data types:
 
 | Value Type | Description | Example YAML |
 |----------- |-------------|--------------|
