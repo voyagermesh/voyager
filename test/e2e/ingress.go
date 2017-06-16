@@ -380,7 +380,7 @@ func (s *IngressTestSuit) TestIngressUpdate() error {
 			s.t.KubeClient.Core().ReplicationControllers(s.t.Config.TestNamespace).Update(rc)
 
 			for {
-				pods, _ := s.t.KubeClient.Core().Pods(s.t.Config.TestNamespace).List(apiv1.ListOptions{
+				pods, _ := s.t.KubeClient.Core().Pods(s.t.Config.TestNamespace).List(metav1.ListOptions{
 					LabelSelector: labels.SelectorFromSet(labels.Set(rc.Spec.Selector)),
 				})
 				if len(pods.Items) <= 0 {
@@ -1462,7 +1462,7 @@ func (s *IngressTestSuit) TestIngressAnnotations() error {
 		return errors.New().WithCause(err).Err()
 	}
 
-	pods, err := s.t.KubeClient.Core().Pods(svc.Namespace).List(apiv1.ListOptions{
+	pods, err := s.t.KubeClient.Core().Pods(svc.Namespace).List(metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
 	})
 	if err == nil {
@@ -1519,7 +1519,7 @@ func (s *IngressTestSuit) TestIngressAnnotations() error {
 		return errors.FromErr(err).Err()
 	}
 
-	pods, err = s.t.KubeClient.Core().Pods(svc.Namespace).List(apiv1.ListOptions{
+	pods, err = s.t.KubeClient.Core().Pods(svc.Namespace).List(metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
 	})
 	if err == nil {
@@ -1576,7 +1576,7 @@ func (s *IngressTestSuit) TestIngressAnnotations() error {
 		}
 	}
 
-	pods, err = s.t.KubeClient.Core().Pods(svc.Namespace).List(apiv1.ListOptions{
+	pods, err = s.t.KubeClient.Core().Pods(svc.Namespace).List(metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
 	})
 	if err == nil {

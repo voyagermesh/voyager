@@ -3,7 +3,7 @@ package clientset
 import (
 	"fmt"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/pkg/api"
 	"k8s.io/client-go/rest"
 )
@@ -69,12 +69,12 @@ func New(c rest.Interface) *ExtensionClient {
 }
 
 func setExtensionsDefaults(config *rest.Config) error {
-	gv, err := metav1.ParseGroupVersion("appscode.com/v1beta1")
+	gv, err := schema.ParseGroupVersion("appscode.com/v1beta1")
 	if err != nil {
 		return err
 	}
 	// if appscode.com/v1beta1 is not enabled, return an error
-	if !api.IsEnabledVersion(gv) {
+	if !api.Registry.IsEnabledVersion(gv) {
 		return fmt.Errorf("appscode.com/v1beta1 is not enabled")
 	}
 	config.APIPath = defaultAPIPath
@@ -83,7 +83,7 @@ func setExtensionsDefaults(config *rest.Config) error {
 	}
 
 	if config.GroupVersion == nil || config.GroupVersion.Group != "appscode.com" {
-		g, err := api.Group("appscode.com")
+		g, err := api.Registry.Group("appscode.com")
 		if err != nil {
 			return err
 		}

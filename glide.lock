@@ -1,5 +1,5 @@
 hash: 379691a763a7ee2c9a392a514faa8ce7932265f63158cc47344f877f95736c8f
-updated: 2017-06-16T11:57:41.547587068-07:00
+updated: 2017-06-16T15:17:13.144329232-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -18,6 +18,7 @@ imports:
   - flags
   - runtime
   - strings
+  - types
   - version
 - name: github.com/appscode/haproxy_exporter
   version: 5ffa4ef4d44b3959a3afeb59227fdec8a892cab2
@@ -385,25 +386,47 @@ imports:
   - discovery
   - discovery/fake
   - kubernetes
+  - kubernetes/fake
   - kubernetes/scheme
   - kubernetes/typed/apps/v1beta1
+  - kubernetes/typed/apps/v1beta1/fake
   - kubernetes/typed/authentication/v1
+  - kubernetes/typed/authentication/v1/fake
   - kubernetes/typed/authentication/v1beta1
+  - kubernetes/typed/authentication/v1beta1/fake
   - kubernetes/typed/authorization/v1
+  - kubernetes/typed/authorization/v1/fake
   - kubernetes/typed/authorization/v1beta1
+  - kubernetes/typed/authorization/v1beta1/fake
   - kubernetes/typed/autoscaling/v1
+  - kubernetes/typed/autoscaling/v1/fake
   - kubernetes/typed/autoscaling/v2alpha1
+  - kubernetes/typed/autoscaling/v2alpha1/fake
   - kubernetes/typed/batch/v1
+  - kubernetes/typed/batch/v1/fake
   - kubernetes/typed/batch/v2alpha1
+  - kubernetes/typed/batch/v2alpha1/fake
   - kubernetes/typed/certificates/v1beta1
+  - kubernetes/typed/certificates/v1beta1/fake
   - kubernetes/typed/core/v1
+  - kubernetes/typed/core/v1/fake
   - kubernetes/typed/extensions/v1beta1
+  - kubernetes/typed/extensions/v1beta1/fake
   - kubernetes/typed/policy/v1beta1
+  - kubernetes/typed/policy/v1beta1/fake
   - kubernetes/typed/rbac/v1alpha1
+  - kubernetes/typed/rbac/v1alpha1/fake
   - kubernetes/typed/rbac/v1beta1
+  - kubernetes/typed/rbac/v1beta1/fake
   - kubernetes/typed/settings/v1alpha1
+  - kubernetes/typed/settings/v1alpha1/fake
   - kubernetes/typed/storage/v1
+  - kubernetes/typed/storage/v1/fake
   - kubernetes/typed/storage/v1beta1
+  - kubernetes/typed/storage/v1beta1/fake
+  - listers/apps/v1beta1
+  - listers/core/v1
+  - listers/extensions/v1beta1
   - pkg/api
   - pkg/api/install
   - pkg/api/v1
@@ -466,11 +489,10 @@ imports:
   - util/homedir
   - util/integer
 - name: k8s.io/kubernetes
-  version: 490c6f13df1cb6612e0993c4c14f2ff90f8cdbf3
+  version: 7fa1c1756d8bc963f1a389f4a6937dc71f08ada2
   subpackages:
   - pkg/api
   - pkg/api/install
-  - pkg/api/meta
   - pkg/api/service
   - pkg/api/v1
   - pkg/apis/apps
@@ -548,12 +570,10 @@ imports:
   - pkg/kubelet/qos
   - pkg/kubelet/types
   - pkg/master/ports
-  - pkg/runtime/serializer/json
   - pkg/util
   - pkg/util/errors
   - pkg/util/net/sets
   - pkg/util/parsers
-  - pkg/watch/versioned
 testImports:
 - name: github.com/pmezard/go-difflib
   version: d8ed2627bdf02c080bf22230dbb337003b7aba2d

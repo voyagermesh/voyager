@@ -7,7 +7,6 @@ import (
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
 )
@@ -33,7 +32,7 @@ func TestEnsureResource(t *testing.T) {
 	}
 	w.ensureResource()
 
-	data, err := w.KubeClient.Extensions().ThirdPartyResources().List(apiv1.ListOptions{})
+	data, err := w.KubeClient.Extensions().ThirdPartyResources().List(metav1.ListOptions{})
 	assert.Nil(t, err)
 	if data == nil {
 		t.Fatal("Item list should not be nil")

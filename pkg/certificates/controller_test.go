@@ -21,8 +21,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/xenolf/lego/acme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/fake"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
-	fakeclientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
 )
 
 func init() {
@@ -30,7 +30,7 @@ func init() {
 }
 
 func TestLoadProviderCredential(t *testing.T) {
-	fakeController := NewController(fakeclientset.NewSimpleClientset(), fake.NewFakeExtensionClient())
+	fakeController := NewController(fake.NewSimpleClientset(), fake.NewFakeExtensionClient())
 	fakeController.certificate = &aci.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
@@ -57,7 +57,7 @@ func TestLoadProviderCredential(t *testing.T) {
 		},
 	}
 
-	s, err := fakeController.KubeClient.Core().Secrets("bar").Create(fakeSecret)
+	s, err := fakeController.KubeClient.CoreV1().Secrets("bar").Create(fakeSecret)
 	assert.Nil(t, err)
 	assert.Equal(t, "foosecret", s.Name)
 	assert.Equal(t, "bar", s.Namespace)
@@ -105,11 +105,11 @@ func TestEnsureClient(t *testing.T) {
 				"GCE_SERVICE_ACCOUNT_DATA": []byte(os.Getenv("TEST_GCE_SERVICE_ACCOUNT_DATA")),
 			},
 		}
-		_, err := fakeController.KubeClient.Core().Secrets("bar").Create(fakeSecret)
+		_, err := fakeController.KubeClient.CoreV1().Secrets("bar").Create(fakeSecret)
 		assert.Nil(t, err)
 
 		fakeController.ensureACMEClient()
-		secret, err := fakeController.KubeClient.Core().Secrets("bar").Get(defaultUserSecretPrefix + fakeController.certificate.Name)
+		secret, err := fakeController.KubeClient.CoreV1().Secrets("bar").Get(defaultUserSecretPrefix + fakeController.certificate.Name)
 		assert.Nil(t, err)
 		assert.NotNil(t, secret)
 		assert.Equal(t, 1, len(secret.Data))
@@ -149,7 +149,7 @@ func TestFakeRegisterACMEUser(t *testing.T) {
 		err := fakeController.registerACMEUser(acmeClient)
 		if !assert.NotNil(t, err) {
 			assert.Nil(t, err)
-			secret, err := fakeController.KubeClient.Core().Secrets("bar").Get(defaultUserSecretPrefix + fakeController.certificate.Name)
+			secret, err := fakeController.KubeClient.CoreV1().Secrets("bar").Get(defaultUserSecretPrefix + fakeController.certificate.Name)
 			assert.Nil(t, err)
 			if assert.NotNil(t, secret) {
 				assert.Equal(t, 1, len(secret.Data))
@@ -191,16 +191,16 @@ func TestCreate(t *testing.T) {
 				"GCE_SERVICE_ACCOUNT_DATA": []byte(os.Getenv("TEST_GCE_SERVICE_ACCOUNT_DATA")),
 			},
 		}
-		_, err := fakeController.KubeClient.Core().Secrets("bar").Create(fakeSecret)
+		_, err := fakeController.KubeClient.CoreV1().Secrets("bar").Create(fakeSecret)
 		assert.Nil(t, err)
 
 		fakeController.create()
 
-		secret, err := fakeController.KubeClient.Core().Secrets("bar").Get(defaultUserSecretPrefix + fakeController.certificate.Name)
+		secret, err := fakeController.KubeClient.CoreV1().Secrets("bar").Get(defaultUserSecretPrefix + fakeController.certificate.Name)
 		assert.Nil(t, err)
 		assert.Equal(t, len(secret.Data), 1)
 
-		list, err := fakeController.KubeClient.Core().Secrets("").List(apiv1.ListOptions{})
+		list, err := fakeController.KubeClient.CoreV1().Secrets("").List(metav1.ListOptions{})
 		if err == nil {
 			for _, item := range list.Items {
 				log.Infoln("List for Secrets that created", item.Name, item.Namespace)
@@ -208,7 +208,7 @@ func TestCreate(t *testing.T) {
 		}
 
 		// Check the certificate data
-		secret, err = fakeController.KubeClient.Core().Secrets("bar").Get("cert-" + fakeController.certificate.Name)
+		secret, err = fakeController.KubeClient.CoreV1().Secrets("bar").Get("cert-" + fakeController.certificate.Name)
 		assert.Nil(t, err)
 		if err != nil {
 			t.Fatal(err)

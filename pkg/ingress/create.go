@@ -46,7 +46,7 @@ func (lbc *EngressController) Create() error {
 
 func (lbc *EngressController) ensureConfigMap() error {
 	log.Infoln("creating cmap for engress")
-	cm, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
+	cm, err := lbc.KubeClient.CoreV1().ConfigMaps(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		cm = &apiv1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
@@ -61,7 +61,7 @@ func (lbc *EngressController) ensureConfigMap() error {
 				"haproxy.cfg": lbc.ConfigData,
 			},
 		}
-		_, err = lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Create(cm)
+		_, err = lbc.KubeClient.CoreV1().ConfigMaps(lbc.Resource.Namespace).Create(cm)
 		return err
 	} else if err != nil {
 		return errors.FromErr(err).Err()
@@ -82,7 +82,7 @@ func (lbc *EngressController) ensureConfigMap() error {
 	}
 
 	if needsUpdate {
-		_, err = lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Update(cm)
+		_, err = lbc.KubeClient.CoreV1().ConfigMaps(lbc.Resource.Namespace).Update(cm)
 		return err
 	}
 	return nil
@@ -169,9 +169,9 @@ func (lbc *EngressController) createHostPortSvc() error {
 	}
 
 	updateFW := false
-	s, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(svc.Name)
+	s, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Get(svc.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		svc, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Create(svc)
+		svc, err = lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Create(svc)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -194,7 +194,7 @@ func (lbc *EngressController) createHostPortSvc() error {
 		}
 
 		if needsUpdate {
-			_, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Update(s)
+			_, err = lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Update(s)
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
@@ -202,7 +202,7 @@ func (lbc *EngressController) createHostPortSvc() error {
 	}
 
 	if updateFW && lbc.CloudManager != nil {
-		daemonNodes, err := lbc.KubeClient.Core().Nodes().List(apiv1.ListOptions{
+		daemonNodes, err := lbc.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{
 			LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Resource.NodeSelector())),
 		})
 		if err != nil {
@@ -317,9 +317,9 @@ func (lbc *EngressController) createHostPortPods() error {
 	}
 
 	log.Infoln("creating DaemonSets controller")
-	dm, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Get(daemon.Name)
+	dm, err := lbc.KubeClient.ExtensionsV1beta1().DaemonSets(lbc.Resource.Namespace).Get(daemon.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		_, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Create(daemon)
+		_, err := lbc.KubeClient.ExtensionsV1beta1().DaemonSets(lbc.Resource.Namespace).Create(daemon)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -340,7 +340,7 @@ func (lbc *EngressController) createHostPortPods() error {
 	}
 
 	if needsUpdate {
-		_, err = lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Update(dm)
+		_, err = lbc.KubeClient.ExtensionsV1beta1().DaemonSets(lbc.Resource.Namespace).Update(dm)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -391,9 +391,9 @@ func (lbc *EngressController) createNodePortSvc() error {
 		svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
 	}
 
-	s, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(svc.Name)
+	s, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Get(svc.Name)
 	if kerr.IsNotFound(err) {
-		svc, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Create(svc)
+		svc, err = lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Create(svc)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -414,7 +414,7 @@ func (lbc *EngressController) createNodePortSvc() error {
 	}
 
 	if needsUpdate {
-		_, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Update(s)
+		_, err = lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Update(s)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -504,9 +504,9 @@ func (lbc *EngressController) createNodePortPods() error {
 		deployment.Spec.Template.Annotations = ans
 	}
 
-	dpl, err := lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Get(deployment.Name)
+	dpl, err := lbc.KubeClient.ExtensionsV1beta1().Deployments(lbc.Resource.Namespace).Get(deployment.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		_, err := lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Create(deployment)
+		_, err := lbc.KubeClient.ExtensionsV1beta1().Deployments(lbc.Resource.Namespace).Create(deployment)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -527,7 +527,7 @@ func (lbc *EngressController) createNodePortPods() error {
 	}
 
 	if needsUpdate {
-		_, err = lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Update(dpl)
+		_, err = lbc.KubeClient.ExtensionsV1beta1().Deployments(lbc.Resource.Namespace).Update(dpl)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -579,9 +579,9 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 		}
 	}
 
-	s, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(svc.Name)
+	s, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Get(svc.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		svc, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Create(svc)
+		svc, err = lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Create(svc)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -602,7 +602,7 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 	}
 
 	if needsUpdate {
-		_, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Update(s)
+		_, err = lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Update(s)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -634,9 +634,9 @@ func (lbc *EngressController) ensureStatsService() {
 		},
 	}
 
-	s, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.Resource.StatsServiceName())
+	s, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Get(lbc.Resource.StatsServiceName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		_, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Create(svc)
+		_, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Create(svc)
 		if err != nil {
 			log.Errorln("Failed to create Stats Service", err)
 		}
@@ -663,7 +663,7 @@ func (lbc *EngressController) ensureStatsService() {
 	}
 
 	if needsUpdate {
-		_, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Update(s)
+		_, err = lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Update(s)
 		if err != nil {
 			log.Errorln("Failed to update Stats Service", err)
 		}
@@ -677,9 +677,7 @@ func (lbc *EngressController) updateStatus() error {
 	case api.LBTypeLoadBalancer:
 		for i := 0; i < 50; i++ {
 			time.Sleep(time.Second * 10)
-			if svc, err := lbc.KubeClient.Core().
-				Services(lbc.Resource.Namespace).
-				Get(lbc.Resource.OffshootName()); err == nil {
+			if svc, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{}); err == nil {
 				if len(svc.Status.LoadBalancer.Ingress) >= 1 {
 					statuses = svc.Status.LoadBalancer.Ingress
 					break
@@ -691,12 +689,12 @@ func (lbc *EngressController) updateStatus() error {
 
 	if len(statuses) > 0 {
 		if lbc.Resource.APISchema() == api.APISchemaIngress {
-			ing, err := lbc.KubeClient.Extensions().Ingresses(lbc.Resource.Namespace).Get(lbc.Resource.Name)
+			ing, err := lbc.KubeClient.ExtensionsV1beta1().Ingresses(lbc.Resource.Namespace).Get(lbc.Resource.Name, metav1.GetOptions{})
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
 			ing.Status.LoadBalancer.Ingress = statuses
-			_, err = lbc.KubeClient.Extensions().Ingresses(lbc.Resource.Namespace).Update(ing)
+			_, err = lbc.KubeClient.ExtensionsV1beta1().Ingresses(lbc.Resource.Namespace).Update(ing)
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}

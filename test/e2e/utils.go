@@ -11,6 +11,7 @@ import (
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	api "github.com/appscode/voyager/api"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
@@ -100,7 +101,7 @@ func (s *IngressTestSuit) getURLs(baseIngress *api.Ingress) ([]string, error) {
 
 func (s *IngressTestSuit) getDaemonURLs(baseIngress *api.Ingress) ([]string, error) {
 	serverAddr := make([]string, 0)
-	nodes, err := s.t.KubeClient.Core().Nodes().List(apiv1.ListOptions{
+	nodes, err := s.t.KubeClient.Core().Nodes().List(metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(baseIngress.NodeSelector()),
 	})
 	if err != nil {

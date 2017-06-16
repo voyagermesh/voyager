@@ -7,6 +7,7 @@ import (
 
 	"github.com/appscode/log"
 	aci "github.com/appscode/voyager/api"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
@@ -60,19 +61,11 @@ func (e EventType) Is(event string) bool {
 
 type EventReason string
 
-const (
-	EventReasonAlertAcknowledgement EventReason = "AlertAcknowledgement"
-)
-
 func (r EventReason) String() string {
 	return string(r)
 }
 
 type ObjectKind string
-
-const (
-	ObjectKindAlert ObjectKind = "Alert"
-)
 
 func (o ObjectKind) String() string {
 	return string(o)

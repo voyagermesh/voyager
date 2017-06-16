@@ -149,7 +149,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 	case events.Endpoint:
 		// Checking if this endpoint have a service or not. If
 		// this do not have a Service we do not want to update our ingress
-		_, err := w.KubeClient.Core().Services(e.MetaData.Namespace).Get(e.MetaData.Name)
+		_, err := w.KubeClient.CoreV1().Services(e.MetaData.Namespace).Get(e.MetaData.Name)
 		if err == nil {
 			log.Infoln("Endpoint has an service with name", e.MetaData.Name, e.MetaData.Namespace, "Event type", e.EventType.String())
 			// Service exists. So we should process.
@@ -218,7 +218,7 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 					var client rest.Interface
 					switch e.ResourceType {
 					case events.ConfigMap, events.Service:
-						client = w.KubeClient.Core().RESTClient()
+						client = w.KubeClient.CoreV1().RESTClient()
 					case events.Deployments, events.DaemonSet:
 						client = w.KubeClient.Extensions().RESTClient()
 					}
@@ -309,7 +309,7 @@ func (w *Watcher) Cache(resource events.ObjectType, object runtime.Object, lw *c
 	if lw != nil {
 		listWatch = lw
 	} else {
-		listWatch = cache.NewListWatchFromClient(w.KubeClient.Core().RESTClient(), resource.String(), apiv1.NamespaceAll, fields.Everything())
+		listWatch = cache.NewListWatchFromClient(w.KubeClient.CoreV1().RESTClient(), resource.String(), apiv1.NamespaceAll, fields.Everything())
 	}
 
 	return cache.NewInformer(
@@ -322,7 +322,7 @@ func (w *Watcher) Cache(resource events.ObjectType, object runtime.Object, lw *c
 
 func (w *Watcher) CacheStore(resource events.ObjectType, object runtime.Object, lw *cache.ListWatch) (cache.Store, *cache.Controller) {
 	if lw == nil {
-		lw = cache.NewListWatchFromClient(w.KubeClient.Core().RESTClient(), resource.String(), apiv1.NamespaceAll, fields.Everything())
+		lw = cache.NewListWatchFromClient(w.KubeClient.CoreV1().RESTClient(), resource.String(), apiv1.NamespaceAll, fields.Everything())
 	}
 
 	return stash.NewInformerPopulated(
@@ -335,7 +335,7 @@ func (w *Watcher) CacheStore(resource events.ObjectType, object runtime.Object, 
 
 func (w *Watcher) CacheIndexer(resource events.ObjectType, object runtime.Object, lw *cache.ListWatch, indexers cache.Indexers) (cache.Indexer, *cache.Controller) {
 	if lw == nil {
-		lw = cache.NewListWatchFromClient(w.KubeClient.Core().RESTClient(), resource.String(), apiv1.NamespaceAll, fields.Everything())
+		lw = cache.NewListWatchFromClient(w.KubeClient.CoreV1().RESTClient(), resource.String(), apiv1.NamespaceAll, fields.Everything())
 	}
 	if indexers == nil {
 		indexers = cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}

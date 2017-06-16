@@ -17,6 +17,7 @@ import (
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	fakecloudprovider "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
@@ -65,15 +66,15 @@ func UpgradeAllEngress(service, providerName string,
 	extClient acs.ExtensionInterface,
 	store *stash.Storage,
 	ingressClass string) error {
-	ing, err := kubeClient.Extensions().Ingresses(apiv1.NamespaceAll).List(apiv1.ListOptions{
-		LabelSelector: labels.Everything(),
+	ing, err := kubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{
+		LabelSelector: labels.Everything().String(),
 	})
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 
-	eng, err := extClient.Ingress(apiv1.NamespaceAll).List(apiv1.ListOptions{
-		LabelSelector: labels.Everything(),
+	eng, err := extClient.Ingress(apiv1.NamespaceAll).List(metav1.ListOptions{
+		LabelSelector: labels.Everything().String(),
 	})
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -156,7 +157,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 				// recreate the resource from scratch.
 				log.Infoln("Loadbalancer is exists, trying to update")
 
-				if svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName()); err == nil {
+				if svc, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{}); err == nil {
 					// check port
 					curPorts := make(map[int]apiv1.ServicePort)
 					for _, p := range svc.Spec.Ports {
@@ -232,7 +233,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 			lbc.Update(updateMode)
 		}
 	}
-	svcs, err := lbc.KubeClient.Core().Services(apiv1.NamespaceAll).List(apiv1.ListOptions{})
+	svcs, err := lbc.KubeClient.CoreV1().Services(apiv1.NamespaceAll).List(metav1.ListOptions{})
 	if err == nil {
 		for _, svc := range svcs.Items {
 			ensureServiceAnnotations(lbc.KubeClient, lbc.Resource, svc.Namespace, svc.Name)
@@ -265,7 +266,7 @@ func shouldHandleIngress(resource *api.Ingress, ingressClass string) bool {
 }
 
 func ensureServiceAnnotations(client clientset.Interface, r *api.Ingress, namespace, name string) {
-	svc, err := client.Core().Services(namespace).Get(name)
+	svc, err := client.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
 		return
 	}
@@ -306,7 +307,7 @@ func ensureServiceAnnotations(client clientset.Interface, r *api.Ingress, namesp
 		if err == nil {
 			svc.Annotations[api.EgressPoints] = string(data)
 		}
-		client.Core().Services(namespace).Update(svc)
+		client.CoreV1().Services(namespace).Update(svc)
 		return
 	}
 	// Lets check if service still have the annotation for this ingress.
@@ -326,7 +327,7 @@ func ensureServiceAnnotations(client clientset.Interface, r *api.Ingress, namesp
 				svc.Annotations[api.EgressPoints] = string(data)
 			}
 		}
-		client.Core().Services(namespace).Update(svc)
+		client.CoreV1().Services(namespace).Update(svc)
 	}
 }
 

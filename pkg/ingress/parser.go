@@ -14,6 +14,7 @@ import (
 	"github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/ingress/template"
 	"github.com/flosch/pongo2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
@@ -50,7 +51,7 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 	}
 
 	log.Infoln("looking for services in namespace", namespace, "with name", name)
-	service, err := lbc.KubeClient.Core().Services(namespace).Get(name)
+	service, err := lbc.KubeClient.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
 		log.Warningln(err)
 		return nil, err
@@ -348,7 +349,7 @@ func (lbc *EngressController) parseOptions() {
 	if lbc.Parsed.Stats {
 		lbc.Parsed.StatsPort = lbc.Resource.StatsPort()
 		if name := lbc.Resource.StatsSecretName(); len(name) > 0 {
-			secret, err := lbc.KubeClient.Core().Secrets(lbc.Resource.ObjectMeta.Namespace).Get(name)
+			secret, err := lbc.KubeClient.CoreV1().Secrets(lbc.Resource.ObjectMeta.Namespace).Get(name)
 			if err == nil {
 				lbc.Parsed.StatsUserName = string(secret.Data["username"])
 				lbc.Parsed.StatsPassWord = string(secret.Data["password"])
