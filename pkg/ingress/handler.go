@@ -158,21 +158,23 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 
 				if svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName()); err == nil {
 					// check port
-					curPorts := make(map[int]int)
+					curPorts := make(map[int]kapi.ServicePort)
 					for _, p := range svc.Spec.Ports {
-						curPorts[int(p.Port)] = 1
+						curPorts[int(p.Port)] = p
 					}
 
 					var updateFW bool
-					for _, p := range lbc.Ports {
-						if _, ok := curPorts[p]; !ok {
+					for targetPort, svcPort := range lbc.Ports {
+						if sp, ok := curPorts[svcPort]; !ok || sp.TargetPort.IntValue() != targetPort {
 							updateFW = true // new port has to be opened
 							break
 						} else {
-							delete(curPorts, p)
+							delete(curPorts, svcPort)
 						}
 					}
-					updateFW = len(curPorts) > 0 // additional port was open previously
+					if len(curPorts) > 0 {
+						updateFW = true // additional port was open previously
+					}
 
 					if updateFW {
 						lbc.Update(UpdateFirewall | UpdateStats)
