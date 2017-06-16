@@ -141,15 +141,15 @@ func (lbc *EngressController) updateLBSvc() error {
 		curPorts[p.Port] = p
 	}
 	svc.Spec.Ports = make([]kapi.ServicePort, 0)
-	for _, port := range lbc.Ports {
-		if sp, found := curPorts[int32(port)]; found {
+	for targetPort, svcPort := range lbc.Ports {
+		if sp, found := curPorts[int32(svcPort)]; found && sp.TargetPort.IntValue() == targetPort {
 			svc.Spec.Ports = append(svc.Spec.Ports, sp)
 		} else {
 			svc.Spec.Ports = append(svc.Spec.Ports, kapi.ServicePort{
-				Name:       "tcp-" + strconv.Itoa(port),
+				Name:       "tcp-" + strconv.Itoa(svcPort),
 				Protocol:   "TCP",
-				Port:       int32(port),
-				TargetPort: intstr.FromInt(port),
+				Port:       int32(svcPort),
+				TargetPort: intstr.FromInt(targetPort),
 			})
 		}
 	}

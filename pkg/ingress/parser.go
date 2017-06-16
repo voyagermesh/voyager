@@ -18,13 +18,6 @@ import (
 	"k8s.io/kubernetes/pkg/util/intstr"
 )
 
-func (lbc *EngressController) APISchema() string {
-	if v, ok := lbc.Resource.Annotations[api.APISchema]; ok {
-		return v
-	}
-	return api.APISchemaEngress
-}
-
 func (lbc *EngressController) SupportsLoadBalancerType() bool {
 	return lbc.ProviderName == "aws" ||
 		lbc.ProviderName == "gce" ||
@@ -221,7 +214,7 @@ func getTargetPort(servicePort *kapi.ServicePort) int {
 
 func (lbc *EngressController) parseSpec() {
 	log.Infoln("Parsing Engress specs")
-	lbc.Ports = make([]int, 0)
+	lbc.Ports = make(map[int]int)
 	lbc.Parsed.DNSResolvers = make(map[string]*api.DNSResolver)
 
 	if lbc.Resource.Spec.Backend != nil {
@@ -286,8 +279,9 @@ func (lbc *EngressController) parseSpec() {
 
 		// adding tcp service to the parser.
 		for _, tcpSvc := range rule.TCP {
-			lbc.Ports = append(lbc.Ports, tcpSvc.Port.IntValue())
 			log.Infoln(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort)
+
+			lbc.Ports[tcpSvc.Port.IntValue()] = tcpSvc.Port.IntValue()
 			eps, _ := lbc.serviceEndpoints(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort, tcpSvc.Backend.HostNames)
 			if len(eps) > 0 {
 				def := &TCPService{
@@ -309,11 +303,33 @@ func (lbc *EngressController) parseSpec() {
 	}
 
 	if httpCount > 0 || (lbc.Resource.Spec.Backend != nil && httpsCount == 0) {
-		lbc.Ports = append(lbc.Ports, 80)
+		lbc.Ports[80] = 80
 	}
 
 	if httpsCount > 0 {
-		lbc.Ports = append(lbc.Ports, 443)
+		lbc.Ports[443] = 443
+	}
+
+	// ref: https://github.com/appscode/voyager/issues/188
+	if lbc.ProviderName == "aws" && lbc.Resource.LBType() == api.LBTypeLoadBalancer {
+		if ans, ok := lbc.Resource.ServiceAnnotations(lbc.ProviderName); ok {
+			if v, usesAWSCertManager := ans["service.beta.kubernetes.io/aws-load-balancer-ssl-cert"]; usesAWSCertManager && v != "" {
+				var tp80, sp443 bool
+				for targetPort, svcPort := range lbc.Ports {
+					if targetPort == 80 {
+						tp80 = true
+					}
+					if svcPort == 443 {
+						sp443 = true
+					}
+				}
+				if tp80 && !sp443 {
+					lbc.Ports[80] = 443
+				} else {
+					log.Errorln("Failed to open port 443 on service for AWS cert manager.")
+				}
+			}
+		}
 	}
 }
 
