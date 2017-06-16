@@ -20,8 +20,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net"
-	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -774,139 +772,6 @@ func (c *Cloud) Firewall() (cloudprovider.Firewall, bool) {
 	return c, true
 }
 
-// NodeAddresses is an implementation of Instances.NodeAddresses.
-func (c *Cloud) NodeAddresses(name types.NodeName) ([]api.NodeAddress, error) {
-	if c.selfAWSInstance.nodeName == name || len(name) == 0 {
-		addresses := []api.NodeAddress{}
-
-		internalIP, err := c.metadata.GetMetadata("local-ipv4")
-		if err != nil {
-			return nil, err
-		}
-		addresses = append(addresses, api.NodeAddress{Type: api.NodeInternalIP, Address: internalIP})
-		// Legacy compatibility: the private ip was the legacy host ip
-		addresses = append(addresses, api.NodeAddress{Type: api.NodeLegacyHostIP, Address: internalIP})
-
-		externalIP, err := c.metadata.GetMetadata("public-ipv4")
-		if err != nil {
-			//TODO: It would be nice to be able to determine the reason for the failure,
-			// but the AWS client masks all failures with the same error description.
-			glog.V(2).Info("Could not determine public IP from AWS metadata.")
-		} else {
-			addresses = append(addresses, api.NodeAddress{Type: api.NodeExternalIP, Address: externalIP})
-		}
-
-		return addresses, nil
-	}
-	instance, err := c.getInstanceByNodeName(name)
-	if err != nil {
-		return nil, fmt.Errorf("getInstanceByNodeName failed for %q with %v", name, err)
-	}
-
-	addresses := []api.NodeAddress{}
-
-	if !isNilOrEmpty(instance.PrivateIpAddress) {
-		ipAddress := *instance.PrivateIpAddress
-		ip := net.ParseIP(ipAddress)
-		if ip == nil {
-			return nil, fmt.Errorf("EC2 instance had invalid private address: %s (%s)", orEmpty(instance.InstanceId), ipAddress)
-		}
-		addresses = append(addresses, api.NodeAddress{Type: api.NodeInternalIP, Address: ip.String()})
-
-		// Legacy compatibility: the private ip was the legacy host ip
-		addresses = append(addresses, api.NodeAddress{Type: api.NodeLegacyHostIP, Address: ip.String()})
-	}
-
-	// TODO: Other IP addresses (multiple ips)?
-	if !isNilOrEmpty(instance.PublicIpAddress) {
-		ipAddress := *instance.PublicIpAddress
-		ip := net.ParseIP(ipAddress)
-		if ip == nil {
-			return nil, fmt.Errorf("EC2 instance had invalid public address: %s (%s)", orEmpty(instance.InstanceId), ipAddress)
-		}
-		addresses = append(addresses, api.NodeAddress{Type: api.NodeExternalIP, Address: ip.String()})
-	}
-
-	return addresses, nil
-}
-
-// ExternalID returns the cloud provider ID of the node with the specified nodeName (deprecated).
-func (c *Cloud) ExternalID(nodeName types.NodeName) (string, error) {
-	if c.selfAWSInstance.nodeName == nodeName {
-		// We assume that if this is run on the instance itself, the instance exists and is alive
-		return c.selfAWSInstance.awsID, nil
-	}
-	// We must verify that the instance still exists
-	// Note that if the instance does not exist or is no longer running, we must return ("", cloudprovider.InstanceNotFound)
-	instance, err := c.findInstanceByNodeName(nodeName)
-	if err != nil {
-		return "", err
-	}
-	if instance == nil {
-		return "", cloudprovider.InstanceNotFound
-	}
-	return orEmpty(instance.InstanceId), nil
-}
-
-// Return a list of instances matching regex string.
-func (c *Cloud) getInstancesByRegex(regex string) ([]types.NodeName, error) {
-	filters := []*ec2.Filter{newEc2Filter("instance-state-name", "running")}
-	filters = c.addFilters(filters)
-	request := &ec2.DescribeInstancesInput{
-		Filters: filters,
-	}
-
-	instances, err := c.ec2.DescribeInstances(request)
-	if err != nil {
-		return []types.NodeName{}, err
-	}
-	if len(instances) == 0 {
-		return []types.NodeName{}, fmt.Errorf("no instances returned")
-	}
-
-	if strings.HasPrefix(regex, "'") && strings.HasSuffix(regex, "'") {
-		glog.Infof("Stripping quotes around regex (%s)", regex)
-		regex = regex[1 : len(regex)-1]
-	}
-
-	re, err := regexp.Compile(regex)
-	if err != nil {
-		return []types.NodeName{}, err
-	}
-
-	matchingInstances := []types.NodeName{}
-	for _, instance := range instances {
-		// Only return fully-ready instances when listing instances
-		// (vs a query by name, where we will return it if we find it)
-		if orEmpty(instance.State.Name) == "pending" {
-			glog.V(2).Infof("Skipping EC2 instance (pending): %s", *instance.InstanceId)
-			continue
-		}
-
-		nodeName := mapInstanceToNodeName(instance)
-		if nodeName == "" {
-			glog.V(2).Infof("Skipping EC2 instance (no PrivateDNSName): %s",
-				aws.StringValue(instance.InstanceId))
-			continue
-		}
-
-		for _, tag := range instance.Tags {
-			if orEmpty(tag.Key) == "Name" && re.MatchString(orEmpty(tag.Value)) {
-				matchingInstances = append(matchingInstances, nodeName)
-				break
-			}
-		}
-	}
-	glog.V(2).Infof("Matched EC2 instances: %s", matchingInstances)
-	return matchingInstances, nil
-}
-
-// List is an implementation of Instances.List.
-func (c *Cloud) List(filter string) ([]types.NodeName, error) {
-	// TODO: Should really use tag query. No need to go regexp.
-	return c.getInstancesByRegex(filter)
-}
-
 // Abstraction around AWS Instance Types
 // There isn't an API to get information for a particular instance type (that I know of)
 type awsInstanceType struct {
@@ -1008,23 +873,6 @@ func (c *Cloud) buildSelfAWSInstance() (*awsInstance, error) {
 		return nil, fmt.Errorf("error finding instance %s: %v", instanceID, err)
 	}
 	return newAWSInstance(c.ec2, instance), nil
-}
-
-// Gets the awsInstance with for the node with the specified nodeName, or the 'self' instance if nodeName == ""
-func (c *Cloud) getAwsInstance(nodeName types.NodeName) (*awsInstance, error) {
-	var awsInstance *awsInstance
-	if nodeName == "" {
-		awsInstance = c.selfAWSInstance
-	} else {
-		instance, err := c.getInstanceByNodeName(nodeName)
-		if err != nil {
-			return nil, err
-		}
-
-		awsInstance = newAWSInstance(c.ec2, instance)
-	}
-
-	return awsInstance, nil
 }
 
 // Retrieves the specified security group from the AWS API, or returns nil if not found
@@ -1949,55 +1797,6 @@ func mapNodeNameToPrivateDNSName(nodeName types.NodeName) string {
 // mapInstanceToNodeName maps a EC2 instance to a k8s NodeName, by extracting the PrivateDNSName
 func mapInstanceToNodeName(i *ec2.Instance) types.NodeName {
 	return types.NodeName(aws.StringValue(i.PrivateDnsName))
-}
-
-// Returns the instance with the specified node name
-// Returns nil if it does not exist
-func (c *Cloud) findInstanceByNodeName(nodeName types.NodeName) (*ec2.Instance, error) {
-	privateDNSName := mapNodeNameToPrivateDNSName(nodeName)
-	filters := []*ec2.Filter{
-		newEc2Filter("private-dns-name", privateDNSName),
-		newEc2Filter("instance-state-name", "running"),
-	}
-	filters = c.addFilters(filters)
-	request := &ec2.DescribeInstancesInput{
-		Filters: filters,
-	}
-
-	instances, err := c.ec2.DescribeInstances(request)
-	if err != nil {
-		return nil, err
-	}
-	if len(instances) == 0 {
-		return nil, nil
-	}
-	if len(instances) > 1 {
-		return nil, fmt.Errorf("multiple instances found for name: %s", nodeName)
-	}
-	return instances[0], nil
-}
-
-// Returns the instance with the specified node name
-// Like findInstanceByNodeName, but returns error if node not found
-func (c *Cloud) getInstanceByNodeName(nodeName types.NodeName) (*ec2.Instance, error) {
-	instance, err := c.findInstanceByNodeName(nodeName)
-	if err == nil && instance == nil {
-		return nil, cloudprovider.InstanceNotFound
-	}
-	return instance, err
-}
-
-func (c *Cloud) getFullInstance(nodeName types.NodeName) (*awsInstance, *ec2.Instance, error) {
-	if nodeName == "" {
-		instance, err := c.getInstanceByID(c.selfAWSInstance.awsID)
-		return c.selfAWSInstance, instance, err
-	}
-	instance, err := c.getInstanceByNodeName(nodeName)
-	if err != nil {
-		return nil, nil, err
-	}
-	awsInstance := newAWSInstance(c.ec2, instance)
-	return awsInstance, instance, err
 }
 
 // Add additional filters, to match on our tags
