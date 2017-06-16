@@ -31,7 +31,7 @@ hosting. This plugin also support configurable application ports with all the fe
   - [Customize generated HAProxy config via BackendRule](backend-rule.md)
   - [Add Custom Annotation to LoadBalancer Service and Pods](annotations.md)
   - [Supports Loadbalancer Source Range](source-range.md)
-  - [Supports redirects/DNS resolve for `ServiceTypeExternalName`](external-svc.md)
+  - [Supports redirects/DNS resolution for `ServiceTypeExternalName`](external-svc.md)
   - [Expose HAProxy stats and metrics, use prometheus with metrics](stats-and-metrics.md)
 
 ### Comparison with Kubernetes
