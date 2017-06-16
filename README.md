@@ -28,7 +28,7 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
   - [Customize generated HAProxy config via BackendRule](docs/user-guide/ingress/backend-rule.md) (can be used for [http rewriting](https://www.haproxy.com/doc/aloha/7.0/haproxy/http_rewriting.html), add [health checks](https://www.haproxy.com/doc/aloha/7.0/haproxy/healthchecks.html), etc.)
   - [Add Custom Annotation to LoadBalancer Service and Pods](docs/user-guide/ingress/annotations.md)
   - [Supports Loadbalancer Source Range](docs/user-guide/ingress/source-range.md)
-  - [Supports redirects/DNS resolution for `ServiceTypeExternalName`](docs/user-guide/ingress/external-svc.md)
+  - [Supports redirects/DNS resolution for `ExternalName` type service](docs/user-guide/ingress/external-svc.md)
   - [Expose HAProxy stats for Prometheus](docs/user-guide/ingress/stats-and-metrics.md)
   - [Supports AWS certificate manager](docs/user-guide/ingress/aws-cert-manager.md)
 
@@ -46,7 +46,7 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
 | Route Traffic to StatefulSet Pods Based on Host Name | :x: | :white_check_mark: |
 | Weighted Loadbalancing for Canary Deployment| :x: | :white_check_mark: |
 | Supports Loadbalancer Source Range | :x: | :white_check_mark: |
-| Supports redirects/DNS resolve for `ServiceTypeExternalName` | :x: | :white_check_mark: |
+| Supports redirects/DNS resolve for `ExternalName` type service | :x: | :white_check_mark: |
 | Expose HAProxy stats for Prometheus | :x: | :white_check_mark: |
 | Supports AWS certificate manager | :x: | :white_check_mark: |
 

@@ -56,7 +56,7 @@ baremetal clusters. Users are required to configure firewall as needed. --cloud-
 You can choose the mode in your Ingress YAML using label: [ingress.appscode.com/type](/docs/user-guide/ingress#configurations-options)
 
 ## Run with helm
-One can deploy the controller with helm by following this [guide](/hack/chart/voyager/README.md)
+You can deploy Voyager operator with helm by using this [chart](/chart/voyager/README.md).
 
 ## Ingress
 This resource Type is backed by an controller which monitors and manages the resources of AppsCode Ingress Kind. Which is used for maintain and HAProxy backed loadbalancer to the cluster for open communications inside cluster from internet via the loadbalancer.
