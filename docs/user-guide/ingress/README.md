@@ -88,6 +88,7 @@ the ip/host name for that LoadBalancer. For `HostPort` mode the ingress will ope
 ### Configuration Options
 Voyager operator allows customization of Ingress resource using annotations under `ingress.appscode.com/` prefix. The ingress annotaiton keys are always
 string. Annotation values ca have the following data types:
+
 | Value Type | Description | Example YAML |
 |----------- |-------------|--------------|
 | string | any valid string | 'v1'; "v2"  |
