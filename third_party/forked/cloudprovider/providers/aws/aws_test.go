@@ -162,10 +162,6 @@ func (s *FakeAWSServices) LoadBalancing(region string) (ELB, error) {
 	return s.elb, nil
 }
 
-func (s *FakeAWSServices) Autoscaling(region string) (ASG, error) {
-	return s.asg, nil
-}
-
 func (s *FakeAWSServices) Metadata() (EC2Metadata, error) {
 	return s.metadata, nil
 }

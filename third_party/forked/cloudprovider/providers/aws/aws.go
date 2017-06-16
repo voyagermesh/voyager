@@ -241,15 +241,6 @@ type EC2Metadata interface {
 	GetMetadata(path string) (string, error)
 }
 
-// InstanceGroups is an interface for managing cloud-managed instance groups / autoscaling instance groups
-// TODO: Allow other clouds to implement this
-type InstanceGroups interface {
-	// Set the size to the fixed size
-	ResizeInstanceGroup(instanceGroupName string, size int) error
-	// Queries the cloud provider for information about the specified instance group
-	DescribeInstanceGroup(instanceGroupName string) (InstanceGroupInfo, error)
-}
-
 // InstanceGroupInfo is returned by InstanceGroups.Describe, and exposes information about the group.
 type InstanceGroupInfo interface {
 	// The number of instances currently running under control of this group
@@ -719,11 +710,6 @@ func newAWSCloud(config io.Reader, awsServices Services) (*Cloud, error) {
 	})
 
 	return awsCloud, nil
-}
-
-// Clusters returns the list of clusters.
-func (c *Cloud) Clusters() (cloudprovider.Clusters, bool) {
-	return nil, false
 }
 
 // ProviderName returns the cloud provider ID.
@@ -1750,12 +1736,6 @@ func (c *Cloud) getInstancesByNodeNamesCached(nodeNames sets.String) ([]*ec2.Ins
 	c.lastNodeNames = nodeNames
 	c.lastInstancesByNodeNames = instances
 	return instances, nil
-}
-
-// mapNodeNameToPrivateDNSName maps a k8s NodeName to an AWS Instance PrivateDNSName
-// This is a simple string cast
-func mapNodeNameToPrivateDNSName(nodeName types.NodeName) string {
-	return string(nodeName)
 }
 
 // mapInstanceToNodeName maps a EC2 instance to a k8s NodeName, by extracting the PrivateDNSName

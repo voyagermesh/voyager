@@ -31,14 +31,6 @@ type Interface interface {
 	ProviderName() string
 }
 
-// Clusters is an abstract, pluggable interface for clusters of containers.
-type Clusters interface {
-	// ListClusters lists the names of the available clusters.
-	ListClusters() ([]string, error)
-	// Master gets back the address (either DNS name or IP address) of the master node for the cluster.
-	Master(clusterName string) (string, error)
-}
-
 // TODO(#6812): Use a shorter name that's less likely to be longer than cloud
 // providers' name length limits.
 func GetLoadBalancerName(service *api.Service) string {
