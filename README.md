@@ -31,7 +31,6 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
   - [Supports redirects/DNS resolution for `ExternalName` type service](docs/user-guide/ingress/external-svc.md)
   - [Expose HAProxy stats for Prometheus](docs/user-guide/ingress/stats-and-metrics.md)
   - [Supports AWS certificate manager](docs/user-guide/ingress/aws-cert-manager.md)
-  - [Preserve source IP for LoadBalancer type Ingress](docs/user-guide/ingress/keep-source-ip.md)
 
 ### Comparison with Kubernetes
 | Feauture | [Kube Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) | AppsCode Ingress |
@@ -50,7 +49,6 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
 | Supports redirects/DNS resolve for `ExternalName` type service | :x: | :white_check_mark: |
 | Expose HAProxy stats for Prometheus | :x: | :white_check_mark: |
 | Supports AWS certificate manager | :x: | :white_check_mark: |
-| Preserve source IP for LoadBalancer type Ingress | :x: | :white_check_mark: |
 
 ## Certificate
 Voyager can automaticallty provision and refresh SSL certificates issued from Let's Encrypt using a custom Kubernetes [Certificate](docs/user-guide/certificate) resource. 
