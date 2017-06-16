@@ -17,7 +17,6 @@ import (
 	"github.com/spf13/cobra"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
-	_ "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
 )
 
 var (

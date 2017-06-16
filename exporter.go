@@ -12,7 +12,6 @@ import (
 	"github.com/appscode/voyager/pkg/analytics"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
-	_ "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
 )
 
 func NewCmdExport() *cobra.Command {
