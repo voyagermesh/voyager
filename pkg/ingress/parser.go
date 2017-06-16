@@ -86,7 +86,7 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 }
 
 func (lbc *EngressController) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
-	ep, err := lbc.EndpointStore.GetServiceEndpoints(s)
+	ep, err := lbc.EndpointStore.Endpoints(s.Namespace).Get(s.Name)
 	if err != nil {
 		log.Warningln(err)
 		return nil, err
@@ -349,7 +349,7 @@ func (lbc *EngressController) parseOptions() {
 	if lbc.Parsed.Stats {
 		lbc.Parsed.StatsPort = lbc.Resource.StatsPort()
 		if name := lbc.Resource.StatsSecretName(); len(name) > 0 {
-			secret, err := lbc.KubeClient.CoreV1().Secrets(lbc.Resource.ObjectMeta.Namespace).Get(name)
+			secret, err := lbc.KubeClient.CoreV1().Secrets(lbc.Resource.ObjectMeta.Namespace).Get(name, metav1.GetOptions{})
 			if err == nil {
 				lbc.Parsed.StatsUserName = string(secret.Data["username"])
 				lbc.Parsed.StatsPassWord = string(secret.Data["password"])

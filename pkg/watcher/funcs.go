@@ -11,13 +11,13 @@ import (
 
 func IngressListFunc(c clientset.Interface) func(metav1.ListOptions) (runtime.Object, error) {
 	return func(opts metav1.ListOptions) (runtime.Object, error) {
-		return c.Extensions().Ingresses(apiv1.NamespaceAll).List(opts)
+		return c.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(opts)
 	}
 }
 
 func IngressWatchFunc(c clientset.Interface) func(options metav1.ListOptions) (watch.Interface, error) {
 	return func(options metav1.ListOptions) (watch.Interface, error) {
-		return c.Extensions().Ingresses(apiv1.NamespaceAll).Watch(options)
+		return c.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).Watch(options)
 	}
 }
 
@@ -35,13 +35,13 @@ func ExtendedIngressWatchFunc(c acs.ExtensionInterface) func(options metav1.List
 
 func DaemonSetListFunc(c clientset.Interface) func(metav1.ListOptions) (runtime.Object, error) {
 	return func(opts metav1.ListOptions) (runtime.Object, error) {
-		return c.Extensions().DaemonSets(apiv1.NamespaceAll).List(opts)
+		return c.ExtensionsV1beta1().DaemonSets(apiv1.NamespaceAll).List(opts)
 	}
 }
 
 func DaemonSetWatchFunc(c clientset.Interface) func(options metav1.ListOptions) (watch.Interface, error) {
 	return func(options metav1.ListOptions) (watch.Interface, error) {
-		return c.Extensions().DaemonSets(apiv1.NamespaceAll).Watch(options)
+		return c.ExtensionsV1beta1().DaemonSets(apiv1.NamespaceAll).Watch(options)
 	}
 }
 
@@ -95,13 +95,13 @@ func EndpointWatchFunc(c clientset.Interface) func(options metav1.ListOptions) (
 
 func DeploymentListFunc(c clientset.Interface) func(metav1.ListOptions) (runtime.Object, error) {
 	return func(opts metav1.ListOptions) (runtime.Object, error) {
-		return c.Extensions().Deployments(apiv1.NamespaceAll).List(opts)
+		return c.ExtensionsV1beta1().Deployments(apiv1.NamespaceAll).List(opts)
 	}
 }
 
 func DeploymentWatchFunc(c clientset.Interface) func(options metav1.ListOptions) (watch.Interface, error) {
 	return func(options metav1.ListOptions) (watch.Interface, error) {
-		return c.Extensions().Deployments(apiv1.NamespaceAll).Watch(options)
+		return c.ExtensionsV1beta1().Deployments(apiv1.NamespaceAll).Watch(options)
 	}
 }
 

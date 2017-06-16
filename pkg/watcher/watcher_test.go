@@ -39,9 +39,9 @@ func TestEnsureResource(t *testing.T) {
 	}
 	assert.Equal(t, 3, len(data.Items))
 
-	_, err = w.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Get("ingress." + aci.V1beta1SchemeGroupVersion.Group, metav1.GetOptions{})
+	_, err = w.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Get("ingress."+aci.V1beta1SchemeGroupVersion.Group, metav1.GetOptions{})
 	assert.Nil(t, err)
 
-	_, err = w.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Get("certificate." + aci.V1beta1SchemeGroupVersion.Group, metav1.GetOptions{})
+	_, err = w.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Get("certificate."+aci.V1beta1SchemeGroupVersion.Group, metav1.GetOptions{})
 	assert.Nil(t, err)
 }

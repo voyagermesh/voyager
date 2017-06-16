@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/appscode/errors"
+	"github.com/appscode/go/types"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -203,7 +204,7 @@ func (lbc *EngressController) createHostPortSvc() error {
 
 	if updateFW && lbc.CloudManager != nil {
 		daemonNodes, err := lbc.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{
-			LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Resource.NodeSelector())),
+			LabelSelector: labels.SelectorFromSet(lbc.Resource.NodeSelector()).String(),
 		})
 		if err != nil {
 			log.Infoln("node not found with nodeSelector, cause", err)
@@ -213,10 +214,8 @@ func (lbc *EngressController) createHostPortSvc() error {
 		log.Debugln("Checking cloud manager", lbc.CloudManager)
 		if fw, ok := lbc.CloudManager.Firewall(); ok {
 			log.Debugln("firewalls found")
-			convertedSvc := &apiv1.Service{}
-			apiv1.Scheme.Convert(svc, convertedSvc, nil)
 			for _, node := range daemonNodes.Items {
-				err = fw.EnsureFirewall(convertedSvc, node.Name)
+				err = fw.EnsureFirewall(svc, node.Name)
 				if err != nil {
 					log.Errorln("Failed to ensure loadbalancer for node", node.Name, "cause", err)
 				}
@@ -283,10 +282,8 @@ func (lbc *EngressController) createHostPortPods() error {
 							VolumeMounts: vms,
 						},
 					},
-					Volumes: vs,
-					SecurityContext: &apiv1.PodSecurityContext{
-						HostNetwork: true,
-					},
+					Volumes:     vs,
+					HostNetwork: true,
 				},
 			},
 		},
@@ -391,7 +388,7 @@ func (lbc *EngressController) createNodePortSvc() error {
 		svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
 	}
 
-	s, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Get(svc.Name)
+	s, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Get(svc.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		svc, err = lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Create(svc)
 		if err != nil {
@@ -439,7 +436,7 @@ func (lbc *EngressController) createNodePortPods() error {
 		},
 
 		Spec: extensions.DeploymentSpec{
-			Replicas: lbc.Resource.Replicas(),
+			Replicas: types.Int32P(lbc.Resource.Replicas()),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labelsFor(lbc.Resource.Name),
 			},
