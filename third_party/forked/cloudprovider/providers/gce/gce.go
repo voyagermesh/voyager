@@ -351,10 +351,6 @@ func CreateGCECloud(projectID, region, zone string, managedZones []string, netwo
 	}, nil
 }
 
-func (gce *GCECloud) Clusters() (cloudprovider.Clusters, bool) {
-	return gce, true
-}
-
 // ProviderName returns the cloud provider ID.
 func (gce *GCECloud) ProviderName() string {
 	return ProviderName
