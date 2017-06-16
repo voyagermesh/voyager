@@ -7,8 +7,9 @@ import (
 	aci "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
-	kapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/fake"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 func init() {
@@ -18,7 +19,7 @@ func init() {
 func TestShouldHandleIngress(t *testing.T) {
 	dataTables := map[*aci.Ingress]map[string]bool{
 		{
-			ObjectMeta: kapi.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Annotations: map[string]string{
 					"kubernetes.io/ingress.class": "voyager",
 				},
@@ -32,7 +33,7 @@ func TestShouldHandleIngress(t *testing.T) {
 		},
 
 		{
-			ObjectMeta: kapi.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Annotations: map[string]string{
 					"ingress.appscode.com/kind": "ingress.appscode.com/v1beta1",
 				},
@@ -46,7 +47,7 @@ func TestShouldHandleIngress(t *testing.T) {
 		},
 
 		{
-			ObjectMeta: kapi.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Annotations: map[string]string{},
 			},
 		}: {
@@ -69,18 +70,18 @@ func TestShouldHandleIngress(t *testing.T) {
 
 func TestEnsureServiceAnnotation(t *testing.T) {
 	fakeClient := fake.NewSimpleClientset()
-	_, err := fakeClient.Core().Services("a").Get("b")
+	_, err := fakeClient.CoreV1().Services("a").Get("b")
 	assert.NotNil(t, err)
 
-	svc, err := fakeClient.Core().Services("test-namespace").Create(&kapi.Service{
-		ObjectMeta: kapi.ObjectMeta{
+	svc, err := fakeClient.CoreV1().Services("test-namespace").Create(&apiv1.Service{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-service",
 			Namespace: "test-namespace",
 		},
 	})
 
 	ensureServiceAnnotations(fakeClient, &aci.Ingress{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
 		},
@@ -91,14 +92,14 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 		},
 	}, "test-namespace", "test-service")
 
-	svc, err = fakeClient.Core().Services("test-namespace").Get("test-service")
+	svc, err = fakeClient.CoreV1().Services("test-namespace").Get("test-service")
 	assert.Nil(t, err)
 	assert.NotNil(t, svc.Annotations)
 	assert.Contains(t, svc.Annotations, aci.EngressKey)
 	fmt.Println(svc.Annotations)
 
 	ensureServiceAnnotations(fakeClient, &aci.Ingress{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
 		},
@@ -109,20 +110,20 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 		},
 	}, "test-namespace", "test-service")
 
-	svc, err = fakeClient.Core().Services("test-namespace").Get("test-service")
+	svc, err = fakeClient.CoreV1().Services("test-namespace").Get("test-service")
 	assert.Nil(t, err)
 	assert.NotNil(t, svc.Annotations)
 	assert.Contains(t, svc.Annotations, aci.EngressKey)
 	fmt.Println(svc.Annotations)
 
 	ensureServiceAnnotations(fakeClient, &aci.Ingress{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
 		},
 	}, "test-namespace", "test-service")
 
-	svc, err = fakeClient.Core().Services("test-namespace").Get("test-service")
+	svc, err = fakeClient.CoreV1().Services("test-namespace").Get("test-service")
 	assert.Nil(t, err)
 	assert.NotNil(t, svc.Annotations)
 	assert.Contains(t, svc.Annotations, aci.EngressKey)

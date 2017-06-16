@@ -10,14 +10,15 @@ import (
 	"github.com/appscode/log"
 	aci "github.com/appscode/voyager/api"
 	"github.com/ghodss/yaml"
-	"k8s.io/kubernetes/pkg/api"
-	schema "k8s.io/kubernetes/pkg/api/unversioned"
-	"k8s.io/kubernetes/pkg/runtime"
-	kubejson "k8s.io/kubernetes/pkg/runtime/serializer/json"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	kubejson "k8s.io/apimachinery/pkg/runtime/serializer/json"
+	"k8s.io/client-go/pkg/api"
 )
 
 // TODO(@sadlil): Find a better way to replace ExtendedCodec to encode and decode objects.
-// Follow the guide to replace it with api.Codec and api.ParameterCodecs.
+// Follow the guide to replace it with apiv1.Codec and apiv1.ParameterCodecs.
 var ExtendedCodec = &extendedCodec{}
 
 // DirectCodecFactory provides methods for retrieving "DirectCodec"s, which do not do conversion.
@@ -63,8 +64,8 @@ type extendedCodec struct {
 	yaml   bool
 }
 
-func (e *extendedCodec) Decode(data []byte, gvk *schema.GroupVersionKind, obj runtime.Object) (runtime.Object, *schema.GroupVersionKind, error) {
-	if e.yaml {
+func (ec *extendedCodec) Decode(data []byte, gvk *schema.GroupVersionKind, obj runtime.Object) (runtime.Object, *schema.GroupVersionKind, error) {
+	if ec.yaml {
 		altered, err := yaml.YAMLToJSON(data)
 		if err != nil {
 			return nil, nil, err
@@ -72,7 +73,7 @@ func (e *extendedCodec) Decode(data []byte, gvk *schema.GroupVersionKind, obj ru
 		data = altered
 	}
 	if obj == nil {
-		metadata := &schema.TypeMeta{}
+		metadata := &metav1.TypeMeta{}
 		err := json.Unmarshal(data, metadata)
 		if err != nil {
 			return obj, gvk, err
@@ -90,9 +91,9 @@ func (e *extendedCodec) Decode(data []byte, gvk *schema.GroupVersionKind, obj ru
 	return obj, gvk, nil
 }
 
-func (e *extendedCodec) Encode(obj runtime.Object, w io.Writer) error {
+func (ec *extendedCodec) Encode(obj runtime.Object, w io.Writer) error {
 	setDefaultVersionKind(obj)
-	if e.yaml {
+	if ec.yaml {
 		json, err := json.Marshal(obj)
 		if err != nil {
 			return err
@@ -107,7 +108,7 @@ func (e *extendedCodec) Encode(obj runtime.Object, w io.Writer) error {
 		}
 	}
 
-	if e.pretty {
+	if ec.pretty {
 		data, err := json.MarshalIndent(obj, "", "  ")
 		if err != nil {
 			return err
@@ -124,8 +125,8 @@ func (*extendedCodec) DecodeParameters(parameters url.Values, from schema.GroupV
 	if len(parameters) == 0 {
 		return nil
 	}
-	_, okDelete := into.(*api.DeleteOptions)
-	if _, okList := into.(*api.ListOptions); okList || okDelete {
+	_, okDelete := into.(*metav1.DeleteOptions)
+	if _, okList := into.(*metav1.ListOptions); okList || okDelete {
 		from = schema.GroupVersion{Version: "v1"}
 	}
 	return runtime.NewParameterCodec(api.Scheme).DecodeParameters(parameters, from, into)
@@ -133,13 +134,13 @@ func (*extendedCodec) DecodeParameters(parameters url.Values, from schema.GroupV
 
 // EncodeParameters converts the provided object into the to version, then converts that object to url.Values.
 // Returns an error if conversion is not possible.
-func (c *extendedCodec) EncodeParameters(obj runtime.Object, to schema.GroupVersion) (url.Values, error) {
+func (ec *extendedCodec) EncodeParameters(obj runtime.Object, to schema.GroupVersion) (url.Values, error) {
 	result := url.Values{}
 	if obj == nil {
 		return result, nil
 	}
-	_, okDelete := obj.(*api.DeleteOptions)
-	if _, okList := obj.(*api.ListOptions); okList || okDelete {
+	_, okDelete := obj.(*metav1.DeleteOptions)
+	if _, okList := obj.(*metav1.ListOptions); okList || okDelete {
 		to = schema.GroupVersion{Version: "v1"}
 	}
 	return runtime.NewParameterCodec(api.Scheme).EncodeParameters(obj, to)
@@ -161,6 +162,6 @@ func setDefaultVersionKind(obj runtime.Object) {
 	obj.GetObjectKind().SetGroupVersionKind(defaultGVK)
 }
 
-func setDefaultType(metadata *schema.TypeMeta) (runtime.Object, error) {
+func setDefaultType(metadata *metav1.TypeMeta) (runtime.Object, error) {
 	return api.Scheme.New(metadata.GroupVersionKind())
 }

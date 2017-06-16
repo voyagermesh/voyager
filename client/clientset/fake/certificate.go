@@ -3,11 +3,11 @@ package fake
 import (
 	aci "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/client/clientset"
-	"k8s.io/kubernetes/pkg/api"
-	schema "k8s.io/kubernetes/pkg/api/unversioned"
-	testing "k8s.io/kubernetes/pkg/client/testing/core"
-	"k8s.io/kubernetes/pkg/labels"
-	"k8s.io/kubernetes/pkg/watch"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/testing"
 )
 
 type FakeCertificate struct {
@@ -31,7 +31,7 @@ func (mock *FakeCertificate) Get(name string) (*aci.Certificate, error) {
 }
 
 // List returns the a of Certificates.
-func (mock *FakeCertificate) List(opts api.ListOptions) (*aci.CertificateList, error) {
+func (mock *FakeCertificate) List(opts metav1.ListOptions) (*aci.CertificateList, error) {
 	obj, err := mock.Fake.
 		Invokes(testing.NewListAction(certResource, mock.ns, opts), &aci.Certificate{})
 
@@ -92,7 +92,7 @@ func (mock *FakeCertificate) UpdateStatus(srv *aci.Certificate) (*aci.Certificat
 	return obj.(*aci.Certificate), err
 }
 
-func (mock *FakeCertificate) Watch(opts api.ListOptions) (watch.Interface, error) {
+func (mock *FakeCertificate) Watch(opts metav1.ListOptions) (watch.Interface, error) {
 	return mock.Fake.
 		InvokesWatch(testing.NewWatchAction(certResource, mock.ns, opts))
 }

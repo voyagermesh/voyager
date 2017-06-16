@@ -34,27 +34,17 @@ import (
 	container "google.golang.org/api/container/v1"
 	"google.golang.org/api/googleapi"
 	"gopkg.in/gcfg.v1"
-	"k8s.io/kubernetes/pkg/api"
-	apiservice "k8s.io/kubernetes/pkg/api/service"
-	"k8s.io/kubernetes/pkg/types"
-	utilerrors "k8s.io/kubernetes/pkg/util/errors"
-	"k8s.io/kubernetes/pkg/util/flowcontrol"
+	"k8s.io/apimachinery/pkg/types"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/wait"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/util/flowcontrol"
 	netsets "k8s.io/kubernetes/pkg/util/net/sets"
-	"k8s.io/kubernetes/pkg/util/sets"
-	"k8s.io/kubernetes/pkg/util/wait"
 )
 
 const (
 	ProviderName = "gce"
-
-	k8sNodeRouteTag = "k8s-node-route"
-
-	// AffinityTypeNone - no session affinity.
-	gceAffinityTypeNone = "NONE"
-	// AffinityTypeClientIP - affinity based on Client IP.
-	gceAffinityTypeClientIP = "CLIENT_IP"
-	// AffinityTypeClientIPProto - affinity based on Client IP and port.
-	gceAffinityTypeClientIPProto = "CLIENT_IP_PROTO"
 
 	operationPollInterval        = 3 * time.Second
 	operationPollTimeoutDuration = 30 * time.Minute
@@ -63,17 +53,6 @@ const (
 	// are iterated through to prevent infinite loops if the API
 	// were to continuously return a nextPageToken.
 	maxPages = 25
-
-	maxTargetPoolCreateInstances = 200
-
-	// HTTP Load Balancer parameters
-	// Configure 2 second period for external health checks.
-	gceHcCheckIntervalSeconds = int64(2)
-	gceHcTimeoutSeconds       = int64(1)
-	// Start sending requests as soon as a pod is found on the node.
-	gceHcHealthyThreshold = int64(1)
-	// Defaults to 5 * 2 = 10 seconds before the LB will steer traffic away
-	gceHcUnhealthyThreshold = int64(5)
 )
 
 // GCECloud is an implementation of Interface, LoadBalancer and Instances for Google Compute Engine.
@@ -102,16 +81,6 @@ type Config struct {
 		Multizone          bool     `gcfg:"multizone"`
 	}
 }
-
-type DiskType string
-
-const (
-	DiskTypeSSD      = "pd-ssd"
-	DiskTypeStandard = "pd-standard"
-
-	diskTypeDefault     = DiskTypeStandard
-	diskTypeUriTemplate = "https://www.googleapis.com/compute/v1/projects/%s/zones/%s/diskTypes/%s"
-)
 
 func init() {
 	cloudprovider.RegisterCloudProvider(ProviderName, func(config io.Reader) (cloudprovider.Interface, error) { return newGCECloud(config) })
@@ -412,7 +381,7 @@ func isHTTPErrorCode(err error, code int) bool {
 // Due to an interesting series of design decisions, this handles both creating
 // new load balancers and updating existing load balancers, recognizing when
 // each is needed.
-func (gce *GCECloud) EnsureFirewall(apiService *api.Service, hostName string) error {
+func (gce *GCECloud) EnsureFirewall(apiService *apiv1.Service, hostName string) error {
 	if hostName == "" {
 		return fmt.Errorf("Cannot EnsureFirewall() with no hosts")
 	}
@@ -436,7 +405,7 @@ func (gce *GCECloud) EnsureFirewall(apiService *api.Service, hostName string) er
 	// is because the forwarding rule is used as the indicator that the load
 	// balancer is fully created - it's what getLoadBalancer checks for.
 	// Check if user specified the allow source range
-	sourceRanges, err := apiservice.GetLoadBalancerSourceRanges(apiService)
+	sourceRanges, err := cloudprovider.GetLoadBalancerSourceRanges(apiService)
 	if err != nil {
 		return err
 	}
@@ -470,7 +439,7 @@ func (gce *GCECloud) EnsureFirewall(apiService *api.Service, hostName string) er
 	return nil
 }
 
-func (gce *GCECloud) firewallNeedsUpdate(name, serviceName, region, ipAddress string, ports []api.ServicePort, sourceRanges netsets.IPNet) (exists bool, needsUpdate bool, err error) {
+func (gce *GCECloud) firewallNeedsUpdate(name, serviceName, region, ipAddress string, ports []apiv1.ServicePort, sourceRanges netsets.IPNet) (exists bool, needsUpdate bool, err error) {
 	fw, err := gce.service.Firewalls.Get(gce.projectID, makeFirewallName(name)).Do()
 	if err != nil {
 		if isHTTPErrorCode(err, http.StatusNotFound) {
@@ -534,7 +503,7 @@ func slicesEqual(x, y []string) bool {
 	return true
 }
 
-func (gce *GCECloud) createFirewall(name, region, desc string, sourceRanges netsets.IPNet, ports []api.ServicePort, hosts []*gceInstance) error {
+func (gce *GCECloud) createFirewall(name, region, desc string, sourceRanges netsets.IPNet, ports []apiv1.ServicePort, hosts []*gceInstance) error {
 	firewall, err := gce.firewallObject(name, region, desc, sourceRanges, ports, hosts)
 	if err != nil {
 		return err
@@ -552,7 +521,7 @@ func (gce *GCECloud) createFirewall(name, region, desc string, sourceRanges nets
 	return nil
 }
 
-func (gce *GCECloud) updateFirewall(name, region, desc string, sourceRanges netsets.IPNet, ports []api.ServicePort, hosts []*gceInstance) error {
+func (gce *GCECloud) updateFirewall(name, region, desc string, sourceRanges netsets.IPNet, ports []apiv1.ServicePort, hosts []*gceInstance) error {
 	firewall, err := gce.firewallObject(name, region, desc, sourceRanges, ports, hosts)
 	if err != nil {
 		return err
@@ -570,7 +539,7 @@ func (gce *GCECloud) updateFirewall(name, region, desc string, sourceRanges nets
 	return nil
 }
 
-func (gce *GCECloud) firewallObject(name, region, desc string, sourceRanges netsets.IPNet, ports []api.ServicePort, hosts []*gceInstance) (*compute.Firewall, error) {
+func (gce *GCECloud) firewallObject(name, region, desc string, sourceRanges netsets.IPNet, ports []apiv1.ServicePort, hosts []*gceInstance) (*compute.Firewall, error) {
 	allowedPorts := make([]string, len(ports))
 	for ix := range ports {
 		allowedPorts[ix] = strconv.Itoa(int(ports[ix].Port))
@@ -685,7 +654,7 @@ func (gce *GCECloud) computeHostTags(hosts []*gceInstance) ([]string, error) {
 }
 
 // EnsureFirewallDeleted is an implementation of Firewall.EnsureFirewallDeleted.
-func (gce *GCECloud) EnsureFirewallDeleted(service *api.Service) error {
+func (gce *GCECloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 	loadBalancerName := cloudprovider.GetLoadBalancerName(service)
 	glog.V(2).Infof("EnsureFirewallDeleted(%v, %v, %v, %v)", service.Namespace, service.Name, loadBalancerName,
 		gce.region)
@@ -731,15 +700,15 @@ func (gce *GCECloud) CreateFirewall(name, desc string, sourceRanges netsets.IPNe
 		return err
 	}
 	// TODO: This completely breaks modularity in the cloudprovider but the methods
-	// shared with the TCPLoadBalancer take api.ServicePorts.
-	svcPorts := []api.ServicePort{}
+	// shared with the TCPLoadBalancer take apiv1.ServicePorts.
+	svcPorts := []apiv1.ServicePort{}
 	// TODO: Currently the only consumer of this method is the GCE L7
 	// loadbalancer controller, which never needs a protocol other than TCP.
 	// We should pipe through a mapping of port:protocol and default to TCP
 	// if UDP ports are required. This means the method signature will change
 	// forcing downstream clients to refactor interfaces.
 	for _, p := range ports {
-		svcPorts = append(svcPorts, api.ServicePort{Port: int32(p), Protocol: api.ProtocolTCP})
+		svcPorts = append(svcPorts, apiv1.ServicePort{Port: int32(p), Protocol: apiv1.ProtocolTCP})
 	}
 	hosts, err := gce.getInstancesByNames(hostNames)
 	if err != nil {
@@ -765,15 +734,15 @@ func (gce *GCECloud) UpdateFirewall(name, desc string, sourceRanges netsets.IPNe
 		return err
 	}
 	// TODO: This completely breaks modularity in the cloudprovider but the methods
-	// shared with the TCPLoadBalancer take api.ServicePorts.
-	svcPorts := []api.ServicePort{}
+	// shared with the TCPLoadBalancer take apiv1.ServicePorts.
+	svcPorts := []apiv1.ServicePort{}
 	// TODO: Currently the only consumer of this method is the GCE L7
 	// loadbalancer controller, which never needs a protocol other than TCP.
 	// We should pipe through a mapping of port:protocol and default to TCP
 	// if UDP ports are required. This means the method signature will change,
 	// forcing downstream clients to refactor interfaces.
 	for _, p := range ports {
-		svcPorts = append(svcPorts, api.ServicePort{Port: int32(p), Protocol: api.ProtocolTCP})
+		svcPorts = append(svcPorts, apiv1.ServicePort{Port: int32(p), Protocol: apiv1.ProtocolTCP})
 	}
 	hosts, err := gce.getInstancesByNames(hostNames)
 	if err != nil {

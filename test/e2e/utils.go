@@ -11,8 +11,9 @@ import (
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	api "github.com/appscode/voyager/api"
-	kapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/labels"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 func (s *IngressTestSuit) getURLs(baseIngress *api.Ingress) ([]string, error) {
@@ -46,9 +47,9 @@ func (s *IngressTestSuit) getURLs(baseIngress *api.Ingress) ([]string, error) {
 			return nil, errors.New().WithCause(err).WithMessage("Failed to load service from minikube").Err()
 		}
 	} else {
-		var svc *kapi.Service
+		var svc *apiv1.Service
 		for i := 0; i < maxRetries; i++ {
-			svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+			svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 			if err == nil {
 				if len(svc.Status.LoadBalancer.Ingress) != 0 {
 					ips := make([]string, 0)
@@ -100,17 +101,17 @@ func (s *IngressTestSuit) getURLs(baseIngress *api.Ingress) ([]string, error) {
 
 func (s *IngressTestSuit) getDaemonURLs(baseIngress *api.Ingress) ([]string, error) {
 	serverAddr := make([]string, 0)
-	nodes, err := s.t.KubeClient.Core().Nodes().List(kapi.ListOptions{
-		LabelSelector: labels.SelectorFromSet(baseIngress.NodeSelector()),
+	nodes, err := s.t.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{
+		LabelSelector: labels.SelectorFromSet(baseIngress.NodeSelector()).String(),
 	})
 	if err != nil {
 		return nil, errors.New().WithCause(err).Err()
 	}
 
-	var svc *kapi.Service
+	var svc *apiv1.Service
 	var ports []int32
 	for i := 0; i < maxRetries; i++ {
-		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			if len(svc.Spec.Ports) > 0 {
 				for _, port := range svc.Spec.Ports {
@@ -128,7 +129,7 @@ func (s *IngressTestSuit) getDaemonURLs(baseIngress *api.Ingress) ([]string, err
 
 	for _, node := range nodes.Items {
 		for _, addr := range node.Status.Addresses {
-			if addr.Type == kapi.NodeLegacyHostIP || addr.Type == kapi.NodeExternalIP {
+			if addr.Type == apiv1.NodeLegacyHostIP || addr.Type == apiv1.NodeExternalIP {
 				for _, port := range ports {
 					var doc bytes.Buffer
 					err = defaultUrlTemplate.Execute(&doc, struct {

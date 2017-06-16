@@ -6,9 +6,10 @@ import (
 	api "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
-	kapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/apis/extensions"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/fake"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
+	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
 func init() {
@@ -19,7 +20,7 @@ func TestResourceIsExists(t *testing.T) {
 	testCases := map[*EngressController]bool{
 		{
 			Resource: &api.Ingress{
-				ObjectMeta: kapi.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
 					Annotations: map[string]string{
@@ -29,21 +30,21 @@ func TestResourceIsExists(t *testing.T) {
 			},
 			KubeClient: fake.NewSimpleClientset(
 				&extensions.DaemonSet{
-					ObjectMeta: kapi.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
-				&kapi.Service{
-					ObjectMeta: kapi.ObjectMeta{
+				&apiv1.Service{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
-				&kapi.ConfigMap{
-					ObjectMeta: kapi.ObjectMeta{
+				&apiv1.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
@@ -53,7 +54,7 @@ func TestResourceIsExists(t *testing.T) {
 
 		{
 			Resource: &api.Ingress{
-				ObjectMeta: kapi.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
 					Annotations: map[string]string{
@@ -63,21 +64,21 @@ func TestResourceIsExists(t *testing.T) {
 			},
 			KubeClient: fake.NewSimpleClientset(
 				&extensions.DaemonSet{
-					ObjectMeta: kapi.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "fake-foo",
 						Namespace: "bar",
 					},
 				},
 
-				&kapi.Service{
-					ObjectMeta: kapi.ObjectMeta{
+				&apiv1.Service{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
-				&kapi.ConfigMap{
-					ObjectMeta: kapi.ObjectMeta{
+				&apiv1.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
@@ -87,7 +88,7 @@ func TestResourceIsExists(t *testing.T) {
 
 		{
 			Resource: &api.Ingress{
-				ObjectMeta: kapi.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
 					Annotations: map[string]string{
@@ -97,21 +98,21 @@ func TestResourceIsExists(t *testing.T) {
 			},
 			KubeClient: fake.NewSimpleClientset(
 				&extensions.DaemonSet{
-					ObjectMeta: kapi.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
-				&kapi.Service{
-					ObjectMeta: kapi.ObjectMeta{
+				&apiv1.Service{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "fake-foo",
 						Namespace: "bar",
 					},
 				},
 
-				&kapi.ConfigMap{
-					ObjectMeta: kapi.ObjectMeta{
+				&apiv1.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
@@ -120,7 +121,7 @@ func TestResourceIsExists(t *testing.T) {
 		}: false,
 		{
 			Resource: &api.Ingress{
-				ObjectMeta: kapi.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
 					Annotations: map[string]string{
@@ -130,21 +131,21 @@ func TestResourceIsExists(t *testing.T) {
 			},
 			KubeClient: fake.NewSimpleClientset(
 				&extensions.DaemonSet{
-					ObjectMeta: kapi.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
-				&kapi.Service{
-					ObjectMeta: kapi.ObjectMeta{
+				&apiv1.Service{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
-				&kapi.ConfigMap{
-					ObjectMeta: kapi.ObjectMeta{
+				&apiv1.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "fake-foo",
 						Namespace: "bar",
 					},
@@ -154,7 +155,7 @@ func TestResourceIsExists(t *testing.T) {
 
 		{
 			Resource: &api.Ingress{
-				ObjectMeta: kapi.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
 					Annotations: map[string]string{
@@ -164,21 +165,21 @@ func TestResourceIsExists(t *testing.T) {
 			},
 			KubeClient: fake.NewSimpleClientset(
 				&extensions.DaemonSet{
-					ObjectMeta: kapi.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
-				&kapi.Service{
-					ObjectMeta: kapi.ObjectMeta{
+				&apiv1.Service{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
-				&kapi.ConfigMap{
-					ObjectMeta: kapi.ObjectMeta{
+				&apiv1.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
@@ -188,7 +189,7 @@ func TestResourceIsExists(t *testing.T) {
 
 		{
 			Resource: &api.Ingress{
-				ObjectMeta: kapi.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
 					Annotations: map[string]string{
@@ -197,22 +198,22 @@ func TestResourceIsExists(t *testing.T) {
 				},
 			},
 			KubeClient: fake.NewSimpleClientset(
-				&kapi.ReplicationController{
-					ObjectMeta: kapi.ObjectMeta{
+				&apiv1.ReplicationController{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
-				&kapi.Service{
-					ObjectMeta: kapi.ObjectMeta{
+				&apiv1.Service{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
-				&kapi.ConfigMap{
-					ObjectMeta: kapi.ObjectMeta{
+				&apiv1.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
@@ -222,7 +223,7 @@ func TestResourceIsExists(t *testing.T) {
 
 		{
 			Resource: &api.Ingress{
-				ObjectMeta: kapi.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
 					Annotations: map[string]string{
@@ -231,22 +232,22 @@ func TestResourceIsExists(t *testing.T) {
 				},
 			},
 			KubeClient: fake.NewSimpleClientset(
-				&kapi.ReplicationController{
-					ObjectMeta: kapi.ObjectMeta{
+				&apiv1.ReplicationController{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "fakefoo",
 						Namespace: "bar",
 					},
 				},
 
-				&kapi.Service{
-					ObjectMeta: kapi.ObjectMeta{
+				&apiv1.Service{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
-				&kapi.ConfigMap{
-					ObjectMeta: kapi.ObjectMeta{
+				&apiv1.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},

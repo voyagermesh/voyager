@@ -3,11 +3,11 @@ package fake
 import (
 	aci "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/client/clientset"
-	"k8s.io/kubernetes/pkg/api"
-	schema "k8s.io/kubernetes/pkg/api/unversioned"
-	testing "k8s.io/kubernetes/pkg/client/testing/core"
-	"k8s.io/kubernetes/pkg/labels"
-	"k8s.io/kubernetes/pkg/watch"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/testing"
 )
 
 type FakeIngress struct {
@@ -31,7 +31,7 @@ func (mock *FakeIngress) Get(name string) (*aci.Ingress, error) {
 }
 
 // List returns the a of Ingresss.
-func (mock *FakeIngress) List(opts api.ListOptions) (*aci.IngressList, error) {
+func (mock *FakeIngress) List(opts metav1.ListOptions) (*aci.IngressList, error) {
 	obj, err := mock.Fake.
 		Invokes(testing.NewListAction(ingressResource, mock.ns, opts), &aci.Ingress{})
 
@@ -92,7 +92,7 @@ func (mock *FakeIngress) UpdateStatus(srv *aci.Ingress) (*aci.Ingress, error) {
 	return obj.(*aci.Ingress), err
 }
 
-func (mock *FakeIngress) Watch(opts api.ListOptions) (watch.Interface, error) {
+func (mock *FakeIngress) Watch(opts metav1.ListOptions) (watch.Interface, error) {
 	return mock.Fake.
 		InvokesWatch(testing.NewWatchAction(ingressResource, mock.ns, opts))
 }

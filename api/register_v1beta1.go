@@ -1,10 +1,9 @@
 package api
 
 import (
-	schema "k8s.io/kubernetes/pkg/api/unversioned"
-	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/runtime"
-	versionedwatch "k8s.io/kubernetes/pkg/watch/versioned"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // SchemeGroupVersion is group version used to register these objects
@@ -12,7 +11,7 @@ var V1beta1SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: "
 
 var (
 	V1beta1SchemeBuilder = runtime.NewSchemeBuilder(v1addKnownTypes, addConversionFuncs)
-	V1betaAddToScheme    = V1beta1SchemeBuilder.AddToScheme
+	V1beta1AddToScheme   = V1beta1SchemeBuilder.AddToScheme
 )
 
 // Adds the list of known types to api.Scheme.
@@ -23,9 +22,7 @@ func v1addKnownTypes(scheme *runtime.Scheme) error {
 
 		&Certificate{},
 		&CertificateList{},
-
-		&v1.ListOptions{},
 	)
-	versionedwatch.AddToGroupVersion(scheme, V1beta1SchemeGroupVersion)
+	metav1.AddToGroupVersion(scheme, V1beta1SchemeGroupVersion)
 	return nil
 }

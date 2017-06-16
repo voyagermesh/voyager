@@ -2,9 +2,9 @@ package clientset
 
 import (
 	aci "github.com/appscode/voyager/api"
-	"k8s.io/kubernetes/pkg/api"
-	rest "k8s.io/kubernetes/pkg/client/restclient"
-	"k8s.io/kubernetes/pkg/watch"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/rest"
 )
 
 // ExtendedIngressNamespacer has methods to work with ExtendedIngress resources in a namespace
@@ -14,12 +14,12 @@ type IngressNamespacer interface {
 
 // ExtendedIngressInterface exposes methods to work on ExtendedIngress resources.
 type IngressInterface interface {
-	List(opts api.ListOptions) (*aci.IngressList, error)
+	List(opts metav1.ListOptions) (*aci.IngressList, error)
 	Get(name string) (*aci.Ingress, error)
 	Create(ExtendedIngress *aci.Ingress) (*aci.Ingress, error)
 	Update(ExtendedIngress *aci.Ingress) (*aci.Ingress, error)
 	Delete(name string) error
-	Watch(opts api.ListOptions) (watch.Interface, error)
+	Watch(opts metav1.ListOptions) (watch.Interface, error)
 	UpdateStatus(ExtendedIngress *aci.Ingress) (*aci.Ingress, error)
 }
 
@@ -37,7 +37,7 @@ func newExtendedIngress(c *ExtensionClient, namespace string) *IngressImpl {
 }
 
 // List returns a list of ExtendedIngress that match the label and field selectors.
-func (c *IngressImpl) List(opts api.ListOptions) (result *aci.IngressList, err error) {
+func (c *IngressImpl) List(opts metav1.ListOptions) (result *aci.IngressList, err error) {
 	result = &aci.IngressList{}
 	err = c.r.Get().
 		Namespace(c.ns).
@@ -96,7 +96,7 @@ func (c *IngressImpl) Delete(name string) (err error) {
 }
 
 // Watch returns a watch.Interface that watches the requested ExtendedIngress.
-func (c *IngressImpl) Watch(opts api.ListOptions) (watch.Interface, error) {
+func (c *IngressImpl) Watch(opts metav1.ListOptions) (watch.Interface, error) {
 	return c.r.Get().
 		Prefix("watch").
 		Namespace(c.ns).

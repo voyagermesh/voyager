@@ -13,27 +13,24 @@ import (
 	_ "github.com/appscode/voyager/api/install"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/events"
-	"github.com/appscode/voyager/pkg/stash"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	fakecloudprovider "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
-	kapi "k8s.io/kubernetes/pkg/api"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/labels"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	clientset "k8s.io/client-go/kubernetes"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 func NewEngressController(providerName string,
 	kubeClient clientset.Interface,
 	extClient acs.ExtensionInterface,
-	store *stash.Storage,
 	ingressClass string) *EngressController {
 	h := &EngressController{
-		ProviderName:  providerName,
-		IngressClass:  ingressClass,
-		KubeClient:    kubeClient,
-		ExtClient:     extClient,
-		Storage:       store,
-		EndpointStore: store.EndpointStore,
+		ProviderName: providerName,
+		IngressClass: ingressClass,
+		KubeClient:   kubeClient,
+		ExtClient:    extClient,
 	}
 	log.Infoln("Initializing cloud manager for provider", providerName)
 	if providerName == "aws" || providerName == "gce" || providerName == "azure" {
@@ -63,17 +60,16 @@ func NewEngressController(providerName string,
 func UpgradeAllEngress(service, providerName string,
 	kubeClient clientset.Interface,
 	extClient acs.ExtensionInterface,
-	store *stash.Storage,
 	ingressClass string) error {
-	ing, err := kubeClient.Extensions().Ingresses(kapi.NamespaceAll).List(kapi.ListOptions{
-		LabelSelector: labels.Everything(),
+	ing, err := kubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{
+		LabelSelector: labels.Everything().String(),
 	})
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 
-	eng, err := extClient.Ingress(kapi.NamespaceAll).List(kapi.ListOptions{
-		LabelSelector: labels.Everything(),
+	eng, err := extClient.Ingress(apiv1.NamespaceAll).List(metav1.ListOptions{
+		LabelSelector: labels.Everything().String(),
 	})
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -94,7 +90,7 @@ func UpgradeAllEngress(service, providerName string,
 		if shouldHandleIngress(engress, ingressClass) {
 			log.Infoln("Checking for service", service, "to be used to load balance via ingress", item.Name, item.Namespace)
 			if ok, name, namespace := isEngressHaveService(engress, service); ok {
-				lbc := NewEngressController(providerName, kubeClient, extClient, store, ingressClass)
+				lbc := NewEngressController(providerName, kubeClient, extClient, ingressClass)
 				lbc.Resource = &items[i]
 				log.Infoln("Trying to Update Ingress", item.Name, item.Namespace)
 				if lbc.IsExists() {
@@ -156,9 +152,9 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 				// recreate the resource from scratch.
 				log.Infoln("Loadbalancer is exists, trying to update")
 
-				if svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName()); err == nil {
+				if svc, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{}); err == nil {
 					// check port
-					curPorts := make(map[int]kapi.ServicePort)
+					curPorts := make(map[int]apiv1.ServicePort)
 					for _, p := range svc.Spec.Ports {
 						curPorts[int(p.Port)] = p
 					}
@@ -232,7 +228,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 			lbc.Update(updateMode)
 		}
 	}
-	svcs, err := lbc.KubeClient.Core().Services(kapi.NamespaceAll).List(kapi.ListOptions{})
+	svcs, err := lbc.KubeClient.CoreV1().Services(apiv1.NamespaceAll).List(metav1.ListOptions{})
 	if err == nil {
 		for _, svc := range svcs.Items {
 			ensureServiceAnnotations(lbc.KubeClient, lbc.Resource, svc.Namespace, svc.Name)
@@ -265,7 +261,7 @@ func shouldHandleIngress(resource *api.Ingress, ingressClass string) bool {
 }
 
 func ensureServiceAnnotations(client clientset.Interface, r *api.Ingress, namespace, name string) {
-	svc, err := client.Core().Services(namespace).Get(name)
+	svc, err := client.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
 		return
 	}
@@ -306,7 +302,7 @@ func ensureServiceAnnotations(client clientset.Interface, r *api.Ingress, namesp
 		if err == nil {
 			svc.Annotations[api.EgressPoints] = string(data)
 		}
-		client.Core().Services(namespace).Update(svc)
+		client.CoreV1().Services(namespace).Update(svc)
 		return
 	}
 	// Lets check if service still have the annotation for this ingress.
@@ -326,7 +322,7 @@ func ensureServiceAnnotations(client clientset.Interface, r *api.Ingress, namesp
 				svc.Annotations[api.EgressPoints] = string(data)
 			}
 		}
-		client.Core().Services(namespace).Update(svc)
+		client.CoreV1().Services(namespace).Update(svc)
 	}
 }
 

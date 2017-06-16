@@ -3,7 +3,7 @@ package api
 import (
 	"fmt"
 
-	kapi "k8s.io/kubernetes/pkg/api"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 const (
@@ -35,8 +35,8 @@ type DNSResolver struct {
 	Hold       map[string]string `json:"hold"`
 }
 
-func DNSResolverForService(svc kapi.Service) (useDNSResolver bool, resolver *DNSResolver, err error) {
-	if svc.Spec.Type != kapi.ServiceTypeExternalName {
+func DNSResolverForService(svc apiv1.Service) (useDNSResolver bool, resolver *DNSResolver, err error) {
+	if svc.Spec.Type != apiv1.ServiceTypeExternalName {
 		return false, nil, fmt.Errorf("Service %s@%s is expected to be of type ServiceTypeExternalName, actual type %s", svc.Name, svc.Namespace, svc.Spec.Type)
 	}
 	useDNSResolver, err = getBool(svc.Annotations, UseDNSResolver)

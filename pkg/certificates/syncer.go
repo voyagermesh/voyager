@@ -6,8 +6,9 @@ import (
 	"github.com/appscode/errors"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/benbjohnson/clock"
-	"k8s.io/kubernetes/pkg/api"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clientset "k8s.io/client-go/kubernetes"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 type CertificateSyncer struct {
@@ -26,11 +27,11 @@ func (c *CertificateSyncer) RunSync() error {
 	for {
 		select {
 		case <-c.Time.After(time.Hour * 24):
-			certificates, err := c.ExtClient.Certificate(api.NamespaceAll).List(api.ListOptions{})
+			result, err := c.ExtClient.Certificate(apiv1.NamespaceAll).List(metav1.ListOptions{})
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
-			for _, cert := range certificates.Items {
+			for _, cert := range result.Items {
 				c.process(&cert)
 			}
 		}

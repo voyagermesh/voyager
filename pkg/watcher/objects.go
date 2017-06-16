@@ -5,10 +5,12 @@ import (
 	aci "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/certificates"
 	"github.com/appscode/voyager/pkg/events"
-	kapi "k8s.io/kubernetes/pkg/api"
-	ext "k8s.io/kubernetes/pkg/apis/extensions"
-	"k8s.io/kubernetes/pkg/client/cache"
-	"k8s.io/kubernetes/pkg/util/wait"
+	"k8s.io/apimachinery/pkg/util/wait"
+	core_listers "k8s.io/client-go/listers/core/v1"
+	extensions_listers "k8s.io/client-go/listers/extensions/v1beta1"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
+	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	"k8s.io/client-go/tools/cache"
 )
 
 func (w *Watcher) Pod() {
@@ -17,9 +19,9 @@ func (w *Watcher) Pod() {
 		ListFunc:  PodListFunc(w.KubeClient),
 		WatchFunc: PodWatchFunc(w.KubeClient),
 	}
-	indexer, controller := w.CacheIndexer(events.Pod, &kapi.Pod{}, lw, nil)
+	indexer, controller := w.CacheIndexer(events.Pod, &apiv1.Pod{}, lw, nil)
 	go controller.Run(wait.NeverStop)
-	w.Storage.PodStore = cache.StoreToPodLister{indexer}
+	w.Storage.PodStore = core_listers.NewPodLister(indexer)
 }
 
 func (w *Watcher) Service() {
@@ -28,9 +30,9 @@ func (w *Watcher) Service() {
 		ListFunc:  ServiceListFunc(w.KubeClient),
 		WatchFunc: ServiceWatchFunc(w.KubeClient),
 	}
-	indexer, controller := w.CacheIndexer(events.Service, &kapi.Service{}, lw, nil)
+	indexer, controller := w.CacheIndexer(events.Service, &apiv1.Service{}, lw, nil)
 	go controller.Run(wait.NeverStop)
-	w.Storage.ServiceStore = cache.StoreToServiceLister{indexer}
+	w.Storage.ServiceStore = core_listers.NewServiceLister(indexer)
 }
 
 func (w *Watcher) Endpoint() {
@@ -39,9 +41,9 @@ func (w *Watcher) Endpoint() {
 		ListFunc:  EndpointListFunc(w.KubeClient),
 		WatchFunc: EndpointWatchFunc(w.KubeClient),
 	}
-	store, controller := w.CacheStore(events.Endpoint, &kapi.Endpoints{}, lw)
+	indexer, controller := w.CacheIndexer(events.Endpoint, &apiv1.Endpoints{}, lw, nil)
 	go controller.Run(wait.NeverStop)
-	w.Storage.EndpointStore = cache.StoreToEndpointsLister{store}
+	w.Storage.EndpointStore = core_listers.NewEndpointsLister(indexer)
 }
 
 func (w *Watcher) Deployment() {
@@ -50,9 +52,9 @@ func (w *Watcher) Deployment() {
 		ListFunc:  DeploymentListFunc(w.KubeClient),
 		WatchFunc: DeploymentWatchFunc(w.KubeClient),
 	}
-	indexer, controller := w.CacheIndexer(events.Deployments, &ext.Deployment{}, lw, nil)
+	indexer, controller := w.CacheIndexer(events.Deployments, &extensions.Deployment{}, lw, nil)
 	go controller.Run(wait.NeverStop)
-	w.Storage.DeploymentStore = cache.StoreToDeploymentLister{indexer}
+	w.Storage.DeploymentStore = extensions_listers.NewDeploymentLister(indexer)
 }
 
 func (w *Watcher) DaemonSet() {
@@ -61,9 +63,9 @@ func (w *Watcher) DaemonSet() {
 		ListFunc:  DaemonSetListFunc(w.KubeClient),
 		WatchFunc: DaemonSetWatchFunc(w.KubeClient),
 	}
-	indexer, controller := w.CacheIndexer(events.DaemonSet, &ext.DaemonSet{}, lw, nil)
+	indexer, controller := w.CacheIndexer(events.DaemonSet, &extensions.DaemonSet{}, lw, nil)
 	go controller.Run(wait.NeverStop)
-	w.Storage.DaemonSetStore = cache.StoreToDaemonSetLister{indexer}
+	w.Storage.DaemonSetStore = extensions_listers.NewDaemonSetLister(indexer)
 }
 
 func (w *Watcher) ConfigMap() {
@@ -72,7 +74,7 @@ func (w *Watcher) ConfigMap() {
 		ListFunc:  ConfigMapListFunc(w.KubeClient),
 		WatchFunc: ConfigMapWatchFunc(w.KubeClient),
 	}
-	_, controller := w.CacheIndexer(events.ConfigMap, &kapi.ConfigMap{}, lw, nil)
+	_, controller := w.CacheIndexer(events.ConfigMap, &apiv1.ConfigMap{}, lw, nil)
 	go controller.Run(wait.NeverStop)
 }
 
@@ -82,7 +84,7 @@ func (w *Watcher) Ingress() {
 		ListFunc:  IngressListFunc(w.KubeClient),
 		WatchFunc: IngressWatchFunc(w.KubeClient),
 	}
-	_, controller := w.Cache(events.Ingress, &ext.Ingress{}, lw)
+	_, controller := w.Cache(events.Ingress, &extensions.Ingress{}, lw)
 	go controller.Run(wait.NeverStop)
 }
 

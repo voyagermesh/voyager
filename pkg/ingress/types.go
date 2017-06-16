@@ -7,8 +7,7 @@ import (
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/stash"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
-	"k8s.io/kubernetes/pkg/client/cache"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+	clientset "k8s.io/client-go/kubernetes"
 )
 
 type EngressController struct {
@@ -37,8 +36,7 @@ type EngressController struct {
 	ExtClient    acs.ExtensionInterface
 	CloudManager cloudprovider.Interface
 	// endpoint cache store. contains all endpoints will be search with respect to services.
-	Storage       *stash.Storage
-	EndpointStore cache.StoreToEndpointsLister
+	Storage stash.Storage
 	sync.Mutex
 }
 

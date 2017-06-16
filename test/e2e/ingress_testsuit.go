@@ -9,8 +9,8 @@ import (
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
-	"k8s.io/kubernetes/pkg/api"
-	k8serr "k8s.io/kubernetes/pkg/api/errors"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func init() {
@@ -41,18 +41,18 @@ func (s *IngressTestSuit) Test() error {
 }
 
 func (s *IngressTestSuit) setUp() error {
-	_, err := s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Create(testServerRc)
-	if err != nil && !k8serr.IsAlreadyExists(err) {
+	_, err := s.t.KubeClient.CoreV1().ReplicationControllers(testServerRc.Namespace).Create(testServerRc)
+	if err != nil && !kerr.IsAlreadyExists(err) {
 		return errors.New().WithCause(err).Err()
 	}
 
-	_, err = s.t.KubeClient.Core().Services(testServerSvc.Namespace).Create(testServerSvc)
-	if err != nil && !k8serr.IsAlreadyExists(err) {
+	_, err = s.t.KubeClient.CoreV1().Services(testServerSvc.Namespace).Create(testServerSvc)
+	if err != nil && !kerr.IsAlreadyExists(err) {
 		return errors.New().WithCause(err).Err()
 	}
 
 	for it := 0; it < maxRetries; it++ {
-		ep, err := s.t.KubeClient.Core().Endpoints(testServerSvc.Namespace).Get(testServerSvc.Name)
+		ep, err := s.t.KubeClient.CoreV1().Endpoints(testServerSvc.Namespace).Get(testServerSvc.Name, metav1.GetOptions{})
 		if err == nil {
 			if len(ep.Subsets) > 0 {
 				if len(ep.Subsets[0].Addresses) > 0 {
@@ -71,14 +71,14 @@ func (s *IngressTestSuit) setUp() error {
 func (s *IngressTestSuit) cleanUp() {
 	if s.t.Config.Cleanup {
 		log.Infoln("Cleaning up Test Resources")
-		s.t.KubeClient.Core().Services(testServerSvc.Namespace).Delete(testServerSvc.Name, &api.DeleteOptions{})
-		rc, err := s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name)
+		s.t.KubeClient.CoreV1().Services(testServerSvc.Namespace).Delete(testServerSvc.Name, &metav1.DeleteOptions{})
+		rc, err := s.t.KubeClient.CoreV1().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name, metav1.GetOptions{})
 		if err == nil {
 			rc.Spec.Replicas = 0
-			s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Update(rc)
+			s.t.KubeClient.CoreV1().ReplicationControllers(testServerRc.Namespace).Update(rc)
 			time.Sleep(time.Second * 5)
 		}
-		s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Delete(testServerRc.Name, &api.DeleteOptions{})
+		s.t.KubeClient.CoreV1().ReplicationControllers(testServerRc.Namespace).Delete(testServerRc.Name, &metav1.DeleteOptions{})
 	}
 }
 

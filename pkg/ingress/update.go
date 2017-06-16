@@ -7,9 +7,10 @@ import (
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
-	kapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/labels"
-	"k8s.io/kubernetes/pkg/util/intstr"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 type updateType int
@@ -63,7 +64,7 @@ func (lbc *EngressController) Update(t updateType) error {
 }
 
 func (lbc *EngressController) updateConfigMap() error {
-	cMap, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
+	cMap, err := lbc.KubeClient.CoreV1().ConfigMaps(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -84,7 +85,7 @@ func (lbc *EngressController) updateConfigMap() error {
 		log.Infoln("Specs have been changed updating config map data for HAProxy templates")
 		cMap.Data["haproxy.cfg"] = lbc.ConfigData
 
-		_, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Update(cMap)
+		_, err := lbc.KubeClient.CoreV1().ConfigMaps(lbc.Resource.Namespace).Update(cMap)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -132,20 +133,20 @@ func (lbc *EngressController) recreatePods() error {
 }
 
 func (lbc *EngressController) updateLBSvc() error {
-	svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
+	svc, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
-	curPorts := make(map[int32]kapi.ServicePort)
+	curPorts := make(map[int32]apiv1.ServicePort)
 	for _, p := range svc.Spec.Ports {
 		curPorts[p.Port] = p
 	}
-	svc.Spec.Ports = make([]kapi.ServicePort, 0)
+	svc.Spec.Ports = make([]apiv1.ServicePort, 0)
 	for targetPort, svcPort := range lbc.Ports {
 		if sp, found := curPorts[int32(svcPort)]; found && sp.TargetPort.IntValue() == targetPort {
 			svc.Spec.Ports = append(svc.Spec.Ports, sp)
 		} else {
-			svc.Spec.Ports = append(svc.Spec.Ports, kapi.ServicePort{
+			svc.Spec.Ports = append(svc.Spec.Ports, apiv1.ServicePort{
 				Name:       "tcp-" + strconv.Itoa(svcPort),
 				Protocol:   "TCP",
 				Port:       int32(svcPort),
@@ -154,7 +155,7 @@ func (lbc *EngressController) updateLBSvc() error {
 		}
 	}
 
-	if svc.Spec.Type == kapi.ServiceTypeLoadBalancer {
+	if svc.Spec.Type == apiv1.ServiceTypeLoadBalancer {
 		// Update Source Range
 		svc.Spec.LoadBalancerSourceRanges = lbc.Resource.Spec.LoadBalancerSourceRanges
 	}
@@ -171,7 +172,7 @@ func (lbc *EngressController) updateLBSvc() error {
 		svc.Annotations[api.OriginName] = lbc.Resource.GetName()
 	}
 
-	svc, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Update(svc)
+	svc, err = lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Update(svc)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -179,8 +180,8 @@ func (lbc *EngressController) updateLBSvc() error {
 	// open up firewall
 	log.Infoln("Loadbalancer CloudManager", lbc.CloudManager, "serviceType", svc.Spec.Type)
 	if (lbc.Resource.LBType() == api.LBTypeDaemon || lbc.Resource.LBType() == api.LBTypeHostPort) && lbc.CloudManager != nil {
-		daemonNodes, err := lbc.KubeClient.Core().Nodes().List(kapi.ListOptions{
-			LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Resource.NodeSelector())),
+		daemonNodes, err := lbc.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{
+			LabelSelector: labels.SelectorFromSet(lbc.Resource.NodeSelector()).String(),
 		})
 		if err != nil {
 			log.Infoln("node not found with nodeSelector, cause", err)
@@ -192,10 +193,8 @@ func (lbc *EngressController) updateLBSvc() error {
 			log.Debugln("cloud manager not nil")
 			if fw, ok := lbc.CloudManager.Firewall(); ok {
 				log.Debugln("firewalls found")
-				convertedSvc := &kapi.Service{}
-				kapi.Scheme.Convert(svc, convertedSvc, nil)
 				for _, node := range daemonNodes.Items {
-					err = fw.EnsureFirewall(convertedSvc, node.Name)
+					err = fw.EnsureFirewall(svc, node.Name)
 					if err != nil {
 						log.Errorln("Failed to ensure loadbalancer for node", node.Name, "cause", err)
 					}
@@ -214,13 +213,13 @@ func (lbc *EngressController) UpdateTargetAnnotations(old *api.Ingress, new *api
 	if newSvcAns, newOk := new.ServiceAnnotations(lbc.ProviderName); newOk {
 		if oldSvcAns, oldOk := old.ServiceAnnotations(lbc.ProviderName); oldOk {
 			if !reflect.DeepEqual(oldSvcAns, newSvcAns) {
-				svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
+				svc, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
 				if err != nil {
 					return errors.FromErr(err).Err()
 				}
 				svc.Annotations = mergeAnnotations(svc.Annotations, oldSvcAns, newSvcAns)
 
-				svc, err = lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Update(svc)
+				svc, err = lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Update(svc)
 				if err != nil {
 					return errors.FromErr(err).Err()
 				}
@@ -233,34 +232,34 @@ func (lbc *EngressController) UpdateTargetAnnotations(old *api.Ingress, new *api
 		if oldPodAns, oldOk := old.PodsAnnotations(); oldOk {
 			if !reflect.DeepEqual(oldPodAns, newPodAns) {
 				if lbc.Resource.LBType() == api.LBTypeDaemon || lbc.Resource.LBType() == api.LBTypeHostPort {
-					daemonset, err := lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
+					daemonset, err := lbc.KubeClient.ExtensionsV1beta1().DaemonSets(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
 					if err != nil {
 						return errors.FromErr(err).Err()
 					}
 					daemonset.Spec.Template.Annotations = newPodAns
-					daemonset, err = lbc.KubeClient.Extensions().DaemonSets(lbc.Resource.Namespace).Update(daemonset)
+					daemonset, err = lbc.KubeClient.ExtensionsV1beta1().DaemonSets(lbc.Resource.Namespace).Update(daemonset)
 					if err != nil {
 						return errors.FromErr(err).Err()
 					}
 					if daemonset.Spec.Selector != nil {
-						pods, _ := lbc.KubeClient.Core().Pods(lbc.Resource.Namespace).List(kapi.ListOptions{
-							LabelSelector: labels.SelectorFromSet(daemonset.Spec.Selector.MatchLabels),
+						pods, _ := lbc.KubeClient.CoreV1().Pods(lbc.Resource.Namespace).List(metav1.ListOptions{
+							LabelSelector: labels.SelectorFromSet(daemonset.Spec.Selector.MatchLabels).String(),
 						})
 						for _, pod := range pods.Items {
 							pod.Annotations = mergeAnnotations(pod.Annotations, oldPodAns, newPodAns)
-							_, err := lbc.KubeClient.Core().Pods(lbc.Resource.Namespace).Update(&pod)
+							_, err := lbc.KubeClient.CoreV1().Pods(lbc.Resource.Namespace).Update(&pod)
 							if err != nil {
 								log.Errorln("Failed to Update Pods", err)
 							}
 						}
 					}
 				} else {
-					dep, err := lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
+					dep, err := lbc.KubeClient.ExtensionsV1beta1().Deployments(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
 					if err != nil {
 						return errors.FromErr(err).Err()
 					}
 					dep.Spec.Template.Annotations = mergeAnnotations(dep.Spec.Template.Annotations, oldPodAns, newPodAns)
-					_, err = lbc.KubeClient.Extensions().Deployments(lbc.Resource.Namespace).Update(dep)
+					_, err = lbc.KubeClient.ExtensionsV1beta1().Deployments(lbc.Resource.Namespace).Update(dep)
 					if err != nil {
 						return errors.FromErr(err).Err()
 					}

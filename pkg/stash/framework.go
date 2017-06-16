@@ -3,10 +3,10 @@ package stash
 import (
 	"time"
 
-	kapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/meta"
-	"k8s.io/kubernetes/pkg/client/cache"
-	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/cache"
 )
 
 // Like cache.NewInformer but loads the already loaded data and does
@@ -16,11 +16,11 @@ func NewInformerPopulated(
 	objType runtime.Object,
 	resyncPeriod time.Duration,
 	h cache.ResourceEventHandler,
-) (cache.Store, *cache.Controller) {
+) (cache.Store, cache.Controller) {
 	store, controller := cache.NewInformer(lw, objType, resyncPeriod, h)
 
 	// watch false on pre population.
-	options := kapi.ListOptions{
+	options := metav1.ListOptions{
 		ResourceVersion: "0",
 		Watch:           false,
 	}
@@ -45,11 +45,11 @@ func NewIndexerInformerPopulated(
 	resyncPeriod time.Duration,
 	h cache.ResourceEventHandler,
 	indexers cache.Indexers,
-) (cache.Indexer, *cache.Controller) {
+) (cache.Indexer, cache.Controller) {
 	indexer, controller := cache.NewIndexerInformer(lw, objType, resyncPeriod, h, indexers)
 
 	// watch false on pre population.
-	options := kapi.ListOptions{
+	options := metav1.ListOptions{
 		ResourceVersion: "0",
 		Watch:           false,
 	}

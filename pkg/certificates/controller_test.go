@@ -20,8 +20,9 @@ import (
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
 	"github.com/xenolf/lego/acme"
-	"k8s.io/kubernetes/pkg/api"
-	fakeclientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/fake"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 func init() {
@@ -29,9 +30,9 @@ func init() {
 }
 
 func TestLoadProviderCredential(t *testing.T) {
-	fakeController := NewController(fakeclientset.NewSimpleClientset(), fake.NewFakeExtensionClient())
+	fakeController := NewController(fake.NewSimpleClientset(), fake.NewFakeExtensionClient())
 	fakeController.certificate = &aci.Certificate{
-		ObjectMeta: api.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
 		},
@@ -46,8 +47,8 @@ func TestLoadProviderCredential(t *testing.T) {
 	fakeController.loadProviderCredential()
 	assert.Equal(t, len(fakeController.acmeClientConfig.ProviderCredentials), 0)
 
-	fakeSecret := &api.Secret{
-		ObjectMeta: api.ObjectMeta{
+	fakeSecret := &apiv1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foosecret",
 			Namespace: "bar",
 		},
@@ -56,7 +57,7 @@ func TestLoadProviderCredential(t *testing.T) {
 		},
 	}
 
-	s, err := fakeController.KubeClient.Core().Secrets("bar").Create(fakeSecret)
+	s, err := fakeController.KubeClient.CoreV1().Secrets("bar").Create(fakeSecret)
 	assert.Nil(t, err)
 	assert.Equal(t, "foosecret", s.Name)
 	assert.Equal(t, "bar", s.Namespace)
@@ -71,12 +72,12 @@ func TestLoadProviderCredential(t *testing.T) {
 func TestEnsureClient(t *testing.T) {
 	if testframework.TestContext.Verbose {
 		fakeController := NewController(fakeclientset.NewSimpleClientset(
-			&api.Secret{
-				ObjectMeta: api.ObjectMeta{Name: "secret", Namespace: "bar"},
+			&apiv1.Secret{
+				ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
 			},
 		), fake.NewFakeExtensionClient())
 		fakeController.certificate = &aci.Certificate{
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "bar",
 			},
@@ -94,8 +95,8 @@ func TestEnsureClient(t *testing.T) {
 			UserDataMap:         make(map[string][]byte),
 		}
 
-		fakeSecret := &api.Secret{
-			ObjectMeta: api.ObjectMeta{
+		fakeSecret := &apiv1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      "fakesecret",
 				Namespace: "bar",
 			},
@@ -104,11 +105,11 @@ func TestEnsureClient(t *testing.T) {
 				"GCE_SERVICE_ACCOUNT_DATA": []byte(os.Getenv("TEST_GCE_SERVICE_ACCOUNT_DATA")),
 			},
 		}
-		_, err := fakeController.KubeClient.Core().Secrets("bar").Create(fakeSecret)
+		_, err := fakeController.KubeClient.CoreV1().Secrets("bar").Create(fakeSecret)
 		assert.Nil(t, err)
 
 		fakeController.ensureACMEClient()
-		secret, err := fakeController.KubeClient.Core().Secrets("bar").Get(defaultUserSecretPrefix + fakeController.certificate.Name)
+		secret, err := fakeController.KubeClient.CoreV1().Secrets("bar").Get(defaultUserSecretPrefix + fakeController.certificate.Name)
 		assert.Nil(t, err)
 		assert.NotNil(t, secret)
 		assert.Equal(t, 1, len(secret.Data))
@@ -117,12 +118,12 @@ func TestEnsureClient(t *testing.T) {
 
 func TestFakeRegisterACMEUser(t *testing.T) {
 	fakeController := NewController(fakeclientset.NewSimpleClientset(
-		&api.Secret{
-			ObjectMeta: api.ObjectMeta{Name: "secret", Namespace: "bar"},
+		&apiv1.Secret{
+			ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
 		},
 	), fake.NewFakeExtensionClient())
 	fakeController.certificate = &aci.Certificate{
-		ObjectMeta: api.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
 		},
@@ -148,7 +149,7 @@ func TestFakeRegisterACMEUser(t *testing.T) {
 		err := fakeController.registerACMEUser(acmeClient)
 		if !assert.NotNil(t, err) {
 			assert.Nil(t, err)
-			secret, err := fakeController.KubeClient.Core().Secrets("bar").Get(defaultUserSecretPrefix + fakeController.certificate.Name)
+			secret, err := fakeController.KubeClient.CoreV1().Secrets("bar").Get(defaultUserSecretPrefix + fakeController.certificate.Name)
 			assert.Nil(t, err)
 			if assert.NotNil(t, secret) {
 				assert.Equal(t, 1, len(secret.Data))
@@ -161,7 +162,7 @@ func TestCreate(t *testing.T) {
 	if testframework.TestContext.Verbose {
 		fakeController := NewController(fakeclientset.NewSimpleClientset(), fake.NewFakeExtensionClient())
 		fakeController.certificate = &aci.Certificate{
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "bar",
 			},
@@ -180,8 +181,8 @@ func TestCreate(t *testing.T) {
 			Provider:            "googlecloud",
 		}
 
-		fakeSecret := &api.Secret{
-			ObjectMeta: api.ObjectMeta{
+		fakeSecret := &apiv1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      "fakesecret",
 				Namespace: "bar",
 			},
@@ -190,16 +191,16 @@ func TestCreate(t *testing.T) {
 				"GCE_SERVICE_ACCOUNT_DATA": []byte(os.Getenv("TEST_GCE_SERVICE_ACCOUNT_DATA")),
 			},
 		}
-		_, err := fakeController.KubeClient.Core().Secrets("bar").Create(fakeSecret)
+		_, err := fakeController.KubeClient.CoreV1().Secrets("bar").Create(fakeSecret)
 		assert.Nil(t, err)
 
 		fakeController.create()
 
-		secret, err := fakeController.KubeClient.Core().Secrets("bar").Get(defaultUserSecretPrefix + fakeController.certificate.Name)
+		secret, err := fakeController.KubeClient.CoreV1().Secrets("bar").Get(defaultUserSecretPrefix + fakeController.certificate.Name)
 		assert.Nil(t, err)
 		assert.Equal(t, len(secret.Data), 1)
 
-		list, err := fakeController.KubeClient.Core().Secrets("").List(api.ListOptions{})
+		list, err := fakeController.KubeClient.CoreV1().Secrets("").List(metav1.ListOptions{})
 		if err == nil {
 			for _, item := range list.Items {
 				log.Infoln("List for Secrets that created", item.Name, item.Namespace)
@@ -207,7 +208,7 @@ func TestCreate(t *testing.T) {
 		}
 
 		// Check the certificate data
-		secret, err = fakeController.KubeClient.Core().Secrets("bar").Get("cert-" + fakeController.certificate.Name)
+		secret, err = fakeController.KubeClient.CoreV1().Secrets("bar").Get("cert-" + fakeController.certificate.Name)
 		assert.Nil(t, err)
 		if err != nil {
 			t.Fatal(err)
@@ -228,7 +229,7 @@ func TestCreate(t *testing.T) {
 
 func TestDemoCertificates(t *testing.T) {
 	c := &aci.Certificate{
-		ObjectMeta: api.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-do-token",
 			Namespace: "default",
 		},

@@ -14,8 +14,9 @@ import (
 	"github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/ingress/template"
 	"github.com/flosch/pongo2"
-	kapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/util/intstr"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 func (lbc *EngressController) SupportsLoadBalancerType() bool {
@@ -50,13 +51,13 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 	}
 
 	log.Infoln("looking for services in namespace", namespace, "with name", name)
-	service, err := lbc.KubeClient.Core().Services(namespace).Get(name)
+	service, err := lbc.KubeClient.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
 		log.Warningln(err)
 		return nil, err
 	}
 
-	if service.Spec.Type == kapi.ServiceTypeExternalName {
+	if service.Spec.Type == apiv1.ServiceTypeExternalName {
 		// https://kubernetes.io/docs/concepts/services-networking/service/#services-without-selectors
 		ep := Endpoint{
 			Name:         "external",
@@ -84,8 +85,8 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 	return lbc.getEndpoints(service, p, hostNames)
 }
 
-func (lbc *EngressController) getEndpoints(s *kapi.Service, servicePort *kapi.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
-	ep, err := lbc.EndpointStore.GetServiceEndpoints(s)
+func (lbc *EngressController) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
+	ep, err := lbc.Storage.EndpointStore.Endpoints(s.Namespace).Get(s.Name)
 	if err != nil {
 		log.Warningln(err)
 		return nil, err
@@ -198,7 +199,7 @@ func Context(s interface{}) (pongo2.Context, error) {
 	return ctx, nil
 }
 
-func getSpecifiedPort(ports []kapi.ServicePort, port intstr.IntOrString) (*kapi.ServicePort, bool) {
+func getSpecifiedPort(ports []apiv1.ServicePort, port intstr.IntOrString) (*apiv1.ServicePort, bool) {
 	for _, p := range ports {
 		if int(p.Port) == port.IntValue() {
 			return &p, true
@@ -208,7 +209,7 @@ func getSpecifiedPort(ports []kapi.ServicePort, port intstr.IntOrString) (*kapi.
 }
 
 // getTargetPort returns the numeric value of TargetPort
-func getTargetPort(servicePort *kapi.ServicePort) int {
+func getTargetPort(servicePort *apiv1.ServicePort) int {
 	return servicePort.TargetPort.IntValue()
 }
 
@@ -348,7 +349,7 @@ func (lbc *EngressController) parseOptions() {
 	if lbc.Parsed.Stats {
 		lbc.Parsed.StatsPort = lbc.Resource.StatsPort()
 		if name := lbc.Resource.StatsSecretName(); len(name) > 0 {
-			secret, err := lbc.KubeClient.Core().Secrets(lbc.Resource.ObjectMeta.Namespace).Get(name)
+			secret, err := lbc.KubeClient.CoreV1().Secrets(lbc.Resource.ObjectMeta.Namespace).Get(name, metav1.GetOptions{})
 			if err == nil {
 				lbc.Parsed.StatsUserName = string(secret.Data["username"])
 				lbc.Parsed.StatsPassWord = string(secret.Data["password"])

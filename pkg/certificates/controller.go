@@ -17,12 +17,12 @@ import (
 	"github.com/appscode/voyager/pkg/certificates/providers"
 	"github.com/appscode/voyager/pkg/events"
 	"github.com/xenolf/lego/acme"
-	"k8s.io/kubernetes/pkg/api"
-	k8serr "k8s.io/kubernetes/pkg/api/errors"
-	"k8s.io/kubernetes/pkg/api/unversioned"
-	"k8s.io/kubernetes/pkg/apis/extensions"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/util/intstr"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	clientset "k8s.io/client-go/kubernetes"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
+	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
 const (
@@ -97,7 +97,7 @@ func (c *CertificateController) process(cert *aci.Certificate) error {
 	}
 
 	// Check if a cert already exists for this Certificate Instance
-	secret, err := c.KubeClient.Core().Secrets(cert.Namespace).Get(defaultCertPrefix + cert.Name)
+	secret, err := c.KubeClient.CoreV1().Secrets(cert.Namespace).Get(defaultCertPrefix+cert.Name, metav1.GetOptions{})
 	if err == nil {
 		var err error
 		c.acmeCert, err = NewACMECertDataFromSecret(secret)
@@ -121,7 +121,7 @@ func (c *CertificateController) process(cert *aci.Certificate) error {
 		}
 	}
 
-	if k8serr.IsNotFound(err) || !cert.Status.CertificateObtained {
+	if kerr.IsNotFound(err) || !cert.Status.CertificateObtained {
 		// Certificate Not found as secret. We must create it now.
 		c.create()
 	}
@@ -149,9 +149,9 @@ func (c *CertificateController) handleIngressEvent(e *events.Event) error {
 				// Certificate exists mount it.
 				return nil
 			}
-			if k8serr.IsNotFound(err) || !certificate.Status.CertificateObtained {
+			if kerr.IsNotFound(err) || !certificate.Status.CertificateObtained {
 				newCertificate := &aci.Certificate{
-					ObjectMeta: api.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      certificateName,
 						Namespace: ingress.Namespace,
 					},
@@ -159,7 +159,7 @@ func (c *CertificateController) handleIngressEvent(e *events.Event) error {
 						Provider: ingress.Annotations[certificateAnnotationKeyProvider],
 						Email:    ingress.Annotations[certificateAnnotationKeyEmail],
 						ProviderCredentialSecretName: ingress.Annotations[certificateAnnotationKeyProviderCredentialSecretName],
-						HTTPProviderIngressReference: api.ObjectReference{
+						HTTPProviderIngressReference: apiv1.ObjectReference{
 							Kind:            "Ingress",
 							Name:            ingress.Name,
 							Namespace:       ingress.Namespace,
@@ -257,22 +257,22 @@ func (c *CertificateController) ensureACMEClient() error {
 	acmeUserRegistered := false
 	log.Infoln("trying to retrive acmeUser data")
 
-	var userSecret *api.Secret
+	var userSecret *apiv1.Secret
 	err := errors.New("Setting error Not found").Err()
 	if c.certificate.Spec.ACMEUserSecretName != "" {
 		// ACMEUser secret name is provided.
-		userSecret, err = c.KubeClient.Core().Secrets(c.certificate.Namespace).Get(c.certificate.Spec.ACMEUserSecretName)
+		userSecret, err = c.KubeClient.CoreV1().Secrets(c.certificate.Namespace).Get(c.certificate.Spec.ACMEUserSecretName, metav1.GetOptions{})
 	}
 	if err != nil && c.certificate.Status.ACMEUserSecretName != "" {
 		// There is a error getting the secret, try the secret name from status, if this was a update request
-		userSecret, err = c.KubeClient.Core().Secrets(c.certificate.Namespace).Get(c.certificate.Status.ACMEUserSecretName)
+		userSecret, err = c.KubeClient.CoreV1().Secrets(c.certificate.Namespace).Get(c.certificate.Status.ACMEUserSecretName, metav1.GetOptions{})
 	}
 	if err != nil {
 		// Trying to find an secret with the same name of Certificates
-		userSecret, err = c.KubeClient.Core().Secrets(c.certificate.Namespace).Get(defaultUserSecretPrefix + c.certificate.Name)
+		userSecret, err = c.KubeClient.CoreV1().Secrets(c.certificate.Namespace).Get(defaultUserSecretPrefix+c.certificate.Name, metav1.GetOptions{})
 		if err == nil {
 			if _, ok := userSecret.Annotations[certificateKey+"/user-info"]; !ok {
-				err = errors.New().WithMessagef("No %s annotaion key", certificateKey+"/user-info").Err()
+				err = errors.Newf("No %s annotaion key", certificateKey+"/user-info").Err()
 			}
 		}
 	}
@@ -336,8 +336,8 @@ func (c *CertificateController) registerACMEUser(acmeClient *ACMEClient) error {
 	}
 
 	// Acme User registered Create The acmeUserSecret
-	secret := &api.Secret{
-		ObjectMeta: api.ObjectMeta{
+	secret := &apiv1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.certificate.Spec.ACMEUserSecretName,
 			Namespace: c.certificate.Namespace,
 			Labels: map[string]string{
@@ -359,7 +359,7 @@ func (c *CertificateController) registerACMEUser(acmeClient *ACMEClient) error {
 	}
 	c.userSecretName = secret.Name
 	log.Debugln("User Registered saving User Informations with Secret name", c.userSecretName)
-	_, err = c.KubeClient.Core().Secrets(c.certificate.Namespace).Create(secret)
+	_, err = c.KubeClient.CoreV1().Secrets(c.certificate.Namespace).Create(secret)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -367,7 +367,7 @@ func (c *CertificateController) registerACMEUser(acmeClient *ACMEClient) error {
 }
 
 func (c *CertificateController) loadProviderCredential() error {
-	cred, err := c.KubeClient.Core().Secrets(c.certificate.Namespace).Get(c.certificate.Spec.ProviderCredentialSecretName)
+	cred, err := c.KubeClient.CoreV1().Secrets(c.certificate.Namespace).Get(c.certificate.Spec.ProviderCredentialSecretName, metav1.GetOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -383,7 +383,7 @@ func (c *CertificateController) save(cert acme.CertificateResource) error {
 	}
 
 	secret := certData.ToSecret(c.certificate.Name, c.certificate.Namespace)
-	_, err := c.KubeClient.Core().Secrets(c.certificate.Namespace).Create(secret)
+	_, err := c.KubeClient.CoreV1().Secrets(c.certificate.Namespace).Create(secret)
 	if err != nil {
 		errors.FromErr(err).Err()
 	}
@@ -394,7 +394,7 @@ func (c *CertificateController) save(cert acme.CertificateResource) error {
 	}
 
 	// Update certificate data to add Details Information
-	t := unversioned.Now()
+	t := metav1.Now()
 	k8sCert.Status = aci.CertificateStatus{
 		CertificateObtained: true,
 		CreationTime:        &t,
@@ -418,12 +418,12 @@ func (c *CertificateController) update(cert acme.CertificateResource) error {
 	}
 
 	secret := certData.ToSecret(c.certificate.Name, c.certificate.Namespace)
-	oldSecret, err := c.KubeClient.Core().Secrets(c.certificate.Namespace).Get(secret.Name)
+	oldSecret, err := c.KubeClient.CoreV1().Secrets(c.certificate.Namespace).Get(secret.Name, metav1.GetOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 	oldSecret.Data = secret.Data
-	_, err = c.KubeClient.Core().Secrets(c.certificate.Namespace).Update(oldSecret)
+	_, err = c.KubeClient.CoreV1().Secrets(c.certificate.Namespace).Update(oldSecret)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -490,8 +490,7 @@ func (c *CertificateController) processHTTPCertificate(revert chan struct{}) err
 		}()
 	case "extensions/v1beta1":
 		revertRequired := false
-		i, err := c.KubeClient.Extensions().Ingresses(c.certificate.Spec.HTTPProviderIngressReference.Namespace).
-			Get(c.certificate.Spec.HTTPProviderIngressReference.Name)
+		i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.certificate.Spec.HTTPProviderIngressReference.Namespace).Get(c.certificate.Spec.HTTPProviderIngressReference.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -517,7 +516,7 @@ func (c *CertificateController) processHTTPCertificate(revert chan struct{}) err
 
 			i.Spec.Rules = append(i.Spec.Rules, rule)
 		}
-		_, err = c.KubeClient.Extensions().Ingresses(c.certificate.Namespace).Update(i)
+		_, err = c.KubeClient.ExtensionsV1beta1().Ingresses(c.certificate.Namespace).Update(i)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -527,15 +526,14 @@ func (c *CertificateController) processHTTPCertificate(revert chan struct{}) err
 			select {
 			case <-revert:
 				if revertRequired {
-					i, err := c.KubeClient.Extensions().Ingresses(c.certificate.Spec.HTTPProviderIngressReference.Namespace).
-						Get(c.certificate.Spec.HTTPProviderIngressReference.Name)
+					i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.certificate.Spec.HTTPProviderIngressReference.Namespace).Get(c.certificate.Spec.HTTPProviderIngressReference.Name, metav1.GetOptions{})
 					if err == nil {
 						i.Spec = prevSpecs
 						i.Spec.TLS = append(i.Spec.TLS, extensions.IngressTLS{
 							Hosts:      c.certificate.Spec.Domains,
 							SecretName: defaultCertPrefix + c.certificate.Name,
 						})
-						c.KubeClient.Extensions().Ingresses(c.certificate.Namespace).Update(i)
+						c.KubeClient.ExtensionsV1beta1().Ingresses(c.certificate.Namespace).Update(i)
 					}
 				}
 				return

@@ -1,17 +1,17 @@
 package api
 
 import (
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
-	"k8s.io/kubernetes/pkg/util/intstr"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 // Custom Ingress type for Voyager.
 type Ingress struct {
-	unversioned.TypeMeta `json:",inline"`
+	metav1.TypeMeta `json:",inline"`
 	// Standard object's metadata.
 	// More info: http://releases.k8s.io/release-1.2/docs/devel/api-conventions.md#metadata
-	api.ObjectMeta `json:"metadata,omitempty"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	// Spec is the desired state of the ExtendedIngress.
 	// More info: http://releases.k8s.io/release-1.2/docs/devel/api-conventions.md#spec-and-status
@@ -24,10 +24,10 @@ type Ingress struct {
 
 // ExtendedIngressList is a collection of ExtendedIngress.
 type IngressList struct {
-	unversioned.TypeMeta `json:",inline"`
+	metav1.TypeMeta `json:",inline"`
 	// Standard object's metadata.
 	// More info: http://releases.k8s.io/release-1.2/docs/devel/api-conventions.md#metadata
-	unversioned.ListMeta `json:"metadata,omitempty"`
+	metav1.ListMeta `json:"metadata,omitempty"`
 
 	// Items is the list of ExtendedIngress.
 	Items []Ingress `json:"items"`
@@ -76,7 +76,7 @@ type ExtendedIngressTLS struct {
 // ExtendedIngressStatus describe the current state of the ExtendedIngress.
 type ExtendedIngressStatus struct {
 	// LoadBalancer contains the current status of the load-balancer.
-	LoadBalancer api.LoadBalancerStatus `json:"loadBalancer,omitempty"`
+	LoadBalancer apiv1.LoadBalancerStatus `json:"loadBalancer,omitempty"`
 }
 
 // ExtendedIngressRule represents the rules mapping the paths under a specified host to
@@ -228,10 +228,10 @@ type ExtendedIngressBackend struct {
 }
 
 type Certificate struct {
-	unversioned.TypeMeta `json:",inline,omitempty"`
-	api.ObjectMeta       `json:"metadata,omitempty"`
-	Spec                 CertificateSpec   `json:"spec,omitempty"`
-	Status               CertificateStatus `json:"status,omitempty"`
+	metav1.TypeMeta   `json:",inline,omitempty"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+	Spec              CertificateSpec   `json:"spec,omitempty"`
+	Status            CertificateStatus `json:"status,omitempty"`
 }
 
 type CertificateSpec struct {
@@ -245,7 +245,7 @@ type CertificateSpec struct {
 	Email    string `json:"email,omitempty"`
 
 	// This is the ingress Reference that will be used if provider is http
-	HTTPProviderIngressReference api.ObjectReference `json:"httpProviderIngressReference,omitempty"`
+	HTTPProviderIngressReference apiv1.ObjectReference `json:"httpProviderIngressReference,omitempty"`
 
 	// ProviderCredentialSecretName is used to create the acme client, that will do
 	// needed processing in DNS.
@@ -262,7 +262,7 @@ type CertificateSpec struct {
 type CertificateStatus struct {
 	CertificateObtained bool                   `json:"certificateObtained"`
 	Message             string                 `json:"message"`
-	CreationTime        *unversioned.Time      `json:"creationTime,omitempty"`
+	CreationTime        *metav1.Time           `json:"creationTime,omitempty"`
 	ACMEUserSecretName  string                 `json:"acmeUserSecretName,omitempty"`
 	Details             ACMECertificateDetails `json:"details,omitempty"`
 }
@@ -275,7 +275,7 @@ type ACMECertificateDetails struct {
 }
 
 type CertificateList struct {
-	unversioned.TypeMeta `json:",inline"`
-	unversioned.ListMeta `json:"metadata,omitempty"`
-	Items                []Certificate `json:"items,omitempty"`
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []Certificate `json:"items,omitempty"`
 }

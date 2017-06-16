@@ -3,9 +3,9 @@ package clientset
 import (
 	"fmt"
 
-	schema "k8s.io/kubernetes/pkg/api/unversioned"
-	"k8s.io/kubernetes/pkg/apimachinery/registered"
-	rest "k8s.io/kubernetes/pkg/client/restclient"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/pkg/api"
+	"k8s.io/client-go/rest"
 )
 
 const (
@@ -74,7 +74,7 @@ func setExtensionsDefaults(config *rest.Config) error {
 		return err
 	}
 	// if appscode.com/v1beta1 is not enabled, return an error
-	if !registered.IsEnabledVersion(gv) {
+	if !api.Registry.IsEnabledVersion(gv) {
 		return fmt.Errorf("appscode.com/v1beta1 is not enabled")
 	}
 	config.APIPath = defaultAPIPath
@@ -83,7 +83,7 @@ func setExtensionsDefaults(config *rest.Config) error {
 	}
 
 	if config.GroupVersion == nil || config.GroupVersion.Group != "appscode.com" {
-		g, err := registered.Group("appscode.com")
+		g, err := api.Registry.Group("appscode.com")
 		if err != nil {
 			return err
 		}
