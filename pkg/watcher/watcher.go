@@ -89,7 +89,7 @@ func (w *Watcher) ensureResource() {
 					APIVersion: "extensions/v1beta1",
 					Kind:       "ThirdPartyResource",
 				},
-				ObjectMeta: apiv1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: resource + "." + api.V1beta1SchemeGroupVersion.Group,
 				},
 				Versions: []extensions.APIVersion{
@@ -225,7 +225,7 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 
 					// Clean Default generated values
 					metadata := reflect.ValueOf(obj).Elem().FieldByName("ObjectMeta")
-					objectMeta, ok := metadata.Interface().(apiv1.ObjectMeta)
+					objectMeta, ok := metadata.Interface().(metav1.ObjectMeta)
 					if ok {
 						objectMeta.SetSelfLink("")
 						objectMeta.SetResourceVersion("")

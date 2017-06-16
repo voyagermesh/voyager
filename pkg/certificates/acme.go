@@ -256,7 +256,7 @@ func (c *ACMECertData) ToSecret(name, namespace string) *apiv1.Secret {
 			Kind:       "Secret",
 		},
 		Data: data,
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      defaultCertPrefix + name,
 			Namespace: namespace,
 			Labels: map[string]string{

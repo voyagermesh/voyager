@@ -42,7 +42,7 @@ func (s *IngressTestSuit) TestIngressEnsureTPR() error {
 
 func (s *IngressTestSuit) TestIngressCreateDelete() error {
 	baseIngress := &api.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},
@@ -166,7 +166,7 @@ func (s *IngressTestSuit) TestIngressCreateDelete() error {
 
 func (s *IngressTestSuit) TestIngressUpdate() error {
 	baseIngress := &api.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},
@@ -431,7 +431,7 @@ func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
 			s.t.Config.ProviderName == "gke" ||
 			(s.t.Config.ProviderName == "aws" && s.t.Config.InCluster)) {
 		baseIngress := &api.Ingress{
-			ObjectMeta: apiv1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      testIngressName(),
 				Namespace: s.t.Config.TestNamespace,
 				Annotations: map[string]string{
@@ -530,7 +530,7 @@ func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
 
 		time.Sleep(time.Second * 30)
 		baseIngress = &api.Ingress{
-			ObjectMeta: apiv1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      testIngressName(),
 				Namespace: s.t.Config.TestNamespace,
 				Annotations: map[string]string{
@@ -641,7 +641,7 @@ func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
 
 func (s *IngressTestSuit) TestIngressCreateWithOptions() error {
 	baseIngress := &api.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},
@@ -761,7 +761,7 @@ func (s *IngressTestSuit) TestIngressCreateWithOptions() error {
 
 func (s *IngressTestSuit) TestIngressCoreIngress() error {
 	baseIngress := &extensions.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
@@ -880,7 +880,7 @@ func (s *IngressTestSuit) TestIngressHostNames() error {
 	}()
 
 	baseIngress := &api.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},
@@ -966,7 +966,7 @@ func (s *IngressTestSuit) TestIngressHostNames() error {
 
 func (s *IngressTestSuit) TestIngressBackendWeight() error {
 	dp1, err := s.t.KubeClient.Extensions().Deployments(s.t.Config.TestNamespace).Create(&extensions.Deployment{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "deploymet-1-" + randString(4),
 			Namespace: s.t.Config.TestNamespace,
 		},
@@ -979,7 +979,7 @@ func (s *IngressTestSuit) TestIngressBackendWeight() error {
 				},
 			},
 			Template: apiv1.PodTemplateSpec{
-				ObjectMeta: apiv1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						"app":         "deployment",
 						"app-version": "v1",
@@ -1020,7 +1020,7 @@ func (s *IngressTestSuit) TestIngressBackendWeight() error {
 	}
 
 	dp2, err := s.t.KubeClient.Extensions().Deployments(s.t.Config.TestNamespace).Create(&extensions.Deployment{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "deploymet-2-" + randString(4),
 			Namespace: s.t.Config.TestNamespace,
 		},
@@ -1033,7 +1033,7 @@ func (s *IngressTestSuit) TestIngressBackendWeight() error {
 				},
 			},
 			Template: apiv1.PodTemplateSpec{
-				ObjectMeta: apiv1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						"app":         "deployment",
 						"app-version": "v2",
@@ -1074,7 +1074,7 @@ func (s *IngressTestSuit) TestIngressBackendWeight() error {
 	}
 
 	svc, err := s.t.KubeClient.Core().Services(s.t.Config.TestNamespace).Create(&apiv1.Service{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "deployment-svc",
 			Namespace: s.t.Config.TestNamespace,
 		},
@@ -1097,7 +1097,7 @@ func (s *IngressTestSuit) TestIngressBackendWeight() error {
 	}
 
 	baseIngress := &api.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},
@@ -1225,7 +1225,7 @@ func (s *IngressTestSuit) TestIngressBackendWeight() error {
 
 func (s *IngressTestSuit) TestIngressBackendRule() error {
 	baseIngress := &api.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},
@@ -1384,7 +1384,7 @@ func (s *IngressTestSuit) TestIngressBackendRule() error {
 
 func (s *IngressTestSuit) TestIngressAnnotations() error {
 	baseIngress := &api.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
@@ -1603,7 +1603,7 @@ func (s *IngressTestSuit) TestIngressAnnotations() error {
 
 func (s *IngressTestSuit) TestIngressNodePort() error {
 	baseDaemonIngress := &api.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
@@ -1675,7 +1675,7 @@ func (s *IngressTestSuit) TestIngressNodePort() error {
 
 func (s *IngressTestSuit) TestIngressStats() error {
 	baseIng := &api.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
@@ -1778,7 +1778,7 @@ func (s *IngressTestSuit) TestIngressStats() error {
 
 func (s *IngressTestSuit) TestIngressKeepSource() error {
 	baseIngress := &api.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
@@ -1853,7 +1853,7 @@ func (s *IngressTestSuit) TestIngressKeepSource() error {
 
 func (s *IngressTestSuit) TestIngressLBSourceRange() error {
 	baseIngress := &api.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
@@ -1945,7 +1945,7 @@ func (s *IngressTestSuit) TestIngressLBSourceRange() error {
 
 func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 	extSvcResolvesDNSWithNS := &apiv1.Service{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "external-svc-dns-with-ns",
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
@@ -1970,7 +1970,7 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 	}()
 
 	extSvcNoResolveRedirect := &apiv1.Service{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "external-svc-non-dns",
 			Namespace: s.t.Config.TestNamespace,
 		},
@@ -1991,7 +1991,7 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 	}()
 
 	extSvcResolvesDNSWithoutNS := &apiv1.Service{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "external-svc-dns",
 			Namespace: s.t.Config.TestNamespace,
 		},
@@ -2012,7 +2012,7 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 	}()
 
 	baseIngress := &api.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},

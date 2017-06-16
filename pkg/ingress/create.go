@@ -49,7 +49,7 @@ func (lbc *EngressController) ensureConfigMap() error {
 	cm, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
 	if kerr.IsNotFound(err) {
 		cm = &apiv1.ConfigMap{
-			ObjectMeta: apiv1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      lbc.Resource.OffshootName(),
 				Namespace: lbc.Resource.Namespace,
 				Annotations: map[string]string{
@@ -135,7 +135,7 @@ func (lbc *EngressController) createHostPortSvc() error {
 	// Create a Headless service without selectors
 	// We just want kubernetes to assign a stable UID to the service. This is used inside EnsureFirewall()
 	svc := &apiv1.Service{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      lbc.Resource.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
@@ -237,7 +237,7 @@ func (lbc *EngressController) createHostPortPods() error {
 	vms := VolumeMounts(lbc.SecretNames)
 	// ignoring errors and trying to create controllers
 	daemon := &extensions.DaemonSet{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      lbc.Resource.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
 			Labels:    labelsFor(lbc.Resource.Name),
@@ -254,7 +254,7 @@ func (lbc *EngressController) createHostPortPods() error {
 
 			// pod templates.
 			Template: apiv1.PodTemplateSpec{
-				ObjectMeta: apiv1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Labels: labelsFor(lbc.Resource.Name),
 				},
 				Spec: apiv1.PodSpec{
@@ -352,7 +352,7 @@ func (lbc *EngressController) createNodePortSvc() error {
 	log.Infoln("creating NodePort type lb")
 	// creating service as type NodePort
 	svc := &apiv1.Service{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      lbc.Resource.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
@@ -428,7 +428,7 @@ func (lbc *EngressController) createNodePortPods() error {
 	vms := VolumeMounts(lbc.SecretNames)
 	// ignoring errors and trying to create controllers
 	deployment := &extensions.Deployment{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      lbc.Resource.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
 			Labels:    labelsFor(lbc.Resource.Name),
@@ -445,7 +445,7 @@ func (lbc *EngressController) createNodePortPods() error {
 			},
 			// pod templates.
 			Template: apiv1.PodTemplateSpec{
-				ObjectMeta: apiv1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Labels: labelsFor(lbc.Resource.Name),
 				},
 
@@ -539,7 +539,7 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 	log.Infoln("creating LoadBalancer type lb")
 	// creating service as typeLoadBalancer
 	svc := &apiv1.Service{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      lbc.Resource.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
@@ -612,7 +612,7 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 
 func (lbc *EngressController) ensureStatsService() {
 	svc := &apiv1.Service{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      lbc.Resource.StatsServiceName(),
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{

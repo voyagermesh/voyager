@@ -10,8 +10,8 @@ import (
 	"github.com/appscode/log"
 	api "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 func daemonNodeSelector(s *IngressTestSuit) string {
@@ -38,7 +38,7 @@ func (s *IngressTestSuit) TestIngressDaemonCreate() error {
 	}
 
 	baseDaemonIngress := &api.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
@@ -124,7 +124,7 @@ func (s *IngressTestSuit) TestIngressDaemonUpdate() error {
 	}
 
 	baseIngress := &api.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
@@ -321,7 +321,7 @@ func (s *IngressTestSuit) TestIngressDaemonRestart() error {
 	}
 
 	baseDaemonIngress := &api.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{

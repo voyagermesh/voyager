@@ -6,6 +6,7 @@ import (
 	aci "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
@@ -19,7 +20,7 @@ func TestEnsureResource(t *testing.T) {
 	w := &Watcher{
 		KubeClient: clientset.NewSimpleClientset(
 			&extensions.ThirdPartyResource{
-				ObjectMeta: apiv1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "foo",
 				},
 				Versions: []extensions.APIVersion{

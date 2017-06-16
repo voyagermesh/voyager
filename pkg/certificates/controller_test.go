@@ -20,6 +20,7 @@ import (
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
 	"github.com/xenolf/lego/acme"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	fakeclientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
 )
@@ -31,7 +32,7 @@ func init() {
 func TestLoadProviderCredential(t *testing.T) {
 	fakeController := NewController(fakeclientset.NewSimpleClientset(), fake.NewFakeExtensionClient())
 	fakeController.certificate = &aci.Certificate{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
 		},
@@ -47,7 +48,7 @@ func TestLoadProviderCredential(t *testing.T) {
 	assert.Equal(t, len(fakeController.acmeClientConfig.ProviderCredentials), 0)
 
 	fakeSecret := &apiv1.Secret{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foosecret",
 			Namespace: "bar",
 		},
@@ -72,11 +73,11 @@ func TestEnsureClient(t *testing.T) {
 	if testframework.TestContext.Verbose {
 		fakeController := NewController(fakeclientset.NewSimpleClientset(
 			&apiv1.Secret{
-				ObjectMeta: apiv1.ObjectMeta{Name: "secret", Namespace: "bar"},
+				ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
 			},
 		), fake.NewFakeExtensionClient())
 		fakeController.certificate = &aci.Certificate{
-			ObjectMeta: apiv1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "bar",
 			},
@@ -95,7 +96,7 @@ func TestEnsureClient(t *testing.T) {
 		}
 
 		fakeSecret := &apiv1.Secret{
-			ObjectMeta: apiv1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      "fakesecret",
 				Namespace: "bar",
 			},
@@ -118,11 +119,11 @@ func TestEnsureClient(t *testing.T) {
 func TestFakeRegisterACMEUser(t *testing.T) {
 	fakeController := NewController(fakeclientset.NewSimpleClientset(
 		&apiv1.Secret{
-			ObjectMeta: apiv1.ObjectMeta{Name: "secret", Namespace: "bar"},
+			ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
 		},
 	), fake.NewFakeExtensionClient())
 	fakeController.certificate = &aci.Certificate{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
 		},
@@ -161,7 +162,7 @@ func TestCreate(t *testing.T) {
 	if testframework.TestContext.Verbose {
 		fakeController := NewController(fakeclientset.NewSimpleClientset(), fake.NewFakeExtensionClient())
 		fakeController.certificate = &aci.Certificate{
-			ObjectMeta: apiv1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "bar",
 			},
@@ -181,7 +182,7 @@ func TestCreate(t *testing.T) {
 		}
 
 		fakeSecret := &apiv1.Secret{
-			ObjectMeta: apiv1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      "fakesecret",
 				Namespace: "bar",
 			},
@@ -228,7 +229,7 @@ func TestCreate(t *testing.T) {
 
 func TestDemoCertificates(t *testing.T) {
 	c := &aci.Certificate{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-do-token",
 			Namespace: "default",
 		},

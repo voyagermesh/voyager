@@ -9,23 +9,24 @@ import (
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/pkg/api"
 )
 
 func TestDefaultGroupVersion(t *testing.T) {
 	i := &aci.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
 		},
 	}
 
-	gv, err := metav1.ParseGroupVersion("appscode.com/v1beta1")
+	gv, err := schema.ParseGroupVersion("appscode.com/v1beta1")
 	if err != nil {
 		fmt.Println(err)
 	}
 	// if appscode.com/v1beta1 is not enabled, return an error
-	if !apiv1.IsEnabledVersion(gv) {
+	if !api.Registry.IsEnabledVersion(gv) {
 		fmt.Println("appscode.com/v1beta1 is not enabled")
 	}
 

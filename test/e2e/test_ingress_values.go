@@ -2,13 +2,14 @@ package e2e
 
 import (
 	"github.com/appscode/voyager/test/testframework"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
 )
 
 var testServerSvc = &apiv1.Service{
-	ObjectMeta: apiv1.ObjectMeta{
+	ObjectMeta: metav1.ObjectMeta{
 		Name:      "test-server",
 		Namespace: testframework.TestContext.E2EConfigs.TestNamespace,
 		Labels: map[string]string{
@@ -62,7 +63,7 @@ var testServerSvc = &apiv1.Service{
 }
 
 var testServerRc = &apiv1.ReplicationController{
-	ObjectMeta: apiv1.ObjectMeta{
+	ObjectMeta: metav1.ObjectMeta{
 		Name:      "test-server",
 		Namespace: testframework.TestContext.E2EConfigs.TestNamespace,
 		Labels: map[string]string{
@@ -76,7 +77,7 @@ var testServerRc = &apiv1.ReplicationController{
 			"app": "test-server",
 		},
 		Template: &apiv1.PodTemplateSpec{
-			ObjectMeta: apiv1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Labels: map[string]string{
 					"app":  "test-server",
 					"name": "test-rc",
@@ -131,7 +132,7 @@ var testServerRc = &apiv1.ReplicationController{
 }
 
 var testStatefulSetSvc = &apiv1.Service{
-	ObjectMeta: apiv1.ObjectMeta{
+	ObjectMeta: metav1.ObjectMeta{
 		Name:      "ss-svc",
 		Namespace: testframework.TestContext.E2EConfigs.TestNamespace,
 		Labels: map[string]string{
@@ -186,7 +187,7 @@ var testStatefulSetSvc = &apiv1.Service{
 }
 
 var testServerStatefulSet = &apps.StatefulSet{
-	ObjectMeta: apiv1.ObjectMeta{
+	ObjectMeta: metav1.ObjectMeta{
 		Name:      "test-ss",
 		Namespace: testframework.TestContext.E2EConfigs.TestNamespace,
 		Labels: map[string]string{
@@ -198,7 +199,7 @@ var testServerStatefulSet = &apps.StatefulSet{
 		Replicas:    3,
 		ServiceName: testStatefulSetSvc.Name,
 		Template: apiv1.PodTemplateSpec{
-			ObjectMeta: apiv1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Labels: map[string]string{
 					"app": "e2e-test",
 				},

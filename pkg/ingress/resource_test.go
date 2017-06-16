@@ -6,6 +6,7 @@ import (
 	api "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
@@ -19,7 +20,7 @@ func TestResourceIsExists(t *testing.T) {
 	testCases := map[*EngressController]bool{
 		{
 			Resource: &api.Ingress{
-				ObjectMeta: apiv1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
 					Annotations: map[string]string{
@@ -29,21 +30,21 @@ func TestResourceIsExists(t *testing.T) {
 			},
 			KubeClient: fake.NewSimpleClientset(
 				&extensions.DaemonSet{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
 				&apiv1.Service{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
 				&apiv1.ConfigMap{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
@@ -53,7 +54,7 @@ func TestResourceIsExists(t *testing.T) {
 
 		{
 			Resource: &api.Ingress{
-				ObjectMeta: apiv1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
 					Annotations: map[string]string{
@@ -63,21 +64,21 @@ func TestResourceIsExists(t *testing.T) {
 			},
 			KubeClient: fake.NewSimpleClientset(
 				&extensions.DaemonSet{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "fake-foo",
 						Namespace: "bar",
 					},
 				},
 
 				&apiv1.Service{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
 				&apiv1.ConfigMap{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
@@ -87,7 +88,7 @@ func TestResourceIsExists(t *testing.T) {
 
 		{
 			Resource: &api.Ingress{
-				ObjectMeta: apiv1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
 					Annotations: map[string]string{
@@ -97,21 +98,21 @@ func TestResourceIsExists(t *testing.T) {
 			},
 			KubeClient: fake.NewSimpleClientset(
 				&extensions.DaemonSet{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
 				&apiv1.Service{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "fake-foo",
 						Namespace: "bar",
 					},
 				},
 
 				&apiv1.ConfigMap{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
@@ -120,7 +121,7 @@ func TestResourceIsExists(t *testing.T) {
 		}: false,
 		{
 			Resource: &api.Ingress{
-				ObjectMeta: apiv1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
 					Annotations: map[string]string{
@@ -130,21 +131,21 @@ func TestResourceIsExists(t *testing.T) {
 			},
 			KubeClient: fake.NewSimpleClientset(
 				&extensions.DaemonSet{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
 				&apiv1.Service{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
 				&apiv1.ConfigMap{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "fake-foo",
 						Namespace: "bar",
 					},
@@ -154,7 +155,7 @@ func TestResourceIsExists(t *testing.T) {
 
 		{
 			Resource: &api.Ingress{
-				ObjectMeta: apiv1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
 					Annotations: map[string]string{
@@ -164,21 +165,21 @@ func TestResourceIsExists(t *testing.T) {
 			},
 			KubeClient: fake.NewSimpleClientset(
 				&extensions.DaemonSet{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
 				&apiv1.Service{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
 				&apiv1.ConfigMap{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
@@ -188,7 +189,7 @@ func TestResourceIsExists(t *testing.T) {
 
 		{
 			Resource: &api.Ingress{
-				ObjectMeta: apiv1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
 					Annotations: map[string]string{
@@ -198,21 +199,21 @@ func TestResourceIsExists(t *testing.T) {
 			},
 			KubeClient: fake.NewSimpleClientset(
 				&apiv1.ReplicationController{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
 				&apiv1.Service{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
 				&apiv1.ConfigMap{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
@@ -222,7 +223,7 @@ func TestResourceIsExists(t *testing.T) {
 
 		{
 			Resource: &api.Ingress{
-				ObjectMeta: apiv1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
 					Annotations: map[string]string{
@@ -232,21 +233,21 @@ func TestResourceIsExists(t *testing.T) {
 			},
 			KubeClient: fake.NewSimpleClientset(
 				&apiv1.ReplicationController{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "fakefoo",
 						Namespace: "bar",
 					},
 				},
 
 				&apiv1.Service{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},
 				},
 
 				&apiv1.ConfigMap{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
 					},

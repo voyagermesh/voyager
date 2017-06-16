@@ -151,7 +151,7 @@ func (c *CertificateController) handleIngressEvent(e *events.Event) error {
 			}
 			if kerr.IsNotFound(err) || !certificate.Status.CertificateObtained {
 				newCertificate := &aci.Certificate{
-					ObjectMeta: apiv1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      certificateName,
 						Namespace: ingress.Namespace,
 					},
@@ -337,7 +337,7 @@ func (c *CertificateController) registerACMEUser(acmeClient *ACMEClient) error {
 
 	// Acme User registered Create The acmeUserSecret
 	secret := &apiv1.Secret{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.certificate.Spec.ACMEUserSecretName,
 			Namespace: c.certificate.Namespace,
 			Labels: map[string]string{

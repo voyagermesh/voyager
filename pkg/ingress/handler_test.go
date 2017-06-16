@@ -7,6 +7,7 @@ import (
 	aci "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
 )
@@ -18,7 +19,7 @@ func init() {
 func TestShouldHandleIngress(t *testing.T) {
 	dataTables := map[*aci.Ingress]map[string]bool{
 		{
-			ObjectMeta: apiv1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Annotations: map[string]string{
 					"kubernetes.io/ingress.class": "voyager",
 				},
@@ -32,7 +33,7 @@ func TestShouldHandleIngress(t *testing.T) {
 		},
 
 		{
-			ObjectMeta: apiv1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Annotations: map[string]string{
 					"ingress.appscode.com/kind": "ingress.appscode.com/v1beta1",
 				},
@@ -46,7 +47,7 @@ func TestShouldHandleIngress(t *testing.T) {
 		},
 
 		{
-			ObjectMeta: apiv1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Annotations: map[string]string{},
 			},
 		}: {
@@ -73,14 +74,14 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 	assert.NotNil(t, err)
 
 	svc, err := fakeClient.Core().Services("test-namespace").Create(&apiv1.Service{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-service",
 			Namespace: "test-namespace",
 		},
 	})
 
 	ensureServiceAnnotations(fakeClient, &aci.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
 		},
@@ -98,7 +99,7 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 	fmt.Println(svc.Annotations)
 
 	ensureServiceAnnotations(fakeClient, &aci.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
 		},
@@ -116,7 +117,7 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 	fmt.Println(svc.Annotations)
 
 	ensureServiceAnnotations(fakeClient, &aci.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
 		},

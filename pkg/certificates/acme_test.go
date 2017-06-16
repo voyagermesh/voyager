@@ -28,7 +28,7 @@ func TestACMECertData(t *testing.T) {
 		TypeMeta: metav1.TypeMeta{
 			Kind: "Secret",
 		},
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      defaultCertPrefix + "hello",
 			Namespace: "default",
 			Labels: map[string]string{
@@ -58,7 +58,7 @@ func TestACMECertDataError(t *testing.T) {
 		TypeMeta: metav1.TypeMeta{
 			Kind: "Secret",
 		},
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      defaultCertPrefix + "hello",
 			Namespace: "default",
 			Labels: map[string]string{

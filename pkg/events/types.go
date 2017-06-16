@@ -123,7 +123,7 @@ type Event struct {
 	RuntimeObj []interface{}
 
 	// kubernetes object metadata
-	MetaData apiv1.ObjectMeta
+	MetaData metav1.ObjectMeta
 }
 
 func New(Type EventType, obj ...interface{}) *Event {
@@ -186,7 +186,7 @@ func detectObjectType(o interface{}) ObjectType {
 	return Unknown
 }
 
-func objectMetadata(o interface{}, t ObjectType) apiv1.ObjectMeta {
+func objectMetadata(o interface{}, t ObjectType) metav1.ObjectMeta {
 	switch t {
 	case Pod:
 		return o.(*apiv1.Pod).ObjectMeta
@@ -217,7 +217,7 @@ func objectMetadata(o interface{}, t ObjectType) apiv1.ObjectMeta {
 	case ConfigMap:
 		return o.(*apiv1.ConfigMap).ObjectMeta
 	}
-	return apiv1.ObjectMeta{}
+	return metav1.ObjectMeta{}
 }
 
 func (e *Event) Ignorable() bool {
