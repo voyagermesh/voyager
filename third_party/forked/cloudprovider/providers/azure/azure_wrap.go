@@ -57,23 +57,6 @@ func (az *Cloud) getVirtualMachine(nodeName types.NodeName) (vm compute.VirtualM
 	return vm, exists, err
 }
 
-func (az *Cloud) getRouteTable() (routeTable network.RouteTable, exists bool, err error) {
-	var realErr error
-
-	routeTable, err = az.RouteTablesClient.Get(az.ResourceGroup, az.RouteTableName, "")
-
-	exists, realErr = checkResourceExistsFromError(err)
-	if realErr != nil {
-		return routeTable, false, realErr
-	}
-
-	if !exists {
-		return routeTable, false, nil
-	}
-
-	return routeTable, exists, err
-}
-
 func (az *Cloud) getSecurityGroup() (sg network.SecurityGroup, exists bool, err error) {
 	var realErr error
 
@@ -89,38 +72,4 @@ func (az *Cloud) getSecurityGroup() (sg network.SecurityGroup, exists bool, err 
 	}
 
 	return sg, exists, err
-}
-
-func (az *Cloud) getAzureLoadBalancer(name string) (lb network.LoadBalancer, exists bool, err error) {
-	var realErr error
-
-	lb, err = az.LoadBalancerClient.Get(az.ResourceGroup, name, "")
-
-	exists, realErr = checkResourceExistsFromError(err)
-	if realErr != nil {
-		return lb, false, realErr
-	}
-
-	if !exists {
-		return lb, false, nil
-	}
-
-	return lb, exists, err
-}
-
-func (az *Cloud) getPublicIPAddress(name string) (pip network.PublicIPAddress, exists bool, err error) {
-	var realErr error
-
-	pip, err = az.PublicIPAddressesClient.Get(az.ResourceGroup, name, "")
-
-	exists, realErr = checkResourceExistsFromError(err)
-	if realErr != nil {
-		return pip, false, realErr
-	}
-
-	if !exists {
-		return pip, false, nil
-	}
-
-	return pip, exists, err
 }
