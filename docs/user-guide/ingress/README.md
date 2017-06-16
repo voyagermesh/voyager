@@ -139,7 +139,8 @@ Below is the full list of supported annotation keys:
 | ingress.appscode.com/annotationsPod | | | Removed since 1.5.6. Use `ingress.appscode.com/annotations-pod` |
 | ingress.appscode.com/statsSecretName | | | Removed since 1.5.6. Use `ingress.appscode.com/stats-secret-name` |
 
-**Following configuration annotations for ingress are not modifiable. The configuration is done only when an Ingress object is created.**
+**Following annotations for ingress are not modifiable. The configuration is applied only when an Ingress object is created.
+If you need to update these annotations, then first delete the Ingress and then recreate.**
 ```
 ingress.appscode.com/type
 ingress.appscode.com/node-selector
