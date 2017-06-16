@@ -37,9 +37,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/util/flowcontrol"
 	apiservice "k8s.io/kubernetes/pkg/api/service"
 	utilerrors "k8s.io/kubernetes/pkg/util/errors"
-//	"k8s.io/kubernetes/pkg/util/flowcontrol"
 	netsets "k8s.io/kubernetes/pkg/util/net/sets"
 )
 
