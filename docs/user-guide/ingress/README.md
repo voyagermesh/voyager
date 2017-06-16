@@ -33,6 +33,7 @@ hosting. This plugin also support configurable application ports with all the fe
   - [Supports Loadbalancer Source Range](source-range.md)
   - [Supports redirects/DNS resolution for `ServiceTypeExternalName`](external-svc.md)
   - [Expose HAProxy stats for Prometheus](stats-and-metrics.md)
+  - [Supports AWS certificate manager](aws-cert-manager.md)
 
 ### Comparison with Kubernetes
 | Feauture | Kube Ingress | AppsCode Ingress |
@@ -51,6 +52,7 @@ hosting. This plugin also support configurable application ports with all the fe
 | Supports Loadbalancer Source Range | :x: | :white_check_mark: |
 | Supports redirects/DNS resolve for `ServiceTypeExternalName` | :x: | :white_check_mark: |
 | Expose HAProxy stats for Prometheus | :x: | :white_check_mark: |
+| Supports AWS certificate manager | :x: | :white_check_mark: |
 
 ## AppsCode Ingress Flow
 Typically, services and pods have IPs only routable by the cluster network. All traffic that ends up at an
