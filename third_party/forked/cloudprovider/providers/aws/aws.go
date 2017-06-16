@@ -32,7 +32,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/golang/glog"
@@ -172,7 +171,6 @@ var once sync.Once
 type Services interface {
 	Compute(region string) (EC2, error)
 	LoadBalancing(region string) (ELB, error)
-	Autoscaling(region string) (ASG, error)
 	Metadata() (EC2Metadata, error)
 }
 
@@ -237,13 +235,6 @@ type ELB interface {
 	ModifyLoadBalancerAttributes(*elb.ModifyLoadBalancerAttributesInput) (*elb.ModifyLoadBalancerAttributesOutput, error)
 }
 
-// ASG is a simple pass-through of the Autoscaling client interface, which
-// allows for testing.
-type ASG interface {
-	UpdateAutoScalingGroup(*autoscaling.UpdateAutoScalingGroupInput) (*autoscaling.UpdateAutoScalingGroupOutput, error)
-	DescribeAutoScalingGroups(*autoscaling.DescribeAutoScalingGroupsInput) (*autoscaling.DescribeAutoScalingGroupsOutput, error)
-}
-
 // EC2Metadata is an abstraction over the AWS metadata service.
 type EC2Metadata interface {
 	// Query the EC2 metadata service (used to discover instance-id etc)
@@ -269,7 +260,6 @@ type InstanceGroupInfo interface {
 type Cloud struct {
 	ec2      EC2
 	elb      ELB
-	asg      ASG
 	metadata EC2Metadata
 	cfg      *CloudConfig
 	region   string
@@ -402,29 +392,9 @@ func (p *awsSDKProvider) LoadBalancing(regionName string) (ELB, error) {
 	return elbClient, nil
 }
 
-func (p *awsSDKProvider) Autoscaling(regionName string) (ASG, error) {
-	client := autoscaling.New(session.New(&aws.Config{
-		Region:      &regionName,
-		Credentials: p.creds,
-	}))
-
-	p.addHandlers(regionName, &client.Handlers)
-
-	return client, nil
-}
-
 func (p *awsSDKProvider) Metadata() (EC2Metadata, error) {
 	client := ec2metadata.New(session.New(&aws.Config{}))
 	return client, nil
-}
-
-// stringPointerArray creates a slice of string pointers from a slice of strings
-// Deprecated: consider using aws.StringSlice - but note the slightly different behaviour with a nil input
-func stringPointerArray(orig []string) []*string {
-	if orig == nil {
-		return nil
-	}
-	return aws.StringSlice(orig)
 }
 
 // isNilOrEmpty returns true if the value is nil or ""
@@ -700,15 +670,9 @@ func newAWSCloud(config io.Reader, awsServices Services) (*Cloud, error) {
 		return nil, fmt.Errorf("error creating AWS ELB client: %v", err)
 	}
 
-	asg, err := awsServices.Autoscaling(regionName)
-	if err != nil {
-		return nil, fmt.Errorf("error creating AWS autoscaling client: %v", err)
-	}
-
 	awsCloud := &Cloud{
 		ec2:      ec2,
 		elb:      elb,
-		asg:      asg,
 		metadata: metadata,
 		cfg:      cfg,
 		region:   regionName,
