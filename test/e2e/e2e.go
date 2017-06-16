@@ -4,14 +4,15 @@ import (
 	"io/ioutil"
 	"os"
 	"time"
+
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/client/clientset"
 	acs "github.com/appscode/voyager/client/clientset"
 	acw "github.com/appscode/voyager/pkg/watcher"
 	"github.com/appscode/voyager/test/testframework"
-clientset "k8s.io/client-go/kubernetes"
-"k8s.io/client-go/rest"
-"k8s.io/client-go/tools/clientcmd"
+	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 type TestSuit struct {

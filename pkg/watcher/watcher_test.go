@@ -2,11 +2,12 @@ package watcher
 
 import (
 	"testing"
+
 	aci "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
-apiv1 "k8s.io/client-go/pkg/api/v1"
-extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
+	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
 )
 

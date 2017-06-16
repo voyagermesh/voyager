@@ -3,9 +3,10 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-apiv1 "k8s.io/client-go/pkg/api/v1"
-extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
-"k8s.io/apimachinery/pkg/runtime"
+
+	"k8s.io/apimachinery/pkg/runtime"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
+	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
 func addConversionFuncs(scheme *runtime.Scheme) error {

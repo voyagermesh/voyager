@@ -5,6 +5,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+
 	rt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
@@ -14,15 +15,15 @@ import (
 	"github.com/appscode/voyager/pkg/events"
 	ingresscontroller "github.com/appscode/voyager/pkg/ingress"
 	"github.com/appscode/voyager/pkg/stash"
-apiv1 "k8s.io/client-go/pkg/api/v1"
-kerr "k8s.io/apimachinery/pkg/api/errors"
-metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
-"k8s.io/client-go/tools/cache"
-clientset "k8s.io/client-go/kubernetes"
-"k8s.io/client-go/rest"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	clientset "k8s.io/client-go/kubernetes"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
+	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
 	"k8s.io/kubernetes/pkg/fields"
-"k8s.io/apimachinery/pkg/runtime"
 )
 
 type Watcher struct {

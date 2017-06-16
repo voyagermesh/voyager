@@ -2,9 +2,9 @@ package e2e
 
 import (
 	"github.com/appscode/voyager/test/testframework"
-apiv1 "k8s.io/client-go/pkg/api/v1"
-apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
-"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
+	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
 )
 
 var testServerSvc = &apiv1.Service{

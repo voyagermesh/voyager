@@ -2,10 +2,11 @@ package stash
 
 import (
 	"time"
-apiv1 "k8s.io/client-go/pkg/api/v1"
+
+	"k8s.io/apimachinery/pkg/runtime"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/tools/cache"
 	"k8s.io/kubernetes/pkg/api/meta"
-"k8s.io/client-go/tools/cache"
-"k8s.io/apimachinery/pkg/runtime"
 )
 
 // Like cache.NewInformer but loads the already loaded data and does

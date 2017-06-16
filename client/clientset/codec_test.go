@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+
 	aci "github.com/appscode/voyager/api"
 	"github.com/stretchr/testify/assert"
-apiv1 "k8s.io/client-go/pkg/api/v1"
-metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-"k8s.io/client-go/pkg/api"
-"k8s.io/apimachinery/pkg/runtime"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 func TestDefaultGroupVersion(t *testing.T) {

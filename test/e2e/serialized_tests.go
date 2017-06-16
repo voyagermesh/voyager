@@ -5,12 +5,13 @@ import (
 	"net/http"
 	"sync"
 	"time"
+
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	api "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
-apiv1 "k8s.io/client-go/pkg/api/v1"
-"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 func daemonNodeSelector(s *IngressTestSuit) string {

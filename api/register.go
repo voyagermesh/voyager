@@ -1,9 +1,9 @@
 package api
 
 import (
-apiv1 "k8s.io/client-go/pkg/api/v1"
-metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-"k8s.io/apimachinery/pkg/runtime"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 // GroupName is the group name use in this package

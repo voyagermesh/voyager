@@ -3,12 +3,13 @@ package ingress
 import (
 	"reflect"
 	"strconv"
+
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
-apiv1 "k8s.io/client-go/pkg/api/v1"
-"k8s.io/apimachinery/pkg/labels"
-"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 type updateType int

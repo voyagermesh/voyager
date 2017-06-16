@@ -5,10 +5,10 @@ import (
 	aci "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/certificates"
 	"github.com/appscode/voyager/pkg/events"
-apiv1 "k8s.io/client-go/pkg/api/v1"
-extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
-"k8s.io/client-go/tools/cache"
-"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/apimachinery/pkg/util/wait"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
+	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	"k8s.io/client-go/tools/cache"
 )
 
 func (w *Watcher) Pod() {

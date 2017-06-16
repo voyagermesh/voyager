@@ -20,6 +20,7 @@ import (
 	"math"
 	"sync"
 	"time"
+
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/golang/glog"

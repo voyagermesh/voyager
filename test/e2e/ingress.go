@@ -5,16 +5,17 @@ import (
 	"strings"
 	"text/template"
 	"time"
+
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	api "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
-apiv1 "k8s.io/client-go/pkg/api/v1"
-kerr "k8s.io/apimachinery/pkg/api/errors"
-metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
-"k8s.io/apimachinery/pkg/labels"
-"k8s.io/apimachinery/pkg/util/intstr"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
+	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
 const maxRetries = 50

@@ -4,12 +4,13 @@ import (
 	"reflect"
 	"strings"
 	"time"
+
 	"github.com/appscode/log"
 	aci "github.com/appscode/voyager/api"
-apiv1 "k8s.io/client-go/pkg/api/v1"
-apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
-extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
-"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
+	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
+	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
 type EventType string

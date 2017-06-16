@@ -23,6 +23,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -35,11 +36,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/golang/glog"
 	"gopkg.in/gcfg.v1"
-apiv1 "k8s.io/client-go/pkg/api/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/sets"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/api/service"
 	aws_credentials "k8s.io/kubernetes/pkg/credentialprovider/aws"
-"k8s.io/apimachinery/pkg/types"
-"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // ProviderName is the name of this cloud provider.

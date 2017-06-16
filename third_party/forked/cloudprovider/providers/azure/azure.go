@@ -20,6 +20,7 @@ import (
 	"io"
 	"io/ioutil"
 	"time"
+
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/Azure/azure-sdk-for-go/arm/network"
 	"github.com/Azure/go-autorest/autorest/azure"

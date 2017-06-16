@@ -3,11 +3,11 @@ package fake
 import (
 	aci "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/client/clientset"
-apiv1 "k8s.io/client-go/pkg/api/v1"
-metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-"k8s.io/client-go/testing"
-"k8s.io/apimachinery/pkg/labels"
-"k8s.io/apimachinery/pkg/watch"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/watch"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/testing"
 )
 
 type FakeIngress struct {

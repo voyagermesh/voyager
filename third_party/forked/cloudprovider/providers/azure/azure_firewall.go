@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
 	"github.com/Azure/azure-sdk-for-go/arm/network"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	"github.com/golang/glog"
-apiv1 "k8s.io/client-go/pkg/api/v1"
-"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/types"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 // EnsureFirewall creates and/or update firewall rules.

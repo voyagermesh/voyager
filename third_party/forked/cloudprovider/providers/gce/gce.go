@@ -24,6 +24,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
 	"cloud.google.com/go/compute/metadata"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	"github.com/golang/glog"
@@ -31,16 +32,15 @@ import (
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v1"
 	container "google.golang.org/api/container/v1"
-	"google.golang.org/api/googleapi"
 	"gopkg.in/gcfg.v1"
-apiv1 "k8s.io/client-go/pkg/api/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/wait"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 	apiservice "k8s.io/kubernetes/pkg/api/service"
-"k8s.io/apimachinery/pkg/types"
 	utilerrors "k8s.io/kubernetes/pkg/util/errors"
 	"k8s.io/kubernetes/pkg/util/flowcontrol"
 	netsets "k8s.io/kubernetes/pkg/util/net/sets"
-"k8s.io/apimachinery/pkg/util/sets"
-"k8s.io/apimachinery/pkg/util/wait"
 )
 
 const (

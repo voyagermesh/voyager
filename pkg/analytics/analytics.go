@@ -3,6 +3,7 @@ package analytics
 import (
 	"strings"
 	"sync"
+
 	"github.com/appscode/log"
 	ga "github.com/jpillora/go-ogle-analytics"
 )

@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+
 	"github.com/appscode/errors"
 	stringutil "github.com/appscode/go/strings"
 	"github.com/appscode/log"
@@ -27,8 +28,8 @@ import (
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"
 	"github.com/xenolf/lego/providers/dns/vultr"
-apiv1 "k8s.io/client-go/pkg/api/v1"
-metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 const (

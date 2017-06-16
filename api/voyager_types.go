@@ -1,9 +1,9 @@
 package api
 
 import (
-apiv1 "k8s.io/client-go/pkg/api/v1"
-metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-"k8s.io/apimachinery/pkg/util/intstr"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 // Custom Ingress type for Voyager.
@@ -228,10 +228,10 @@ type ExtendedIngressBackend struct {
 }
 
 type Certificate struct {
-	metav1.TypeMeta `json:",inline,omitempty"`
-	apiv1.ObjectMeta       `json:"metadata,omitempty"`
-	Spec                 CertificateSpec   `json:"spec,omitempty"`
-	Status               CertificateStatus `json:"status,omitempty"`
+	metav1.TypeMeta  `json:",inline,omitempty"`
+	apiv1.ObjectMeta `json:"metadata,omitempty"`
+	Spec             CertificateSpec   `json:"spec,omitempty"`
+	Status           CertificateStatus `json:"status,omitempty"`
 }
 
 type CertificateSpec struct {
@@ -262,7 +262,7 @@ type CertificateSpec struct {
 type CertificateStatus struct {
 	CertificateObtained bool                   `json:"certificateObtained"`
 	Message             string                 `json:"message"`
-	CreationTime        *metav1.Time      `json:"creationTime,omitempty"`
+	CreationTime        *metav1.Time           `json:"creationTime,omitempty"`
 	ACMEUserSecretName  string                 `json:"acmeUserSecretName,omitempty"`
 	Details             ACMECertificateDetails `json:"details,omitempty"`
 }
@@ -277,5 +277,5 @@ type ACMECertificateDetails struct {
 type CertificateList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items                []Certificate `json:"items,omitempty"`
+	Items           []Certificate `json:"items,omitempty"`
 }

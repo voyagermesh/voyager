@@ -2,10 +2,10 @@ package watcher
 
 import (
 	acs "github.com/appscode/voyager/client/clientset"
-apiv1 "k8s.io/client-go/pkg/api/v1"
-clientset "k8s.io/client-go/kubernetes"
-"k8s.io/apimachinery/pkg/runtime"
-"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/watch"
+	clientset "k8s.io/client-go/kubernetes"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 func IngressListFunc(c clientset.Interface) func(apiv1.ListOptions) (runtime.Object, error) {

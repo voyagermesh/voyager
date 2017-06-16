@@ -2,11 +2,12 @@ package certificates
 
 import (
 	"time"
+
 	"github.com/appscode/errors"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/benbjohnson/clock"
-apiv1 "k8s.io/client-go/pkg/api/v1"
-clientset "k8s.io/client-go/kubernetes"
+	clientset "k8s.io/client-go/kubernetes"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 type CertificateSyncer struct {

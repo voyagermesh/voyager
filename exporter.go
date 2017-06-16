@@ -14,7 +14,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
 	"github.com/prometheus/common/version"
-	kerr "k8s.io/kubernetes/pkg/api/errors"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
 )
 
 const (

@@ -7,11 +7,12 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	api "github.com/appscode/voyager/api"
-apiv1 "k8s.io/client-go/pkg/api/v1"
-"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/labels"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 func (s *IngressTestSuit) getURLs(baseIngress *api.Ingress) ([]string, error) {
