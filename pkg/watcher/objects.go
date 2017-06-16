@@ -3,10 +3,18 @@ package watcher
 import (
 	"github.com/appscode/log"
 	aci "github.com/appscode/voyager/api"
-	"github.com/appscode/voyager/pkg/certificates"
 	"github.com/appscode/voyager/pkg/events"
+	"github.com/appscode/voyager/pkg/certificates"
 	"k8s.io/apimachinery/pkg/util/wait"
+	core_listers "k8s.io/client-go/listers/core/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
+	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	"k8s.io/client-go/tools/cache"
+	apps_listers "k8s.io/client-go/listers/apps/v1beta1"
+	core_listers "k8s.io/client-go/listers/core/v1"
+	extensions_listers "k8s.io/client-go/listers/extensions/v1beta1"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
+	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/tools/cache"
 )
@@ -19,7 +27,7 @@ func (w *Watcher) Pod() {
 	}
 	indexer, controller := w.CacheIndexer(events.Pod, &apiv1.Pod{}, lw, nil)
 	go controller.Run(wait.NeverStop)
-	w.Storage.PodStore = cache.StoreToPodLister{indexer}
+	w.Storage.PodStore = core_listers.NewPodLister(indexer)
 }
 
 func (w *Watcher) Service() {
@@ -30,7 +38,7 @@ func (w *Watcher) Service() {
 	}
 	indexer, controller := w.CacheIndexer(events.Service, &apiv1.Service{}, lw, nil)
 	go controller.Run(wait.NeverStop)
-	w.Storage.ServiceStore = cache.StoreToServiceLister{indexer}
+	w.Storage.ServiceStore = core_listers.NewServiceLister(indexer)
 }
 
 func (w *Watcher) Endpoint() {
@@ -39,9 +47,9 @@ func (w *Watcher) Endpoint() {
 		ListFunc:  EndpointListFunc(w.KubeClient),
 		WatchFunc: EndpointWatchFunc(w.KubeClient),
 	}
-	store, controller := w.CacheStore(events.Endpoint, &apiv1.Endpoints{}, lw)
+	indexer, controller := w.CacheIndexer(events.Endpoint, &apiv1.Endpoints{}, lw, nil)
 	go controller.Run(wait.NeverStop)
-	w.Storage.EndpointStore = cache.StoreToEndpointsLister{store}
+	w.Storage.EndpointStore = core_listers.NewEndpointsLister(indexer)
 }
 
 func (w *Watcher) Deployment() {
@@ -52,7 +60,7 @@ func (w *Watcher) Deployment() {
 	}
 	indexer, controller := w.CacheIndexer(events.Deployments, &extensions.Deployment{}, lw, nil)
 	go controller.Run(wait.NeverStop)
-	w.Storage.DeploymentStore = cache.StoreToDeploymentLister{indexer}
+	w.Storage.DeploymentStore = extensions_listers.NewDeploymentLister(indexer)
 }
 
 func (w *Watcher) DaemonSet() {
@@ -63,7 +71,7 @@ func (w *Watcher) DaemonSet() {
 	}
 	indexer, controller := w.CacheIndexer(events.DaemonSet, &extensions.DaemonSet{}, lw, nil)
 	go controller.Run(wait.NeverStop)
-	w.Storage.DaemonSetStore = cache.StoreToDaemonSetLister{indexer}
+	w.Storage.DaemonSetStore = extensions_listers.NewDaemonSetLister(indexer)
 }
 
 func (w *Watcher) ConfigMap() {

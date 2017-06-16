@@ -7,6 +7,7 @@ import (
 	"time"
 
 	rt "github.com/appscode/go/runtime"
+	"github.com/appscode/go/types"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
@@ -17,13 +18,13 @@ import (
 	"github.com/appscode/voyager/pkg/stash"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/kubernetes/pkg/fields"
 )
 
 type Watcher struct {
@@ -82,7 +83,7 @@ var resourceList []string = []string{
 func (w *Watcher) ensureResource() {
 	for _, resource := range resourceList {
 		// This is version dependent
-		_, err := w.KubeClient.Extensions().ThirdPartyResources().Get(resource + "." + api.V1beta1SchemeGroupVersion.Group)
+		_, err := w.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Get(resource+"."+api.V1beta1SchemeGroupVersion.Group, metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
 			tpr := &extensions.ThirdPartyResource{
 				TypeMeta: metav1.TypeMeta{
@@ -98,7 +99,7 @@ func (w *Watcher) ensureResource() {
 					},
 				},
 			}
-			_, err := w.KubeClient.Extensions().ThirdPartyResources().Create(tpr)
+			_, err := w.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Create(tpr)
 			if err != nil {
 				// This should fail if there is one third party resource data missing.
 				log.Fatalln(tpr.Name, "failed to create, causes", err.Error())
@@ -149,7 +150,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 	case events.Endpoint:
 		// Checking if this endpoint have a service or not. If
 		// this do not have a Service we do not want to update our ingress
-		_, err := w.KubeClient.CoreV1().Services(e.MetaData.Namespace).Get(e.MetaData.Name)
+		_, err := w.KubeClient.CoreV1().Services(e.MetaData.Namespace).Get(e.MetaData.Name, metav1.GetOptions{})
 		if err == nil {
 			log.Infoln("Endpoint has an service with name", e.MetaData.Name, e.MetaData.Namespace, "Event type", e.EventType.String())
 			// Service exists. So we should process.
@@ -192,11 +193,11 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 				var ingressErr error
 				var detectedAPIGroup string
 				if sourceType == api.APISchemaIngress {
-					_, ingressErr = w.KubeClient.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
+					_, ingressErr = w.KubeClient.ExtensionsV1beta1().Ingresses(e.MetaData.Namespace).Get(sourceName, metav1.GetOptions{})
 				} else if sourceType == api.APISchemaEngress {
 					_, ingressErr = w.ExtClient.Ingress(e.MetaData.Namespace).Get(sourceName)
 				} else if !sourceTypeFound {
-					_, ingressErr = w.KubeClient.Extensions().Ingresses(e.MetaData.Namespace).Get(sourceName)
+					_, ingressErr = w.KubeClient.ExtensionsV1beta1().Ingresses(e.MetaData.Namespace).Get(sourceName, metav1.GetOptions{})
 					if ingressErr != nil {
 						_, ingressErr = w.ExtClient.Ingress(e.MetaData.Namespace).Get(sourceName)
 						if ingressErr == nil {
@@ -220,7 +221,7 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 					case events.ConfigMap, events.Service:
 						client = w.KubeClient.CoreV1().RESTClient()
 					case events.Deployments, events.DaemonSet:
-						client = w.KubeClient.Extensions().RESTClient()
+						client = w.KubeClient.ExtensionsV1beta1().RESTClient()
 					}
 
 					// Clean Default generated values
@@ -248,8 +249,8 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 						dp, ok := obj.(*extensions.Deployment)
 						if ok {
 							dp.Spec.Paused = false
-							if dp.Spec.Replicas < 1 {
-								dp.Spec.Replicas = 1
+							if types.Int32(dp.Spec.Replicas) < 1 {
+								dp.Spec.Replicas = types.Int32P(1)
 							}
 						}
 					}
@@ -304,7 +305,7 @@ func sendAnalytics(e *events.Event, err error) {
 	}
 }
 
-func (w *Watcher) Cache(resource events.ObjectType, object runtime.Object, lw *cache.ListWatch) (cache.Store, *cache.Controller) {
+func (w *Watcher) Cache(resource events.ObjectType, object runtime.Object, lw *cache.ListWatch) (cache.Store, cache.Controller) {
 	var listWatch *cache.ListWatch
 	if lw != nil {
 		listWatch = lw
@@ -320,7 +321,7 @@ func (w *Watcher) Cache(resource events.ObjectType, object runtime.Object, lw *c
 	)
 }
 
-func (w *Watcher) CacheStore(resource events.ObjectType, object runtime.Object, lw *cache.ListWatch) (cache.Store, *cache.Controller) {
+func (w *Watcher) CacheStore(resource events.ObjectType, object runtime.Object, lw *cache.ListWatch) (cache.Store, cache.Controller) {
 	if lw == nil {
 		lw = cache.NewListWatchFromClient(w.KubeClient.CoreV1().RESTClient(), resource.String(), apiv1.NamespaceAll, fields.Everything())
 	}
@@ -333,7 +334,7 @@ func (w *Watcher) CacheStore(resource events.ObjectType, object runtime.Object, 
 	)
 }
 
-func (w *Watcher) CacheIndexer(resource events.ObjectType, object runtime.Object, lw *cache.ListWatch, indexers cache.Indexers) (cache.Indexer, *cache.Controller) {
+func (w *Watcher) CacheIndexer(resource events.ObjectType, object runtime.Object, lw *cache.ListWatch, indexers cache.Indexers) (cache.Indexer, cache.Controller) {
 	if lw == nil {
 		lw = cache.NewListWatchFromClient(w.KubeClient.CoreV1().RESTClient(), resource.String(), apiv1.NamespaceAll, fields.Everything())
 	}

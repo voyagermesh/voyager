@@ -32,28 +32,19 @@ import (
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v1"
 	container "google.golang.org/api/container/v1"
+	"google.golang.org/api/googleapi"
 	"gopkg.in/gcfg.v1"
 	"k8s.io/apimachinery/pkg/types"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/util/flowcontrol"
-	apiservice "k8s.io/kubernetes/pkg/api/service"
-	utilerrors "k8s.io/kubernetes/pkg/util/errors"
 	netsets "k8s.io/kubernetes/pkg/util/net/sets"
 )
 
 const (
 	ProviderName = "gce"
-
-	k8sNodeRouteTag = "k8s-node-route"
-
-	// AffinityTypeNone - no session affinity.
-	gceAffinityTypeNone = "NONE"
-	// AffinityTypeClientIP - affinity based on Client IP.
-	gceAffinityTypeClientIP = "CLIENT_IP"
-	// AffinityTypeClientIPProto - affinity based on Client IP and port.
-	gceAffinityTypeClientIPProto = "CLIENT_IP_PROTO"
 
 	operationPollInterval        = 3 * time.Second
 	operationPollTimeoutDuration = 30 * time.Minute
@@ -62,17 +53,6 @@ const (
 	// are iterated through to prevent infinite loops if the API
 	// were to continuously return a nextPageToken.
 	maxPages = 25
-
-	maxTargetPoolCreateInstances = 200
-
-	// HTTP Load Balancer parameters
-	// Configure 2 second period for external health checks.
-	gceHcCheckIntervalSeconds = int64(2)
-	gceHcTimeoutSeconds       = int64(1)
-	// Start sending requests as soon as a pod is found on the node.
-	gceHcHealthyThreshold = int64(1)
-	// Defaults to 5 * 2 = 10 seconds before the LB will steer traffic away
-	gceHcUnhealthyThreshold = int64(5)
 )
 
 // GCECloud is an implementation of Interface, LoadBalancer and Instances for Google Compute Engine.
@@ -101,16 +81,6 @@ type Config struct {
 		Multizone          bool     `gcfg:"multizone"`
 	}
 }
-
-type DiskType string
-
-const (
-	DiskTypeSSD      = "pd-ssd"
-	DiskTypeStandard = "pd-standard"
-
-	diskTypeDefault     = DiskTypeStandard
-	diskTypeUriTemplate = "https://www.googleapis.com/compute/v1/projects/%s/zones/%s/diskTypes/%s"
-)
 
 func init() {
 	cloudprovider.RegisterCloudProvider(ProviderName, func(config io.Reader) (cloudprovider.Interface, error) { return newGCECloud(config) })
@@ -370,7 +340,7 @@ func opIsDone(op *compute.Operation) bool {
 
 func getErrorFromOp(op *compute.Operation) error {
 	if op != nil && op.Error != nil && len(op.Error.Errors) > 0 {
-		err := &googleapiv1.Error{
+		err := &googleapi.Error{
 			Code:    int(op.HttpErrorStatusCode),
 			Message: op.Error.Errors[0].Message,
 		}
@@ -400,7 +370,7 @@ func (gce *GCECloud) waitForZoneOp(op *compute.Operation, zone string) error {
 }
 
 func isHTTPErrorCode(err error, code int) bool {
-	apiErr, ok := err.(*googleapiv1.Error)
+	apiErr, ok := err.(*googleapi.Error)
 	return ok && apiErr.Code == code
 }
 
@@ -435,7 +405,7 @@ func (gce *GCECloud) EnsureFirewall(apiService *apiv1.Service, hostName string) 
 	// is because the forwarding rule is used as the indicator that the load
 	// balancer is fully created - it's what getLoadBalancer checks for.
 	// Check if user specified the allow source range
-	sourceRanges, err := apiservice.GetLoadBalancerSourceRanges(apiService)
+	sourceRanges, err := cloudprovider.GetLoadBalancerSourceRanges(apiService)
 	if err != nil {
 		return err
 	}

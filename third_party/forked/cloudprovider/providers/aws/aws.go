@@ -39,8 +39,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/api/service"
-	aws_credentials "k8s.io/kubernetes/pkg/credentialprovider/aws"
 )
 
 // ProviderName is the name of this cloud provider.
@@ -50,119 +48,11 @@ const ProviderName = "aws"
 // logically independent clusters running in the same AZ
 const TagNameKubernetesCluster = "KubernetesCluster"
 
-// TagNameKubernetesService is the tag name we use to differentiate multiple
-// services. Used currently for ELBs only.
-const TagNameKubernetesService = "kubernetes.io/service-name"
-
-// TagNameSubnetInternalELB is the tag name used on a subnet to designate that
-// it should be used for internal ELBs
-const TagNameSubnetInternalELB = "kubernetes.io/role/internal-elb"
-
-// TagNameSubnetPublicELB is the tag name used on a subnet to designate that
-// it should be used for internet ELBs
-const TagNameSubnetPublicELB = "kubernetes.io/role/elb"
-
-// ServiceAnnotationLoadBalancerInternal is the annotation used on the service
-// to indicate that we want an internal ELB.
-// Currently we accept only the value "0.0.0.0/0" - other values are an error.
-// This lets us define more advanced semantics in future.
-const ServiceAnnotationLoadBalancerInternal = "service.beta.kubernetes.io/aws-load-balancer-internal"
-
-// ServiceAnnotationLoadBalancerProxyProtocol is the annotation used on the
-// service to enable the proxy protocol on an ELB. Right now we only accept the
-// value "*" which means enable the proxy protocol on all ELB backends. In the
-// future we could adjust this to allow setting the proxy protocol only on
-// certain backends.
-const ServiceAnnotationLoadBalancerProxyProtocol = "service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"
-
-// ServiceAnnotationLoadBalancerAccessLogEmitInterval is the annotation used to
-// specify access log emit interval.
-const ServiceAnnotationLoadBalancerAccessLogEmitInterval = "service.beta.kubernetes.io/aws-load-balancer-access-log-emit-interval"
-
-// ServiceAnnotationLoadBalancerAccessLogEnabled is the annotation used on the
-// service to enable or disable access logs.
-const ServiceAnnotationLoadBalancerAccessLogEnabled = "service.beta.kubernetes.io/aws-load-balancer-access-log-enabled"
-
-// ServiceAnnotationLoadBalancerAccessLogS3BucketName is the annotation used to
-// specify access log s3 bucket name.
-const ServiceAnnotationLoadBalancerAccessLogS3BucketName = "service.beta.kubernetes.io/aws-load-balancer-access-log-s3-bucket-name"
-
-// ServiceAnnotationLoadBalancerAccessLogS3BucketPrefix is the annotation used
-// to specify access log s3 bucket prefix.
-const ServiceAnnotationLoadBalancerAccessLogS3BucketPrefix = "service.beta.kubernetes.io/aws-load-balancer-access-log-s3-bucket-prefix"
-
-// ServiceAnnotationLoadBalancerConnectionDrainingEnabled is the annnotation
-// used on the service to enable or disable connection draining.
-const ServiceAnnotationLoadBalancerConnectionDrainingEnabled = "service.beta.kubernetes.io/aws-load-balancer-connection-draining-enabled"
-
-// ServiceAnnotationLoadBalancerConnectionDrainingTimeout is the annotation
-// used on the service to specify a connection draining timeout.
-const ServiceAnnotationLoadBalancerConnectionDrainingTimeout = "service.beta.kubernetes.io/aws-load-balancer-connection-draining-timeout"
-
-// ServiceAnnotationLoadBalancerConnectionIdleTimeout is the annotation used
-// on the service to specify the idle connection timeout.
-const ServiceAnnotationLoadBalancerConnectionIdleTimeout = "service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout"
-
-// ServiceAnnotationLoadBalancerCrossZoneLoadBalancingEnabled is the annotation
-// used on the service to enable or disable cross-zone load balancing.
-const ServiceAnnotationLoadBalancerCrossZoneLoadBalancingEnabled = "service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled"
-
-// ServiceAnnotationLoadBalancerCertificate is the annotation used on the
-// service to request a secure listener. Value is a valid certificate ARN.
-// For more, see http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/elb-listener-config.html
-// CertARN is an IAM or CM certificate ARN, e.g. arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012
-const ServiceAnnotationLoadBalancerCertificate = "service.beta.kubernetes.io/aws-load-balancer-ssl-cert"
-
-// ServiceAnnotationLoadBalancerSSLPorts is the annotation used on the service
-// to specify a comma-separated list of ports that will use SSL/HTTPS
-// listeners. Defaults to '*' (all).
-const ServiceAnnotationLoadBalancerSSLPorts = "service.beta.kubernetes.io/aws-load-balancer-ssl-ports"
-
-// ServiceAnnotationLoadBalancerBEProtocol is the annotation used on the service
-// to specify the protocol spoken by the backend (pod) behind a listener.
-// If `http` (default) or `https`, an HTTPS listener that terminates the
-//  connection and parses headers is created.
-// If set to `ssl` or `tcp`, a "raw" SSL listener is used.
-// If set to `http` and `aws-load-balancer-ssl-cert` is not used then
-// a HTTP listener is used.
-const ServiceAnnotationLoadBalancerBEProtocol = "service.beta.kubernetes.io/aws-load-balancer-backend-protocol"
-
-const (
-	// volumeAttachmentStatusTimeout is the maximum time to wait for a volume attach/detach to complete
-	volumeAttachmentStatusTimeout = 30 * time.Minute
-	// volumeAttachmentConsecutiveErrorLimit is the number of consecutive errors we will ignore when waiting for a volume to attach/detach
-	volumeAttachmentStatusConsecutiveErrorLimit = 10
-	// volumeAttachmentErrorDelay is the amount of time we wait before retrying after encountering an error,
-	// while waiting for a volume attach/detach to complete
-	volumeAttachmentStatusErrorDelay = 20 * time.Second
-	// volumeAttachmentStatusPollInterval is the interval at which we poll the volume,
-	// while waiting for a volume attach/detach to complete
-	volumeAttachmentStatusPollInterval = 10 * time.Second
-)
-
-// Maps from backend protocol to ELB protocol
-var backendProtocolMapping = map[string]string{
-	"https": "https",
-	"http":  "https",
-	"ssl":   "ssl",
-	"tcp":   "ssl",
-}
-
 // MaxReadThenCreateRetries sets the maximum number of attempts we will make when
 // we read to see if something exists and then try to create it if we didn't find it.
 // This can fail once in a consistent system if done in parallel
 // In an eventually consistent system, it could fail unboundedly
 const MaxReadThenCreateRetries = 30
-
-// DefaultVolumeType specifies which storage to use for newly created Volumes
-// TODO: Remove when user/admin can configure volume types and thus we don't
-// need hardcoded defaults.
-const DefaultVolumeType = "gp2"
-
-// DefaultMaxEBSVolumes is the limit for volumes attached to an instance.
-// Amazon recommends no more than 40; the system root volume uses at least one.
-// See http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/volume_limits.html#linux-specific-volume-limits
-const DefaultMaxEBSVolumes = 39
 
 // Used to call aws_credentials.Init() just once
 var once sync.Once
@@ -180,17 +70,6 @@ type Services interface {
 type EC2 interface {
 	// Query EC2 for instances matching the filter
 	DescribeInstances(request *ec2.DescribeInstancesInput) ([]*ec2.Instance, error)
-
-	// Attach a volume to an instance
-	AttachVolume(*ec2.AttachVolumeInput) (*ec2.VolumeAttachment, error)
-	// Detach a volume from an instance it is attached to
-	DetachVolume(request *ec2.DetachVolumeInput) (resp *ec2.VolumeAttachment, err error)
-	// Lists volumes
-	DescribeVolumes(request *ec2.DescribeVolumesInput) ([]*ec2.Volume, error)
-	// Create an EBS volume
-	CreateVolume(request *ec2.CreateVolumeInput) (resp *ec2.Volume, err error)
-	// Delete an EBS volume
-	DeleteVolume(*ec2.DeleteVolumeInput) (*ec2.DeleteVolumeOutput, error)
 
 	DescribeSecurityGroups(request *ec2.DescribeSecurityGroupsInput) ([]*ec2.SecurityGroup, error)
 
@@ -589,21 +468,8 @@ func readAWSCloudConfig(config io.Reader, metadata EC2Metadata) (*CloudConfig, e
 	return &cfg, nil
 }
 
-func getInstanceType(metadata EC2Metadata) (string, error) {
-	return metadata.GetMetadata("instance-type")
-}
-
 func getAvailabilityZone(metadata EC2Metadata) (string, error) {
 	return metadata.GetMetadata("placement/availability-zone")
-}
-
-func isRegionValid(region string) bool {
-	for _, r := range aws_credentials.AWSRegions {
-		if r == region {
-			return true
-		}
-	}
-	return false
 }
 
 // Derives the region from a valid az name.
@@ -705,8 +571,9 @@ func newAWSCloud(config io.Reader, awsServices Services) (*Cloud, error) {
 	}
 
 	// Register handler for ECR credentials
+	// Register regions, in particular for ECR credentials
 	once.Do(func() {
-		aws_credentials.Init()
+		RecognizeWellKnownRegions()
 	})
 
 	return awsCloud, nil
@@ -1312,7 +1179,7 @@ func (c *Cloud) EnsureFirewall(apiService *apiv1.Service, hostname string) error
 		return err
 	}
 
-	sourceRanges, err := service.GetLoadBalancerSourceRanges(apiService)
+	sourceRanges, err := cloudprovider.GetLoadBalancerSourceRanges(apiService)
 	if err != nil {
 		return err
 	}
