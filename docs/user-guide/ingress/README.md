@@ -30,6 +30,10 @@ hosting. This plugin also support configurable application ports with all the fe
   - [Weighted Loadbalancing for Canary Deployment](weighted.md)
   - [Customize generated HAProxy config via BackendRule](backend-rule.md)
   - [Add Custom Annotation to LoadBalancer Service and Pods](annotations.md)
+  - [Supports Loadbalancer Source Range](source-range.md)
+  - [Supports redirects/DNS resolution for `ServiceTypeExternalName`](external-svc.md)
+  - [Expose HAProxy stats for Prometheus](stats-and-metrics.md)
+  - [Supports AWS certificate manager](aws-cert-manager.md)
 
 ### Comparison with Kubernetes
 | Feauture | Kube Ingress | AppsCode Ingress |
@@ -45,6 +49,10 @@ hosting. This plugin also support configurable application ports with all the fe
 | Route Traffic to StatefulSet Pods Based on Host Name | :x: | :white_check_mark: |
 | Weighted Loadbalancing on Canary Deployment| :x: | :white_check_mark: |
 | Supports full Spectrum of HAProxy backend rules | :x: | :white_check_mark: |
+| Supports Loadbalancer Source Range | :x: | :white_check_mark: |
+| Supports redirects/DNS resolve for `ServiceTypeExternalName` | :x: | :white_check_mark: |
+| Expose HAProxy stats for Prometheus | :x: | :white_check_mark: |
+| Supports AWS certificate manager | :x: | :white_check_mark: |
 
 ## AppsCode Ingress Flow
 Typically, services and pods have IPs only routable by the cluster network. All traffic that ends up at an
@@ -75,50 +83,77 @@ for a high-availability loadbalancer, inside a kubernetes cluster.
 |  PUT    | /apis/appscode.com/v1beta1/namespace/`ns`/ingresss/`name`   | UPDATE | JSON
 |  DELETE | /apis/appscode.com/v1beta1/namespace/`ns`/ingresss/`name`   | DELETE | nil
 
+## Ingress Status
+If an ingress is created as `ingress.appscode.com/type: LoadBalancer` the ingress status field will contain
+the ip/host name for that LoadBalancer. For `HostPort` mode the ingress will open ports on the nodes selected to run HAProxy.
 
-### Configurations Options
-AppsCode Ingress have some global configurations passed via the `annotaion` field of Ingress Metadata,
-and those configuration will be applicable on loadbalancer globally. Annotation keys and its actions are as follows:
+### Configuration Options
+Voyager operator allows customization of Ingress resource using annotation keys with `ingress.appscode.com/` prefix.
+The ingress annotaiton keys are always string. Annotation values might have the following data types:
 
+| Value Type | Description | Example YAML |
+|----------- |-------------|--------------|
+| string | any valid string | 'v1'; "v2"  |
+| integer | any valid integer | '1'; "2" |
+| bool | 1, t, T, TRUE, true, True considered _true_; everything else is considered _false_ | 'true' |
+| array | json formatted array of string | '["v1", "v2"]' |
+| map | json formatted string to string map | '{ "k1" : "v1", "k2": "v2" }' |
+| enum | string which has a predefined set of valid values | 'E1'; "E2"  |
+
+If you are using YAML to write your Ingress, you can use any valid YAML syntax, including multi-line string. Here is an example:
+```yaml
+annotations:
+  ingress.appscode.com/type: LoadBalancer
+  ingress.appscode.com/replicas: '2'
+  ingress.appscode.com/load-balaner-ip: '100.101.102.103'
+  ingress.appscode.com/stats: 'true'
+  ingress.appscode.com/stats-port: '2017'
+  ingress.appscode.com/stats-secret-name: my-secret
+  ingress.appscode.com/annotations-service: |
+    {
+        "service.beta.kubernetes.io/aws-load-balancer-backend-protocol": "http",
+        "service.beta.kubernetes.io/aws-load-balancer-proxy-protocol": "*",
+        "service.beta.kubernetes.io/aws-load-balancer-ssl-cert": "arn:aws:acm:..."
+    }
 ```
-ingress.appscode.com/sticky-session         = indicates the session affinity for the traffic, is set
-                                      session affinity will apply to all the rulses set.
-                                      defaults to false
 
-ingress.appscode.com/type                  = indicates type of service used to expose HAproxy to the internet. Possible values are:
-                                         - LoadBalancer (default)
-                                         - HostPort (previously called Daemon)
-                                         - NodePort
+Below is the full list of supported annotation keys:
 
-ingress.appscode.com/replicas              = indicates number of replicas of HAProxy is run. The default value is 1.
+|  Keys  |   Value   |  Default |  Description |
+|--------|-----------|----------|--------------|
+| ingress.appscode.com/type | LoadBalancer, HostPort, NodePort | LoadBalancer | Indicates type of service used to expose HAProxy to the internet |
+| ingress.appscode.com/replicas | integer | 1 | Indicates number of replicas of HAProxy pods |
+| ingress.appscode.com/load-balaner-ip | string | x | For "gce" and "gke" cloud provider, if this value is set to a valid IPv4 address, it will be assigned to Google cloud network loadbalancer used to expose HAProxy. Usually this is set to a static IP to preserve DNS configuration |
+| ingress.appscode.com/node-selector | map | x | Indicates which hosts are selected to run HAProxy pods. This is a required annotation for `HostPort` type ingress. |
+| ingress.appscode.com/sticky-session | bool | false | Indicates the session affinity for the traffic. If set, session affinity will apply to all the rulses. |
+| ingress.appscode.com/annotations-service | map | x | Annotaiotns applied to service used to expose HAProxy |
+| ingress.appscode.com/annotations-pod | map | x | Annotations applied to pods used to run HAProxy |
+| ingress.appscode.com/keep-source-ip | bool | false | If set, preserves source IP for `LoadBalancer` type ingresses. The actual configuration generated depends on the underlying cloud provider. For gce, gke, azure: Adds annotation `service.beta.kubernetes.io/external-traffic: OnlyLocal` to services used to expose HAProxy. For aws, enforces the use of the PROXY protocol. |
+| ingress.appscode.com/stats | bool | false | If set, HAProxy stats will be exposed |
+| ingress.appscode.com/stats-port | integer | 1936 | Port used to expose HAProxy stats |
+| ingress.appscode.com/stats-secret-name | string | x | Secret used to provide username & password to secure HAProxy stats endpoint. Secret must contain keys `username` and `password` |
+| ingress.appscode.com/stats-service-name | string | `<ingress-name>-stats` | ClusterIP type service used to expose HAproxy stats. This allows to avoid exposing stats to internet. |
+| ingress.appscode.com/ip | | | Removed since 1.5.6. Use `ingress.appscode.com/load-balaner-ip` |
+| ingress.appscode.com/persist | | | Removed since 1.5.6. |
+| ingress.appscode.com/daemon.nodeSelector | | | Removed since 1.5.6. Use `ingress.appscode.com/node-selector` |
+| ingress.appscode.com/stickySession | | | Removed since 1.5.6. Use `ingress.appscode.com/sticky-session` |
+| ingress.appscode.com/annotationsService | | | Removed since 1.5.6. Use `ingress.appscode.com/annotations-service` |
+| ingress.appscode.com/annotationsPod | | | Removed since 1.5.6. Use `ingress.appscode.com/annotations-pod` |
+| ingress.appscode.com/statsSecretName | | | Removed since 1.5.6. Use `ingress.appscode.com/stats-secret-name` |
 
-ingress.appscode.com/node-selector          = This nodeSelector will indicate which host the HAProxy is going to run. This is 
-                                            a required annotation for `HostPort` type ingress. The value of this annotation should 
-                                            be formatted as `foo=bar,foo2=bar2`. This used to be called `ingress.appscode.com/daemon.nodeSelector`.
-                                            We recommend you use the new key going forward. Any existing ingress with previous annotation
-                                            will continue to function as expected.
-
-ingress.appscode.com/ip                    = This key is deprecated. Going forward, use `ingress.appscode.com/load-balaner-ip`.
-
-ingress.appscode.com/load-balaner-ip       = For "gce" and "gke" cloud provider, if this value is set to an valid IPv4 address, 
-                                            it will be assigned to Google cloud network loadbalancer used to expose HAProxy.
-                                            Usually this is set to a static IP to preserve DNS configuration.
-
-ingress.appscode.com/stats                 = if set to true it will open HAProxy stats in IP's 1936 port.
-                                      defaults to false.
-
-ingress.appscode.com/stats-secret-name      = if the stats is on then this kubernetes secret will
-                                      be used as stats basic auth. This secret must contain two data `username`
-                                      and `password` which will be used.
+**Following annotations for ingress are not modifiable. The configuration is applied only when an Ingress object is created.
+If you need to update these annotations, then first delete the Ingress and then recreate.**
+```
+ingress.appscode.com/type
+ingress.appscode.com/node-selector
+ingress.appscode.com/load-balaner-ip
+```
+The issue is being [tracked here.](https://github.com/appscode/voyager/issues/143)
 
 
-ingress.appscode.com/annotations-service   = Json encoded annotations to be applied in LoadBalancer Service
-
-
-ingress.appscode.com/annotations-pod       = Json encoded annotations to be applied in LoadBalancer Pods
-
-The following annotations can be applied in an Ingress if we want to manage Certificate with the
-same ingress resource. Learn more by reading the certificate doc.
+The following annotations can be applied in an Ingress, if you want to manage Certificate with the
+same ingress resource. Learn more by reading the [certificate doc](../certificate/README.md).
+```
  certificate.appscode.com/enabled
  certificate.appscode.com/name
  certificate.appscode.com/provider
@@ -138,10 +173,14 @@ same ingress resource. Learn more by reading the certificate doc.
 - [Route Traffic to StatefulSet Pods Based on Host Name](statefulset-pod.md)
 - [Weighted Loadbalancing on Canary Deployment](weighted.md)
 - [Supports full HAProxy Spectrum via BackendRule](backend-rule.md)
+- [Add Custom Annotation to LoadBalancer Service and Pods](annotations.md)
+- [Supports Loadbalancer Source Range](source-range.md)
+- [Supports redirects/DNS resolve for `ServiceTypeExternalName`](external-svc.md)
+- [Expose HAProxy stats and metrics, use prometheus with metrics](stats-and-metrics.md)
 
 ## Example
-Check out examples for [complex ingress configurations](../../../../hack/example/ingress.yaml).
-This example generates to a HAProxy Configuration like [this](../../../../hack/example/haproxy_generated.cfg).
+Check out examples for [complex ingress configurations](../../../hack/example/ingress.yaml).
+This example generates to a HAProxy Configuration like [this](../../../hack/example/haproxy_generated.cfg).
 
 ## Other CURD Operations
 Applying other operation like update, delete to AppsCode Ingress is regular kubernetes resource operation.
