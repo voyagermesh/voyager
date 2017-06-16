@@ -26,12 +26,16 @@ Now Create Your Ingress/Certificated.
 
 #### Configuration Options
 ```
---master          // The address of the Kubernetes API server (overrides any value in kubeconfig)
---kubeconfig      // Path to kubeconfig file with authorization information (the master location is set by the master flag)
---cloude-provider // Name of cloud provider
---haproxy-image   // Haproxy image name to be run
---ingress-class   // Ingress class handled by voyager. Unset by default. Set to voyager to only handle
-                  // ingress with annotation kubernetes.io/ingress.class=voyager.
+      --address string                        Address to listen on for web interface and telemetry. (default ":8080")
+      --analytics                             Send analytical event to Google Analytics (default true)
+  -c, --cloud-provider string                 Name of cloud provider
+      --haproxy-image string                  haproxy image name to be run (default "appscode/haproxy:1.7.5-1.5.6")
+      --haproxy.server-metric-fields string   Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1 (default "2,3,4,5,6,7,8,9,13,14,15,16,17,18,21,24,33,35,38,39,40,41,42,43,44")
+      --haproxy.timeout duration              Timeout for trying to get stats from HAProxy. (default 5s)
+  -h, --help                                  help for run
+      --ingress-class string                  Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.
+      --kubeconfig string                     Path to kubeconfig file with authorization information (the master location is set by the master flag).
+      --master string                         The address of the Kubernetes API server (overrides any value in kubeconfig)
 ```
 
 Voyager can run HAProxy in 3 different modes. `cloude-provider` flag should be set appropriately depending on the mode. These modes are:
