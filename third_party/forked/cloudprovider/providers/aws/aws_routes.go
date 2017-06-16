@@ -19,10 +19,10 @@ package aws
 import (
 	"fmt"
 
+	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
-	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 )
 
 func (c *Cloud) findRouteTable(clusterName string) (*ec2.RouteTable, error) {

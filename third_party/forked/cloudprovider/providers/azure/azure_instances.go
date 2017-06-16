@@ -20,10 +20,9 @@ import (
 	"fmt"
 	"regexp"
 
-	"k8s.io/kubernetes/pkg/api"
-	"github.com/appscode/voyager/third_party/forked/cloudprovider"
-
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
+	"github.com/appscode/voyager/third_party/forked/cloudprovider"
+	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/types"
 )
 

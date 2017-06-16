@@ -77,9 +77,9 @@ def version():
 
 
 def fmt():
-    libbuild.ungroup_go_imports('*.go', 'api', 'client', 'pkg', 'test')
-    die(call('goimports -w *.go api client pkg test'))
-    call('gofmt -s -w *.go api client pkg test')
+    libbuild.ungroup_go_imports('*.go', 'api', 'client', 'pkg', 'test', 'third_party')
+    die(call('goimports -w *.go api client pkg test third_party'))
+    call('gofmt -s -w *.go api client pkg test third_party')
 
 
 def vet():

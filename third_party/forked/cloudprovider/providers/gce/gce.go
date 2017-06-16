@@ -17,7 +17,6 @@ limitations under the License.
 package gce
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,27 +27,23 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/gcfg.v1"
-
-	"k8s.io/kubernetes/pkg/api"
-	apiservice "k8s.io/kubernetes/pkg/api/service"
-	"k8s.io/kubernetes/pkg/api/unversioned"
-	"github.com/appscode/voyager/third_party/forked/cloudprovider"
-	"k8s.io/kubernetes/pkg/types"
-	utilerrors "k8s.io/kubernetes/pkg/util/errors"
-	"k8s.io/kubernetes/pkg/util/flowcontrol"
-	netsets "k8s.io/kubernetes/pkg/util/net/sets"
-	"k8s.io/kubernetes/pkg/util/sets"
-	"k8s.io/kubernetes/pkg/util/wait"
-	"k8s.io/kubernetes/pkg/volume"
-
 	"cloud.google.com/go/compute/metadata"
+	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	"github.com/golang/glog"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v1"
 	container "google.golang.org/api/container/v1"
 	"google.golang.org/api/googleapi"
+	"gopkg.in/gcfg.v1"
+	"k8s.io/kubernetes/pkg/api"
+	apiservice "k8s.io/kubernetes/pkg/api/service"
+	"k8s.io/kubernetes/pkg/types"
+	utilerrors "k8s.io/kubernetes/pkg/util/errors"
+	"k8s.io/kubernetes/pkg/util/flowcontrol"
+	netsets "k8s.io/kubernetes/pkg/util/net/sets"
+	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/kubernetes/pkg/util/wait"
 )
 
 const (

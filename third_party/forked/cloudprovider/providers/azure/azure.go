@@ -19,15 +19,14 @@ package azure
 import (
 	"io"
 	"io/ioutil"
-
-	"github.com/appscode/voyager/third_party/forked/cloudprovider"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/Azure/azure-sdk-for-go/arm/network"
 	"github.com/Azure/azure-sdk-for-go/arm/storage"
 	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	"github.com/ghodss/yaml"
-	"time"
 )
 
 // CloudProviderName is the value used for the --cloud-provider flag

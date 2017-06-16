@@ -21,13 +21,12 @@ import (
 	"strings"
 	"testing"
 
-	"k8s.io/kubernetes/pkg/api"
-	serviceapi "k8s.io/kubernetes/pkg/api/service"
-	"k8s.io/kubernetes/pkg/types"
-
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/Azure/azure-sdk-for-go/arm/network"
 	"github.com/Azure/go-autorest/autorest/to"
+	"k8s.io/kubernetes/pkg/api"
+	serviceapi "k8s.io/kubernetes/pkg/api/service"
+	"k8s.io/kubernetes/pkg/types"
 )
 
 var testClusterName = "testCluster"
