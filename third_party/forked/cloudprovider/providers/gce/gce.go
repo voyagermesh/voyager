@@ -140,18 +140,6 @@ func getProjectAndZone() (string, string, error) {
 	return projectID, zone, nil
 }
 
-func getInstanceIDViaMetadata() (string, error) {
-	result, err := metadata.Get("instance/hostname")
-	if err != nil {
-		return "", err
-	}
-	parts := strings.Split(result, ".")
-	if len(parts) == 0 {
-		return "", fmt.Errorf("unexpected response: %s", result)
-	}
-	return parts[0], nil
-}
-
 func getNetworkNameViaMetadata() (string, error) {
 	result, err := metadata.Get("instance/network-interfaces/0/network")
 	if err != nil {
@@ -452,10 +440,6 @@ func (gce *GCECloud) waitForZoneOp(op *compute.Operation, zone string) error {
 func isHTTPErrorCode(err error, code int) bool {
 	apiErr, ok := err.(*googleapi.Error)
 	return ok && apiErr.Code == code
-}
-
-func makeHealthCheckDescription(serviceName string) string {
-	return fmt.Sprintf(`{"kubernetes.io/service-name":"%s"}`, serviceName)
 }
 
 // EnsureFirewall is an implementation of LoadBalancer.EnsureLoadBalancer.
