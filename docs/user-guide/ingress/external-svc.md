@@ -61,7 +61,7 @@ spec:
 
 ### Default redirect
 If No BackendRules are configured for the endpoint, Voyager will configure HAProxy to redirect traffic to provided domain and port.
-The redirect code will be 301 (permanent redirect).
+The redirect code will be 301 (permanent redirect). Scheme (http or https) used by endpoint is preserved on redirect.
 ```
 backend:
   serviceName: external-svc-non-dns
@@ -70,7 +70,7 @@ backend:
 
 The generated redirect line in HAProxy config:
 ```
-http-request redirect location http://{{e.ExternalName}}:{{ e.Port }} code 301
+http-request redirect location http[s]://{{e.ExternalName}}:{{ e.Port }} code 301
 ```
 
 ### Backend Rule
