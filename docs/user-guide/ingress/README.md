@@ -96,7 +96,7 @@ string. Annotation values ca have the following data types:
 | bool | 1, t, T, TRUE, true, True considered _true_; everything else is considered _false_ | 'true' |
 | array | json formatted array of string | '["v1", "v2"]' |
 | map | json formatted string to string map | '{ "k1" : "v1", "k2": "v2" }' |
-| enum | string which has a predefined set of valid values | 'v1'; "v2"  |
+| enum | string which has a predefined set of valid values | 'E1'; "E2"  |
 
 If you are using YAML to write your Ingress, you can use any valid YAML syntax, including multi-line string. Here is an example:
 ```yaml
