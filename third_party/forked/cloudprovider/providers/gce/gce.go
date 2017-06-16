@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -322,45 +321,9 @@ func (gce *GCECloud) ProviderName() string {
 	return ProviderName
 }
 
-// Known-useless DNS search path.
-var uselessDNSSearchRE = regexp.MustCompile(`^[0-9]+.google.internal.$`)
-
-// ScrubDNS filters DNS settings for pods.
-func (gce *GCECloud) ScrubDNS(nameservers, searches []string) (nsOut, srchOut []string) {
-	// GCE has too many search paths by default. Filter the ones we know are useless.
-	for _, s := range searches {
-		if !uselessDNSSearchRE.MatchString(s) {
-			srchOut = append(srchOut, s)
-		}
-	}
-	return nameservers, srchOut
-}
-
 // Firewall returns an implementation of Firewall for Google Compute Engine.
 func (gce *GCECloud) Firewall() (cloudprovider.Firewall, bool) {
 	return gce, true
-}
-
-func makeHostURL(projectID, zone, host string) string {
-	host = canonicalizeInstanceName(host)
-	return fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/zones/%s/instances/%s",
-		projectID, zone, host)
-}
-
-func (h *gceInstance) makeComparableHostPath() string {
-	return fmt.Sprintf("/zones/%s/instances/%s", h.Zone, h.Name)
-}
-
-func hostURLToComparablePath(hostURL string) string {
-	idx := strings.Index(hostURL, "/zones/")
-	if idx < 0 {
-		return ""
-	}
-	return hostURL[idx:]
-}
-
-func (gce *GCECloud) targetPoolURL(name, region string) string {
-	return fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/regions/%s/targetPools/%s", gce.projectID, region, name)
 }
 
 func (gce *GCECloud) waitForOp(op *compute.Operation, getOperation func(operationName string) (*compute.Operation, error)) error {
@@ -721,32 +684,6 @@ func (gce *GCECloud) computeHostTags(hosts []*gceInstance) ([]string, error) {
 	return tags.List(), nil
 }
 
-func (gce *GCECloud) projectOwnsStaticIP(name, region string, ipAddress string) (bool, error) {
-	pageToken := ""
-	page := 0
-	for ; page == 0 || (pageToken != "" && page < maxPages); page++ {
-		listCall := gce.service.Addresses.List(gce.projectID, region)
-		if pageToken != "" {
-			listCall = listCall.PageToken(pageToken)
-		}
-		addresses, err := listCall.Do()
-		if err != nil {
-			return false, fmt.Errorf("failed to list gce IP addresses: %v", err)
-		}
-		pageToken = addresses.NextPageToken
-		for _, addr := range addresses.Items {
-			if addr.Address == ipAddress {
-				// This project does own the address, so return success.
-				return true, nil
-			}
-		}
-	}
-	if page >= maxPages {
-		glog.Errorf("projectOwnsStaticIP exceeded maxPages=%d for Addresses.List; truncating.", maxPages)
-	}
-	return false, nil
-}
-
 // EnsureFirewallDeleted is an implementation of Firewall.EnsureFirewallDeleted.
 func (gce *GCECloud) EnsureFirewallDeleted(service *api.Service) error {
 	loadBalancerName := cloudprovider.GetLoadBalancerName(service)
@@ -843,128 +780,6 @@ func (gce *GCECloud) UpdateFirewall(name, desc string, sourceRanges netsets.IPNe
 		return err
 	}
 	return gce.updateFirewall(name, region, desc, sourceRanges, svcPorts, hosts)
-}
-
-// InstanceGroup Management
-
-// CreateInstanceGroup creates an instance group with the given instances. It is the callers responsibility to add named ports.
-func (gce *GCECloud) CreateInstanceGroup(name string, zone string) (*compute.InstanceGroup, error) {
-	op, err := gce.service.InstanceGroups.Insert(
-		gce.projectID, zone, &compute.InstanceGroup{Name: name}).Do()
-	if err != nil {
-		return nil, err
-	}
-	if err = gce.waitForZoneOp(op, zone); err != nil {
-		return nil, err
-	}
-	return gce.GetInstanceGroup(name, zone)
-}
-
-// DeleteInstanceGroup deletes an instance group.
-func (gce *GCECloud) DeleteInstanceGroup(name string, zone string) error {
-	op, err := gce.service.InstanceGroups.Delete(
-		gce.projectID, zone, name).Do()
-	if err != nil {
-		return err
-	}
-	return gce.waitForZoneOp(op, zone)
-}
-
-// ListInstanceGroups lists all InstanceGroups in the project and zone.
-func (gce *GCECloud) ListInstanceGroups(zone string) (*compute.InstanceGroupList, error) {
-	// TODO: use PageToken to list all not just the first 500
-	return gce.service.InstanceGroups.List(gce.projectID, zone).Do()
-}
-
-// ListInstancesInInstanceGroup lists all the instances in a given instance group and state.
-func (gce *GCECloud) ListInstancesInInstanceGroup(name string, zone string, state string) (*compute.InstanceGroupsListInstances, error) {
-	// TODO: use PageToken to list all not just the first 500
-	return gce.service.InstanceGroups.ListInstances(
-		gce.projectID, zone, name,
-		&compute.InstanceGroupsListInstancesRequest{InstanceState: state}).Do()
-}
-
-// AddInstancesToInstanceGroup adds the given instances to the given instance group.
-func (gce *GCECloud) AddInstancesToInstanceGroup(name string, zone string, instanceNames []string) error {
-	if len(instanceNames) == 0 {
-		return nil
-	}
-	// Adding the same instance twice will result in a 4xx error
-	instances := []*compute.InstanceReference{}
-	for _, ins := range instanceNames {
-		instances = append(instances, &compute.InstanceReference{Instance: makeHostURL(gce.projectID, zone, ins)})
-	}
-	op, err := gce.service.InstanceGroups.AddInstances(
-		gce.projectID, zone, name,
-		&compute.InstanceGroupsAddInstancesRequest{
-			Instances: instances,
-		}).Do()
-
-	if err != nil {
-		return err
-	}
-	return gce.waitForZoneOp(op, zone)
-}
-
-// RemoveInstancesFromInstanceGroup removes the given instances from the instance group.
-func (gce *GCECloud) RemoveInstancesFromInstanceGroup(name string, zone string, instanceNames []string) error {
-	if len(instanceNames) == 0 {
-		return nil
-	}
-	instances := []*compute.InstanceReference{}
-	for _, ins := range instanceNames {
-		instanceLink := makeHostURL(gce.projectID, zone, ins)
-		instances = append(instances, &compute.InstanceReference{Instance: instanceLink})
-	}
-	op, err := gce.service.InstanceGroups.RemoveInstances(
-		gce.projectID, zone, name,
-		&compute.InstanceGroupsRemoveInstancesRequest{
-			Instances: instances,
-		}).Do()
-
-	if err != nil {
-		if isHTTPErrorCode(err, http.StatusNotFound) {
-			return nil
-		}
-		return err
-	}
-	return gce.waitForZoneOp(op, zone)
-}
-
-// AddPortToInstanceGroup adds a port to the given instance group.
-func (gce *GCECloud) AddPortToInstanceGroup(ig *compute.InstanceGroup, port int64) (*compute.NamedPort, error) {
-	for _, np := range ig.NamedPorts {
-		if np.Port == port {
-			glog.V(3).Infof("Instance group %v already has named port %+v", ig.Name, np)
-			return np, nil
-		}
-	}
-	glog.Infof("Adding port %v to instance group %v with %d ports", port, ig.Name, len(ig.NamedPorts))
-	namedPort := compute.NamedPort{Name: fmt.Sprintf("port%v", port), Port: port}
-	ig.NamedPorts = append(ig.NamedPorts, &namedPort)
-
-	// setNamedPorts is a zonal endpoint, meaning we invoke it by re-creating a URL like:
-	// {project}/zones/{zone}/instanceGroups/{instanceGroup}/setNamedPorts, so the "zone"
-	// parameter given to SetNamedPorts must not be the entire zone URL.
-	zoneURLParts := strings.Split(ig.Zone, "/")
-	zone := zoneURLParts[len(zoneURLParts)-1]
-
-	op, err := gce.service.InstanceGroups.SetNamedPorts(
-		gce.projectID, zone, ig.Name,
-		&compute.InstanceGroupsSetNamedPortsRequest{
-			NamedPorts: ig.NamedPorts}).Do()
-	if err != nil {
-		return nil, err
-	}
-	if err = gce.waitForZoneOp(op, zone); err != nil {
-		return nil, err
-	}
-	return &namedPort, nil
-}
-
-// GetInstanceGroup returns an instance group by name.
-func (gce *GCECloud) GetInstanceGroup(name string, zone string) (*compute.InstanceGroup, error) {
-	return gce.service.InstanceGroups.Get(gce.projectID, zone, name).Do()
 }
 
 // Take a GCE instance 'hostname' and break it down to something that can be fed
