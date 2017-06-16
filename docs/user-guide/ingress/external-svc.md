@@ -1,4 +1,4 @@
-Voyager supports `ServiceTypeExternalName` services via redirect or dns resolution.
+Voyager supports `ExternalName` type services via dns resolution or http redirect.
 
 ## DNS Resolution
 Voyager can forward traffic in both HTTP and TCP mode to the named domain in the external name
