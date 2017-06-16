@@ -121,16 +121,16 @@ Below is the full list of supported annotation keys:
 |--------|-----------|----------|--------------|
 | ingress.appscode.com/type | LoadBalancer, HostPort, NodePort | LoadBalancer | indicates type of service used to expose HAproxy to the internet |
 | ingress.appscode.com/replicas | integer | 1 | indicates number of replicas of HAProxy is run |
-| ingress.appscode.com/load-balaner-ip | IP | x | For "gce" and "gke" cloud provider, if this value is set to an valid IPv4 address, it will be assigned to Google cloud network loadbalancer used to expose HAProxy. Usually this is set to a static IP to preserve DNS configuration |
-| ingress.appscode.com/node-selector | JSON | x | This nodeSelector will indicate which host the HAProxy is going to run. This is a required annotation for `HostPort` type ingress. The value of this annotation should be formatted as `{"foo": "bar", "foo2": "bar2"}`. This used to be called `ingress.appscode.com/daemon.nodeSelector` with comma seperated selectors list as `foo=bar,foo2=bar2`. This format is changed for the new key. We recommend you use the new key going forward. Any existing ingress with previous annotation will continue to function as expected. |
-| ingress.appscode.com/sticky-session | true, false | false | indicates the session affinity for the traffic, is set session affinity will apply to all the rulses set |
-| ingress.appscode.com/annotations-service | JSON | x | Json encoded annotations to be applied in LoadBalancer Service |
-| ingress.appscode.com/annotations-pod | JSON | x | Json encoded annotations to be applied in LoadBalancer Pods |
-| ingress.appscode.com/keep-source-ip | true, false | false | Preserves source IP for LoadBalancer type ingresses. The actual configuration generated depends on the underlying cloud provider. For gce, gke, azure: Adds annotation `service.beta.kubernetes.io/external-traffic: OnlyLocal` to services used to expose HAProxy. For aws: Enforces the use of the PROXY protocol over any connection accepted by |
-| ingress.appscode.com/stats | true, false | false | if set to true it will open HAProxy stats |
-| ingress.appscode.com/stats-port | Integer | 1936 | HAProxy stats port to open via service |
-| ingress.appscode.com/stats-secret-name | String | x | HAProxy stats secret name to use basic auth. Secret must contain key `username` `password` |
-| ingress.appscode.com/stats-service-name | String | `stats-<ingress-name>` | Stats Service Name |
+| ingress.appscode.com/load-balaner-ip | string | x | For "gce" and "gke" cloud provider, if this value is set to an valid IPv4 address, it will be assigned to Google cloud network loadbalancer used to expose HAProxy. Usually this is set to a static IP to preserve DNS configuration |
+| ingress.appscode.com/node-selector | map | x | This nodeSelector will indicate which host the HAProxy is going to run. This is a required annotation for `HostPort` type ingress. The value of this annotation should be formatted as `{"foo": "bar", "foo2": "bar2"}`. This used to be called `ingress.appscode.com/daemon.nodeSelector` with comma seperated selectors list as `foo=bar,foo2=bar2`. This format is changed for the new key. We recommend you use the new key going forward. Any existing ingress with previous annotation will continue to function as expected. |
+| ingress.appscode.com/sticky-session | bool | false | indicates the session affinity for the traffic, is set session affinity will apply to all the rulses set |
+| ingress.appscode.com/annotations-service | map | x | Json encoded annotations to be applied in LoadBalancer Service |
+| ingress.appscode.com/annotations-pod | map | x | Json encoded annotations to be applied in LoadBalancer Pods |
+| ingress.appscode.com/keep-source-ip | bool | false | Preserves source IP for LoadBalancer type ingresses. The actual configuration generated depends on the underlying cloud provider. For gce, gke, azure: Adds annotation `service.beta.kubernetes.io/external-traffic: OnlyLocal` to services used to expose HAProxy. For aws: Enforces the use of the PROXY protocol over any connection accepted by |
+| ingress.appscode.com/stats | bool | false | if set to true it will open HAProxy stats |
+| ingress.appscode.com/stats-port | integer | 1936 | HAProxy stats port to open via service |
+| ingress.appscode.com/stats-secret-name | string | x | HAProxy stats secret name to use basic auth. Secret must contain key `username` `password` |
+| ingress.appscode.com/stats-service-name | string | `stats-<ingress-name>` | Stats Service Name |
 
 | ingress.appscode.com/ip | IP | x | This key is deprecated. Going forward, use `ingress.appscode.com/load-balaner-ip` |
 
