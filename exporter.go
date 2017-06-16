@@ -14,7 +14,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
 	"github.com/prometheus/common/version"
-	kerr "k8s.io/kubernetes/pkg/api/errors"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -74,7 +75,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 				reg = r2.(*prometheus.Registry)
 			} else {
 				log.Infof("Configuring exporter for standard ingress %s in namespace %s", name, namespace)
-				ingress, err := kubeClient.Extensions().Ingresses(namespace).Get(name)
+				ingress, err := kubeClient.ExtensionsV1beta1().Ingresses(namespace).Get(name, metav1.GetOptions{})
 				if kerr.IsNotFound(err) {
 					http.NotFound(w, r)
 					return
@@ -149,7 +150,7 @@ func getScrapeURL(r *api.Ingress, podIP string) (string, error) {
 	if r.StatsSecretName() != "" {
 		return fmt.Sprintf("http://%s:%d?stats;csv", podIP, r.StatsPort()), nil
 	}
-	secret, err := kubeClient.Core().Secrets(r.Namespace).Get(r.StatsSecretName())
+	secret, err := kubeClient.CoreV1().Secrets(r.Namespace).Get(r.StatsSecretName(), metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}
