@@ -21,32 +21,6 @@ import (
 	"testing"
 )
 
-func TestGetRegion(t *testing.T) {
-	zoneName := "us-central1-b"
-	regionName, err := GetGCERegion(zoneName)
-	if err != nil {
-		t.Fatalf("unexpected error from GetGCERegion: %v", err)
-	}
-	if regionName != "us-central1" {
-		t.Errorf("Unexpected region from GetGCERegion: %s", regionName)
-	}
-	gce := &GCECloud{
-		localZone: zoneName,
-		region:    regionName,
-	}
-	zones, ok := gce.Zones()
-	if !ok {
-		t.Fatalf("Unexpected missing zones impl")
-	}
-	zone, err := zones.GetZone()
-	if err != nil {
-		t.Fatalf("unexpected error %v", err)
-	}
-	if zone.Region != "us-central1" {
-		t.Errorf("Unexpected region: %s", zone.Region)
-	}
-}
-
 func TestComparingHostURLs(t *testing.T) {
 	tests := []struct {
 		host1       string

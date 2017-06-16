@@ -18,7 +18,6 @@ package fake
 
 import (
 	"errors"
-	"fmt"
 	"net"
 	"regexp"
 	"sync"
