@@ -32,7 +32,7 @@ hosting. This plugin also support configurable application ports with all the fe
   - [Add Custom Annotation to LoadBalancer Service and Pods](annotations.md)
   - [Supports Loadbalancer Source Range](source-range.md)
   - [Supports redirects/DNS resolution for `ServiceTypeExternalName`](external-svc.md)
-  - [Expose HAProxy stats and metrics, use prometheus with metrics](stats-and-metrics.md)
+  - [Expose HAProxy stats for Prometheus](stats-and-metrics.md)
 
 ### Comparison with Kubernetes
 | Feauture | Kube Ingress | AppsCode Ingress |
@@ -50,7 +50,7 @@ hosting. This plugin also support configurable application ports with all the fe
 | Supports full Spectrum of HAProxy backend rules | :x: | :white_check_mark: |
 | Supports Loadbalancer Source Range | :x: | :white_check_mark: |
 | Supports redirects/DNS resolve for `ServiceTypeExternalName` | :x: | :white_check_mark: |
-| Expose HAProxy stats and metrics, use prometheus with metrics | :x: | :white_check_mark: |
+| Expose HAProxy stats for Prometheus | :x: | :white_check_mark: |
 
 ## AppsCode Ingress Flow
 Typically, services and pods have IPs only routable by the cluster network. All traffic that ends up at an

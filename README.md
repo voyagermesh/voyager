@@ -46,7 +46,7 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
 | Weighted Loadbalancing for Canary Deployment| :x: | :white_check_mark: |
 | Supports Loadbalancer Source Range | :x: | :white_check_mark: |
 | Supports redirects/DNS resolve for `ServiceTypeExternalName` | :x: | :white_check_mark: |
-| Expose HAProxy stats and metrics, use prometheus with metrics | :x: | :white_check_mark: |
+| Expose HAProxy stats for Prometheus | :x: | :white_check_mark: |
 
 ## Certificate
 Voyager can automaticallty provision and refresh SSL certificates issued from Let's Encrypt using a custom Kubernetes [Certificate](docs/user-guide/certificate) resource. 
