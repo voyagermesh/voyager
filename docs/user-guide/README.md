@@ -40,17 +40,18 @@ Now Create Your Ingress/Certificated.
 
 Voyager can run HAProxy in 3 different modes. `cloude-provider` flag should be set appropriately depending on the mode. These modes are:
 
+- LoadBalancer: In this mode, a Kubernetes LoadBalancer type service is used to expose HAProxy to the internet.
+This is supported for cloud providers known to Kubernetes (`aws`, `gce` and `azure`), `--cloud-provider` flag is required to properly setup this loadbalancer. This mode supports reserved ip on GCE.
+
 - HostPort: In this mode, HAProxy is run as DaemonSet using nodeSelector and hostNetwork:true. As a result,
 HAProxy's IP will be same as the IP address for nodes where it is running. This is supported on any cloud provider
 (known or unknown to Kubernetes). Voyager will open firewall, if a `cloud-provider` is one of `aws`, `gce`, `gke` or
 `azure`. If cloud provider is unknown (say, running on DigitalOcean), users are required to configure firewall as needed.
 This mode used to be called `Daemon`. We recommend using `HostPort` for new setups.
 
-- LoadBalancer: In this mode, a Kubernetes LoadBalancer type service is used to expose HAProxy to the internet.
-This is supported for cloud providers known to Kubernetes (`aws`, `gce` and `azure`), `--cloud-provider` flag is required to properly setup this loadbalancer. This mode supports reserved ip on GCE.
-
 - NodePort: In this mode, a Kubernetes NodePort type service is used to expose HAProxy to the internet. This is supported on any cloud provider including
-baremetal clusters. Users are required to configure firewall as needed.
+baremetal clusters. Users are required to configure firewall as needed. --cloud-provider flag can be left unset, if used with providers other than `aws`, `gce`, `gke` or
+`azure`.
 
 You can choose the mode in your Ingress YAML using label: [ingress.appscode.com/type](/docs/user-guide/ingress#configurations-options)
 
