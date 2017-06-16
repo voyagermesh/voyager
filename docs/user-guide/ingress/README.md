@@ -31,9 +31,10 @@ hosting. This plugin also support configurable application ports with all the fe
   - [Customize generated HAProxy config via BackendRule](backend-rule.md)
   - [Add Custom Annotation to LoadBalancer Service and Pods](annotations.md)
   - [Supports Loadbalancer Source Range](source-range.md)
-  - [Supports redirects/DNS resolution for `ServiceTypeExternalName`](external-svc.md)
+  - [Supports redirects/DNS resolution for `ExternalName` type service](external-svc.md)
   - [Expose HAProxy stats for Prometheus](stats-and-metrics.md)
   - [Supports AWS certificate manager](aws-cert-manager.md)
+  - [Preserve source IP for LoadBalancer type Ingress](docs/user-guide/ingress/keep-source-ip.md)
 
 ### Comparison with Kubernetes
 | Feauture | Kube Ingress | AppsCode Ingress |
@@ -50,9 +51,10 @@ hosting. This plugin also support configurable application ports with all the fe
 | Weighted Loadbalancing on Canary Deployment| :x: | :white_check_mark: |
 | Supports full Spectrum of HAProxy backend rules | :x: | :white_check_mark: |
 | Supports Loadbalancer Source Range | :x: | :white_check_mark: |
-| Supports redirects/DNS resolve for `ServiceTypeExternalName` | :x: | :white_check_mark: |
+| Supports redirects/DNS resolve for `ExternalName` type service | :x: | :white_check_mark: |
 | Expose HAProxy stats for Prometheus | :x: | :white_check_mark: |
 | Supports AWS certificate manager | :x: | :white_check_mark: |
+| Preserve source IP for LoadBalancer type Ingress | :x: | :white_check_mark: |
 
 ## AppsCode Ingress Flow
 Typically, services and pods have IPs only routable by the cluster network. All traffic that ends up at an
