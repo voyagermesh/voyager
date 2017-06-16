@@ -83,20 +83,46 @@ for a high-availability loadbalancer, inside a kubernetes cluster.
 
 ## Ingress Status
 If an ingress is created as `ingress.appscode.com/type: LoadBalancer` the ingress status field will contain
-the ip/host name for that LoadBalancer. For `HostPort` mode the ingress will open traffic in nodes address the pod is running.
+the ip/host name for that LoadBalancer. For `HostPort` mode the ingress will open ports on the nodes selected to run HAProxy.
 
-### Configurations Options
-AppsCode Ingress have some global configurations passed via the `annotaions` field of Ingress Metadata,
-and those configuration will be applicable on loadbalancer globally. Annotation keys and its actions are as follows:
+### Configuration Options
+Voyager operator allows customization of Ingress resource using annotations under `ingress.appscode.com/` prefix. The ingress annotaiton keys are always
+string. Annotation values ca have the following data types:
+| Value Type | Description | Example YAML |
+|----------- |-------------|--------------|
+| string | any valid string | 'v1'; "v2"  |
+| integer | any valid integer | '1'; "2" |
+| bool | 1, t, T, TRUE, true, True considered _true_; everything else is considered false | 'true' |
+| array | json formatted array of string | '["v1", "v2"]' |
+| map | json formatted string to string map | '{ "k1" : "v1", "k2": "v2" }' |
+| enum | string which has a predefined set of valid values | 'v1'; "v2"  |
 
-|  Keys  |   Value  |  Default |  Description |
+If you are using YAML to write your Ingress, you can use any valid YAML syntax, including multi-line string. Here is an example:
+```yaml
+annotations:
+  ingress.appscode.com/type: LoadBalancer
+  ingress.appscode.com/replicas: '2'
+  ingress.appscode.com/load-balaner-ip: '100.101.102.103'
+  ingress.appscode.com/stats: 'true'
+  ingress.appscode.com/stats-port: '2017'
+  ingress.appscode.com/stats-secret-name: my-secret
+  ingress.appscode.com/annotations-service: |
+    {
+        "service.beta.kubernetes.io/aws-load-balancer-backend-protocol": "http",
+        "service.beta.kubernetes.io/aws-load-balancer-proxy-protocol": "*",
+        "service.beta.kubernetes.io/aws-load-balancer-ssl-cert": "arn:aws:acm:..."
+    }
+```
+
+Below is the full list of supported annotation keys:
+
+|  Keys  |   Value   |  Default |  Description |
 |--------|-----------|----------|--------------|
-| ingress.appscode.com/sticky-session | true, false | false | indicates the session affinity for the traffic, is set session affinity will apply to all the rulses set |
-| ingress.appscode.com/type | LoadBalancer, HostPort, NodePOrt | LoadBalancer | indicates type of service used to expose HAproxy to the internet |
+| ingress.appscode.com/type | LoadBalancer, HostPort, NodePort | LoadBalancer | indicates type of service used to expose HAproxy to the internet |
 | ingress.appscode.com/replicas | integer | 1 | indicates number of replicas of HAProxy is run |
-| ingress.appscode.com/node-selector | JSON | x | This nodeSelector will indicate which host the HAProxy is going to run. This is a required annotation for `HostPort` type ingress. The value of this annotation should be formatted as `{"foo": "bar", "foo2": "bar2"}`. This used to be called `ingress.appscode.com/daemon.nodeSelector` with comma seperated selectors list as `foo=bar,foo2=bar2`. This format is changed for the new key. We recommend you use the new key going forward. Any existing ingress with previous annotation will continue to function as expected. |
-| ingress.appscode.com/ip | IP | x | This key is deprecated. Going forward, use `ingress.appscode.com/load-balaner-ip` |
 | ingress.appscode.com/load-balaner-ip | IP | x | For "gce" and "gke" cloud provider, if this value is set to an valid IPv4 address, it will be assigned to Google cloud network loadbalancer used to expose HAProxy. Usually this is set to a static IP to preserve DNS configuration |
+| ingress.appscode.com/node-selector | JSON | x | This nodeSelector will indicate which host the HAProxy is going to run. This is a required annotation for `HostPort` type ingress. The value of this annotation should be formatted as `{"foo": "bar", "foo2": "bar2"}`. This used to be called `ingress.appscode.com/daemon.nodeSelector` with comma seperated selectors list as `foo=bar,foo2=bar2`. This format is changed for the new key. We recommend you use the new key going forward. Any existing ingress with previous annotation will continue to function as expected. |
+| ingress.appscode.com/sticky-session | true, false | false | indicates the session affinity for the traffic, is set session affinity will apply to all the rulses set |
 | ingress.appscode.com/annotations-service | JSON | x | Json encoded annotations to be applied in LoadBalancer Service |
 | ingress.appscode.com/annotations-pod | JSON | x | Json encoded annotations to be applied in LoadBalancer Pods |
 | ingress.appscode.com/keep-source-ip | true, false | false | Preserves source IP for LoadBalancer type ingresses. The actual configuration generated depends on the underlying cloud provider. For gce, gke, azure: Adds annotation `service.beta.kubernetes.io/external-traffic: OnlyLocal` to services used to expose HAProxy. For aws: Enforces the use of the PROXY protocol over any connection accepted by |
@@ -105,7 +131,9 @@ and those configuration will be applicable on loadbalancer globally. Annotation 
 | ingress.appscode.com/stats-secret-name | String | x | HAProxy stats secret name to use basic auth. Secret must contain key `username` `password` |
 | ingress.appscode.com/stats-service-name | String | `stats-<ingress-name>` | Stats Service Name |
 
-**Following configuration annotations for ingress are not modifiable. The configuration is done only when create.**
+| ingress.appscode.com/ip | IP | x | This key is deprecated. Going forward, use `ingress.appscode.com/load-balaner-ip` |
+
+**Following configuration annotations for ingress are not modifiable. The configuration is done only when an Ingress object is created.**
 ```
 ingress.appscode.com/type
 ingress.appscode.com/node-selector
@@ -114,8 +142,7 @@ ingress.appscode.com/load-balaner-ip
 The issue is being [tracked here.](https://github.com/appscode/voyager/issues/143)
 
 
-
-The following annotations can be applied in an Ingress if we want to manage Certificate with the
+The following annotations can be applied in an Ingress, if you want to manage Certificate with the
 same ingress resource. Learn more by reading the [certificate doc](../certificate/README.md).
 ```
  certificate.appscode.com/enabled
