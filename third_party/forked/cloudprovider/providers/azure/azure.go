@@ -19,15 +19,13 @@ package azure
 import (
 	"io"
 	"io/ioutil"
-
-	"github.com/appscode/voyager/third_party/forked/cloudprovider"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/Azure/azure-sdk-for-go/arm/network"
-	"github.com/Azure/azure-sdk-for-go/arm/storage"
 	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	"github.com/ghodss/yaml"
-	"time"
 )
 
 // CloudProviderName is the value used for the --cloud-provider flag
@@ -54,16 +52,10 @@ type Config struct {
 // Cloud holds the config and clients
 type Cloud struct {
 	Config
-	Environment             azure.Environment
-	RoutesClient            network.RoutesClient
-	SubnetsClient           network.SubnetsClient
-	InterfacesClient        network.InterfacesClient
-	RouteTablesClient       network.RouteTablesClient
-	LoadBalancerClient      network.LoadBalancersClient
-	PublicIPAddressesClient network.PublicIPAddressesClient
-	SecurityGroupsClient    network.SecurityGroupsClient
-	VirtualMachinesClient   compute.VirtualMachinesClient
-	StorageAccountClient    storage.AccountsClient
+	Environment           azure.Environment
+	InterfacesClient      network.InterfacesClient
+	SecurityGroupsClient  network.SecurityGroupsClient
+	VirtualMachinesClient compute.VirtualMachinesClient
 }
 
 func init() {
@@ -106,77 +98,25 @@ func NewCloud(configReader io.Reader) (cloudprovider.Interface, error) {
 		return nil, err
 	}
 
-	az.SubnetsClient = network.NewSubnetsClient(az.SubscriptionID)
-	az.SubnetsClient.BaseURI = az.Environment.ResourceManagerEndpoint
-	az.SubnetsClient.Authorizer = servicePrincipalToken
-
-	az.RouteTablesClient = network.NewRouteTablesClient(az.SubscriptionID)
-	az.RouteTablesClient.BaseURI = az.Environment.ResourceManagerEndpoint
-	az.RouteTablesClient.Authorizer = servicePrincipalToken
-
-	az.RoutesClient = network.NewRoutesClient(az.SubscriptionID)
-	az.RoutesClient.BaseURI = az.Environment.ResourceManagerEndpoint
-	az.RoutesClient.Authorizer = servicePrincipalToken
-
 	az.InterfacesClient = network.NewInterfacesClient(az.SubscriptionID)
 	az.InterfacesClient.BaseURI = az.Environment.ResourceManagerEndpoint
 	az.InterfacesClient.Authorizer = servicePrincipalToken
-
-	az.LoadBalancerClient = network.NewLoadBalancersClient(az.SubscriptionID)
-	az.LoadBalancerClient.BaseURI = az.Environment.ResourceManagerEndpoint
-	az.LoadBalancerClient.Authorizer = servicePrincipalToken
 
 	az.VirtualMachinesClient = compute.NewVirtualMachinesClient(az.SubscriptionID)
 	az.VirtualMachinesClient.BaseURI = az.Environment.ResourceManagerEndpoint
 	az.VirtualMachinesClient.Authorizer = servicePrincipalToken
 	az.VirtualMachinesClient.PollingDelay = 5 * time.Second
 
-	az.PublicIPAddressesClient = network.NewPublicIPAddressesClient(az.SubscriptionID)
-	az.PublicIPAddressesClient.BaseURI = az.Environment.ResourceManagerEndpoint
-	az.PublicIPAddressesClient.Authorizer = servicePrincipalToken
-
 	az.SecurityGroupsClient = network.NewSecurityGroupsClient(az.SubscriptionID)
 	az.SecurityGroupsClient.BaseURI = az.Environment.ResourceManagerEndpoint
 	az.SecurityGroupsClient.Authorizer = servicePrincipalToken
 
-	az.StorageAccountClient = storage.NewAccountsClientWithBaseURI(az.Environment.ResourceManagerEndpoint, az.SubscriptionID)
-	az.StorageAccountClient.Authorizer = servicePrincipalToken
 	return &az, nil
 }
 
 // Firewall returns a firewall interface. Also returns true if the interface is supported, false otherwise.
 func (az *Cloud) Firewall() (cloudprovider.Firewall, bool) {
 	return az, false
-}
-
-// LoadBalancer returns a balancer interface. Also returns true if the interface is supported, false otherwise.
-func (az *Cloud) LoadBalancer() (cloudprovider.LoadBalancer, bool) {
-	return az, true
-}
-
-// Instances returns an instances interface. Also returns true if the interface is supported, false otherwise.
-func (az *Cloud) Instances() (cloudprovider.Instances, bool) {
-	return az, true
-}
-
-// Zones returns a zones interface. Also returns true if the interface is supported, false otherwise.
-func (az *Cloud) Zones() (cloudprovider.Zones, bool) {
-	return az, true
-}
-
-// Clusters returns a clusters interface.  Also returns true if the interface is supported, false otherwise.
-func (az *Cloud) Clusters() (cloudprovider.Clusters, bool) {
-	return nil, false
-}
-
-// Routes returns a routes interface along with whether the interface is supported.
-func (az *Cloud) Routes() (cloudprovider.Routes, bool) {
-	return az, true
-}
-
-// ScrubDNS provides an opportunity for cloud-provider-specific code to process DNS settings for pods.
-func (az *Cloud) ScrubDNS(nameservers, searches []string) (nsOut, srchOut []string) {
-	return nameservers, searches
 }
 
 // ProviderName returns the cloud provider ID.

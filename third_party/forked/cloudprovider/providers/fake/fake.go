@@ -18,13 +18,12 @@ package fake
 
 import (
 	"errors"
-	"fmt"
 	"net"
 	"regexp"
 	"sync"
 
-	"k8s.io/kubernetes/pkg/api"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
+	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/types"
 )
 
@@ -61,12 +60,10 @@ type FakeCloud struct {
 	UpdateCalls   []FakeUpdateBalancerCall
 	RouteMap      map[string]*FakeRoute
 	Lock          sync.Mutex
-	cloudprovider.Zone
 }
 
 type FakeRoute struct {
 	ClusterName string
-	Route       cloudprovider.Route
 }
 
 func (f *FakeCloud) addCall(desc string) {
@@ -78,52 +75,14 @@ func (f *FakeCloud) ClearCalls() {
 	f.Calls = []string{}
 }
 
-func (f *FakeCloud) ListClusters() ([]string, error) {
-	return f.ClusterList, f.Err
-}
-
-func (f *FakeCloud) Master(name string) (string, error) {
-	return f.MasterName, f.Err
-}
-
-func (f *FakeCloud) Clusters() (cloudprovider.Clusters, bool) {
-	return f, true
-}
-
 // ProviderName returns the cloud provider ID.
 func (f *FakeCloud) ProviderName() string {
 	return ProviderName
 }
 
-// ScrubDNS filters DNS settings for pods.
-func (f *FakeCloud) ScrubDNS(nameservers, searches []string) (nsOut, srchOut []string) {
-	return nameservers, searches
-}
-
 // Firewall returns a nil Firewall.
 func (f *FakeCloud) Firewall() (cloudprovider.Firewall, bool) {
 	return nil, false
-}
-
-// LoadBalancer returns a fake implementation of LoadBalancer.
-// Actually it just returns f itself.
-func (f *FakeCloud) LoadBalancer() (cloudprovider.LoadBalancer, bool) {
-	return f, true
-}
-
-// Instances returns a fake implementation of Instances.
-//
-// Actually it just returns f itself.
-func (f *FakeCloud) Instances() (cloudprovider.Instances, bool) {
-	return f, true
-}
-
-func (f *FakeCloud) Zones() (cloudprovider.Zones, bool) {
-	return f, true
-}
-
-func (f *FakeCloud) Routes() (cloudprovider.Routes, bool) {
-	return f, true
 }
 
 // GetLoadBalancer is a stub implementation of LoadBalancer.GetLoadBalancer.
@@ -132,46 +91,6 @@ func (f *FakeCloud) GetLoadBalancer(clusterName string, service *api.Service) (*
 	status.Ingress = []api.LoadBalancerIngress{{IP: f.ExternalIP.String()}}
 
 	return status, f.Exists, f.Err
-}
-
-// EnsureLoadBalancer is a test-spy implementation of LoadBalancer.EnsureLoadBalancer.
-// It adds an entry "create" into the internal method call record.
-func (f *FakeCloud) EnsureLoadBalancer(clusterName string, service *api.Service, hosts []string) (*api.LoadBalancerStatus, error) {
-	f.addCall("create")
-	if f.Balancers == nil {
-		f.Balancers = make(map[string]FakeBalancer)
-	}
-
-	name := cloudprovider.GetLoadBalancerName(service)
-	spec := service.Spec
-
-	zone, err := f.GetZone()
-	if err != nil {
-		return nil, err
-	}
-	region := zone.Region
-
-	f.Balancers[name] = FakeBalancer{name, region, spec.LoadBalancerIP, spec.Ports, hosts}
-
-	status := &api.LoadBalancerStatus{}
-	status.Ingress = []api.LoadBalancerIngress{{IP: f.ExternalIP.String()}}
-
-	return status, f.Err
-}
-
-// UpdateLoadBalancer is a test-spy implementation of LoadBalancer.UpdateLoadBalancer.
-// It adds an entry "update" into the internal method call record.
-func (f *FakeCloud) UpdateLoadBalancer(clusterName string, service *api.Service, hosts []string) error {
-	f.addCall("update")
-	f.UpdateCalls = append(f.UpdateCalls, FakeUpdateBalancerCall{service, hosts})
-	return f.Err
-}
-
-// EnsureLoadBalancerDeleted is a test-spy implementation of LoadBalancer.EnsureLoadBalancerDeleted.
-// It adds an entry "delete" into the internal method call record.
-func (f *FakeCloud) EnsureLoadBalancerDeleted(clusterName string, service *api.Service) error {
-	f.addCall("delete")
-	return f.Err
 }
 
 func (f *FakeCloud) AddSSHKeyToAllInstances(user string, keyData []byte) error {
@@ -221,53 +140,4 @@ func (f *FakeCloud) List(filter string) ([]types.NodeName, error) {
 		}
 	}
 	return result, f.Err
-}
-
-func (f *FakeCloud) GetZone() (cloudprovider.Zone, error) {
-	f.addCall("get-zone")
-	return f.Zone, f.Err
-}
-
-func (f *FakeCloud) ListRoutes(clusterName string) ([]*cloudprovider.Route, error) {
-	f.Lock.Lock()
-	defer f.Lock.Unlock()
-	f.addCall("list-routes")
-	var routes []*cloudprovider.Route
-	for _, fakeRoute := range f.RouteMap {
-		if clusterName == fakeRoute.ClusterName {
-			routeCopy := fakeRoute.Route
-			routes = append(routes, &routeCopy)
-		}
-	}
-	return routes, f.Err
-}
-
-func (f *FakeCloud) CreateRoute(clusterName string, nameHint string, route *cloudprovider.Route) error {
-	f.Lock.Lock()
-	defer f.Lock.Unlock()
-	f.addCall("create-route")
-	name := clusterName + "-" + nameHint
-	if _, exists := f.RouteMap[name]; exists {
-		f.Err = fmt.Errorf("route %q already exists", name)
-		return f.Err
-	}
-	fakeRoute := FakeRoute{}
-	fakeRoute.Route = *route
-	fakeRoute.Route.Name = name
-	fakeRoute.ClusterName = clusterName
-	f.RouteMap[name] = &fakeRoute
-	return nil
-}
-
-func (f *FakeCloud) DeleteRoute(clusterName string, route *cloudprovider.Route) error {
-	f.Lock.Lock()
-	defer f.Lock.Unlock()
-	f.addCall("delete-route")
-	name := route.Name
-	if _, exists := f.RouteMap[name]; !exists {
-		f.Err = fmt.Errorf("no route found with name %q", name)
-		return f.Err
-	}
-	delete(f.RouteMap, name)
-	return nil
 }
