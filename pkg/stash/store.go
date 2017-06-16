@@ -1,7 +1,7 @@
 package stash
 
 import (
-	"k8s.io/kubernetes/pkg/client/cache"
+"k8s.io/client-go/tools/cache"
 )
 
 type Storage struct {

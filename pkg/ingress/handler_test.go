@@ -3,11 +3,10 @@ package ingress
 import (
 	"fmt"
 	"testing"
-
 	aci "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
-	kapi "k8s.io/kubernetes/pkg/api"
+apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
 )
 
@@ -18,7 +17,7 @@ func init() {
 func TestShouldHandleIngress(t *testing.T) {
 	dataTables := map[*aci.Ingress]map[string]bool{
 		{
-			ObjectMeta: kapi.ObjectMeta{
+			ObjectMeta: apiv1.ObjectMeta{
 				Annotations: map[string]string{
 					"kubernetes.io/ingress.class": "voyager",
 				},
@@ -32,7 +31,7 @@ func TestShouldHandleIngress(t *testing.T) {
 		},
 
 		{
-			ObjectMeta: kapi.ObjectMeta{
+			ObjectMeta: apiv1.ObjectMeta{
 				Annotations: map[string]string{
 					"ingress.appscode.com/kind": "ingress.appscode.com/v1beta1",
 				},
@@ -46,7 +45,7 @@ func TestShouldHandleIngress(t *testing.T) {
 		},
 
 		{
-			ObjectMeta: kapi.ObjectMeta{
+			ObjectMeta: apiv1.ObjectMeta{
 				Annotations: map[string]string{},
 			},
 		}: {
@@ -72,15 +71,15 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 	_, err := fakeClient.Core().Services("a").Get("b")
 	assert.NotNil(t, err)
 
-	svc, err := fakeClient.Core().Services("test-namespace").Create(&kapi.Service{
-		ObjectMeta: kapi.ObjectMeta{
+	svc, err := fakeClient.Core().Services("test-namespace").Create(&apiv1.Service{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      "test-service",
 			Namespace: "test-namespace",
 		},
 	})
 
 	ensureServiceAnnotations(fakeClient, &aci.Ingress{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
 		},
@@ -98,7 +97,7 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 	fmt.Println(svc.Annotations)
 
 	ensureServiceAnnotations(fakeClient, &aci.Ingress{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
 		},
@@ -116,7 +115,7 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 	fmt.Println(svc.Annotations)
 
 	ensureServiceAnnotations(fakeClient, &aci.Ingress{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
 		},

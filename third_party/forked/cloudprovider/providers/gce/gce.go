@@ -24,7 +24,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
 	"cloud.google.com/go/compute/metadata"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	"github.com/golang/glog"
@@ -34,14 +33,14 @@ import (
 	container "google.golang.org/api/container/v1"
 	"google.golang.org/api/googleapi"
 	"gopkg.in/gcfg.v1"
-	"k8s.io/kubernetes/pkg/api"
+apiv1 "k8s.io/client-go/pkg/api/v1"
 	apiservice "k8s.io/kubernetes/pkg/api/service"
-	"k8s.io/kubernetes/pkg/types"
+"k8s.io/apimachinery/pkg/types"
 	utilerrors "k8s.io/kubernetes/pkg/util/errors"
 	"k8s.io/kubernetes/pkg/util/flowcontrol"
 	netsets "k8s.io/kubernetes/pkg/util/net/sets"
-	"k8s.io/kubernetes/pkg/util/sets"
-	"k8s.io/kubernetes/pkg/util/wait"
+"k8s.io/apimachinery/pkg/util/sets"
+"k8s.io/apimachinery/pkg/util/wait"
 )
 
 const (
@@ -371,7 +370,7 @@ func opIsDone(op *compute.Operation) bool {
 
 func getErrorFromOp(op *compute.Operation) error {
 	if op != nil && op.Error != nil && len(op.Error.Errors) > 0 {
-		err := &googleapi.Error{
+		err := &googleapiv1.Error{
 			Code:    int(op.HttpErrorStatusCode),
 			Message: op.Error.Errors[0].Message,
 		}
@@ -401,7 +400,7 @@ func (gce *GCECloud) waitForZoneOp(op *compute.Operation, zone string) error {
 }
 
 func isHTTPErrorCode(err error, code int) bool {
-	apiErr, ok := err.(*googleapi.Error)
+	apiErr, ok := err.(*googleapiv1.Error)
 	return ok && apiErr.Code == code
 }
 
@@ -412,7 +411,7 @@ func isHTTPErrorCode(err error, code int) bool {
 // Due to an interesting series of design decisions, this handles both creating
 // new load balancers and updating existing load balancers, recognizing when
 // each is needed.
-func (gce *GCECloud) EnsureFirewall(apiService *api.Service, hostName string) error {
+func (gce *GCECloud) EnsureFirewall(apiService *apiv1.Service, hostName string) error {
 	if hostName == "" {
 		return fmt.Errorf("Cannot EnsureFirewall() with no hosts")
 	}
@@ -470,7 +469,7 @@ func (gce *GCECloud) EnsureFirewall(apiService *api.Service, hostName string) er
 	return nil
 }
 
-func (gce *GCECloud) firewallNeedsUpdate(name, serviceName, region, ipAddress string, ports []api.ServicePort, sourceRanges netsets.IPNet) (exists bool, needsUpdate bool, err error) {
+func (gce *GCECloud) firewallNeedsUpdate(name, serviceName, region, ipAddress string, ports []apiv1.ServicePort, sourceRanges netsets.IPNet) (exists bool, needsUpdate bool, err error) {
 	fw, err := gce.service.Firewalls.Get(gce.projectID, makeFirewallName(name)).Do()
 	if err != nil {
 		if isHTTPErrorCode(err, http.StatusNotFound) {
@@ -534,7 +533,7 @@ func slicesEqual(x, y []string) bool {
 	return true
 }
 
-func (gce *GCECloud) createFirewall(name, region, desc string, sourceRanges netsets.IPNet, ports []api.ServicePort, hosts []*gceInstance) error {
+func (gce *GCECloud) createFirewall(name, region, desc string, sourceRanges netsets.IPNet, ports []apiv1.ServicePort, hosts []*gceInstance) error {
 	firewall, err := gce.firewallObject(name, region, desc, sourceRanges, ports, hosts)
 	if err != nil {
 		return err
@@ -552,7 +551,7 @@ func (gce *GCECloud) createFirewall(name, region, desc string, sourceRanges nets
 	return nil
 }
 
-func (gce *GCECloud) updateFirewall(name, region, desc string, sourceRanges netsets.IPNet, ports []api.ServicePort, hosts []*gceInstance) error {
+func (gce *GCECloud) updateFirewall(name, region, desc string, sourceRanges netsets.IPNet, ports []apiv1.ServicePort, hosts []*gceInstance) error {
 	firewall, err := gce.firewallObject(name, region, desc, sourceRanges, ports, hosts)
 	if err != nil {
 		return err
@@ -570,7 +569,7 @@ func (gce *GCECloud) updateFirewall(name, region, desc string, sourceRanges nets
 	return nil
 }
 
-func (gce *GCECloud) firewallObject(name, region, desc string, sourceRanges netsets.IPNet, ports []api.ServicePort, hosts []*gceInstance) (*compute.Firewall, error) {
+func (gce *GCECloud) firewallObject(name, region, desc string, sourceRanges netsets.IPNet, ports []apiv1.ServicePort, hosts []*gceInstance) (*compute.Firewall, error) {
 	allowedPorts := make([]string, len(ports))
 	for ix := range ports {
 		allowedPorts[ix] = strconv.Itoa(int(ports[ix].Port))
@@ -685,7 +684,7 @@ func (gce *GCECloud) computeHostTags(hosts []*gceInstance) ([]string, error) {
 }
 
 // EnsureFirewallDeleted is an implementation of Firewall.EnsureFirewallDeleted.
-func (gce *GCECloud) EnsureFirewallDeleted(service *api.Service) error {
+func (gce *GCECloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 	loadBalancerName := cloudprovider.GetLoadBalancerName(service)
 	glog.V(2).Infof("EnsureFirewallDeleted(%v, %v, %v, %v)", service.Namespace, service.Name, loadBalancerName,
 		gce.region)
@@ -731,15 +730,15 @@ func (gce *GCECloud) CreateFirewall(name, desc string, sourceRanges netsets.IPNe
 		return err
 	}
 	// TODO: This completely breaks modularity in the cloudprovider but the methods
-	// shared with the TCPLoadBalancer take api.ServicePorts.
-	svcPorts := []api.ServicePort{}
+	// shared with the TCPLoadBalancer take apiv1.ServicePorts.
+	svcPorts := []apiv1.ServicePort{}
 	// TODO: Currently the only consumer of this method is the GCE L7
 	// loadbalancer controller, which never needs a protocol other than TCP.
 	// We should pipe through a mapping of port:protocol and default to TCP
 	// if UDP ports are required. This means the method signature will change
 	// forcing downstream clients to refactor interfaces.
 	for _, p := range ports {
-		svcPorts = append(svcPorts, api.ServicePort{Port: int32(p), Protocol: api.ProtocolTCP})
+		svcPorts = append(svcPorts, apiv1.ServicePort{Port: int32(p), Protocol: apiv1.ProtocolTCP})
 	}
 	hosts, err := gce.getInstancesByNames(hostNames)
 	if err != nil {
@@ -765,15 +764,15 @@ func (gce *GCECloud) UpdateFirewall(name, desc string, sourceRanges netsets.IPNe
 		return err
 	}
 	// TODO: This completely breaks modularity in the cloudprovider but the methods
-	// shared with the TCPLoadBalancer take api.ServicePorts.
-	svcPorts := []api.ServicePort{}
+	// shared with the TCPLoadBalancer take apiv1.ServicePorts.
+	svcPorts := []apiv1.ServicePort{}
 	// TODO: Currently the only consumer of this method is the GCE L7
 	// loadbalancer controller, which never needs a protocol other than TCP.
 	// We should pipe through a mapping of port:protocol and default to TCP
 	// if UDP ports are required. This means the method signature will change,
 	// forcing downstream clients to refactor interfaces.
 	for _, p := range ports {
-		svcPorts = append(svcPorts, api.ServicePort{Port: int32(p), Protocol: api.ProtocolTCP})
+		svcPorts = append(svcPorts, apiv1.ServicePort{Port: int32(p), Protocol: apiv1.ProtocolTCP})
 	}
 	hosts, err := gce.getInstancesByNames(hostNames)
 	if err != nil {

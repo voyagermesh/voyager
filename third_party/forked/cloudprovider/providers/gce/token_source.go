@@ -21,7 +21,6 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"

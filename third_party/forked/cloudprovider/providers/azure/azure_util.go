@@ -19,10 +19,9 @@ package azure
 import (
 	"fmt"
 	"strings"
-
 	"github.com/Azure/azure-sdk-for-go/arm/network"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
-	"k8s.io/kubernetes/pkg/api"
+apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 const (
@@ -32,9 +31,9 @@ const (
 
 // returns the equivalent LoadBalancerRule, SecurityRule and LoadBalancerProbe
 // protocol types for the given Kubernetes protocol type.
-func getProtocolsFromKubernetesProtocol(protocol api.Protocol) (network.TransportProtocol, network.SecurityRuleProtocol, network.ProbeProtocol, error) {
+func getProtocolsFromKubernetesProtocol(protocol apiv1.Protocol) (network.TransportProtocol, network.SecurityRuleProtocol, network.ProbeProtocol, error) {
 	switch protocol {
-	case api.ProtocolTCP:
+	case apiv1.ProtocolTCP:
 		return network.TransportProtocolTCP, network.TCP, network.ProbeProtocolTCP, nil
 	default:
 		return "", "", "", fmt.Errorf("Only TCP is supported for Azure LoadBalancers")
@@ -43,16 +42,16 @@ func getProtocolsFromKubernetesProtocol(protocol api.Protocol) (network.Transpor
 
 // This returns a human-readable version of the Service used to tag some resources.
 // This is only used for human-readable convenience, and not to filter.
-func getServiceName(service *api.Service) string {
+func getServiceName(service *apiv1.Service) string {
 	return fmt.Sprintf("%s/%s", service.Namespace, service.Name)
 }
 
 // This returns a prefix for loadbalancer/security rules.
-func getRulePrefix(service *api.Service) string {
+func getRulePrefix(service *apiv1.Service) string {
 	return cloudprovider.GetLoadBalancerName(service)
 }
 
-func serviceOwnsRule(service *api.Service, rule string) bool {
+func serviceOwnsRule(service *apiv1.Service, rule string) bool {
 	prefix := getRulePrefix(service)
 	return strings.HasPrefix(strings.ToUpper(rule), strings.ToUpper(prefix))
 }

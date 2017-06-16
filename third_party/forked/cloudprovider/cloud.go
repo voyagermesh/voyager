@@ -19,8 +19,7 @@ package cloudprovider
 import (
 	"errors"
 	"strings"
-
-	"k8s.io/kubernetes/pkg/api"
+apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 // Interface is an abstract, pluggable interface for cloud providers.
@@ -33,7 +32,7 @@ type Interface interface {
 
 // TODO(#6812): Use a shorter name that's less likely to be longer than cloud
 // providers' name length limits.
-func GetLoadBalancerName(service *api.Service) string {
+func GetLoadBalancerName(service *apiv1.Service) string {
 	//GCE requires that the name of a load balancer starts with a lower case letter.
 	ret := "a" + string(service.UID)
 	ret = strings.Replace(ret, "-", "", -1)
@@ -47,8 +46,8 @@ func GetLoadBalancerName(service *api.Service) string {
 // Firewall is an abstract, pluggable interface for firewalls.
 type Firewall interface {
 	// EnsureFirewall creates and/or update firewall rules.
-	// Implementations must treat the *api.Service parameter as read-only and not modify it.
-	EnsureFirewall(service *api.Service, hostname string) error
+	// Implementations must treat the *apiv1.Service parameter as read-only and not modify it.
+	EnsureFirewall(service *apiv1.Service, hostname string) error
 
 	// EnsureFirewallDeleted deletes the specified firewall if it
 	// exists, returning nil if the firewall specified either didn't exist or
@@ -56,8 +55,8 @@ type Firewall interface {
 	// This construction is useful because many cloud providers' firewall
 	// have multiple underlying components, meaning a Get could say that the firewall
 	// doesn't exist even if some part of it is still laying around.
-	// Implementations must treat the *api.Service parameter as read-only and not modify it.
-	EnsureFirewallDeleted(service *api.Service) error
+	// Implementations must treat the *apiv1.Service parameter as read-only and not modify it.
+	EnsureFirewallDeleted(service *apiv1.Service) error
 }
 
 var InstanceNotFound = errors.New("instance not found")

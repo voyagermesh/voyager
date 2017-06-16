@@ -5,7 +5,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
 	rt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
@@ -15,15 +14,15 @@ import (
 	"github.com/appscode/voyager/pkg/events"
 	ingresscontroller "github.com/appscode/voyager/pkg/ingress"
 	"github.com/appscode/voyager/pkg/stash"
-	kapi "k8s.io/kubernetes/pkg/api"
-	k8serrors "k8s.io/kubernetes/pkg/api/errors"
-	"k8s.io/kubernetes/pkg/api/unversioned"
-	"k8s.io/kubernetes/pkg/apis/extensions"
-	"k8s.io/kubernetes/pkg/client/cache"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/client/restclient"
+apiv1 "k8s.io/client-go/pkg/api/v1"
+kerr "k8s.io/apimachinery/pkg/api/errors"
+metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+"k8s.io/client-go/tools/cache"
+clientset "k8s.io/client-go/kubernetes"
+"k8s.io/client-go/rest"
 	"k8s.io/kubernetes/pkg/fields"
-	"k8s.io/kubernetes/pkg/runtime"
+"k8s.io/apimachinery/pkg/runtime"
 )
 
 type Watcher struct {
@@ -83,13 +82,13 @@ func (w *Watcher) ensureResource() {
 	for _, resource := range resourceList {
 		// This is version dependent
 		_, err := w.KubeClient.Extensions().ThirdPartyResources().Get(resource + "." + api.V1beta1SchemeGroupVersion.Group)
-		if k8serrors.IsNotFound(err) {
+		if kerr.IsNotFound(err) {
 			tpr := &extensions.ThirdPartyResource{
-				TypeMeta: unversioned.TypeMeta{
+				TypeMeta: metav1.TypeMeta{
 					APIVersion: "extensions/v1beta1",
 					Kind:       "ThirdPartyResource",
 				},
-				ObjectMeta: kapi.ObjectMeta{
+				ObjectMeta: apiv1.ObjectMeta{
 					Name: resource + "." + api.V1beta1SchemeGroupVersion.Group,
 				},
 				Versions: []extensions.APIVersion{
@@ -215,7 +214,7 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 				log.Infof("%s/%s required restore", e.EventType, e.ResourceType)
 				obj, true := e.GetRuntimeObject()
 				if true {
-					var client restclient.Interface
+					var client rest.Interface
 					switch e.ResourceType {
 					case events.ConfigMap, events.Service:
 						client = w.KubeClient.Core().RESTClient()
@@ -225,7 +224,7 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 
 					// Clean Default generated values
 					metadata := reflect.ValueOf(obj).Elem().FieldByName("ObjectMeta")
-					objectMeta, ok := metadata.Interface().(kapi.ObjectMeta)
+					objectMeta, ok := metadata.Interface().(apiv1.ObjectMeta)
 					if ok {
 						objectMeta.SetSelfLink("")
 						objectMeta.SetResourceVersion("")
@@ -309,7 +308,7 @@ func (w *Watcher) Cache(resource events.ObjectType, object runtime.Object, lw *c
 	if lw != nil {
 		listWatch = lw
 	} else {
-		listWatch = cache.NewListWatchFromClient(w.KubeClient.Core().RESTClient(), resource.String(), kapi.NamespaceAll, fields.Everything())
+		listWatch = cache.NewListWatchFromClient(w.KubeClient.Core().RESTClient(), resource.String(), apiv1.NamespaceAll, fields.Everything())
 	}
 
 	return cache.NewInformer(
@@ -322,7 +321,7 @@ func (w *Watcher) Cache(resource events.ObjectType, object runtime.Object, lw *c
 
 func (w *Watcher) CacheStore(resource events.ObjectType, object runtime.Object, lw *cache.ListWatch) (cache.Store, *cache.Controller) {
 	if lw == nil {
-		lw = cache.NewListWatchFromClient(w.KubeClient.Core().RESTClient(), resource.String(), kapi.NamespaceAll, fields.Everything())
+		lw = cache.NewListWatchFromClient(w.KubeClient.Core().RESTClient(), resource.String(), apiv1.NamespaceAll, fields.Everything())
 	}
 
 	return stash.NewInformerPopulated(
@@ -335,7 +334,7 @@ func (w *Watcher) CacheStore(resource events.ObjectType, object runtime.Object, 
 
 func (w *Watcher) CacheIndexer(resource events.ObjectType, object runtime.Object, lw *cache.ListWatch, indexers cache.Indexers) (cache.Indexer, *cache.Controller) {
 	if lw == nil {
-		lw = cache.NewListWatchFromClient(w.KubeClient.Core().RESTClient(), resource.String(), kapi.NamespaceAll, fields.Everything())
+		lw = cache.NewListWatchFromClient(w.KubeClient.Core().RESTClient(), resource.String(), apiv1.NamespaceAll, fields.Everything())
 	}
 	if indexers == nil {
 		indexers = cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}

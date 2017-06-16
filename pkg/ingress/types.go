@@ -2,13 +2,12 @@ package ingress
 
 import (
 	"sync"
-
 	api "github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/stash"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
-	"k8s.io/kubernetes/pkg/client/cache"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+"k8s.io/client-go/tools/cache"
+clientset "k8s.io/client-go/kubernetes"
 )
 
 type EngressController struct {

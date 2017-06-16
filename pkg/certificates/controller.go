@@ -8,7 +8,6 @@ import (
 	"encoding/pem"
 	"sync"
 	"time"
-
 	"github.com/appscode/errors"
 	"github.com/appscode/go/strings"
 	"github.com/appscode/log"
@@ -17,12 +16,12 @@ import (
 	"github.com/appscode/voyager/pkg/certificates/providers"
 	"github.com/appscode/voyager/pkg/events"
 	"github.com/xenolf/lego/acme"
-	"k8s.io/kubernetes/pkg/api"
-	k8serr "k8s.io/kubernetes/pkg/api/errors"
-	"k8s.io/kubernetes/pkg/api/unversioned"
-	"k8s.io/kubernetes/pkg/apis/extensions"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/util/intstr"
+apiv1 "k8s.io/client-go/pkg/api/v1"
+kerr "k8s.io/apimachinery/pkg/api/errors"
+metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+clientset "k8s.io/client-go/kubernetes"
+"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 const (
@@ -121,7 +120,7 @@ func (c *CertificateController) process(cert *aci.Certificate) error {
 		}
 	}
 
-	if k8serr.IsNotFound(err) || !cert.Status.CertificateObtained {
+	if kerr.IsNotFound(err) || !cert.Status.CertificateObtained {
 		// Certificate Not found as secret. We must create it now.
 		c.create()
 	}
@@ -149,9 +148,9 @@ func (c *CertificateController) handleIngressEvent(e *events.Event) error {
 				// Certificate exists mount it.
 				return nil
 			}
-			if k8serr.IsNotFound(err) || !certificate.Status.CertificateObtained {
+			if kerr.IsNotFound(err) || !certificate.Status.CertificateObtained {
 				newCertificate := &aci.Certificate{
-					ObjectMeta: api.ObjectMeta{
+					ObjectMeta: apiv1.ObjectMeta{
 						Name:      certificateName,
 						Namespace: ingress.Namespace,
 					},
@@ -159,7 +158,7 @@ func (c *CertificateController) handleIngressEvent(e *events.Event) error {
 						Provider: ingress.Annotations[certificateAnnotationKeyProvider],
 						Email:    ingress.Annotations[certificateAnnotationKeyEmail],
 						ProviderCredentialSecretName: ingress.Annotations[certificateAnnotationKeyProviderCredentialSecretName],
-						HTTPProviderIngressReference: api.ObjectReference{
+						HTTPProviderIngressReference: apiv1.ObjectReference{
 							Kind:            "Ingress",
 							Name:            ingress.Name,
 							Namespace:       ingress.Namespace,
@@ -257,7 +256,7 @@ func (c *CertificateController) ensureACMEClient() error {
 	acmeUserRegistered := false
 	log.Infoln("trying to retrive acmeUser data")
 
-	var userSecret *api.Secret
+	var userSecret *apiv1.Secret
 	err := errors.New("Setting error Not found").Err()
 	if c.certificate.Spec.ACMEUserSecretName != "" {
 		// ACMEUser secret name is provided.
@@ -336,8 +335,8 @@ func (c *CertificateController) registerACMEUser(acmeClient *ACMEClient) error {
 	}
 
 	// Acme User registered Create The acmeUserSecret
-	secret := &api.Secret{
-		ObjectMeta: api.ObjectMeta{
+	secret := &apiv1.Secret{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      c.certificate.Spec.ACMEUserSecretName,
 			Namespace: c.certificate.Namespace,
 			Labels: map[string]string{
@@ -394,7 +393,7 @@ func (c *CertificateController) save(cert acme.CertificateResource) error {
 	}
 
 	// Update certificate data to add Details Information
-	t := unversioned.Now()
+	t := metav1.Now()
 	k8sCert.Status = aci.CertificateStatus{
 		CertificateObtained: true,
 		CreationTime:        &t,

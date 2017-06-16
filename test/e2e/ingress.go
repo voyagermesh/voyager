@@ -5,17 +5,16 @@ import (
 	"strings"
 	"text/template"
 	"time"
-
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	api "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
-	kapi "k8s.io/kubernetes/pkg/api"
-	k8serr "k8s.io/kubernetes/pkg/api/errors"
-	"k8s.io/kubernetes/pkg/api/unversioned"
-	"k8s.io/kubernetes/pkg/apis/extensions"
-	"k8s.io/kubernetes/pkg/labels"
-	"k8s.io/kubernetes/pkg/util/intstr"
+apiv1 "k8s.io/client-go/pkg/api/v1"
+kerr "k8s.io/apimachinery/pkg/api/errors"
+metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+"k8s.io/apimachinery/pkg/labels"
+"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 const maxRetries = 50
@@ -42,7 +41,7 @@ func (s *IngressTestSuit) TestIngressEnsureTPR() error {
 
 func (s *IngressTestSuit) TestIngressCreateDelete() error {
 	baseIngress := &api.Ingress{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},
@@ -79,7 +78,7 @@ func (s *IngressTestSuit) TestIngressCreateDelete() error {
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 60)
-	var svc *kapi.Service
+	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
 		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
@@ -151,14 +150,14 @@ func (s *IngressTestSuit) TestIngressCreateDelete() error {
 	for i := 0; i < maxRetries; i++ {
 		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err != nil {
-			if k8serr.IsNotFound(err) {
+			if kerr.IsNotFound(err) {
 				break
 			}
 		}
 		time.Sleep(time.Second * 5)
 		log.Infoln("Waiting for service to be Deleted")
 	}
-	if !k8serr.IsNotFound(err) {
+	if !kerr.IsNotFound(err) {
 		return errors.New().WithCause(err).Err()
 	}
 	return nil
@@ -166,7 +165,7 @@ func (s *IngressTestSuit) TestIngressCreateDelete() error {
 
 func (s *IngressTestSuit) TestIngressUpdate() error {
 	baseIngress := &api.Ingress{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},
@@ -203,7 +202,7 @@ func (s *IngressTestSuit) TestIngressUpdate() error {
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 40)
-	var svc *kapi.Service
+	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
 		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
@@ -380,7 +379,7 @@ func (s *IngressTestSuit) TestIngressUpdate() error {
 			s.t.KubeClient.Core().ReplicationControllers(s.t.Config.TestNamespace).Update(rc)
 
 			for {
-				pods, _ := s.t.KubeClient.Core().Pods(s.t.Config.TestNamespace).List(kapi.ListOptions{
+				pods, _ := s.t.KubeClient.Core().Pods(s.t.Config.TestNamespace).List(apiv1.ListOptions{
 					LabelSelector: labels.SelectorFromSet(labels.Set(rc.Spec.Selector)),
 				})
 				if len(pods.Items) <= 0 {
@@ -431,7 +430,7 @@ func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
 			s.t.Config.ProviderName == "gke" ||
 			(s.t.Config.ProviderName == "aws" && s.t.Config.InCluster)) {
 		baseIngress := &api.Ingress{
-			ObjectMeta: kapi.ObjectMeta{
+			ObjectMeta: apiv1.ObjectMeta{
 				Name:      testIngressName(),
 				Namespace: s.t.Config.TestNamespace,
 				Annotations: map[string]string{
@@ -471,7 +470,7 @@ func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
 
 		// Wait sometime to loadbalancer be opened up.
 		time.Sleep(time.Second * 10)
-		var svc *kapi.Service
+		var svc *apiv1.Service
 		for i := 0; i < maxRetries; i++ {
 			svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 			if err == nil {
@@ -530,7 +529,7 @@ func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
 
 		time.Sleep(time.Second * 30)
 		baseIngress = &api.Ingress{
-			ObjectMeta: kapi.ObjectMeta{
+			ObjectMeta: apiv1.ObjectMeta{
 				Name:      testIngressName(),
 				Namespace: s.t.Config.TestNamespace,
 				Annotations: map[string]string{
@@ -641,7 +640,7 @@ func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
 
 func (s *IngressTestSuit) TestIngressCreateWithOptions() error {
 	baseIngress := &api.Ingress{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},
@@ -683,7 +682,7 @@ func (s *IngressTestSuit) TestIngressCreateWithOptions() error {
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 10)
-	var svc *kapi.Service
+	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
 		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
@@ -761,7 +760,7 @@ func (s *IngressTestSuit) TestIngressCreateWithOptions() error {
 
 func (s *IngressTestSuit) TestIngressCoreIngress() error {
 	baseIngress := &extensions.Ingress{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
@@ -795,13 +794,13 @@ func (s *IngressTestSuit) TestIngressCoreIngress() error {
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.KubeClient.Extensions().Ingresses(baseIngress.Namespace).Delete(baseIngress.Name, &kapi.DeleteOptions{})
+			s.t.KubeClient.Extensions().Ingresses(baseIngress.Namespace).Delete(baseIngress.Name, &apiv1.DeleteOptions{})
 		}
 	}()
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 10)
-	var svc *kapi.Service
+	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
 		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(api.VoyagerPrefix + baseIngress.Name)
 		if err == nil {
@@ -861,7 +860,7 @@ func (s *IngressTestSuit) TestIngressHostNames() error {
 	orphan := false
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.KubeClient.Core().Services(s.t.Config.TestNamespace).Delete(headlessSvc.Name, &kapi.DeleteOptions{
+			s.t.KubeClient.Core().Services(s.t.Config.TestNamespace).Delete(headlessSvc.Name, &apiv1.DeleteOptions{
 				OrphanDependents: &orphan,
 			})
 		}
@@ -873,14 +872,14 @@ func (s *IngressTestSuit) TestIngressHostNames() error {
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.KubeClient.Apps().StatefulSets(s.t.Config.TestNamespace).Delete(ss.Name, &kapi.DeleteOptions{
+			s.t.KubeClient.Apps().StatefulSets(s.t.Config.TestNamespace).Delete(ss.Name, &apiv1.DeleteOptions{
 				OrphanDependents: &orphan,
 			})
 		}
 	}()
 
 	baseIngress := &api.Ingress{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},
@@ -917,7 +916,7 @@ func (s *IngressTestSuit) TestIngressHostNames() error {
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 120)
-	var svc *kapi.Service
+	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
 		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
@@ -966,20 +965,20 @@ func (s *IngressTestSuit) TestIngressHostNames() error {
 
 func (s *IngressTestSuit) TestIngressBackendWeight() error {
 	dp1, err := s.t.KubeClient.Extensions().Deployments(s.t.Config.TestNamespace).Create(&extensions.Deployment{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      "deploymet-1-" + randString(4),
 			Namespace: s.t.Config.TestNamespace,
 		},
 		Spec: extensions.DeploymentSpec{
 			Replicas: 1,
-			Selector: &unversioned.LabelSelector{
+			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
 					"app":         "deployment",
 					"app-version": "v1",
 				},
 			},
-			Template: kapi.PodTemplateSpec{
-				ObjectMeta: kapi.ObjectMeta{
+			Template: apiv1.PodTemplateSpec{
+				ObjectMeta: apiv1.ObjectMeta{
 					Labels: map[string]string{
 						"app":         "deployment",
 						"app-version": "v1",
@@ -988,22 +987,22 @@ func (s *IngressTestSuit) TestIngressBackendWeight() error {
 						api.BackendWeight: "90",
 					},
 				},
-				Spec: kapi.PodSpec{
-					Containers: []kapi.Container{
+				Spec: apiv1.PodSpec{
+					Containers: []apiv1.Container{
 						{
 							Name:  "server",
 							Image: "appscode/test-server:1.1",
-							Env: []kapi.EnvVar{
+							Env: []apiv1.EnvVar{
 								{
 									Name: "POD_NAME",
-									ValueFrom: &kapi.EnvVarSource{
-										FieldRef: &kapi.ObjectFieldSelector{
+									ValueFrom: &apiv1.EnvVarSource{
+										FieldRef: &apiv1.ObjectFieldSelector{
 											FieldPath: "metadata.name",
 										},
 									},
 								},
 							},
-							Ports: []kapi.ContainerPort{
+							Ports: []apiv1.ContainerPort{
 								{
 									Name:          "http-1",
 									ContainerPort: 8080,
@@ -1020,20 +1019,20 @@ func (s *IngressTestSuit) TestIngressBackendWeight() error {
 	}
 
 	dp2, err := s.t.KubeClient.Extensions().Deployments(s.t.Config.TestNamespace).Create(&extensions.Deployment{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      "deploymet-2-" + randString(4),
 			Namespace: s.t.Config.TestNamespace,
 		},
 		Spec: extensions.DeploymentSpec{
 			Replicas: 1,
-			Selector: &unversioned.LabelSelector{
+			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
 					"app":         "deployment",
 					"app-version": "v2",
 				},
 			},
-			Template: kapi.PodTemplateSpec{
-				ObjectMeta: kapi.ObjectMeta{
+			Template: apiv1.PodTemplateSpec{
+				ObjectMeta: apiv1.ObjectMeta{
 					Labels: map[string]string{
 						"app":         "deployment",
 						"app-version": "v2",
@@ -1042,22 +1041,22 @@ func (s *IngressTestSuit) TestIngressBackendWeight() error {
 						api.BackendWeight: "10",
 					},
 				},
-				Spec: kapi.PodSpec{
-					Containers: []kapi.Container{
+				Spec: apiv1.PodSpec{
+					Containers: []apiv1.Container{
 						{
 							Name:  "server",
 							Image: "appscode/test-server:1.1",
-							Env: []kapi.EnvVar{
+							Env: []apiv1.EnvVar{
 								{
 									Name: "POD_NAME",
-									ValueFrom: &kapi.EnvVarSource{
-										FieldRef: &kapi.ObjectFieldSelector{
+									ValueFrom: &apiv1.EnvVarSource{
+										FieldRef: &apiv1.ObjectFieldSelector{
 											FieldPath: "metadata.name",
 										},
 									},
 								},
 							},
-							Ports: []kapi.ContainerPort{
+							Ports: []apiv1.ContainerPort{
 								{
 									Name:          "http-1",
 									ContainerPort: 8080,
@@ -1073,13 +1072,13 @@ func (s *IngressTestSuit) TestIngressBackendWeight() error {
 		return err
 	}
 
-	svc, err := s.t.KubeClient.Core().Services(s.t.Config.TestNamespace).Create(&kapi.Service{
-		ObjectMeta: kapi.ObjectMeta{
+	svc, err := s.t.KubeClient.Core().Services(s.t.Config.TestNamespace).Create(&apiv1.Service{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      "deployment-svc",
 			Namespace: s.t.Config.TestNamespace,
 		},
-		Spec: kapi.ServiceSpec{
-			Ports: []kapi.ServicePort{
+		Spec: apiv1.ServiceSpec{
+			Ports: []apiv1.ServicePort{
 				{
 					Name:       "http-1",
 					Port:       80,
@@ -1097,7 +1096,7 @@ func (s *IngressTestSuit) TestIngressBackendWeight() error {
 	}
 
 	baseIngress := &api.Ingress{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},
@@ -1136,15 +1135,15 @@ func (s *IngressTestSuit) TestIngressBackendWeight() error {
 			}
 			time.Sleep(time.Second * 5)
 			orphan := false
-			s.t.KubeClient.Extensions().Deployments(dp1.Namespace).Delete(dp1.Name, &kapi.DeleteOptions{
+			s.t.KubeClient.Extensions().Deployments(dp1.Namespace).Delete(dp1.Name, &apiv1.DeleteOptions{
 				OrphanDependents: &orphan,
 			})
 
-			s.t.KubeClient.Extensions().Deployments(dp2.Namespace).Delete(dp2.Name, &kapi.DeleteOptions{
+			s.t.KubeClient.Extensions().Deployments(dp2.Namespace).Delete(dp2.Name, &apiv1.DeleteOptions{
 				OrphanDependents: &orphan,
 			})
 
-			s.t.KubeClient.Core().Services(svc.Namespace).Delete(svc.Name, &kapi.DeleteOptions{
+			s.t.KubeClient.Core().Services(svc.Namespace).Delete(svc.Name, &apiv1.DeleteOptions{
 				OrphanDependents: &orphan,
 			})
 		}
@@ -1225,7 +1224,7 @@ func (s *IngressTestSuit) TestIngressBackendWeight() error {
 
 func (s *IngressTestSuit) TestIngressBackendRule() error {
 	baseIngress := &api.Ingress{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},
@@ -1289,7 +1288,7 @@ func (s *IngressTestSuit) TestIngressBackendRule() error {
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 10)
-	var svc *kapi.Service
+	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
 		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
@@ -1384,7 +1383,7 @@ func (s *IngressTestSuit) TestIngressBackendRule() error {
 
 func (s *IngressTestSuit) TestIngressAnnotations() error {
 	baseIngress := &api.Ingress{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
@@ -1424,7 +1423,7 @@ func (s *IngressTestSuit) TestIngressAnnotations() error {
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 60)
-	var svc *kapi.Service
+	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
 		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
@@ -1462,7 +1461,7 @@ func (s *IngressTestSuit) TestIngressAnnotations() error {
 		return errors.New().WithCause(err).Err()
 	}
 
-	pods, err := s.t.KubeClient.Core().Pods(svc.Namespace).List(kapi.ListOptions{
+	pods, err := s.t.KubeClient.Core().Pods(svc.Namespace).List(apiv1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
 	})
 	if err == nil {
@@ -1519,7 +1518,7 @@ func (s *IngressTestSuit) TestIngressAnnotations() error {
 		return errors.FromErr(err).Err()
 	}
 
-	pods, err = s.t.KubeClient.Core().Pods(svc.Namespace).List(kapi.ListOptions{
+	pods, err = s.t.KubeClient.Core().Pods(svc.Namespace).List(apiv1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
 	})
 	if err == nil {
@@ -1576,7 +1575,7 @@ func (s *IngressTestSuit) TestIngressAnnotations() error {
 		}
 	}
 
-	pods, err = s.t.KubeClient.Core().Pods(svc.Namespace).List(kapi.ListOptions{
+	pods, err = s.t.KubeClient.Core().Pods(svc.Namespace).List(apiv1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
 	})
 	if err == nil {
@@ -1603,7 +1602,7 @@ func (s *IngressTestSuit) TestIngressAnnotations() error {
 
 func (s *IngressTestSuit) TestIngressNodePort() error {
 	baseDaemonIngress := &api.Ingress{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
@@ -1642,7 +1641,7 @@ func (s *IngressTestSuit) TestIngressNodePort() error {
 	}()
 
 	// Wait sometime to loadbalancer be opened up.
-	var svc *kapi.Service
+	var svc *apiv1.Service
 	time.Sleep(time.Second * 60)
 	for i := 0; i < maxRetries; i++ {
 		var err error
@@ -1657,7 +1656,7 @@ func (s *IngressTestSuit) TestIngressNodePort() error {
 		return errors.New().WithCause(err).Err()
 	}
 
-	if svc.Spec.Type != kapi.ServiceTypeNodePort {
+	if svc.Spec.Type != apiv1.ServiceTypeNodePort {
 		return errors.New().WithMessage("ServiceType Not NodePort").Err()
 	}
 
@@ -1675,7 +1674,7 @@ func (s *IngressTestSuit) TestIngressNodePort() error {
 
 func (s *IngressTestSuit) TestIngressStats() error {
 	baseIng := &api.Ingress{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
@@ -1730,7 +1729,7 @@ func (s *IngressTestSuit) TestIngressStats() error {
 	}
 
 	// Check if all Stats Things are open
-	var svc *kapi.Service
+	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
 		var err error
 		svc, err = s.t.KubeClient.Core().Services(baseIng.Namespace).Get(baseIng.Name + "-stats")
@@ -1778,7 +1777,7 @@ func (s *IngressTestSuit) TestIngressStats() error {
 
 func (s *IngressTestSuit) TestIngressKeepSource() error {
 	baseIngress := &api.Ingress{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
@@ -1818,7 +1817,7 @@ func (s *IngressTestSuit) TestIngressKeepSource() error {
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 60)
-	var svc *kapi.Service
+	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
 		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
@@ -1853,7 +1852,7 @@ func (s *IngressTestSuit) TestIngressKeepSource() error {
 
 func (s *IngressTestSuit) TestIngressLBSourceRange() error {
 	baseIngress := &api.Ingress{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
@@ -1897,7 +1896,7 @@ func (s *IngressTestSuit) TestIngressLBSourceRange() error {
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 60)
-	var svc *kapi.Service
+	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
 		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {
@@ -1944,8 +1943,8 @@ func (s *IngressTestSuit) TestIngressLBSourceRange() error {
 }
 
 func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
-	extSvcResolvesDNSWithNS := &kapi.Service{
-		ObjectMeta: kapi.ObjectMeta{
+	extSvcResolvesDNSWithNS := &apiv1.Service{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      "external-svc-dns-with-ns",
 			Namespace: s.t.Config.TestNamespace,
 			Annotations: map[string]string{
@@ -1953,8 +1952,8 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 				api.DNSResolverNameservers: `["8.8.8.8:53", "8.8.4.4:53"]`,
 			},
 		},
-		Spec: kapi.ServiceSpec{
-			Type:         kapi.ServiceTypeExternalName,
+		Spec: apiv1.ServiceSpec{
+			Type:         apiv1.ServiceTypeExternalName,
 			ExternalName: "google.com",
 		},
 	}
@@ -1969,13 +1968,13 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 		}
 	}()
 
-	extSvcNoResolveRedirect := &kapi.Service{
-		ObjectMeta: kapi.ObjectMeta{
+	extSvcNoResolveRedirect := &apiv1.Service{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      "external-svc-non-dns",
 			Namespace: s.t.Config.TestNamespace,
 		},
-		Spec: kapi.ServiceSpec{
-			Type:         kapi.ServiceTypeExternalName,
+		Spec: apiv1.ServiceSpec{
+			Type:         apiv1.ServiceTypeExternalName,
 			ExternalName: "google.com",
 		},
 	}
@@ -1990,13 +1989,13 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 		}
 	}()
 
-	extSvcResolvesDNSWithoutNS := &kapi.Service{
-		ObjectMeta: kapi.ObjectMeta{
+	extSvcResolvesDNSWithoutNS := &apiv1.Service{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      "external-svc-dns",
 			Namespace: s.t.Config.TestNamespace,
 		},
-		Spec: kapi.ServiceSpec{
-			Type:         kapi.ServiceTypeExternalName,
+		Spec: apiv1.ServiceSpec{
+			Type:         apiv1.ServiceTypeExternalName,
 			ExternalName: "google.com",
 		},
 	}
@@ -2012,7 +2011,7 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 	}()
 
 	baseIngress := &api.Ingress{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},
@@ -2077,7 +2076,7 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 10)
-	var svc *kapi.Service
+	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
 		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
 		if err == nil {

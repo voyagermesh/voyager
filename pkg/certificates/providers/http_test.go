@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"testing"
 	"time"
-
 	"github.com/appscode/voyager/test/testframework"
 )
 

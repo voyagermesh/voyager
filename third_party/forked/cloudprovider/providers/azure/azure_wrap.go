@@ -18,11 +18,10 @@ package azure
 
 import (
 	"net/http"
-
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/Azure/azure-sdk-for-go/arm/network"
 	"github.com/Azure/go-autorest/autorest"
-	"k8s.io/kubernetes/pkg/types"
+"k8s.io/apimachinery/pkg/types"
 )
 
 // checkExistsFromError inspects an error and returns a true if err is nil,

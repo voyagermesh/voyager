@@ -3,13 +3,12 @@ package ingress
 import (
 	"reflect"
 	"strconv"
-
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
-	kapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/labels"
-	"k8s.io/kubernetes/pkg/util/intstr"
+apiv1 "k8s.io/client-go/pkg/api/v1"
+"k8s.io/apimachinery/pkg/labels"
+"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 type updateType int
@@ -136,16 +135,16 @@ func (lbc *EngressController) updateLBSvc() error {
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
-	curPorts := make(map[int32]kapi.ServicePort)
+	curPorts := make(map[int32]apiv1.ServicePort)
 	for _, p := range svc.Spec.Ports {
 		curPorts[p.Port] = p
 	}
-	svc.Spec.Ports = make([]kapi.ServicePort, 0)
+	svc.Spec.Ports = make([]apiv1.ServicePort, 0)
 	for targetPort, svcPort := range lbc.Ports {
 		if sp, found := curPorts[int32(svcPort)]; found && sp.TargetPort.IntValue() == targetPort {
 			svc.Spec.Ports = append(svc.Spec.Ports, sp)
 		} else {
-			svc.Spec.Ports = append(svc.Spec.Ports, kapi.ServicePort{
+			svc.Spec.Ports = append(svc.Spec.Ports, apiv1.ServicePort{
 				Name:       "tcp-" + strconv.Itoa(svcPort),
 				Protocol:   "TCP",
 				Port:       int32(svcPort),
@@ -154,7 +153,7 @@ func (lbc *EngressController) updateLBSvc() error {
 		}
 	}
 
-	if svc.Spec.Type == kapi.ServiceTypeLoadBalancer {
+	if svc.Spec.Type == apiv1.ServiceTypeLoadBalancer {
 		// Update Source Range
 		svc.Spec.LoadBalancerSourceRanges = lbc.Resource.Spec.LoadBalancerSourceRanges
 	}
@@ -179,7 +178,7 @@ func (lbc *EngressController) updateLBSvc() error {
 	// open up firewall
 	log.Infoln("Loadbalancer CloudManager", lbc.CloudManager, "serviceType", svc.Spec.Type)
 	if (lbc.Resource.LBType() == api.LBTypeDaemon || lbc.Resource.LBType() == api.LBTypeHostPort) && lbc.CloudManager != nil {
-		daemonNodes, err := lbc.KubeClient.Core().Nodes().List(kapi.ListOptions{
+		daemonNodes, err := lbc.KubeClient.Core().Nodes().List(apiv1.ListOptions{
 			LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Resource.NodeSelector())),
 		})
 		if err != nil {
@@ -192,8 +191,8 @@ func (lbc *EngressController) updateLBSvc() error {
 			log.Debugln("cloud manager not nil")
 			if fw, ok := lbc.CloudManager.Firewall(); ok {
 				log.Debugln("firewalls found")
-				convertedSvc := &kapi.Service{}
-				kapi.Scheme.Convert(svc, convertedSvc, nil)
+				convertedSvc := &apiv1.Service{}
+				apiv1.Scheme.Convert(svc, convertedSvc, nil)
 				for _, node := range daemonNodes.Items {
 					err = fw.EnsureFirewall(convertedSvc, node.Name)
 					if err != nil {
@@ -243,7 +242,7 @@ func (lbc *EngressController) UpdateTargetAnnotations(old *api.Ingress, new *api
 						return errors.FromErr(err).Err()
 					}
 					if daemonset.Spec.Selector != nil {
-						pods, _ := lbc.KubeClient.Core().Pods(lbc.Resource.Namespace).List(kapi.ListOptions{
+						pods, _ := lbc.KubeClient.Core().Pods(lbc.Resource.Namespace).List(apiv1.ListOptions{
 							LabelSelector: labels.SelectorFromSet(daemonset.Spec.Selector.MatchLabels),
 						})
 						for _, pod := range pods.Items {

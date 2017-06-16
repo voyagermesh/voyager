@@ -7,12 +7,11 @@ import (
 	"encoding/pem"
 	"os"
 	"testing"
-
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
 	"github.com/xenolf/lego/acme"
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+apiv1 "k8s.io/client-go/pkg/api/v1"
+metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestNewDomainCollection(t *testing.T) {
@@ -24,11 +23,11 @@ func TestNewDomainCollection(t *testing.T) {
 }
 
 func TestACMECertData(t *testing.T) {
-	certificateSecret := &api.Secret{
-		TypeMeta: unversioned.TypeMeta{
+	certificateSecret := &apiv1.Secret{
+		TypeMeta: metav1.TypeMeta{
 			Kind: "Secret",
 		},
-		ObjectMeta: api.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      defaultCertPrefix + "hello",
 			Namespace: "default",
 			Labels: map[string]string{
@@ -40,10 +39,10 @@ func TestACMECertData(t *testing.T) {
 			},
 		},
 		Data: map[string][]byte{
-			api.TLSCertKey:       []byte("Certificate key"),
-			api.TLSPrivateKeyKey: []byte("Certificate private key"),
+			apiv1.TLSCertKey:       []byte("Certificate key"),
+			apiv1.TLSPrivateKeyKey: []byte("Certificate private key"),
 		},
-		Type: api.SecretTypeTLS,
+		Type: apiv1.SecretTypeTLS,
 	}
 
 	cert, err := NewACMECertDataFromSecret(certificateSecret)
@@ -54,11 +53,11 @@ func TestACMECertData(t *testing.T) {
 }
 
 func TestACMECertDataError(t *testing.T) {
-	certificateSecret := &api.Secret{
-		TypeMeta: unversioned.TypeMeta{
+	certificateSecret := &apiv1.Secret{
+		TypeMeta: metav1.TypeMeta{
 			Kind: "Secret",
 		},
-		ObjectMeta: api.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      defaultCertPrefix + "hello",
 			Namespace: "default",
 			Labels: map[string]string{
@@ -70,9 +69,9 @@ func TestACMECertDataError(t *testing.T) {
 			},
 		},
 		Data: map[string][]byte{
-			api.TLSPrivateKeyKey: []byte("Certificate private key"),
+			apiv1.TLSPrivateKeyKey: []byte("Certificate private key"),
 		},
-		Type: api.SecretTypeTLS,
+		Type: apiv1.SecretTypeTLS,
 	}
 
 	_, err := NewACMECertDataFromSecret(certificateSecret)

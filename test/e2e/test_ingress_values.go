@@ -2,21 +2,21 @@ package e2e
 
 import (
 	"github.com/appscode/voyager/test/testframework"
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/apis/apps"
-	"k8s.io/kubernetes/pkg/util/intstr"
+apiv1 "k8s.io/client-go/pkg/api/v1"
+apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
+"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-var testServerSvc = &api.Service{
-	ObjectMeta: api.ObjectMeta{
+var testServerSvc = &apiv1.Service{
+	ObjectMeta: apiv1.ObjectMeta{
 		Name:      "test-server",
 		Namespace: testframework.TestContext.E2EConfigs.TestNamespace,
 		Labels: map[string]string{
 			"app": "test-server",
 		},
 	},
-	Spec: api.ServiceSpec{
-		Ports: []api.ServicePort{
+	Spec: apiv1.ServiceSpec{
+		Ports: []apiv1.ServicePort{
 			{
 				Name:       "http-1",
 				Port:       80,
@@ -61,8 +61,8 @@ var testServerSvc = &api.Service{
 	},
 }
 
-var testServerRc = &api.ReplicationController{
-	ObjectMeta: api.ObjectMeta{
+var testServerRc = &apiv1.ReplicationController{
+	ObjectMeta: apiv1.ObjectMeta{
 		Name:      "test-server",
 		Namespace: testframework.TestContext.E2EConfigs.TestNamespace,
 		Labels: map[string]string{
@@ -70,34 +70,34 @@ var testServerRc = &api.ReplicationController{
 			"name": "test-rc",
 		},
 	},
-	Spec: api.ReplicationControllerSpec{
+	Spec: apiv1.ReplicationControllerSpec{
 		Replicas: 2,
 		Selector: map[string]string{
 			"app": "test-server",
 		},
-		Template: &api.PodTemplateSpec{
-			ObjectMeta: api.ObjectMeta{
+		Template: &apiv1.PodTemplateSpec{
+			ObjectMeta: apiv1.ObjectMeta{
 				Labels: map[string]string{
 					"app":  "test-server",
 					"name": "test-rc",
 				},
 			},
-			Spec: api.PodSpec{
-				Containers: []api.Container{
+			Spec: apiv1.PodSpec{
+				Containers: []apiv1.Container{
 					{
 						Name:  "server",
 						Image: "appscode/test-server:1.4",
-						Env: []api.EnvVar{
+						Env: []apiv1.EnvVar{
 							{
 								Name: "POD_NAME",
-								ValueFrom: &api.EnvVarSource{
-									FieldRef: &api.ObjectFieldSelector{
+								ValueFrom: &apiv1.EnvVarSource{
+									FieldRef: &apiv1.ObjectFieldSelector{
 										FieldPath: "metadata.name",
 									},
 								},
 							},
 						},
-						Ports: []api.ContainerPort{
+						Ports: []apiv1.ContainerPort{
 							{
 								Name:          "http-1",
 								ContainerPort: 8080,
@@ -130,17 +130,17 @@ var testServerRc = &api.ReplicationController{
 	},
 }
 
-var testStatefulSetSvc = &api.Service{
-	ObjectMeta: api.ObjectMeta{
+var testStatefulSetSvc = &apiv1.Service{
+	ObjectMeta: apiv1.ObjectMeta{
 		Name:      "ss-svc",
 		Namespace: testframework.TestContext.E2EConfigs.TestNamespace,
 		Labels: map[string]string{
 			"app": "e2e-test",
 		},
 	},
-	Spec: api.ServiceSpec{
+	Spec: apiv1.ServiceSpec{
 		ClusterIP: "None",
-		Ports: []api.ServicePort{
+		Ports: []apiv1.ServicePort{
 			{
 				Name:       "http-1",
 				Port:       80,
@@ -186,7 +186,7 @@ var testStatefulSetSvc = &api.Service{
 }
 
 var testServerStatefulSet = &apps.StatefulSet{
-	ObjectMeta: api.ObjectMeta{
+	ObjectMeta: apiv1.ObjectMeta{
 		Name:      "test-ss",
 		Namespace: testframework.TestContext.E2EConfigs.TestNamespace,
 		Labels: map[string]string{
@@ -197,28 +197,28 @@ var testServerStatefulSet = &apps.StatefulSet{
 	Spec: apps.StatefulSetSpec{
 		Replicas:    3,
 		ServiceName: testStatefulSetSvc.Name,
-		Template: api.PodTemplateSpec{
-			ObjectMeta: api.ObjectMeta{
+		Template: apiv1.PodTemplateSpec{
+			ObjectMeta: apiv1.ObjectMeta{
 				Labels: map[string]string{
 					"app": "e2e-test",
 				},
 			},
-			Spec: api.PodSpec{
-				Containers: []api.Container{
+			Spec: apiv1.PodSpec{
+				Containers: []apiv1.Container{
 					{
 						Name:  "server",
 						Image: "appscode/test-server:1.1",
-						Env: []api.EnvVar{
+						Env: []apiv1.EnvVar{
 							{
 								Name: "POD_NAME",
-								ValueFrom: &api.EnvVarSource{
-									FieldRef: &api.ObjectFieldSelector{
+								ValueFrom: &apiv1.EnvVarSource{
+									FieldRef: &apiv1.ObjectFieldSelector{
 										FieldPath: "metadata.name",
 									},
 								},
 							},
 						},
-						Ports: []api.ContainerPort{
+						Ports: []apiv1.ContainerPort{
 							{
 								Name:          "http-1",
 								ContainerPort: 8080,

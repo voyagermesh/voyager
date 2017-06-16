@@ -4,20 +4,19 @@ import (
 	"io/ioutil"
 	"os"
 	"time"
-
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/client/clientset"
 	acs "github.com/appscode/voyager/client/clientset"
 	acw "github.com/appscode/voyager/pkg/watcher"
 	"github.com/appscode/voyager/test/testframework"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/client/restclient"
-	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
+clientset "k8s.io/client-go/kubernetes"
+"k8s.io/client-go/rest"
+"k8s.io/client-go/tools/clientcmd"
 )
 
 type TestSuit struct {
 	Config     testframework.E2EConfig
-	KubeClient internalclientset.Interface
+	KubeClient clientset.Interface
 	ExtClient  clientset.ExtensionInterface
 	Voyager    *acw.Watcher
 }
@@ -35,14 +34,14 @@ func NewE2ETestSuit() *TestSuit {
 	return &TestSuit{
 		Config: testframework.TestContext.E2EConfigs,
 		Voyager: &acw.Watcher{
-			KubeClient:   internalclientset.NewForConfigOrDie(c),
+			KubeClient:   clientset.NewForConfigOrDie(c),
 			ExtClient:    acs.NewForConfigOrDie(c),
 			SyncPeriod:   time.Minute * 2,
 			ProviderName: testframework.TestContext.E2EConfigs.ProviderName,
 			HAProxyImage: testframework.TestContext.E2EConfigs.HAProxyImageName,
 			IngressClass: testframework.TestContext.E2EConfigs.IngressClass,
 		},
-		KubeClient: internalclientset.NewForConfigOrDie(c),
+		KubeClient: clientset.NewForConfigOrDie(c),
 		ExtClient:  acs.NewForConfigOrDie(c),
 	}
 }
@@ -69,7 +68,7 @@ func ensureE2EConfigs() {
 	}
 }
 
-func getKubeConfig() (*restclient.Config, error) {
+func getKubeConfig() (*rest.Config, error) {
 	if len(testframework.TestContext.E2EConfigs.KubeConfig) == 0 {
 		if _, err := os.Stat(clientcmd.RecommendedHomeFile); err == nil {
 			testframework.TestContext.E2EConfigs.KubeConfig = clientcmd.RecommendedHomeFile

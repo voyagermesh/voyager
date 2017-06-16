@@ -8,7 +8,6 @@ import (
 	"os"
 	"strings"
 	"sync"
-
 	"github.com/appscode/errors"
 	stringutil "github.com/appscode/go/strings"
 	"github.com/appscode/log"
@@ -28,13 +27,13 @@ import (
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"
 	"github.com/xenolf/lego/providers/dns/vultr"
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+apiv1 "k8s.io/client-go/pkg/api/v1"
+metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
 	certificateKey     = "certificate.appscode.com"
-	LetsEncryptACMEUrl = "https://acme-staging.api.letsencrypt.org/directory"
+	LetsEncryptACMEUrl = "https://acme-staging.apiv1.letsencrypt.org/directory"
 )
 
 type ACMEClient struct {
@@ -223,40 +222,40 @@ type ACMECertData struct {
 	PrivateKey []byte
 }
 
-func NewACMECertDataFromSecret(s *api.Secret) (ACMECertData, error) {
+func NewACMECertDataFromSecret(s *apiv1.Secret) (ACMECertData, error) {
 	var acmeCertData ACMECertData
 	var ok bool
 
 	acmeCertData.Domains = NewDomainCollection().FromString(s.Labels[certificateKey+"/domains"])
-	acmeCertData.Cert, ok = s.Data[api.TLSCertKey]
+	acmeCertData.Cert, ok = s.Data[apiv1.TLSCertKey]
 	if !ok {
 		return acmeCertData, errors.New().WithMessagef("Could not find key tls.crt in secret %v", s.Name).Err()
 	}
-	acmeCertData.PrivateKey, ok = s.Data[api.TLSPrivateKeyKey]
+	acmeCertData.PrivateKey, ok = s.Data[apiv1.TLSPrivateKeyKey]
 	if !ok {
 		return acmeCertData, errors.New().WithMessagef("Could not find key tls.key in secret %v", s.Name).Err()
 	}
 	return acmeCertData, nil
 }
 
-func (c *ACMECertData) ToSecret(name, namespace string) *api.Secret {
+func (c *ACMECertData) ToSecret(name, namespace string) *apiv1.Secret {
 	log.Infoln("Revived certificates for name", name, "namespace", namespace)
 	data := make(map[string][]byte)
 
 	if len(c.Cert) > 0 {
-		data[api.TLSCertKey] = c.Cert
+		data[apiv1.TLSCertKey] = c.Cert
 	}
 	if len(c.PrivateKey) > 0 {
-		data[api.TLSPrivateKeyKey] = c.PrivateKey
+		data[apiv1.TLSPrivateKeyKey] = c.PrivateKey
 	}
 	log.Infoln("Certificate cert length", len(c.Cert), "private key length", len(c.PrivateKey))
-	return &api.Secret{
-		TypeMeta: unversioned.TypeMeta{
+	return &apiv1.Secret{
+		TypeMeta: metav1.TypeMeta{
 			APIVersion: "",
 			Kind:       "Secret",
 		},
 		Data: data,
-		ObjectMeta: api.ObjectMeta{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      defaultCertPrefix + name,
 			Namespace: namespace,
 			Labels: map[string]string{
@@ -267,7 +266,7 @@ func (c *ACMECertData) ToSecret(name, namespace string) *api.Secret {
 				certificateKey: "true",
 			},
 		},
-		Type: api.SecretTypeTLS,
+		Type: apiv1.SecretTypeTLS,
 	}
 }
 

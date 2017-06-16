@@ -18,7 +18,6 @@ package azure
 
 import (
 	"strings"
-
 	"github.com/Azure/azure-sdk-for-go/arm/network"
 )
 

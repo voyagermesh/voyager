@@ -19,7 +19,6 @@ package aws
 import (
 	"encoding/json"
 	"fmt"
-
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
 

@@ -5,7 +5,6 @@ import (
 	"net"
 	"reflect"
 	"strings"
-
 	"github.com/appscode/errors"
 	stringutil "github.com/appscode/go/strings"
 	"github.com/appscode/log"
@@ -17,9 +16,9 @@ import (
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	fakecloudprovider "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
-	kapi "k8s.io/kubernetes/pkg/api"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/labels"
+apiv1 "k8s.io/client-go/pkg/api/v1"
+clientset "k8s.io/client-go/kubernetes"
+"k8s.io/apimachinery/pkg/labels"
 )
 
 func NewEngressController(providerName string,
@@ -65,14 +64,14 @@ func UpgradeAllEngress(service, providerName string,
 	extClient acs.ExtensionInterface,
 	store *stash.Storage,
 	ingressClass string) error {
-	ing, err := kubeClient.Extensions().Ingresses(kapi.NamespaceAll).List(kapi.ListOptions{
+	ing, err := kubeClient.Extensions().Ingresses(apiv1.NamespaceAll).List(apiv1.ListOptions{
 		LabelSelector: labels.Everything(),
 	})
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 
-	eng, err := extClient.Ingress(kapi.NamespaceAll).List(kapi.ListOptions{
+	eng, err := extClient.Ingress(apiv1.NamespaceAll).List(apiv1.ListOptions{
 		LabelSelector: labels.Everything(),
 	})
 	if err != nil {
@@ -158,7 +157,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 
 				if svc, err := lbc.KubeClient.Core().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName()); err == nil {
 					// check port
-					curPorts := make(map[int]kapi.ServicePort)
+					curPorts := make(map[int]apiv1.ServicePort)
 					for _, p := range svc.Spec.Ports {
 						curPorts[int(p.Port)] = p
 					}
@@ -232,7 +231,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 			lbc.Update(updateMode)
 		}
 	}
-	svcs, err := lbc.KubeClient.Core().Services(kapi.NamespaceAll).List(kapi.ListOptions{})
+	svcs, err := lbc.KubeClient.Core().Services(apiv1.NamespaceAll).List(apiv1.ListOptions{})
 	if err == nil {
 		for _, svc := range svcs.Items {
 			ensureServiceAnnotations(lbc.KubeClient, lbc.Resource, svc.Namespace, svc.Name)

@@ -2,9 +2,9 @@ package clientset
 
 import (
 	aci "github.com/appscode/voyager/api"
-	"k8s.io/kubernetes/pkg/api"
-	rest "k8s.io/kubernetes/pkg/client/restclient"
-	"k8s.io/kubernetes/pkg/watch"
+apiv1 "k8s.io/client-go/pkg/api/v1"
+"k8s.io/client-go/rest"
+"k8s.io/apimachinery/pkg/watch"
 )
 
 type CertificateNamespacer interface {
@@ -12,12 +12,12 @@ type CertificateNamespacer interface {
 }
 
 type CertificateInterface interface {
-	List(opts api.ListOptions) (*aci.CertificateList, error)
+	List(opts apiv1.ListOptions) (*aci.CertificateList, error)
 	Get(name string) (*aci.Certificate, error)
 	Create(certificate *aci.Certificate) (*aci.Certificate, error)
 	Update(certificate *aci.Certificate) (*aci.Certificate, error)
 	Delete(name string) error
-	Watch(opts api.ListOptions) (watch.Interface, error)
+	Watch(opts apiv1.ListOptions) (watch.Interface, error)
 	UpdateStatus(certificate *aci.Certificate) (*aci.Certificate, error)
 }
 
@@ -32,7 +32,7 @@ func newCertificate(c *ExtensionClient, namespace string) *CertificateImpl {
 	return &CertificateImpl{c.restClient, namespace}
 }
 
-func (c *CertificateImpl) List(opts api.ListOptions) (result *aci.CertificateList, err error) {
+func (c *CertificateImpl) List(opts apiv1.ListOptions) (result *aci.CertificateList, err error) {
 	result = &aci.CertificateList{}
 	err = c.r.Get().
 		Namespace(c.ns).
@@ -86,7 +86,7 @@ func (c *CertificateImpl) Delete(name string) (err error) {
 		Error()
 }
 
-func (c *CertificateImpl) Watch(opts api.ListOptions) (watch.Interface, error) {
+func (c *CertificateImpl) Watch(opts apiv1.ListOptions) (watch.Interface, error) {
 	return c.r.Get().
 		Prefix("watch").
 		Namespace(c.ns).

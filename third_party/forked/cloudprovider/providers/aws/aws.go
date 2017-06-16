@@ -23,7 +23,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -36,11 +35,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/golang/glog"
 	"gopkg.in/gcfg.v1"
-	"k8s.io/kubernetes/pkg/api"
+apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/api/service"
 	aws_credentials "k8s.io/kubernetes/pkg/credentialprovider/aws"
-	"k8s.io/kubernetes/pkg/types"
-	"k8s.io/kubernetes/pkg/util/sets"
+"k8s.io/apimachinery/pkg/types"
+"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // ProviderName is the name of this cloud provider.
@@ -1283,11 +1282,11 @@ type portSets struct {
 }
 
 // EnsureFirewall implements LoadBalancer.EnsureLoadBalancer
-func (c *Cloud) EnsureFirewall(apiService *api.Service, hostname string) error {
+func (c *Cloud) EnsureFirewall(apiService *apiv1.Service, hostname string) error {
 	glog.V(2).Infof("EnsureLoadBalancer(%v, %v, %v, %v, %v, %v)",
 		apiService.Namespace, apiService.Name, c.region, apiService.Spec.LoadBalancerIP, apiService.Spec.Ports, hostname)
 
-	if apiService.Spec.SessionAffinity != api.ServiceAffinityNone {
+	if apiService.Spec.SessionAffinity != apiv1.ServiceAffinityNone {
 		// ELB supports sticky sessions, but only when configured for HTTP/HTTPS
 		return fmt.Errorf("unsupported load balancer affinity: %v", apiService.Spec.SessionAffinity)
 	}
@@ -1297,7 +1296,7 @@ func (c *Cloud) EnsureFirewall(apiService *api.Service, hostname string) error {
 	}
 
 	for _, port := range apiService.Spec.Ports {
-		if port.Protocol != api.ProtocolTCP {
+		if port.Protocol != apiv1.ProtocolTCP {
 			return errors.New("Only TCP LoadBalancer is supported for AWS ELB")
 		}
 	}
@@ -1560,7 +1559,7 @@ func (s *Cloud) updateInstanceSecurityGroupsForFirewall(loadBalancerSecurityGrou
 }
 
 // EnsureFirewallDeleted implements Firewall.EnsureFirewallDeleted.
-func (c *Cloud) EnsureFirewallDeleted(service *api.Service) error {
+func (c *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 	loadBalancerName := cloudprovider.GetLoadBalancerName(service)
 	// Collect the security groups to delete
 	var securityGroupID string

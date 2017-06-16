@@ -2,12 +2,11 @@ package watcher
 
 import (
 	"testing"
-
 	aci "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
-	kapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/apis/extensions"
+apiv1 "k8s.io/client-go/pkg/api/v1"
+extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
 )
 
@@ -19,7 +18,7 @@ func TestEnsureResource(t *testing.T) {
 	w := &Watcher{
 		KubeClient: clientset.NewSimpleClientset(
 			&extensions.ThirdPartyResource{
-				ObjectMeta: kapi.ObjectMeta{
+				ObjectMeta: apiv1.ObjectMeta{
 					Name: "foo",
 				},
 				Versions: []extensions.APIVersion{
@@ -32,7 +31,7 @@ func TestEnsureResource(t *testing.T) {
 	}
 	w.ensureResource()
 
-	data, err := w.KubeClient.Extensions().ThirdPartyResources().List(kapi.ListOptions{})
+	data, err := w.KubeClient.Extensions().ThirdPartyResources().List(apiv1.ListOptions{})
 	assert.Nil(t, err)
 	if data == nil {
 		t.Fatal("Item list should not be nil")

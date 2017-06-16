@@ -4,17 +4,16 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
 	"github.com/Azure/azure-sdk-for-go/arm/network"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/types"
+apiv1 "k8s.io/client-go/pkg/api/v1"
+"k8s.io/apimachinery/pkg/types"
 )
 
 // EnsureFirewall creates and/or update firewall rules.
-func (az *Cloud) EnsureFirewall(service *api.Service, hostname string) error {
+func (az *Cloud) EnsureFirewall(service *apiv1.Service, hostname string) error {
 	serviceName := getServiceName(service)
 	glog.V(2).Infof("ensure(%s): START EnsureFirewall", serviceName)
 
@@ -67,13 +66,13 @@ func (az *Cloud) EnsureFirewall(service *api.Service, hostname string) error {
 // EnsureFirewallDeleted deletes the specified firewall rules if those
 // exist, returning nil if the firewall rules specified either didn't exist or
 // was successfully deleted.
-func (az *Cloud) EnsureFirewallDeleted(service *api.Service) error {
+func (az *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 	serviceName := getServiceName(service)
 
 	glog.V(2).Infof("delete(%s): START EnsureFirewallDeleted", serviceName)
 
 	// reconcile logic is capable of fully reconcile, so we can use this to delete
-	service.Spec.Ports = []api.ServicePort{}
+	service.Spec.Ports = []apiv1.ServicePort{}
 
 	sg, existsSg, err := az.getSecurityGroup()
 	if err != nil {
@@ -100,7 +99,7 @@ func (az *Cloud) EnsureFirewallDeleted(service *api.Service) error {
 
 // This reconciles the Network Security Group similar to how the LB is reconciled.
 // This entails adding required, missing SecurityRules and removing stale rules.
-func (az *Cloud) reconcileFirewall(sg network.SecurityGroup, service *api.Service, destAddr string) (network.SecurityGroup, bool, error) {
+func (az *Cloud) reconcileFirewall(sg network.SecurityGroup, service *apiv1.Service, destAddr string) (network.SecurityGroup, bool, error) {
 	serviceName := getServiceName(service)
 	wantLb := len(service.Spec.Ports) > 0
 	expectedSecurityRules := make([]network.SecurityRule, len(service.Spec.Ports))
@@ -174,6 +173,6 @@ func (az *Cloud) reconcileFirewall(sg network.SecurityGroup, service *api.Servic
 	return sg, dirtySg, nil
 }
 
-func getFwRuleName(service *api.Service, port api.ServicePort) string {
+func getFwRuleName(service *apiv1.Service, port apiv1.ServicePort) string {
 	return fmt.Sprintf("%s-%s-fw-%d", getRulePrefix(service), port.Protocol, port.TargetPort.IntValue())
 }

@@ -20,14 +20,13 @@ import (
 	"io"
 	"strings"
 	"testing"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/golang/glog"
 	"github.com/stretchr/testify/mock"
-	"k8s.io/kubernetes/pkg/util/sets"
+"k8s.io/apimachinery/pkg/util/sets"
 )
 
 const TestClusterId = "clusterid.test"

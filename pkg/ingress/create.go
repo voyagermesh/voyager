@@ -5,16 +5,15 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
-	kapi "k8s.io/kubernetes/pkg/api"
-	kerr "k8s.io/kubernetes/pkg/api/errors"
-	"k8s.io/kubernetes/pkg/api/unversioned"
-	kepi "k8s.io/kubernetes/pkg/apis/extensions"
-	"k8s.io/kubernetes/pkg/labels"
-	"k8s.io/kubernetes/pkg/util/intstr"
+apiv1 "k8s.io/client-go/pkg/api/v1"
+kerr "k8s.io/apimachinery/pkg/api/errors"
+metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+"k8s.io/apimachinery/pkg/labels"
+"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 func (lbc *EngressController) Create() error {
@@ -48,8 +47,8 @@ func (lbc *EngressController) ensureConfigMap() error {
 	log.Infoln("creating cmap for engress")
 	cm, err := lbc.KubeClient.Core().ConfigMaps(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName())
 	if kerr.IsNotFound(err) {
-		cm = &kapi.ConfigMap{
-			ObjectMeta: kapi.ObjectMeta{
+		cm = &apiv1.ConfigMap{
+			ObjectMeta: apiv1.ObjectMeta{
 				Name:      lbc.Resource.OffshootName(),
 				Namespace: lbc.Resource.Namespace,
 				Annotations: map[string]string{
@@ -134,8 +133,8 @@ func (lbc *EngressController) createLB() error {
 func (lbc *EngressController) createHostPortSvc() error {
 	// Create a Headless service without selectors
 	// We just want kubernetes to assign a stable UID to the service. This is used inside EnsureFirewall()
-	svc := &kapi.Service{
-		ObjectMeta: kapi.ObjectMeta{
+	svc := &apiv1.Service{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      lbc.Resource.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
@@ -144,16 +143,16 @@ func (lbc *EngressController) createHostPortSvc() error {
 			},
 		},
 
-		Spec: kapi.ServiceSpec{
-			Type:      kapi.ServiceTypeClusterIP,
+		Spec: apiv1.ServiceSpec{
+			Type:      apiv1.ServiceTypeClusterIP,
 			ClusterIP: "None",
-			Ports:     []kapi.ServicePort{},
+			Ports:     []apiv1.ServicePort{},
 		},
 	}
 
 	// opening other tcp ports
 	for targetPort, svcPort := range lbc.Ports {
-		p := kapi.ServicePort{
+		p := apiv1.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
 			Port:       int32(svcPort),
@@ -202,7 +201,7 @@ func (lbc *EngressController) createHostPortSvc() error {
 	}
 
 	if updateFW && lbc.CloudManager != nil {
-		daemonNodes, err := lbc.KubeClient.Core().Nodes().List(kapi.ListOptions{
+		daemonNodes, err := lbc.KubeClient.Core().Nodes().List(apiv1.ListOptions{
 			LabelSelector: labels.SelectorFromSet(labels.Set(lbc.Resource.NodeSelector())),
 		})
 		if err != nil {
@@ -213,8 +212,8 @@ func (lbc *EngressController) createHostPortSvc() error {
 		log.Debugln("Checking cloud manager", lbc.CloudManager)
 		if fw, ok := lbc.CloudManager.Firewall(); ok {
 			log.Debugln("firewalls found")
-			convertedSvc := &kapi.Service{}
-			kapi.Scheme.Convert(svc, convertedSvc, nil)
+			convertedSvc := &apiv1.Service{}
+			apiv1.Scheme.Convert(svc, convertedSvc, nil)
 			for _, node := range daemonNodes.Items {
 				err = fw.EnsureFirewall(convertedSvc, node.Name)
 				if err != nil {
@@ -236,8 +235,8 @@ func (lbc *EngressController) createHostPortPods() error {
 	vs := Volumes(lbc.SecretNames)
 	vms := VolumeMounts(lbc.SecretNames)
 	// ignoring errors and trying to create controllers
-	daemon := &kepi.DaemonSet{
-		ObjectMeta: kapi.ObjectMeta{
+	daemon := &extensions.DaemonSet{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      lbc.Resource.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
 			Labels:    labelsFor(lbc.Resource.Name),
@@ -247,27 +246,27 @@ func (lbc *EngressController) createHostPortPods() error {
 			},
 		},
 
-		Spec: kepi.DaemonSetSpec{
-			Selector: &unversioned.LabelSelector{
+		Spec: extensions.DaemonSetSpec{
+			Selector: &metav1.LabelSelector{
 				MatchLabels: labelsFor(lbc.Resource.Name),
 			},
 
 			// pod templates.
-			Template: kapi.PodTemplateSpec{
-				ObjectMeta: kapi.ObjectMeta{
+			Template: apiv1.PodTemplateSpec{
+				ObjectMeta: apiv1.ObjectMeta{
 					Labels: labelsFor(lbc.Resource.Name),
 				},
-				Spec: kapi.PodSpec{
+				Spec: apiv1.PodSpec{
 					NodeSelector: lbc.Resource.NodeSelector(),
-					Containers: []kapi.Container{
+					Containers: []apiv1.Container{
 						{
 							Name:  "haproxy",
 							Image: GetLoadbalancerImage(),
-							Env: []kapi.EnvVar{
+							Env: []apiv1.EnvVar{
 								{
 									Name: "KUBE_NAMESPACE",
-									ValueFrom: &kapi.EnvVarSource{
-										FieldRef: &kapi.ObjectFieldSelector{
+									ValueFrom: &apiv1.EnvVarSource{
+										FieldRef: &apiv1.ObjectFieldSelector{
 											FieldPath: "metadata.namespace",
 										},
 									},
@@ -279,12 +278,12 @@ func (lbc *EngressController) createHostPortPods() error {
 								"--boot-cmd=" + "/etc/sv/reloader/reload",
 								"--v=4",
 							},
-							Ports:        []kapi.ContainerPort{},
+							Ports:        []apiv1.ContainerPort{},
 							VolumeMounts: vms,
 						},
 					},
 					Volumes: vs,
-					SecurityContext: &kapi.PodSecurityContext{
+					SecurityContext: &apiv1.PodSecurityContext{
 						HostNetwork: true,
 					},
 				},
@@ -294,7 +293,7 @@ func (lbc *EngressController) createHostPortPods() error {
 
 	// adding tcp ports to pod template
 	for targetPort := range lbc.Ports {
-		p := kapi.ContainerPort{
+		p := apiv1.ContainerPort{
 			Name:          "tcp-" + strconv.Itoa(targetPort),
 			Protocol:      "TCP",
 			ContainerPort: int32(targetPort),
@@ -304,7 +303,7 @@ func (lbc *EngressController) createHostPortPods() error {
 	}
 
 	if lbc.Parsed.Stats {
-		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, kapi.ContainerPort{
+		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
 			Name:          "stats",
 			Protocol:      "TCP",
 			ContainerPort: int32(lbc.Parsed.StatsPort),
@@ -351,8 +350,8 @@ func (lbc *EngressController) createHostPortPods() error {
 func (lbc *EngressController) createNodePortSvc() error {
 	log.Infoln("creating NodePort type lb")
 	// creating service as type NodePort
-	svc := &kapi.Service{
-		ObjectMeta: kapi.ObjectMeta{
+	svc := &apiv1.Service{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      lbc.Resource.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
@@ -360,9 +359,9 @@ func (lbc *EngressController) createNodePortSvc() error {
 				api.OriginName:      lbc.Resource.GetName(),
 			},
 		},
-		Spec: kapi.ServiceSpec{
-			Type:     kapi.ServiceTypeNodePort,
-			Ports:    []kapi.ServicePort{},
+		Spec: apiv1.ServiceSpec{
+			Type:     apiv1.ServiceTypeNodePort,
+			Ports:    []apiv1.ServicePort{},
 			Selector: labelsFor(lbc.Resource.Name),
 			// https://github.com/kubernetes/kubernetes/issues/33586
 			// LoadBalancerSourceRanges: lbc.Config.Spec.LoadBalancerSourceRanges,
@@ -371,7 +370,7 @@ func (lbc *EngressController) createNodePortSvc() error {
 
 	// opening other tcp ports
 	for targetPort, svcPort := range lbc.Ports {
-		p := kapi.ServicePort{
+		p := apiv1.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
 			Port:       int32(svcPort),
@@ -427,8 +426,8 @@ func (lbc *EngressController) createNodePortPods() error {
 	vs := Volumes(lbc.SecretNames)
 	vms := VolumeMounts(lbc.SecretNames)
 	// ignoring errors and trying to create controllers
-	deployment := &kepi.Deployment{
-		ObjectMeta: kapi.ObjectMeta{
+	deployment := &extensions.Deployment{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      lbc.Resource.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
 			Labels:    labelsFor(lbc.Resource.Name),
@@ -438,28 +437,28 @@ func (lbc *EngressController) createNodePortPods() error {
 			},
 		},
 
-		Spec: kepi.DeploymentSpec{
+		Spec: extensions.DeploymentSpec{
 			Replicas: lbc.Resource.Replicas(),
-			Selector: &unversioned.LabelSelector{
+			Selector: &metav1.LabelSelector{
 				MatchLabels: labelsFor(lbc.Resource.Name),
 			},
 			// pod templates.
-			Template: kapi.PodTemplateSpec{
-				ObjectMeta: kapi.ObjectMeta{
+			Template: apiv1.PodTemplateSpec{
+				ObjectMeta: apiv1.ObjectMeta{
 					Labels: labelsFor(lbc.Resource.Name),
 				},
 
-				Spec: kapi.PodSpec{
+				Spec: apiv1.PodSpec{
 					NodeSelector: lbc.Resource.NodeSelector(),
-					Containers: []kapi.Container{
+					Containers: []apiv1.Container{
 						{
 							Name:  "haproxy",
 							Image: GetLoadbalancerImage(),
-							Env: []kapi.EnvVar{
+							Env: []apiv1.EnvVar{
 								{
 									Name: "KUBE_NAMESPACE",
-									ValueFrom: &kapi.EnvVarSource{
-										FieldRef: &kapi.ObjectFieldSelector{
+									ValueFrom: &apiv1.EnvVarSource{
+										FieldRef: &apiv1.ObjectFieldSelector{
 											FieldPath: "metadata.namespace",
 										},
 									},
@@ -471,7 +470,7 @@ func (lbc *EngressController) createNodePortPods() error {
 								"--boot-cmd=" + "/etc/sv/reloader/reload",
 								"--v=4",
 							},
-							Ports:        []kapi.ContainerPort{},
+							Ports:        []apiv1.ContainerPort{},
 							VolumeMounts: vms,
 						},
 					},
@@ -483,7 +482,7 @@ func (lbc *EngressController) createNodePortPods() error {
 
 	// adding tcp ports to pod template
 	for targetPort := range lbc.Ports {
-		p := kapi.ContainerPort{
+		p := apiv1.ContainerPort{
 			Name:          "tcp-" + strconv.Itoa(targetPort),
 			Protocol:      "TCP",
 			ContainerPort: int32(targetPort),
@@ -492,7 +491,7 @@ func (lbc *EngressController) createNodePortPods() error {
 	}
 
 	if lbc.Parsed.Stats {
-		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, kapi.ContainerPort{
+		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
 			Name:          "stats",
 			Protocol:      "TCP",
 			ContainerPort: int32(lbc.Parsed.StatsPort),
@@ -538,8 +537,8 @@ func (lbc *EngressController) createNodePortPods() error {
 func (lbc *EngressController) createLoadBalancerSvc() error {
 	log.Infoln("creating LoadBalancer type lb")
 	// creating service as typeLoadBalancer
-	svc := &kapi.Service{
-		ObjectMeta: kapi.ObjectMeta{
+	svc := &apiv1.Service{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      lbc.Resource.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
@@ -547,9 +546,9 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 				api.OriginName:      lbc.Resource.GetName(),
 			},
 		},
-		Spec: kapi.ServiceSpec{
-			Type:                     kapi.ServiceTypeLoadBalancer,
-			Ports:                    []kapi.ServicePort{},
+		Spec: apiv1.ServiceSpec{
+			Type:                     apiv1.ServiceTypeLoadBalancer,
+			Ports:                    []apiv1.ServicePort{},
 			Selector:                 labelsFor(lbc.Resource.Name),
 			LoadBalancerSourceRanges: lbc.Resource.Spec.LoadBalancerSourceRanges,
 		},
@@ -557,7 +556,7 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 
 	// opening other tcp ports
 	for targetPort, svcPort := range lbc.Ports {
-		p := kapi.ServicePort{
+		p := apiv1.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
 			Port:       int32(svcPort),
@@ -611,8 +610,8 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 }
 
 func (lbc *EngressController) ensureStatsService() {
-	svc := &kapi.Service{
-		ObjectMeta: kapi.ObjectMeta{
+	svc := &apiv1.Service{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      lbc.Resource.StatsServiceName(),
 			Namespace: lbc.Resource.Namespace,
 			Annotations: map[string]string{
@@ -620,8 +619,8 @@ func (lbc *EngressController) ensureStatsService() {
 				api.OriginName:      lbc.Resource.GetName(),
 			},
 		},
-		Spec: kapi.ServiceSpec{
-			Ports: []kapi.ServicePort{
+		Spec: apiv1.ServiceSpec{
+			Ports: []apiv1.ServicePort{
 				{
 
 					Name:       "stats",
@@ -671,7 +670,7 @@ func (lbc *EngressController) ensureStatsService() {
 }
 
 func (lbc *EngressController) updateStatus() error {
-	var statuses []kapi.LoadBalancerIngress
+	var statuses []apiv1.LoadBalancerIngress
 
 	switch lbc.Resource.LBType() {
 	case api.LBTypeLoadBalancer:
@@ -746,9 +745,9 @@ func labelsFor(name string) map[string]string {
 	}
 }
 
-func Volumes(secretNames []string) []kapi.Volume {
+func Volumes(secretNames []string) []apiv1.Volume {
 	skipper := make(map[string]bool)
-	vs := make([]kapi.Volume, 0)
+	vs := make([]apiv1.Volume, 0)
 	for _, s := range secretNames {
 		if strings.TrimSpace(s) == "" {
 			continue
@@ -757,10 +756,10 @@ func Volumes(secretNames []string) []kapi.Volume {
 			continue
 		}
 		skipper[s+"-secret-volume"] = true
-		sVolume := kapi.Volume{
+		sVolume := apiv1.Volume{
 			Name: s + "-secret-volume",
-			VolumeSource: kapi.VolumeSource{
-				Secret: &kapi.SecretVolumeSource{
+			VolumeSource: apiv1.VolumeSource{
+				Secret: &apiv1.SecretVolumeSource{
 					SecretName: s,
 				},
 			},
@@ -770,9 +769,9 @@ func Volumes(secretNames []string) []kapi.Volume {
 	return vs
 }
 
-func VolumeMounts(secretNames []string) []kapi.VolumeMount {
+func VolumeMounts(secretNames []string) []apiv1.VolumeMount {
 	skipper := make(map[string]bool)
-	ms := make([]kapi.VolumeMount, 0)
+	ms := make([]apiv1.VolumeMount, 0)
 	for _, s := range secretNames {
 		if strings.TrimSpace(s) == "" {
 			continue
@@ -781,7 +780,7 @@ func VolumeMounts(secretNames []string) []kapi.VolumeMount {
 			continue
 		}
 		skipper[s+"-secret-volume"] = true
-		sMount := kapi.VolumeMount{
+		sMount := apiv1.VolumeMount{
 			Name:      s + "-secret-volume",
 			MountPath: "/srv/haproxy/secrets/" + s,
 		}
@@ -790,7 +789,7 @@ func VolumeMounts(secretNames []string) []kapi.VolumeMount {
 	return ms
 }
 
-func isServicePortChanged(oldPorts, newPorts []kapi.ServicePort) bool {
+func isServicePortChanged(oldPorts, newPorts []apiv1.ServicePort) bool {
 	// Check if any port changed
 	ports := make(map[int32]bool)
 	for _, port := range oldPorts {

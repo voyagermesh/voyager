@@ -6,11 +6,10 @@ import (
 	"strings"
 	"sync"
 	"time"
-
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
-	"k8s.io/kubernetes/pkg/api"
-	k8serr "k8s.io/kubernetes/pkg/api/errors"
+apiv1 "k8s.io/client-go/pkg/api/v1"
+kerr "k8s.io/apimachinery/pkg/api/errors"
 )
 
 func init() {
@@ -42,12 +41,12 @@ func (s *IngressTestSuit) Test() error {
 
 func (s *IngressTestSuit) setUp() error {
 	_, err := s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Create(testServerRc)
-	if err != nil && !k8serr.IsAlreadyExists(err) {
+	if err != nil && !kerr.IsAlreadyExists(err) {
 		return errors.New().WithCause(err).Err()
 	}
 
 	_, err = s.t.KubeClient.Core().Services(testServerSvc.Namespace).Create(testServerSvc)
-	if err != nil && !k8serr.IsAlreadyExists(err) {
+	if err != nil && !kerr.IsAlreadyExists(err) {
 		return errors.New().WithCause(err).Err()
 	}
 
@@ -71,14 +70,14 @@ func (s *IngressTestSuit) setUp() error {
 func (s *IngressTestSuit) cleanUp() {
 	if s.t.Config.Cleanup {
 		log.Infoln("Cleaning up Test Resources")
-		s.t.KubeClient.Core().Services(testServerSvc.Namespace).Delete(testServerSvc.Name, &api.DeleteOptions{})
+		s.t.KubeClient.Core().Services(testServerSvc.Namespace).Delete(testServerSvc.Name, &apiv1.DeleteOptions{})
 		rc, err := s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name)
 		if err == nil {
 			rc.Spec.Replicas = 0
 			s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Update(rc)
 			time.Sleep(time.Second * 5)
 		}
-		s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Delete(testServerRc.Name, &api.DeleteOptions{})
+		s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Delete(testServerRc.Name, &apiv1.DeleteOptions{})
 	}
 }
 

@@ -5,7 +5,6 @@ import (
 	goerr "errors"
 	"strconv"
 	"strings"
-
 	"github.com/appscode/errors"
 	"github.com/appscode/go/arrays"
 	"github.com/appscode/go/crypto/rand"
@@ -14,8 +13,8 @@ import (
 	"github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/ingress/template"
 	"github.com/flosch/pongo2"
-	kapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/util/intstr"
+apiv1 "k8s.io/client-go/pkg/api/v1"
+"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 func (lbc *EngressController) SupportsLoadBalancerType() bool {
@@ -56,7 +55,7 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 		return nil, err
 	}
 
-	if service.Spec.Type == kapi.ServiceTypeExternalName {
+	if service.Spec.Type == apiv1.ServiceTypeExternalName {
 		// https://kubernetes.io/docs/concepts/services-networking/service/#services-without-selectors
 		ep := Endpoint{
 			Name:         "external",
@@ -84,7 +83,7 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 	return lbc.getEndpoints(service, p, hostNames)
 }
 
-func (lbc *EngressController) getEndpoints(s *kapi.Service, servicePort *kapi.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
+func (lbc *EngressController) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
 	ep, err := lbc.EndpointStore.GetServiceEndpoints(s)
 	if err != nil {
 		log.Warningln(err)
@@ -198,7 +197,7 @@ func Context(s interface{}) (pongo2.Context, error) {
 	return ctx, nil
 }
 
-func getSpecifiedPort(ports []kapi.ServicePort, port intstr.IntOrString) (*kapi.ServicePort, bool) {
+func getSpecifiedPort(ports []apiv1.ServicePort, port intstr.IntOrString) (*apiv1.ServicePort, bool) {
 	for _, p := range ports {
 		if int(p.Port) == port.IntValue() {
 			return &p, true
@@ -208,7 +207,7 @@ func getSpecifiedPort(ports []kapi.ServicePort, port intstr.IntOrString) (*kapi.
 }
 
 // getTargetPort returns the numeric value of TargetPort
-func getTargetPort(servicePort *kapi.ServicePort) int {
+func getTargetPort(servicePort *apiv1.ServicePort) int {
 	return servicePort.TargetPort.IntValue()
 }
 
