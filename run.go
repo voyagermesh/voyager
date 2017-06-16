@@ -44,6 +44,9 @@ func NewCmdRun() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			run()
 		},
+		PostRun: func(cmd *cobra.Command, args []string) {
+			analytics.OperatorStopped()
+		},
 	}
 
 	cmd.Flags().StringVar(&masterURL, "master", masterURL, "The address of the Kubernetes API server (overrides any value in kubeconfig)")
@@ -86,8 +89,8 @@ func run() {
 		IngressClass: ingressClass,
 	}
 
-	log.Infoln("Starting Voyager Controller...")
-	analytics.VoyagerStarted()
+	log.Infoln("Starting Voyager operator...")
+	analytics.OperatorStarted()
 	go w.Run()
 
 	selectedServerMetrics, err = hpe.FilterServerMetrics(haProxyServerMetricFields)
@@ -96,7 +99,7 @@ func run() {
 	}
 	m := pat.New()
 	m.Get("/metrics", promhttp.Handler())
-	pattern := fmt.Sprintf("/%s/v1beta1/namespaces/%s/ingresses/%s/pods/%s/metrics", ParamAPIGroup, ParamNamespace, ParamName, ParamPodIP)
+	pattern := fmt.Sprintf("/%s/v1beta1/namespaces/%s/ingresses/%s/metrics", PathParamAPIGroup, PathParamNamespace, PathParamName)
 	log.Infof("URL pattern: %s", pattern)
 	m.Get(pattern, http.HandlerFunc(ExportMetrics))
 	m.Del(pattern, http.HandlerFunc(DeleteRegistry))

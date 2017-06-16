@@ -27,6 +27,7 @@ func main() {
 	logs.InitLogs()
 
 	rootCmd.AddCommand(NewCmdRun())
+	rootCmd.AddCommand(NewCmdExport())
 	rootCmd.AddCommand(v.NewCmdVersion())
 
 	if err := rootCmd.Execute(); err != nil {
