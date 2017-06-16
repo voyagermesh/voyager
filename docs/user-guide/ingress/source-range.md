@@ -48,4 +48,4 @@ spec:
   - 130.211.204.2/32
 ```
 
-NB: Currently there is a [bug in Kubernetes](https://github.com/kubernetes/kubernetes/issues/34218) due to which changing loadBalancerSourceRanges does not change SecurityGroup in AWS.
+NB: Currently there is a [bug in Kubernetes](https://github.com/kubernetes/kubernetes/issues/34218) due to which changing `loadBalancerSourceRanges` does not change SecurityGroup in AWS.
