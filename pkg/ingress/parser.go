@@ -325,6 +325,8 @@ func (lbc *EngressController) parseSpec() {
 				}
 				if tp80 && !sp443 {
 					lbc.Ports[80] = 443
+				} else {
+					log.Errorln("Failed to open port 443 on service for AWS cert manager.")
 				}
 			}
 		}
