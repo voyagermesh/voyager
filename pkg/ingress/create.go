@@ -111,7 +111,7 @@ func (lbc *EngressController) createLB() error {
 		}
 	} else {
 		if lbc.SupportsLoadBalancerType() {
-			// deleteResidualPods is a safety checking deletation of previous version RC
+			// deleteResidualPods is a safety checking deletion of previous version RC
 			// This should Ignore error.
 			lbc.deleteResidualPods()
 			err := lbc.createNodePortPods()
@@ -152,12 +152,12 @@ func (lbc *EngressController) createHostPortSvc() error {
 	}
 
 	// opening other tcp ports
-	for _, port := range lbc.Ports {
+	for targetPort, svcPort := range lbc.Ports {
 		p := kapi.ServicePort{
-			Name:       "tcp-" + strconv.Itoa(port),
+			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
-			Port:       int32(port),
-			TargetPort: intstr.FromInt(port),
+			Port:       int32(svcPort),
+			TargetPort: intstr.FromInt(targetPort),
 		}
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
@@ -293,12 +293,12 @@ func (lbc *EngressController) createHostPortPods() error {
 	}
 
 	// adding tcp ports to pod template
-	for _, port := range lbc.Ports {
+	for targetPort := range lbc.Ports {
 		p := kapi.ContainerPort{
-			Name:          "tcp-" + strconv.Itoa(port),
+			Name:          "tcp-" + strconv.Itoa(targetPort),
 			Protocol:      "TCP",
-			ContainerPort: int32(port),
-			HostPort:      int32(port),
+			ContainerPort: int32(targetPort),
+			HostPort:      int32(targetPort),
 		}
 		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, p)
 	}
@@ -370,12 +370,12 @@ func (lbc *EngressController) createNodePortSvc() error {
 	}
 
 	// opening other tcp ports
-	for _, port := range lbc.Ports {
+	for targetPort, svcPort := range lbc.Ports {
 		p := kapi.ServicePort{
-			Name:       "tcp-" + strconv.Itoa(port),
+			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
-			Port:       int32(port),
-			TargetPort: intstr.FromInt(port),
+			Port:       int32(svcPort),
+			TargetPort: intstr.FromInt(targetPort),
 		}
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
@@ -482,11 +482,11 @@ func (lbc *EngressController) createNodePortPods() error {
 	}
 
 	// adding tcp ports to pod template
-	for _, port := range lbc.Ports {
+	for targetPort := range lbc.Ports {
 		p := kapi.ContainerPort{
-			Name:          "tcp-" + strconv.Itoa(port),
+			Name:          "tcp-" + strconv.Itoa(targetPort),
 			Protocol:      "TCP",
-			ContainerPort: int32(port),
+			ContainerPort: int32(targetPort),
 		}
 		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, p)
 	}
@@ -556,12 +556,12 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 	}
 
 	// opening other tcp ports
-	for _, port := range lbc.Ports {
+	for targetPort, svcPort := range lbc.Ports {
 		p := kapi.ServicePort{
-			Name:       "tcp-" + strconv.Itoa(port),
+			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
-			Port:       int32(port),
-			TargetPort: intstr.FromInt(port),
+			Port:       int32(svcPort),
+			TargetPort: intstr.FromInt(targetPort),
 		}
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
