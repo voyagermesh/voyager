@@ -44,8 +44,8 @@ spec:
     servicePort: "80"
 ```
 
-## Redirect Traffic
-if dns resolver is not set in an external name service, voyager can redirect traffic via two ways.
+## HTTP Redirect
+If `ingress.appscode.com/use-dns-resolver` annotation is not set or missing on a `ExternalName` type service, Voyager resolves L7 ingress in the following ways.
 
 ```
 apiVersion: v1
