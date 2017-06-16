@@ -28,8 +28,8 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
   - [Customize generated HAProxy config via BackendRule](docs/user-guide/ingress/backend-rule.md) (can be used for [http rewriting](https://www.haproxy.com/doc/aloha/7.0/haproxy/http_rewriting.html), add [health checks](https://www.haproxy.com/doc/aloha/7.0/haproxy/healthchecks.html), etc.)
   - [Add Custom Annotation to LoadBalancer Service and Pods](docs/user-guide/ingress/annotations.md)
   - [Supports Loadbalancer Source Range](docs/user-guide/ingress/source-range.md)
-  - [Supports redirects/DNS resolve for `ServiceTypeExternalName`](docs/user-guide/ingress/external-svc.md)
-  - [Expose HAProxy stats and metrics, use prometheus with metrics](docs/user-guide/ingress/stats-and-metrics.md)
+  - [Supports redirects/DNS resolution for `ServiceTypeExternalName`](docs/user-guide/ingress/external-svc.md)
+  - [Expose HAProxy stats for Prometheus](docs/user-guide/ingress/stats-and-metrics.md)
 
 ### Comparison with Kubernetes
 | Feauture | [Kube Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) | AppsCode Ingress |
@@ -106,9 +106,8 @@ compatible among different versions of the operator.
 
 ---
 
-**The voyager operator collects anonymous usage statistics to help us learning
-how the software is being used and how we can improve it. To disable collection,
-run the operator with the flag** `--analytics=false`.
+**The voyager operator collects anonymous usage statistics to help us learn how the software is being used and how we can improve it.
+To disable stats collection, run the operator with the flag** `--analytics=false`.
 
 ---
 
