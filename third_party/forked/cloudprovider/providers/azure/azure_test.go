@@ -35,7 +35,7 @@ func TestReconcileSecurityGroupNewServiceAddsPort(t *testing.T) {
 
 	sg := getTestSecurityGroup()
 
-	sg, _, err := az.reconcileSecurityGroup(sg, testClusterName, &svc1)
+	sg, _, err := az.reconcileFirewall(sg, testClusterName, &svc1)
 	if err != nil {
 		t.Errorf("Unexpected error: %q", err)
 	}
@@ -50,7 +50,7 @@ func TestReconcileSecurityGroupRemoveServiceRemovesPort(t *testing.T) {
 	sg := getTestSecurityGroup(svc)
 
 	svcUpdated := getTestService("servicea", 80)
-	sg, _, err := az.reconcileSecurityGroup(sg, testClusterName, &svcUpdated)
+	sg, _, err := az.reconcileFirewall(sg, testClusterName, &svcUpdated)
 	if err != nil {
 		t.Errorf("Unexpected error: %q", err)
 	}
@@ -67,7 +67,7 @@ func TestReconcileSecurityWithSourceRanges(t *testing.T) {
 	}
 
 	sg := getTestSecurityGroup(svc)
-	sg, _, err := az.reconcileSecurityGroup(sg, testClusterName, &svc)
+	sg, _, err := az.reconcileFirewall(sg, testClusterName, &svc)
 	if err != nil {
 		t.Errorf("Unexpected error: %q", err)
 	}
