@@ -86,13 +86,3 @@ server server-name google.com:80
 ```
 
 So HAProxy will get traffic from the domain and forward to client.
-
-## External Name resolver configurations
-
-|  Keys  |   Value  |  Default |  Description |
-|--------|-----------|----------|--------------|
-| ingress.appscode.com/use-dns-resolver | true, false | false | Use DNS resolver for this external name service |
-| ingress.appscode.com/dns-resolver-nameservers | JSON Array | x | DNS nameserver to be used to resolve dns. Must include port. ie `["8.8.8.8:53", "8.8.4.4:53"]` |
-| ingress.appscode.com/dns-resolver-retries | int | 1 | Retry count |
-| ingress.appscode.com/dns-resolver-timeout | JSON Map | x | Timeout options, ie.  `{"event":"time","event":"time"}` |
-| ingress.appscode.com/dns-resolver-hold | JSON Map | x | Hold options, ie.  `{"status":"period","status":"period"}` |

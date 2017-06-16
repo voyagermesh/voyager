@@ -239,7 +239,7 @@ backend tcp-{{ svc.Name }}
     {% endif %}
 
     {% for e in svc.Backends.Endpoints %}
-    {% if e.ExternalName and e.UseDNSResolver %}
+    {% if e.ExternalName %}
     server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} resolve-prefer ipv4 {% if e.DNSResolver %} check resolvers {{ e.DNSResolver }} {% endif %}
     {% else %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %}
