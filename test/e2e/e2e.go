@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/appscode/log"
-	"github.com/appscode/voyager/client/clientset"
 	acs "github.com/appscode/voyager/client/clientset"
 	acw "github.com/appscode/voyager/pkg/watcher"
 	"github.com/appscode/voyager/test/testframework"
@@ -18,7 +17,7 @@ import (
 type TestSuit struct {
 	Config     testframework.E2EConfig
 	KubeClient clientset.Interface
-	ExtClient  clientset.ExtensionInterface
+	ExtClient  acs.ExtensionInterface
 	Voyager    *acw.Watcher
 }
 

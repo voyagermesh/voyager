@@ -13,7 +13,6 @@ import (
 	_ "github.com/appscode/voyager/api/install"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/events"
-	"github.com/appscode/voyager/pkg/stash"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	fakecloudprovider "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
@@ -26,15 +25,12 @@ import (
 func NewEngressController(providerName string,
 	kubeClient clientset.Interface,
 	extClient acs.ExtensionInterface,
-	store *stash.Storage,
 	ingressClass string) *EngressController {
 	h := &EngressController{
-		ProviderName:  providerName,
-		IngressClass:  ingressClass,
-		KubeClient:    kubeClient,
-		ExtClient:     extClient,
-		Storage:       store,
-		EndpointStore: store.EndpointStore,
+		ProviderName: providerName,
+		IngressClass: ingressClass,
+		KubeClient:   kubeClient,
+		ExtClient:    extClient,
 	}
 	log.Infoln("Initializing cloud manager for provider", providerName)
 	if providerName == "aws" || providerName == "gce" || providerName == "azure" {
@@ -64,7 +60,6 @@ func NewEngressController(providerName string,
 func UpgradeAllEngress(service, providerName string,
 	kubeClient clientset.Interface,
 	extClient acs.ExtensionInterface,
-	store *stash.Storage,
 	ingressClass string) error {
 	ing, err := kubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{
 		LabelSelector: labels.Everything().String(),
@@ -95,7 +90,7 @@ func UpgradeAllEngress(service, providerName string,
 		if shouldHandleIngress(engress, ingressClass) {
 			log.Infoln("Checking for service", service, "to be used to load balance via ingress", item.Name, item.Namespace)
 			if ok, name, namespace := isEngressHaveService(engress, service); ok {
-				lbc := NewEngressController(providerName, kubeClient, extClient, store, ingressClass)
+				lbc := NewEngressController(providerName, kubeClient, extClient, ingressClass)
 				lbc.Resource = &items[i]
 				log.Infoln("Trying to Update Ingress", item.Name, item.Namespace)
 				if lbc.IsExists() {

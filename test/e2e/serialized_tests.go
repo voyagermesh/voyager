@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/appscode/errors"
+	"github.com/appscode/go/types"
 	"github.com/appscode/log"
 	api "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
@@ -80,7 +81,7 @@ func (s *IngressTestSuit) TestIngressDaemonCreate() error {
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 30)
 	for i := 0; i < maxRetries; i++ {
-		_, err := s.t.KubeClient.Core().Services(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName())
+		_, err := s.t.KubeClient.CoreV1().Services(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -166,7 +167,7 @@ func (s *IngressTestSuit) TestIngressDaemonUpdate() error {
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 10)
 	for i := 0; i < maxRetries; i++ {
-		_, err := s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		_, err := s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -269,7 +270,7 @@ func (s *IngressTestSuit) TestIngressDaemonUpdate() error {
 		time.Sleep(time.Second * 60)
 		found := false
 		for i := 1; i <= maxRetries; i++ {
-			svc, err := s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+			svc, err := s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 			if err != nil {
 				continue
 			}
@@ -363,7 +364,7 @@ func (s *IngressTestSuit) TestIngressDaemonRestart() error {
 	// Wait sometime to loadbalancer be opened up.
 	time.Sleep(time.Second * 10)
 	for i := 0; i < maxRetries; i++ {
-		_, err := s.t.KubeClient.Core().Services(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName())
+		_, err := s.t.KubeClient.CoreV1().Services(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -397,37 +398,37 @@ func (s *IngressTestSuit) TestIngressDaemonRestart() error {
 
 	// Teardown and then again create one pod of the backend
 	// And Make sure The DS does not gets deleted.
-	_, err = s.t.KubeClient.Extensions().DaemonSets(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName())
+	_, err = s.t.KubeClient.ExtensionsV1beta1().DaemonSets(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	rc, err := s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name)
+	rc, err := s.t.KubeClient.CoreV1().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name, metav1.GetOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
-	rc.Spec.Replicas += 1
-	s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Update(rc)
+	rc.Spec.Replicas = types.Int32P(*rc.Spec.Replicas + 1)
+	s.t.KubeClient.CoreV1().ReplicationControllers(testServerRc.Namespace).Update(rc)
 
-	rc, err = s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name)
+	rc, err = s.t.KubeClient.CoreV1().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name, metav1.GetOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
-	rc.Spec.Replicas -= 1
-	s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Update(rc)
+	rc.Spec.Replicas = types.Int32P(*rc.Spec.Replicas - 1)
+	s.t.KubeClient.CoreV1().ReplicationControllers(testServerRc.Namespace).Update(rc)
 
-	_, err = s.t.KubeClient.Extensions().DaemonSets(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName())
+	_, err = s.t.KubeClient.ExtensionsV1beta1().DaemonSets(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 
-	rc, err = s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name)
+	rc, err = s.t.KubeClient.CoreV1().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name, metav1.GetOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
-	rc.Spec.Replicas += 1
-	s.t.KubeClient.Core().ReplicationControllers(testServerRc.Namespace).Update(rc)
+	rc.Spec.Replicas = types.Int32P(*rc.Spec.Replicas + 1)
+	s.t.KubeClient.CoreV1().ReplicationControllers(testServerRc.Namespace).Update(rc)
 
-	_, err = s.t.KubeClient.Extensions().DaemonSets(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName())
+	_, err = s.t.KubeClient.ExtensionsV1beta1().DaemonSets(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}

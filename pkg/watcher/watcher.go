@@ -46,7 +46,7 @@ type Watcher struct {
 	SyncPeriod time.Duration
 
 	// lister store
-	Storage *stash.Storage
+	Storage stash.Storage
 
 	sync.Mutex
 }
@@ -71,7 +71,6 @@ func (w *Watcher) Run() {
 
 func (w *Watcher) setup() {
 	w.ensureResource()
-	w.Storage = &stash.Storage{}
 	ingresscontroller.SetLoadbalancerImage(w.HAProxyImage)
 }
 
@@ -120,7 +119,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 			w.ProviderName,
 			w.KubeClient,
 			w.ExtClient,
-			w.Storage, w.IngressClass).Handle(e)
+			w.IngressClass).Handle(e)
 
 		// Check the Ingress or Extended Ingress Annotations. To Work for auto certificate
 		// operations.
@@ -145,7 +144,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 				w.ProviderName,
 				w.KubeClient,
 				w.ExtClient,
-				w.Storage, w.IngressClass)
+				w.IngressClass)
 		}
 	case events.Endpoint:
 		// Checking if this endpoint have a service or not. If
@@ -160,7 +159,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 					w.ProviderName,
 					w.KubeClient,
 					w.ExtClient,
-					w.Storage, w.IngressClass)
+					w.IngressClass)
 			}
 		}
 	case events.ConfigMap, events.DaemonSet, events.Deployments:

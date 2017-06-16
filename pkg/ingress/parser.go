@@ -86,7 +86,7 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 }
 
 func (lbc *EngressController) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
-	ep, err := lbc.EndpointStore.Endpoints(s.Namespace).Get(s.Name)
+	ep, err := lbc.Storage.EndpointStore.Endpoints(s.Namespace).Get(s.Name)
 	if err != nil {
 		log.Warningln(err)
 		return nil, err

@@ -49,7 +49,7 @@ func (s *IngressTestSuit) getURLs(baseIngress *api.Ingress) ([]string, error) {
 	} else {
 		var svc *apiv1.Service
 		for i := 0; i < maxRetries; i++ {
-			svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+			svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 			if err == nil {
 				if len(svc.Status.LoadBalancer.Ingress) != 0 {
 					ips := make([]string, 0)
@@ -101,8 +101,8 @@ func (s *IngressTestSuit) getURLs(baseIngress *api.Ingress) ([]string, error) {
 
 func (s *IngressTestSuit) getDaemonURLs(baseIngress *api.Ingress) ([]string, error) {
 	serverAddr := make([]string, 0)
-	nodes, err := s.t.KubeClient.Core().Nodes().List(metav1.ListOptions{
-		LabelSelector: labels.SelectorFromSet(baseIngress.NodeSelector()),
+	nodes, err := s.t.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{
+		LabelSelector: labels.SelectorFromSet(baseIngress.NodeSelector()).String(),
 	})
 	if err != nil {
 		return nil, errors.New().WithCause(err).Err()
@@ -111,7 +111,7 @@ func (s *IngressTestSuit) getDaemonURLs(baseIngress *api.Ingress) ([]string, err
 	var svc *apiv1.Service
 	var ports []int32
 	for i := 0; i < maxRetries; i++ {
-		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			if len(svc.Spec.Ports) > 0 {
 				for _, port := range svc.Spec.Ports {
