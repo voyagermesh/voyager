@@ -13,8 +13,7 @@ dns, [DNS resolvers](https://cbonte.github.io/haproxy-dconv/1.7/configuration.ht
 | ingress.appscode.com/dns-resolver-retries | integer | | If set, this defines the number of queries to send to resolve a server name before
 giving up. If not set, default value pre-configured by HAProxy is used. |
 | ingress.appscode.com/dns-resolver-timeout | map | | If set, defines timeouts related to name resolution. The format is '{ "event": "time" }'. For a list of valid events, please consult [HAProxy documentation](https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#5.3.2-timeout). |
-| ingress.appscode.com/dns-resolver-hold | map | | If set, Defines period during which the last name resolution should be kept based
-on last resolution status. The format is '{ "status": "period" }'. For a list of valid status, please consult [HAProxy documentation](https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#5.3.2-hold). |
+| ingress.appscode.com/dns-resolver-hold | map | | If set, Defines period during which the last name resolution should be kept based on last resolution status. The format is '{ "status": "period" }'. For a list of valid status, please consult [HAProxy documentation](https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#5.3.2-hold). |
 
 Following example illustrates the scenario.
 
