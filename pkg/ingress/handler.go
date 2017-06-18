@@ -13,6 +13,7 @@ import (
 	_ "github.com/appscode/voyager/api/install"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/events"
+	"github.com/appscode/voyager/pkg/monitor"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	fakecloudprovider "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
@@ -199,25 +200,41 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 			lbc.Delete()
 		}
 	} else if e.EventType.IsUpdated() {
-		lbc.Resource = engs[1].(*api.Ingress)
-		if !reflect.DeepEqual(engs[0].(*api.Ingress).ObjectMeta.Annotations, engs[1].(*api.Ingress).ObjectMeta.Annotations) {
+		old := engs[0].(*api.Ingress)
+		new := engs[1].(*api.Ingress)
+		lbc.Resource = new
+		if !reflect.DeepEqual(old.ObjectMeta.Annotations, new.ObjectMeta.Annotations) {
 			// Ingress Annotations Changed, Apply Changes to Targets
 			// The following method do not update to HAProxy config or restart pod. It only sets the annotations
 			// to the required targets.
-			lbc.UpdateTargetAnnotations(engs[0].(*api.Ingress), engs[1].(*api.Ingress))
+			lbc.UpdateTargetAnnotations(old, new)
 		}
 
 		updateMode := updateType(0)
-		if lbc.isKeepSourceChanged(engs[0].(*api.Ingress), engs[1].(*api.Ingress)) {
-			updateMode |= UpdateConfig
-		}
-
-		if isStatsChanged(engs[0].(*api.Ingress), engs[1].(*api.Ingress)) {
-			updateMode |= UpdateStats
-		}
-
-		if !reflect.DeepEqual(engs[0].(*api.Ingress).Spec, engs[1].(*api.Ingress).Spec) {
+		if !reflect.DeepEqual(old.Spec, new.Spec) {
 			if shouldHandleIngress(lbc.Resource, lbc.IngressClass) {
+				// Check for changes in ingress.appscode.com/monitoring-agent
+				if newMonSpec, newErr := new.MonitorSpec(); newErr == nil {
+					if oldMonSpec, oldErr := old.MonitorSpec(); oldErr == nil {
+						if !reflect.DeepEqual(oldMonSpec, newMonSpec) {
+							ctrl := monitor.NewPrometheusController(lbc.KubeClient, lbc.PromClient)
+							err := ctrl.UpdateMonitor(lbc.Resource, oldMonSpec, newMonSpec)
+							if err != nil {
+								return errors.FromErr(err).Err()
+							}
+						}
+						if oldMonSpec == nil && newMonSpec != nil {
+							updateMode |= UpdateFirewall
+						}
+					}
+				}
+
+				if lbc.isKeepSourceChanged(old, new) {
+					updateMode |= UpdateConfig
+				}
+				if isStatsChanged(old, new) {
+					updateMode |= UpdateStats
+				}
 				if isNewPortChanged(engs[0], engs[1]) || isLoadBalancerSourceRangeChanged(engs[0], engs[1]) {
 					updateMode |= UpdateFirewall
 				} else if isNewSecretAdded(engs[0], engs[1]) {
