@@ -44,7 +44,7 @@ func NewCmdRun() *cobra.Command {
 			run()
 		},
 		PostRun: func(cmd *cobra.Command, args []string) {
-			analytics.OperatorStopped()
+			analytics.Send("operator", "stopped", Version)
 		},
 	}
 
@@ -89,7 +89,7 @@ func run() {
 	}
 
 	log.Infoln("Starting Voyager operator...")
-	analytics.OperatorStarted()
+	analytics.Send("operator", "started", Version)
 	go w.Run()
 
 	selectedServerMetrics, err = hpe.FilterServerMetrics(haProxyServerMetricFields)

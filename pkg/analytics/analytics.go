@@ -50,22 +50,6 @@ func mustNewClient() *ga.Client {
 	return client
 }
 
-func OperatorStarted() {
-	send(ga.NewEvent("operator", "started"))
-}
-
-func OperatorStopped() {
-	send(ga.NewEvent("operator", "stopped"))
-}
-
-func ExporterStarted() {
-	send(ga.NewEvent("exporter", "started"))
-}
-
-func ExporterStopped() {
-	send(ga.NewEvent("exporter", "stopped"))
-}
-
 func Send(category, action string, label ...string) {
 	ev := ga.NewEvent(category, action)
 	if len(label) > 0 {
