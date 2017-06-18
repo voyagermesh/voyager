@@ -3,12 +3,13 @@ package api
 import "fmt"
 
 const (
-	AgentCoreosOperator = "COREOS_OPERATOR"
+	AgentCoreosPrometheus = "COREOS_PROMETHEUS"
 
-	MonitoringAgent              = EngressKey + "/monitoring-agent"                         // COREOS_OPERATOR
+	MonitoringAgent              = EngressKey + "/monitoring-agent"                         // COREOS_PROMETHEUS
+	PrometheusExporterPort       = EngressKey + "/prometheus-exporter-port"                // Kube NS where service monitors will be created
 	ServiceMonitorNamespace      = EngressKey + "/service-monitor-namespace"                // Kube NS where service monitors will be created
 	ServiceMonitorLabels         = EngressKey + "/service-monitor-labels"                   // map[string]string used to select Prometheus instance
-	ServiceMonitorScrapeInterval = EngressKey + "/service-monitor-endpoint-scrape-interval" // scrape interval
+	ServiceMonitorScrapeInterval = EngressKey + "/service-monitor-scrape-interval" // scrape interval
 )
 
 type MonitorSpec struct {
@@ -16,6 +17,8 @@ type MonitorSpec struct {
 }
 
 type PrometheusSpec struct {
+	ExporterPort int
+
 	// Namespace of Prometheus. Service monitors will be created in this namespace.
 	Namespace string `json:"namespace,omitempty"`
 	// Labels are key value pairs that is used to select Prometheus instance via ServiceMonitor labels.
@@ -34,20 +37,38 @@ func (r Ingress) MonitorSpec() (*MonitorSpec, error) {
 	if agent == "" {
 		return nil, nil
 	}
-	if agent != AgentCoreosOperator {
+	if agent != AgentCoreosPrometheus {
 		return nil, fmt.Errorf("Unknown monitoring agent %s", agent)
 	}
 
 	var err error
 	var prom PrometheusSpec
+
 	prom.Namespace = getString(r.Annotations, ServiceMonitorNamespace)
 	if prom.Namespace == "" {
-		return nil, fmt.Errorf("Missing %s anootation", ServiceMonitorNamespace)
+		return nil, fmt.Errorf("Missing %s annotation", ServiceMonitorNamespace)
 	}
+
 	prom.Labels, err = getMap(r.Annotations, ServiceMonitorLabels)
 	if err != nil {
 		return nil, err
 	}
+	if len(prom.Labels) == 0 {
+		return nil, fmt.Errorf("Missing %s annotation", ServiceMonitorLabels)
+	}
+
+	prom.ExporterPort, err = getInt(r.Annotations, PrometheusExporterPort)
+	if err != nil {
+		return nil, err
+	}
+	if prom.ExporterPort == 0 {
+		prom.ExporterPort = 56789
+	}
+
 	prom.Interval = getString(r.Annotations, ServiceMonitorScrapeInterval)
+	if err != nil {
+		return nil, err
+	}
+
 	return &MonitorSpec{Prometheus: &prom}, err
 }

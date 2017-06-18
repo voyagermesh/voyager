@@ -36,7 +36,7 @@ func (lbc *EngressController) Delete() error {
 }
 
 func (lbc *EngressController) deleteLB() error {
-	if lbc.Resource.LBType() == api.LBTypeDaemon || lbc.Resource.LBType() == api.LBTypeHostPort {
+	if lbc.Resource.LBType() == api.LBTypeHostPort {
 		err := lbc.deleteHostPortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -66,7 +66,7 @@ func (lbc *EngressController) deleteLBSvc() error {
 			return errors.FromErr(err).Err()
 		}
 
-		if (lbc.Resource.LBType() == api.LBTypeDaemon || lbc.Resource.LBType() == api.LBTypeHostPort) && lbc.CloudManager != nil {
+		if (lbc.Resource.LBType() == api.LBTypeHostPort) && lbc.CloudManager != nil {
 			if fw, ok := lbc.CloudManager.Firewall(); ok {
 				err = fw.EnsureFirewallDeleted(svc)
 				if err != nil {
