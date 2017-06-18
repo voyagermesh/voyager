@@ -152,7 +152,7 @@ def go_build(name, goos, goarch, main):
     linker_opts = []
     if BIN_MATRIX[name].get('go_version', False):
         md = metadata(REPO_ROOT, goos, goarch)
-        if ma['version_strategy'] == 'tag':
+        if md['version_strategy'] == 'tag':
             del md['commit_timestamp']
             del md['build_timestamp']
             del md['build_host']
