@@ -93,7 +93,6 @@ Want to learn whats happening under the hood, read [the developer guide](docs/de
 ## Contribution
 If you're interested in being a contributor, read [the contribution guide](docs/contribution/README.md).
 
-
 ## Building voyager
 Read [Build Instructions](docs/developer-guide/build.md) to build voyager.
 
