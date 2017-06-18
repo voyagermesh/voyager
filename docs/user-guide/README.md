@@ -12,7 +12,7 @@ $ export CLOUD_PROVIDER=<provider-name> // ie:
                                         // - aws
                                         // - azure
 
-$ export TAG=1.5.6                      // Docker image tag for Voyager operator.
+$ export TAG=3.0.0                      // Docker image tag for Voyager operator.
 
 $ curl https://raw.githubusercontent.com/appscode/voyager/master/hack/deploy/deployments.yaml | \
         envsubst | \
