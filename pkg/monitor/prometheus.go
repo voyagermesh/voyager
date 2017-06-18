@@ -4,13 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"k8s.io/apimachinery/pkg/util/intstr"
+
 	"github.com/appscode/voyager/api"
 	"github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	_ "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	clientset "k8s.io/client-go/kubernetes"
 )
 
@@ -115,18 +116,18 @@ func (c *PrometheusController) createServiceMonitor(r *api.Ingress, spec *api.Mo
 			Labels:    spec.Prometheus.Labels,
 		},
 		Spec: prom.ServiceMonitorSpec{
+			Selector: metav1.LabelSelector{
+				MatchLabels: r.OffshootLabels(),
+			},
 			NamespaceSelector: prom.NamespaceSelector{
 				MatchNames: []string{r.Namespace},
 			},
 			Endpoints: []prom.Endpoint{
 				{
 					TargetPort: intstr.FromInt(spec.Prometheus.ExporterPort),
-					Interval: spec.Prometheus.Interval,
-					Path:     fmt.Sprintf("/%s/namespaces/%s/ingresses/%s/metrics", r.APISchema(), r.Namespace, r.Name),
+					Interval:   spec.Prometheus.Interval,
+					Path:       fmt.Sprintf("/%s/namespaces/%s/ingresses/%s/metrics", r.APISchema(), r.Namespace, r.Name),
 				},
-			},
-			Selector: metav1.LabelSelector{
-				MatchLabels: svc.Spec.Selector,
 			},
 		},
 	}
