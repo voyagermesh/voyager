@@ -95,7 +95,7 @@ func (lbc *EngressController) updateConfigMap() error {
 }
 
 func (lbc *EngressController) recreatePods() error {
-	if lbc.Resource.LBType() == api.LBTypeDaemon || lbc.Resource.LBType() == api.LBTypeHostPort {
+	if lbc.Resource.LBType() == api.LBTypeHostPort {
 		err := lbc.deleteHostPortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -179,7 +179,7 @@ func (lbc *EngressController) updateLBSvc() error {
 
 	// open up firewall
 	log.Infoln("Loadbalancer CloudManager", lbc.CloudManager, "serviceType", svc.Spec.Type)
-	if (lbc.Resource.LBType() == api.LBTypeDaemon || lbc.Resource.LBType() == api.LBTypeHostPort) && lbc.CloudManager != nil {
+	if (lbc.Resource.LBType() == api.LBTypeHostPort) && lbc.CloudManager != nil {
 		daemonNodes, err := lbc.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{
 			LabelSelector: labels.SelectorFromSet(lbc.Resource.NodeSelector()).String(),
 		})
@@ -231,7 +231,7 @@ func (lbc *EngressController) UpdateTargetAnnotations(old *api.Ingress, new *api
 	if newPodAns, newOk := new.PodsAnnotations(); newOk {
 		if oldPodAns, oldOk := old.PodsAnnotations(); oldOk {
 			if !reflect.DeepEqual(oldPodAns, newPodAns) {
-				if lbc.Resource.LBType() == api.LBTypeDaemon || lbc.Resource.LBType() == api.LBTypeHostPort {
+				if lbc.Resource.LBType() == api.LBTypeHostPort {
 					daemonset, err := lbc.KubeClient.ExtensionsV1beta1().DaemonSets(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
 					if err != nil {
 						return errors.FromErr(err).Err()

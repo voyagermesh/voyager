@@ -47,7 +47,6 @@ This is supported for cloud providers known to Kubernetes (`aws`, `gce` and `azu
 HAProxy's IP will be same as the IP address for nodes where it is running. This is supported on any cloud provider
 (known or unknown to Kubernetes). Voyager will open firewall, if a `cloud-provider` is one of `aws`, `gce`, `gke` or
 `azure`. If cloud provider is unknown (say, running on DigitalOcean), users are required to configure firewall as needed.
-This mode used to be called `Daemon`. We recommend using `HostPort` for new setups.
 
 - NodePort: In this mode, a Kubernetes NodePort type service is used to expose HAProxy to the internet. This is supported on any cloud provider including
 baremetal clusters. Users are required to configure firewall as needed. --cloud-provider flag can be left unset, if used with providers other than `aws`, `gce`, `gke` or
