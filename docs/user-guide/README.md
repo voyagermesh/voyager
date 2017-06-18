@@ -29,7 +29,7 @@ Now Create Your Ingress/Certificated.
       --address string                        Address to listen on for web interface and telemetry. (default ":8080")
       --analytics                             Send analytical event to Google Analytics (default true)
   -c, --cloud-provider string                 Name of cloud provider
-      --haproxy-image string                  haproxy image name to be run (default "appscode/haproxy:1.7.5-1.5.6")
+      --haproxy-image string                  haproxy image name to be run (default "appscode/haproxy:1.7.6-3.0.0")
       --haproxy.server-metric-fields string   Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1 (default "2,3,4,5,6,7,8,9,13,14,15,16,17,18,21,24,33,35,38,39,40,41,42,43,44")
       --haproxy.timeout duration              Timeout for trying to get stats from HAProxy. (default 5s)
   -h, --help                                  help for run
