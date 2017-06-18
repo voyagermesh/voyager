@@ -290,29 +290,12 @@ func (lbc *EngressController) createHostPortPods() error {
 		},
 	}
 
-	monSpec, err := lbc.Resource.MonitorSpec()
+	exporter, err := lbc.getExporterSidecar()
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
-	if monSpec != nil && monSpec.Prometheus != nil {
-		exporter := apiv1.Container{
-			Name: "exporter",
-			Args: []string{
-				"exporter",
-				fmt.Sprintf("--address=:%d", monSpec.Prometheus.ExporterPort),
-				"--v=3",
-			},
-			Image:           "appscode/voyager:<-------------------->",
-			ImagePullPolicy: apiv1.PullIfNotPresent,
-			Ports: []apiv1.ContainerPort{
-				{
-					Name:          "http",
-					Protocol:      apiv1.ProtocolTCP,
-					ContainerPort: int32(monSpec.Prometheus.ExporterPort),
-				},
-			},
-		}
-		daemon.Spec.Template.Spec.Containers = append(daemon.Spec.Template.Spec.Containers, exporter)
+	if exporter != nil {
+		daemon.Spec.Template.Spec.Containers = append(daemon.Spec.Template.Spec.Containers, *exporter)
 	}
 
 	// adding tcp ports to pod template
@@ -503,6 +486,13 @@ func (lbc *EngressController) createNodePortPods() error {
 			},
 		},
 	}
+	exporter, err := lbc.getExporterSidecar()
+	if err != nil {
+		return errors.FromErr(err).Err()
+	}
+	if exporter != nil {
+		deployment.Spec.Template.Spec.Containers = append(deployment.Spec.Template.Spec.Containers, *exporter)
+	}
 
 	// adding tcp ports to pod template
 	for targetPort := range lbc.Ports {
@@ -631,6 +621,33 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 		}
 	}
 	return nil
+}
+
+func (lbc *EngressController) getExporterSidecar() (*apiv1.Container, error) {
+	monSpec, err := lbc.Resource.MonitorSpec()
+	if err != nil {
+		return nil, err
+	}
+	if monSpec != nil && monSpec.Prometheus != nil {
+		return &apiv1.Container{
+			Name: "exporter",
+			Args: []string{
+				"exporter",
+				fmt.Sprintf("--address=:%d", monSpec.Prometheus.ExporterPort),
+				"--v=3",
+			},
+			Image:           "appscode/voyager:3.0.0",
+			ImagePullPolicy: apiv1.PullIfNotPresent,
+			Ports: []apiv1.ContainerPort{
+				{
+					Name:          "http",
+					Protocol:      apiv1.ProtocolTCP,
+					ContainerPort: int32(monSpec.Prometheus.ExporterPort),
+				},
+			},
+		}, nil
+	}
+	return nil, nil
 }
 
 func (lbc *EngressController) ensureStatsService() {
