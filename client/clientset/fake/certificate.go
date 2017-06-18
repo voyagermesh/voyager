@@ -15,7 +15,7 @@ type FakeCertificate struct {
 	ns   string
 }
 
-var certResource = schema.GroupVersionResource{Group: "appscode.com", Version: "v1beta1", Resource: "certificates"}
+var certResource = schema.GroupVersionResource{Group: "voyager.appscode.com", Version: "v1beta1", Resource: "certificates"}
 
 var _ clientset.CertificateInterface = &FakeCertificate{}
 

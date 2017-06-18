@@ -77,11 +77,11 @@ for a high-availability loadbalancer, inside a kubernetes cluster.
 
 |  VERB   |                     ENDPOINT                                | ACTION | BODY
 |---------|-------------------------------------------------------------|--------|-------
-|  GET    | /apis/appscode.com/v1beta1/namespace/`ns`/ingresss          | LIST   | nil
-|  GET    | /apis/appscode.com/v1beta1/namespace/`ns`/ingresss/`name`   | GET    | nil
-|  POST   | /apis/appscode.com/v1beta1/namespace/`ns`/ingresss          | CREATE | JSON
-|  PUT    | /apis/appscode.com/v1beta1/namespace/`ns`/ingresss/`name`   | UPDATE | JSON
-|  DELETE | /apis/appscode.com/v1beta1/namespace/`ns`/ingresss/`name`   | DELETE | nil
+|  GET    | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/ingresss          | LIST   | nil
+|  GET    | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/ingresss/`name`   | GET    | nil
+|  POST   | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/ingresss          | CREATE | JSON
+|  PUT    | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/ingresss/`name`   | UPDATE | JSON
+|  DELETE | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/ingresss/`name`   | DELETE | nil
 
 ## Ingress Status
 If an ingress is created as `ingress.appscode.com/type: LoadBalancer` the ingress status field will contain

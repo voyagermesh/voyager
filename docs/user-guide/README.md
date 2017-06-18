@@ -65,7 +65,7 @@ Even when a resource for AppsCode Ingress type is created, the controller will t
 A minimal AppsCode Ingress resource Looks like at the kubernetes level:
 
 ```yaml
-apiVersion: appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -91,7 +91,7 @@ spec:
 POSTing this to Kubernetes, API server will need to create a loadbalancer.
 
 **Line 1-3**: With all other Kubernetes config, AppsCode Ingress resource needs `apiVersion`, `kind` and `metadata` fields.
-`apiVersion` and `kind` needs to be exactly same as `appscode.com/v1beta1`, and, `specific version` currently as `v1beta1`, to identify the resource
+`apiVersion` and `kind` needs to be exactly same as `voyager.appscode.com/v1beta1`, and, `specific version` currently as `v1beta1`, to identify the resource
 as AppsCode Ingress. In metadata the `name` and `namespace` indicates the resource identifying name and its Kubernetes namespace.
 
 
@@ -121,11 +121,11 @@ in absence of those requests which doesn’t match a rule in spec, are sent to t
 
 |  VERB   |                     ENDPOINT                                | ACTION | BODY
 |---------|-------------------------------------------------------------|--------|-------
-|  GET    | /apis/appscode.com/v1beta1/namespace/`ns`/certificates          | LIST   | nil
-|  GET    | /apis/appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | GET    | nil
-|  POST   | /apis/appscode.com/v1beta1/namespace/`ns`/certificates          | CREATE | JSON
-|  PUT    | /apis/appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | UPDATE | JSON
-|  DELETE | /apis/appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | DELETE | nil
+|  GET    | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates          | LIST   | nil
+|  GET    | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | GET    | nil
+|  POST   | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates          | CREATE | JSON
+|  PUT    | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | UPDATE | JSON
+|  DELETE | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | DELETE | nil
 
 ### Dive into Ingress
 You Can Learn more about `ingress.appscode.com` by reading [this doc](ingress/README.md).
@@ -139,7 +139,7 @@ Before you can create a Certificate object you must create the Certificate Third
 A minimal Certificate resource Looks like at the kubernetes level:
 
 ```yaml
-apiVersion: appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1beta1
 kind: Certificate
 metadata:
   name: test-cert
@@ -156,7 +156,7 @@ spec:
 POSTing this to Kubernetes, API server will create a certificate and store it as a secret that can be used to SSL with ingress.
 
 **Line 1-3**: With all other Kubernetes config, AppsCode Ingress resource needs `apiVersion`, `kind` and `metadata` fields.
-`apiVersion` and `kind` needs to be exactly same as `appscode.com/v1beta1`, and, `specific version` currently as `v1beta1`, to identify the resource
+`apiVersion` and `kind` needs to be exactly same as `voyager.appscode.com/v1beta1`, and, `specific version` currently as `v1beta1`, to identify the resource
 as AppsCode Ingress. In metadata the `name` and `namespace` indicates the resource identifying name and its Kubernetes namespace.
 
 **Line 7-9**: domains specifies the domain list that the certificate needs to be issued. First on the list will be used as the
@@ -172,11 +172,11 @@ certificate common name.
 
 |  VERB   |                     ENDPOINT                                    | ACTION | BODY
 |---------|-----------------------------------------------------------------|--------|-------
-|  GET    | /apis/appscode.com/v1beta1/namespace/`ns`/certificates          | LIST   | nil
-|  GET    | /apis/appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | GET    | nil
-|  POST   | /apis/appscode.com/v1beta1/namespace/`ns`/certificates          | CREATE | JSON
-|  PUT    | /apis/appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | UPDATE | JSON
-|  DELETE | /apis/appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | DELETE | nil
+|  GET    | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates          | LIST   | nil
+|  GET    | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | GET    | nil
+|  POST   | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates          | CREATE | JSON
+|  PUT    | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | UPDATE | JSON
+|  DELETE | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | DELETE | nil
 
 ### Dive into Certificates
 You Can Learn more about `certificate.appscode.com` by reading [this doc](certificate/README.md).

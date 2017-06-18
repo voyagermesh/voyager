@@ -15,7 +15,7 @@ type FakeIngress struct {
 	ns   string
 }
 
-var ingressResource = schema.GroupVersionResource{Group: "appscode.com", Version: "v1beta1", Resource: "ingresses"}
+var ingressResource = schema.GroupVersionResource{Group: "voyager.appscode.com", Version: "v1beta1", Resource: "ingresses"}
 
 var _ clientset.IngressInterface = &FakeIngress{}
 

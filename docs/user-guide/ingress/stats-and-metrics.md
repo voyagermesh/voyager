@@ -16,7 +16,7 @@ Voyager operator exposes Prometheus ready metrics via the following endpoints on
 
  - `/metrics`: Scrape this to monitor operator.
  - `/extensions/v1beta1/namespaces/:ns/ingresses/:name/pods/:ip/metrics` :  Scrape this endpoint to monitor HAProxy running for a Kubernetes ingress
- - `/appscode.com/v1beta1/namespaces/:ns/ingresses/:name/pods/:ip/metrics`: Scrape this endpoint to monitor HAProxy running for an AppsCode extended ingress
+ - `/voyager.appscode.com/v1beta1/namespaces/:ns/ingresses/:name/pods/:ip/metrics`: Scrape this endpoint to monitor HAProxy running for an AppsCode extended ingress
 
 To change the port, use `--address` flag on Voyager opreator.
 

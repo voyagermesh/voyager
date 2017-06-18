@@ -25,7 +25,7 @@ data:
 Referencing this secret in an Ingress will tell the Ingress controller to secure the channel from
 client to the loadbalancer using TLS:
 ```yaml
-apiVersion: appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
   name: test-ingress
