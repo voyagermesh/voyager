@@ -9,7 +9,7 @@ import (
 
 func (lbc *EngressController) IsExists() bool {
 	log.Infoln("Checking Ingress existence", lbc.Resource.ObjectMeta)
-	if lbc.Resource.LBType() == api.LBTypeHostPort || lbc.Resource.LBType() == api.LBTypeDaemon {
+	if lbc.Resource.LBType() == api.LBTypeHostPort {
 		_, err := lbc.KubeClient.ExtensionsV1beta1().DaemonSets(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
 			return false

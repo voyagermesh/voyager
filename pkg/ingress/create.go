@@ -90,7 +90,7 @@ func (lbc *EngressController) ensureConfigMap() error {
 }
 
 func (lbc *EngressController) createLB() error {
-	if lbc.Resource.LBType() == api.LBTypeDaemon || lbc.Resource.LBType() == api.LBTypeHostPort {
+	if lbc.Resource.LBType() == api.LBTypeHostPort {
 		err := lbc.createHostPortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
