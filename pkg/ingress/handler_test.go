@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	aci "github.com/appscode/voyager/api"
+	"github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -17,7 +17,7 @@ func init() {
 }
 
 func TestShouldHandleIngress(t *testing.T) {
-	dataTables := map[*aci.Ingress]map[string]bool{
+	dataTables := map[*api.Ingress]map[string]bool{
 		{
 			ObjectMeta: metav1.ObjectMeta{
 				Annotations: map[string]string{
@@ -70,7 +70,7 @@ func TestShouldHandleIngress(t *testing.T) {
 
 func TestEnsureServiceAnnotation(t *testing.T) {
 	fakeClient := fake.NewSimpleClientset()
-	_, err := fakeClient.CoreV1().Services("a").Get("b")
+	_, err := fakeClient.CoreV1().Services("a").Get("b", metav1.GetOptions{})
 	assert.NotNil(t, err)
 
 	svc, err := fakeClient.CoreV1().Services("test-namespace").Create(&apiv1.Service{
@@ -80,52 +80,52 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 		},
 	})
 
-	ensureServiceAnnotations(fakeClient, &aci.Ingress{
+	ensureServiceAnnotations(fakeClient, &api.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
 		},
-		Spec: aci.ExtendedIngressSpec{
-			Backend: &aci.ExtendedIngressBackend{
+		Spec: api.ExtendedIngressSpec{
+			Backend: &api.ExtendedIngressBackend{
 				ServiceName: "test-service.test-namespace",
 			},
 		},
 	}, "test-namespace", "test-service")
 
-	svc, err = fakeClient.CoreV1().Services("test-namespace").Get("test-service")
+	svc, err = fakeClient.CoreV1().Services("test-namespace").Get("test-service", metav1.GetOptions{})
 	assert.Nil(t, err)
 	assert.NotNil(t, svc.Annotations)
-	assert.Contains(t, svc.Annotations, aci.EngressKey)
+	assert.Contains(t, svc.Annotations, api.EngressKey)
 	fmt.Println(svc.Annotations)
 
-	ensureServiceAnnotations(fakeClient, &aci.Ingress{
+	ensureServiceAnnotations(fakeClient, &api.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
 		},
-		Spec: aci.ExtendedIngressSpec{
-			Backend: &aci.ExtendedIngressBackend{
+		Spec: api.ExtendedIngressSpec{
+			Backend: &api.ExtendedIngressBackend{
 				ServiceName: "test-service.test-namespace",
 			},
 		},
 	}, "test-namespace", "test-service")
 
-	svc, err = fakeClient.CoreV1().Services("test-namespace").Get("test-service")
+	svc, err = fakeClient.CoreV1().Services("test-namespace").Get("test-service", metav1.GetOptions{})
 	assert.Nil(t, err)
 	assert.NotNil(t, svc.Annotations)
-	assert.Contains(t, svc.Annotations, aci.EngressKey)
+	assert.Contains(t, svc.Annotations, api.EngressKey)
 	fmt.Println(svc.Annotations)
 
-	ensureServiceAnnotations(fakeClient, &aci.Ingress{
+	ensureServiceAnnotations(fakeClient, &api.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
 		},
 	}, "test-namespace", "test-service")
 
-	svc, err = fakeClient.CoreV1().Services("test-namespace").Get("test-service")
+	svc, err = fakeClient.CoreV1().Services("test-namespace").Get("test-service", metav1.GetOptions{})
 	assert.Nil(t, err)
 	assert.NotNil(t, svc.Annotations)
-	assert.Contains(t, svc.Annotations, aci.EngressKey)
+	assert.Contains(t, svc.Annotations, api.EngressKey)
 	fmt.Println(svc.Annotations)
 }
