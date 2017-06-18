@@ -5,11 +5,11 @@ import "fmt"
 const (
 	AgentCoreosPrometheus = "COREOS_PROMETHEUS"
 
-	MonitoringAgent              = EngressKey + "/monitoring-agent"                // COREOS_PROMETHEUS
-	PrometheusExporterPort       = EngressKey + "/prometheus-exporter-port"        // Kube NS where service monitors will be created
-	ServiceMonitorNamespace      = EngressKey + "/service-monitor-namespace"       // Kube NS where service monitors will be created
-	ServiceMonitorLabels         = EngressKey + "/service-monitor-labels"          // map[string]string used to select Prometheus instance
-	ServiceMonitorScrapeInterval = EngressKey + "/service-monitor-scrape-interval" // scrape interval
+	MonitoringAgent              = EngressKey + "/monitoring-agent"                         // COREOS_PROMETHEUS
+	PrometheusExporterPort       = EngressKey + "/prometheus-exporter-port"                 // Kube NS where service monitors will be created
+	ServiceMonitorNamespace      = EngressKey + "/service-monitor-namespace"                // Kube NS where service monitors will be created
+	ServiceMonitorLabels         = EngressKey + "/service-monitor-labels"                   // map[string]string used to select Prometheus instance
+	ServiceMonitorScrapeInterval = EngressKey + "/service-monitor-endpoint-scrape-interval" // scrape interval
 )
 
 type MonitorSpec struct {
