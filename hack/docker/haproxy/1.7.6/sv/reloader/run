@@ -1,0 +1,9 @@
+#!/bin/bash
+exec 1> >(logger -s -p daemon.info -t ${PWD##*/})
+exec 2> >(logger -s -p daemon.error -t ${PWD##*/})
+source /etc/envvars
+
+echo "Starting HAProxy configuration watcher and reloader ..."
+cmd="exec /kloader run $KLOADER_ARGS"
+echo $cmd
+$cmd
