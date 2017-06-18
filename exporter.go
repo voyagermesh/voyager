@@ -22,7 +22,7 @@ func NewCmdExport() *cobra.Command {
 			export()
 		},
 		PostRun: func(cmd *cobra.Command, args []string) {
-			analytics.ExporterStopped()
+			analytics.Send("exporter", "stopped", Version)
 		},
 	}
 
@@ -43,7 +43,7 @@ func export() {
 	}
 
 	log.Infoln("Starting Voyager exporter...")
-	analytics.ExporterStarted()
+	analytics.Send("exporter", "started", Version)
 
 	var err error
 	selectedServerMetrics, err = hpe.FilterServerMetrics(haProxyServerMetricFields)
