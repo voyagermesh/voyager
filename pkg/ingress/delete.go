@@ -7,6 +7,7 @@ import (
 	"github.com/appscode/go/types"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
+	"github.com/appscode/voyager/pkg/monitor"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
@@ -53,6 +54,15 @@ func (lbc *EngressController) deleteLB() error {
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
+	}
+
+	monSpec, err := lbc.Resource.MonitorSpec()
+	if err != nil {
+		return errors.FromErr(err).Err()
+	}
+	if monSpec != nil && monSpec.Prometheus != nil {
+		ctrl := monitor.NewPrometheusController(lbc.KubeClient, lbc.PromClient)
+		ctrl.DeleteMonitor(lbc.Resource, monSpec)
 	}
 	return lbc.deleteLBSvc()
 }

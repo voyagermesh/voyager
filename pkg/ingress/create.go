@@ -1,6 +1,7 @@
 package ingress
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -10,6 +11,7 @@ import (
 	"github.com/appscode/go/types"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
+	"github.com/appscode/voyager/pkg/monitor"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -128,6 +130,15 @@ func (lbc *EngressController) createLB() error {
 			return errors.New("LoadBalancer type ingress is unsupported for cloud provider:", lbc.ProviderName).Err()
 		}
 	}
+
+	monSpec, err := lbc.Resource.MonitorSpec()
+	if err != nil {
+		return errors.FromErr(err).Err()
+	}
+	if monSpec != nil && monSpec.Prometheus != nil {
+		ctrl := monitor.NewPrometheusController(lbc.KubeClient, lbc.PromClient)
+		ctrl.AddMonitor(lbc.Resource, monSpec)
+	}
 	return nil
 }
 
@@ -238,7 +249,7 @@ func (lbc *EngressController) createHostPortPods() error {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      lbc.Resource.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
-			Labels:    labelsFor(lbc.Resource.Name),
+			Labels:    lbc.Resource.OffshootLabels(),
 			Annotations: map[string]string{
 				api.OriginAPISchema: lbc.Resource.APISchema(),
 				api.OriginName:      lbc.Resource.GetName(),
@@ -247,13 +258,13 @@ func (lbc *EngressController) createHostPortPods() error {
 
 		Spec: extensions.DaemonSetSpec{
 			Selector: &metav1.LabelSelector{
-				MatchLabels: labelsFor(lbc.Resource.Name),
+				MatchLabels: lbc.Resource.OffshootLabels(),
 			},
 
 			// pod templates.
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: labelsFor(lbc.Resource.Name),
+					Labels: lbc.Resource.OffshootLabels(),
 				},
 				Spec: apiv1.PodSpec{
 					NodeSelector: lbc.Resource.NodeSelector(),
@@ -288,6 +299,14 @@ func (lbc *EngressController) createHostPortPods() error {
 		},
 	}
 
+	exporter, err := lbc.getExporterSidecar()
+	if err != nil {
+		return errors.FromErr(err).Err()
+	}
+	if exporter != nil {
+		daemon.Spec.Template.Spec.Containers = append(daemon.Spec.Template.Spec.Containers, *exporter)
+	}
+
 	// adding tcp ports to pod template
 	for targetPort := range lbc.Ports {
 		p := apiv1.ContainerPort{
@@ -312,9 +331,9 @@ func (lbc *EngressController) createHostPortPods() error {
 		daemon.Spec.Template.Annotations = ans
 	}
 
-	log.Infoln("creating DaemonSets controller")
 	dm, err := lbc.KubeClient.ExtensionsV1beta1().DaemonSets(lbc.Resource.Namespace).Get(daemon.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
+		log.Infoln("creating DaemonSets controller")
 		_, err := lbc.KubeClient.ExtensionsV1beta1().DaemonSets(lbc.Resource.Namespace).Create(daemon)
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -359,7 +378,7 @@ func (lbc *EngressController) createNodePortSvc() error {
 		Spec: apiv1.ServiceSpec{
 			Type:     apiv1.ServiceTypeNodePort,
 			Ports:    []apiv1.ServicePort{},
-			Selector: labelsFor(lbc.Resource.Name),
+			Selector: lbc.Resource.OffshootLabels(),
 			// https://github.com/kubernetes/kubernetes/issues/33586
 			// LoadBalancerSourceRanges: lbc.Config.Spec.LoadBalancerSourceRanges,
 		},
@@ -420,14 +439,11 @@ func (lbc *EngressController) createNodePortSvc() error {
 
 func (lbc *EngressController) createNodePortPods() error {
 	log.Infoln("creating NodePort deployment")
-	vs := Volumes(lbc.SecretNames)
-	vms := VolumeMounts(lbc.SecretNames)
-	// ignoring errors and trying to create controllers
 	deployment := &extensions.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      lbc.Resource.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
-			Labels:    labelsFor(lbc.Resource.Name),
+			Labels:    lbc.Resource.OffshootLabels(),
 			Annotations: map[string]string{
 				api.OriginAPISchema: lbc.Resource.APISchema(),
 				api.OriginName:      lbc.Resource.GetName(),
@@ -437,15 +453,28 @@ func (lbc *EngressController) createNodePortPods() error {
 		Spec: extensions.DeploymentSpec{
 			Replicas: types.Int32P(lbc.Resource.Replicas()),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: labelsFor(lbc.Resource.Name),
+				MatchLabels: lbc.Resource.OffshootLabels(),
 			},
 			// pod templates.
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: labelsFor(lbc.Resource.Name),
+					Labels: lbc.Resource.OffshootLabels(),
 				},
-
 				Spec: apiv1.PodSpec{
+					Affinity: &apiv1.Affinity{
+						PodAntiAffinity: &apiv1.PodAntiAffinity{
+							PreferredDuringSchedulingIgnoredDuringExecution: []apiv1.WeightedPodAffinityTerm{
+								{
+									Weight: 100,
+									PodAffinityTerm: apiv1.PodAffinityTerm{
+										LabelSelector: &metav1.LabelSelector{
+											MatchLabels: lbc.Resource.OffshootLabels(),
+										},
+									},
+								},
+							},
+						},
+					},
 					NodeSelector: lbc.Resource.NodeSelector(),
 					Containers: []apiv1.Container{
 						{
@@ -468,13 +497,20 @@ func (lbc *EngressController) createNodePortPods() error {
 								"--v=4",
 							},
 							Ports:        []apiv1.ContainerPort{},
-							VolumeMounts: vms,
+							VolumeMounts: VolumeMounts(lbc.SecretNames),
 						},
 					},
-					Volumes: vs,
+					Volumes: Volumes(lbc.SecretNames),
 				},
 			},
 		},
+	}
+	exporter, err := lbc.getExporterSidecar()
+	if err != nil {
+		return errors.FromErr(err).Err()
+	}
+	if exporter != nil {
+		deployment.Spec.Template.Spec.Containers = append(deployment.Spec.Template.Spec.Containers, *exporter)
 	}
 
 	// adding tcp ports to pod template
@@ -546,7 +582,7 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 		Spec: apiv1.ServiceSpec{
 			Type:                     apiv1.ServiceTypeLoadBalancer,
 			Ports:                    []apiv1.ServicePort{},
-			Selector:                 labelsFor(lbc.Resource.Name),
+			Selector:                 lbc.Resource.OffshootLabels(),
 			LoadBalancerSourceRanges: lbc.Resource.Spec.LoadBalancerSourceRanges,
 		},
 	}
@@ -604,6 +640,33 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 		}
 	}
 	return nil
+}
+
+func (lbc *EngressController) getExporterSidecar() (*apiv1.Container, error) {
+	monSpec, err := lbc.Resource.MonitorSpec()
+	if err != nil {
+		return nil, err
+	}
+	if monSpec != nil && monSpec.Prometheus != nil {
+		return &apiv1.Container{
+			Name: "exporter",
+			Args: []string{
+				"exporter",
+				fmt.Sprintf("--address=:%d", monSpec.Prometheus.ExporterPort),
+				"--v=3",
+			},
+			Image:           "appscode/voyager:3.0.0",
+			ImagePullPolicy: apiv1.PullIfNotPresent,
+			Ports: []apiv1.ContainerPort{
+				{
+					Name:          "http",
+					Protocol:      apiv1.ProtocolTCP,
+					ContainerPort: int32(monSpec.Prometheus.ExporterPort),
+				},
+			},
+		}, nil
+	}
+	return nil, nil
 }
 
 func (lbc *EngressController) updateStatus() error {
@@ -668,16 +731,6 @@ func (lbc *EngressController) ensureResourceAnnotations(annotation map[string]st
 		ret[api.OriginName] = lbc.Resource.GetName()
 	}
 	return ret, needsUpdate
-}
-
-func labelsFor(name string) map[string]string {
-	return map[string]string{
-		"appType":     "ext-applbc-" + name,
-		"type":        "ext-lbc-" + name,
-		"target":      "eng-" + name,
-		"meta":        "eng-" + name + "-applbc",
-		"engressName": name,
-	}
 }
 
 func Volumes(secretNames []string) []apiv1.Volume {
