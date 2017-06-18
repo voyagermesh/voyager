@@ -1,6 +1,7 @@
 package ingress
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -287,6 +288,31 @@ func (lbc *EngressController) createHostPortPods() error {
 				},
 			},
 		},
+	}
+
+	monSpec, err := lbc.Resource.MonitorSpec()
+	if err != nil {
+		return errors.FromErr(err).Err()
+	}
+	if monSpec != nil && monSpec.Prometheus != nil {
+		exporter := apiv1.Container{
+			Name: "exporter",
+			Args: []string{
+				"exporter",
+				fmt.Sprintf("--address=:%d", monSpec.Prometheus.ExporterPort),
+				"--v=3",
+			},
+			Image:           "appscode/voyager:<-------------------->",
+			ImagePullPolicy: apiv1.PullIfNotPresent,
+			Ports: []apiv1.ContainerPort{
+				{
+					Name:          "http",
+					Protocol:      apiv1.ProtocolTCP,
+					ContainerPort: int32(monSpec.Prometheus.ExporterPort),
+				},
+			},
+		}
+		daemon.Spec.Template.Spec.Containers = append(daemon.Spec.Template.Spec.Containers, exporter)
 	}
 
 	// adding tcp ports to pod template
