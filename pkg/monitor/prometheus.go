@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"strings"
 
 	"github.com/appscode/voyager/api"
 	"github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
@@ -16,38 +15,36 @@ import (
 )
 
 type PrometheusController struct {
-	kubeClient        clientset.Interface
-	promClient        *v1alpha1.MonitoringV1alpha1Client
-	operatorNamespace string
+	kubeClient clientset.Interface
+	promClient v1alpha1.MonitoringV1alpha1Interface
 }
 
-func NewPrometheusController(kubeClient clientset.Interface, promClient *v1alpha1.MonitoringV1alpha1Client, operatorNamespace string) Monitor {
+func NewPrometheusController(kubeClient clientset.Interface, promClient v1alpha1.MonitoringV1alpha1Interface) Monitor {
 	return &PrometheusController{
-		kubeClient:        kubeClient,
-		promClient:        promClient,
-		operatorNamespace: operatorNamespace,
+		kubeClient: kubeClient,
+		promClient: promClient,
 	}
 }
 
-func (c *PrometheusController) AddMonitor(meta metav1.ObjectMeta, spec *api.MonitorSpec) error {
+func (c *PrometheusController) AddMonitor(r *api.Ingress, spec *api.MonitorSpec) error {
 	if !c.SupportsCoreOSOperator() {
 		return errors.New("Cluster does not support CoreOS Prometheus operator")
 	}
-	return c.ensureServiceMonitor(meta, spec, spec)
+	return c.ensureServiceMonitor(r, spec, spec)
 }
 
-func (c *PrometheusController) UpdateMonitor(meta metav1.ObjectMeta, old, new *api.MonitorSpec) error {
+func (c *PrometheusController) UpdateMonitor(r *api.Ingress, old, new *api.MonitorSpec) error {
 	if !c.SupportsCoreOSOperator() {
 		return errors.New("Cluster does not support CoreOS Prometheus operator")
 	}
-	return c.ensureServiceMonitor(meta, old, new)
+	return c.ensureServiceMonitor(r, old, new)
 }
 
-func (c *PrometheusController) DeleteMonitor(meta metav1.ObjectMeta, spec *api.MonitorSpec) error {
+func (c *PrometheusController) DeleteMonitor(r *api.Ingress, spec *api.MonitorSpec) error {
 	if !c.SupportsCoreOSOperator() {
 		return errors.New("Cluster does not support CoreOS Prometheus operator")
 	}
-	if err := c.promClient.ServiceMonitors(spec.Prometheus.Namespace).Delete(getServiceMonitorName(meta), nil); !kerr.IsNotFound(err) {
+	if err := c.promClient.ServiceMonitors(spec.Prometheus.Namespace).Delete(getServiceMonitorName(r), nil); !kerr.IsNotFound(err) {
 		return err
 	}
 	return nil
@@ -65,8 +62,8 @@ func (c *PrometheusController) SupportsCoreOSOperator() bool {
 	return true
 }
 
-func (c *PrometheusController) ensureServiceMonitor(meta metav1.ObjectMeta, old, new *api.MonitorSpec) error {
-	name := getServiceMonitorName(meta)
+func (c *PrometheusController) ensureServiceMonitor(r *api.Ingress, old, new *api.MonitorSpec) error {
+	name := getServiceMonitorName(r)
 	if old != nil && (new == nil || old.Prometheus.Namespace != new.Prometheus.Namespace) {
 		err := c.promClient.ServiceMonitors(old.Prometheus.Namespace).Delete(name, nil)
 		if err != nil && !kerr.IsNotFound(err) {
@@ -79,7 +76,7 @@ func (c *PrometheusController) ensureServiceMonitor(meta metav1.ObjectMeta, old,
 
 	actual, err := c.promClient.ServiceMonitors(new.Prometheus.Namespace).Get(name)
 	if kerr.IsNotFound(err) {
-		return c.createServiceMonitor(meta, new)
+		return c.createServiceMonitor(r, new)
 	} else if err != nil {
 		return err
 	}
@@ -110,8 +107,8 @@ func (c *PrometheusController) ensureServiceMonitor(meta metav1.ObjectMeta, old,
 	return nil
 }
 
-func (c *PrometheusController) createServiceMonitor(meta metav1.ObjectMeta, spec *api.MonitorSpec) error {
-	svc, err := c.kubeClient.CoreV1().Services(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+func (c *PrometheusController) createServiceMonitor(r *api.Ingress, spec *api.MonitorSpec) error {
+	svc, err := c.kubeClient.CoreV1().Services(r.Namespace).Get(r.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -122,7 +119,7 @@ func (c *PrometheusController) createServiceMonitor(meta metav1.ObjectMeta, spec
 
 	sm := &prom.ServiceMonitor{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      getServiceMonitorName(meta),
+			Name:      getServiceMonitorName(r),
 			Namespace: spec.Prometheus.Namespace,
 			Labels:    spec.Prometheus.Labels,
 		},
@@ -132,10 +129,9 @@ func (c *PrometheusController) createServiceMonitor(meta metav1.ObjectMeta, spec
 			},
 			Endpoints: []prom.Endpoint{
 				{
-					Address:  fmt.Sprintf("%s.%s.svc:%d", "", c.operatorNamespace, ""),
 					Port:     svc.Spec.Ports[0].Name,
 					Interval: spec.Prometheus.Interval,
-					Path:     fmt.Sprintf("/kubedb.com/v1alpha1/namespaces/%s/%s/%s/pods/${__meta_kubernetes_pod_ip}/metrics", meta.Namespace, getTypeFromSelfLink(meta.SelfLink), meta.Name),
+					Path:     fmt.Sprintf("/%s/namespaces/%s/ingresses/%s/metrics", r.APISchema(), r.Namespace, r.Name),
 				},
 			},
 			Selector: metav1.LabelSelector{
@@ -149,14 +145,6 @@ func (c *PrometheusController) createServiceMonitor(meta metav1.ObjectMeta, spec
 	return nil
 }
 
-func getTypeFromSelfLink(selfLink string) string {
-	if len(selfLink) == 0 {
-		return ""
-	}
-	s := strings.Split(selfLink, "/")
-	return s[len(s)-2]
-}
-
-func getServiceMonitorName(meta metav1.ObjectMeta) string {
-	return fmt.Sprintf("kubedb-%s-%s", meta.Namespace, meta.Name)
+func getServiceMonitorName(r *api.Ingress) string {
+	return api.VoyagerPrefix + r.Namespace + "-" + r.Name
 }

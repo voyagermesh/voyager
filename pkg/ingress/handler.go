@@ -16,6 +16,7 @@ import (
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	fakecloudprovider "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
+	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	clientset "k8s.io/client-go/kubernetes"
@@ -25,12 +26,14 @@ import (
 func NewEngressController(providerName string,
 	kubeClient clientset.Interface,
 	extClient acs.ExtensionInterface,
+	promClient pcm.MonitoringV1alpha1Interface,
 	ingressClass string) *EngressController {
 	h := &EngressController{
 		ProviderName: providerName,
 		IngressClass: ingressClass,
 		KubeClient:   kubeClient,
 		ExtClient:    extClient,
+		PromClient:   promClient,
 	}
 	log.Infoln("Initializing cloud manager for provider", providerName)
 	if providerName == "aws" || providerName == "gce" || providerName == "azure" {
@@ -60,6 +63,7 @@ func NewEngressController(providerName string,
 func UpgradeAllEngress(service, providerName string,
 	kubeClient clientset.Interface,
 	extClient acs.ExtensionInterface,
+	promClient pcm.MonitoringV1alpha1Interface,
 	ingressClass string) error {
 	ing, err := kubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{
 		LabelSelector: labels.Everything().String(),
@@ -90,7 +94,7 @@ func UpgradeAllEngress(service, providerName string,
 		if shouldHandleIngress(engress, ingressClass) {
 			log.Infoln("Checking for service", service, "to be used to load balance via ingress", item.Name, item.Namespace)
 			if ok, name, namespace := isEngressHaveService(engress, service); ok {
-				lbc := NewEngressController(providerName, kubeClient, extClient, ingressClass)
+				lbc := NewEngressController(providerName, kubeClient, extClient, promClient, ingressClass)
 				lbc.Resource = &items[i]
 				log.Infoln("Trying to Update Ingress", item.Name, item.Namespace)
 				if lbc.IsExists() {

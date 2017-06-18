@@ -16,6 +16,7 @@ import (
 	"github.com/appscode/voyager/pkg/events"
 	ingresscontroller "github.com/appscode/voyager/pkg/ingress"
 	"github.com/appscode/voyager/pkg/stash"
+	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -36,11 +37,9 @@ type Watcher struct {
 
 	IngressClass string
 
-	// kubernetes client to apiserver
 	KubeClient clientset.Interface
-
-	// client for getting the appscode extensions
-	ExtClient acs.ExtensionInterface
+	ExtClient  acs.ExtensionInterface
+	PromClient pcm.MonitoringV1alpha1Interface
 
 	// sync time to sync the list.
 	SyncPeriod time.Duration
@@ -119,6 +118,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 			w.ProviderName,
 			w.KubeClient,
 			w.ExtClient,
+			w.PromClient,
 			w.IngressClass).Handle(e)
 
 		// Check the Ingress or Extended Ingress Annotations. To Work for auto certificate
@@ -144,6 +144,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 				w.ProviderName,
 				w.KubeClient,
 				w.ExtClient,
+				w.PromClient,
 				w.IngressClass)
 		}
 	case events.Endpoint:
@@ -159,6 +160,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 					w.ProviderName,
 					w.KubeClient,
 					w.ExtClient,
+					w.PromClient,
 					w.IngressClass)
 			}
 		}
