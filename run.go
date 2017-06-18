@@ -24,7 +24,7 @@ var (
 	kubeconfigPath string
 
 	providerName    string
-	haProxyImage    string = "appscode/haproxy:1.7.5-1.5.6"
+	haProxyImage    string = "appscode/haproxy:1.7.6-3.0.0"
 	ingressClass    string
 	enableAnalytics bool = true
 
