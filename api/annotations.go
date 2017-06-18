@@ -25,8 +25,6 @@ const (
 	StatsServiceName = EngressKey + "/" + "stats-service-name"
 	DefaultStatsPort = 1936
 
-	// Deprecated, use LBTypeHostPort
-	LBTypeDaemon       = "Daemon"
 	LBTypeHostPort     = "HostPort"
 	LBTypeNodePort     = "NodePort"
 	LBTypeLoadBalancer = "LoadBalancer" // default
