@@ -41,9 +41,8 @@ func (lbc *EngressController) Create() error {
 		return errors.FromErr(err).Err()
 	}
 
-	if lbc.Parsed.Stats {
-		lbc.ensureStatsService()
-	}
+	lbc.ensureStatsServiceDeleted()
+
 	return nil
 }
 
@@ -668,66 +667,6 @@ func (lbc *EngressController) getExporterSidecar() (*apiv1.Container, error) {
 		}, nil
 	}
 	return nil, nil
-}
-
-func (lbc *EngressController) ensureStatsService() {
-	svc := &apiv1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      lbc.Resource.StatsServiceName(),
-			Namespace: lbc.Resource.Namespace,
-			Annotations: map[string]string{
-				api.OriginAPISchema: lbc.Resource.APISchema(),
-				api.OriginName:      lbc.Resource.GetName(),
-			},
-		},
-		Spec: apiv1.ServiceSpec{
-			Ports: []apiv1.ServicePort{
-				{
-
-					Name:       "stats",
-					Protocol:   "TCP",
-					Port:       int32(lbc.Parsed.StatsPort),
-					TargetPort: intstr.FromInt(lbc.Parsed.StatsPort),
-				},
-			},
-			Selector: lbc.Resource.OffshootLabels(),
-		},
-	}
-
-	s, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Get(lbc.Resource.StatsServiceName(), metav1.GetOptions{})
-	if kerr.IsNotFound(err) {
-		_, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Create(svc)
-		if err != nil {
-			log.Errorln("Failed to create Stats Service", err)
-		}
-		return
-	} else if err != nil {
-		log.Errorln(err)
-		return
-	}
-
-	needsUpdate := false
-	if val, ok := lbc.ensureResourceAnnotations(svc.Annotations); ok {
-		needsUpdate = true
-		svc.Annotations = val
-	}
-
-	if isServicePortChanged(s.Spec.Ports, svc.Spec.Ports) {
-		needsUpdate = true
-		s.Spec.Ports = svc.Spec.Ports
-	}
-
-	if !reflect.DeepEqual(svc.Spec.Selector, lbc.Resource.OffshootLabels()) {
-		needsUpdate = true
-		svc.Spec.Selector = lbc.Resource.OffshootLabels()
-	}
-
-	if needsUpdate {
-		_, err = lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Update(s)
-		if err != nil {
-			log.Errorln("Failed to update Stats Service", err)
-		}
-	}
 }
 
 func (lbc *EngressController) updateStatus() error {

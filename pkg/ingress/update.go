@@ -53,13 +53,8 @@ func (lbc *EngressController) Update(t updateType) error {
 	}
 
 	if t&UpdateStats > 0 {
-		if lbc.Parsed.Stats {
-			lbc.ensureStatsService()
-		} else {
-			lbc.ensureStatsServiceDeleted()
-		}
+		lbc.ensureStatsServiceDeleted()
 	}
-
 	return nil
 }
 
