@@ -7,8 +7,8 @@ import (
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clientset "k8s.io/client-go/kubernetes/fake"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
-	clientset "k8s.io/client-go/testing/fake"
 )
 
 func init() {
