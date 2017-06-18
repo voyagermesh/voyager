@@ -88,6 +88,14 @@ func (r Ingress) OffshootName() string {
 	return VoyagerPrefix + r.Name
 }
 
+func (r Ingress) OffshootLabels() map[string]string {
+	return map[string]string{
+		"origin":            "voyager",
+		"origin-api-schema": r.APISchema(),
+		"origin-name":       r.Name,
+	}
+}
+
 func (r Ingress) APISchema() string {
 	if v := getString(r.Annotations, APISchema); v != "" {
 		return v
