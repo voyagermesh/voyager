@@ -3,10 +3,12 @@ package api
 import "fmt"
 
 const (
-	MonitoringAgent         = EngressKey + "/monitoring-agent"           // CoreOS
-	ServiceMonitorNamespace = EngressKey + "/service-monitor-namespace"  //Kube NS where service monitors will be created
-	ServiceMonitorLabels    = EngressKey + "/service-monitor-labels"     //map[string]string used to select Prometheus instance
-	ScrapeInterval          = EngressKey + "/prometheus-scrape-interval" // scrape interval
+	AgentCoreosOperator = "COREOS_OPERATOR"
+
+	MonitoringAgent              = EngressKey + "/monitoring-agent"                         // COREOS_OPERATOR
+	ServiceMonitorNamespace      = EngressKey + "/service-monitor-namespace"                // Kube NS where service monitors will be created
+	ServiceMonitorLabels         = EngressKey + "/service-monitor-labels"                   // map[string]string used to select Prometheus instance
+	ServiceMonitorScrapeInterval = EngressKey + "/service-monitor-endpoint-scrape-interval" // scrape interval
 )
 
 type MonitorSpec struct {
@@ -32,7 +34,7 @@ func (r Ingress) MonitorSpec() (*MonitorSpec, error) {
 	if agent == "" {
 		return nil, nil
 	}
-	if agent != "CoreOS" {
+	if agent != AgentCoreosOperator {
 		return nil, fmt.Errorf("Unknown monitoring agent %s", agent)
 	}
 
@@ -46,6 +48,6 @@ func (r Ingress) MonitorSpec() (*MonitorSpec, error) {
 	if err != nil {
 		return nil, err
 	}
-	prom.Interval = getString(r.Annotations, ScrapeInterval)
+	prom.Interval = getString(r.Annotations, ServiceMonitorScrapeInterval)
 	return &MonitorSpec{Prometheus: &prom}, err
 }
