@@ -421,9 +421,6 @@ func (lbc *EngressController) createNodePortSvc() error {
 
 func (lbc *EngressController) createNodePortPods() error {
 	log.Infoln("creating NodePort deployment")
-	vs := Volumes(lbc.SecretNames)
-	vms := VolumeMounts(lbc.SecretNames)
-	// ignoring errors and trying to create controllers
 	deployment := &extensions.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      lbc.Resource.OffshootName(),
@@ -445,8 +442,21 @@ func (lbc *EngressController) createNodePortPods() error {
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: lbc.Resource.OffshootLabels(),
 				},
-
 				Spec: apiv1.PodSpec{
+					Affinity: &apiv1.Affinity{
+						PodAntiAffinity: &apiv1.PodAntiAffinity{
+							PreferredDuringSchedulingIgnoredDuringExecution: []apiv1.WeightedPodAffinityTerm{
+								{
+									Weight: 100,
+									PodAffinityTerm: apiv1.PodAffinityTerm{
+										LabelSelector: &metav1.LabelSelector{
+											MatchLabels: lbc.Resource.OffshootLabels(),
+										},
+									},
+								},
+							},
+						},
+					},
 					NodeSelector: lbc.Resource.NodeSelector(),
 					Containers: []apiv1.Container{
 						{
@@ -469,10 +479,10 @@ func (lbc *EngressController) createNodePortPods() error {
 								"--v=4",
 							},
 							Ports:        []apiv1.ContainerPort{},
-							VolumeMounts: vms,
+							VolumeMounts: VolumeMounts(lbc.SecretNames),
 						},
 					},
-					Volumes: vs,
+					Volumes: Volumes(lbc.SecretNames),
 				},
 			},
 		},
