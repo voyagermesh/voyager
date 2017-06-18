@@ -69,21 +69,21 @@ func New(c rest.Interface) *ExtensionClient {
 }
 
 func setExtensionsDefaults(config *rest.Config) error {
-	gv, err := schema.ParseGroupVersion("voyager.appscode.com/v1beta1")
+	gv, err := schema.ParseGroupVersion(api.GroupName+ "/v1beta1")
 	if err != nil {
 		return err
 	}
 	// if voyager.appscode.com/v1beta1 is not enabled, return an error
 	if !api.Registry.IsEnabledVersion(gv) {
-		return fmt.Errorf("voyager.appscode.com/v1beta1 is not enabled")
+		return fmt.Errorf(api.GroupName+ "/v1beta1 is not enabled")
 	}
 	config.APIPath = defaultAPIPath
 	if config.UserAgent == "" {
 		config.UserAgent = rest.DefaultKubernetesUserAgent()
 	}
 
-	if config.GroupVersion == nil || config.GroupVersion.Group != "voyager.appscode.com" {
-		g, err := api.Registry.Group("voyager.appscode.com")
+	if config.GroupVersion == nil || config.GroupVersion.Group != api.GroupName {
+		g, err := api.Registry.Group(api.GroupName)
 		if err != nil {
 			return err
 		}
