@@ -8,6 +8,7 @@ import (
 	logs "github.com/appscode/log/golog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	_ "k8s.io/client-go/kubernetes/fake"
 )
 
 func main() {

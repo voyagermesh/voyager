@@ -7,7 +7,7 @@ import (
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientset "k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/kubernetes/fake"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
@@ -17,7 +17,7 @@ func init() {
 
 func TestEnsureResource(t *testing.T) {
 	w := &Watcher{
-		KubeClient: clientset.NewSimpleClientset(
+		KubeClient: fake.NewSimpleClientset(
 			&extensions.ThirdPartyResource{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "foo",
