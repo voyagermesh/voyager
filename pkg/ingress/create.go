@@ -239,7 +239,7 @@ func (lbc *EngressController) createHostPortPods() error {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      lbc.Resource.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
-			Labels:    labelsFor(lbc.Resource.Name),
+			Labels:    lbc.Resource.OffshootLabels(),
 			Annotations: map[string]string{
 				api.OriginAPISchema: lbc.Resource.APISchema(),
 				api.OriginName:      lbc.Resource.GetName(),
@@ -248,13 +248,13 @@ func (lbc *EngressController) createHostPortPods() error {
 
 		Spec: extensions.DaemonSetSpec{
 			Selector: &metav1.LabelSelector{
-				MatchLabels: labelsFor(lbc.Resource.Name),
+				MatchLabels: lbc.Resource.OffshootLabels(),
 			},
 
 			// pod templates.
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: labelsFor(lbc.Resource.Name),
+					Labels: lbc.Resource.OffshootLabels(),
 				},
 				Spec: apiv1.PodSpec{
 					NodeSelector: lbc.Resource.NodeSelector(),
@@ -360,7 +360,7 @@ func (lbc *EngressController) createNodePortSvc() error {
 		Spec: apiv1.ServiceSpec{
 			Type:     apiv1.ServiceTypeNodePort,
 			Ports:    []apiv1.ServicePort{},
-			Selector: labelsFor(lbc.Resource.Name),
+			Selector: lbc.Resource.OffshootLabels(),
 			// https://github.com/kubernetes/kubernetes/issues/33586
 			// LoadBalancerSourceRanges: lbc.Config.Spec.LoadBalancerSourceRanges,
 		},
@@ -428,7 +428,7 @@ func (lbc *EngressController) createNodePortPods() error {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      lbc.Resource.OffshootName(),
 			Namespace: lbc.Resource.Namespace,
-			Labels:    labelsFor(lbc.Resource.Name),
+			Labels:    lbc.Resource.OffshootLabels(),
 			Annotations: map[string]string{
 				api.OriginAPISchema: lbc.Resource.APISchema(),
 				api.OriginName:      lbc.Resource.GetName(),
@@ -438,12 +438,12 @@ func (lbc *EngressController) createNodePortPods() error {
 		Spec: extensions.DeploymentSpec{
 			Replicas: types.Int32P(lbc.Resource.Replicas()),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: labelsFor(lbc.Resource.Name),
+				MatchLabels: lbc.Resource.OffshootLabels(),
 			},
 			// pod templates.
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: labelsFor(lbc.Resource.Name),
+					Labels: lbc.Resource.OffshootLabels(),
 				},
 
 				Spec: apiv1.PodSpec{
@@ -547,7 +547,7 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 		Spec: apiv1.ServiceSpec{
 			Type:                     apiv1.ServiceTypeLoadBalancer,
 			Ports:                    []apiv1.ServicePort{},
-			Selector:                 labelsFor(lbc.Resource.Name),
+			Selector:                 lbc.Resource.OffshootLabels(),
 			LoadBalancerSourceRanges: lbc.Resource.Spec.LoadBalancerSourceRanges,
 		},
 	}
@@ -627,7 +627,7 @@ func (lbc *EngressController) ensureStatsService() {
 					TargetPort: intstr.FromInt(lbc.Parsed.StatsPort),
 				},
 			},
-			Selector: labelsFor(lbc.Resource.Name),
+			Selector: lbc.Resource.OffshootLabels(),
 		},
 	}
 
@@ -654,9 +654,9 @@ func (lbc *EngressController) ensureStatsService() {
 		s.Spec.Ports = svc.Spec.Ports
 	}
 
-	if !reflect.DeepEqual(svc.Spec.Selector, labelsFor(lbc.Resource.Name)) {
+	if !reflect.DeepEqual(svc.Spec.Selector, lbc.Resource.OffshootLabels()) {
 		needsUpdate = true
-		svc.Spec.Selector = labelsFor(lbc.Resource.Name)
+		svc.Spec.Selector = lbc.Resource.OffshootLabels()
 	}
 
 	if needsUpdate {
@@ -729,16 +729,6 @@ func (lbc *EngressController) ensureResourceAnnotations(annotation map[string]st
 		ret[api.OriginName] = lbc.Resource.GetName()
 	}
 	return ret, needsUpdate
-}
-
-func labelsFor(name string) map[string]string {
-	return map[string]string{
-		"appType":     "ext-applbc-" + name,
-		"type":        "ext-lbc-" + name,
-		"target":      "eng-" + name,
-		"meta":        "eng-" + name + "-applbc",
-		"engressName": name,
-	}
 }
 
 func Volumes(secretNames []string) []apiv1.Volume {
