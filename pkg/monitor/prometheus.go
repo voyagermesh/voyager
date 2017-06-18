@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"github.com/appscode/voyager/api"
 	"github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	_ "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
@@ -108,15 +108,6 @@ func (c *PrometheusController) ensureServiceMonitor(r *api.Ingress, old, new *ap
 }
 
 func (c *PrometheusController) createServiceMonitor(r *api.Ingress, spec *api.MonitorSpec) error {
-	svc, err := c.kubeClient.CoreV1().Services(r.Namespace).Get(r.Name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	ports := svc.Spec.Ports
-	if len(ports) == 0 {
-		return errors.New("No port found in database service")
-	}
-
 	sm := &prom.ServiceMonitor{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      getServiceMonitorName(r),
@@ -125,11 +116,11 @@ func (c *PrometheusController) createServiceMonitor(r *api.Ingress, spec *api.Mo
 		},
 		Spec: prom.ServiceMonitorSpec{
 			NamespaceSelector: prom.NamespaceSelector{
-				MatchNames: []string{svc.Namespace},
+				MatchNames: []string{r.Namespace},
 			},
 			Endpoints: []prom.Endpoint{
 				{
-					Port:     svc.Spec.Ports[0].Name,
+					TargetPort: intstr.FromInt(spec.Prometheus.ExporterPort),
 					Interval: spec.Prometheus.Interval,
 					Path:     fmt.Sprintf("/%s/namespaces/%s/ingresses/%s/metrics", r.APISchema(), r.Namespace, r.Name),
 				},
