@@ -7,6 +7,7 @@ import (
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/stash"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
+	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	clientset "k8s.io/client-go/kubernetes"
 )
 
@@ -34,6 +35,7 @@ type EngressController struct {
 	// kubernetes client
 	KubeClient   clientset.Interface
 	ExtClient    acs.ExtensionInterface
+	PromClient   pcm.MonitoringV1alpha1Interface
 	CloudManager cloudprovider.Interface
 	// endpoint cache store. contains all endpoints will be search with respect to services.
 	Storage stash.Storage

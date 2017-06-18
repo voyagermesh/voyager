@@ -13,6 +13,7 @@ import (
 	_ "github.com/appscode/voyager/client/clientset/fake"
 	"github.com/appscode/voyager/pkg/analytics"
 	"github.com/appscode/voyager/pkg/watcher"
+	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	clientset "k8s.io/client-go/kubernetes"
@@ -78,10 +79,15 @@ func run() {
 
 	kubeClient = clientset.NewForConfigOrDie(config)
 	extClient = acs.NewForConfigOrDie(config)
+	promClient, err := pcm.NewForConfig(config)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	w := &watcher.Watcher{
 		KubeClient:   kubeClient,
 		ExtClient:    extClient,
+		PromClient:   promClient,
 		SyncPeriod:   time.Minute * 2,
 		ProviderName: providerName,
 		HAProxyImage: haProxyImage,

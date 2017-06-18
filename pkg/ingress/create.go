@@ -1,6 +1,7 @@
 package ingress
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -10,6 +11,7 @@ import (
 	"github.com/appscode/go/types"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
+	"github.com/appscode/voyager/pkg/monitor"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -128,6 +130,15 @@ func (lbc *EngressController) createLB() error {
 		} else {
 			return errors.New("LoadBalancer type ingress is unsupported for cloud provider:", lbc.ProviderName).Err()
 		}
+	}
+
+	monSpec, err := lbc.Resource.MonitorSpec()
+	if err != nil {
+		return errors.FromErr(err).Err()
+	}
+	if monSpec != nil && monSpec.Prometheus != nil {
+		ctrl := monitor.NewPrometheusController(lbc.KubeClient, lbc.PromClient)
+		ctrl.AddMonitor(lbc.Resource, monSpec)
 	}
 	return nil
 }
@@ -289,6 +300,14 @@ func (lbc *EngressController) createHostPortPods() error {
 		},
 	}
 
+	exporter, err := lbc.getExporterSidecar()
+	if err != nil {
+		return errors.FromErr(err).Err()
+	}
+	if exporter != nil {
+		daemon.Spec.Template.Spec.Containers = append(daemon.Spec.Template.Spec.Containers, *exporter)
+	}
+
 	// adding tcp ports to pod template
 	for targetPort := range lbc.Ports {
 		p := apiv1.ContainerPort{
@@ -313,9 +332,9 @@ func (lbc *EngressController) createHostPortPods() error {
 		daemon.Spec.Template.Annotations = ans
 	}
 
-	log.Infoln("creating DaemonSets controller")
 	dm, err := lbc.KubeClient.ExtensionsV1beta1().DaemonSets(lbc.Resource.Namespace).Get(daemon.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
+		log.Infoln("creating DaemonSets controller")
 		_, err := lbc.KubeClient.ExtensionsV1beta1().DaemonSets(lbc.Resource.Namespace).Create(daemon)
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -487,6 +506,13 @@ func (lbc *EngressController) createNodePortPods() error {
 			},
 		},
 	}
+	exporter, err := lbc.getExporterSidecar()
+	if err != nil {
+		return errors.FromErr(err).Err()
+	}
+	if exporter != nil {
+		deployment.Spec.Template.Spec.Containers = append(deployment.Spec.Template.Spec.Containers, *exporter)
+	}
 
 	// adding tcp ports to pod template
 	for targetPort := range lbc.Ports {
@@ -615,6 +641,33 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 		}
 	}
 	return nil
+}
+
+func (lbc *EngressController) getExporterSidecar() (*apiv1.Container, error) {
+	monSpec, err := lbc.Resource.MonitorSpec()
+	if err != nil {
+		return nil, err
+	}
+	if monSpec != nil && monSpec.Prometheus != nil {
+		return &apiv1.Container{
+			Name: "exporter",
+			Args: []string{
+				"exporter",
+				fmt.Sprintf("--address=:%d", monSpec.Prometheus.ExporterPort),
+				"--v=3",
+			},
+			Image:           "appscode/voyager:3.0.0",
+			ImagePullPolicy: apiv1.PullIfNotPresent,
+			Ports: []apiv1.ContainerPort{
+				{
+					Name:          "http",
+					Protocol:      apiv1.ProtocolTCP,
+					ContainerPort: int32(monSpec.Prometheus.ExporterPort),
+				},
+			},
+		}, nil
+	}
+	return nil, nil
 }
 
 func (lbc *EngressController) ensureStatsService() {
