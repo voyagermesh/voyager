@@ -1,5 +1,5 @@
 ## Exposing HAProxy Stats
-To expose HAProxy stats, please use the following annotations: 
+To expose HAProxy stats, please use the following annotations:
 
 ### Stats annotations
 |  Keys  |   Value  |  Default |  Description |
@@ -11,7 +11,7 @@ To expose HAProxy stats, please use the following annotations:
 Please note that stats port is not exposed to the internet via the service running in front of HAProxy pods.
 
 ## Using Prometheus
-Voyager operator exposes Prometheus ready metrics via the following endpoints on port `:8080`:
+Voyager operator exposes Prometheus ready metrics via the following endpoints on port `:56790`:
 
  - `/metrics`: Scrape this to monitor operator.
  - `/extensions/v1beta1/namespaces/:ns/ingresses/:name/pods/:ip/metrics` :  Scrape this endpoint to monitor HAProxy running for a Kubernetes ingress
@@ -25,7 +25,7 @@ Voyager operator can create [service monitors](https://coreos.com/operators/prom
  - `/extensions/v1beta1/namespaces/:ns/ingresses/:name/pods/:ip/metrics` :  Scrape this endpoint to monitor HAProxy running for a Kubernetes ingress
  - `/voyager.appscode.com/v1beta1/namespaces/:ns/ingresses/:name/metrics`: Scrape this endpoint to monitor HAProxy running for an AppsCode extended ingress
 
-To enable this feature, please use the following annotations: 
+To enable this feature, please use the following annotations:
 
 |  Keys  |   Value  |  Default |  Description |
 |--------|-----------|----------|-------------|

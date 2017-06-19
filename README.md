@@ -29,7 +29,7 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
   - [Add Custom Annotation to LoadBalancer Service and Pods](docs/user-guide/ingress/annotations.md)
   - [Supports Loadbalancer Source Range](docs/user-guide/ingress/source-range.md)
   - [Supports redirects/DNS resolution for `ExternalName` type service](docs/user-guide/ingress/external-svc.md)
-  - [Expose HAProxy stats for Prometheus](docs/user-guide/ingress/stats-and-metrics.md)
+  - [Expose HAProxy stats for Prometheus](docs/user-guide/ingress/stats-and-prometheus.md)
   - [Supports AWS certificate manager](docs/user-guide/ingress/aws-cert-manager.md)
 
 ### Comparison with Kubernetes
