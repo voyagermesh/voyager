@@ -100,17 +100,17 @@ can be created using following data.
 
 ```yaml
 metadata:
-  name: ingress.appscode.com
+  name: ingress.voyager.appscode.com
 apiVersion: extensions/v1beta1
 kind: ThirdPartyResource
-description: "Extended ingress support for Kubernetes by appscode.com"
+description: "Extended ingress support for Kubernetes by AppsCode"
 versions:
   - name: v1beta1
 ```
 
 ```yaml
 metadata:
-  name: certificate.appscode.com
+  name: certificate.voyager.appscode.com
 apiVersion: extensions/v1beta1
 kind: ThirdPartyResource
 description: "A specification of a Let's Encrypt Certificate to manage."
