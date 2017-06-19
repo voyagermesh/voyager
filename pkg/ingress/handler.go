@@ -22,12 +22,14 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
+	"github.com/appscode/voyager/pkg/stash"
 )
 
 func NewEngressController(providerName string,
 	kubeClient clientset.Interface,
 	extClient acs.ExtensionInterface,
 	promClient pcm.MonitoringV1alpha1Interface,
+	store stash.Storage,
 	ingressClass string) *EngressController {
 	h := &EngressController{
 		ProviderName: providerName,
@@ -35,6 +37,7 @@ func NewEngressController(providerName string,
 		KubeClient:   kubeClient,
 		ExtClient:    extClient,
 		PromClient:   promClient,
+		Storage: store,
 	}
 	log.Infoln("Initializing cloud manager for provider", providerName)
 	if providerName == "aws" || providerName == "gce" || providerName == "azure" {
@@ -65,6 +68,7 @@ func UpgradeAllEngress(service, providerName string,
 	kubeClient clientset.Interface,
 	extClient acs.ExtensionInterface,
 	promClient pcm.MonitoringV1alpha1Interface,
+	store stash.Storage,
 	ingressClass string) error {
 	ing, err := kubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{
 		LabelSelector: labels.Everything().String(),
@@ -95,7 +99,7 @@ func UpgradeAllEngress(service, providerName string,
 		if shouldHandleIngress(engress, ingressClass) {
 			log.Infoln("Checking for service", service, "to be used to load balance via ingress", item.Name, item.Namespace)
 			if ok, name, namespace := isEngressHaveService(engress, service); ok {
-				lbc := NewEngressController(providerName, kubeClient, extClient, promClient, ingressClass)
+				lbc := NewEngressController(providerName, kubeClient, extClient, promClient, store, ingressClass)
 				lbc.Resource = &items[i]
 				log.Infoln("Trying to Update Ingress", item.Name, item.Namespace)
 				if lbc.IsExists() {
