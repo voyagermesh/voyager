@@ -23,7 +23,7 @@ const (
 	StatsPort        = EngressKey + "/" + "stats-port"
 	StatsSecret      = EngressKey + "/" + "stats-secret-name"
 	StatsServiceName = EngressKey + "/" + "stats-service-name"
-	DefaultStatsPort = 1936
+	DefaultStatsPort = 56789
 
 	LBTypeHostPort     = "HostPort"
 	LBTypeNodePort     = "NodePort"

@@ -4,6 +4,7 @@ import "fmt"
 
 const (
 	AgentCoreosPrometheus = "coreos-prometheus-operator"
+	DefaultExporterPort   = 56790
 
 	MonitoringAgent              = EngressKey + "/monitoring-agent"                         // COREOS_PROMETHEUS
 	PrometheusExporterPort       = EngressKey + "/prometheus-exporter-port"                 // Kube NS where service monitors will be created
@@ -62,7 +63,7 @@ func (r Ingress) MonitorSpec() (*MonitorSpec, error) {
 		return nil, err
 	}
 	if prom.ExporterPort == 0 {
-		prom.ExporterPort = 56789
+		prom.ExporterPort = DefaultExporterPort
 	}
 
 	prom.Interval = getString(r.Annotations, ServiceMonitorScrapeInterval)

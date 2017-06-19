@@ -26,7 +26,7 @@ Now Create Your Ingress/Certificated.
 
 #### Configuration Options
 ```
-      --address string                        Address to listen on for web interface and telemetry. (default ":8080")
+      --address string                        Address to listen on for web interface and telemetry. (default ":56790")
       --analytics                             Send analytical event to Google Analytics (default true)
   -c, --cloud-provider string                 Name of cloud provider
       --haproxy-image string                  haproxy image name to be run (default "appscode/haproxy:1.7.6-3.0.0")

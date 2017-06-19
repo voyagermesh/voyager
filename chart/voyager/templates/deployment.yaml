@@ -27,6 +27,6 @@ spec:
         image: "{{ .Values.image }}:{{ .Values.imageTag }}"
         name: voyager
         ports:
-        - containerPort: 8080
+        - containerPort: 56790
           name: http
           protocol: TCP
