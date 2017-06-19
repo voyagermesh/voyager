@@ -104,7 +104,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 		}
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)
 		return
-	case "appscode.com":
+	case api.GroupName:
 		var reg *prometheus.Registry
 		if val, ok := registerers.Get(r.URL.Path); ok {
 			reg = val.(*prometheus.Registry)

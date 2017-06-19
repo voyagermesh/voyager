@@ -10,7 +10,7 @@ that is only accessible to cluster internal ips. This will not allow clients fro
 Kubernetes cluster to access the load balancer.
 
 ```
-apiVersion: appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -30,7 +30,7 @@ spec:
 In the following example, a load balancer will be created that is only accessible to clients with
 IP addresses from 130.211.204.1 and 130.211.204.2.
 ```
-apiVersion: appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
   name: test-ingress

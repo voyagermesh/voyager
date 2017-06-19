@@ -3,7 +3,7 @@ There are existing Kubernetes concepts which allows you to expose a single servi
 through an AppsCode Ingress as well, simply by specifying a default backend with no rules.
 
 ```yaml
-apiVersion: appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -22,7 +22,7 @@ matched.
 **As Example:**
 
 ```yaml
-apiVersion: appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
   name: test-ingress
