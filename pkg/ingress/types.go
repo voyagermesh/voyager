@@ -22,10 +22,10 @@ type EngressController struct {
 	// contains raw configMap data parsed from the cfg file.
 	ConfigData string
 
-	// Ports contains a map of HAProxy port to Service Port (svc.TargetPort -> svc.Port).
-	// HAProxy binds to the target ports. Service ports are used to open loadbalancer/firewall.
+	// Ports contains a map of Service Port to HAProxy port (svc.Port -> svc.TargetPort).
+	// HAProxy pods binds to the target ports. Service ports are used to open loadbalancer/firewall.
 	// Usually target port == service port with one exception for LoadBalancer type service in AWS.
-	// If AWS cert manager is used then a 80 -> 443 port mapping is added.
+	// If AWS cert manager is used then a 443 -> 80 port mapping is added.
 	Ports map[int]int
 	// contains all the https host names.
 	HostFilter []string
