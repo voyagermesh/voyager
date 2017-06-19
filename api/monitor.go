@@ -10,7 +10,7 @@ const (
 	AgentCoreosPrometheus = "coreos-prometheus-operator"
 	DefaultExporterPort   = 56790
 
-	MonitoringAgent              = EngressKey + "/monitoring-agent"                         // COREOS_PROMETHEUS
+	MonitoringAgent              = EngressKey + "/monitoring-agent"                         // Name of monitoring agent
 	ServiceMonitorNamespace      = EngressKey + "/service-monitor-namespace"                // Kube NS where service monitors will be created
 	ServiceMonitorLabels         = EngressKey + "/service-monitor-labels"                   // map[string]string used to select Prometheus instance
 	ServiceMonitorTargetPort     = EngressKey + "/service-monitor-endpoint-target-port"     // Target port on container used to expose metrics
@@ -59,7 +59,7 @@ func (r Ingress) MonitorSpec() (*MonitorSpec, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(prom.Labels) == 0 {
+	if len(prom.Labels) <= 0 {
 		return nil, fmt.Errorf("Missing %s annotation", ServiceMonitorLabels)
 	}
 
@@ -74,9 +74,6 @@ func (r Ingress) MonitorSpec() (*MonitorSpec, error) {
 	}
 
 	prom.Interval = getString(r.Annotations, ServiceMonitorScrapeInterval)
-	if err != nil {
-		return nil, err
-	}
 
-	return &MonitorSpec{Prometheus: &prom}, err
+	return &MonitorSpec{Prometheus: &prom}, nil
 }
