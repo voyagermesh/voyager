@@ -12,6 +12,12 @@ $ export CLOUD_PROVIDER=<provider-name> // ie:
                                         // - aws
                                         // - azure
 
+
+$ export CLOUDE_CONFIG=<path>           // The path to the cloud provider configuration file.
+                                        // Empty string for no configuration file.
+                                        // ie. for azure use /etc/kubernetes/azure.json
+
+
 $ export TAG=3.0.0                      // Docker image tag for Voyager operator.
 
 $ curl https://raw.githubusercontent.com/appscode/voyager/master/hack/deploy/deployments.yaml | \
@@ -29,6 +35,7 @@ Now Create Your Ingress/Certificated.
       --address string                        Address to listen on for web interface and telemetry. (default ":56790")
       --analytics                             Send analytical event to Google Analytics (default true)
   -c, --cloud-provider string                 Name of cloud provider
+      --cloud-config string                   The path to the cloud provider configuration file.  Empty string for no configuration file.
       --haproxy-image string                  haproxy image name to be run (default "appscode/haproxy:1.7.6-3.0.0")
       --haproxy.server-metric-fields string   Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1 (default "2,3,4,5,6,7,8,9,13,14,15,16,17,18,21,24,33,35,38,39,40,41,42,43,44")
       --haproxy.timeout duration              Timeout for trying to get stats from HAProxy. (default 5s)
