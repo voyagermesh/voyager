@@ -4,7 +4,7 @@ import "fmt"
 
 const (
 	AgentCoreosPrometheus = "coreos-prometheus-operator"
-	DefaultExporterPort = 56790
+	DefaultExporterPort   = 56790
 
 	MonitoringAgent              = EngressKey + "/monitoring-agent"                         // COREOS_PROMETHEUS
 	PrometheusExporterPort       = EngressKey + "/prometheus-exporter-port"                 // Kube NS where service monitors will be created
