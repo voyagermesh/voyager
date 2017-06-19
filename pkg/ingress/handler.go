@@ -14,6 +14,7 @@ import (
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/events"
 	"github.com/appscode/voyager/pkg/monitor"
+	"github.com/appscode/voyager/pkg/stash"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	fakecloudprovider "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
@@ -22,7 +23,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
-	"github.com/appscode/voyager/pkg/stash"
 )
 
 func NewEngressController(providerName string,
@@ -37,7 +37,7 @@ func NewEngressController(providerName string,
 		KubeClient:   kubeClient,
 		ExtClient:    extClient,
 		PromClient:   promClient,
-		Storage: store,
+		Storage:      store,
 	}
 	log.Infoln("Initializing cloud manager for provider", providerName)
 	if providerName == "aws" || providerName == "gce" || providerName == "azure" {

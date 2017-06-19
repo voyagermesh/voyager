@@ -90,14 +90,14 @@ func (r Ingress) OffshootName() string {
 
 func (r Ingress) OffshootLabels() map[string]string {
 	lbl := map[string]string{
-		"origin":           "voyager",
-		"origin-name":      r.Name,
+		"origin":      "voyager",
+		"origin-name": r.Name,
 	}
 
-	gv := strings.Split(r.APISchema(), "/")
-	if len(gv) >= 2 {
-		lbl["origin-api-schema-group"] = gv[0]
-		lbl["origin-api-schema-version"] = gv[1]
+	gv := strings.SplitN(r.APISchema(), "/", 2)
+	if len(gv) == 2 {
+		lbl["origin-api-group"] = gv[0]
+		lbl["origin-api-version"] = gv[1]
 	}
 	return lbl
 }
