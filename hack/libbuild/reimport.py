@@ -42,7 +42,7 @@ PKG_MAP = {
     'k8s.io/kubernetes/pkg/api/errors':['k8s.io/apimachinery/pkg/api/errors', 'kerr'],
     'k8s.io/kubernetes/pkg/api/unversioned': ['k8s.io/apimachinery/pkg/apis/meta/v1', 'metav1'],
     'k8s.io/kubernetes/pkg/apimachinery/announced': ['k8s.io/apimachinery/pkg/apimachinery/announced'],
-    'k8s.io/kubernetes/pkg/apimachinery/registered': ['k8s.io/client-go/pkg/api'],
+    'k8s.io/kubernetes/pkg/apimachinery/registered': ['k8s.io/client-go/pkg/api', 'kapi'],
     'k8s.io/kubernetes/pkg/apis/apps': ['k8s.io/client-go/pkg/apis/apps/v1beta1', 'apps'],
     'k8s.io/kubernetes/pkg/apis/batch': ['k8s.io/client-go/pkg/apis/batch/v1', 'batch'],
     'k8s.io/kubernetes/pkg/apis/extensions': ['k8s.io/client-go/pkg/apis/extensions/v1beta1', 'extensions'],
