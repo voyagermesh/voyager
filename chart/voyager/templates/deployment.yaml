@@ -23,6 +23,7 @@ spec:
       - args:
         - run
         - --cloud-provider={{ .Values.cloudProvider }}
+        - --cloud-config={{ .Values.cloudConfig }}
         - --v={{ .Values.logLevel }}
         image: "{{ .Values.image }}:{{ .Values.imageTag }}"
         name: voyager

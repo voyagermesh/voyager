@@ -5,5 +5,6 @@ image: appscode/voyager
 imageTag: 3.0.0
 ## Use cloud provider here. Read details https://github.com/appscode/voyager/blob/master/docs/user-guide/README.md
 cloudProvider: cloud_provider
+cloudConfig: cloud_config
 ## Log level for voyager
 logLevel: 3
