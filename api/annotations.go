@@ -92,7 +92,6 @@ func (r Ingress) OffshootLabels() map[string]string {
 	lbl := map[string]string{
 		"origin":           "voyager",
 		"origin-name":      r.Name,
-		"origin-namespace": r.Namespace,
 	}
 
 	gv := strings.Split(r.APISchema(), "/")
