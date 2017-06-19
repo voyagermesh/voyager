@@ -738,7 +738,7 @@ func (s *IngressTestSuit) TestIngressCreateWithOptions() error {
 		resp, err := testserverclient.NewTestHTTPClient(url).
 			Method("GET").
 			Header(map[string]string{
-				"X-Ingress-Test-Header": api.GroupName+ "/v1beta1",
+				"X-Ingress-Test-Header": api.GroupName + "/v1beta1",
 			}).
 			Path("/testpath/ok").DoWithRetry(50)
 		if err != nil {
@@ -753,7 +753,7 @@ func (s *IngressTestSuit) TestIngressCreateWithOptions() error {
 			return errors.New().WithMessage("Path did not matched").Err()
 		}
 
-		if resp.RequestHeaders.Get("X-Ingress-Test-Header") != api.GroupName+ "/v1beta1" {
+		if resp.RequestHeaders.Get("X-Ingress-Test-Header") != api.GroupName+"/v1beta1" {
 			return errors.New().WithMessage("Header did not matched").Err()
 		}
 	}

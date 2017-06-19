@@ -35,7 +35,7 @@ func TestShouldHandleIngress(t *testing.T) {
 		{
 			ObjectMeta: metav1.ObjectMeta{
 				Annotations: map[string]string{
-					"ingress.appscode.com/kind": "ingress.voyager.appscode.com/v1beta1",
+					"ingress.appscode.com/kind": api.GroupName + "/v1beta1",
 				},
 			},
 		}: {
