@@ -31,3 +31,11 @@ spec:
         - containerPort: 56790
           name: http
           protocol: TCP
+        volumeMounts:
+          - mountPath: /etc/kubernetes
+            name: cloudconfig
+            readOnly: true
+      volumes:
+        - hostPath:
+            path: /etc/kubernetes
+          name: cloudconfig

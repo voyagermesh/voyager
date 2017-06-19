@@ -29,11 +29,12 @@ spec:
           protocol: TCP
         volumeMounts:
           - mountPath: /etc/kubernetes
-            name: etc-kubernetes
+            name: cloudconfig
+            readOnly: true
       volumes:
         - hostPath:
             path: /etc/kubernetes
-          name: etc-kubernetes
+          name: cloudconfig
 ---
 apiVersion: v1
 kind: Service
