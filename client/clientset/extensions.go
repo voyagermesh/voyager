@@ -3,8 +3,9 @@ package clientset
 import (
 	"fmt"
 
+	"github.com/appscode/voyager/api"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/pkg/api"
+	kapi "k8s.io/client-go/pkg/api"
 	"k8s.io/client-go/rest"
 )
 
@@ -74,7 +75,7 @@ func setExtensionsDefaults(config *rest.Config) error {
 		return err
 	}
 	// if voyager.appscode.com/v1beta1 is not enabled, return an error
-	if !api.Registry.IsEnabledVersion(gv) {
+	if !kapi.Registry.IsEnabledVersion(gv) {
 		return fmt.Errorf(api.GroupName + "/v1beta1 is not enabled")
 	}
 	config.APIPath = defaultAPIPath
@@ -83,7 +84,7 @@ func setExtensionsDefaults(config *rest.Config) error {
 	}
 
 	if config.GroupVersion == nil || config.GroupVersion.Group != api.GroupName {
-		g, err := api.Registry.Group(api.GroupName)
+		g, err := kapi.Registry.Group(api.GroupName)
 		if err != nil {
 			return err
 		}

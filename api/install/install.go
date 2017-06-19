@@ -4,7 +4,7 @@ import (
 	aci "github.com/appscode/voyager/api"
 	"k8s.io/apimachinery/pkg/apimachinery/announced"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/client-go/pkg/api"
+	kapi "k8s.io/client-go/pkg/api"
 )
 
 func init() {
@@ -19,7 +19,7 @@ func init() {
 		announced.VersionToSchemeFunc{
 			aci.V1beta1SchemeGroupVersion.Version: aci.V1beta1AddToScheme,
 		},
-	).Announce(api.GroupFactoryRegistry).RegisterAndEnable(api.Registry, api.Scheme); err != nil {
+	).Announce(kapi.GroupFactoryRegistry).RegisterAndEnable(kapi.Registry, kapi.Scheme); err != nil {
 		panic(err)
 	}
 }
