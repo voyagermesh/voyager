@@ -130,7 +130,7 @@ Below is the full list of supported annotation keys:
 | ingress.appscode.com/annotations-pod | map | x | `Optional`. Annotations applied to pods used to run HAProxy |
 | ingress.appscode.com/keep-source-ip | bool | false | `Optional`. If set, preserves source IP for `LoadBalancer` type ingresses. The actual configuration generated depends on the underlying cloud provider. For gce, gke, azure: Adds annotation `service.beta.kubernetes.io/external-traffic: OnlyLocal` to services used to expose HAProxy. For aws, enforces the use of the PROXY protocol. |
 | ingress.appscode.com/stats | bool | false | `Optional`. If set, HAProxy stats will be exposed |
-| ingress.appscode.com/stats-port | integer | 1936 | `Optional`. Port used to expose HAProxy stats |
+| ingress.appscode.com/stats-port | integer | 56789 | `Optional`. Port used to expose HAProxy stats |
 | ingress.appscode.com/stats-secret-name | string | x | `Optional`. Secret used to provide username & password to secure HAProxy stats endpoint. Secret must contain keys `username` and `password` |
 | ingress.appscode.com/ip | | | Removed since 1.5.6. Use `ingress.appscode.com/load-balaner-ip` |
 | ingress.appscode.com/persist | | | Removed since 1.5.6. |

@@ -9,6 +9,7 @@ import (
 	hpe "github.com/appscode/haproxy_exporter/exporter"
 	"github.com/appscode/log"
 	"github.com/appscode/pat"
+	"github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
 	_ "github.com/appscode/voyager/client/clientset/fake"
 	"github.com/appscode/voyager/pkg/analytics"
@@ -29,7 +30,7 @@ var (
 	ingressClass    string
 	enableAnalytics bool = true
 
-	address                   string        = ":8080"
+	address                   string        = fmt.Sprintf(":%d", api.DefaultExporterPort)
 	haProxyServerMetricFields string        = hpe.ServerMetrics.String()
 	haProxyTimeout            time.Duration = 5 * time.Second
 
