@@ -23,7 +23,7 @@ spec:
         - --v=3
         image: appscode/voyager:$TAG
         ports:
-        - containerPort: 8080
+        - containerPort: 56790
           name: http
           protocol: TCP
 ---
@@ -37,7 +37,7 @@ metadata:
 spec:
   ports:
   - name: http
-    port: 8080
+    port: 56790
     targetPort: http
   selector:
     app: voyager-operator

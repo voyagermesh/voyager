@@ -86,7 +86,7 @@ func (s *HTTPProviderServer) serve() {
 
 			httpServer := &http.Server{
 				Handler: mux,
-				Addr:    ":56789",
+				Addr:    ":56788",
 			}
 			// Once httpServer is shut down we don't want any lingering
 			// connections, so disable KeepAlives.
