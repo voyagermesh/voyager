@@ -32,7 +32,7 @@ hosting. This plugin also support configurable application ports with all the fe
   - [Add Custom Annotation to LoadBalancer Service and Pods](annotations.md)
   - [Supports Loadbalancer Source Range](source-range.md)
   - [Supports redirects/DNS resolution for `ExternalName` type service](external-svc.md)
-  - [Expose HAProxy stats for Prometheus](stats-and-metrics.md)
+  - [Expose HAProxy stats for Prometheus](stats-and-prometheus.md)
   - [Supports AWS certificate manager](aws-cert-manager.md)
 
 ### Comparison with Kubernetes
@@ -176,7 +176,7 @@ same ingress resource. Learn more by reading the [certificate doc](../certificat
 - [Add Custom Annotation to LoadBalancer Service and Pods](annotations.md)
 - [Supports Loadbalancer Source Range](source-range.md)
 - [Supports redirects/DNS resolve for `ServiceTypeExternalName`](external-svc.md)
-- [Expose HAProxy stats and metrics, use prometheus with metrics](stats-and-metrics.md)
+- [Expose HAProxy stats and metrics, use prometheus with metrics](stats-and-prometheus.md)
 
 ## Example
 Check out examples for [complex ingress configurations](../../../hack/example/ingress.yaml).
