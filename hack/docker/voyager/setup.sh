@@ -48,7 +48,6 @@ RUN set -x \
   && rm -rf /var/cache/apk/*
 
 COPY voyager /voyager
-USER nobody:nobody
 ENTRYPOINT ["/voyager"]
 EOL
 	local cmd="docker build -t appscode/$IMG:$TAG ."
