@@ -19,7 +19,7 @@ Voyager operator exposes Prometheus ready metrics via the following endpoints on
 
 To change the port, use `--address` flag on Voyager opreator.
 
-## Using CoreOS Prometheus Operator
+## Using [CoreOS Prometheus Operator](https://coreos.com/operators/prometheus/docs/latest/)
 Voyager operator can create [service monitors](https://coreos.com/operators/prometheus/docs/latest/user-guides/running-exporters.html#create-a-matching-servicemonitor) for HAProxy pods. If enabled, a side-car exporter pod is run with HAProxy to expose Prometheus ready metrics via the following endpoints on port `:56789`:
 
  - `/extensions/v1beta1/namespaces/:ns/ingresses/:name/pods/:ip/metrics` :  Scrape this endpoint to monitor HAProxy running for a Kubernetes ingress
