@@ -5,16 +5,16 @@ import (
 	"reflect"
 	"testing"
 
-	aci "github.com/appscode/voyager/api"
+	"github.com/appscode/voyager/api"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/pkg/api"
+	kapi "k8s.io/client-go/pkg/api"
 )
 
 func TestDefaultGroupVersion(t *testing.T) {
-	i := &aci.Ingress{
+	i := &api.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
@@ -26,7 +26,7 @@ func TestDefaultGroupVersion(t *testing.T) {
 		fmt.Println(err)
 	}
 	// if voyager.appscode.com/v1beta1 is not enabled, return an error
-	if !api.Registry.IsEnabledVersion(gv) {
+	if !kapi.Registry.IsEnabledVersion(gv) {
 		fmt.Println(api.GroupName + "/v1beta1 is not enabled")
 	}
 

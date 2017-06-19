@@ -8,13 +8,13 @@ import (
 	"strings"
 
 	"github.com/appscode/log"
-	aci "github.com/appscode/voyager/api"
+	"github.com/appscode/voyager/api"
 	"github.com/ghodss/yaml"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	kubejson "k8s.io/apimachinery/pkg/runtime/serializer/json"
-	"k8s.io/client-go/pkg/api"
+	kapi "k8s.io/client-go/pkg/api"
 )
 
 // TODO(@sadlil): Find a better way to replace ExtendedCodec to encode and decode objects.
@@ -129,7 +129,7 @@ func (*extendedCodec) DecodeParameters(parameters url.Values, from schema.GroupV
 	if _, okList := into.(*metav1.ListOptions); okList || okDelete {
 		from = schema.GroupVersion{Version: "v1"}
 	}
-	return runtime.NewParameterCodec(api.Scheme).DecodeParameters(parameters, from, into)
+	return runtime.NewParameterCodec(kapi.Scheme).DecodeParameters(parameters, from, into)
 }
 
 // EncodeParameters converts the provided object into the to version, then converts that object to url.Values.
@@ -143,14 +143,14 @@ func (ec *extendedCodec) EncodeParameters(obj runtime.Object, to schema.GroupVer
 	if _, okList := obj.(*metav1.ListOptions); okList || okDelete {
 		to = schema.GroupVersion{Version: "v1"}
 	}
-	return runtime.NewParameterCodec(api.Scheme).EncodeParameters(obj, to)
+	return runtime.NewParameterCodec(kapi.Scheme).EncodeParameters(obj, to)
 }
 
 func setDefaultVersionKind(obj runtime.Object) {
 	// Check the values can are In type Extended Ingress
 	defaultGVK := schema.GroupVersionKind{
-		Group:   aci.V1beta1SchemeGroupVersion.Group,
-		Version: aci.V1beta1SchemeGroupVersion.Version,
+		Group:   api.V1beta1SchemeGroupVersion.Group,
+		Version: api.V1beta1SchemeGroupVersion.Version,
 	}
 
 	fullyQualifiedKind := reflect.ValueOf(obj).Type().String()
@@ -163,5 +163,5 @@ func setDefaultVersionKind(obj runtime.Object) {
 }
 
 func setDefaultType(metadata *metav1.TypeMeta) (runtime.Object, error) {
-	return api.Scheme.New(metadata.GroupVersionKind())
+	return kapi.Scheme.New(metadata.GroupVersionKind())
 }
