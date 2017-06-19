@@ -128,7 +128,7 @@ in absence of those requests which doesn’t match a rule in spec, are sent to t
 |  DELETE | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | DELETE | nil
 
 ### Dive into Ingress
-You Can Learn more about `ingress.appscode.com` by reading [this doc](ingress/README.md).
+You can learn more about ingress options by reading [this doc](ingress/README.md).
 
 
 ## Certificate
@@ -136,7 +136,7 @@ Certificate objects are used to declare one or more Let's Encrypt issued TLS cer
 Before you can create a Certificate object you must create the Certificate Third Party Resource in your Kubernetes cluster.
 
 ### Resource
-A minimal Certificate resource Looks like at the kubernetes level:
+A minimal Certificate resource looks like at the kubernetes level:
 
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
@@ -179,7 +179,7 @@ certificate common name.
 |  DELETE | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | DELETE | nil
 
 ### Dive into Certificates
-You Can Learn more about `certificate.appscode.com` by reading [this doc](certificate/README.md).
+You Can Learn more about issuing SSL certificates by reading [this doc](certificate/README.md).
 
 ## Running Voyager alongside with other ingress controller
 Voyager can be configured to handle default kubernetes ingress or only ingress.appscode.com. Voyager can also be run

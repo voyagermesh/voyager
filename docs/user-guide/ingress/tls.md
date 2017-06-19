@@ -1,7 +1,6 @@
 ## TLS
-You can secure an Ingress by specifying a secret containing TLS pem or By referring a `certificate.appscode.com` resource.
-Referring `certificate.appscode.com` will try to manage an certificate resource and use that certificate to encrypt communication.
-We will discuss those things later.
+You can secure an Ingress by specifying a secret containing TLS pem or By referring a `certificate.voyager.appscode.com` resource.
+`certificate.voyager.appscode.com` can manage an certificate resource and use that certificate to encrypt communication.
 Currently the Ingress only supports a
 single TLS port, **443 for HTTP Rules**, and **Any Port for TCP Rules** and **assumes TLS termination**.
 
