@@ -148,10 +148,10 @@ func (s *IngressTestSuit) runTests() error {
 	wg.Wait()
 
 	log.Infoln("======================================")
+	log.Infoln("Time Elapsed", time.Since(startTime).Minutes(), "minutes")
 	log.Infoln("TOTAL", len(serializedMethodName))
 	log.Infoln("PASSED", len(serializedMethodName)-len(errs))
 	log.Infoln("FAILED", len(errs))
-	log.Infoln("Time Elapsed", time.Since(startTime).Minutes(), "minutes")
 	log.Infoln("======================================")
 	if len(errs) > 0 {
 		for _, err := range errs {

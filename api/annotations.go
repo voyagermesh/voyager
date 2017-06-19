@@ -89,11 +89,17 @@ func (r Ingress) OffshootName() string {
 }
 
 func (r Ingress) OffshootLabels() map[string]string {
-	return map[string]string{
-		"origin":            "voyager",
-		"origin-api-schema": r.APISchema(),
-		"origin-name":       r.Name,
+	lbl := map[string]string{
+		"origin":      "voyager",
+		"origin-name": r.Name,
 	}
+
+	gv := strings.SplitN(r.APISchema(), "/", 2)
+	if len(gv) == 2 {
+		lbl["origin-api-group"] = gv[0]
+		lbl["origin-api-version"] = gv[1]
+	}
+	return lbl
 }
 
 func (r Ingress) APISchema() string {

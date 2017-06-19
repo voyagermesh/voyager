@@ -23,6 +23,7 @@ func daemonNodeSelector(s *IngressTestSuit) string {
 			return fmt.Sprintf(`{"kubernetes.io/hostname": "%s"}`, s.t.Config.DaemonHostName)
 		}
 	}
+	log.Warningln("No node selector provided for daemon ingress")
 	return "{}"
 }
 

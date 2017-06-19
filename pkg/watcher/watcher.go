@@ -119,6 +119,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 			w.KubeClient,
 			w.ExtClient,
 			w.PromClient,
+			w.Storage,
 			w.IngressClass).Handle(e)
 
 		// Check the Ingress or Extended Ingress Annotations. To Work for auto certificate
@@ -145,6 +146,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 				w.KubeClient,
 				w.ExtClient,
 				w.PromClient,
+				w.Storage,
 				w.IngressClass)
 		}
 	case events.Endpoint:
@@ -161,6 +163,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 					w.KubeClient,
 					w.ExtClient,
 					w.PromClient,
+					w.Storage,
 					w.IngressClass)
 			}
 		}

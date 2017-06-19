@@ -62,6 +62,8 @@ var testServerSvc = &apiv1.Service{
 	},
 }
 
+var rcReplica int32 = 2
+
 var testServerRc = &apiv1.ReplicationController{
 	ObjectMeta: metav1.ObjectMeta{
 		Name:      "test-server",
@@ -72,7 +74,7 @@ var testServerRc = &apiv1.ReplicationController{
 		},
 	},
 	Spec: apiv1.ReplicationControllerSpec{
-		Replicas: 2,
+		Replicas: &rcReplica,
 		Selector: map[string]string{
 			"app": "test-server",
 		},
@@ -186,6 +188,8 @@ var testStatefulSetSvc = &apiv1.Service{
 	},
 }
 
+var statefulsetReplica int32 = 3
+
 var testServerStatefulSet = &apps.StatefulSet{
 	ObjectMeta: metav1.ObjectMeta{
 		Name:      "test-ss",
@@ -196,7 +200,7 @@ var testServerStatefulSet = &apps.StatefulSet{
 		},
 	},
 	Spec: apps.StatefulSetSpec{
-		Replicas:    3,
+		Replicas:    &statefulsetReplica,
 		ServiceName: testStatefulSetSvc.Name,
 		Template: apiv1.PodTemplateSpec{
 			ObjectMeta: metav1.ObjectMeta{
