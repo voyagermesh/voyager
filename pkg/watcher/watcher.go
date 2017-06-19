@@ -30,7 +30,8 @@ import (
 
 type Watcher struct {
 	// name of the cloud provider
-	ProviderName string
+	ProviderName    string
+	CloudConfigFile string
 
 	// HAProxyImage is used to create HAProxy pods.
 	HAProxyImage string
@@ -116,6 +117,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 		// Handle Ingress first
 		err := ingresscontroller.NewEngressController(
 			w.ProviderName,
+			w.CloudConfigFile,
 			w.KubeClient,
 			w.ExtClient,
 			w.PromClient,
@@ -143,6 +145,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 			return ingresscontroller.UpgradeAllEngress(
 				e.MetaData.Name+"."+e.MetaData.Namespace,
 				w.ProviderName,
+				w.CloudConfigFile,
 				w.KubeClient,
 				w.ExtClient,
 				w.PromClient,
@@ -160,6 +163,7 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 				return ingresscontroller.UpgradeAllEngress(
 					e.MetaData.Name+"."+e.MetaData.Namespace,
 					w.ProviderName,
+					w.CloudConfigFile,
 					w.KubeClient,
 					w.ExtClient,
 					w.PromClient,

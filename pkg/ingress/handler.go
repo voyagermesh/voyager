@@ -25,7 +25,7 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-func NewEngressController(providerName string,
+func NewEngressController(providerName, cloudConfig string,
 	kubeClient clientset.Interface,
 	extClient acs.ExtensionInterface,
 	promClient pcm.MonitoringV1alpha1Interface,
@@ -41,7 +41,7 @@ func NewEngressController(providerName string,
 	}
 	log.Infoln("Initializing cloud manager for provider", providerName)
 	if providerName == "aws" || providerName == "gce" || providerName == "azure" {
-		cloudInterface, err := cloudprovider.GetCloudProvider(providerName, nil)
+		cloudInterface, err := cloudprovider.InitCloudProvider(providerName, cloudConfig)
 		if err != nil {
 			log.Errorln("Failed to initialize cloud provider:"+providerName, err)
 		} else {
@@ -49,7 +49,7 @@ func NewEngressController(providerName string,
 			h.CloudManager = cloudInterface
 		}
 	} else if providerName == "gke" {
-		cloudInterface, err := cloudprovider.GetCloudProvider("gce", nil)
+		cloudInterface, err := cloudprovider.InitCloudProvider("gce", cloudConfig)
 		if err != nil {
 			log.Errorln("Failed to initialize cloud provider:"+providerName, err)
 		} else {
@@ -64,7 +64,7 @@ func NewEngressController(providerName string,
 	return h
 }
 
-func UpgradeAllEngress(service, providerName string,
+func UpgradeAllEngress(service, providerName, cloudConfig string,
 	kubeClient clientset.Interface,
 	extClient acs.ExtensionInterface,
 	promClient pcm.MonitoringV1alpha1Interface,
@@ -99,7 +99,7 @@ func UpgradeAllEngress(service, providerName string,
 		if shouldHandleIngress(engress, ingressClass) {
 			log.Infoln("Checking for service", service, "to be used to load balance via ingress", item.Name, item.Namespace)
 			if ok, name, namespace := isEngressHaveService(engress, service); ok {
-				lbc := NewEngressController(providerName, kubeClient, extClient, promClient, store, ingressClass)
+				lbc := NewEngressController(providerName, cloudConfig, kubeClient, extClient, promClient, store, ingressClass)
 				lbc.Resource = &items[i]
 				log.Infoln("Trying to Update Ingress", item.Name, item.Namespace)
 				if lbc.IsExists() {

@@ -26,6 +26,7 @@ var (
 	kubeconfigPath string
 
 	providerName    string
+	cloudConfigFile string
 	haProxyImage    string = "appscode/haproxy:1.7.6-3.0.0"
 	ingressClass    string
 	enableAnalytics bool = true
@@ -53,6 +54,7 @@ func NewCmdRun() *cobra.Command {
 	cmd.Flags().StringVar(&masterURL, "master", masterURL, "The address of the Kubernetes API server (overrides any value in kubeconfig)")
 	cmd.Flags().StringVar(&kubeconfigPath, "kubeconfig", kubeconfigPath, "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
 	cmd.Flags().StringVarP(&providerName, "cloud-provider", "c", providerName, "Name of cloud provider")
+	cmd.Flags().StringVar(&cloudConfigFile, "cloud-config", cloudConfigFile, "The path to the cloud provider configuration file.  Empty string for no configuration file.")
 	cmd.Flags().StringVar(&haProxyImage, "haproxy-image", haProxyImage, "haproxy image name to be run")
 	cmd.Flags().StringVar(&ingressClass, "ingress-class", "", "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
 	cmd.Flags().BoolVar(&enableAnalytics, "analytics", enableAnalytics, "Send analytical event to Google Analytics")
@@ -86,13 +88,14 @@ func run() {
 	}
 
 	w := &watcher.Watcher{
-		KubeClient:   kubeClient,
-		ExtClient:    extClient,
-		PromClient:   promClient,
-		SyncPeriod:   time.Minute * 2,
-		ProviderName: providerName,
-		HAProxyImage: haProxyImage,
-		IngressClass: ingressClass,
+		KubeClient:      kubeClient,
+		ExtClient:       extClient,
+		PromClient:      promClient,
+		SyncPeriod:      time.Minute * 2,
+		ProviderName:    providerName,
+		CloudConfigFile: cloudConfigFile,
+		HAProxyImage:    haProxyImage,
+		IngressClass:    ingressClass,
 	}
 
 	log.Infoln("Starting Voyager operator...")
