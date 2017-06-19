@@ -9,10 +9,10 @@ dns, [DNS resolvers](https://cbonte.github.io/haproxy-dconv/1.7/configuration.ht
 |  Keys  |   Value  |  Default |  Description |
 |--------|-----------|----------|-------------|
 | ingress.appscode.com/use-dns-resolver | bool | false for L7, always true for L4 | If set, DNS resolution will be used |
-| ingress.appscode.com/dns-resolver-nameservers | array | | If set to an array of DNS nameservers, these will be used HAProxy to periodically resolve DNS. If not set, HAProxy parses the server line definition and matches a host name at start up. |
-| ingress.appscode.com/dns-resolver-retries | integer | | If set, this defines the number of queries to send to resolve a server name before giving up. If not set, default value pre-configured by HAProxy is used. |
-| ingress.appscode.com/dns-resolver-timeout | map | | If set, defines timeouts related to name resolution. Define value as '{ "event": "time" }'. For a list of valid events, please consult [HAProxy documentation](https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#5.3.2-timeout). |
-| ingress.appscode.com/dns-resolver-hold | map | | If set, Defines period during which the last name resolution should be kept based on last resolution status. Define value as '{ "status": "period" }'. For a list of valid status, please consult [HAProxy documentation](https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#5.3.2-hold). |
+| ingress.appscode.com/dns-resolver-nameservers | array | | `Optional`. If set to an array of DNS nameservers, these will be used HAProxy to periodically resolve DNS. If not set, HAProxy parses the server line definition and matches a host name at start up. |
+| ingress.appscode.com/dns-resolver-retries | integer | | `Optional`. If set, this defines the number of queries to send to resolve a server name before giving up. If not set, default value pre-configured by HAProxy is used. |
+| ingress.appscode.com/dns-resolver-timeout | map | | `Optional`. If set, defines timeouts related to name resolution. Define value as '{ "event": "time" }'. For a list of valid events, please consult [HAProxy documentation](https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#5.3.2-timeout). |
+| ingress.appscode.com/dns-resolver-hold | map | | `Optional`. If set, Defines period during which the last name resolution should be kept based on last resolution status. Define value as '{ "status": "period" }'. For a list of valid status, please consult [HAProxy documentation](https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#5.3.2-hold). |
 
 Following example illustrates the scenario.
 

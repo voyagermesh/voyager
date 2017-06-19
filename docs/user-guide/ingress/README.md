@@ -121,17 +121,17 @@ Below is the full list of supported annotation keys:
 
 |  Keys  |   Value   |  Default |  Description |
 |--------|-----------|----------|--------------|
-| ingress.appscode.com/type | LoadBalancer, HostPort, NodePort | LoadBalancer | Indicates type of service used to expose HAProxy to the internet |
-| ingress.appscode.com/replicas | integer | 1 | Indicates number of replicas of HAProxy pods |
-| ingress.appscode.com/load-balaner-ip | string | x | For "gce" and "gke" cloud provider, if this value is set to a valid IPv4 address, it will be assigned to Google cloud network loadbalancer used to expose HAProxy. Usually this is set to a static IP to preserve DNS configuration |
+| ingress.appscode.com/type | LoadBalancer, HostPort, NodePort | LoadBalancer | `Required`. Indicates type of service used to expose HAProxy to the internet |
+| ingress.appscode.com/replicas | integer | 1 | `Optional`. Indicates number of replicas of HAProxy pods |
+| ingress.appscode.com/load-balaner-ip | string | x | `Optional`. For "gce" and "gke" cloud provider, if this value is set to a valid IPv4 address, it will be assigned to Google cloud network loadbalancer used to expose HAProxy. Usually this is set to a static IP to preserve DNS configuration |
 | ingress.appscode.com/node-selector | map | x | Indicates which hosts are selected to run HAProxy pods. This is a required annotation for `HostPort` type ingress. |
-| ingress.appscode.com/sticky-session | bool | false | Indicates the session affinity for the traffic. If set, session affinity will apply to all the rulses. |
-| ingress.appscode.com/annotations-service | map | x | Annotaiotns applied to service used to expose HAProxy |
-| ingress.appscode.com/annotations-pod | map | x | Annotations applied to pods used to run HAProxy |
-| ingress.appscode.com/keep-source-ip | bool | false | If set, preserves source IP for `LoadBalancer` type ingresses. The actual configuration generated depends on the underlying cloud provider. For gce, gke, azure: Adds annotation `service.beta.kubernetes.io/external-traffic: OnlyLocal` to services used to expose HAProxy. For aws, enforces the use of the PROXY protocol. |
-| ingress.appscode.com/stats | bool | false | If set, HAProxy stats will be exposed |
-| ingress.appscode.com/stats-port | integer | 1936 | Port used to expose HAProxy stats |
-| ingress.appscode.com/stats-secret-name | string | x | Secret used to provide username & password to secure HAProxy stats endpoint. Secret must contain keys `username` and `password` |
+| ingress.appscode.com/sticky-session | bool | false | `Optional`. Indicates the session affinity for the traffic. If set, session affinity will apply to all the rulses. |
+| ingress.appscode.com/annotations-service | map | x | `Optional`. Annotaiotns applied to service used to expose HAProxy |
+| ingress.appscode.com/annotations-pod | map | x | `Optional`. Annotations applied to pods used to run HAProxy |
+| ingress.appscode.com/keep-source-ip | bool | false | `Optional`. If set, preserves source IP for `LoadBalancer` type ingresses. The actual configuration generated depends on the underlying cloud provider. For gce, gke, azure: Adds annotation `service.beta.kubernetes.io/external-traffic: OnlyLocal` to services used to expose HAProxy. For aws, enforces the use of the PROXY protocol. |
+| ingress.appscode.com/stats | bool | false | `Optional`. If set, HAProxy stats will be exposed |
+| ingress.appscode.com/stats-port | integer | 1936 | `Optional`. Port used to expose HAProxy stats |
+| ingress.appscode.com/stats-secret-name | string | x | `Optional`. Secret used to provide username & password to secure HAProxy stats endpoint. Secret must contain keys `username` and `password` |
 | ingress.appscode.com/ip | | | Removed since 1.5.6. Use `ingress.appscode.com/load-balaner-ip` |
 | ingress.appscode.com/persist | | | Removed since 1.5.6. |
 | ingress.appscode.com/daemon.nodeSelector | | | Removed since 1.5.6. Use `ingress.appscode.com/node-selector` |

@@ -3,7 +3,7 @@ package api
 import "fmt"
 
 const (
-	AgentCoreosPrometheus = "COREOS_PROMETHEUS"
+	AgentCoreosPrometheus = "coreos-prometheus-operator"
 
 	MonitoringAgent              = EngressKey + "/monitoring-agent"                         // COREOS_PROMETHEUS
 	PrometheusExporterPort       = EngressKey + "/prometheus-exporter-port"                 // Kube NS where service monitors will be created
