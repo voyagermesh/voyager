@@ -70,7 +70,7 @@ func TestShouldHandleIngress(t *testing.T) {
 
 func TestEnsureServiceAnnotation(t *testing.T) {
 	fakeClient := fake.NewSimpleClientset()
-	_, err := fakeClient.CoreV1().Services("a").Get("b")
+	_, err := fakeClient.CoreV1().Services("a").Get("b", metav1.GetOptions{})
 	assert.NotNil(t, err)
 
 	svc, err := fakeClient.CoreV1().Services("test-namespace").Create(&apiv1.Service{
@@ -92,7 +92,7 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 		},
 	}, "test-namespace", "test-service")
 
-	svc, err = fakeClient.CoreV1().Services("test-namespace").Get("test-service")
+	svc, err = fakeClient.CoreV1().Services("test-namespace").Get("test-service", metav1.GetOptions{})
 	assert.Nil(t, err)
 	assert.NotNil(t, svc.Annotations)
 	assert.Contains(t, svc.Annotations, api.EngressKey)
@@ -110,7 +110,7 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 		},
 	}, "test-namespace", "test-service")
 
-	svc, err = fakeClient.CoreV1().Services("test-namespace").Get("test-service")
+	svc, err = fakeClient.CoreV1().Services("test-namespace").Get("test-service", metav1.GetOptions{})
 	assert.Nil(t, err)
 	assert.NotNil(t, svc.Annotations)
 	assert.Contains(t, svc.Annotations, api.EngressKey)
@@ -123,7 +123,7 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 		},
 	}, "test-namespace", "test-service")
 
-	svc, err = fakeClient.CoreV1().Services("test-namespace").Get("test-service")
+	svc, err = fakeClient.CoreV1().Services("test-namespace").Get("test-service", metav1.GetOptions{})
 	assert.Nil(t, err)
 	assert.NotNil(t, svc.Annotations)
 	assert.Contains(t, svc.Annotations, api.EngressKey)

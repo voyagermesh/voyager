@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/appscode/errors"
+	"github.com/appscode/go/types"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
@@ -28,7 +29,7 @@ func (s *IngressTestSuit) TestIngressEnsureTPR() error {
 	var err error
 	for it := 0; it < 10; it++ {
 		log.Infoln(it, "Trying to get ingress.appscode.com")
-		tpr, err := s.t.KubeClient.Extensions().ThirdPartyResources().Get("ingress.appscode.com")
+		tpr, err := s.t.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Get("ingress.appscode.com", metav1.GetOptions{})
 		if err == nil {
 			log.Infoln("Found tpr for ingress with name", tpr.Name)
 			break
@@ -81,7 +82,7 @@ func (s *IngressTestSuit) TestIngressCreateDelete() error {
 	time.Sleep(time.Second * 60)
 	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -93,7 +94,7 @@ func (s *IngressTestSuit) TestIngressCreateDelete() error {
 	}
 	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 	for i := 0; i < maxRetries; i++ {
-		_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		_, err = s.t.KubeClient.CoreV1().Endpoints(svc.Namespace).Get(svc.Name, metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -149,7 +150,7 @@ func (s *IngressTestSuit) TestIngressCreateDelete() error {
 	// Wait until everything is deleted
 	time.Sleep(time.Second * 60)
 	for i := 0; i < maxRetries; i++ {
-		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 		if err != nil {
 			if kerr.IsNotFound(err) {
 				break
@@ -205,7 +206,7 @@ func (s *IngressTestSuit) TestIngressUpdate() error {
 	time.Sleep(time.Second * 40)
 	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -217,7 +218,7 @@ func (s *IngressTestSuit) TestIngressUpdate() error {
 	}
 	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 	for i := 0; i < maxRetries; i++ {
-		_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		_, err = s.t.KubeClient.CoreV1().Endpoints(svc.Namespace).Get(svc.Name, metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -328,7 +329,7 @@ func (s *IngressTestSuit) TestIngressUpdate() error {
 
 		found := false
 		for i := 1; i <= maxRetries; i++ {
-			svc, err := s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+			svc, err := s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 			if err != nil {
 				continue
 			}
@@ -368,27 +369,27 @@ func (s *IngressTestSuit) TestIngressUpdate() error {
 		}
 
 		log.Infoln("Checking NodePort Assignments")
-		rc, err := s.t.KubeClient.Core().ReplicationControllers(s.t.Config.TestNamespace).Get(testServerRc.Name)
+		rc, err := s.t.KubeClient.CoreV1().ReplicationControllers(s.t.Config.TestNamespace).Get(testServerRc.Name, metav1.GetOptions{})
 		if err == nil {
 
-			svc, err := s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+			svc, err := s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 			if err != nil {
 				return errors.New().WithMessage("Service get encountered error").Err()
 			}
 			// Removing pods so that endpoints get updated
-			rc.Spec.Replicas = 0
-			s.t.KubeClient.Core().ReplicationControllers(s.t.Config.TestNamespace).Update(rc)
+			rc.Spec.Replicas = types.Int32P(0)
+			s.t.KubeClient.CoreV1().ReplicationControllers(s.t.Config.TestNamespace).Update(rc)
 
 			for {
-				pods, _ := s.t.KubeClient.Core().Pods(s.t.Config.TestNamespace).List(metav1.ListOptions{
-					LabelSelector: labels.SelectorFromSet(labels.Set(rc.Spec.Selector)),
+				pods, _ := s.t.KubeClient.CoreV1().Pods(s.t.Config.TestNamespace).List(metav1.ListOptions{
+					LabelSelector: labels.SelectorFromSet(rc.Spec.Selector).String(),
 				})
 				if len(pods.Items) <= 0 {
 					break
 				}
 				time.Sleep(time.Second * 5)
 			}
-			svcUpdated, err := s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+			svcUpdated, err := s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 			if err != nil {
 				return errors.New().WithMessage("Service get encountered error").Err()
 			}
@@ -403,10 +404,10 @@ func (s *IngressTestSuit) TestIngressUpdate() error {
 				}
 			}
 
-			rc.Spec.Replicas = 2
-			s.t.KubeClient.Core().ReplicationControllers(s.t.Config.TestNamespace).Update(rc)
+			rc.Spec.Replicas = types.Int32P(2)
+			s.t.KubeClient.CoreV1().ReplicationControllers(s.t.Config.TestNamespace).Update(rc)
 
-			svcUpdated, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+			svcUpdated, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 			if err != nil {
 				return errors.New().WithMessage("Service get encountered error").Err()
 			}
@@ -473,7 +474,7 @@ func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
 		time.Sleep(time.Second * 10)
 		var svc *apiv1.Service
 		for i := 0; i < maxRetries; i++ {
-			svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+			svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 			if err == nil {
 				break
 			}
@@ -485,7 +486,7 @@ func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
 		}
 		log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 		for i := 0; i < maxRetries; i++ {
-			_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+			_, err = s.t.KubeClient.CoreV1().Endpoints(svc.Namespace).Get(svc.Name, metav1.GetOptions{})
 			if err == nil {
 				break
 			}
@@ -517,7 +518,7 @@ func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
 			}
 		}
 
-		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 		if err != nil {
 			return errors.New().WithCause(err).Err()
 		}
@@ -571,7 +572,7 @@ func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
 		// Wait sometime to loadbalancer be opened up.
 		time.Sleep(time.Second * 10)
 		for i := 0; i < maxRetries; i++ {
-			svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+			svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 			if err == nil {
 				break
 			}
@@ -583,7 +584,7 @@ func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
 		}
 		log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 		for i := 0; i < maxRetries; i++ {
-			_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+			_, err = s.t.KubeClient.CoreV1().Endpoints(svc.Namespace).Get(svc.Name, metav1.GetOptions{})
 			if err == nil {
 				break
 			}
@@ -615,7 +616,7 @@ func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
 			}
 		}
 
-		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 		if err != nil {
 			return errors.New().WithCause(err).Err()
 		}
@@ -685,7 +686,7 @@ func (s *IngressTestSuit) TestIngressCreateWithOptions() error {
 	time.Sleep(time.Second * 10)
 	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -697,7 +698,7 @@ func (s *IngressTestSuit) TestIngressCreateWithOptions() error {
 	}
 	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 	for i := 0; i < maxRetries; i++ {
-		_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		_, err = s.t.KubeClient.CoreV1().Endpoints(svc.Namespace).Get(svc.Name, metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -789,13 +790,13 @@ func (s *IngressTestSuit) TestIngressCoreIngress() error {
 		},
 	}
 
-	_, err := s.t.KubeClient.Extensions().Ingresses(baseIngress.Namespace).Create(baseIngress)
+	_, err := s.t.KubeClient.ExtensionsV1beta1().Ingresses(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.KubeClient.Extensions().Ingresses(baseIngress.Namespace).Delete(baseIngress.Name, &apiv1.DeleteOptions{})
+			s.t.KubeClient.ExtensionsV1beta1().Ingresses(baseIngress.Namespace).Delete(baseIngress.Name, &metav1.DeleteOptions{})
 		}
 	}()
 
@@ -803,7 +804,7 @@ func (s *IngressTestSuit) TestIngressCoreIngress() error {
 	time.Sleep(time.Second * 10)
 	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(api.VoyagerPrefix + baseIngress.Name)
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(api.VoyagerPrefix+baseIngress.Name, metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -815,7 +816,7 @@ func (s *IngressTestSuit) TestIngressCoreIngress() error {
 	}
 	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 	for i := 0; i < maxRetries; i++ {
-		_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		_, err = s.t.KubeClient.CoreV1().Endpoints(svc.Namespace).Get(svc.Name, metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -854,14 +855,14 @@ func (s *IngressTestSuit) TestIngressCoreIngress() error {
 }
 
 func (s *IngressTestSuit) TestIngressHostNames() error {
-	headlessSvc, err := s.t.KubeClient.Core().Services(s.t.Config.TestNamespace).Create(testStatefulSetSvc)
+	headlessSvc, err := s.t.KubeClient.CoreV1().Services(s.t.Config.TestNamespace).Create(testStatefulSetSvc)
 	if err != nil {
 		return err
 	}
 	orphan := false
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.KubeClient.Core().Services(s.t.Config.TestNamespace).Delete(headlessSvc.Name, &apiv1.DeleteOptions{
+			s.t.KubeClient.CoreV1().Services(s.t.Config.TestNamespace).Delete(headlessSvc.Name, &metav1.DeleteOptions{
 				OrphanDependents: &orphan,
 			})
 		}
@@ -873,7 +874,7 @@ func (s *IngressTestSuit) TestIngressHostNames() error {
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.KubeClient.Apps().StatefulSets(s.t.Config.TestNamespace).Delete(ss.Name, &apiv1.DeleteOptions{
+			s.t.KubeClient.Apps().StatefulSets(s.t.Config.TestNamespace).Delete(ss.Name, &metav1.DeleteOptions{
 				OrphanDependents: &orphan,
 			})
 		}
@@ -919,7 +920,7 @@ func (s *IngressTestSuit) TestIngressHostNames() error {
 	time.Sleep(time.Second * 120)
 	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -931,7 +932,7 @@ func (s *IngressTestSuit) TestIngressHostNames() error {
 	}
 	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 	for i := 0; i < maxRetries; i++ {
-		_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		_, err = s.t.KubeClient.CoreV1().Endpoints(svc.Namespace).Get(svc.Name, metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -965,13 +966,13 @@ func (s *IngressTestSuit) TestIngressHostNames() error {
 }
 
 func (s *IngressTestSuit) TestIngressBackendWeight() error {
-	dp1, err := s.t.KubeClient.Extensions().Deployments(s.t.Config.TestNamespace).Create(&extensions.Deployment{
+	dp1, err := s.t.KubeClient.ExtensionsV1beta1().Deployments(s.t.Config.TestNamespace).Create(&extensions.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "deploymet-1-" + randString(4),
 			Namespace: s.t.Config.TestNamespace,
 		},
 		Spec: extensions.DeploymentSpec{
-			Replicas: 1,
+			Replicas: types.Int32P(1),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
 					"app":         "deployment",
@@ -1019,13 +1020,13 @@ func (s *IngressTestSuit) TestIngressBackendWeight() error {
 		return err
 	}
 
-	dp2, err := s.t.KubeClient.Extensions().Deployments(s.t.Config.TestNamespace).Create(&extensions.Deployment{
+	dp2, err := s.t.KubeClient.ExtensionsV1beta1().Deployments(s.t.Config.TestNamespace).Create(&extensions.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "deploymet-2-" + randString(4),
 			Namespace: s.t.Config.TestNamespace,
 		},
 		Spec: extensions.DeploymentSpec{
-			Replicas: 1,
+			Replicas: types.Int32P(1),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
 					"app":         "deployment",
@@ -1073,7 +1074,7 @@ func (s *IngressTestSuit) TestIngressBackendWeight() error {
 		return err
 	}
 
-	svc, err := s.t.KubeClient.Core().Services(s.t.Config.TestNamespace).Create(&apiv1.Service{
+	svc, err := s.t.KubeClient.CoreV1().Services(s.t.Config.TestNamespace).Create(&apiv1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "deployment-svc",
 			Namespace: s.t.Config.TestNamespace,
@@ -1124,27 +1125,27 @@ func (s *IngressTestSuit) TestIngressBackendWeight() error {
 
 	defer func() {
 		if s.t.Config.Cleanup {
-			dp1, err := s.t.KubeClient.Extensions().Deployments(dp1.Namespace).Get(dp1.Name)
+			dp1, err := s.t.KubeClient.ExtensionsV1beta1().Deployments(dp1.Namespace).Get(dp1.Name, metav1.GetOptions{})
 			if err == nil {
-				dp1.Spec.Replicas = 0
-				s.t.KubeClient.Extensions().Deployments(dp1.Namespace).Update(dp1)
+				dp1.Spec.Replicas = types.Int32P(0)
+				s.t.KubeClient.ExtensionsV1beta1().Deployments(dp1.Namespace).Update(dp1)
 			}
-			dp2, err := s.t.KubeClient.Extensions().Deployments(dp2.Namespace).Get(dp2.Name)
+			dp2, err := s.t.KubeClient.ExtensionsV1beta1().Deployments(dp2.Namespace).Get(dp2.Name, metav1.GetOptions{})
 			if err == nil {
-				dp2.Spec.Replicas = 0
-				s.t.KubeClient.Extensions().Deployments(dp2.Namespace).Update(dp2)
+				dp2.Spec.Replicas = types.Int32P(0)
+				s.t.KubeClient.ExtensionsV1beta1().Deployments(dp2.Namespace).Update(dp2)
 			}
 			time.Sleep(time.Second * 5)
 			orphan := false
-			s.t.KubeClient.Extensions().Deployments(dp1.Namespace).Delete(dp1.Name, &apiv1.DeleteOptions{
+			s.t.KubeClient.ExtensionsV1beta1().Deployments(dp1.Namespace).Delete(dp1.Name, &metav1.DeleteOptions{
 				OrphanDependents: &orphan,
 			})
 
-			s.t.KubeClient.Extensions().Deployments(dp2.Namespace).Delete(dp2.Name, &apiv1.DeleteOptions{
+			s.t.KubeClient.ExtensionsV1beta1().Deployments(dp2.Namespace).Delete(dp2.Name, &metav1.DeleteOptions{
 				OrphanDependents: &orphan,
 			})
 
-			s.t.KubeClient.Core().Services(svc.Namespace).Delete(svc.Name, &apiv1.DeleteOptions{
+			s.t.KubeClient.CoreV1().Services(svc.Namespace).Delete(svc.Name, &metav1.DeleteOptions{
 				OrphanDependents: &orphan,
 			})
 		}
@@ -1162,7 +1163,7 @@ func (s *IngressTestSuit) TestIngressBackendWeight() error {
 
 	time.Sleep(time.Second * 10)
 	for i := 0; i < maxRetries; i++ {
-		_, err := s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		_, err := s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -1291,7 +1292,7 @@ func (s *IngressTestSuit) TestIngressBackendRule() error {
 	time.Sleep(time.Second * 10)
 	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -1303,7 +1304,7 @@ func (s *IngressTestSuit) TestIngressBackendRule() error {
 	}
 	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 	for i := 0; i < maxRetries; i++ {
-		_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		_, err = s.t.KubeClient.CoreV1().Endpoints(svc.Namespace).Get(svc.Name, metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -1426,7 +1427,7 @@ func (s *IngressTestSuit) TestIngressAnnotations() error {
 	time.Sleep(time.Second * 60)
 	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -1451,7 +1452,7 @@ func (s *IngressTestSuit) TestIngressAnnotations() error {
 
 	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 	for i := 0; i < maxRetries; i++ {
-		_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		_, err = s.t.KubeClient.CoreV1().Endpoints(svc.Namespace).Get(svc.Name, metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -1462,8 +1463,8 @@ func (s *IngressTestSuit) TestIngressAnnotations() error {
 		return errors.New().WithCause(err).Err()
 	}
 
-	pods, err := s.t.KubeClient.Core().Pods(svc.Namespace).List(metav1.ListOptions{
-		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
+	pods, err := s.t.KubeClient.CoreV1().Pods(svc.Namespace).List(metav1.ListOptions{
+		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector).String(),
 	})
 	if err == nil {
 		for _, pod := range pods.Items {
@@ -1494,7 +1495,7 @@ func (s *IngressTestSuit) TestIngressAnnotations() error {
 
 	time.Sleep(time.Second * 60)
 	for i := 0; i < maxRetries; i++ {
-		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 		if err != nil {
 			err = errors.New().WithCause(err).WithMessage("Service encountered an error").Err()
 		}
@@ -1519,8 +1520,8 @@ func (s *IngressTestSuit) TestIngressAnnotations() error {
 		return errors.FromErr(err).Err()
 	}
 
-	pods, err = s.t.KubeClient.Core().Pods(svc.Namespace).List(metav1.ListOptions{
-		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
+	pods, err = s.t.KubeClient.CoreV1().Pods(svc.Namespace).List(metav1.ListOptions{
+		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector).String(),
 	})
 	if err == nil {
 		for _, pod := range pods.Items {
@@ -1551,7 +1552,7 @@ func (s *IngressTestSuit) TestIngressAnnotations() error {
 
 	time.Sleep(time.Second * 60)
 	for i := 0; i < maxRetries; i++ {
-		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 		if err != nil {
 			err = errors.New().WithCause(err).WithMessage("Service encountered an error").Err()
 		}
@@ -1576,8 +1577,8 @@ func (s *IngressTestSuit) TestIngressAnnotations() error {
 		}
 	}
 
-	pods, err = s.t.KubeClient.Core().Pods(svc.Namespace).List(metav1.ListOptions{
-		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
+	pods, err = s.t.KubeClient.CoreV1().Pods(svc.Namespace).List(metav1.ListOptions{
+		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector).String(),
 	})
 	if err == nil {
 		for _, pod := range pods.Items {
@@ -1646,7 +1647,7 @@ func (s *IngressTestSuit) TestIngressNodePort() error {
 	time.Sleep(time.Second * 60)
 	for i := 0; i < maxRetries; i++ {
 		var err error
-		svc, err = s.t.KubeClient.Core().Services(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName())
+		svc, err = s.t.KubeClient.CoreV1().Services(baseDaemonIngress.Namespace).Get(baseDaemonIngress.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -1718,7 +1719,7 @@ func (s *IngressTestSuit) TestIngressStats() error {
 	time.Sleep(time.Second * 60)
 	for i := 0; i < maxRetries; i++ {
 		var err error
-		_, err = s.t.KubeClient.Core().Services(baseIng.Namespace).Get(baseIng.OffshootName())
+		_, err = s.t.KubeClient.CoreV1().Services(baseIng.Namespace).Get(baseIng.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -1733,7 +1734,7 @@ func (s *IngressTestSuit) TestIngressStats() error {
 	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
 		var err error
-		svc, err = s.t.KubeClient.Core().Services(baseIng.Namespace).Get(baseIng.Name + "-stats")
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIng.Namespace).Get(baseIng.Name+"-stats", metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -1762,7 +1763,7 @@ func (s *IngressTestSuit) TestIngressStats() error {
 	time.Sleep(time.Second * 60)
 	var deleteErr error
 	for i := 0; i < maxRetries; i++ {
-		_, deleteErr = s.t.KubeClient.Core().Services(baseIng.Namespace).Get(baseIng.Name + "-stats")
+		_, deleteErr = s.t.KubeClient.CoreV1().Services(baseIng.Namespace).Get(baseIng.Name+"-stats", metav1.GetOptions{})
 		if deleteErr != nil {
 			break
 		}
@@ -1820,7 +1821,7 @@ func (s *IngressTestSuit) TestIngressKeepSource() error {
 	time.Sleep(time.Second * 60)
 	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -1832,7 +1833,7 @@ func (s *IngressTestSuit) TestIngressKeepSource() error {
 	}
 	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 	for i := 0; i < maxRetries; i++ {
-		_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		_, err = s.t.KubeClient.CoreV1().Endpoints(svc.Namespace).Get(svc.Name, metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -1899,7 +1900,7 @@ func (s *IngressTestSuit) TestIngressLBSourceRange() error {
 	time.Sleep(time.Second * 60)
 	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -1926,7 +1927,7 @@ func (s *IngressTestSuit) TestIngressLBSourceRange() error {
 
 	time.Sleep(time.Second * 60)
 	for i := 0; i < maxRetries; i++ {
-		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -1959,13 +1960,13 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 		},
 	}
 
-	_, err := s.t.KubeClient.Core().Services(extSvcResolvesDNSWithNS.Namespace).Create(extSvcResolvesDNSWithNS)
+	_, err := s.t.KubeClient.CoreV1().Services(extSvcResolvesDNSWithNS.Namespace).Create(extSvcResolvesDNSWithNS)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.KubeClient.Core().Services(extSvcResolvesDNSWithNS.Namespace).Delete(extSvcResolvesDNSWithNS.Name, nil)
+			s.t.KubeClient.CoreV1().Services(extSvcResolvesDNSWithNS.Namespace).Delete(extSvcResolvesDNSWithNS.Name, nil)
 		}
 	}()
 
@@ -1980,13 +1981,13 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 		},
 	}
 
-	_, err = s.t.KubeClient.Core().Services(extSvcNoResolveRedirect.Namespace).Create(extSvcNoResolveRedirect)
+	_, err = s.t.KubeClient.CoreV1().Services(extSvcNoResolveRedirect.Namespace).Create(extSvcNoResolveRedirect)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.KubeClient.Core().Services(extSvcNoResolveRedirect.Namespace).Delete(extSvcNoResolveRedirect.Name, nil)
+			s.t.KubeClient.CoreV1().Services(extSvcNoResolveRedirect.Namespace).Delete(extSvcNoResolveRedirect.Name, nil)
 		}
 	}()
 
@@ -2001,13 +2002,13 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 		},
 	}
 
-	_, err = s.t.KubeClient.Core().Services(extSvcResolvesDNSWithoutNS.Namespace).Create(extSvcResolvesDNSWithoutNS)
+	_, err = s.t.KubeClient.CoreV1().Services(extSvcResolvesDNSWithoutNS.Namespace).Create(extSvcResolvesDNSWithoutNS)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.KubeClient.Core().Services(extSvcResolvesDNSWithoutNS.Namespace).Delete(extSvcResolvesDNSWithoutNS.Name, nil)
+			s.t.KubeClient.CoreV1().Services(extSvcResolvesDNSWithoutNS.Namespace).Delete(extSvcResolvesDNSWithoutNS.Name, nil)
 		}
 	}()
 
@@ -2079,7 +2080,7 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 	time.Sleep(time.Second * 10)
 	var svc *apiv1.Service
 	for i := 0; i < maxRetries; i++ {
-		svc, err = s.t.KubeClient.Core().Services(baseIngress.Namespace).Get(baseIngress.OffshootName())
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			break
 		}
@@ -2091,7 +2092,7 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 	}
 	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
 	for i := 0; i < maxRetries; i++ {
-		_, err = s.t.KubeClient.Core().Endpoints(svc.Namespace).Get(svc.Name)
+		_, err = s.t.KubeClient.CoreV1().Endpoints(svc.Namespace).Get(svc.Name, metav1.GetOptions{})
 		if err == nil {
 			break
 		}

@@ -12,7 +12,7 @@ import (
 	"github.com/appscode/errors"
 	"github.com/appscode/go/strings"
 	"github.com/appscode/log"
-	aci "github.com/appscode/voyager/api"
+	"github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/certificates/providers"
 	"github.com/appscode/voyager/pkg/events"
@@ -43,7 +43,7 @@ type CertificateController struct {
 	KubeClient clientset.Interface
 	ExtClient  acs.ExtensionInterface
 
-	certificate       *aci.Certificate
+	certificate       *api.Certificate
 	acmeCert          ACMECertData
 	parsedCertificate *x509.Certificate
 	sync.Mutex
@@ -70,16 +70,16 @@ func (c *CertificateController) Handle(e *events.Event) error {
 
 func (c *CertificateController) handleCertificateEvent(e *events.Event) error {
 	if e.EventType == events.Added || e.EventType == events.Updated {
-		var cert *aci.Certificate
+		var cert *api.Certificate
 
 		// Indicates event contains an certificate to operate with
 		ok := false
 		switch e.EventType {
 		case events.Added:
-			cert, ok = e.RuntimeObj[0].(*aci.Certificate)
+			cert, ok = e.RuntimeObj[0].(*api.Certificate)
 		case events.Updated:
 			if len(e.RuntimeObj) > 1 {
-				cert, ok = e.RuntimeObj[1].(*aci.Certificate)
+				cert, ok = e.RuntimeObj[1].(*api.Certificate)
 			}
 		}
 		if ok {
@@ -90,7 +90,7 @@ func (c *CertificateController) handleCertificateEvent(e *events.Event) error {
 	return nil
 }
 
-func (c *CertificateController) process(cert *aci.Certificate) error {
+func (c *CertificateController) process(cert *api.Certificate) error {
 	c.acmeClientConfig = &ACMEConfig{
 		Provider:      cert.Spec.Provider,
 		ACMEServerUrl: cert.Spec.ACMEServerURL,
@@ -129,14 +129,14 @@ func (c *CertificateController) process(cert *aci.Certificate) error {
 }
 
 func (c *CertificateController) handleIngressEvent(e *events.Event) error {
-	var ingress *aci.Ingress
+	var ingress *api.Ingress
 	ok := false
 	switch e.EventType {
 	case events.Added:
-		ingress, ok = e.RuntimeObj[0].(*aci.Ingress)
+		ingress, ok = e.RuntimeObj[0].(*api.Ingress)
 	case events.Updated:
 		if len(e.RuntimeObj) > 1 {
-			ingress, ok = e.RuntimeObj[1].(*aci.Ingress)
+			ingress, ok = e.RuntimeObj[1].(*api.Ingress)
 		}
 	}
 
@@ -150,12 +150,12 @@ func (c *CertificateController) handleIngressEvent(e *events.Event) error {
 				return nil
 			}
 			if kerr.IsNotFound(err) || !certificate.Status.CertificateObtained {
-				newCertificate := &aci.Certificate{
+				newCertificate := &api.Certificate{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      certificateName,
 						Namespace: ingress.Namespace,
 					},
-					Spec: aci.CertificateSpec{
+					Spec: api.CertificateSpec{
 						Provider: ingress.Annotations[certificateAnnotationKeyProvider],
 						Email:    ingress.Annotations[certificateAnnotationKeyEmail],
 						ProviderCredentialSecretName: ingress.Annotations[certificateAnnotationKeyProviderCredentialSecretName],
@@ -170,11 +170,11 @@ func (c *CertificateController) handleIngressEvent(e *events.Event) error {
 						ACMEServerURL:      ingress.Annotations[certificateAnnotationKeyACMEServerURL],
 					},
 				}
-				if v, ok := ingress.Annotations[aci.APISchema]; ok {
-					if v == aci.APISchemaIngress {
-						newCertificate.Spec.HTTPProviderIngressReference.APIVersion = aci.APISchemaIngress
+				if v, ok := ingress.Annotations[api.APISchema]; ok {
+					if v == api.APISchemaIngress {
+						newCertificate.Spec.HTTPProviderIngressReference.APIVersion = api.APISchemaIngress
 					} else {
-						newCertificate.Spec.HTTPProviderIngressReference.APIVersion = aci.APISchemaEngress
+						newCertificate.Spec.HTTPProviderIngressReference.APIVersion = api.APISchemaEngress
 					}
 				}
 				for _, rule := range ingress.Spec.Rules {
@@ -395,11 +395,11 @@ func (c *CertificateController) save(cert acme.CertificateResource) error {
 
 	// Update certificate data to add Details Information
 	t := metav1.Now()
-	k8sCert.Status = aci.CertificateStatus{
+	k8sCert.Status = api.CertificateStatus{
 		CertificateObtained: true,
 		CreationTime:        &t,
 		ACMEUserSecretName:  c.userSecretName,
-		Details: aci.ACMECertificateDetails{
+		Details: api.ACMECertificateDetails{
 			Domain:        cert.Domain,
 			CertURL:       cert.CertURL,
 			CertStableURL: cert.CertStableURL,
@@ -445,14 +445,14 @@ func (c *CertificateController) processHTTPCertificate(revert chan struct{}) err
 		// make a copy of previous spec.
 		prevSpecs := i.Spec
 		for _, host := range c.certificate.Spec.Domains {
-			rule := aci.ExtendedIngressRule{
+			rule := api.ExtendedIngressRule{
 				Host: host,
-				ExtendedIngressRuleValue: aci.ExtendedIngressRuleValue{
-					HTTP: &aci.HTTPExtendedIngressRuleValue{
-						Paths: []aci.HTTPExtendedIngressPath{
+				ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
+					HTTP: &api.HTTPExtendedIngressRuleValue{
+						Paths: []api.HTTPExtendedIngressPath{
 							{
 								Path: providers.URLPrefix,
-								Backend: aci.ExtendedIngressBackend{
+								Backend: api.ExtendedIngressBackend{
 									ServiceName: "kubed.kube-system",
 									ServicePort: intstr.FromInt(8765),
 								},
@@ -478,7 +478,7 @@ func (c *CertificateController) processHTTPCertificate(revert chan struct{}) err
 						Get(c.certificate.Spec.HTTPProviderIngressReference.Name)
 					if err == nil {
 						i.Spec = prevSpecs
-						i.Spec.TLS = append(i.Spec.TLS, aci.ExtendedIngressTLS{
+						i.Spec.TLS = append(i.Spec.TLS, api.ExtendedIngressTLS{
 							Hosts:      c.certificate.Spec.Domains,
 							SecretName: defaultCertPrefix + c.certificate.Name,
 						})

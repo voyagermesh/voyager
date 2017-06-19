@@ -2,7 +2,7 @@ package watcher
 
 import (
 	"github.com/appscode/log"
-	aci "github.com/appscode/voyager/api"
+	"github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/certificates"
 	"github.com/appscode/voyager/pkg/events"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -94,7 +94,7 @@ func (w *Watcher) ExtendedIngress() {
 		ListFunc:  ExtendedIngressListFunc(w.ExtClient),
 		WatchFunc: ExtendedIngressWatchFunc(w.ExtClient),
 	}
-	_, controller := w.Cache(events.ExtendedIngress, &aci.Ingress{}, lw)
+	_, controller := w.Cache(events.ExtendedIngress, &api.Ingress{}, lw)
 	go controller.Run(wait.NeverStop)
 }
 
@@ -104,7 +104,7 @@ func (w *Watcher) Certificate() {
 		ListFunc:  CertificateListFunc(w.ExtClient),
 		WatchFunc: CertificateWatchFunc(w.ExtClient),
 	}
-	_, controller := w.Cache(events.Certificate, &aci.Certificate{}, lw)
+	_, controller := w.Cache(events.Certificate, &api.Certificate{}, lw)
 	go controller.Run(wait.NeverStop)
 
 	go certificates.NewCertificateSyncer(w.KubeClient, w.ExtClient).RunSync()

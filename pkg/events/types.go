@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/appscode/log"
-	aci "github.com/appscode/voyager/api"
+	"github.com/appscode/voyager/api"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
@@ -163,9 +163,9 @@ func detectObjectType(o interface{}) ObjectType {
 		return ConfigMap
 	case apiv1.Endpoints, *apiv1.Endpoints:
 		return Endpoint
-	case aci.Ingress, *aci.Ingress:
+	case api.Ingress, *api.Ingress:
 		return ExtendedIngress
-	case aci.Certificate, *aci.Certificate:
+	case api.Certificate, *api.Certificate:
 		return Certificate
 	case extensions.ReplicaSet, *extensions.ReplicaSet:
 		return ReplicaSet
@@ -194,9 +194,9 @@ func objectMetadata(o interface{}, t ObjectType) metav1.ObjectMeta {
 	case Ingress:
 		return o.(*extensions.Ingress).ObjectMeta
 	case ExtendedIngress:
-		return o.(*aci.Ingress).ObjectMeta
+		return o.(*api.Ingress).ObjectMeta
 	case Certificate:
-		return o.(*aci.Certificate).ObjectMeta
+		return o.(*api.Certificate).ObjectMeta
 	case Endpoint:
 		return o.(*apiv1.Endpoints).ObjectMeta
 	case ReplicaSet:
