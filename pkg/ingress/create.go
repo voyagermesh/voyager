@@ -652,7 +652,7 @@ func (lbc *EngressController) getExporterSidecar() (*apiv1.Container, error) {
 			Name: "exporter",
 			Args: []string{
 				"exporter",
-				fmt.Sprintf("--address=:%d", monSpec.Prometheus.TargetPort),
+				fmt.Sprintf("--address=:%d", monSpec.Prometheus.TargetPort.IntVal),
 				"--v=3",
 			},
 			Image:           "appscode/voyager:3.0.0",
