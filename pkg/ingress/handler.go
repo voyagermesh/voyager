@@ -169,7 +169,7 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 					}
 
 					var updateFW bool
-					for targetPort, svcPort := range lbc.Ports {
+					for svcPort, targetPort := range lbc.Ports {
 						if sp, ok := curPorts[svcPort]; !ok || sp.TargetPort.IntValue() != targetPort {
 							updateFW = true // new port has to be opened
 							break

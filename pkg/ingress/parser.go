@@ -316,7 +316,7 @@ func (lbc *EngressController) parseSpec() {
 		if ans, ok := lbc.Resource.ServiceAnnotations(lbc.ProviderName); ok {
 			if v, usesAWSCertManager := ans["service.beta.kubernetes.io/aws-load-balancer-ssl-cert"]; usesAWSCertManager && v != "" {
 				var tp80, sp443 bool
-				for targetPort, svcPort := range lbc.Ports {
+				for svcPort, targetPort := range lbc.Ports {
 					if targetPort == 80 {
 						tp80 = true
 					}
@@ -325,7 +325,7 @@ func (lbc *EngressController) parseSpec() {
 					}
 				}
 				if tp80 && !sp443 {
-					lbc.Ports[80] = 443
+					lbc.Ports[443] = 80
 				} else {
 					log.Errorln("Failed to open port 443 on service for AWS cert manager.")
 				}

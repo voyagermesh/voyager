@@ -163,7 +163,7 @@ func (lbc *EngressController) createHostPortSvc() error {
 	}
 
 	// opening other tcp ports
-	for targetPort, svcPort := range lbc.Ports {
+	for svcPort, targetPort := range lbc.Ports {
 		p := apiv1.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
@@ -308,7 +308,11 @@ func (lbc *EngressController) createHostPortPods() error {
 	}
 
 	// adding tcp ports to pod template
-	for targetPort := range lbc.Ports {
+	targetPorts := make(map[int]bool)
+	for _, targetPort := range lbc.Ports {
+		targetPorts[targetPort] = true
+	}
+	for targetPort := range targetPorts {
 		p := apiv1.ContainerPort{
 			Name:          "tcp-" + strconv.Itoa(targetPort),
 			Protocol:      "TCP",
@@ -385,7 +389,7 @@ func (lbc *EngressController) createNodePortSvc() error {
 	}
 
 	// opening other tcp ports
-	for targetPort, svcPort := range lbc.Ports {
+	for svcPort, targetPort := range lbc.Ports {
 		p := apiv1.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
@@ -514,7 +518,11 @@ func (lbc *EngressController) createNodePortPods() error {
 	}
 
 	// adding tcp ports to pod template
-	for targetPort := range lbc.Ports {
+	targetPorts := make(map[int]bool)
+	for _, targetPort := range lbc.Ports {
+		targetPorts[targetPort] = true
+	}
+	for targetPort := range targetPorts {
 		p := apiv1.ContainerPort{
 			Name:          "tcp-" + strconv.Itoa(targetPort),
 			Protocol:      "TCP",
@@ -588,7 +596,7 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 	}
 
 	// opening other tcp ports
-	for targetPort, svcPort := range lbc.Ports {
+	for svcPort, targetPort := range lbc.Ports {
 		p := apiv1.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
