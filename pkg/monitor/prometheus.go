@@ -11,7 +11,6 @@ import (
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	clientset "k8s.io/client-go/kubernetes"
 )
 
@@ -124,7 +123,7 @@ func (c *PrometheusController) createServiceMonitor(r *api.Ingress, spec *api.Mo
 			},
 			Endpoints: []prom.Endpoint{
 				{
-					TargetPort: intstr.FromInt(spec.Prometheus.ExporterPort),
+					TargetPort: spec.Prometheus.TargetPort,
 					Interval:   spec.Prometheus.Interval,
 					Path:       fmt.Sprintf("/%s/namespaces/%s/ingresses/%s/metrics", r.APISchema(), r.Namespace, r.Name),
 				},

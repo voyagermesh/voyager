@@ -1,15 +1,19 @@
 package api
 
-import "fmt"
+import (
+	"fmt"
+
+	"k8s.io/apimachinery/pkg/util/intstr"
+)
 
 const (
 	AgentCoreosPrometheus = "coreos-prometheus-operator"
 	DefaultExporterPort   = 56790
 
 	MonitoringAgent              = EngressKey + "/monitoring-agent"                         // COREOS_PROMETHEUS
-	PrometheusExporterPort       = EngressKey + "/prometheus-exporter-port"                 // Kube NS where service monitors will be created
 	ServiceMonitorNamespace      = EngressKey + "/service-monitor-namespace"                // Kube NS where service monitors will be created
 	ServiceMonitorLabels         = EngressKey + "/service-monitor-labels"                   // map[string]string used to select Prometheus instance
+	ServiceMonitorTargetPort     = EngressKey + "/service-monitor-endpoint-target-port"     // Target port on container used to expose metrics
 	ServiceMonitorScrapeInterval = EngressKey + "/service-monitor-endpoint-scrape-interval" // scrape interval
 )
 
@@ -18,7 +22,8 @@ type MonitorSpec struct {
 }
 
 type PrometheusSpec struct {
-	ExporterPort int
+	// Name or number of the target port of the endpoint. Mutually exclusive with port.
+	TargetPort intstr.IntOrString `json:"targetPort,omitempty"`
 
 	// Namespace of Prometheus. Service monitors will be created in this namespace.
 	Namespace string `json:"namespace,omitempty"`
@@ -58,12 +63,14 @@ func (r Ingress) MonitorSpec() (*MonitorSpec, error) {
 		return nil, fmt.Errorf("Missing %s annotation", ServiceMonitorLabels)
 	}
 
-	prom.ExporterPort, err = getInt(r.Annotations, PrometheusExporterPort)
+	port, err := getInt(r.Annotations, ServiceMonitorTargetPort)
 	if err != nil {
 		return nil, err
 	}
-	if prom.ExporterPort == 0 {
-		prom.ExporterPort = DefaultExporterPort
+	if port == 0 {
+		prom.TargetPort = intstr.FromInt(DefaultExporterPort)
+	} else {
+		prom.TargetPort = intstr.FromInt(port)
 	}
 
 	prom.Interval = getString(r.Annotations, ServiceMonitorScrapeInterval)
