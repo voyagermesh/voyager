@@ -14,15 +14,15 @@ Please note that stats port is not exposed to the internet via the service runni
 Voyager operator exposes Prometheus ready metrics via the following endpoints on port `:56790`:
 
  - `/metrics`: Scrape this to monitor operator.
- - `/extensions/v1beta1/namespaces/:ns/ingresses/:name/pods/:ip/metrics` :  Scrape this endpoint to monitor HAProxy running for a Kubernetes ingress
- - `/voyager.appscode.com/v1beta1/namespaces/:ns/ingresses/:name/metrics`: Scrape this endpoint to monitor HAProxy running for an AppsCode extended ingress
+ - `/extensions/v1beta1/namespaces/:ns/ingresses/:name/metrics?pod=<pod_ip>` :  Scrape this endpoint to monitor HAProxy running for a Kubernetes ingress
+ - `/voyager.appscode.com/v1beta1/namespaces/:ns/ingresses/:name/metrics?pod=<pod_ip>`: Scrape this endpoint to monitor HAProxy running for an AppsCode extended ingress
 
 To change the port, use `--address` flag on Voyager opreator.
 
 ## Using [CoreOS Prometheus Operator](https://coreos.com/operators/prometheus/docs/latest/)
-Voyager operator can create [service monitors](https://coreos.com/operators/prometheus/docs/latest/user-guides/running-exporters.html#create-a-matching-servicemonitor) for HAProxy pods. If enabled, a side-car exporter pod is run with HAProxy to expose Prometheus ready metrics via the following endpoints on port `:56790`:
+Voyager operator can create [service monitors](https://coreos.com/operators/prometheus/docs/latest/user-guides/running-exporters.html#create-a-matching-servicemonitor) for HAProxy pods. If enabled, a __side-car exporter pod__ is run with HAProxy to expose Prometheus ready metrics via the following endpoints on port `:56790`:
 
- - `/extensions/v1beta1/namespaces/:ns/ingresses/:name/pods/:ip/metrics` :  Scrape this endpoint to monitor HAProxy running for a Kubernetes ingress
+ - `/extensions/v1beta1/namespaces/:ns/ingresses/:name/metrics` :  Scrape this endpoint to monitor HAProxy running for a Kubernetes ingress
  - `/voyager.appscode.com/v1beta1/namespaces/:ns/ingresses/:name/metrics`: Scrape this endpoint to monitor HAProxy running for an AppsCode extended ingress
 
 To enable this feature, please use the following annotations:
