@@ -29,10 +29,10 @@ To enable this feature, please use the following annotations:
 
 |  Keys  |   Value  |  Default |  Description |
 |--------|-----------|----------|-------------|
-| ingress.appscode.com/monitoring-agent | string | | Required. Indicates the monitoring agent used. Only valid value currently is 'coreos-prometheus-operator' |
-| ingress.appscode.com/prometheus-exporter-port| integer | 56789 | Indicates the port used by exporter side-car to expose Prometheus metrics endpoint. If the default port 56789 is used to expose traffic, change it to an unused port. |
-| ingress.appscode.com/service-monitor-labels | map | | Required. Indicates labels applied to service monitor. |
-| ingress.appscode.com/service-monitor-namespace| string | | Required. Indicates namespace where service monitors are created. This must be the same namespace of the Prometheus instance. |
-| ingress.appscode.com/service-monitor-endpoint-scrape-interval | string | | Optional. Indicates the srace interval for HAProxy exporter endpoint
+| ingress.appscode.com/monitoring-agent | string | | `Required`. Indicates the monitoring agent used. Only valid value currently is 'coreos-prometheus-operator' |
+| ingress.appscode.com/prometheus-exporter-port| integer | 56789 | `Optional`. Indicates the port used by exporter side-car to expose Prometheus metrics endpoint. If the default port 56789 is used to expose traffic, change it to an unused port. |
+| ingress.appscode.com/service-monitor-labels | map | | `Required`. Indicates labels applied to service monitor. |
+| ingress.appscode.com/service-monitor-namespace| string | | `Required`. Indicates namespace where service monitors are created. This must be the same namespace of the Prometheus instance. |
+| ingress.appscode.com/service-monitor-endpoint-scrape-interval | string | | `Optional`. Indicates the srace interval for HAProxy exporter endpoint
 
 Known Limitations: If the HAProxy stats password is updated, exporter must be restarted to use the credentials. This issue is tracked [here](https://github.com/appscode/voyager/issues/212).
