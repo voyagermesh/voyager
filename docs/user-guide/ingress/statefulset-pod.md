@@ -77,7 +77,7 @@ Those are the host names.
 
 Now Create a ingress that will only forward traffic to web-0
 ```yaml
-apiVersion: appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
   name: test-ingress

@@ -18,7 +18,7 @@ var _ clientset.ExtensionInterface = &FakeExtensionClient{}
 func NewFakeExtensionClient(objects ...runtime.Object) *FakeExtensionClient {
 	o := testing.NewObjectTracker(api.Registry, api.Scheme, api.Codecs.UniversalDecoder())
 	for _, obj := range objects {
-		if obj.GetObjectKind().GroupVersionKind().Group == "appscode.com" {
+		if obj.GetObjectKind().GroupVersionKind().Group == api.GroupName {
 			if err := o.Add(obj); err != nil {
 				panic(err)
 			}

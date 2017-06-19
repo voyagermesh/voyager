@@ -21,13 +21,13 @@ func TestDefaultGroupVersion(t *testing.T) {
 		},
 	}
 
-	gv, err := schema.ParseGroupVersion("appscode.com/v1beta1")
+	gv, err := schema.ParseGroupVersion(api.GroupName + "/v1beta1")
 	if err != nil {
 		fmt.Println(err)
 	}
-	// if appscode.com/v1beta1 is not enabled, return an error
+	// if voyager.appscode.com/v1beta1 is not enabled, return an error
 	if !api.Registry.IsEnabledVersion(gv) {
-		fmt.Println("appscode.com/v1beta1 is not enabled")
+		fmt.Println(api.GroupName + "/v1beta1 is not enabled")
 	}
 
 	fmt.Println(*i)
@@ -36,7 +36,7 @@ func TestDefaultGroupVersion(t *testing.T) {
 func TestSetDefault(t *testing.T) {
 	metadata := &metav1.TypeMeta{
 		Kind:       "Ingress",
-		APIVersion: "appscode.com/v1beta1",
+		APIVersion: api.GroupName + "/v1beta1",
 	}
 	var obj runtime.Object
 

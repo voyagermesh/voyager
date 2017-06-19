@@ -11,7 +11,7 @@ const (
 	EngressKey = "ingress.appscode.com"
 
 	APISchema        = EngressKey + "/" + "api-schema" // APISchema = {APIGroup}/{APIVersion}
-	APISchemaEngress = "appscode.com/v1beta1"
+	APISchemaEngress = GroupName + "/v1beta1"
 	APISchemaIngress = "extension/v1beta1"
 
 	VoyagerPrefix = "voyager-"

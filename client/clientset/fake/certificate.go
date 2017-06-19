@@ -1,7 +1,7 @@
 package fake
 
 import (
-	aci "github.com/appscode/voyager/api"
+	"github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/client/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -15,25 +15,25 @@ type FakeCertificate struct {
 	ns   string
 }
 
-var certResource = schema.GroupVersionResource{Group: "appscode.com", Version: "v1beta1", Resource: "certificates"}
+var certResource = schema.GroupVersionResource{Group: api.GroupName, Version: "v1beta1", Resource: "certificates"}
 
 var _ clientset.CertificateInterface = &FakeCertificate{}
 
 // Get returns the Certificate by name.
-func (mock *FakeCertificate) Get(name string) (*aci.Certificate, error) {
+func (mock *FakeCertificate) Get(name string) (*api.Certificate, error) {
 	obj, err := mock.Fake.
-		Invokes(testing.NewGetAction(certResource, mock.ns, name), &aci.Certificate{})
+		Invokes(testing.NewGetAction(certResource, mock.ns, name), &api.Certificate{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*aci.Certificate), err
+	return obj.(*api.Certificate), err
 }
 
 // List returns the a of Certificates.
-func (mock *FakeCertificate) List(opts metav1.ListOptions) (*aci.CertificateList, error) {
+func (mock *FakeCertificate) List(opts metav1.ListOptions) (*api.CertificateList, error) {
 	obj, err := mock.Fake.
-		Invokes(testing.NewListAction(certResource, mock.ns, opts), &aci.Certificate{})
+		Invokes(testing.NewListAction(certResource, mock.ns, opts), &api.Certificate{})
 
 	if obj == nil {
 		return nil, err
@@ -43,8 +43,8 @@ func (mock *FakeCertificate) List(opts metav1.ListOptions) (*aci.CertificateList
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &aci.CertificateList{}
-	for _, item := range obj.(*aci.CertificateList).Items {
+	list := &api.CertificateList{}
+	for _, item := range obj.(*api.CertificateList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)
 		}
@@ -53,43 +53,43 @@ func (mock *FakeCertificate) List(opts metav1.ListOptions) (*aci.CertificateList
 }
 
 // Create creates a new Certificate.
-func (mock *FakeCertificate) Create(svc *aci.Certificate) (*aci.Certificate, error) {
+func (mock *FakeCertificate) Create(svc *api.Certificate) (*api.Certificate, error) {
 	obj, err := mock.Fake.
-		Invokes(testing.NewCreateAction(certResource, mock.ns, svc), &aci.Certificate{})
+		Invokes(testing.NewCreateAction(certResource, mock.ns, svc), &api.Certificate{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*aci.Certificate), err
+	return obj.(*api.Certificate), err
 }
 
 // Update updates a Certificate.
-func (mock *FakeCertificate) Update(svc *aci.Certificate) (*aci.Certificate, error) {
+func (mock *FakeCertificate) Update(svc *api.Certificate) (*api.Certificate, error) {
 	obj, err := mock.Fake.
-		Invokes(testing.NewUpdateAction(certResource, mock.ns, svc), &aci.Certificate{})
+		Invokes(testing.NewUpdateAction(certResource, mock.ns, svc), &api.Certificate{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*aci.Certificate), err
+	return obj.(*api.Certificate), err
 }
 
 // Delete deletes a Certificate by name.
 func (mock *FakeCertificate) Delete(name string) error {
 	_, err := mock.Fake.
-		Invokes(testing.NewDeleteAction(certResource, mock.ns, name), &aci.Certificate{})
+		Invokes(testing.NewDeleteAction(certResource, mock.ns, name), &api.Certificate{})
 
 	return err
 }
 
-func (mock *FakeCertificate) UpdateStatus(srv *aci.Certificate) (*aci.Certificate, error) {
+func (mock *FakeCertificate) UpdateStatus(srv *api.Certificate) (*api.Certificate, error) {
 	obj, err := mock.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(certResource, "status", mock.ns, srv), &aci.Certificate{})
+		Invokes(testing.NewUpdateSubresourceAction(certResource, "status", mock.ns, srv), &api.Certificate{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*aci.Certificate), err
+	return obj.(*api.Certificate), err
 }
 
 func (mock *FakeCertificate) Watch(opts metav1.ListOptions) (watch.Interface, error) {
