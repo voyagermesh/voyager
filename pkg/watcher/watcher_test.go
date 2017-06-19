@@ -3,7 +3,7 @@ package watcher
 import (
 	"testing"
 
-	aci "github.com/appscode/voyager/api"
+	"github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -39,9 +39,9 @@ func TestEnsureResource(t *testing.T) {
 	}
 	assert.Equal(t, 3, len(data.Items))
 
-	_, err = w.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Get("ingress."+aci.V1beta1SchemeGroupVersion.Group, metav1.GetOptions{})
+	_, err = w.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Get("ingress."+api.V1beta1SchemeGroupVersion.Group, metav1.GetOptions{})
 	assert.Nil(t, err)
 
-	_, err = w.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Get("certificate."+aci.V1beta1SchemeGroupVersion.Group, metav1.GetOptions{})
+	_, err = w.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Get("certificate."+api.V1beta1SchemeGroupVersion.Group, metav1.GetOptions{})
 	assert.Nil(t, err)
 }

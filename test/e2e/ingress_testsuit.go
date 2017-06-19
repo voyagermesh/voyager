@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/appscode/errors"
+	"github.com/appscode/go/types"
 	"github.com/appscode/log"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -74,7 +75,7 @@ func (s *IngressTestSuit) cleanUp() {
 		s.t.KubeClient.CoreV1().Services(testServerSvc.Namespace).Delete(testServerSvc.Name, &metav1.DeleteOptions{})
 		rc, err := s.t.KubeClient.CoreV1().ReplicationControllers(testServerRc.Namespace).Get(testServerRc.Name, metav1.GetOptions{})
 		if err == nil {
-			rc.Spec.Replicas = 0
+			rc.Spec.Replicas = types.Int32P(0)
 			s.t.KubeClient.CoreV1().ReplicationControllers(testServerRc.Namespace).Update(rc)
 			time.Sleep(time.Second * 5)
 		}
