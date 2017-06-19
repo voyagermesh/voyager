@@ -16,7 +16,7 @@ func init() {
 func TestNotFound(t *testing.T) {
 	defaultHTTPProvider.serve()
 	time.Sleep(time.Second * 5)
-	resp, err := http.Get("http://127.0.0.1:56788" + URLPrefix + "token")
+	resp, err := http.Get("http://127.0.0.1:56791" + URLPrefix + "token")
 	if err != nil {
 		t.Fatal("expected Nil, found", err)
 	}
@@ -38,8 +38,8 @@ func TestNotFound(t *testing.T) {
 func TestFound(t *testing.T) {
 	defaultHTTPProvider.serve()
 	time.Sleep(time.Second * 5)
-	defaultHTTPProvider.Present("127.0.0.1:56788", "token", "key")
-	resp, err := http.Get("http://127.0.0.1:56788" + URLPrefix + "token")
+	defaultHTTPProvider.Present("127.0.0.1:56791", "token", "key")
+	resp, err := http.Get("http://127.0.0.1:56791" + URLPrefix + "token")
 	if err != nil {
 		t.Fatal("expected Nil, found", err)
 	}
