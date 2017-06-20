@@ -31,11 +31,13 @@ spec:
         - containerPort: 56790
           name: http
           protocol: TCP
+{{- if .Values.persistence.enabled }}
         volumeMounts:
-          - mountPath: /etc/kubernetes
+          - mountPath: {{ dir .Values.cloudConfig | quote }}
             name: cloudconfig
             readOnly: true
       volumes:
         - hostPath:
-            path: /etc/kubernetes
+            path: {{ .Values.persistence.hostPath | quote }}
           name: cloudconfig
+{{- end -}}
