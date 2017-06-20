@@ -74,6 +74,7 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 		if ep.UseDNSResolver && resolver != nil {
 			lbc.Parsed.DNSResolvers[resolver.Name] = resolver
 			ep.DNSResolver = resolver.Name
+			ep.CheckHealth = resolver.CheckHealth
 		}
 		return []*Endpoint{&ep}, nil
 	}
