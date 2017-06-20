@@ -7,7 +7,7 @@ Voyager requires Service account secret for your specified dns provider. This Se
 
 ### Create a Kubernetes Certificate Object
 ```yaml
-apiVersion: networking.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1beta1
 kind: Certificate
 metadata:
   name: test-cert
@@ -76,7 +76,7 @@ tls.key:        1679 bytes
 Your ingress must be present before a certificate can be issues from Let's Encrypt using HTTP validation. Your ingress must terminate SSL(/docs/user-guide/ingress/tls.md) for the desired domains. Here is an example ingress definition:
 
 ```yaml
-apiVersion: networking.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
   name: base-ingress
@@ -99,7 +99,7 @@ Now create the ingress. Once the ingress is configured, it will show a IP addres
 Below is an example certificate definition. Please note that to use HTTP Provider, you need to point to the ingress created in above.
 
 ```yaml
-apiVersion: networking.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1beta1
 kind: Certificate
 metadata:
   name: test-cert
@@ -111,7 +111,7 @@ spec:
   email: jon.doe@example.com
   provider: http
   httpProviderIngressReference:
-    apiVersion: networking.appscode.com/v1beta1
+    apiVersion: voyager.appscode.com/v1beta1
     kind: Ingress
     Namespace: foo
     Name: base-ingress

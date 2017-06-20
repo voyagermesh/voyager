@@ -74,7 +74,7 @@ func setExtensionsDefaults(config *rest.Config) error {
 	if err != nil {
 		return err
 	}
-	// if networking.appscode.com/v1beta1 is not enabled, return an error
+	// if voyager.appscode.com/v1beta1 is not enabled, return an error
 	if !kapi.Registry.IsEnabledVersion(gv) {
 		return fmt.Errorf(api.GroupName + "/v1beta1 is not enabled")
 	}

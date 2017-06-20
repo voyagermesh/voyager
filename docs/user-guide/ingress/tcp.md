@@ -5,7 +5,7 @@ HTTP and TCP together.
 
 One Simple TCP Rule Would be:
 ```yaml
-apiVersion: networking.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
   name: test-ingress
