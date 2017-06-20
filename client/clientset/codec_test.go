@@ -25,7 +25,7 @@ func TestDefaultGroupVersion(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	// if voyager.appscode.com/v1beta1 is not enabled, return an error
+	// if networking.appscode.com/v1beta1 is not enabled, return an error
 	if !kapi.Registry.IsEnabledVersion(gv) {
 		fmt.Println(api.GroupName + "/v1beta1 is not enabled")
 	}

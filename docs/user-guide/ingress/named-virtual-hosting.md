@@ -9,7 +9,7 @@ bar.foo.com --|               |-> bar.foo.com s2:80
 The following Ingress tells the backing loadbalancer to route requests based on the [Host header](https://tools.ietf.org/html/rfc7230#section-5.4).
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: networking.appscode.com/v1beta1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -38,7 +38,7 @@ so `foo.bar.com` or `test.bar.com` will forward traffic to the desired backends.
 If your ingress in namespace `foo` and your application is in namespace `bar` you can still forward traffic.
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: networking.appscode.com/v1beta1
 kind: Ingress
 metadata:
   name: test-ingress
