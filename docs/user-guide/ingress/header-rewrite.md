@@ -3,7 +3,7 @@ AppsCode Ingress support header and URL modification at the loadbalancer level. 
 the header and rewrite rules follow the HAProxy syntax as it is.
 To add some rewrite rules in a http rule, the syntax is:
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: networking.appscode.com/v1beta1
 kind: Ingress
 metadata:
   name: test-ingress

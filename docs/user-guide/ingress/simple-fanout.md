@@ -12,7 +12,7 @@ foo.bar.com -> load balancer -> / foo    s1:80
 
 would require an Ingress such as:
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: networking.appscode.com/v1beta1
 kind: Ingress
 metadata:
   name: test-ingress
