@@ -43,11 +43,17 @@ func NewCmdRun() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run operator",
-		Run: func(cmd *cobra.Command, args []string) {
-			run()
+		PreRun: func(cmd *cobra.Command, args []string) {
+			if enableAnalytics {
+				analytics.Enable()
+			}
+			analytics.Send("operator", "started", Version)
 		},
 		PostRun: func(cmd *cobra.Command, args []string) {
 			analytics.Send("operator", "stopped", Version)
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			run()
 		},
 	}
 
@@ -69,10 +75,6 @@ func NewCmdRun() *cobra.Command {
 func run() {
 	if haProxyImage == "" {
 		log.Fatalln("Missing required flag --haproxy-image")
-	}
-
-	if enableAnalytics {
-		analytics.Enable()
 	}
 
 	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
@@ -99,7 +101,6 @@ func run() {
 	}
 
 	log.Infoln("Starting Voyager operator...")
-	analytics.Send("operator", "started", Version)
 	go w.Run()
 
 	selectedServerMetrics, err = hpe.FilterServerMetrics(haProxyServerMetricFields)
