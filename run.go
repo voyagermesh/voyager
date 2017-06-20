@@ -101,6 +101,10 @@ func run() {
 	}
 
 	log.Infoln("Starting Voyager operator...")
+
+	// https://github.com/appscode/voyager/issues/229
+	w.PurgeOffshootsWithDeprecatedLabels()
+
 	go w.Run()
 
 	selectedServerMetrics, err = hpe.FilterServerMetrics(haProxyServerMetricFields)
