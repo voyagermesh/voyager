@@ -34,11 +34,11 @@ func NewFakeExtensionClient(objects ...runtime.Object) *FakeExtensionClient {
 	return &FakeExtensionClient{&fakePtr}
 }
 
-func (c *FakeExtensionClient) Ingress(namespace string) clientset.IngressInterface {
+func (c *FakeExtensionClient) Ingresses(namespace string) clientset.IngressInterface {
 	return &FakeIngress{c.Fake, namespace}
 }
 
-func (c *FakeExtensionClient) Certificate(ns string) clientset.CertificateInterface {
+func (c *FakeExtensionClient) Certificates(ns string) clientset.CertificateInterface {
 	return &FakeCertificate{c.Fake, ns}
 }
 

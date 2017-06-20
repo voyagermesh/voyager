@@ -173,7 +173,7 @@ func TestCreate(t *testing.T) {
 				ProviderCredentialSecretName: "fakesecret",
 			},
 		}
-		fakeController.ExtClient.Certificate("bar").Create(fakeController.certificate)
+		fakeController.ExtClient.Certificates("bar").Create(fakeController.certificate)
 
 		fakeController.acmeClientConfig = &ACMEConfig{
 			ProviderCredentials: make(map[string][]byte),
@@ -218,7 +218,7 @@ func TestCreate(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, "true", value)
 
-		certificate, err := fakeController.ExtClient.Certificate("bar").Get("foo")
+		certificate, err := fakeController.ExtClient.Certificates("bar").Get("foo")
 		if err != nil {
 			t.Fatal(err)
 		}

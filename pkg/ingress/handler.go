@@ -77,7 +77,7 @@ func UpgradeAllEngress(service, providerName, cloudConfig string,
 		return errors.FromErr(err).Err()
 	}
 
-	eng, err := extClient.Ingress(apiv1.NamespaceAll).List(metav1.ListOptions{
+	eng, err := extClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{
 		LabelSelector: labels.Everything().String(),
 	})
 	if err != nil {

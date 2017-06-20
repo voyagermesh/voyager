@@ -68,13 +68,13 @@ func (s *IngressTestSuit) TestIngressCreateDelete() error {
 		},
 	}
 
-	_, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err := s.t.ExtClient.Ingresses(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+			s.t.ExtClient.Ingresses(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
@@ -128,7 +128,7 @@ func (s *IngressTestSuit) TestIngressCreateDelete() error {
 
 	if s.t.Voyager != nil && s.t.Voyager.ProviderName != "minikube" {
 		// Check Status for ingress
-		baseIngress, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+		baseIngress, err := s.t.ExtClient.Ingresses(baseIngress.Namespace).Get(baseIngress.Name)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -142,7 +142,7 @@ func (s *IngressTestSuit) TestIngressCreateDelete() error {
 		}
 	}
 
-	err = s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+	err = s.t.ExtClient.Ingresses(baseIngress.Namespace).Delete(baseIngress.Name)
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Failed to delete").Err()
 	}
@@ -192,13 +192,13 @@ func (s *IngressTestSuit) TestIngressUpdate() error {
 		},
 	}
 
-	_, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err := s.t.ExtClient.Ingresses(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+			s.t.ExtClient.Ingresses(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
@@ -250,12 +250,12 @@ func (s *IngressTestSuit) TestIngressUpdate() error {
 		}
 	}
 
-	updatedBaseIngress, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+	updatedBaseIngress, err := s.t.ExtClient.Ingresses(baseIngress.Namespace).Get(baseIngress.Name)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	updatedBaseIngress.Spec.Rules[0].HTTP.Paths[0].Path = "/newTestpath"
-	_, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Update(updatedBaseIngress)
+	_, err = s.t.ExtClient.Ingresses(baseIngress.Namespace).Update(updatedBaseIngress)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
@@ -298,7 +298,7 @@ func (s *IngressTestSuit) TestIngressUpdate() error {
 	}
 
 	// Open New Port
-	updatedBaseIngress, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+	updatedBaseIngress, err = s.t.ExtClient.Ingresses(baseIngress.Namespace).Get(baseIngress.Name)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
@@ -321,7 +321,7 @@ func (s *IngressTestSuit) TestIngressUpdate() error {
 				},
 			},
 		}
-		_, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Update(updatedBaseIngress)
+		_, err = s.t.ExtClient.Ingresses(baseIngress.Namespace).Update(updatedBaseIngress)
 		if err != nil {
 			return errors.New().WithCause(err).Err()
 		}
@@ -460,13 +460,13 @@ func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
 			},
 		}
 
-		_, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+		_, err := s.t.ExtClient.Ingresses(baseIngress.Namespace).Create(baseIngress)
 		if err != nil {
 			return err
 		}
 		defer func() {
 			if s.t.Config.Cleanup {
-				s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+				s.t.ExtClient.Ingresses(baseIngress.Namespace).Delete(baseIngress.Name)
 			}
 		}()
 
@@ -524,7 +524,7 @@ func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
 		}
 		oldServiceIP := svc.Status.LoadBalancer.Ingress[0].IP
 
-		err = s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+		err = s.t.ExtClient.Ingresses(baseIngress.Namespace).Delete(baseIngress.Name)
 		if err != nil {
 			return errors.New().WithCause(err).Err()
 		}
@@ -559,13 +559,13 @@ func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
 			},
 		}
 
-		_, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+		_, err = s.t.ExtClient.Ingresses(baseIngress.Namespace).Create(baseIngress)
 		if err != nil {
 			return err
 		}
 		defer func() {
 			if s.t.Config.Cleanup {
-				s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+				s.t.ExtClient.Ingresses(baseIngress.Namespace).Delete(baseIngress.Name)
 			}
 		}()
 
@@ -672,13 +672,13 @@ func (s *IngressTestSuit) TestIngressCreateWithOptions() error {
 		},
 	}
 
-	_, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err := s.t.ExtClient.Ingresses(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+			s.t.ExtClient.Ingresses(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
@@ -906,13 +906,13 @@ func (s *IngressTestSuit) TestIngressHostNames() error {
 			},
 		},
 	}
-	_, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err = s.t.ExtClient.Ingresses(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+			s.t.ExtClient.Ingresses(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
@@ -1151,13 +1151,13 @@ func (s *IngressTestSuit) TestIngressBackendWeight() error {
 		}
 	}()
 
-	_, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err = s.t.ExtClient.Ingresses(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+			s.t.ExtClient.Ingresses(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
@@ -1278,13 +1278,13 @@ func (s *IngressTestSuit) TestIngressBackendRule() error {
 		},
 	}
 
-	_, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err := s.t.ExtClient.Ingresses(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+			s.t.ExtClient.Ingresses(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
@@ -1413,13 +1413,13 @@ func (s *IngressTestSuit) TestIngressAnnotations() error {
 		},
 	}
 
-	_, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err := s.t.ExtClient.Ingresses(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+			s.t.ExtClient.Ingresses(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
@@ -1483,12 +1483,12 @@ func (s *IngressTestSuit) TestIngressAnnotations() error {
 	}
 
 	// Check Service Annotation Change only Update Service
-	ings, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+	ings, err := s.t.ExtClient.Ingresses(baseIngress.Namespace).Get(baseIngress.Name)
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
 	}
 	ings.Annotations[api.ServiceAnnotations] = `{"bar": "foo", "second-service-annotation": "set"}`
-	ings, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Update(ings)
+	ings, err = s.t.ExtClient.Ingresses(baseIngress.Namespace).Update(ings)
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
 	}
@@ -1540,12 +1540,12 @@ func (s *IngressTestSuit) TestIngressAnnotations() error {
 	}
 
 	// Check Pod Annotation Change only Update Pods
-	ings, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+	ings, err = s.t.ExtClient.Ingresses(baseIngress.Namespace).Get(baseIngress.Name)
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
 	}
 	ings.Annotations[api.PodAnnotations] = `{"bar": "foo", "second-pod-annotation": "set"}`
-	ings, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Update(ings)
+	ings, err = s.t.ExtClient.Ingresses(baseIngress.Namespace).Update(ings)
 	if err != nil {
 		return errors.New().WithCause(err).WithMessage("Ingress error").Err()
 	}
@@ -1632,13 +1632,13 @@ func (s *IngressTestSuit) TestIngressNodePort() error {
 		},
 	}
 
-	_, err := s.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Create(baseDaemonIngress)
+	_, err := s.t.ExtClient.Ingresses(baseDaemonIngress.Namespace).Create(baseDaemonIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Delete(baseDaemonIngress.Name)
+			s.t.ExtClient.Ingresses(baseDaemonIngress.Namespace).Delete(baseDaemonIngress.Name)
 		}
 	}()
 
@@ -1704,13 +1704,13 @@ func (s *IngressTestSuit) TestIngressKeepSource() error {
 		},
 	}
 
-	_, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err := s.t.ExtClient.Ingresses(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+			s.t.ExtClient.Ingresses(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
@@ -1783,13 +1783,13 @@ func (s *IngressTestSuit) TestIngressLBSourceRange() error {
 		},
 	}
 
-	_, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err := s.t.ExtClient.Ingresses(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+			s.t.ExtClient.Ingresses(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
@@ -1812,12 +1812,12 @@ func (s *IngressTestSuit) TestIngressLBSourceRange() error {
 		return errors.New().WithMessage("LBSource range did not matched").Err()
 	}
 
-	tobeUpdated, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+	tobeUpdated, err := s.t.ExtClient.Ingresses(baseIngress.Namespace).Get(baseIngress.Name)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	tobeUpdated.Spec.LoadBalancerSourceRanges = []string{"192.10.0.0/24"}
-	_, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Update(tobeUpdated)
+	_, err = s.t.ExtClient.Ingresses(baseIngress.Namespace).Update(tobeUpdated)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
@@ -1963,13 +1963,13 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 		},
 	}
 
-	_, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err = s.t.ExtClient.Ingresses(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+			s.t.ExtClient.Ingresses(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 

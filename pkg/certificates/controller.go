@@ -144,7 +144,7 @@ func (c *CertificateController) handleIngressEvent(e *events.Event) error {
 		if ingress.Annotations[certificateAnnotationKeyEnabled] == "true" {
 			certificateName := ingress.Annotations[certificateAnnotationKeyName]
 			// Check if a certificate already exists.
-			certificate, err := c.ExtClient.Certificate(ingress.Namespace).Get(certificateName)
+			certificate, err := c.ExtClient.Certificates(ingress.Namespace).Get(certificateName)
 			if err == nil {
 				// Certificate exists mount it.
 				return nil
@@ -188,7 +188,7 @@ func (c *CertificateController) handleIngressEvent(e *events.Event) error {
 						newCertificate.Spec.Domains = append(newCertificate.Spec.Domains, rule.Host)
 					}
 				}
-				_, err := c.ExtClient.Certificate(newCertificate.Namespace).Create(newCertificate)
+				_, err := c.ExtClient.Certificates(newCertificate.Namespace).Create(newCertificate)
 				if err != nil {
 					errors.FromErr(err).Err()
 				}
@@ -388,7 +388,7 @@ func (c *CertificateController) save(cert acme.CertificateResource) error {
 		errors.FromErr(err).Err()
 	}
 
-	k8sCert, err := c.ExtClient.Certificate(c.certificate.Namespace).Get(c.certificate.Name)
+	k8sCert, err := c.ExtClient.Certificates(c.certificate.Namespace).Get(c.certificate.Name)
 	if err != nil {
 		log.Errorln("failed to load cert object,", err)
 	}
@@ -406,7 +406,7 @@ func (c *CertificateController) save(cert acme.CertificateResource) error {
 			AccountRef:    cert.AccountRef,
 		},
 	}
-	c.ExtClient.Certificate(c.certificate.Namespace).Update(k8sCert)
+	c.ExtClient.Certificates(c.certificate.Namespace).Update(k8sCert)
 	return nil
 }
 
@@ -437,7 +437,7 @@ func (c *CertificateController) processHTTPCertificate(revert chan struct{}) err
 	switch c.certificate.Spec.HTTPProviderIngressReference.APIVersion {
 	case "appscode.com/v1":
 		revertRequired := false
-		i, err := c.ExtClient.Ingress(c.certificate.Spec.HTTPProviderIngressReference.Namespace).
+		i, err := c.ExtClient.Ingresses(c.certificate.Spec.HTTPProviderIngressReference.Namespace).
 			Get(c.certificate.Spec.HTTPProviderIngressReference.Name)
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -464,7 +464,7 @@ func (c *CertificateController) processHTTPCertificate(revert chan struct{}) err
 
 			i.Spec.Rules = append(i.Spec.Rules, rule)
 		}
-		_, err = c.ExtClient.Ingress(c.certificate.Namespace).Update(i)
+		_, err = c.ExtClient.Ingresses(c.certificate.Namespace).Update(i)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -474,7 +474,7 @@ func (c *CertificateController) processHTTPCertificate(revert chan struct{}) err
 			select {
 			case <-revert:
 				if revertRequired {
-					i, err := c.ExtClient.Ingress(c.certificate.Spec.HTTPProviderIngressReference.Namespace).
+					i, err := c.ExtClient.Ingresses(c.certificate.Spec.HTTPProviderIngressReference.Namespace).
 						Get(c.certificate.Spec.HTTPProviderIngressReference.Name)
 					if err == nil {
 						i.Spec = prevSpecs
@@ -482,7 +482,7 @@ func (c *CertificateController) processHTTPCertificate(revert chan struct{}) err
 							Hosts:      c.certificate.Spec.Domains,
 							SecretName: defaultCertPrefix + c.certificate.Name,
 						})
-						c.ExtClient.Ingress(c.certificate.Namespace).Update(i)
+						c.ExtClient.Ingresses(c.certificate.Namespace).Update(i)
 					}
 				}
 				return

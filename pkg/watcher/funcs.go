@@ -23,13 +23,13 @@ func IngressWatchFunc(c clientset.Interface) func(options metav1.ListOptions) (w
 
 func ExtendedIngressListFunc(c acs.ExtensionInterface) func(metav1.ListOptions) (runtime.Object, error) {
 	return func(opts metav1.ListOptions) (runtime.Object, error) {
-		return c.Ingress(apiv1.NamespaceAll).List(opts)
+		return c.Ingresses(apiv1.NamespaceAll).List(opts)
 	}
 }
 
 func ExtendedIngressWatchFunc(c acs.ExtensionInterface) func(options metav1.ListOptions) (watch.Interface, error) {
 	return func(options metav1.ListOptions) (watch.Interface, error) {
-		return c.Ingress(apiv1.NamespaceAll).Watch(options)
+		return c.Ingresses(apiv1.NamespaceAll).Watch(options)
 	}
 }
 
@@ -47,13 +47,13 @@ func DaemonSetWatchFunc(c clientset.Interface) func(options metav1.ListOptions) 
 
 func CertificateListFunc(c acs.ExtensionInterface) func(metav1.ListOptions) (runtime.Object, error) {
 	return func(opts metav1.ListOptions) (runtime.Object, error) {
-		return c.Certificate(apiv1.NamespaceAll).List(opts)
+		return c.Certificates(apiv1.NamespaceAll).List(opts)
 	}
 }
 
 func CertificateWatchFunc(c acs.ExtensionInterface) func(options metav1.ListOptions) (watch.Interface, error) {
 	return func(options metav1.ListOptions) (watch.Interface, error) {
-		return c.Certificate(apiv1.NamespaceAll).Watch(options)
+		return c.Certificates(apiv1.NamespaceAll).Watch(options)
 	}
 }
 

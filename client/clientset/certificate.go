@@ -7,8 +7,8 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-type CertificateNamespacer interface {
-	Certificate(namespace string) CertificateInterface
+type CertificateGetter interface {
+	Certificates(namespace string) CertificateInterface
 }
 
 type CertificateInterface interface {

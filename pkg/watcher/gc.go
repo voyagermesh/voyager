@@ -34,7 +34,7 @@ func (w *Watcher) PurgeOffshootsWithDeprecatedLabels() error {
 		return err
 	}
 
-	engresses, err := w.ExtClient.Ingress(apiv1.NamespaceAll).List(metav1.ListOptions{})
+	engresses, err := w.ExtClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
 	if err == nil {
 		for _, ing := range engresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
