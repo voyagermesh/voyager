@@ -103,7 +103,7 @@ backend default-backend
     {% for e in DefaultBackend.Endpoints %}
     {% if e.ExternalName %}
     {% if e.UseDNSResolver %}
-    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} {% if e.DNSResolver %} check resolvers {{ e.DNSResolver }} resolve-prefer ipv4 {% endif %}
+    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} {% if e.DNSResolver %} {% if e.CheckHealth %} check {% endif %} resolvers {{ e.DNSResolver }} resolve-prefer ipv4 {% endif %}
     {% elif not svc.Backends.BackendRules %}
     acl https ssl_fc
     http-request redirect location https://{{e.ExternalName}}:{{ e.Port }} code 301 if https
@@ -157,7 +157,7 @@ backend https-{{ svc.Name }}
     {% for e in svc.Backends.Endpoints %}
     {% if e.ExternalName %}
     {% if e.UseDNSResolver %}
-    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} {% if e.DNSResolver %} check resolvers {{ e.DNSResolver }} resolve-prefer ipv4 {% endif %}
+    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} {% if e.DNSResolver %} {% if e.CheckHealth %} check {% endif %} resolvers {{ e.DNSResolver }} resolve-prefer ipv4 {% endif %}
     {% elif not svc.Backends.BackendRules %}
     http-request redirect location https://{{e.ExternalName}}:{{ e.Port }} code 301
     {% endif %}
@@ -204,7 +204,7 @@ backend http-{{ svc.Name }}
     {% for e in svc.Backends.Endpoints %}
     {% if e.ExternalName %}
     {% if e.UseDNSResolver %}
-    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} resolve-prefer ipv4 {% if e.DNSResolver %} check resolvers {{ e.DNSResolver }} {% endif %}
+    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} {% if e.DNSResolver %} {% if e.CheckHealth %} check {% endif %} resolvers {{ e.DNSResolver }} resolve-prefer ipv4 {% endif %}
     {% elif not svc.Backends.BackendRules %}
     http-request redirect location http://{{e.ExternalName}}:{{ e.Port }} code 301
     {% endif %}
@@ -240,7 +240,7 @@ backend tcp-{{ svc.Name }}
 
     {% for e in svc.Backends.Endpoints %}
     {% if e.ExternalName %}
-    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} {% if e.DNSResolver %} check resolvers {{ e.DNSResolver }} resolve-prefer ipv4 {% endif %}
+    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} {% if e.DNSResolver %} {% if e.CheckHealth %} check {% endif %} resolvers {{ e.DNSResolver }} resolve-prefer ipv4 {% endif %}
     {% else %}
     server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %}
     {% endif %}

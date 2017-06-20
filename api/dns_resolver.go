@@ -20,19 +20,21 @@ const (
 			  hold timeout         30s
 			  hold valid           10s
 	*/
-	UseDNSResolver         = EngressKey + "/" + "use-dns-resolver"         // Bool
-	DNSResolverNameservers = EngressKey + "/" + "dns-resolver-nameservers" // ["", ""]
-	DNSResolverRetries     = EngressKey + "/" + "dns-resolver-retries"     // int
-	DNSResolverTimeout     = EngressKey + "/" + "dns-resolver-timeout"     // {"event":"time","event":"time"}
-	DNSResolverHold        = EngressKey + "/" + "dns-resolver-hold"        // {"status":"period","status":"period"}
+	UseDNSResolver         = EngressKey + "/" + "use-dns-resolver"          // Bool
+	DNSResolverNameservers = EngressKey + "/" + "dns-resolver-nameservers"  // ["", ""]
+	DNSResolverCheckHealth = EngressKey + "/" + "dns-resolver-check-health" // bool
+	DNSResolverRetries     = EngressKey + "/" + "dns-resolver-retries"      // int
+	DNSResolverTimeout     = EngressKey + "/" + "dns-resolver-timeout"      // {"event":"time","event":"time"}
+	DNSResolverHold        = EngressKey + "/" + "dns-resolver-hold"         // {"status":"period","status":"period"}
 )
 
 type DNSResolver struct {
-	Name       string
-	NameServer []string          `json:"nameserver"`
-	Retries    int               `json:"retries"`
-	Timeout    map[string]string `json:"timeout"`
-	Hold       map[string]string `json:"hold"`
+	Name        string
+	NameServer  []string          `json:"nameserver"`
+	CheckHealth bool              `json:"checkHealth"`
+	Retries     int               `json:"retries"`
+	Timeout     map[string]string `json:"timeout"`
+	Hold        map[string]string `json:"hold"`
 }
 
 func DNSResolverForService(svc apiv1.Service) (useDNSResolver bool, resolver *DNSResolver, err error) {
@@ -48,6 +50,11 @@ func DNSResolverForService(svc apiv1.Service) (useDNSResolver bool, resolver *DN
 	resolver.NameServer, err = getList(svc.Annotations, DNSResolverNameservers)
 	if err != nil {
 		return
+	}
+	if ch, e2 := getBool(svc.Annotations, DNSResolverCheckHealth); e2 == nil {
+		resolver.CheckHealth = ch
+	} else {
+		resolver.CheckHealth = len(resolver.NameServer) > 0
 	}
 	resolver.Retries, err = getInt(svc.Annotations, DNSResolverRetries)
 	if err != nil {

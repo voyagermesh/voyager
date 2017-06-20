@@ -103,6 +103,7 @@ type Endpoint struct {
 	ExternalName   string
 	UseDNSResolver bool
 	DNSResolver    string
+	CheckHealth    bool
 }
 
 // Loadbalancer image is an almost constant type.
