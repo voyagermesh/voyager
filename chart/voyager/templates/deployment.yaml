@@ -23,9 +23,7 @@ spec:
       - args:
         - run
         - --cloud-provider={{ .Values.cloudProvider }}
-        {{- if .Values.cloudConfig -}}
         - --cloud-config={{ .Values.cloudConfig }}
-        {{- end }}
         - --v={{ .Values.logLevel }}
         image: "{{ .Values.image }}:{{ .Values.imageTag }}"
         name: voyager
@@ -33,9 +31,9 @@ spec:
         - containerPort: 56790
           name: http
           protocol: TCP
-{{- if .Values.persistence.enabled -}}
+{{- if .Values.persistence.enabled }}
         volumeMounts:
-          - mountPath: {{ .Values.cloudConfig | dir }}
+          - mountPath: {{ dir .Values.cloudConfig | quote }}
             name: cloudconfig
             readOnly: true
       volumes:
