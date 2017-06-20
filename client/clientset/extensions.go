@@ -15,8 +15,8 @@ const (
 
 type ExtensionInterface interface {
 	RESTClient() rest.Interface
-	IngressNamespacer
-	CertificateNamespacer
+	IngressesGetter
+	CertificateGetter
 }
 
 // ExtensionClient is used to interact with experimental Kubernetes features.
@@ -28,11 +28,11 @@ type ExtensionClient struct {
 
 var _ ExtensionInterface = &ExtensionClient{}
 
-func (c *ExtensionClient) Ingress(namespace string) IngressInterface {
+func (c *ExtensionClient) Ingresses(namespace string) IngressInterface {
 	return newExtendedIngress(c, namespace)
 }
 
-func (c *ExtensionClient) Certificate(namespace string) CertificateInterface {
+func (c *ExtensionClient) Certificates(namespace string) CertificateInterface {
 	return newCertificate(c, namespace)
 }
 

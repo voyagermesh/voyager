@@ -69,13 +69,13 @@ func (s *IngressTestSuit) TestIngressDaemonCreate() error {
 		},
 	}
 
-	_, err := s.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Create(baseDaemonIngress)
+	_, err := s.t.ExtClient.Ingresses(baseDaemonIngress.Namespace).Create(baseDaemonIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Delete(baseDaemonIngress.Name)
+			s.t.ExtClient.Ingresses(baseDaemonIngress.Namespace).Delete(baseDaemonIngress.Name)
 		}
 	}()
 
@@ -155,13 +155,13 @@ func (s *IngressTestSuit) TestIngressDaemonUpdate() error {
 		},
 	}
 
-	_, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Create(baseIngress)
+	_, err := s.t.ExtClient.Ingresses(baseIngress.Namespace).Create(baseIngress)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.ExtClient.Ingress(baseIngress.Namespace).Delete(baseIngress.Name)
+			s.t.ExtClient.Ingresses(baseIngress.Namespace).Delete(baseIngress.Name)
 		}
 	}()
 
@@ -200,12 +200,12 @@ func (s *IngressTestSuit) TestIngressDaemonUpdate() error {
 		}
 	}
 
-	updatedBaseIngress, err := s.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+	updatedBaseIngress, err := s.t.ExtClient.Ingresses(baseIngress.Namespace).Get(baseIngress.Name)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
 	updatedBaseIngress.Spec.Rules[0].HTTP.Paths[0].Path = "/newTestpath"
-	_, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Update(updatedBaseIngress)
+	_, err = s.t.ExtClient.Ingresses(baseIngress.Namespace).Update(updatedBaseIngress)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
@@ -248,7 +248,7 @@ func (s *IngressTestSuit) TestIngressDaemonUpdate() error {
 	}
 
 	// Open New Port
-	updatedBaseIngress, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Get(baseIngress.Name)
+	updatedBaseIngress, err = s.t.ExtClient.Ingresses(baseIngress.Namespace).Get(baseIngress.Name)
 	if err != nil {
 		return errors.New().WithCause(err).Err()
 	}
@@ -264,7 +264,7 @@ func (s *IngressTestSuit) TestIngressDaemonUpdate() error {
 				},
 			},
 		}
-		_, err = s.t.ExtClient.Ingress(baseIngress.Namespace).Update(updatedBaseIngress)
+		_, err = s.t.ExtClient.Ingresses(baseIngress.Namespace).Update(updatedBaseIngress)
 		if err != nil {
 			return errors.New().WithCause(err).Err()
 		}
@@ -352,13 +352,13 @@ func (s *IngressTestSuit) TestIngressDaemonRestart() error {
 		},
 	}
 
-	_, err := s.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Create(baseDaemonIngress)
+	_, err := s.t.ExtClient.Ingresses(baseDaemonIngress.Namespace).Create(baseDaemonIngress)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if s.t.Config.Cleanup {
-			s.t.ExtClient.Ingress(baseDaemonIngress.Namespace).Delete(baseDaemonIngress.Name)
+			s.t.ExtClient.Ingresses(baseDaemonIngress.Namespace).Delete(baseDaemonIngress.Name)
 		}
 	}()
 

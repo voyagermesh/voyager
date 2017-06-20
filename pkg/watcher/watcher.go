@@ -203,11 +203,11 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 				if sourceType == api.APISchemaIngress {
 					_, ingressErr = w.KubeClient.ExtensionsV1beta1().Ingresses(e.MetaData.Namespace).Get(sourceName, metav1.GetOptions{})
 				} else if sourceType == api.APISchemaEngress {
-					_, ingressErr = w.ExtClient.Ingress(e.MetaData.Namespace).Get(sourceName)
+					_, ingressErr = w.ExtClient.Ingresses(e.MetaData.Namespace).Get(sourceName)
 				} else if !sourceTypeFound {
 					_, ingressErr = w.KubeClient.ExtensionsV1beta1().Ingresses(e.MetaData.Namespace).Get(sourceName, metav1.GetOptions{})
 					if ingressErr != nil {
-						_, ingressErr = w.ExtClient.Ingress(e.MetaData.Namespace).Get(sourceName)
+						_, ingressErr = w.ExtClient.Ingresses(e.MetaData.Namespace).Get(sourceName)
 						if ingressErr == nil {
 							detectedAPIGroup = api.APISchemaEngress
 						}

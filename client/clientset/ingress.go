@@ -7,9 +7,9 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-// ExtendedIngressNamespacer has methods to work with ExtendedIngress resources in a namespace
-type IngressNamespacer interface {
-	Ingress(namespace string) IngressInterface
+// IngressesGetter has methods to work with ExtendedIngress resources in a namespace
+type IngressesGetter interface {
+	Ingresses(namespace string) IngressInterface
 }
 
 // ExtendedIngressInterface exposes methods to work on ExtendedIngress resources.
@@ -23,7 +23,7 @@ type IngressInterface interface {
 	UpdateStatus(ExtendedIngress *aci.Ingress) (*aci.Ingress, error)
 }
 
-// ExtendedIngress implements ExtendedIngressNamespacer interface
+// IngressImpl implements IngressesGetter interface
 type IngressImpl struct {
 	r  rest.Interface
 	ns string
