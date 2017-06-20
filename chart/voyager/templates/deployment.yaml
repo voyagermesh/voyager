@@ -23,7 +23,9 @@ spec:
       - args:
         - run
         - --cloud-provider={{ .Values.cloudProvider }}
+        {{- if .Values.cloudConfig -}}
         - --cloud-config={{ .Values.cloudConfig }}
+        {{- end }}
         - --v={{ .Values.logLevel }}
         image: "{{ .Values.image }}:{{ .Values.imageTag }}"
         name: voyager
@@ -31,11 +33,13 @@ spec:
         - containerPort: 56790
           name: http
           protocol: TCP
+{{- if .Values.persistence.enabled -}}
         volumeMounts:
-          - mountPath: /etc/kubernetes
+          - mountPath: {{ .Values.cloudConfig | dir }}
             name: cloudconfig
             readOnly: true
       volumes:
         - hostPath:
-            path: /etc/kubernetes
+            path: {{ .Values.persistence.hostPath | quote }}
           name: cloudconfig
+{{- end -}}

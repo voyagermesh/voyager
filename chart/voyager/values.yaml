@@ -10,3 +10,6 @@ cloudProvider: cloud_provider
 cloudConfig: cloud_config
 ## Log level for voyager
 logLevel: 3
+persistence:
+  enabled: true
+  hostPath: /etc/kubernetes
