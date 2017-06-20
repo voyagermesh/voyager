@@ -18,6 +18,14 @@ func Reverse(s string) string {
 	return string(buf)
 }
 
+func PrefixFold(s, prefix string) bool {
+	return len(s) >= len(prefix) && strings.EqualFold(prefix, s[:len(prefix)])
+}
+
+func IsEmpty(s *string) bool {
+	return s == nil || *s == ""
+}
+
 func IsBothAlphaNum(a string) bool {
 	alpha := false
 	num := false
