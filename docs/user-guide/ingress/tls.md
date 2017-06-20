@@ -1,6 +1,6 @@
 ## TLS
-You can secure an Ingress by specifying a secret containing TLS pem or By referring a `certificate.networking.appscode.com` resource.
-`certificate.networking.appscode.com` can manage an certificate resource and use that certificate to encrypt communication.
+You can secure an Ingress by specifying a secret containing TLS pem or By referring a `certificate.voyager.appscode.com` resource.
+`certificate.voyager.appscode.com` can manage an certificate resource and use that certificate to encrypt communication.
 Currently the Ingress only supports a
 single TLS port, **443 for HTTP Rules**, and **Any Port for TCP Rules** and **assumes TLS termination**.
 
@@ -24,7 +24,7 @@ data:
 Referencing this secret in an Ingress will tell the Ingress controller to secure the channel from
 client to the loadbalancer using TLS:
 ```yaml
-apiVersion: networking.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
   name: test-ingress

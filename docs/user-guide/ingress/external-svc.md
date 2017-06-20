@@ -34,7 +34,7 @@ spec:
 If this service is used in ingress, the traffic will forward to google.com's address.
 
 ```
-apiVersion: networking.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
   name: test-ings-rhvulnlb
