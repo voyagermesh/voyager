@@ -18,11 +18,17 @@ func NewCmdExport() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "export",
 		Short: "Export Prometheus metrics for HAProxy",
-		Run: func(cmd *cobra.Command, args []string) {
-			export()
+		PreRun: func(cmd *cobra.Command, args []string) {
+			if enableAnalytics {
+				analytics.Enable()
+			}
+			analytics.Send("exporter", "started", Version)
 		},
 		PostRun: func(cmd *cobra.Command, args []string) {
 			analytics.Send("exporter", "stopped", Version)
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			export()
 		},
 	}
 
@@ -38,12 +44,7 @@ func NewCmdExport() *cobra.Command {
 }
 
 func export() {
-	if enableAnalytics {
-		analytics.Enable()
-	}
-
 	log.Infoln("Starting Voyager exporter...")
-	analytics.Send("exporter", "started", Version)
 
 	var err error
 	selectedServerMetrics, err = hpe.FilterServerMetrics(haProxyServerMetricFields)
