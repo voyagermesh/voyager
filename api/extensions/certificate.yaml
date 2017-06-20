@@ -1,5 +1,5 @@
 metadata:
-  name: certificate.voyager.appscode.com
+  name: certificate.networking.appscode.com
 apiVersion: extensions/v1beta1
 kind: ThirdPartyResource
 description: "A specification of a Let's Encrypt Certificate to manage."
