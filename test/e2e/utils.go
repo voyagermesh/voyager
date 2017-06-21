@@ -54,7 +54,12 @@ func (s *IngressTestSuit) getURLs(baseIngress *api.Ingress) ([]string, error) {
 				if len(svc.Status.LoadBalancer.Ingress) != 0 {
 					ips := make([]string, 0)
 					for _, ingress := range svc.Status.LoadBalancer.Ingress {
-						ips = append(ips, ingress.IP)
+						if s.t.Config.ProviderName == "aws" {
+							ips = append(ips, ingress.Hostname)
+						} else {
+							ips = append(ips, ingress.IP)
+						}
+
 					}
 					var ports []int32
 					if len(svc.Spec.Ports) > 0 {
@@ -129,7 +134,7 @@ func (s *IngressTestSuit) getDaemonURLs(baseIngress *api.Ingress) ([]string, err
 
 	for _, node := range nodes.Items {
 		for _, addr := range node.Status.Addresses {
-			if addr.Type == apiv1.NodeLegacyHostIP || addr.Type == apiv1.NodeExternalIP {
+			if addr.Type == apiv1.NodeExternalIP {
 				for _, port := range ports {
 					var doc bytes.Buffer
 					err = defaultUrlTemplate.Execute(&doc, struct {
