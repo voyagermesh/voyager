@@ -10,7 +10,7 @@ Some of the Voyager development helper scripts rely on a fairly up-to-date GNU t
 work just fine out-of-the-box.
 
 ### Go development environment
-Voyager is written in the go programming language. The release is built and tested on **go 1.7.5**. If you haven't set up a Go
+Voyager is written in the go programming language. The release is built and tested on **go 1.8.3**. If you haven't set up a Go
 development environment, please follow [these instructions](https://golang.org/doc/code.html) to install the go tools.
 
 ```sh
