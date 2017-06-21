@@ -180,7 +180,7 @@ func (r Ingress) ServiceAnnotations(provider string) (map[string]string, bool) {
 			case "aws":
 				// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
 				filteredMap["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
-			case "gce", "gke", "azure":
+			case "gce", "gke", "azure", "acs":
 				// ref: https://kubernetes.io/docs/tutorials/services/source-ip/#source-ip-for-services-with-typeloadbalancer
 				filteredMap["service.beta.kubernetes.io/external-traffic"] = "OnlyLocal"
 			}

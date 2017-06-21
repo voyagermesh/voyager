@@ -19,12 +19,20 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-func (lbc *EngressController) SupportsLoadBalancerType() bool {
-	return lbc.ProviderName == "aws" ||
-		lbc.ProviderName == "gce" ||
-		lbc.ProviderName == "gke" ||
-		lbc.ProviderName == "azure" ||
-		lbc.ProviderName == "minikube"
+func (lbc *EngressController) SupportsLBType() bool {
+	switch lbc.Resource.LBType() {
+	case api.LBTypeLoadBalancer:
+		return lbc.ProviderName == "aws" ||
+			lbc.ProviderName == "gce" ||
+			lbc.ProviderName == "gke" ||
+			lbc.ProviderName == "azure" ||
+			lbc.ProviderName == "acs" ||
+			lbc.ProviderName == "minikube"
+	case api.LBTypeNodePort, api.LBTypeHostPort:
+		return lbc.ProviderName != "acs"
+	default:
+		return false
+	}
 }
 
 func (lbc *EngressController) parse() error {

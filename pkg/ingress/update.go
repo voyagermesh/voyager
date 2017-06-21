@@ -90,6 +90,10 @@ func (lbc *EngressController) updateConfigMap() error {
 }
 
 func (lbc *EngressController) recreatePods() error {
+	if !lbc.SupportsLBType() {
+		return errors.Newf("LBType %s is unsupported for cloud provider: %s", lbc.Resource.LBType(), lbc.ProviderName).Err()
+	}
+
 	if lbc.Resource.LBType() == api.LBTypeHostPort {
 		err := lbc.deleteHostPortPods()
 		if err != nil {
@@ -109,19 +113,15 @@ func (lbc *EngressController) recreatePods() error {
 			return errors.FromErr(err).Err()
 		}
 	} else {
-		if lbc.SupportsLoadBalancerType() {
-			// Ignore Error.
-			lbc.deleteResidualPods()
-			err := lbc.deleteNodePortPods()
-			if err != nil {
-				return errors.FromErr(err).Err()
-			}
-			err = lbc.createNodePortPods()
-			if err != nil {
-				return errors.FromErr(err).Err()
-			}
-		} else {
-			return errors.New("LoadBalancer type ingress is unsupported for cloud provider:", lbc.ProviderName).Err()
+		// Ignore Error.
+		lbc.deleteResidualPods()
+		err := lbc.deleteNodePortPods()
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
+		err = lbc.createNodePortPods()
+		if err != nil {
+			return errors.FromErr(err).Err()
 		}
 	}
 	return nil
