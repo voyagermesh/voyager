@@ -3,8 +3,8 @@ package watcher
 import (
 	"github.com/appscode/voyager/api"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 func (w *Watcher) PurgeOffshootsWithDeprecatedLabels() error {

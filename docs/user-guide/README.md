@@ -11,6 +11,7 @@ $ export CLOUD_PROVIDER=<provider-name> // ie:
                                         // - gke
                                         // - aws
                                         // - azure
+                                        // - acs (aka, Azure Container Service)
 
 
 $ export CLOUDE_CONFIG=<path>           // The path to the cloud provider configuration file.
@@ -53,11 +54,10 @@ This is supported for cloud providers known to Kubernetes (`aws`, `gce` and `azu
 - HostPort: In this mode, HAProxy is run as DaemonSet using nodeSelector and hostNetwork:true. As a result,
 HAProxy's IP will be same as the IP address for nodes where it is running. This is supported on any cloud provider
 (known or unknown to Kubernetes). Voyager will open firewall, if a `cloud-provider` is one of `aws`, `gce`, `gke` or
-`azure`. If cloud provider is unknown (say, running on DigitalOcean), users are required to configure firewall as needed.
+`azure`. This is not supported for Azure `acs` provider. If cloud provider is unknown (say, running on DigitalOcean), users are required to configure firewall as needed.
 
 - NodePort: In this mode, a Kubernetes NodePort type service is used to expose HAProxy to the internet. This is supported on any cloud provider including
-baremetal clusters. Users are required to configure firewall as needed. --cloud-provider flag can be left unset, if used with providers other than `aws`, `gce`, `gke` or
-`azure`.
+baremetal clusters. Users are required to configure firewall as needed. This is not supported for Azure `acs` provider. 
 
 You can choose the mode in your Ingress YAML using label: [ingress.appscode.com/type](/docs/user-guide/ingress#configurations-options)
 
