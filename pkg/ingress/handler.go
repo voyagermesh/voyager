@@ -277,7 +277,7 @@ const (
 // if ingressClass == "", then handle no annotaion or voyager annotation
 func shouldHandleIngress(resource *api.Ingress, ingressClass string) bool {
 	// https://github.com/appscode/voyager/blob/master/api/conversion_v1beta1.go#L44
-	if resource.Annotations[api.APISchema] == api.EngressKey+"/"+api.V1beta1SchemeGroupVersion.Version {
+	if resource.Annotations[api.APISchema] == api.APISchemaEngress {
 		// Resource Type is Extended Ingress So we should always Handle this
 		return true
 	}
