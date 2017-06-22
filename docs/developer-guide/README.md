@@ -74,6 +74,15 @@ $ ./hack/make.py test e2e -cloud-provider=gce -test-only=CreateIPPersist -lb-ip=
 
 ```
 
+Tests are run only in namespaces prefixed with `test-`. So, to run tests in your desired namespace, follow these steps:
+```
+# create a Kubernetes namespace in minikube with
+kubectl create ns test-<any-name-you-want>
+
+# run tests
+./hack/make.py test minikube -namespace test-<any-name-you-want> -max-test=1
+```
+
 ### Local Build
 To build Voyager using your local Go development environment (generate linux binaries):
 ```sh
