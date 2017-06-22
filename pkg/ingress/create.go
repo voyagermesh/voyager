@@ -20,6 +20,10 @@ import (
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
+const (
+	ExporterSidecarTag = "appscode/voyager:3.0.0"
+)
+
 func (lbc *EngressController) Create() error {
 	log.Debugln("Starting creating lb. got engress with", lbc.Resource.ObjectMeta)
 	err := lbc.parse()
@@ -663,7 +667,7 @@ func (lbc *EngressController) getExporterSidecar() (*apiv1.Container, error) {
 				fmt.Sprintf("--address=:%d", monSpec.Prometheus.TargetPort.IntValue()),
 				"--v=3",
 			},
-			Image:           "appscode/voyager:3.0.0",
+			Image:           ExporterSidecarTag,
 			ImagePullPolicy: apiv1.PullIfNotPresent,
 			Ports: []apiv1.ContainerPort{
 				{
