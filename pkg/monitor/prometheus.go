@@ -123,9 +123,9 @@ func (c *PrometheusController) createServiceMonitor(r *api.Ingress, spec *api.Mo
 			},
 			Endpoints: []prom.Endpoint{
 				{
-					TargetPort: spec.Prometheus.TargetPort,
-					Interval:   spec.Prometheus.Interval,
-					Path:       fmt.Sprintf("/%s/namespaces/%s/ingresses/%s/metrics", r.APISchema(), r.Namespace, r.Name),
+					Port:     api.ExporterPortName,
+					Interval: spec.Prometheus.Interval,
+					Path:     fmt.Sprintf("/%s/namespaces/%s/ingresses/%s/metrics", r.APISchema(), r.Namespace, r.Name),
 				},
 			},
 		},

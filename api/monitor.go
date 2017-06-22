@@ -2,18 +2,18 @@ package api
 
 import (
 	"fmt"
-
-	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 const (
-	AgentCoreosPrometheus = "coreos-prometheus-operator"
-	DefaultExporterPort   = 56790
+	AgentCoreosPrometheus     = "coreos-prometheus-operator"
+	StatsPortName             = "stats"
+	ExporterPortName          = "http"
+	DefaultExporterPortNumber = 56790
 
 	MonitoringAgent              = EngressKey + "/monitoring-agent"                         // Name of monitoring agent
 	ServiceMonitorNamespace      = EngressKey + "/service-monitor-namespace"                // Kube NS where service monitors will be created
 	ServiceMonitorLabels         = EngressKey + "/service-monitor-labels"                   // map[string]string used to select Prometheus instance
-	ServiceMonitorTargetPort     = EngressKey + "/service-monitor-endpoint-target-port"     // Target port on container used to expose metrics
+	ServiceMonitorPort           = EngressKey + "/service-monitor-endpoint-port"            // Port on stats service used to expose metrics
 	ServiceMonitorScrapeInterval = EngressKey + "/service-monitor-endpoint-scrape-interval" // scrape interval
 )
 
@@ -22,8 +22,8 @@ type MonitorSpec struct {
 }
 
 type PrometheusSpec struct {
-	// Name or number of the target port of the endpoint. Mutually exclusive with port.
-	TargetPort intstr.IntOrString `json:"targetPort,omitempty"`
+	// Port number for the exporter side car.
+	Port int `json:"port,omitempty"`
 
 	// Namespace of Prometheus. Service monitors will be created in this namespace.
 	Namespace string `json:"namespace,omitempty"`
@@ -63,14 +63,14 @@ func (r Ingress) MonitorSpec() (*MonitorSpec, error) {
 		return nil, fmt.Errorf("Missing %s annotation", ServiceMonitorLabels)
 	}
 
-	port, err := getInt(r.Annotations, ServiceMonitorTargetPort)
+	port, err := getInt(r.Annotations, ServiceMonitorPort)
 	if err != nil {
 		return nil, err
 	}
 	if port == 0 {
-		prom.TargetPort = intstr.FromInt(DefaultExporterPort)
+		prom.Port = DefaultExporterPortNumber
 	} else {
-		prom.TargetPort = intstr.FromInt(port)
+		prom.Port = port
 	}
 
 	prom.Interval = getString(r.Annotations, ServiceMonitorScrapeInterval)
