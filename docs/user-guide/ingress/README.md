@@ -132,6 +132,7 @@ Below is the full list of supported annotation keys:
 | ingress.appscode.com/stats | bool | false | `Optional`. If set, HAProxy stats will be exposed |
 | ingress.appscode.com/stats-port | integer | 56789 | `Optional`. Port used to expose HAProxy stats |
 | ingress.appscode.com/stats-secret-name | string | x | `Optional`. Secret used to provide username & password to secure HAProxy stats endpoint. Secret must contain keys `username` and `password` |
+| ingress.appscode.com/stats-service-name | string | `<ingress-name>-stats` | ClusterIP type service used to expose HAproxy stats. This allows to avoid exposing stats to internet. |
 | ingress.appscode.com/ip | | | Removed since 1.5.6. Use `ingress.appscode.com/load-balaner-ip` |
 | ingress.appscode.com/persist | | | Removed since 1.5.6. |
 | ingress.appscode.com/daemon.nodeSelector | | | Removed since 1.5.6. Use `ingress.appscode.com/node-selector` |
