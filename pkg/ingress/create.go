@@ -659,7 +659,7 @@ func (lbc *EngressController) getExporterSidecar() (*apiv1.Container, error) {
 		return &apiv1.Container{
 			Name: "exporter",
 			Args: []string{
-				"exporter",
+				"export",
 				fmt.Sprintf("--address=:%d", monSpec.Prometheus.TargetPort.IntValue()),
 				"--v=3",
 			},
