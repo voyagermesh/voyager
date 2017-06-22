@@ -130,7 +130,6 @@ func (r Ingress) StatsPort() int {
 	return DefaultStatsPort
 }
 
-// Deprecated
 func (r Ingress) StatsServiceName() string {
 	if v := getString(r.Annotations, StatsServiceName); v != "" {
 		return v

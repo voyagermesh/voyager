@@ -31,7 +31,7 @@ var (
 	ingressClass    string
 	enableAnalytics bool = true
 
-	address                   string        = fmt.Sprintf(":%d", api.DefaultExporterPort)
+	address                   string        = fmt.Sprintf(":%d", api.DefaultExporterPortNumber)
 	haProxyServerMetricFields string        = hpe.ServerMetrics.String()
 	haProxyTimeout            time.Duration = 5 * time.Second
 

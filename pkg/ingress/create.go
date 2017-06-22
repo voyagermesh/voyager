@@ -45,8 +45,9 @@ func (lbc *EngressController) Create() error {
 		return errors.FromErr(err).Err()
 	}
 
-	lbc.ensureStatsServiceDeleted()
-
+	if lbc.Parsed.Stats {
+		lbc.ensureStatsService()
+	}
 	return nil
 }
 
@@ -328,10 +329,9 @@ func (lbc *EngressController) createHostPortPods() error {
 
 	if lbc.Parsed.Stats {
 		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
-			Name:          "stats",
+			Name:          api.StatsPortName,
 			Protocol:      "TCP",
 			ContainerPort: int32(lbc.Parsed.StatsPort),
-			HostPort:      int32(lbc.Parsed.StatsPort),
 		})
 	}
 
@@ -537,10 +537,9 @@ func (lbc *EngressController) createNodePortPods() error {
 
 	if lbc.Parsed.Stats {
 		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
-			Name:          "stats",
+			Name:          api.StatsPortName,
 			Protocol:      "TCP",
 			ContainerPort: int32(lbc.Parsed.StatsPort),
-			HostPort:      int32(lbc.Parsed.StatsPort),
 		})
 	}
 
@@ -664,21 +663,89 @@ func (lbc *EngressController) getExporterSidecar() (*apiv1.Container, error) {
 			Name: "exporter",
 			Args: []string{
 				"export",
-				fmt.Sprintf("--address=:%d", monSpec.Prometheus.TargetPort.IntValue()),
+				fmt.Sprintf("--address=:%d", monSpec.Prometheus.Port),
 				"--v=3",
 			},
 			Image:           ExporterSidecarTag,
 			ImagePullPolicy: apiv1.PullIfNotPresent,
 			Ports: []apiv1.ContainerPort{
 				{
-					Name:          "http",
+					Name:          api.ExporterPortName,
 					Protocol:      apiv1.ProtocolTCP,
-					ContainerPort: int32(monSpec.Prometheus.TargetPort.IntValue()),
+					ContainerPort: int32(monSpec.Prometheus.Port),
 				},
 			},
 		}, nil
 	}
 	return nil, nil
+}
+
+func (lbc *EngressController) ensureStatsService() {
+	svc := &apiv1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      lbc.Resource.StatsServiceName(),
+			Namespace: lbc.Resource.Namespace,
+			Annotations: map[string]string{
+				api.OriginAPISchema: lbc.Resource.APISchema(),
+				api.OriginName:      lbc.Resource.GetName(),
+			},
+		},
+		Spec: apiv1.ServiceSpec{
+			Ports: []apiv1.ServicePort{
+				{
+					Name:       api.StatsPortName,
+					Protocol:   "TCP",
+					Port:       int32(lbc.Parsed.StatsPort),
+					TargetPort: intstr.FromString(api.StatsPortName),
+				},
+			},
+			Selector: lbc.Resource.OffshootLabels(),
+		},
+	}
+	monSpec, err := lbc.Resource.MonitorSpec()
+	if err == nil && monSpec != nil && monSpec.Prometheus != nil {
+		svc.Spec.Ports = append(svc.Spec.Ports, apiv1.ServicePort{
+			Name:       api.ExporterPortName,
+			Protocol:   "TCP",
+			Port:       int32(monSpec.Prometheus.Port),
+			TargetPort: intstr.FromString(api.ExporterPortName),
+		})
+	}
+
+	s, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Get(lbc.Resource.StatsServiceName(), metav1.GetOptions{})
+	if kerr.IsNotFound(err) {
+		_, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Create(svc)
+		if err != nil {
+			log.Errorln("Failed to create Stats Service", err)
+		}
+		return
+	} else if err != nil {
+		log.Errorln(err)
+		return
+	}
+
+	needsUpdate := false
+	if val, ok := lbc.ensureResourceAnnotations(svc.Annotations); ok {
+		needsUpdate = true
+		svc.Annotations = val
+	}
+
+	if isServicePortChanged(s.Spec.Ports, svc.Spec.Ports) {
+		needsUpdate = true
+		s.Spec.Ports = svc.Spec.Ports
+	}
+
+	if !reflect.DeepEqual(svc.Spec.Selector, lbc.Resource.OffshootLabels()) {
+		needsUpdate = true
+		svc.Spec.Selector = lbc.Resource.OffshootLabels()
+	}
+
+	if needsUpdate {
+		_, err = lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Update(s)
+		if err != nil {
+			log.Errorln("Failed to update Stats Service", err)
+		}
+	}
 }
 
 func (lbc *EngressController) updateStatus() error {
