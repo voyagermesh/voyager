@@ -8,10 +8,13 @@ import (
 	hpe "github.com/appscode/haproxy_exporter/exporter"
 	"github.com/appscode/log"
 	"github.com/appscode/pat"
+	acs "github.com/appscode/voyager/client/clientset"
 	_ "github.com/appscode/voyager/client/clientset/fake"
 	"github.com/appscode/voyager/pkg/analytics"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
+	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 func NewCmdExport() *cobra.Command {
@@ -44,9 +47,14 @@ func NewCmdExport() *cobra.Command {
 }
 
 func export() {
-	log.Infoln("Starting Voyager exporter...")
+	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
+	if err != nil {
+		log.Fatalf("Could not get Kubernetes config: %s", err)
+	}
+	kubeClient = clientset.NewForConfigOrDie(config)
+	extClient = acs.NewForConfigOrDie(config)
 
-	var err error
+	log.Infoln("Starting Voyager exporter...")
 	selectedServerMetrics, err = hpe.FilterServerMetrics(haProxyServerMetricFields)
 	if err != nil {
 		log.Fatal(err)
