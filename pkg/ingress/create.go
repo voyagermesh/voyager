@@ -660,7 +660,7 @@ func (lbc *EngressController) getExporterSidecar() (*apiv1.Container, error) {
 			Name: "exporter",
 			Args: []string{
 				"exporter",
-				fmt.Sprintf("--address=:%d", monSpec.Prometheus.TargetPort.IntVal),
+				fmt.Sprintf("--address=:%d", monSpec.Prometheus.TargetPort.IntValue()),
 				"--v=3",
 			},
 			Image:           "appscode/voyager:3.0.0",
@@ -669,7 +669,7 @@ func (lbc *EngressController) getExporterSidecar() (*apiv1.Container, error) {
 				{
 					Name:          "http",
 					Protocol:      apiv1.ProtocolTCP,
-					ContainerPort: monSpec.Prometheus.TargetPort.IntVal,
+					ContainerPort: int32(monSpec.Prometheus.TargetPort.IntValue()),
 				},
 			},
 		}, nil
