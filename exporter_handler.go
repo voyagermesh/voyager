@@ -60,7 +60,6 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 	podIP := r.URL.Query().Get(QueryParamPodIP)
 	if podIP == "" {
 		podIP = "127.0.0.1"
-		return
 	}
 
 	switch apiGroup {
