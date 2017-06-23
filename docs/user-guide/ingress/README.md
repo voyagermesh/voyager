@@ -140,7 +140,6 @@ Below is the full list of supported annotation keys:
 | ingress.appscode.com/annotationsService | | | Removed since 1.5.6. Use `ingress.appscode.com/annotations-service` |
 | ingress.appscode.com/annotationsPod | | | Removed since 1.5.6. Use `ingress.appscode.com/annotations-pod` |
 | ingress.appscode.com/statsSecretName | | | Removed since 1.5.6. Use `ingress.appscode.com/stats-secret-name` |
-| ingress.appscode.com/stats-service-name | | | Removed since 3.0.0. |
 
 **Following annotations for ingress are not modifiable. The configuration is applied only when an Ingress object is created.
 If you need to update these annotations, then first delete the Ingress and then recreate.**
