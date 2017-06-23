@@ -235,8 +235,9 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 							return errors.FromErr(err).Err()
 						}
 					}
-					if oldMonSpec == nil && newMonSpec != nil {
-						updateMode |= UpdateFirewall
+					if (oldMonSpec == nil && newMonSpec != nil) ||
+						(oldMonSpec != nil && newMonSpec == nil) {
+						updateMode |= UpdateStats
 					}
 				}
 			}
