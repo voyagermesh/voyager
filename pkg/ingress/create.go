@@ -689,6 +689,7 @@ func (lbc *EngressController) ensureStatsService() {
 				api.OriginAPISchema: lbc.Resource.APISchema(),
 				api.OriginName:      lbc.Resource.GetName(),
 			},
+			Labels: lbc.Resource.StatsLabels(),
 		},
 		Spec: apiv1.ServiceSpec{
 			Ports: []apiv1.ServicePort{

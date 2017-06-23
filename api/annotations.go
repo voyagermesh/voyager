@@ -102,6 +102,12 @@ func (r Ingress) OffshootLabels() map[string]string {
 	return lbl
 }
 
+func (r Ingress) StatsLabels() map[string]string {
+	lbl := r.OffshootLabels()
+	lbl["feature"] = "stats"
+	return lbl
+}
+
 func (r Ingress) APISchema() string {
 	if v := getString(r.Annotations, APISchema); v != "" {
 		return v
@@ -134,7 +140,7 @@ func (r Ingress) StatsServiceName() string {
 	if v := getString(r.Annotations, StatsServiceName); v != "" {
 		return v
 	}
-	return r.Name + "-stats"
+	return VoyagerPrefix + r.Name + "-stats"
 }
 
 func (r Ingress) LBType() string {
