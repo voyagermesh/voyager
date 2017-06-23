@@ -654,6 +654,9 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 }
 
 func (lbc *EngressController) getExporterSidecar() (*apiv1.Container, error) {
+	if !lbc.Resource.Stats() {
+		return nil, nil // Don't add sidecar is stats is not exposed.
+	}
 	monSpec, err := lbc.Resource.MonitorSpec()
 	if err != nil {
 		return nil, err
