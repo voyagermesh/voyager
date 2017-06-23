@@ -14,7 +14,7 @@ $ export CLOUD_PROVIDER=<provider-name> // ie:
                                         // - acs (aka, Azure Container Service)
 
 
-$ export CLOUDE_CONFIG=<path>           // The path to the cloud provider configuration file.
+$ export CLOUD_CONFIG=<path>           // The path to the cloud provider configuration file.
                                         // Empty string for no configuration file.
                                         // For azure/acs, use `/etc/kubernetes/azure.json`.
                                         // This file was created during the cluster provisioning process.
