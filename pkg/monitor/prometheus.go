@@ -97,6 +97,12 @@ func (c *PrometheusController) ensureServiceMonitor(r *api.Ingress, old, new *ap
 
 	if update {
 		actual.Labels = new.Prometheus.Labels
+		actual.Spec.Selector = metav1.LabelSelector{
+			MatchLabels: r.StatsLabels(),
+		}
+		actual.Spec.NamespaceSelector = prom.NamespaceSelector{
+			MatchNames: []string{r.Namespace},
+		}
 		for i := range actual.Spec.Endpoints {
 			actual.Spec.Endpoints[i].Interval = new.Prometheus.Interval
 		}
