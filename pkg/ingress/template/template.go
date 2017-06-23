@@ -74,7 +74,7 @@ resolvers {{ name }}
 
 {% if Stats %}
 listen stats
-    bind *:{{ StatsPort }}
+    bind *:{{ StatsPort|integer }}
     mode http
     stats enable
     stats realm Haproxy\ Statistics
