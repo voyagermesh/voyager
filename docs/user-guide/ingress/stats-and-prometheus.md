@@ -29,7 +29,7 @@ To enable this feature, please use the following annotations:
 
 |  Keys  |   Value  |  Default |  Description |
 |--------|-----------|----------|-------------|
-| ingress.appscode.com/monitoring-agent | string | | `Required`. Indicates the monitoring agent used. Only valid value currently is 'coreos-prometheus-operator' |
+| ingress.appscode.com/monitoring-agent | string | | `Required`. Indicates the monitoring agent used. Only valid value currently is `coreos-prometheus-operator` |
 | ingress.appscode.com/service-monitor-labels | map | | `Required`. Indicates labels applied to service monitor. |
 | ingress.appscode.com/service-monitor-namespace| string | | `Required`. Indicates namespace where service monitors are created. This must be the same namespace of the Prometheus instance. |
 | ingress.appscode.com/service-monitor-endpoint-port| integer | 56790 | `Optional`. Indicates the port used by exporter side-car to expose Prometheus metrics endpoint. If the default port 56790 is used to expose traffic, change it to an unused port. |
