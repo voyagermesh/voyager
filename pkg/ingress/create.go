@@ -727,28 +727,12 @@ func (lbc *EngressController) ensureStatsService() {
 		log.Errorln(err)
 		return
 	}
-
-	needsUpdate := false
-	if val, ok := lbc.ensureResourceAnnotations(svc.Annotations); ok {
-		needsUpdate = true
-		svc.Annotations = val
-	}
-
-	if isServicePortChanged(s.Spec.Ports, svc.Spec.Ports) {
-		needsUpdate = true
-		s.Spec.Ports = svc.Spec.Ports
-	}
-
-	if !reflect.DeepEqual(svc.Spec.Selector, lbc.Resource.OffshootLabels()) {
-		needsUpdate = true
-		svc.Spec.Selector = lbc.Resource.OffshootLabels()
-	}
-
-	if needsUpdate {
-		_, err = lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Update(s)
-		if err != nil {
-			log.Errorln("Failed to update Stats Service", err)
-		}
+	s.Labels = svc.Labels
+	s.Annotations = svc.Annotations
+	s.Spec = svc.Spec
+	_, err = lbc.KubeClient.CoreV1().Services(s.Namespace).Update(s)
+	if err != nil {
+		log.Errorln("Failed to update Stats Service", err)
 	}
 }
 
