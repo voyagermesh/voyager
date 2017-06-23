@@ -116,7 +116,7 @@ func (c *PrometheusController) createServiceMonitor(r *api.Ingress, spec *api.Mo
 		},
 		Spec: prom.ServiceMonitorSpec{
 			Selector: metav1.LabelSelector{
-				MatchLabels: r.OffshootLabels(),
+				MatchLabels: r.StatsLabels(),
 			},
 			NamespaceSelector: prom.NamespaceSelector{
 				MatchNames: []string{r.Namespace},
