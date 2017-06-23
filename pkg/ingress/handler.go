@@ -207,46 +207,47 @@ func (lbc *EngressController) Handle(e *events.Event) error {
 		old := engs[0].(*api.Ingress)
 		new := engs[1].(*api.Ingress)
 		lbc.Resource = new
+		if !shouldHandleIngress(lbc.Resource, lbc.IngressClass) {
+			return nil
+		}
+
+		updateMode := updateType(0)
+
 		if !reflect.DeepEqual(old.ObjectMeta.Annotations, new.ObjectMeta.Annotations) {
 			// Ingress Annotations Changed, Apply Changes to Targets
 			// The following method do not update to HAProxy config or restart pod. It only sets the annotations
 			// to the required targets.
 			lbc.UpdateTargetAnnotations(old, new)
-		}
 
-		updateMode := updateType(0)
-		if !reflect.DeepEqual(old.Spec, new.Spec) {
-			if shouldHandleIngress(lbc.Resource, lbc.IngressClass) {
-				// Check for changes in ingress.appscode.com/monitoring-agent
-				if newMonSpec, newErr := new.MonitorSpec(); newErr == nil {
-					if oldMonSpec, oldErr := old.MonitorSpec(); oldErr == nil {
-						if !reflect.DeepEqual(oldMonSpec, newMonSpec) {
-							ctrl := monitor.NewPrometheusController(lbc.KubeClient, lbc.PromClient)
-							err := ctrl.UpdateMonitor(lbc.Resource, oldMonSpec, newMonSpec)
-							if err != nil {
-								return errors.FromErr(err).Err()
-							}
-						}
-						if oldMonSpec == nil && newMonSpec != nil {
-							updateMode |= UpdateFirewall
+			if lbc.isKeepSourceChanged(old, new) {
+				updateMode |= UpdateConfig
+			}
+			if isStatsChanged(old, new) {
+				updateMode |= UpdateStats
+			}
+			// Check for changes in ingress.appscode.com/monitoring-agent
+			if newMonSpec, newErr := new.MonitorSpec(); newErr == nil {
+				if oldMonSpec, oldErr := old.MonitorSpec(); oldErr == nil {
+					if !reflect.DeepEqual(oldMonSpec, newMonSpec) {
+						ctrl := monitor.NewPrometheusController(lbc.KubeClient, lbc.PromClient)
+						err := ctrl.UpdateMonitor(lbc.Resource, oldMonSpec, newMonSpec)
+						if err != nil {
+							return errors.FromErr(err).Err()
 						}
 					}
-				}
-
-				if lbc.isKeepSourceChanged(old, new) {
-					updateMode |= UpdateConfig
-				}
-				if isStatsChanged(old, new) {
-					updateMode |= UpdateStats
-				}
-				if isNewPortChanged(engs[0], engs[1]) || isLoadBalancerSourceRangeChanged(engs[0], engs[1]) {
-					updateMode |= UpdateFirewall
-				} else if isNewSecretAdded(engs[0], engs[1]) {
-					updateMode |= RestartHAProxy
-				} else {
-					updateMode |= UpdateConfig
+					if oldMonSpec == nil && newMonSpec != nil {
+						updateMode |= UpdateFirewall
+					}
 				}
 			}
+		}
+
+		if isNewPortChanged(engs[0], engs[1]) || isLoadBalancerSourceRangeChanged(engs[0], engs[1]) {
+			updateMode |= UpdateFirewall
+		} else if isNewSecretAdded(engs[0], engs[1]) {
+			updateMode |= RestartHAProxy
+		} else {
+			updateMode |= UpdateConfig
 		}
 		if updateMode > 0 {
 			// For ingress update update HAProxy once
