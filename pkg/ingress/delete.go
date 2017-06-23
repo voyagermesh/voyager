@@ -194,7 +194,6 @@ func (lbc *EngressController) deletePodsForSelector(s map[string]string) {
 	}
 }
 
-// Deprecated, this should be removed in future versions.
 func (lbc *EngressController) ensureStatsServiceDeleted() {
 	err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Delete(
 		lbc.Resource.StatsServiceName(),

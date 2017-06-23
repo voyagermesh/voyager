@@ -199,23 +199,24 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 			if sourceNameFound {
 				// deleted resource have source reference
 				var ingressErr error
-				var detectedAPIGroup string
+				var engress *api.Ingress
 				if sourceType == api.APISchemaIngress {
-					_, ingressErr = w.KubeClient.ExtensionsV1beta1().Ingresses(e.MetaData.Namespace).Get(sourceName, metav1.GetOptions{})
+					var resource *extensions.Ingress
+					resource, ingressErr = w.KubeClient.ExtensionsV1beta1().Ingresses(e.MetaData.Namespace).Get(sourceName, metav1.GetOptions{})
+					if ingressErr == nil {
+						engress, _ = api.NewEngressFromIngress(resource)
+					}
 				} else if sourceType == api.APISchemaEngress {
-					_, ingressErr = w.ExtClient.Ingresses(e.MetaData.Namespace).Get(sourceName)
+					engress, ingressErr = w.ExtClient.Ingresses(e.MetaData.Namespace).Get(sourceName)
 				} else if !sourceTypeFound {
-					_, ingressErr = w.KubeClient.ExtensionsV1beta1().Ingresses(e.MetaData.Namespace).Get(sourceName, metav1.GetOptions{})
-					if ingressErr != nil {
-						_, ingressErr = w.ExtClient.Ingresses(e.MetaData.Namespace).Get(sourceName)
-						if ingressErr == nil {
-							detectedAPIGroup = api.APISchemaEngress
-						}
+					var resource *extensions.Ingress
+					resource, ingressErr = w.KubeClient.ExtensionsV1beta1().Ingresses(e.MetaData.Namespace).Get(sourceName, metav1.GetOptions{})
+					if ingressErr == nil {
+						engress, _ = api.NewEngressFromIngress(resource)
 					} else {
-						detectedAPIGroup = api.APISchemaIngress
+						engress, ingressErr = w.ExtClient.Ingresses(e.MetaData.Namespace).Get(sourceName)
 					}
 				}
-
 				if ingressErr != nil {
 					return
 				}
@@ -245,7 +246,7 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 							if annotation == nil {
 								annotation = make(map[string]string)
 							}
-							annotation[api.OriginAPISchema] = detectedAPIGroup
+							annotation[api.OriginAPISchema] = engress.APISchema()
 							annotation[api.OriginName] = sourceName
 
 						}
@@ -267,6 +268,9 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 						if ok {
 							// Remove cluster IP
 							svc.Spec.ClusterIP = ""
+						}
+						if svc.Name == engress.StatsServiceName() && !engress.Stats() {
+							return
 						}
 					}
 
