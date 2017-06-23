@@ -146,7 +146,7 @@ func getScrapeURL(r *api.Ingress, podIP string) (string, error) {
 	if !r.Stats() {
 		return "", errors.New("Stats not exposed")
 	}
-	if r.StatsSecretName() != "" {
+	if r.StatsSecretName() == "" {
 		return fmt.Sprintf("http://%s:%d?stats;csv", podIP, r.StatsPort()), nil
 	}
 	secret, err := kubeClient.CoreV1().Secrets(r.Namespace).Get(r.StatsSecretName(), metav1.GetOptions{})
