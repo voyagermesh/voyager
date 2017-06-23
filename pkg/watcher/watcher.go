@@ -252,14 +252,21 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 						metadata.Set(reflect.ValueOf(objectMeta))
 					}
 
-					// Special treatment for Deployment
-					if e.ResourceType == events.Deployments {
+					// Special treatments
+					switch e.ResourceType {
+					case events.Deployments:
 						dp, ok := obj.(*extensions.Deployment)
 						if ok {
 							dp.Spec.Paused = false
 							if types.Int32(dp.Spec.Replicas) < 1 {
 								dp.Spec.Replicas = types.Int32P(1)
 							}
+						}
+					case events.Service:
+						svc, ok := obj.(*apiv1.Service)
+						if ok {
+							// Remove cluster IP
+							svc.Spec.ClusterIP = ""
 						}
 					}
 

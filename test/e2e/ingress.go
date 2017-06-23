@@ -1674,6 +1674,109 @@ func (s *IngressTestSuit) TestIngressNodePort() error {
 	return nil
 }
 
+func (s *IngressTestSuit) TestIngressStats() error {
+	baseIng := &api.Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      testIngressName(),
+			Namespace: s.t.Config.TestNamespace,
+			Annotations: map[string]string{
+				api.StatsOn:   "true",
+				api.StatsPort: "8787",
+			},
+		},
+		Spec: api.ExtendedIngressSpec{
+			Rules: []api.ExtendedIngressRule{
+				{
+					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
+						HTTP: &api.HTTPExtendedIngressRuleValue{
+							Paths: []api.HTTPExtendedIngressPath{
+								{
+									Path: "/testpath",
+									Backend: api.ExtendedIngressBackend{
+										ServiceName: testServerSvc.Name,
+										ServicePort: intstr.FromInt(80),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, err := s.t.ExtClient.Ingresses(baseIng.Namespace).Create(baseIng)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if s.t.Config.Cleanup {
+			s.t.ExtClient.Ingresses(baseIng.Namespace).Delete(baseIng.Name)
+		}
+	}()
+
+	// Wait sometime to loadbalancer be opened up.
+	time.Sleep(time.Second * 60)
+	for i := 0; i < maxRetries; i++ {
+		var err error
+		_, err = s.t.KubeClient.CoreV1().Services(baseIng.Namespace).Get(baseIng.OffshootName(), metav1.GetOptions{})
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for service to be created")
+	}
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+
+	// Check if all Stats Things are open
+	var svc *apiv1.Service
+	for i := 0; i < maxRetries; i++ {
+		var err error
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIng.Namespace).Get(baseIng.StatsServiceName(), metav1.GetOptions{})
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for service to be created")
+	}
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+
+	if svc.Spec.Ports[0].Port != 8787 {
+		return errors.New().WithMessage("Service port mismatched").Err()
+	}
+
+	// Remove Stats From Annotation and Check if the service gets deleted
+	baseIng, err = s.t.ExtClient.Ingresses(baseIng.Namespace).Get(baseIng.Name)
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+	delete(baseIng.Annotations, api.StatsOn)
+	baseIng, err = s.t.ExtClient.Ingresses(baseIng.Namespace).Update(baseIng)
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+
+	time.Sleep(time.Second * 60)
+	var deleteErr error
+	for i := 0; i < maxRetries; i++ {
+		_, deleteErr = s.t.KubeClient.CoreV1().Services(baseIng.Namespace).Get(baseIng.StatsServiceName(), metav1.GetOptions{})
+		if deleteErr != nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for service to be Deleted")
+	}
+	if deleteErr == nil {
+		return errors.New().WithMessage("Stats Service Should Be deleted").Err()
+	}
+
+	return nil
+}
+
 func (s *IngressTestSuit) TestIngressKeepSource() error {
 	baseIngress := &api.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
