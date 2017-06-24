@@ -30,14 +30,16 @@ func NewEngressController(providerName, cloudConfig string,
 	extClient acs.ExtensionInterface,
 	promClient pcm.MonitoringV1alpha1Interface,
 	store stash.Storage,
-	ingressClass string) *EngressController {
+	ingressClass string,
+	operatorServiceAccount string) *EngressController {
 	h := &EngressController{
-		ProviderName: providerName,
-		IngressClass: ingressClass,
-		KubeClient:   kubeClient,
-		ExtClient:    extClient,
-		PromClient:   promClient,
-		Storage:      store,
+		ProviderName:       providerName,
+		IngressClass:       ingressClass,
+		ServiceAccountName: operatorServiceAccount,
+		KubeClient:         kubeClient,
+		ExtClient:          extClient,
+		PromClient:         promClient,
+		Storage:            store,
 	}
 	log.Infoln("Initializing cloud manager for provider", providerName)
 	if providerName == "aws" || providerName == "gce" || providerName == "azure" {
@@ -69,7 +71,8 @@ func UpgradeAllEngress(service, providerName, cloudConfig string,
 	extClient acs.ExtensionInterface,
 	promClient pcm.MonitoringV1alpha1Interface,
 	store stash.Storage,
-	ingressClass string) error {
+	ingressClass string,
+	operatorServiceAccount string) error {
 	ing, err := kubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{
 		LabelSelector: labels.Everything().String(),
 	})
@@ -99,7 +102,7 @@ func UpgradeAllEngress(service, providerName, cloudConfig string,
 		if shouldHandleIngress(engress, ingressClass) {
 			log.Infoln("Checking for service", service, "to be used to load balance via ingress", item.Name, item.Namespace)
 			if ok, name, namespace := isEngressHaveService(engress, service); ok {
-				lbc := NewEngressController(providerName, cloudConfig, kubeClient, extClient, promClient, store, ingressClass)
+				lbc := NewEngressController(providerName, cloudConfig, kubeClient, extClient, promClient, store, ingressClass, operatorServiceAccount)
 				lbc.Resource = &items[i]
 				log.Infoln("Trying to Update Ingress", item.Name, item.Namespace)
 				if lbc.IsExists() {

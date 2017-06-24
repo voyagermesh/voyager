@@ -16,13 +16,18 @@ spec:
         app: voyager-operator
     spec:
       containers:
-      - name: voyager-operator
+      - name: voyager
         args:
         - run
         - --cloud-provider=$CLOUD_PROVIDER
         - --cloud-config=$CLOUD_CONFIG # ie. /etc/kubernetes/azure.json for azure
         - --v=3
         image: appscode/voyager:$TAG
+        env:
+          - name: OPERATOR_SERVICE_ACCOUNT
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.serviceAccountName
         ports:
         - containerPort: 56790
           name: http

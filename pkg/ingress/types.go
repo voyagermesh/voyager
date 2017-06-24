@@ -12,8 +12,9 @@ import (
 )
 
 type EngressController struct {
-	ProviderName string
-	IngressClass string
+	ProviderName       string
+	IngressClass       string
+	ServiceAccountName string
 
 	// Engress object that created or updated.
 	Resource *api.Ingress
