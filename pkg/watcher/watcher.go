@@ -36,7 +36,8 @@ type Watcher struct {
 	// HAProxyImage is used to create HAProxy pods.
 	HAProxyImage string
 
-	IngressClass string
+	IngressClass       string
+	ServiceAccountName string
 
 	KubeClient clientset.Interface
 	ExtClient  acs.ExtensionInterface
@@ -122,7 +123,8 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 			w.ExtClient,
 			w.PromClient,
 			w.Storage,
-			w.IngressClass).Handle(e)
+			w.IngressClass,
+			w.ServiceAccountName).Handle(e)
 
 		// Check the Ingress or Extended Ingress Annotations. To Work for auto certificate
 		// operations.
@@ -150,7 +152,8 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 				w.ExtClient,
 				w.PromClient,
 				w.Storage,
-				w.IngressClass)
+				w.IngressClass,
+				w.ServiceAccountName)
 		}
 	case events.Endpoint:
 		// Checking if this endpoint have a service or not. If
@@ -168,7 +171,8 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 					w.ExtClient,
 					w.PromClient,
 					w.Storage,
-					w.IngressClass)
+					w.IngressClass,
+					w.ServiceAccountName)
 			}
 		}
 	case events.ConfigMap, events.DaemonSet, events.Deployments:
