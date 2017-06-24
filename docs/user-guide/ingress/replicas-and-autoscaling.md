@@ -7,7 +7,7 @@ For each Ingress resource, Voyager deploys HAProxy in a Deployment prefixed by
 This Deployment has `.spec.replicas = 1` by default. To change the desired
 number of replicas, use the `ingress.appscode.com/replicas` annotation.
 
-```
+```yaml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
@@ -20,7 +20,7 @@ spec:
     servicePort: '80'
 ```
 
-```
+```sh
 $ kubectl get deploy voyager-my-app
 NAME               DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
 voyager-my-app     2         2         2            2           1d
@@ -38,11 +38,11 @@ To set up a HorizontalPodAutoscaler for a Voyager HAPRoxy deployment, you can
 use the `kubectl autoscale` command or defining a HorizontalPodAutoscaler
 resource.
 
-```
+```sh
 kubectl autoscale deployment voyager-my-app --cpu-percent=20 --min=2 --max=10
 ```
 
-```
+```yaml
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
