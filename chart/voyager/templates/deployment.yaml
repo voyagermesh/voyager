@@ -1,24 +1,25 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  labels:
-    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-    heritage: {{ .Release.Service }}
-    release: {{ .Release.Name }}
-    app: {{ template "name" . }}
   name: {{ template "fullname" . }}
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    app: "{{ template "name" . }}"
+    heritage: "{{ .Release.Service }}"
+    release: "{{ .Release.Name }}"
 spec:
   replicas: 1
-  selector:
-    matchLabels:
-      app: {{ template "name" . }}
-      release: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ template "name" . }}
-        release: {{ .Release.Name }}
+        chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+        app: "{{ template "name" . }}"
+        heritage: "{{ .Release.Service }}"
+        release: "{{ .Release.Name }}"
     spec:
+{{- if .Values.rbac.install }}
+      serviceAccountName: {{ template "fullname" . }}
+{{- end }}
       containers:
       - args:
         - run

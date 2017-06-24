@@ -6,27 +6,29 @@ Voyager controller communicates with kube-apiserver at inCluster mode if no mast
 to handle corresponding events.
 
 ```sh
-$ export CLOUD_PROVIDER=<provider-name> // ie:
-                                        // - gce
-                                        // - gke
-                                        // - aws
-                                        // - azure
-                                        // - acs (aka, Azure Container Service)
+$ export CLOUD_PROVIDER=<provider-name> # ie:
+                                        # - gce
+                                        # - gke
+                                        # - aws
+                                        # - azure
+                                        # - acs (aka, Azure Container Service)
 
+$ export CLOUD_CONFIG=<path>            # The path to the cloud provider configuration file.
+                                        # Empty string for no configuration file.
+                                        # Leave it empty for `gce`, `gke`, `aws` and bare metal clusters.
+                                        # For azure/acs, use `/etc/kubernetes/azure.json`.
+                                        # This file was created during the cluster provisioning process.
+                                        # Voyager uses this to connect to cloud provider api.
 
-$ export CLOUD_CONFIG=<path>            // The path to the cloud provider configuration file.
-                                        // Empty string for no configuration file.
-                                        // Leave it empty for `gce`, `gke`, `aws` and bare metal clusters.
-                                        // For azure/acs, use `/etc/kubernetes/azure.json`.
-                                        // This file was created during the cluster provisioning process.
-                                        // Voyager uses this to connect to cloud provider api.
+# Install without RBAC roles
+$ curl https://raw.githubusercontent.com/appscode/voyager/master/hack/deploy/voyager-without-rbac.yaml \
+    | envsubst \
+    | kubectl apply -f -
 
-
-$ export TAG=3.0.0                      // Docker image tag for Voyager operator.
-
-$ curl https://raw.githubusercontent.com/appscode/voyager/master/hack/deploy/deployments.yaml | \
-        envsubst | \
-        kubectl apply -f -
+# Install with RBAC roles
+$ curl https://raw.githubusercontent.com/appscode/voyager/master/hack/deploy/voyager-with-rbac.yaml \
+    | envsubst \
+    | kubectl apply -f -
 ```
 
 Once Controller is *Running* It will create the [required ThirdPartyResources for ingress and certificates](/docs/developer-guide#third-party-resources).

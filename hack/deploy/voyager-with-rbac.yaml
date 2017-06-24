@@ -1,0 +1,127 @@
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: voyager-operator
+rules:
+- apiGroups:
+  - extensions
+  resources:
+  - thirdpartyresources
+  verbs: ["get", "create"]
+- apiGroups:
+  - voyager.appscode.com
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - servicemonitors
+  verbs: ["get", "create", "update"]
+- apiGroups:
+  - extensions
+  resources:
+  - deployments
+  - daemonsets
+  - ingresses
+  verbs: ["*"]
+- apiGroups: [""]
+  resources:
+  - replicationcontrollers
+  - services
+  - endpoints
+  verbs: ["*"]
+- apiGroups: [""]
+  resources:
+  - configmaps
+  - secrets
+  verbs: ["get", "create", "update"]
+- apiGroups: [""]
+  resources:
+  - events
+  verbs: ["create"]
+- apiGroups: [""]
+  resources:
+  - pods
+  verbs: ["list", "watch", "delete"]
+- apiGroups: [""]
+  resources:
+  - nodes
+  verbs: ["list", "get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: voyager-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: voyager-operator
+subjects:
+- kind: ServiceAccount
+  name: voyager-operator
+  namespace: kube-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: voyager-operator
+  namespace: kube-system
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: voyager-operator
+  name: voyager-operator
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voyager-operator
+  template:
+    metadata:
+      labels:
+        app: voyager-operator
+    spec:
+      serviceAccountName: voyager-operator
+      containers:
+      - name: voyager
+        args:
+        - run
+        - --cloud-provider=$CLOUD_PROVIDER
+        - --cloud-config=$CLOUD_CONFIG # ie. /etc/kubernetes/azure.json for azure
+        - --v=3
+        image: appscode/voyager:3.0.0
+        env:
+          - name: OPERATOR_SERVICE_ACCOUNT
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.serviceAccountName
+        ports:
+        - containerPort: 56790
+          name: http
+          protocol: TCP
+        volumeMounts:
+          - mountPath: /etc/kubernetes
+            name: cloudconfig
+            readOnly: true
+      volumes:
+        - hostPath:
+            path: /etc/kubernetes
+          name: cloudconfig
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: voyager-operator
+  name: voyager-operator
+  namespace: kube-system  
+spec:
+  ports:
+  - name: http
+    port: 56790
+    targetPort: http
+  selector:
+    app: voyager-operator
