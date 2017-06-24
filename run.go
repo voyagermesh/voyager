@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
+	"os"
 	"time"
 
+	stringz "github.com/appscode/go/strings"
 	hpe "github.com/appscode/haproxy_exporter/exporter"
 	"github.com/appscode/log"
 	"github.com/appscode/pat"
@@ -25,11 +27,12 @@ var (
 	masterURL      string
 	kubeconfigPath string
 
-	providerName    string
-	cloudConfigFile string
-	haProxyImage    string = "appscode/haproxy:1.7.6-3.0.0"
-	ingressClass    string
-	enableAnalytics bool = true
+	providerName           string
+	cloudConfigFile        string
+	haProxyImage           string = "appscode/haproxy:1.7.6-3.0.0"
+	ingressClass           string
+	operatorServiceAccount string = stringz.Val(os.Getenv("OPERATOR_SERVICE_ACCOUNT"), "default")
+	enableAnalytics        bool   = true
 
 	address                   string        = fmt.Sprintf(":%d", api.DefaultExporterPortNumber)
 	haProxyServerMetricFields string        = hpe.ServerMetrics.String()
@@ -63,6 +66,7 @@ func NewCmdRun() *cobra.Command {
 	cmd.Flags().StringVar(&cloudConfigFile, "cloud-config", cloudConfigFile, "The path to the cloud provider configuration file.  Empty string for no configuration file.")
 	cmd.Flags().StringVar(&haProxyImage, "haproxy-image", haProxyImage, "haproxy image name to be run")
 	cmd.Flags().StringVar(&ingressClass, "ingress-class", "", "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
+	cmd.Flags().StringVar(&operatorServiceAccount, "operator-service-account", operatorServiceAccount, "Service account name used to run Voyager operator")
 	cmd.Flags().BoolVar(&enableAnalytics, "analytics", enableAnalytics, "Send analytical event to Google Analytics")
 
 	cmd.Flags().StringVar(&address, "address", address, "Address to listen on for web interface and telemetry.")
@@ -90,14 +94,15 @@ func run() {
 	}
 
 	w := &watcher.Watcher{
-		KubeClient:      kubeClient,
-		ExtClient:       extClient,
-		PromClient:      promClient,
-		SyncPeriod:      time.Minute * 2,
-		ProviderName:    providerName,
-		CloudConfigFile: cloudConfigFile,
-		HAProxyImage:    haProxyImage,
-		IngressClass:    ingressClass,
+		KubeClient:         kubeClient,
+		ExtClient:          extClient,
+		PromClient:         promClient,
+		SyncPeriod:         time.Minute * 2,
+		ProviderName:       providerName,
+		CloudConfigFile:    cloudConfigFile,
+		HAProxyImage:       haProxyImage,
+		IngressClass:       ingressClass,
+		ServiceAccountName: operatorServiceAccount,
 	}
 
 	log.Infoln("Starting Voyager operator...")
