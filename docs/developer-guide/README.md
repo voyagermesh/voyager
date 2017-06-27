@@ -82,12 +82,12 @@ $ ./hack/make.py test unit
 
 #### Run e2e Test
 ```
-$ ./hack/make.py test minikube // Run Test against minikube, this requires minikube to be set up and started.
+$ ./hack/make.py test minikube # Run Test against minikube, this requires minikube to be set up and started.
 
-$ ./hack/make.py test e2e -cloud-provider=gce // Test e2e against gce cluster
+$ ./hack/make.py test e2e -cloud-provider=gce # Test e2e against gce cluster
 
-$ ./hack/make.py test integration -cloud-provider=gce // Run Integration test against gce
-                                                      // This requires voyager to be deployed in the cluster.
+$ ./hack/make.py test integration -cloud-provider=gce # Run Integration test against gce
+                                                      # This requires voyager to be deployed in the cluster.
 
 ```
 
@@ -114,14 +114,7 @@ kubectl create ns test-<any-name-you-want>
 ./hack/make.py test minikube -namespace test-<any-name-you-want> -max-test=1
 ```
 
-### Local Build
-To build Voyager using your local Go development environment (generate linux binaries):
-```sh
-$ ./hack/make.py build
-```
-Read full [Build instructions](build.md).
-
-<br><br>
+<br>
 ## Architecture
 Voyager works by implementing third party resource data watcher for kubernetes. It connects with k8s apiserver
 for specific events as ADD, UPDATE and DELETE. and perform required operations.
