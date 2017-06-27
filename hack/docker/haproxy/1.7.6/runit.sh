@@ -20,6 +20,7 @@ do
 	secret=${dir##*/}
 
 	cat $dir/tls.crt >  $CERT_DIR/$secret.pem
+	echo '\n' >>  $CERT_DIR/$secret.pem
 	cat $dir/tls.key >> $CERT_DIR/$secret.pem
 done
 
