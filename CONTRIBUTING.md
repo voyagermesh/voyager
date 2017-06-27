@@ -1,4 +1,4 @@
-# Contributing guidelines
+# Contribution Guidelines
 Want to hack on Voyager?
 
 ## Developer Guide
@@ -22,3 +22,6 @@ If you fix a bug or developed a new feature, feel free to submit a PR. In either
 5. Build the project
 6. Run e2e tests
 7. Submit PR. And you are go. Contact @tamalsaha @sadlil for review.
+
+## Spread the word
+If you have written blog post or tutorial on Voyager, please share it with us on [Twitter](https://twitter.com/AppsCodeHQ) or [Slack](https://slack.appscode.com).
