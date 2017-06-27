@@ -60,6 +60,11 @@ $ ./hack/docker/haproxy/<version>/setup.sh
 $ ./hack/docker/haproxy/<version>/setup.sh push
 ```
 
+#### Generate CLI Reference Docs
+```sh
+$ ./hack/gendocs/make.sh 
+```
+
 ### Run Test
 #### Run Short Unit Test by running
 ```sh
