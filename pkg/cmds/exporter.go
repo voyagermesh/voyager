@@ -1,4 +1,4 @@
-package main
+package cmds
 
 import (
 	"fmt"
@@ -17,7 +17,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-func NewCmdExport() *cobra.Command {
+func NewCmdExport(version string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "export",
 		Short: "Export Prometheus metrics for HAProxy",
@@ -25,10 +25,10 @@ func NewCmdExport() *cobra.Command {
 			if enableAnalytics {
 				analytics.Enable()
 			}
-			analytics.Send("exporter", "started", Version)
+			analytics.Send("exporter", "started", version)
 		},
 		PostRun: func(cmd *cobra.Command, args []string) {
-			analytics.Send("exporter", "stopped", Version)
+			analytics.Send("exporter", "stopped", version)
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 			export()

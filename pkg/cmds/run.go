@@ -1,4 +1,4 @@
-package main
+package cmds
 
 import (
 	"fmt"
@@ -13,7 +13,6 @@ import (
 	"github.com/appscode/pat"
 	"github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
-	_ "github.com/appscode/voyager/client/clientset/fake"
 	"github.com/appscode/voyager/pkg/analytics"
 	"github.com/appscode/voyager/pkg/watcher"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
@@ -42,7 +41,7 @@ var (
 	extClient  acs.ExtensionInterface
 )
 
-func NewCmdRun() *cobra.Command {
+func NewCmdRun(version string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run operator",
@@ -50,10 +49,10 @@ func NewCmdRun() *cobra.Command {
 			if enableAnalytics {
 				analytics.Enable()
 			}
-			analytics.Send("operator", "started", Version)
+			analytics.Send("operator", "started", version)
 		},
 		PostRun: func(cmd *cobra.Command, args []string) {
-			analytics.Send("operator", "stopped", Version)
+			analytics.Send("operator", "stopped", version)
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 			run()

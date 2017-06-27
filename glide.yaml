@@ -8,7 +8,9 @@ import:
   version: master
 - package: github.com/mikespook/golib
 - package: github.com/spf13/cobra
+  version: master
 - package: github.com/spf13/pflag
+  version: master
 - package: github.com/xenolf/lego
   repo: https://github.com/appscode/lego.git
   vcs: git
