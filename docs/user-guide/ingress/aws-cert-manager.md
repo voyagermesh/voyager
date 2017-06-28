@@ -4,8 +4,9 @@ add the following annotations to Ingress;
 ```yaml
   ingress.appscode.com/annotations-service: |
     {
-      "service.beta.kubernetes.io/aws-load-balancer-ssl-cert": "arn:aws:acm:..."
+      "service.beta.kubernetes.io/aws-load-balancer-ssl-cert": "arn:aws:acm:...",
       "service.beta.kubernetes.io/aws-load-balancer-backend-protocol": "http",
+      "service.beta.kubernetes.io/aws-load-balancer-ssl-ports": "443"
     }
 ```
 
