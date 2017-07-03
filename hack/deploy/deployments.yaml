@@ -2,18 +2,15 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   labels:
-    app: voyager-operator
+    app: voyager
   name: voyager-operator
   namespace: kube-system
 spec:
   replicas: 1
-  selector:
-    matchLabels:
-      app: voyager-operator
   template:
     metadata:
       labels:
-        app: voyager-operator
+        app: voyager
     spec:
       containers:
       - name: voyager
@@ -45,7 +42,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: voyager-operator
+    app: voyager
   name: voyager-operator
   namespace: kube-system  
 spec:
@@ -54,4 +51,4 @@ spec:
     port: 56790
     targetPort: http
   selector:
-    app: voyager-operator
+    app: voyager

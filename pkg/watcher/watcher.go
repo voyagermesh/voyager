@@ -92,7 +92,11 @@ func (w *Watcher) ensureResource() {
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name: resource + "." + api.V1beta1SchemeGroupVersion.Group,
+					Labels: map[string]string{
+						"app": "voyager",
+					},
 				},
+				Description: "Voyager by AppsCode - Secure Ingress Controller for Kubernetes",
 				Versions: []extensions.APIVersion{
 					{
 						Name: api.V1beta1SchemeGroupVersion.Version,
