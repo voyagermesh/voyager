@@ -92,7 +92,7 @@ along side with other controllers.
 Want to learn whats happening under the hood, read [the developer guide](docs/developer-guide/README.md).
 
 ## Contribution
-If you're interested in being a contributor, read [the contribution guide](docs/contribution/README.md).
+If you're interested in being a contributor, read [the contribution guide](CONTRIBUTING.md).
 
 ## Building voyager
 Read [Build Instructions](docs/developer-guide/build.md) to build voyager.
