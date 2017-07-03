@@ -272,9 +272,9 @@ func (w *Watcher) restoreResourceIfRequired(e *events.Event) {
 						if ok {
 							// Remove cluster IP
 							svc.Spec.ClusterIP = ""
-						}
-						if svc.Name == engress.StatsServiceName() && !engress.Stats() {
-							return
+							if svc.Name == engress.StatsServiceName() && !engress.Stats() {
+								return
+							}
 						}
 					}
 
