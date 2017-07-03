@@ -1,5 +1,5 @@
 hash: 4603d45081832651b419c72d01373806592fe66c295a144567aab3fdcbedcda8
-updated: 2017-06-27T07:17:40.856435772-07:00
+updated: 2017-07-03T14:16:32.965287395-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -11,7 +11,7 @@ imports:
   subpackages:
   - h/log
 - name: github.com/appscode/go
-  version: ecda61fa4e8943020e9948723e49c4ae544f7a3a
+  version: 9fde097ebcef0add8325c8fbee63ae01e7da530e
   subpackages:
   - arrays
   - crypto/rand
@@ -182,11 +182,11 @@ imports:
 - name: github.com/jpillora/go-ogle-analytics
   version: 14b04e0594ef6a9fd943363b135656f0ec8c9d0e
 - name: github.com/juju/errors
-  version: 6bffea730f4aba190658f565cb02e95679f7ce31
+  version: c7d06af17c68cd34c835053720b21f6549d9b0ee
 - name: github.com/juju/ratelimit
   version: 77ed1c8a01217656d2080ad51981f6e99adaa177
 - name: github.com/lib/pq
-  version: 50761b0867bd1d9d069276790bcd4a3bccf2324a
+  version: 69552e54d2a9d4c6a2438926a774930f7bc398ec
 - name: github.com/mailru/easyjson
   version: d5b7844b561a7bc640052f1b935f7b800330d7e0
   subpackages:
@@ -204,7 +204,7 @@ imports:
 - name: github.com/orcaman/concurrent-map
   version: 2ae17bc4c860c83513ee50feb9746f3e50d7515d
 - name: github.com/ovh/go-ovh
-  version: d2207178e10e4527e8f222fd8707982df8c3af17
+  version: d95f6f91b1fb339a53fc438df7289cd85756193b
   subpackages:
   - ovh
 - name: github.com/prometheus/client_golang
@@ -217,7 +217,7 @@ imports:
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 0d0c3d572886e0f2323ed376557f9eb99b97d25b
+  version: 0866df4b85a18d652b6965be022d007cdf076822
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
@@ -237,7 +237,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
 - name: github.com/spf13/cobra
-  version: 4d647c8944eb42504a714e57e97f244ed6344722
+  version: 8c6fa02d2225de0f9bdcb7ca912556f68d172d8c
   subpackages:
   - doc
 - name: github.com/spf13/pflag
