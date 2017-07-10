@@ -226,3 +226,9 @@ type ExtendedIngressBackend struct {
 	// Deprecated: Use backendRule, will be removed.
 	HeaderRule []string `json:"headerRule,omitempty"`
 }
+
+type IngressRef struct {
+	APISchema string `json:"apiSchema"`
+	Name      string `json:"name"`
+	Namespace string `json:"namespace"`
+}

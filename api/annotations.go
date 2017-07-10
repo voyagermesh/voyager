@@ -283,3 +283,20 @@ func getMap(m map[string]string, key string) (map[string]string, error) {
 	err := json.Unmarshal([]byte(s), &v)
 	return v, err
 }
+
+const (
+	ingressClassAnnotationKey   = "kubernetes.io/ingress.class"
+	ingressClassAnnotationValue = "voyager"
+)
+
+// if ingressClass == "voyager", then only handle ingress that has voyager annotation
+// if ingressClass == "", then handle no annotaion or voyager annotation
+func (r Ingress) ShouldHandleIngress(ingressClass string) bool {
+	// https://github.com/appscode/voyager/blob/master/api/conversion_v1beta1.go#L44
+	if r.Annotations[APISchema] == APISchemaEngress {
+		// Resource Type is Extended Ingress So we should always Handle this
+		return true
+	}
+	kubeAnnotation, _ := r.Annotations[ingressClassAnnotationKey]
+	return kubeAnnotation == ingressClass || kubeAnnotation == ingressClassAnnotationValue
+}

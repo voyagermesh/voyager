@@ -2,7 +2,6 @@ package operator
 
 import (
 	"errors"
-	"fmt"
 
 	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
@@ -30,16 +29,6 @@ func (c *Operator) WatchEndpoints() {
 		&apiv1.Endpoints{},
 		c.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
-			AddFunc: func(obj interface{}) {
-				if ep, ok := obj.(*apiv1.Endpoints); ok {
-					log.Infof("Endpoints %s@%s added", ep.Name, ep.Namespace)
-
-					if !c.ServiceExists(ep) {
-						log.Warningf("Skipping Endpoints %s@%s, as it has no matching service", ep.Name, ep.Namespace)
-						return
-					}
-				}
-			},
 			UpdateFunc: func(old, new interface{}) {
 				oldEndpoints, ok := old.(*apiv1.Endpoints)
 				if !ok {
@@ -57,16 +46,6 @@ func (c *Operator) WatchEndpoints() {
 					return
 				}
 
-			},
-			DeleteFunc: func(obj interface{}) {
-				if ep, ok := obj.(*apiv1.Endpoints); ok {
-					log.Infof("Endpoints %s@%s deleted", ep.Name, ep.Namespace)
-
-					if !c.ServiceExists(ep) {
-						log.Warningf("Skipping Endpoints %s@%s, as it has no matching service", ep.Name, ep.Namespace)
-						return
-					}
-				}
 			},
 		},
 	)
