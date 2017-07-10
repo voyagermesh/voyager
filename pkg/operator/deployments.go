@@ -1,8 +1,6 @@
 package operator
 
 import (
-	"strings"
-
 	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/go/types"
 	"github.com/appscode/log"
@@ -48,42 +46,10 @@ func (w *Operator) restoreDeploymentIfRequired(deployment *extensions.Deployment
 		return nil
 	}
 
-	sourceName, sourceNameFound := deployment.Annotations[api.OriginName]
-	sourceType, sourceTypeFound := deployment.Annotations[api.OriginAPISchema]
-	noAnnotationResource := false
-	if !sourceNameFound && !sourceTypeFound {
-		// Lets Check if those are old Ingress resource
-		if strings.HasPrefix(deployment.Name, api.VoyagerPrefix) {
-			noAnnotationResource = true
-			sourceName, sourceNameFound = deployment.Name[len(api.VoyagerPrefix):], true
-		}
-	}
-	if !sourceNameFound {
-		return nil
-	}
-
 	// deleted resource have source reference
-	var ingressErr error
-	var engress *api.Ingress
-	if sourceType == api.APISchemaIngress {
-		var resource *extensions.Ingress
-		resource, ingressErr = w.KubeClient.ExtensionsV1beta1().Ingresses(deployment.Namespace).Get(sourceName, metav1.GetOptions{})
-		if ingressErr == nil {
-			engress, _ = api.NewEngressFromIngress(resource)
-		}
-	} else if sourceType == api.APISchemaEngress {
-		engress, ingressErr = w.ExtClient.Ingresses(deployment.Namespace).Get(sourceName)
-	} else if !sourceTypeFound {
-		var resource *extensions.Ingress
-		resource, ingressErr = w.KubeClient.ExtensionsV1beta1().Ingresses(deployment.Namespace).Get(sourceName, metav1.GetOptions{})
-		if ingressErr == nil {
-			engress, _ = api.NewEngressFromIngress(resource)
-		} else {
-			engress, ingressErr = w.ExtClient.Ingresses(deployment.Namespace).Get(sourceName)
-		}
-	}
-	if ingressErr != nil {
-		return ingressErr
+	engress, err := w.findOrigin(deployment.ObjectMeta)
+	if err != nil {
+		return err
 	}
 
 	// Ingress Still exists, restore resource
@@ -94,15 +60,13 @@ func (w *Operator) restoreDeploymentIfRequired(deployment *extensions.Deployment
 	}
 	deployment.SelfLink = ""
 	deployment.ResourceVersion = ""
-	if noAnnotationResource {
-		// Old resource and annotations are missing so we need to add the annotations
-		if deployment.Annotations == nil {
-			deployment.Annotations = make(map[string]string)
-		}
-		deployment.Annotations[api.OriginAPISchema] = engress.APISchema()
-		deployment.Annotations[api.OriginName] = sourceName
+	// Old resource and annotations are missing so we need to add the annotations
+	if deployment.Annotations == nil {
+		deployment.Annotations = make(map[string]string)
 	}
+	deployment.Annotations[api.OriginAPISchema] = engress.APISchema()
+	deployment.Annotations[api.OriginName] = engress.Name
 
-	_, err := w.KubeClient.ExtensionsV1beta1().Deployments(deployment.Namespace).Create(deployment)
+	_, err = w.KubeClient.ExtensionsV1beta1().Deployments(deployment.Namespace).Create(deployment)
 	return err
 }

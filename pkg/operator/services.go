@@ -19,7 +19,6 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
-	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/tools/cache"
 )
 
@@ -63,42 +62,10 @@ func (w *Operator) restoreServiceIfRequired(svc *apiv1.Service) error {
 		return nil
 	}
 
-	sourceName, sourceNameFound := svc.Annotations[api.OriginName]
-	sourceType, sourceTypeFound := svc.Annotations[api.OriginAPISchema]
-	noAnnotationResource := false
-	if !sourceNameFound && !sourceTypeFound {
-		// Lets Check if those are old Ingress resource
-		if strings.HasPrefix(svc.Name, api.VoyagerPrefix) {
-			noAnnotationResource = true
-			sourceName, sourceNameFound = svc.Name[len(api.VoyagerPrefix):], true
-		}
-	}
-	if !sourceNameFound {
-		return nil
-	}
-
 	// deleted resource have source reference
-	var ingressErr error
-	var engress *api.Ingress
-	if sourceType == api.APISchemaIngress {
-		var resource *extensions.Ingress
-		resource, ingressErr = w.KubeClient.ExtensionsV1beta1().Ingresses(svc.Namespace).Get(sourceName, metav1.GetOptions{})
-		if ingressErr == nil {
-			engress, _ = api.NewEngressFromIngress(resource)
-		}
-	} else if sourceType == api.APISchemaEngress {
-		engress, ingressErr = w.ExtClient.Ingresses(svc.Namespace).Get(sourceName)
-	} else if !sourceTypeFound {
-		var resource *extensions.Ingress
-		resource, ingressErr = w.KubeClient.ExtensionsV1beta1().Ingresses(svc.Namespace).Get(sourceName, metav1.GetOptions{})
-		if ingressErr == nil {
-			engress, _ = api.NewEngressFromIngress(resource)
-		} else {
-			engress, ingressErr = w.ExtClient.Ingresses(svc.Namespace).Get(sourceName)
-		}
-	}
-	if ingressErr != nil {
-		return ingressErr
+	engress, err := w.findOrigin(svc.ObjectMeta)
+	if err != nil {
+		return err
 	}
 
 	if svc.Name == engress.StatsServiceName() && !engress.Stats() {
@@ -110,16 +77,14 @@ func (w *Operator) restoreServiceIfRequired(svc *apiv1.Service) error {
 	svc.Spec.ClusterIP = "" // Remove cluster IP
 	svc.SelfLink = ""
 	svc.ResourceVersion = ""
-	if noAnnotationResource {
-		// Old resource and annotations are missing so we need to add the annotations
-		if svc.Annotations == nil {
-			svc.Annotations = make(map[string]string)
-		}
-		svc.Annotations[api.OriginAPISchema] = engress.APISchema()
-		svc.Annotations[api.OriginName] = sourceName
+	// Old resource and annotations are missing so we need to add the annotations
+	if svc.Annotations == nil {
+		svc.Annotations = make(map[string]string)
 	}
+	svc.Annotations[api.OriginAPISchema] = engress.APISchema()
+	svc.Annotations[api.OriginName] = engress.Name
 
-	_, err := w.KubeClient.CoreV1().Services(svc.Namespace).Create(svc)
+	_, err = w.KubeClient.CoreV1().Services(svc.Namespace).Create(svc)
 	return err
 }
 

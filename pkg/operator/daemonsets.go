@@ -1,8 +1,6 @@
 package operator
 
 import (
-	"strings"
-
 	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
@@ -47,57 +45,22 @@ func (w *Operator) restoreDaemonSetIfRequired(daemon *extensions.DaemonSet) erro
 		return nil
 	}
 
-	sourceName, sourceNameFound := daemon.Annotations[api.OriginName]
-	sourceType, sourceTypeFound := daemon.Annotations[api.OriginAPISchema]
-	noAnnotationResource := false
-	if !sourceNameFound && !sourceTypeFound {
-		// Lets Check if those are old Ingress resource
-		if strings.HasPrefix(daemon.Name, api.VoyagerPrefix) {
-			noAnnotationResource = true
-			sourceName, sourceNameFound = daemon.Name[len(api.VoyagerPrefix):], true
-		}
-	}
-	if !sourceNameFound {
-		return nil
-	}
-
 	// deleted resource have source reference
-	var ingressErr error
-	var engress *api.Ingress
-	if sourceType == api.APISchemaIngress {
-		var resource *extensions.Ingress
-		resource, ingressErr = w.KubeClient.ExtensionsV1beta1().Ingresses(daemon.Namespace).Get(sourceName, metav1.GetOptions{})
-		if ingressErr == nil {
-			engress, _ = api.NewEngressFromIngress(resource)
-		}
-	} else if sourceType == api.APISchemaEngress {
-		engress, ingressErr = w.ExtClient.Ingresses(daemon.Namespace).Get(sourceName)
-	} else if !sourceTypeFound {
-		var resource *extensions.Ingress
-		resource, ingressErr = w.KubeClient.ExtensionsV1beta1().Ingresses(daemon.Namespace).Get(sourceName, metav1.GetOptions{})
-		if ingressErr == nil {
-			engress, _ = api.NewEngressFromIngress(resource)
-		} else {
-			engress, ingressErr = w.ExtClient.Ingresses(daemon.Namespace).Get(sourceName)
-		}
+	engress, err := w.findOrigin(daemon.ObjectMeta)
+	if err != nil {
+		return err
 	}
-	if ingressErr != nil {
-		return ingressErr
-	}
-
 	// Ingress Still exists, restore resource
 	log.Infof("DaemonSet %s@%s requires restoration", daemon.Name, daemon.Namespace)
 	daemon.SelfLink = ""
 	daemon.ResourceVersion = ""
-	if noAnnotationResource {
-		// Old resource and annotations are missing so we need to add the annotations
-		if daemon.Annotations == nil {
-			daemon.Annotations = make(map[string]string)
-		}
-		daemon.Annotations[api.OriginAPISchema] = engress.APISchema()
-		daemon.Annotations[api.OriginName] = sourceName
+	// Old resource and annotations are missing so we need to add the annotations
+	if daemon.Annotations == nil {
+		daemon.Annotations = make(map[string]string)
 	}
+	daemon.Annotations[api.OriginAPISchema] = engress.APISchema()
+	daemon.Annotations[api.OriginName] = engress.Name
 
-	_, err := w.KubeClient.ExtensionsV1beta1().DaemonSets(daemon.Namespace).Create(daemon)
+	_, err = w.KubeClient.ExtensionsV1beta1().DaemonSets(daemon.Namespace).Create(daemon)
 	return err
 }
