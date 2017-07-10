@@ -6,6 +6,7 @@ import (
 
 	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
+	"github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/analytics"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -36,7 +37,18 @@ func (c *Operator) WatchIngresses() {
 				if ingress, ok := obj.(*extensions.Ingress); ok {
 					log.Infof("%s %s@%s added", ingress.GroupVersionKind(), ingress.Name, ingress.Namespace)
 
+					engress, err := api.NewEngressFromIngress(ingress)
+					if err != nil {
+						log.Errorf("Failed to convert Ingress %s@%s into Engress. Reason %v", ingress.Name, ingress.Namespace, err)
+						return
+					}
+					if !engress.ShouldHandleIngress(c.Opt.IngressClass) {
+						log.Infof("%s %s@%s does not match ingress class", ingress.GroupVersionKind(), ingress.Name, ingress.Namespace)
+						return
+					}
+
 					go analytics.Send(ingress.GroupVersionKind().String(), "ADD", "success")
+
 				}
 			},
 			UpdateFunc: func(old, new interface{}) {
@@ -51,12 +63,39 @@ func (c *Operator) WatchIngresses() {
 					return
 				}
 
-				fmt.Println(oldIngress.Name, newIngress.Name)
+				oldEngress, err := api.NewEngressFromIngress(oldIngress)
+				if err != nil {
+					log.Errorf("Failed to convert Ingress %s@%s into Engress. Reason %v", oldIngress.Name, oldIngress.Namespace, err)
+					return
+				}
+				newEngress, err := api.NewEngressFromIngress(newIngress)
+				if err != nil {
+					log.Errorf("Failed to convert Ingress %s@%s into Engress. Reason %v", newIngress.Name, newIngress.Namespace, err)
+					return
+				}
 
+				if changed, _ := oldEngress.HasChanged(*newEngress); !changed {
+					log.Infof("%s %s@%s has unchanged spec and annotations", newIngress.GroupVersionKind(), newIngress.Name, newIngress.Namespace)
+					return
+				}
+
+				// check the case of switching ingress class
+
+				fmt.Println(oldEngress.Name, newEngress.Name)
 			},
 			DeleteFunc: func(obj interface{}) {
 				if ingress, ok := obj.(*extensions.Ingress); ok {
 					log.Infof("%s %s@%s deleted", ingress.GroupVersionKind(), ingress.Name, ingress.Namespace)
+
+					engress, err := api.NewEngressFromIngress(ingress)
+					if err != nil {
+						log.Errorf("Failed to convert Ingress %s@%s into Engress. Reason %v", ingress.Name, ingress.Namespace, err)
+						return
+					}
+					if !engress.ShouldHandleIngress(c.Opt.IngressClass) {
+						log.Infof("%s %s@%s does not match ingress class", ingress.GroupVersionKind(), ingress.Name, ingress.Namespace)
+						return
+					}
 
 					go analytics.Send(ingress.GroupVersionKind().String(), "DELETE", "success")
 				}

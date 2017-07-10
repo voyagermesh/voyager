@@ -2,7 +2,6 @@ package operator
 
 import (
 	"encoding/json"
-	"errors"
 	"strings"
 
 	acrt "github.com/appscode/go/runtime"

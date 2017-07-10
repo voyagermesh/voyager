@@ -2,7 +2,9 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"net"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -299,4 +301,30 @@ func (r Ingress) ShouldHandleIngress(ingressClass string) bool {
 	}
 	kubeAnnotation, _ := r.Annotations[ingressClassAnnotationKey]
 	return kubeAnnotation == ingressClass || kubeAnnotation == ingressClassAnnotationValue
+}
+
+func (r Ingress) HasChanged(o Ingress) (bool, error) {
+	if r.Name != o.Name ||
+		r.Namespace != o.Namespace ||
+		r.APISchema() != o.APISchema() {
+		return false, errors.New("Not the same Ingress.")
+	}
+
+	if !reflect.DeepEqual(r.Spec, o.Spec) {
+		return true, nil
+	}
+
+	ra := map[string]string{}
+	for k, v := range r.Annotations {
+		if strings.HasPrefix(k, EngressKey+"/") {
+			ra[k] = v
+		}
+	}
+	oa := map[string]string{}
+	for k, v := range o.Annotations {
+		if strings.HasPrefix(k, EngressKey+"/") {
+			oa[k] = v
+		}
+	}
+	return !reflect.DeepEqual(ra, oa), nil
 }
