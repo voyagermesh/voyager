@@ -29,9 +29,14 @@ func (c *Operator) WatchNamespaces() {
 		cache.ResourceEventHandlerFuncs{
 			DeleteFunc: func(obj interface{}) {
 				if ns, ok := obj.(*apiv1.Namespace); ok {
-					if alerts, err := c.ExtClient.PodAlerts(ns.Name).List(metav1.ListOptions{}); err == nil {
-						for _, alert := range alerts.Items {
-							c.ExtClient.PodAlerts(alert.Namespace).Delete(alert.Name)
+					if resources, err := c.ExtClient.Certificates(ns.Name).List(metav1.ListOptions{}); err == nil {
+						for _, resource := range resources.Items {
+							c.ExtClient.Certificates(resource.Namespace).Delete(resource.Name)
+						}
+					}
+					if resources, err := c.ExtClient.Ingresses(ns.Name).List(metav1.ListOptions{}); err == nil {
+						for _, resource := range resources.Items {
+							c.ExtClient.Ingresses(resource.Namespace).Delete(resource.Name)
 						}
 					}
 				}

@@ -15,6 +15,7 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/tools/record"
+	"github.com/appscode/voyager/pkg/certificates"
 )
 
 type Options struct {
@@ -104,4 +105,5 @@ func (c *Operator) Run() {
 	go c.WatchIngresses()
 	go c.WatchNamespaces()
 	go c.WatchServices()
+	go certificates.NewCertificateSyncer(c.KubeClient, c.ExtClient).RunSync()
 }
