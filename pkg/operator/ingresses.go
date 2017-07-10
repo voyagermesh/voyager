@@ -6,6 +6,7 @@ import (
 
 	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
+	"github.com/appscode/voyager/pkg/analytics"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -32,9 +33,10 @@ func (c *Operator) WatchIngresses() {
 		c.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				if pod, ok := obj.(*extensions.Ingress); ok {
-					log.Infof("Ingress %s@%s added", pod.Name, pod.Namespace)
+				if ingress, ok := obj.(*extensions.Ingress); ok {
+					log.Infof("%s %s@%s added", ingress.GroupVersionKind(), ingress.Name, ingress.Namespace)
 
+					go analytics.Send(ingress.GroupVersionKind().String(), "ADD", "success")
 				}
 			},
 			UpdateFunc: func(old, new interface{}) {
@@ -53,9 +55,10 @@ func (c *Operator) WatchIngresses() {
 
 			},
 			DeleteFunc: func(obj interface{}) {
-				if pod, ok := obj.(*extensions.Ingress); ok {
-					log.Infof("Ingress %s@%s deleted", pod.Name, pod.Namespace)
+				if ingress, ok := obj.(*extensions.Ingress); ok {
+					log.Infof("%s %s@%s deleted", ingress.GroupVersionKind(), ingress.Name, ingress.Namespace)
 
+					go analytics.Send(ingress.GroupVersionKind().String(), "DELETE", "success")
 				}
 			},
 		},

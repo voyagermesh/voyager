@@ -7,6 +7,7 @@ import (
 	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
 	sapi "github.com/appscode/voyager/api"
+	"github.com/appscode/voyager/pkg/analytics"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -32,26 +33,30 @@ func (c *Operator) WatchCertificateTPRs() {
 		c.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				if resource, ok := obj.(*sapi.Certificate); ok {
-					fmt.Println(resource.Name)
+				if cert, ok := obj.(*sapi.Certificate); ok {
+					log.Infof("%s %s@%s added", cert.GroupVersionKind(), cert.Name, cert.Namespace)
+
+					go analytics.Send(cert.GroupVersionKind().String(), "ADD", "success")
 				}
 			},
 			UpdateFunc: func(old, new interface{}) {
-				oldObj, ok := old.(*sapi.Certificate)
+				oldCert, ok := old.(*sapi.Certificate)
 				if !ok {
 					log.Errorln(errors.New("Invalid Certificate object"))
 					return
 				}
-				newObj, ok := new.(*sapi.Certificate)
+				newCert, ok := new.(*sapi.Certificate)
 				if !ok {
 					log.Errorln(errors.New("Invalid Certificate object"))
 					return
 				}
-				fmt.Println(oldObj.Name, newObj.Name)
+				fmt.Println(oldCert.Name, newCert.Name)
 			},
 			DeleteFunc: func(obj interface{}) {
-				if resource, ok := obj.(*sapi.Certificate); ok {
-					fmt.Println(resource.Name)
+				if cert, ok := obj.(*sapi.Certificate); ok {
+					log.Infof("%s %s@%s deleted", cert.GroupVersionKind(), cert.Name, cert.Namespace)
+
+					go analytics.Send(cert.GroupVersionKind().String(), "DELETE", "success")
 				}
 			},
 		},

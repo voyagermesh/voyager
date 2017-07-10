@@ -7,6 +7,7 @@ import (
 	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
 	sapi "github.com/appscode/voyager/api"
+	"github.com/appscode/voyager/pkg/analytics"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -32,26 +33,30 @@ func (c *Operator) WatchIngressTPRs() {
 		c.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				if resource, ok := obj.(*sapi.Ingress); ok {
-					fmt.Println(resource.Name)
+				if ingress, ok := obj.(*sapi.Ingress); ok {
+					log.Infof("%s %s@%s added", ingress.GroupVersionKind(), ingress.Name, ingress.Namespace)
+
+					go analytics.Send(ingress.GroupVersionKind().String(), "ADD", "success")
 				}
 			},
 			UpdateFunc: func(old, new interface{}) {
-				oldObj, ok := old.(*sapi.Ingress)
+				oldIngress, ok := old.(*sapi.Ingress)
 				if !ok {
 					log.Errorln(errors.New("Invalid Ingress object"))
 					return
 				}
-				newObj, ok := new.(*sapi.Ingress)
+				newIngress, ok := new.(*sapi.Ingress)
 				if !ok {
 					log.Errorln(errors.New("Invalid Ingress object"))
 					return
 				}
-				fmt.Println(oldObj.Name, newObj.Name)
+				fmt.Println(oldIngress.Name, newIngress.Name)
 			},
 			DeleteFunc: func(obj interface{}) {
-				if resource, ok := obj.(*sapi.Ingress); ok {
-					fmt.Println(resource.Name)
+				if ingress, ok := obj.(*sapi.Ingress); ok {
+					log.Infof("%s %s@%s deleted", ingress.GroupVersionKind(), ingress.Name, ingress.Namespace)
+
+					go analytics.Send(ingress.GroupVersionKind().String(), "DELETE", "success")
 				}
 			},
 		},

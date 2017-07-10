@@ -9,13 +9,13 @@ import (
 )
 
 const (
-	EventReasonInvalidCronExpression         = "InvalidCronExpression"
-	EventReasonSuccessfulCronExpressionReset = "SuccessfulCronExpressionReset"
-	EventReasonSuccessfulBackup              = "SuccessfulBackup"
-	EventReasonFailedToBackup                = "FailedBackup"
-	EventReasonFailedToRetention             = "FailedRetention"
-	EventReasonFailedToUpdate                = "FailedUpdateBackup"
-	EventReasonFailedCronJob                 = "FailedCronJob"
+//EventReasonInvalidCronExpression         = "InvalidCronExpression"
+//EventReasonSuccessfulCronExpressionReset = "SuccessfulCronExpressionReset"
+//EventReasonSuccessfulBackup              = "SuccessfulBackup"
+//EventReasonFailedToBackup                = "FailedBackup"
+//EventReasonFailedToRetention             = "FailedRetention"
+//EventReasonFailedToUpdate                = "FailedUpdateBackup"
+//EventReasonFailedCronJob                 = "FailedCronJob"
 )
 
 func NewEventRecorder(client clientset.Interface, component string) record.EventRecorder {

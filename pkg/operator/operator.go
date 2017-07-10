@@ -5,9 +5,10 @@ import (
 	"time"
 
 	"github.com/appscode/log"
-	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
+	"github.com/appscode/voyager/pkg/certificates"
+	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/stash"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -15,7 +16,6 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/tools/record"
-	"github.com/appscode/voyager/pkg/certificates"
 )
 
 type Options struct {
