@@ -2,7 +2,7 @@ package operator
 
 import (
 	"errors"
-	"fmt"
+	"reflect"
 
 	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
@@ -35,7 +35,7 @@ func (c *Operator) WatchCertificateTPRs() {
 			AddFunc: func(obj interface{}) {
 				if cert, ok := obj.(*sapi.Certificate); ok {
 					log.Infof("%s %s@%s added", cert.GroupVersionKind(), cert.Name, cert.Namespace)
-
+					c.CertController.HandleCertificate(cert)
 					go analytics.Send(cert.GroupVersionKind().String(), "ADD", "success")
 				}
 			},
@@ -50,7 +50,9 @@ func (c *Operator) WatchCertificateTPRs() {
 					log.Errorln(errors.New("Invalid Certificate object"))
 					return
 				}
-				fmt.Println(oldCert.Name, newCert.Name)
+				if !reflect.DeepEqual(oldCert.Spec, newCert.Spec) {
+					c.CertController.HandleCertificate(newCert)
+				}
 			},
 			DeleteFunc: func(obj interface{}) {
 				if cert, ok := obj.(*sapi.Certificate); ok {
