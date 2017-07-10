@@ -28,10 +28,11 @@ type Options struct {
 }
 
 type Operator struct {
-	KubeClient clientset.Interface
-	ExtClient  acs.ExtensionInterface
-	PromClient pcm.MonitoringV1alpha1Interface
-	Opt        Options
+	KubeClient     clientset.Interface
+	ExtClient      acs.ExtensionInterface
+	PromClient     pcm.MonitoringV1alpha1Interface
+	Opt            Options
+	CertController *certificates.Controller
 
 	recorder   record.EventRecorder
 	SyncPeriod time.Duration
@@ -46,12 +47,13 @@ func New(
 	opt Options,
 ) *Operator {
 	return &Operator{
-		KubeClient: kubeClient,
-		ExtClient:  extClient,
-		PromClient: promClient,
-		Opt:        opt,
-		recorder:   eventer.NewEventRecorder(kubeClient, "Voyager operator"),
-		SyncPeriod: 2 * time.Minute,
+		KubeClient:     kubeClient,
+		ExtClient:      extClient,
+		PromClient:     promClient,
+		CertController: certificates.NewController(kubeClient, extClient),
+		Opt:            opt,
+		recorder:       eventer.NewEventRecorder(kubeClient, "Voyager operator"),
+		SyncPeriod:     2 * time.Minute,
 	}
 }
 

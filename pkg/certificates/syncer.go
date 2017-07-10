@@ -11,19 +11,19 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-type CertificateSyncer struct {
-	CertificateController
+type Syncer struct {
+	Controller
 	Time clock.Clock
 }
 
-func NewCertificateSyncer(c clientset.Interface, a acs.ExtensionInterface) *CertificateSyncer {
-	return &CertificateSyncer{
-		CertificateController: *NewController(c, a),
-		Time: clock.New(),
+func NewCertificateSyncer(c clientset.Interface, a acs.ExtensionInterface) *Syncer {
+	return &Syncer{
+		Controller: *NewController(c, a),
+		Time:       clock.New(),
 	}
 }
 
-func (c *CertificateSyncer) RunSync() error {
+func (c *Syncer) RunSync() error {
 	for {
 		select {
 		case <-c.Time.After(time.Hour * 24):
@@ -32,7 +32,7 @@ func (c *CertificateSyncer) RunSync() error {
 				return errors.FromErr(err).Err()
 			}
 			for _, cert := range result.Items {
-				c.process(&cert)
+				c.process(c.Controller.newInternalCertificateOptions(&cert))
 			}
 		}
 	}

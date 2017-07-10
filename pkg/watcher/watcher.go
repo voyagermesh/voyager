@@ -12,7 +12,7 @@ import (
 	"github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/analytics"
-	"github.com/appscode/voyager/pkg/certificates"
+	// "github.com/appscode/voyager/pkg/certificates"
 	"github.com/appscode/voyager/pkg/events"
 	ingresscontroller "github.com/appscode/voyager/pkg/ingress"
 	"github.com/appscode/voyager/pkg/stash"
@@ -133,16 +133,16 @@ func (w *Watcher) Dispatch(e *events.Event) error {
 		// Check the Ingress or Extended Ingress Annotations. To Work for auto certificate
 		// operations.
 		if err == nil {
-			certController := certificates.NewController(w.KubeClient, w.ExtClient)
-			certController.Handle(e)
+			// certController := certificates.NewController(w.KubeClient, w.ExtClient)
+			// certController.Handle(e)
 		}
 		sendAnalytics(e, err)
 		return err
 	case events.Certificate:
 		var err error
 		if e.EventType.IsAdded() || e.EventType.IsUpdated() {
-			certController := certificates.NewController(w.KubeClient, w.ExtClient)
-			err = certController.Handle(e)
+			// certController := certificates.NewController(w.KubeClient, w.ExtClient)
+			// err = certController.Handle(e)
 		}
 		sendAnalytics(e, err)
 	case events.Service:
