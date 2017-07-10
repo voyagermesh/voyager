@@ -32,7 +32,7 @@ func (c *Syncer) RunSync() error {
 				return errors.FromErr(err).Err()
 			}
 			for _, cert := range result.Items {
-				c.process(&cert)
+				c.process(c.Controller.newInternalCertificateOptions(&cert))
 			}
 		}
 	}

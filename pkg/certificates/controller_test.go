@@ -30,8 +30,7 @@ func init() {
 }
 
 func TestLoadProviderCredential(t *testing.T) {
-	fakeController := NewController(fake.NewSimpleClientset(), acf.NewFakeExtensionClient())
-	fakeController.certificate = &api.Certificate{
+	fakeController := NewController(fake.NewSimpleClientset(), acf.NewFakeExtensionClient()).newInternalCertificateOptions(&api.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
@@ -39,7 +38,7 @@ func TestLoadProviderCredential(t *testing.T) {
 		Spec: api.CertificateSpec{
 			ProviderCredentialSecretName: "foosecret",
 		},
-	}
+	})
 	fakeController.acmeClientConfig = &ACMEConfig{
 		ProviderCredentials: make(map[string][]byte),
 	}
@@ -75,8 +74,7 @@ func TestEnsureClient(t *testing.T) {
 			&apiv1.Secret{
 				ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
 			},
-		), acf.NewFakeExtensionClient())
-		fakeController.certificate = &api.Certificate{
+		), acf.NewFakeExtensionClient()).newInternalCertificateOptions(&api.Certificate{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "bar",
@@ -87,7 +85,7 @@ func TestEnsureClient(t *testing.T) {
 				Provider:                     "googlecloud",
 				ProviderCredentialSecretName: "fakesecret",
 			},
-		}
+		})
 
 		fakeController.acmeClientConfig = &ACMEConfig{
 			Provider:            "googlecloud",
@@ -121,8 +119,7 @@ func TestFakeRegisterACMEUser(t *testing.T) {
 		&apiv1.Secret{
 			ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
 		},
-	), acf.NewFakeExtensionClient())
-	fakeController.certificate = &api.Certificate{
+	), acf.NewFakeExtensionClient()).newInternalCertificateOptions(&api.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
@@ -133,7 +130,7 @@ func TestFakeRegisterACMEUser(t *testing.T) {
 			Provider:                     "googlecloud",
 			ProviderCredentialSecretName: "fakesecret",
 		},
-	}
+	})
 
 	acmeClient := &ACMEClient{
 		Client: newFakeACMEClient(),
@@ -160,8 +157,7 @@ func TestFakeRegisterACMEUser(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	if testframework.TestContext.Verbose {
-		fakeController := NewController(fake.NewSimpleClientset(), acf.NewFakeExtensionClient())
-		fakeController.certificate = &api.Certificate{
+		fakeController := NewController(fake.NewSimpleClientset(), acf.NewFakeExtensionClient()).newInternalCertificateOptions(&api.Certificate{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "bar",
@@ -172,7 +168,7 @@ func TestCreate(t *testing.T) {
 				Provider:                     "googlecloud",
 				ProviderCredentialSecretName: "fakesecret",
 			},
-		}
+		})
 		fakeController.ExtClient.Certificates("bar").Create(fakeController.certificate)
 
 		fakeController.acmeClientConfig = &ACMEConfig{
