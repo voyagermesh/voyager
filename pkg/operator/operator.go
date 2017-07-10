@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/appscode/log"
-	"github.com/appscode/searchlight/pkg/eventer"
+	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/stash"
@@ -92,4 +92,16 @@ func (c *Operator) ensureThirdPartyResource(resourceName string) error {
 
 	_, err = c.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Create(thirdPartyResource)
 	return err
+}
+
+func (c *Operator) Run() {
+	go c.WatchCertificateTPRs()
+	go c.WatchConfigMaps()
+	go c.WatchDaemonSets()
+	go c.WatchDeployments()
+	go c.WatchEndpoints()
+	go c.WatchIngressTPRs()
+	go c.WatchIngresses()
+	go c.WatchNamespaces()
+	go c.WatchServices()
 }

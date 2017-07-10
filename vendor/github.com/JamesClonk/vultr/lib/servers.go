@@ -40,6 +40,7 @@ type Server struct {
 	Tag              string      `json:"tag"`
 	OSID             string      `json:"OSID"`
 	AppID            string      `json:"APPID"`
+	FirewallGroupID  string      `json:"FIREWALLGROUPID"`
 }
 
 // ServerOptions are optional parameters to be used during server creation
@@ -57,6 +58,7 @@ type ServerOptions struct {
 	Hostname             string
 	Tag                  string
 	AppID                string
+	FirewallGroupID      string
 }
 
 type servers []Server
@@ -166,10 +168,16 @@ func (s *Server) UnmarshalJSON(data []byte) (err error) {
 	s.OSID = value
 
 	value = fmt.Sprintf("%v", fields["APPID"])
-	if value == "<nil>" {
+	if value == "<nil>" || value == "0" {
 		value = ""
 	}
 	s.AppID = value
+
+	value = fmt.Sprintf("%v", fields["FIREWALLGROUPID"])
+	if value == "<nil>" || value == "0" {
+		value = ""
+	}
+	s.FirewallGroupID = value
 
 	s.ID = fmt.Sprintf("%v", fields["SUBID"])
 	s.Name = fmt.Sprintf("%v", fields["label"])
@@ -310,6 +318,10 @@ func (c *Client) CreateServer(name string, regionID, planID, osID int, options *
 
 		if options.AppID != "" {
 			values.Add("APPID", options.AppID)
+		}
+
+		if options.FirewallGroupID != "" {
+			values.Add("FIREWALLGROUPID", options.FirewallGroupID)
 		}
 	}
 
