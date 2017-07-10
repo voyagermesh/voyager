@@ -31,9 +31,13 @@ func (c *Operator) WatchEndpoints() {
 		c.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				if pod, ok := obj.(*apiv1.Endpoints); ok {
-					log.Infof("Endpoints %s@%s added", pod.Name, pod.Namespace)
+				if ep, ok := obj.(*apiv1.Endpoints); ok {
+					log.Infof("Endpoints %s@%s added", ep.Name, ep.Namespace)
 
+					if !c.ServiceExists(ep) {
+						log.Warningf("Skipping Endpoints %s@%s, as it has no matching service", ep.Name, ep.Namespace)
+						return
+					}
 				}
 			},
 			UpdateFunc: func(old, new interface{}) {
@@ -48,16 +52,30 @@ func (c *Operator) WatchEndpoints() {
 					return
 				}
 
-				fmt.Println(oldEndpoints.Name, newEndpoints.Name)
+				if !c.ServiceExists(newEndpoints) {
+					log.Warningf("Skipping Endpoints %s@%s, as it has no matching service", newEndpoints.Name, newEndpoints.Namespace)
+					return
+				}
 
 			},
 			DeleteFunc: func(obj interface{}) {
-				if pod, ok := obj.(*apiv1.Endpoints); ok {
-					log.Infof("Endpoints %s@%s deleted", pod.Name, pod.Namespace)
+				if ep, ok := obj.(*apiv1.Endpoints); ok {
+					log.Infof("Endpoints %s@%s deleted", ep.Name, ep.Namespace)
 
+					if !c.ServiceExists(ep) {
+						log.Warningf("Skipping Endpoints %s@%s, as it has no matching service", ep.Name, ep.Namespace)
+						return
+					}
 				}
 			},
 		},
 	)
 	ctrl.Run(wait.NeverStop)
+}
+
+func (c *Operator) ServiceExists(ep *apiv1.Endpoints) bool {
+	// Checking if this endpoint have a service or not. If
+	// this do not have a Service we do not want to update our ingress
+	_, err := c.KubeClient.CoreV1().Services(ep.Namespace).Get(ep.Name, metav1.GetOptions{})
+	return err == nil
 }

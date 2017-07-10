@@ -58,6 +58,8 @@ func (c *Operator) WatchServices() {
 				if svc, ok := obj.(*apiv1.Service); ok {
 					log.Infof("Service %s@%s deleted", svc.Name, svc.Namespace)
 
+					c.restoreServiceIfRequired(svc)
+
 				}
 			},
 		},
