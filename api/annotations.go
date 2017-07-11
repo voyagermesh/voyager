@@ -91,23 +91,11 @@ const (
 	//
 	// If the annotation is not set default values used to config defaults section will be:
 	//
-	// # Maximum time to wait for a connection attempt to a server to succeed.
-	//	timeout connect         50000
-	//
-	// # Maximum inactivity time on the client side.
-	// # Applies when the client is expected to acknowledge or send data.
-	// timeout client          50000
-	//
-	// # Inactivity timeout on the client side for half-closed connections.
-	// # Applies when the client is expected to acknowledge or send data
-	// # while one direction is already shut down.
-	// timeout client-fin      50000
-	//
-	// # Maximum inactivity time on the server side.
-	// timeout server          50000
-	//
-	// # timeout to use with WebSocket and CONNECT
-	// timeout tunnel          50000
+	// timeout  connect         50000
+	// timeout  client          50000
+	// timeout  client-fin      50000
+	// timeout  server          50000
+	// timeout  tunnel          50000
 	DefaultsTimeOut = EngressKey + "/" + "defaults-timeout"
 )
 
