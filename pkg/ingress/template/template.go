@@ -26,35 +26,14 @@ defaults
     # This avoids excessive logs from haproxy internals.
     option dontlognull
 
-    # Maximum time to wait for a connection attempt to a server to succeed.
-    timeout connect         50000
-
-    # Maximum inactivity time on the client side.
-    # Applies when the client is expected to acknowledge or send data.
-    timeout client          50000
-
-    # Inactivity timeout on the client side for half-closed connections.
-    # Applies when the client is expected to acknowledge or send data
-    # while one direction is already shut down.
-    timeout client-fin      50000
-
-    # Maximum inactivity time on the server side.
-    timeout server          50000
-
-    # timeout to use with WebSocket and CONNECT
-    timeout tunnel          50000
+    # Timeout values
+    {% for key, value in DefaultOptionTimeouts %}
+    timeout {{ key }}  {{ value }}
+    {% endfor %}
 
     # default traffic mode is http
     # mode is overwritten in case of tcp services
     mode http
-
-    # errorloc 400 https://appscode.com/errors/400
-    # errorloc 403 https://appscode.com/errors/403
-    # errorloc 408 https://appscode.com/errors/408
-    # errorloc 500 https://appscode.com/errors/500
-    # errorloc 502 https://appscode.com/errors/502
-    # errorloc 503 https://appscode.com/errors/503
-    # errorloc 504 https://appscode.com/errors/504
 
 {% for name, resolver in DNSResolvers %}
 resolvers {{ name }}

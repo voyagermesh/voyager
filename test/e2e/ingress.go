@@ -46,6 +46,9 @@ func (s *IngressTestSuit) TestIngressCreateDelete() error {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
+			Annotations: map[string]string{
+				api.DefaultsTimeOut: `{"connect": "5s", "server": "10s"}`,
+			},
 		},
 		Spec: api.IngressSpec{
 			Rules: []api.IngressRule{
