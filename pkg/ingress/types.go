@@ -16,7 +16,7 @@ type IngressController struct {
 	ExtClient  acs.ExtensionInterface
 	PromClient pcm.MonitoringV1alpha1Interface
 
-	opt config.Options
+	Opt config.Options
 
 	// Engress object that created or updated.
 	Resource *api.Ingress

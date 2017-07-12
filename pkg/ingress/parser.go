@@ -22,14 +22,14 @@ import (
 func (lbc *IngressController) SupportsLBType() bool {
 	switch lbc.Resource.LBType() {
 	case api.LBTypeLoadBalancer:
-		return lbc.opt.CloudProvider == "aws" ||
-			lbc.opt.CloudProvider == "gce" ||
-			lbc.opt.CloudProvider == "gke" ||
-			lbc.opt.CloudProvider == "azure" ||
-			lbc.opt.CloudProvider == "acs" ||
-			lbc.opt.CloudProvider == "minikube"
+		return lbc.Opt.CloudProvider == "aws" ||
+			lbc.Opt.CloudProvider == "gce" ||
+			lbc.Opt.CloudProvider == "gke" ||
+			lbc.Opt.CloudProvider == "azure" ||
+			lbc.Opt.CloudProvider == "acs" ||
+			lbc.Opt.CloudProvider == "minikube"
 	case api.LBTypeNodePort, api.LBTypeHostPort:
-		return lbc.opt.CloudProvider != "acs"
+		return lbc.Opt.CloudProvider != "acs"
 	default:
 		return false
 	}
@@ -321,8 +321,8 @@ func (lbc *IngressController) parseSpec() {
 	}
 
 	// ref: https://github.com/appscode/voyager/issues/188
-	if lbc.opt.CloudProvider == "aws" && lbc.Resource.LBType() == api.LBTypeLoadBalancer {
-		if ans, ok := lbc.Resource.ServiceAnnotations(lbc.opt.CloudProvider); ok {
+	if lbc.Opt.CloudProvider == "aws" && lbc.Resource.LBType() == api.LBTypeLoadBalancer {
+		if ans, ok := lbc.Resource.ServiceAnnotations(lbc.Opt.CloudProvider); ok {
 			if v, usesAWSCertManager := ans["service.beta.kubernetes.io/aws-load-balancer-ssl-cert"]; usesAWSCertManager && v != "" {
 				var tp80, sp443 bool
 				for svcPort, targetPort := range lbc.Ports {
@@ -369,7 +369,7 @@ func (lbc *IngressController) parseOptions() {
 		}
 	}
 
-	if lbc.opt.CloudProvider == "aws" && lbc.Resource.LBType() == api.LBTypeLoadBalancer {
+	if lbc.Opt.CloudProvider == "aws" && lbc.Resource.LBType() == api.LBTypeLoadBalancer {
 		lbc.Parsed.AcceptProxy = lbc.Resource.KeepSourceIP()
 	}
 }

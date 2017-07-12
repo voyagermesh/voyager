@@ -96,7 +96,7 @@ func (lbc *IngressController) updateConfigMap() error {
 
 func (lbc *IngressController) recreatePods() error {
 	if !lbc.SupportsLBType() {
-		return errors.Newf("LBType %s is unsupported for cloud provider: %s", lbc.Resource.LBType(), lbc.opt.CloudProvider).Err()
+		return errors.Newf("LBType %s is unsupported for cloud provider: %s", lbc.Resource.LBType(), lbc.Opt.CloudProvider).Err()
 	}
 
 	if lbc.Resource.LBType() == api.LBTypeHostPort {
@@ -210,8 +210,8 @@ func (lbc *IngressController) UpdateTargetAnnotations(old *api.Ingress, new *api
 	lbc.parse()
 
 	// Check for changes in ingress.appscode.com/annotations-service
-	if newSvcAns, newOk := new.ServiceAnnotations(lbc.opt.CloudProvider); newOk {
-		if oldSvcAns, oldOk := old.ServiceAnnotations(lbc.opt.CloudProvider); oldOk {
+	if newSvcAns, newOk := new.ServiceAnnotations(lbc.Opt.CloudProvider); newOk {
+		if oldSvcAns, oldOk := old.ServiceAnnotations(lbc.Opt.CloudProvider); oldOk {
 			if !reflect.DeepEqual(oldSvcAns, newSvcAns) {
 				svc, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
 				if err != nil {

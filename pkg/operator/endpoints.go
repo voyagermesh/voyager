@@ -2,7 +2,7 @@ package operator
 
 import (
 	"errors"
-	"fmt"
+	"reflect"
 
 	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
@@ -42,22 +42,20 @@ func (op *Operator) WatchEndpoints() {
 					return
 				}
 
-				if !op.ServiceExists(newEndpoints) {
-					log.Warningf("Skipping Endpoints %s@%s, as it has no matching service", newEndpoints.Name, newEndpoints.Namespace)
+				if reflect.DeepEqual(oldEndpoints.Subsets, newEndpoints.Subsets) {
 					return
 				}
 
-				fmt.Println(oldEndpoints)
-
+				// Checking if this endpoint have a service or not. If
+				// this do not have a Service we do not want to update our ingress
+				svc, err := op.KubeClient.CoreV1().Services(newEndpoints.Namespace).Get(newEndpoints.Name, metav1.GetOptions{})
+				if err != nil {
+					log.Warningf("Skipping Endpoints %s@%s, as it has no matching service", newEndpoints.Name, newEndpoints.Namespace)
+					return
+				}
+				op.updateHAProxies(svc)
 			},
 		},
 	)
 	ctrl.Run(wait.NeverStop)
-}
-
-func (op *Operator) ServiceExists(ep *apiv1.Endpoints) bool {
-	// Checking if this endpoint have a service or not. If
-	// this do not have a Service we do not want to update our ingress
-	_, err := op.KubeClient.CoreV1().Services(ep.Namespace).Get(ep.Name, metav1.GetOptions{})
-	return err == nil
 }

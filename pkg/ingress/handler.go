@@ -8,20 +8,18 @@ import (
 
 	"github.com/appscode/errors"
 	stringutil "github.com/appscode/go/strings"
+	"github.com/appscode/kubed/pkg/events"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	_ "github.com/appscode/voyager/api/install"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/config"
-	"github.com/appscode/voyager/pkg/events"
 	"github.com/appscode/voyager/pkg/monitor"
-	"github.com/appscode/voyager/pkg/stash"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	fakecloudprovider "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
@@ -30,12 +28,14 @@ func NewController(
 	kubeClient clientset.Interface,
 	extClient acs.ExtensionInterface,
 	promClient pcm.MonitoringV1alpha1Interface,
-	opt config.Options) *IngressController {
+	opt config.Options,
+	ingress *api.Ingress) *IngressController {
 	h := &IngressController{
 		KubeClient: kubeClient,
 		ExtClient:  extClient,
 		PromClient: promClient,
-		opt:        opt,
+		Opt:        opt,
+		Resource:   ingress,
 	}
 	log.Infoln("Initializing cloud manager for provider", opt.CloudProvider)
 	if opt.CloudProvider == "aws" || opt.CloudProvider == "gce" || opt.CloudProvider == "azure" {
@@ -62,74 +62,6 @@ func NewController(
 	return h
 }
 
-func UpgradeAllEngress(service, providerName, cloudConfig string,
-	kubeClient clientset.Interface,
-	extClient acs.ExtensionInterface,
-	promClient pcm.MonitoringV1alpha1Interface,
-	store stash.Storage,
-	ingressClass string,
-	operatorServiceAccount string) error {
-	ing, err := kubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{
-		LabelSelector: labels.Everything().String(),
-	})
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
-
-	eng, err := extClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{
-		LabelSelector: labels.Everything().String(),
-	})
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
-
-	items := make([]api.Ingress, len(ing.Items))
-	for i, item := range ing.Items {
-		e, err := api.NewEngressFromIngress(item)
-		if err != nil {
-			continue
-		}
-		items[i] = *e
-	}
-	items = append(items, eng.Items...)
-	log.Infoln("Updating All Ingress, got total", len(items))
-	for i, item := range items {
-		engress := &items[i]
-		if shouldHandleIngress(engress, ingressClass) {
-			log.Infoln("Checking for service", service, "to be used to load balance via ingress", item.Name, item.Namespace)
-			if ok, name, namespace := isEngressHaveService(engress, service); ok {
-				lbc := NewController(providerName, cloudConfig, kubeClient, extClient, promClient, store, ingressClass, operatorServiceAccount)
-				lbc.Resource = &items[i]
-				log.Infoln("Trying to Update Ingress", item.Name, item.Namespace)
-				if lbc.IsExists() {
-					// Loadbalancer resource for this ingress is found in its place,
-					// so no need to create the resources. First trying to update
-					// the configMap only for the rules.
-					// In case of any failure in soft update we will make hard update
-					// to the resource. If hard update encounters errors then we will
-					// recreate the resource from scratch.
-					log.Infoln("Loadbalancer is exists, trying to update")
-					cfgErr := lbc.Update(UpdateConfig)
-					if cfgErr != nil {
-						log.Warningln("Loadbalancer is exists but Soft Update failed. Retring Hard Update")
-						restartErr := lbc.Update(RestartHAProxy)
-						if restartErr != nil {
-							log.Warningln("Loadbalancer is exists, But Hard Update is also failed, recreating with a cleanup")
-							lbc.Create()
-						}
-					}
-				} else {
-					// This LB should be there. If it is no there. we should create it
-					log.Infoln("Loadbalancer is not found, recreating with a cleanup")
-					lbc.Create()
-				}
-				ensureServiceAnnotations(kubeClient, engress, namespace, name)
-			}
-		}
-	}
-	return nil
-}
-
 func (lbc *IngressController) Handle(e *events.Event) error {
 	log.Infof("Engress event %s/%s occurred for %s", e.EventType, e.ResourceType, e.MetaData.Name)
 	// convert to extended ingress and then handle
@@ -150,7 +82,7 @@ func (lbc *IngressController) Handle(e *events.Event) error {
 	log.Infoln("Size of engs", len(engs), "Size of RuntimeObj", len(e.RuntimeObj))
 	if e.EventType.IsAdded() {
 		lbc.Resource = engs[0].(*api.Ingress)
-		if shouldHandleIngress(lbc.Resource, lbc.opt.IngressClass) {
+		if shouldHandleIngress(lbc.Resource, lbc.Opt.IngressClass) {
 			if lbc.IsExists() {
 				// Loadbalancer resource for this ingress is found in its place,
 				// so no need to create the resources. First trying to update
@@ -199,14 +131,14 @@ func (lbc *IngressController) Handle(e *events.Event) error {
 		}
 	} else if e.EventType.IsDeleted() {
 		lbc.Resource = engs[0].(*api.Ingress)
-		if shouldHandleIngress(lbc.Resource, lbc.opt.IngressClass) {
+		if shouldHandleIngress(lbc.Resource, lbc.Opt.IngressClass) {
 			lbc.Delete()
 		}
 	} else if e.EventType.IsUpdated() {
 		old := engs[0].(*api.Ingress)
 		new := engs[1].(*api.Ingress)
 		lbc.Resource = new
-		if !shouldHandleIngress(lbc.Resource, lbc.opt.IngressClass) {
+		if !shouldHandleIngress(lbc.Resource, lbc.Opt.IngressClass) {
 			return nil
 		}
 
@@ -451,7 +383,7 @@ func isStatsChanged(old *api.Ingress, new *api.Ingress) bool {
 }
 
 func (lbc *IngressController) isKeepSourceChanged(old *api.Ingress, new *api.Ingress) bool {
-	return lbc.opt.CloudProvider == "aws" &&
+	return lbc.Opt.CloudProvider == "aws" &&
 		lbc.Resource.LBType() == api.LBTypeLoadBalancer &&
 		isMapKeyChanged(old.Annotations, new.Annotations, api.KeepSourceIP)
 }

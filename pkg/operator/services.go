@@ -8,6 +8,7 @@ import (
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	_ "github.com/appscode/voyager/api/install"
+	"github.com/appscode/voyager/pkg/ingress"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -37,7 +38,7 @@ func (op *Operator) WatchServices() {
 			AddFunc: func(obj interface{}) {
 				if svc, ok := obj.(*apiv1.Service); ok {
 					log.Infof("Service %s@%s added", svc.Name, svc.Namespace)
-
+					op.updateHAProxies(svc)
 				}
 			},
 			DeleteFunc: func(obj interface{}) {
@@ -45,7 +46,7 @@ func (op *Operator) WatchServices() {
 					log.Infof("Service %s@%s deleted", svc.Name, svc.Namespace)
 
 					op.restoreServiceIfRequired(svc)
-
+					op.updateHAProxies(svc)
 				}
 			},
 		},
@@ -84,7 +85,7 @@ func (op *Operator) restoreServiceIfRequired(svc *apiv1.Service) error {
 	return err
 }
 
-func (op *Operator) UpgradeAllEngress(service string) error {
+func (op *Operator) updateHAProxies(svc *apiv1.Service) error {
 	ing, err := op.KubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{LabelSelector: labels.Everything().String()})
 	if err != nil {
 		return err
@@ -108,53 +109,43 @@ func (op *Operator) UpgradeAllEngress(service string) error {
 	for i, item := range items {
 		engress := &items[i]
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
-			log.Infoln("Checking for service", service, "to be used to load balance via ingress", item.Name, item.Namespace)
-			if ok, name, namespace := op.isEngressHaveService(engress, service); ok {
-
-				/*
-					lbc := NewEngressController(providerName, cloudConfig, kubeClient, extClient, promClient, store, ingressClass, operatorServiceAccount)
-					lbc.Resource = &items[i]
-					log.Infoln("Trying to Update Ingress", item.Name, item.Namespace)
-					if lbc.IsExists() {
-						// Loadbalancer resource for this ingress is found in its place,
-						// so no need to create the resources. First trying to update
-						// the configMap only for the rules.
-						// In case of any failure in soft update we will make hard update
-						// to the resource. If hard update encounters errors then we will
-						// recreate the resource from scratch.
-						log.Infoln("Loadbalancer is exists, trying to update")
-						cfgErr := lbc.Update(UpdateConfig)
-						if cfgErr != nil {
-							log.Warningln("Loadbalancer is exists but Soft Update failed. Retring Hard Update")
-							restartErr := lbc.Update(RestartHAProxy)
-							if restartErr != nil {
-								log.Warningln("Loadbalancer is exists, But Hard Update is also failed, recreating with a cleanup")
-								lbc.Create()
-							}
+			log.Infoln("Checking for service", svc, "to be used to load balance via ingress", item.Name, item.Namespace)
+			if op.IngressUsesService(engress, svc) {
+				ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.Opt, engress)
+				if ctrl.IsExists() {
+					// Loadbalancer resource for this ingress is found in its place,
+					// so no need to create the resources. First trying to update
+					// the configMap only for the rules.
+					// In case of any failure in soft update we will make hard update
+					// to the resource. If hard update encounters errors then we will
+					// recreate the resource from scratch.
+					log.Infoln("Loadbalancer is exists, trying to update")
+					cfgErr := ctrl.Update(ingress.UpdateConfig)
+					if cfgErr != nil {
+						log.Warningln("Loadbalancer is exists but Soft Update failed. Retring Hard Update")
+						restartErr := ctrl.Update(ingress.RestartHAProxy)
+						if restartErr != nil {
+							log.Warningln("Loadbalancer is exists, But Hard Update is also failed, recreating with a cleanup")
+							ctrl.Create()
 						}
-					} else {
-						// This LB should be there. If it is no there. we should create it
-						log.Infoln("Loadbalancer is not found, recreating with a cleanup")
-						lbc.Create()
 					}
-				*/
-				op.ensureServiceAnnotations(engress, namespace, name)
+				} else {
+					// This LB should be there. If it is no there. we should create it
+					log.Infoln("Loadbalancer is not found, recreating with a cleanup")
+					ctrl.Create()
+				}
+				op.ensureServiceAnnotations(engress, svc)
 			}
 		}
 	}
 	return nil
 }
 
-func (op *Operator) ensureServiceAnnotations(r *api.Ingress, namespace, name string) {
-	svc, err := op.KubeClient.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
-	if err != nil {
-		return
-	}
+func (op *Operator) ensureServiceAnnotations(r *api.Ingress, svc *apiv1.Service) {
 	if svc.Annotations == nil {
 		svc.Annotations = make(map[string]string)
 	}
-
-	if ok, _, _ := op.isEngressHaveService(r, name+"."+namespace); ok {
+	if op.IngressUsesService(r, svc) {
 		list := make([]api.IngressRef, 0)
 		val, ok := svc.Annotations[api.EgressPoints]
 		if ok {
@@ -187,7 +178,7 @@ func (op *Operator) ensureServiceAnnotations(r *api.Ingress, namespace, name str
 		if err == nil {
 			svc.Annotations[api.EgressPoints] = string(data)
 		}
-		op.KubeClient.CoreV1().Services(namespace).Update(svc)
+		op.KubeClient.CoreV1().Services(svc.Namespace).Update(svc)
 		return
 	}
 	// Lets check if service still have the annotation for this ingress.
@@ -207,41 +198,40 @@ func (op *Operator) ensureServiceAnnotations(r *api.Ingress, namespace, name str
 				svc.Annotations[api.EgressPoints] = string(data)
 			}
 		}
-		op.KubeClient.CoreV1().Services(namespace).Update(svc)
+		op.KubeClient.CoreV1().Services(svc.Namespace).Update(svc)
 	}
 }
 
-func (op *Operator) isEngressHaveService(ing *api.Ingress, service string) (bool, string, string) {
-	serviceNotWithDefault := service
-	if strings.HasSuffix(serviceNotWithDefault, "."+ing.Namespace) {
-		serviceNotWithDefault = serviceNotWithDefault[:strings.Index(serviceNotWithDefault, "."+ing.Namespace)]
-	}
-	log.Infoln("Checking Ingress", ing.Name, "for service name", serviceNotWithDefault)
-	if ing.Spec.Backend != nil {
-		if ing.Spec.Backend.ServiceName == service || ing.Spec.Backend.ServiceName == serviceNotWithDefault {
-			name, namespace := splitNameNamespace(service, serviceNotWithDefault, ing.Namespace)
-			return true, name, namespace
+func (op *Operator) IngressUsesService(ing *api.Ingress, svc *apiv1.Service) bool {
+	svcFQN := svc.Name + "." + svc.Namespace
+
+	fqn := func(svcName string) string {
+		if strings.ContainsRune(svcName, '.') {
+			return svcName
 		}
+		return svcName + "." + ing.Namespace
 	}
 
+	if ing.Spec.Backend != nil {
+		if fqn(ing.Spec.Backend.ServiceName) == svcFQN {
+			return true
+		}
+	}
 	for _, rules := range ing.Spec.Rules {
 		if rules.HTTP != nil {
 			for _, svc := range rules.HTTP.Paths {
-				if svc.Backend.ServiceName == service || svc.Backend.ServiceName == serviceNotWithDefault {
-					name, namespace := splitNameNamespace(service, serviceNotWithDefault, ing.Namespace)
-					return true, name, namespace
+				if fqn(svc.Backend.ServiceName) == svcFQN {
+					return true
 				}
 			}
 		}
-
 		for _, svc := range rules.TCP {
-			if svc.Backend.ServiceName == service || svc.Backend.ServiceName == serviceNotWithDefault {
-				name, namespace := splitNameNamespace(service, serviceNotWithDefault, ing.Namespace)
-				return true, name, namespace
+			if fqn(svc.Backend.ServiceName) == svcFQN {
+				return true
 			}
 		}
 	}
-	return false, "", ""
+	return false
 }
 
 func splitNameNamespace(fqdn, name, namespace string) (string, string) {
