@@ -46,9 +46,9 @@ type Controller struct {
 	KubeClient clientset.Interface
 	ExtClient  acs.ExtensionInterface
 
-	tpr               *api.Certificate
-	acmeCert          ACMECertData
-	parsedCertificate *x509.Certificate
+	tpr      *api.Certificate
+	acmeCert ACMECertData
+	crt      *x509.Certificate
 	sync.Mutex
 
 	acmeClientConfig *ACMEConfig
@@ -143,16 +143,16 @@ func (c *Controller) Process() error {
 
 		// Decode cert
 		pemBlock, _ := pem.Decode(c.acmeCert.Cert)
-		c.parsedCertificate, err = x509.ParseCertificate(pemBlock.Bytes)
+		c.crt, err = x509.ParseCertificate(pemBlock.Bytes)
 		if err != nil {
 			return errors.FromErr(err).WithMessage("Error decoding x509 encoded certificate").Err()
 		}
-		if !c.parsedCertificate.NotAfter.After(time.Now().Add(time.Hour * 24 * 7)) {
+		if !c.crt.NotAfter.After(time.Now().Add(time.Hour * 24 * 7)) {
 			log.Infoln("certificate is expiring in 7 days, attempting renew")
 			c.renew()
 		}
 
-		if !c.acmeCert.EqualDomains(c.parsedCertificate) {
+		if !c.acmeCert.EqualDomains(c.crt) {
 			c.renew()
 		}
 	}
