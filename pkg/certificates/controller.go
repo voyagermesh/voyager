@@ -42,9 +42,10 @@ const (
 //	ExtClient  acs.ExtensionInterface
 //}
 
-type CertificateController struct {
+type Controller struct {
 	KubeClient        clientset.Interface
 	ExtClient         acs.ExtensionInterface
+
 	certificate       *api.Certificate
 	acmeCert          ACMECertData
 	parsedCertificate *x509.Certificate
@@ -56,8 +57,8 @@ type CertificateController struct {
 	userSecretName string
 }
 
-func New(c clientset.Interface, a acs.ExtensionInterface, cert *api.Certificate) *CertificateController {
-	return &CertificateController{
+func New(c clientset.Interface, a acs.ExtensionInterface, cert *api.Certificate) *Controller {
+	return &Controller{
 		KubeClient:  c,
 		ExtClient:   a,
 		certificate: cert,
@@ -125,7 +126,7 @@ func (c *Controller) HandleIngress(ingress *api.Ingress) error {
 }
 */
 
-func (c *CertificateController) Process() error {
+func (c *Controller) Process() error {
 	c.acmeClientConfig = &ACMEConfig{
 		Provider:      c.certificate.Spec.Provider,
 		ACMEServerUrl: c.certificate.Spec.ACMEServerURL,
@@ -163,7 +164,7 @@ func (c *CertificateController) Process() error {
 	return nil
 }
 
-func (c *CertificateController) create() error {
+func (c *Controller) create() error {
 	if err := c.ensureACMEClient(); err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -187,7 +188,7 @@ func (c *CertificateController) create() error {
 	return nil
 }
 
-func (c *CertificateController) renew() error {
+func (c *Controller) renew() error {
 	if err := c.ensureACMEClient(); err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -217,7 +218,7 @@ func (c *CertificateController) renew() error {
 	return c.update(cert)
 }
 
-func (c *CertificateController) ensureACMEClient() error {
+func (c *Controller) ensureACMEClient() error {
 	var acmeUserInfo *ACMEUserData
 	acmeUserRegistered := false
 	log.Infoln("trying to retrive acmeUser data")
@@ -289,7 +290,7 @@ func (c *CertificateController) ensureACMEClient() error {
 	return nil
 }
 
-func (c *CertificateController) registerACMEUser(acmeClient *ACMEClient) error {
+func (c *Controller) registerACMEUser(acmeClient *ACMEClient) error {
 	log.Debugln("ACME user not registered, registering new ACME user")
 	registration, err := acmeClient.Register()
 	if err != nil {
@@ -331,7 +332,7 @@ func (c *CertificateController) registerACMEUser(acmeClient *ACMEClient) error {
 	return nil
 }
 
-func (c *CertificateController) loadProviderCredential() error {
+func (c *Controller) loadProviderCredential() error {
 	cred, err := c.KubeClient.CoreV1().Secrets(c.certificate.Namespace).Get(c.certificate.Spec.ProviderCredentialSecretName, metav1.GetOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -340,7 +341,7 @@ func (c *CertificateController) loadProviderCredential() error {
 	return nil
 }
 
-func (c *CertificateController) save(cert acme.CertificateResource) error {
+func (c *Controller) save(cert acme.CertificateResource) error {
 	certData := &ACMECertData{
 		Domains:    c.acmeCert.Domains,
 		Cert:       cert.Certificate,
@@ -375,7 +376,7 @@ func (c *CertificateController) save(cert acme.CertificateResource) error {
 	return nil
 }
 
-func (c *CertificateController) update(cert acme.CertificateResource) error {
+func (c *Controller) update(cert acme.CertificateResource) error {
 	certData := &ACMECertData{
 		Domains:    c.acmeCert.Domains,
 		Cert:       cert.Certificate,
@@ -395,7 +396,7 @@ func (c *CertificateController) update(cert acme.CertificateResource) error {
 	return nil
 }
 
-func (c *CertificateController) processHTTPCertificate(revert chan struct{}) error {
+func (c *Controller) processHTTPCertificate(revert chan struct{}) error {
 	c.acmeClient.HTTPProviderLock.Lock()
 	defer c.acmeClient.HTTPProviderLock.Unlock()
 
