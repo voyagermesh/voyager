@@ -53,7 +53,7 @@ func (op *Operator) WatchEndpoints() {
 					log.Warningf("Skipping Endpoints %s@%s, as it has no matching service", newEndpoints.Name, newEndpoints.Namespace)
 					return
 				}
-				op.updateHAProxies(svc)
+				op.updateHAProxyConfig(svc)
 			},
 		},
 	)

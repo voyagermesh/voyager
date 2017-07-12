@@ -89,10 +89,17 @@ func (op *Operator) WatchIngressTPRs() {
 							}
 						}
 						return
+					} else {
+						ctrl.Create()
 					}
-					ctrl.Create()
 
-					// TODO: Apply Annotations
+					for _, meta := range engress.BackendServices() {
+						svc, err := op.KubeClient.CoreV1().Services(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+						if err != nil {
+							continue
+						}
+						op.ensureServiceAnnotations(engress, svc)
+					}
 
 					err := certificate.NewController(op.KubeClient, op.ExtClient, nil).HandleIngress(engress)
 					if err != nil {
@@ -161,6 +168,19 @@ func (op *Operator) WatchIngressTPRs() {
 					// For ingress update update HAProxy once
 					ctrl.Update(updateMode)
 				}
+
+				for _, meta := range newEngress.BackendServices() {
+					svc, err := op.KubeClient.CoreV1().Services(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+					if err != nil {
+						continue
+					}
+					op.ensureServiceAnnotations(newEngress, svc)
+				}
+
+				err := certificate.NewController(op.KubeClient, op.ExtClient, nil).HandleIngress(newEngress)
+				if err != nil {
+					log.Error(err)
+				}
 			},
 			DeleteFunc: func(obj interface{}) {
 				if engress, ok := obj.(*tapi.Ingress); ok {
@@ -174,7 +194,13 @@ func (op *Operator) WatchIngressTPRs() {
 					ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.Opt, engress)
 					ctrl.Delete()
 
-					// TODO: Remove annotations
+					for _, meta := range engress.BackendServices() {
+						svc, err := op.KubeClient.CoreV1().Services(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+						if err != nil {
+							continue
+						}
+						op.ensureServiceAnnotations(engress, svc)
+					}
 				}
 			},
 		},

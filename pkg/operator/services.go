@@ -38,7 +38,7 @@ func (op *Operator) WatchServices() {
 			AddFunc: func(obj interface{}) {
 				if svc, ok := obj.(*apiv1.Service); ok {
 					log.Infof("Service %s@%s added", svc.Name, svc.Namespace)
-					op.updateHAProxies(svc)
+					op.updateHAProxyConfig(svc)
 				}
 			},
 			DeleteFunc: func(obj interface{}) {
@@ -48,7 +48,7 @@ func (op *Operator) WatchServices() {
 					if restored, err := op.restoreServiceIfRequired(svc); err == nil && restored {
 						return
 					}
-					op.updateHAProxies(svc)
+					op.updateHAProxyConfig(svc)
 				}
 			},
 		},
@@ -110,12 +110,16 @@ func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*tapi.Ingress, error) {
 	return nil, fmt.Errorf("Unknown ingress type %s", sourceType)
 }
 
-func (op *Operator) updateHAProxies(svc *apiv1.Service) error {
-	ing, err := op.KubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{LabelSelector: labels.Everything().String()})
+func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
+	ing, err := op.KubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{
+		LabelSelector: labels.Everything().String(),
+	})
 	if err != nil {
 		return err
 	}
-	eng, err := op.ExtClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{LabelSelector: labels.Everything().String()})
+	eng, err := op.ExtClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{
+		LabelSelector: labels.Everything().String(),
+	})
 	if err != nil {
 		return err
 	}
@@ -131,10 +135,10 @@ func (op *Operator) updateHAProxies(svc *apiv1.Service) error {
 	items = append(items, eng.Items...)
 
 	log.Infoln("Updating All Ingress, got total", len(items))
-	for i, item := range items {
+	for i := range items {
 		engress := &items[i]
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
-			log.Infoln("Checking for service", svc, "to be used to load balance via ingress", item.Name, item.Namespace)
+			log.Infoln("Checking for service", svc, "to be used to load balance via ingress", engress.Name, engress.Namespace)
 			if engress.HasBackendService(svc.Name, svc.Namespace) {
 				ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.Opt, engress)
 				if ctrl.IsExists() {
