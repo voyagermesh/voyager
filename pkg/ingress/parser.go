@@ -35,17 +35,6 @@ func (lbc *IngressController) SupportsLBType() bool {
 	}
 }
 
-func (lbc *IngressController) parse() error {
-	log.Infoln("Parsing new engress")
-	if lbc.Resource == nil {
-		log.Warningln("Config is nil, nothing to parse")
-		return errors.New("no config found").Err()
-	}
-	lbc.parseOptions()
-	lbc.parseSpec()
-	return nil
-}
-
 func (lbc *IngressController) serviceEndpoints(name string, port intstr.IntOrString, hostNames []string) ([]*Endpoint, error) {
 	log.Infoln("getting endpoints for ", lbc.Resource.Namespace, name, "port", port)
 
@@ -139,7 +128,7 @@ func (lbc *IngressController) getEndpoints(s *apiv1.Service, servicePort *apiv1.
 					if epAddress.TargetRef != nil {
 						pod, err := lbc.KubeClient.CoreV1().Pods(epAddress.TargetRef.Namespace).Get(epAddress.TargetRef.Name, metav1.GetOptions{})
 						if err != nil {
-							log.Errorln("Error getting endpoind pod", err)
+							log.Errorln("Error getting endpoint pod", err)
 						} else {
 							if pod.Annotations != nil {
 								if val, ok := pod.Annotations[api.BackendWeight]; ok {

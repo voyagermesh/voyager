@@ -23,8 +23,6 @@ const (
 )
 
 func (lbc *IngressController) Update(t UpdateMode) error {
-	log.Debugln("updating engress specs with type", t)
-	lbc.parse()
 	err := lbc.generateTemplate()
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -207,8 +205,6 @@ func (lbc *IngressController) updateLBSvc() error {
 }
 
 func (lbc *IngressController) UpdateTargetAnnotations(old *api.Ingress, new *api.Ingress) error {
-	lbc.parse()
-
 	// Check for changes in ingress.appscode.com/annotations-service
 	if newSvcAns, newOk := new.ServiceAnnotations(lbc.Opt.CloudProvider); newOk {
 		if oldSvcAns, oldOk := old.ServiceAnnotations(lbc.Opt.CloudProvider); oldOk {

@@ -15,12 +15,7 @@ import (
 )
 
 func (lbc *IngressController) Delete() error {
-	log.Infoln("Starting deleting lb. got engress with", lbc.Resource.ObjectMeta)
-	err := lbc.parse()
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
-	err = lbc.deleteLB()
+	err := lbc.deleteLB()
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}

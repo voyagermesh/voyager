@@ -25,12 +25,7 @@ const (
 )
 
 func (lbc *IngressController) Create() error {
-	log.Debugln("Starting creating lb. got engress with", lbc.Resource.ObjectMeta)
-	err := lbc.parse()
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
-	err = lbc.generateTemplate()
+	err := lbc.generateTemplate()
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}

@@ -48,5 +48,8 @@ func NewController(
 	} else {
 		log.Infoln("No cloud manager found for provider", opt.CloudProvider)
 	}
+
+	h.parseOptions()
+	h.parseSpec()
 	return h
 }
