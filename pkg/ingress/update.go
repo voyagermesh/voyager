@@ -62,7 +62,7 @@ func (lbc *Controller) Update(t UpdateMode) error {
 }
 
 func (lbc *Controller) updateConfigMap() error {
-	cMap, err := lbc.KubeClient.CoreV1().ConfigMaps(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
+	cMap, err := lbc.KubeClient.CoreV1().ConfigMaps(lbc.Ingress.Namespace).Get(lbc.Ingress.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -75,15 +75,15 @@ func (lbc *Controller) updateConfigMap() error {
 	_, sourceTypeFound := cMap.Annotations[api.OriginAPISchema]
 	if !sourceNameFound && !sourceTypeFound {
 		// Old version object
-		cMap.Annotations[api.OriginAPISchema] = lbc.Resource.APISchema()
-		cMap.Annotations[api.OriginName] = lbc.Resource.GetName()
+		cMap.Annotations[api.OriginAPISchema] = lbc.Ingress.APISchema()
+		cMap.Annotations[api.OriginName] = lbc.Ingress.GetName()
 	}
 
 	if cMap.Data["haproxy.cfg"] != lbc.ConfigData {
 		log.Infoln("Specs have been changed updating config map data for HAProxy templates")
 		cMap.Data["haproxy.cfg"] = lbc.ConfigData
 
-		_, err := lbc.KubeClient.CoreV1().ConfigMaps(lbc.Resource.Namespace).Update(cMap)
+		_, err := lbc.KubeClient.CoreV1().ConfigMaps(lbc.Ingress.Namespace).Update(cMap)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -94,10 +94,10 @@ func (lbc *Controller) updateConfigMap() error {
 
 func (lbc *Controller) recreatePods() error {
 	if !lbc.SupportsLBType() {
-		return errors.Newf("LBType %s is unsupported for cloud provider: %s", lbc.Resource.LBType(), lbc.Opt.CloudProvider).Err()
+		return errors.Newf("LBType %s is unsupported for cloud provider: %s", lbc.Ingress.LBType(), lbc.Opt.CloudProvider).Err()
 	}
 
-	if lbc.Resource.LBType() == api.LBTypeHostPort {
+	if lbc.Ingress.LBType() == api.LBTypeHostPort {
 		err := lbc.deleteHostPortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -106,7 +106,7 @@ func (lbc *Controller) recreatePods() error {
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
-	} else if lbc.Resource.LBType() == api.LBTypeNodePort {
+	} else if lbc.Ingress.LBType() == api.LBTypeNodePort {
 		err := lbc.deleteNodePortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -131,7 +131,7 @@ func (lbc *Controller) recreatePods() error {
 }
 
 func (lbc *Controller) updateLBSvc() error {
-	svc, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
+	svc, err := lbc.KubeClient.CoreV1().Services(lbc.Ingress.Namespace).Get(lbc.Ingress.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -155,7 +155,7 @@ func (lbc *Controller) updateLBSvc() error {
 
 	if svc.Spec.Type == apiv1.ServiceTypeLoadBalancer {
 		// Update Source Range
-		svc.Spec.LoadBalancerSourceRanges = lbc.Resource.Spec.LoadBalancerSourceRanges
+		svc.Spec.LoadBalancerSourceRanges = lbc.Ingress.Spec.LoadBalancerSourceRanges
 	}
 
 	if svc.Annotations == nil {
@@ -166,20 +166,20 @@ func (lbc *Controller) updateLBSvc() error {
 	_, sourceTypeFound := svc.Annotations[api.OriginAPISchema]
 	if !sourceNameFound && !sourceTypeFound {
 		// Old version object
-		svc.Annotations[api.OriginAPISchema] = lbc.Resource.APISchema()
-		svc.Annotations[api.OriginName] = lbc.Resource.GetName()
+		svc.Annotations[api.OriginAPISchema] = lbc.Ingress.APISchema()
+		svc.Annotations[api.OriginName] = lbc.Ingress.GetName()
 	}
 
-	svc, err = lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Update(svc)
+	svc, err = lbc.KubeClient.CoreV1().Services(lbc.Ingress.Namespace).Update(svc)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 
 	// open up firewall
 	log.Infoln("Loadbalancer CloudManager", lbc.CloudManager, "serviceType", svc.Spec.Type)
-	if (lbc.Resource.LBType() == api.LBTypeHostPort) && lbc.CloudManager != nil {
+	if (lbc.Ingress.LBType() == api.LBTypeHostPort) && lbc.CloudManager != nil {
 		daemonNodes, err := lbc.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{
-			LabelSelector: labels.SelectorFromSet(lbc.Resource.NodeSelector()).String(),
+			LabelSelector: labels.SelectorFromSet(lbc.Ingress.NodeSelector()).String(),
 		})
 		if err != nil {
 			log.Infoln("node not found with nodeSelector, cause", err)
@@ -209,13 +209,13 @@ func (lbc *Controller) UpdateTargetAnnotations(old *api.Ingress, new *api.Ingres
 	if newSvcAns, newOk := new.ServiceAnnotations(lbc.Opt.CloudProvider); newOk {
 		if oldSvcAns, oldOk := old.ServiceAnnotations(lbc.Opt.CloudProvider); oldOk {
 			if !reflect.DeepEqual(oldSvcAns, newSvcAns) {
-				svc, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
+				svc, err := lbc.KubeClient.CoreV1().Services(lbc.Ingress.Namespace).Get(lbc.Ingress.OffshootName(), metav1.GetOptions{})
 				if err != nil {
 					return errors.FromErr(err).Err()
 				}
 				svc.Annotations = mergeAnnotations(svc.Annotations, oldSvcAns, newSvcAns)
 
-				svc, err = lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Update(svc)
+				svc, err = lbc.KubeClient.CoreV1().Services(lbc.Ingress.Namespace).Update(svc)
 				if err != nil {
 					return errors.FromErr(err).Err()
 				}
@@ -227,35 +227,35 @@ func (lbc *Controller) UpdateTargetAnnotations(old *api.Ingress, new *api.Ingres
 	if newPodAns, newOk := new.PodsAnnotations(); newOk {
 		if oldPodAns, oldOk := old.PodsAnnotations(); oldOk {
 			if !reflect.DeepEqual(oldPodAns, newPodAns) {
-				if lbc.Resource.LBType() == api.LBTypeHostPort {
-					daemonset, err := lbc.KubeClient.ExtensionsV1beta1().DaemonSets(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
+				if lbc.Ingress.LBType() == api.LBTypeHostPort {
+					daemonset, err := lbc.KubeClient.ExtensionsV1beta1().DaemonSets(lbc.Ingress.Namespace).Get(lbc.Ingress.OffshootName(), metav1.GetOptions{})
 					if err != nil {
 						return errors.FromErr(err).Err()
 					}
 					daemonset.Spec.Template.Annotations = newPodAns
-					daemonset, err = lbc.KubeClient.ExtensionsV1beta1().DaemonSets(lbc.Resource.Namespace).Update(daemonset)
+					daemonset, err = lbc.KubeClient.ExtensionsV1beta1().DaemonSets(lbc.Ingress.Namespace).Update(daemonset)
 					if err != nil {
 						return errors.FromErr(err).Err()
 					}
 					if daemonset.Spec.Selector != nil {
-						pods, _ := lbc.KubeClient.CoreV1().Pods(lbc.Resource.Namespace).List(metav1.ListOptions{
+						pods, _ := lbc.KubeClient.CoreV1().Pods(lbc.Ingress.Namespace).List(metav1.ListOptions{
 							LabelSelector: labels.SelectorFromSet(daemonset.Spec.Selector.MatchLabels).String(),
 						})
 						for _, pod := range pods.Items {
 							pod.Annotations = mergeAnnotations(pod.Annotations, oldPodAns, newPodAns)
-							_, err := lbc.KubeClient.CoreV1().Pods(lbc.Resource.Namespace).Update(&pod)
+							_, err := lbc.KubeClient.CoreV1().Pods(lbc.Ingress.Namespace).Update(&pod)
 							if err != nil {
 								log.Errorln("Failed to Update Pods", err)
 							}
 						}
 					}
 				} else {
-					dep, err := lbc.KubeClient.ExtensionsV1beta1().Deployments(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
+					dep, err := lbc.KubeClient.ExtensionsV1beta1().Deployments(lbc.Ingress.Namespace).Get(lbc.Ingress.OffshootName(), metav1.GetOptions{})
 					if err != nil {
 						return errors.FromErr(err).Err()
 					}
 					dep.Spec.Template.Annotations = mergeAnnotations(dep.Spec.Template.Annotations, oldPodAns, newPodAns)
-					_, err = lbc.KubeClient.ExtensionsV1beta1().Deployments(lbc.Resource.Namespace).Update(dep)
+					_, err = lbc.KubeClient.ExtensionsV1beta1().Deployments(lbc.Ingress.Namespace).Update(dep)
 					if err != nil {
 						return errors.FromErr(err).Err()
 					}

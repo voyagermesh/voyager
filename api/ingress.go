@@ -62,6 +62,9 @@ type IngressSpec struct {
 	// cloud-provider does not support the feature.
 	// https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/
 	LoadBalancerSourceRanges []string `json:"loadBalancerSourceRanges,omitempty"`
+
+	// Compute Resources required by the sidecar container.
+	Resources apiv1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // IngressTLS describes the transport layer security associated with an Ingress.

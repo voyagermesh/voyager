@@ -175,7 +175,7 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 				if oldMonSpec, oldErr := oldEngress.MonitorSpec(); oldErr == nil {
 					if !reflect.DeepEqual(oldMonSpec, newMonSpec) {
 						promCtrl := monitor.NewPrometheusController(ctrl.KubeClient, ctrl.PromClient)
-						err := promCtrl.UpdateMonitor(ctrl.Resource, oldMonSpec, newMonSpec)
+						err := promCtrl.UpdateMonitor(ctrl.Ingress, oldMonSpec, newMonSpec)
 						if err != nil {
 							return
 						}

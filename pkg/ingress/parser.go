@@ -38,7 +38,7 @@ func NewController(
 		ExtClient:  extClient,
 		PromClient: promClient,
 		Opt:        opt,
-		Resource:   ingress,
+		Ingress:    ingress,
 	}
 	log.Infoln("Initializing cloud manager for provider", opt.CloudProvider)
 	if opt.CloudProvider == "aws" || opt.CloudProvider == "gce" || opt.CloudProvider == "azure" {
@@ -69,7 +69,7 @@ func NewController(
 }
 
 func (lbc *Controller) SupportsLBType() bool {
-	switch lbc.Resource.LBType() {
+	switch lbc.Ingress.LBType() {
 	case api.LBTypeLoadBalancer:
 		return lbc.Opt.CloudProvider == "aws" ||
 			lbc.Opt.CloudProvider == "gce" ||
@@ -85,12 +85,12 @@ func (lbc *Controller) SupportsLBType() bool {
 }
 
 func (lbc *Controller) serviceEndpoints(name string, port intstr.IntOrString, hostNames []string) ([]*Endpoint, error) {
-	log.Infoln("getting endpoints for ", lbc.Resource.Namespace, name, "port", port)
+	log.Infoln("getting endpoints for ", lbc.Ingress.Namespace, name, "port", port)
 
 	// the following lines giving support to
 	// serviceName.namespaceName or serviceName in the same namespace to the
 	// ingress
-	var namespace string = lbc.Resource.Namespace
+	var namespace string = lbc.Ingress.Namespace
 	if strings.Contains(name, ".") {
 		namespace = name[strings.Index(name, ".")+1:]
 		name = name[:strings.Index(name, ".")]
@@ -265,22 +265,22 @@ func (lbc *Controller) parseSpec() {
 	lbc.Ports = make(map[int]int)
 	lbc.Parsed.DNSResolvers = make(map[string]*api.DNSResolver)
 
-	if lbc.Resource.Spec.Backend != nil {
-		log.Debugln("generating default backend", lbc.Resource.Spec.Backend.RewriteRule, lbc.Resource.Spec.Backend.HeaderRule)
-		eps, _ := lbc.serviceEndpoints(lbc.Resource.Spec.Backend.ServiceName, lbc.Resource.Spec.Backend.ServicePort, lbc.Resource.Spec.Backend.HostNames)
+	if lbc.Ingress.Spec.Backend != nil {
+		log.Debugln("generating default backend", lbc.Ingress.Spec.Backend.RewriteRule, lbc.Ingress.Spec.Backend.HeaderRule)
+		eps, _ := lbc.serviceEndpoints(lbc.Ingress.Spec.Backend.ServiceName, lbc.Ingress.Spec.Backend.ServicePort, lbc.Ingress.Spec.Backend.HostNames)
 		lbc.Parsed.DefaultBackend = &Backend{
 			Name:      "default-backend",
 			Endpoints: eps,
 
-			BackendRules: lbc.Resource.Spec.Backend.BackendRule,
-			RewriteRules: lbc.Resource.Spec.Backend.RewriteRule,
-			HeaderRules:  lbc.Resource.Spec.Backend.HeaderRule,
+			BackendRules: lbc.Ingress.Spec.Backend.BackendRule,
+			RewriteRules: lbc.Ingress.Spec.Backend.RewriteRule,
+			HeaderRules:  lbc.Ingress.Spec.Backend.HeaderRule,
 		}
 	}
-	if len(lbc.Resource.Spec.TLS) > 0 {
+	if len(lbc.Ingress.Spec.TLS) > 0 {
 		lbc.SecretNames = make([]string, 0)
 		lbc.HostFilter = make([]string, 0)
-		for _, secret := range lbc.Resource.Spec.TLS {
+		for _, secret := range lbc.Ingress.Spec.TLS {
 			lbc.SecretNames = append(lbc.SecretNames, secret.SecretName)
 			lbc.HostFilter = append(lbc.HostFilter, secret.Hosts...)
 		}
@@ -291,7 +291,7 @@ func (lbc *Controller) parseSpec() {
 	lbc.Parsed.TCPService = make([]*TCPService, 0)
 
 	var httpCount, httpsCount int
-	for _, rule := range lbc.Resource.Spec.Rules {
+	for _, rule := range lbc.Ingress.Spec.Rules {
 		host := rule.Host
 		if rule.HTTP != nil {
 			if ok, _ := arrays.Contains(lbc.HostFilter, host); ok {
@@ -350,7 +350,7 @@ func (lbc *Controller) parseSpec() {
 		}
 	}
 
-	if httpCount > 0 || (lbc.Resource.Spec.Backend != nil && httpsCount == 0) {
+	if httpCount > 0 || (lbc.Ingress.Spec.Backend != nil && httpsCount == 0) {
 		lbc.Ports[80] = 80
 	}
 
@@ -359,8 +359,8 @@ func (lbc *Controller) parseSpec() {
 	}
 
 	// ref: https://github.com/appscode/voyager/issues/188
-	if lbc.Opt.CloudProvider == "aws" && lbc.Resource.LBType() == api.LBTypeLoadBalancer {
-		if ans, ok := lbc.Resource.ServiceAnnotations(lbc.Opt.CloudProvider); ok {
+	if lbc.Opt.CloudProvider == "aws" && lbc.Ingress.LBType() == api.LBTypeLoadBalancer {
+		if ans, ok := lbc.Ingress.ServiceAnnotations(lbc.Opt.CloudProvider); ok {
 			if v, usesAWSCertManager := ans["service.beta.kubernetes.io/aws-load-balancer-ssl-cert"]; usesAWSCertManager && v != "" {
 				var tp80, sp443 bool
 				for svcPort, targetPort := range lbc.Ports {
@@ -382,21 +382,21 @@ func (lbc *Controller) parseSpec() {
 }
 
 func (lbc *Controller) parseOptions() {
-	if lbc.Resource == nil {
+	if lbc.Ingress == nil {
 		log.Infoln("Config is nil, nothing to parse")
 		return
 	}
 	log.Infoln("Parsing annotations.")
-	lbc.Parsed.Sticky = lbc.Resource.StickySession()
-	if len(lbc.Resource.Spec.TLS) > 0 {
+	lbc.Parsed.Sticky = lbc.Ingress.StickySession()
+	if len(lbc.Ingress.Spec.TLS) > 0 {
 		lbc.Parsed.SSLCert = true
 	}
 
-	lbc.Parsed.Stats = lbc.Resource.Stats()
+	lbc.Parsed.Stats = lbc.Ingress.Stats()
 	if lbc.Parsed.Stats {
-		lbc.Parsed.StatsPort = lbc.Resource.StatsPort()
-		if name := lbc.Resource.StatsSecretName(); len(name) > 0 {
-			secret, err := lbc.KubeClient.CoreV1().Secrets(lbc.Resource.ObjectMeta.Namespace).Get(name, metav1.GetOptions{})
+		lbc.Parsed.StatsPort = lbc.Ingress.StatsPort()
+		if name := lbc.Ingress.StatsSecretName(); len(name) > 0 {
+			secret, err := lbc.KubeClient.CoreV1().Secrets(lbc.Ingress.ObjectMeta.Namespace).Get(name, metav1.GetOptions{})
 			if err == nil {
 				lbc.Parsed.StatsUserName = string(secret.Data["username"])
 				lbc.Parsed.StatsPassWord = string(secret.Data["password"])
@@ -407,8 +407,8 @@ func (lbc *Controller) parseOptions() {
 		}
 	}
 
-	if lbc.Opt.CloudProvider == "aws" && lbc.Resource.LBType() == api.LBTypeLoadBalancer {
-		lbc.Parsed.AcceptProxy = lbc.Resource.KeepSourceIP()
+	if lbc.Opt.CloudProvider == "aws" && lbc.Ingress.LBType() == api.LBTypeLoadBalancer {
+		lbc.Parsed.AcceptProxy = lbc.Ingress.KeepSourceIP()
 	}
 }
 
