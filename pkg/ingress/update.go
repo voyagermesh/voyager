@@ -13,16 +13,16 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-type updateType int
+type UpdateMode int
 
 const (
-	UpdateConfig   updateType = 1 << iota // only reset haproxy config
+	UpdateConfig   UpdateMode = 1 << iota // only reset haproxy config
 	RestartHAProxy                        // secret changes, ports unchanged
 	UpdateFirewall                        // ports changed
 	UpdateStats                           // Update things for stats update
 )
 
-func (lbc *IngressController) Update(t updateType) error {
+func (lbc *IngressController) Update(t UpdateMode) error {
 	log.Debugln("updating engress specs with type", t)
 	lbc.parse()
 	err := lbc.generateTemplate()

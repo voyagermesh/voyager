@@ -142,7 +142,7 @@ func (lbc *IngressController) Handle(e *events.Event) error {
 			return nil
 		}
 
-		updateMode := updateType(0)
+		updateMode := UpdateMode(0)
 
 		if !reflect.DeepEqual(old.ObjectMeta.Annotations, new.ObjectMeta.Annotations) {
 			// Ingress Annotations Changed, Apply Changes to Targets

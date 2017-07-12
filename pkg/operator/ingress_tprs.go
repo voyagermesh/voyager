@@ -1,13 +1,18 @@
 package operator
 
 import (
-	"errors"
-	"fmt"
+	"net"
+	"reflect"
+	"strings"
 
+	"github.com/appscode/errors"
 	acrt "github.com/appscode/go/runtime"
+	stringz "github.com/appscode/go/strings"
 	"github.com/appscode/log"
 	sapi "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/analytics"
+	"github.com/appscode/voyager/pkg/ingress"
+	"github.com/appscode/voyager/pkg/monitor"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -40,17 +45,67 @@ func (op *Operator) WatchIngressTPRs() {
 						return
 					}
 					go analytics.Send(engress.GroupVersionKind().String(), "ADD", "success")
+
+					ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.Opt, engress)
+					if ctrl.IsExists() {
+						// Loadbalancer resource for this ingress is found in its place,
+						// so no need to create the resources. First trying to update
+						// the configMap only for the rules.
+						// In case of any failure in soft update we will make hard update
+						// to the resource. If hard update encounters errors then we will
+						// recreate the resource from scratch.
+						log.Infoln("Loadbalancer is exists, trying to update")
+
+						if svc, err := op.KubeClient.CoreV1().Services(engress.Namespace).Get(engress.OffshootName(), metav1.GetOptions{}); err == nil {
+							// check port
+							curPorts := make(map[int]apiv1.ServicePort)
+							for _, p := range svc.Spec.Ports {
+								curPorts[int(p.Port)] = p
+							}
+
+							// TODO: Fix where is ctrl.Ports is set ?
+							var updateFW bool
+							for svcPort, targetPort := range ctrl.Ports {
+								if sp, ok := curPorts[svcPort]; !ok || sp.TargetPort.IntValue() != targetPort {
+									updateFW = true // new port has to be opened
+									break
+								} else {
+									delete(curPorts, svcPort)
+								}
+							}
+							if len(curPorts) > 0 {
+								updateFW = true // additional port was open previously
+							}
+
+							if updateFW {
+								ctrl.Update(ingress.UpdateFirewall | ingress.UpdateStats)
+							} else {
+								ctrl.Update(ingress.UpdateConfig | ingress.UpdateStats)
+							}
+						} else {
+							log.Warningln("Loadbalancer is exists but Soft Update failed. Retrying Hard Update")
+							restartErr := ctrl.Update(ingress.RestartHAProxy)
+							if restartErr != nil {
+								log.Warningln("Loadbalancer is exists, But Hard Update is also failed, recreating with a cleanup")
+								ctrl.Create()
+							}
+						}
+						return
+					}
+					ctrl.Create()
+
+					// TODO: Apply Annotations
 				}
 			},
 			UpdateFunc: func(old, new interface{}) {
 				oldEngress, ok := old.(*sapi.Ingress)
 				if !ok {
-					log.Errorln(errors.New("Invalid Ingress object"))
+					log.Errorln(errors.New("Invalid Ingress object").Err())
 					return
 				}
 				newEngress, ok := new.(*sapi.Ingress)
 				if !ok {
-					log.Errorln(errors.New("Invalid Ingress object"))
+					log.Errorln(errors.New("Invalid Ingress object").Err())
 					return
 				}
 
@@ -59,9 +114,50 @@ func (op *Operator) WatchIngressTPRs() {
 					return
 				}
 
-				// check the case of switching ingress class
+				// TODO: Fix check the case of switching ingress class
+				ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.Opt, newEngress)
 
-				fmt.Println(oldEngress.Name, newEngress.Name)
+				var updateMode ingress.UpdateMode
+
+				// Ingress Annotations Changed, Apply Changes to Targets
+				// The following method do not update to HAProxy config or restart pod. It only sets the annotations
+				// to the required targets.
+				ctrl.UpdateTargetAnnotations(oldEngress, newEngress)
+
+				if op.isKeepSourceChanged(oldEngress, newEngress) {
+					updateMode |= ingress.UpdateConfig
+				}
+				if isStatsChanged(oldEngress, newEngress) {
+					updateMode |= ingress.UpdateStats
+				}
+				// Check for changes in ingress.appscode.com/monitoring-agent
+				if newMonSpec, newErr := newEngress.MonitorSpec(); newErr == nil {
+					if oldMonSpec, oldErr := oldEngress.MonitorSpec(); oldErr == nil {
+						if !reflect.DeepEqual(oldMonSpec, newMonSpec) {
+							promCtrl := monitor.NewPrometheusController(ctrl.KubeClient, ctrl.PromClient)
+							err := promCtrl.UpdateMonitor(ctrl.Resource, oldMonSpec, newMonSpec)
+							if err != nil {
+								return
+							}
+						}
+						if (oldMonSpec == nil && newMonSpec != nil) ||
+							(oldMonSpec != nil && newMonSpec == nil) {
+							updateMode |= ingress.UpdateStats
+						}
+					}
+				}
+
+				if isNewPortChanged(oldEngress, newEngress) || isLoadBalancerSourceRangeChanged(oldEngress, newEngress) {
+					updateMode |= ingress.UpdateFirewall
+				} else if isNewSecretAdded(oldEngress, newEngress) {
+					updateMode |= ingress.RestartHAProxy
+				} else {
+					updateMode |= ingress.UpdateConfig
+				}
+				if updateMode > 0 {
+					// For ingress update update HAProxy once
+					ctrl.Update(updateMode)
+				}
 			},
 			DeleteFunc: func(obj interface{}) {
 				if engress, ok := obj.(*sapi.Ingress); ok {
@@ -71,9 +167,124 @@ func (op *Operator) WatchIngressTPRs() {
 						return
 					}
 					go analytics.Send(engress.GroupVersionKind().String(), "DELETE", "success")
+
+					ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.Opt, engress)
+					ctrl.Delete()
+
+					// TODO: Remove annotations
 				}
 			},
 		},
 	)
 	ctrl.Run(wait.NeverStop)
+}
+
+func isNewPortChanged(old interface{}, new interface{}) bool {
+	o := old.(*sapi.Ingress)
+	n := new.(*sapi.Ingress)
+
+	oldPortLists := make([]string, 0)
+	for _, rs := range o.Spec.Rules {
+		for _, port := range rs.TCP {
+			oldPortLists = append(oldPortLists, port.Port.String())
+		}
+	}
+
+	for _, rs := range n.Spec.Rules {
+		for _, port := range rs.TCP {
+			if !stringz.Contains(oldPortLists, port.Port.String()) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func isNewSecretAdded(old interface{}, new interface{}) bool {
+	o := old.(*sapi.Ingress)
+	n := new.(*sapi.Ingress)
+
+	oldSecretLists := make([]string, 0)
+	for _, rs := range o.Spec.TLS {
+		oldSecretLists = append(oldSecretLists, rs.SecretName)
+	}
+	for _, rs := range o.Spec.Rules {
+		for _, tcp := range rs.TCP {
+			oldSecretLists = append(oldSecretLists, tcp.SecretName)
+		}
+	}
+
+	for _, rs := range n.Spec.Rules {
+		for _, port := range rs.TCP {
+			if !stringz.Contains(oldSecretLists, port.SecretName) {
+				return true
+			}
+		}
+	}
+	for _, rs := range n.Spec.TLS {
+		if !stringz.Contains(oldSecretLists, rs.SecretName) {
+			return true
+		}
+	}
+	return false
+}
+
+func isLoadBalancerSourceRangeChanged(old interface{}, new interface{}) bool {
+	oldObj, oldOk := old.(*sapi.Ingress)
+	newObj, newOk := new.(*sapi.Ingress)
+
+	if oldOk && newOk {
+		oldipset := make(map[string]bool)
+		for _, oldrange := range oldObj.Spec.LoadBalancerSourceRanges {
+			k, ok := ipnet(oldrange)
+			if ok {
+				oldipset[k] = true
+			}
+		}
+
+		newipset := make(map[string]bool)
+		for _, newrange := range newObj.Spec.LoadBalancerSourceRanges {
+			k, ok := ipnet(newrange)
+			if ok {
+				newipset[k] = true
+				if _, found := oldipset[k]; !found {
+					return true
+				}
+			}
+		}
+
+		if len(newipset) != len(oldipset) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func ipnet(spec string) (string, bool) {
+	spec = strings.TrimSpace(spec)
+	_, ipnet, err := net.ParseCIDR(spec)
+	if err != nil {
+		return "", false
+	}
+	return ipnet.String(), true
+}
+
+func isStatsChanged(old *sapi.Ingress, new *sapi.Ingress) bool {
+	return isMapKeyChanged(old.Annotations, new.Annotations, sapi.StatsOn) ||
+		isMapKeyChanged(old.Annotations, new.Annotations, sapi.StatsPort) ||
+		isMapKeyChanged(old.Annotations, new.Annotations, sapi.StatsServiceName) ||
+		isMapKeyChanged(old.Annotations, new.Annotations, sapi.StatsSecret)
+}
+
+func (op *Operator) isKeepSourceChanged(old *sapi.Ingress, new *sapi.Ingress) bool {
+	return op.Opt.CloudProvider == "aws" &&
+		new.LBType() == sapi.LBTypeLoadBalancer &&
+		isMapKeyChanged(old.Annotations, new.Annotations, sapi.KeepSourceIP)
+}
+
+func isMapKeyChanged(oldMap map[string]string, newMap map[string]string, key string) bool {
+	oldValue, oldOk := oldMap[key]
+	newValue, newOk := newMap[key]
+	return oldOk != newOk || oldValue != newValue
 }
