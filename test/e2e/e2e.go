@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/appscode/log"
-	acs "github.com/appscode/voyager/client/clientset"
+	tcs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/config"
-	acw "github.com/appscode/voyager/pkg/operator"
+	"github.com/appscode/voyager/pkg/operator"
 	"github.com/appscode/voyager/test/testframework"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -18,8 +18,8 @@ import (
 type TestSuit struct {
 	Config     testframework.E2EConfig
 	KubeClient clientset.Interface
-	ExtClient  acs.ExtensionInterface
-	Operator   *acw.Operator
+	ExtClient  tcs.ExtensionInterface
+	Operator   *operator.Operator
 }
 
 func init() {
@@ -35,10 +35,10 @@ func NewE2ETestSuit() *TestSuit {
 	return &TestSuit{
 		Config:     testframework.TestContext.E2EConfigs,
 		KubeClient: clientset.NewForConfigOrDie(c),
-		ExtClient:  acs.NewForConfigOrDie(c),
-		Operator: acw.New(
+		ExtClient:  tcs.NewForConfigOrDie(c),
+		Operator: operator.New(
 			clientset.NewForConfigOrDie(c),
-			acs.NewForConfigOrDie(c),
+			tcs.NewForConfigOrDie(c),
 			nil,
 			config.Options{
 				CloudProvider: testframework.TestContext.E2EConfigs.ProviderName,

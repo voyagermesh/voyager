@@ -24,7 +24,7 @@ const (
 	ExporterSidecarTag = "appscode/voyager:3.0.0"
 )
 
-func (lbc *IngressController) Create() error {
+func (lbc *Controller) Create() error {
 	err := lbc.generateTemplate()
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -46,7 +46,7 @@ func (lbc *IngressController) Create() error {
 	return nil
 }
 
-func (lbc *IngressController) ensureConfigMap() error {
+func (lbc *Controller) ensureConfigMap() error {
 	log.Infoln("creating cmap for engress")
 	cm, err := lbc.KubeClient.CoreV1().ConfigMaps(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
@@ -90,7 +90,7 @@ func (lbc *IngressController) ensureConfigMap() error {
 	return nil
 }
 
-func (lbc *IngressController) createLB() error {
+func (lbc *Controller) createLB() error {
 	if !lbc.SupportsLBType() {
 		return errors.Newf("LBType %s is unsupported for cloud provider: %s", lbc.Resource.LBType(), lbc.Opt.CloudProvider).Err()
 	}
@@ -142,7 +142,7 @@ func (lbc *IngressController) createLB() error {
 	return nil
 }
 
-func (lbc *IngressController) createHostPortSvc() error {
+func (lbc *Controller) createHostPortSvc() error {
 	// Create a Headless service without selectors
 	// We just want kubernetes to assign a stable UID to the service. This is used inside EnsureFirewall()
 	svc := &apiv1.Service{
@@ -236,7 +236,7 @@ func (lbc *IngressController) createHostPortSvc() error {
 	return nil
 }
 
-func (lbc *IngressController) createHostPortPods() error {
+func (lbc *Controller) createHostPortPods() error {
 	if len(lbc.Resource.NodeSelector()) == 0 {
 		return errors.Newf("%s type ingress %s@%s is missing node selectors.", lbc.Resource.LBType(), lbc.Resource.Name, lbc.Resource.Namespace).Err()
 	}
@@ -366,7 +366,7 @@ func (lbc *IngressController) createHostPortPods() error {
 	return nil
 }
 
-func (lbc *IngressController) createNodePortSvc() error {
+func (lbc *Controller) createNodePortSvc() error {
 	log.Infoln("creating NodePort type lb")
 	// creating service as type NodePort
 	svc := &apiv1.Service{
@@ -440,7 +440,7 @@ func (lbc *IngressController) createNodePortSvc() error {
 	return nil
 }
 
-func (lbc *IngressController) createNodePortPods() error {
+func (lbc *Controller) createNodePortPods() error {
 	log.Infoln("creating NodePort deployment")
 	deployment := &extensions.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -573,7 +573,7 @@ func (lbc *IngressController) createNodePortPods() error {
 	return nil
 }
 
-func (lbc *IngressController) createLoadBalancerSvc() error {
+func (lbc *Controller) createLoadBalancerSvc() error {
 	log.Infoln("creating LoadBalancer type lb")
 	// creating service as typeLoadBalancer
 	svc := &apiv1.Service{
@@ -648,7 +648,7 @@ func (lbc *IngressController) createLoadBalancerSvc() error {
 	return nil
 }
 
-func (lbc *IngressController) getExporterSidecar() (*apiv1.Container, error) {
+func (lbc *Controller) getExporterSidecar() (*apiv1.Container, error) {
 	if !lbc.Resource.Stats() {
 		return nil, nil // Don't add sidecar is stats is not exposed.
 	}
@@ -678,7 +678,7 @@ func (lbc *IngressController) getExporterSidecar() (*apiv1.Container, error) {
 	return nil, nil
 }
 
-func (lbc *IngressController) ensureStatsService() {
+func (lbc *Controller) ensureStatsService() {
 	svc := &apiv1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      lbc.Resource.StatsServiceName(),
@@ -731,7 +731,7 @@ func (lbc *IngressController) ensureStatsService() {
 	}
 }
 
-func (lbc *IngressController) updateStatus() error {
+func (lbc *Controller) updateStatus() error {
 	var statuses []apiv1.LoadBalancerIngress
 
 	switch lbc.Resource.LBType() {
@@ -774,7 +774,7 @@ func (lbc *IngressController) updateStatus() error {
 	return nil
 }
 
-func (lbc *IngressController) ensureResourceAnnotations(annotation map[string]string) (map[string]string, bool) {
+func (lbc *Controller) ensureResourceAnnotations(annotation map[string]string) (map[string]string, bool) {
 	needsUpdate := false
 
 	// Copy the given map to avoid updating the original annotations

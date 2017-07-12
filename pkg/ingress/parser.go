@@ -19,7 +19,7 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-func (lbc *IngressController) SupportsLBType() bool {
+func (lbc *Controller) SupportsLBType() bool {
 	switch lbc.Resource.LBType() {
 	case api.LBTypeLoadBalancer:
 		return lbc.Opt.CloudProvider == "aws" ||
@@ -35,7 +35,7 @@ func (lbc *IngressController) SupportsLBType() bool {
 	}
 }
 
-func (lbc *IngressController) serviceEndpoints(name string, port intstr.IntOrString, hostNames []string) ([]*Endpoint, error) {
+func (lbc *Controller) serviceEndpoints(name string, port intstr.IntOrString, hostNames []string) ([]*Endpoint, error) {
 	log.Infoln("getting endpoints for ", lbc.Resource.Namespace, name, "port", port)
 
 	// the following lines giving support to
@@ -83,7 +83,7 @@ func (lbc *IngressController) serviceEndpoints(name string, port intstr.IntOrStr
 	return lbc.getEndpoints(service, p, hostNames)
 }
 
-func (lbc *IngressController) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
+func (lbc *Controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
 	ep, err := lbc.KubeClient.CoreV1().Endpoints(s.Namespace).Get(s.Name, metav1.GetOptions{})
 	if err != nil {
 		log.Warningln(err)
@@ -158,7 +158,7 @@ func isForwardable(hostNames []string, hostName string) bool {
 	return false
 }
 
-func (lbc *IngressController) generateTemplate() error {
+func (lbc *Controller) generateTemplate() error {
 	log.Infoln("Generating Ingress template.")
 	ctx, err := Context(lbc.Parsed)
 	if err != nil {
@@ -211,7 +211,7 @@ func getTargetPort(servicePort *apiv1.ServicePort) int {
 	return servicePort.TargetPort.IntValue()
 }
 
-func (lbc *IngressController) parseSpec() {
+func (lbc *Controller) parseSpec() {
 	log.Infoln("Parsing Engress specs")
 	lbc.Ports = make(map[int]int)
 	lbc.Parsed.DNSResolvers = make(map[string]*api.DNSResolver)
@@ -332,7 +332,7 @@ func (lbc *IngressController) parseSpec() {
 	}
 }
 
-func (lbc *IngressController) parseOptions() {
+func (lbc *Controller) parseOptions() {
 	if lbc.Resource == nil {
 		log.Infoln("Config is nil, nothing to parse")
 		return

@@ -17,7 +17,7 @@ func init() {
 }
 
 func TestResourceIsExists(t *testing.T) {
-	testCases := map[*IngressController]bool{
+	testCases := map[*Controller]bool{
 		{
 			Resource: &api.Ingress{
 				ObjectMeta: metav1.ObjectMeta{

@@ -15,7 +15,7 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 )
 
-type IngressController struct {
+type Controller struct {
 	KubeClient clientset.Interface
 	ExtClient  acs.ExtensionInterface
 	PromClient pcm.MonitoringV1alpha1Interface
@@ -113,8 +113,8 @@ func NewController(
 	extClient acs.ExtensionInterface,
 	promClient pcm.MonitoringV1alpha1Interface,
 	opt config.Options,
-	ingress *api.Ingress) *IngressController {
-	h := &IngressController{
+	ingress *api.Ingress) *Controller {
+	h := &Controller{
 		KubeClient: kubeClient,
 		ExtClient:  extClient,
 		PromClient: promClient,
