@@ -2,7 +2,6 @@ package operator
 
 import (
 	"encoding/json"
-	"strings"
 
 	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
@@ -110,7 +109,7 @@ func (op *Operator) updateHAProxies(svc *apiv1.Service) error {
 		engress := &items[i]
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
 			log.Infoln("Checking for service", svc, "to be used to load balance via ingress", item.Name, item.Namespace)
-			if op.IngressUsesService(engress, svc) {
+			if engress.HasBackendService(svc.Name, svc.Namespace) {
 				ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.Opt, engress)
 				if ctrl.IsExists() {
 					// Loadbalancer resource for this ingress is found in its place,
@@ -145,8 +144,7 @@ func (op *Operator) ensureServiceAnnotations(r *tapi.Ingress, svc *apiv1.Service
 	if svc.Annotations == nil {
 		svc.Annotations = make(map[string]string)
 	}
-	backends := r.BackendServices()
-	if _, ok := backends[svc.Name+"."+svc.Namespace]; ok {
+	if r.HasBackendService(svc.Name, svc.Namespace) {
 		list := make([]tapi.IngressRef, 0)
 		val, ok := svc.Annotations[tapi.EgressPoints]
 		if ok {
@@ -201,36 +199,4 @@ func (op *Operator) ensureServiceAnnotations(r *tapi.Ingress, svc *apiv1.Service
 		}
 		op.KubeClient.CoreV1().Services(svc.Namespace).Update(svc)
 	}
-}
-
-func (op *Operator) IngressUsesService(ing *tapi.Ingress, svc *apiv1.Service) bool {
-	svcFQN := svc.Name + "." + svc.Namespace
-
-	fqn := func(svcName string) string {
-		if strings.ContainsRune(svcName, '.') {
-			return svcName
-		}
-		return svcName + "." + ing.Namespace
-	}
-
-	if ing.Spec.Backend != nil {
-		if fqn(ing.Spec.Backend.ServiceName) == svcFQN {
-			return true
-		}
-	}
-	for _, rules := range ing.Spec.Rules {
-		if rules.HTTP != nil {
-			for _, svc := range rules.HTTP.Paths {
-				if fqn(svc.Backend.ServiceName) == svcFQN {
-					return true
-				}
-			}
-		}
-		for _, svc := range rules.TCP {
-			if fqn(svc.Backend.ServiceName) == svcFQN {
-				return true
-			}
-		}
-	}
-	return false
 }
