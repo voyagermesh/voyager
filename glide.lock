@@ -1,5 +1,5 @@
 hash: 4603d45081832651b419c72d01373806592fe66c295a144567aab3fdcbedcda8
-updated: 2017-07-12T03:42:10.642283746-07:00
+updated: 2017-07-12T12:44:07.541012348-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -353,7 +353,7 @@ imports:
   - cipher
   - json
 - name: gopkg.in/yaml.v2
-  version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
+  version: 1be3d31502d6eabc0dd7ce5b0daab022e14a5538
 - name: k8s.io/apimachinery
   version: 75b8dd260ef0469d96d578705a87cffd0e09dab8
   subpackages:
@@ -444,9 +444,6 @@ imports:
   - kubernetes/typed/storage/v1/fake
   - kubernetes/typed/storage/v1beta1
   - kubernetes/typed/storage/v1beta1/fake
-  - listers/apps/v1beta1
-  - listers/core/v1
-  - listers/extensions/v1beta1
   - pkg/api
   - pkg/api/install
   - pkg/api/v1
