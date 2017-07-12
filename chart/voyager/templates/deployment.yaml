@@ -12,27 +12,21 @@ spec:
   template:
     metadata:
       labels:
-        chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
         app: "{{ template "name" . }}"
-        heritage: "{{ .Release.Service }}"
         release: "{{ .Release.Name }}"
     spec:
 {{- if .Values.rbac.install }}
       serviceAccountName: {{ template "fullname" . }}
 {{- end }}
       containers:
-      - args:
+      - name: operator
+        image: "{{ .Values.image }}:{{ .Values.imageTag }}"
+        args:
         - run
         - --cloud-provider={{ .Values.cloudProvider }}
         - --cloud-config={{ .Values.cloudConfig }}
         - --v={{ .Values.logLevel }}
-        image: "{{ .Values.image }}:{{ .Values.imageTag }}"
-        name: voyager
-        env:
-          - name: OPERATOR_SERVICE_ACCOUNT
-            valueFrom:
-              fieldRef:
-                fieldPath: spec.serviceAccountName
+        - --operator-service={{ template "fullname" . }}
         ports:
         - containerPort: 56790
           name: http
