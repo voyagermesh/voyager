@@ -89,14 +89,15 @@ func (op *Operator) ensureThirdPartyResource(resourceName string) error {
 }
 
 func (op *Operator) Run() {
-	go op.WatchCertificateTPRs()
+	op.Setup()
+	go op.WatchNamespaces()
 	go op.WatchConfigMaps()
 	go op.WatchDaemonSets()
 	go op.WatchDeployments()
-	go op.WatchEndpoints()
-	go op.WatchIngressTPRs()
-	go op.WatchIngresses()
-	go op.WatchNamespaces()
 	go op.WatchServices()
+	go op.WatchEndpoints()
+	go op.WatchIngresses()
+	go op.WatchIngressTPRs()
+	go op.WatchCertificateTPRs()
 	go certificate.CheckCertificates(op.KubeClient, op.ExtClient, op.Opt)
 }

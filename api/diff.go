@@ -53,23 +53,50 @@ func (r Ingress) HasChanged(o Ingress) (bool, error) {
 	return !reflect.DeepEqual(ra, oa), nil
 }
 
-// TODO: Fix 80, 443 detection
 func (r Ingress) IsPortChanged(o Ingress) bool {
+	if (r.Spec.Backend == nil && o.Spec.Backend != r.Spec.Backend) ||
+		(r.Spec.Backend != nil && o.Spec.Backend == nil) {
+		return true
+	}
+
+	var oldPort80Open, oldPort443Open bool
 	oldPortLists := make([]string, 0)
 	for _, rs := range r.Spec.Rules {
+		if rs.HTTP != nil {
+			for _, tls := range r.Spec.TLS {
+				if stringz.Contains(tls.Hosts, rs.Host) {
+					oldPort443Open = true
+				} else {
+					oldPort80Open = true
+				}
+			}
+		}
+
 		for _, port := range rs.TCP {
 			oldPortLists = append(oldPortLists, port.Port.String())
 		}
 	}
 
+	var newPort80Open, newPort443Open bool
 	for _, rs := range o.Spec.Rules {
+		if rs.HTTP != nil {
+			for _, tls := range r.Spec.TLS {
+				if stringz.Contains(tls.Hosts, rs.Host) {
+					newPort443Open = true
+				} else {
+					newPort80Open = true
+				}
+			}
+		}
+
 		for _, port := range rs.TCP {
 			if !stringz.Contains(oldPortLists, port.Port.String()) {
 				return true
 			}
 		}
 	}
-	return false
+
+	return (oldPort80Open != newPort80Open) || (oldPort443Open != newPort443Open)
 }
 
 func (r Ingress) IsSecretChanged(o Ingress) bool {

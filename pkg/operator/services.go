@@ -17,6 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
+	"github.com/appscode/errors"
 )
 
 // Blocks caller. Intended to be called as a Go routine.
@@ -95,7 +96,7 @@ func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*tapi.Ingress, error) {
 	sourceName, sourceNameFound := meta.Annotations[tapi.OriginName]
 	sourceType, sourceTypeFound := meta.Annotations[tapi.OriginAPISchema]
 	if !sourceNameFound && !sourceTypeFound {
-		return nil, nil
+		return nil, errors.New("No Types or Name found").Err()
 	}
 
 	if sourceType == tapi.APISchemaIngress {
