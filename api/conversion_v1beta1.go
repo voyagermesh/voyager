@@ -11,7 +11,7 @@ import (
 func addConversionFuncs(scheme *runtime.Scheme) error {
 	// Add field label conversions for kinds having selectable nothing but ObjectMeta fields.
 	var err error
-	for _, k := range []string{"Ingress", "Certificate"} {
+	for _, k := range []string{ResourceKindIngress, ResourceKindCertificate} {
 		kind := k // don't close over range variables
 		err = scheme.AddFieldLabelConversionFunc(GroupName+"/v1", kind,
 			func(label, value string) (string, string, error) {

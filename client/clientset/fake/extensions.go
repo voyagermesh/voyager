@@ -1,7 +1,7 @@
 package fake
 
 import (
-	"github.com/appscode/voyager/api"
+	tapi "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/client/clientset"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -19,7 +19,7 @@ var _ clientset.ExtensionInterface = &FakeExtensionClient{}
 func NewFakeExtensionClient(objects ...runtime.Object) *FakeExtensionClient {
 	o := testing.NewObjectTracker(kapi.Registry, kapi.Scheme, kapi.Codecs.UniversalDecoder())
 	for _, obj := range objects {
-		if obj.GetObjectKind().GroupVersionKind().Group == api.GroupName {
+		if obj.GetObjectKind().GroupVersionKind().Group == tapi.GroupName {
 			if err := o.Add(obj); err != nil {
 				panic(err)
 			}
