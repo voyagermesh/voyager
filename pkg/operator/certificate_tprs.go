@@ -8,11 +8,11 @@ import (
 	"github.com/appscode/log"
 	sapi "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/analytics"
-	"github.com/appscode/voyager/pkg/certificates"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/informers/certificates"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
 )

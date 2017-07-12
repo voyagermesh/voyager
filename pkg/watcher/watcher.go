@@ -12,7 +12,7 @@ import (
 	"github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/analytics"
-	// "github.com/appscode/voyager/pkg/certificates"
+	// "github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/events"
 	ingresscontroller "github.com/appscode/voyager/pkg/ingress"
 	"github.com/appscode/voyager/pkg/stash"

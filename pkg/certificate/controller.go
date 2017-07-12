@@ -1,4 +1,4 @@
-package certificates
+package certificate
 
 import (
 	"crypto/rand"
@@ -13,7 +13,7 @@ import (
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
-	"github.com/appscode/voyager/pkg/certificates/providers"
+	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/xenolf/lego/acme"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

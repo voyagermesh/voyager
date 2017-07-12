@@ -3,7 +3,7 @@ package watcher
 import (
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
-	"github.com/appscode/voyager/pkg/certificates"
+	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/events"
 	"k8s.io/apimachinery/pkg/util/wait"
 	core_listers "k8s.io/client-go/listers/core/v1"
@@ -107,5 +107,5 @@ func (w *Watcher) Certificate() {
 	_, controller := w.Cache(events.Certificate, &api.Certificate{}, lw)
 	go controller.Run(wait.NeverStop)
 
-	go certificates.CheckCertificates(w.KubeClient, w.ExtClient)
+	go certificate.CheckCertificates(w.KubeClient, w.ExtClient)
 }
