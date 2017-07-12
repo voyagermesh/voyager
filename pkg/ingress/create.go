@@ -271,7 +271,7 @@ func (lbc *IngressController) createHostPortPods() error {
 					Containers: []apiv1.Container{
 						{
 							Name:  "haproxy",
-							Image: GetLoadbalancerImage(),
+							Image: lbc.Opt.HAProxyImage,
 							Env: []apiv1.EnvVar{
 								{
 									Name: "KUBE_NAMESPACE",
@@ -482,7 +482,7 @@ func (lbc *IngressController) createNodePortPods() error {
 					Containers: []apiv1.Container{
 						{
 							Name:  "haproxy",
-							Image: GetLoadbalancerImage(),
+							Image: lbc.Opt.HAProxyImage,
 							Env: []apiv1.EnvVar{
 								{
 									Name: "KUBE_NAMESPACE",
