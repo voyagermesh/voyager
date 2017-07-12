@@ -22,10 +22,13 @@ voyager run [flags]
       --haproxy.server-metric-fields string   Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1 (default "2,3,4,5,6,7,8,9,13,14,15,16,17,18,21,24,33,35,38,39,40,41,42,43,44")
       --haproxy.timeout duration              Timeout for trying to get stats from HAProxy. (default 5s)
   -h, --help                                  help for run
+      --http-challenge-port int               Port used to answer ACME HTTP challenge (default 56791)
       --ingress-class string                  Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.
       --kubeconfig string                     Path to kubeconfig file with authorization information (the master location is set by the master flag).
       --master string                         The address of the Kubernetes API server (overrides any value in kubeconfig)
-      --operator-service-account string       Service account name used to run Voyager operator (default "default")
+      --operator-namespace string             Namespace where voyager pod is running (default "default")
+      --operator-service string               Name of service used to expose voyager operator (default "voyager-operator")
+      --rbac                                  Enable RBAC for operator & offshoot Kubernetes objects
 ```
 
 ### Options inherited from parent commands
