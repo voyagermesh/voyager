@@ -1,5 +1,6 @@
 # Voyager
-[Voyager](https://github.com/appscode/voyager)  provides controller for Ingress and Certificates for Kubernetes developed by AppsCode.
+[Voyager by AppsCode](https://github.com/appscode/voyager) - Secure Ingress Controller for Kubernetes
+
 ## TL;DR;
 
 ```bash
