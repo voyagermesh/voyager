@@ -4,17 +4,16 @@ import (
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
-	"os"
 	"time"
 
-	stringz "github.com/appscode/go/strings"
 	hpe "github.com/appscode/haproxy_exporter/exporter"
 	"github.com/appscode/log"
 	"github.com/appscode/pat"
 	"github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/analytics"
-	"github.com/appscode/voyager/pkg/watcher"
+	"github.com/appscode/voyager/pkg/config"
+	"github.com/appscode/voyager/pkg/operator"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
@@ -25,13 +24,10 @@ import (
 var (
 	masterURL      string
 	kubeconfigPath string
-
-	providerName           string
-	cloudConfigFile        string
-	haProxyImage           string = "appscode/haproxy:1.7.6-3.0.0"
-	ingressClass           string
-	operatorServiceAccount string = stringz.Val(os.Getenv("OPERATOR_SERVICE_ACCOUNT"), "default")
-	enableAnalytics        bool   = true
+	opt            config.Options = config.Options{
+		HAProxyImage: "appscode/haproxy:1.7.6-3.0.0",
+	}
+	enableAnalytics bool = true
 
 	address                   string        = fmt.Sprintf(":%d", api.DefaultExporterPortNumber)
 	haProxyServerMetricFields string        = hpe.ServerMetrics.String()
@@ -61,11 +57,11 @@ func NewCmdRun(version string) *cobra.Command {
 
 	cmd.Flags().StringVar(&masterURL, "master", masterURL, "The address of the Kubernetes API server (overrides any value in kubeconfig)")
 	cmd.Flags().StringVar(&kubeconfigPath, "kubeconfig", kubeconfigPath, "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
-	cmd.Flags().StringVarP(&providerName, "cloud-provider", "c", providerName, "Name of cloud provider")
-	cmd.Flags().StringVar(&cloudConfigFile, "cloud-config", cloudConfigFile, "The path to the cloud provider configuration file.  Empty string for no configuration file.")
-	cmd.Flags().StringVar(&haProxyImage, "haproxy-image", haProxyImage, "haproxy image name to be run")
-	cmd.Flags().StringVar(&ingressClass, "ingress-class", "", "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
-	cmd.Flags().StringVar(&operatorServiceAccount, "operator-service-account", operatorServiceAccount, "Service account name used to run Voyager operator")
+	cmd.Flags().StringVarP(&opt.CloudProvider, "cloud-provider", "c", opt.CloudProvider, "Name of cloud provider")
+	cmd.Flags().StringVar(&opt.CloudConfigFile, "cloud-config", opt.CloudConfigFile, "The path to the cloud provider configuration file.  Empty string for no configuration file.")
+	cmd.Flags().StringVar(&opt.HAProxyImage, "haproxy-image", opt.HAProxyImage, "haproxy image name to be run")
+	cmd.Flags().StringVar(&opt.IngressClass, "ingress-class", opt.IngressClass, "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
+	cmd.Flags().BoolVar(&opt.EnableRBAC, "rbac", opt.EnableRBAC, "Enable RBAC for operator & offshoot Kubernetes objects")
 	cmd.Flags().BoolVar(&enableAnalytics, "analytics", enableAnalytics, "Send analytical event to Google Analytics")
 
 	cmd.Flags().StringVar(&address, "address", address, "Address to listen on for web interface and telemetry.")
@@ -76,7 +72,7 @@ func NewCmdRun(version string) *cobra.Command {
 }
 
 func run() {
-	if haProxyImage == "" {
+	if opt.HAProxyImage == "" {
 		log.Fatalln("Missing required flag --haproxy-image")
 	}
 
@@ -92,23 +88,11 @@ func run() {
 		log.Fatalln(err)
 	}
 
-	w := &watcher.Watcher{
-		KubeClient:         kubeClient,
-		ExtClient:          extClient,
-		PromClient:         promClient,
-		SyncPeriod:         time.Minute * 2,
-		ProviderName:       providerName,
-		CloudConfigFile:    cloudConfigFile,
-		HAProxyImage:       haProxyImage,
-		IngressClass:       ingressClass,
-		ServiceAccountName: operatorServiceAccount,
-	}
-
 	log.Infoln("Starting Voyager operator...")
 
+	w := operator.New(kubeClient, extClient, promClient, opt)
 	// https://github.com/appscode/voyager/issues/229
 	w.PurgeOffshootsWithDeprecatedLabels()
-
 	go w.Run()
 
 	selectedServerMetrics, err = hpe.FilterServerMetrics(haProxyServerMetricFields)

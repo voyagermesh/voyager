@@ -8,30 +8,23 @@ import (
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
+	"github.com/appscode/voyager/pkg/certificate"
+	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/stash"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/informers/certificates"
 	clientset "k8s.io/client-go/kubernetes"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/tools/record"
 )
 
-type Options struct {
-	CloudProvider      string
-	CloudConfigFile    string
-	HAProxyImage       string
-	IngressClass       string
-	ServiceAccountName string
-}
-
 type Operator struct {
 	KubeClient clientset.Interface
 	ExtClient  acs.ExtensionInterface
 	PromClient pcm.MonitoringV1alpha1Interface
-	Opt        Options
+	Opt        config.Options
 
 	recorder   record.EventRecorder
 	SyncPeriod time.Duration
@@ -43,7 +36,7 @@ func New(
 	kubeClient clientset.Interface,
 	extClient acs.ExtensionInterface,
 	promClient pcm.MonitoringV1alpha1Interface,
-	opt Options,
+	opt config.Options,
 ) *Operator {
 	return &Operator{
 		KubeClient: kubeClient,
@@ -106,7 +99,7 @@ func (c *Operator) Run() {
 	go c.WatchIngresses()
 	go c.WatchNamespaces()
 	go c.WatchServices()
-	go certificates.CheckCertificates(c.KubeClient, c.ExtClient)
+	go certificate.CheckCertificates(c.KubeClient, c.ExtClient)
 }
 
 func (w *Operator) findOrigin(meta metav1.ObjectMeta) (*api.Ingress, error) {

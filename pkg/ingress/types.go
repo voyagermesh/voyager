@@ -5,16 +5,18 @@ import (
 
 	api "github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
-	"github.com/appscode/voyager/pkg/stash"
+	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	clientset "k8s.io/client-go/kubernetes"
 )
 
 type IngressController struct {
-	ProviderName       string
-	IngressClass       string
-	ServiceAccountName string
+	KubeClient clientset.Interface
+	ExtClient  acs.ExtensionInterface
+	PromClient pcm.MonitoringV1alpha1Interface
+
+	opt config.Options
 
 	// Engress object that created or updated.
 	Resource *api.Ingress
@@ -34,12 +36,7 @@ type IngressController struct {
 	Parsed HAProxyOptions
 
 	// kubernetes client
-	KubeClient   clientset.Interface
-	ExtClient    acs.ExtensionInterface
-	PromClient   pcm.MonitoringV1alpha1Interface
 	CloudManager cloudprovider.Interface
-	// endpoint cache store. contains all endpoints will be search with respect to services.
-	Storage stash.Storage
 	sync.Mutex
 }
 

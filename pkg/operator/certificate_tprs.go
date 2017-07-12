@@ -8,11 +8,11 @@ import (
 	"github.com/appscode/log"
 	sapi "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/analytics"
+	"github.com/appscode/voyager/pkg/certificate"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
-	"k8s.io/client-go/informers/certificates"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
 )
@@ -38,7 +38,7 @@ func (c *Operator) WatchCertificateTPRs() {
 					log.Infof("%s %s@%s added", cert.GroupVersionKind(), cert.Name, cert.Namespace)
 					go analytics.Send(cert.GroupVersionKind().String(), "ADD", "success")
 
-					err := certificates.New(c.KubeClient, c.ExtClient, cert).Process()
+					err := certificate.NewController(c.KubeClient, c.ExtClient, cert).Process()
 					if err != nil {
 						log.Error(err)
 					}
@@ -56,7 +56,7 @@ func (c *Operator) WatchCertificateTPRs() {
 					return
 				}
 				if !reflect.DeepEqual(oldCert.Spec, newCert.Spec) {
-					err := certificates.New(c.KubeClient, c.ExtClient, newCert).Process()
+					err := certificate.NewController(c.KubeClient, c.ExtClient, newCert).Process()
 					if err != nil {
 						log.Error(err)
 					}

@@ -97,7 +97,7 @@ func (lbc *IngressController) ensureConfigMap() error {
 
 func (lbc *IngressController) createLB() error {
 	if !lbc.SupportsLBType() {
-		return errors.Newf("LBType %s is unsupported for cloud provider: %s", lbc.Resource.LBType(), lbc.ProviderName).Err()
+		return errors.Newf("LBType %s is unsupported for cloud provider: %s", lbc.Resource.LBType(), lbc.opt.CloudProvider).Err()
 	}
 
 	if lbc.Resource.LBType() == api.LBTypeHostPort {
@@ -178,7 +178,7 @@ func (lbc *IngressController) createHostPortSvc() error {
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
 
-	if ans, ok := lbc.Resource.ServiceAnnotations(lbc.ProviderName); ok {
+	if ans, ok := lbc.Resource.ServiceAnnotations(lbc.opt.CloudProvider); ok {
 		for k, v := range ans {
 			svc.Annotations[k] = v
 		}
@@ -297,9 +297,8 @@ func (lbc *IngressController) createHostPortPods() error {
 							VolumeMounts: vms,
 						},
 					},
-					Volumes:            vs,
-					HostNetwork:        true,
-					ServiceAccountName: lbc.ServiceAccountName,
+					Volumes:     vs,
+					HostNetwork: true,
 				},
 			},
 		},
@@ -404,13 +403,13 @@ func (lbc *IngressController) createNodePortSvc() error {
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
 
-	if ans, ok := lbc.Resource.ServiceAnnotations(lbc.ProviderName); ok {
+	if ans, ok := lbc.Resource.ServiceAnnotations(lbc.opt.CloudProvider); ok {
 		for k, v := range ans {
 			svc.Annotations[k] = v
 		}
 	}
 
-	if lbc.ProviderName == "aws" && lbc.Resource.KeepSourceIP() {
+	if lbc.opt.CloudProvider == "aws" && lbc.Resource.KeepSourceIP() {
 		// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
 		svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
 	}
@@ -509,8 +508,7 @@ func (lbc *IngressController) createNodePortPods() error {
 							VolumeMounts: VolumeMounts(lbc.SecretNames),
 						},
 					},
-					Volumes:            Volumes(lbc.SecretNames),
-					ServiceAccountName: lbc.ServiceAccountName,
+					Volumes: Volumes(lbc.SecretNames),
 				},
 			},
 		},
@@ -611,13 +609,13 @@ func (lbc *IngressController) createLoadBalancerSvc() error {
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
 
-	if ans, ok := lbc.Resource.ServiceAnnotations(lbc.ProviderName); ok {
+	if ans, ok := lbc.Resource.ServiceAnnotations(lbc.opt.CloudProvider); ok {
 		for k, v := range ans {
 			svc.Annotations[k] = v
 		}
 	}
 
-	switch lbc.ProviderName {
+	switch lbc.opt.CloudProvider {
 	case "gce", "gke":
 		if ip := lbc.Resource.LoadBalancerIP(); ip != nil {
 			svc.Spec.LoadBalancerIP = ip.String()

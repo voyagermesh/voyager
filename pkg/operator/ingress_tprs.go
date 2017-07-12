@@ -55,7 +55,7 @@ func (c *Operator) WatchIngressTPRs() {
 				}
 
 				if changed, _ := oldEngress.HasChanged(*newEngress); !changed {
-					log.Infof("%s %s@%s has unchanged spec and annotations", newIngress.GroupVersionKind(), newIngress.Name, newIngress.Namespace)
+					log.Infof("%s %s@%s has unchanged spec and annotations", newEngress.GroupVersionKind(), newEngress.Name, newEngress.Namespace)
 					return
 				}
 

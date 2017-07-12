@@ -22,7 +22,7 @@ func CheckCertificates(kubeClient clientset.Interface, extClient tcs.ExtensionIn
 				continue
 			}
 			for i := range result.Items {
-				err = New(kubeClient, extClient, &result.Items[i]).Process()
+				err = NewController(kubeClient, extClient, &result.Items[i]).Process()
 				if err != nil {
 					log.Error(err)
 				}

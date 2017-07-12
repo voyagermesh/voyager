@@ -57,7 +57,7 @@ type Controller struct {
 	userSecretName string
 }
 
-func New(kubeClient clientset.Interface, extClient acs.ExtensionInterface, tpr *api.Certificate) *Controller {
+func NewController(kubeClient clientset.Interface, extClient acs.ExtensionInterface, tpr *api.Certificate) *Controller {
 	return &Controller{
 		KubeClient: kubeClient,
 		ExtClient:  extClient,

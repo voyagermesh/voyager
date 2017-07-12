@@ -22,14 +22,14 @@ import (
 func (lbc *IngressController) SupportsLBType() bool {
 	switch lbc.Resource.LBType() {
 	case api.LBTypeLoadBalancer:
-		return lbc.ProviderName == "aws" ||
-			lbc.ProviderName == "gce" ||
-			lbc.ProviderName == "gke" ||
-			lbc.ProviderName == "azure" ||
-			lbc.ProviderName == "acs" ||
-			lbc.ProviderName == "minikube"
+		return lbc.opt.CloudProvider == "aws" ||
+			lbc.opt.CloudProvider == "gce" ||
+			lbc.opt.CloudProvider == "gke" ||
+			lbc.opt.CloudProvider == "azure" ||
+			lbc.opt.CloudProvider == "acs" ||
+			lbc.opt.CloudProvider == "minikube"
 	case api.LBTypeNodePort, api.LBTypeHostPort:
-		return lbc.ProviderName != "acs"
+		return lbc.opt.CloudProvider != "acs"
 	default:
 		return false
 	}
@@ -95,7 +95,7 @@ func (lbc *IngressController) serviceEndpoints(name string, port intstr.IntOrStr
 }
 
 func (lbc *IngressController) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
-	ep, err := lbc.Storage.EndpointStore.Endpoints(s.Namespace).Get(s.Name)
+	ep, err := lbc.KubeClient.CoreV1().Endpoints(s.Namespace).Get(s.Name, metav1.GetOptions{})
 	if err != nil {
 		log.Warningln(err)
 		return nil, err
@@ -137,7 +137,7 @@ func (lbc *IngressController) getEndpoints(s *apiv1.Service, servicePort *apiv1.
 						Port: targetPort,
 					}
 					if epAddress.TargetRef != nil {
-						pod, err := lbc.Storage.PodStore.Pods(epAddress.TargetRef.Namespace).Get(epAddress.TargetRef.Name)
+						pod, err := lbc.KubeClient.CoreV1().Pods(epAddress.TargetRef.Namespace).Get(epAddress.TargetRef.Name, metav1.GetOptions{})
 						if err != nil {
 							log.Errorln("Error getting endpoind pod", err)
 						} else {
@@ -321,8 +321,8 @@ func (lbc *IngressController) parseSpec() {
 	}
 
 	// ref: https://github.com/appscode/voyager/issues/188
-	if lbc.ProviderName == "aws" && lbc.Resource.LBType() == api.LBTypeLoadBalancer {
-		if ans, ok := lbc.Resource.ServiceAnnotations(lbc.ProviderName); ok {
+	if lbc.opt.CloudProvider == "aws" && lbc.Resource.LBType() == api.LBTypeLoadBalancer {
+		if ans, ok := lbc.Resource.ServiceAnnotations(lbc.opt.CloudProvider); ok {
 			if v, usesAWSCertManager := ans["service.beta.kubernetes.io/aws-load-balancer-ssl-cert"]; usesAWSCertManager && v != "" {
 				var tp80, sp443 bool
 				for svcPort, targetPort := range lbc.Ports {
@@ -369,7 +369,7 @@ func (lbc *IngressController) parseOptions() {
 		}
 	}
 
-	if lbc.ProviderName == "aws" && lbc.Resource.LBType() == api.LBTypeLoadBalancer {
+	if lbc.opt.CloudProvider == "aws" && lbc.Resource.LBType() == api.LBTypeLoadBalancer {
 		lbc.Parsed.AcceptProxy = lbc.Resource.KeepSourceIP()
 	}
 }

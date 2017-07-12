@@ -12,6 +12,7 @@ import (
 	"github.com/appscode/voyager/api"
 	_ "github.com/appscode/voyager/api/install"
 	acs "github.com/appscode/voyager/client/clientset"
+	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/events"
 	"github.com/appscode/voyager/pkg/monitor"
 	"github.com/appscode/voyager/pkg/stash"
@@ -25,43 +26,38 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-func NewEngressController(providerName, cloudConfig string,
+func NewController(
 	kubeClient clientset.Interface,
 	extClient acs.ExtensionInterface,
 	promClient pcm.MonitoringV1alpha1Interface,
-	store stash.Storage,
-	ingressClass string,
-	operatorServiceAccount string) *IngressController {
+	opt config.Options) *IngressController {
 	h := &IngressController{
-		ProviderName:       providerName,
-		IngressClass:       ingressClass,
-		ServiceAccountName: operatorServiceAccount,
-		KubeClient:         kubeClient,
-		ExtClient:          extClient,
-		PromClient:         promClient,
-		Storage:            store,
+		KubeClient: kubeClient,
+		ExtClient:  extClient,
+		PromClient: promClient,
+		opt:        opt,
 	}
-	log.Infoln("Initializing cloud manager for provider", providerName)
-	if providerName == "aws" || providerName == "gce" || providerName == "azure" {
-		cloudInterface, err := cloudprovider.InitCloudProvider(providerName, cloudConfig)
+	log.Infoln("Initializing cloud manager for provider", opt.CloudProvider)
+	if opt.CloudProvider == "aws" || opt.CloudProvider == "gce" || opt.CloudProvider == "azure" {
+		cloudInterface, err := cloudprovider.InitCloudProvider(opt.CloudProvider, opt.CloudConfigFile)
 		if err != nil {
-			log.Errorln("Failed to initialize cloud provider:"+providerName, err)
+			log.Errorln("Failed to initialize cloud provider:"+opt.CloudProvider, err)
 		} else {
-			log.Infoln("Initialized cloud provider: "+providerName, cloudInterface)
+			log.Infoln("Initialized cloud provider: "+opt.CloudProvider, cloudInterface)
 			h.CloudManager = cloudInterface
 		}
-	} else if providerName == "gke" {
-		cloudInterface, err := cloudprovider.InitCloudProvider("gce", cloudConfig)
+	} else if opt.CloudProvider == "gke" {
+		cloudInterface, err := cloudprovider.InitCloudProvider("gce", opt.CloudConfigFile)
 		if err != nil {
-			log.Errorln("Failed to initialize cloud provider:"+providerName, err)
+			log.Errorln("Failed to initialize cloud provider:"+opt.CloudProvider, err)
 		} else {
-			log.Infoln("Initialized cloud provider: "+providerName, cloudInterface)
+			log.Infoln("Initialized cloud provider: "+opt.CloudProvider, cloudInterface)
 			h.CloudManager = cloudInterface
 		}
-	} else if providerName == "minikube" {
+	} else if opt.CloudProvider == "minikube" {
 		h.CloudManager = &fakecloudprovider.FakeCloud{}
 	} else {
-		log.Infoln("No cloud manager found for provider", providerName)
+		log.Infoln("No cloud manager found for provider", opt.CloudProvider)
 	}
 	return h
 }
@@ -102,7 +98,7 @@ func UpgradeAllEngress(service, providerName, cloudConfig string,
 		if shouldHandleIngress(engress, ingressClass) {
 			log.Infoln("Checking for service", service, "to be used to load balance via ingress", item.Name, item.Namespace)
 			if ok, name, namespace := isEngressHaveService(engress, service); ok {
-				lbc := NewEngressController(providerName, cloudConfig, kubeClient, extClient, promClient, store, ingressClass, operatorServiceAccount)
+				lbc := NewController(providerName, cloudConfig, kubeClient, extClient, promClient, store, ingressClass, operatorServiceAccount)
 				lbc.Resource = &items[i]
 				log.Infoln("Trying to Update Ingress", item.Name, item.Namespace)
 				if lbc.IsExists() {
@@ -154,7 +150,7 @@ func (lbc *IngressController) Handle(e *events.Event) error {
 	log.Infoln("Size of engs", len(engs), "Size of RuntimeObj", len(e.RuntimeObj))
 	if e.EventType.IsAdded() {
 		lbc.Resource = engs[0].(*api.Ingress)
-		if shouldHandleIngress(lbc.Resource, lbc.IngressClass) {
+		if shouldHandleIngress(lbc.Resource, lbc.opt.IngressClass) {
 			if lbc.IsExists() {
 				// Loadbalancer resource for this ingress is found in its place,
 				// so no need to create the resources. First trying to update
@@ -203,14 +199,14 @@ func (lbc *IngressController) Handle(e *events.Event) error {
 		}
 	} else if e.EventType.IsDeleted() {
 		lbc.Resource = engs[0].(*api.Ingress)
-		if shouldHandleIngress(lbc.Resource, lbc.IngressClass) {
+		if shouldHandleIngress(lbc.Resource, lbc.opt.IngressClass) {
 			lbc.Delete()
 		}
 	} else if e.EventType.IsUpdated() {
 		old := engs[0].(*api.Ingress)
 		new := engs[1].(*api.Ingress)
 		lbc.Resource = new
-		if !shouldHandleIngress(lbc.Resource, lbc.IngressClass) {
+		if !shouldHandleIngress(lbc.Resource, lbc.opt.IngressClass) {
 			return nil
 		}
 
@@ -455,7 +451,7 @@ func isStatsChanged(old *api.Ingress, new *api.Ingress) bool {
 }
 
 func (lbc *IngressController) isKeepSourceChanged(old *api.Ingress, new *api.Ingress) bool {
-	return lbc.ProviderName == "aws" &&
+	return lbc.opt.CloudProvider == "aws" &&
 		lbc.Resource.LBType() == api.LBTypeLoadBalancer &&
 		isMapKeyChanged(old.Annotations, new.Annotations, api.KeepSourceIP)
 }
