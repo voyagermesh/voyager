@@ -87,7 +87,7 @@ const (
 	// Supports all valid timeout option for defaults section of HAProxy
 	// https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.2-timeout%20check
 	// expects a json encoded map
-	// ie: "ingress.appscode.com/defaults-timeout": {"client": "5s"}
+	// ie: "ingress.appscode.com/default-timeout": {"client": "5s"}
 	//
 	// If the annotation is not set default values used to config defaults section will be:
 	//
@@ -96,7 +96,7 @@ const (
 	// timeout  client-fin      50000
 	// timeout  server          50000
 	// timeout  tunnel          50000
-	DefaultsTimeOut = EngressKey + "/" + "defaults-timeout"
+	DefaultsTimeOut = EngressKey + "/" + "default-timeout"
 )
 
 func (r Ingress) OffshootName() string {
