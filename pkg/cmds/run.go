@@ -2,8 +2,11 @@ package cmds
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	_ "net/http/pprof"
+	"os"
+	"strings"
 	"time"
 
 	hpe "github.com/appscode/haproxy_exporter/exporter"
@@ -18,6 +21,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	clientset "k8s.io/client-go/kubernetes"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -25,7 +29,10 @@ var (
 	masterURL      string
 	kubeconfigPath string
 	opt            config.Options = config.Options{
-		HAProxyImage: "appscode/haproxy:1.7.6-3.0.0",
+		HAProxyImage:      "appscode/haproxy:1.7.6-3.0.0",
+		OperatorNamespace: namespace(),
+		OperatorService:   "voyager-operator",
+		HTTPChallengePort: 56791,
 	}
 	enableAnalytics bool = true
 
@@ -63,6 +70,10 @@ func NewCmdRun(version string) *cobra.Command {
 	cmd.Flags().StringVar(&opt.IngressClass, "ingress-class", opt.IngressClass, "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
 	cmd.Flags().BoolVar(&opt.EnableRBAC, "rbac", opt.EnableRBAC, "Enable RBAC for operator & offshoot Kubernetes objects")
 	cmd.Flags().BoolVar(&enableAnalytics, "analytics", enableAnalytics, "Send analytical event to Google Analytics")
+
+	cmd.Flags().StringVar(&opt.OperatorService, "operator-service", opt.OperatorService, "Name of service used to expose voyager operator")
+	cmd.Flags().StringVar(&opt.OperatorNamespace, "operator-namespace", opt.OperatorNamespace, "Namespace where voyager pod is running")
+	cmd.Flags().IntVar(&opt.HTTPChallengePort, "http-challenge-port", opt.HTTPChallengePort, "Port used to answer ACME HTTP challenge")
 
 	cmd.Flags().StringVar(&address, "address", address, "Address to listen on for web interface and telemetry.")
 	cmd.Flags().StringVar(&haProxyServerMetricFields, "haproxy.server-metric-fields", haProxyServerMetricFields, "Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1")
@@ -108,4 +119,16 @@ func run() {
 	http.Handle("/", m)
 	log.Infoln("Listening on", address)
 	log.Fatal(http.ListenAndServe(address, nil))
+}
+
+func namespace() string {
+	if ns := os.Getenv("OPERATOR_NAMESPACE"); ns != "" {
+		return ns
+	}
+	if data, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace"); err == nil {
+		if ns := strings.TrimSpace(string(data)); len(ns) > 0 {
+			return ns
+		}
+	}
+	return apiv1.NamespaceDefault
 }

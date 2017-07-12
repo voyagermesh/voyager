@@ -98,5 +98,5 @@ func (op *Operator) Run() {
 	go op.WatchIngresses()
 	go op.WatchNamespaces()
 	go op.WatchServices()
-	go certificate.CheckCertificates(op.KubeClient, op.ExtClient)
+	go certificate.CheckCertificates(op.KubeClient, op.ExtClient, op.Opt)
 }

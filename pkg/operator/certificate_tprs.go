@@ -38,7 +38,7 @@ func (op *Operator) WatchCertificateTPRs() {
 					log.Infof("%s %s@%s added", cert.GroupVersionKind(), cert.Name, cert.Namespace)
 					go analytics.Send(cert.GroupVersionKind().String(), "ADD", "success")
 
-					err := certificate.NewController(op.KubeClient, op.ExtClient, cert).Process()
+					err := certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, cert).Process()
 					if err != nil {
 						log.Error(err)
 					}
@@ -56,7 +56,7 @@ func (op *Operator) WatchCertificateTPRs() {
 					return
 				}
 				if !reflect.DeepEqual(oldCert.Spec, newCert.Spec) {
-					err := certificate.NewController(op.KubeClient, op.ExtClient, newCert).Process()
+					err := certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, newCert).Process()
 					if err != nil {
 						log.Error(err)
 					}
