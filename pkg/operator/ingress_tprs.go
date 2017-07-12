@@ -122,53 +122,72 @@ func (op *Operator) WatchIngressTPRs() {
 					log.Infof("%s %s@%s has unchanged spec and annotations", newEngress.GroupVersionKind(), newEngress.Name, newEngress.Namespace)
 					return
 				}
+				oldHandled := oldEngress.ShouldHandleIngress(op.Opt.IngressClass)
+				newHandled := newEngress.ShouldHandleIngress(op.Opt.IngressClass)
+				if !oldHandled && !newHandled {
+					return
+				}
 
-				// TODO: Fix check the case of switching ingress class
 				ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.Opt, newEngress)
 
-				var updateMode ingress.UpdateMode
+				if oldHandled && !newHandled {
+					ctrl.Delete()
+				} else {
+					if ctrl.IsExists() {
+						var updateMode ingress.UpdateMode
 
-				// Ingress Annotations Changed, Apply Changes to Targets
-				// The following method do not update to HAProxy config or restart pod. It only sets the annotations
-				// to the required targets.
-				ctrl.UpdateTargetAnnotations(oldEngress, newEngress)
+						// Ingress Annotations Changed, Apply Changes to Targets
+						// The following method do not update to HAProxy config or restart pod. It only sets the annotations
+						// to the required targets.
+						ctrl.UpdateTargetAnnotations(oldEngress, newEngress)
 
-				if oldEngress.IsKeepSourceChanged(*newEngress, op.Opt.CloudProvider) {
-					updateMode |= ingress.UpdateConfig
-				}
-				if oldEngress.IsStatsChanged(*newEngress) {
-					updateMode |= ingress.UpdateStats
-				}
-				// Check for changes in ingress.appscode.com/monitoring-agent
-				if newMonSpec, newErr := newEngress.MonitorSpec(); newErr == nil {
-					if oldMonSpec, oldErr := oldEngress.MonitorSpec(); oldErr == nil {
-						if !reflect.DeepEqual(oldMonSpec, newMonSpec) {
-							promCtrl := monitor.NewPrometheusController(ctrl.KubeClient, ctrl.PromClient)
-							err := promCtrl.UpdateMonitor(ctrl.Resource, oldMonSpec, newMonSpec)
-							if err != nil {
-								return
-							}
+						if oldEngress.IsKeepSourceChanged(*newEngress, op.Opt.CloudProvider) {
+							updateMode |= ingress.UpdateConfig
 						}
-						if (oldMonSpec == nil && newMonSpec != nil) ||
-							(oldMonSpec != nil && newMonSpec == nil) {
+						if oldEngress.IsStatsChanged(*newEngress) {
 							updateMode |= ingress.UpdateStats
 						}
+						// Check for changes in ingress.appscode.com/monitoring-agent
+						if newMonSpec, newErr := newEngress.MonitorSpec(); newErr == nil {
+							if oldMonSpec, oldErr := oldEngress.MonitorSpec(); oldErr == nil {
+								if !reflect.DeepEqual(oldMonSpec, newMonSpec) {
+									promCtrl := monitor.NewPrometheusController(ctrl.KubeClient, ctrl.PromClient)
+									err := promCtrl.UpdateMonitor(ctrl.Resource, oldMonSpec, newMonSpec)
+									if err != nil {
+										return
+									}
+								}
+								if (oldMonSpec == nil && newMonSpec != nil) ||
+									(oldMonSpec != nil && newMonSpec == nil) {
+									updateMode |= ingress.UpdateStats
+								}
+							}
+						}
+
+						if oldEngress.IsPortChanged(*newEngress) || oldEngress.IsLoadBalancerSourceRangeChanged(*newEngress) {
+							updateMode |= ingress.UpdateFirewall
+						} else if oldEngress.IsSecretChanged(*newEngress) {
+							updateMode |= ingress.RestartHAProxy
+						} else {
+							updateMode |= ingress.UpdateConfig
+						}
+						if updateMode > 0 {
+							// For ingress update update HAProxy once
+							ctrl.Update(updateMode)
+						}
+					} else {
+						ctrl.Create()
 					}
 				}
 
-				if oldEngress.IsPortChanged(*newEngress) || oldEngress.IsLoadBalancerSourceRangeChanged(*newEngress) {
-					updateMode |= ingress.UpdateFirewall
-				} else if oldEngress.IsSecretChanged(*newEngress) {
-					updateMode |= ingress.RestartHAProxy
-				} else {
-					updateMode |= ingress.UpdateConfig
+				backends := map[string]metav1.ObjectMeta{}
+				for k, v := range oldEngress.BackendServices() {
+					backends[k] = v
 				}
-				if updateMode > 0 {
-					// For ingress update update HAProxy once
-					ctrl.Update(updateMode)
+				for k, v := range newEngress.BackendServices() {
+					backends[k] = v
 				}
-
-				for _, meta := range newEngress.BackendServices() {
+				for _, meta := range backends {
 					svc, err := op.KubeClient.CoreV1().Services(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 					if err != nil {
 						continue
