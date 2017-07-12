@@ -233,13 +233,3 @@ func (op *Operator) IngressUsesService(ing *api.Ingress, svc *apiv1.Service) boo
 	}
 	return false
 }
-
-func splitNameNamespace(fqdn, name, namespace string) (string, string) {
-	if fqdn == (name+"."+namespace) || fqdn == name {
-		return name, namespace
-	}
-	if strings.HasPrefix(fqdn, name+".") {
-		return name, name[:strings.LastIndex(name, ".")]
-	}
-	return name, namespace
-}
