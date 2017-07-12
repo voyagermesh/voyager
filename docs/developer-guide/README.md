@@ -133,7 +133,7 @@ Certificate watcher watch and process certificates third party data and obtain a
 
 
 ### Third Party Resources
-`voyager` depends on two Third Party Resource Object `ingress.appscode.com` and `certificate.appscode.com`. Those two objects
+`voyager` depends on two Third Party Resource Object `ingress.voyager.appscode.com` and `certificate.voyager.appscode.com`. Those two objects
 can be created using following data.
 
 ```yaml
@@ -157,7 +157,6 @@ versions:
 ```
 
 ```sh
-# Create Third Party Resource
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/master/api/extensions/ingress.yaml
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/master/api/extensions/certificate.yaml
+# Create Third Party Resources
+$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/master/api/extensions/tprs.yaml
 ```

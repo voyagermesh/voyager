@@ -1,0 +1,19 @@
+metadata:
+  name: ingress.voyager.appscode.com
+  labels:
+    app: voyager
+apiVersion: extensions/v1beta1
+kind: ThirdPartyResource
+description: "Voyager by AppsCode - Secure Ingress Controller for Kubernetes"
+versions:
+  - name: v1beta1
+---
+metadata:
+  name: certificate.voyager.appscode.com
+  labels:
+    app: voyager
+apiVersion: extensions/v1beta1
+kind: ThirdPartyResource
+description: "Voyager by AppsCode - Secure Ingress Controller for Kubernetes"
+versions:
+  - name: v1beta1
