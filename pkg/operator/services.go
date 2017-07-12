@@ -8,35 +8,31 @@ import (
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	_ "github.com/appscode/voyager/api/install"
-	acs "github.com/appscode/voyager/client/clientset"
-	"github.com/appscode/voyager/pkg/stash"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
-	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
-	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
 )
 
 // Blocks caller. Intended to be called as a Go routine.
-func (c *Operator) WatchServices() {
+func (op *Operator) WatchServices() {
 	defer acrt.HandleCrash()
 
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return c.KubeClient.CoreV1().Services(apiv1.NamespaceAll).List(metav1.ListOptions{})
+			return op.KubeClient.CoreV1().Services(apiv1.NamespaceAll).List(metav1.ListOptions{})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.KubeClient.CoreV1().Services(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
+			return op.KubeClient.CoreV1().Services(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
 	_, ctrl := cache.NewInformer(lw,
 		&apiv1.Service{},
-		c.SyncPeriod,
+		op.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				if svc, ok := obj.(*apiv1.Service); ok {
@@ -48,7 +44,7 @@ func (c *Operator) WatchServices() {
 				if svc, ok := obj.(*apiv1.Service); ok {
 					log.Infof("Service %s@%s deleted", svc.Name, svc.Namespace)
 
-					c.restoreServiceIfRequired(svc)
+					op.restoreServiceIfRequired(svc)
 
 				}
 			},
@@ -57,13 +53,13 @@ func (c *Operator) WatchServices() {
 	ctrl.Run(wait.NeverStop)
 }
 
-func (w *Operator) restoreServiceIfRequired(svc *apiv1.Service) error {
+func (op *Operator) restoreServiceIfRequired(svc *apiv1.Service) error {
 	if svc.Annotations == nil {
 		return nil
 	}
 
 	// deleted resource have source reference
-	engress, err := w.findOrigin(svc.ObjectMeta)
+	engress, err := op.findOrigin(svc.ObjectMeta)
 	if err != nil {
 		return err
 	}
@@ -84,27 +80,16 @@ func (w *Operator) restoreServiceIfRequired(svc *apiv1.Service) error {
 	svc.Annotations[api.OriginAPISchema] = engress.APISchema()
 	svc.Annotations[api.OriginName] = engress.Name
 
-	_, err = w.KubeClient.CoreV1().Services(svc.Namespace).Create(svc)
+	_, err = op.KubeClient.CoreV1().Services(svc.Namespace).Create(svc)
 	return err
 }
 
-func (w *Operator) UpgradeAllEngress(service, providerName, cloudConfig string,
-	kubeClient clientset.Interface,
-	extClient acs.ExtensionInterface,
-	promClient pcm.MonitoringV1alpha1Interface,
-	store stash.Storage,
-	ingressClass string,
-	operatorServiceAccount string) error {
-	ing, err := kubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{
-		LabelSelector: labels.Everything().String(),
-	})
+func (op *Operator) UpgradeAllEngress(service string) error {
+	ing, err := op.KubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{LabelSelector: labels.Everything().String()})
 	if err != nil {
 		return err
 	}
-
-	eng, err := extClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{
-		LabelSelector: labels.Everything().String(),
-	})
+	eng, err := op.ExtClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{LabelSelector: labels.Everything().String()})
 	if err != nil {
 		return err
 	}
@@ -118,12 +103,13 @@ func (w *Operator) UpgradeAllEngress(service, providerName, cloudConfig string,
 		items[i] = *e
 	}
 	items = append(items, eng.Items...)
+
 	log.Infoln("Updating All Ingress, got total", len(items))
 	for i, item := range items {
 		engress := &items[i]
-		if engress.ShouldHandleIngress(w.Opt.IngressClass) {
+		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
 			log.Infoln("Checking for service", service, "to be used to load balance via ingress", item.Name, item.Namespace)
-			if ok, name, namespace := w.isEngressHaveService(engress, service); ok {
+			if ok, name, namespace := op.isEngressHaveService(engress, service); ok {
 
 				/*
 					lbc := NewEngressController(providerName, cloudConfig, kubeClient, extClient, promClient, store, ingressClass, operatorServiceAccount)
@@ -152,15 +138,15 @@ func (w *Operator) UpgradeAllEngress(service, providerName, cloudConfig string,
 						lbc.Create()
 					}
 				*/
-				w.ensureServiceAnnotations(engress, namespace, name)
+				op.ensureServiceAnnotations(engress, namespace, name)
 			}
 		}
 	}
 	return nil
 }
 
-func (w *Operator) ensureServiceAnnotations(r *api.Ingress, namespace, name string) {
-	svc, err := w.KubeClient.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
+func (op *Operator) ensureServiceAnnotations(r *api.Ingress, namespace, name string) {
+	svc, err := op.KubeClient.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
 		return
 	}
@@ -168,7 +154,7 @@ func (w *Operator) ensureServiceAnnotations(r *api.Ingress, namespace, name stri
 		svc.Annotations = make(map[string]string)
 	}
 
-	if ok, _, _ := w.isEngressHaveService(r, name+"."+namespace); ok {
+	if ok, _, _ := op.isEngressHaveService(r, name+"."+namespace); ok {
 		list := make([]api.IngressRef, 0)
 		val, ok := svc.Annotations[api.EgressPoints]
 		if ok {
@@ -201,7 +187,7 @@ func (w *Operator) ensureServiceAnnotations(r *api.Ingress, namespace, name stri
 		if err == nil {
 			svc.Annotations[api.EgressPoints] = string(data)
 		}
-		w.KubeClient.CoreV1().Services(namespace).Update(svc)
+		op.KubeClient.CoreV1().Services(namespace).Update(svc)
 		return
 	}
 	// Lets check if service still have the annotation for this ingress.
@@ -221,11 +207,11 @@ func (w *Operator) ensureServiceAnnotations(r *api.Ingress, namespace, name stri
 				svc.Annotations[api.EgressPoints] = string(data)
 			}
 		}
-		w.KubeClient.CoreV1().Services(namespace).Update(svc)
+		op.KubeClient.CoreV1().Services(namespace).Update(svc)
 	}
 }
 
-func (w *Operator) isEngressHaveService(ing *api.Ingress, service string) (bool, string, string) {
+func (op *Operator) isEngressHaveService(ing *api.Ingress, service string) (bool, string, string) {
 	serviceNotWithDefault := service
 	if strings.HasSuffix(serviceNotWithDefault, "."+ing.Namespace) {
 		serviceNotWithDefault = serviceNotWithDefault[:strings.Index(serviceNotWithDefault, "."+ing.Namespace)]

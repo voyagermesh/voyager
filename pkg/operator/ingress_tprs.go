@@ -17,25 +17,25 @@ import (
 )
 
 // Blocks caller. Intended to be called as a Go routine.
-func (c *Operator) WatchIngressTPRs() {
+func (op *Operator) WatchIngressTPRs() {
 	defer acrt.HandleCrash()
 
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return c.ExtClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
+			return op.ExtClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.ExtClient.Ingresses(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
+			return op.ExtClient.Ingresses(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
 	_, ctrl := cache.NewInformer(lw,
 		&sapi.Ingress{},
-		c.SyncPeriod,
+		op.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				if engress, ok := obj.(*sapi.Ingress); ok {
 					log.Infof("%s %s@%s added", engress.GroupVersionKind(), engress.Name, engress.Namespace)
-					if !engress.ShouldHandleIngress(c.Opt.IngressClass) {
+					if !engress.ShouldHandleIngress(op.Opt.IngressClass) {
 						log.Infof("%s %s@%s does not match ingress class", engress.GroupVersionKind(), engress.Name, engress.Namespace)
 						return
 					}
@@ -66,7 +66,7 @@ func (c *Operator) WatchIngressTPRs() {
 			DeleteFunc: func(obj interface{}) {
 				if engress, ok := obj.(*sapi.Ingress); ok {
 					log.Infof("%s %s@%s deleted", engress.GroupVersionKind(), engress.Name, engress.Namespace)
-					if !engress.ShouldHandleIngress(c.Opt.IngressClass) {
+					if !engress.ShouldHandleIngress(op.Opt.IngressClass) {
 						log.Infof("%s %s@%s does not match ingress class", engress.GroupVersionKind(), engress.Name, engress.Namespace)
 						return
 					}

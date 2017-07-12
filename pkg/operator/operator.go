@@ -48,20 +48,20 @@ func New(
 	}
 }
 
-func (c *Operator) Setup() error {
+func (op *Operator) Setup() error {
 	log.Infoln("Ensuring TPR registration")
 
-	if err := c.ensureThirdPartyResource("ingress" + "." + api.V1beta1SchemeGroupVersion.Group); err != nil {
+	if err := op.ensureThirdPartyResource("ingress" + "." + api.V1beta1SchemeGroupVersion.Group); err != nil {
 		return err
 	}
-	if err := c.ensureThirdPartyResource("certificate" + "." + api.V1beta1SchemeGroupVersion.Group); err != nil {
+	if err := op.ensureThirdPartyResource("certificate" + "." + api.V1beta1SchemeGroupVersion.Group); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c *Operator) ensureThirdPartyResource(resourceName string) error {
-	_, err := c.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Get(resourceName, metav1.GetOptions{})
+func (op *Operator) ensureThirdPartyResource(resourceName string) error {
+	_, err := op.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Get(resourceName, metav1.GetOptions{})
 	if !kerr.IsNotFound(err) {
 		return err
 	}
@@ -85,24 +85,24 @@ func (c *Operator) ensureThirdPartyResource(resourceName string) error {
 		},
 	}
 
-	_, err = c.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Create(thirdPartyResource)
+	_, err = op.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Create(thirdPartyResource)
 	return err
 }
 
-func (c *Operator) Run() {
-	go c.WatchCertificateTPRs()
-	go c.WatchConfigMaps()
-	go c.WatchDaemonSets()
-	go c.WatchDeployments()
-	go c.WatchEndpoints()
-	go c.WatchIngressTPRs()
-	go c.WatchIngresses()
-	go c.WatchNamespaces()
-	go c.WatchServices()
-	go certificate.CheckCertificates(c.KubeClient, c.ExtClient)
+func (op *Operator) Run() {
+	go op.WatchCertificateTPRs()
+	go op.WatchConfigMaps()
+	go op.WatchDaemonSets()
+	go op.WatchDeployments()
+	go op.WatchEndpoints()
+	go op.WatchIngressTPRs()
+	go op.WatchIngresses()
+	go op.WatchNamespaces()
+	go op.WatchServices()
+	go certificate.CheckCertificates(op.KubeClient, op.ExtClient)
 }
 
-func (w *Operator) findOrigin(meta metav1.ObjectMeta) (*api.Ingress, error) {
+func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*api.Ingress, error) {
 	if meta.Annotations == nil {
 		return nil, nil
 	}
@@ -114,13 +114,13 @@ func (w *Operator) findOrigin(meta metav1.ObjectMeta) (*api.Ingress, error) {
 	}
 
 	if sourceType == api.APISchemaIngress {
-		ingress, err := w.KubeClient.ExtensionsV1beta1().Ingresses(meta.Namespace).Get(sourceName, metav1.GetOptions{})
+		ingress, err := op.KubeClient.ExtensionsV1beta1().Ingresses(meta.Namespace).Get(sourceName, metav1.GetOptions{})
 		if err != nil {
 			return nil, err
 		}
 		return api.NewEngressFromIngress(ingress)
 	} else if sourceType == api.APISchemaEngress {
-		return w.ExtClient.Ingresses(meta.Namespace).Get(sourceName)
+		return op.ExtClient.Ingresses(meta.Namespace).Get(sourceName)
 	}
 	return nil, fmt.Errorf("Unknown ingress type %s", sourceType)
 }
