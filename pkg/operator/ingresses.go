@@ -2,7 +2,6 @@ package operator
 
 import (
 	"errors"
-	"fmt"
 
 	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
@@ -49,6 +48,7 @@ func (op *Operator) WatchIngresses() {
 
 					go analytics.Send(ingress.GroupVersionKind().String(), "ADD", "success")
 
+					op.AddEngress(engress)
 				}
 			},
 			UpdateFunc: func(old, new interface{}) {
@@ -78,10 +78,7 @@ func (op *Operator) WatchIngresses() {
 					log.Infof("%s %s@%s has unchanged spec and annotations", newIngress.GroupVersionKind(), newIngress.Name, newIngress.Namespace)
 					return
 				}
-
-				// check the case of switching ingress class
-
-				fmt.Println(oldEngress.Name, newEngress.Name)
+				op.UpdateEngress(oldEngress, newEngress)
 			},
 			DeleteFunc: func(obj interface{}) {
 				if ingress, ok := obj.(*extensions.Ingress); ok {
@@ -98,6 +95,7 @@ func (op *Operator) WatchIngresses() {
 					}
 
 					go analytics.Send(ingress.GroupVersionKind().String(), "DELETE", "success")
+					op.DeleteEngress(engress)
 				}
 			},
 		},
