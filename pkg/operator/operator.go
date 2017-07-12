@@ -10,7 +10,6 @@ import (
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
-	"github.com/appscode/voyager/pkg/stash"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,7 +26,6 @@ type Operator struct {
 
 	recorder   record.EventRecorder
 	SyncPeriod time.Duration
-	Storage    stash.Storage
 	sync.Mutex
 }
 
