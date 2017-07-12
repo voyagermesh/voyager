@@ -18,20 +18,20 @@ import (
 )
 
 // Blocks caller. Intended to be called as a Go routine.
-func (c *Operator) WatchIngresses() {
+func (op *Operator) WatchIngresses() {
 	defer acrt.HandleCrash()
 
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return c.KubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
+			return op.KubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.KubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
+			return op.KubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
 	_, ctrl := cache.NewInformer(lw,
 		&extensions.Ingress{},
-		c.SyncPeriod,
+		op.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				if ingress, ok := obj.(*extensions.Ingress); ok {
@@ -42,7 +42,7 @@ func (c *Operator) WatchIngresses() {
 						log.Errorf("Failed to convert Ingress %s@%s into Engress. Reason %v", ingress.Name, ingress.Namespace, err)
 						return
 					}
-					if !engress.ShouldHandleIngress(c.Opt.IngressClass) {
+					if !engress.ShouldHandleIngress(op.Opt.IngressClass) {
 						log.Infof("%s %s@%s does not match ingress class", ingress.GroupVersionKind(), ingress.Name, ingress.Namespace)
 						return
 					}
@@ -92,7 +92,7 @@ func (c *Operator) WatchIngresses() {
 						log.Errorf("Failed to convert Ingress %s@%s into Engress. Reason %v", ingress.Name, ingress.Namespace, err)
 						return
 					}
-					if !engress.ShouldHandleIngress(c.Opt.IngressClass) {
+					if !engress.ShouldHandleIngress(op.Opt.IngressClass) {
 						log.Infof("%s %s@%s does not match ingress class", ingress.GroupVersionKind(), ingress.Name, ingress.Namespace)
 						return
 					}

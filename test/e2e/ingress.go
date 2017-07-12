@@ -126,7 +126,7 @@ func (s *IngressTestSuit) TestIngressCreateDelete() error {
 		}
 	}
 
-	if s.t.Voyager != nil && s.t.Voyager.ProviderName != "minikube" {
+	if s.t.Operator != nil && s.t.Operator.Opt.CloudProvider != "minikube" {
 		// Check Status for ingress
 		baseIngress, err := s.t.ExtClient.Ingresses(baseIngress.Namespace).Get(baseIngress.Name)
 		if err != nil {

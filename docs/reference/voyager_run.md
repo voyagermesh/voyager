@@ -25,7 +25,7 @@ voyager run [flags]
       --ingress-class string                  Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.
       --kubeconfig string                     Path to kubeconfig file with authorization information (the master location is set by the master flag).
       --master string                         The address of the Kubernetes API server (overrides any value in kubeconfig)
-      --operator-service-account string       Service account name used to run Voyager operator (default "default")
+      --rbac                                  Enable RBAC for operator & offshoot Kubernetes objects
 ```
 
 ### Options inherited from parent commands

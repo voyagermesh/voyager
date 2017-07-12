@@ -15,25 +15,25 @@ import (
 )
 
 // Blocks caller. Intended to be called as a Go routine.
-func (c *Operator) WatchDeployments() {
+func (op *Operator) WatchDeployments() {
 	defer acrt.HandleCrash()
 
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return c.KubeClient.ExtensionsV1beta1().Deployments(apiv1.NamespaceAll).List(metav1.ListOptions{})
+			return op.KubeClient.ExtensionsV1beta1().Deployments(apiv1.NamespaceAll).List(metav1.ListOptions{})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.KubeClient.ExtensionsV1beta1().Deployments(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
+			return op.KubeClient.ExtensionsV1beta1().Deployments(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
 	_, ctrl := cache.NewInformer(lw,
 		&extensions.Deployment{},
-		c.SyncPeriod,
+		op.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			DeleteFunc: func(obj interface{}) {
 				if deployment, ok := obj.(*extensions.Deployment); ok {
 					log.Infof("Deployment %s@%s deleted", deployment.Name, deployment.Namespace)
-					c.restoreDeploymentIfRequired(deployment)
+					op.restoreDeploymentIfRequired(deployment)
 				}
 			},
 		},
@@ -41,13 +41,13 @@ func (c *Operator) WatchDeployments() {
 	ctrl.Run(wait.NeverStop)
 }
 
-func (w *Operator) restoreDeploymentIfRequired(deployment *extensions.Deployment) error {
+func (op *Operator) restoreDeploymentIfRequired(deployment *extensions.Deployment) error {
 	if deployment.Annotations == nil {
 		return nil
 	}
 
 	// deleted resource have source reference
-	engress, err := w.findOrigin(deployment.ObjectMeta)
+	engress, err := op.findOrigin(deployment.ObjectMeta)
 	if err != nil {
 		return err
 	}
@@ -67,6 +67,6 @@ func (w *Operator) restoreDeploymentIfRequired(deployment *extensions.Deployment
 	deployment.Annotations[api.OriginAPISchema] = engress.APISchema()
 	deployment.Annotations[api.OriginName] = engress.Name
 
-	_, err = w.KubeClient.ExtensionsV1beta1().Deployments(deployment.Namespace).Create(deployment)
+	_, err = op.KubeClient.ExtensionsV1beta1().Deployments(deployment.Namespace).Create(deployment)
 	return err
 }

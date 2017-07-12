@@ -2,6 +2,7 @@ package operator
 
 import (
 	"errors"
+	"reflect"
 
 	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
@@ -14,20 +15,20 @@ import (
 )
 
 // Blocks caller. Intended to be called as a Go routine.
-func (c *Operator) WatchEndpoints() {
+func (op *Operator) WatchEndpoints() {
 	defer acrt.HandleCrash()
 
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return c.KubeClient.CoreV1().Endpoints(apiv1.NamespaceAll).List(metav1.ListOptions{})
+			return op.KubeClient.CoreV1().Endpoints(apiv1.NamespaceAll).List(metav1.ListOptions{})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.KubeClient.CoreV1().Endpoints(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
+			return op.KubeClient.CoreV1().Endpoints(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
 	_, ctrl := cache.NewInformer(lw,
 		&apiv1.Endpoints{},
-		c.SyncPeriod,
+		op.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			UpdateFunc: func(old, new interface{}) {
 				oldEndpoints, ok := old.(*apiv1.Endpoints)
@@ -41,20 +42,20 @@ func (c *Operator) WatchEndpoints() {
 					return
 				}
 
-				if !c.ServiceExists(newEndpoints) {
-					log.Warningf("Skipping Endpoints %s@%s, as it has no matching service", newEndpoints.Name, newEndpoints.Namespace)
+				if reflect.DeepEqual(oldEndpoints.Subsets, newEndpoints.Subsets) {
 					return
 				}
 
+				// Checking if this endpoint have a service or not. If
+				// this do not have a Service we do not want to update our ingress
+				svc, err := op.KubeClient.CoreV1().Services(newEndpoints.Namespace).Get(newEndpoints.Name, metav1.GetOptions{})
+				if err != nil {
+					log.Warningf("Skipping Endpoints %s@%s, as it has no matching service", newEndpoints.Name, newEndpoints.Namespace)
+					return
+				}
+				op.updateHAProxies(svc)
 			},
 		},
 	)
 	ctrl.Run(wait.NeverStop)
-}
-
-func (c *Operator) ServiceExists(ep *apiv1.Endpoints) bool {
-	// Checking if this endpoint have a service or not. If
-	// this do not have a Service we do not want to update our ingress
-	_, err := c.KubeClient.CoreV1().Services(ep.Namespace).Get(ep.Name, metav1.GetOptions{})
-	return err == nil
 }

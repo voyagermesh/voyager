@@ -13,18 +13,16 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-type updateType int
+type UpdateMode int
 
 const (
-	UpdateConfig   updateType = 1 << iota // only reset haproxy config
+	UpdateConfig   UpdateMode = 1 << iota // only reset haproxy config
 	RestartHAProxy                        // secret changes, ports unchanged
 	UpdateFirewall                        // ports changed
 	UpdateStats                           // Update things for stats update
 )
 
-func (lbc *EngressController) Update(t updateType) error {
-	log.Debugln("updating engress specs with type", t)
-	lbc.parse()
+func (lbc *Controller) Update(t UpdateMode) error {
 	err := lbc.generateTemplate()
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -63,7 +61,7 @@ func (lbc *EngressController) Update(t updateType) error {
 	return nil
 }
 
-func (lbc *EngressController) updateConfigMap() error {
+func (lbc *Controller) updateConfigMap() error {
 	cMap, err := lbc.KubeClient.CoreV1().ConfigMaps(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -94,9 +92,9 @@ func (lbc *EngressController) updateConfigMap() error {
 	return nil
 }
 
-func (lbc *EngressController) recreatePods() error {
+func (lbc *Controller) recreatePods() error {
 	if !lbc.SupportsLBType() {
-		return errors.Newf("LBType %s is unsupported for cloud provider: %s", lbc.Resource.LBType(), lbc.ProviderName).Err()
+		return errors.Newf("LBType %s is unsupported for cloud provider: %s", lbc.Resource.LBType(), lbc.Opt.CloudProvider).Err()
 	}
 
 	if lbc.Resource.LBType() == api.LBTypeHostPort {
@@ -132,7 +130,7 @@ func (lbc *EngressController) recreatePods() error {
 	return nil
 }
 
-func (lbc *EngressController) updateLBSvc() error {
+func (lbc *Controller) updateLBSvc() error {
 	svc, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -206,12 +204,10 @@ func (lbc *EngressController) updateLBSvc() error {
 	return nil
 }
 
-func (lbc *EngressController) UpdateTargetAnnotations(old *api.Ingress, new *api.Ingress) error {
-	lbc.parse()
-
+func (lbc *Controller) UpdateTargetAnnotations(old *api.Ingress, new *api.Ingress) error {
 	// Check for changes in ingress.appscode.com/annotations-service
-	if newSvcAns, newOk := new.ServiceAnnotations(lbc.ProviderName); newOk {
-		if oldSvcAns, oldOk := old.ServiceAnnotations(lbc.ProviderName); oldOk {
+	if newSvcAns, newOk := new.ServiceAnnotations(lbc.Opt.CloudProvider); newOk {
+		if oldSvcAns, oldOk := old.ServiceAnnotations(lbc.Opt.CloudProvider); oldOk {
 			if !reflect.DeepEqual(oldSvcAns, newSvcAns) {
 				svc, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
 				if err != nil {

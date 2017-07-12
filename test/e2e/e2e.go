@@ -6,8 +6,9 @@ import (
 	"time"
 
 	"github.com/appscode/log"
-	acs "github.com/appscode/voyager/client/clientset"
-	acw "github.com/appscode/voyager/pkg/watcher"
+	tcs "github.com/appscode/voyager/client/clientset"
+	"github.com/appscode/voyager/pkg/config"
+	"github.com/appscode/voyager/pkg/operator"
 	"github.com/appscode/voyager/test/testframework"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -17,8 +18,8 @@ import (
 type TestSuit struct {
 	Config     testframework.E2EConfig
 	KubeClient clientset.Interface
-	ExtClient  acs.ExtensionInterface
-	Voyager    *acw.Watcher
+	ExtClient  tcs.ExtensionInterface
+	Operator   *operator.Operator
 }
 
 func init() {
@@ -32,23 +33,25 @@ func NewE2ETestSuit() *TestSuit {
 		log.Fatalln("Failed to load Kube Config", err)
 	}
 	return &TestSuit{
-		Config: testframework.TestContext.E2EConfigs,
-		Voyager: &acw.Watcher{
-			KubeClient:   clientset.NewForConfigOrDie(c),
-			ExtClient:    acs.NewForConfigOrDie(c),
-			SyncPeriod:   time.Minute * 2,
-			ProviderName: testframework.TestContext.E2EConfigs.ProviderName,
-			HAProxyImage: testframework.TestContext.E2EConfigs.HAProxyImageName,
-			IngressClass: testframework.TestContext.E2EConfigs.IngressClass,
-		},
+		Config:     testframework.TestContext.E2EConfigs,
 		KubeClient: clientset.NewForConfigOrDie(c),
-		ExtClient:  acs.NewForConfigOrDie(c),
+		ExtClient:  tcs.NewForConfigOrDie(c),
+		Operator: operator.New(
+			clientset.NewForConfigOrDie(c),
+			tcs.NewForConfigOrDie(c),
+			nil,
+			config.Options{
+				CloudProvider: testframework.TestContext.E2EConfigs.ProviderName,
+				HAProxyImage:  testframework.TestContext.E2EConfigs.HAProxyImageName,
+				IngressClass:  testframework.TestContext.E2EConfigs.IngressClass,
+			},
+		),
 	}
 }
 
 func (t *TestSuit) Run() error {
 	if !t.Config.InCluster {
-		go t.Voyager.Run()
+		go t.Operator.Run()
 	}
 	defer time.Sleep(time.Second * 30)
 	defer log.Flush()

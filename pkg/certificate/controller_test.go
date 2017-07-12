@@ -1,4 +1,4 @@
-package certificates
+package certificate
 
 import (
 	"bytes"
@@ -30,7 +30,7 @@ func init() {
 }
 
 func TestLoadProviderCredential(t *testing.T) {
-	fakeController := NewController(fake.NewSimpleClientset(), acf.NewFakeExtensionClient()).newInternalCertificateOptions(&api.Certificate{
+	fakeController := NewController(fake.NewSimpleClientset(), acf.NewFakeExtensionClient()).New(&api.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
@@ -74,7 +74,7 @@ func TestEnsureClient(t *testing.T) {
 			&apiv1.Secret{
 				ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
 			},
-		), acf.NewFakeExtensionClient()).newInternalCertificateOptions(&api.Certificate{
+		), acf.NewFakeExtensionClient()).New(&api.Certificate{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "bar",
@@ -119,7 +119,7 @@ func TestFakeRegisterACMEUser(t *testing.T) {
 		&apiv1.Secret{
 			ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
 		},
-	), acf.NewFakeExtensionClient()).newInternalCertificateOptions(&api.Certificate{
+	), acf.NewFakeExtensionClient()).New(&api.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
@@ -157,7 +157,7 @@ func TestFakeRegisterACMEUser(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	if testframework.TestContext.Verbose {
-		fakeController := NewController(fake.NewSimpleClientset(), acf.NewFakeExtensionClient()).newInternalCertificateOptions(&api.Certificate{
+		fakeController := NewController(fake.NewSimpleClientset(), acf.NewFakeExtensionClient()).New(&api.Certificate{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "bar",

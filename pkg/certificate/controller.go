@@ -1,4 +1,4 @@
-package certificates
+package certificate
 
 import (
 	"crypto/rand"
@@ -10,11 +10,10 @@ import (
 	"time"
 
 	"github.com/appscode/errors"
-	"github.com/appscode/go/strings"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
-	"github.com/appscode/voyager/pkg/certificates/providers"
+	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/xenolf/lego/acme"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,17 +36,19 @@ const (
 	certificateAnnotationKeyACMEServerURL                = "certificate.appscode.com/server-url"
 )
 
+//type Controller struct {
+//	// kubernetes clients
+//	KubeClient clientset.Interface
+//	ExtClient  acs.ExtensionInterface
+//}
+
 type Controller struct {
-	// kubernetes clients
 	KubeClient clientset.Interface
 	ExtClient  acs.ExtensionInterface
-}
 
-type internalCertificateOptions struct {
-	*Controller
-	certificate       *api.Certificate
-	acmeCert          ACMECertData
-	parsedCertificate *x509.Certificate
+	tpr      *api.Certificate
+	acmeCert ACMECertData
+	crt      *x509.Certificate
 	sync.Mutex
 
 	acmeClientConfig *ACMEConfig
@@ -56,24 +57,15 @@ type internalCertificateOptions struct {
 	userSecretName string
 }
 
-func NewController(c clientset.Interface, a acs.ExtensionInterface) *Controller {
+func NewController(kubeClient clientset.Interface, extClient acs.ExtensionInterface, tpr *api.Certificate) *Controller {
 	return &Controller{
-		KubeClient: c,
-		ExtClient:  a,
+		KubeClient: kubeClient,
+		ExtClient:  extClient,
+		tpr:        tpr,
 	}
 }
 
-func (c *Controller) newInternalCertificateOptions(cert *api.Certificate) *internalCertificateOptions {
-	return &internalCertificateOptions{
-		Controller:  c,
-		certificate: cert,
-	}
-}
-
-func (c *Controller) HandleCertificate(cert *api.Certificate) error {
-	return c.process(c.newInternalCertificateOptions(cert))
-}
-
+/*
 func (c *Controller) HandleIngress(ingress *api.Ingress) error {
 	if ingress.Annotations != nil {
 		if val, ok := ingress.Annotations[certificateAnnotationKeyEnabled]; ok && val == "true" {
@@ -132,50 +124,51 @@ func (c *Controller) HandleIngress(ingress *api.Ingress) error {
 	}
 	return nil
 }
+*/
 
-func (c *Controller) process(opt *internalCertificateOptions) error {
-	opt.acmeClientConfig = &ACMEConfig{
-		Provider:      opt.certificate.Spec.Provider,
-		ACMEServerUrl: opt.certificate.Spec.ACMEServerURL,
+func (c *Controller) Process() error {
+	c.acmeClientConfig = &ACMEConfig{
+		Provider:      c.tpr.Spec.Provider,
+		ACMEServerUrl: c.tpr.Spec.ACMEServerURL,
 	}
 
 	// Check if a cert already exists for this Certificate Instance
-	secret, err := c.KubeClient.CoreV1().Secrets(opt.certificate.Namespace).Get(defaultCertPrefix+opt.certificate.Name, metav1.GetOptions{})
+	secret, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(defaultCertPrefix+c.tpr.Name, metav1.GetOptions{})
 	if err == nil {
 		var err error
-		opt.acmeCert, err = NewACMECertDataFromSecret(secret)
+		c.acmeCert, err = NewACMECertDataFromSecret(secret)
 		if err != nil {
 			return errors.FromErr(err).WithMessage("Error decoding acme certificate").Err()
 		}
 
 		// Decode cert
-		pemBlock, _ := pem.Decode(opt.acmeCert.Cert)
-		opt.parsedCertificate, err = x509.ParseCertificate(pemBlock.Bytes)
+		pemBlock, _ := pem.Decode(c.acmeCert.Cert)
+		c.crt, err = x509.ParseCertificate(pemBlock.Bytes)
 		if err != nil {
 			return errors.FromErr(err).WithMessage("Error decoding x509 encoded certificate").Err()
 		}
-		if !opt.parsedCertificate.NotAfter.After(time.Now().Add(time.Hour * 24 * 7)) {
+		if !c.crt.NotAfter.After(time.Now().Add(time.Hour * 24 * 7)) {
 			log.Infoln("certificate is expiring in 7 days, attempting renew")
-			opt.renew()
+			c.renew()
 		}
 
-		if !opt.acmeCert.EqualDomains(opt.parsedCertificate) {
-			opt.renew()
+		if !c.acmeCert.EqualDomains(c.crt) {
+			c.renew()
 		}
 	}
 
-	if kerr.IsNotFound(err) || !opt.certificate.Status.CertificateObtained {
+	if kerr.IsNotFound(err) || !c.tpr.Status.CertificateObtained {
 		// Certificate Not found as secret. We must create it now.
-		opt.create()
+		c.create()
 	}
 	return nil
 }
 
-func (c *internalCertificateOptions) create() error {
+func (c *Controller) create() error {
 	if err := c.ensureACMEClient(); err != nil {
 		return errors.FromErr(err).Err()
 	}
-	if c.certificate.Spec.Provider == "http" {
+	if c.tpr.Spec.Provider == "http" {
 		done := make(chan struct{})
 		defer func() {
 			done <- struct{}{}
@@ -185,7 +178,7 @@ func (c *internalCertificateOptions) create() error {
 			return err
 		}
 	}
-	cert, errs := c.acmeClient.ObtainCertificate(c.certificate.Spec.Domains, true, nil, true)
+	cert, errs := c.acmeClient.ObtainCertificate(c.tpr.Spec.Domains, true, nil, true)
 	for k, v := range errs {
 		log.Errorf("Error occurred for %s, reason %s", k, v.Error())
 	}
@@ -195,12 +188,12 @@ func (c *internalCertificateOptions) create() error {
 	return nil
 }
 
-func (c *internalCertificateOptions) renew() error {
+func (c *Controller) renew() error {
 	if err := c.ensureACMEClient(); err != nil {
 		return errors.FromErr(err).Err()
 	}
 
-	if c.certificate.Spec.Provider == "http" {
+	if c.tpr.Spec.Provider == "http" {
 		done := make(chan struct{})
 		defer func() {
 			done <- struct{}{}
@@ -211,10 +204,10 @@ func (c *internalCertificateOptions) renew() error {
 		}
 	}
 	acmeCert := acme.CertificateResource{
-		Domain:        c.certificate.Status.Details.Domain,
-		CertURL:       c.certificate.Status.Details.CertURL,
-		CertStableURL: c.certificate.Status.Details.CertStableURL,
-		AccountRef:    c.certificate.Status.Details.AccountRef,
+		Domain:        c.tpr.Status.Details.Domain,
+		CertURL:       c.tpr.Status.Details.CertURL,
+		CertStableURL: c.tpr.Status.Details.CertStableURL,
+		AccountRef:    c.tpr.Status.Details.AccountRef,
 		Certificate:   c.acmeCert.Cert,
 		PrivateKey:    c.acmeCert.PrivateKey,
 	}
@@ -225,24 +218,24 @@ func (c *internalCertificateOptions) renew() error {
 	return c.update(cert)
 }
 
-func (c *internalCertificateOptions) ensureACMEClient() error {
+func (c *Controller) ensureACMEClient() error {
 	var acmeUserInfo *ACMEUserData
 	acmeUserRegistered := false
 	log.Infoln("trying to retrive acmeUser data")
 
 	var userSecret *apiv1.Secret
 	err := errors.New("Setting error Not found").Err()
-	if c.certificate.Spec.ACMEUserSecretName != "" {
+	if c.tpr.Spec.ACMEUserSecretName != "" {
 		// ACMEUser secret name is provided.
-		userSecret, err = c.KubeClient.CoreV1().Secrets(c.certificate.Namespace).Get(c.certificate.Spec.ACMEUserSecretName, metav1.GetOptions{})
+		userSecret, err = c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(c.tpr.Spec.ACMEUserSecretName, metav1.GetOptions{})
 	}
-	if err != nil && c.certificate.Status.ACMEUserSecretName != "" {
+	if err != nil && c.tpr.Status.ACMEUserSecretName != "" {
 		// There is a error getting the secret, try the secret name from status, if this was a update request
-		userSecret, err = c.KubeClient.CoreV1().Secrets(c.certificate.Namespace).Get(c.certificate.Status.ACMEUserSecretName, metav1.GetOptions{})
+		userSecret, err = c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(c.tpr.Status.ACMEUserSecretName, metav1.GetOptions{})
 	}
 	if err != nil {
 		// Trying to find an secret with the same name of Certificates
-		userSecret, err = c.KubeClient.CoreV1().Secrets(c.certificate.Namespace).Get(defaultUserSecretPrefix+c.certificate.Name, metav1.GetOptions{})
+		userSecret, err = c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(defaultUserSecretPrefix+c.tpr.Name, metav1.GetOptions{})
 		if err == nil {
 			if _, ok := userSecret.Annotations[certificateKey+"/user-info"]; !ok {
 				err = errors.Newf("No %s annotaion key", certificateKey+"/user-info").Err()
@@ -270,7 +263,7 @@ func (c *internalCertificateOptions) ensureACMEClient() error {
 			return errors.FromErr(err).WithMessage("Failed to generate Key for New Acme User")
 		}
 		acmeUserInfo = &ACMEUserData{
-			Email: c.certificate.Spec.Email,
+			Email: c.tpr.Spec.Email,
 			Key: pem.EncodeToMemory(&pem.Block{
 				Type:  "RSA PRIVATE KEY",
 				Bytes: x509.MarshalPKCS1PrivateKey(userKey),
@@ -297,7 +290,7 @@ func (c *internalCertificateOptions) ensureACMEClient() error {
 	return nil
 }
 
-func (c *internalCertificateOptions) registerACMEUser(acmeClient *ACMEClient) error {
+func (c *Controller) registerACMEUser(acmeClient *ACMEClient) error {
 	log.Debugln("ACME user not registered, registering new ACME user")
 	registration, err := acmeClient.Register()
 	if err != nil {
@@ -311,15 +304,15 @@ func (c *internalCertificateOptions) registerACMEUser(acmeClient *ACMEClient) er
 	// Acme User registered Create The acmeUserSecret
 	secret := &apiv1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      c.certificate.Spec.ACMEUserSecretName,
-			Namespace: c.certificate.Namespace,
+			Name:      c.tpr.Spec.ACMEUserSecretName,
+			Namespace: c.tpr.Namespace,
 			Labels: map[string]string{
 				certificateKey + "/user-info": "true",
-				certificateKey + "/cert-name": c.certificate.Name,
+				certificateKey + "/cert-name": c.tpr.Name,
 			},
 			Annotations: map[string]string{
 				certificateKey + "/user-info": "true",
-				certificateKey + "/cert-name": c.certificate.Name,
+				certificateKey + "/cert-name": c.tpr.Name,
 			},
 		},
 		Data: map[string][]byte{
@@ -328,19 +321,19 @@ func (c *internalCertificateOptions) registerACMEUser(acmeClient *ACMEClient) er
 		Type: "certificate.appscode.com/acme-user-info",
 	}
 	if secret.Name == "" {
-		secret.Name = defaultUserSecretPrefix + c.certificate.Name
+		secret.Name = defaultUserSecretPrefix + c.tpr.Name
 	}
 	c.userSecretName = secret.Name
 	log.Debugln("User Registered saving User Informations with Secret name", c.userSecretName)
-	_, err = c.KubeClient.CoreV1().Secrets(c.certificate.Namespace).Create(secret)
+	_, err = c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Create(secret)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 	return nil
 }
 
-func (c *internalCertificateOptions) loadProviderCredential() error {
-	cred, err := c.KubeClient.CoreV1().Secrets(c.certificate.Namespace).Get(c.certificate.Spec.ProviderCredentialSecretName, metav1.GetOptions{})
+func (c *Controller) loadProviderCredential() error {
+	cred, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(c.tpr.Spec.ProviderCredentialSecretName, metav1.GetOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -348,20 +341,20 @@ func (c *internalCertificateOptions) loadProviderCredential() error {
 	return nil
 }
 
-func (c *internalCertificateOptions) save(cert acme.CertificateResource) error {
+func (c *Controller) save(cert acme.CertificateResource) error {
 	certData := &ACMECertData{
 		Domains:    c.acmeCert.Domains,
 		Cert:       cert.Certificate,
 		PrivateKey: cert.PrivateKey,
 	}
 
-	secret := certData.ToSecret(c.certificate.Name, c.certificate.Namespace)
-	_, err := c.KubeClient.CoreV1().Secrets(c.certificate.Namespace).Create(secret)
+	secret := certData.ToSecret(c.tpr.Name, c.tpr.Namespace)
+	_, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Create(secret)
 	if err != nil {
 		errors.FromErr(err).Err()
 	}
 
-	k8sCert, err := c.ExtClient.Certificates(c.certificate.Namespace).Get(c.certificate.Name)
+	k8sCert, err := c.ExtClient.Certificates(c.tpr.Namespace).Get(c.tpr.Name)
 	if err != nil {
 		log.Errorln("failed to load cert object,", err)
 	}
@@ -379,45 +372,45 @@ func (c *internalCertificateOptions) save(cert acme.CertificateResource) error {
 			AccountRef:    cert.AccountRef,
 		},
 	}
-	c.ExtClient.Certificates(c.certificate.Namespace).Update(k8sCert)
+	c.ExtClient.Certificates(c.tpr.Namespace).Update(k8sCert)
 	return nil
 }
 
-func (c *internalCertificateOptions) update(cert acme.CertificateResource) error {
+func (c *Controller) update(cert acme.CertificateResource) error {
 	certData := &ACMECertData{
 		Domains:    c.acmeCert.Domains,
 		Cert:       cert.Certificate,
 		PrivateKey: cert.PrivateKey,
 	}
 
-	secret := certData.ToSecret(c.certificate.Name, c.certificate.Namespace)
-	oldSecret, err := c.KubeClient.CoreV1().Secrets(c.certificate.Namespace).Get(secret.Name, metav1.GetOptions{})
+	secret := certData.ToSecret(c.tpr.Name, c.tpr.Namespace)
+	oldSecret, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(secret.Name, metav1.GetOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 	oldSecret.Data = secret.Data
-	_, err = c.KubeClient.CoreV1().Secrets(c.certificate.Namespace).Update(oldSecret)
+	_, err = c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Update(oldSecret)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 	return nil
 }
 
-func (c *internalCertificateOptions) processHTTPCertificate(revert chan struct{}) error {
+func (c *Controller) processHTTPCertificate(revert chan struct{}) error {
 	c.acmeClient.HTTPProviderLock.Lock()
 	defer c.acmeClient.HTTPProviderLock.Unlock()
 
-	switch c.certificate.Spec.HTTPProviderIngressReference.APIVersion {
+	switch c.tpr.Spec.HTTPProviderIngressReference.APIVersion {
 	case "appscode.com/v1":
 		revertRequired := false
-		i, err := c.ExtClient.Ingresses(c.certificate.Spec.HTTPProviderIngressReference.Namespace).
-			Get(c.certificate.Spec.HTTPProviderIngressReference.Name)
+		i, err := c.ExtClient.Ingresses(c.tpr.Spec.HTTPProviderIngressReference.Namespace).
+			Get(c.tpr.Spec.HTTPProviderIngressReference.Name)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
 		// make a copy of previous spec.
 		prevSpecs := i.Spec
-		for _, host := range c.certificate.Spec.Domains {
+		for _, host := range c.tpr.Spec.Domains {
 			rule := api.ExtendedIngressRule{
 				Host: host,
 				ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
@@ -437,7 +430,7 @@ func (c *internalCertificateOptions) processHTTPCertificate(revert chan struct{}
 
 			i.Spec.Rules = append(i.Spec.Rules, rule)
 		}
-		_, err = c.ExtClient.Ingresses(c.certificate.Namespace).Update(i)
+		_, err = c.ExtClient.Ingresses(c.tpr.Namespace).Update(i)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -447,15 +440,15 @@ func (c *internalCertificateOptions) processHTTPCertificate(revert chan struct{}
 			select {
 			case <-revert:
 				if revertRequired {
-					i, err := c.ExtClient.Ingresses(c.certificate.Spec.HTTPProviderIngressReference.Namespace).
-						Get(c.certificate.Spec.HTTPProviderIngressReference.Name)
+					i, err := c.ExtClient.Ingresses(c.tpr.Spec.HTTPProviderIngressReference.Namespace).
+						Get(c.tpr.Spec.HTTPProviderIngressReference.Name)
 					if err == nil {
 						i.Spec = prevSpecs
 						i.Spec.TLS = append(i.Spec.TLS, api.ExtendedIngressTLS{
-							Hosts:      c.certificate.Spec.Domains,
-							SecretName: defaultCertPrefix + c.certificate.Name,
+							Hosts:      c.tpr.Spec.Domains,
+							SecretName: defaultCertPrefix + c.tpr.Name,
 						})
-						c.ExtClient.Ingresses(c.certificate.Namespace).Update(i)
+						c.ExtClient.Ingresses(c.tpr.Namespace).Update(i)
 					}
 				}
 				return
@@ -463,13 +456,13 @@ func (c *internalCertificateOptions) processHTTPCertificate(revert chan struct{}
 		}()
 	case "extensions/v1beta1":
 		revertRequired := false
-		i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.certificate.Spec.HTTPProviderIngressReference.Namespace).Get(c.certificate.Spec.HTTPProviderIngressReference.Name, metav1.GetOptions{})
+		i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Spec.HTTPProviderIngressReference.Namespace).Get(c.tpr.Spec.HTTPProviderIngressReference.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
 		// make a copy of previous spec.
 		prevSpecs := i.Spec
-		for _, host := range c.certificate.Spec.Domains {
+		for _, host := range c.tpr.Spec.Domains {
 			rule := extensions.IngressRule{
 				Host: host,
 				IngressRuleValue: extensions.IngressRuleValue{
@@ -489,7 +482,7 @@ func (c *internalCertificateOptions) processHTTPCertificate(revert chan struct{}
 
 			i.Spec.Rules = append(i.Spec.Rules, rule)
 		}
-		_, err = c.KubeClient.ExtensionsV1beta1().Ingresses(c.certificate.Namespace).Update(i)
+		_, err = c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Namespace).Update(i)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -499,14 +492,14 @@ func (c *internalCertificateOptions) processHTTPCertificate(revert chan struct{}
 			select {
 			case <-revert:
 				if revertRequired {
-					i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.certificate.Spec.HTTPProviderIngressReference.Namespace).Get(c.certificate.Spec.HTTPProviderIngressReference.Name, metav1.GetOptions{})
+					i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Spec.HTTPProviderIngressReference.Namespace).Get(c.tpr.Spec.HTTPProviderIngressReference.Name, metav1.GetOptions{})
 					if err == nil {
 						i.Spec = prevSpecs
 						i.Spec.TLS = append(i.Spec.TLS, extensions.IngressTLS{
-							Hosts:      c.certificate.Spec.Domains,
-							SecretName: defaultCertPrefix + c.certificate.Name,
+							Hosts:      c.tpr.Spec.Domains,
+							SecretName: defaultCertPrefix + c.tpr.Name,
 						})
-						c.KubeClient.ExtensionsV1beta1().Ingresses(c.certificate.Namespace).Update(i)
+						c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Namespace).Update(i)
 					}
 				}
 				return

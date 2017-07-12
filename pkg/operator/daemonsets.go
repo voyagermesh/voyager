@@ -14,25 +14,25 @@ import (
 )
 
 // Blocks caller. Intended to be called as a Go routine.
-func (c *Operator) WatchDaemonSets() {
+func (op *Operator) WatchDaemonSets() {
 	defer acrt.HandleCrash()
 
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return c.KubeClient.ExtensionsV1beta1().DaemonSets(apiv1.NamespaceAll).List(metav1.ListOptions{})
+			return op.KubeClient.ExtensionsV1beta1().DaemonSets(apiv1.NamespaceAll).List(metav1.ListOptions{})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.KubeClient.ExtensionsV1beta1().DaemonSets(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
+			return op.KubeClient.ExtensionsV1beta1().DaemonSets(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
 	_, ctrl := cache.NewInformer(lw,
 		&extensions.DaemonSet{},
-		c.SyncPeriod,
+		op.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			DeleteFunc: func(obj interface{}) {
 				if daemon, ok := obj.(*extensions.DaemonSet); ok {
 					log.Infof("DaemonSet %s@%s deleted", daemon.Name, daemon.Namespace)
-					c.restoreDaemonSetIfRequired(daemon)
+					op.restoreDaemonSetIfRequired(daemon)
 				}
 			},
 		},
@@ -40,13 +40,13 @@ func (c *Operator) WatchDaemonSets() {
 	ctrl.Run(wait.NeverStop)
 }
 
-func (w *Operator) restoreDaemonSetIfRequired(daemon *extensions.DaemonSet) error {
+func (op *Operator) restoreDaemonSetIfRequired(daemon *extensions.DaemonSet) error {
 	if daemon.Annotations == nil {
 		return nil
 	}
 
 	// deleted resource have source reference
-	engress, err := w.findOrigin(daemon.ObjectMeta)
+	engress, err := op.findOrigin(daemon.ObjectMeta)
 	if err != nil {
 		return err
 	}
@@ -61,6 +61,6 @@ func (w *Operator) restoreDaemonSetIfRequired(daemon *extensions.DaemonSet) erro
 	daemon.Annotations[api.OriginAPISchema] = engress.APISchema()
 	daemon.Annotations[api.OriginName] = engress.Name
 
-	_, err = w.KubeClient.ExtensionsV1beta1().DaemonSets(daemon.Namespace).Create(daemon)
+	_, err = op.KubeClient.ExtensionsV1beta1().DaemonSets(daemon.Namespace).Create(daemon)
 	return err
 }
