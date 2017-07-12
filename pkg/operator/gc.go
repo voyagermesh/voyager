@@ -1,4 +1,4 @@
-package watcher
+package operator
 
 import (
 	"github.com/appscode/voyager/api"
@@ -7,25 +7,25 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-func (w *Watcher) PurgeOffshootsWithDeprecatedLabels() error {
-	ingresses, err := w.KubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
+func (op *Operator) PurgeOffshootsWithDeprecatedLabels() error {
+	ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
 	if err == nil {
 		for _, ing := range ingresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
-				w.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).DeleteCollection(
+				op.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).DeleteCollection(
 					&metav1.DeleteOptions{},
 					metav1.ListOptions{
 						LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
 					})
 			} else {
-				w.KubeClient.ExtensionsV1beta1().Deployments(ing.Namespace).DeleteCollection(
+				op.KubeClient.ExtensionsV1beta1().Deployments(ing.Namespace).DeleteCollection(
 					&metav1.DeleteOptions{},
 					metav1.ListOptions{
 						LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
 					})
 			}
 
-			w.KubeClient.CoreV1().Services(ing.Namespace).DeleteCollection(
+			op.KubeClient.CoreV1().Services(ing.Namespace).DeleteCollection(
 				&metav1.DeleteOptions{},
 				metav1.ListOptions{
 					LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
@@ -34,24 +34,24 @@ func (w *Watcher) PurgeOffshootsWithDeprecatedLabels() error {
 		return err
 	}
 
-	engresses, err := w.ExtClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
+	engresses, err := op.ExtClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
 	if err == nil {
 		for _, ing := range engresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
-				w.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).DeleteCollection(
+				op.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).DeleteCollection(
 					&metav1.DeleteOptions{},
 					metav1.ListOptions{
 						LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
 					})
 			} else {
-				w.KubeClient.ExtensionsV1beta1().Deployments(ing.Namespace).DeleteCollection(
+				op.KubeClient.ExtensionsV1beta1().Deployments(ing.Namespace).DeleteCollection(
 					&metav1.DeleteOptions{},
 					metav1.ListOptions{
 						LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
 					})
 			}
 
-			w.KubeClient.CoreV1().Services(ing.Namespace).DeleteCollection(
+			op.KubeClient.CoreV1().Services(ing.Namespace).DeleteCollection(
 				&metav1.DeleteOptions{},
 				metav1.ListOptions{
 					LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),

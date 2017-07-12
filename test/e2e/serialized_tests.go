@@ -48,15 +48,15 @@ func (s *IngressTestSuit) TestIngressDaemonCreate() error {
 				api.NodeSelector: daemonNodeSelector(s),
 			},
 		},
-		Spec: api.ExtendedIngressSpec{
-			Rules: []api.ExtendedIngressRule{
+		Spec: api.IngressSpec{
+			Rules: []api.IngressRule{
 				{
-					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
-						HTTP: &api.HTTPExtendedIngressRuleValue{
-							Paths: []api.HTTPExtendedIngressPath{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
 								{
 									Path: "/testpath",
-									Backend: api.ExtendedIngressBackend{
+									Backend: api.IngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 									},
@@ -134,15 +134,15 @@ func (s *IngressTestSuit) TestIngressDaemonUpdate() error {
 				api.NodeSelector: daemonNodeSelector(s),
 			},
 		},
-		Spec: api.ExtendedIngressSpec{
-			Rules: []api.ExtendedIngressRule{
+		Spec: api.IngressSpec{
+			Rules: []api.IngressRule{
 				{
-					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
-						HTTP: &api.HTTPExtendedIngressRuleValue{
-							Paths: []api.HTTPExtendedIngressPath{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
 								{
 									Path: "/testpath",
-									Backend: api.ExtendedIngressBackend{
+									Backend: api.IngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 									},
@@ -255,7 +255,7 @@ func (s *IngressTestSuit) TestIngressDaemonUpdate() error {
 
 	if s.t.Config.ProviderName != "minikube" {
 		updatedBaseIngress.Spec.Rules[0].HTTP = nil
-		updatedBaseIngress.Spec.Rules[0].TCP = []api.TCPExtendedIngressRuleValue{
+		updatedBaseIngress.Spec.Rules[0].TCP = []api.TCPIngressRuleValue{
 			{
 				Port: intstr.FromString("4545"),
 				Backend: api.IngressBackend{
@@ -331,15 +331,15 @@ func (s *IngressTestSuit) TestIngressDaemonRestart() error {
 				api.NodeSelector: daemonNodeSelector(s),
 			},
 		},
-		Spec: api.ExtendedIngressSpec{
-			Rules: []api.ExtendedIngressRule{
+		Spec: api.IngressSpec{
+			Rules: []api.IngressRule{
 				{
-					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
-						HTTP: &api.HTTPExtendedIngressRuleValue{
-							Paths: []api.HTTPExtendedIngressPath{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
 								{
 									Path: "/testpath",
-									Backend: api.ExtendedIngressBackend{
+									Backend: api.IngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 									},

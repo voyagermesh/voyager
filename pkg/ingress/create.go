@@ -24,13 +24,8 @@ const (
 	ExporterSidecarTag = "appscode/voyager:3.0.0"
 )
 
-func (lbc *EngressController) Create() error {
-	log.Debugln("Starting creating lb. got engress with", lbc.Resource.ObjectMeta)
-	err := lbc.parse()
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
-	err = lbc.generateTemplate()
+func (lbc *Controller) Create() error {
+	err := lbc.generateTemplate()
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -51,7 +46,7 @@ func (lbc *EngressController) Create() error {
 	return nil
 }
 
-func (lbc *EngressController) ensureConfigMap() error {
+func (lbc *Controller) ensureConfigMap() error {
 	log.Infoln("creating cmap for engress")
 	cm, err := lbc.KubeClient.CoreV1().ConfigMaps(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
@@ -95,9 +90,9 @@ func (lbc *EngressController) ensureConfigMap() error {
 	return nil
 }
 
-func (lbc *EngressController) createLB() error {
+func (lbc *Controller) createLB() error {
 	if !lbc.SupportsLBType() {
-		return errors.Newf("LBType %s is unsupported for cloud provider: %s", lbc.Resource.LBType(), lbc.ProviderName).Err()
+		return errors.Newf("LBType %s is unsupported for cloud provider: %s", lbc.Resource.LBType(), lbc.Opt.CloudProvider).Err()
 	}
 
 	if lbc.Resource.LBType() == api.LBTypeHostPort {
@@ -147,7 +142,7 @@ func (lbc *EngressController) createLB() error {
 	return nil
 }
 
-func (lbc *EngressController) createHostPortSvc() error {
+func (lbc *Controller) createHostPortSvc() error {
 	// Create a Headless service without selectors
 	// We just want kubernetes to assign a stable UID to the service. This is used inside EnsureFirewall()
 	svc := &apiv1.Service{
@@ -178,7 +173,7 @@ func (lbc *EngressController) createHostPortSvc() error {
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
 
-	if ans, ok := lbc.Resource.ServiceAnnotations(lbc.ProviderName); ok {
+	if ans, ok := lbc.Resource.ServiceAnnotations(lbc.Opt.CloudProvider); ok {
 		for k, v := range ans {
 			svc.Annotations[k] = v
 		}
@@ -241,7 +236,7 @@ func (lbc *EngressController) createHostPortSvc() error {
 	return nil
 }
 
-func (lbc *EngressController) createHostPortPods() error {
+func (lbc *Controller) createHostPortPods() error {
 	if len(lbc.Resource.NodeSelector()) == 0 {
 		return errors.Newf("%s type ingress %s@%s is missing node selectors.", lbc.Resource.LBType(), lbc.Resource.Name, lbc.Resource.Namespace).Err()
 	}
@@ -276,7 +271,7 @@ func (lbc *EngressController) createHostPortPods() error {
 					Containers: []apiv1.Container{
 						{
 							Name:  "haproxy",
-							Image: GetLoadbalancerImage(),
+							Image: lbc.Opt.HAProxyImage,
 							Env: []apiv1.EnvVar{
 								{
 									Name: "KUBE_NAMESPACE",
@@ -297,9 +292,8 @@ func (lbc *EngressController) createHostPortPods() error {
 							VolumeMounts: vms,
 						},
 					},
-					Volumes:            vs,
-					HostNetwork:        true,
-					ServiceAccountName: lbc.ServiceAccountName,
+					Volumes:     vs,
+					HostNetwork: true,
 				},
 			},
 		},
@@ -372,7 +366,7 @@ func (lbc *EngressController) createHostPortPods() error {
 	return nil
 }
 
-func (lbc *EngressController) createNodePortSvc() error {
+func (lbc *Controller) createNodePortSvc() error {
 	log.Infoln("creating NodePort type lb")
 	// creating service as type NodePort
 	svc := &apiv1.Service{
@@ -404,13 +398,13 @@ func (lbc *EngressController) createNodePortSvc() error {
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
 
-	if ans, ok := lbc.Resource.ServiceAnnotations(lbc.ProviderName); ok {
+	if ans, ok := lbc.Resource.ServiceAnnotations(lbc.Opt.CloudProvider); ok {
 		for k, v := range ans {
 			svc.Annotations[k] = v
 		}
 	}
 
-	if lbc.ProviderName == "aws" && lbc.Resource.KeepSourceIP() {
+	if lbc.Opt.CloudProvider == "aws" && lbc.Resource.KeepSourceIP() {
 		// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
 		svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
 	}
@@ -446,7 +440,7 @@ func (lbc *EngressController) createNodePortSvc() error {
 	return nil
 }
 
-func (lbc *EngressController) createNodePortPods() error {
+func (lbc *Controller) createNodePortPods() error {
 	log.Infoln("creating NodePort deployment")
 	deployment := &extensions.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -488,7 +482,7 @@ func (lbc *EngressController) createNodePortPods() error {
 					Containers: []apiv1.Container{
 						{
 							Name:  "haproxy",
-							Image: GetLoadbalancerImage(),
+							Image: lbc.Opt.HAProxyImage,
 							Env: []apiv1.EnvVar{
 								{
 									Name: "KUBE_NAMESPACE",
@@ -509,8 +503,7 @@ func (lbc *EngressController) createNodePortPods() error {
 							VolumeMounts: VolumeMounts(lbc.SecretNames),
 						},
 					},
-					Volumes:            Volumes(lbc.SecretNames),
-					ServiceAccountName: lbc.ServiceAccountName,
+					Volumes: Volumes(lbc.SecretNames),
 				},
 			},
 		},
@@ -580,7 +573,7 @@ func (lbc *EngressController) createNodePortPods() error {
 	return nil
 }
 
-func (lbc *EngressController) createLoadBalancerSvc() error {
+func (lbc *Controller) createLoadBalancerSvc() error {
 	log.Infoln("creating LoadBalancer type lb")
 	// creating service as typeLoadBalancer
 	svc := &apiv1.Service{
@@ -611,13 +604,13 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
 
-	if ans, ok := lbc.Resource.ServiceAnnotations(lbc.ProviderName); ok {
+	if ans, ok := lbc.Resource.ServiceAnnotations(lbc.Opt.CloudProvider); ok {
 		for k, v := range ans {
 			svc.Annotations[k] = v
 		}
 	}
 
-	switch lbc.ProviderName {
+	switch lbc.Opt.CloudProvider {
 	case "gce", "gke":
 		if ip := lbc.Resource.LoadBalancerIP(); ip != nil {
 			svc.Spec.LoadBalancerIP = ip.String()
@@ -655,7 +648,7 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 	return nil
 }
 
-func (lbc *EngressController) getExporterSidecar() (*apiv1.Container, error) {
+func (lbc *Controller) getExporterSidecar() (*apiv1.Container, error) {
 	if !lbc.Resource.Stats() {
 		return nil, nil // Don't add sidecar is stats is not exposed.
 	}
@@ -685,7 +678,7 @@ func (lbc *EngressController) getExporterSidecar() (*apiv1.Container, error) {
 	return nil, nil
 }
 
-func (lbc *EngressController) ensureStatsService() {
+func (lbc *Controller) ensureStatsService() {
 	svc := &apiv1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      lbc.Resource.StatsServiceName(),
@@ -738,7 +731,7 @@ func (lbc *EngressController) ensureStatsService() {
 	}
 }
 
-func (lbc *EngressController) updateStatus() error {
+func (lbc *Controller) updateStatus() error {
 	var statuses []apiv1.LoadBalancerIngress
 
 	switch lbc.Resource.LBType() {
@@ -781,7 +774,7 @@ func (lbc *EngressController) updateStatus() error {
 	return nil
 }
 
-func (lbc *EngressController) ensureResourceAnnotations(annotation map[string]string) (map[string]string, bool) {
+func (lbc *Controller) ensureResourceAnnotations(annotation map[string]string) (map[string]string, bool) {
 	needsUpdate := false
 
 	// Copy the given map to avoid updating the original annotations

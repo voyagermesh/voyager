@@ -47,15 +47,15 @@ func (s *IngressTestSuit) TestIngressCreateDelete() error {
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},
-		Spec: api.ExtendedIngressSpec{
-			Rules: []api.ExtendedIngressRule{
+		Spec: api.IngressSpec{
+			Rules: []api.IngressRule{
 				{
-					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
-						HTTP: &api.HTTPExtendedIngressRuleValue{
-							Paths: []api.HTTPExtendedIngressPath{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
 								{
 									Path: "/testpath",
-									Backend: api.ExtendedIngressBackend{
+									Backend: api.IngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 									},
@@ -126,7 +126,7 @@ func (s *IngressTestSuit) TestIngressCreateDelete() error {
 		}
 	}
 
-	if s.t.Voyager != nil && s.t.Voyager.ProviderName != "minikube" {
+	if s.t.Operator != nil && s.t.Operator.Opt.CloudProvider != "minikube" {
 		// Check Status for ingress
 		baseIngress, err := s.t.ExtClient.Ingresses(baseIngress.Namespace).Get(baseIngress.Name)
 		if err != nil {
@@ -171,15 +171,15 @@ func (s *IngressTestSuit) TestIngressUpdate() error {
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},
-		Spec: api.ExtendedIngressSpec{
-			Rules: []api.ExtendedIngressRule{
+		Spec: api.IngressSpec{
+			Rules: []api.IngressRule{
 				{
-					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
-						HTTP: &api.HTTPExtendedIngressRuleValue{
-							Paths: []api.HTTPExtendedIngressPath{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
 								{
 									Path: "/testpath",
-									Backend: api.ExtendedIngressBackend{
+									Backend: api.IngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 									},
@@ -305,7 +305,7 @@ func (s *IngressTestSuit) TestIngressUpdate() error {
 
 	if s.t.Config.ProviderName != "minikube" {
 		updatedBaseIngress.Spec.Rules[0].HTTP = nil
-		updatedBaseIngress.Spec.Rules[0].TCP = []api.TCPExtendedIngressRuleValue{
+		updatedBaseIngress.Spec.Rules[0].TCP = []api.TCPIngressRuleValue{
 			{
 				Port: intstr.FromString("4545"),
 				Backend: api.IngressBackend{
@@ -439,15 +439,15 @@ func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
 					api.LoadBalancerIP: s.t.Config.LBPersistIP,
 				},
 			},
-			Spec: api.ExtendedIngressSpec{
-				Rules: []api.ExtendedIngressRule{
+			Spec: api.IngressSpec{
+				Rules: []api.IngressRule{
 					{
-						ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
-							HTTP: &api.HTTPExtendedIngressRuleValue{
-								Paths: []api.HTTPExtendedIngressPath{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/testpath",
-										Backend: api.ExtendedIngressBackend{
+										Backend: api.IngressBackend{
 											ServiceName: testServerSvc.Name,
 											ServicePort: intstr.FromInt(80),
 										},
@@ -538,15 +538,15 @@ func (s *IngressTestSuit) TestIngressCreateIPPersist() error {
 					api.LoadBalancerIP: oldServiceIP,
 				},
 			},
-			Spec: api.ExtendedIngressSpec{
-				Rules: []api.ExtendedIngressRule{
+			Spec: api.IngressSpec{
+				Rules: []api.IngressRule{
 					{
-						ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
-							HTTP: &api.HTTPExtendedIngressRuleValue{
-								Paths: []api.HTTPExtendedIngressPath{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/testpath",
-										Backend: api.ExtendedIngressBackend{
+										Backend: api.IngressBackend{
 											ServiceName: testServerSvc.Name,
 											ServicePort: intstr.FromInt(80),
 										},
@@ -646,14 +646,14 @@ func (s *IngressTestSuit) TestIngressCreateWithOptions() error {
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},
-		Spec: api.ExtendedIngressSpec{
-			Rules: []api.ExtendedIngressRule{
+		Spec: api.IngressSpec{
+			Rules: []api.IngressRule{
 				{
-					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
-						HTTP: &api.HTTPExtendedIngressRuleValue{
-							Paths: []api.HTTPExtendedIngressPath{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
 								{
-									Backend: api.ExtendedIngressBackend{
+									Backend: api.IngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 										HeaderRule: []string{
@@ -885,15 +885,15 @@ func (s *IngressTestSuit) TestIngressHostNames() error {
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},
-		Spec: api.ExtendedIngressSpec{
-			Rules: []api.ExtendedIngressRule{
+		Spec: api.IngressSpec{
+			Rules: []api.IngressRule{
 				{
-					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
-						HTTP: &api.HTTPExtendedIngressRuleValue{
-							Paths: []api.HTTPExtendedIngressPath{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
 								{
 									Path: "/testpath",
-									Backend: api.ExtendedIngressBackend{
+									Backend: api.IngressBackend{
 										HostNames:   []string{testServerStatefulSet.Name + "-0"},
 										ServiceName: headlessSvc.Name,
 										ServicePort: intstr.FromInt(80),
@@ -1102,15 +1102,15 @@ func (s *IngressTestSuit) TestIngressBackendWeight() error {
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},
-		Spec: api.ExtendedIngressSpec{
-			Rules: []api.ExtendedIngressRule{
+		Spec: api.IngressSpec{
+			Rules: []api.IngressRule{
 				{
-					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
-						HTTP: &api.HTTPExtendedIngressRuleValue{
-							Paths: []api.HTTPExtendedIngressPath{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
 								{
 									Path: "/testpath",
-									Backend: api.ExtendedIngressBackend{
+									Backend: api.IngressBackend{
 										ServiceName: svc.Name,
 										ServicePort: intstr.FromInt(80),
 									},
@@ -1230,15 +1230,15 @@ func (s *IngressTestSuit) TestIngressBackendRule() error {
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},
-		Spec: api.ExtendedIngressSpec{
-			Rules: []api.ExtendedIngressRule{
+		Spec: api.IngressSpec{
+			Rules: []api.IngressRule{
 				{
-					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
-						HTTP: &api.HTTPExtendedIngressRuleValue{
-							Paths: []api.HTTPExtendedIngressPath{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
 								{
 									Path: "/old",
-									Backend: api.ExtendedIngressBackend{
+									Backend: api.IngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 										BackendRule: []string{
@@ -1252,7 +1252,7 @@ func (s *IngressTestSuit) TestIngressBackendRule() error {
 								},
 								{
 									Path: "/test-second",
-									Backend: api.ExtendedIngressBackend{
+									Backend: api.IngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 										BackendRule: []string{
@@ -1393,14 +1393,14 @@ func (s *IngressTestSuit) TestIngressAnnotations() error {
 				api.PodAnnotations:     `{"foo": "bar", "pod-annotation": "set"}`,
 			},
 		},
-		Spec: api.ExtendedIngressSpec{
-			Rules: []api.ExtendedIngressRule{
+		Spec: api.IngressSpec{
+			Rules: []api.IngressRule{
 				{
-					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
-						HTTP: &api.HTTPExtendedIngressRuleValue{
-							Paths: []api.HTTPExtendedIngressPath{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
 								{
-									Backend: api.ExtendedIngressBackend{
+									Backend: api.IngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 									},
@@ -1611,15 +1611,15 @@ func (s *IngressTestSuit) TestIngressNodePort() error {
 				api.LBType: api.LBTypeNodePort,
 			},
 		},
-		Spec: api.ExtendedIngressSpec{
-			Rules: []api.ExtendedIngressRule{
+		Spec: api.IngressSpec{
+			Rules: []api.IngressRule{
 				{
-					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
-						HTTP: &api.HTTPExtendedIngressRuleValue{
-							Paths: []api.HTTPExtendedIngressPath{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
 								{
 									Path: "/testpath",
-									Backend: api.ExtendedIngressBackend{
+									Backend: api.IngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 									},
@@ -1684,15 +1684,15 @@ func (s *IngressTestSuit) TestIngressStats() error {
 				api.StatsPort: "8787",
 			},
 		},
-		Spec: api.ExtendedIngressSpec{
-			Rules: []api.ExtendedIngressRule{
+		Spec: api.IngressSpec{
+			Rules: []api.IngressRule{
 				{
-					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
-						HTTP: &api.HTTPExtendedIngressRuleValue{
-							Paths: []api.HTTPExtendedIngressPath{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
 								{
 									Path: "/testpath",
-									Backend: api.ExtendedIngressBackend{
+									Backend: api.IngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 									},
@@ -1786,15 +1786,15 @@ func (s *IngressTestSuit) TestIngressKeepSource() error {
 				api.KeepSourceIP: "true",
 			},
 		},
-		Spec: api.ExtendedIngressSpec{
-			Rules: []api.ExtendedIngressRule{
+		Spec: api.IngressSpec{
+			Rules: []api.IngressRule{
 				{
-					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
-						HTTP: &api.HTTPExtendedIngressRuleValue{
-							Paths: []api.HTTPExtendedIngressPath{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
 								{
 									Path: "/testpath",
-									Backend: api.ExtendedIngressBackend{
+									Backend: api.IngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 									},
@@ -1861,19 +1861,19 @@ func (s *IngressTestSuit) TestIngressLBSourceRange() error {
 				api.KeepSourceIP: "true",
 			},
 		},
-		Spec: api.ExtendedIngressSpec{
+		Spec: api.IngressSpec{
 			LoadBalancerSourceRanges: []string{
 				"192.101.0.0/16",
 				"192.0.0.0/24",
 			},
-			Rules: []api.ExtendedIngressRule{
+			Rules: []api.IngressRule{
 				{
-					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
-						HTTP: &api.HTTPExtendedIngressRuleValue{
-							Paths: []api.HTTPExtendedIngressPath{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
 								{
 									Path: "/testpath",
-									Backend: api.ExtendedIngressBackend{
+									Backend: api.IngressBackend{
 										ServiceName: testServerSvc.Name,
 										ServicePort: intstr.FromInt(80),
 									},
@@ -2017,40 +2017,40 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 			Name:      testIngressName(),
 			Namespace: s.t.Config.TestNamespace,
 		},
-		Spec: api.ExtendedIngressSpec{
-			Backend: &api.ExtendedIngressBackend{
+		Spec: api.IngressSpec{
+			Backend: &api.IngressBackend{
 				ServiceName: extSvcNoResolveRedirect.Name,
 				ServicePort: intstr.FromString("80"),
 			},
-			Rules: []api.ExtendedIngressRule{
+			Rules: []api.IngressRule{
 				{
-					ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
-						HTTP: &api.HTTPExtendedIngressRuleValue{
-							Paths: []api.HTTPExtendedIngressPath{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
 								{
 									Path: "/test-dns",
-									Backend: api.ExtendedIngressBackend{
+									Backend: api.IngressBackend{
 										ServiceName: extSvcResolvesDNSWithNS.Name,
 										ServicePort: intstr.FromString("80"),
 									},
 								},
 								{
 									Path: "/test-no-dns",
-									Backend: api.ExtendedIngressBackend{
+									Backend: api.IngressBackend{
 										ServiceName: extSvcNoResolveRedirect.Name,
 										ServicePort: intstr.FromString("80"),
 									},
 								},
 								{
 									Path: "/test-no-backend-redirect",
-									Backend: api.ExtendedIngressBackend{
+									Backend: api.IngressBackend{
 										ServiceName: extSvcResolvesDNSWithoutNS.Name,
 										ServicePort: intstr.FromString("80"),
 									},
 								},
 								{
 									Path: "/test-no-backend-rule-redirect",
-									Backend: api.ExtendedIngressBackend{
+									Backend: api.IngressBackend{
 										ServiceName: extSvcNoResolveRedirect.Name,
 										ServicePort: intstr.FromString("80"),
 										BackendRule: []string{
