@@ -182,22 +182,22 @@ func (r Ingress) BackendServices() map[string]metav1.ObjectMeta {
 	return services
 }
 
-func (ing *Ingress) HasBackendService(name, namespace string) bool {
+func (r Ingress) HasBackendService(name, namespace string) bool {
 	svcFQN := name + "." + namespace
 
 	fqn := func(svcName string) string {
 		if strings.ContainsRune(svcName, '.') {
 			return svcName
 		}
-		return svcName + "." + ing.Namespace
+		return svcName + "." + r.Namespace
 	}
 
-	if ing.Spec.Backend != nil {
-		if fqn(ing.Spec.Backend.ServiceName) == svcFQN {
+	if r.Spec.Backend != nil {
+		if fqn(r.Spec.Backend.ServiceName) == svcFQN {
 			return true
 		}
 	}
-	for _, rules := range ing.Spec.Rules {
+	for _, rules := range r.Spec.Rules {
 		if rules.HTTP != nil {
 			for _, svc := range rules.HTTP.Paths {
 				if fqn(svc.Backend.ServiceName) == svcFQN {

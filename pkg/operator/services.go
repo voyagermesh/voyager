@@ -2,6 +2,7 @@ package operator
 
 import (
 	"encoding/json"
+	"fmt"
 
 	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
@@ -44,7 +45,9 @@ func (op *Operator) WatchServices() {
 				if svc, ok := obj.(*apiv1.Service); ok {
 					log.Infof("Service %s@%s deleted", svc.Name, svc.Namespace)
 
-					op.restoreServiceIfRequired(svc)
+					if restored, err := op.restoreServiceIfRequired(svc); err == nil && restored {
+						return
+					}
 					op.updateHAProxies(svc)
 				}
 			},
@@ -53,19 +56,19 @@ func (op *Operator) WatchServices() {
 	ctrl.Run(wait.NeverStop)
 }
 
-func (op *Operator) restoreServiceIfRequired(svc *apiv1.Service) error {
+func (op *Operator) restoreServiceIfRequired(svc *apiv1.Service) (bool, error) {
 	if svc.Annotations == nil {
-		return nil
+		return false, nil
 	}
 
 	// deleted resource have source reference
 	engress, err := op.findOrigin(svc.ObjectMeta)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	if svc.Name == engress.StatsServiceName() && !engress.Stats() {
-		return nil
+		return false, nil
 	}
 
 	// Ingress Still exists, restore resource
@@ -81,7 +84,30 @@ func (op *Operator) restoreServiceIfRequired(svc *apiv1.Service) error {
 	svc.Annotations[tapi.OriginName] = engress.Name
 
 	_, err = op.KubeClient.CoreV1().Services(svc.Namespace).Create(svc)
-	return err
+	return true, err
+}
+
+func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*tapi.Ingress, error) {
+	if meta.Annotations == nil {
+		return nil, nil
+	}
+
+	sourceName, sourceNameFound := meta.Annotations[tapi.OriginName]
+	sourceType, sourceTypeFound := meta.Annotations[tapi.OriginAPISchema]
+	if !sourceNameFound && !sourceTypeFound {
+		return nil, nil
+	}
+
+	if sourceType == tapi.APISchemaIngress {
+		ingress, err := op.KubeClient.ExtensionsV1beta1().Ingresses(meta.Namespace).Get(sourceName, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
+		return tapi.NewEngressFromIngress(ingress)
+	} else if sourceType == tapi.APISchemaEngress {
+		return op.ExtClient.Ingresses(meta.Namespace).Get(sourceName)
+	}
+	return nil, fmt.Errorf("Unknown ingress type %s", sourceType)
 }
 
 func (op *Operator) updateHAProxies(svc *apiv1.Service) error {

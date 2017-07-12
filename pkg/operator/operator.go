@@ -1,7 +1,6 @@
 package operator
 
 import (
-	"fmt"
 	"sync"
 	"time"
 
@@ -100,27 +99,4 @@ func (op *Operator) Run() {
 	go op.WatchNamespaces()
 	go op.WatchServices()
 	go certificate.CheckCertificates(op.KubeClient, op.ExtClient)
-}
-
-func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*api.Ingress, error) {
-	if meta.Annotations == nil {
-		return nil, nil
-	}
-
-	sourceName, sourceNameFound := meta.Annotations[api.OriginName]
-	sourceType, sourceTypeFound := meta.Annotations[api.OriginAPISchema]
-	if !sourceNameFound && !sourceTypeFound {
-		return nil, nil
-	}
-
-	if sourceType == api.APISchemaIngress {
-		ingress, err := op.KubeClient.ExtensionsV1beta1().Ingresses(meta.Namespace).Get(sourceName, metav1.GetOptions{})
-		if err != nil {
-			return nil, err
-		}
-		return api.NewEngressFromIngress(ingress)
-	} else if sourceType == api.APISchemaEngress {
-		return op.ExtClient.Ingresses(meta.Namespace).Get(sourceName)
-	}
-	return nil, fmt.Errorf("Unknown ingress type %s", sourceType)
 }
