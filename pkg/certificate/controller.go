@@ -15,6 +15,7 @@ import (
 	"github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/certificate/providers"
+	"github.com/appscode/voyager/pkg/config"
 	"github.com/xenolf/lego/acme"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -40,6 +41,7 @@ const (
 type Controller struct {
 	KubeClient clientset.Interface
 	ExtClient  acs.ExtensionInterface
+	Opt        config.Options
 
 	tpr      *api.Certificate
 	acmeCert ACMECertData
@@ -52,10 +54,11 @@ type Controller struct {
 	userSecretName string
 }
 
-func NewController(kubeClient clientset.Interface, extClient acs.ExtensionInterface, tpr *api.Certificate) *Controller {
+func NewController(kubeClient clientset.Interface, extClient acs.ExtensionInterface, opt config.Options, tpr *api.Certificate) *Controller {
 	return &Controller{
 		KubeClient: kubeClient,
 		ExtClient:  extClient,
+		Opt:        opt,
 		tpr:        tpr,
 	}
 }
@@ -412,8 +415,8 @@ func (c *Controller) processHTTPCertificate(revert chan struct{}) error {
 							{
 								Path: providers.URLPrefix,
 								Backend: api.IngressBackend{
-									ServiceName: "kubed.kube-system", // TODO: Fix operator name
-									ServicePort: intstr.FromInt(8765),
+									ServiceName: c.Opt.OperatorService + "." + c.Opt.OperatorNamespace,
+									ServicePort: intstr.FromInt(c.Opt.HTTPChallengePort),
 								},
 							},
 						},
@@ -464,8 +467,8 @@ func (c *Controller) processHTTPCertificate(revert chan struct{}) error {
 							{
 								Path: providers.URLPrefix,
 								Backend: extensions.IngressBackend{
-									ServiceName: "kubed.kube-system", // TODO: fix
-									ServicePort: intstr.FromInt(8765),
+									ServiceName: c.Opt.OperatorService + "." + c.Opt.OperatorNamespace,
+									ServicePort: intstr.FromInt(c.Opt.HTTPChallengePort),
 								},
 							},
 						},
