@@ -229,7 +229,7 @@ func (r Ingress) KeepSourceIP() bool {
 	return v
 }
 
-var defaultTimeoutValues = map[string]string{
+var timeoutDefaults = map[string]string{
 	// Maximum time to wait for a connection attempt to a server to succeed.
 	"connect": "50000",
 
@@ -261,7 +261,7 @@ func (r Ingress) Timeouts() map[string]string {
 	// is not recommended. Such a usage is accepted and works but reports a warning
 	// during startup because it may results in accumulation of expired sessions in
 	// the system if the system's timeouts are not configured either.
-	for k, v := range defaultTimeoutValues {
+	for k, v := range timeoutDefaults {
 		if _, ok := ans[k]; !ok {
 			ans[k] = v
 		}

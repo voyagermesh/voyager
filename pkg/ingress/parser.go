@@ -387,7 +387,7 @@ func (lbc *Controller) parseOptions() {
 		return
 	}
 	log.Infoln("Parsing annotations.")
-	lbc.Parsed.DefaultOptionTimeouts = lbc.Ingress.Timeouts()
+	lbc.Parsed.TimeoutDefaults = lbc.Ingress.Timeouts()
 	lbc.Parsed.Sticky = lbc.Ingress.StickySession()
 	if len(lbc.Ingress.Spec.TLS) > 0 {
 		lbc.Parsed.SSLCert = true

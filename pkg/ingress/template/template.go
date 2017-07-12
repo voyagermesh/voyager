@@ -27,7 +27,7 @@ defaults
     option dontlognull
 
     # Timeout values
-    {% for key, value in DefaultOptionTimeouts %}
+    {% for key, value in TimeoutDefaults %}
     timeout {{ key }}  {{ value }}
     {% endfor %}
 

@@ -41,5 +41,5 @@ func TestGetTimeOuts(t *testing.T) {
 	ing := &Ingress{}
 	timeouts := ing.Timeouts()
 
-	assert.Equal(t, timeouts, defaultTimeoutValues)
+	assert.Equal(t, timeouts, timeoutDefaults)
 }
