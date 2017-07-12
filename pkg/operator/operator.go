@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/appscode/log"
-	"github.com/appscode/voyager/api"
-	acs "github.com/appscode/voyager/client/clientset"
+	tapi "github.com/appscode/voyager/api"
+	tcs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
@@ -21,7 +21,7 @@ import (
 
 type Operator struct {
 	KubeClient clientset.Interface
-	ExtClient  acs.ExtensionInterface
+	ExtClient  tcs.ExtensionInterface
 	PromClient pcm.MonitoringV1alpha1Interface
 	Opt        config.Options
 
@@ -33,7 +33,7 @@ type Operator struct {
 
 func New(
 	kubeClient clientset.Interface,
-	extClient acs.ExtensionInterface,
+	extClient tcs.ExtensionInterface,
 	promClient pcm.MonitoringV1alpha1Interface,
 	opt config.Options,
 ) *Operator {
@@ -50,10 +50,10 @@ func New(
 func (op *Operator) Setup() error {
 	log.Infoln("Ensuring TPR registration")
 
-	if err := op.ensureThirdPartyResource("ingress" + "." + api.V1beta1SchemeGroupVersion.Group); err != nil {
+	if err := op.ensureThirdPartyResource(tapi.ResourceNameIngress + "." + tapi.V1beta1SchemeGroupVersion.Group); err != nil {
 		return err
 	}
-	if err := op.ensureThirdPartyResource("certificate" + "." + api.V1beta1SchemeGroupVersion.Group); err != nil {
+	if err := op.ensureThirdPartyResource(tapi.ResourceNameCertificate + "." + tapi.V1beta1SchemeGroupVersion.Group); err != nil {
 		return err
 	}
 	return nil
@@ -79,7 +79,7 @@ func (op *Operator) ensureThirdPartyResource(resourceName string) error {
 		Description: "Voyager by AppsCode - Secure Ingress Controller for Kubernetes",
 		Versions: []extensions.APIVersion{
 			{
-				Name: api.V1beta1SchemeGroupVersion.Version,
+				Name: tapi.V1beta1SchemeGroupVersion.Version,
 			},
 		},
 	}
