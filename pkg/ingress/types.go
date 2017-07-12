@@ -49,6 +49,8 @@ type HAProxyOptions struct {
 	Sticky  bool
 	SSLCert bool
 
+	TimeoutDefaults map[string]string
+
 	// open up load balancer stats
 	Stats bool
 	// Basic auth to lb stats

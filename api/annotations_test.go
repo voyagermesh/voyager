@@ -36,3 +36,10 @@ func TestGetMap(t *testing.T) {
 	actual, _ := getMap(in, "k1")
 	assert.Equal(t, map[string]string{"o1": "v1"}, actual)
 }
+
+func TestGetTimeOuts(t *testing.T) {
+	ing := &Ingress{}
+	timeouts := ing.Timeouts()
+
+	assert.Equal(t, timeouts, timeoutDefaults)
+}
