@@ -22,7 +22,7 @@ const (
 	UpdateStats                           // Update things for stats update
 )
 
-func (lbc *Controller) Update(t UpdateMode) error {
+func (lbc *Controller) Update(mode UpdateMode) error {
 	err := lbc.generateTemplate()
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -33,15 +33,15 @@ func (lbc *Controller) Update(t UpdateMode) error {
 		return errors.FromErr(err).Err()
 	}
 
-	if t&UpdateFirewall > 0 ||
-		t&RestartHAProxy > 0 ||
-		t&UpdateStats > 0 {
+	if mode&UpdateFirewall > 0 ||
+		mode&RestartHAProxy > 0 ||
+		mode&UpdateStats > 0 {
 		err := lbc.recreatePods()
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
 	}
-	if t&UpdateFirewall > 0 {
+	if mode&UpdateFirewall > 0 {
 		err := lbc.updateLBSvc()
 		if err != nil {
 			// Only update if the service is updated.
@@ -50,7 +50,7 @@ func (lbc *Controller) Update(t UpdateMode) error {
 		return err
 	}
 
-	if t&UpdateStats > 0 {
+	if mode&UpdateStats > 0 {
 		if lbc.Parsed.Stats {
 			lbc.ensureStatsService()
 		} else {

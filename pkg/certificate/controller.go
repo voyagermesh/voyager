@@ -16,6 +16,7 @@ import (
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/appscode/voyager/pkg/config"
+	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/xenolf/lego/acme"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,6 +24,7 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	"k8s.io/client-go/tools/record"
 )
 
 const (
@@ -42,6 +44,7 @@ type Controller struct {
 	KubeClient clientset.Interface
 	ExtClient  acs.ExtensionInterface
 	Opt        config.Options
+	recorder   record.EventRecorder
 
 	tpr      *api.Certificate
 	acmeCert ACMECertData
@@ -60,6 +63,7 @@ func NewController(kubeClient clientset.Interface, extClient acs.ExtensionInterf
 		ExtClient:  extClient,
 		Opt:        opt,
 		tpr:        tpr,
+		recorder:   eventer.NewEventRecorder(kubeClient, "Voyager operator"),
 	}
 }
 
