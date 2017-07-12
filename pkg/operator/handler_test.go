@@ -1,4 +1,4 @@
-package ingress
+package operator
 
 import (
 	"fmt"
@@ -85,8 +85,8 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 			Name:      "foo",
 			Namespace: "bar",
 		},
-		Spec: api.ExtendedIngressSpec{
-			Backend: &api.ExtendedIngressBackend{
+		Spec: api.IngressSpec{
+			Backend: &api.IngressBackend{
 				ServiceName: "test-service.test-namespace",
 			},
 		},
@@ -103,8 +103,8 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 			Name:      "foo",
 			Namespace: "bar",
 		},
-		Spec: api.ExtendedIngressSpec{
-			Backend: &api.ExtendedIngressBackend{
+		Spec: api.IngressSpec{
+			Backend: &api.IngressBackend{
 				ServiceName: "test-service.test-namespace",
 			},
 		},

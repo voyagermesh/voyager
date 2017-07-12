@@ -2,9 +2,7 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"net"
-	"reflect"
 	"strconv"
 	"strings"
 )
@@ -284,47 +282,4 @@ func getMap(m map[string]string, key string) (map[string]string, error) {
 	v := make(map[string]string)
 	err := json.Unmarshal([]byte(s), &v)
 	return v, err
-}
-
-const (
-	ingressClassAnnotationKey   = "kubernetes.io/ingress.class"
-	ingressClassAnnotationValue = "voyager"
-)
-
-// if ingressClass == "voyager", then only handle ingress that has voyager annotation
-// if ingressClass == "", then handle no annotaion or voyager annotation
-func (r Ingress) ShouldHandleIngress(ingressClass string) bool {
-	// https://github.com/appscode/voyager/blob/master/api/conversion_v1beta1.go#L44
-	if r.Annotations[APISchema] == APISchemaEngress {
-		// Resource Type is Extended Ingress So we should always Handle this
-		return true
-	}
-	kubeAnnotation, _ := r.Annotations[ingressClassAnnotationKey]
-	return kubeAnnotation == ingressClass || kubeAnnotation == ingressClassAnnotationValue
-}
-
-func (r Ingress) HasChanged(o Ingress) (bool, error) {
-	if r.Name != o.Name ||
-		r.Namespace != o.Namespace ||
-		r.APISchema() != o.APISchema() {
-		return false, errors.New("Not the same Ingress.")
-	}
-
-	if !reflect.DeepEqual(r.Spec, o.Spec) {
-		return true, nil
-	}
-
-	ra := map[string]string{}
-	for k, v := range r.Annotations {
-		if strings.HasPrefix(k, EngressKey+"/") {
-			ra[k] = v
-		}
-	}
-	oa := map[string]string{}
-	for k, v := range o.Annotations {
-		if strings.HasPrefix(k, EngressKey+"/") {
-			oa[k] = v
-		}
-	}
-	return !reflect.DeepEqual(ra, oa), nil
 }
