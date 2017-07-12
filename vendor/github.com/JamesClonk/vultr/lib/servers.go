@@ -51,6 +51,7 @@ type ServerOptions struct {
 	UserData             string
 	Snapshot             string
 	SSHKey               string
+	ReservedIP           string
 	IPV6                 bool
 	PrivateNetworking    bool
 	AutoBackups          bool
@@ -286,6 +287,10 @@ func (c *Client) CreateServer(name string, regionID, planID, osID int, options *
 
 		if options.SSHKey != "" {
 			values.Add("SSHKEYID", options.SSHKey)
+		}
+
+		if options.ReservedIP != "" {
+			values.Add("reserved_ip_v4", options.ReservedIP)
 		}
 
 		values.Add("enable_ipv6", "no")

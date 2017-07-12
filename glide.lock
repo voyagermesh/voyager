@@ -1,5 +1,5 @@
 hash: 4603d45081832651b419c72d01373806592fe66c295a144567aab3fdcbedcda8
-updated: 2017-07-09T17:50:07.207705011-07:00
+updated: 2017-07-12T03:42:10.642283746-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -178,7 +178,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/JamesClonk/vultr
-  version: 253a3520b6e35123fe5879eb057b1599426b6a2a
+  version: 743eb4ae7f548cb4da4e55b9e5a2c9077125bd82
   subpackages:
   - lib
 - name: github.com/jmespath/go-jmespath
@@ -241,7 +241,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
 - name: github.com/spf13/cobra
-  version: 8c6fa02d2225de0f9bdcb7ca912556f68d172d8c
+  version: c46add8a652801b61513ad36c56759f302fbb028
   subpackages:
   - doc
 - name: github.com/spf13/pflag
