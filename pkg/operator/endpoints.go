@@ -2,6 +2,7 @@ package operator
 
 import (
 	"errors"
+	"fmt"
 
 	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
@@ -45,6 +46,8 @@ func (c *Operator) WatchEndpoints() {
 					log.Warningf("Skipping Endpoints %s@%s, as it has no matching service", newEndpoints.Name, newEndpoints.Namespace)
 					return
 				}
+
+				fmt.Println(oldEndpoints)
 
 			},
 		},
