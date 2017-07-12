@@ -394,7 +394,7 @@ func (c *Controller) processHTTPCertificate(revert chan struct{}) error {
 	defer c.acmeClient.HTTPProviderLock.Unlock()
 
 	switch c.tpr.Spec.HTTPProviderIngressReference.APIVersion {
-	case "appscode.com/v1":
+	case api.V1beta1SchemeGroupVersion.String():
 		revertRequired := false
 		i, err := c.ExtClient.Ingresses(c.tpr.Spec.HTTPProviderIngressReference.Namespace).
 			Get(c.tpr.Spec.HTTPProviderIngressReference.Name)
@@ -464,7 +464,7 @@ func (c *Controller) processHTTPCertificate(revert chan struct{}) error {
 							{
 								Path: providers.URLPrefix,
 								Backend: extensions.IngressBackend{
-									ServiceName: "kubed.kube-system",
+									ServiceName: "kubed.kube-system", // TODO: fix
 									ServicePort: intstr.FromInt(8765),
 								},
 							},
