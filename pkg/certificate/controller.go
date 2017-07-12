@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/appscode/errors"
+	stringz "github.com/appscode/go/strings"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
@@ -36,12 +37,6 @@ const (
 	certificateAnnotationKeyACMEServerURL                = "certificate.appscode.com/server-url"
 )
 
-//type Controller struct {
-//	// kubernetes clients
-//	KubeClient clientset.Interface
-//	ExtClient  acs.ExtensionInterface
-//}
-
 type Controller struct {
 	KubeClient clientset.Interface
 	ExtClient  acs.ExtensionInterface
@@ -65,7 +60,6 @@ func NewController(kubeClient clientset.Interface, extClient acs.ExtensionInterf
 	}
 }
 
-/*
 func (c *Controller) HandleIngress(ingress *api.Ingress) error {
 	if ingress.Annotations != nil {
 		if val, ok := ingress.Annotations[certificateAnnotationKeyEnabled]; ok && val == "true" {
@@ -107,7 +101,7 @@ func (c *Controller) HandleIngress(ingress *api.Ingress) error {
 				for _, rule := range ingress.Spec.Rules {
 					found := false
 					for _, tls := range ingress.Spec.TLS {
-						if strings.Contains(tls.Hosts, rule.Host) {
+						if stringz.Contains(tls.Hosts, rule.Host) {
 							found = true
 						}
 					}
@@ -124,7 +118,6 @@ func (c *Controller) HandleIngress(ingress *api.Ingress) error {
 	}
 	return nil
 }
-*/
 
 func (c *Controller) Process() error {
 	c.acmeClientConfig = &ACMEConfig{
@@ -411,15 +404,15 @@ func (c *Controller) processHTTPCertificate(revert chan struct{}) error {
 		// make a copy of previous spec.
 		prevSpecs := i.Spec
 		for _, host := range c.tpr.Spec.Domains {
-			rule := api.ExtendedIngressRule{
+			rule := api.IngressRule{
 				Host: host,
-				ExtendedIngressRuleValue: api.ExtendedIngressRuleValue{
-					HTTP: &api.HTTPExtendedIngressRuleValue{
-						Paths: []api.HTTPExtendedIngressPath{
+				IngressRuleValue: api.IngressRuleValue{
+					HTTP: &api.HTTPIngressRuleValue{
+						Paths: []api.HTTPIngressPath{
 							{
 								Path: providers.URLPrefix,
-								Backend: api.ExtendedIngressBackend{
-									ServiceName: "kubed.kube-system",
+								Backend: api.IngressBackend{
+									ServiceName: "kubed.kube-system", // TODO: Fix operator name
 									ServicePort: intstr.FromInt(8765),
 								},
 							},
@@ -444,7 +437,7 @@ func (c *Controller) processHTTPCertificate(revert chan struct{}) error {
 						Get(c.tpr.Spec.HTTPProviderIngressReference.Name)
 					if err == nil {
 						i.Spec = prevSpecs
-						i.Spec.TLS = append(i.Spec.TLS, api.ExtendedIngressTLS{
+						i.Spec.TLS = append(i.Spec.TLS, api.IngressTLS{
 							Hosts:      c.tpr.Spec.Domains,
 							SecretName: defaultCertPrefix + c.tpr.Name,
 						})

@@ -6,7 +6,7 @@ import (
 
 	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
-	"github.com/appscode/voyager/api"
+	tapi "github.com/appscode/voyager/api"
 	_ "github.com/appscode/voyager/api/install"
 	"github.com/appscode/voyager/pkg/ingress"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
@@ -78,8 +78,8 @@ func (op *Operator) restoreServiceIfRequired(svc *apiv1.Service) error {
 	if svc.Annotations == nil {
 		svc.Annotations = make(map[string]string)
 	}
-	svc.Annotations[api.OriginAPISchema] = engress.APISchema()
-	svc.Annotations[api.OriginName] = engress.Name
+	svc.Annotations[tapi.OriginAPISchema] = engress.APISchema()
+	svc.Annotations[tapi.OriginName] = engress.Name
 
 	_, err = op.KubeClient.CoreV1().Services(svc.Namespace).Create(svc)
 	return err
@@ -95,9 +95,9 @@ func (op *Operator) updateHAProxies(svc *apiv1.Service) error {
 		return err
 	}
 
-	items := make([]api.Ingress, len(ing.Items))
+	items := make([]tapi.Ingress, len(ing.Items))
 	for i, item := range ing.Items {
-		e, err := api.NewEngressFromIngress(item)
+		e, err := tapi.NewEngressFromIngress(item)
 		if err != nil {
 			continue
 		}
@@ -141,13 +141,14 @@ func (op *Operator) updateHAProxies(svc *apiv1.Service) error {
 	return nil
 }
 
-func (op *Operator) ensureServiceAnnotations(r *api.Ingress, svc *apiv1.Service) {
+func (op *Operator) ensureServiceAnnotations(r *tapi.Ingress, svc *apiv1.Service) {
 	if svc.Annotations == nil {
 		svc.Annotations = make(map[string]string)
 	}
-	if op.IngressUsesService(r, svc) {
-		list := make([]api.IngressRef, 0)
-		val, ok := svc.Annotations[api.EgressPoints]
+	backends := r.BackendServices()
+	if _, ok := backends[svc.Name+"."+svc.Namespace]; ok {
+		list := make([]tapi.IngressRef, 0)
+		val, ok := svc.Annotations[tapi.EgressPoints]
 		if ok {
 			err := json.Unmarshal([]byte(val), list)
 			if err == nil {
@@ -159,7 +160,7 @@ func (op *Operator) ensureServiceAnnotations(r *api.Ingress, svc *apiv1.Service)
 					}
 				}
 				if !found {
-					list = append(list, api.IngressRef{
+					list = append(list, tapi.IngressRef{
 						APISchema: r.APISchema(),
 						Name:      r.Name,
 						Namespace: r.Namespace,
@@ -167,7 +168,7 @@ func (op *Operator) ensureServiceAnnotations(r *api.Ingress, svc *apiv1.Service)
 				}
 			}
 		} else {
-			list = append(list, api.IngressRef{
+			list = append(list, tapi.IngressRef{
 				APISchema: r.APISchema(),
 				Name:      r.Name,
 				Namespace: r.Namespace,
@@ -176,15 +177,15 @@ func (op *Operator) ensureServiceAnnotations(r *api.Ingress, svc *apiv1.Service)
 
 		data, err := json.Marshal(list)
 		if err == nil {
-			svc.Annotations[api.EgressPoints] = string(data)
+			svc.Annotations[tapi.EgressPoints] = string(data)
 		}
 		op.KubeClient.CoreV1().Services(svc.Namespace).Update(svc)
 		return
 	}
 	// Lets check if service still have the annotation for this ingress.
-	val, ok := svc.Annotations[api.EgressPoints]
+	val, ok := svc.Annotations[tapi.EgressPoints]
 	if ok {
-		list := make([]api.IngressRef, 0)
+		list := make([]tapi.IngressRef, 0)
 		err := json.Unmarshal([]byte(val), list)
 		if err == nil {
 			for i, engs := range list {
@@ -195,14 +196,14 @@ func (op *Operator) ensureServiceAnnotations(r *api.Ingress, svc *apiv1.Service)
 			}
 			data, err := json.Marshal(list)
 			if err == nil {
-				svc.Annotations[api.EgressPoints] = string(data)
+				svc.Annotations[tapi.EgressPoints] = string(data)
 			}
 		}
 		op.KubeClient.CoreV1().Services(svc.Namespace).Update(svc)
 	}
 }
 
-func (op *Operator) IngressUsesService(ing *api.Ingress, svc *apiv1.Service) bool {
+func (op *Operator) IngressUsesService(ing *tapi.Ingress, svc *apiv1.Service) bool {
 	svcFQN := svc.Name + "." + svc.Namespace
 
 	fqn := func(svcName string) string {
