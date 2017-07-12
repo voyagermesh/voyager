@@ -6,6 +6,12 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
+const (
+	ResourceKindIngress = "Ingress"
+	ResourceNameIngress = "ingress"
+	ResourceTypeIngress = "ingresses"
+)
+
 // Custom Ingress type for Voyager.
 type Ingress struct {
 	metav1.TypeMeta `json:",inline"`
