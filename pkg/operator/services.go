@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/appscode/errors"
 	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
 	tapi "github.com/appscode/voyager/api"
@@ -17,7 +18,6 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
-	"github.com/appscode/errors"
 )
 
 // Blocks caller. Intended to be called as a Go routine.

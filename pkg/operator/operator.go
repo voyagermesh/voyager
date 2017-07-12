@@ -89,13 +89,13 @@ func (op *Operator) ensureThirdPartyResource(resourceName string) error {
 }
 
 func (op *Operator) Run() {
-	op.Setup()
 	go op.WatchNamespaces()
 	go op.WatchConfigMaps()
 	go op.WatchDaemonSets()
 	go op.WatchDeployments()
 	go op.WatchServices()
 	go op.WatchEndpoints()
+
 	go op.WatchIngresses()
 	go op.WatchIngressTPRs()
 	go op.WatchCertificateTPRs()

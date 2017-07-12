@@ -51,6 +51,7 @@ func NewE2ETestSuit() *TestSuit {
 
 func (t *TestSuit) Run() error {
 	if !t.Config.InCluster {
+		t.Operator.Setup()
 		go t.Operator.Run()
 	}
 	defer time.Sleep(time.Second * 30)

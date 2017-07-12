@@ -102,6 +102,10 @@ func run() {
 	log.Infoln("Starting Voyager operator...")
 
 	w := operator.New(kubeClient, extClient, promClient, opt)
+	err = w.Setup()
+	if err != nil {
+		log.Fatalln(err)
+	}
 	// https://github.com/appscode/voyager/issues/229
 	w.PurgeOffshootsWithDeprecatedLabels()
 	go w.Run()
