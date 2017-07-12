@@ -61,7 +61,6 @@ func (op *Operator) WatchIngressTPRs() {
 								curPorts[int(p.Port)] = p
 							}
 
-							// TODO: Fix where is ctrl.Ports is set ?
 							var updateFW bool
 							for svcPort, targetPort := range ctrl.Ports {
 								if sp, ok := curPorts[svcPort]; !ok || sp.TargetPort.IntValue() != targetPort {
