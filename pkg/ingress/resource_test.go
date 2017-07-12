@@ -19,7 +19,7 @@ func init() {
 func TestResourceIsExists(t *testing.T) {
 	testCases := map[*Controller]bool{
 		{
-			Resource: &api.Ingress{
+			Ingress: &api.Ingress{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
@@ -53,7 +53,7 @@ func TestResourceIsExists(t *testing.T) {
 		}: true,
 
 		{
-			Resource: &api.Ingress{
+			Ingress: &api.Ingress{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
@@ -87,7 +87,7 @@ func TestResourceIsExists(t *testing.T) {
 		}: false,
 
 		{
-			Resource: &api.Ingress{
+			Ingress: &api.Ingress{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
@@ -120,7 +120,7 @@ func TestResourceIsExists(t *testing.T) {
 			),
 		}: false,
 		{
-			Resource: &api.Ingress{
+			Ingress: &api.Ingress{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
@@ -154,7 +154,7 @@ func TestResourceIsExists(t *testing.T) {
 		}: false,
 
 		{
-			Resource: &api.Ingress{
+			Ingress: &api.Ingress{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
@@ -188,7 +188,7 @@ func TestResourceIsExists(t *testing.T) {
 		}: true,
 
 		{
-			Resource: &api.Ingress{
+			Ingress: &api.Ingress{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
@@ -222,7 +222,7 @@ func TestResourceIsExists(t *testing.T) {
 		}: true,
 
 		{
-			Resource: &api.Ingress{
+			Ingress: &api.Ingress{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
