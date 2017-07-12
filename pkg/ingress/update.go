@@ -22,7 +22,7 @@ const (
 	UpdateStats                           // Update things for stats update
 )
 
-func (lbc *EngressController) Update(t updateType) error {
+func (lbc *IngressController) Update(t updateType) error {
 	log.Debugln("updating engress specs with type", t)
 	lbc.parse()
 	err := lbc.generateTemplate()
@@ -63,7 +63,7 @@ func (lbc *EngressController) Update(t updateType) error {
 	return nil
 }
 
-func (lbc *EngressController) updateConfigMap() error {
+func (lbc *IngressController) updateConfigMap() error {
 	cMap, err := lbc.KubeClient.CoreV1().ConfigMaps(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -94,7 +94,7 @@ func (lbc *EngressController) updateConfigMap() error {
 	return nil
 }
 
-func (lbc *EngressController) recreatePods() error {
+func (lbc *IngressController) recreatePods() error {
 	if !lbc.SupportsLBType() {
 		return errors.Newf("LBType %s is unsupported for cloud provider: %s", lbc.Resource.LBType(), lbc.ProviderName).Err()
 	}
@@ -132,7 +132,7 @@ func (lbc *EngressController) recreatePods() error {
 	return nil
 }
 
-func (lbc *EngressController) updateLBSvc() error {
+func (lbc *IngressController) updateLBSvc() error {
 	svc, err := lbc.KubeClient.CoreV1().Services(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -206,7 +206,7 @@ func (lbc *EngressController) updateLBSvc() error {
 	return nil
 }
 
-func (lbc *EngressController) UpdateTargetAnnotations(old *api.Ingress, new *api.Ingress) error {
+func (lbc *IngressController) UpdateTargetAnnotations(old *api.Ingress, new *api.Ingress) error {
 	lbc.parse()
 
 	// Check for changes in ingress.appscode.com/annotations-service

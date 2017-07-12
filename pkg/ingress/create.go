@@ -24,7 +24,7 @@ const (
 	ExporterSidecarTag = "appscode/voyager:3.0.0"
 )
 
-func (lbc *EngressController) Create() error {
+func (lbc *IngressController) Create() error {
 	log.Debugln("Starting creating lb. got engress with", lbc.Resource.ObjectMeta)
 	err := lbc.parse()
 	if err != nil {
@@ -51,7 +51,7 @@ func (lbc *EngressController) Create() error {
 	return nil
 }
 
-func (lbc *EngressController) ensureConfigMap() error {
+func (lbc *IngressController) ensureConfigMap() error {
 	log.Infoln("creating cmap for engress")
 	cm, err := lbc.KubeClient.CoreV1().ConfigMaps(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
@@ -95,7 +95,7 @@ func (lbc *EngressController) ensureConfigMap() error {
 	return nil
 }
 
-func (lbc *EngressController) createLB() error {
+func (lbc *IngressController) createLB() error {
 	if !lbc.SupportsLBType() {
 		return errors.Newf("LBType %s is unsupported for cloud provider: %s", lbc.Resource.LBType(), lbc.ProviderName).Err()
 	}
@@ -147,7 +147,7 @@ func (lbc *EngressController) createLB() error {
 	return nil
 }
 
-func (lbc *EngressController) createHostPortSvc() error {
+func (lbc *IngressController) createHostPortSvc() error {
 	// Create a Headless service without selectors
 	// We just want kubernetes to assign a stable UID to the service. This is used inside EnsureFirewall()
 	svc := &apiv1.Service{
@@ -241,7 +241,7 @@ func (lbc *EngressController) createHostPortSvc() error {
 	return nil
 }
 
-func (lbc *EngressController) createHostPortPods() error {
+func (lbc *IngressController) createHostPortPods() error {
 	if len(lbc.Resource.NodeSelector()) == 0 {
 		return errors.Newf("%s type ingress %s@%s is missing node selectors.", lbc.Resource.LBType(), lbc.Resource.Name, lbc.Resource.Namespace).Err()
 	}
@@ -372,7 +372,7 @@ func (lbc *EngressController) createHostPortPods() error {
 	return nil
 }
 
-func (lbc *EngressController) createNodePortSvc() error {
+func (lbc *IngressController) createNodePortSvc() error {
 	log.Infoln("creating NodePort type lb")
 	// creating service as type NodePort
 	svc := &apiv1.Service{
@@ -446,7 +446,7 @@ func (lbc *EngressController) createNodePortSvc() error {
 	return nil
 }
 
-func (lbc *EngressController) createNodePortPods() error {
+func (lbc *IngressController) createNodePortPods() error {
 	log.Infoln("creating NodePort deployment")
 	deployment := &extensions.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -580,7 +580,7 @@ func (lbc *EngressController) createNodePortPods() error {
 	return nil
 }
 
-func (lbc *EngressController) createLoadBalancerSvc() error {
+func (lbc *IngressController) createLoadBalancerSvc() error {
 	log.Infoln("creating LoadBalancer type lb")
 	// creating service as typeLoadBalancer
 	svc := &apiv1.Service{
@@ -655,7 +655,7 @@ func (lbc *EngressController) createLoadBalancerSvc() error {
 	return nil
 }
 
-func (lbc *EngressController) getExporterSidecar() (*apiv1.Container, error) {
+func (lbc *IngressController) getExporterSidecar() (*apiv1.Container, error) {
 	if !lbc.Resource.Stats() {
 		return nil, nil // Don't add sidecar is stats is not exposed.
 	}
@@ -685,7 +685,7 @@ func (lbc *EngressController) getExporterSidecar() (*apiv1.Container, error) {
 	return nil, nil
 }
 
-func (lbc *EngressController) ensureStatsService() {
+func (lbc *IngressController) ensureStatsService() {
 	svc := &apiv1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      lbc.Resource.StatsServiceName(),
@@ -738,7 +738,7 @@ func (lbc *EngressController) ensureStatsService() {
 	}
 }
 
-func (lbc *EngressController) updateStatus() error {
+func (lbc *IngressController) updateStatus() error {
 	var statuses []apiv1.LoadBalancerIngress
 
 	switch lbc.Resource.LBType() {
@@ -781,7 +781,7 @@ func (lbc *EngressController) updateStatus() error {
 	return nil
 }
 
-func (lbc *EngressController) ensureResourceAnnotations(annotation map[string]string) (map[string]string, bool) {
+func (lbc *IngressController) ensureResourceAnnotations(annotation map[string]string) (map[string]string, bool) {
 	needsUpdate := false
 
 	// Copy the given map to avoid updating the original annotations

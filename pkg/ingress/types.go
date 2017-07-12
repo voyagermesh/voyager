@@ -11,7 +11,7 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 )
 
-type EngressController struct {
+type IngressController struct {
 	ProviderName       string
 	IngressClass       string
 	ServiceAccountName string

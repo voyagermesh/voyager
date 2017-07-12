@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/appscode/errors"
-	"github.com/appscode/go/strings"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
@@ -37,14 +36,15 @@ const (
 	certificateAnnotationKeyACMEServerURL                = "certificate.appscode.com/server-url"
 )
 
-type Controller struct {
-	// kubernetes clients
-	KubeClient clientset.Interface
-	ExtClient  acs.ExtensionInterface
-}
+//type Controller struct {
+//	// kubernetes clients
+//	KubeClient clientset.Interface
+//	ExtClient  acs.ExtensionInterface
+//}
 
-type internalCertificateOptions struct {
-	*Controller
+type CertificateController struct {
+	KubeClient        clientset.Interface
+	ExtClient         acs.ExtensionInterface
 	certificate       *api.Certificate
 	acmeCert          ACMECertData
 	parsedCertificate *x509.Certificate
@@ -56,24 +56,15 @@ type internalCertificateOptions struct {
 	userSecretName string
 }
 
-func NewController(c clientset.Interface, a acs.ExtensionInterface) *Controller {
-	return &Controller{
-		KubeClient: c,
-		ExtClient:  a,
-	}
-}
-
-func (c *Controller) newInternalCertificateOptions(cert *api.Certificate) *internalCertificateOptions {
-	return &internalCertificateOptions{
-		Controller:  c,
+func New(c clientset.Interface, a acs.ExtensionInterface, cert *api.Certificate) *CertificateController {
+	return &CertificateController{
+		KubeClient:  c,
+		ExtClient:   a,
 		certificate: cert,
 	}
 }
 
-func (c *Controller) HandleCertificate(cert *api.Certificate) error {
-	return c.process(c.newInternalCertificateOptions(cert))
-}
-
+/*
 func (c *Controller) HandleIngress(ingress *api.Ingress) error {
 	if ingress.Annotations != nil {
 		if val, ok := ingress.Annotations[certificateAnnotationKeyEnabled]; ok && val == "true" {
@@ -132,46 +123,47 @@ func (c *Controller) HandleIngress(ingress *api.Ingress) error {
 	}
 	return nil
 }
+*/
 
-func (c *Controller) process(opt *internalCertificateOptions) error {
-	opt.acmeClientConfig = &ACMEConfig{
-		Provider:      opt.certificate.Spec.Provider,
-		ACMEServerUrl: opt.certificate.Spec.ACMEServerURL,
+func (c *CertificateController) Process() error {
+	c.acmeClientConfig = &ACMEConfig{
+		Provider:      c.certificate.Spec.Provider,
+		ACMEServerUrl: c.certificate.Spec.ACMEServerURL,
 	}
 
 	// Check if a cert already exists for this Certificate Instance
-	secret, err := c.KubeClient.CoreV1().Secrets(opt.certificate.Namespace).Get(defaultCertPrefix+opt.certificate.Name, metav1.GetOptions{})
+	secret, err := c.KubeClient.CoreV1().Secrets(c.certificate.Namespace).Get(defaultCertPrefix+c.certificate.Name, metav1.GetOptions{})
 	if err == nil {
 		var err error
-		opt.acmeCert, err = NewACMECertDataFromSecret(secret)
+		c.acmeCert, err = NewACMECertDataFromSecret(secret)
 		if err != nil {
 			return errors.FromErr(err).WithMessage("Error decoding acme certificate").Err()
 		}
 
 		// Decode cert
-		pemBlock, _ := pem.Decode(opt.acmeCert.Cert)
-		opt.parsedCertificate, err = x509.ParseCertificate(pemBlock.Bytes)
+		pemBlock, _ := pem.Decode(c.acmeCert.Cert)
+		c.parsedCertificate, err = x509.ParseCertificate(pemBlock.Bytes)
 		if err != nil {
 			return errors.FromErr(err).WithMessage("Error decoding x509 encoded certificate").Err()
 		}
-		if !opt.parsedCertificate.NotAfter.After(time.Now().Add(time.Hour * 24 * 7)) {
+		if !c.parsedCertificate.NotAfter.After(time.Now().Add(time.Hour * 24 * 7)) {
 			log.Infoln("certificate is expiring in 7 days, attempting renew")
-			opt.renew()
+			c.renew()
 		}
 
-		if !opt.acmeCert.EqualDomains(opt.parsedCertificate) {
-			opt.renew()
+		if !c.acmeCert.EqualDomains(c.parsedCertificate) {
+			c.renew()
 		}
 	}
 
-	if kerr.IsNotFound(err) || !opt.certificate.Status.CertificateObtained {
+	if kerr.IsNotFound(err) || !c.certificate.Status.CertificateObtained {
 		// Certificate Not found as secret. We must create it now.
-		opt.create()
+		c.create()
 	}
 	return nil
 }
 
-func (c *internalCertificateOptions) create() error {
+func (c *CertificateController) create() error {
 	if err := c.ensureACMEClient(); err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -195,7 +187,7 @@ func (c *internalCertificateOptions) create() error {
 	return nil
 }
 
-func (c *internalCertificateOptions) renew() error {
+func (c *CertificateController) renew() error {
 	if err := c.ensureACMEClient(); err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -225,7 +217,7 @@ func (c *internalCertificateOptions) renew() error {
 	return c.update(cert)
 }
 
-func (c *internalCertificateOptions) ensureACMEClient() error {
+func (c *CertificateController) ensureACMEClient() error {
 	var acmeUserInfo *ACMEUserData
 	acmeUserRegistered := false
 	log.Infoln("trying to retrive acmeUser data")
@@ -297,7 +289,7 @@ func (c *internalCertificateOptions) ensureACMEClient() error {
 	return nil
 }
 
-func (c *internalCertificateOptions) registerACMEUser(acmeClient *ACMEClient) error {
+func (c *CertificateController) registerACMEUser(acmeClient *ACMEClient) error {
 	log.Debugln("ACME user not registered, registering new ACME user")
 	registration, err := acmeClient.Register()
 	if err != nil {
@@ -339,7 +331,7 @@ func (c *internalCertificateOptions) registerACMEUser(acmeClient *ACMEClient) er
 	return nil
 }
 
-func (c *internalCertificateOptions) loadProviderCredential() error {
+func (c *CertificateController) loadProviderCredential() error {
 	cred, err := c.KubeClient.CoreV1().Secrets(c.certificate.Namespace).Get(c.certificate.Spec.ProviderCredentialSecretName, metav1.GetOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -348,7 +340,7 @@ func (c *internalCertificateOptions) loadProviderCredential() error {
 	return nil
 }
 
-func (c *internalCertificateOptions) save(cert acme.CertificateResource) error {
+func (c *CertificateController) save(cert acme.CertificateResource) error {
 	certData := &ACMECertData{
 		Domains:    c.acmeCert.Domains,
 		Cert:       cert.Certificate,
@@ -383,7 +375,7 @@ func (c *internalCertificateOptions) save(cert acme.CertificateResource) error {
 	return nil
 }
 
-func (c *internalCertificateOptions) update(cert acme.CertificateResource) error {
+func (c *CertificateController) update(cert acme.CertificateResource) error {
 	certData := &ACMECertData{
 		Domains:    c.acmeCert.Domains,
 		Cert:       cert.Certificate,
@@ -403,7 +395,7 @@ func (c *internalCertificateOptions) update(cert acme.CertificateResource) error
 	return nil
 }
 
-func (c *internalCertificateOptions) processHTTPCertificate(revert chan struct{}) error {
+func (c *CertificateController) processHTTPCertificate(revert chan struct{}) error {
 	c.acmeClient.HTTPProviderLock.Lock()
 	defer c.acmeClient.HTTPProviderLock.Unlock()
 

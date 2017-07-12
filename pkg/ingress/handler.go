@@ -31,8 +31,8 @@ func NewEngressController(providerName, cloudConfig string,
 	promClient pcm.MonitoringV1alpha1Interface,
 	store stash.Storage,
 	ingressClass string,
-	operatorServiceAccount string) *EngressController {
-	h := &EngressController{
+	operatorServiceAccount string) *IngressController {
+	h := &IngressController{
 		ProviderName:       providerName,
 		IngressClass:       ingressClass,
 		ServiceAccountName: operatorServiceAccount,
@@ -134,7 +134,7 @@ func UpgradeAllEngress(service, providerName, cloudConfig string,
 	return nil
 }
 
-func (lbc *EngressController) Handle(e *events.Event) error {
+func (lbc *IngressController) Handle(e *events.Event) error {
 	log.Infof("Engress event %s/%s occurred for %s", e.EventType, e.ResourceType, e.MetaData.Name)
 	// convert to extended ingress and then handle
 	var engs []interface{}
@@ -454,7 +454,7 @@ func isStatsChanged(old *api.Ingress, new *api.Ingress) bool {
 		isMapKeyChanged(old.Annotations, new.Annotations, api.StatsSecret)
 }
 
-func (lbc *EngressController) isKeepSourceChanged(old *api.Ingress, new *api.Ingress) bool {
+func (lbc *IngressController) isKeepSourceChanged(old *api.Ingress, new *api.Ingress) bool {
 	return lbc.ProviderName == "aws" &&
 		lbc.Resource.LBType() == api.LBTypeLoadBalancer &&
 		isMapKeyChanged(old.Annotations, new.Annotations, api.KeepSourceIP)

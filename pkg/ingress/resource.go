@@ -7,7 +7,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (lbc *EngressController) IsExists() bool {
+func (lbc *IngressController) IsExists() bool {
 	log.Infoln("Checking Ingress existence", lbc.Resource.ObjectMeta)
 	if lbc.Resource.LBType() == api.LBTypeHostPort {
 		_, err := lbc.KubeClient.ExtensionsV1beta1().DaemonSets(lbc.Resource.Namespace).Get(lbc.Resource.OffshootName(), metav1.GetOptions{})

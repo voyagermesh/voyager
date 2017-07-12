@@ -8,6 +8,7 @@ import (
 	"github.com/appscode/log"
 	sapi "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/analytics"
+	"github.com/appscode/voyager/pkg/certificates"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -35,8 +36,12 @@ func (c *Operator) WatchCertificateTPRs() {
 			AddFunc: func(obj interface{}) {
 				if cert, ok := obj.(*sapi.Certificate); ok {
 					log.Infof("%s %s@%s added", cert.GroupVersionKind(), cert.Name, cert.Namespace)
-					c.CertController.HandleCertificate(cert)
 					go analytics.Send(cert.GroupVersionKind().String(), "ADD", "success")
+
+					err := certificates.New(c.KubeClient, c.ExtClient, cert).Process()
+					if err != nil {
+						log.Error(err)
+					}
 				}
 			},
 			UpdateFunc: func(old, new interface{}) {
@@ -51,7 +56,10 @@ func (c *Operator) WatchCertificateTPRs() {
 					return
 				}
 				if !reflect.DeepEqual(oldCert.Spec, newCert.Spec) {
-					c.CertController.HandleCertificate(newCert)
+					err := certificates.New(c.KubeClient, c.ExtClient, newCert).Process()
+					if err != nil {
+						log.Error(err)
+					}
 				}
 			},
 			DeleteFunc: func(obj interface{}) {

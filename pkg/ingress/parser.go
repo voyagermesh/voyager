@@ -19,7 +19,7 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-func (lbc *EngressController) SupportsLBType() bool {
+func (lbc *IngressController) SupportsLBType() bool {
 	switch lbc.Resource.LBType() {
 	case api.LBTypeLoadBalancer:
 		return lbc.ProviderName == "aws" ||
@@ -35,7 +35,7 @@ func (lbc *EngressController) SupportsLBType() bool {
 	}
 }
 
-func (lbc *EngressController) parse() error {
+func (lbc *IngressController) parse() error {
 	log.Infoln("Parsing new engress")
 	if lbc.Resource == nil {
 		log.Warningln("Config is nil, nothing to parse")
@@ -46,7 +46,7 @@ func (lbc *EngressController) parse() error {
 	return nil
 }
 
-func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrString, hostNames []string) ([]*Endpoint, error) {
+func (lbc *IngressController) serviceEndpoints(name string, port intstr.IntOrString, hostNames []string) ([]*Endpoint, error) {
 	log.Infoln("getting endpoints for ", lbc.Resource.Namespace, name, "port", port)
 
 	// the following lines giving support to
@@ -94,7 +94,7 @@ func (lbc *EngressController) serviceEndpoints(name string, port intstr.IntOrStr
 	return lbc.getEndpoints(service, p, hostNames)
 }
 
-func (lbc *EngressController) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
+func (lbc *IngressController) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
 	ep, err := lbc.Storage.EndpointStore.Endpoints(s.Namespace).Get(s.Name)
 	if err != nil {
 		log.Warningln(err)
@@ -169,7 +169,7 @@ func isForwardable(hostNames []string, hostName string) bool {
 	return false
 }
 
-func (lbc *EngressController) generateTemplate() error {
+func (lbc *IngressController) generateTemplate() error {
 	log.Infoln("Generating Ingress template.")
 	ctx, err := Context(lbc.Parsed)
 	if err != nil {
@@ -222,7 +222,7 @@ func getTargetPort(servicePort *apiv1.ServicePort) int {
 	return servicePort.TargetPort.IntValue()
 }
 
-func (lbc *EngressController) parseSpec() {
+func (lbc *IngressController) parseSpec() {
 	log.Infoln("Parsing Engress specs")
 	lbc.Ports = make(map[int]int)
 	lbc.Parsed.DNSResolvers = make(map[string]*api.DNSResolver)
@@ -343,7 +343,7 @@ func (lbc *EngressController) parseSpec() {
 	}
 }
 
-func (lbc *EngressController) parseOptions() {
+func (lbc *IngressController) parseOptions() {
 	if lbc.Resource == nil {
 		log.Infoln("Config is nil, nothing to parse")
 		return

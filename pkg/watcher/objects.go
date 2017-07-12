@@ -107,5 +107,5 @@ func (w *Watcher) Certificate() {
 	_, controller := w.Cache(events.Certificate, &api.Certificate{}, lw)
 	go controller.Run(wait.NeverStop)
 
-	go certificates.NewCertificateSyncer(w.KubeClient, w.ExtClient).RunSync()
+	go certificates.CheckCertificates(w.KubeClient, w.ExtClient)
 }
