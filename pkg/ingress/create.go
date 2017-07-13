@@ -51,6 +51,14 @@ func (lbc *Controller) Create() error {
 	)
 
 	time.Sleep(time.Second * 5)
+
+	// If RBAC is enabled we need to ensure service account
+	if lbc.Opt.EnableRBAC {
+		if err := lbc.ensureRBAC(); err != nil {
+			return err
+		}
+	}
+
 	err = lbc.createLB()
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -63,7 +71,7 @@ func (lbc *Controller) Create() error {
 }
 
 func (lbc *Controller) ensureConfigMap() error {
-	log.Infoln("creating cmap for engress")
+	log.Infoln("Creating ConfigMap for engress")
 	cm, err := lbc.KubeClient.CoreV1().ConfigMaps(lbc.Ingress.Namespace).Get(lbc.Ingress.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		cm = &apiv1.ConfigMap{
@@ -106,6 +114,25 @@ func (lbc *Controller) ensureConfigMap() error {
 	return nil
 }
 
+func (lbc *Controller) ensureRBAC() error {
+	log.Infoln("Creating ServiceAccount for ingress", lbc.Ingress.OffshootName())
+	if err := lbc.ensureServiceAccountCreated(); err != nil {
+		return errors.FromErr(err).Err()
+	}
+
+	log.Infoln("Creating Roles for ingress", lbc.Ingress.OffshootName())
+	if err := lbc.ensureRolesCreated(); err != nil {
+		return errors.FromErr(err).Err()
+	}
+
+	log.Infoln("Creating RoleBinding for ingress", lbc.Ingress.OffshootName())
+	if err := lbc.ensureRoleBindingCreated(); err != nil {
+		return errors.FromErr(err).Err()
+	}
+
+	return nil
+}
+
 func (lbc *Controller) createLB() error {
 	if !lbc.SupportsLBType() {
 		err := errors.Newf("LBType %s is unsupported for cloud provider: %s", lbc.Ingress.LBType(), lbc.Opt.CloudProvider).Err()
@@ -119,6 +146,7 @@ func (lbc *Controller) createLB() error {
 	}
 
 	// Specifically Add Controller and Service Event Separately for all LBTypes.
+	log.Infof("Creating Resource for ingress %s, LBType detected %s", lbc.Ingress.OffshootName(), lbc.Ingress.LBType())
 	if lbc.Ingress.LBType() == api.LBTypeHostPort {
 		err := lbc.createHostPortPods()
 		if err != nil {
@@ -418,6 +446,10 @@ func (lbc *Controller) createHostPortPods() error {
 		},
 	}
 
+	if lbc.Opt.EnableRBAC {
+		daemon.Spec.Template.Spec.ServiceAccountName = lbc.Ingress.OffshootName()
+	}
+
 	exporter, err := lbc.getExporterSidecar()
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -628,6 +660,11 @@ func (lbc *Controller) createNodePortPods() error {
 			},
 		},
 	}
+
+	if lbc.Opt.EnableRBAC {
+		deployment.Spec.Template.Spec.ServiceAccountName = lbc.Ingress.OffshootName()
+	}
+
 	exporter, err := lbc.getExporterSidecar()
 	if err != nil {
 		return errors.FromErr(err).Err()

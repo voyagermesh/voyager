@@ -2177,3 +2177,44 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 	}
 	return nil
 }
+
+func (s *IngressTestSuit) TestIngressOperatorWithRBAC() error {
+	if s.t.Config.RBACEnabled && s.t.Config.InCluster {
+		baseIngress := &api.Ingress{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      testIngressName(),
+				Namespace: s.t.Config.TestNamespace,
+			},
+			Spec: api.IngressSpec{
+				Rules: []api.IngressRule{
+					{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
+									{
+										Path: "/testpath",
+										Backend: api.IngressBackend{
+											ServiceName: testServerSvc.Name,
+											ServicePort: intstr.FromInt(80),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		_, err := s.t.ExtClient.Ingresses(baseIngress.Namespace).Create(baseIngress)
+		if err != nil {
+			return err
+		}
+		defer func() {
+			if s.t.Config.Cleanup {
+				s.t.ExtClient.Ingresses(baseIngress.Namespace).Delete(baseIngress.Name)
+			}
+		}()
+	}
+	return nil
+}

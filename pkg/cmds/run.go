@@ -33,6 +33,7 @@ var (
 		OperatorNamespace: namespace(),
 		OperatorService:   "voyager-operator",
 		HTTPChallengePort: 56791,
+		EnableRBAC:        false,
 	}
 	enableAnalytics bool = true
 

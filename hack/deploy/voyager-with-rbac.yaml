@@ -7,7 +7,7 @@ rules:
   - extensions
   resources:
   - thirdpartyresources
-  verbs: ["get", "create"]
+  verbs: ["get", "create", "list"]
 - apiGroups:
   - voyager.appscode.com
   resources: ["*"]
@@ -29,12 +29,13 @@ rules:
   - replicationcontrollers
   - services
   - endpoints
+  - configmaps
   verbs: ["*"]
 - apiGroups: [""]
   resources:
-  - configmaps
   - secrets
-  verbs: ["get", "create", "update"]
+  - namespaces
+  verbs: ["get", "list", "watch"]
 - apiGroups: [""]
   resources:
   - events
@@ -47,6 +48,15 @@ rules:
   resources:
   - nodes
   verbs: ["list", "get"]
+- apiGroups: [""]
+  resources:
+  - serviceaccounts
+  verbs: ["get", "create", "delete"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources:
+  - roles
+  - rolebindings
+  verbs: ["get", "create", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
@@ -92,7 +102,8 @@ spec:
         - --cloud-provider=$CLOUD_PROVIDER
         - --cloud-config=$CLOUD_CONFIG # ie. /etc/kubernetes/azure.json for azure
         - --v=3
-        image: appscode/voyager:3.0.0
+        - --rbac
+        image: appscode/voyager:rback-fix
         env:
           - name: OPERATOR_SERVICE_ACCOUNT
             valueFrom:
