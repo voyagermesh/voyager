@@ -237,9 +237,6 @@ func (lbc *Controller) createHostPortSvc() error {
 }
 
 func (lbc *Controller) createHostPortPods() error {
-	if len(lbc.Ingress.NodeSelector()) == 0 {
-		return errors.Newf("%s type ingress %s@%s is missing node selectors.", lbc.Ingress.LBType(), lbc.Ingress.Name, lbc.Ingress.Namespace).Err()
-	}
 	log.Infoln("Creating Daemon type lb for nodeSelector = ", lbc.Ingress.NodeSelector())
 
 	vs := Volumes(lbc.SecretNames)
