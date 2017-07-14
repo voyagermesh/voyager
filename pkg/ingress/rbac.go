@@ -78,7 +78,7 @@ func (lbc *Controller) ensureRoles() error {
 		})
 	}
 
-	if lbc.Ingress.Stats() {
+	if lbc.Ingress.Stats() && len(lbc.Ingress.StatsSecretName()) > 0 {
 		defaultRole.Rules = append(defaultRole.Rules, rbac.PolicyRule{
 			APIGroups:     []string{apiv1.GroupName},
 			Resources:     []string{"secret"},
