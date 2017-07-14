@@ -1,0 +1,54 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: voyager
+  name: voyager-operator
+  namespace: kube-system
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: voyager
+    spec:
+      containers:
+      - name: voyager
+        args:
+        - run
+        - --cloud-provider=$CLOUD_PROVIDER
+        - --cloud-config=$CLOUD_CONFIG # ie. /etc/kubernetes/azure.json for azure
+        - --v=3
+        image: appscode/voyager:3.0.0
+        env:
+          - name: OPERATOR_SERVICE_ACCOUNT
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.serviceAccountName
+        ports:
+        - containerPort: 56790
+          name: http
+          protocol: TCP
+        volumeMounts:
+          - mountPath: /etc/kubernetes
+            name: cloudconfig
+            readOnly: true
+      volumes:
+        - hostPath:
+            path: /etc/kubernetes
+          name: cloudconfig
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: voyager
+  name: voyager-operator
+  namespace: kube-system  
+spec:
+  ports:
+  - name: http
+    port: 56790
+    targetPort: http
+  selector:
+    app: voyager
