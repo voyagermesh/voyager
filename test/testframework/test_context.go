@@ -47,7 +47,7 @@ type E2EConfig struct {
 	RunOnly           string
 	TestNamespace     string
 	MaxConcurrentTest int
-	RBACEnabled bool
+	RBACEnabled       bool
 }
 
 var TestContext TestContextType

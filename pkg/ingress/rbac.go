@@ -8,10 +8,11 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
+	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	rbac "k8s.io/client-go/pkg/apis/rbac/v1beta1"
 )
 
-func (lbc *Controller) ensureServiceAccountCreated() error {
+func (lbc *Controller) ensureServiceAccount() error {
 	sa, err := lbc.KubeClient.CoreV1().ServiceAccounts(lbc.Ingress.Namespace).Get(lbc.Ingress.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		sa = &apiv1.ServiceAccount{
@@ -43,7 +44,7 @@ func (lbc *Controller) ensureServiceAccountCreated() error {
 	return nil
 }
 
-func (lbc *Controller) ensureRolesCreated() error {
+func (lbc *Controller) ensureRoles() error {
 	defaultRole := &rbac.Role{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      lbc.Ingress.OffshootName(),
@@ -55,12 +56,35 @@ func (lbc *Controller) ensureRolesCreated() error {
 		},
 		Rules: []rbac.PolicyRule{
 			{
-				APIGroups:     []string{""},
-				Resources:     []string{"configmaps"},
-				ResourceNames: []string{lbc.Ingress.OffshootName()},
-				Verbs:         []string{"get", "list", "watch"},
+				APIGroups: []string{apiv1.GroupName},
+				Resources: []string{"configmaps"},
+				Verbs:     []string{"get", "list", "watch"},
 			},
 		},
+	}
+
+	switch lbc.Ingress.APISchema() {
+	case api.APISchemaEngress:
+		defaultRole.Rules = append(defaultRole.Rules, rbac.PolicyRule{
+			APIGroups: []string{api.GroupName},
+			Resources: []string{"ingresses"},
+			Verbs:     []string{"get"},
+		})
+	case api.APISchemaIngress:
+		defaultRole.Rules = append(defaultRole.Rules, rbac.PolicyRule{
+			APIGroups: []string{extensions.GroupName},
+			Resources: []string{"ingresses"},
+			Verbs:     []string{"get"},
+		})
+	}
+
+	if lbc.Ingress.Stats() {
+		defaultRole.Rules = append(defaultRole.Rules, rbac.PolicyRule{
+			APIGroups:     []string{apiv1.GroupName},
+			Resources:     []string{"secret"},
+			ResourceNames: []string{lbc.Ingress.StatsSecretName()},
+			Verbs:         []string{"get"},
+		})
 	}
 
 	role, err := lbc.KubeClient.RbacV1beta1().Roles(lbc.Ingress.Namespace).Get(lbc.Ingress.OffshootName(), metav1.GetOptions{})
@@ -89,7 +113,7 @@ func (lbc *Controller) ensureRolesCreated() error {
 	return nil
 }
 
-func (lbc *Controller) ensureRoleBindingCreated() error {
+func (lbc *Controller) ensureRoleBinding() error {
 	defaultRoleBinding := &rbac.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      lbc.Ingress.OffshootName(),
@@ -142,4 +166,22 @@ func (lbc *Controller) ensureRoleBindingCreated() error {
 		return err
 	}
 	return nil
+}
+
+func (lbc *Controller) ensureRoleBindingDeleted() error {
+	return lbc.KubeClient.RbacV1beta1().
+		RoleBindings(lbc.Ingress.Namespace).
+		Delete(lbc.Ingress.OffshootName(), &metav1.DeleteOptions{})
+}
+
+func (lbc *Controller) ensureRolesDeleted() error {
+	return lbc.KubeClient.RbacV1beta1().
+		Roles(lbc.Ingress.Namespace).
+		Delete(lbc.Ingress.OffshootName(), &metav1.DeleteOptions{})
+}
+
+func (lbc *Controller) ensureServiceAccountDeleted() error {
+	return lbc.KubeClient.CoreV1().
+		ServiceAccounts(lbc.Ingress.Namespace).
+		Delete(lbc.Ingress.OffshootName(), &metav1.DeleteOptions{})
 }

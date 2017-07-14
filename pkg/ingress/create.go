@@ -116,17 +116,17 @@ func (lbc *Controller) ensureConfigMap() error {
 
 func (lbc *Controller) ensureRBAC() error {
 	log.Infoln("Creating ServiceAccount for ingress", lbc.Ingress.OffshootName())
-	if err := lbc.ensureServiceAccountCreated(); err != nil {
+	if err := lbc.ensureServiceAccount(); err != nil {
 		return errors.FromErr(err).Err()
 	}
 
 	log.Infoln("Creating Roles for ingress", lbc.Ingress.OffshootName())
-	if err := lbc.ensureRolesCreated(); err != nil {
+	if err := lbc.ensureRoles(); err != nil {
 		return errors.FromErr(err).Err()
 	}
 
 	log.Infoln("Creating RoleBinding for ingress", lbc.Ingress.OffshootName())
-	if err := lbc.ensureRoleBindingCreated(); err != nil {
+	if err := lbc.ensureRoleBinding(); err != nil {
 		return errors.FromErr(err).Err()
 	}
 
