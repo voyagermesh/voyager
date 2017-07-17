@@ -168,6 +168,8 @@ func (lbc *Controller) createLB() error {
 		err := ctrl.AddMonitor(lbc.Ingress, monSpec)
 		if err != nil {
 			lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeWarning, "ServiceMonitorCreateFailed", err.Error())
+			// TODO @tamal Should we return error from here?
+			return errors.FromErr(err).Err()
 		}
 		lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeNormal, "ServiceMonitorCreated", "Successfully created ServiceMonitor")
 	}
