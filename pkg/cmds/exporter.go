@@ -5,7 +5,6 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 
-	hpe "github.com/appscode/haproxy_exporter/exporter"
 	"github.com/appscode/log"
 	"github.com/appscode/pat"
 	acs "github.com/appscode/voyager/client/clientset"
@@ -55,10 +54,6 @@ func export() {
 	extClient = acs.NewForConfigOrDie(config)
 
 	log.Infoln("Starting Voyager exporter...")
-	selectedServerMetrics, err = hpe.FilterServerMetrics(haProxyServerMetricFields)
-	if err != nil {
-		log.Fatal(err)
-	}
 	m := pat.New()
 	m.Get("/metrics", promhttp.Handler())
 	pattern := fmt.Sprintf("/%s/v1beta1/namespaces/%s/ingresses/%s/metrics", PathParamAPIGroup, PathParamNamespace, PathParamName)
