@@ -15,6 +15,7 @@ import (
 	_ "github.com/appscode/voyager/api/install"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/config"
+	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/ingress/template"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
@@ -39,6 +40,7 @@ func NewController(
 		PromClient: promClient,
 		Opt:        opt,
 		Ingress:    ingress,
+		recorder:   eventer.NewEventRecorder(kubeClient, "voyager operator"),
 	}
 	log.Infoln("Initializing cloud manager for provider", opt.CloudProvider)
 	if opt.CloudProvider == "aws" || opt.CloudProvider == "gce" || opt.CloudProvider == "azure" {

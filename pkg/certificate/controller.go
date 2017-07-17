@@ -16,6 +16,7 @@ import (
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/appscode/voyager/pkg/config"
+	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/xenolf/lego/acme"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,6 +24,7 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	"k8s.io/client-go/tools/record"
 )
 
 const (
@@ -42,6 +44,7 @@ type Controller struct {
 	KubeClient clientset.Interface
 	ExtClient  acs.ExtensionInterface
 	Opt        config.Options
+	recorder   record.EventRecorder
 
 	tpr      *api.Certificate
 	acmeCert ACMECertData
@@ -60,6 +63,7 @@ func NewController(kubeClient clientset.Interface, extClient acs.ExtensionInterf
 		ExtClient:  extClient,
 		Opt:        opt,
 		tpr:        tpr,
+		recorder:   eventer.NewEventRecorder(kubeClient, "Voyager operator"),
 	}
 }
 
@@ -145,17 +149,65 @@ func (c *Controller) Process() error {
 		}
 		if !c.crt.NotAfter.After(time.Now().Add(time.Hour * 24 * 7)) {
 			log.Infoln("certificate is expiring in 7 days, attempting renew")
-			c.renew()
+			err := c.renew()
+			if err != nil {
+				c.recorder.Eventf(
+					c.tpr,
+					apiv1.EventTypeWarning,
+					eventer.EventReasonCertificateRenewFailed,
+					"Failed to renew certificate, Reason %s",
+					err.Error(),
+				)
+				return err
+			}
+			c.recorder.Eventf(
+				c.tpr,
+				apiv1.EventTypeWarning,
+				eventer.EventReasonCertificateRenewSuccessful,
+				"Successfully renewed certificate",
+			)
 		}
 
 		if !c.acmeCert.EqualDomains(c.crt) {
-			c.renew()
+			err := c.renew()
+			if err != nil {
+				c.recorder.Eventf(
+					c.tpr,
+					apiv1.EventTypeWarning,
+					eventer.EventReasonCertificateRenewFailed,
+					"Failed to renew certificate, Reason %s",
+					err.Error(),
+				)
+				return err
+			}
+			c.recorder.Eventf(
+				c.tpr,
+				apiv1.EventTypeWarning,
+				eventer.EventReasonCertificateRenewSuccessful,
+				"Successfully renewed certificate",
+			)
 		}
 	}
 
 	if kerr.IsNotFound(err) || !c.tpr.Status.CertificateObtained {
 		// Certificate Not found as secret. We must create it now.
-		c.create()
+		err := c.create()
+		if err != nil {
+			c.recorder.Eventf(
+				c.tpr,
+				apiv1.EventTypeWarning,
+				eventer.EventReasonCertificateCreateFailed,
+				"Failed to create certificate, Reason: %s",
+				err.Error(),
+			)
+			return err
+		}
+		c.recorder.Eventf(
+			c.tpr,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonCertificateCreateSuccessful,
+			"Successfully created certificate",
+		)
 	}
 	return nil
 }

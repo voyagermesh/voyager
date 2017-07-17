@@ -40,7 +40,7 @@ func New(
 		ExtClient:  extClient,
 		PromClient: promClient,
 		Opt:        opt,
-		recorder:   eventer.NewEventRecorder(kubeClient, "Voyager operator"),
+		recorder:   eventer.NewEventRecorder(kubeClient, "voyager operator"),
 		SyncPeriod: 2 * time.Minute,
 	}
 }

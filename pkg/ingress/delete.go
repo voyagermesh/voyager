@@ -189,12 +189,13 @@ func (lbc *Controller) deletePodsForSelector(s map[string]string) {
 	}
 }
 
-func (lbc *Controller) ensureStatsServiceDeleted() {
+func (lbc *Controller) ensureStatsServiceDeleted() error {
 	err := lbc.KubeClient.CoreV1().Services(lbc.Ingress.Namespace).Delete(
 		lbc.Ingress.StatsServiceName(),
 		&metav1.DeleteOptions{},
 	)
 	if err != nil {
-		log.Errorln("Failed to delete Stats service", err)
+		return errors.FromErr(err).Err()
 	}
+	return nil
 }

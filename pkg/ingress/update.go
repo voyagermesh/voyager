@@ -7,6 +7,7 @@ import (
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
+	"github.com/appscode/voyager/pkg/eventer"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -22,7 +23,7 @@ const (
 	UpdateStats                           // Update things for stats update
 )
 
-func (lbc *Controller) Update(t UpdateMode) error {
+func (lbc *Controller) Update(mode UpdateMode) error {
 	err := lbc.generateTemplate()
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -33,24 +34,50 @@ func (lbc *Controller) Update(t UpdateMode) error {
 		return errors.FromErr(err).Err()
 	}
 
-	if t&UpdateFirewall > 0 ||
-		t&RestartHAProxy > 0 ||
-		t&UpdateStats > 0 {
+	if mode&UpdateFirewall > 0 ||
+		mode&RestartHAProxy > 0 ||
+		mode&UpdateStats > 0 {
 		err := lbc.recreatePods()
 		if err != nil {
+			lbc.recorder.Eventf(
+				lbc.Ingress,
+				apiv1.EventTypeWarning,
+				eventer.EventReasonIngressUpdateFailed,
+				"Failed to update Pods, %s", err.Error(),
+			)
 			return errors.FromErr(err).Err()
 		}
-	}
-	if t&UpdateFirewall > 0 {
-		err := lbc.updateLBSvc()
-		if err != nil {
-			// Only update if the service is updated.
-			go lbc.updateStatus()
-		}
-		return err
+		lbc.recorder.Eventf(
+			lbc.Ingress,
+			apiv1.EventTypeNormal,
+			eventer.EventReasonIngressUpdateSuccessful,
+			"Successfully updated Pods",
+		)
 	}
 
-	if t&UpdateStats > 0 {
+	if mode&UpdateFirewall > 0 {
+		err := lbc.updateLBSvc()
+		if err != nil {
+			lbc.recorder.Eventf(
+				lbc.Ingress,
+				apiv1.EventTypeWarning,
+				eventer.EventReasonIngressServiceUpdateFailed,
+				"Failed to update LBService, %s",
+				err.Error(),
+			)
+			return errors.FromErr(err).Err()
+		}
+		lbc.recorder.Eventf(
+			lbc.Ingress,
+			apiv1.EventTypeNormal,
+			eventer.EventReasonIngressServiceUpdateSuccessful,
+			"Successfully updated LBService",
+		)
+
+		go lbc.updateStatus()
+	}
+
+	if mode&UpdateStats > 0 {
 		if lbc.Parsed.Stats {
 			lbc.ensureStatsService()
 		} else {
@@ -85,8 +112,11 @@ func (lbc *Controller) updateConfigMap() error {
 
 		_, err := lbc.KubeClient.CoreV1().ConfigMaps(lbc.Ingress.Namespace).Update(cMap)
 		if err != nil {
+			lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeWarning, "ConfigMapUpdateFailed", "HAProxy configuration Update failed, %s", err.Error())
 			return errors.FromErr(err).Err()
 		}
+		// Add event only if the ConfigMap Really Updated
+		lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeNormal, "ConfigMapUpdated", "ConfigMap Updated, HAProxy will restart itself now via reloader")
 		log.Infoln("Config Map Updated, HAProxy will restart itself now via reloader")
 	}
 	return nil

@@ -1,5 +1,5 @@
 hash: 4603d45081832651b419c72d01373806592fe66c295a144567aab3fdcbedcda8
-updated: 2017-07-12T12:44:07.541012348-07:00
+updated: 2017-07-12T10:51:52.9643395-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -444,6 +444,9 @@ imports:
   - kubernetes/typed/storage/v1/fake
   - kubernetes/typed/storage/v1beta1
   - kubernetes/typed/storage/v1beta1/fake
+  - listers/apps/v1beta1
+  - listers/core/v1
+  - listers/extensions/v1beta1
   - pkg/api
   - pkg/api/install
   - pkg/api/v1
