@@ -106,6 +106,7 @@ func (lbc *Controller) createLB() error {
 		return err
 	}
 
+	// Specifically Add Controller and Service Event Separately for all LBTypes.
 	if lbc.Ingress.LBType() == api.LBTypeHostPort {
 		err := lbc.createHostPortPods()
 		if err != nil {
