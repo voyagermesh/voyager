@@ -40,7 +40,7 @@ func NewController(
 		PromClient: promClient,
 		Opt:        opt,
 		Ingress:    ingress,
-		recorder:   eventer.NewEventRecorder(kubeClient, "Voyager operator"),
+		recorder:   eventer.NewEventRecorder(kubeClient, "voyager operator"),
 	}
 	log.Infoln("Initializing cloud manager for provider", opt.CloudProvider)
 	if opt.CloudProvider == "aws" || opt.CloudProvider == "gce" || opt.CloudProvider == "azure" {
@@ -389,6 +389,7 @@ func (lbc *Controller) parseOptions() {
 		return
 	}
 	log.Infoln("Parsing annotations.")
+	lbc.Parsed.TimeoutDefaults = lbc.Ingress.Timeouts()
 	lbc.Parsed.Sticky = lbc.Ingress.StickySession()
 	if len(lbc.Ingress.Spec.TLS) > 0 {
 		lbc.Parsed.SSLCert = true

@@ -149,17 +149,32 @@ func (c *Controller) Process() error {
 		}
 		if !c.crt.NotAfter.After(time.Now().Add(time.Hour * 24 * 7)) {
 			log.Infoln("certificate is expiring in 7 days, attempting renew")
-			c.renew()
+			err := c.renew()
+			if err != nil {
+				c.recorder.Eventf(c.tpr, apiv1.EventTypeWarning, "RenewFailed", "Failed to renew certificate, %s", err.Error())
+				return err
+			}
+			c.recorder.Eventf(c.tpr, apiv1.EventTypeWarning, "Renewed", "Successfully renewed certificate")
 		}
 
 		if !c.acmeCert.EqualDomains(c.crt) {
-			c.renew()
+			err := c.renew()
+			if err != nil {
+				c.recorder.Eventf(c.tpr, apiv1.EventTypeWarning, "RenewFailed", "Failed to renew certificate, %s", err.Error())
+				return err
+			}
+			c.recorder.Eventf(c.tpr, apiv1.EventTypeWarning, "Renewed", "Successfully renewed certificate")
 		}
 	}
 
 	if kerr.IsNotFound(err) || !c.tpr.Status.CertificateObtained {
 		// Certificate Not found as secret. We must create it now.
-		c.create()
+		err := c.create()
+		if err != nil {
+			c.recorder.Eventf(c.tpr, apiv1.EventTypeWarning, "CreateFailed", "Failed to create certificate, %s", err.Error())
+			return err
+		}
+		c.recorder.Eventf(c.tpr, apiv1.EventTypeWarning, "Created", "Successfully created certificate")
 	}
 	return nil
 }

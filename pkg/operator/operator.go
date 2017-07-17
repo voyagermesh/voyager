@@ -10,7 +10,6 @@ import (
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
-	"github.com/appscode/voyager/pkg/stash"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,7 +26,6 @@ type Operator struct {
 
 	recorder   record.EventRecorder
 	SyncPeriod time.Duration
-	Storage    stash.Storage
 	sync.Mutex
 }
 
@@ -42,7 +40,7 @@ func New(
 		ExtClient:  extClient,
 		PromClient: promClient,
 		Opt:        opt,
-		recorder:   eventer.NewEventRecorder(kubeClient, "Voyager operator"),
+		recorder:   eventer.NewEventRecorder(kubeClient, "voyager operator"),
 		SyncPeriod: 2 * time.Minute,
 	}
 }
@@ -91,6 +89,7 @@ func (op *Operator) ensureThirdPartyResource(resourceName string) error {
 func (op *Operator) Run() {
 	go op.WatchNamespaces()
 	go op.WatchConfigMaps()
+	go op.WatchServiceMonitors()
 	go op.WatchDaemonSets()
 	go op.WatchDeployments()
 	go op.WatchServices()

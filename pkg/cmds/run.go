@@ -72,7 +72,6 @@ func NewCmdRun(version string) *cobra.Command {
 	cmd.Flags().BoolVar(&enableAnalytics, "analytics", enableAnalytics, "Send analytical event to Google Analytics")
 
 	cmd.Flags().StringVar(&opt.OperatorService, "operator-service", opt.OperatorService, "Name of service used to expose voyager operator")
-	cmd.Flags().StringVar(&opt.OperatorNamespace, "operator-namespace", opt.OperatorNamespace, "Namespace where voyager pod is running")
 	cmd.Flags().IntVar(&opt.HTTPChallengePort, "http-challenge-port", opt.HTTPChallengePort, "Port used to answer ACME HTTP challenge")
 
 	cmd.Flags().StringVar(&address, "address", address, "Address to listen on for web interface and telemetry.")

@@ -47,12 +47,12 @@ const (
 	// https://github.com/appscode/voyager/issues/103
 	// ServiceAnnotations is user provided annotations map that will be
 	// applied to the service of that LoadBalancer.
-	// ex: "ingress.appscode.com/service.annotation": {"key": "val"}
+	// ex: "ingress.appscode.com/annotations-service": {"key": "val"}
 	ServiceAnnotations = EngressKey + "/" + "annotations-service"
 
 	// PodAnnotations is user provided annotations map that will be
 	// applied to the Pods (Deployment/ DaemonSet) of that LoadBalancer.
-	// ex: "ingress.appscode.com/service.annotation": {"key": "val"}
+	// ex: "ingress.appscode.com/annotations-pod": {"key": "val"}
 	PodAnnotations = EngressKey + "/" + "annotations-pod"
 
 	// Preserves source IP for LoadBalancer type ingresses. The actual configuration
@@ -82,6 +82,21 @@ const (
 	OriginName      = EngressKey + "/" + "origin-name"
 
 	EgressPoints = EngressKey + "/" + "egress-points"
+
+	// https://github.com/appscode/voyager/issues/280
+	// Supports all valid timeout option for defaults section of HAProxy
+	// https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.2-timeout%20check
+	// expects a json encoded map
+	// ie: "ingress.appscode.com/default-timeout": {"client": "5s"}
+	//
+	// If the annotation is not set default values used to config defaults section will be:
+	//
+	// timeout  connect         50000
+	// timeout  client          50000
+	// timeout  client-fin      50000
+	// timeout  server          50000
+	// timeout  tunnel          50000
+	DefaultsTimeOut = EngressKey + "/" + "default-timeout"
 )
 
 func (r Ingress) OffshootName() string {
@@ -212,6 +227,47 @@ func (r Ingress) PodsAnnotations() (map[string]string, bool) {
 func (r Ingress) KeepSourceIP() bool {
 	v, _ := getBool(r.Annotations, KeepSourceIP)
 	return v
+}
+
+var timeoutDefaults = map[string]string{
+	// Maximum time to wait for a connection attempt to a server to succeed.
+	"connect": "50000",
+
+	// Maximum inactivity time on the client side.
+	// Applies when the client is expected to acknowledge or send data.
+	"client": "50000",
+
+	// Inactivity timeout on the client side for half-closed connections.
+	// Applies when the client is expected to acknowledge or send data
+	// while one direction is already shut down.
+	"client-fin": "50000",
+
+	// Maximum inactivity time on the server side.
+	"server": "50000",
+
+	// Timeout to use with WebSocket and CONNECT
+	"tunnel": "50000",
+}
+
+func (r Ingress) Timeouts() map[string]string {
+	ans, _ := getMap(r.Annotations, DefaultsTimeOut)
+	if ans == nil {
+		ans = make(map[string]string)
+	}
+
+	// If the timeouts specified in `defaultTimeoutValues` are not set specifically set
+	// we need to set default timeout values.
+	// An unspecified timeout results in an infinite timeout, which
+	// is not recommended. Such a usage is accepted and works but reports a warning
+	// during startup because it may results in accumulation of expired sessions in
+	// the system if the system's timeouts are not configured either.
+	for k, v := range timeoutDefaults {
+		if _, ok := ans[k]; !ok {
+			ans[k] = v
+		}
+	}
+
+	return ans
 }
 
 // ref: https://github.com/kubernetes/kubernetes/blob/078238a461a0872a8eacb887fbb3d0085714604c/staging/src/k8s.io/apiserver/pkg/apis/example/v1/types.go#L134
