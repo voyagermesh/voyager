@@ -29,7 +29,7 @@ var (
 	masterURL      string
 	kubeconfigPath string
 	opt            config.Options = config.Options{
-		HAProxyImage:      "appscode/haproxy:1.7.6-3.0.0",
+		HAProxyImage:      "appscode/haproxy:1.7.6-3.1.0",
 		OperatorNamespace: namespace(),
 		OperatorService:   "voyager-operator",
 		HTTPChallengePort: 56791,
