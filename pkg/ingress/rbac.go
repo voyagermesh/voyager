@@ -66,15 +66,17 @@ func (lbc *Controller) ensureRoles() error {
 	switch lbc.Ingress.APISchema() {
 	case api.APISchemaEngress:
 		defaultRole.Rules = append(defaultRole.Rules, rbac.PolicyRule{
-			APIGroups: []string{api.GroupName},
-			Resources: []string{"ingresses"},
-			Verbs:     []string{"get"},
+			APIGroups:     []string{api.GroupName},
+			Resources:     []string{"ingresses"},
+			ResourceNames: []string{lbc.Ingress.Name},
+			Verbs:         []string{"get"},
 		})
 	case api.APISchemaIngress:
 		defaultRole.Rules = append(defaultRole.Rules, rbac.PolicyRule{
-			APIGroups: []string{extensions.GroupName},
-			Resources: []string{"ingresses"},
-			Verbs:     []string{"get"},
+			APIGroups:     []string{extensions.GroupName},
+			Resources:     []string{"ingresses"},
+			ResourceNames: []string{lbc.Ingress.Name},
+			Verbs:         []string{"get"},
 		})
 	}
 
