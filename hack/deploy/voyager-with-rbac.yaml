@@ -2,12 +2,14 @@ apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
   name: voyager-operator
+  labels:
+    app: voyager
 rules:
 - apiGroups:
   - extensions
   resources:
   - thirdpartyresources
-  verbs: ["get", "create"]
+  verbs: ["get", "create", "list"]
 - apiGroups:
   - voyager.appscode.com
   resources: ["*"]
@@ -29,12 +31,13 @@ rules:
   - replicationcontrollers
   - services
   - endpoints
+  - configmaps
   verbs: ["*"]
 - apiGroups: [""]
   resources:
-  - configmaps
   - secrets
-  verbs: ["get", "create", "update"]
+  - namespaces
+  verbs: ["get", "list", "watch"]
 - apiGroups: [""]
   resources:
   - events
@@ -47,11 +50,22 @@ rules:
   resources:
   - nodes
   verbs: ["list", "get"]
+- apiGroups: [""]
+  resources:
+  - serviceaccounts
+  verbs: ["get", "create", "delete"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources:
+  - roles
+  - rolebindings
+  verbs: ["get", "create", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
   name: voyager-operator
+  labels:
+    app: voyager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -66,23 +80,22 @@ kind: ServiceAccount
 metadata:
   name: voyager-operator
   namespace: kube-system
+  labels:
+    app: voyager
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   labels:
-    app: voyager-operator
+    app: voyager
   name: voyager-operator
   namespace: kube-system
 spec:
   replicas: 1
-  selector:
-    matchLabels:
-      app: voyager-operator
   template:
     metadata:
       labels:
-        app: voyager-operator
+        app: voyager
     spec:
       serviceAccountName: voyager-operator
       containers:
@@ -92,6 +105,7 @@ spec:
         - --cloud-provider=$CLOUD_PROVIDER
         - --cloud-config=$CLOUD_CONFIG # ie. /etc/kubernetes/azure.json for azure
         - --v=3
+        - --rbac
         image: appscode/voyager:3.0.0
         env:
           - name: OPERATOR_SERVICE_ACCOUNT
@@ -115,7 +129,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: voyager-operator
+    app: voyager
   name: voyager-operator
   namespace: kube-system  
 spec:
@@ -124,4 +138,4 @@ spec:
     port: 56790
     targetPort: http
   selector:
-    app: voyager-operator
+    app: voyager

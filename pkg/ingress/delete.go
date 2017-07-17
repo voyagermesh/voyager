@@ -24,6 +24,12 @@ func (lbc *Controller) Delete() error {
 		return errors.FromErr(err).Err()
 	}
 
+	if lbc.Opt.EnableRBAC {
+		if err := lbc.ensureRBACDeleted(); err != nil {
+			return err
+		}
+	}
+
 	if lbc.Parsed.Stats {
 		lbc.ensureStatsServiceDeleted()
 	}
@@ -195,6 +201,21 @@ func (lbc *Controller) ensureStatsServiceDeleted() error {
 		&metav1.DeleteOptions{},
 	)
 	if err != nil {
+		return errors.FromErr(err).Err()
+	}
+	return nil
+}
+
+func (lbc *Controller) ensureRBACDeleted() error {
+	if err := lbc.ensureRoleBindingDeleted(); err != nil {
+		return errors.FromErr(err).Err()
+	}
+
+	if err := lbc.ensureRolesDeleted(); err != nil {
+		return errors.FromErr(err).Err()
+	}
+
+	if err := lbc.ensureServiceAccountDeleted(); err != nil {
 		return errors.FromErr(err).Err()
 	}
 	return nil

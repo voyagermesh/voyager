@@ -162,6 +162,10 @@ func (r Ingress) IsStatsChanged(o Ingress) bool {
 		isMapKeyChanged(r.Annotations, o.Annotations, StatsSecret)
 }
 
+func (r Ingress) IsStatsSecretChanged(o Ingress) bool {
+	return isMapKeyChanged(r.Annotations, o.Annotations, StatsSecret)
+}
+
 func (r Ingress) IsKeepSourceChanged(o Ingress, cloudProvider string) bool {
 	return cloudProvider == "aws" &&
 		o.LBType() == LBTypeLoadBalancer &&
