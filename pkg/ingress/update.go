@@ -86,7 +86,7 @@ func (lbc *Controller) Update(mode UpdateMode) error {
 		}
 	}
 
-	if t&UpdateRBAC > 0 {
+	if mode&UpdateRBAC > 0 {
 		lbc.ensureRoles()
 	}
 
