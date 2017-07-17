@@ -92,9 +92,6 @@ metadata:
   namespace: kube-system
 spec:
   replicas: 1
-  selector:
-    matchLabels:
-      app: voyager
   template:
     metadata:
       labels:
