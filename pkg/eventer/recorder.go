@@ -29,6 +29,10 @@ const (
 	EventReasonIngressUpdateSuccessful               = "UpdateSuccessful"
 	EventReasonIngressServiceUpdateFailed            = "ServiceUpdateFailed"
 	EventReasonIngressServiceUpdateSuccessful        = "ServiceUpdateSuccessful"
+	EventReasonIngressStatsServiceCreateFailed       = "StatsServiceCreateFailed"
+	EventReasonIngressStatsServiceCreateSuccessful   = "StatsServiceCreateSuccessful"
+	EventReasonIngressStatsServiceDeleteFailed       = "StatsServiceDeleteFailed"
+	EventReasonIngressStatsServiceDeleteSuccessful   = "StatsServiceDeleteSuccessful"
 )
 
 func NewEventRecorder(client clientset.Interface, component string) record.EventRecorder {

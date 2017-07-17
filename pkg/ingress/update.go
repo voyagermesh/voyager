@@ -80,9 +80,43 @@ func (lbc *Controller) Update(mode UpdateMode) error {
 
 	if mode&UpdateStats > 0 {
 		if lbc.Ingress.Stats() {
-			lbc.ensureStatsService()
+			err := lbc.ensureStatsService()
+			if err != nil {
+				lbc.recorder.Eventf(
+					lbc.Ingress,
+					apiv1.EventTypeWarning,
+					eventer.EventReasonIngressStatsServiceCreateFailed,
+					"Failed to create Stats Service. Reason: %s",
+					err.Error(),
+				)
+			} else {
+				lbc.recorder.Eventf(
+					lbc.Ingress,
+					apiv1.EventTypeNormal,
+					eventer.EventReasonIngressStatsServiceCreateSuccessful,
+					"Successfully created Stats Service %s",
+					lbc.Ingress.StatsServiceName(),
+				)
+			}
 		} else {
-			lbc.ensureStatsServiceDeleted()
+			err := lbc.ensureStatsServiceDeleted()
+			if err != nil {
+				lbc.recorder.Eventf(
+					lbc.Ingress,
+					apiv1.EventTypeWarning,
+					eventer.EventReasonIngressStatsServiceDeleteFailed,
+					"Failed to delete Stats Service. Reason: %s",
+					err.Error(),
+				)
+			} else {
+				lbc.recorder.Eventf(
+					lbc.Ingress,
+					apiv1.EventTypeNormal,
+					eventer.EventReasonIngressStatsServiceDeleteSuccessful,
+					"Successfully deleted Stats Service %s",
+					lbc.Ingress.StatsServiceName(),
+				)
+			}
 		}
 	}
 
