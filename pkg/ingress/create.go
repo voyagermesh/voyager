@@ -65,7 +65,25 @@ func (lbc *Controller) Create() error {
 	}
 
 	if lbc.Parsed.Stats {
-		lbc.ensureStatsService()
+		err := lbc.ensureStatsService()
+		// Error ignored intentionally
+		if err != nil {
+			lbc.recorder.Eventf(
+				lbc.Ingress,
+				apiv1.EventTypeWarning,
+				eventer.EventReasonIngressStatsServiceCreateFailed,
+				"Failed to create Stats Service. Reason: %s",
+				err.Error(),
+			)
+		} else {
+			lbc.recorder.Eventf(
+				lbc.Ingress,
+				apiv1.EventTypeNormal,
+				eventer.EventReasonIngressStatsServiceCreateSuccessful,
+				"Successfully created Stats Service %s",
+				lbc.Ingress.StatsServiceName(),
+			)
+		}
 	}
 	return nil
 }
