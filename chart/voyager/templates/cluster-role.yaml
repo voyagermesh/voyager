@@ -14,7 +14,7 @@ rules:
   - extensions
   resources:
   - thirdpartyresources
-  verbs: ["get", "create"]
+  verbs: ["get", "create", "list"]
 - apiGroups:
   - voyager.appscode.com
   resources: ["*"]
@@ -36,12 +36,13 @@ rules:
   - replicationcontrollers
   - services
   - endpoints
+  - configmaps
   verbs: ["*"]
 - apiGroups: [""]
   resources:
-  - configmaps
   - secrets
-  verbs: ["get", "create", "update"]
+  - namespaces
+  verbs: ["get", "list", "watch"]
 - apiGroups: [""]
   resources:
   - events
@@ -54,4 +55,13 @@ rules:
   resources:
   - nodes
   verbs: ["list", "get"]
+- apiGroups: [""]
+  resources:
+  - serviceaccounts
+  verbs: ["get", "create", "delete"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources:
+  - roles
+  - rolebindings
+  verbs: ["get", "create", "delete"]
 {{ end }}
