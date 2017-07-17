@@ -110,10 +110,6 @@ func run() {
 	w.PurgeOffshootsWithDeprecatedLabels()
 	go w.Run()
 
-	selectedServerMetrics, err = hpe.FilterServerMetrics(haProxyServerMetricFields)
-	if err != nil {
-		log.Fatal(err)
-	}
 	m := pat.New()
 	m.Get("/metrics", promhttp.Handler())
 	pattern := fmt.Sprintf("/%s/v1beta1/namespaces/%s/ingresses/%s/metrics", PathParamAPIGroup, PathParamNamespace, PathParamName)

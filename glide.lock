@@ -1,5 +1,5 @@
 hash: 4603d45081832651b419c72d01373806592fe66c295a144567aab3fdcbedcda8
-updated: 2017-07-12T10:51:52.9643395-07:00
+updated: 2017-07-17T08:00:19.058412039-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -21,7 +21,7 @@ imports:
   - types
   - version
 - name: github.com/appscode/haproxy_exporter
-  version: 5ffa4ef4d44b3959a3afeb59227fdec8a892cab2
+  version: 599f8e0f418ba29629985265f8caff016d4ea661
   subpackages:
   - exporter
 - name: github.com/appscode/log
@@ -241,7 +241,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
 - name: github.com/spf13/cobra
-  version: c46add8a652801b61513ad36c56759f302fbb028
+  version: d994347edadc56d6a7f863775fb6887606685ae6
   subpackages:
   - doc
 - name: github.com/spf13/pflag
@@ -353,7 +353,7 @@ imports:
   - cipher
   - json
 - name: gopkg.in/yaml.v2
-  version: 1be3d31502d6eabc0dd7ce5b0daab022e14a5538
+  version: 3b4ad1db5b2a649883ff3782f5f9f6fb52be71af
 - name: k8s.io/apimachinery
   version: 75b8dd260ef0469d96d578705a87cffd0e09dab8
   subpackages:
@@ -444,9 +444,6 @@ imports:
   - kubernetes/typed/storage/v1/fake
   - kubernetes/typed/storage/v1beta1
   - kubernetes/typed/storage/v1beta1/fake
-  - listers/apps/v1beta1
-  - listers/core/v1
-  - listers/extensions/v1beta1
   - pkg/api
   - pkg/api/install
   - pkg/api/v1

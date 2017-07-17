@@ -26,8 +26,6 @@ const (
 )
 
 var (
-	selectedServerMetrics map[int]*prometheus.GaugeVec
-
 	registerers = cmap.New() // URL.path => *prometheus.Registry
 )
 
@@ -92,7 +90,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				exporter, err := hpe.NewExporter(scrapeURL, selectedServerMetrics, haProxyTimeout)
+				exporter, err := hpe.NewExporter(scrapeURL, name, haProxyServerMetricFields, haProxyTimeout)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -127,7 +125,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				exporter, err := hpe.NewExporter(scrapeURL, selectedServerMetrics, haProxyTimeout)
+				exporter, err := hpe.NewExporter(scrapeURL, name, haProxyServerMetricFields, haProxyTimeout)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
