@@ -26,3 +26,4 @@ _testmain.go
 dist/
 hack/configs/.env
 **/dist
+.vscode/

@@ -36,7 +36,7 @@ build_binary() {
 
 build_docker() {
 	pushd $REPO_ROOT/hack/docker/voyager
-	cp $REPO_ROOT/dist/voyager/voyager-linux-amd64 voyager
+	cp $REPO_ROOT/dist/voyager/voyager-alpine-amd64 voyager
 	chmod 755 voyager
 
 	cat >Dockerfile <<EOL
