@@ -9,13 +9,26 @@ import (
 )
 
 const (
-//EventReasonInvalidCronExpression         = "InvalidCronExpression"
-//EventReasonSuccessfulCronExpressionReset = "SuccessfulCronExpressionReset"
-//EventReasonSuccessfulBackup              = "SuccessfulBackup"
-//EventReasonFailedToBackup                = "FailedBackup"
-//EventReasonFailedToRetention             = "FailedRetention"
-//EventReasonFailedToUpdate                = "FailedUpdateBackup"
-//EventReasonFailedCronJob                 = "FailedCronJob"
+	// Certificate Events
+	EventReasonCertificateRenewFailed      = "RenewFailed"
+	EventReasonCertificateRenewSuccessful  = "RenewSuccessful"
+	EventReasonCertificateCreateFailed     = "CreateFailed"
+	EventReasonCertificateCreateSuccessful = "CreateSuccessful"
+
+	// Ingress Events
+	EventReasonIngressConfigMapCreateFailed          = "ConfigMapCreateFailed"
+	EventReasonIngressConfigMapCreateSuccessful      = "ConfigMapCreateSuccessful"
+	EventReasonIngressUnsupportedLBType              = "UnsupportedLBType"
+	EventReasonIngressControllerCreateFailed         = "ControllerCreateFailed"
+	EventReasonIngressControllerCreateSuccessful     = "ControllerCreateSuccessful"
+	EventReasonIngressServiceCreateFailed            = "ServiceCreateFailed"
+	EventReasonIngressServiceCreateSuccessful        = "ServiceCreateSuccessful"
+	EventReasonIngressServiceMonitorCreateFailed     = "ServiceMonitorCreateFailed"
+	EventReasonIngressServiceMonitorCreateSuccessful = "ServiceMonitorCreateSuccessful"
+	EventReasonIngressUpdateFailed                   = "UpdateFailed"
+	EventReasonIngressUpdateSuccessful               = "UpdateSuccessful"
+	EventReasonIngressServiceUpdateFailed            = "ServiceUpdateFailed"
+	EventReasonIngressServiceUpdateSuccessful        = "ServiceUpdateSuccessful"
 )
 
 func NewEventRecorder(client clientset.Interface, component string) record.EventRecorder {

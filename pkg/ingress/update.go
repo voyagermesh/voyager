@@ -7,6 +7,7 @@ import (
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
+	"github.com/appscode/voyager/pkg/eventer"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -38,19 +39,40 @@ func (lbc *Controller) Update(mode UpdateMode) error {
 		mode&UpdateStats > 0 {
 		err := lbc.recreatePods()
 		if err != nil {
-			lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeWarning, "UpdateFailed", "Failed to update Pods, %s", err.Error())
+			lbc.recorder.Eventf(
+				lbc.Ingress,
+				apiv1.EventTypeWarning,
+				eventer.EventReasonIngressUpdateFailed,
+				"Failed to update Pods, %s", err.Error(),
+			)
 			return errors.FromErr(err).Err()
 		}
-		lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeNormal, "Updated", "Successfully updated Pods")
+		lbc.recorder.Eventf(
+			lbc.Ingress,
+			apiv1.EventTypeNormal,
+			eventer.EventReasonIngressUpdateSuccessful,
+			"Successfully updated Pods",
+		)
 	}
 
 	if mode&UpdateFirewall > 0 {
 		err := lbc.updateLBSvc()
 		if err != nil {
-			lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeWarning, "LBServiceUpdateFailed", "Failed to update LBService, %s", err.Error())
+			lbc.recorder.Eventf(
+				lbc.Ingress,
+				apiv1.EventTypeWarning,
+				eventer.EventReasonIngressServiceUpdateFailed,
+				"Failed to update LBService, %s",
+				err.Error(),
+			)
 			return errors.FromErr(err).Err()
 		}
-		lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeNormal, "LBServiceUpdated", "Successfully updated LBService")
+		lbc.recorder.Eventf(
+			lbc.Ingress,
+			apiv1.EventTypeNormal,
+			eventer.EventReasonIngressServiceUpdateSuccessful,
+			"Successfully updated LBService",
+		)
 
 		go lbc.updateStatus()
 	}

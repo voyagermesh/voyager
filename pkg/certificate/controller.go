@@ -151,19 +151,41 @@ func (c *Controller) Process() error {
 			log.Infoln("certificate is expiring in 7 days, attempting renew")
 			err := c.renew()
 			if err != nil {
-				c.recorder.Eventf(c.tpr, apiv1.EventTypeWarning, "RenewFailed", "Failed to renew certificate, %s", err.Error())
+				c.recorder.Eventf(
+					c.tpr,
+					apiv1.EventTypeWarning,
+					eventer.EventReasonCertificateRenewFailed,
+					"Failed to renew certificate, Reason %s",
+					err.Error(),
+				)
 				return err
 			}
-			c.recorder.Eventf(c.tpr, apiv1.EventTypeWarning, "Renewed", "Successfully renewed certificate")
+			c.recorder.Eventf(
+				c.tpr,
+				apiv1.EventTypeWarning,
+				eventer.EventReasonCertificateRenewSuccessful,
+				"Successfully renewed certificate",
+			)
 		}
 
 		if !c.acmeCert.EqualDomains(c.crt) {
 			err := c.renew()
 			if err != nil {
-				c.recorder.Eventf(c.tpr, apiv1.EventTypeWarning, "RenewFailed", "Failed to renew certificate, %s", err.Error())
+				c.recorder.Eventf(
+					c.tpr,
+					apiv1.EventTypeWarning,
+					eventer.EventReasonCertificateRenewFailed,
+					"Failed to renew certificate, Reason %s",
+					err.Error(),
+				)
 				return err
 			}
-			c.recorder.Eventf(c.tpr, apiv1.EventTypeWarning, "Renewed", "Successfully renewed certificate")
+			c.recorder.Eventf(
+				c.tpr,
+				apiv1.EventTypeWarning,
+				eventer.EventReasonCertificateRenewSuccessful,
+				"Successfully renewed certificate",
+			)
 		}
 	}
 
@@ -171,10 +193,21 @@ func (c *Controller) Process() error {
 		// Certificate Not found as secret. We must create it now.
 		err := c.create()
 		if err != nil {
-			c.recorder.Eventf(c.tpr, apiv1.EventTypeWarning, "CreateFailed", "Failed to create certificate, %s", err.Error())
+			c.recorder.Eventf(
+				c.tpr,
+				apiv1.EventTypeWarning,
+				eventer.EventReasonCertificateCreateFailed,
+				"Failed to create certificate, Reason: %s",
+				err.Error(),
+			)
 			return err
 		}
-		c.recorder.Eventf(c.tpr, apiv1.EventTypeWarning, "Created", "Successfully created certificate")
+		c.recorder.Eventf(
+			c.tpr,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonCertificateCreateSuccessful,
+			"Successfully created certificate",
+		)
 	}
 	return nil
 }

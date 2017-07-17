@@ -11,6 +11,7 @@ import (
 	"github.com/appscode/go/types"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
+	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/monitor"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -32,13 +33,19 @@ func (lbc *Controller) Create() error {
 
 	err = lbc.ensureConfigMap()
 	if err != nil {
-		lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeWarning, "ConfigMapCreateFailed", err.Error())
+		lbc.recorder.Eventf(
+			lbc.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressConfigMapCreateFailed,
+			"Reason: %s",
+			err.Error(),
+		)
 		return errors.FromErr(err).Err()
 	}
 	lbc.recorder.Eventf(
 		lbc.Ingress,
 		apiv1.EventTypeNormal,
-		"ConfigMapCreated",
+		eventer.EventReasonIngressConfigMapCreateSuccessful,
 		"Successfully created ConfigMap %s",
 		lbc.Ingress.OffshootName(),
 	)
@@ -102,7 +109,12 @@ func (lbc *Controller) ensureConfigMap() error {
 func (lbc *Controller) createLB() error {
 	if !lbc.SupportsLBType() {
 		err := errors.Newf("LBType %s is unsupported for cloud provider: %s", lbc.Ingress.LBType(), lbc.Opt.CloudProvider).Err()
-		lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeWarning, "Failed", err.Error())
+		lbc.recorder.Eventf(
+			lbc.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressUnsupportedLBType,
+			err.Error(),
+		)
 		return err
 	}
 
@@ -110,51 +122,116 @@ func (lbc *Controller) createLB() error {
 	if lbc.Ingress.LBType() == api.LBTypeHostPort {
 		err := lbc.createHostPortPods()
 		if err != nil {
-			lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeWarning, "ControllerCreateFailed", "Failed to create HostPortPods, %s", err.Error())
+			lbc.recorder.Eventf(
+				lbc.Ingress,
+				apiv1.EventTypeWarning,
+				eventer.EventReasonIngressControllerCreateFailed,
+				"Failed to create HostPortPods, Reason: %s",
+				err.Error(),
+			)
 			return errors.FromErr(err).Err()
 		}
-		lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeNormal, "ControllerCreated", "Successfully created HostPortPods")
+		lbc.recorder.Eventf(
+			lbc.Ingress,
+			apiv1.EventTypeNormal,
+			eventer.EventReasonIngressControllerCreateSuccessful,
+			"Successfully created HostPortPods",
+		)
 
 		time.Sleep(time.Second * 10)
 		err = lbc.createHostPortSvc()
 		if err != nil {
-			lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeWarning, "ServiceCreateFailed", "Failed to create HostPortService, %s", err.Error())
+			lbc.recorder.Eventf(
+				lbc.Ingress,
+				apiv1.EventTypeWarning,
+				eventer.EventReasonIngressServiceCreateFailed,
+				"Failed to create HostPortService, Reason: %s",
+				err.Error(),
+			)
 			return errors.FromErr(err).Err()
 		}
-		lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeNormal, "ServiceCreated", "Successfully created HostPortService")
+		lbc.recorder.Eventf(
+			lbc.Ingress,
+			apiv1.EventTypeNormal,
+			eventer.EventReasonIngressServiceCreateSuccessful,
+			"Successfully created HostPortService",
+		)
 	} else if lbc.Ingress.LBType() == api.LBTypeNodePort {
 		err := lbc.createNodePortPods()
 		if err != nil {
-			lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeWarning, "ControllerCreateFailed", "Failed to create NodePortPods, %s", err.Error())
+			lbc.recorder.Eventf(
+				lbc.Ingress,
+				apiv1.EventTypeWarning,
+				eventer.EventReasonIngressControllerCreateFailed,
+				"Failed to create NodePortPods, Reason: %s",
+				err.Error(),
+			)
 			return errors.FromErr(err).Err()
 		}
-		lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeNormal, "ControllerCreated", "Successfully created NodePortPods")
+		lbc.recorder.Eventf(
+			lbc.Ingress,
+			apiv1.EventTypeNormal,
+			eventer.EventReasonIngressControllerCreateSuccessful,
+			"Successfully created NodePortPods")
 
 		time.Sleep(time.Second * 10)
 		err = lbc.createNodePortSvc()
 		if err != nil {
-			lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeWarning, "ServiceCreateFailed", "Failed to create NodePortService, %s", err.Error())
+			lbc.recorder.Eventf(
+				lbc.Ingress,
+				apiv1.EventTypeWarning,
+				eventer.EventReasonIngressServiceCreateFailed,
+				"Failed to create NodePortService, Reason: %s",
+				err.Error(),
+			)
 			return errors.FromErr(err).Err()
 		}
-		lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeNormal, "ServiceCreated", "Successfully created NodePortService")
+		lbc.recorder.Eventf(
+			lbc.Ingress,
+			apiv1.EventTypeNormal,
+			eventer.EventReasonIngressServiceCreateSuccessful,
+			"Successfully created NodePortService",
+		)
 	} else {
 		// deleteResidualPods is a safety checking deletion of previous version RC
 		// This should Ignore error.
 		lbc.deleteResidualPods()
 		err := lbc.createNodePortPods()
 		if err != nil {
-			lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeWarning, "ControllerCreateFailed", "Failed to create NodePortPods, %s", err.Error())
+			lbc.recorder.Eventf(
+				lbc.Ingress,
+				apiv1.EventTypeWarning,
+				eventer.EventReasonIngressControllerCreateFailed,
+				"Failed to create NodePortPods, Reason: %s",
+				err.Error(),
+			)
 			return errors.FromErr(err).Err()
 		}
-		lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeNormal, "ControllerCreated", "Successfully created NodePortPods")
+		lbc.recorder.Eventf(
+			lbc.Ingress,
+			apiv1.EventTypeNormal,
+			eventer.EventReasonIngressControllerCreateSuccessful,
+			"Successfully created NodePortPods",
+		)
 
 		time.Sleep(time.Second * 10)
 		err = lbc.createLoadBalancerSvc()
 		if err != nil {
-			lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeWarning, "ServiceCreateFailed", "Failed to create LoadBalancerService, %s", err.Error())
+			lbc.recorder.Eventf(
+				lbc.Ingress,
+				apiv1.EventTypeWarning,
+				eventer.EventReasonIngressServiceCreateFailed,
+				"Failed to create LoadBalancerService, Reason: %s",
+				err.Error(),
+			)
 			return errors.FromErr(err).Err()
 		}
-		lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeNormal, "ServiceCreated", "Successfully created LoadBalancerService")
+		lbc.recorder.Eventf(
+			lbc.Ingress,
+			apiv1.EventTypeNormal,
+			eventer.EventReasonIngressServiceCreateSuccessful,
+			"Successfully created LoadBalancerService",
+		)
 
 		go lbc.updateStatus()
 	}
@@ -166,12 +243,22 @@ func (lbc *Controller) createLB() error {
 	if monSpec != nil && monSpec.Prometheus != nil {
 		ctrl := monitor.NewPrometheusController(lbc.KubeClient, lbc.PromClient)
 		err := ctrl.AddMonitor(lbc.Ingress, monSpec)
+		// Error Ignored intentionally
 		if err != nil {
-			lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeWarning, "ServiceMonitorCreateFailed", err.Error())
-			// TODO @tamal Should we return error from here?
-			return errors.FromErr(err).Err()
+			lbc.recorder.Eventf(
+				lbc.Ingress,
+				apiv1.EventTypeWarning,
+				eventer.EventReasonIngressServiceMonitorCreateFailed,
+				err.Error(),
+			)
+		} else {
+			lbc.recorder.Eventf(
+				lbc.Ingress,
+				apiv1.EventTypeNormal,
+				eventer.EventReasonIngressServiceMonitorCreateSuccessful,
+				"Successfully created ServiceMonitor",
+			)
 		}
-		lbc.recorder.Eventf(lbc.Ingress, apiv1.EventTypeNormal, "ServiceMonitorCreated", "Successfully created ServiceMonitor")
 	}
 	return nil
 }
