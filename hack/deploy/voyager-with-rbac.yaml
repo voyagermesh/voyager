@@ -106,7 +106,7 @@ spec:
         - --cloud-config=$CLOUD_CONFIG # ie. /etc/kubernetes/azure.json for azure
         - --v=3
         - --rbac
-        image: appscode/voyager:rback-fix
+        image: appscode/voyager:3.0.0
         env:
           - name: OPERATOR_SERVICE_ACCOUNT
             valueFrom:
