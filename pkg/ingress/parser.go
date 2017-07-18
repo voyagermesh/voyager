@@ -106,6 +106,7 @@ func (lbc *Controller) serviceEndpoints(name string, port intstr.IntOrString, ho
 	}
 
 	if service.Spec.Type == apiv1.ServiceTypeExternalName {
+		log.Infof("Found ServiceType ExternalName for service %s, Checking DNS resolver options", service.Name)
 		// https://kubernetes.io/docs/concepts/services-networking/service/#services-without-selectors
 		ep := Endpoint{
 			Name:         "external",
@@ -117,7 +118,7 @@ func (lbc *Controller) serviceEndpoints(name string, port intstr.IntOrString, ho
 		var err error
 		ep.UseDNSResolver, resolver, err = api.DNSResolverForService(*service)
 		if err != nil {
-			return nil, err
+			return nil, errors.FromErr(err).Err()
 		}
 		if ep.UseDNSResolver && resolver != nil {
 			lbc.Parsed.DNSResolvers[resolver.Name] = resolver
@@ -128,8 +129,8 @@ func (lbc *Controller) serviceEndpoints(name string, port intstr.IntOrString, ho
 	}
 	p, ok := getSpecifiedPort(service.Spec.Ports, port)
 	if !ok {
-		log.Warningln("service port unavailable")
-		return nil, goerr.New("service port unavailable")
+		log.Warningf("Service port %s unavailable for service %s", port.String(), service.Name)
+		return nil, goerr.New("Service port unavailable")
 	}
 	return lbc.getEndpoints(service, p, hostNames)
 }
@@ -163,12 +164,12 @@ func (lbc *Controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.Service
 				if len(ss.Ports) == 1 {
 					targetPort = strconv.Itoa(int(epPort.Port))
 				} else {
-					log.Debugln("targert port empty. skipping.")
+					log.Debugf("Target port %s empty for service %s. skipping.", servicePort.String(), s.Name)
 					continue
 				}
 			}
 
-			log.Infoln("targert port", targetPort)
+			log.Infof("Found target port %s for service %s", targetPort, s.Name)
 			for _, epAddress := range ss.Addresses {
 				if isForwardable(hostNames, epAddress.Hostname) {
 					ep := &Endpoint{
@@ -263,7 +264,7 @@ func getTargetPort(servicePort *apiv1.ServicePort) int {
 }
 
 func (lbc *Controller) parseSpec() {
-	log.Infoln("Parsing Engress specs")
+	log.Infoln("Parsing Engress specs for", lbc.Ingress.Name)
 	lbc.Ports = make(map[int]int)
 	lbc.Parsed.DNSResolvers = make(map[string]*api.DNSResolver)
 
@@ -304,6 +305,7 @@ func (lbc *Controller) parseSpec() {
 
 			for _, svc := range rule.HTTP.Paths {
 				eps, _ := lbc.serviceEndpoints(svc.Backend.ServiceName, svc.Backend.ServicePort, svc.Backend.HostNames)
+				log.Infoln("Returned service endpoints len(eps)", len(eps), "for service", svc.Backend.ServiceName)
 				if len(eps) > 0 {
 					def := &Service{
 						Name:     "service-" + rand.Characters(6),
@@ -333,6 +335,7 @@ func (lbc *Controller) parseSpec() {
 
 			lbc.Ports[tcpSvc.Port.IntValue()] = tcpSvc.Port.IntValue()
 			eps, _ := lbc.serviceEndpoints(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort, tcpSvc.Backend.HostNames)
+			log.Infoln("Returned service endpoints len(eps)", len(eps), "for service", tcpSvc.Backend.ServiceName)
 			if len(eps) > 0 {
 				def := &TCPService{
 					Name:        "service-" + rand.Characters(6),

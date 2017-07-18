@@ -2178,6 +2178,188 @@ func (s *IngressTestSuit) TestIngressExternalNameResolver() error {
 	return nil
 }
 
+func (s *IngressTestSuit) TestIngressExternalNameWithBackendRules() error {
+	extSvcNoResolveRedirect := &apiv1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "external-svc-non-dns",
+			Namespace: s.t.Config.TestNamespace,
+		},
+		Spec: apiv1.ServiceSpec{
+			Type:         apiv1.ServiceTypeExternalName,
+			ExternalName: "google.com",
+		},
+	}
+
+	_, err := s.t.KubeClient.CoreV1().Services(extSvcNoResolveRedirect.Namespace).Create(extSvcNoResolveRedirect)
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+	defer func() {
+		if s.t.Config.Cleanup {
+			s.t.KubeClient.CoreV1().Services(extSvcNoResolveRedirect.Namespace).Delete(extSvcNoResolveRedirect.Name, nil)
+		}
+	}()
+
+	baseIngress := &api.Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      testIngressName(),
+			Namespace: s.t.Config.TestNamespace,
+		},
+		Spec: api.IngressSpec{
+			Backend: &api.IngressBackend{
+				ServiceName: testServerSvc.Name,
+				ServicePort: intstr.FromString("8989"),
+			},
+			Rules: []api.IngressRule{
+				{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
+								{
+									Path: "/redirect-rule",
+									Backend: api.IngressBackend{
+										BackendRule: []string{
+											"http-request redirect location https://github.com/appscode/discuss/issues code 301",
+										},
+										ServiceName: extSvcNoResolveRedirect.Name,
+										ServicePort: intstr.FromString("80"),
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
+								{
+									Path: "/redirect",
+									Backend: api.IngressBackend{
+										ServiceName: extSvcNoResolveRedirect.Name,
+										ServicePort: intstr.FromString("80"),
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
+								{
+									Path: "/back-end",
+									Backend: api.IngressBackend{
+										ServiceName: testServerSvc.Name,
+										ServicePort: intstr.FromString("8989"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, err = s.t.ExtClient.Ingresses(baseIngress.Namespace).Create(baseIngress)
+	if err != nil {
+		return errors.New().WithCause(err).Err()
+	}
+	defer func() {
+		if s.t.Config.Cleanup {
+			s.t.ExtClient.Ingresses(baseIngress.Namespace).Delete(baseIngress.Name)
+		}
+	}()
+
+	// Wait sometime to loadbalancer be opened up.
+	time.Sleep(time.Second * 10)
+	var svc *apiv1.Service
+	for i := 0; i < maxRetries; i++ {
+		svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for service to be created")
+	}
+	if err != nil {
+		return err
+	}
+	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
+	for i := 0; i < maxRetries; i++ {
+		_, err = s.t.KubeClient.CoreV1().Endpoints(svc.Namespace).Get(svc.Name, metav1.GetOptions{})
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for endpoints to be created")
+	}
+	if err != nil {
+		return err
+	}
+
+	serverAddr, err := s.getURLs(baseIngress)
+	if err != nil {
+		return err
+	}
+	time.Sleep(time.Second * 60)
+	log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/redirect-rule").DoTestRedirectWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
+		}
+		if resp.Status != 301 {
+			return errors.New().WithMessage("Code did not matched").Err()
+		}
+	}
+
+	err = s.t.KubeClient.CoreV1().Pods(s.t.Config.TestNamespace).DeleteCollection(
+		&metav1.DeleteOptions{},
+		metav1.ListOptions{
+			LabelSelector: labels.SelectorFromSet(
+				map[string]string{
+					"app": "test-server",
+				},
+			).String(),
+		},
+	)
+	if err != nil {
+		return errors.FromErr(err).Err()
+	}
+	log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
+	for i := 0; i < maxRetries; i++ {
+		_, err = s.t.KubeClient.CoreV1().Endpoints(svc.Namespace).Get(svc.Name, metav1.GetOptions{})
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 5)
+		log.Infoln("Waiting for endpoints to be created")
+	}
+	if err != nil {
+		return err
+	}
+
+	serverAddr, err = s.getURLs(baseIngress)
+	if err != nil {
+		return err
+	}
+	time.Sleep(time.Second * 60)
+	log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
+	for _, url := range serverAddr {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/redirect-rule").DoTestRedirectWithRetry(50)
+		if err != nil {
+			return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
+		}
+		if resp.Status != 301 {
+			return errors.New().WithMessage("Code did not matched").Err()
+		}
+	}
+	return nil
+}
+
 func (s *IngressTestSuit) TestIngressOperatorWithRBAC() error {
 	if s.t.Config.RBACEnabled && s.t.Config.InCluster {
 		baseIngress := &api.Ingress{
@@ -2208,13 +2390,74 @@ func (s *IngressTestSuit) TestIngressOperatorWithRBAC() error {
 
 		_, err := s.t.ExtClient.Ingresses(baseIngress.Namespace).Create(baseIngress)
 		if err != nil {
-			return err
+			return errors.FromErr(err).Err()
 		}
 		defer func() {
 			if s.t.Config.Cleanup {
 				s.t.ExtClient.Ingresses(baseIngress.Namespace).Delete(baseIngress.Name)
 			}
 		}()
+
+		// Wait sometime to loadbalancer be opened up.
+		time.Sleep(time.Second * 10)
+		var svc *apiv1.Service
+		for i := 0; i < maxRetries; i++ {
+			svc, err = s.t.KubeClient.CoreV1().Services(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
+			if err == nil {
+				break
+			}
+			time.Sleep(time.Second * 5)
+			log.Infoln("Waiting for service to be created")
+		}
+		if err != nil {
+			return err
+		}
+		log.Infoln("Service Created for loadbalancer, Checking for service endpoints")
+		for i := 0; i < maxRetries; i++ {
+			_, err = s.t.KubeClient.CoreV1().Endpoints(svc.Namespace).Get(svc.Name, metav1.GetOptions{})
+			if err == nil {
+				break
+			}
+			time.Sleep(time.Second * 5)
+			log.Infoln("Waiting for endpoints to be created")
+		}
+		if err != nil {
+			return err
+		}
+
+		serverAddr, err := s.getURLs(baseIngress)
+		if err != nil {
+			return err
+		}
+
+		_, err = s.t.KubeClient.CoreV1().ServiceAccounts(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
+
+		_, err = s.t.KubeClient.RbacV1beta1().Roles(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
+
+		_, err = s.t.KubeClient.RbacV1beta1().RoleBindings(baseIngress.Namespace).Get(baseIngress.OffshootName(), metav1.GetOptions{})
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
+
+		time.Sleep(time.Second * 60)
+		log.Infoln("Loadbalancer created, calling http endpoints, Total", len(serverAddr))
+		// Check Non DNS redirect
+		for _, url := range serverAddr {
+			resp, err := testserverclient.NewTestHTTPClient(url).Method("GET").Path("/testpath").DoWithRetry(50)
+			if err != nil {
+				return errors.New().WithCause(err).WithMessage("Failed to connect with server").Err()
+			}
+			if resp.Status != 200 {
+				return errors.New().WithMessage("Code did not matched").Err()
+			}
+		}
+
 	}
 	return nil
 }
