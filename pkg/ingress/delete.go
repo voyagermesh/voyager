@@ -110,9 +110,6 @@ func (lbc *Controller) deleteNodePortPods() error {
 	// resize the controller to zero (effectively deleting all pods) before deleting it.
 	d.Spec.Replicas = types.Int32P(0)
 	_, err = lbc.KubeClient.ExtensionsV1beta1().Deployments(lbc.Ingress.Namespace).Update(d)
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
 
 	log.Debugln("Waiting before delete the RC")
 	time.Sleep(time.Second * 5)

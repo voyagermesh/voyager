@@ -3,6 +3,7 @@ package ingress
 import (
 	"reflect"
 	"strconv"
+	"time"
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
@@ -171,6 +172,7 @@ func (lbc *Controller) recreatePods() error {
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
+		time.Sleep(time.Second * 5)
 		err = lbc.createHostPortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -180,6 +182,7 @@ func (lbc *Controller) recreatePods() error {
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
+		time.Sleep(time.Second * 5)
 		err = lbc.createNodePortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -191,6 +194,7 @@ func (lbc *Controller) recreatePods() error {
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
+		time.Sleep(time.Second * 5)
 		err = lbc.createNodePortPods()
 		if err != nil {
 			return errors.FromErr(err).Err()

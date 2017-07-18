@@ -80,7 +80,7 @@ func (r Ingress) IsPortChanged(o Ingress) bool {
 	var newPort80Open, newPort443Open bool
 	for _, rs := range o.Spec.Rules {
 		if rs.HTTP != nil {
-			for _, tls := range r.Spec.TLS {
+			for _, tls := range o.Spec.TLS {
 				if stringz.Contains(tls.Hosts, rs.Host) {
 					newPort443Open = true
 				} else {
