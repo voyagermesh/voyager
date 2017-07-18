@@ -41,8 +41,11 @@ func DNSResolverForService(svc apiv1.Service) (useDNSResolver bool, resolver *DN
 	if svc.Spec.Type != apiv1.ServiceTypeExternalName {
 		return false, nil, fmt.Errorf("Service %s@%s is expected to be of type ServiceTypeExternalName, actual type %s", svc.Name, svc.Namespace, svc.Spec.Type)
 	}
-	useDNSResolver, err = getBool(svc.Annotations, UseDNSResolver)
-	if err != nil || !useDNSResolver {
+
+	// getBool returns an error if the value is empty string, or the key is not present
+	// So, we ignored error.
+	useDNSResolver, _ = getBool(svc.Annotations, UseDNSResolver)
+	if !useDNSResolver {
 		return
 	}
 

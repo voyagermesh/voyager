@@ -127,7 +127,9 @@ func (lbc *Controller) ensureConfigMap() error {
 
 	if needsUpdate {
 		_, err = lbc.KubeClient.CoreV1().ConfigMaps(lbc.Ingress.Namespace).Update(cm)
-		return errors.FromErr(err).Err()
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
 	}
 	return nil
 }
