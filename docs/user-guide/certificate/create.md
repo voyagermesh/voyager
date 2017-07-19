@@ -34,7 +34,7 @@ data:
 
 See the Supported Providers List [here](provider.md)
 
-```sh
+```console
 kubectl create -f example.yaml
 ```
 
@@ -46,7 +46,7 @@ kubectl logs -f appscode-voyager
 ### Results
 This object will create a certificate named `cert-test-cert`.
 
-```sh
+```console
 kubectl get secrets cert-test-cert
 ```
 
@@ -119,7 +119,7 @@ spec:
 
 When your certificate is issued, you will see a `kubernetes.io/tls` type secret.
 
-```sh
+```console
 kubectl get secrets cert-test-cert
 ```
 
