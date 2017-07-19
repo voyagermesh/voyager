@@ -15,14 +15,14 @@ development environment, please follow [these instructions](https://golang.org/d
 
 #### Download Source
 
-```sh
+```console
 $ go get github.com/appscode/voyager
 $ cd $(go env GOPATH)/src/github.com/appscode/voyager
 ```
 
 #### Install Dev tools
 To install various dev tools for Voyager, run the following command:
-```sh
+```console
 $ ./hack/builddeps.sh
 ```
 
@@ -35,14 +35,14 @@ $ voyager version
 #### Dependency management
 Voyager uses [Glide](https://github.com/Masterminds/glide) to manage dependencies. Dependencies are already checked in the `vendor` folder.
 If you want to update/add dependencies, run:
-```sh
+```console
 $ glide slow
 ```
 
 #### Build Docker images
 To build and push your custom Docker image, follow the steps below. To release a new version of Voyager, please follow the [release guide](/docs/developer-guide/release.md).
 
-```sh
+```console
 # Build Docker image
 $ ./hack/docker/voyager/setup.sh
 
@@ -55,33 +55,33 @@ $ docker push <image>:<tag>
 
 #### Build HAProxy
 We package HAProxy and [Kloader](https://github.com/appscode/kloader) into a Ubuntu 16.04 based Docker image.
-```sh
+```console
 $ ./hack/docker/haproxy/<version>/setup.sh
 $ ./hack/docker/haproxy/<version>/setup.sh push
 ```
 
 #### Generate CLI Reference Docs
-```sh
+```console
 $ ./hack/gendocs/make.sh 
 ```
 
 ### Run Test
 #### Run Short Unit Test by running
-```sh
+```console
 go test -v ./cmd/... ./pkg/...
 ```
 
 #### Run Full Test
 To Run Full unit test You need to provide some secret in `hack/configs/.env` file. Or You may add them as
 environment variables.
-```sh
+```console
 TEST_GCE_SERVICE_ACCOUNT_DATA
 TEST_GCE_PROJECT
 TEST_ACME_USER_EMAIL
 TEST_DNS_DOMAINS
 ```
 Then run
-```sh
+```console
 $ ./hack/make.py test unit
 ```
 
@@ -156,7 +156,7 @@ versions:
   - name: v1beta1
 ```
 
-```sh
+```console
 # Create Third Party Resources
 $ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/3.1.0/api/extensions/tprs.yaml
 ```

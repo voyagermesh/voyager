@@ -5,7 +5,7 @@ This guide will walk you through deploying the Voyager controller.
 Voyager controller communicates with kube-apiserver at inCluster mode if no master or kubeconfig is provided. It watches Ingress and Certificate resource
 to handle corresponding events.
 
-```sh
+```console
 $ export CLOUD_PROVIDER=<provider-name> # ie:
                                         # - gce
                                         # - gke
@@ -199,7 +199,7 @@ along side with other controllers.
 Read the example how to use [HTTP Provider](/docs/user-guide/certificate/create.md#create-certificate-with-http-provider)
 for certificate.
 
-```sh
+```console
   --ingress-class
   // this flag can be set to 'voyager' to handle only ingress
   // with annotation kubernetes.io/ingress.class=voyager.
