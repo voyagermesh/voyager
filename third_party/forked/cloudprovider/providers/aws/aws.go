@@ -489,6 +489,12 @@ func newAWSCloud(config io.Reader, awsServices Services) (*Cloud, error) {
 	// Log so that if we are building multiple Cloud objects, it is obvious!
 	glog.Infof("Building AWS cloudprovider")
 
+	// Register handler for ECR credentials
+	// Register regions, in particular for ECR credentials
+	once.Do(func() {
+		RecognizeWellKnownRegions()
+	})
+
 	metadata, err := awsServices.Metadata()
 	if err != nil {
 		return nil, fmt.Errorf("error creating AWS metadata client: %v", err)
@@ -569,12 +575,6 @@ func newAWSCloud(config io.Reader, awsServices Services) (*Cloud, error) {
 	} else {
 		glog.Infof("AWS cloud - no tag filtering")
 	}
-
-	// Register handler for ECR credentials
-	// Register regions, in particular for ECR credentials
-	once.Do(func() {
-		RecognizeWellKnownRegions()
-	})
 
 	return awsCloud, nil
 }
