@@ -641,6 +641,7 @@ func (lbc *Controller) createNodePortPods() error {
 								{
 									Weight: 100,
 									PodAffinityTerm: apiv1.PodAffinityTerm{
+										TopologyKey: "kubernetes.io/hostname",
 										LabelSelector: &metav1.LabelSelector{
 											MatchLabels: lbc.Ingress.OffshootLabels(),
 										},
