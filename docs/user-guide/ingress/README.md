@@ -34,7 +34,8 @@ hosting. This plugin also support configurable application ports with all the fe
   - [Supports redirects/DNS resolution for `ExternalName` type service](external-svc.md)
   - [Expose HAProxy stats for Prometheus](stats-and-prometheus.md)
   - [Supports AWS certificate manager](aws-cert-manager.md)
-  - [Scale load balancer using HorizontalPodAutoscaling](docs/user-guide/ingress/replicas-and-autoscaling.md)
+  - [Scale load balancer using HorizontalPodAutoscaling](replicas-and-autoscaling.md)
+  - [Configure Custom Timeouts for HAProxy](configure-timeouts.md)
 
 ### Comparison with Kubernetes
 | Feauture | Kube Ingress | AppsCode Ingress |

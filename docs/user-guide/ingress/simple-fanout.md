@@ -40,3 +40,4 @@ the Status of Ingress.
 - [URL and Header Rewriting](header-rewrite.md)
 - [TCP Loadbalancing](tcp.md)
 - [TLS Termination](tls.md)
+- [Configure Custom Timeouts for HAProxy](configure-timeouts.md)

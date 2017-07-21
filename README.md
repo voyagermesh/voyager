@@ -32,6 +32,7 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
   - [Expose HAProxy stats for Prometheus](docs/user-guide/ingress/stats-and-prometheus.md)
   - [Supports AWS certificate manager](docs/user-guide/ingress/aws-cert-manager.md)
   - [Scale load balancer using HorizontalPodAutoscaling](docs/user-guide/ingress/replicas-and-autoscaling.md)
+  - [Configure Custom Timeouts for HAProxy](docs/user-guide/ingress/configure-timeouts.md)
 
 ### Comparison with Kubernetes
 | Feauture | [Kube Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) | AppsCode Ingress |
