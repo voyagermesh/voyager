@@ -53,7 +53,7 @@ func (r Ingress) HasChanged(o Ingress) (bool, error) {
 	return !reflect.DeepEqual(ra, oa), nil
 }
 
-func (r Ingress) Ports(cloudProvider string) []int {
+func (r Ingress) Ports() []int {
 	usesTLS := func(h string) bool {
 		for _, tls := range r.Spec.TLS {
 			for _, host := range tls.Hosts {
@@ -88,19 +88,6 @@ func (r Ingress) Ports(cloudProvider string) []int {
 		ports[80] = "http"
 	}
 
-	//// ref: https://github.com/appscode/voyager/issues/188
-	//if cloudProvider == "aws" && r.LBType() == LBTypeLoadBalancer {
-	//	if ans, ok := r.ServiceAnnotations(cloudProvider); ok {
-	//		if v, usesAWSCertManager := ans["service.beta.kubernetes.io/aws-load-balancer-ssl-cert"]; usesAWSCertManager && v != "" {
-	//			_, p443 := ports[443]
-	//			_, p80 := ports[80]
-	//			if p80 && !p443 {
-	//				ports[443] = "aws"
-	//			}
-	//		}
-	//	}
-	//}
-
 	result := make([]int, len(ports))
 	i := 0
 	for k := range ports {
@@ -110,17 +97,16 @@ func (r Ingress) Ports(cloudProvider string) []int {
 	return result
 }
 
-func (r Ingress) IsPortChanged(o Ingress, cloudProvider string) bool {
-	rPorts := r.Ports(cloudProvider)
-	oPorts := o.Ports(cloudProvider)
-
-	sort.Ints(rPorts)
-	sort.Ints(oPorts)
+func (r Ingress) IsPortChanged(o Ingress) bool {
+	rPorts := r.Ports()
+	oPorts := o.Ports()
 
 	if len(rPorts) != len(oPorts) {
 		return false
 	}
 
+	sort.Ints(rPorts)
+	sort.Ints(oPorts)
 	for i := range rPorts {
 		if rPorts[i] != oPorts[i] {
 			return false
