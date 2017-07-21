@@ -635,20 +635,21 @@ func (lbc *Controller) createNodePortPods() error {
 					Labels: lbc.Ingress.OffshootLabels(),
 				},
 				Spec: apiv1.PodSpec{
-					//Affinity: &apiv1.Affinity{
-					//	PodAntiAffinity: &apiv1.PodAntiAffinity{
-					//		PreferredDuringSchedulingIgnoredDuringExecution: []apiv1.WeightedPodAffinityTerm{
-					//			{
-					//				Weight: 100,
-					//				PodAffinityTerm: apiv1.PodAffinityTerm{
-					//					LabelSelector: &metav1.LabelSelector{
-					//						MatchLabels: lbc.Ingress.OffshootLabels(),
-					//					},
-					//				},
-					//			},
-					//		},
-					//	},
-					//},
+					Affinity: &apiv1.Affinity{
+						PodAntiAffinity: &apiv1.PodAntiAffinity{
+							PreferredDuringSchedulingIgnoredDuringExecution: []apiv1.WeightedPodAffinityTerm{
+								{
+									Weight: 100,
+									PodAffinityTerm: apiv1.PodAffinityTerm{
+										TopologyKey: "kubernetes.io/hostname",
+										LabelSelector: &metav1.LabelSelector{
+											MatchLabels: lbc.Ingress.OffshootLabels(),
+										},
+									},
+								},
+							},
+						},
+					},
 					NodeSelector: lbc.Ingress.NodeSelector(),
 					Containers: []apiv1.Container{
 						{
