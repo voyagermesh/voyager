@@ -101,17 +101,17 @@ func (r Ingress) IsPortChanged(o Ingress) bool {
 	oPorts := o.Ports()
 
 	if len(rPorts) != len(oPorts) {
-		return false
+		return true
 	}
 
 	sort.Ints(rPorts)
 	sort.Ints(oPorts)
 	for i := range rPorts {
 		if rPorts[i] != oPorts[i] {
-			return false
+			return true
 		}
 	}
-	return true
+	return false
 }
 
 func (r Ingress) IsSecretChanged(o Ingress) bool {
