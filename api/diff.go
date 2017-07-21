@@ -88,18 +88,18 @@ func (r Ingress) Ports(cloudProvider string) []int {
 		ports[80] = "http"
 	}
 
-	// ref: https://github.com/appscode/voyager/issues/188
-	if cloudProvider == "aws" && r.LBType() == LBTypeLoadBalancer {
-		if ans, ok := r.ServiceAnnotations(cloudProvider); ok {
-			if v, usesAWSCertManager := ans["service.beta.kubernetes.io/aws-load-balancer-ssl-cert"]; usesAWSCertManager && v != "" {
-				_, p443 := ports[443]
-				_, p80 := ports[80]
-				if p80 && !p443 {
-					ports[443] = "aws"
-				}
-			}
-		}
-	}
+	//// ref: https://github.com/appscode/voyager/issues/188
+	//if cloudProvider == "aws" && r.LBType() == LBTypeLoadBalancer {
+	//	if ans, ok := r.ServiceAnnotations(cloudProvider); ok {
+	//		if v, usesAWSCertManager := ans["service.beta.kubernetes.io/aws-load-balancer-ssl-cert"]; usesAWSCertManager && v != "" {
+	//			_, p443 := ports[443]
+	//			_, p80 := ports[80]
+	//			if p80 && !p443 {
+	//				ports[443] = "aws"
+	//			}
+	//		}
+	//	}
+	//}
 
 	result := make([]int, len(ports))
 	i := 0
