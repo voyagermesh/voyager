@@ -22,11 +22,6 @@ spec:
         - --cloud-config=$CLOUD_CONFIG # ie. /etc/kubernetes/azure.json for azure
         - --v=3
         image: appscode/voyager:3.1.0
-        env:
-          - name: OPERATOR_SERVICE_ACCOUNT
-            valueFrom:
-              fieldRef:
-                fieldPath: spec.serviceAccountName
         ports:
         - containerPort: 56790
           name: http
