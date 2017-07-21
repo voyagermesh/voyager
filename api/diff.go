@@ -4,9 +4,9 @@ import (
 	"errors"
 	"net"
 	"reflect"
+	"sort"
 	"strings"
 
-	stringz "github.com/appscode/go/strings"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -53,50 +53,65 @@ func (r Ingress) HasChanged(o Ingress) (bool, error) {
 	return !reflect.DeepEqual(ra, oa), nil
 }
 
+func (r Ingress) Ports() []int {
+	usesTLS := func(h string) bool {
+		for _, tls := range r.Spec.TLS {
+			for _, host := range tls.Hosts {
+				if host == h {
+					return true
+				}
+			}
+		}
+		return false
+	}
+
+	usesHTTPRule := false
+	ports := map[int]string{}
+	for _, rule := range r.Spec.Rules {
+		if rule.HTTP != nil {
+			usesHTTPRule = true
+			if usesTLS(rule.Host) {
+				ports[443] = "https"
+			} else {
+				ports[80] = "http"
+			}
+		}
+		for _, port := range rule.TCP {
+			p := port.Port.IntValue()
+			if p > 0 {
+				ports[p] = "tcp"
+			}
+		}
+	}
+	if !usesHTTPRule && r.Spec.Backend != nil {
+		ports[80] = "http"
+	}
+
+	result := make([]int, len(ports))
+	i := 0
+	for k := range ports {
+		result[i] = k
+		i++
+	}
+	return result
+}
+
 func (r Ingress) IsPortChanged(o Ingress) bool {
-	if (r.Spec.Backend == nil && o.Spec.Backend != r.Spec.Backend) ||
-		(r.Spec.Backend != nil && o.Spec.Backend == nil) {
+	rPorts := r.Ports()
+	oPorts := o.Ports()
+
+	if len(rPorts) != len(oPorts) {
 		return true
 	}
 
-	var oldPort80Open, oldPort443Open bool
-	oldPortLists := make([]string, 0)
-	for _, rs := range r.Spec.Rules {
-		if rs.HTTP != nil {
-			for _, tls := range r.Spec.TLS {
-				if stringz.Contains(tls.Hosts, rs.Host) {
-					oldPort443Open = true
-				} else {
-					oldPort80Open = true
-				}
-			}
-		}
-
-		for _, port := range rs.TCP {
-			oldPortLists = append(oldPortLists, port.Port.String())
+	sort.Ints(rPorts)
+	sort.Ints(oPorts)
+	for i := range rPorts {
+		if rPorts[i] != oPorts[i] {
+			return true
 		}
 	}
-
-	var newPort80Open, newPort443Open bool
-	for _, rs := range o.Spec.Rules {
-		if rs.HTTP != nil {
-			for _, tls := range o.Spec.TLS {
-				if stringz.Contains(tls.Hosts, rs.Host) {
-					newPort443Open = true
-				} else {
-					newPort80Open = true
-				}
-			}
-		}
-
-		for _, port := range rs.TCP {
-			if !stringz.Contains(oldPortLists, port.Port.String()) {
-				return true
-			}
-		}
-	}
-
-	return (oldPort80Open != newPort80Open) || (oldPort443Open != newPort443Open)
+	return false
 }
 
 func (r Ingress) IsSecretChanged(o Ingress) bool {
