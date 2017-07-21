@@ -33,7 +33,7 @@ $ curl https://raw.githubusercontent.com/appscode/voyager/3.1.0/hack/deploy/voya
 
 Once Controller is *Running* It will create the [required ThirdPartyResources for ingress and certificates](/docs/developer-guide#third-party-resources).
 Check the Controller is running or not via `kubectl get pods` there should be a pod nameed `appscode-voyager-xxxxxxxxxx-xxxxx`.
-Now Create Your Ingress/Certificated.
+Now Create Your Ingress/Certificates.
 
 
 #### Configuration Options
@@ -51,7 +51,7 @@ Now Create Your Ingress/Certificated.
       --master string                         The address of the Kubernetes API server (overrides any value in kubeconfig)
 ```
 
-Voyager can run HAProxy in 3 different modes. `cloude-provider` flag should be set appropriately depending on the mode. These modes are:
+Voyager can run HAProxy in 3 different modes. `cloud-provider` flag should be set appropriately depending on the mode. These modes are:
 
 - LoadBalancer: In this mode, a Kubernetes LoadBalancer type service is used to expose HAProxy to the internet.
 This is supported for cloud providers known to Kubernetes (`aws`, `gce` and `azure`), `--cloud-provider` flag is required to properly setup this loadbalancer. This mode supports reserved ip on GCE.
