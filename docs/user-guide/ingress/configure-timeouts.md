@@ -11,7 +11,7 @@ metadata:
   name: test-ingress
   namespace: default
   annotations:
-    ingress.appscode.com/default-timeout: '{"connect": "5s", "server": "10s"'
+    ingress.appscode.com/default-timeout: '{"connect": "5s", "server": "10s"}'
 spec:
   backend:
     serviceName: test-server
@@ -26,27 +26,27 @@ spec:
 ```
 
 This ingress will generate a HAProxy template with provided timeouts. like
-```
+```console
 defaults
-    log global
+	log global
 
-    option http-server-close
-    option dontlognull
+	option http-server-close
+	option dontlognull
 
-    # Timeout values
-    # timeout {{ key }}  {{ value }}
-    timeout  connect         5s
-    timeout  server          10s
-    timeout  client          50000
-    timeout  client-fin      50000
-    timeout  tunnel          50000
+	# Timeout values
+	# timeout {{ key }}  {{ value }}
+	timeout  connect         5s
+	timeout  server          10s
+	timeout  client          50000
+	timeout  client-fin      50000
+	timeout  tunnel          50000
 
 ```
 
 
 If any required timeouts is not provided timeouts will be populated with the following values.
 ```
-    timeout  connect         50000
+	timeout  connect         50000
 	timeout  client          50000
 	timeout  client-fin      50000
 	timeout  server          50000
@@ -69,5 +69,5 @@ for every keyword. Supported units are :
 
 ### Examples Annotations
 ```
-ingress.appscode.com/default-timeout": {"client": "5s"}
+ingress.appscode.com/default-timeout: '{"client": "5s"}'
 ```
