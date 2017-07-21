@@ -135,6 +135,15 @@ type IngressRuleValue struct {
 // to match against everything after the last '/' and before the first '?'
 // or '#'.
 type HTTPIngressRuleValue struct {
+	// port to listen http(s) connections.
+	Port intstr.IntOrString `json:"port,omitempty"`
+
+	// Set noSSL = true to force plain text. Else, auto detect like present
+	NoSSL bool `json:"noSSL,omitempty"`
+
+	// Specifies the node port of the referenced service.
+	NodePort intstr.IntOrString `json:"nodePort,omitempty"`
+
 	// A collection of paths that map requests to backends.
 	Paths []HTTPIngressPath `json:"paths"`
 	// TODO: Consider adding fields for Ingress-type specific global
@@ -144,6 +153,9 @@ type HTTPIngressRuleValue struct {
 type TCPIngressRuleValue struct {
 	// port to listen tcp connections.
 	Port intstr.IntOrString `json:"port,omitempty"`
+
+	// Specifies the node port of the referenced service.
+	NodePort intstr.IntOrString `json:"nodePort,omitempty"`
 
 	// SSl cert used to terminate ssl in this port
 	SecretName string `json:"secretName,omitempty"`
