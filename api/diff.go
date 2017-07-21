@@ -4,11 +4,10 @@ import (
 	"errors"
 	"net"
 	"reflect"
+	"sort"
 	"strings"
 
-	stringz "github.com/appscode/go/strings"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"github.com/ncw/swift/rs"
 )
 
 const (
@@ -66,9 +65,7 @@ func (r Ingress) Ports(cloudProvider string) []int {
 		return false
 	}
 
-
 	usesHTTPRule := false
-
 	ports := map[int]string{}
 	for _, rule := range r.Spec.Rules {
 		if rule.HTTP != nil {
@@ -87,59 +84,49 @@ func (r Ingress) Ports(cloudProvider string) []int {
 			}
 		}
 	}
-
 	if !usesHTTPRule && r.Spec.Backend != nil {
 		ports[80] = "http"
 	}
 
-	return (oldPort80Open != newPort80Open) || (oldPort443Open != newPort443Open)
+	// ref: https://github.com/appscode/voyager/issues/188
+	if cloudProvider == "aws" && r.LBType() == LBTypeLoadBalancer {
+		if ans, ok := r.ServiceAnnotations(cloudProvider); ok {
+			if v, usesAWSCertManager := ans["service.beta.kubernetes.io/aws-load-balancer-ssl-cert"]; usesAWSCertManager && v != "" {
+				_, p443 := ports[443]
+				_, p80 := ports[80]
+				if p80 && !p443 {
+					ports[443] = "aws"
+				}
+			}
+		}
+	}
+
+	result := make([]int, len(ports))
+	i := 0
+	for k := range ports {
+		result[i] = k
+		i++
+	}
+	return result
 }
 
+func (r Ingress) IsPortChanged(o Ingress, cloudProvider string) bool {
+	rPorts := r.Ports(cloudProvider)
+	oPorts := o.Ports(cloudProvider)
 
-func (r Ingress) IsPortChanged(o Ingress) bool {
-	if (r.Spec.Backend == nil && o.Spec.Backend != r.Spec.Backend) ||
-		(r.Spec.Backend != nil && o.Spec.Backend == nil) {
-		return true
+	sort.Ints(rPorts)
+	sort.Ints(oPorts)
+
+	if len(rPorts) != len(oPorts) {
+		return false
 	}
 
-	var oldPort80Open, oldPort443Open bool
-	oldPortLists := make([]string, 0)
-	for _, rs := range r.Spec.Rules {
-		if rs.HTTP != nil {
-			for _, tls := range r.Spec.TLS {
-				if stringz.Contains(tls.Hosts, rs.Host) {
-					oldPort443Open = true
-				} else {
-					oldPort80Open = true
-				}
-			}
-		}
-
-		for _, port := range rs.TCP {
-			oldPortLists = append(oldPortLists, port.Port.String())
+	for i := range rPorts {
+		if rPorts[i] != oPorts[i] {
+			return false
 		}
 	}
-
-	var newPort80Open, newPort443Open bool
-	for _, rs := range o.Spec.Rules {
-		if rs.HTTP != nil {
-			for _, tls := range o.Spec.TLS {
-				if stringz.Contains(tls.Hosts, rs.Host) {
-					newPort443Open = true
-				} else {
-					newPort80Open = true
-				}
-			}
-		}
-
-		for _, port := range rs.TCP {
-			if !stringz.Contains(oldPortLists, port.Port.String()) {
-				return true
-			}
-		}
-	}
-
-	return (oldPort80Open != newPort80Open) || (oldPort443Open != newPort443Open)
+	return true
 }
 
 func (r Ingress) IsSecretChanged(o Ingress) bool {
