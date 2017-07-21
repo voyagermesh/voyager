@@ -56,14 +56,14 @@ The following tables lists the configurable parameters of the Voyager chart and 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
 
 ```bash
-$ helm install --name my-release --set image.tag=v0.2.1 stable/voyager
+$ helm install --name my-release --set image.tag=v0.2.1 chart/voyager
 ```
 
 Alternatively, a YAML file that specifies the values for the parameters can be provided while
 installing the chart. For example:
 
 ```bash
-$ helm install --name my-release --values values.yaml stable/voyager
+$ helm install --name my-release --values values.yaml chart/voyager
 ```
 
 ## RBAC
