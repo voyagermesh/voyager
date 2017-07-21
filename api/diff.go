@@ -75,12 +75,11 @@ func (r Ingress) Ports() []int {
 			} else {
 				ports[80] = "http"
 			}
-		} else {
-			for _, port := range rule.TCP {
-				p := port.Port.IntValue()
-				if p > 0 {
-					ports[p] = "tcp"
-				}
+		}
+		for _, port := range rule.TCP {
+			p := port.Port.IntValue()
+			if p > 0 {
+				ports[p] = "tcp"
 			}
 		}
 	}
