@@ -13,3 +13,7 @@ logLevel: 3
 persistence:
   enabled: false
   hostPath: /etc/kubernetes
+## Install Default RBAC roles and bindings
+rbac:
+  install: false
+  apiVersion: v1beta1
