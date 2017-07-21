@@ -8,6 +8,7 @@ import (
 
 	stringz "github.com/appscode/go/strings"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/ncw/swift/rs"
 )
 
 const (
@@ -52,6 +53,41 @@ func (r Ingress) HasChanged(o Ingress) (bool, error) {
 	}
 	return !reflect.DeepEqual(ra, oa), nil
 }
+
+func (r Ingress) Ports() []int {
+	ports := make([]int, 0)
+	for _, rule := range r.Spec.Rules {
+		for _, port := range rule.TCP {
+			p := port.Port.IntValue()
+			if p > 0 {
+				ports = append(ports, p)
+			}
+		}
+	}
+
+
+
+	var oldPort80Open, oldPort443Open bool
+	oldPortLists := make([]string, 0)
+	for _, rule := range r.Spec.Rules {
+		if rule.HTTP != nil {
+			for _, tls := range r.Spec.TLS {
+				if stringz.Contains(tls.Hosts, rule.Host) {
+					oldPort443Open = true
+				} else {
+					oldPort80Open = true
+				}
+			}
+		}
+
+		for _, port := range rule.TCP {
+			oldPortLists = append(oldPortLists, port.Port.String())
+		}
+	}
+
+	return (oldPort80Open != newPort80Open) || (oldPort443Open != newPort443Open)
+}
+
 
 func (r Ingress) IsPortChanged(o Ingress) bool {
 	if (r.Spec.Backend == nil && o.Spec.Backend != r.Spec.Backend) ||
