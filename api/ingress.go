@@ -126,7 +126,7 @@ type IngressRuleValue struct {
 
 	HTTP *HTTPIngressRuleValue `json:"http,omitempty"`
 
-	TCP []TCPIngressRuleValue `json:"tcp,omitempty"`
+	TCP *TCPIngressRuleValue `json:"tcp,omitempty"`
 }
 
 // HTTPIngressRuleValue is a list of http selectors pointing to backends.
@@ -154,11 +154,11 @@ type TCPIngressRuleValue struct {
 	// port to listen tcp connections.
 	Port intstr.IntOrString `json:"port,omitempty"`
 
+	// Set noSSL = true to force plain text. Else, auto detect like present
+	NoSSL bool `json:"noSSL,omitempty"`
+
 	// Specifies the node port of the referenced service.
 	NodePort intstr.IntOrString `json:"nodePort,omitempty"`
-
-	// SSl cert used to terminate ssl in this port
-	SecretName string `json:"secretName,omitempty"`
 
 	// Backend to forward the requests.
 	Backend IngressBackend `json:"backend,omitempty"`
