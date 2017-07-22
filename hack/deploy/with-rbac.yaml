@@ -102,10 +102,11 @@ spec:
       - name: voyager
         args:
         - run
-        - --cloud-provider=$CLOUD_PROVIDER
-        - --cloud-config=$CLOUD_CONFIG # ie. /etc/kubernetes/azure.json for azure
         - --v=3
         - --rbac
+        - --cloud-provider=$CLOUD_PROVIDER
+        - --cloud-config=$CLOUD_CONFIG # ie. /etc/kubernetes/azure.json for azure
+        - --ingress-class=$INGRESS_CLASS
         image: appscode/voyager:3.1.0
         ports:
         - containerPort: 56790
