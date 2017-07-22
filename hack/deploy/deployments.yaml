@@ -16,11 +16,16 @@ spec:
       - name: voyager
         args:
         - run
-        - --v=3
         - --cloud-provider=$CLOUD_PROVIDER
         - --cloud-config=$CLOUD_CONFIG # ie. /etc/kubernetes/azure.json for azure
+        - --v=3
         - --ingress-class=$INGRESS_CLASS
         image: appscode/voyager:3.1.0
+        env:
+          - name: OPERATOR_SERVICE_ACCOUNT
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.serviceAccountName
         ports:
         - containerPort: 56790
           name: http
@@ -40,7 +45,7 @@ metadata:
   labels:
     app: voyager
   name: voyager-operator
-  namespace: kube-system
+  namespace: kube-system  
 spec:
   ports:
   - name: http
