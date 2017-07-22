@@ -21,12 +21,12 @@ $ export CLOUD_CONFIG=<path>            # The path to the cloud provider configu
                                         # Voyager uses this to connect to cloud provider api.
 
 # Install without RBAC roles
-$ curl https://raw.githubusercontent.com/appscode/voyager/3.1.0/hack/deploy/voyager-without-rbac.yaml \
+$ curl https://raw.githubusercontent.com/appscode/voyager/3.1.0/hack/deploy/without-rbac.yaml \
     | envsubst \
     | kubectl apply -f -
 
 # Install with RBAC roles
-$ curl https://raw.githubusercontent.com/appscode/voyager/3.1.0/hack/deploy/voyager-with-rbac.yaml \
+$ curl https://raw.githubusercontent.com/appscode/voyager/3.1.0/hack/deploy/with-rbac.yaml \
     | envsubst \
     | kubectl apply -f -
 ```
