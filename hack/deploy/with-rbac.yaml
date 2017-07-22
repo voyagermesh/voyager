@@ -96,8 +96,6 @@ spec:
     metadata:
       labels:
         app: voyager
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       serviceAccountName: voyager-operator
       containers:
@@ -121,9 +119,6 @@ spec:
         - hostPath:
             path: /etc/kubernetes
           name: cloudconfig
-      tolerations:
-      - key: "CriticalAddonsOnly"
-        operator: "Exists"
 ---
 apiVersion: v1
 kind: Service
@@ -131,7 +126,7 @@ metadata:
   labels:
     app: voyager
   name: voyager-operator
-  namespace: kube-system  
+  namespace: kube-system
 spec:
   ports:
   - name: http
