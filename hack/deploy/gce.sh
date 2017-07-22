@@ -9,5 +9,5 @@ if [ $# -eq 0 ]; then
 elif [ $1 == '--rbac' ]; then
     cat ./hack/deploy/with-rbac.yaml | envsubst | kubectl apply -f -
 else
-    echo 'Usage: ./hack/gce.sh [--rbac]'
+    echo 'Usage: ./hack/deploy/gce.sh [--rbac]'
 fi
