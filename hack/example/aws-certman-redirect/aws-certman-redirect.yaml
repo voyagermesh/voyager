@@ -1,0 +1,18 @@
+apiVersion: voyager.appscode.com/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    ingress.appscode.com/annotations-service: '{"service.beta.kubernetes.io/aws-load-balancer-ssl-ports": "443", "service.beta.kubernetes.io/aws-load-balancer-ssl-cert": "arn:aws:...", "service.beta.kubernetes.io/aws-load-balancer-backend-protocol": "http"}'
+  name: test-aws
+  namespace: default
+spec:
+  rules:
+  - host: test.getcontainercloud.com
+    http:
+      paths:
+      - backend:
+          backendRule:
+          - acl is_proxy_https hdr(X-Forwarded-Proto) https
+          - redirect scheme https code 301 if ! is_proxy_https
+          serviceName: test-server
+          servicePort: "80"

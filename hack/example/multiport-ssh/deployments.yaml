@@ -1,0 +1,57 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: ssh-1
+  name: ssh-1
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ssh-1
+  template:
+    metadata:
+      labels:
+        app: ssh-1
+    spec:
+      containers:
+      - env:
+        - name: ROOT_PASS
+          value: '1234'
+        image: sadlil/ssh
+        imagePullPolicy: IfNotPresent
+        name: server
+        ports:
+        - containerPort: 22
+          name: ssh
+          protocol: TCP
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: ssh-2
+  name: ssh-2
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ssh-2
+  template:
+    metadata:
+      labels:
+        app: ssh-2
+    spec:
+      containers:
+      - env:
+        - name: ROOT_PASS
+          value: '1234'
+        image: sadlil/ssh
+        imagePullPolicy: IfNotPresent
+        name: server
+        ports:
+        - containerPort: 22
+          name: ssh
+          protocol: TCP

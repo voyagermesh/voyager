@@ -1,0 +1,24 @@
+apiVersion: voyager.appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: ssh-test
+  namespace: default
+spec:
+  tls:
+  - secretName: fake-secret
+    hosts:
+    - ssh.appscode.co
+    - ssh-2.appscode.co
+  rules:
+  - host: ssh.appscode.co
+    tcp:
+    - backend:
+        serviceName: ssh-1
+        servicePort: "22"
+      port: "22"
+  - host: ssh-2.appscode.co
+    tcp:
+    - backend:
+        serviceName: ssh-2
+        servicePort: "22"
+      port: "8022"

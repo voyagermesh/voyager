@@ -1,0 +1,11 @@
+apiVersion: voyager.appscode.com/v1beta1
+kind: Certificate
+metadata:
+  name: test-cert-dev-2
+  namespace: default
+spec:
+  domains:
+  - test.qa.getcontainercloud.com
+  email: admin@appscode.com
+  provider: route53
+  providerCredentialSecretName: test-aws-secret
