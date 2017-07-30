@@ -3,7 +3,7 @@
 
 ## TL;DR;
 
-```bash
+```console
 $ helm install chart/voyager
 ```
 
@@ -18,7 +18,7 @@ This chart bootstraps an [ingress controller](https://github.com/appscode/voyage
 
 ## Installing the Chart
 To install the chart with the release name `my-release`:
-```bash
+```console
 $ helm install --name my-release chart/voyager
 ```
 The command deploys Voyager Controller on the Kubernetes cluster in the default configuration. The [configuration](#configuration) section lists the parameters that can be configured during installation.
@@ -29,7 +29,7 @@ The command deploys Voyager Controller on the Kubernetes cluster in the default 
 
 To uninstall/delete the `my-release`:
 
-```bash
+```console
 $ helm delete my-release
 ```
 
@@ -55,14 +55,14 @@ The following tables lists the configurable parameters of the Voyager chart and 
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
 
-```bash
+```console
 $ helm install --name my-release --set image.tag=v0.2.1 chart/voyager
 ```
 
 Alternatively, a YAML file that specifies the values for the parameters can be provided while
 installing the chart. For example:
 
-```bash
+```console
 $ helm install --name my-release --values values.yaml chart/voyager
 ```
 

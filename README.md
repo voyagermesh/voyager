@@ -81,7 +81,7 @@ To deploy voyager in Kubernetes follow this [guide](docs/user-guide/README.md). 
 Voyager can be configured to handle default kubernetes ingress or only ingress.appscode.com. voyager can also be run
 along side with other controllers.
 
-```sh
+```console
   --ingress-class
   // this flag can be set to 'voyager' to handle only ingress
   // with annotation kubernetes.io/ingress.class=voyager.
