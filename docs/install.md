@@ -29,28 +29,28 @@ $ curl https://raw.githubusercontent.com/appscode/voyager/3.1.1/hack/deploy/with
     | kubectl apply -f -
 ```
 
-There are cloud provider specific installer scripts available in [/hack/deploy](/hack/deploy) folder that sets these flags appropriately.
+There are cloud provider specific installer scripts available in [/hack/deploy](/hack/deploy) folder. To use in a RBAC enabled cluster, pass the `--rbac` flag.
 ```console
 # Deploy in minikube
-$ ./hack/deploy/minikube.sh
+$ ./hack/deploy/minikube.sh [--rbac]
 
 # Deploy in Amazon AWS EC2
-$ ./hack/deploy/aws.sh
+$ ./hack/deploy/aws.sh [--rbac]
 
 # Deploy in Google Compute Cloud(GCE)
-$ ./hack/deploy/gce.sh
+$ ./hack/deploy/gce.sh [--rbac]
 
 # Deploy in Google Container Engine(GKE)
-$ ./hack/deploy/gke.sh
+$ ./hack/deploy/gke.sh [--rbac]
 
 # Deploy in Microsoft Azure
-$ ./hack/deploy/azure.sh
+$ ./hack/deploy/azure.sh [--rbac]
 
 # Deploy in Azure Container Service(ACS)
-$ ./hack/deploy/acs.sh
+$ ./hack/deploy/acs.sh [--rbac]
 
 # Deploy in Baremetal providers
-$ ./hack/deploy/baremetal.sh
+$ ./hack/deploy/baremetal.sh [--rbac]
 ```
 
 
