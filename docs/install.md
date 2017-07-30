@@ -6,15 +6,33 @@
 Voyager can be installed using YAML files includes in the [/hack/deploy](/hack/deploy) folder.
 
 ```console
+$ export CLOUD_PROVIDER=<provider-name> # ie:
+                                        # - gce
+                                        # - gke
+                                        # - aws
+                                        # - azure
+                                        # - acs (aka, Azure Container Service)
+
+$ export CLOUD_CONFIG=<path>            # The path to the cloud provider configuration file.
+                                        # Empty string for no configuration file.
+                                        # Leave it empty for `gce`, `gke`, `aws` and bare metal clusters.
+                                        # For azure/acs, use `/etc/kubernetes/azure.json`.
+                                        # This file was created during the cluster provisioning process.
+                                        # Voyager uses this to connect to cloud provider api.
+
 # Install without RBAC roles
 $ curl https://raw.githubusercontent.com/appscode/voyager/3.1.1/hack/deploy/without-rbac.yaml \
-  | kubectl apply -f -
-
+    | envsubst \
+    | kubectl apply -f -
 
 # Install with RBAC roles
 $ curl https://raw.githubusercontent.com/appscode/voyager/3.1.1/hack/deploy/with-rbac.yaml \
-  | kubectl apply -f -
+    | envsubst \
+    | kubectl apply -f -
 ```
+
+There are various cloud provider installer scripts available in [/hack/deploy](/hack/deploy) folder that can set these flags appropriately.
+
 
 ## Using Helm
 Voyager can be installed via [Helm](https://helm.sh/) using the [chart](/chart/voyager) included in this repository or from official charts repository. To install the chart with the release name `my-release`:
@@ -37,4 +55,4 @@ Now, to confirm TPR groups have been registered by the operator, run the followi
 $ kubectl get thirdpartyresources -l app=voyager
 ```
 
-Now, you are ready to [take your first backup](/docs/tutorial.md) using Voyager.
+Now, you are ready to [create your first ingress](/docs/tutorial.md) using Voyager.
