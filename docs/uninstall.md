@@ -23,14 +23,16 @@ No resources found
 $ kubectl get pods --all-namespaces -l app=voyager
 ```
 
-3. To keep a copy of your existing `Restic` objects, run:
+3. To keep a copy of your existing Voyager objects, run:
 ```console
-kubectl get restic.voyager.appscode.com --all-namespaces -o yaml > data.yaml
+$ kubectl get ingress.voyager.appscode.com --all-namespaces -o yaml > ingress.yaml
+$ kubectl get certificate.voyager.appscode.com --all-namespaces -o yaml > certificate.yaml
 ```
 
-4. To delete existing `Restic` objects from all namespaces, run the following command in each namespace one by one.
-```
-kubectl delete restic.voyager.appscode.com --all --cascade=false
+4. To delete existing Voyager objects from all namespaces, run the following command in each namespace one by one.
+```console
+$ kubectl delete ingress.voyager.appscode.com --all --cascade=false
+$ kubectl delete certificate.voyager.appscode.com --all --cascade=false
 ```
 
 5. Delete the old TPR-registration.

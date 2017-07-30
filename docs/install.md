@@ -36,7 +36,7 @@ There are various cloud provider installer scripts available in [/hack/deploy](/
 
 ## Using Helm
 Voyager can be installed via [Helm](https://helm.sh/) using the [chart](/chart/voyager) included in this repository or from official charts repository. To install the chart with the release name `my-release`:
-```bash
+```console
 $ helm install chart/voyager --name my-release
 ```
 To see the detailed configuration options, visit [here](/chart/voyager/README.md).
