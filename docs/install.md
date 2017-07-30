@@ -55,4 +55,4 @@ Now, to confirm TPR groups have been registered by the operator, run the followi
 $ kubectl get thirdpartyresources -l app=voyager
 ```
 
-Now, you are ready to [create your first ingress](/docs/tutorial.md) using Voyager.
+Now, you are ready to create your first ingress using Voyager.
