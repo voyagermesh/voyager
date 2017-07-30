@@ -31,7 +31,29 @@ $ curl https://raw.githubusercontent.com/appscode/voyager/3.1.1/hack/deploy/with
     | kubectl apply -f -
 ```
 
-There are various cloud provider installer scripts available in [/hack/deploy](/hack/deploy) folder that can set these flags appropriately.
+There are cloud provider specific installer scripts available in [/hack/deploy](/hack/deploy) folder that sets these flags appropriately.
+```console
+# Deploy in minikube
+$ ./hack/deploy/minikube.sh
+
+# Deploy in Amazon AWS EC2
+$ ./hack/deploy/aws.sh
+
+# Deploy in Google Compute Cloud(GCE)
+$ ./hack/deploy/gce.sh
+
+# Deploy in Google Container Engine(GKE)
+$ ./hack/deploy/gke.sh
+
+# Deploy in Microsoft Azure
+$ ./hack/deploy/azure.sh
+
+# Deploy in Azure Container Service(ACS)
+$ ./hack/deploy/acs.sh
+
+# Deploy in Baremetal providers
+$ ./hack/deploy/baremetal.sh
+```
 
 
 ## Using Helm
