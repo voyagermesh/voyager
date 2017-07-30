@@ -1,5 +1,3 @@
-> New to Voyager? Please start [here](/docs/tutorial.md).
-
 # Uninstall Voyager
 Please follow the steps below to uninstall Voyager:
 

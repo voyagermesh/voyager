@@ -1,5 +1,3 @@
-> New to Voyager? Please start [here](/docs/tutorial.md).
-
 # Installation Guide
 
 ## Using YAML
