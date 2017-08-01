@@ -25,22 +25,6 @@ var (
 	defaultUrlTemplate = template.Must(template.New("svc-template").Parse("http://{{.IP}}:{{.Port}}"))
 )
 
-func (s *IngressTestSuit) TestIngressEnsureTPR() error {
-	var err error
-	for it := 0; it < 10; it++ {
-		log.Infoln(it, "Trying to get ingress.voyager.appscode.com")
-		tpr, err := s.t.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Get("ingress.voyager.appscode.com", metav1.GetOptions{})
-		if err == nil {
-			log.Infoln("Found tpr for ingress with name", tpr.Name)
-			break
-		}
-		err = errors.New().WithCause(err).Err()
-		time.Sleep(time.Second * 5)
-		continue
-	}
-	return err
-}
-
 func (s *IngressTestSuit) TestIngressCreateDelete() error {
 	baseIngress := &api.Ingress{
 		ObjectMeta: metav1.ObjectMeta{

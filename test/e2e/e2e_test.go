@@ -2,16 +2,59 @@ package e2e
 
 import (
 	"testing"
+	"time"
 
-	"github.com/appscode/log"
+	"github.com/appscode/voyager/pkg/config"
+	operator "github.com/appscode/voyager/pkg/operator"
+	"github.com/appscode/voyager/test/testframework"
+	. "github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/reporters"
+	. "github.com/onsi/gomega"
+)
+
+const (
+	TestTimeout = 2 * time.Hour
+)
+
+var (
+	root       *testframework.Framework
+	controller *operator.Operator
 )
 
 func TestE2E(t *testing.T) {
-	log.Infoln("Running e2e tests suit")
-	tests := NewE2ETestSuit()
-	err := tests.Run()
-	if err != nil {
-		log.Errorln("E2E test suit failed with error", err.Error())
-		t.Fail()
-	}
+	root = testframework.New()
+
+	RegisterFailHandler(Fail)
+	SetDefaultEventuallyTimeout(TestTimeout)
+	junitReporter := reporters.NewJUnitReporter("junit.xml")
+	RunSpecsWithDefaultAndCustomReporters(t, "Voyager E2E Suite", []Reporter{junitReporter})
 }
+
+var _ = BeforeSuite(func() {
+	controller = operator.New(
+		root.KubeClient,
+		root.VoyagerClient,
+		nil,
+		config.Options{
+			CloudProvider: root.Config.CloudProviderName,
+			HAProxyImage:  root.Config.HAProxyImageName,
+			IngressClass:  root.Config.IngressClass,
+		},
+	)
+
+	err := root.CreateNamespace()
+	Expect(err).NotTo(HaveOccurred())
+
+	if !root.Config.InCluster {
+		err := controller.Setup()
+		Expect(err).NotTo(HaveOccurred())
+		go controller.Run()
+	}
+	root.EventuallyTPR().Should(Succeed())
+})
+
+var _ = AfterSuite(func() {
+	if root.Config.Cleanup {
+		root.DeleteNamespace()
+	}
+})

@@ -158,27 +158,25 @@ def test(type, *args):
         e2e_test(args)
     elif type == 'minikube':
         e2e_test_minikube(args)
-    elif type == 'integration' or type == 'intg':
-        integration(args)
-    elif type == 'clean':
-        e2e_test_clean()
+    elif type == 'integration' or type == 'int':
+        integration_test(args)
     else:
         print '{test unit|minikube|e2e}'
 
 def unit_test():
-    die(call(libbuild.GOC + ' test -v ./cmd/... ./pkg/... -args -v=3 -verbose=true -mode=unit'))
+    die(call(libbuild.GOC + ' test -v ./cmd/... ./pkg/...'))
 
 def e2e_test(args):
     st = ' '.join(args)
-    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -v=3 -verbose=true -mode=e2e ' + st))
+    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -v=3 ' + st))
 
 def e2e_test_minikube(args):
     st = ' '.join(args)
-    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -v=3 -verbose=true -mode=e2e -cloud-provider=minikube ' + st))
+    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -v=3 -cloud-provider=minikube ' + st))
 
-def integration(args):
+def integration_test(args):
     st = ' '.join(args)
-    die(call(libbuild.GOC + ' test -v ./test/integration/... -timeout 10h -args -v=3 -verbose=true -mode=e2e -in-cluster=true ' + st))
+    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -v=3 -in-cluster=true ' + st))
 
 def test_deploy(provider):
     with open(libbuild.REPO_ROOT + '/hack/deploy/deployments.yaml', 'r') as f:
