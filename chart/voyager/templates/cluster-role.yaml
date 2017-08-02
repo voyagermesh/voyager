@@ -41,6 +41,9 @@ rules:
 - apiGroups: [""]
   resources:
   - secrets
+  verbs: ["get", "list", "watch", "create", "update"]
+- apiGroups: [""]
+  resources:
   - namespaces
   verbs: ["get", "list", "watch"]
 - apiGroups: [""]
