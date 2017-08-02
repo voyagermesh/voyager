@@ -6,9 +6,7 @@ tutorial will walk you through creating certificate objects based on the googled
 Voyager requires Service account secret for your specified dns provider. This Secret spec is briefly described [here](provider.md).
 
 ### Create a Kubernetes Certificate Object
-The following example will create a certificate from Lets Encrypt Prod. If you want to create a certificate from
-another ACME server [see this example](create-with-custom-provider.md)
-
+The following example will create a certificate from Lets Encrypt Staging.
 
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
@@ -23,6 +21,7 @@ spec:
   email: jon.doe@example.com
   provider: googlecloud
   providerCredentialSecretName: test-gcp-secret
+  acmeStagingURL: https://acme-staging.api.letsencrypt.org/directory
 ```
 
 In this example the domains DNS providers are `googlecloude`. Example Test `test-gcp-secret` should look like

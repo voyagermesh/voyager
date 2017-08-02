@@ -34,7 +34,8 @@ import (
 
 const (
 	certificateKey     = "certificate.appscode.com"
-	LetsEncryptACMEUrl = "https://acme-staging.apiv1.letsencrypt.org/directory"
+	LetsEncryptStagingURL = "https://acme-staging.api.letsencrypt.org/directory"
+	LetsEncryptProdURL    = "https://acme-v01.api.letsencrypt.org/directory"
 )
 
 type ACMEClient struct {
@@ -45,7 +46,7 @@ type ACMEClient struct {
 }
 
 func NewACMEClient(config *ACMEConfig) (*ACMEClient, error) {
-	providerUrl := LetsEncryptACMEUrl
+	providerUrl := LetsEncryptProdURL
 	if config.ACMEServerUrl != "" {
 		providerUrl = config.ACMEServerUrl
 	}
