@@ -21,8 +21,10 @@ spec:
   email: jon.doe@example.com
   provider: googlecloud
   providerCredentialSecretName: test-gcp-secret
-  acmeStagingURL: https://acme-staging.api.letsencrypt.org/directory
+  acmeStagingURL: <Your custom ACME Server URL>
 ```
+
+For testing purpose you may use `https://acme-staging.api.letsencrypt.org/directory` as `acmeStagingURL`
 
 In this example the domains DNS providers are `googlecloude`. Example Test `test-gcp-secret` should look like
 ```yaml
