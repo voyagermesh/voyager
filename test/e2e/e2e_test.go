@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/appscode/voyager/pkg/config"
-	operator "github.com/appscode/voyager/pkg/operator"
+	"github.com/appscode/voyager/pkg/operator"
 	"github.com/appscode/voyager/test/testframework"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
@@ -17,11 +17,11 @@ const (
 )
 
 var (
-	root       *testframework.Framework
-	controller *operator.Operator
+	root *testframework.Framework
 )
 
 func TestE2E(t *testing.T) {
+	By("Initializing test Framework")
 	root = testframework.New()
 
 	RegisterFailHandler(Fail)
@@ -31,7 +31,7 @@ func TestE2E(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
-	controller = operator.New(
+	controller := operator.New(
 		root.KubeClient,
 		root.VoyagerClient,
 		nil,
@@ -42,10 +42,12 @@ var _ = BeforeSuite(func() {
 		},
 	)
 
-	err := root.CreateNamespace()
+	By("Ensuring Test Namespace" + root.Config.TestNamespace)
+	err := root.EnsureNamespace()
 	Expect(err).NotTo(HaveOccurred())
 
 	if !root.Config.InCluster {
+		By("Running Controller in non-cluster mode")
 		err := controller.Setup()
 		Expect(err).NotTo(HaveOccurred())
 		go controller.Run()

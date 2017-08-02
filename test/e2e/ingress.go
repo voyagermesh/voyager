@@ -1,11 +1,11 @@
 package e2e
 
+/*
 import (
 	"net/http"
 	"strings"
 	"text/template"
 	"time"
-
 	"github.com/appscode/errors"
 	"github.com/appscode/go/types"
 	"github.com/appscode/log"
@@ -2611,3 +2611,4 @@ func (s *IngressTestSuit) TestIngressSecretChanged() error {
 	}
 	return nil
 }
+*/

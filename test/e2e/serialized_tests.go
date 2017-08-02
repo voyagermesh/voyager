@@ -1,11 +1,11 @@
 package e2e
 
+/*
 import (
 	"fmt"
 	"net/http"
 	"sync"
 	"time"
-
 	"github.com/appscode/errors"
 	"github.com/appscode/go/types"
 	"github.com/appscode/log"
@@ -435,3 +435,4 @@ func (s *IngressTestSuit) TestIngressDaemonRestart() error {
 	}
 	return nil
 }
+*/

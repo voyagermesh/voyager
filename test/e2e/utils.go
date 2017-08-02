@@ -1,5 +1,6 @@
 package e2e
 
+/*
 import (
 	"bytes"
 	"math/rand"
@@ -7,7 +8,6 @@ import (
 	"os/exec"
 	"strings"
 	"time"
-
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	api "github.com/appscode/voyager/api"
@@ -173,3 +173,4 @@ func randString(length int) string {
 	}
 	return string(b)
 }
+*/

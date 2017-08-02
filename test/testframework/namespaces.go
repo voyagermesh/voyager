@@ -10,7 +10,7 @@ func (f *Framework) Namespace() string {
 	return f.namespace
 }
 
-func (f *Framework) CreateNamespace() error {
+func (f *Framework) EnsureNamespace() error {
 	_, err := f.KubeClient.CoreV1().Namespaces().Get(f.namespace, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
 		_, err := f.KubeClient.CoreV1().Namespaces().Create(&apiv1.Namespace{
