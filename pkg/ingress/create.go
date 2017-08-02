@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	ExporterSidecarTag = "appscode/voyager:3.1.1"
+	ExporterSidecarTag = "appscode/voyager:3.1.2"
 )
 
 func (lbc *Controller) Create() error {
