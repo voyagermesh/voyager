@@ -20,7 +20,7 @@ spec:
         - --cloud-provider=$CLOUD_PROVIDER
         - --cloud-config=$CLOUD_CONFIG # ie. /etc/kubernetes/azure.json for azure
         - --ingress-class=$INGRESS_CLASS
-        image: appscode/voyager:3.1.1
+        image: appscode/voyager:3.1.2
         ports:
         - containerPort: 56790
           name: http
