@@ -33,7 +33,7 @@ import (
 )
 
 const (
-	certificateKey     = "certificate.appscode.com"
+	certificateKey        = "certificate.appscode.com"
 	LetsEncryptStagingURL = "https://acme-staging.api.letsencrypt.org/directory"
 	LetsEncryptProdURL    = "https://acme-v01.api.letsencrypt.org/directory"
 )

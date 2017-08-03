@@ -5,13 +5,27 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/appscode/errors"
-	logginghandler "github.com/appscode/errors/h/log"
 	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/go/flags"
 	"github.com/appscode/log"
 	"github.com/mitchellh/go-homedir"
 )
+
+func init() {
+	flag.StringVar(&testConfigs.Master, "master", "", "The address of the Kubernetes API server (overrides any value in kubeconfig)")
+	flag.StringVar(&testConfigs.KubeConfig, "kubeconfig", "", "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
+	flag.StringVar(&testConfigs.CloudProviderName, "cloud-provider", "", "Name of cloud provider")
+	flag.StringVar(&testConfigs.HAProxyImageName, "haproxy-image", "appscode/haproxy:1.7.6-3.1.0", "haproxy image name to be run")
+	flag.StringVar(&testConfigs.IngressClass, "ingress-class", "", "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
+	flag.BoolVar(&testConfigs.Cleanup, "cleanup", true, "")
+	flag.BoolVar(&testConfigs.InCluster, "in-cluster", false, "")
+	flag.StringVar(&testConfigs.DaemonHostName, "daemon-host-name", "", "Daemon host name to run daemon hosts")
+	flag.StringVar(&testConfigs.LBPersistIP, "lb-ip", "", "LoadBalancer persistent IP")
+	flag.StringVar(&testConfigs.TestNamespace, "namespace", "test-ing", "Run tests in this namespaces")
+	flag.BoolVar(&testConfigs.RBACEnabled, "rbac", false, "")
+
+	enableLogging()
+}
 
 type E2EConfig struct {
 	Master            string
@@ -27,24 +41,7 @@ type E2EConfig struct {
 	RBACEnabled       bool
 }
 
-var config E2EConfig
-
-func init() {
-	flag.StringVar(&config.Master, "master", "", "The address of the Kubernetes API server (overrides any value in kubeconfig)")
-	flag.StringVar(&config.KubeConfig, "kubeconfig", "", "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
-	flag.StringVar(&config.CloudProviderName, "cloud-provider", "", "Name of cloud provider")
-	flag.StringVar(&config.HAProxyImageName, "haproxy-image", "appscode/haproxy:1.7.6-3.1.0", "haproxy image name to be run")
-	flag.StringVar(&config.IngressClass, "ingress-class", "", "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
-	flag.BoolVar(&config.Cleanup, "cleanup", true, "")
-	flag.BoolVar(&config.InCluster, "in-cluster", false, "")
-	flag.StringVar(&config.DaemonHostName, "daemon-host-name", "", "Daemon host name to run daemon hosts")
-	flag.StringVar(&config.LBPersistIP, "lb-ip", "", "LoadBalancer persistent IP")
-	flag.StringVar(&config.TestNamespace, "namespace", "test-ing", "Run tests in this namespaces")
-	flag.BoolVar(&config.RBACEnabled, "rbac", false, "")
-
-	enableLogging()
-	errors.Handlers.Add(logginghandler.LogHandler{})
-}
+var testConfigs E2EConfig
 
 func enableLogging() {
 	flag.Set("logtostderr", "true")
@@ -72,7 +69,7 @@ func (c *E2EConfig) validate() {
 	}
 
 	if len(c.TestNamespace) == 0 {
-		c.TestNamespace = rand.WithUniqSuffix("test-voyager-")
+		c.TestNamespace = rand.WithUniqSuffix("test-voyager")
 	}
 
 	if !strings.HasPrefix(c.TestNamespace, "test-") {

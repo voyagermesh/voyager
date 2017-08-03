@@ -146,12 +146,12 @@ def update_registry():
 
 
 def install():
-    die(call('GO15VENDOREXPERIMENT=1 ' + libbuild.GOC + ' install ./cmd/...'))
+    die(call('GO15VENDOREXPERIMENT=1 ' + libbuild.GOC + ' install ./...'))
 
 
 def test(type, *args):
-    die(call(libbuild.GOC + ' install ./cmd/...'))
-    pydotenv.load_dotenv(join(dirname(__file__), 'configs/.env'))
+    die(call(libbuild.GOC + ' install ./...'))
+    #pydotenv.load_dotenv(join(dirname(__file__), 'configs/.env'))
     if type == 'unit':
         unit_test()
     elif type == 'e2e':
@@ -164,19 +164,19 @@ def test(type, *args):
         print '{test unit|minikube|e2e}'
 
 def unit_test():
-    die(call(libbuild.GOC + ' test -v ./cmd/... ./pkg/...'))
+    die(call(libbuild.GOC + ' test -v . ./pkg/...'))
 
 def e2e_test(args):
     st = ' '.join(args)
-    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -v=3 ' + st))
+    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -ginkgo.r -ginkgo.v -ginkgo.progress -ginkgo.trace -v=2 ' + st))
 
 def e2e_test_minikube(args):
     st = ' '.join(args)
-    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -v=3 -cloud-provider=minikube ' + st))
+    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -ginkgo.v -ginkgo.progress -ginkgo.trace -v=2 -cloud-provider=minikube ' + st))
 
 def integration_test(args):
     st = ' '.join(args)
-    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -v=3 -in-cluster=true ' + st))
+    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -ginkgo.v -ginkgo.progress -ginkgo.trace -v=2 -cloud-provider=minikube -in-cluster=true' + st))
 
 def test_deploy(provider):
     with open(libbuild.REPO_ROOT + '/hack/deploy/deployments.yaml', 'r') as f:

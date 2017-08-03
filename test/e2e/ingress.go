@@ -21,9 +21,6 @@ import (
 
 const maxRetries = 50
 
-var (
-	defaultUrlTemplate = template.Must(template.New("svc-template").Parse("http://{{.IP}}:{{.Port}}"))
-)
 
 func (s *IngressTestSuit) TestIngressCreateDelete() error {
 	baseIngress := &api.Ingress{
@@ -35,23 +32,7 @@ func (s *IngressTestSuit) TestIngressCreateDelete() error {
 			},
 		},
 		Spec: api.IngressSpec{
-			Rules: []api.IngressRule{
-				{
-					IngressRuleValue: api.IngressRuleValue{
-						HTTP: &api.HTTPIngressRuleValue{
-							Paths: []api.HTTPIngressPath{
-								{
-									Path: "/testpath",
-									Backend: api.IngressBackend{
-										ServiceName: testServerSvc.Name,
-										ServicePort: intstr.FromInt(80),
-									},
-								},
-							},
-						},
-					},
-				},
-			},
+			Rules:
 		},
 	}
 
@@ -113,21 +94,7 @@ func (s *IngressTestSuit) TestIngressCreateDelete() error {
 		}
 	}
 
-	if s.t.Operator != nil && s.t.Operator.Opt.CloudProvider != "minikube" {
-		// Check Status for ingress
-		baseIngress, err := s.t.ExtClient.Ingresses(baseIngress.Namespace).Get(baseIngress.Name)
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
-		if len(svc.Status.LoadBalancer.Ingress) > 0 {
-			if len(baseIngress.Status.LoadBalancer.Ingress) != len(svc.Status.LoadBalancer.Ingress) {
-				return errors.New().WithMessage("Statuses didn't matched").Err()
-			}
-			if baseIngress.Status.LoadBalancer.Ingress[0] != svc.Status.LoadBalancer.Ingress[0] {
-				return errors.New().WithMessage("Statuses didn't matched").Err()
-			}
-		}
-	}
+
 
 	err = s.t.ExtClient.Ingresses(baseIngress.Namespace).Delete(baseIngress.Name)
 	if err != nil {
