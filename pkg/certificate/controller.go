@@ -132,11 +132,12 @@ func (c *Controller) Process() error {
 		ACMEServerUrl: c.tpr.Spec.ACMEServerURL,
 	}
 
+	c.acmeCert.Domains = NewDomainCollection(c.tpr.Spec.Domains...)
 	// Check if a cert already exists for this Certificate Instance
 	secret, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(defaultCertPrefix+c.tpr.Name, metav1.GetOptions{})
 	if err == nil {
 		var err error
-		c.acmeCert, err = NewACMECertDataFromSecret(secret)
+		c.acmeCert, err = NewACMECertDataFromSecret(secret, c.tpr)
 		if err != nil {
 			return errors.FromErr(err).WithMessage("Error decoding acme certificate").Err()
 		}

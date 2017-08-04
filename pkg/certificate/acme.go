@@ -12,6 +12,7 @@ import (
 	"github.com/appscode/errors"
 	stringutil "github.com/appscode/go/strings"
 	"github.com/appscode/log"
+	"github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/providers/dns/cloudflare"
@@ -223,11 +224,10 @@ type ACMECertData struct {
 	PrivateKey []byte
 }
 
-func NewACMECertDataFromSecret(s *apiv1.Secret) (ACMECertData, error) {
+func NewACMECertDataFromSecret(s *apiv1.Secret, cert *api.Certificate) (ACMECertData, error) {
 	var acmeCertData ACMECertData
 	var ok bool
-
-	acmeCertData.Domains = NewDomainCollection().FromString(s.Labels[certificateKey+"/domains"])
+	acmeCertData.Domains = NewDomainCollection(cert.Spec.Domains...)
 	acmeCertData.Cert, ok = s.Data[apiv1.TLSCertKey]
 	if !ok {
 		return acmeCertData, errors.New().WithMessagef("Could not find key tls.crt in secret %v", s.Name).Err()
@@ -260,8 +260,7 @@ func (c *ACMECertData) ToSecret(name, namespace string) *apiv1.Secret {
 			Name:      defaultCertPrefix + name,
 			Namespace: namespace,
 			Labels: map[string]string{
-				certificateKey:              "true",
-				certificateKey + "/domains": c.Domains.String(),
+				certificateKey: "true",
 			},
 			Annotations: map[string]string{
 				certificateKey: "true",

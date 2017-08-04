@@ -8,6 +8,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
 	"github.com/xenolf/lego/acme"
@@ -46,7 +47,7 @@ func TestACMECertData(t *testing.T) {
 		Type: apiv1.SecretTypeTLS,
 	}
 
-	cert, err := NewACMECertDataFromSecret(certificateSecret)
+	cert, err := NewACMECertDataFromSecret(certificateSecret, &api.Certificate{})
 	assert.Nil(t, err)
 
 	convertedCert := cert.ToSecret("hello", "default")
@@ -75,7 +76,7 @@ func TestACMECertDataError(t *testing.T) {
 		Type: apiv1.SecretTypeTLS,
 	}
 
-	_, err := NewACMECertDataFromSecret(certificateSecret)
+	_, err := NewACMECertDataFromSecret(certificateSecret, &api.Certificate{})
 	assert.NotNil(t, err)
 	assert.Equal(t, "INTERNAL:Could not find key tls.crt in secret "+defaultCertPrefix+"hello", err.Error())
 
