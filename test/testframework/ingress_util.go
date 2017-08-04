@@ -40,6 +40,26 @@ func (i *ingressInvocation) GetSkeleton() *api.Ingress {
 	return ing
 }
 
+func (i *ingressInvocation) SetSkeletonRule(ing *api.Ingress) {
+	ing.Spec.Rules = []api.IngressRule{
+		{
+			IngressRuleValue: api.IngressRuleValue{
+				HTTP: &api.HTTPIngressRuleValue{
+					Paths: []api.HTTPIngressPath{
+						{
+							Path: "/testpath",
+							Backend: api.IngressBackend{
+								ServiceName: i.TestServerName(),
+								ServicePort: intstr.FromInt(80),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
 func (i *ingressInvocation) generateName() string {
 	return rand.WithUniqSuffix("e2e-test")
 }

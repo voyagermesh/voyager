@@ -21,26 +21,11 @@ var _ = Describe("IngressOperations", func() {
 
 	BeforeEach(func() {
 		f = root.Invoke()
-
 		ing = f.Ingress.GetSkeleton()
-		ing.Spec.Rules = []api.IngressRule{
-			{
-				IngressRuleValue: api.IngressRuleValue{
-					HTTP: &api.HTTPIngressRuleValue{
-						Paths: []api.HTTPIngressPath{
-							{
-								Path: "/testpath",
-								Backend: api.IngressBackend{
-									ServiceName: f.Ingress.TestServerName(),
-									ServicePort: intstr.FromInt(80),
-								},
-							},
-						},
-					},
-				},
-			},
-		}
+		f.Ingress.SetSkeletonRule(ing)
+	})
 
+	JustBeforeEach(func() {
 		By("Creating ingress with name " + ing.GetName())
 		err := f.Ingress.Create(ing)
 		Expect(err).NotTo(HaveOccurred())
@@ -188,10 +173,7 @@ var _ = Describe("IngressOperations", func() {
 				Skip("Persistent IP is not supported")
 			}
 
-			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
-			By("Wait for resource to be deleted", shouldDeleteResource)
-			ing.Annotations[api.LoadBalancerIP] = f.Config.LBPersistIP
-			Expect(f.Ingress.Create(ing)).NotTo(HaveOccurred())
+
 			By("Checking HTTP Response", shouldResponseHTTP)
 			oldsvc, err := f.Ingress.GetOffShootService(ing)
 			Expect(err).NotTo(HaveOccurred())
@@ -202,6 +184,7 @@ var _ = Describe("IngressOperations", func() {
 			By("Wait for resource to be deleted", shouldDeleteResource)
 			ing.Annotations[api.LoadBalancerIP] = f.Config.LBPersistIP
 			Expect(f.Ingress.Create(ing)).NotTo(HaveOccurred())
+
 			By("Checking HTTP Response", shouldResponseHTTP)
 			newsvc, err := f.Ingress.GetOffShootService(ing)
 			Expect(err).NotTo(HaveOccurred())
@@ -214,7 +197,14 @@ var _ = Describe("IngressOperations", func() {
 	Describe("Create", func() {
 		It("Should create Loadbalancer entry", shouldCreateServiceEntry)
 		It("Should response HTTP", shouldResponseHTTP)
-		It("Should persist IP", shouldPersistIP)
+
+
+		Describe("With persistent IP", func() {
+			BeforeEach(func() {
+				ing.Annotations[api.LoadBalancerIP] = f.Config.LBPersistIP
+			})
+			It("Should persist service IP", shouldPersistIP)
+		})
 	})
 
 	Describe("Delete", func() {
