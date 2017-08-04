@@ -17,7 +17,6 @@ import (
 	api "github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
 	acf "github.com/appscode/voyager/client/clientset/fake"
-	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
 	"github.com/xenolf/lego/acme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,9 +24,6 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-func init() {
-	testframework.Initialize()
-}
 
 func TestLoadProviderCredential(t *testing.T) {
 	fakeController := NewController(fake.NewSimpleClientset(), acf.NewFakeExtensionClient()).New(&api.Certificate{
@@ -69,7 +65,7 @@ func TestLoadProviderCredential(t *testing.T) {
 }
 
 func TestEnsureClient(t *testing.T) {
-	if testframework.TestContext.Verbose {
+	if testing.Verbose() {
 		fakeController := NewController(fake.NewSimpleClientset(
 			&apiv1.Secret{
 				ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
@@ -156,7 +152,7 @@ func TestFakeRegisterACMEUser(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	if testframework.TestContext.Verbose {
+	if testing.Verbose() {
 		fakeController := NewController(fake.NewSimpleClientset(), acf.NewFakeExtensionClient()).New(&api.Certificate{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "foo",

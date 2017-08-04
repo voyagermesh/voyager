@@ -5,13 +5,7 @@ import (
 	"net/http"
 	"testing"
 	"time"
-
-	"github.com/appscode/voyager/test/testframework"
 )
-
-func init() {
-	testframework.Initialize()
-}
 
 func TestNotFound(t *testing.T) {
 	defaultHTTPProvider.serve()

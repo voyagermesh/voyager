@@ -5,16 +5,11 @@ import (
 	"testing"
 
 	"github.com/appscode/voyager/api"
-	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
-
-func init() {
-	testframework.Initialize()
-}
 
 func TestShouldHandleIngress(t *testing.T) {
 	dataTables := map[*api.Ingress]map[string]bool{
