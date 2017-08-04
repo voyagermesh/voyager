@@ -220,6 +220,34 @@ var _ = Describe("IngressOperations", func() {
 			)
 			Expect(err).NotTo(HaveOccurred())
 		}
+
+		backendRulesShouldApply = func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/old/replace", func(r *testserverclient.Response) bool {
+				return Expect(r.Method).Should(Equal("GET")) &&
+					Expect(r.Path).Should(Equal("/rewrited/from/proxy/old/replace"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/old/add/now", func(r *testserverclient.Response) bool {
+				return Expect(r.Method).Should(Equal("GET")) &&
+					Expect(r.Path).Should(Equal("/old/add/now")) &&
+					Expect(r.RequestHeaders.Get("X-Added-From-Proxy")).Should(Equal("added-from-proxy"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/test-second", func(r *testserverclient.Response) bool {
+				return Expect(r.Method).Should(Equal("GET")) &&
+					Expect(r.Path).Should(Equal("/override/rewrited/from/proxy/test-second")) &&
+					Expect(r.RequestHeaders.Get("X-Added-From-Proxy")).Should(Equal("added-from-proxy")) &&
+					Expect(r.RequestHeaders.Get("X-Ingress-Test-Header")).Should(Equal("ingress.appscode.com"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+		}
 	)
 
 	Describe("Create", func() {
@@ -233,7 +261,7 @@ var _ = Describe("IngressOperations", func() {
 			It("Should persist service IP", shouldPersistIP)
 		})
 
-		Describe("With BackendRules", func() {
+		Describe("With Rules", func() {
 			BeforeEach(func() {
 				ing.Spec.Rules = []api.IngressRule{
 					{
@@ -260,6 +288,56 @@ var _ = Describe("IngressOperations", func() {
 			})
 
 			It("Rules Should Apply", rulesShouldApply)
+		})
+
+		Describe("With BackendRules", func() {
+			BeforeEach(func() {
+				ing.Spec.Rules = []api.IngressRule{
+					{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
+									{
+										Path: "/old",
+										Backend: api.IngressBackend{
+											ServiceName: f.Ingress.TestServerName(),
+											ServicePort: intstr.FromInt(80),
+											BackendRule: []string{
+												"acl add_url capture.req.uri -m beg /old/add/now",
+												`http-response set-header X-Added-From-Proxy added-from-proxy if add_url`,
+
+												"acl rep_url path_beg /old/replace",
+												`reqrep ^([^\ :]*)\ /(.*)$ \1\ /rewrited/from/proxy/\2 if rep_url`,
+											},
+										},
+									},
+									{
+										Path: "/test-second",
+										Backend: api.IngressBackend{
+											ServiceName: f.Ingress.TestServerName(),
+											ServicePort: intstr.FromInt(80),
+											BackendRule: []string{
+												"acl add_url capture.req.uri -m beg /test-second",
+												`http-response set-header X-Added-From-Proxy added-from-proxy if add_url`,
+
+												"acl rep_url path_beg /test-second",
+												`reqrep ^([^\ :]*)\ /(.*)$ \1\ /rewrited/from/proxy/\2 if rep_url`,
+											},
+											HeaderRule: []string{
+												"X-Ingress-Test-Header ingress.appscode.com",
+											},
+											RewriteRule: []string{
+												`^([^\ :]*)\ /(.*)$ \1\ /override/\2`,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				}
+			})
+			It("BackendRules Should Apply", backendRulesShouldApply)
 		})
 	})
 

@@ -3,7 +3,6 @@ package framework
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"net/url"
 	"os/exec"
 	"strings"
@@ -233,7 +232,6 @@ func getLoadBalancerURLs(provider string, k kubernetes.Interface, ing *api.Ingre
 	var err error
 	if provider == "minikube" {
 		gomega.Eventually(func() error {
-			fmt.Println("Getting service ip")
 			var outputs []byte
 			outputs, err = exec.Command(
 				"/usr/local/bin/minikube",
@@ -244,7 +242,6 @@ func getLoadBalancerURLs(provider string, k kubernetes.Interface, ing *api.Ingre
 				ing.Namespace,
 			).CombinedOutput()
 			if err == nil {
-				fmt.Println("Minikube exec output\n", string(outputs))
 				for _, output := range strings.Split(string(outputs), "\n") {
 					if strings.HasPrefix(output, "http") {
 						serverAddr = append(serverAddr, output)
