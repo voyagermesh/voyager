@@ -1,8 +1,9 @@
-package testframework
+package framework
 
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"net/url"
 	"os/exec"
 	"strings"
@@ -28,7 +29,7 @@ var (
 func (i *ingressInvocation) GetSkeleton() *api.Ingress {
 	ing := &api.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      i.generateName(),
+			Name:      i.UniqueName(),
 			Namespace: i.Namespace(),
 			Annotations: map[string]string{
 				api.DefaultsTimeOut: `{"connect": "5s", "server": "10s"}`,
@@ -60,7 +61,7 @@ func (i *ingressInvocation) SetSkeletonRule(ing *api.Ingress) {
 	}
 }
 
-func (i *ingressInvocation) generateName() string {
+func (i *ingressInvocation) UniqueName() string {
 	return rand.WithUniqSuffix("e2e-test")
 }
 
@@ -212,7 +213,7 @@ func (i *ingressInvocation) testServerServicePorts() []apiv1.ServicePort {
 func (i *ingressInvocation) waitForTestServer() error {
 	var err error
 	var ep *apiv1.Endpoints
-	for it := 0; it < maxRetryCount; it++ {
+	for it := 0; it < MaxRetry; it++ {
 		ep, err = i.KubeClient.CoreV1().Endpoints(i.Namespace()).Get(testServerResourceName, metav1.GetOptions{})
 		if err == nil {
 			if len(ep.Subsets) > 0 {
@@ -232,6 +233,7 @@ func getLoadBalancerURLs(provider string, k kubernetes.Interface, ing *api.Ingre
 	var err error
 	if provider == "minikube" {
 		gomega.Eventually(func() error {
+			fmt.Println("Getting service ip")
 			var outputs []byte
 			outputs, err = exec.Command(
 				"/usr/local/bin/minikube",
@@ -242,7 +244,7 @@ func getLoadBalancerURLs(provider string, k kubernetes.Interface, ing *api.Ingre
 				ing.Namespace,
 			).CombinedOutput()
 			if err == nil {
-				log.Infoln("Minikube exec output\n", string(outputs))
+				fmt.Println("Minikube exec output\n", string(outputs))
 				for _, output := range strings.Split(string(outputs), "\n") {
 					if strings.HasPrefix(output, "http") {
 						serverAddr = append(serverAddr, output)
@@ -251,7 +253,7 @@ func getLoadBalancerURLs(provider string, k kubernetes.Interface, ing *api.Ingre
 				return nil
 			}
 			return err
-		}, "10m", "10s").Should(gomega.BeNil())
+		}, "5m", "10s").Should(gomega.BeNil())
 		if err != nil {
 			return nil, err
 		}
@@ -304,7 +306,7 @@ func getLoadBalancerURLs(provider string, k kubernetes.Interface, ing *api.Ingre
 				}
 			}
 			return nil
-		}, "10m", "10s").Should(gomega.BeNil())
+		}, "5m", "10s").Should(gomega.BeNil())
 		if err != nil {
 			return nil, err
 		}

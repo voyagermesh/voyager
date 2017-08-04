@@ -1,10 +1,9 @@
-package testframework
+package framework
 
 import (
 	"sync"
 
 	"github.com/appscode/go/crypto/rand"
-	"github.com/appscode/voyager/api"
 	voyagerclient "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/config"
 	. "github.com/onsi/gomega"
@@ -13,7 +12,8 @@ import (
 )
 
 const (
-	maxRetryCount = 50
+	MaxRetry = 50
+	NoRetry  = 1
 )
 
 type Framework struct {
@@ -71,6 +71,6 @@ func (f *Framework) Invoke() *Invocation {
 	}
 	return &Invocation{
 		rootInvocation: r,
-		Ingress:        &ingressInvocation{r},
+		Ingress:        &ingressInvocation{rootInvocation: r},
 	}
 }

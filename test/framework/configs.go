@@ -1,4 +1,4 @@
-package testframework
+package framework
 
 import (
 	"flag"

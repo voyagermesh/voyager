@@ -1,4 +1,4 @@
-package testframework
+package framework
 
 import (
 	"errors"
@@ -102,10 +102,9 @@ func (i *ingressInvocation) GetOffShootService(ing *api.Ingress) (*v1.Service, e
 	return i.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 }
 
-
-func (i *ingressInvocation) DoHTTP(ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTP(retryCount int, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Path(path).DoWithRetry(maxRetryCount)
+		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Path(path).DoWithRetry(retryCount)
 		if err != nil {
 			return err
 		}
@@ -118,9 +117,24 @@ func (i *ingressInvocation) DoHTTP(ing *api.Ingress, eps []string, method, path 
 	return nil
 }
 
-func (i *ingressInvocation) DoTCP(ing *api.Ingress, eps []string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTPWithHeader(retryCount int, ing *api.Ingress, eps []string, method, path string, h map[string]string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
-		resp, err := testserverclient.NewTestTCPClient(url).DoWithRetry(maxRetryCount)
+		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Header(h).Path(path).DoWithRetry(retryCount)
+		if err != nil {
+			return err
+		}
+
+		log.Infoln("HTTP Response received from server", *resp)
+		if !matcher(resp) {
+			return errors.New("Failed to match")
+		}
+	}
+	return nil
+}
+
+func (i *ingressInvocation) DoTCP(retryCount int, ing *api.Ingress, eps []string, matcher func(resp *testserverclient.Response) bool) error {
+	for _, url := range eps {
+		resp, err := testserverclient.NewTestTCPClient(url).DoWithRetry(retryCount)
 		if err != nil {
 			return err
 		}

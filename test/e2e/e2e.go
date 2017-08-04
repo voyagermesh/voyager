@@ -6,7 +6,7 @@ import (
 
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/operator"
-	"github.com/appscode/voyager/test/testframework"
+	"github.com/appscode/voyager/test/framework"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
@@ -17,15 +17,15 @@ const (
 )
 
 var (
-	root       *testframework.Framework
-	invocation *testframework.Invocation
+	root       *framework.Framework
+	invocation *framework.Invocation
 )
 
 func RunE2ETestSuit(t *testing.T) {
 	RegisterFailHandler(Fail)
 	SetDefaultEventuallyTimeout(TestTimeout)
 
-	root = testframework.New()
+	root = framework.New()
 	invocation = root.Invoke()
 
 	junitReporter := reporters.NewJUnitReporter("report.xml")

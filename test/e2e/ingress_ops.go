@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/appscode/voyager/api"
+	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
-	"github.com/appscode/voyager/test/testframework"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,7 +15,7 @@ import (
 
 var _ = Describe("IngressOperations", func() {
 	var (
-		f   *testframework.Invocation
+		f   *framework.Invocation
 		ing *api.Ingress
 	)
 
@@ -64,7 +64,7 @@ var _ = Describe("IngressOperations", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTP(ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
 				return Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok"))
 			})
@@ -79,7 +79,7 @@ var _ = Describe("IngressOperations", func() {
 			Eventually(f.Ingress.Controller(ing).IsExists, "5m", "10s").Should(BeFalse())
 		}
 
-		shouldUpdateIngress = func() {
+		shouldUpdateLoadbalancer = func() {
 			By("Updating Ingress resource")
 			uing, err := f.Ingress.Get(ing)
 			Expect(err).NotTo(HaveOccurred())
@@ -97,14 +97,14 @@ var _ = Describe("IngressOperations", func() {
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
 			By("Calling new HTTP path")
-			err = f.Ingress.DoHTTP(ing, eps, "GET", "/newTestPath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/newTestPath/ok", func(r *testserverclient.Response) bool {
 				return Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/newTestPath/ok"))
 			})
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Checking old path")
-			err = f.Ingress.DoHTTP(ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.NoRetry, ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
 				return true
 			})
 			Expect(err).To(HaveOccurred())
@@ -156,7 +156,7 @@ var _ = Describe("IngressOperations", func() {
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
 			By("Calling new TCP")
-			err = f.Ingress.DoTCP(ing, eps, func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoTCP(framework.MaxRetry, ing, eps, func(r *testserverclient.Response) bool {
 				return Expect(r.ServerPort).Should(Equal(":4545"))
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -173,12 +173,10 @@ var _ = Describe("IngressOperations", func() {
 				Skip("Persistent IP is not supported")
 			}
 
-
 			By("Checking HTTP Response", shouldResponseHTTP)
 			oldsvc, err := f.Ingress.GetOffShootService(ing)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(oldsvc.Status.LoadBalancer.Ingress)).Should(Equal(1))
-
 
 			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
 			By("Wait for resource to be deleted", shouldDeleteResource)
@@ -192,18 +190,76 @@ var _ = Describe("IngressOperations", func() {
 
 			Expect(newsvc.Status.LoadBalancer.Ingress).Should(Equal(oldsvc.Status.LoadBalancer.Ingress))
 		}
+
+		rulesShouldApply = func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+				return Expect(r.Method).Should(Equal("GET")) &&
+					Expect(r.Path).Should(Equal("/override/testpath/ok")) &&
+					Expect(r.RequestHeaders.Get("X-Ingress-Test-Header")).Should(Equal("ingress.appscode.com"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoHTTPWithHeader(framework.MaxRetry,
+				ing,
+				eps,
+				"GET",
+				"/testpath/ok",
+				map[string]string{
+					"X-Ingress-Test-Header": api.GroupName + "/v1beta1",
+				},
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/override/testpath/ok")) &&
+						Expect(r.RequestHeaders.Get("X-Ingress-Test-Header")).Should(Equal(api.GroupName+"/v1beta1"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+		}
 	)
 
 	Describe("Create", func() {
 		It("Should create Loadbalancer entry", shouldCreateServiceEntry)
 		It("Should response HTTP", shouldResponseHTTP)
 
-
 		Describe("With persistent IP", func() {
 			BeforeEach(func() {
 				ing.Annotations[api.LoadBalancerIP] = f.Config.LBPersistIP
 			})
 			It("Should persist service IP", shouldPersistIP)
+		})
+
+		Describe("With BackendRules", func() {
+			BeforeEach(func() {
+				ing.Spec.Rules = []api.IngressRule{
+					{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
+									{
+										Backend: api.IngressBackend{
+											ServiceName: f.Ingress.TestServerName(),
+											ServicePort: intstr.FromInt(80),
+											HeaderRule: []string{
+												"X-Ingress-Test-Header ingress.appscode.com",
+											},
+											RewriteRule: []string{
+												`^([^\ :]*)\ /(.*)$ \1\ /override/\2`,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				}
+			})
+
+			It("Rules Should Apply", rulesShouldApply)
 		})
 	})
 
@@ -212,7 +268,7 @@ var _ = Describe("IngressOperations", func() {
 	})
 
 	Describe("Update", func() {
-		It("Should update Loadbalancer", shouldUpdateIngress)
+		It("Should update Loadbalancer", shouldUpdateLoadbalancer)
 		It("Should add TCP rule", shouldAddTCPRule)
 	})
 })

@@ -1,4 +1,4 @@
-package testframework
+package framework
 
 import (
 	"k8s.io/apimachinery/pkg/api/errors"

@@ -1,4 +1,4 @@
-package testframework
+package framework
 
 import (
 	vapi "github.com/appscode/voyager/api"
