@@ -163,7 +163,7 @@ func (c *Controller) Process() error {
 			}
 			c.recorder.Eventf(
 				c.tpr,
-				apiv1.EventTypeWarning,
+				apiv1.EventTypeNormal,
 				eventer.EventReasonCertificateRenewSuccessful,
 				"Successfully renewed certificate",
 			)
@@ -183,7 +183,7 @@ func (c *Controller) Process() error {
 			}
 			c.recorder.Eventf(
 				c.tpr,
-				apiv1.EventTypeWarning,
+				apiv1.EventTypeNormal,
 				eventer.EventReasonCertificateRenewSuccessful,
 				"Successfully renewed certificate",
 			)
@@ -205,7 +205,7 @@ func (c *Controller) Process() error {
 		}
 		c.recorder.Eventf(
 			c.tpr,
-			apiv1.EventTypeWarning,
+			apiv1.EventTypeNormal,
 			eventer.EventReasonCertificateCreateSuccessful,
 			"Successfully created certificate",
 		)
