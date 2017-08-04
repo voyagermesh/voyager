@@ -2,6 +2,7 @@ package testframework
 
 import (
 	"bytes"
+	"errors"
 	"net/url"
 	"os/exec"
 	"strings"
@@ -25,7 +26,7 @@ var (
 )
 
 func (i *ingressInvocation) GetSkeleton() *api.Ingress {
-	return &api.Ingress{
+	ing := &api.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      i.generateName(),
 			Namespace: i.Namespace(),
@@ -35,6 +36,8 @@ func (i *ingressInvocation) GetSkeleton() *api.Ingress {
 		},
 		Spec: api.IngressSpec{Rules: make([]api.IngressRule, 0)},
 	}
+
+	return ing
 }
 
 func (i *ingressInvocation) generateName() string {
@@ -343,4 +346,73 @@ func getHostPortURLs(provider string, k kubernetes.Interface, ing *api.Ingress) 
 		}
 	}
 	return serverAddr, nil
+}
+
+func (i *ingressInvocation) CheckTestServersPortAssignments(ing *api.Ingress) error {
+	i.Mutex.Lock()
+	defer i.Mutex.Unlock()
+
+	rc, err := i.KubeClient.CoreV1().ReplicationControllers(i.Config.TestNamespace).Get(i.TestServerName(), metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	svc, err := i.KubeClient.CoreV1().Services(ing.GetNamespace()).Get(ing.OffshootName(), metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	// Removing pods so that endpoints get updated
+	rc.Spec.Replicas = types.Int32P(0)
+	i.KubeClient.CoreV1().ReplicationControllers(rc.Namespace).Update(rc)
+	for {
+		pods, _ := i.KubeClient.CoreV1().Pods(rc.Namespace).List(metav1.ListOptions{
+			LabelSelector: labels.SelectorFromSet(rc.Spec.Selector).String(),
+		})
+		if len(pods.Items) <= 0 {
+			break
+		}
+		time.Sleep(time.Second * 1)
+	}
+
+	svcUpdated, err := i.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	for _, oldPort := range svc.Spec.Ports {
+		for _, newPort := range svcUpdated.Spec.Ports {
+			if oldPort.Port == newPort.Port {
+				if oldPort.NodePort != newPort.NodePort {
+					return errors.New("NodePort Mismatched")
+				}
+			}
+		}
+	}
+
+	rc.Spec.Replicas = types.Int32P(2)
+	i.KubeClient.CoreV1().ReplicationControllers(rc.Namespace).Update(rc)
+	svcUpdated, err = i.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	for _, oldPort := range svc.Spec.Ports {
+		for _, newPort := range svcUpdated.Spec.Ports {
+			if oldPort.Port == newPort.Port {
+				if oldPort.NodePort != newPort.NodePort {
+					return errors.New("NodePort Mismatched")
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (i *ingressInvocation) SupportsServiceIP() bool {
+	return i.Config.CloudProviderName == "aws" ||
+		i.Config.CloudProviderName == "gce" ||
+		i.Config.CloudProviderName == "gke" ||
+		i.Config.CloudProviderName == "azure" ||
+		i.Config.CloudProviderName == "acs"
 }

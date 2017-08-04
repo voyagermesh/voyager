@@ -1,7 +1,10 @@
 package testframework
 
 import (
+	"sync"
+
 	"github.com/appscode/go/crypto/rand"
+	"github.com/appscode/voyager/api"
 	voyagerclient "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/config"
 	. "github.com/onsi/gomega"
@@ -32,6 +35,7 @@ type rootInvocation struct {
 }
 
 type ingressInvocation struct {
+	Mutex sync.Mutex
 	*rootInvocation
 }
 

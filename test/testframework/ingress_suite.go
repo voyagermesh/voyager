@@ -51,6 +51,15 @@ func (i *ingressInvocation) Create(ing *api.Ingress) error {
 	return nil
 }
 
+func (i *ingressInvocation) Get(ing *api.Ingress) (*api.Ingress, error) {
+	return i.VoyagerClient.Ingresses(i.Namespace()).Get(ing.Name)
+}
+
+func (i *ingressInvocation) Update(ing *api.Ingress) error {
+	_, err := i.VoyagerClient.Ingresses(i.Namespace()).Update(ing)
+	return err
+}
+
 func (i *ingressInvocation) Delete(ing *api.Ingress) error {
 	return i.VoyagerClient.Ingresses(i.Namespace()).Delete(ing.Name)
 }
@@ -93,14 +102,30 @@ func (i *ingressInvocation) GetOffShootService(ing *api.Ingress) (*v1.Service, e
 	return i.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 }
 
+
 func (i *ingressInvocation) DoHTTP(ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Path(path).DoWithRetry(100)
+		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Path(path).DoWithRetry(maxRetryCount)
 		if err != nil {
 			return err
 		}
 
 		log.Infoln("HTTP Response received from server", *resp)
+		if !matcher(resp) {
+			return errors.New("Failed to match")
+		}
+	}
+	return nil
+}
+
+func (i *ingressInvocation) DoTCP(ing *api.Ingress, eps []string, matcher func(resp *testserverclient.Response) bool) error {
+	for _, url := range eps {
+		resp, err := testserverclient.NewTestTCPClient(url).DoWithRetry(maxRetryCount)
+		if err != nil {
+			return err
+		}
+
+		log.Infoln("TCP Response received from server", *resp)
 		if !matcher(resp) {
 			return errors.New("Failed to match")
 		}
