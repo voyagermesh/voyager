@@ -100,8 +100,8 @@ func (op *Operator) AddEngress(engress *tapi.Ingress) {
 			}
 
 			var updateFW bool
-			for svcPort, targetPort := range ctrl.PortMapping {
-				if sp, ok := curPorts[svcPort]; !ok || sp.TargetPort.IntValue() != targetPort {
+			for svcPort, target := range ctrl.PortMapping {
+				if sp, ok := curPorts[svcPort]; !ok || sp.TargetPort.IntValue() != target.PodPort {
 					updateFW = true // new port has to be opened
 					break
 				} else {
