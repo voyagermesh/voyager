@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	ExporterSidecarTag = "appscode/voyager:3.1.0"
+	ExporterSidecarTag = "appscode/voyager:3.1.2"
 )
 
 func (lbc *Controller) Create() error {
@@ -641,6 +641,7 @@ func (lbc *Controller) createNodePortPods() error {
 								{
 									Weight: 100,
 									PodAffinityTerm: apiv1.PodAffinityTerm{
+										TopologyKey: "kubernetes.io/hostname",
 										LabelSelector: &metav1.LabelSelector{
 											MatchLabels: lbc.Ingress.OffshootLabels(),
 										},

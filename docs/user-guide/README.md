@@ -21,19 +21,21 @@ $ export CLOUD_CONFIG=<path>            # The path to the cloud provider configu
                                         # Voyager uses this to connect to cloud provider api.
 
 # Install without RBAC roles
-$ curl https://raw.githubusercontent.com/appscode/voyager/3.1.0/hack/deploy/voyager-without-rbac.yaml \
+$ curl https://raw.githubusercontent.com/appscode/voyager/3.1.2/hack/deploy/without-rbac.yaml \
     | envsubst \
     | kubectl apply -f -
 
 # Install with RBAC roles
-$ curl https://raw.githubusercontent.com/appscode/voyager/3.1.0/hack/deploy/voyager-with-rbac.yaml \
+$ curl https://raw.githubusercontent.com/appscode/voyager/3.1.2/hack/deploy/with-rbac.yaml \
     | envsubst \
     | kubectl apply -f -
 ```
 
+There are various cloud provider installer scripts available in [/hack/deploy](/hack/deploy) folder that can set these flags appropriately.
+
 Once Controller is *Running* It will create the [required ThirdPartyResources for ingress and certificates](/docs/developer-guide#third-party-resources).
 Check the Controller is running or not via `kubectl get pods` there should be a pod nameed `appscode-voyager-xxxxxxxxxx-xxxxx`.
-Now Create Your Ingress/Certificated.
+Now Create Your Ingress/Certificates.
 
 
 #### Configuration Options
@@ -51,7 +53,7 @@ Now Create Your Ingress/Certificated.
       --master string                         The address of the Kubernetes API server (overrides any value in kubeconfig)
 ```
 
-Voyager can run HAProxy in 3 different modes. `cloude-provider` flag should be set appropriately depending on the mode. These modes are:
+Voyager can run HAProxy in 3 different modes. `cloud-provider` flag should be set appropriately depending on the mode. These modes are:
 
 - LoadBalancer: In this mode, a Kubernetes LoadBalancer type service is used to expose HAProxy to the internet.
 This is supported for cloud providers known to Kubernetes (`aws`, `gce` and `azure`), `--cloud-provider` flag is required to properly setup this loadbalancer. This mode supports reserved ip on GCE.

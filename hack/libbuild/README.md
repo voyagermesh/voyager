@@ -10,7 +10,7 @@ Use `libbuild` as a git subtree in your project.
 ## Usage
 ### Using as git subtree with shell scripts
 
-```sh
+```console
 # add first time
 git subtree add --prefix hack/libbuild https://github.com/appscode/libbuild.git master --squash
 
@@ -25,7 +25,7 @@ To learn about `git subtree`, check the following articles:
 ### Using from python scripts
 We recommend using https://github.com/ellisonbg/antipackage to import libbuild.py . First install `antipackage` using pip:
 
-```sh
+```console
 pip install git+https://github.com/ellisonbg/antipackage.git#egg=antipackage
 ```
 
