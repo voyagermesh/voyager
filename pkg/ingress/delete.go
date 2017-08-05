@@ -30,7 +30,7 @@ func (lbc *Controller) Delete() error {
 		}
 	}
 
-	if lbc.Parsed.Stats {
+	if lbc.TemplateData.Stats {
 		lbc.ensureStatsServiceDeleted()
 	}
 

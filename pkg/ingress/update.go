@@ -146,9 +146,9 @@ func (lbc *Controller) updateConfigMap() error {
 		cMap.Annotations[api.OriginName] = lbc.Ingress.GetName()
 	}
 
-	if cMap.Data["haproxy.cfg"] != lbc.ConfigData {
+	if cMap.Data["haproxy.cfg"] != lbc.HAProxyConfig {
 		log.Infoln("Specs have been changed updating config map data for HAProxy templates")
-		cMap.Data["haproxy.cfg"] = lbc.ConfigData
+		cMap.Data["haproxy.cfg"] = lbc.HAProxyConfig
 
 		_, err := lbc.KubeClient.CoreV1().ConfigMaps(lbc.Ingress.Namespace).Update(cMap)
 		if err != nil {

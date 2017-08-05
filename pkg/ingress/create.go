@@ -65,7 +65,7 @@ func (lbc *Controller) Create() error {
 		return errors.FromErr(err).Err()
 	}
 
-	if lbc.Parsed.Stats {
+	if lbc.TemplateData.Stats {
 		err := lbc.ensureStatsService()
 		// Error ignored intentionally
 		if err != nil {
@@ -103,7 +103,7 @@ func (lbc *Controller) ensureConfigMap() error {
 				},
 			},
 			Data: map[string]string{
-				"haproxy.cfg": lbc.ConfigData,
+				"haproxy.cfg": lbc.HAProxyConfig,
 			},
 		}
 		_, err = lbc.KubeClient.CoreV1().ConfigMaps(lbc.Ingress.Namespace).Create(cm)
@@ -119,7 +119,7 @@ func (lbc *Controller) ensureConfigMap() error {
 	}
 
 	cmData := map[string]string{
-		"haproxy.cfg": lbc.ConfigData,
+		"haproxy.cfg": lbc.HAProxyConfig,
 	}
 	if !reflect.DeepEqual(cm.Data, cmData) {
 		needsUpdate = true
@@ -491,11 +491,11 @@ func (lbc *Controller) createHostPortPods() error {
 		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, p)
 	}
 
-	if lbc.Parsed.Stats {
+	if lbc.TemplateData.Stats {
 		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
 			Name:          api.StatsPortName,
 			Protocol:      "TCP",
-			ContainerPort: int32(lbc.Parsed.StatsPort),
+			ContainerPort: int32(lbc.TemplateData.StatsPort),
 		})
 	}
 
@@ -708,11 +708,11 @@ func (lbc *Controller) createNodePortPods() error {
 		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, p)
 	}
 
-	if lbc.Parsed.Stats {
+	if lbc.TemplateData.Stats {
 		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
 			Name:          api.StatsPortName,
 			Protocol:      "TCP",
-			ContainerPort: int32(lbc.Parsed.StatsPort),
+			ContainerPort: int32(lbc.TemplateData.StatsPort),
 		})
 	}
 
@@ -873,7 +873,7 @@ func (lbc *Controller) ensureStatsService() error {
 				{
 					Name:       api.StatsPortName,
 					Protocol:   "TCP",
-					Port:       int32(lbc.Parsed.StatsPort),
+					Port:       int32(lbc.TemplateData.StatsPort),
 					TargetPort: intstr.FromString(api.StatsPortName),
 				},
 			},

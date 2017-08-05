@@ -23,8 +23,6 @@ type Controller struct {
 
 	// Engress object that created or updated.
 	Ingress *api.Ingress
-	// contains raw configMap data parsed from the cfg file.
-	ConfigData string
 
 	// Ports contains a map of Service Port to HAProxy port (svc.Port -> svc.TargetPort).
 	// HAProxy pods binds to the target ports. Service ports are used to open loadbalancer/firewall.
@@ -32,7 +30,9 @@ type Controller struct {
 	// If AWS cert manager is used then a 443 -> 80 port mapping is added.
 	PortMapping map[int]Target
 	// parsed ingress.
-	Parsed TemplateData
+	TemplateData IngressInfo
+	// contains raw configMap data parsed from the cfg file.
+	HAProxyConfig string
 
 	// kubernetes client
 	CloudManager cloudprovider.Interface
@@ -44,7 +44,7 @@ type Target struct {
 	NodePort int
 }
 
-type TemplateData struct {
+type IngressInfo struct {
 	Timestamp int64
 	// those options are get from annotations. applied globally
 	// in all the sections.

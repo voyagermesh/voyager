@@ -121,7 +121,7 @@ func (lbc *Controller) serviceEndpoints(name string, port intstr.IntOrString, ho
 			return nil, errors.FromErr(err).Err()
 		}
 		if ep.UseDNSResolver && resolver != nil {
-			lbc.Parsed.DNSResolvers[resolver.Name] = resolver
+			lbc.TemplateData.DNSResolvers[resolver.Name] = resolver
 			ep.DNSResolver = resolver.Name
 			ep.CheckHealth = resolver.CheckHealth
 		}
@@ -212,7 +212,7 @@ func isForwardable(hostNames []string, hostName string) bool {
 
 func (lbc *Controller) generateTemplate() error {
 	log.Infoln("Generating Ingress template.")
-	ctx, err := Context(lbc.Parsed)
+	ctx, err := Context(lbc.TemplateData)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -226,12 +226,12 @@ func (lbc *Controller) generateTemplate() error {
 		return errors.FromErr(err).Err()
 	}
 
-	lbc.ConfigData = stringutil.Fmt(r)
+	lbc.HAProxyConfig = stringutil.Fmt(r)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 	log.Infoln("Template genareted for HAProxy")
-	log.Infoln(lbc.ConfigData)
+	log.Infoln(lbc.HAProxyConfig)
 	return nil
 }
 
@@ -266,13 +266,13 @@ func getTargetPort(servicePort *apiv1.ServicePort) int {
 func (lbc *Controller) parseSpec() {
 	log.Infoln("Parsing Engress specs for", lbc.Ingress.Name)
 	lbc.PortMapping = make(map[int]Target)
-	lbc.Parsed.DNSResolvers = make(map[string]*api.DNSResolver)
+	lbc.TemplateData.DNSResolvers = make(map[string]*api.DNSResolver)
 
 	if lbc.Ingress.Spec.Backend != nil {
 		log.Debugln("generating default backend", lbc.Ingress.Spec.Backend.RewriteRule, lbc.Ingress.Spec.Backend.HeaderRule)
 		eps, _ := lbc.serviceEndpoints(lbc.Ingress.Spec.Backend.ServiceName, lbc.Ingress.Spec.Backend.ServicePort, lbc.Ingress.Spec.Backend.HostNames)
 		sort.Slice(eps, func(i, j int) bool { return eps[i].IP < eps[j].IP })
-		lbc.Parsed.DefaultBackend = &Backend{
+		lbc.TemplateData.DefaultBackend = &Backend{
 			Endpoints:    eps,
 			BackendRules: lbc.Ingress.Spec.Backend.BackendRule,
 			RewriteRules: lbc.Ingress.Spec.Backend.RewriteRule,
@@ -280,8 +280,8 @@ func (lbc *Controller) parseSpec() {
 		}
 	}
 
-	lbc.Parsed.HTTPService = make([]*HTTPService, 0)
-	lbc.Parsed.TCPService = make([]*TCPService, 0)
+	lbc.TemplateData.HTTPService = make([]*HTTPService, 0)
+	lbc.TemplateData.TCPService = make([]*TCPService, 0)
 
 	type httpKey struct {
 		Port    int
@@ -364,11 +364,13 @@ func (lbc *Controller) parseSpec() {
 				if _, ok := lbc.Ingress.UsesTLS(rule.Host); ok && !rule.TCP.NoSSL {
 					def.UsesSSL = true
 				}
-				lbc.Parsed.TCPService = append(lbc.Parsed.TCPService, def)
+				lbc.TemplateData.TCPService = append(lbc.TemplateData.TCPService, def)
 			}
 		}
 	}
-	sort.Slice(lbc.Parsed.TCPService, func(i, j int) bool { return lbc.Parsed.TCPService[i].SortKey() < lbc.Parsed.TCPService[j].SortKey() })
+	sort.Slice(lbc.TemplateData.TCPService, func(i, j int) bool {
+		return lbc.TemplateData.TCPService[i].SortKey() < lbc.TemplateData.TCPService[j].SortKey()
+	})
 
 	if !usesHTTPRule && lbc.Ingress.Spec.Backend != nil {
 		lbc.PortMapping[80] = Target{PodPort: 80}
@@ -377,14 +379,16 @@ func (lbc *Controller) parseSpec() {
 	for key := range httpServices {
 		value := httpServices[key]
 		sort.Slice(value, func(i, j int) bool { return value[i].SortKey() < value[j].SortKey() })
-		lbc.Parsed.HTTPService = append(lbc.Parsed.HTTPService, &HTTPService{
+		lbc.TemplateData.HTTPService = append(lbc.TemplateData.HTTPService, &HTTPService{
 			Name:    "fix-it",
 			Port:    key.Port,
 			UsesSSL: key.UsesSSL,
 			Paths:   value,
 		})
 	}
-	sort.Slice(lbc.Parsed.HTTPService, func(i, j int) bool { return lbc.Parsed.HTTPService[i].SortKey() < lbc.Parsed.HTTPService[j].SortKey() })
+	sort.Slice(lbc.TemplateData.HTTPService, func(i, j int) bool {
+		return lbc.TemplateData.HTTPService[i].SortKey() < lbc.TemplateData.HTTPService[j].SortKey()
+	})
 
 	// ref: https://github.com/appscode/voyager/issues/188
 	if lbc.Opt.CloudProvider == "aws" && lbc.Ingress.LBType() == api.LBTypeLoadBalancer {
@@ -415,29 +419,29 @@ func (lbc *Controller) parseOptions() {
 		return
 	}
 	log.Infoln("Parsing annotations.")
-	lbc.Parsed.TimeoutDefaults = lbc.Ingress.Timeouts()
-	lbc.Parsed.Sticky = lbc.Ingress.StickySession()
+	lbc.TemplateData.TimeoutDefaults = lbc.Ingress.Timeouts()
+	lbc.TemplateData.Sticky = lbc.Ingress.StickySession()
 	if len(lbc.Ingress.Spec.TLS) > 0 {
-		lbc.Parsed.SSLCert = true
+		lbc.TemplateData.SSLCert = true
 	}
 
-	lbc.Parsed.Stats = lbc.Ingress.Stats()
-	if lbc.Parsed.Stats {
-		lbc.Parsed.StatsPort = lbc.Ingress.StatsPort()
+	lbc.TemplateData.Stats = lbc.Ingress.Stats()
+	if lbc.TemplateData.Stats {
+		lbc.TemplateData.StatsPort = lbc.Ingress.StatsPort()
 		if name := lbc.Ingress.StatsSecretName(); len(name) > 0 {
 			secret, err := lbc.KubeClient.CoreV1().Secrets(lbc.Ingress.ObjectMeta.Namespace).Get(name, metav1.GetOptions{})
 			if err == nil {
-				lbc.Parsed.StatsUserName = string(secret.Data["username"])
-				lbc.Parsed.StatsPassWord = string(secret.Data["password"])
+				lbc.TemplateData.StatsUserName = string(secret.Data["username"])
+				lbc.TemplateData.StatsPassWord = string(secret.Data["password"])
 			} else {
-				lbc.Parsed.Stats = false
+				lbc.TemplateData.Stats = false
 				log.Errorln("Error encountered while loading Stats secret", err)
 			}
 		}
 	}
 
 	if lbc.Opt.CloudProvider == "aws" && lbc.Ingress.LBType() == api.LBTypeLoadBalancer {
-		lbc.Parsed.AcceptProxy = lbc.Ingress.KeepSourceIP()
+		lbc.TemplateData.AcceptProxy = lbc.Ingress.KeepSourceIP()
 	}
 }
 
