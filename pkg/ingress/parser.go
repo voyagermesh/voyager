@@ -282,10 +282,8 @@ func (lbc *Controller) parseSpec() {
 		}
 	}
 	if len(lbc.Ingress.Spec.TLS) > 0 {
-		lbc.SecretNames = make([]string, 0)
 		lbc.HostFilter = make([]string, 0)
 		for _, secret := range lbc.Ingress.Spec.TLS {
-			lbc.SecretNames = append(lbc.SecretNames, secret.SecretName)
 			lbc.HostFilter = append(lbc.HostFilter, secret.Hosts...)
 		}
 	}
@@ -352,7 +350,6 @@ func (lbc *Controller) parseSpec() {
 					Endpoints:    eps,
 				}
 				lbc.Parsed.TCPService = append(lbc.Parsed.TCPService, def)
-				lbc.SecretNames = append(lbc.SecretNames, def.SecretName)
 			}
 		}
 	}

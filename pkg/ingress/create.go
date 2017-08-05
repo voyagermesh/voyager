@@ -408,10 +408,7 @@ func (lbc *Controller) createHostPortSvc() error {
 
 func (lbc *Controller) createHostPortPods() error {
 	log.Infoln("Creating Daemon type lb for nodeSelector = ", lbc.Ingress.NodeSelector())
-
-	vs := Volumes(lbc.SecretNames)
-	vms := VolumeMounts(lbc.SecretNames)
-	// ignoring errors and trying to create controllers
+	secrets := lbc.Ingress.Secrets()
 	daemon := &extensions.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      lbc.Ingress.OffshootName(),
@@ -457,10 +454,10 @@ func (lbc *Controller) createHostPortPods() error {
 							},
 							Ports:        []apiv1.ContainerPort{},
 							Resources:    lbc.Ingress.Spec.Resources,
-							VolumeMounts: vms,
+							VolumeMounts: VolumeMounts(secrets),
 						},
 					},
-					Volumes:     vs,
+					Volumes:     Volumes(secrets),
 					HostNetwork: true,
 				},
 			},
@@ -615,6 +612,7 @@ func (lbc *Controller) createNodePortSvc() error {
 
 func (lbc *Controller) createNodePortPods() error {
 	log.Infoln("creating NodePort deployment")
+	secrets := lbc.Ingress.Secrets()
 	deployment := &extensions.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      lbc.Ingress.OffshootName(),
@@ -675,10 +673,10 @@ func (lbc *Controller) createNodePortPods() error {
 							},
 							Ports:        []apiv1.ContainerPort{},
 							Resources:    lbc.Ingress.Spec.Resources,
-							VolumeMounts: VolumeMounts(lbc.SecretNames),
+							VolumeMounts: VolumeMounts(secrets),
 						},
 					},
-					Volumes: Volumes(lbc.SecretNames),
+					Volumes: Volumes(secrets),
 				},
 			},
 		},

@@ -22,8 +22,6 @@ type Controller struct {
 
 	// Engress object that created or updated.
 	Ingress *api.Ingress
-	// kube options data
-	SecretNames []string
 	// contains raw configMap data parsed from the cfg file.
 	ConfigData string
 
