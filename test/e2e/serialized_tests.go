@@ -255,13 +255,11 @@ func (s *IngressTestSuit) TestIngressDaemonUpdate() error {
 
 	if s.t.Config.ProviderName != "minikube" {
 		updatedBaseIngress.Spec.Rules[0].HTTP = nil
-		updatedBaseIngress.Spec.Rules[0].TCP = []api.TCPIngressRuleValue{
-			{
-				Port: intstr.FromString("4545"),
-				Backend: api.IngressBackend{
-					ServiceName: testServerSvc.Name,
-					ServicePort: intstr.FromString("4545"),
-				},
+		updatedBaseIngress.Spec.Rules[0].TCP = &api.TCPIngressRuleValue{
+			Port: intstr.FromString("4545"),
+			Backend: api.IngressBackend{
+				ServiceName: testServerSvc.Name,
+				ServicePort: intstr.FromString("4545"),
 			},
 		}
 		_, err = s.t.ExtClient.Ingresses(baseIngress.Namespace).Update(updatedBaseIngress)

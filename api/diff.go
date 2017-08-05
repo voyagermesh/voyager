@@ -54,7 +54,7 @@ func (r Ingress) HasChanged(o Ingress) (bool, error) {
 	return !reflect.DeepEqual(ra, oa), nil
 }
 
-func (r Ingress) usesTLS(h string) (string, bool) {
+func (r Ingress) UsesTLS(h string) (string, bool) {
 	for _, tls := range r.Spec.TLS {
 		for _, host := range tls.Hosts {
 			if host == h {
@@ -76,7 +76,7 @@ func (r Ingress) Ports() []int {
 			} else {
 				if rule.HTTP.NoSSL {
 					ports.Insert(80)
-				} else if _, ok := r.usesTLS(rule.Host); ok {
+				} else if _, ok := r.UsesTLS(rule.Host); ok {
 					ports.Insert(443)
 				} else {
 					ports.Insert(80)
@@ -117,12 +117,12 @@ func (r Ingress) Secrets() []string {
 	for _, rule := range r.Spec.Rules {
 		if rule.HTTP != nil {
 			if port := rule.HTTP.Port.IntValue(); port > 0 {
-				if secretName, ok := r.usesTLS(rule.Host); ok && !rule.HTTP.NoSSL {
+				if secretName, ok := r.UsesTLS(rule.Host); ok && !rule.HTTP.NoSSL {
 					secrets.Insert(secretName)
 				}
 			}
 		} else if rule.TCP != nil {
-			if secretName, ok := r.usesTLS(rule.Host); ok {
+			if secretName, ok := r.UsesTLS(rule.Host); ok {
 				secrets.Insert(secretName)
 			}
 		}

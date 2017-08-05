@@ -330,23 +330,25 @@ func (lbc *Controller) parseSpec() {
 		}
 
 		// adding tcp service to the parser.
-		for _, tcpSvc := range rule.TCP {
-			log.Infoln(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort)
+		if rule.TCP != nil {
+			log.Infoln(rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort)
 
-			lbc.Ports[tcpSvc.Port.IntValue()] = tcpSvc.Port.IntValue()
-			eps, _ := lbc.serviceEndpoints(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort, tcpSvc.Backend.HostNames)
-			log.Infoln("Returned service endpoints len(eps)", len(eps), "for service", tcpSvc.Backend.ServiceName)
+			lbc.Ports[rule.TCP.Port.IntValue()] = rule.TCP.Port.IntValue()
+			eps, _ := lbc.serviceEndpoints(rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort, rule.TCP.Backend.HostNames)
+			log.Infoln("Returned service endpoints len(eps)", len(eps), "for service", rule.TCP.Backend.ServiceName)
 			if len(eps) > 0 {
 				def := &TCPService{
 					Name:        "service-" + rand.Characters(6),
 					Host:        host,
-					Port:        tcpSvc.Port.String(),
-					SecretName:  tcpSvc.SecretName,
-					ALPNOptions: parseALPNOptions(tcpSvc.ALPN),
+					Port:        rule.TCP.Port.String(),
+					ALPNOptions: parseALPNOptions(rule.TCP.ALPN),
+				}
+				if secretName, ok := lbc.Ingress.UsesTLS(rule.Host); ok && !rule.TCP.NoSSL {
+					def.SecretName = secretName
 				}
 				def.Backends = &Backend{
 					Name:         "backend-" + rand.Characters(5),
-					BackendRules: tcpSvc.Backend.BackendRule,
+					BackendRules: rule.TCP.Backend.BackendRule,
 					Endpoints:    eps,
 				}
 				lbc.Parsed.TCPService = append(lbc.Parsed.TCPService, def)
