@@ -17,6 +17,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/sets"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
@@ -332,7 +333,7 @@ func (lbc *Controller) createHostPortSvc() error {
 	}
 
 	// opening other tcp ports
-	for svcPort, targetPort := range lbc.Ports {
+	for svcPort, targetPort := range lbc.Svc2TargetPort {
 		p := apiv1.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
@@ -479,9 +480,9 @@ func (lbc *Controller) createHostPortPods() error {
 	}
 
 	// adding tcp ports to pod template
-	targetPorts := make(map[int]bool)
-	for _, targetPort := range lbc.Ports {
-		targetPorts[targetPort] = true
+	targetPorts := sets.NewInt()
+	for _, targetPort := range lbc.Svc2TargetPort {
+		targetPorts.Insert(targetPort)
 	}
 	for targetPort := range targetPorts {
 		p := apiv1.ContainerPort{
@@ -559,12 +560,13 @@ func (lbc *Controller) createNodePortSvc() error {
 	}
 
 	// opening other tcp ports
-	for svcPort, targetPort := range lbc.Ports {
+	for svcPort, targetPort := range lbc.Svc2TargetPort {
 		p := apiv1.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
 			Port:       int32(svcPort),
 			TargetPort: intstr.FromInt(targetPort),
+			NodePort:   int32(lbc.Svc2NodePort[svcPort]),
 		}
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
@@ -695,9 +697,9 @@ func (lbc *Controller) createNodePortPods() error {
 	}
 
 	// adding tcp ports to pod template
-	targetPorts := make(map[int]bool)
-	for _, targetPort := range lbc.Ports {
-		targetPorts[targetPort] = true
+	targetPorts := sets.NewInt()
+	for _, targetPort := range lbc.Svc2TargetPort {
+		targetPorts.Insert(targetPort)
 	}
 	for targetPort := range targetPorts {
 		p := apiv1.ContainerPort{
@@ -772,12 +774,13 @@ func (lbc *Controller) createLoadBalancerSvc() error {
 	}
 
 	// opening other tcp ports
-	for svcPort, targetPort := range lbc.Ports {
+	for svcPort, targetPort := range lbc.Svc2TargetPort {
 		p := apiv1.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
 			Port:       int32(svcPort),
 			TargetPort: intstr.FromInt(targetPort),
+			NodePort:   int32(lbc.Svc2NodePort[svcPort]),
 		}
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}

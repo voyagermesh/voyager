@@ -265,7 +265,8 @@ func getTargetPort(servicePort *apiv1.ServicePort) int {
 
 func (lbc *Controller) parseSpec() {
 	log.Infoln("Parsing Engress specs for", lbc.Ingress.Name)
-	lbc.Ports = make(map[int]int)
+	lbc.Svc2TargetPort = make(map[int]int)
+	lbc.Svc2NodePort = make(map[int]int)
 	lbc.Parsed.DNSResolvers = make(map[string]*api.DNSResolver)
 
 	if lbc.Ingress.Spec.Backend != nil {
@@ -328,12 +329,11 @@ func (lbc *Controller) parseSpec() {
 				}
 			}
 		}
-
-		// adding tcp service to the parser.
 		if rule.TCP != nil {
 			log.Infoln(rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort)
 
-			lbc.Ports[rule.TCP.Port.IntValue()] = rule.TCP.Port.IntValue()
+			lbc.Svc2TargetPort[rule.TCP.Port.IntValue()] = rule.TCP.Port.IntValue()
+			lbc.Svc2NodePort[rule.TCP.Port.IntValue()] = rule.TCP.NodePort.IntValue()
 			eps, _ := lbc.serviceEndpoints(rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort, rule.TCP.Backend.HostNames)
 			log.Infoln("Returned service endpoints len(eps)", len(eps), "for service", rule.TCP.Backend.ServiceName)
 			if len(eps) > 0 {
@@ -358,11 +358,13 @@ func (lbc *Controller) parseSpec() {
 	}
 
 	if httpCount > 0 || (lbc.Ingress.Spec.Backend != nil && httpsCount == 0) {
-		lbc.Ports[80] = 80
+		lbc.Svc2TargetPort[80] = 80
+		// TODO: Fix
 	}
 
 	if httpsCount > 0 {
-		lbc.Ports[443] = 443
+		lbc.Svc2TargetPort[443] = 443
+		// TODO: Fix
 	}
 
 	// ref: https://github.com/appscode/voyager/issues/188
@@ -370,7 +372,7 @@ func (lbc *Controller) parseSpec() {
 		if ans, ok := lbc.Ingress.ServiceAnnotations(lbc.Opt.CloudProvider); ok {
 			if v, usesAWSCertManager := ans["service.beta.kubernetes.io/aws-load-balancer-ssl-cert"]; usesAWSCertManager && v != "" {
 				var tp80, sp443 bool
-				for svcPort, targetPort := range lbc.Ports {
+				for svcPort, targetPort := range lbc.Svc2TargetPort {
 					if targetPort == 80 {
 						tp80 = true
 					}
@@ -379,7 +381,7 @@ func (lbc *Controller) parseSpec() {
 					}
 				}
 				if tp80 && !sp443 {
-					lbc.Ports[443] = 80
+					lbc.Svc2TargetPort[443] = 80
 				} else {
 					log.Errorln("Failed to open port 443 on service for AWS cert manager.")
 				}

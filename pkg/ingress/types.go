@@ -31,7 +31,8 @@ type Controller struct {
 	// HAProxy pods binds to the target ports. Service ports are used to open loadbalancer/firewall.
 	// Usually target port == service port with one exception for LoadBalancer type service in AWS.
 	// If AWS cert manager is used then a 443 -> 80 port mapping is added.
-	Ports map[int]int
+	Svc2TargetPort map[int]int
+	Svc2NodePort   map[int]int
 	// contains all the https host names.
 	HostFilter []string
 	// parsed ingress.
