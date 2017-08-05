@@ -1,6 +1,7 @@
 package ingress
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/appscode/voyager/api"
@@ -29,16 +30,18 @@ type Controller struct {
 	// HAProxy pods binds to the target ports. Service ports are used to open loadbalancer/firewall.
 	// Usually target port == service port with one exception for LoadBalancer type service in AWS.
 	// If AWS cert manager is used then a 443 -> 80 port mapping is added.
-	Svc2TargetPort map[int]int
-	Svc2NodePort   map[int]int
-	// contains all the https host names.
-	HostFilter []string
+	PortMapping map[int]Target
 	// parsed ingress.
 	Parsed TemplateData
 
 	// kubernetes client
 	CloudManager cloudprovider.Interface
 	sync.Mutex
+}
+
+type Target struct {
+	PodPort  int
+	NodePort int
 }
 
 type TemplateData struct {
@@ -60,34 +63,53 @@ type TemplateData struct {
 	StatsPort     int
 
 	// Add accept-proxy to bind statements
-	AcceptProxy bool
-
+	AcceptProxy    bool
 	DefaultBackend *Backend
-	HttpsService   []*Service
-	HttpService    []*Service
+	HTTPService    []*HTTPService
 	TCPService     []*TCPService
 	DNSResolvers   map[string]*api.DNSResolver
 }
 
-type Service struct {
-	Name     string
-	AclMatch string
-	Host     string
-	Backend  *Backend
+type HTTPService struct {
+	Name    string
+	Port    int
+	UsesSSL bool
+	Paths   []*HTTPPath
+}
+
+func (svc HTTPService) SortKey() string {
+	if svc.UsesSSL {
+		return fmt.Sprintf("https://%d", svc.Port)
+	}
+	return fmt.Sprintf("http://%d", svc.Port)
+}
+
+type HTTPPath struct {
+	Name    string
+	Host    string
+	Path    string
+	Backend Backend
+}
+
+func (svc HTTPPath) SortKey() string {
+	return fmt.Sprintf("%s/%s", svc.Host, svc.Path)
 }
 
 type TCPService struct {
 	Name        string
 	Host        string
 	Port        string
-	SecretName  string
+	UsesSSL     bool
 	PEMName     string
-	Backend     *Backend
+	Backend     Backend
 	ALPNOptions string
 }
 
+func (svc TCPService) SortKey() string {
+	return fmt.Sprintf("%s:%s", svc.Host, svc.Port)
+}
+
 type Backend struct {
-	Name         string   `json:"Name,omitempty"`
 	BackendRules []string `json:"BackendRules,omitempty"`
 	// Deprecated
 	RewriteRules []string `json:"RewriteRules,omitempty"`

@@ -213,15 +213,16 @@ func (lbc *Controller) updateLBSvc() error {
 		curPorts[p.Port] = p
 	}
 	svc.Spec.Ports = make([]apiv1.ServicePort, 0)
-	for svcPort, targetPort := range lbc.Svc2TargetPort {
-		if sp, found := curPorts[int32(svcPort)]; found && sp.TargetPort.IntValue() == targetPort {
+	for svcPort, target := range lbc.PortMapping {
+		if sp, found := curPorts[int32(svcPort)]; found && sp.TargetPort.IntValue() == target.PodPort {
 			svc.Spec.Ports = append(svc.Spec.Ports, sp)
 		} else {
 			svc.Spec.Ports = append(svc.Spec.Ports, apiv1.ServicePort{
 				Name:       "tcp-" + strconv.Itoa(svcPort),
 				Protocol:   "TCP",
 				Port:       int32(svcPort),
-				TargetPort: intstr.FromInt(targetPort),
+				TargetPort: intstr.FromInt(target.PodPort),
+				NodePort:   int32(target.NodePort),
 			})
 		}
 	}

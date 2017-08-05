@@ -3,11 +3,11 @@ package ingress
 import (
 	"encoding/json"
 	goerr "errors"
+	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/appscode/errors"
-	"github.com/appscode/go/arrays"
 	"github.com/appscode/go/crypto/rand"
 	stringutil "github.com/appscode/go/strings"
 	"github.com/appscode/log"
@@ -173,7 +173,7 @@ func (lbc *Controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.Service
 			for _, epAddress := range ss.Addresses {
 				if isForwardable(hostNames, epAddress.Hostname) {
 					ep := &Endpoint{
-						Name: "server-" + epAddress.IP,
+						Name: "pod-" + epAddress.IP,
 						IP:   epAddress.IP,
 						Port: targetPort,
 					}
@@ -265,112 +265,134 @@ func getTargetPort(servicePort *apiv1.ServicePort) int {
 
 func (lbc *Controller) parseSpec() {
 	log.Infoln("Parsing Engress specs for", lbc.Ingress.Name)
-	lbc.Svc2TargetPort = make(map[int]int)
-	lbc.Svc2NodePort = make(map[int]int)
+	lbc.PortMapping = make(map[int]Target)
 	lbc.Parsed.DNSResolvers = make(map[string]*api.DNSResolver)
 
 	if lbc.Ingress.Spec.Backend != nil {
 		log.Debugln("generating default backend", lbc.Ingress.Spec.Backend.RewriteRule, lbc.Ingress.Spec.Backend.HeaderRule)
 		eps, _ := lbc.serviceEndpoints(lbc.Ingress.Spec.Backend.ServiceName, lbc.Ingress.Spec.Backend.ServicePort, lbc.Ingress.Spec.Backend.HostNames)
+		sort.Slice(eps, func(i, j int) bool { return eps[i].IP < eps[j].IP })
 		lbc.Parsed.DefaultBackend = &Backend{
-			Name:      "default-backend",
-			Endpoints: eps,
-
+			Endpoints:    eps,
 			BackendRules: lbc.Ingress.Spec.Backend.BackendRule,
 			RewriteRules: lbc.Ingress.Spec.Backend.RewriteRule,
 			HeaderRules:  lbc.Ingress.Spec.Backend.HeaderRule,
 		}
 	}
-	if len(lbc.Ingress.Spec.TLS) > 0 {
-		lbc.HostFilter = make([]string, 0)
-		for _, secret := range lbc.Ingress.Spec.TLS {
-			lbc.HostFilter = append(lbc.HostFilter, secret.Hosts...)
-		}
-	}
 
-	lbc.Parsed.HttpService = make([]*Service, 0)
-	lbc.Parsed.HttpsService = make([]*Service, 0)
+	lbc.Parsed.HTTPService = make([]*HTTPService, 0)
 	lbc.Parsed.TCPService = make([]*TCPService, 0)
 
-	var httpCount, httpsCount int
+	type httpKey struct {
+		Port    int
+		UsesSSL bool
+	}
+	httpServices := make(map[httpKey][]*HTTPPath)
+	usesHTTPRule := false
 	for _, rule := range lbc.Ingress.Spec.Rules {
 		host := rule.Host
 		if rule.HTTP != nil {
-			if ok, _ := arrays.Contains(lbc.HostFilter, host); ok {
-				httpsCount++
-			} else {
-				httpCount++
+			usesHTTPRule = true
+			httpPaths := make([]*HTTPPath, 0)
+			for _, path := range rule.HTTP.Paths {
+				eps, _ := lbc.serviceEndpoints(path.Backend.ServiceName, path.Backend.ServicePort, path.Backend.HostNames)
+				sort.Slice(eps, func(i, j int) bool { return eps[i].IP < eps[j].IP })
+				log.Infoln("Returned service endpoints len(eps)", len(eps), "for service", path.Backend.ServiceName)
+				if len(eps) > 0 {
+					httpPaths = append(httpPaths, &HTTPPath{
+						Name: "service-" + rand.Characters(6),
+						Host: host,
+						Path: path.Path,
+						Backend: Backend{
+							Endpoints:    eps,
+							BackendRules: path.Backend.BackendRule,
+							RewriteRules: path.Backend.RewriteRule,
+							HeaderRules:  path.Backend.HeaderRule,
+						},
+					})
+				}
 			}
 
-			for _, svc := range rule.HTTP.Paths {
-				eps, _ := lbc.serviceEndpoints(svc.Backend.ServiceName, svc.Backend.ServicePort, svc.Backend.HostNames)
-				log.Infoln("Returned service endpoints len(eps)", len(eps), "for service", svc.Backend.ServiceName)
-				if len(eps) > 0 {
-					def := &Service{
-						Name:     "service-" + rand.Characters(6),
-						Host:     host,
-						AclMatch: svc.Path,
-					}
-					def.Backend = &Backend{
-						Name:         "backend-" + rand.Characters(5),
-						Endpoints:    eps,
-						BackendRules: svc.Backend.BackendRule,
-						RewriteRules: svc.Backend.RewriteRule,
-						HeaderRules:  svc.Backend.HeaderRule,
-					}
-					// add the service to http or https filters.
-					if ok, _ := arrays.Contains(lbc.HostFilter, host); ok {
-						lbc.Parsed.HttpsService = append(lbc.Parsed.HttpsService, def)
-					} else {
-						lbc.Parsed.HttpService = append(lbc.Parsed.HttpService, def)
-					}
+			var key httpKey
+			if _, foundTLS := lbc.Ingress.UsesTLS(rule.Host); foundTLS && !rule.HTTP.NoSSL {
+				key.UsesSSL = true
+				if port := rule.HTTP.Port.IntValue(); port > 0 {
+					key.Port = port
+					lbc.PortMapping[port] = Target{PodPort: port, NodePort: rule.TCP.NodePort.IntValue()}
+				} else {
+					key.Port = 443
+					lbc.PortMapping[443] = Target{PodPort: 443, NodePort: rule.TCP.NodePort.IntValue()}
 				}
+			} else {
+				key.UsesSSL = false
+				if port := rule.HTTP.Port.IntValue(); port > 0 {
+					key.Port = port
+					lbc.PortMapping[port] = Target{PodPort: port, NodePort: rule.TCP.NodePort.IntValue()}
+				} else {
+					key.Port = 80
+					lbc.PortMapping[80] = Target{PodPort: 80, NodePort: rule.TCP.NodePort.IntValue()}
+				}
+			}
+
+			if v, ok := httpServices[key]; ok {
+				httpServices[key] = append(v, httpPaths...)
+			} else {
+				httpServices[key] = httpPaths
 			}
 		}
 		if rule.TCP != nil {
 			log.Infoln(rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort)
 
-			lbc.Svc2TargetPort[rule.TCP.Port.IntValue()] = rule.TCP.Port.IntValue()
-			lbc.Svc2NodePort[rule.TCP.Port.IntValue()] = rule.TCP.NodePort.IntValue()
+			lbc.PortMapping[rule.TCP.Port.IntValue()] = Target{
+				PodPort:  rule.TCP.Port.IntValue(),
+				NodePort: rule.TCP.NodePort.IntValue(),
+			}
 			eps, _ := lbc.serviceEndpoints(rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort, rule.TCP.Backend.HostNames)
+			sort.Slice(eps, func(i, j int) bool { return eps[i].IP < eps[j].IP })
 			log.Infoln("Returned service endpoints len(eps)", len(eps), "for service", rule.TCP.Backend.ServiceName)
 			if len(eps) > 0 {
 				def := &TCPService{
-					Name:        "service-" + rand.Characters(6),
+					Name:        "tcp-" + rule.TCP.Port.String(),
 					Host:        host,
 					Port:        rule.TCP.Port.String(),
 					ALPNOptions: parseALPNOptions(rule.TCP.ALPN),
+					Backend: Backend{
+						BackendRules: rule.TCP.Backend.BackendRule,
+						Endpoints:    eps,
+					},
 				}
-				if secretName, ok := lbc.Ingress.UsesTLS(rule.Host); ok && !rule.TCP.NoSSL {
-					def.SecretName = secretName
-				}
-				def.Backend = &Backend{
-					Name:         "backend-" + rand.Characters(5),
-					BackendRules: rule.TCP.Backend.BackendRule,
-					Endpoints:    eps,
+				if _, ok := lbc.Ingress.UsesTLS(rule.Host); ok && !rule.TCP.NoSSL {
+					def.UsesSSL = true
 				}
 				lbc.Parsed.TCPService = append(lbc.Parsed.TCPService, def)
 			}
 		}
 	}
+	sort.Slice(lbc.Parsed.TCPService, func(i, j int) bool { return lbc.Parsed.TCPService[i].SortKey() < lbc.Parsed.TCPService[j].SortKey() })
 
-	if httpCount > 0 || (lbc.Ingress.Spec.Backend != nil && httpsCount == 0) {
-		lbc.Svc2TargetPort[80] = 80
-		// TODO: Fix
+	if !usesHTTPRule && lbc.Ingress.Spec.Backend != nil {
+		lbc.PortMapping[80] = Target{PodPort: 80}
 	}
 
-	if httpsCount > 0 {
-		lbc.Svc2TargetPort[443] = 443
-		// TODO: Fix
+	for key := range httpServices {
+		value := httpServices[key]
+		sort.Slice(value, func(i, j int) bool { return value[i].SortKey() < value[j].SortKey() })
+		lbc.Parsed.HTTPService = append(lbc.Parsed.HTTPService, &HTTPService{
+			Name:    "fix-it",
+			Port:    key.Port,
+			UsesSSL: key.UsesSSL,
+			Paths:   value,
+		})
 	}
+	sort.Slice(lbc.Parsed.HTTPService, func(i, j int) bool { return lbc.Parsed.HTTPService[i].SortKey() < lbc.Parsed.HTTPService[j].SortKey() })
 
 	// ref: https://github.com/appscode/voyager/issues/188
 	if lbc.Opt.CloudProvider == "aws" && lbc.Ingress.LBType() == api.LBTypeLoadBalancer {
 		if ans, ok := lbc.Ingress.ServiceAnnotations(lbc.Opt.CloudProvider); ok {
 			if v, usesAWSCertManager := ans["service.beta.kubernetes.io/aws-load-balancer-ssl-cert"]; usesAWSCertManager && v != "" {
 				var tp80, sp443 bool
-				for svcPort, targetPort := range lbc.Svc2TargetPort {
-					if targetPort == 80 {
+				for svcPort, target := range lbc.PortMapping {
+					if target.PodPort == 80 {
 						tp80 = true
 					}
 					if svcPort == 443 {
@@ -378,7 +400,7 @@ func (lbc *Controller) parseSpec() {
 					}
 				}
 				if tp80 && !sp443 {
-					lbc.Svc2TargetPort[443] = 80
+					lbc.PortMapping[443] = Target{PodPort: 80}
 				} else {
 					log.Errorln("Failed to open port 443 on service for AWS cert manager.")
 				}

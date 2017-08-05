@@ -83,7 +83,7 @@ backend default-backend
     {% if e.ExternalName %}
     {% if e.UseDNSResolver %}
     server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} {% if e.DNSResolver %} {% if e.CheckHealth %} check {% endif %} resolvers {{ e.DNSResolver }} resolve-prefer ipv4 {% endif %}
-    {% elif not svc.Backends.BackendRules %}
+    {% elif not svc.Backend.BackendRules %}
     acl https ssl_fc
     http-request redirect location https://{{e.ExternalName}}:{{ e.Port }} code 301 if https
     http-request redirect location http://{{e.ExternalName}}:{{ e.Port }} code 301 unless https
@@ -109,9 +109,9 @@ frontend https-frontend
 
 {% for svc in HttpsService %}
     {% set both = 0 %}
-    {% if svc.AclMatch %}acl url_acl_{{ svc.Name }} path_beg {{ svc.AclMatch }} {% set both = both + 1 %}{% endif %}
+    {% if svc.Path %}acl url_acl_{{ svc.Name }} path_beg {{ svc.Path }} {% set both = both + 1 %}{% endif %}
     {% if svc.Host %}acl host_acl_{{ svc.Name }} {{ svc.Host|host_name }} {% set both = both + 1 %}{% endif %}
-    use_backend https-{{ svc.Name }} {% if both != 0 %}if {% endif %}{% if svc.AclMatch %}url_acl_{{ svc.Name }}{% endif %} {% if svc.Host %}host_acl_{{ svc.Name }}{% endif %}
+    use_backend https-{{ svc.Name }} {% if both != 0 %}if {% endif %}{% if svc.Path %}url_acl_{{ svc.Name }}{% endif %} {% if svc.Host %}host_acl_{{ svc.Name }}{% endif %}
 {% endfor %}
     {% if DefaultBackend %}default_backend default-backend{% endif %}
 {% endif %}
@@ -120,24 +120,24 @@ frontend https-frontend
 backend https-{{ svc.Name }}
     {% if Sticky %}cookie SERVERID insert indirect nocache{% endif %}
 
-    {% for rule in svc.Backends.BackendRules %}
+    {% for rule in svc.Backend.BackendRules %}
     {{ rule }}
     {% endfor %}
 
-    {% for rule in svc.Backends.RewriteRules %}
+    {% for rule in svc.Backend.RewriteRules %}
     reqrep {{ rule }}
     {% endfor %}
 
-    {% for rule in svc.Backends.HeaderRules %}
+    {% for rule in svc.Backend.HeaderRules %}
     acl ___header_x_{{ forloop.Counter }}_exists req.hdr({{ rule|header_name }}) -m found
     http-request add-header {{ rule }} unless ___header_x_{{ forloop.Counter }}_exists
     {% endfor %}
 
-    {% for e in svc.Backends.Endpoints %}
+    {% for e in svc.Backend.Endpoints %}
     {% if e.ExternalName %}
     {% if e.UseDNSResolver %}
     server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} {% if e.DNSResolver %} {% if e.CheckHealth %} check {% endif %} resolvers {{ e.DNSResolver }} resolve-prefer ipv4 {% endif %}
-    {% elif not svc.Backends.BackendRules %}
+    {% elif not svc.Backend.BackendRules %}
     http-request redirect location https://{{e.ExternalName}}:{{ e.Port }} code 301
     {% endif %}
     {% else %}
@@ -156,9 +156,9 @@ frontend http-frontend
 
 {% for svc in HttpService %}
     {% set both = 0 %}
-    {% if svc.AclMatch %}acl url_acl_{{ svc.Name }} path_beg {{ svc.AclMatch }} {% set both = both + 1 %}{% endif %}
+    {% if svc.Path %}acl url_acl_{{ svc.Name }} path_beg {{ svc.Path }} {% set both = both + 1 %}{% endif %}
     {% if svc.Host %}acl host_acl_{{ svc.Name }} {{ svc.Host|host_name }} {% set both = both + 1 %}{% endif %}
-    use_backend http-{{ svc.Name }} {% if both != 0 %}if {% endif %}{% if svc.AclMatch %}url_acl_{{ svc.Name }}{% endif %} {% if svc.Host %}host_acl_{{ svc.Name }}{% endif %}
+    use_backend http-{{ svc.Name }} {% if both != 0 %}if {% endif %}{% if svc.Path %}url_acl_{{ svc.Name }}{% endif %} {% if svc.Host %}host_acl_{{ svc.Name }}{% endif %}
 {% endfor %}
     {% if DefaultBackend %}default_backend default-backend{% endif %}
 {% endif %}
@@ -167,24 +167,24 @@ frontend http-frontend
 backend http-{{ svc.Name }}
     {% if Sticky %}cookie SERVERID insert indirect nocache{% endif %}
 
-    {% for rule in svc.Backends.BackendRules %}
+    {% for rule in svc.Backend.BackendRules %}
     {{ rule }}
     {% endfor %}
 
-    {% for rule in svc.Backends.RewriteRules %}
+    {% for rule in svc.Backend.RewriteRules %}
     reqrep {{ rule }}
     {% endfor %}
 
-    {% for rule in svc.Backends.HeaderRules %}
+    {% for rule in svc.Backend.HeaderRules %}
     acl ___header_x_{{ forloop.Counter }}_exists req.hdr({{ rule|header_name }}) -m found
     http-request add-header {{ rule }} unless ___header_x_{{ forloop.Counter }}_exists
     {% endfor %}
 
-    {% for e in svc.Backends.Endpoints %}
+    {% for e in svc.Backend.Endpoints %}
     {% if e.ExternalName %}
     {% if e.UseDNSResolver %}
     server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} {% if e.DNSResolver %} {% if e.CheckHealth %} check {% endif %} resolvers {{ e.DNSResolver }} resolve-prefer ipv4 {% endif %}
-    {% elif not svc.Backends.BackendRules %}
+    {% elif not svc.Backend.BackendRules %}
     http-request redirect location http://{{e.ExternalName}}:{{ e.Port }} code 301
     {% endif %}
     {% else %}
@@ -208,7 +208,7 @@ frontend tcp-frontend-key-{{ svc.Port }}
 backend tcp-{{ svc.Name }}
     mode tcp
 
-    {% for rule in svc.Backends.BackendRules %}
+    {% for rule in svc.Backend.BackendRules %}
     {{ rule }}
     {% endfor %}
 
@@ -217,7 +217,7 @@ backend tcp-{{ svc.Name }}
     stick on src
     {% endif %}
 
-    {% for e in svc.Backends.Endpoints %}
+    {% for e in svc.Backend.Endpoints %}
     {% if e.ExternalName %}
     server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} {% if e.DNSResolver %} {% if e.CheckHealth %} check {% endif %} resolvers {{ e.DNSResolver }} resolve-prefer ipv4 {% endif %}
     {% else %}

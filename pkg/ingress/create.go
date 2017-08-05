@@ -333,12 +333,12 @@ func (lbc *Controller) createHostPortSvc() error {
 	}
 
 	// opening other tcp ports
-	for svcPort, targetPort := range lbc.Svc2TargetPort {
+	for svcPort, target := range lbc.PortMapping {
 		p := apiv1.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
 			Port:       int32(svcPort),
-			TargetPort: intstr.FromInt(targetPort),
+			TargetPort: intstr.FromInt(target.PodPort),
 		}
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
@@ -477,16 +477,16 @@ func (lbc *Controller) createHostPortPods() error {
 	}
 
 	// adding tcp ports to pod template
-	targetPorts := sets.NewInt()
-	for _, targetPort := range lbc.Svc2TargetPort {
-		targetPorts.Insert(targetPort)
+	podPorts := sets.NewInt()
+	for _, target := range lbc.PortMapping {
+		podPorts.Insert(target.PodPort)
 	}
-	for targetPort := range targetPorts {
+	for podPort := range podPorts {
 		p := apiv1.ContainerPort{
-			Name:          "tcp-" + strconv.Itoa(targetPort),
+			Name:          "tcp-" + strconv.Itoa(podPort),
 			Protocol:      "TCP",
-			ContainerPort: int32(targetPort),
-			HostPort:      int32(targetPort),
+			ContainerPort: int32(podPort),
+			HostPort:      int32(podPort),
 		}
 		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, p)
 	}
@@ -557,13 +557,13 @@ func (lbc *Controller) createNodePortSvc() error {
 	}
 
 	// opening other tcp ports
-	for svcPort, targetPort := range lbc.Svc2TargetPort {
+	for svcPort, target := range lbc.PortMapping {
 		p := apiv1.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
 			Port:       int32(svcPort),
-			TargetPort: intstr.FromInt(targetPort),
-			NodePort:   int32(lbc.Svc2NodePort[svcPort]),
+			TargetPort: intstr.FromInt(target.PodPort),
+			NodePort:   int32(target.NodePort),
 		}
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
@@ -695,15 +695,15 @@ func (lbc *Controller) createNodePortPods() error {
 	}
 
 	// adding tcp ports to pod template
-	targetPorts := sets.NewInt()
-	for _, targetPort := range lbc.Svc2TargetPort {
-		targetPorts.Insert(targetPort)
+	podPorts := sets.NewInt()
+	for _, target := range lbc.PortMapping {
+		podPorts.Insert(target.PodPort)
 	}
-	for targetPort := range targetPorts {
+	for podPort := range podPorts {
 		p := apiv1.ContainerPort{
-			Name:          "tcp-" + strconv.Itoa(targetPort),
+			Name:          "tcp-" + strconv.Itoa(podPort),
 			Protocol:      "TCP",
-			ContainerPort: int32(targetPort),
+			ContainerPort: int32(podPort),
 		}
 		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, p)
 	}
@@ -772,13 +772,13 @@ func (lbc *Controller) createLoadBalancerSvc() error {
 	}
 
 	// opening other tcp ports
-	for svcPort, targetPort := range lbc.Svc2TargetPort {
+	for svcPort, target := range lbc.PortMapping {
 		p := apiv1.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
 			Port:       int32(svcPort),
-			TargetPort: intstr.FromInt(targetPort),
-			NodePort:   int32(lbc.Svc2NodePort[svcPort]),
+			TargetPort: intstr.FromInt(target.PodPort),
+			NodePort:   int32(target.NodePort),
 		}
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}

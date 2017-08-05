@@ -74,9 +74,7 @@ func (r Ingress) Ports() []int {
 			if port := rule.HTTP.Port.IntValue(); port > 0 {
 				ports.Insert(port)
 			} else {
-				if rule.HTTP.NoSSL {
-					ports.Insert(80)
-				} else if _, ok := r.UsesTLS(rule.Host); ok {
+				if _, ok := r.UsesTLS(rule.Host); ok && !rule.HTTP.NoSSL {
 					ports.Insert(443)
 				} else {
 					ports.Insert(80)
