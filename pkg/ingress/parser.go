@@ -311,7 +311,7 @@ func (lbc *Controller) parseSpec() {
 						Host:     host,
 						AclMatch: svc.Path,
 					}
-					def.Backends = &Backend{
+					def.Backend = &Backend{
 						Name:         "backend-" + rand.Characters(5),
 						Endpoints:    eps,
 						BackendRules: svc.Backend.BackendRule,
@@ -344,7 +344,7 @@ func (lbc *Controller) parseSpec() {
 				if secretName, ok := lbc.Ingress.UsesTLS(rule.Host); ok && !rule.TCP.NoSSL {
 					def.SecretName = secretName
 				}
-				def.Backends = &Backend{
+				def.Backend = &Backend{
 					Name:         "backend-" + rand.Characters(5),
 					BackendRules: rule.TCP.Backend.BackendRule,
 					Endpoints:    eps,

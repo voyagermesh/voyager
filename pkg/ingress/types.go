@@ -34,14 +34,14 @@ type Controller struct {
 	// contains all the https host names.
 	HostFilter []string
 	// parsed ingress.
-	Parsed HAProxyOptions
+	Parsed TemplateData
 
 	// kubernetes client
 	CloudManager cloudprovider.Interface
 	sync.Mutex
 }
 
-type HAProxyOptions struct {
+type TemplateData struct {
 	Timestamp int64
 	// those options are get from annotations. applied globally
 	// in all the sections.
@@ -73,7 +73,7 @@ type Service struct {
 	Name     string
 	AclMatch string
 	Host     string
-	Backends *Backend
+	Backend  *Backend
 }
 
 type TCPService struct {
@@ -82,7 +82,7 @@ type TCPService struct {
 	Port        string
 	SecretName  string
 	PEMName     string
-	Backends    *Backend
+	Backend     *Backend
 	ALPNOptions string
 }
 
