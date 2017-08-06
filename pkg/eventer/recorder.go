@@ -33,6 +33,7 @@ const (
 	EventReasonIngressStatsServiceCreateSuccessful   = "StatsServiceCreateSuccessful"
 	EventReasonIngressStatsServiceDeleteFailed       = "StatsServiceDeleteFailed"
 	EventReasonIngressStatsServiceDeleteSuccessful   = "StatsServiceDeleteSuccessful"
+	EventReasonIngressInvalid                        = "IngressInvalid"
 )
 
 func NewEventRecorder(client clientset.Interface, component string) record.EventRecorder {

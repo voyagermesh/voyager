@@ -7,6 +7,7 @@ import (
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/analytics"
+	"github.com/appscode/voyager/pkg/eventer"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -45,7 +46,16 @@ func (op *Operator) WatchIngresses() {
 						log.Infof("%s %s@%s does not match ingress class", ingress.GroupVersionKind(), ingress.Name, ingress.Namespace)
 						return
 					}
-
+					if err := engress.IsValid(); err != nil {
+						op.recorder.Eventf(
+							engress,
+							apiv1.EventTypeWarning,
+							eventer.EventReasonIngressInvalid,
+							"Reason: %s",
+							err.Error(),
+						)
+						return
+					}
 					go analytics.Send(ingress.GroupVersionKind().String(), "ADD", "success")
 
 					op.AddEngress(engress)
@@ -76,6 +86,16 @@ func (op *Operator) WatchIngresses() {
 
 				if changed, _ := oldEngress.HasChanged(*newEngress); !changed {
 					log.Infof("%s %s@%s has unchanged spec and annotations", newIngress.GroupVersionKind(), newIngress.Name, newIngress.Namespace)
+					return
+				}
+				if err := newEngress.IsValid(); err != nil {
+					op.recorder.Eventf(
+						newEngress,
+						apiv1.EventTypeWarning,
+						eventer.EventReasonIngressInvalid,
+						"Reason: %s",
+						err.Error(),
+					)
 					return
 				}
 				op.UpdateEngress(oldEngress, newEngress)
