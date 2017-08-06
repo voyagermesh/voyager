@@ -34,7 +34,7 @@ type Controller struct {
 	// If AWS cert manager is used then a 443 -> 80 port mapping is added.
 	PortMapping map[int]Target
 	// parsed ingress.
-	TemplateData IngressInfo
+	Parsed IngressInfo
 	// contains raw configMap data parsed from the cfg file.
 	HAProxyConfig string
 

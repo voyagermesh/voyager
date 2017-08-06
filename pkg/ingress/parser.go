@@ -126,7 +126,7 @@ func (c *Controller) serviceEndpoints(name string, port intstr.IntOrString, host
 			return nil, errors.FromErr(err).Err()
 		}
 		if ep.UseDNSResolver && resolver != nil {
-			c.TemplateData.DNSResolvers[resolver.Name] = resolver
+			c.Parsed.DNSResolvers[resolver.Name] = resolver
 			ep.DNSResolver = resolver.Name
 			ep.CheckHealth = resolver.CheckHealth
 		}
@@ -217,7 +217,7 @@ func isForwardable(hostNames []string, hostName string) bool {
 
 func (c *Controller) generateTemplate() error {
 	log.Infoln("Generating Ingress template.")
-	ctx, err := Context(c.TemplateData)
+	ctx, err := Context(c.Parsed)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -271,13 +271,13 @@ func getTargetPort(servicePort *apiv1.ServicePort) int {
 func (c *Controller) parseSpec() {
 	log.Infoln("Parsing Engress specs for", c.Ingress.Name)
 	c.PortMapping = make(map[int]Target)
-	c.TemplateData.DNSResolvers = make(map[string]*api.DNSResolver)
+	c.Parsed.DNSResolvers = make(map[string]*api.DNSResolver)
 
 	if c.Ingress.Spec.Backend != nil {
 		log.Debugln("generating default backend", c.Ingress.Spec.Backend.RewriteRule, c.Ingress.Spec.Backend.HeaderRule)
 		eps, _ := c.serviceEndpoints(c.Ingress.Spec.Backend.ServiceName, c.Ingress.Spec.Backend.ServicePort, c.Ingress.Spec.Backend.HostNames)
 		sort.Slice(eps, func(i, j int) bool { return eps[i].IP < eps[j].IP })
-		c.TemplateData.DefaultBackend = &Backend{
+		c.Parsed.DefaultBackend = &Backend{
 			Endpoints:    eps,
 			BackendRules: c.Ingress.Spec.Backend.BackendRule,
 			RewriteRules: c.Ingress.Spec.Backend.RewriteRule,
@@ -285,8 +285,8 @@ func (c *Controller) parseSpec() {
 		}
 	}
 
-	c.TemplateData.HTTPService = make([]*HTTPService, 0)
-	c.TemplateData.TCPService = make([]*TCPService, 0)
+	c.Parsed.HTTPService = make([]*HTTPService, 0)
+	c.Parsed.TCPService = make([]*TCPService, 0)
 
 	type httpKey struct {
 		Port    int
@@ -369,12 +369,12 @@ func (c *Controller) parseSpec() {
 				if _, ok := c.Ingress.UsesTLS(rule.Host); ok && !rule.TCP.NoSSL {
 					def.UsesSSL = true
 				}
-				c.TemplateData.TCPService = append(c.TemplateData.TCPService, def)
+				c.Parsed.TCPService = append(c.Parsed.TCPService, def)
 			}
 		}
 	}
-	sort.Slice(c.TemplateData.TCPService, func(i, j int) bool {
-		return c.TemplateData.TCPService[i].SortKey() < c.TemplateData.TCPService[j].SortKey()
+	sort.Slice(c.Parsed.TCPService, func(i, j int) bool {
+		return c.Parsed.TCPService[i].SortKey() < c.Parsed.TCPService[j].SortKey()
 	})
 
 	if !usesHTTPRule && c.Ingress.Spec.Backend != nil {
@@ -384,15 +384,15 @@ func (c *Controller) parseSpec() {
 	for key := range httpServices {
 		value := httpServices[key]
 		sort.Slice(value, func(i, j int) bool { return value[i].SortKey() < value[j].SortKey() })
-		c.TemplateData.HTTPService = append(c.TemplateData.HTTPService, &HTTPService{
+		c.Parsed.HTTPService = append(c.Parsed.HTTPService, &HTTPService{
 			Name:    "fix-it",
 			Port:    key.Port,
 			UsesSSL: key.UsesSSL,
 			Paths:   value,
 		})
 	}
-	sort.Slice(c.TemplateData.HTTPService, func(i, j int) bool {
-		return c.TemplateData.HTTPService[i].SortKey() < c.TemplateData.HTTPService[j].SortKey()
+	sort.Slice(c.Parsed.HTTPService, func(i, j int) bool {
+		return c.Parsed.HTTPService[i].SortKey() < c.Parsed.HTTPService[j].SortKey()
 	})
 
 	// ref: https://github.com/appscode/voyager/issues/188
@@ -424,29 +424,29 @@ func (c *Controller) parseOptions() {
 		return
 	}
 	log.Infoln("Parsing annotations.")
-	c.TemplateData.TimeoutDefaults = c.Ingress.Timeouts()
-	c.TemplateData.Sticky = c.Ingress.StickySession()
+	c.Parsed.TimeoutDefaults = c.Ingress.Timeouts()
+	c.Parsed.Sticky = c.Ingress.StickySession()
 	if len(c.Ingress.Spec.TLS) > 0 {
-		c.TemplateData.SSLCert = true
+		c.Parsed.SSLCert = true
 	}
 
-	c.TemplateData.Stats = c.Ingress.Stats()
-	if c.TemplateData.Stats {
-		c.TemplateData.StatsPort = c.Ingress.StatsPort()
+	c.Parsed.Stats = c.Ingress.Stats()
+	if c.Parsed.Stats {
+		c.Parsed.StatsPort = c.Ingress.StatsPort()
 		if name := c.Ingress.StatsSecretName(); len(name) > 0 {
 			secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.ObjectMeta.Namespace).Get(name, metav1.GetOptions{})
 			if err == nil {
-				c.TemplateData.StatsUserName = string(secret.Data["username"])
-				c.TemplateData.StatsPassWord = string(secret.Data["password"])
+				c.Parsed.StatsUserName = string(secret.Data["username"])
+				c.Parsed.StatsPassWord = string(secret.Data["password"])
 			} else {
-				c.TemplateData.Stats = false
+				c.Parsed.Stats = false
 				log.Errorln("Error encountered while loading Stats secret", err)
 			}
 		}
 	}
 
 	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
-		c.TemplateData.AcceptProxy = c.Ingress.KeepSourceIP()
+		c.Parsed.AcceptProxy = c.Ingress.KeepSourceIP()
 	}
 }
 

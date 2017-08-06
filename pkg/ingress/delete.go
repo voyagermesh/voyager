@@ -30,7 +30,7 @@ func (c *Controller) Delete() error {
 		}
 	}
 
-	if c.TemplateData.Stats {
+	if c.Parsed.Stats {
 		c.ensureStatsServiceDeleted()
 	}
 

@@ -65,7 +65,7 @@ func (c *Controller) Create() error {
 		return errors.FromErr(err).Err()
 	}
 
-	if c.TemplateData.Stats {
+	if c.Parsed.Stats {
 		err := c.ensureStatsService()
 		// Error ignored intentionally
 		if err != nil {
@@ -491,11 +491,11 @@ func (c *Controller) createHostPortPods() error {
 		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, p)
 	}
 
-	if c.TemplateData.Stats {
+	if c.Parsed.Stats {
 		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
 			Name:          api.StatsPortName,
 			Protocol:      "TCP",
-			ContainerPort: int32(c.TemplateData.StatsPort),
+			ContainerPort: int32(c.Parsed.StatsPort),
 		})
 	}
 
@@ -708,11 +708,11 @@ func (c *Controller) createNodePortPods() error {
 		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, p)
 	}
 
-	if c.TemplateData.Stats {
+	if c.Parsed.Stats {
 		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
 			Name:          api.StatsPortName,
 			Protocol:      "TCP",
-			ContainerPort: int32(c.TemplateData.StatsPort),
+			ContainerPort: int32(c.Parsed.StatsPort),
 		})
 	}
 
@@ -873,7 +873,7 @@ func (c *Controller) ensureStatsService() error {
 				{
 					Name:       api.StatsPortName,
 					Protocol:   "TCP",
-					Port:       int32(c.TemplateData.StatsPort),
+					Port:       int32(c.Parsed.StatsPort),
 					TargetPort: intstr.FromString(api.StatsPortName),
 				},
 			},
