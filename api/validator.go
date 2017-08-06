@@ -51,9 +51,6 @@ func (r Ingress) IsValid() error {
 			if _, err := checkRequiredPort(rule.TCP.Backend.ServicePort); err != nil {
 				return fmt.Errorf("spec.rule[%d].tcp is using invalid servicePort %s for addr %s. Reason: %s", ri, rule.TCP.Backend.ServicePort, addr, err)
 			}
-			if len(rule.TCP.Backend.HostNames) > 0 && rule.TCP.Backend.HostExpander != "" {
-				return fmt.Errorf("spec.rule[%d].tcp is using both hostNames and hostExpander for addr %s", ri, addr)
-			}
 		}
 		if rule.HTTP != nil {
 			addr := address{Host: rule.Host}
@@ -89,9 +86,6 @@ func (r Ingress) IsValid() error {
 				}
 				if _, err := checkRequiredPort(path.Backend.ServicePort); err != nil {
 					return fmt.Errorf("spec.rule[%d].http.paths[%d] is using invalid servicePort %s for addr %s and path %s. Reason: %s", ri, pi, path.Backend.ServicePort, addr, path.Path, err)
-				}
-				if len(path.Backend.HostNames) > 0 && path.Backend.HostExpander != "" {
-					return fmt.Errorf("spec.rule[%d].http.paths[%d] is using both hostNames and hostExpander for addr %s and path %s", ri, pi, addr, path.Path)
 				}
 			}
 		}
