@@ -19,7 +19,7 @@ import (
 )
 
 // Blocks caller. Intended to be called as a Go routine.
-func (op *Operator) WatchServices() cache.Controller {
+func (op *Operator) getServiceWatcher() cache.Controller {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
 			return op.KubeClient.CoreV1().Services(apiv1.NamespaceAll).List(metav1.ListOptions{})

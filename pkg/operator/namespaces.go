@@ -10,7 +10,7 @@ import (
 
 // Blocks caller. Intended to be called as a Go routine.
 // ref: https://github.com/kubernetes/kubernetes/issues/46736
-func (op *Operator) WatchNamespaces() cache.Controller {
+func (op *Operator) getNamespaceWatcher() cache.Controller {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
 			return op.KubeClient.CoreV1().Namespaces().List(metav1.ListOptions{})

@@ -16,7 +16,7 @@ import (
 )
 
 // Blocks caller. Intended to be called as a Go routine.
-func (op *Operator) WatchIngresses() cache.Controller {
+func (op *Operator) getIngresseWatcher() cache.Controller {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
 			return op.KubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})

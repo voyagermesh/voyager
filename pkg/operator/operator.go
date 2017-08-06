@@ -96,17 +96,17 @@ func (op *Operator) Run() {
 	defer runtime.HandleCrash()
 
 	informers := []cache.Controller{
-		op.WatchNamespaces(),
-		op.WatchConfigMaps(),
-		op.WatchDaemonSets(),
-		op.WatchDeployments(),
-		op.WatchServices(),
-		op.WatchEndpoints(),
-		op.WatchIngresses(),
-		op.WatchIngressTPRs(),
-		op.WatchCertificateTPRs(),
+		op.getNamespaceWatcher(),
+		op.getConfigMapWatcher(),
+		op.getDaemonSetWatcher(),
+		op.getDeploymentWatcher(),
+		op.getServiceWatcher(),
+		op.getEndpointWatcher(),
+		op.getIngresseWatcher(),
+		op.getIngressTPRWatcher(),
+		op.getCertificateTPRWatcher(),
 	}
-	if informer := op.WatchServiceMonitors(); informer != nil {
+	if informer := op.getServiceMonitorWatcher(); informer != nil {
 		informers = append(informers, informer)
 	}
 	for i := range informers {
