@@ -1,27 +1,23 @@
 package operator
 
 import (
-	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/util"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
 )
 
 // Blocks caller. Intended to be called as a Go routine.
-func (op *Operator) WatchServiceMonitors() {
+func (op *Operator) WatchServiceMonitors() cache.Controller {
 	if !util.IsPreferredAPIResource(op.KubeClient, prom.TPRGroup+"/"+prom.TPRVersion, prom.TPRServiceMonitorsKind) {
 		log.Warningf("Skipping watching non-preferred GroupVersion:%s Kind:%s", prom.TPRGroup+"/"+prom.TPRVersion, prom.TPRServiceMonitorsKind)
-		return
+		return nil
 	}
-
-	defer acrt.HandleCrash()
 
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
@@ -31,7 +27,7 @@ func (op *Operator) WatchServiceMonitors() {
 			return op.PromClient.ServiceMonitors(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
-	_, ctrl := cache.NewInformer(lw,
+	_, informer := cache.NewInformer(lw,
 		&prom.ServiceMonitor{},
 		op.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
@@ -43,7 +39,7 @@ func (op *Operator) WatchServiceMonitors() {
 			},
 		},
 	)
-	ctrl.Run(wait.NeverStop)
+	return informer
 }
 
 func (op *Operator) restoreServiceMonitorIfRequired(svcmon *prom.ServiceMonitor) error {

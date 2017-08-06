@@ -13,9 +13,12 @@ import (
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
 	core "k8s.io/client-go/listers/core/v1"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 )
 
@@ -90,16 +93,24 @@ func (op *Operator) ensureThirdPartyResource(resourceName string) error {
 }
 
 func (op *Operator) Run() {
-	go op.WatchNamespaces()
-	go op.WatchConfigMaps()
-	go op.WatchServiceMonitors()
-	go op.WatchDaemonSets()
-	go op.WatchDeployments()
-	go op.WatchServices()
-	go op.WatchEndpoints()
+	defer runtime.HandleCrash()
 
-	go op.WatchIngresses()
-	go op.WatchIngressTPRs()
-	go op.WatchCertificateTPRs()
+	informers := []cache.Controller{
+		op.WatchNamespaces(),
+		op.WatchConfigMaps(),
+		op.WatchDaemonSets(),
+		op.WatchDeployments(),
+		op.WatchServices(),
+		op.WatchEndpoints(),
+		op.WatchIngresses(),
+		op.WatchIngressTPRs(),
+		op.WatchCertificateTPRs(),
+	}
+	if informer := op.WatchServiceMonitors(); informer != nil {
+		informers = append(informers, informer)
+	}
+	for i := range informers {
+		go informers[i].Run(wait.NeverStop)
+	}
 	go certificate.CheckCertificates(op.KubeClient, op.ExtClient, op.Opt)
 }

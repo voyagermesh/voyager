@@ -1,10 +1,8 @@
 package operator
 
 import (
-	acrt "github.com/appscode/go/runtime"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
@@ -12,9 +10,7 @@ import (
 
 // Blocks caller. Intended to be called as a Go routine.
 // ref: https://github.com/kubernetes/kubernetes/issues/46736
-func (op *Operator) WatchNamespaces() {
-	defer acrt.HandleCrash()
-
+func (op *Operator) WatchNamespaces() cache.Controller {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
 			return op.KubeClient.CoreV1().Namespaces().List(metav1.ListOptions{})
@@ -23,7 +19,7 @@ func (op *Operator) WatchNamespaces() {
 			return op.KubeClient.CoreV1().Namespaces().Watch(metav1.ListOptions{})
 		},
 	}
-	_, ctrl := cache.NewInformer(lw,
+	_, informer := cache.NewInformer(lw,
 		&apiv1.Namespace{},
 		op.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
@@ -43,5 +39,5 @@ func (op *Operator) WatchNamespaces() {
 			},
 		},
 	)
-	ctrl.Run(wait.NeverStop)
+	return informer
 }

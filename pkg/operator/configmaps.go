@@ -1,21 +1,17 @@
 package operator
 
 import (
-	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
 )
 
 // Blocks caller. Intended to be called as a Go routine.
-func (op *Operator) WatchConfigMaps() {
-	defer acrt.HandleCrash()
-
+func (op *Operator) WatchConfigMaps() cache.Controller {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
 			return op.KubeClient.CoreV1().ConfigMaps(apiv1.NamespaceAll).List(metav1.ListOptions{})
@@ -24,7 +20,7 @@ func (op *Operator) WatchConfigMaps() {
 			return op.KubeClient.CoreV1().ConfigMaps(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
-	_, ctrl := cache.NewInformer(lw,
+	_, informer := cache.NewInformer(lw,
 		&apiv1.ConfigMap{},
 		op.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
@@ -36,7 +32,7 @@ func (op *Operator) WatchConfigMaps() {
 			},
 		},
 	)
-	ctrl.Run(wait.NeverStop)
+	return informer
 }
 
 func (op *Operator) restoreConfigMapIfRequired(cfgmap *apiv1.ConfigMap) error {

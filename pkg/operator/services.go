@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/appscode/errors"
-	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
 	tapi "github.com/appscode/voyager/api"
 	_ "github.com/appscode/voyager/api/install"
@@ -13,7 +12,6 @@ import (
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
 	core_listers "k8s.io/client-go/listers/core/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
@@ -21,9 +19,7 @@ import (
 )
 
 // Blocks caller. Intended to be called as a Go routine.
-func (op *Operator) WatchServices() {
-	defer acrt.HandleCrash()
-
+func (op *Operator) WatchServices() cache.Controller {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
 			return op.KubeClient.CoreV1().Services(apiv1.NamespaceAll).List(metav1.ListOptions{})
@@ -32,7 +28,7 @@ func (op *Operator) WatchServices() {
 			return op.KubeClient.CoreV1().Services(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
-	indexer, ctrl := cache.NewIndexerInformer(lw,
+	indexer, informer := cache.NewIndexerInformer(lw,
 		&apiv1.Service{},
 		op.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
@@ -56,7 +52,7 @@ func (op *Operator) WatchServices() {
 		cache.Indexers{},
 	)
 	op.ServiceLister = core_listers.NewServiceLister(indexer)
-	ctrl.Run(wait.NeverStop)
+	return informer
 }
 
 func (op *Operator) restoreServiceIfRequired(svc *apiv1.Service) (bool, error) {
