@@ -102,7 +102,7 @@ func (op *Operator) WatchIngressTPRs() {
 }
 
 func (op *Operator) AddEngress(engress *tapi.Ingress) {
-	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.Opt, engress)
+	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 	if ctrl.IsExists() {
 		// Loadbalancer resource for this ingress is found in its place,
 		// so no need to create the resources. First trying to update
@@ -171,7 +171,7 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 		return
 	}
 
-	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.Opt, newEngress)
+	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, newEngress)
 
 	if oldHandled && !newHandled {
 		ctrl.Delete()
@@ -248,7 +248,7 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 }
 
 func (op *Operator) DeleteEngress(engress *tapi.Ingress) {
-	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.Opt, engress)
+	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 	ctrl.Delete()
 
 	for _, meta := range engress.BackendServices() {

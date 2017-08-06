@@ -25,6 +25,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	clientset "k8s.io/client-go/kubernetes"
+	core "k8s.io/client-go/listers/core/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
@@ -32,15 +33,19 @@ func NewController(
 	kubeClient clientset.Interface,
 	extClient acs.ExtensionInterface,
 	promClient pcm.MonitoringV1alpha1Interface,
+	services core.ServiceLister,
+	endpoints core.EndpointsLister,
 	opt config.Options,
 	ingress *api.Ingress) *Controller {
 	h := &Controller{
-		KubeClient: kubeClient,
-		ExtClient:  extClient,
-		PromClient: promClient,
-		Opt:        opt,
-		Ingress:    ingress,
-		recorder:   eventer.NewEventRecorder(kubeClient, "voyager operator"),
+		KubeClient:      kubeClient,
+		ExtClient:       extClient,
+		PromClient:      promClient,
+		ServiceLister:   services,
+		EndpointsLister: endpoints,
+		Opt:             opt,
+		Ingress:         ingress,
+		recorder:        eventer.NewEventRecorder(kubeClient, "voyager operator"),
 	}
 	log.Infoln("Initializing cloud manager for provider", opt.CloudProvider)
 	if opt.CloudProvider == "aws" || opt.CloudProvider == "gce" || opt.CloudProvider == "azure" {
@@ -99,7 +104,7 @@ func (c *Controller) serviceEndpoints(name string, port intstr.IntOrString, host
 	}
 
 	log.Infoln("looking for services in namespace", namespace, "with name", name)
-	service, err := c.KubeClient.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
+	service, err := c.ServiceLister.Services(namespace).Get(name)
 	if err != nil {
 		log.Warningln(err)
 		return nil, err
@@ -136,7 +141,7 @@ func (c *Controller) serviceEndpoints(name string, port intstr.IntOrString, host
 }
 
 func (c *Controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
-	ep, err := c.KubeClient.CoreV1().Endpoints(s.Namespace).Get(s.Name, metav1.GetOptions{})
+	ep, err := c.EndpointsLister.Endpoints(s.Namespace).Get(s.Name)
 	if err != nil {
 		log.Warningln(err)
 		return nil, err

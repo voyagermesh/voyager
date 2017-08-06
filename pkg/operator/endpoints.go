@@ -10,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
+	core_listers "k8s.io/client-go/listers/core/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
 )
@@ -26,7 +27,7 @@ func (op *Operator) WatchEndpoints() {
 			return op.KubeClient.CoreV1().Endpoints(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
-	_, ctrl := cache.NewInformer(lw,
+	indexer, ctrl := cache.NewIndexerInformer(lw,
 		&apiv1.Endpoints{},
 		op.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
@@ -56,6 +57,8 @@ func (op *Operator) WatchEndpoints() {
 				op.updateHAProxyConfig(svc)
 			},
 		},
+		cache.Indexers{},
 	)
+	op.EndpointsLister = core_listers.NewEndpointsLister(indexer)
 	ctrl.Run(wait.NeverStop)
 }

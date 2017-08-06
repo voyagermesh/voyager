@@ -14,15 +14,18 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
+	core "k8s.io/client-go/listers/core/v1"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/tools/record"
 )
 
 type Operator struct {
-	KubeClient clientset.Interface
-	ExtClient  tcs.ExtensionInterface
-	PromClient pcm.MonitoringV1alpha1Interface
-	Opt        config.Options
+	KubeClient      clientset.Interface
+	ExtClient       tcs.ExtensionInterface
+	PromClient      pcm.MonitoringV1alpha1Interface
+	ServiceLister   core.ServiceLister
+	EndpointsLister core.EndpointsLister
+	Opt             config.Options
 
 	recorder   record.EventRecorder
 	SyncPeriod time.Duration

@@ -10,14 +10,18 @@ import (
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	clientset "k8s.io/client-go/kubernetes"
+	core "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/record"
 )
 
 type Controller struct {
-	KubeClient clientset.Interface
-	ExtClient  acs.ExtensionInterface
-	PromClient pcm.MonitoringV1alpha1Interface
-	recorder   record.EventRecorder
+	KubeClient      clientset.Interface
+	ExtClient       acs.ExtensionInterface
+	PromClient      pcm.MonitoringV1alpha1Interface
+	ServiceLister   core.ServiceLister
+	EndpointsLister core.EndpointsLister
+
+	recorder record.EventRecorder
 
 	Opt config.Options
 
