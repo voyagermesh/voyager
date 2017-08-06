@@ -51,6 +51,12 @@ func (r Ingress) IsValid() error {
 			if _, err := checkRequiredPort(rule.TCP.Backend.ServicePort); err != nil {
 				return fmt.Errorf("spec.rule[%d].tcp is using invalid servicePort %s for addr %s. Reason: %s", ri, rule.TCP.Backend.ServicePort, addr, err)
 			}
+			if len(rule.TCP.Backend.HeaderRule) > 0 {
+				return fmt.Errorf("spec.rule[%d].tcp.backend.headerRule must be empty for addr %s", ri, addr)
+			}
+			if len(rule.TCP.Backend.RewriteRule) > 0 {
+				return fmt.Errorf("spec.rule[%d].tcp.backend.rewriteRule must be empty for addr %s", ri, addr)
+			}
 		}
 		if rule.HTTP != nil {
 			addr := address{Host: rule.Host}
