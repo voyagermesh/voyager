@@ -70,36 +70,36 @@ func NewController(
 	return h
 }
 
-func (lbc *Controller) SupportsLBType() bool {
-	switch lbc.Ingress.LBType() {
+func (c *Controller) SupportsLBType() bool {
+	switch c.Ingress.LBType() {
 	case api.LBTypeLoadBalancer:
-		return lbc.Opt.CloudProvider == "aws" ||
-			lbc.Opt.CloudProvider == "gce" ||
-			lbc.Opt.CloudProvider == "gke" ||
-			lbc.Opt.CloudProvider == "azure" ||
-			lbc.Opt.CloudProvider == "acs" ||
-			lbc.Opt.CloudProvider == "minikube"
+		return c.Opt.CloudProvider == "aws" ||
+			c.Opt.CloudProvider == "gce" ||
+			c.Opt.CloudProvider == "gke" ||
+			c.Opt.CloudProvider == "azure" ||
+			c.Opt.CloudProvider == "acs" ||
+			c.Opt.CloudProvider == "minikube"
 	case api.LBTypeNodePort, api.LBTypeHostPort:
-		return lbc.Opt.CloudProvider != "acs"
+		return c.Opt.CloudProvider != "acs"
 	default:
 		return false
 	}
 }
 
-func (lbc *Controller) serviceEndpoints(name string, port intstr.IntOrString, hostNames []string) ([]*Endpoint, error) {
-	log.Infoln("getting endpoints for ", lbc.Ingress.Namespace, name, "port", port)
+func (c *Controller) serviceEndpoints(name string, port intstr.IntOrString, hostNames []string) ([]*Endpoint, error) {
+	log.Infoln("getting endpoints for ", c.Ingress.Namespace, name, "port", port)
 
 	// the following lines giving support to
 	// serviceName.namespaceName or serviceName in the same namespace to the
 	// ingress
-	var namespace string = lbc.Ingress.Namespace
+	var namespace string = c.Ingress.Namespace
 	if strings.Contains(name, ".") {
 		namespace = name[strings.Index(name, ".")+1:]
 		name = name[:strings.Index(name, ".")]
 	}
 
 	log.Infoln("looking for services in namespace", namespace, "with name", name)
-	service, err := lbc.KubeClient.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
+	service, err := c.KubeClient.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
 		log.Warningln(err)
 		return nil, err
@@ -121,7 +121,7 @@ func (lbc *Controller) serviceEndpoints(name string, port intstr.IntOrString, ho
 			return nil, errors.FromErr(err).Err()
 		}
 		if ep.UseDNSResolver && resolver != nil {
-			lbc.Parsed.DNSResolvers[resolver.Name] = resolver
+			c.Parsed.DNSResolvers[resolver.Name] = resolver
 			ep.DNSResolver = resolver.Name
 			ep.CheckHealth = resolver.CheckHealth
 		}
@@ -132,11 +132,11 @@ func (lbc *Controller) serviceEndpoints(name string, port intstr.IntOrString, ho
 		log.Warningf("Service port %s unavailable for service %s", port.String(), service.Name)
 		return nil, goerr.New("Service port unavailable")
 	}
-	return lbc.getEndpoints(service, p, hostNames)
+	return c.getEndpoints(service, p, hostNames)
 }
 
-func (lbc *Controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
-	ep, err := lbc.KubeClient.CoreV1().Endpoints(s.Namespace).Get(s.Name, metav1.GetOptions{})
+func (c *Controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
+	ep, err := c.KubeClient.CoreV1().Endpoints(s.Namespace).Get(s.Name, metav1.GetOptions{})
 	if err != nil {
 		log.Warningln(err)
 		return nil, err
@@ -178,7 +178,7 @@ func (lbc *Controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.Service
 						Port: targetPort,
 					}
 					if epAddress.TargetRef != nil {
-						pod, err := lbc.KubeClient.CoreV1().Pods(epAddress.TargetRef.Namespace).Get(epAddress.TargetRef.Name, metav1.GetOptions{})
+						pod, err := c.KubeClient.CoreV1().Pods(epAddress.TargetRef.Namespace).Get(epAddress.TargetRef.Name, metav1.GetOptions{})
 						if err != nil {
 							log.Errorln("Error getting endpoint pod", err)
 						} else {
@@ -210,9 +210,9 @@ func isForwardable(hostNames []string, hostName string) bool {
 	return false
 }
 
-func (lbc *Controller) generateTemplate() error {
+func (c *Controller) generateTemplate() error {
 	log.Infoln("Generating Ingress template.")
-	ctx, err := Context(lbc.Parsed)
+	ctx, err := Context(c.Parsed)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -226,12 +226,12 @@ func (lbc *Controller) generateTemplate() error {
 		return errors.FromErr(err).Err()
 	}
 
-	lbc.ConfigData = stringutil.Fmt(r)
+	c.ConfigData = stringutil.Fmt(r)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
 	log.Infoln("Template genareted for HAProxy")
-	log.Infoln(lbc.ConfigData)
+	log.Infoln(c.ConfigData)
 	return nil
 }
 
@@ -263,48 +263,48 @@ func getTargetPort(servicePort *apiv1.ServicePort) int {
 	return servicePort.TargetPort.IntValue()
 }
 
-func (lbc *Controller) parseSpec() {
-	log.Infoln("Parsing Engress specs for", lbc.Ingress.Name)
-	lbc.Ports = make(map[int]int)
-	lbc.Parsed.DNSResolvers = make(map[string]*api.DNSResolver)
+func (c *Controller) parseSpec() {
+	log.Infoln("Parsing Engress specs for", c.Ingress.Name)
+	c.Ports = make(map[int]int)
+	c.Parsed.DNSResolvers = make(map[string]*api.DNSResolver)
 
-	if lbc.Ingress.Spec.Backend != nil {
-		log.Debugln("generating default backend", lbc.Ingress.Spec.Backend.RewriteRule, lbc.Ingress.Spec.Backend.HeaderRule)
-		eps, _ := lbc.serviceEndpoints(lbc.Ingress.Spec.Backend.ServiceName, lbc.Ingress.Spec.Backend.ServicePort, lbc.Ingress.Spec.Backend.HostNames)
-		lbc.Parsed.DefaultBackend = &Backend{
+	if c.Ingress.Spec.Backend != nil {
+		log.Debugln("generating default backend", c.Ingress.Spec.Backend.RewriteRule, c.Ingress.Spec.Backend.HeaderRule)
+		eps, _ := c.serviceEndpoints(c.Ingress.Spec.Backend.ServiceName, c.Ingress.Spec.Backend.ServicePort, c.Ingress.Spec.Backend.HostNames)
+		c.Parsed.DefaultBackend = &Backend{
 			Name:      "default-backend",
 			Endpoints: eps,
 
-			BackendRules: lbc.Ingress.Spec.Backend.BackendRule,
-			RewriteRules: lbc.Ingress.Spec.Backend.RewriteRule,
-			HeaderRules:  lbc.Ingress.Spec.Backend.HeaderRule,
+			BackendRules: c.Ingress.Spec.Backend.BackendRule,
+			RewriteRules: c.Ingress.Spec.Backend.RewriteRule,
+			HeaderRules:  c.Ingress.Spec.Backend.HeaderRule,
 		}
 	}
-	if len(lbc.Ingress.Spec.TLS) > 0 {
-		lbc.SecretNames = make([]string, 0)
-		lbc.HostFilter = make([]string, 0)
-		for _, secret := range lbc.Ingress.Spec.TLS {
-			lbc.SecretNames = append(lbc.SecretNames, secret.SecretName)
-			lbc.HostFilter = append(lbc.HostFilter, secret.Hosts...)
+	if len(c.Ingress.Spec.TLS) > 0 {
+		c.SecretNames = make([]string, 0)
+		c.HostFilter = make([]string, 0)
+		for _, secret := range c.Ingress.Spec.TLS {
+			c.SecretNames = append(c.SecretNames, secret.SecretName)
+			c.HostFilter = append(c.HostFilter, secret.Hosts...)
 		}
 	}
 
-	lbc.Parsed.HttpService = make([]*Service, 0)
-	lbc.Parsed.HttpsService = make([]*Service, 0)
-	lbc.Parsed.TCPService = make([]*TCPService, 0)
+	c.Parsed.HttpService = make([]*Service, 0)
+	c.Parsed.HttpsService = make([]*Service, 0)
+	c.Parsed.TCPService = make([]*TCPService, 0)
 
 	var httpCount, httpsCount int
-	for _, rule := range lbc.Ingress.Spec.Rules {
+	for _, rule := range c.Ingress.Spec.Rules {
 		host := rule.Host
 		if rule.HTTP != nil {
-			if ok, _ := arrays.Contains(lbc.HostFilter, host); ok {
+			if ok, _ := arrays.Contains(c.HostFilter, host); ok {
 				httpsCount++
 			} else {
 				httpCount++
 			}
 
 			for _, svc := range rule.HTTP.Paths {
-				eps, _ := lbc.serviceEndpoints(svc.Backend.ServiceName, svc.Backend.ServicePort, svc.Backend.HostNames)
+				eps, _ := c.serviceEndpoints(svc.Backend.ServiceName, svc.Backend.ServicePort, svc.Backend.HostNames)
 				log.Infoln("Returned service endpoints len(eps)", len(eps), "for service", svc.Backend.ServiceName)
 				if len(eps) > 0 {
 					def := &Service{
@@ -320,10 +320,10 @@ func (lbc *Controller) parseSpec() {
 						HeaderRules:  svc.Backend.HeaderRule,
 					}
 					// add the service to http or https filters.
-					if ok, _ := arrays.Contains(lbc.HostFilter, host); ok {
-						lbc.Parsed.HttpsService = append(lbc.Parsed.HttpsService, def)
+					if ok, _ := arrays.Contains(c.HostFilter, host); ok {
+						c.Parsed.HttpsService = append(c.Parsed.HttpsService, def)
 					} else {
-						lbc.Parsed.HttpService = append(lbc.Parsed.HttpService, def)
+						c.Parsed.HttpService = append(c.Parsed.HttpService, def)
 					}
 				}
 			}
@@ -333,8 +333,8 @@ func (lbc *Controller) parseSpec() {
 		for _, tcpSvc := range rule.TCP {
 			log.Infoln(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort)
 
-			lbc.Ports[tcpSvc.Port.IntValue()] = tcpSvc.Port.IntValue()
-			eps, _ := lbc.serviceEndpoints(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort, tcpSvc.Backend.HostNames)
+			c.Ports[tcpSvc.Port.IntValue()] = tcpSvc.Port.IntValue()
+			eps, _ := c.serviceEndpoints(tcpSvc.Backend.ServiceName, tcpSvc.Backend.ServicePort, tcpSvc.Backend.HostNames)
 			log.Infoln("Returned service endpoints len(eps)", len(eps), "for service", tcpSvc.Backend.ServiceName)
 			if len(eps) > 0 {
 				def := &TCPService{
@@ -349,26 +349,26 @@ func (lbc *Controller) parseSpec() {
 					BackendRules: tcpSvc.Backend.BackendRule,
 					Endpoints:    eps,
 				}
-				lbc.Parsed.TCPService = append(lbc.Parsed.TCPService, def)
-				lbc.SecretNames = append(lbc.SecretNames, def.SecretName)
+				c.Parsed.TCPService = append(c.Parsed.TCPService, def)
+				c.SecretNames = append(c.SecretNames, def.SecretName)
 			}
 		}
 	}
 
-	if httpCount > 0 || (lbc.Ingress.Spec.Backend != nil && httpsCount == 0) {
-		lbc.Ports[80] = 80
+	if httpCount > 0 || (c.Ingress.Spec.Backend != nil && httpsCount == 0) {
+		c.Ports[80] = 80
 	}
 
 	if httpsCount > 0 {
-		lbc.Ports[443] = 443
+		c.Ports[443] = 443
 	}
 
 	// ref: https://github.com/appscode/voyager/issues/188
-	if lbc.Opt.CloudProvider == "aws" && lbc.Ingress.LBType() == api.LBTypeLoadBalancer {
-		if ans, ok := lbc.Ingress.ServiceAnnotations(lbc.Opt.CloudProvider); ok {
+	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
+		if ans, ok := c.Ingress.ServiceAnnotations(c.Opt.CloudProvider); ok {
 			if v, usesAWSCertManager := ans["service.beta.kubernetes.io/aws-load-balancer-ssl-cert"]; usesAWSCertManager && v != "" {
 				var tp80, sp443 bool
-				for svcPort, targetPort := range lbc.Ports {
+				for svcPort, targetPort := range c.Ports {
 					if targetPort == 80 {
 						tp80 = true
 					}
@@ -377,7 +377,7 @@ func (lbc *Controller) parseSpec() {
 					}
 				}
 				if tp80 && !sp443 {
-					lbc.Ports[443] = 80
+					c.Ports[443] = 80
 				} else {
 					log.Errorln("Failed to open port 443 on service for AWS cert manager.")
 				}
@@ -386,35 +386,35 @@ func (lbc *Controller) parseSpec() {
 	}
 }
 
-func (lbc *Controller) parseOptions() {
-	if lbc.Ingress == nil {
+func (c *Controller) parseOptions() {
+	if c.Ingress == nil {
 		log.Infoln("Config is nil, nothing to parse")
 		return
 	}
 	log.Infoln("Parsing annotations.")
-	lbc.Parsed.TimeoutDefaults = lbc.Ingress.Timeouts()
-	lbc.Parsed.Sticky = lbc.Ingress.StickySession()
-	if len(lbc.Ingress.Spec.TLS) > 0 {
-		lbc.Parsed.SSLCert = true
+	c.Parsed.TimeoutDefaults = c.Ingress.Timeouts()
+	c.Parsed.Sticky = c.Ingress.StickySession()
+	if len(c.Ingress.Spec.TLS) > 0 {
+		c.Parsed.SSLCert = true
 	}
 
-	lbc.Parsed.Stats = lbc.Ingress.Stats()
-	if lbc.Parsed.Stats {
-		lbc.Parsed.StatsPort = lbc.Ingress.StatsPort()
-		if name := lbc.Ingress.StatsSecretName(); len(name) > 0 {
-			secret, err := lbc.KubeClient.CoreV1().Secrets(lbc.Ingress.ObjectMeta.Namespace).Get(name, metav1.GetOptions{})
+	c.Parsed.Stats = c.Ingress.Stats()
+	if c.Parsed.Stats {
+		c.Parsed.StatsPort = c.Ingress.StatsPort()
+		if name := c.Ingress.StatsSecretName(); len(name) > 0 {
+			secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.ObjectMeta.Namespace).Get(name, metav1.GetOptions{})
 			if err == nil {
-				lbc.Parsed.StatsUserName = string(secret.Data["username"])
-				lbc.Parsed.StatsPassWord = string(secret.Data["password"])
+				c.Parsed.StatsUserName = string(secret.Data["username"])
+				c.Parsed.StatsPassWord = string(secret.Data["password"])
 			} else {
-				lbc.Parsed.Stats = false
+				c.Parsed.Stats = false
 				log.Errorln("Error encountered while loading Stats secret", err)
 			}
 		}
 	}
 
-	if lbc.Opt.CloudProvider == "aws" && lbc.Ingress.LBType() == api.LBTypeLoadBalancer {
-		lbc.Parsed.AcceptProxy = lbc.Ingress.KeepSourceIP()
+	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
+		c.Parsed.AcceptProxy = c.Ingress.KeepSourceIP()
 	}
 }
 
