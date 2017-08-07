@@ -25,210 +25,207 @@ defaults
     option dontlognull
 
     # Timeout values
-    {% for key, value in TimeoutDefaults %}
-    timeout {{ key }}  {{ value }}
-    {% endfor %}
+    {{ range $key, $value := .TimeoutDefaults }}
+    timeout {{ $key }} {{ $value }}
+    {{ end }}
 
     # default traffic mode is http
     # mode is overwritten in case of tcp services
     mode http
 
-{% for name, resolver in DNSResolvers %}
-resolvers {{ name }}
-    {% for ns in resolver.nameserver %}
-    nameserver dns{{ forloop.Counter }} {{ ns }}
-    {% endfor %}
-    {% if resolver.retries|integer %}
-    resolve_retries {{ resolver.retries|integer }}
-    {% endif %}
-    {% for event, time in resolver.timeout %}
-    timeout {{ event }} {{ time }}
-    {% endfor %}
-    {% for status, period in resolver.hold %}
-    hold {{ status }} {{ period }}
-    {% endfor %}
-{% endfor %}
+{{ define "dns-resolver" }}
+resolvers {{ .Name }}
+    {{ range $index, $ns := .NameServer }}
+    nameserver dns{{ $index }} {{ $ns }}
+    {{ end }}
+    {{ if .Retries }}
+    resolve_retries {{ .Retries }}
+    {{ end }}
+    {{ range $event, $time := .Timeout }}
+    timeout {{ $event }} {{ $time }}
+    {{ end }}
+    {{ range $status, $period := .Hold }}
+    hold {{ $status }} {{ $period }}
+    {{ end }}
+{{ end }}
 
-{% if Stats %}
+{{ range $resolver := .DNSResolvers }}
+{{ template "dns-resolver" $resolver }}
+{{ end }}
+
+{{ define "stats" }}
 listen stats
-    bind *:{{ StatsPort|integer }}
+    bind *:{{ .Port }}
     mode http
     stats enable
     stats realm Haproxy\ Statistics
     stats uri /
-    {% if StatsUserName %}stats auth {{ StatsUserName }}:{{ StatsPassWord }}{% endif %}
-{% endif %}
+    {{ if .Username }}stats auth {{ .Username }}:{{ .PassWord }}{{ end }}
+{{ end }}
 
-{% if DefaultBackend %}
-# default backend
+{{ if .Stats }}
+{{ template "stats" .Stats }}
+{{ end }}
+
+{{ if .DefaultBackend }}
+{{ template "default-backend" .DefaultBackend }}
+{{ end }}
+
+{{ define "default-backend" }}
 backend default-backend
-    {% if Sticky %}cookie SERVERID insert indirect nocache{% endif %}
+    {{ if .Sticky }}cookie SERVERID insert indirect nocache{{ end }}
 
-    {% for rule in DefaultBackend.BackendRules %}
-    {{ rule }}
-    {% endfor %}
+    {{ range $rule := .Backend.BackendRules }}
+    {{ $rule }}
+    {{ end }}
 
-    {% for rule in DefaultBackend.RewriteRules %}
+    {{ range $rule := .Backend.RewriteRules }}
     reqrep {{ rule }}
-    {% endfor %}
+    {{ end }}
 
-    {% for rule in DefaultBackend.HeaderRules %}
-    acl ___header_x_{{ forloop.Counter }}_exists req.hdr({{ rule|header_name }}) -m found
-    http-request add-header {{ rule }} unless ___header_x_{{ forloop.Counter }}_exists
-    {% endfor %}
+    {{ range $index, $rule := .Backend.HeaderRules }}
+    acl ___header_x_{{ $index }}_exists req.hdr({{ $rule | header_name }}) -m found
+    http-request add-header {{ $rule }} unless ___header_x_{{ $index }}_exists
+    {{ end }}
 
-    {% for e in DefaultBackend.Endpoints %}
-    {% if e.ExternalName %}
-    {% if e.UseDNSResolver %}
-    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} {% if e.DNSResolver %} {% if e.CheckHealth %} check {% endif %} resolvers {{ e.DNSResolver }} resolve-prefer ipv4 {% endif %}
-    {% elif not svc.Backend.BackendRules %}
+    {{ range $e := .Backend.Endpoints }}
+    {{ if $e.ExternalName }}
+    {{ if $e.UseDNSResolver }}
+    server {{ $e.Name }} {{ $e.ExternalName }}:{{ $e.Port }} {{ if $e.DNSResolver }} {{ if $e.CheckHealth }} check {{ end }} resolvers {{ $e.DNSResolver }} resolve-prefer ipv4 {{ end }}
+    {{ elif not .Backend.BackendRules }}
     acl https ssl_fc
-    http-request redirect location https://{{e.ExternalName}}:{{ e.Port }} code 301 if https
-    http-request redirect location http://{{e.ExternalName}}:{{ e.Port }} code 301 unless https
-    {% endif %}
-    {% else %}
-    server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %} {% if Sticky %}cookie {{ e.Name }} {% endif %}
-    {% endif %}
-    {% endfor %}
-{% endif %}
+    http-request redirect location https://{{$e.ExternalName}}:{{ $e.Port }} code 301 if https
+    http-request redirect location http://{{$e.ExternalName}}:{{ $e.Port }} code 301 unless https
+    {{ end }}
+    {{ else }}
+    server {{ $e.Name }} {{ $e.IP }}:{{ $e.Port }} {{ if $e.Weight }}weight {{ $e.Weight }}{{ end }} {{ if .Sticky }}cookie {{ $e.Name }}{{ end }}
+    {{ end }}
+    {{ end }}
+{{ end }}
 
-{% if HttpsService %}
-# https service
-frontend https-frontend
-    bind *:443 {% if AcceptProxy %}accept-proxy{% endif %} ssl no-sslv3 no-tlsv10 no-tls-tickets crt /etc/ssl/private/haproxy/ alpn http/1.1
+
+{{ range $svc := .HttpService }}
+{{ template "http-frontend" $svc }}
+{{ template "http-backend" $svc }}
+{{ end }}
+
+
+{{ define "http-frontend" }}
+frontend {{ .FrontendName }}
+    {{ if .UseSSL }}
+    bind *:{{ .Port }} {{ if .AcceptProxy }}accept-proxy{{ end }} ssl no-sslv3 no-tlsv10 no-tls-tickets crt /etc/ssl/private/haproxy/ alpn http/1.1
     # Mark all cookies as secure
     rsprep ^Set-Cookie:\ (.*) Set-Cookie:\ \1;\ Secure
     # Add the HSTS header with a 6 month max-age
     rspadd  Strict-Transport-Security:\ max-age=15768000
+    {{ else }}    
+    bind *:{{ .Port }} {{ if .AcceptProxy }}accept-proxy{{ end }}
+    {{ end }}
 
     mode http
     option httplog
     option forwardfor
 
-{% for svc in HttpsService %}
-    {% set both = 0 %}
-    {% if svc.Path %}acl url_acl_{{ svc.Name }} path_beg {{ svc.Path }} {% set both = both + 1 %}{% endif %}
-    {% if svc.Host %}acl host_acl_{{ svc.Name }} {{ svc.Host|host_name }} {% set both = both + 1 %}{% endif %}
-    use_backend https-{{ svc.Name }} {% if both != 0 %}if {% endif %}{% if svc.Path %}url_acl_{{ svc.Name }}{% endif %} {% if svc.Host %}host_acl_{{ svc.Name }}{% endif %}
-{% endfor %}
-    {% if DefaultBackend %}default_backend default-backend{% endif %}
-{% endif %}
-
-{% for svc in HttpsService %}
-backend https-{{ svc.Name }}
-    {% if Sticky %}cookie SERVERID insert indirect nocache{% endif %}
-
-    {% for rule in svc.Backend.BackendRules %}
-    {{ rule }}
-    {% endfor %}
-
-    {% for rule in svc.Backend.RewriteRules %}
-    reqrep {{ rule }}
-    {% endfor %}
-
-    {% for rule in svc.Backend.HeaderRules %}
-    acl ___header_x_{{ forloop.Counter }}_exists req.hdr({{ rule|header_name }}) -m found
-    http-request add-header {{ rule }} unless ___header_x_{{ forloop.Counter }}_exists
-    {% endfor %}
-
-    {% for e in svc.Backend.Endpoints %}
-    {% if e.ExternalName %}
-    {% if e.UseDNSResolver %}
-    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} {% if e.DNSResolver %} {% if e.CheckHealth %} check {% endif %} resolvers {{ e.DNSResolver }} resolve-prefer ipv4 {% endif %}
-    {% elif not svc.Backend.BackendRules %}
-    http-request redirect location https://{{e.ExternalName}}:{{ e.Port }} code 301
-    {% endif %}
-    {% else %}
-    server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %} {% if Sticky %} cookie {{ e.Name }} {% endif %}
-    {% endif %}
-    {% endfor %}
-{% endfor %}
-
-{% if HttpService %}
-# http services.
-frontend http-frontend
-    bind *:80 {% if AcceptProxy %}accept-proxy{% endif %}
-    mode http
-    option httplog
-    option forwardfor
-
-{% for svc in HttpService %}
-    {% set both = 0 %}
-    {% if svc.Path %}acl url_acl_{{ svc.Name }} path_beg {{ svc.Path }} {% set both = both + 1 %}{% endif %}
-    {% if svc.Host %}acl host_acl_{{ svc.Name }} {{ svc.Host|host_name }} {% set both = both + 1 %}{% endif %}
-    use_backend http-{{ svc.Name }} {% if both != 0 %}if {% endif %}{% if svc.Path %}url_acl_{{ svc.Name }}{% endif %} {% if svc.Host %}host_acl_{{ svc.Name }}{% endif %}
-{% endfor %}
-    {% if DefaultBackend %}default_backend default-backend{% endif %}
-{% endif %}
-
-{% for svc in HttpService %}
-backend http-{{ svc.Name }}
-    {% if Sticky %}cookie SERVERID insert indirect nocache{% endif %}
-
-    {% for rule in svc.Backend.BackendRules %}
-    {{ rule }}
-    {% endfor %}
-
-    {% for rule in svc.Backend.RewriteRules %}
-    reqrep {{ rule }}
-    {% endfor %}
-
-    {% for rule in svc.Backend.HeaderRules %}
-    acl ___header_x_{{ forloop.Counter }}_exists req.hdr({{ rule|header_name }}) -m found
-    http-request add-header {{ rule }} unless ___header_x_{{ forloop.Counter }}_exists
-    {% endfor %}
-
-    {% for e in svc.Backend.Endpoints %}
-    {% if e.ExternalName %}
-    {% if e.UseDNSResolver %}
-    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} {% if e.DNSResolver %} {% if e.CheckHealth %} check {% endif %} resolvers {{ e.DNSResolver }} resolve-prefer ipv4 {% endif %}
-    {% elif not svc.Backend.BackendRules %}
-    http-request redirect location http://{{e.ExternalName}}:{{ e.Port }} code 301
-    {% endif %}
-    {% else %}
-    server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %} {% if Sticky %}cookie {{ e.Name }} {% endif %}
-    {% endif %}
-    {% endfor %}
-{% endfor %}
+{{ range $path := .Paths }}
+    {{ if $path.Host }}acl host_acl_{{ $path.Backend.Name }} {{ $path.Host | host_name }}{{ end }}
+    {{ if $path.Path }}acl url_acl_{{ $path.Backend.Name }} path_beg {{ $path.Path }}{{ end }}
+    use_backend {{ $path.Backend.Name }} {{ if or $path.Host $path.Path }}if {{ end }}{{ if $path.Host }}host_acl_{{ $path.Backend.Name }}{{ end }}{{ if $path.Path }}url_acl_{{ $path.Backend.Name }}{{ end }}
+{{ end }}
+    {{ if .DefaultBackend }}default_backend default-backend{{ end }}
+{{ end }}
 
 
-{% if TCPService %}
-# tcp service
-{% for svc in TCPService %}
-frontend tcp-frontend-key-{{ svc.Port }}
-    bind *:{{ svc.Port }} {% if AcceptProxy %}accept-proxy{% endif %} {% if svc.SecretName %}ssl no-sslv3 no-tlsv10 no-tls-tickets crt /etc/ssl/private/haproxy/{{ svc.SecretName }}.pem{% endif %} {%if svc.ALPNOptions %} {{svc.ALPNOptions}}{% endif %}
+
+
+{{ define "http-backend" }}
+{{ range $path := .Paths }}
+backend {{ $path.Backend.Name }}
+    {{ if .Sticky }}cookie SERVERID insert indirect nocache{{ end }}
+
+    {{ range $rule := $path.Backend.BackendRules }}
+    {{ $rule }}
+    {{ end }}
+
+    {{ range $rule := $path.Backend.RewriteRules }}
+    reqrep {{ $rule }}
+    {{ end }}
+
+    {{ range $index, $rule := $path.Backend.HeaderRules }}
+    acl ___header_x_{{ $index }}_exists req.hdr({{ $rule | header_name }}) -m found
+    http-request add-header {{ $rule }} unless ___header_x_{{ $index }}_exists
+    {{ end }}
+
+    {{ range $e := $path.Backend.Endpoints }}
+    {{ if $e.ExternalName }}
+    {{ if $e.UseDNSResolver }}
+    server {{ $e.Name }} {{ $e.ExternalName }}:{{ $e.Port }} {{ if $e.DNSResolver }} {{ if $e.CheckHealth }} check {{ end }} resolvers {{ $e.DNSResolver }} resolve-prefer ipv4 {{ end }}
+    {{ elif not $path.Backend.BackendRules }}
+    http-request redirect location {{ if .UseSSL }}https://{{ else }}http://{{ end }}{{$e.ExternalName}}:{{ $e.Port }} code 301
+    {{ end }}
+    {{ else }}
+    server {{ $e.Name }} {{ $e.IP }}:{{ $e.Port }} {{ if $e.Weight }}weight {{ $e.Weight }} {{ end }} {{ if .Sticky }}cookie {{ $e.Name }} {{ end }}
+    {{ end }}
+    {{ end }}
+{{ end }}
+{{ end }}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{{ range $svc := .TCPService }}
+{{ template "tcp-frontend" $svc }}
+{{ template "tcp-backend" $svc }}
+{{ end }}
+
+{{ define "tcp-frontend" }}
+frontend {{ .FrontendName }}
+    bind *:{{ Port }} {{ if .AcceptProxy }}accept-proxy{{ end }} {{ if .SecretName }}ssl no-sslv3 no-tlsv10 no-tls-tickets crt /etc/ssl/private/haproxy/{{ .SecretName }}.pem{{ end }} {{if .ALPNOptions }}{{.ALPNOptions}}{{ end }}
     mode tcp
-    default_backend tcp-{{ svc.Name }}
-{% endfor %}
-{% endif %}
+    default_backend {{ .Backend.Name }}
+{{ end }}
 
-{% for svc in TCPService %}
-backend tcp-{{ svc.Name }}
+{{ define "tcp-backend" }}
+backend {{ .Backend.Name }}
     mode tcp
 
-    {% for rule in svc.Backend.BackendRules %}
-    {{ rule }}
-    {% endfor %}
+    {{ range $rule := .Backend.BackendRules }}
+    {{ $rule }}
+    {{ end }}
 
-    {% if Sticky %}
+    {{ if .Sticky }}
     stick-table type ip size 100k expire 30m
     stick on src
-    {% endif %}
+    {{ end }}
 
-    {% for e in svc.Backend.Endpoints %}
-    {% if e.ExternalName %}
-    server {{ e.Name }} {{ e.ExternalName }}:{{ e.Port }} {% if e.DNSResolver %} {% if e.CheckHealth %} check {% endif %} resolvers {{ e.DNSResolver }} resolve-prefer ipv4 {% endif %}
-    {% else %}
-    server {{ e.Name }} {{ e.IP }}:{{ e.Port }} {% if e.Weight %}weight {{ e.Weight|integer }} {% endif %}
-    {% endif %}
-    {% endfor %}
-{% endfor %}
+    {{ range $e := .Backend.Endpoints }}
+    {{ if $e.ExternalName }}
+    server {{ $e.Name }} {{ $e.ExternalName }}:{{ $e.Port }} {{ if $e.DNSResolver }} {{ if $e.CheckHealth }}check{{ end }} resolvers {{ $e.DNSResolver }} resolve-prefer ipv4{{ end }}
+    {{ else }}
+    server {{ $e.Name }} {{ $e.IP }}:{{ $e.Port }} {{ if $e.Weight }}weight {{ $e.Weight }}{{ end }}
+    {{ end }}
+    {{ end }}
+{{ end }}
 
-{% if !HttpService and !HttpsService and DefaultBackend %}
+
+
+{{ if and !.HttpService .DefaultBackend }}
 frontend http-frontend
-    bind *:80 {% if AcceptProxy %}accept-proxy{% endif %}
-    mode http
+    bind *:80 {{ if .AcceptProxy }}accept-proxy{{ end }}
 
+    mode http
+    option httplog
     option forwardfor
+
     default_backend default-backend
-{% endif %}`
+{{ end }}`

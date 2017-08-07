@@ -290,7 +290,7 @@ func (c *Controller) parseIngress() {
 		if name := c.Ingress.StatsSecretName(); len(name) > 0 {
 			secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.ObjectMeta.Namespace).Get(name, metav1.GetOptions{})
 			if err == nil {
-				stats.UserName = string(secret.Data["username"])
+				stats.Username = string(secret.Data["username"])
 				stats.PassWord = string(secret.Data["password"])
 			} else {
 				log.Errorln("Error encountered while loading Stats secret", err)
@@ -334,10 +334,10 @@ func (c *Controller) parseIngress() {
 				log.Infoln("Returned service endpoints len(eps)", len(eps), "for service", path.Backend.ServiceName)
 				if len(eps) > 0 {
 					httpPaths = append(httpPaths, &HTTPPath{
-						Name: "service-" + rand.Characters(6),
-						Host: rule.Host,
-						Path: path.Path,
+						Host:        rule.Host,
+						Path:        path.Path,
 						Backend: Backend{
+							Name: "service-" + rand.Characters(6),
 							Endpoints:    eps,
 							BackendRules: path.Backend.BackendRule,
 							RewriteRules: path.Backend.RewriteRule,
@@ -385,11 +385,11 @@ func (c *Controller) parseIngress() {
 			log.Infoln("Returned service endpoints len(eps)", len(eps), "for service", rule.TCP.Backend.ServiceName)
 			if len(eps) > 0 {
 				def := &TCPService{
-					SharedInfo:  si,
-					Name:        "tcp-" + rule.TCP.Port.String(),
-					Host:        rule.Host,
-					Port:        rule.TCP.Port.String(),
-					ALPNOptions: parseALPNOptions(rule.TCP.ALPN),
+					SharedInfo:   si,
+					FrontendName: "tcp-" + rule.TCP.Port.String(),
+					Host:         rule.Host,
+					Port:         rule.TCP.Port.String(),
+					ALPNOptions:  parseALPNOptions(rule.TCP.ALPN),
 					Backend: Backend{
 						BackendRules: rule.TCP.Backend.BackendRule,
 						Endpoints:    eps,
@@ -407,11 +407,11 @@ func (c *Controller) parseIngress() {
 		value := httpServices[key]
 		sort.Slice(value, func(i, j int) bool { return value[i].SortKey() < value[j].SortKey() })
 		c.Parsed.HTTPService = append(c.Parsed.HTTPService, &HTTPService{
-			SharedInfo: si,
-			Name:       "fix-it",
-			Port:       key.Port,
-			UsesSSL:    key.UsesSSL,
-			Paths:      value,
+			SharedInfo:   si,
+			FrontendName: "fix-it",
+			Port:         key.Port,
+			UsesSSL:      key.UsesSSL,
+			Paths:        value,
 		})
 	}
 	sort.Slice(c.Parsed.HTTPService, func(i, j int) bool {
@@ -445,6 +445,8 @@ func (c *Controller) parseIngress() {
 			}
 		}
 	}
+
+	// TODO: 9verify frontend, backend names).
 }
 
 func parseALPNOptions(opt []string) string {

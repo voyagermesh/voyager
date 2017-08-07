@@ -67,17 +67,17 @@ type SharedInfo struct {
 
 type StatsInfo struct {
 	Port     int
-	UserName string
+	Username string
 	PassWord string
 }
 
 type HTTPService struct {
 	SharedInfo
 
-	Name    string
-	Port    int
-	UsesSSL bool
-	Paths   []*HTTPPath
+	FrontendName string
+	Port         int
+	UsesSSL      bool
+	Paths        []*HTTPPath
 }
 
 func (svc HTTPService) SortKey() string {
@@ -88,10 +88,9 @@ func (svc HTTPService) SortKey() string {
 }
 
 type HTTPPath struct {
-	Name    string
-	Host    string
-	Path    string
-	Backend Backend
+	Host        string
+	Path        string
+	Backend     Backend
 }
 
 func (svc HTTPPath) SortKey() string {
@@ -101,13 +100,13 @@ func (svc HTTPPath) SortKey() string {
 type TCPService struct {
 	SharedInfo
 
-	Name        string
-	Host        string
-	Port        string
-	SecretName  string
-	PEMName     string
-	Backend     Backend
-	ALPNOptions string
+	FrontendName string
+	Host         string
+	Port         string
+	SecretName   string
+	PEMName      string
+	Backend      Backend
+	ALPNOptions  string
 }
 
 func (svc TCPService) SortKey() string {
@@ -115,6 +114,8 @@ func (svc TCPService) SortKey() string {
 }
 
 type Backend struct {
+	Name string
+
 	BackendRules []string
 	// Deprecated
 	RewriteRules []string
