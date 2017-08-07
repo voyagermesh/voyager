@@ -10,6 +10,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
@@ -248,6 +249,74 @@ var _ = Describe("IngressOperations", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 		}
+
+		shouldApplyTargetAnnotations = func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			svc, err := f.Ingress.GetOffShootService(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(svc.Annotations).NotTo(BeNil())
+			Expect(svc.Annotations).Should(HaveKey("foo"))
+			Expect(svc.Annotations["foo"]).Should(Equal("bar"))
+			Expect(svc.Annotations).Should(HaveKey("service-annotation"))
+			Expect(svc.Annotations["service-annotation"]).Should(Equal("set"))
+
+			pods, err := f.Ingress.KubeClient.CoreV1().Pods(svc.Namespace).List(metav1.ListOptions{
+				LabelSelector: labels.SelectorFromSet(svc.Spec.Selector).String(),
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(pods.Items)).Should(BeNumerically(">=", 1))
+			for _, pod := range pods.Items {
+				Expect(pod.Annotations).NotTo(BeNil())
+				Expect(pod.Annotations).Should(HaveKey("foo"))
+				Expect(pod.Annotations["foo"]).Should(Equal("bar"))
+				Expect(pod.Annotations).Should(HaveKey("pod-annotation"))
+				Expect(pod.Annotations["pod-annotation"]).Should(Equal("set"))
+			}
+
+			toBeUpdated, err := f.Ingress.Get(ing)
+			Expect(err).NotTo(HaveOccurred())
+			toBeUpdated.Annotations[api.ServiceAnnotations] = `{"bar": "foo", "second-service-annotation": "set"}`
+			err = f.Ingress.Update(toBeUpdated)
+			Expect(err).NotTo(HaveOccurred())
+			time.Sleep(time.Second*20)
+			Eventually(func() bool {
+				svc, err := f.Ingress.GetOffShootService(ing)
+				return Expect(err).NotTo(HaveOccurred()) &&
+					Expect(svc.Annotations).NotTo(BeNil()) &&
+					Expect(svc.Annotations).Should(HaveKey("bar")) &&
+					Expect(svc.Annotations["bar"]).Should(Equal("foo")) &&
+					Expect(svc.Annotations).Should(HaveKey("second-service-annotation")) &&
+					Expect(svc.Annotations["second-service-annotation"]).Should(Equal("set"))
+
+			}, "5m", "5s").Should(BeTrue())
+
+			toBeUpdated, err = f.Ingress.Get(ing)
+			Expect(err).NotTo(HaveOccurred())
+			toBeUpdated.Annotations[api.PodAnnotations] = `{"bar": "foo", "second-pod-annotation": "set"}`
+			err = f.Ingress.Update(toBeUpdated)
+			Expect(err).NotTo(HaveOccurred())
+			time.Sleep(time.Second*20)
+			Eventually(func() bool {
+				ret := true
+				pods, err = f.Ingress.KubeClient.CoreV1().Pods(svc.Namespace).List(metav1.ListOptions{
+					LabelSelector: labels.SelectorFromSet(svc.Spec.Selector).String(),
+				})
+				ret = ret && Expect(err).NotTo(HaveOccurred())
+				Expect(len(pods.Items)).Should(BeNumerically(">=", 1))
+				for _, pod := range pods.Items {
+					ret = ret && Expect(pod.Annotations).NotTo(BeNil())
+					ret = ret && Expect(pod.Annotations).Should(HaveKey("bar"))
+					ret = ret && Expect(pod.Annotations["bar"]).Should(Equal("foo"))
+					ret = ret && Expect(pod.Annotations).Should(HaveKey("second-pod-annotation"))
+					ret = ret && Expect(pod.Annotations["second-pod-annotation"]).Should(Equal("set"))
+				}
+				return ret
+			}, "5m", "5s").Should(BeTrue())
+		}
 	)
 
 	Describe("Create", func() {
@@ -259,6 +328,14 @@ var _ = Describe("IngressOperations", func() {
 				ing.Annotations[api.LoadBalancerIP] = f.Config.LBPersistIP
 			})
 			It("Should persist service IP", shouldPersistIP)
+		})
+
+		Describe("With custom target annotations", func() {
+			BeforeEach(func() {
+				ing.Annotations[api.ServiceAnnotations] = `{"foo": "bar", "service-annotation": "set"}`
+				ing.Annotations[api.PodAnnotations] = `{"foo": "bar", "pod-annotation": "set"}`
+			})
+			It("Should persist service IP", shouldApplyTargetAnnotations)
 		})
 
 		Describe("With Rules", func() {
