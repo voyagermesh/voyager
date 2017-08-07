@@ -183,6 +183,7 @@ func (c *Controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePo
 						Port: targetPort,
 					}
 					if epAddress.TargetRef != nil {
+						// Use PodList via service selector
 						pod, err := c.KubeClient.CoreV1().Pods(epAddress.TargetRef.Namespace).Get(epAddress.TargetRef.Name, metav1.GetOptions{})
 						if err != nil {
 							log.Errorln("Error getting endpoint pod", err)

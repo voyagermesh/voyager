@@ -45,7 +45,7 @@ func (op *Operator) getEndpointWatcher() cache.Controller {
 
 				// Checking if this endpoint have a service or not. If
 				// this do not have a Service we do not want to update our ingress
-				svc, err := op.KubeClient.CoreV1().Services(newEndpoints.Namespace).Get(newEndpoints.Name, metav1.GetOptions{})
+				svc, err := op.ServiceLister.Services(newEndpoints.Namespace).Get(newEndpoints.Name)
 				if err != nil {
 					log.Warningf("Skipping Endpoints %s@%s, as it has no matching service", newEndpoints.Name, newEndpoints.Namespace)
 					return

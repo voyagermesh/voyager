@@ -114,12 +114,12 @@ func (svc TCPService) SortKey() string {
 }
 
 type Backend struct {
-	BackendRules []string `json:"BackendRules,omitempty"`
+	BackendRules []string
 	// Deprecated
-	RewriteRules []string `json:"RewriteRules,omitempty"`
+	RewriteRules []string
 	// Deprecated
-	HeaderRules []string    `json:"HeaderRules,omitempty"`
-	Endpoints   []*Endpoint `json:"Endpoints,omitempty"`
+	HeaderRules []string
+	Endpoints   []*Endpoint
 }
 
 type Endpoint struct {
