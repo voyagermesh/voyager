@@ -20,8 +20,8 @@ type SharedInfo struct {
 	// Add accept-proxy to bind statements
 	AcceptProxy bool
 	// stick requests to specified servers.
-	Sticky bool
-	DefaultBackend  *Backend
+	Sticky         bool
+	DefaultBackend *Backend
 }
 
 type StatsInfo struct {
