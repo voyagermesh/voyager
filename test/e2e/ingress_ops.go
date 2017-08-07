@@ -12,6 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/client-go/pkg/api/v1"
 )
 
 var _ = Describe("IngressOperations", func() {
@@ -317,6 +318,21 @@ var _ = Describe("IngressOperations", func() {
 				return ret
 			}, "5m", "5s").Should(BeTrue())
 		}
+
+		shouldOpenNodePorts = func() {
+			var svc *v1.Service;
+			Eventually(func() error {
+				var err error
+				svc, err = f.Ingress.GetOffShootService(ing)
+				return err
+			}, "10m", "5s").Should(BeNil())
+			Expect(svc).ShouldNot(BeNil())
+			Expect(svc.Spec.Type).Should(Equal(v1.ServiceTypeNodePort))
+
+			for _, port := range svc.Spec.Ports {
+				Expect(port.NodePort).Should(BeNumerically(">", 0))
+			}
+		}
 	)
 
 	Describe("Create", func() {
@@ -328,6 +344,13 @@ var _ = Describe("IngressOperations", func() {
 				ing.Annotations[api.LoadBalancerIP] = f.Config.LBPersistIP
 			})
 			It("Should persist service IP", shouldPersistIP)
+		})
+
+		Describe("With NodePort Service", func() {
+			BeforeEach(func() {
+				ing.Annotations[api.LBType] = api.LBTypeNodePort
+			})
+			It("Should create nodeport service", shouldOpenNodePorts)
 		})
 
 		Describe("With custom target annotations", func() {
