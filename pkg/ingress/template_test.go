@@ -1,10 +1,11 @@
 package ingress
 
 import (
+	"bytes"
 	"testing"
+	"text/template"
 
 	"github.com/appscode/voyager/test/testframework"
-	"github.com/flosch/pongo2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,47 +14,35 @@ func init() {
 }
 
 func TestHeaderNameFilter(t *testing.T) {
-	temp := `
+	tpl := template.Must(template.New("").Parse(`
 {{ val|header_name }}
 {{ val2|header_name }}
-	`
-	ctx := &pongo2.Context{
+`))
+	var buf bytes.Buffer
+	tpl.Execute(&buf, map[string]string{
 		"val":  "hello world",
 		"val2": "hello   world",
-	}
-	res, _ := render(ctx, temp)
+	})
 	exp := `
 hello
 hello
 	`
-	assert.Equal(t, res, exp)
+	assert.Equal(t, exp, buf.String())
 }
 
 func TestHostNameFilter(t *testing.T) {
-	temp := `
+	tpl := template.Must(template.New("").Parse(`
 {{ val|host_name }}
 {{ val2|host_name }}
-	`
-	ctx := &pongo2.Context{
+`))
+	var buf bytes.Buffer
+	tpl.Execute(&buf, map[string]string{
 		"val":  "appscode.com",
 		"val2": "*.appscode.com",
-	}
-	res, _ := render(ctx, temp)
+	})
 	exp := `
 hdr(host) -i appscode.com
 hdr_end(host) -i .appscode.com
 	`
-	assert.Equal(t, res, exp)
-}
-
-func render(ctx *pongo2.Context, temp string) (string, error) {
-	tpl, err := pongo2.FromString(temp)
-	if err != nil {
-		return "", err
-	}
-	out, err := tpl.Execute(*ctx)
-	if err != nil {
-		return "", err
-	}
-	return out, nil
+	assert.Equal(t, exp, buf.String())
 }

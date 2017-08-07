@@ -1,7 +1,7 @@
 package ingress
 
 import (
-	"encoding/json"
+	"bytes"
 	goerr "errors"
 	"sort"
 	"strconv"
@@ -9,19 +9,16 @@ import (
 
 	"github.com/appscode/errors"
 	"github.com/appscode/go/crypto/rand"
-	stringutil "github.com/appscode/go/strings"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	_ "github.com/appscode/voyager/api/install"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
-	"github.com/appscode/voyager/pkg/ingress/template"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	fakecloudprovider "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
-	"github.com/flosch/pongo2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	clientset "k8s.io/client-go/kubernetes"
@@ -222,41 +219,16 @@ func isForwardable(hostNames []string, hostName string) bool {
 
 func (c *Controller) generateTemplate() error {
 	log.Infoln("Generating Ingress template.")
-	ctx, err := Context(c.Parsed)
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
 
-	tpl, err := pongo2.FromString(template.HAProxyTemplate)
+	var buf bytes.Buffer
+	err := haproxyTemplate.Execute(&buf, c.Parsed)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
-	r, err := tpl.Execute(ctx)
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
-
-	c.HAProxyConfig = stringutil.Fmt(r)
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
-	log.Infoln("Template genareted for HAProxy")
+	c.HAProxyConfig = buf.String()
+	log.Infoln("Generated haproxy.cfg for ingress: %s@%s", c.Ingress.Name, c.Ingress.Namespace)
 	log.Infoln(c.HAProxyConfig)
 	return nil
-}
-
-func Context(s interface{}) (pongo2.Context, error) {
-	ctx := pongo2.Context{}
-	d, err := json.MarshalIndent(s, "", "  ")
-	if err != nil {
-		return ctx, err
-	}
-	log.Infoln("Rendering haproxy.cfg using context", string(d))
-	err = json.Unmarshal(d, &ctx)
-	if err != nil {
-		return ctx, errors.FromErr(err).Err()
-	}
-	return ctx, nil
 }
 
 func getSpecifiedPort(ports []apiv1.ServicePort, port intstr.IntOrString) (*apiv1.ServicePort, bool) {
@@ -334,10 +306,10 @@ func (c *Controller) parseIngress() {
 				log.Infoln("Returned service endpoints len(eps)", len(eps), "for service", path.Backend.ServiceName)
 				if len(eps) > 0 {
 					httpPaths = append(httpPaths, &HTTPPath{
-						Host:        rule.Host,
-						Path:        path.Path,
+						Host: rule.Host,
+						Path: path.Path,
 						Backend: Backend{
-							Name: "service-" + rand.Characters(6),
+							Name:         "service-" + rand.Characters(6),
 							Endpoints:    eps,
 							BackendRules: path.Backend.BackendRule,
 							RewriteRules: path.Backend.RewriteRule,

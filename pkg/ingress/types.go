@@ -88,9 +88,9 @@ func (svc HTTPService) SortKey() string {
 }
 
 type HTTPPath struct {
-	Host        string
-	Path        string
-	Backend     Backend
+	Host    string
+	Path    string
+	Backend Backend
 }
 
 func (svc HTTPPath) SortKey() string {
