@@ -39,34 +39,34 @@ var (
 # DO NOT EDIT!
 
 global
-    daemon
-    stats socket /tmp/haproxy
-    server-state-file global
-    server-state-base /var/state/haproxy/
-    maxconn 4000
-    # log using a syslog socket
-    log /dev/log local0 info
-    log /dev/log local0 notice
-    tune.ssl.default-dh-param 2048
-    ssl-default-bind-ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK
+	daemon
+	stats socket /tmp/haproxy
+	server-state-file global
+	server-state-base /var/state/haproxy/
+	maxconn 4000
+	# log using a syslog socket
+	log /dev/log local0 info
+	log /dev/log local0 notice
+	tune.ssl.default-dh-param 2048
+	ssl-default-bind-ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK
 
 defaults
-    log global
+	log global
 
-    option http-server-close
+	option http-server-close
 
-    # Disable logging of null connections (haproxy connections like checks).
-    # This avoids excessive logs from haproxy internals.
-    option dontlognull
+	# Disable logging of null connections (haproxy connections like checks).
+	# This avoids excessive logs from haproxy internals.
+	option dontlognull
 
-    # Timeout values
-    {{ range $k, $v := .TimeoutDefaults }}
-    timeout {{ $k }} {{ $v }}
-    {{ end }}
+	# Timeout values
+	{{ range $k, $v := .TimeoutDefaults }}
+	timeout {{ $k }} {{ $v }}
+	{{ end }}
 
-    # default traffic mode is http
-    # mode is overwritten in case of tcp services
-    mode http
+	# default traffic mode is http
+	# mode is overwritten in case of tcp services
+	mode http
 
 {{ range $resolver := .DNSResolvers }}
 {{ template "dns-resolver" $resolver }}
