@@ -17,7 +17,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/apimachinery/pkg/util/sets"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
@@ -27,7 +26,18 @@ const (
 )
 
 func (c *Controller) Create() error {
-	err := c.ensureConfigMap()
+	err := c.generateConfig()
+	if err != nil {
+		c.recorder.Eventf(
+			c.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressHAProxyConfigCreateFailed,
+			"Reason: %s",
+			err.Error(),
+		)
+		return errors.FromErr(err).Err()
+	}
+	err = c.ensureConfigMap()
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
@@ -328,7 +338,11 @@ func (c *Controller) createHostPortSvc() error {
 	}
 
 	// opening other tcp ports
-	for svcPort, target := range c.PortMapping {
+	mappings, err := c.Ingress.PortMappings(c.Opt.CloudProvider)
+	if err != nil {
+		return err
+	}
+	for svcPort, target := range mappings {
 		p := apiv1.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
@@ -472,11 +486,7 @@ func (c *Controller) createHostPortPods() error {
 	}
 
 	// adding tcp ports to pod template
-	podPorts := sets.NewInt()
-	for _, target := range c.PortMapping {
-		podPorts.Insert(target.PodPort)
-	}
-	for podPort := range podPorts {
+	for podPort := range c.Ingress.PodPorts() {
 		p := apiv1.ContainerPort{
 			Name:          "tcp-" + strconv.Itoa(podPort),
 			Protocol:      "TCP",
@@ -552,7 +562,11 @@ func (c *Controller) createNodePortSvc() error {
 	}
 
 	// opening other tcp ports
-	for svcPort, target := range c.PortMapping {
+	mappings, err := c.Ingress.PortMappings(c.Opt.CloudProvider)
+	if err != nil {
+		return err
+	}
+	for svcPort, target := range mappings {
 		p := apiv1.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
@@ -690,11 +704,7 @@ func (c *Controller) createNodePortPods() error {
 	}
 
 	// adding tcp ports to pod template
-	podPorts := sets.NewInt()
-	for _, target := range c.PortMapping {
-		podPorts.Insert(target.PodPort)
-	}
-	for podPort := range podPorts {
+	for podPort := range c.Ingress.PodPorts() {
 		p := apiv1.ContainerPort{
 			Name:          "tcp-" + strconv.Itoa(podPort),
 			Protocol:      "TCP",
@@ -767,7 +777,11 @@ func (c *Controller) createLoadBalancerSvc() error {
 	}
 
 	// opening other tcp ports
-	for svcPort, target := range c.PortMapping {
+	mappings, err := c.Ingress.PortMappings(c.Opt.CloudProvider)
+	if err != nil {
+		return err
+	}
+	for svcPort, target := range mappings {
 		p := apiv1.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",

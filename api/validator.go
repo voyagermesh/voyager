@@ -17,7 +17,7 @@ func (a address) String() string {
 	return fmt.Sprintf("%s:%d", a.Host, a.Port)
 }
 
-func (r Ingress) IsValid() error {
+func (r Ingress) IsValid(cloudProvider string) error {
 	addrs := make(map[address]int)
 	nodePorts := make(map[int]int)
 	for ri, rule := range r.Spec.Rules {
@@ -36,6 +36,9 @@ func (r Ingress) IsValid() error {
 			if np, err := checkOptionalPort(rule.HTTP.NodePort); err != nil {
 				return fmt.Errorf("spec.rule[%d].http.nodePort %s is invalid. Reason: %s", ri, rule.HTTP.NodePort, err)
 			} else if np > 0 {
+				if r.LBType() == LBTypeHostPort {
+					return fmt.Errorf("spec.rule[%d].http.nodePort %s may not be specified when `LBType` is `HostPort`", ri, rule.HTTP.NodePort)
+				}
 				if ei, found := nodePorts[np]; found {
 					return fmt.Errorf("spec.rule[%d].http is reusing nodePort %s for addr %s, also used in spec.rule[%d]", ri, np, addr, ei)
 				} else {
@@ -79,6 +82,9 @@ func (r Ingress) IsValid() error {
 			if np, err := checkOptionalPort(rule.TCP.NodePort); err != nil {
 				return fmt.Errorf("spec.rule[%d].tcp.nodePort %s is invalid. Reason: %s", ri, rule.TCP.NodePort, err)
 			} else if np > 0 {
+				if r.LBType() == LBTypeHostPort {
+					return fmt.Errorf("spec.rule[%d].tcp.nodePort %s may not be specified when `LBType` is `HostPort`", ri, rule.TCP.NodePort)
+				}
 				if ei, found := nodePorts[np]; found {
 					return fmt.Errorf("spec.rule[%d].tcp is reusing nodePort %s for addr %s, also used in spec.rule[%d]", ri, np, addr, ei)
 				} else {
@@ -104,7 +110,9 @@ func (r Ingress) IsValid() error {
 			return fmt.Errorf("spec.rule[%d] can specify either HTTP or TCP", ri)
 		}
 	}
-	return nil
+
+	_, err := r.PortMappings(cloudProvider)
+	return err
 }
 
 func checkRequiredPort(port intstr.IntOrString) (int, error) {

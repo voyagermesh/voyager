@@ -26,8 +26,19 @@ const (
 )
 
 func (c *Controller) Update(mode UpdateMode) error {
+	err := c.generateConfig()
+	if err != nil {
+		c.recorder.Eventf(
+			c.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressHAProxyConfigCreateFailed,
+			"Reason: %s",
+			err.Error(),
+		)
+		return errors.FromErr(err).Err()
+	}
 	// Update HAProxy config
-	err := c.updateConfigMap()
+	err = c.updateConfigMap()
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -209,7 +220,12 @@ func (c *Controller) updateLBSvc() error {
 		curPorts[p.Port] = p
 	}
 	svc.Spec.Ports = make([]apiv1.ServicePort, 0)
-	for svcPort, target := range c.PortMapping {
+
+	mappings, err := c.Ingress.PortMappings(c.Opt.CloudProvider)
+	if err != nil {
+		return err
+	}
+	for svcPort, target := range mappings {
 		if sp, found := curPorts[int32(svcPort)]; found && sp.TargetPort.IntValue() == target.PodPort {
 			if target.NodePort > 0 {
 				sp.NodePort = int32(target.NodePort) // ensure preferred NodePort is used.

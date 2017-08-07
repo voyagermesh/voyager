@@ -16,6 +16,7 @@ const (
 	EventReasonCertificateCreateSuccessful = "CreateSuccessful"
 
 	// Ingress Events
+	EventReasonIngressHAProxyConfigCreateFailed      = "HAProxyConfigCreateFailed"
 	EventReasonIngressConfigMapCreateFailed          = "ConfigMapCreateFailed"
 	EventReasonIngressConfigMapUpdateFailed          = "ConfigMapUpdateFailed"
 	EventReasonIngressConfigMapCreateSuccessful      = "ConfigMapCreateSuccessful"

@@ -39,7 +39,7 @@ func (op *Operator) getIngressTPRWatcher() cache.Controller {
 						log.Infof("%s %s@%s does not match ingress class", engress.GroupVersionKind(), engress.Name, engress.Namespace)
 						return
 					}
-					if err := engress.IsValid(); err != nil {
+					if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
 						op.recorder.Eventf(
 							engress,
 							apiv1.EventTypeWarning,
@@ -69,7 +69,7 @@ func (op *Operator) getIngressTPRWatcher() cache.Controller {
 					log.Infof("%s %s@%s has unchanged spec and annotations", newEngress.GroupVersionKind(), newEngress.Name, newEngress.Namespace)
 					return
 				}
-				if err := newEngress.IsValid(); err != nil {
+				if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
 					op.recorder.Eventf(
 						newEngress,
 						apiv1.EventTypeWarning,
@@ -98,17 +98,7 @@ func (op *Operator) getIngressTPRWatcher() cache.Controller {
 }
 
 func (op *Operator) AddEngress(engress *tapi.Ingress) {
-	ctrl, err := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
-	if err != nil {
-		op.recorder.Eventf(
-			engress,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonIngressControllerCreateFailed,
-			"Reason: %s",
-			err.Error(),
-		)
-		return
-	}
+	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 	if ctrl.IsExists() {
 		// Loadbalancer resource for this ingress is found in its place,
 		// so no need to create the resources. First trying to update
@@ -124,10 +114,13 @@ func (op *Operator) AddEngress(engress *tapi.Ingress) {
 			for _, p := range svc.Spec.Ports {
 				curPorts[int(p.Port)] = p
 			}
+			mappings, _ := engress.PortMappings(op.Opt.CloudProvider) // already validated
 
 			var updateFW bool
-			for svcPort, target := range ctrl.PortMapping {
-				if sp, ok := curPorts[svcPort]; !ok || sp.TargetPort.IntValue() != target.PodPort {
+			for svcPort, target := range mappings {
+				if sp, ok := curPorts[svcPort]; !ok || // svc port not found
+					sp.TargetPort.IntValue() != target.PodPort || // pod port mismatch
+					target.NodePort != 0 && target.NodePort != int(sp.NodePort) { // node port mismatch
 					updateFW = true // new port has to be opened
 					break
 				} else {
@@ -164,7 +157,7 @@ func (op *Operator) AddEngress(engress *tapi.Ingress) {
 		op.ensureServiceAnnotations(engress, svc)
 	}
 
-	err = certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, nil).HandleIngress(engress)
+	err := certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, nil).HandleIngress(engress)
 	if err != nil {
 		log.Error(err)
 	}
@@ -177,18 +170,7 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 		return
 	}
 
-	ctrl, err := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, newEngress)
-	if err != nil {
-		op.recorder.Eventf(
-			newEngress,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonIngressUpdateFailed,
-			"Reason: %s",
-			err.Error(),
-		)
-		return
-	}
-
+	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, newEngress)
 	if oldHandled && !newHandled {
 		ctrl.Delete()
 	} else {
@@ -226,7 +208,7 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 				}
 			}
 
-			if oldEngress.IsPortChanged(*newEngress) || oldEngress.IsLoadBalancerSourceRangeChanged(*newEngress) {
+			if oldEngress.IsPortChanged(*newEngress, op.Opt.CloudProvider) || oldEngress.IsLoadBalancerSourceRangeChanged(*newEngress) {
 				updateMode |= ingress.UpdateFirewall
 			} else if oldEngress.IsSecretChanged(*newEngress) {
 				updateMode |= ingress.RestartHAProxy
@@ -257,24 +239,14 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 		op.ensureServiceAnnotations(newEngress, svc)
 	}
 
-	err = certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, nil).HandleIngress(newEngress)
+	err := certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, nil).HandleIngress(newEngress)
 	if err != nil {
 		log.Error(err)
 	}
 }
 
 func (op *Operator) DeleteEngress(engress *tapi.Ingress) {
-	ctrl, err := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
-	if err != nil {
-		op.recorder.Eventf(
-			engress,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonIngressDeleteFailed,
-			"Reason: %s",
-			err.Error(),
-		)
-		return
-	}
+	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 	ctrl.Delete()
 
 	for _, meta := range engress.BackendServices() {

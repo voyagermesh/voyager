@@ -1,18 +1,20 @@
 package api
 
 import (
-	"k8s.io/apimachinery/pkg/util/sets"
-	"github.com/appscode/voyager/pkg/haproxy"
-	"github.com/constabulary/gb/testdata/src/c"
 	"fmt"
-)
 
+	"k8s.io/apimachinery/pkg/util/sets"
+)
 
 type Target struct {
 	PodPort  int
 	NodePort int
 }
 
+// PortMappings contains a map of Service Port to HAProxy port (svc.Port -> {svc.TargetPort, svc.NodePort}).
+// HAProxy pods binds to the target ports. Service ports are used to open loadbalancer/firewall.
+// Usually target port == service port with one exception for LoadBalancer type service in AWS.
+// If AWS cert manager is used then a 443 -> 80 port mapping is added.
 func (r Ingress) PortMappings(cloudProvider string) (map[int]Target, error) {
 	mappings := make(map[int]Target)
 
@@ -68,30 +70,29 @@ func (r Ingress) PortMappings(cloudProvider string) (map[int]Target, error) {
 	return mappings, nil
 }
 
-func (r Ingress) Ports() []int {
-	targets := map[Target]*int{}
-
+func (r Ingress) PodPorts() []int {
+	ports := sets.NewInt()
 	usesHTTPRule := false
 	for _, rule := range r.Spec.Rules {
 		if rule.HTTP != nil {
 			usesHTTPRule = true
 			if port := rule.HTTP.Port.IntValue(); port > 0 {
-				targets.Insert(port)
+				ports.Insert(port)
 			} else {
 				if _, ok := r.FindTLSSecret(rule.Host); ok && !rule.HTTP.NoSSL {
-					targets.Insert(443)
+					ports.Insert(443)
 				} else {
-					targets.Insert(80)
+					ports.Insert(80)
 				}
 			}
 		} else if rule.TCP != nil {
 			if port := rule.TCP.Port.IntValue(); port > 0 {
-				targets.Insert(port)
+				ports.Insert(port)
 			}
 		}
 	}
 	if !usesHTTPRule && r.Spec.Backend != nil {
-		targets.Insert(80)
+		ports.Insert(80)
 	}
-	return targets.List()
+	return ports.List()
 }

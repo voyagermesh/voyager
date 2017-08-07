@@ -33,7 +33,7 @@ func NewController(
 	services core.ServiceLister,
 	endpoints core.EndpointsLister,
 	opt config.Options,
-	ingress *api.Ingress) (*Controller, error) {
+	ingress *api.Ingress) *Controller {
 	ctrl := &Controller{
 		KubeClient:      kubeClient,
 		ExtClient:       extClient,
@@ -66,12 +66,7 @@ func NewController(
 	} else {
 		log.Infoln("No cloud manager found for provider", opt.CloudProvider)
 	}
-
-	err := ctrl.parseIngress()
-	if err != nil {
-		return nil, err
-	}
-	return ctrl, nil
+	return ctrl
 }
 
 func (c *Controller) SupportsLBType() bool {
@@ -224,7 +219,7 @@ func getSpecifiedPort(ports []apiv1.ServicePort, port intstr.IntOrString) (*apiv
 	return nil, false
 }
 
-func (c *Controller) parseIngress() error {
+func (c *Controller) generateConfig() error {
 	var parsed haproxy.TemplateData
 
 	var si haproxy.SharedInfo
@@ -250,7 +245,6 @@ func (c *Controller) parseIngress() error {
 		parsed.Stats = stats
 	}
 	parsed.DNSResolvers = make(map[string]*api.DNSResolver)
-	c.PortMapping = make(map[int]Target)
 
 	if c.Ingress.Spec.Backend != nil {
 		eps, err := c.serviceEndpoints(&parsed, c.Ingress.Spec.Backend.ServiceName, c.Ingress.Spec.Backend.ServicePort, c.Ingress.Spec.Backend.HostNames)
@@ -273,11 +267,8 @@ func (c *Controller) parseIngress() error {
 		UsesSSL bool
 	}
 	httpServices := make(map[httpKey][]*haproxy.HTTPPath)
-	usesHTTPRule := false
 	for _, rule := range c.Ingress.Spec.Rules {
 		if rule.HTTP != nil {
-			usesHTTPRule = true
-
 			httpPaths := make([]*haproxy.HTTPPath, 0)
 			for _, path := range rule.HTTP.Paths {
 				eps, err := c.serviceEndpoints(&parsed, path.Backend.ServiceName, path.Backend.ServicePort, path.Backend.HostNames)
@@ -304,19 +295,15 @@ func (c *Controller) parseIngress() error {
 				key.UsesSSL = true
 				if port := rule.HTTP.Port.IntValue(); port > 0 {
 					key.Port = port
-					c.PortMapping[port] = Target{PodPort: port, NodePort: rule.TCP.NodePort.IntValue()}
 				} else {
 					key.Port = 443
-					c.PortMapping[443] = Target{PodPort: 443, NodePort: rule.TCP.NodePort.IntValue()}
 				}
 			} else {
 				key.UsesSSL = false
 				if port := rule.HTTP.Port.IntValue(); port > 0 {
 					key.Port = port
-					c.PortMapping[port] = Target{PodPort: port, NodePort: rule.TCP.NodePort.IntValue()}
 				} else {
 					key.Port = 80
-					c.PortMapping[80] = Target{PodPort: 80, NodePort: rule.TCP.NodePort.IntValue()}
 				}
 			}
 
@@ -326,12 +313,6 @@ func (c *Controller) parseIngress() error {
 				httpServices[key] = httpPaths
 			}
 		} else if rule.TCP != nil {
-			log.Infoln(rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort)
-
-			c.PortMapping[rule.TCP.Port.IntValue()] = Target{
-				PodPort:  rule.TCP.Port.IntValue(),
-				NodePort: rule.TCP.NodePort.IntValue(),
-			}
 			eps, err := c.serviceEndpoints(&parsed, rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort, rule.TCP.Backend.HostNames)
 			if err != nil {
 				return err
@@ -367,35 +348,9 @@ func (c *Controller) parseIngress() error {
 		})
 	}
 
-	if !usesHTTPRule && c.Ingress.Spec.Backend != nil {
-		c.PortMapping[80] = Target{PodPort: 80}
-	}
-	// ref: https://github.com/appscode/voyager/issues/188
-	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
-		if ans, ok := c.Ingress.ServiceAnnotations(c.Opt.CloudProvider); ok {
-			if v, usesAWSCertManager := ans["service.beta.kubernetes.io/aws-load-balancer-ssl-cert"]; usesAWSCertManager && v != "" {
-				var tp80, sp443 bool
-				for svcPort, target := range c.PortMapping {
-					if target.PodPort == 80 {
-						tp80 = true
-					}
-					if svcPort == 443 {
-						sp443 = true
-					}
-				}
-				if tp80 && !sp443 {
-					c.PortMapping[443] = Target{PodPort: 80}
-				} else {
-					return fmt.Errorf("Failed to open port 443 on service for AWS cert manager for Ingress %s@%s.", c.Ingress.Name, c.Ingress.Namespace)
-				}
-			}
-		}
-	}
-
 	var err error
 	c.HAProxyConfig, err = haproxy.RenderConfig(parsed)
 	return err
-	// TODO: (verify frontend, backend names).
 }
 
 func parseALPNOptions(opt []string) string {

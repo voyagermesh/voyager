@@ -24,7 +24,7 @@ func (op *Operator) ValidateIngress() error {
 		if !engress.ShouldHandleIngress(op.Opt.IngressClass) {
 			continue
 		}
-		if err := engress.IsValid(); err != nil {
+		if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
 			op.recorder.Eventf(
 				engress,
 				apiv1.EventTypeWarning,
@@ -44,7 +44,7 @@ func (op *Operator) ValidateIngress() error {
 		if !ing.ShouldHandleIngress(op.Opt.IngressClass) {
 			continue
 		}
-		if err := ing.IsValid(); err != nil {
+		if err := ing.IsValid(op.Opt.CloudProvider); err != nil {
 			op.recorder.Eventf(
 				&ing,
 				apiv1.EventTypeWarning,

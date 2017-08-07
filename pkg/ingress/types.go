@@ -27,12 +27,6 @@ type Controller struct {
 	// Engress object that created or updated.
 	Ingress *api.Ingress
 
-	// Ports contains a map of Service Port to HAProxy port (svc.Port -> svc.TargetPort).
-	// HAProxy pods binds to the target ports. Service ports are used to open loadbalancer/firewall.
-	// Usually target port == service port with one exception for LoadBalancer type service in AWS.
-	// If AWS cert manager is used then a 443 -> 80 port mapping is added.
-	PortMapping map[int]Target
-
 	// contains raw configMap data parsed from the cfg file.
 	HAProxyConfig string
 

@@ -8,7 +8,6 @@ import (
 	"github.com/appscode/log"
 	tapi "github.com/appscode/voyager/api"
 	_ "github.com/appscode/voyager/api/install"
-	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/ingress"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -136,17 +135,7 @@ func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
 			log.Infoln("Checking for service", svc, "to be used to load balance via ingress", engress.Name, engress.Namespace)
 			if engress.HasBackendService(svc.Name, svc.Namespace) {
-				ctrl, err := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
-				if err != nil {
-					op.recorder.Eventf(
-						engress,
-						apiv1.EventTypeWarning,
-						eventer.EventReasonIngressConfigMapUpdateFailed,
-						"Reason: %s",
-						err.Error(),
-					)
-					return err
-				}
+				ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 				if ctrl.IsExists() {
 					// Loadbalancer resource for this ingress is found in its place,
 					// so no need to create the resources. First trying to update

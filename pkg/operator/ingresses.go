@@ -42,7 +42,7 @@ func (op *Operator) getIngresseWatcher() cache.Controller {
 						log.Infof("%s %s@%s does not match ingress class", ingress.GroupVersionKind(), ingress.Name, ingress.Namespace)
 						return
 					}
-					if err := engress.IsValid(); err != nil {
+					if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
 						op.recorder.Eventf(
 							engress,
 							apiv1.EventTypeWarning,
@@ -84,7 +84,7 @@ func (op *Operator) getIngresseWatcher() cache.Controller {
 					log.Infof("%s %s@%s has unchanged spec and annotations", newIngress.GroupVersionKind(), newIngress.Name, newIngress.Namespace)
 					return
 				}
-				if err := newEngress.IsValid(); err != nil {
+				if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
 					op.recorder.Eventf(
 						newEngress,
 						apiv1.EventTypeWarning,

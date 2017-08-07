@@ -65,22 +65,16 @@ func (r Ingress) FindTLSSecret(h string) (string, bool) {
 	return "", false
 }
 
-func (r Ingress) IsPortChanged(o Ingress) bool {
-	rPorts := r.Ports()
-	oPorts := o.Ports()
-
-	if len(rPorts) != len(oPorts) {
-		return true
+func (r Ingress) IsPortChanged(o Ingress, cloudProvider string) bool {
+	rpm, err := r.PortMappings(cloudProvider)
+	if err != nil {
+		return false
 	}
-
-	sort.Ints(rPorts)
-	sort.Ints(oPorts)
-	for i := range rPorts {
-		if rPorts[i] != oPorts[i] {
-			return true
-		}
+	opm, err := o.PortMappings(cloudProvider)
+	if err != nil {
+		return false
 	}
-	return false
+	return reflect.DeepEqual(rpm, opm)
 }
 
 func (r Ingress) Secrets() []string {
