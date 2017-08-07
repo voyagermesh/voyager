@@ -345,8 +345,7 @@ func (c *Controller) parseSpec() {
 			} else {
 				httpServices[key] = httpPaths
 			}
-		}
-		if rule.TCP != nil {
+		} else if rule.TCP != nil {
 			log.Infoln(rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort)
 
 			c.PortMapping[rule.TCP.Port.IntValue()] = Target{

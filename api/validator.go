@@ -20,44 +20,6 @@ func (r Ingress) IsValid() error {
 	addrs := make(map[address]int)
 	nodePorts := make(map[int]int)
 	for ri, rule := range r.Spec.Rules {
-		if rule.TCP == nil && rule.HTTP == nil {
-			return fmt.Errorf("spec.rule[%d] is missing both HTTP and TCP specification", ri)
-		}
-		if rule.TCP != nil {
-			addr := address{Host: rule.Host}
-			if port, err := checkRequiredPort(rule.TCP.Port); err != nil {
-				return fmt.Errorf("spec.rule[%d].tcp.port %s is invalid. Reason: %s", ri, rule.TCP.Port, err)
-			} else {
-				addr.Port = port
-			}
-			if ei, found := addrs[addr]; found {
-				return fmt.Errorf("spec.rule[%d].tcp is reusing addr %s, also used in spec.rule[%d]", ri, addr, ei)
-			}
-			addrs[addr] = ri
-
-			if np, err := checkOptionalPort(rule.TCP.NodePort); err != nil {
-				return fmt.Errorf("spec.rule[%d].tcp.nodePort %s is invalid. Reason: %s", ri, rule.TCP.NodePort, err)
-			} else if np > 0 {
-				if ei, found := nodePorts[np]; found {
-					return fmt.Errorf("spec.rule[%d].tcp is reusing nodePort %s for addr %s, also used in spec.rule[%d]", ri, np, addr, ei)
-				} else {
-					nodePorts[np] = ri
-				}
-			}
-
-			if rule.TCP.Backend.ServiceName == "" {
-				return fmt.Errorf("spec.rule[%d].tcp is missing serviceName for addr %s", ri, addr)
-			}
-			if _, err := checkRequiredPort(rule.TCP.Backend.ServicePort); err != nil {
-				return fmt.Errorf("spec.rule[%d].tcp is using invalid servicePort %s for addr %s. Reason: %s", ri, rule.TCP.Backend.ServicePort, addr, err)
-			}
-			if len(rule.TCP.Backend.HeaderRule) > 0 {
-				return fmt.Errorf("spec.rule[%d].tcp.backend.headerRule must be empty for addr %s", ri, addr)
-			}
-			if len(rule.TCP.Backend.RewriteRule) > 0 {
-				return fmt.Errorf("spec.rule[%d].tcp.backend.rewriteRule must be empty for addr %s", ri, addr)
-			}
-		}
 		if rule.HTTP != nil {
 			addr := address{Host: rule.Host}
 			if port, err := checkRequiredPort(rule.HTTP.Port); err != nil {
@@ -94,6 +56,44 @@ func (r Ingress) IsValid() error {
 					return fmt.Errorf("spec.rule[%d].http.paths[%d] is using invalid servicePort %s for addr %s and path %s. Reason: %s", ri, pi, path.Backend.ServicePort, addr, path.Path, err)
 				}
 			}
+		} else if rule.TCP != nil {
+			addr := address{Host: rule.Host}
+			if port, err := checkRequiredPort(rule.TCP.Port); err != nil {
+				return fmt.Errorf("spec.rule[%d].tcp.port %s is invalid. Reason: %s", ri, rule.TCP.Port, err)
+			} else {
+				addr.Port = port
+			}
+			if ei, found := addrs[addr]; found {
+				return fmt.Errorf("spec.rule[%d].tcp is reusing addr %s, also used in spec.rule[%d]", ri, addr, ei)
+			}
+			addrs[addr] = ri
+
+			if np, err := checkOptionalPort(rule.TCP.NodePort); err != nil {
+				return fmt.Errorf("spec.rule[%d].tcp.nodePort %s is invalid. Reason: %s", ri, rule.TCP.NodePort, err)
+			} else if np > 0 {
+				if ei, found := nodePorts[np]; found {
+					return fmt.Errorf("spec.rule[%d].tcp is reusing nodePort %s for addr %s, also used in spec.rule[%d]", ri, np, addr, ei)
+				} else {
+					nodePorts[np] = ri
+				}
+			}
+
+			if rule.TCP.Backend.ServiceName == "" {
+				return fmt.Errorf("spec.rule[%d].tcp is missing serviceName for addr %s", ri, addr)
+			}
+			if _, err := checkRequiredPort(rule.TCP.Backend.ServicePort); err != nil {
+				return fmt.Errorf("spec.rule[%d].tcp is using invalid servicePort %s for addr %s. Reason: %s", ri, rule.TCP.Backend.ServicePort, addr, err)
+			}
+			if len(rule.TCP.Backend.HeaderRule) > 0 {
+				return fmt.Errorf("spec.rule[%d].tcp.backend.headerRule must be empty for addr %s", ri, addr)
+			}
+			if len(rule.TCP.Backend.RewriteRule) > 0 {
+				return fmt.Errorf("spec.rule[%d].tcp.backend.rewriteRule must be empty for addr %s", ri, addr)
+			}
+		} else if rule.TCP == nil && rule.HTTP == nil {
+			return fmt.Errorf("spec.rule[%d] is missing both HTTP and TCP specification", ri)
+		} else {
+			return fmt.Errorf("spec.rule[%d] can specify either HTTP or TCP", ri)
 		}
 	}
 	return nil

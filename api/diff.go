@@ -80,8 +80,7 @@ func (r Ingress) Ports() []int {
 					ports.Insert(80)
 				}
 			}
-		}
-		if rule.TCP != nil {
+		} else if rule.TCP != nil {
 			if port := rule.TCP.Port.IntValue(); port > 0 {
 				ports.Insert(port)
 			}
@@ -120,8 +119,7 @@ func (r Ingress) Secrets() []string {
 					secrets.Insert(secretName)
 				}
 			}
-		}
-		if rule.TCP != nil {
+		} else if rule.TCP != nil {
 			if secretName, ok := r.UsesTLS(rule.Host); ok {
 				secrets.Insert(secretName)
 			}
@@ -227,8 +225,7 @@ func (r Ingress) BackendServices() map[string]metav1.ObjectMeta {
 			for _, svc := range rule.HTTP.Paths {
 				record(svc.Backend.ServiceName)
 			}
-		}
-		if rule.TCP != nil {
+		} else if rule.TCP != nil {
 			record(rule.TCP.Backend.ServiceName)
 		}
 	}
@@ -258,8 +255,7 @@ func (r Ingress) HasBackendService(name, namespace string) bool {
 					return true
 				}
 			}
-		}
-		if rule.TCP != nil {
+		} else if rule.TCP != nil {
 			if fqn(rule.TCP.Backend.ServiceName) == svcFQN {
 				return true
 			}
