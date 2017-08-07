@@ -85,7 +85,7 @@ func (c *Controller) SupportsLBType() bool {
 	}
 }
 
-func (c *Controller) serviceEndpoints(parsed *haproxy.TemplateData, name string, port intstr.IntOrString, hostNames []string) ([]*haproxy.Endpoint, error) {
+func (c *Controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, name string, port intstr.IntOrString, hostNames []string) ([]*haproxy.Endpoint, error) {
 	log.Infoln("getting endpoints for ", c.Ingress.Namespace, name, "port", port)
 
 	// the following lines giving support to
@@ -120,7 +120,7 @@ func (c *Controller) serviceEndpoints(parsed *haproxy.TemplateData, name string,
 			return nil, errors.FromErr(err).Err()
 		}
 		if ep.UseDNSResolver && resolver != nil {
-			parsed.DNSResolvers[resolver.Name] = resolver
+			dnsResolvers[resolver.Name] = resolver
 			ep.DNSResolver = resolver.Name
 			ep.CheckHealth = resolver.CheckHealth
 		}
@@ -253,10 +253,10 @@ func (c *Controller) generateConfig() error {
 		}
 		parsed.Stats = stats
 	}
-	parsed.DNSResolvers = make(map[string]*api.DNSResolver)
+	dnsResolvers := make(map[string]*api.DNSResolver)
 
 	if c.Ingress.Spec.Backend != nil {
-		eps, err := c.serviceEndpoints(&parsed, c.Ingress.Spec.Backend.ServiceName, c.Ingress.Spec.Backend.ServicePort, c.Ingress.Spec.Backend.HostNames)
+		eps, err := c.serviceEndpoints(dnsResolvers, c.Ingress.Spec.Backend.ServiceName, c.Ingress.Spec.Backend.ServicePort, c.Ingress.Spec.Backend.HostNames)
 		if err != nil {
 			return err
 		}
@@ -280,7 +280,7 @@ func (c *Controller) generateConfig() error {
 		if rule.HTTP != nil {
 			httpPaths := make([]*haproxy.HTTPPath, 0)
 			for _, path := range rule.HTTP.Paths {
-				eps, err := c.serviceEndpoints(&parsed, path.Backend.ServiceName, path.Backend.ServicePort, path.Backend.HostNames)
+				eps, err := c.serviceEndpoints(dnsResolvers, path.Backend.ServiceName, path.Backend.ServicePort, path.Backend.HostNames)
 				if err != nil {
 					return err
 				}
@@ -322,7 +322,7 @@ func (c *Controller) generateConfig() error {
 				httpServices[key] = httpPaths
 			}
 		} else if rule.TCP != nil {
-			eps, err := c.serviceEndpoints(&parsed, rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort, rule.TCP.Backend.HostNames)
+			eps, err := c.serviceEndpoints(dnsResolvers, rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort, rule.TCP.Backend.HostNames)
 			if err != nil {
 				return err
 			}
