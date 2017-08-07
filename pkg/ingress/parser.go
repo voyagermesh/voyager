@@ -1,7 +1,6 @@
 package ingress
 
 import (
-	goerr "errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -20,6 +19,7 @@ import (
 	fakecloudprovider "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	clientset "k8s.io/client-go/kubernetes"
 	core "k8s.io/client-go/listers/core/v1"
@@ -128,8 +128,7 @@ func (c *Controller) serviceEndpoints(parsed *haproxy.TemplateData, name string,
 	}
 	p, ok := getSpecifiedPort(service.Spec.Ports, port)
 	if !ok {
-		log.Warningf("Service port %s unavailable for service %s", port.String(), service.Name)
-		return nil, goerr.New("Service port unavailable")
+		return nil, fmt.Errorf("Service port %s unavailable for service %s", port.String(), service.Name)
 	}
 	return c.getEndpoints(service, p, hostNames)
 }
@@ -137,8 +136,18 @@ func (c *Controller) serviceEndpoints(parsed *haproxy.TemplateData, name string,
 func (c *Controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (eps []*haproxy.Endpoint, err error) {
 	ep, err := c.EndpointsLister.Endpoints(s.Namespace).Get(s.Name)
 	if err != nil {
-		log.Warningln(err)
 		return nil, err
+	}
+
+	podList, err := c.KubeClient.CoreV1().Pods(s.Namespace).List(metav1.ListOptions{
+		LabelSelector: labels.SelectorFromSet(s.Spec.Selector).String(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	pods := map[string]apiv1.Pod{}
+	for _, pod := range podList.Items {
+		pods[pod.Name] = pod
 	}
 
 	// The intent here is to create a union of all subsets that match a targetPort.
@@ -178,8 +187,8 @@ func (c *Controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePo
 					}
 					if epAddress.TargetRef != nil {
 						// Use PodList via service selector
-						pod, err := c.KubeClient.CoreV1().Pods(epAddress.TargetRef.Namespace).Get(epAddress.TargetRef.Name, metav1.GetOptions{})
-						if err != nil {
+						pod, ok := pods[epAddress.TargetRef.Name]
+						if !ok {
 							log.Errorln("Error getting endpoint pod", err)
 						} else {
 							if pod.Annotations != nil {
