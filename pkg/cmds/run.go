@@ -106,6 +106,11 @@ func run() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	// https://github.com/appscode/voyager/issues/346
+	err = w.ValidateIngress()
+	if err != nil {
+		log.Fatalln(err)
+	}
 	// https://github.com/appscode/voyager/issues/229
 	w.PurgeOffshootsWithDeprecatedLabels()
 	go w.Run()
