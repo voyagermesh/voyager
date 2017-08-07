@@ -65,33 +65,6 @@ func (r Ingress) FindTLSSecret(h string) (string, bool) {
 	return "", false
 }
 
-func (r Ingress) Ports() []int {
-	usesHTTPRule := false
-	ports := sets.NewInt()
-	for _, rule := range r.Spec.Rules {
-		if rule.HTTP != nil {
-			usesHTTPRule = true
-			if port := rule.HTTP.Port.IntValue(); port > 0 {
-				ports.Insert(port)
-			} else {
-				if _, ok := r.FindTLSSecret(rule.Host); ok && !rule.HTTP.NoSSL {
-					ports.Insert(443)
-				} else {
-					ports.Insert(80)
-				}
-			}
-		} else if rule.TCP != nil {
-			if port := rule.TCP.Port.IntValue(); port > 0 {
-				ports.Insert(port)
-			}
-		}
-	}
-	if !usesHTTPRule && r.Spec.Backend != nil {
-		ports.Insert(80)
-	}
-	return ports.List()
-}
-
 func (r Ingress) IsPortChanged(o Ingress) bool {
 	rPorts := r.Ports()
 	oPorts := o.Ports()

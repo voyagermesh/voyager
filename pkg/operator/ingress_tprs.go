@@ -118,7 +118,7 @@ func (op *Operator) AddEngress(engress *tapi.Ingress) {
 		// recreate the resource from scratch.
 		log.Infoln("Loadbalancer is exists, trying to update")
 
-		if svc, err := op.KubeClient.CoreV1().Services(engress.Namespace).Get(engress.OffshootName(), metav1.GetOptions{}); err == nil {
+		if svc, err := op.ServiceLister.Services(engress.Namespace).Get(engress.OffshootName()); err == nil {
 			// check port
 			curPorts := make(map[int]apiv1.ServicePort)
 			for _, p := range svc.Spec.Ports {

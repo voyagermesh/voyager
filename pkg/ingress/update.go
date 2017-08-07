@@ -211,6 +211,9 @@ func (c *Controller) updateLBSvc() error {
 	svc.Spec.Ports = make([]apiv1.ServicePort, 0)
 	for svcPort, target := range c.PortMapping {
 		if sp, found := curPorts[int32(svcPort)]; found && sp.TargetPort.IntValue() == target.PodPort {
+			if target.NodePort > 0 {
+				sp.NodePort = int32(target.NodePort) // ensure preferred NodePort is used.
+			}
 			svc.Spec.Ports = append(svc.Spec.Ports, sp)
 		} else {
 			svc.Spec.Ports = append(svc.Spec.Ports, apiv1.ServicePort{
