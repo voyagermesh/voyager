@@ -24,7 +24,6 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-
 func TestLoadProviderCredential(t *testing.T) {
 	fakeController := NewController(fake.NewSimpleClientset(), acf.NewFakeExtensionClient()).New(&api.Certificate{
 		ObjectMeta: metav1.ObjectMeta{

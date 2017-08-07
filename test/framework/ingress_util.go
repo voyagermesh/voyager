@@ -19,6 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
+	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
 )
 
 var (
@@ -434,4 +435,137 @@ func (i *ingressInvocation) SupportsServiceIP() bool {
 		i.Config.CloudProviderName == "gke" ||
 		i.Config.CloudProviderName == "azure" ||
 		i.Config.CloudProviderName == "acs"
+}
+
+func (i *ingressInvocation) CreateResourceWithHostNames() (metav1.ObjectMeta, error) {
+	meta := metav1.ObjectMeta{
+		Name:      i.UniqueName(),
+		Namespace: i.Namespace(),
+		Labels: map[string]string{
+			"app": i.app,
+			"v":   i.UniqueName(),
+		},
+	}
+	_, err := i.KubeClient.CoreV1().Services(i.Namespace()).Create(&apiv1.Service{
+		ObjectMeta: meta,
+		Spec: apiv1.ServiceSpec{
+			ClusterIP: "None",
+			Ports: []apiv1.ServicePort{
+				{
+					Name:       "http-1",
+					Port:       80,
+					TargetPort: intstr.FromInt(8080),
+					Protocol:   "TCP",
+				},
+				{
+					Name:       "http-2",
+					Port:       8989,
+					TargetPort: intstr.FromInt(8989),
+					Protocol:   "TCP",
+				},
+				{
+					Name:       "http-3",
+					Port:       9090,
+					TargetPort: intstr.FromInt(9090),
+					Protocol:   "TCP",
+				},
+				{
+					Name:       "tcp-1",
+					Port:       4343,
+					TargetPort: intstr.FromInt(4343),
+					Protocol:   "TCP",
+				},
+				{
+					Name:       "tcp-2",
+					Port:       4545,
+					TargetPort: intstr.FromInt(4545),
+					Protocol:   "TCP",
+				},
+				{
+					Name:       "tcp-3",
+					Port:       5656,
+					TargetPort: intstr.FromInt(5656),
+					Protocol:   "TCP",
+				},
+			},
+			Selector: meta.Labels,
+		},
+	})
+	if err != nil {
+		return meta, err
+	}
+
+	_, err = i.KubeClient.AppsV1beta1().StatefulSets(i.Namespace()).Create(&apps.StatefulSet{
+		ObjectMeta: meta,
+		Spec: apps.StatefulSetSpec{
+			Replicas:    types.Int32P(2),
+			ServiceName: meta.Name,
+			Template: apiv1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: meta.Labels,
+				},
+				Spec: apiv1.PodSpec{
+					Containers: []apiv1.Container{
+						{
+							Name:  "server",
+							Image: "appscode/test-server:1.1",
+							Env: []apiv1.EnvVar{
+								{
+									Name: "POD_NAME",
+									ValueFrom: &apiv1.EnvVarSource{
+										FieldRef: &apiv1.ObjectFieldSelector{
+											FieldPath: "metadata.name",
+										},
+									},
+								},
+							},
+							Ports: []apiv1.ContainerPort{
+								{
+									Name:          "http-1",
+									ContainerPort: 8080,
+								},
+								{
+									Name:          "http-2",
+									ContainerPort: 8989,
+								},
+								{
+									Name:          "http-3",
+									ContainerPort: 9090,
+								},
+								{
+									Name:          "tcp-1",
+									ContainerPort: 4343,
+								},
+								{
+									Name:          "tcp-2",
+									ContainerPort: 4545,
+								},
+								{
+									Name:          "tcp-3",
+									ContainerPort: 5656,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		return meta, err
+	}
+	return meta, nil
+}
+
+func (i *ingressInvocation) DeleteResourceWithHostNames(meta metav1.ObjectMeta) error {
+	policy := metav1.DeletePropagationBackground
+	if err := i.KubeClient.AppsV1beta1().StatefulSets(meta.Namespace).Delete(meta.Name, &metav1.DeleteOptions{PropagationPolicy: &policy}); err != nil {
+		return err
+	}
+
+	if err := i.KubeClient.CoreV1().Services(meta.Namespace).Delete(meta.Name, &metav1.DeleteOptions{}); err != nil {
+		return err
+	}
+
+	return nil
 }

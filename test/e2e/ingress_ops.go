@@ -337,7 +337,7 @@ var _ = Describe("IngressOperations", func() {
 					},
 				}
 			})
-			FIt("BackendRules Should Apply", backendRulesShouldApply)
+			It("BackendRules Should Apply", backendRulesShouldApply)
 		})
 	})
 
