@@ -366,8 +366,8 @@ func (c *Controller) parseSpec() {
 						Endpoints:    eps,
 					},
 				}
-				if _, ok := c.Ingress.UsesTLS(rule.Host); ok && !rule.TCP.NoSSL {
-					def.UsesSSL = true
+				if secretName, ok := c.Ingress.UsesTLS(rule.Host); ok && !rule.TCP.NoSSL {
+					def.SecretName = secretName
 				}
 				c.Parsed.TCPService = append(c.Parsed.TCPService, def)
 			}

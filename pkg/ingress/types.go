@@ -103,7 +103,7 @@ type TCPService struct {
 	Name        string
 	Host        string
 	Port        string
-	UsesSSL     bool
+	SecretName  string
 	PEMName     string
 	Backend     Backend
 	ALPNOptions string
