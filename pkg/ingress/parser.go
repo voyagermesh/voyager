@@ -357,6 +357,11 @@ func (c *Controller) generateConfig() error {
 		})
 	}
 
+	parsed.DNSResolvers = make([]*api.DNSResolver, 0)
+	for k := range dnsResolvers {
+		parsed.DNSResolvers = append(parsed.DNSResolvers, dnsResolvers[k])
+	}
+
 	var err error
 	c.HAProxyConfig, err = haproxy.RenderConfig(parsed)
 	return err

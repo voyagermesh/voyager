@@ -3,16 +3,18 @@ package haproxy
 import (
 	"fmt"
 	"sort"
+
+	"github.com/appscode/voyager/api"
 )
 
 type TemplateData struct {
 	SharedInfo
 	TimeoutDefaults map[string]string
 	Stats           *StatsInfo
-	// DNSResolvers    map[string]*api.DNSResolver
-	DefaultBackend *Backend
-	HTTPService    []*HTTPService
-	TCPService     []*TCPService
+	DNSResolvers    []*api.DNSResolver
+	DefaultBackend  *Backend
+	HTTPService     []*HTTPService
+	TCPService      []*TCPService
 }
 
 type SharedInfo struct {
