@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -55,6 +56,13 @@ func (r Ingress) IsValid() error {
 				if _, err := checkRequiredPort(path.Backend.ServicePort); err != nil {
 					return fmt.Errorf("spec.rule[%d].http.paths[%d] is using invalid servicePort %s for addr %s and path %s. Reason: %s", ri, pi, path.Backend.ServicePort, addr, path.Path, err)
 				}
+
+				for hi, hdr := range path.Backend.HeaderRule {
+					if len(strings.Fields(hdr)) == 1 {
+						return fmt.Errorf("spec.rule[%d].http.paths[%d].backend.headerRule[%d] is invalid for addr %s and path %s.", ri, pi, hi, addr, path.Path)
+					}
+				}
+
 			}
 		} else if rule.TCP != nil {
 			addr := address{Host: rule.Host}

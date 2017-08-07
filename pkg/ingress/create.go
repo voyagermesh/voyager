@@ -27,12 +27,7 @@ const (
 )
 
 func (c *Controller) Create() error {
-	err := c.generateTemplate()
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
-
-	err = c.ensureConfigMap()
+	err := c.ensureConfigMap()
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,

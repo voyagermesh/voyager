@@ -1,9 +1,8 @@
 package ingress
 
 import (
-	"bytes"
 	goerr "errors"
-	"sort"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -15,6 +14,7 @@ import (
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
+	"github.com/appscode/voyager/pkg/haproxy"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	fakecloudprovider "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
@@ -33,8 +33,8 @@ func NewController(
 	services core.ServiceLister,
 	endpoints core.EndpointsLister,
 	opt config.Options,
-	ingress *api.Ingress) *Controller {
-	h := &Controller{
+	ingress *api.Ingress) (*Controller, error) {
+	ctrl := &Controller{
 		KubeClient:      kubeClient,
 		ExtClient:       extClient,
 		PromClient:      promClient,
@@ -51,7 +51,7 @@ func NewController(
 			log.Errorln("Failed to initialize cloud provider:"+opt.CloudProvider, err)
 		} else {
 			log.Infoln("Initialized cloud provider: "+opt.CloudProvider, cloudInterface)
-			h.CloudManager = cloudInterface
+			ctrl.CloudManager = cloudInterface
 		}
 	} else if opt.CloudProvider == "gke" {
 		cloudInterface, err := cloudprovider.InitCloudProvider("gce", opt.CloudConfigFile)
@@ -59,21 +59,19 @@ func NewController(
 			log.Errorln("Failed to initialize cloud provider:"+opt.CloudProvider, err)
 		} else {
 			log.Infoln("Initialized cloud provider: "+opt.CloudProvider, cloudInterface)
-			h.CloudManager = cloudInterface
+			ctrl.CloudManager = cloudInterface
 		}
 	} else if opt.CloudProvider == "minikube" {
-		h.CloudManager = &fakecloudprovider.FakeCloud{}
+		ctrl.CloudManager = &fakecloudprovider.FakeCloud{}
 	} else {
 		log.Infoln("No cloud manager found for provider", opt.CloudProvider)
 	}
 
-	//if c.Ingress == nil {
-	//	log.Infoln("Config is nil, nothing to parse")
-	//	return
-	//}
-
-	h.parseIngress()
-	return h
+	err := ctrl.parseIngress()
+	if err != nil {
+		return nil, err
+	}
+	return ctrl, nil
 }
 
 func (c *Controller) SupportsLBType() bool {
@@ -92,7 +90,7 @@ func (c *Controller) SupportsLBType() bool {
 	}
 }
 
-func (c *Controller) serviceEndpoints(name string, port intstr.IntOrString, hostNames []string) ([]*Endpoint, error) {
+func (c *Controller) serviceEndpoints(parsed *haproxy.TemplateData, name string, port intstr.IntOrString, hostNames []string) ([]*haproxy.Endpoint, error) {
 	log.Infoln("getting endpoints for ", c.Ingress.Namespace, name, "port", port)
 
 	// the following lines giving support to
@@ -114,7 +112,7 @@ func (c *Controller) serviceEndpoints(name string, port intstr.IntOrString, host
 	if service.Spec.Type == apiv1.ServiceTypeExternalName {
 		log.Infof("Found ServiceType ExternalName for service %s, Checking DNS resolver options", service.Name)
 		// https://kubernetes.io/docs/concepts/services-networking/service/#services-without-selectors
-		ep := Endpoint{
+		ep := haproxy.Endpoint{
 			Name:         "external",
 			Port:         port.String(),
 			ExternalName: service.Spec.ExternalName,
@@ -127,11 +125,11 @@ func (c *Controller) serviceEndpoints(name string, port intstr.IntOrString, host
 			return nil, errors.FromErr(err).Err()
 		}
 		if ep.UseDNSResolver && resolver != nil {
-			c.Parsed.DNSResolvers[resolver.Name] = resolver
+			parsed.DNSResolvers[resolver.Name] = resolver
 			ep.DNSResolver = resolver.Name
 			ep.CheckHealth = resolver.CheckHealth
 		}
-		return []*Endpoint{&ep}, nil
+		return []*haproxy.Endpoint{&ep}, nil
 	}
 	p, ok := getSpecifiedPort(service.Spec.Ports, port)
 	if !ok {
@@ -141,7 +139,7 @@ func (c *Controller) serviceEndpoints(name string, port intstr.IntOrString, host
 	return c.getEndpoints(service, p, hostNames)
 }
 
-func (c *Controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (eps []*Endpoint, err error) {
+func (c *Controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (eps []*haproxy.Endpoint, err error) {
 	ep, err := c.EndpointsLister.Endpoints(s.Namespace).Get(s.Name)
 	if err != nil {
 		log.Warningln(err)
@@ -156,7 +154,7 @@ func (c *Controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePo
 			var targetPort string
 			switch servicePort.TargetPort.Type {
 			case intstr.Int:
-				if int(epPort.Port) == getTargetPort(servicePort) {
+				if int(epPort.Port) == servicePort.TargetPort.IntValue() {
 					targetPort = servicePort.TargetPort.String()
 				}
 			case intstr.String:
@@ -178,7 +176,7 @@ func (c *Controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePo
 			log.Infof("Found target port %s for service %s", targetPort, s.Name)
 			for _, epAddress := range ss.Addresses {
 				if isForwardable(hostNames, epAddress.Hostname) {
-					ep := &Endpoint{
+					ep := &haproxy.Endpoint{
 						Name: "pod-" + epAddress.IP,
 						IP:   epAddress.IP,
 						Port: targetPort,
@@ -217,20 +215,6 @@ func isForwardable(hostNames []string, hostName string) bool {
 	return false
 }
 
-func (c *Controller) generateTemplate() error {
-	log.Infoln("Generating Ingress template.")
-
-	var buf bytes.Buffer
-	err := haproxyTemplate.Execute(&buf, c.Parsed)
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
-	c.HAProxyConfig = buf.String()
-	log.Infoln("Generated haproxy.cfg for ingress: %s@%s", c.Ingress.Name, c.Ingress.Namespace)
-	log.Infoln(c.HAProxyConfig)
-	return nil
-}
-
 func getSpecifiedPort(ports []apiv1.ServicePort, port intstr.IntOrString) (*apiv1.ServicePort, bool) {
 	for _, p := range ports {
 		if int(p.Port) == port.IntValue() {
@@ -240,24 +224,19 @@ func getSpecifiedPort(ports []apiv1.ServicePort, port intstr.IntOrString) (*apiv
 	return nil, false
 }
 
-// getTargetPort returns the numeric value of TargetPort
-func getTargetPort(servicePort *apiv1.ServicePort) int {
-	return servicePort.TargetPort.IntValue()
-}
+func (c *Controller) parseIngress() error {
+	var parsed haproxy.TemplateData
 
-func (c *Controller) parseIngress() {
-	log.Infoln("Parsing Engress specs for", c.Ingress.Name)
-
-	var si SharedInfo
+	var si haproxy.SharedInfo
 	si.Sticky = c.Ingress.StickySession()
 	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
 		si.AcceptProxy = c.Ingress.KeepSourceIP()
 	}
-	c.Parsed.SharedInfo = si
-	c.Parsed.TimeoutDefaults = c.Ingress.Timeouts()
+	parsed.SharedInfo = si
+	parsed.TimeoutDefaults = c.Ingress.Timeouts()
 
 	if c.Ingress.Stats() {
-		stats := &StatsInfo{}
+		stats := &haproxy.StatsInfo{}
 		stats.Port = c.Ingress.StatsPort()
 		if name := c.Ingress.StatsSecretName(); len(name) > 0 {
 			secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.ObjectMeta.Namespace).Get(name, metav1.GetOptions{})
@@ -265,20 +244,20 @@ func (c *Controller) parseIngress() {
 				stats.Username = string(secret.Data["username"])
 				stats.PassWord = string(secret.Data["password"])
 			} else {
-				log.Errorln("Error encountered while loading Stats secret", err)
-				stats = nil
+				return fmt.Errorf("Failed to load stats secret for ingress %s@%s", c.Ingress.Name, c.Ingress.Namespace)
 			}
 		}
-		c.Parsed.Stats = stats
+		parsed.Stats = stats
 	}
-	c.Parsed.DNSResolvers = make(map[string]*api.DNSResolver)
+	parsed.DNSResolvers = make(map[string]*api.DNSResolver)
 	c.PortMapping = make(map[int]Target)
 
 	if c.Ingress.Spec.Backend != nil {
-		log.Debugln("generating default backend", c.Ingress.Spec.Backend.RewriteRule, c.Ingress.Spec.Backend.HeaderRule)
-		eps, _ := c.serviceEndpoints(c.Ingress.Spec.Backend.ServiceName, c.Ingress.Spec.Backend.ServicePort, c.Ingress.Spec.Backend.HostNames)
-		sort.Slice(eps, func(i, j int) bool { return eps[i].IP < eps[j].IP })
-		c.Parsed.DefaultBackend = &Backend{
+		eps, err := c.serviceEndpoints(&parsed, c.Ingress.Spec.Backend.ServiceName, c.Ingress.Spec.Backend.ServicePort, c.Ingress.Spec.Backend.HostNames)
+		if err != nil {
+			return err
+		}
+		parsed.DefaultBackend = &haproxy.Backend{
 			Endpoints:    eps,
 			BackendRules: c.Ingress.Spec.Backend.BackendRule,
 			RewriteRules: c.Ingress.Spec.Backend.RewriteRule,
@@ -286,29 +265,30 @@ func (c *Controller) parseIngress() {
 		}
 	}
 
-	c.Parsed.HTTPService = make([]*HTTPService, 0)
-	c.Parsed.TCPService = make([]*TCPService, 0)
+	parsed.HTTPService = make([]*haproxy.HTTPService, 0)
+	parsed.TCPService = make([]*haproxy.TCPService, 0)
 
 	type httpKey struct {
 		Port    int
 		UsesSSL bool
 	}
-	httpServices := make(map[httpKey][]*HTTPPath)
+	httpServices := make(map[httpKey][]*haproxy.HTTPPath)
 	usesHTTPRule := false
 	for _, rule := range c.Ingress.Spec.Rules {
 		if rule.HTTP != nil {
 			usesHTTPRule = true
 
-			httpPaths := make([]*HTTPPath, 0)
+			httpPaths := make([]*haproxy.HTTPPath, 0)
 			for _, path := range rule.HTTP.Paths {
-				eps, _ := c.serviceEndpoints(path.Backend.ServiceName, path.Backend.ServicePort, path.Backend.HostNames)
-				sort.Slice(eps, func(i, j int) bool { return eps[i].IP < eps[j].IP })
-				log.Infoln("Returned service endpoints len(eps)", len(eps), "for service", path.Backend.ServiceName)
+				eps, err := c.serviceEndpoints(&parsed, path.Backend.ServiceName, path.Backend.ServicePort, path.Backend.HostNames)
+				if err != nil {
+					return err
+				}
 				if len(eps) > 0 {
-					httpPaths = append(httpPaths, &HTTPPath{
+					httpPaths = append(httpPaths, &haproxy.HTTPPath{
 						Host: rule.Host,
 						Path: path.Path,
-						Backend: Backend{
+						Backend: haproxy.Backend{
 							Name:         "service-" + rand.Characters(6),
 							Endpoints:    eps,
 							BackendRules: path.Backend.BackendRule,
@@ -352,17 +332,18 @@ func (c *Controller) parseIngress() {
 				PodPort:  rule.TCP.Port.IntValue(),
 				NodePort: rule.TCP.NodePort.IntValue(),
 			}
-			eps, _ := c.serviceEndpoints(rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort, rule.TCP.Backend.HostNames)
-			sort.Slice(eps, func(i, j int) bool { return eps[i].IP < eps[j].IP })
-			log.Infoln("Returned service endpoints len(eps)", len(eps), "for service", rule.TCP.Backend.ServiceName)
+			eps, err := c.serviceEndpoints(&parsed, rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort, rule.TCP.Backend.HostNames)
+			if err != nil {
+				return err
+			}
 			if len(eps) > 0 {
-				def := &TCPService{
+				def := &haproxy.TCPService{
 					SharedInfo:   si,
 					FrontendName: "tcp-" + rule.TCP.Port.String(),
 					Host:         rule.Host,
 					Port:         rule.TCP.Port.String(),
 					ALPNOptions:  parseALPNOptions(rule.TCP.ALPN),
-					Backend: Backend{
+					Backend: haproxy.Backend{
 						BackendRules: rule.TCP.Backend.BackendRule,
 						Endpoints:    eps,
 					},
@@ -370,15 +351,14 @@ func (c *Controller) parseIngress() {
 				if secretName, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoSSL {
 					def.SecretName = secretName
 				}
-				c.Parsed.TCPService = append(c.Parsed.TCPService, def)
+				parsed.TCPService = append(parsed.TCPService, def)
 			}
 		}
 	}
 
 	for key := range httpServices {
 		value := httpServices[key]
-		sort.Slice(value, func(i, j int) bool { return value[i].SortKey() < value[j].SortKey() })
-		c.Parsed.HTTPService = append(c.Parsed.HTTPService, &HTTPService{
+		parsed.HTTPService = append(parsed.HTTPService, &haproxy.HTTPService{
 			SharedInfo:   si,
 			FrontendName: "fix-it",
 			Port:         key.Port,
@@ -386,12 +366,6 @@ func (c *Controller) parseIngress() {
 			Paths:        value,
 		})
 	}
-	sort.Slice(c.Parsed.HTTPService, func(i, j int) bool {
-		return c.Parsed.HTTPService[i].SortKey() < c.Parsed.HTTPService[j].SortKey()
-	})
-	sort.Slice(c.Parsed.TCPService, func(i, j int) bool {
-		return c.Parsed.TCPService[i].SortKey() < c.Parsed.TCPService[j].SortKey()
-	})
 
 	if !usesHTTPRule && c.Ingress.Spec.Backend != nil {
 		c.PortMapping[80] = Target{PodPort: 80}
@@ -412,13 +386,16 @@ func (c *Controller) parseIngress() {
 				if tp80 && !sp443 {
 					c.PortMapping[443] = Target{PodPort: 80}
 				} else {
-					log.Errorln("Failed to open port 443 on service for AWS cert manager.")
+					return fmt.Errorf("Failed to open port 443 on service for AWS cert manager for Ingress %s@%s.", c.Ingress.Name, c.Ingress.Namespace)
 				}
 			}
 		}
 	}
 
-	// TODO: 9verify frontend, backend names).
+	var err error
+	c.HAProxyConfig, err = haproxy.RenderConfig(parsed)
+	return err
+	// TODO: (verify frontend, backend names).
 }
 
 func parseALPNOptions(opt []string) string {

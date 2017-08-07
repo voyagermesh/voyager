@@ -1,4 +1,4 @@
-package ingress
+package haproxy
 
 import (
 	"strings"

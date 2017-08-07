@@ -17,6 +17,7 @@ const (
 
 	// Ingress Events
 	EventReasonIngressConfigMapCreateFailed          = "ConfigMapCreateFailed"
+	EventReasonIngressConfigMapUpdateFailed          = "ConfigMapUpdateFailed"
 	EventReasonIngressConfigMapCreateSuccessful      = "ConfigMapCreateSuccessful"
 	EventReasonIngressUnsupportedLBType              = "UnsupportedLBType"
 	EventReasonIngressControllerCreateFailed         = "ControllerCreateFailed"
@@ -26,6 +27,7 @@ const (
 	EventReasonIngressServiceMonitorCreateFailed     = "ServiceMonitorCreateFailed"
 	EventReasonIngressServiceMonitorCreateSuccessful = "ServiceMonitorCreateSuccessful"
 	EventReasonIngressUpdateFailed                   = "UpdateFailed"
+	EventReasonIngressDeleteFailed                   = "DeleteFailed"
 	EventReasonIngressUpdateSuccessful               = "UpdateSuccessful"
 	EventReasonIngressServiceUpdateFailed            = "ServiceUpdateFailed"
 	EventReasonIngressServiceUpdateSuccessful        = "ServiceUpdateSuccessful"

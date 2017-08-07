@@ -98,7 +98,17 @@ func (op *Operator) getIngressTPRWatcher() cache.Controller {
 }
 
 func (op *Operator) AddEngress(engress *tapi.Ingress) {
-	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
+	ctrl, err := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
+	if err != nil {
+		op.recorder.Eventf(
+			engress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressControllerCreateFailed,
+			"Reason: %s",
+			err.Error(),
+		)
+		return
+	}
 	if ctrl.IsExists() {
 		// Loadbalancer resource for this ingress is found in its place,
 		// so no need to create the resources. First trying to update
@@ -154,7 +164,7 @@ func (op *Operator) AddEngress(engress *tapi.Ingress) {
 		op.ensureServiceAnnotations(engress, svc)
 	}
 
-	err := certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, nil).HandleIngress(engress)
+	err = certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, nil).HandleIngress(engress)
 	if err != nil {
 		log.Error(err)
 	}
@@ -167,7 +177,17 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 		return
 	}
 
-	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, newEngress)
+	ctrl, err := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, newEngress)
+	if err != nil {
+		op.recorder.Eventf(
+			newEngress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressUpdateFailed,
+			"Reason: %s",
+			err.Error(),
+		)
+		return
+	}
 
 	if oldHandled && !newHandled {
 		ctrl.Delete()
@@ -237,14 +257,24 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 		op.ensureServiceAnnotations(newEngress, svc)
 	}
 
-	err := certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, nil).HandleIngress(newEngress)
+	err = certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, nil).HandleIngress(newEngress)
 	if err != nil {
 		log.Error(err)
 	}
 }
 
 func (op *Operator) DeleteEngress(engress *tapi.Ingress) {
-	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
+	ctrl, err := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
+	if err != nil {
+		op.recorder.Eventf(
+			engress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressDeleteFailed,
+			"Reason: %s",
+			err.Error(),
+		)
+		return
+	}
 	ctrl.Delete()
 
 	for _, meta := range engress.BackendServices() {

@@ -26,12 +26,8 @@ const (
 )
 
 func (c *Controller) Update(mode UpdateMode) error {
-	err := c.generateTemplate()
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
 	// Update HAProxy config
-	err = c.updateConfigMap()
+	err := c.updateConfigMap()
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
