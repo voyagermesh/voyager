@@ -60,8 +60,8 @@ defaults
     option dontlognull
 
     # Timeout values
-    {{ range $key, $value := .TimeoutDefaults }}
-    timeout {{ $key }} {{ $value }}
+    {{ range $k, $v := .TimeoutDefaults }}
+    timeout {{ $k }} {{ $v }}
     {{ end }}
 
     # default traffic mode is http
@@ -90,7 +90,7 @@ defaults
 {{ template "tcp-backend" $svc }}
 {{ end }}
 
-{{ if and !.HttpService .DefaultBackend }}
+{{ if and (not .HttpService) .DefaultBackend }}
 frontend http-frontend
     bind *:80 {{ if .AcceptProxy }}accept-proxy{{ end }}
 
@@ -137,7 +137,7 @@ backend default-backend
 {{ end }}
 
 {{ range $rule := .Backend.RewriteRules }}
-reqrep {{ rule }}
+reqrep {{ $rule }}
 {{ end }}
 
 {{ range $index, $rule := .Backend.HeaderRules }}
@@ -149,7 +149,7 @@ http-request add-header {{ $rule }} unless ___header_x_{{ $index }}_exists
 {{ if $e.ExternalName }}
 {{ if $e.UseDNSResolver }}
 server {{ $e.Name }} {{ $e.ExternalName }}:{{ $e.Port }} {{ if $e.DNSResolver }} {{ if $e.CheckHealth }} check {{ end }} resolvers {{ $e.DNSResolver }} resolve-prefer ipv4 {{ end }}
-{{ elif not .Backend.BackendRules }}
+{{ else if not .Backend.BackendRules }}
 acl https ssl_fc
 http-request redirect location https://{{$e.ExternalName}}:{{ $e.Port }} code 301 if https
 http-request redirect location http://{{$e.ExternalName}}:{{ $e.Port }} code 301 unless https
@@ -206,7 +206,7 @@ http-request add-header {{ $rule }} unless ___header_x_{{ $index }}_exists
 {{ if $e.ExternalName }}
 {{ if $e.UseDNSResolver }}
 server {{ $e.Name }} {{ $e.ExternalName }}:{{ $e.Port }} {{ if $e.DNSResolver }} {{ if $e.CheckHealth }} check {{ end }} resolvers {{ $e.DNSResolver }} resolve-prefer ipv4 {{ end }}
-{{ elif not $path.Backend.BackendRules }}
+{{ else if not $path.Backend.BackendRules }}
 http-request redirect location {{ if .UseSSL }}https://{{ else }}http://{{ end }}{{$e.ExternalName}}:{{ $e.Port }} code 301
 {{ end }}
 {{ else }}
@@ -218,7 +218,7 @@ server {{ $e.Name }} {{ $e.IP }}:{{ $e.Port }} {{ if $e.Weight }}weight {{ $e.We
 
 	_ = template.Must(template.New("tcp-frontend").Funcs(funcMap).Parse(`
 frontend {{ .FrontendName }}
-bind *:{{ Port }} {{ if .AcceptProxy }}accept-proxy{{ end }} {{ if .SecretName }}ssl no-sslv3 no-tlsv10 no-tls-tickets crt /etc/ssl/private/haproxy/{{ .SecretName }}.pem{{ end }} {{if .ALPNOptions }}{{.ALPNOptions}}{{ end }}
+bind *:{{ .Port }} {{ if .AcceptProxy }}accept-proxy{{ end }} {{ if .SecretName }}ssl no-sslv3 no-tlsv10 no-tls-tickets crt /etc/ssl/private/haproxy/{{ .SecretName }}.pem{{ end }} {{if .ALPNOptions }}{{.ALPNOptions}}{{ end }}
 mode tcp
 default_backend {{ .Backend.Name }}
 `))
