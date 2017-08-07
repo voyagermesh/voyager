@@ -75,21 +75,6 @@ var _ = Describe("IngressCoreOperations", func() {
 	})
 
 	var (
-		shouldCreateServiceEntry = func() {
-			By("Checking StatusIP for provider" + f.Config.CloudProviderName)
-			if f.Config.CloudProviderName == "minikube" {
-				Skip("Minikube do not support this")
-			}
-			// Check Status for ingress
-			baseIngress, err := f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Get(ext.Name, metav1.GetOptions{})
-			Expect(err).NotTo(HaveOccurred())
-
-			svc, err := f.Ingress.GetOffShootService(ing)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(baseIngress.Status.LoadBalancer.Ingress)).Should(Equal(len(svc.Status.LoadBalancer.Ingress)))
-			Expect(baseIngress.Status.LoadBalancer.Ingress[0]).Should(Equal(svc.Status.LoadBalancer.Ingress[0]))
-		}
-
 		shouldResponseHTTP = func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
@@ -144,7 +129,6 @@ var _ = Describe("IngressCoreOperations", func() {
 	)
 
 	Describe("Create", func() {
-		It("Should create Loadbalancer entry", shouldCreateServiceEntry)
 		It("Should response HTTP", shouldResponseHTTP)
 	})
 

@@ -236,14 +236,14 @@ var _ = Describe("IngressOperations", func() {
 			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/old/add/now", func(r *testserverclient.Response) bool {
 				return Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/old/add/now")) &&
-					Expect(r.RequestHeaders.Get("X-Added-From-Proxy")).Should(Equal("added-from-proxy"))
+					Expect(r.ResponseHeader.Get("X-Added-From-Proxy")).Should(Equal("added-from-proxy"))
 			})
 			Expect(err).NotTo(HaveOccurred())
 
 			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/test-second", func(r *testserverclient.Response) bool {
 				return Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/override/rewrited/from/proxy/test-second")) &&
-					Expect(r.RequestHeaders.Get("X-Added-From-Proxy")).Should(Equal("added-from-proxy")) &&
+					Expect(r.ResponseHeader.Get("X-Added-From-Proxy")).Should(Equal("added-from-proxy")) &&
 					Expect(r.RequestHeaders.Get("X-Ingress-Test-Header")).Should(Equal("ingress.appscode.com"))
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -337,7 +337,7 @@ var _ = Describe("IngressOperations", func() {
 					},
 				}
 			})
-			It("BackendRules Should Apply", backendRulesShouldApply)
+			FIt("BackendRules Should Apply", backendRulesShouldApply)
 		})
 	})
 
