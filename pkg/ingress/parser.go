@@ -320,7 +320,7 @@ func (c *Controller) parseSpec() {
 			}
 
 			var key httpKey
-			if _, foundTLS := c.Ingress.UsesTLS(rule.Host); foundTLS && !rule.HTTP.NoSSL {
+			if _, foundTLS := c.Ingress.FindTLSSecret(rule.Host); foundTLS && !rule.HTTP.NoSSL {
 				key.UsesSSL = true
 				if port := rule.HTTP.Port.IntValue(); port > 0 {
 					key.Port = port
@@ -366,7 +366,7 @@ func (c *Controller) parseSpec() {
 						Endpoints:    eps,
 					},
 				}
-				if secretName, ok := c.Ingress.UsesTLS(rule.Host); ok && !rule.TCP.NoSSL {
+				if secretName, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoSSL {
 					def.SecretName = secretName
 				}
 				c.Parsed.TCPService = append(c.Parsed.TCPService, def)
