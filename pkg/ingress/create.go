@@ -65,7 +65,7 @@ func (c *Controller) Create() error {
 		return errors.FromErr(err).Err()
 	}
 
-	if c.Parsed.Stats != nil {
+	if c.Ingress.Stats() {
 		err := c.ensureStatsService()
 		// Error ignored intentionally
 		if err != nil {
@@ -491,11 +491,11 @@ func (c *Controller) createHostPortPods() error {
 		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, p)
 	}
 
-	if c.Parsed.Stats != nil {
+	if c.Ingress.Stats() {
 		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
 			Name:          api.StatsPortName,
 			Protocol:      "TCP",
-			ContainerPort: int32(c.Parsed.Stats.Port),
+			ContainerPort: int32(c.Ingress.StatsPort()),
 		})
 	}
 
@@ -708,11 +708,11 @@ func (c *Controller) createNodePortPods() error {
 		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, p)
 	}
 
-	if c.Parsed.Stats != nil {
+	if c.Ingress.Stats() {
 		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
 			Name:          api.StatsPortName,
 			Protocol:      "TCP",
-			ContainerPort: int32(c.Parsed.Stats.Port),
+			ContainerPort: int32(c.Ingress.StatsPort()),
 		})
 	}
 
@@ -873,7 +873,7 @@ func (c *Controller) ensureStatsService() error {
 				{
 					Name:       api.StatsPortName,
 					Protocol:   "TCP",
-					Port:       int32(c.Parsed.Stats.Port),
+					Port:       int32(c.Ingress.StatsPort()),
 					TargetPort: intstr.FromString(api.StatsPortName),
 				},
 			},
