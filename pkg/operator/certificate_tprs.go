@@ -16,7 +16,7 @@ import (
 )
 
 // Blocks caller. Intended to be called as a Go routine.
-func (op *Operator) getCertificateTPRWatcher() cache.Controller {
+func (op *Operator) initCertificateTPRWatcher() cache.Controller {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
 			return op.ExtClient.Certificates(apiv1.NamespaceAll).List(metav1.ListOptions{})
