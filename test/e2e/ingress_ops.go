@@ -320,7 +320,7 @@ var _ = Describe("IngressOperations", func() {
 		}
 
 		shouldOpenNodePorts = func() {
-			var svc *v1.Service;
+			var svc *v1.Service
 			Eventually(func() error {
 				var err error
 				svc, err = f.Ingress.GetOffShootService(ing)
@@ -332,6 +332,32 @@ var _ = Describe("IngressOperations", func() {
 			for _, port := range svc.Spec.Ports {
 				Expect(port.NodePort).Should(BeNumerically(">", 0))
 			}
+		}
+
+		shouldTestStatService = func() {
+			var svc *v1.Service
+			Eventually(func() error {
+				var err error
+				svc, err = f.KubeClient.CoreV1().Services(ing.GetNamespace()).Get(ing.StatsServiceName(), metav1.GetOptions{})
+				return err
+			}, "10m", "5s").Should(BeNil())
+			Expect(svc).ShouldNot(BeNil())
+			Expect(len(svc.Spec.Ports)).Should(Equal(1))
+			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(8787)))
+
+			tobeUpdated, err := f.Ingress.Get(ing)
+			Expect(err).NotTo(HaveOccurred())
+
+			delete(tobeUpdated.Annotations, api.StatsOn)
+			Expect(tobeUpdated.Annotations).ShouldNot(HaveKey(api.StatsOn))
+
+			err = f.Ingress.Update(tobeUpdated)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(func() bool {
+				_, err := f.KubeClient.CoreV1().Services(ing.GetNamespace()).Get(ing.StatsServiceName(), metav1.GetOptions{})
+				return err != nil
+			}, "2m", "20s").Should(BeTrue())
 		}
 	)
 
@@ -359,6 +385,14 @@ var _ = Describe("IngressOperations", func() {
 				ing.Annotations[api.PodAnnotations] = `{"foo": "bar", "pod-annotation": "set"}`
 			})
 			It("Should persist service IP", shouldApplyTargetAnnotations)
+		})
+
+		Describe("With Stats", func() {
+			BeforeEach(func() {
+				ing.Annotations[api.StatsOn] = `true`
+				ing.Annotations[api.StatsPort] = `8787`
+			})
+			It("Should test stat service", shouldTestStatService)
 		})
 
 		Describe("With Rules", func() {
