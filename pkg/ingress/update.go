@@ -87,7 +87,7 @@ func (c *Controller) Update(mode UpdateMode) error {
 					c.Ingress,
 					apiv1.EventTypeWarning,
 					eventer.EventReasonIngressStatsServiceCreateFailed,
-					"Failed to create Stats Service. Reason: %s",
+					"Failed to create HAProxy stats Service. Reason: %s",
 					err.Error(),
 				)
 			} else {
@@ -95,7 +95,7 @@ func (c *Controller) Update(mode UpdateMode) error {
 					c.Ingress,
 					apiv1.EventTypeNormal,
 					eventer.EventReasonIngressStatsServiceCreateSuccessful,
-					"Successfully created Stats Service %s",
+					"Successfully created HAProxy stats Service %s",
 					c.Ingress.StatsServiceName(),
 				)
 			}
@@ -106,7 +106,7 @@ func (c *Controller) Update(mode UpdateMode) error {
 					c.Ingress,
 					apiv1.EventTypeWarning,
 					eventer.EventReasonIngressStatsServiceDeleteFailed,
-					"Failed to delete Stats Service. Reason: %s",
+					"Failed to delete HAProxy stats Service. Reason: %s",
 					err.Error(),
 				)
 			} else {
@@ -114,7 +114,7 @@ func (c *Controller) Update(mode UpdateMode) error {
 					c.Ingress,
 					apiv1.EventTypeNormal,
 					eventer.EventReasonIngressStatsServiceDeleteSuccessful,
-					"Successfully deleted Stats Service %s",
+					"Successfully deleted HAProxy stats Service %s",
 					c.Ingress.StatsServiceName(),
 				)
 			}
