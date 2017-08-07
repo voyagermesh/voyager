@@ -228,6 +228,16 @@ func getSpecifiedPort(ports []apiv1.ServicePort, port intstr.IntOrString) (*apiv
 	return nil, false
 }
 
+func getBackendName(r *api.Ingress, be api.IngressBackend) string {
+	var seed string
+	if strings.ContainsRune(be.ServiceName, '.') {
+		seed = fmt.Sprintf("%s:%d", be.ServiceName, be.ServicePort.IntValue())
+	} else {
+		seed = fmt.Sprintf("%s.%s:%d", be.ServiceName, r.Namespace, be.ServicePort.IntValue())
+	}
+	return rand.WithUniqSuffix(seed)
+}
+
 func (c *Controller) generateConfig() error {
 	var parsed haproxy.TemplateData
 
@@ -261,6 +271,7 @@ func (c *Controller) generateConfig() error {
 			return err
 		}
 		parsed.DefaultBackend = &haproxy.Backend{
+			Name:         "default-backend", // TODO: Use constant
 			Endpoints:    eps,
 			BackendRules: c.Ingress.Spec.Backend.BackendRule,
 			RewriteRules: c.Ingress.Spec.Backend.RewriteRule,
@@ -289,7 +300,7 @@ func (c *Controller) generateConfig() error {
 						Host: rule.Host,
 						Path: path.Path,
 						Backend: haproxy.Backend{
-							Name:         "service-" + rand.Characters(6),
+							Name:         getBackendName(c.Ingress, path.Backend),
 							Endpoints:    eps,
 							BackendRules: path.Backend.BackendRule,
 							RewriteRules: path.Backend.RewriteRule,
@@ -329,11 +340,12 @@ func (c *Controller) generateConfig() error {
 			if len(eps) > 0 {
 				def := &haproxy.TCPService{
 					SharedInfo:   si,
-					FrontendName: "tcp-" + rule.TCP.Port.String(),
+					FrontendName: fmt.Sprintf("tcp-%s", rule.TCP.Port),
 					Host:         rule.Host,
 					Port:         rule.TCP.Port.String(),
 					ALPNOptions:  parseALPNOptions(rule.TCP.ALPN),
 					Backend: haproxy.Backend{
+						Name:         getBackendName(c.Ingress, rule.TCP.Backend),
 						BackendRules: rule.TCP.Backend.BackendRule,
 						Endpoints:    eps,
 					},
@@ -350,7 +362,7 @@ func (c *Controller) generateConfig() error {
 		value := httpServices[key]
 		parsed.HTTPService = append(parsed.HTTPService, &haproxy.HTTPService{
 			SharedInfo:   si,
-			FrontendName: "fix-it",
+			FrontendName: fmt.Sprintf("http-%d", key.Port),
 			Port:         key.Port,
 			UsesSSL:      key.UsesSSL,
 			Paths:        value,
