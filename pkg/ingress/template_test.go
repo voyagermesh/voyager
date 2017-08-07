@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"testing"
 	"text/template"
+
 	"github.com/stretchr/testify/assert"
 )
 

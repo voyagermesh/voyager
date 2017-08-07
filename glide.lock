@@ -1,5 +1,5 @@
-hash: 4603d45081832651b419c72d01373806592fe66c295a144567aab3fdcbedcda8
-updated: 2017-08-06T14:33:42.155649499-07:00
+hash: 094f992c06b688c6241b35fc31cdb2f9506fc984496d48e0a3176f3a559127f1
+updated: 2017-08-07T04:07:18.031299421-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -114,8 +114,6 @@ imports:
   - swagger
 - name: github.com/facebookgo/stack
   version: 751773369052141c013c6e827a71e8f35c07879c
-- name: github.com/flosch/pongo2
-  version: 58f1f3387f7c57843ff829d92a759d08abe5a63f
 - name: github.com/ghodss/yaml
   version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/go-ini/ini
@@ -163,8 +161,6 @@ imports:
   version: 3433f3ea46d9f8019119e7dd41274e112a2359a9
 - name: github.com/jpillora/go-ogle-analytics
   version: 14b04e0594ef6a9fd943363b135656f0ec8c9d0e
-- name: github.com/juju/errors
-  version: c7d06af17c68cd34c835053720b21f6549d9b0ee
 - name: github.com/juju/ratelimit
   version: 77ed1c8a01217656d2080ad51981f6e99adaa177
 - name: github.com/lib/pq
@@ -224,6 +220,8 @@ imports:
   - doc
 - name: github.com/spf13/pflag
   version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
+- name: github.com/tamalsaha/go-oneliners
+  version: 4ca214c0460d9077e49e3ef394785f92408f7699
 - name: github.com/timewasted/linode
   version: 37e84520dcf74488f67654f9c775b9752c232dc1
   subpackages:
