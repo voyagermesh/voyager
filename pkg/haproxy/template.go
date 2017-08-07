@@ -76,10 +76,6 @@ defaults
 {{ template "stats" .Stats }}
 {{ end }}
 
-{{ if .DefaultBackend }}
-{{ template "default-backend" .DefaultBackend }}
-{{ end }}
-
 {{ range $svc := .HttpService }}
 {{ template "http-frontend" $svc }}
 {{ template "http-backend" $svc }}
@@ -91,14 +87,11 @@ defaults
 {{ end }}
 
 {{ if and (not .HttpService) .DefaultBackend }}
-frontend http-frontend
-    bind *:80 {{ if .AcceptProxy }}accept-proxy{{ end }}
+{{ template "default-frontend" .SharedInfo }}
+{{ end }}
 
-    mode http
-    option httplog
-    option forwardfor
-
-    default_backend default-backend
+{{ if .DefaultBackend }}
+{{ template "default-backend" .SharedInfo }}
 {{ end }}
 `))
 
@@ -128,28 +121,39 @@ stats uri /
 {{ if .Username }}stats auth {{ .Username }}:{{ .PassWord }}{{ end }}
 `))
 
+	_ = template.Must(template.New("default-frontend").Funcs(funcMap).Parse(`
+frontend http-frontend
+    bind *:80 {{ if .AcceptProxy }}accept-proxy{{ end }}
+
+    mode http
+    option httplog
+    option forwardfor
+
+    default_backend default-backend
+`))
+
 	_ = template.Must(template.New("default-backend").Funcs(funcMap).Parse(`
 backend default-backend
 {{ if .Sticky }}cookie SERVERID insert indirect nocache{{ end }}
 
-{{ range $rule := .Backend.BackendRules }}
+{{ range $rule := .DefaultBackend.BackendRules }}
 {{ $rule }}
 {{ end }}
 
-{{ range $rule := .Backend.RewriteRules }}
+{{ range $rule := .DefaultBackend.RewriteRules }}
 reqrep {{ $rule }}
 {{ end }}
 
-{{ range $index, $rule := .Backend.HeaderRules }}
+{{ range $index, $rule := .DefaultBackend.HeaderRules }}
 acl ___header_x_{{ $index }}_exists req.hdr({{ $rule | header_name }}) -m found
 http-request add-header {{ $rule }} unless ___header_x_{{ $index }}_exists
 {{ end }}
 
-{{ range $e := .Backend.Endpoints }}
+{{ range $e := .DefaultBackend.Endpoints }}
 {{ if $e.ExternalName }}
 {{ if $e.UseDNSResolver }}
 server {{ $e.Name }} {{ $e.ExternalName }}:{{ $e.Port }} {{ if $e.DNSResolver }} {{ if $e.CheckHealth }} check {{ end }} resolvers {{ $e.DNSResolver }} resolve-prefer ipv4 {{ end }}
-{{ else if not .Backend.BackendRules }}
+{{ else if not .DefaultBackend.BackendRules }}
 acl https ssl_fc
 http-request redirect location https://{{$e.ExternalName}}:{{ $e.Port }} code 301 if https
 http-request redirect location http://{{$e.ExternalName}}:{{ $e.Port }} code 301 unless https

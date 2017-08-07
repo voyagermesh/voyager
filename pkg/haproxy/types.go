@@ -12,7 +12,6 @@ type TemplateData struct {
 	TimeoutDefaults map[string]string
 	Stats           *StatsInfo
 	DNSResolvers    []*api.DNSResolver
-	DefaultBackend  *Backend
 	HTTPService     []*HTTPService
 	TCPService      []*TCPService
 }
@@ -22,6 +21,7 @@ type SharedInfo struct {
 	AcceptProxy bool
 	// stick requests to specified servers.
 	Sticky bool
+	DefaultBackend  *Backend
 }
 
 type StatsInfo struct {
