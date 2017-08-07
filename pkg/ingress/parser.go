@@ -276,11 +276,13 @@ func getTargetPort(servicePort *apiv1.ServicePort) int {
 func (c *Controller) parseIngress() {
 	log.Infoln("Parsing Engress specs for", c.Ingress.Name)
 
-	c.Parsed.TimeoutDefaults = c.Ingress.Timeouts()
-	c.Parsed.Sticky = c.Ingress.StickySession()
+	var si SharedInfo
+	si.Sticky = c.Ingress.StickySession()
 	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
-		c.Parsed.AcceptProxy = c.Ingress.KeepSourceIP()
+		si.AcceptProxy = c.Ingress.KeepSourceIP()
 	}
+	c.Parsed.SharedInfo = si
+	c.Parsed.TimeoutDefaults = c.Ingress.Timeouts()
 
 	if c.Ingress.Stats() {
 		stats := &StatsInfo{}
@@ -322,9 +324,9 @@ func (c *Controller) parseIngress() {
 	httpServices := make(map[httpKey][]*HTTPPath)
 	usesHTTPRule := false
 	for _, rule := range c.Ingress.Spec.Rules {
-		host := rule.Host
 		if rule.HTTP != nil {
 			usesHTTPRule = true
+
 			httpPaths := make([]*HTTPPath, 0)
 			for _, path := range rule.HTTP.Paths {
 				eps, _ := c.serviceEndpoints(path.Backend.ServiceName, path.Backend.ServicePort, path.Backend.HostNames)
@@ -333,7 +335,7 @@ func (c *Controller) parseIngress() {
 				if len(eps) > 0 {
 					httpPaths = append(httpPaths, &HTTPPath{
 						Name: "service-" + rand.Characters(6),
-						Host: host,
+						Host: rule.Host,
 						Path: path.Path,
 						Backend: Backend{
 							Endpoints:    eps,
@@ -383,8 +385,9 @@ func (c *Controller) parseIngress() {
 			log.Infoln("Returned service endpoints len(eps)", len(eps), "for service", rule.TCP.Backend.ServiceName)
 			if len(eps) > 0 {
 				def := &TCPService{
+					SharedInfo:  si,
 					Name:        "tcp-" + rule.TCP.Port.String(),
-					Host:        host,
+					Host:        rule.Host,
 					Port:        rule.TCP.Port.String(),
 					ALPNOptions: parseALPNOptions(rule.TCP.ALPN),
 					Backend: Backend{
@@ -399,6 +402,21 @@ func (c *Controller) parseIngress() {
 			}
 		}
 	}
+
+	for key := range httpServices {
+		value := httpServices[key]
+		sort.Slice(value, func(i, j int) bool { return value[i].SortKey() < value[j].SortKey() })
+		c.Parsed.HTTPService = append(c.Parsed.HTTPService, &HTTPService{
+			SharedInfo: si,
+			Name:       "fix-it",
+			Port:       key.Port,
+			UsesSSL:    key.UsesSSL,
+			Paths:      value,
+		})
+	}
+	sort.Slice(c.Parsed.HTTPService, func(i, j int) bool {
+		return c.Parsed.HTTPService[i].SortKey() < c.Parsed.HTTPService[j].SortKey()
+	})
 	sort.Slice(c.Parsed.TCPService, func(i, j int) bool {
 		return c.Parsed.TCPService[i].SortKey() < c.Parsed.TCPService[j].SortKey()
 	})
@@ -406,21 +424,6 @@ func (c *Controller) parseIngress() {
 	if !usesHTTPRule && c.Ingress.Spec.Backend != nil {
 		c.PortMapping[80] = Target{PodPort: 80}
 	}
-
-	for key := range httpServices {
-		value := httpServices[key]
-		sort.Slice(value, func(i, j int) bool { return value[i].SortKey() < value[j].SortKey() })
-		c.Parsed.HTTPService = append(c.Parsed.HTTPService, &HTTPService{
-			Name:    "fix-it",
-			Port:    key.Port,
-			UsesSSL: key.UsesSSL,
-			Paths:   value,
-		})
-	}
-	sort.Slice(c.Parsed.HTTPService, func(i, j int) bool {
-		return c.Parsed.HTTPService[i].SortKey() < c.Parsed.HTTPService[j].SortKey()
-	})
-
 	// ref: https://github.com/appscode/voyager/issues/188
 	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
 		if ans, ok := c.Ingress.ServiceAnnotations(c.Opt.CloudProvider); ok {
