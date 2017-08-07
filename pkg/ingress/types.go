@@ -34,8 +34,3 @@ type Controller struct {
 	CloudManager cloudprovider.Interface
 	sync.Mutex
 }
-
-type Target struct {
-	PodPort  int
-	NodePort int
-}
