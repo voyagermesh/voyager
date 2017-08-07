@@ -120,7 +120,7 @@ func (op *Operator) AddEngress(engress *tapi.Ingress) {
 			for svcPort, target := range mappings {
 				if sp, ok := curPorts[svcPort]; !ok || // svc port not found
 					sp.TargetPort.IntValue() != target.PodPort || // pod port mismatch
-					target.NodePort != 0 && target.NodePort != int(sp.NodePort) { // node port mismatch
+					(target.NodePort != 0 && target.NodePort != int(sp.NodePort)) { // node port mismatch
 					updateFW = true // new port has to be opened
 					break
 				} else {
