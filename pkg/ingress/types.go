@@ -34,7 +34,7 @@ type Controller struct {
 	// If AWS cert manager is used then a 443 -> 80 port mapping is added.
 	PortMapping map[int]Target
 	// parsed ingress.
-	Parsed IngressInfo
+	Parsed TemplateInfo
 	// contains raw configMap data parsed from the cfg file.
 	HAProxyConfig string
 
@@ -48,33 +48,32 @@ type Target struct {
 	NodePort int
 }
 
-type IngressInfo struct {
-	Timestamp int64
-	// those options are get from annotations. applied globally
-	// in all the sections.
-
-	// stick requests to specified servers.
-	Sticky  bool
-	SSLCert bool
-
+type TemplateInfo struct {
+	SharedInfo
 	TimeoutDefaults map[string]string
+	Stats           *StatsInfo
+	DNSResolvers    map[string]*api.DNSResolver
+	DefaultBackend  *Backend
+	HTTPService     []*HTTPService
+	TCPService      []*TCPService
+}
 
-	// open up load balancer stats
-	Stats bool
-	// Basic auth to lb stats
-	StatsUserName string
-	StatsPassWord string
-	StatsPort     int
-
+type SharedInfo struct {
 	// Add accept-proxy to bind statements
-	AcceptProxy    bool
-	DefaultBackend *Backend
-	HTTPService    []*HTTPService
-	TCPService     []*TCPService
-	DNSResolvers   map[string]*api.DNSResolver
+	AcceptProxy bool
+	// stick requests to specified servers.
+	Sticky bool
+}
+
+type StatsInfo struct {
+	Port     int
+	UserName string
+	PassWord string
 }
 
 type HTTPService struct {
+	SharedInfo
+
 	Name    string
 	Port    int
 	UsesSSL bool
@@ -100,6 +99,8 @@ func (svc HTTPPath) SortKey() string {
 }
 
 type TCPService struct {
+	SharedInfo
+
 	Name        string
 	Host        string
 	Port        string

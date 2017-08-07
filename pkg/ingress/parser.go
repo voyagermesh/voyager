@@ -70,8 +70,12 @@ func NewController(
 		log.Infoln("No cloud manager found for provider", opt.CloudProvider)
 	}
 
-	h.parseOptions()
-	h.parseSpec()
+	//if c.Ingress == nil {
+	//	log.Infoln("Config is nil, nothing to parse")
+	//	return
+	//}
+
+	h.parseIngress()
 	return h
 }
 
@@ -269,10 +273,32 @@ func getTargetPort(servicePort *apiv1.ServicePort) int {
 	return servicePort.TargetPort.IntValue()
 }
 
-func (c *Controller) parseSpec() {
+func (c *Controller) parseIngress() {
 	log.Infoln("Parsing Engress specs for", c.Ingress.Name)
-	c.PortMapping = make(map[int]Target)
+
+	c.Parsed.TimeoutDefaults = c.Ingress.Timeouts()
+	c.Parsed.Sticky = c.Ingress.StickySession()
+	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
+		c.Parsed.AcceptProxy = c.Ingress.KeepSourceIP()
+	}
+
+	if c.Ingress.Stats() {
+		stats := &StatsInfo{}
+		stats.Port = c.Ingress.StatsPort()
+		if name := c.Ingress.StatsSecretName(); len(name) > 0 {
+			secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.ObjectMeta.Namespace).Get(name, metav1.GetOptions{})
+			if err == nil {
+				stats.UserName = string(secret.Data["username"])
+				stats.PassWord = string(secret.Data["password"])
+			} else {
+				log.Errorln("Error encountered while loading Stats secret", err)
+				stats = nil
+			}
+		}
+		c.Parsed.Stats = stats
+	}
 	c.Parsed.DNSResolvers = make(map[string]*api.DNSResolver)
+	c.PortMapping = make(map[int]Target)
 
 	if c.Ingress.Spec.Backend != nil {
 		log.Debugln("generating default backend", c.Ingress.Spec.Backend.RewriteRule, c.Ingress.Spec.Backend.HeaderRule)
@@ -415,38 +441,6 @@ func (c *Controller) parseSpec() {
 				}
 			}
 		}
-	}
-}
-
-func (c *Controller) parseOptions() {
-	if c.Ingress == nil {
-		log.Infoln("Config is nil, nothing to parse")
-		return
-	}
-	log.Infoln("Parsing annotations.")
-	c.Parsed.TimeoutDefaults = c.Ingress.Timeouts()
-	c.Parsed.Sticky = c.Ingress.StickySession()
-	if len(c.Ingress.Spec.TLS) > 0 {
-		c.Parsed.SSLCert = true
-	}
-
-	c.Parsed.Stats = c.Ingress.Stats()
-	if c.Parsed.Stats {
-		c.Parsed.StatsPort = c.Ingress.StatsPort()
-		if name := c.Ingress.StatsSecretName(); len(name) > 0 {
-			secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.ObjectMeta.Namespace).Get(name, metav1.GetOptions{})
-			if err == nil {
-				c.Parsed.StatsUserName = string(secret.Data["username"])
-				c.Parsed.StatsPassWord = string(secret.Data["password"])
-			} else {
-				c.Parsed.Stats = false
-				log.Errorln("Error encountered while loading Stats secret", err)
-			}
-		}
-	}
-
-	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
-		c.Parsed.AcceptProxy = c.Ingress.KeepSourceIP()
 	}
 }
 
