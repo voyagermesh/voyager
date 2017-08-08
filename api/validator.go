@@ -23,10 +23,18 @@ func (r Ingress) IsValid(cloudProvider string) error {
 	for ri, rule := range r.Spec.Rules {
 		if rule.HTTP != nil {
 			addr := address{Host: rule.Host}
-			if port, err := checkRequiredPort(rule.HTTP.Port); err != nil {
+			var err error
+			addr.Port, err = checkOptionalPort(rule.HTTP.Port)
+			if err != nil {
 				return fmt.Errorf("spec.rule[%d].http.port %s is invalid. Reason: %s", ri, rule.HTTP.Port, err)
-			} else {
-				addr.Port = port
+			}
+			if addr.Port == 0 {
+				// detect port
+				if _, foundTLS := r.FindTLSSecret(rule.Host); foundTLS && !rule.HTTP.NoSSL {
+					addr.Port = 443
+				} else {
+					addr.Port = 80
+				}
 			}
 			if ei, found := addrs[addr]; found {
 				return fmt.Errorf("spec.rule[%d].http is reusing addr %s, also used in spec.rule[%d]", ri, addr, ei)
@@ -111,6 +119,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 		}
 	}
 
+	// TODO: merge port mapping check.
 	_, err := r.PortMappings(cloudProvider)
 	return err
 }
