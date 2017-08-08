@@ -27,3 +27,4 @@ dist/
 hack/configs/.env
 **/dist
 .vscode/
+test/e2e/report.xml
