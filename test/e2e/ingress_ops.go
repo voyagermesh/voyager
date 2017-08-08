@@ -283,7 +283,7 @@ var _ = Describe("IngressOperations", func() {
 			toBeUpdated.Annotations[api.ServiceAnnotations] = `{"bar": "foo", "second-service-annotation": "set"}`
 			err = f.Ingress.Update(toBeUpdated)
 			Expect(err).NotTo(HaveOccurred())
-			time.Sleep(time.Second*20)
+			time.Sleep(time.Second * 20)
 			Eventually(func() bool {
 				svc, err := f.Ingress.GetOffShootService(ing)
 				return Expect(err).NotTo(HaveOccurred()) &&
@@ -300,7 +300,7 @@ var _ = Describe("IngressOperations", func() {
 			toBeUpdated.Annotations[api.PodAnnotations] = `{"bar": "foo", "second-pod-annotation": "set"}`
 			err = f.Ingress.Update(toBeUpdated)
 			Expect(err).NotTo(HaveOccurred())
-			time.Sleep(time.Second*20)
+			time.Sleep(time.Second * 20)
 			Eventually(func() bool {
 				ret := true
 				pods, err = f.Ingress.KubeClient.CoreV1().Pods(svc.Namespace).List(metav1.ListOptions{
@@ -359,6 +359,33 @@ var _ = Describe("IngressOperations", func() {
 				return err != nil
 			}, "2m", "20s").Should(BeTrue())
 		}
+
+		shouldKeepLoadBalancerSourceRanges = func() {
+			var svc *v1.Service
+			Eventually(func() error {
+				var err error
+				svc, err = f.Ingress.GetOffShootService(ing)
+				return err
+			}, "10m", "5s").Should(BeNil())
+			Expect(svc).ShouldNot(BeNil())
+			Expect(len(svc.Spec.LoadBalancerSourceRanges)).Should(Equal(len(ing.Spec.LoadBalancerSourceRanges)))
+			Expect(svc.Spec.LoadBalancerSourceRanges).Should(Equal(ing.Spec.LoadBalancerSourceRanges))
+
+			tobeUpdated, err := f.Ingress.Get(ing)
+			Expect(err).NotTo(HaveOccurred())
+			tobeUpdated.Spec.LoadBalancerSourceRanges = []string{"192.10.0.0/24"}
+			err = f.Ingress.Update(tobeUpdated)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(func() int {
+				var err error
+				svc, err = f.Ingress.GetOffShootService(ing)
+				Expect(err).NotTo(HaveOccurred())
+				return len(svc.Spec.LoadBalancerSourceRanges)
+			}, "10m", "5s").Should(Equal(1))
+			Expect(len(svc.Spec.LoadBalancerSourceRanges)).Should(Equal(len(tobeUpdated.Spec.LoadBalancerSourceRanges)))
+			Expect(svc.Spec.LoadBalancerSourceRanges).Should(Equal(tobeUpdated.Spec.LoadBalancerSourceRanges))
+		}
 	)
 
 	Describe("Create", func() {
@@ -393,6 +420,16 @@ var _ = Describe("IngressOperations", func() {
 				ing.Annotations[api.StatsPort] = `8787`
 			})
 			It("Should test stat service", shouldTestStatService)
+		})
+
+		Describe("Keep LoadBalancerSourceRanges for Service", func() {
+			BeforeEach(func() {
+				ing.Spec.LoadBalancerSourceRanges = []string{
+					"192.101.0.0/16",
+					"192.0.0.0/24",
+				}
+			})
+			It("Should keep LoadBalancerSourceRanges", shouldKeepLoadBalancerSourceRanges)
 		})
 
 		Describe("With Rules", func() {
