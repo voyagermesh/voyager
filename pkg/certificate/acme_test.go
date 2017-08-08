@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/appscode/voyager/api"
-	"github.com/appscode/voyager/test/testframework"
 	"github.com/stretchr/testify/assert"
 	"github.com/xenolf/lego/acme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -104,7 +103,7 @@ func TestClient(t *testing.T) {
 	_, err = NewACMEClient(config)
 	assert.Nil(t, err)
 
-	if testframework.TestContext.Verbose {
+	if testing.Verbose() {
 		config := &ACMEConfig{
 			Provider: "http",
 			UserData: user,
