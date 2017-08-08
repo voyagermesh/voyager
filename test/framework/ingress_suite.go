@@ -83,11 +83,12 @@ func (i *ingressInvocation) EventuallyStarted(ing *api.Ingress) GomegaAsyncAsser
 			return false
 		}
 
-		_, err = i.KubeClient.CoreV1().Endpoints(i.Namespace()).Get(ing.OffshootName(), metav1.GetOptions{})
-		if err != nil {
-			return false
+		if ing.Annotations[api.LBType] == api.LBTypeLoadBalancer {
+			_, err = i.KubeClient.CoreV1().Endpoints(i.Namespace()).Get(ing.OffshootName(), metav1.GetOptions{})
+			if err != nil {
+				return false
+			}
 		}
-
 		return true
 	}, "10m", "20s")
 }
@@ -96,7 +97,7 @@ func (i *ingressInvocation) GetHTTPEndpoints(ing *api.Ingress) ([]string, error)
 	switch ing.LBType() {
 	case api.LBTypeLoadBalancer:
 		return getLoadBalancerURLs(i.Config.CloudProviderName, i.KubeClient, ing)
-	case api.LBTypeNodePort:
+	case api.LBTypeHostPort:
 		return getHostPortURLs(i.Config.CloudProviderName, i.KubeClient, ing)
 	}
 	return nil, errors.New("LBType Not recognized")

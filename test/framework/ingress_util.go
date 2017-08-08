@@ -3,6 +3,7 @@ package framework
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"net/url"
 	"os/exec"
 	"strings"
@@ -43,6 +44,30 @@ func (i *ingressInvocation) GetSkeleton() *api.Ingress {
 }
 
 func (i *ingressInvocation) SetSkeletonRule(ing *api.Ingress) {
+	ing.Spec.Rules = []api.IngressRule{
+		{
+			IngressRuleValue: api.IngressRuleValue{
+				HTTP: &api.HTTPIngressRuleValue{
+					Paths: []api.HTTPIngressPath{
+						{
+							Path: "/testpath",
+							Backend: api.IngressBackend{
+								ServiceName: i.TestServerName(),
+								ServicePort: intstr.FromInt(80),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func (i *ingressInvocation) SetDaemonSkeletonRule(ing *api.Ingress) {
+	ing.Annotations = map[string]string{
+		api.LBType:       api.LBTypeHostPort,
+		api.NodeSelector: i.DaemonNodeSelector(),
+	}
 	ing.Spec.Rules = []api.IngressRule{
 		{
 			IngressRuleValue: api.IngressRuleValue{
@@ -229,6 +254,18 @@ func (i *ingressInvocation) waitForTestServer() error {
 	return err
 }
 
+func (i *ingressInvocation) DaemonNodeSelector() string {
+	if i.Config.CloudProviderName == "minikube" {
+		return `{"kubernetes.io/hostname": "minikube"}`
+	} else {
+		if len(i.Config.DaemonHostName) > 0 {
+			return fmt.Sprintf(`{"kubernetes.io/hostname": "%s"}`, i.Config.DaemonHostName)
+		}
+	}
+	log.Warningln("No node selector provided for daemon ingress")
+	return "{}"
+}
+
 func getLoadBalancerURLs(provider string, k kubernetes.Interface, ing *api.Ingress) ([]string, error) {
 	serverAddr := make([]string, 0)
 	var err error
@@ -343,7 +380,7 @@ func getHostPortURLs(provider string, k kubernetes.Interface, ing *api.Ingress) 
 
 	for _, node := range nodes.Items {
 		for _, addr := range node.Status.Addresses {
-			if addr.Type == apiv1.NodeExternalIP {
+			if (addr.Type == apiv1.NodeExternalIP) || (provider == "minikube" && addr.Type == apiv1.NodeInternalIP) {
 				for _, port := range ports {
 					var doc bytes.Buffer
 					err = defaultUrlTemplate.Execute(&doc, struct {
