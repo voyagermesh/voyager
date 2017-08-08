@@ -40,6 +40,13 @@ func (i *ingressInvocation) Teardown() {
 			time.Sleep(time.Second * 5)
 		}
 		i.KubeClient.CoreV1().ReplicationControllers(i.Namespace()).Delete(testServerResourceName, &metav1.DeleteOptions{})
+
+		list, err := i.VoyagerClient.Ingresses(metav1.NamespaceAll).List(metav1.ListOptions{})
+		if err == nil {
+			for _, ing := range list.Items {
+				i.VoyagerClient.Ingresses(ing.Namespace).Delete(ing.Name)
+			}
+		}
 	}
 }
 
