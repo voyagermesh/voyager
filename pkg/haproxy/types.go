@@ -84,9 +84,6 @@ type Backend struct {
 }
 
 func (be *Backend) canonicalize() {
-	sort.Strings(be.BackendRules)
-	sort.Strings(be.RewriteRules)
-	sort.Strings(be.HeaderRules)
 	sort.Slice(be.Endpoints, func(i, j int) bool { return be.Endpoints[i].IP < be.Endpoints[j].IP })
 }
 
