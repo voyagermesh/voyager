@@ -68,7 +68,7 @@ $ ./hack/gendocs/make.sh
 ### Run Test
 #### Run Short Unit Test by running
 ```console
-go test -v ./cmd/... ./pkg/...
+go test ./pkg/...
 ```
 
 #### Run Full Test
@@ -97,16 +97,16 @@ $ ./hack/make.py test integration -cloud-provider=gce # Run Integration test aga
 ```
 
 ```
-- Run only one e2e test
-$ ./hack/make.py test e2e -cloud-provider=gce -test-only=CoreIngress
+- Run only matching tests e2e test
+$ ./hack/make.py test e2e -cloud-provider=gce -ginkgo.focus=<regexp>
 
 
-- Run One test but do not delete all resource that are created
-$ ./hack/make.py test minikube -cloud-provider=gce -test-only=CoreIngress -cleanup=false
+- Run tests but do not delete resource that are created
+$ ./hack/make.py test minikube -cloud-provider=gce -cleanup=false
 
 
 - Run Service IP Persist test with provided IP
-$ ./hack/make.py test e2e -cloud-provider=gce -test-only=CreateIPPersist -lb-ip=35.184.104.215
+$ ./hack/make.py test e2e -cloud-provider=gce -lb-ip=35.184.104.215
 
 ```
 
@@ -116,8 +116,10 @@ Tests are run only in namespaces prefixed with `test-`. So, to run tests in your
 kubectl create ns test-<any-name-you-want>
 
 # run tests
-./hack/make.py test minikube -namespace test-<any-name-you-want> -max-test=1
+./hack/make.py test minikube -namespace test-<any-name-you-want>
 ```
+
+**e2e** tests are powered by [ginkgo](http://onsi.github.io/ginkgo/). All the [configs and flags](https://github.com/onsi/ginkgo/blob/master/config/config.go#L64) of ginkgo are also available.
 
 <br>
 ## Architecture
