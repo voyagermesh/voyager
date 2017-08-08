@@ -36,7 +36,7 @@ var _ = Describe("IngressOperations", func() {
 		f.Ingress.EventuallyStarted(ing).Should(BeTrue())
 
 		By("Checking generated resource")
-		Expect(f.Ingress.IsTargetCreated(ing)).Should(BeTrue())
+		Expect(f.Ingress.IsExists(ing)).Should(BeTrue())
 	})
 
 	AfterEach(func() {
@@ -65,7 +65,9 @@ var _ = Describe("IngressOperations", func() {
 			err := f.Ingress.Delete(ing)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(f.Ingress.Controller(ing).IsExists, "5m", "10s").Should(BeFalse())
+			Eventually(func() bool {
+				return f.Ingress.IsExists(ing)
+			}, "5m", "10s").Should(BeFalse())
 		}
 	)
 
@@ -460,20 +462,27 @@ var _ = Describe("IngressOperations", func() {
 			uing, err := f.Ingress.Get(ing)
 			Expect(err).NotTo(HaveOccurred())
 
-			uing.Spec.Rules[0].HTTP = nil
-			uing.Spec.Rules[0].TCP = []api.TCPIngressRuleValue{
+			uing.Spec.Rules = []api.IngressRule{
 				{
-					Port: intstr.FromString("4545"),
-					Backend: api.IngressBackend{
-						ServiceName: f.Ingress.TestServerName(),
-						ServicePort: intstr.FromString("4545"),
+					IngressRuleValue: api.IngressRuleValue{
+						TCP: &api.TCPIngressRuleValue{
+							Port: intstr.FromString("4545"),
+							Backend: api.IngressBackend{
+								ServiceName: f.Ingress.TestServerName(),
+								ServicePort: intstr.FromString("4545"),
+							},
+						},
 					},
 				},
 				{
-					Port: intstr.FromString("4949"),
-					Backend: api.IngressBackend{
-						ServiceName: f.Ingress.TestServerName(),
-						ServicePort: intstr.FromString("4545"),
+					IngressRuleValue: api.IngressRuleValue{
+						TCP: &api.TCPIngressRuleValue{
+							Port: intstr.FromString("4949"),
+							Backend: api.IngressBackend{
+								ServiceName: f.Ingress.TestServerName(),
+								ServicePort: intstr.FromString("4545"),
+							},
+						},
 					},
 				},
 			}
