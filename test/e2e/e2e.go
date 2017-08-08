@@ -1,90 +1,67 @@
 package e2e
 
 import (
-	"io/ioutil"
-	"os"
+	"testing"
 	"time"
 
-	"github.com/appscode/log"
-	tcs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/operator"
-	"github.com/appscode/voyager/test/testframework"
-	clientset "k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
+	"github.com/appscode/voyager/test/framework"
+	. "github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/reporters"
+	. "github.com/onsi/gomega"
 )
 
-type TestSuit struct {
-	Config     testframework.E2EConfig
-	KubeClient clientset.Interface
-	ExtClient  tcs.ExtensionInterface
-	Operator   *operator.Operator
+const (
+	TestTimeout = 2 * time.Hour
+)
+
+var (
+	root       *framework.Framework
+	invocation *framework.Invocation
+)
+
+func RunE2ETestSuit(t *testing.T) {
+	RegisterFailHandler(Fail)
+	SetDefaultEventuallyTimeout(TestTimeout)
+
+	root = framework.New()
+	invocation = root.Invoke()
+
+	junitReporter := reporters.NewJUnitReporter("report.xml")
+	RunSpecsWithDefaultAndCustomReporters(t, "Voyager E2E Suite", []Reporter{junitReporter})
 }
 
-func init() {
-	testframework.Initialize()
-}
+var _ = BeforeSuite(func() {
+	controller := operator.New(
+		root.KubeClient,
+		root.VoyagerClient,
+		nil,
+		config.Options{
+			CloudProvider: root.Config.CloudProviderName,
+			HAProxyImage:  root.Config.HAProxyImageName,
+			IngressClass:  root.Config.IngressClass,
+		},
+	)
 
-func NewE2ETestSuit() *TestSuit {
-	ensureE2EConfigs()
-	c, err := getKubeConfig()
-	if err != nil {
-		log.Fatalln("Failed to load Kube Config", err)
-	}
-	return &TestSuit{
-		Config:     testframework.TestContext.E2EConfigs,
-		KubeClient: clientset.NewForConfigOrDie(c),
-		ExtClient:  tcs.NewForConfigOrDie(c),
-		Operator: operator.New(
-			clientset.NewForConfigOrDie(c),
-			tcs.NewForConfigOrDie(c),
-			nil,
-			config.Options{
-				CloudProvider: testframework.TestContext.E2EConfigs.ProviderName,
-				HAProxyImage:  testframework.TestContext.E2EConfigs.HAProxyImageName,
-				IngressClass:  testframework.TestContext.E2EConfigs.IngressClass,
-			},
-		),
-	}
-}
+	By("Ensuring Test Namespace " + root.Config.TestNamespace)
+	err := root.EnsureNamespace()
+	Expect(err).NotTo(HaveOccurred())
 
-func (t *TestSuit) Run() error {
-	if !t.Config.InCluster {
-		t.Operator.Setup()
-		go t.Operator.Run()
+	if !root.Config.InCluster {
+		By("Running Controller in Local mode")
+		err := controller.Setup()
+		Expect(err).NotTo(HaveOccurred())
+		go controller.Run()
 	}
-	defer time.Sleep(time.Second * 30)
-	defer log.Flush()
-	// Wait some time to initialize voyager watcher
-	time.Sleep(time.Second * 10)
-	ingTestSuit := NewIngressTestSuit(*t)
-	if err := ingTestSuit.Test(); err != nil {
-		return err
-	}
-	return nil
-}
+	root.EventuallyTPR().Should(Succeed())
 
-func ensureE2EConfigs() {
-	if testframework.TestContext.E2EConfigs.ProviderName == "" ||
-		testframework.TestContext.E2EConfigs.HAProxyImageName == "" {
-		log.Fatalln("Required flag not provided.")
-	}
-}
+	Eventually(invocation.Ingress.Setup).Should(BeNil())
+})
 
-func getKubeConfig() (*rest.Config, error) {
-	if len(testframework.TestContext.E2EConfigs.KubeConfig) == 0 {
-		if _, err := os.Stat(clientcmd.RecommendedHomeFile); err == nil {
-			testframework.TestContext.E2EConfigs.KubeConfig = clientcmd.RecommendedHomeFile
-		} else {
-			k8sConfig := os.Getenv("TEST_KUBE_CONFIG")
-			k8sConfigDir := os.TempDir() + "/.kube/config"
-			err := ioutil.WriteFile(k8sConfigDir, []byte(k8sConfig), os.ModePerm)
-			if err == nil {
-				testframework.TestContext.E2EConfigs.KubeConfig = k8sConfigDir
-			}
-		}
+var _ = AfterSuite(func() {
+	if root.Config.Cleanup {
+		root.DeleteNamespace()
+		invocation.Ingress.Teardown()
 	}
-
-	return clientcmd.BuildConfigFromFlags(testframework.TestContext.E2EConfigs.Master, testframework.TestContext.E2EConfigs.KubeConfig)
-}
+})
