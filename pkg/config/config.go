@@ -1,5 +1,7 @@
 package config
 
+import "time"
+
 type Options struct {
 	CloudProvider     string
 	CloudConfigFile   string
@@ -9,4 +11,5 @@ type Options struct {
 	OperatorNamespace string
 	OperatorService   string
 	HTTPChallengePort int
+	SyncPeriod        time.Duration
 }

@@ -2,7 +2,6 @@ package operator
 
 import (
 	"sync"
-	"time"
 
 	"github.com/appscode/log"
 	tapi "github.com/appscode/voyager/api"
@@ -30,8 +29,7 @@ type Operator struct {
 	EndpointsLister core.EndpointsLister
 	Opt             config.Options
 
-	recorder   record.EventRecorder
-	SyncPeriod time.Duration
+	recorder record.EventRecorder
 	sync.Mutex
 }
 
@@ -47,7 +45,6 @@ func New(
 		PromClient: promClient,
 		Opt:        opt,
 		recorder:   eventer.NewEventRecorder(kubeClient, "voyager operator"),
-		SyncPeriod: 2 * time.Minute,
 	}
 }
 

@@ -34,6 +34,7 @@ var (
 		OperatorService:   "voyager-operator",
 		HTTPChallengePort: 56791,
 		EnableRBAC:        false,
+		SyncPeriod:        2 * time.Minute,
 	}
 	enableAnalytics bool = true
 
@@ -74,6 +75,7 @@ func NewCmdRun(version string) *cobra.Command {
 
 	cmd.Flags().StringVar(&opt.OperatorService, "operator-service", opt.OperatorService, "Name of service used to expose voyager operator")
 	cmd.Flags().IntVar(&opt.HTTPChallengePort, "http-challenge-port", opt.HTTPChallengePort, "Port used to answer ACME HTTP challenge")
+	cmd.Flags().DurationVar(&opt.SyncPeriod, "resync-period", opt.SyncPeriod, "If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out.")
 
 	cmd.Flags().StringVar(&address, "address", address, "Address to listen on for web interface and telemetry.")
 	cmd.Flags().StringVar(&haProxyServerMetricFields, "haproxy.server-metric-fields", haProxyServerMetricFields, "Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1")

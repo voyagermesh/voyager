@@ -27,7 +27,7 @@ func (op *Operator) initIngresseWatcher() cache.Controller {
 	}
 	_, informer := cache.NewInformer(lw,
 		&extensions.Ingress{},
-		op.SyncPeriod,
+		op.Opt.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				if ingress, ok := obj.(*extensions.Ingress); ok {

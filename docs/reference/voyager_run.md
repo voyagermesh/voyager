@@ -28,14 +28,13 @@ voyager run [flags]
       --master string                         The address of the Kubernetes API server (overrides any value in kubeconfig)
       --operator-service string               Name of service used to expose voyager operator (default "voyager-operator")
       --rbac                                  Enable RBAC for operator & offshoot Kubernetes objects
+      --resync-period duration                If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out. (default 2m0s)
 ```
 
 ### Options inherited from parent commands
 
 ```
       --alsologtostderr                  log to standard error as well as files
-      --log.format logFormatFlag         Set the log target and format. Example: "logger:syslog?appname=bob&local=7" or "logger:stdout?json=true" (default "logger:stderr")
-      --log.level levelFlag              Only log messages with the given severity or above. Valid levels: [debug, info, warn, error, fatal] (default "info")
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files

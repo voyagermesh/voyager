@@ -24,7 +24,7 @@ func (op *Operator) initDeploymentWatcher() cache.Controller {
 	}
 	_, informer := cache.NewInformer(lw,
 		&extensions.Deployment{},
-		op.SyncPeriod,
+		op.Opt.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			DeleteFunc: func(obj interface{}) {
 				if deployment, ok := obj.(*extensions.Deployment); ok {

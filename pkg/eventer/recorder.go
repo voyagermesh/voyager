@@ -18,7 +18,6 @@ const (
 	// Ingress Events
 	EventReasonIngressHAProxyConfigCreateFailed      = "HAProxyConfigCreateFailed"
 	EventReasonIngressConfigMapCreateFailed          = "ConfigMapCreateFailed"
-	EventReasonIngressConfigMapUpdateFailed          = "ConfigMapUpdateFailed"
 	EventReasonIngressConfigMapCreateSuccessful      = "ConfigMapCreateSuccessful"
 	EventReasonIngressUnsupportedLBType              = "UnsupportedLBType"
 	EventReasonIngressControllerCreateFailed         = "ControllerCreateFailed"

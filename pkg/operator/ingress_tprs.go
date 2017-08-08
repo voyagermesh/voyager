@@ -30,7 +30,7 @@ func (op *Operator) initIngressTPRWatcher() cache.Controller {
 	}
 	_, informer := cache.NewInformer(lw,
 		&tapi.Ingress{},
-		op.SyncPeriod,
+		op.Opt.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				if engress, ok := obj.(*tapi.Ingress); ok {

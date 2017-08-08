@@ -22,7 +22,7 @@ func (op *Operator) initConfigMapWatcher() cache.Controller {
 	}
 	_, informer := cache.NewInformer(lw,
 		&apiv1.ConfigMap{},
-		op.SyncPeriod,
+		op.Opt.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			DeleteFunc: func(obj interface{}) {
 				if cfgmap, ok := obj.(*apiv1.ConfigMap); ok {

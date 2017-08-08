@@ -25,7 +25,7 @@ func (op *Operator) initEndpointWatcher() cache.Controller {
 	}
 	indexer, informer := cache.NewIndexerInformer(lw,
 		&apiv1.Endpoints{},
-		op.SyncPeriod,
+		op.Opt.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			UpdateFunc: func(old, new interface{}) {
 				oldEndpoints, ok := old.(*apiv1.Endpoints)
