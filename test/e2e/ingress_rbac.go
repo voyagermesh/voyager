@@ -3,9 +3,9 @@ package e2e
 import (
 	"github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/framework"
+	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/appscode/voyager/test/test-server/testserverclient"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -45,7 +45,6 @@ var _ = Describe("IngressWithRBACEnabled", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			
 			_, err = f.KubeClient.CoreV1().ServiceAccounts(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
 

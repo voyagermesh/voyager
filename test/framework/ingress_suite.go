@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/go/types"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
@@ -12,11 +13,10 @@ import (
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/pkg/api/v1"
-	"github.com/appscode/go/crypto/rand"
 )
 
 const (
-	testServerImage        = "appscode/test-server:1.4"
+	testServerImage = "appscode/test-server:1.4"
 )
 
 var (

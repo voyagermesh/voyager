@@ -21,7 +21,7 @@ func init() {
 	flag.BoolVar(&testConfigs.InCluster, "in-cluster", false, "")
 	flag.StringVar(&testConfigs.DaemonHostName, "daemon-host-name", "", "Daemon host name to run daemon hosts")
 	flag.StringVar(&testConfigs.LBPersistIP, "lb-ip", "", "LoadBalancer persistent IP")
-	flag.StringVar(&testConfigs.TestNamespace, "namespace", "test-" + rand.Characters(5), "Run tests in this namespaces")
+	flag.StringVar(&testConfigs.TestNamespace, "namespace", "test-"+rand.Characters(5), "Run tests in this namespaces")
 	flag.BoolVar(&testConfigs.RBACEnabled, "rbac", false, "")
 
 	enableLogging()
