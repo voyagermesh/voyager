@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/appscode/voyager/api"
@@ -74,29 +75,34 @@ var _ = Describe("IngressCoreOperations", func() {
 		}
 	})
 
-	var (
-		shouldResponseHTTP = func() {
+	Describe("Create", func() {
+		It("Should response HTTP", func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
 			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
-				return Expect(r.Method).Should(Equal("GET")) &&
+				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok"))
 			})
 			Expect(err).NotTo(HaveOccurred())
-		}
+		})
+	})
 
-		shouldDeleteResource = func() {
+	Describe("Delete", func() {
+		It("Should delete Ingress resource", func() {
 			By("Deleting Ingress resource")
 			err := f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Delete(ext.Name, &metav1.DeleteOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(f.Ingress.Controller(ing).IsExists, "5m", "10s").Should(BeFalse())
-		}
+		})
+	})
 
-		shouldUpdateLoadbalancer = func() {
+	Describe("Update", func() {
+		It("Should update Loadbalancer", func() {
 			By("Updating Ingress resource")
 			uing, err := f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Get(ext.Name, metav1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
@@ -115,7 +121,8 @@ var _ = Describe("IngressCoreOperations", func() {
 
 			By("Calling new HTTP path")
 			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/newTestPath/ok", func(r *testserverclient.Response) bool {
-				return Expect(r.Method).Should(Equal("GET")) &&
+				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/newTestPath/ok"))
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -125,18 +132,6 @@ var _ = Describe("IngressCoreOperations", func() {
 				return true
 			})
 			Expect(err).To(HaveOccurred())
-		}
-	)
-
-	Describe("Create", func() {
-		It("Should response HTTP", shouldResponseHTTP)
-	})
-
-	Describe("Delete", func() {
-		It("Should delete Ingress resource", shouldDeleteResource)
-	})
-
-	Describe("Update", func() {
-		It("Should update Loadbalancer", shouldUpdateLoadbalancer)
+		})
 	})
 })

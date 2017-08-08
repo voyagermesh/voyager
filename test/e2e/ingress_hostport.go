@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"errors"
+	"net/http"
 	"time"
 
 	"github.com/appscode/voyager/api"
@@ -50,29 +51,34 @@ var _ = Describe("IngressHostPort", func() {
 		}
 	})
 
-	var (
-		shouldResponseHTTP = func() {
+	Describe("Create", func() {
+		It("Should response HTTP", func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
 			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
-				return Expect(r.Method).Should(Equal("GET")) &&
+				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok"))
 			})
 			Expect(err).NotTo(HaveOccurred())
-		}
+		})
+	})
 
-		shouldDeleteResource = func() {
+	Describe("Delete", func() {
+		It("Should delete Ingress resource", func() {
 			By("Deleting Ingress resource")
 			err := f.Ingress.Delete(ing)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(f.Ingress.Controller(ing).IsExists, "5m", "10s").Should(BeFalse())
-		}
+		})
+	})
 
-		shouldUpdateLoadbalancer = func() {
+	Describe("Update", func() {
+		It("Should update Loadbalancer", func() {
 			By("Updating Ingress resource")
 			uing, err := f.Ingress.Get(ing)
 			Expect(err).NotTo(HaveOccurred())
@@ -91,7 +97,8 @@ var _ = Describe("IngressHostPort", func() {
 
 			By("Calling new HTTP path")
 			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/newTestPath/ok", func(r *testserverclient.Response) bool {
-				return Expect(r.Method).Should(Equal("GET")) &&
+				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/newTestPath/ok"))
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -101,9 +108,9 @@ var _ = Describe("IngressHostPort", func() {
 				return true
 			})
 			Expect(err).To(HaveOccurred())
-		}
+		})
 
-		shouldAddTCPRule = func() {
+		It("Should add TCP rule", func() {
 			By("Updating Ingress resource for TCP")
 			uing, err := f.Ingress.Get(ing)
 			Expect(err).NotTo(HaveOccurred())
@@ -157,19 +164,6 @@ var _ = Describe("IngressHostPort", func() {
 				err = f.Ingress.CheckTestServersPortAssignments(ing)
 				Expect(err).Should(BeNil())
 			}
-		}
-	)
-
-	Describe("Create", func() {
-		It("Should response HTTP", shouldResponseHTTP)
-	})
-
-	Describe("Delete", func() {
-		It("Should delete Ingress resource", shouldDeleteResource)
-	})
-
-	Describe("Update", func() {
-		It("Should update Loadbalancer", shouldUpdateLoadbalancer)
-		It("Should add TCP rule", shouldAddTCPRule)
+		})
 	})
 })

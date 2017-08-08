@@ -41,8 +41,29 @@ var _ = Describe("IngressUpdates", func() {
 		}
 	})
 
-	var (
-		shouldUpdateServiceWhenSecretChanged = func() {
+	Describe("Secret Changed", func() {
+		BeforeEach(func() {
+			ing.Spec.Rules = []api.IngressRule{
+				{
+					Host: "http.appscode.dev",
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
+								{
+									Path: "/testpath",
+									Backend: api.IngressBackend{
+										ServiceName: f.Ingress.TestServerName(),
+										ServicePort: intstr.FromInt(80),
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+		})
+
+		It("Should update when secret changed", func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
@@ -83,32 +104,7 @@ var _ = Describe("IngressUpdates", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(svc.Spec.Ports)).Should(Equal(1))
 			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(443)))
-		}
-	)
-
-	Describe("Secret Changed", func() {
-		BeforeEach(func() {
-			ing.Spec.Rules = []api.IngressRule{
-				{
-					Host: "http.appscode.dev",
-					IngressRuleValue: api.IngressRuleValue{
-						HTTP: &api.HTTPIngressRuleValue{
-							Paths: []api.HTTPIngressPath{
-								{
-									Path: "/testpath",
-									Backend: api.IngressBackend{
-										ServiceName: f.Ingress.TestServerName(),
-										ServicePort: intstr.FromInt(80),
-									},
-								},
-							},
-						},
-					},
-				},
-			}
 		})
-
-		It("Should update when secret changed", shouldUpdateServiceWhenSecretChanged)
 	})
 })
 

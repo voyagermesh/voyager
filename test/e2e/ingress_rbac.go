@@ -38,8 +38,18 @@ var _ = Describe("IngressWithRBACEnabled", func() {
 		}
 	})
 
-	var (
-		shouldTestRBACSupport = func() {
+	Describe("With RBAC", func() {
+		BeforeEach(func() {
+			if !f.Config.RBACEnabled {
+				Skip("RBAC is Not enabled")
+			}
+
+			if !f.Config.InCluster {
+				Skip("RBAC can only be work in 'in-cluster' mode")
+			}
+		})
+
+		It("Should test RBAC Support", func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
@@ -59,20 +69,6 @@ var _ = Describe("IngressWithRBACEnabled", func() {
 					Expect(r.Path).Should(Equal("/testpath/ok"))
 			})
 			Expect(err).NotTo(HaveOccurred())
-		}
-	)
-
-	Describe("With RBAC", func() {
-		BeforeEach(func() {
-			if !f.Config.RBACEnabled {
-				Skip("RBAC is Not enabled")
-			}
-
-			if !f.Config.InCluster {
-				Skip("RBAC can only be work in 'in-cluster' mode")
-			}
 		})
-
-		It("Should test RBAC Support", shouldTestRBACSupport)
 	})
 })

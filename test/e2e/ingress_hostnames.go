@@ -1,6 +1,8 @@
 package e2e
 
 import (
+	"net/http"
+
 	"github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
@@ -47,37 +49,6 @@ var _ = Describe("IngressWithHostName", func() {
 		}
 	})
 
-	var (
-		shouldCreateServiceEntry = func() {
-			By("Checking StatusIP for provider" + f.Config.CloudProviderName)
-			if f.Config.CloudProviderName == "minikube" {
-				Skip("Minikube do not support this")
-			}
-			// Check Status for ingress
-			baseIngress, err := f.VoyagerClient.Ingresses(ing.Namespace).Get(ing.Name)
-			Expect(err).NotTo(HaveOccurred())
-
-			svc, err := f.Ingress.GetOffShootService(ing)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(baseIngress.Status.LoadBalancer.Ingress)).Should(Equal(len(svc.Status.LoadBalancer.Ingress)))
-			Expect(baseIngress.Status.LoadBalancer.Ingress[0]).Should(Equal(svc.Status.LoadBalancer.Ingress[0]))
-		}
-
-		shouldResponseHTTPFromHost0 = func() {
-			By("Getting HTTP endpoints")
-			eps, err := f.Ingress.GetHTTPEndpoints(ing)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(eps)).Should(BeNumerically(">=", 1))
-
-			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/testpath", func(r *testserverclient.Response) bool {
-				return Expect(r.Method).Should(Equal("GET")) &&
-					Expect(r.Path).Should(Equal("/testpath")) &&
-					Expect(r.PodName).Should(Equal(meta.Name+"-0"))
-			})
-			Expect(err).NotTo(HaveOccurred())
-		}
-	)
-
 	Describe("Create", func() {
 		BeforeEach(func() {
 			ing.Spec.Rules = []api.IngressRule{
@@ -100,7 +71,34 @@ var _ = Describe("IngressWithHostName", func() {
 			}
 		})
 
-		It("Should create Ingress with hostname", shouldCreateServiceEntry)
-		It("Should response HTTP from host-0", shouldResponseHTTPFromHost0)
+		It("Should create Ingress with hostname", func() {
+			By("Checking StatusIP for provider" + f.Config.CloudProviderName)
+			if f.Config.CloudProviderName == "minikube" {
+				Skip("Minikube do not support this")
+			}
+			// Check Status for ingress
+			baseIngress, err := f.VoyagerClient.Ingresses(ing.Namespace).Get(ing.Name)
+			Expect(err).NotTo(HaveOccurred())
+
+			svc, err := f.Ingress.GetOffShootService(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(baseIngress.Status.LoadBalancer.Ingress)).Should(Equal(len(svc.Status.LoadBalancer.Ingress)))
+			Expect(baseIngress.Status.LoadBalancer.Ingress[0]).Should(Equal(svc.Status.LoadBalancer.Ingress[0]))
+		})
+
+		It("Should response HTTP from host-0", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/testpath", func(r *testserverclient.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+					Expect(r.Method).Should(Equal("GET")) &&
+					Expect(r.Path).Should(Equal("/testpath")) &&
+					Expect(r.PodName).Should(Equal(meta.Name+"-0"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+		})
 	})
 })
