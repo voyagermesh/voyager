@@ -49,6 +49,7 @@ func NewCmdRun(version string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run operator",
+		DisableAutoGenTag: true,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			if enableAnalytics {
 				analytics.Enable()

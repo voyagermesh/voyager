@@ -156,6 +156,19 @@ func (c *Client) DeleteFirewallGroup(groupID string) error {
 	return nil
 }
 
+// SetFirewallGroupDescription sets the description of an existing firewall group
+func (c *Client) SetFirewallGroupDescription(groupID, description string) error {
+	values := url.Values{
+		"FIREWALLGROUPID": {groupID},
+		"description":     {description},
+	}
+
+	if err := c.post(`firewall/group_set_description`, values, nil); err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetFirewallRules returns a list of rules for the given firewall group
 func (c *Client) GetFirewallRules(groupID string) ([]FirewallRule, error) {
 	var ruleMap map[string]FirewallRule
