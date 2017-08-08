@@ -99,10 +99,11 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 	Describe("ExternalNameResolver", func() {
 		BeforeEach(func() {
 			ing.Spec = api.IngressSpec{
-				Backend: &api.IngressBackend{
-					ServiceName: svcNotResolvesRedirect.Name,
-					ServicePort: intstr.FromString("80"),
-				},
+				Backend: &api.HTTPIngressBackend{
+					IngressBackend: api.IngressBackend{
+						ServiceName: svcNotResolvesRedirect.Name,
+						ServicePort: intstr.FromString("80"),
+					}},
 				Rules: []api.IngressRule{
 					{
 						IngressRuleValue: api.IngressRuleValue{
@@ -110,32 +111,37 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/test-dns",
-										Backend: api.IngressBackend{
-											ServiceName: svcResolveDNSWithNS.Name,
-											ServicePort: intstr.FromString("80"),
-										},
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: svcResolveDNSWithNS.Name,
+												ServicePort: intstr.FromString("80"),
+											}},
 									},
 									{
 										Path: "/test-no-dns",
-										Backend: api.IngressBackend{
-											ServiceName: svcNotResolvesRedirect.Name,
-											ServicePort: intstr.FromString("80"),
-										},
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: svcNotResolvesRedirect.Name,
+												ServicePort: intstr.FromString("80"),
+											}},
 									},
 									{
 										Path: "/test-no-backend-redirect",
-										Backend: api.IngressBackend{
-											ServiceName: svcResolveDNSWithoutNS.Name,
-											ServicePort: intstr.FromString("80"),
-										},
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: svcResolveDNSWithoutNS.Name,
+												ServicePort: intstr.FromString("80"),
+											}},
 									},
 									{
 										Path: "/test-no-backend-rule-redirect",
-										Backend: api.IngressBackend{
-											ServiceName: svcNotResolvesRedirect.Name,
-											ServicePort: intstr.FromString("80"),
-											BackendRule: []string{
-												"http-request redirect location https://google.com code 302",
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: svcNotResolvesRedirect.Name,
+												ServicePort: intstr.FromString("80"),
+												BackendRule: []string{
+													"http-request redirect location https://google.com code 302",
+												},
 											},
 										},
 									},
@@ -149,12 +155,14 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/redirect-rule",
-										Backend: api.IngressBackend{
-											BackendRule: []string{
-												"http-request redirect location https://github.com/appscode/discuss/issues code 301",
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												BackendRule: []string{
+													"http-request redirect location https://github.com/appscode/discuss/issues code 301",
+												},
+												ServiceName: svcNotResolvesRedirect.Name,
+												ServicePort: intstr.FromString("80"),
 											},
-											ServiceName: svcNotResolvesRedirect.Name,
-											ServicePort: intstr.FromString("80"),
 										},
 									},
 								},
@@ -167,9 +175,11 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/redirect",
-										Backend: api.IngressBackend{
-											ServiceName: svcNotResolvesRedirect.Name,
-											ServicePort: intstr.FromString("80"),
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: svcNotResolvesRedirect.Name,
+												ServicePort: intstr.FromString("80"),
+											},
 										},
 									},
 								},
@@ -182,9 +192,11 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/back-end",
-										Backend: api.IngressBackend{
-											ServiceName: f.Ingress.TestServerName(),
-											ServicePort: intstr.FromString("8989"),
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: f.Ingress.TestServerName(),
+												ServicePort: intstr.FromString("8989"),
+											},
 										},
 									},
 								},

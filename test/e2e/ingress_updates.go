@@ -51,9 +51,11 @@ var _ = Describe("IngressUpdates", func() {
 							Paths: []api.HTTPIngressPath{
 								{
 									Path: "/testpath",
-									Backend: api.IngressBackend{
-										ServiceName: f.Ingress.TestServerName(),
-										ServicePort: intstr.FromInt(80),
+									Backend: api.HTTPIngressBackend{
+										IngressBackend: api.IngressBackend{
+											ServiceName: f.Ingress.TestServerName(),
+											ServicePort: intstr.FromInt(80),
+										},
 									},
 								},
 							},

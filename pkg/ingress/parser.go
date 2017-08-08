@@ -233,7 +233,7 @@ func (c *Controller) generateConfig() error {
 						Host: rule.Host,
 						Path: path.Path,
 						Backend: haproxy.Backend{
-							Name:         getBackendName(c.Ingress, path.Backend),
+							Name:         getBackendName(c.Ingress, path.Backend.IngressBackend),
 							Endpoints:    eps,
 							BackendRules: path.Backend.BackendRule,
 							RewriteRules: path.Backend.RewriteRule,

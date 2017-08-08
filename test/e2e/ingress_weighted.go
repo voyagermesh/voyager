@@ -59,9 +59,11 @@ var _ = Describe("IngressWithHostName", func() {
 							Paths: []api.HTTPIngressPath{
 								{
 									Path: "/testpath",
-									Backend: api.IngressBackend{
-										ServiceName: meta.Name,
-										ServicePort: intstr.FromInt(80),
+									Backend: api.HTTPIngressBackend{
+										IngressBackend: api.IngressBackend{
+											ServiceName: meta.Name,
+											ServicePort: intstr.FromInt(80),
+										},
 									},
 								},
 							},
