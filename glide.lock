@@ -1,5 +1,5 @@
 hash: 094f992c06b688c6241b35fc31cdb2f9506fc984496d48e0a3176f3a559127f1
-updated: 2017-08-07T04:11:09.212312854-07:00
+updated: 2017-08-08T10:02:05.910872121-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -14,8 +14,6 @@ imports:
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/appscode/errors
   version: 748883e321a9f99fe901bd2663c7af3fcae43ea4
-  subpackages:
-  - h/log
 - name: github.com/appscode/go
   version: 95092d156baddb2d9aab547739669496d58ab6bd
   subpackages:
@@ -179,6 +177,41 @@ imports:
   version: 5d001d020961ae1c184f9f8152fdc73810481677
 - name: github.com/mikespook/golib
   version: 38fe6917d34b267a79c3432369e7dcc379e2d5b3
+- name: github.com/mitchellh/go-homedir
+  version: b8bc1bf767474819792c23f32d8286a45736f1c6
+- name: github.com/onsi/ginkgo
+  version: bb93381d543b0e5725244abe752214a110791d01
+  subpackages:
+  - config
+  - internal/codelocation
+  - internal/containernode
+  - internal/failer
+  - internal/leafnodes
+  - internal/remote
+  - internal/spec
+  - internal/specrunner
+  - internal/suite
+  - internal/testingtproxy
+  - internal/writer
+  - reporters
+  - reporters/stenographer
+  - reporters/stenographer/support/go-colorable
+  - reporters/stenographer/support/go-isatty
+  - types
+- name: github.com/onsi/gomega
+  version: d59fa0ac68bb5dd932ee8d24eed631cdd519efc3
+  subpackages:
+  - format
+  - internal/assertion
+  - internal/asyncassertion
+  - internal/oraclematcher
+  - internal/testingtsupport
+  - matchers
+  - matchers/support/goraph/bipartitegraph
+  - matchers/support/goraph/edge
+  - matchers/support/goraph/node
+  - matchers/support/goraph/util
+  - types
 - name: github.com/orcaman/concurrent-map
   version: 2ae17bc4c860c83513ee50feb9746f3e50d7515d
 - name: github.com/ovh/go-ovh
