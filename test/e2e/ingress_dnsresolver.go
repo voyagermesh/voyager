@@ -251,7 +251,7 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 			}
 		})
 
-		FIt("Should test dns resolvers", shouldTestDNSResolvers)
-		FIt("Should test dns with backend rules", shouldTestDNSResolversWithBackendRules)
+		It("Should test dns resolvers", shouldTestDNSResolvers)
+		It("Should test dns with backend rules", shouldTestDNSResolversWithBackendRules)
 	})
 })

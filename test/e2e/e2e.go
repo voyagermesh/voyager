@@ -49,7 +49,7 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 
 	if !root.Config.InCluster {
-		By("Running Controller in non-cluster mode")
+		By("Running Controller in Local mode")
 		err := controller.Setup()
 		Expect(err).NotTo(HaveOccurred())
 		go controller.Run()
