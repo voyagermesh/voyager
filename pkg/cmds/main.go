@@ -14,6 +14,7 @@ func NewCmdVoyager(version string) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "voyager [command]",
 		Short: `Voyager by Appscode - Secure Ingress Controller for Kubernetes`,
+		DisableAutoGenTag: true,
 		PersistentPreRun: func(c *cobra.Command, args []string) {
 			c.Flags().VisitAll(func(flag *pflag.Flag) {
 				log.Printf("FLAG: --%s=%q", flag.Name, flag.Value)

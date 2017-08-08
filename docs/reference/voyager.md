@@ -25,4 +25,3 @@ Voyager by Appscode - Secure Ingress Controller for Kubernetes
 * [voyager run](voyager_run.md)	 - Run operator
 * [voyager version](voyager_version.md)	 - Prints binary version number.
 
-

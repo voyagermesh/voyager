@@ -1,5 +1,5 @@
-hash: 094f992c06b688c6241b35fc31cdb2f9506fc984496d48e0a3176f3a559127f1
-updated: 2017-08-08T10:02:05.910872121-07:00
+hash: 59e2895427a4f330c6f21a831e3616dde1c56cff6cf8382aa34cb40cc21374d7
+updated: 2017-08-08T15:55:18.425695647-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -15,7 +15,7 @@ imports:
 - name: github.com/appscode/errors
   version: 748883e321a9f99fe901bd2663c7af3fcae43ea4
 - name: github.com/appscode/go
-  version: 95092d156baddb2d9aab547739669496d58ab6bd
+  version: 45732d59b2277b9c7ffdc41d2d5c07a899a20a70
   subpackages:
   - crypto/rand
   - flags
@@ -152,7 +152,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/JamesClonk/vultr
-  version: 5ace2a5cf43f0a397b06abb3afa32adbbfa171e5
+  version: 2fd0705ce648e602e6c9c57329a174270a4f6688
   subpackages:
   - lib
 - name: github.com/jmespath/go-jmespath

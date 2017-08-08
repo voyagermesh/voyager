@@ -20,6 +20,7 @@ func NewCmdExport(version string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "export",
 		Short: "Export Prometheus metrics for HAProxy",
+		DisableAutoGenTag: true,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			if enableAnalytics {
 				analytics.Enable()
