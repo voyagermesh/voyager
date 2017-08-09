@@ -129,11 +129,11 @@ frontend http-frontend
 	option httplog
 	option forwardfor
 
-	default_backend default-backend
+	default_backend {{ .DefaultBackend.Name }}
 `))
 
 	_ = template.Must(haproxyTemplate.New("default-backend").Funcs(funcMap).Parse(`
-backend default-backend
+backend {{ .DefaultBackend.Name }}
 	{{ if .Sticky }}cookie SERVERID insert indirect nocache{{ end }}
 
 	{{ range $rule := .DefaultBackend.BackendRules }}
@@ -185,7 +185,7 @@ frontend {{ .FrontendName }}
 	{{ if $path.Path }}acl url_acl_{{ $path.Backend.Name }} path_beg {{ $path.Path }}{{ end }}
 	use_backend {{ $path.Backend.Name }} {{ if or $path.Host $path.Path }}if {{ end }}{{ if $path.Host }}host_acl_{{ $path.Backend.Name }}{{ end }}{{ if $path.Path }}url_acl_{{ $path.Backend.Name }}{{ end }}
 	{{ end }}
-	{{ if .DefaultBackend }}default_backend default-backend{{ end }}
+	{{ if .DefaultBackend }}default_backend {{ .DefaultBackend.Name }}{{ end }}
 `))
 
 	_ = template.Must(haproxyTemplate.New("http-backend").Funcs(funcMap).Parse(`
