@@ -163,24 +163,25 @@ func getSpecifiedPort(ports []apiv1.ServicePort, port intstr.IntOrString) (*apiv
 
 func getBackendName(r *api.Ingress, be api.IngressBackend) string {
 	var seed string
-	if strings.ContainsRune(be.ServiceName, '.') {
-		seed = fmt.Sprintf("%s:%d", be.ServiceName, be.ServicePort.IntValue())
+	parts := strings.Split(be.ServiceName, ".")
+	if len(parts) == 1 {
+		seed = fmt.Sprintf("%s.%s:%d", parts[0], r.Namespace, be.ServicePort.IntValue())
 	} else {
-		seed = fmt.Sprintf("%s.%s:%d", be.ServiceName, r.Namespace, be.ServicePort.IntValue())
+		seed = fmt.Sprintf("%s.%s:%d", parts[0], parts[1], be.ServicePort.IntValue()) // drop DNS labels following svcName, i.e.,  parts[2:]
 	}
 	return rand.WithUniqSuffix(seed)
 }
 
 func (c *Controller) generateConfig() error {
-	var parsed haproxy.TemplateData
+	var td haproxy.TemplateData
 
 	var si haproxy.SharedInfo
 	si.Sticky = c.Ingress.StickySession()
 	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
 		si.AcceptProxy = c.Ingress.KeepSourceIP()
 	}
-	parsed.SharedInfo = si
-	parsed.TimeoutDefaults = c.Ingress.Timeouts()
+	td.SharedInfo = si
+	td.TimeoutDefaults = c.Ingress.Timeouts()
 
 	if c.Ingress.Stats() {
 		stats := &haproxy.StatsInfo{}
@@ -194,7 +195,7 @@ func (c *Controller) generateConfig() error {
 				return fmt.Errorf("Failed to load stats secret for ingress %s@%s", c.Ingress.Name, c.Ingress.Namespace)
 			}
 		}
-		parsed.Stats = stats
+		td.Stats = stats
 	}
 	dnsResolvers := make(map[string]*api.DNSResolver)
 
@@ -203,7 +204,7 @@ func (c *Controller) generateConfig() error {
 		if err != nil {
 			return err
 		}
-		parsed.DefaultBackend = &haproxy.Backend{
+		td.DefaultBackend = &haproxy.Backend{
 			Name:         "default-backend", // TODO: Use constant
 			Endpoints:    eps,
 			BackendRules: c.Ingress.Spec.Backend.BackendRule,
@@ -212,8 +213,8 @@ func (c *Controller) generateConfig() error {
 		}
 	}
 
-	parsed.HTTPService = make([]*haproxy.HTTPService, 0)
-	parsed.TCPService = make([]*haproxy.TCPService, 0)
+	td.HTTPService = make([]*haproxy.HTTPService, 0)
+	td.TCPService = make([]*haproxy.TCPService, 0)
 
 	type httpKey struct {
 		Port    int
@@ -286,14 +287,14 @@ func (c *Controller) generateConfig() error {
 				if secretName, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoSSL {
 					def.SecretName = secretName
 				}
-				parsed.TCPService = append(parsed.TCPService, def)
+				td.TCPService = append(td.TCPService, def)
 			}
 		}
 	}
 
 	for key := range httpServices {
 		value := httpServices[key]
-		parsed.HTTPService = append(parsed.HTTPService, &haproxy.HTTPService{
+		td.HTTPService = append(td.HTTPService, &haproxy.HTTPService{
 			SharedInfo:   si,
 			FrontendName: fmt.Sprintf("http-%d", key.Port),
 			Port:         key.Port,
@@ -302,13 +303,13 @@ func (c *Controller) generateConfig() error {
 		})
 	}
 
-	parsed.DNSResolvers = make([]*api.DNSResolver, 0)
+	td.DNSResolvers = make([]*api.DNSResolver, 0)
 	for k := range dnsResolvers {
-		parsed.DNSResolvers = append(parsed.DNSResolvers, dnsResolvers[k])
+		td.DNSResolvers = append(td.DNSResolvers, dnsResolvers[k])
 	}
 
 	var err error
-	c.HAProxyConfig, err = haproxy.RenderConfig(parsed)
+	c.HAProxyConfig, err = haproxy.RenderConfig(td)
 	return err
 }
 

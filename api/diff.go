@@ -55,6 +55,9 @@ func (r Ingress) HasChanged(o Ingress) (bool, error) {
 }
 
 func (r Ingress) FindTLSSecret(h string) (string, bool) {
+	if h == "" {
+		return "", false
+	}
 	for _, tls := range r.Spec.TLS {
 		for _, host := range tls.Hosts {
 			if host == h {

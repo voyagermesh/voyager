@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sort"
 
-	"k8s.io/apimachinery/pkg/util/sets"
 	"github.com/appscode/log"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 func RenderConfig(data TemplateData) (string, error) {
