@@ -24,15 +24,15 @@ func (r Ingress) PortMappings(cloudProvider string) (map[int]Target, error) {
 			usesHTTPRule = true
 			if _, foundTLS := r.FindTLSSecret(rule.Host); foundTLS && !rule.HTTP.NoSSL {
 				if port := rule.HTTP.Port.IntValue(); port > 0 {
-					mappings[port] = Target{PodPort: port, NodePort: rule.TCP.NodePort.IntValue()}
+					mappings[port] = Target{PodPort: port, NodePort: rule.HTTP.NodePort.IntValue()}
 				} else {
-					mappings[443] = Target{PodPort: 443, NodePort: rule.TCP.NodePort.IntValue()}
+					mappings[443] = Target{PodPort: 443, NodePort: rule.HTTP.NodePort.IntValue()}
 				}
 			} else {
 				if port := rule.HTTP.Port.IntValue(); port > 0 {
-					mappings[port] = Target{PodPort: port, NodePort: rule.TCP.NodePort.IntValue()}
+					mappings[port] = Target{PodPort: port, NodePort: rule.HTTP.NodePort.IntValue()}
 				} else {
-					mappings[80] = Target{PodPort: 80, NodePort: rule.TCP.NodePort.IntValue()}
+					mappings[80] = Target{PodPort: 80, NodePort: rule.HTTP.NodePort.IntValue()}
 				}
 			}
 		} else if rule.TCP != nil {

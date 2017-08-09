@@ -76,9 +76,9 @@ defaults
 {{ template "stats" .Stats }}
 {{ end }}
 
-{{ range $svc := .HttpService }}
-{{ template "http-frontend" $svc }}
-{{ template "http-backend" $svc }}
+{{ range $svc := .HTTPService }}
+{{ template "http-frontend" $svc  }}
+{{ template "http-backend" $svc  }}
 {{ end }}
 
 {{ range $svc := .TCPService }}
@@ -86,7 +86,7 @@ defaults
 {{ template "tcp-backend" $svc }}
 {{ end }}
 
-{{ if and (not .HttpService) .DefaultBackend }}
+{{ if and (not .HTTPService) .DefaultBackend }}
 {{ template "default-frontend" .SharedInfo }}
 {{ end }}
 
@@ -95,7 +95,7 @@ defaults
 {{ end }}
 `))
 
-	_ = template.Must(template.New("dns-resolver").Funcs(funcMap).Parse(`
+	_ = template.Must(haproxyTemplate.New("dns-resolver").Funcs(funcMap).Parse(`
 resolvers {{ .Name }}
 	{{ range $index, $ns := .NameServer }}
 	nameserver dns{{ $index }} {{ $ns }}
@@ -111,7 +111,7 @@ resolvers {{ .Name }}
 	{{ end }}
 `))
 
-	_ = template.Must(template.New("stats").Funcs(funcMap).Parse(`
+	_ = template.Must(haproxyTemplate.New("stats").Funcs(funcMap).Parse(`
 listen stats
 	bind *:{{ .Port }}
 	mode http
@@ -121,7 +121,7 @@ listen stats
 	{{ if .Username }}stats auth {{ .Username }}:{{ .PassWord }}{{ end }}
 `))
 
-	_ = template.Must(template.New("default-frontend").Funcs(funcMap).Parse(`
+	_ = template.Must(haproxyTemplate.New("default-frontend").Funcs(funcMap).Parse(`
 frontend http-frontend
 	bind *:80 {{ if .AcceptProxy }}accept-proxy{{ end }}
 
@@ -132,7 +132,7 @@ frontend http-frontend
 	default_backend default-backend
 `))
 
-	_ = template.Must(template.New("default-backend").Funcs(funcMap).Parse(`
+	_ = template.Must(haproxyTemplate.New("default-backend").Funcs(funcMap).Parse(`
 backend default-backend
 	{{ if .Sticky }}cookie SERVERID insert indirect nocache{{ end }}
 
@@ -153,20 +153,20 @@ backend default-backend
 	{{ if $e.ExternalName }}
 	{{ if $e.UseDNSResolver }}
 	server {{ $e.Name }} {{ $e.ExternalName }}:{{ $e.Port }} {{ if $e.DNSResolver }} {{ if $e.CheckHealth }} check {{ end }} resolvers {{ $e.DNSResolver }} resolve-prefer ipv4 {{ end }}
-	{{ else if not .DefaultBackend.BackendRules }}
+	{{ else if not $.DefaultBackend.BackendRules }}
 	acl https ssl_fc
 	http-request redirect location https://{{$e.ExternalName}}:{{ $e.Port }} code 301 if https
 	http-request redirect location http://{{$e.ExternalName}}:{{ $e.Port }} code 301 unless https
 	{{ end }}
 	{{ else }}
-	server {{ $e.Name }} {{ $e.IP }}:{{ $e.Port }} {{ if $e.Weight }}weight {{ $e.Weight }}{{ end }} {{ if .Sticky }}cookie {{ $e.Name }}{{ end }}
+	server {{ $e.Name }} {{ $e.IP }}:{{ $e.Port }} {{ if $e.Weight }}weight {{ $e.Weight }}{{ end }} {{ if $.Sticky }}cookie {{ $e.Name }}{{ end }}
 	{{ end }}
 	{{ end }}
 `))
 
-	_ = template.Must(template.New("http-frontend").Funcs(funcMap).Parse(`
+	_ = template.Must(haproxyTemplate.New("http-frontend").Funcs(funcMap).Parse(`
 frontend {{ .FrontendName }}
-	{{ if .UseSSL }}
+	{{ if .UsesSSL }}
 	bind *:{{ .Port }} {{ if .AcceptProxy }}accept-proxy{{ end }} ssl no-sslv3 no-tlsv10 no-tls-tickets crt /etc/ssl/private/haproxy/ alpn http/1.1
 	# Mark all cookies as secure
 	rsprep ^Set-Cookie:\ (.*) Set-Cookie:\ \1;\ Secure
@@ -188,10 +188,10 @@ frontend {{ .FrontendName }}
 	{{ if .DefaultBackend }}default_backend default-backend{{ end }}
 `))
 
-	_ = template.Must(template.New("http-backend").Funcs(funcMap).Parse(`
+	_ = template.Must(haproxyTemplate.New("http-backend").Funcs(funcMap).Parse(`
 {{ range $path := .Paths }}
 backend {{ $path.Backend.Name }}
-	{{ if .Sticky }}cookie SERVERID insert indirect nocache{{ end }}
+	{{ if $.Sticky }}cookie SERVERID insert indirect nocache{{ end }}
 
 	{{ range $rule := $path.Backend.BackendRules }}
 	{{ $rule }}
@@ -211,23 +211,23 @@ backend {{ $path.Backend.Name }}
 	{{ if $e.UseDNSResolver }}
 	server {{ $e.Name }} {{ $e.ExternalName }}:{{ $e.Port }} {{ if $e.DNSResolver }} {{ if $e.CheckHealth }} check {{ end }} resolvers {{ $e.DNSResolver }} resolve-prefer ipv4 {{ end }}
 	{{ else if not $path.Backend.BackendRules }}
-	http-request redirect location {{ if .UseSSL }}https://{{ else }}http://{{ end }}{{$e.ExternalName}}:{{ $e.Port }} code 301
+	http-request redirect location {{ if $.UsesSSL }}https://{{ else }}http://{{ end }}{{$e.ExternalName}}:{{ $e.Port }} code 301
 	{{ end }}
 	{{ else }}
-	server {{ $e.Name }} {{ $e.IP }}:{{ $e.Port }} {{ if $e.Weight }}weight {{ $e.Weight }} {{ end }} {{ if .Sticky }}cookie {{ $e.Name }} {{ end }}
+	server {{ $e.Name }} {{ $e.IP }}:{{ $e.Port }} {{ if $e.Weight }}weight {{ $e.Weight }} {{ end }} {{ if $.Sticky }}cookie {{ $e.Name }} {{ end }}
 	{{ end }}
 	{{ end }}
 {{ end }}
 `))
 
-	_ = template.Must(template.New("tcp-frontend").Funcs(funcMap).Parse(`
+	_ = template.Must(haproxyTemplate.New("tcp-frontend").Funcs(funcMap).Parse(`
 frontend {{ .FrontendName }}
-	bind *:{{ .Port }} {{ if .AcceptProxy }}accept-proxy{{ end }} {{ if .SecretName }}ssl no-sslv3 no-tlsv10 no-tls-tickets crt /etc/ssl/private/haproxy/{{ .SecretName }}.pem{{ end }} {{if .ALPNOptions }}{{.ALPNOptions}}{{ end }}
+	bind *:{{ .Port }} {{ if .AcceptProxy }}accept-proxy{{ end }} {{ if .SecretName }}ssl no-sslv3 no-tlsv10 no-tls-tickets crt /etc/ssl/private/haproxy/{{ .SecretName }}.pem{{ end }} {{ if .ALPNOptions }}{{ .ALPNOptions }}{{ end }}
 	mode tcp
 	default_backend {{ .Backend.Name }}
 `))
 
-	_ = template.Must(template.New("tcp-backend").Funcs(funcMap).Parse(`
+	_ = template.Must(haproxyTemplate.New("tcp-backend").Funcs(funcMap).Parse(`
 backend {{ .Backend.Name }}
 	mode tcp
 
@@ -235,7 +235,7 @@ backend {{ .Backend.Name }}
 	{{ $rule }}
 	{{ end }}
 
-	{{ if .Sticky }}
+	{{ if $.Sticky }}
 	stick-table type ip size 100k expire 30m
 	stick on src
 	{{ end }}

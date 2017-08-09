@@ -486,7 +486,7 @@ func (c *Controller) createHostPortPods() error {
 	}
 
 	// adding tcp ports to pod template
-	for podPort := range c.Ingress.PodPorts() {
+	for _, podPort := range c.Ingress.PodPorts() {
 		p := apiv1.ContainerPort{
 			Name:          "tcp-" + strconv.Itoa(podPort),
 			Protocol:      "TCP",
@@ -704,7 +704,7 @@ func (c *Controller) createNodePortPods() error {
 	}
 
 	// adding tcp ports to pod template
-	for podPort := range c.Ingress.PodPorts() {
+	for _, podPort := range c.Ingress.PodPorts() {
 		p := apiv1.ContainerPort{
 			Name:          "tcp-" + strconv.Itoa(podPort),
 			Protocol:      "TCP",

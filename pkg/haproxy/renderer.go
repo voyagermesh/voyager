@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"github.com/appscode/log"
 )
 
 func RenderConfig(data TemplateData) (string, error) {
@@ -16,6 +17,7 @@ func RenderConfig(data TemplateData) (string, error) {
 	var buf bytes.Buffer
 	err := haproxyTemplate.Execute(&buf, data)
 	if err != nil {
+		log.Error(err)
 		return "", err
 	}
 	return buf.String(), nil
