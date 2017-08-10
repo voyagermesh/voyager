@@ -37,24 +37,24 @@ defaults
 	# timeout {{ key }}  {{ value }}
 	timeout  connect         5s
 	timeout  server          10s
-	timeout  client          50000
-	timeout  client-fin      50000
-	timeout  tunnel          50000
+	timeout  client          50000ms
+	timeout  client-fin      50000ms
+	timeout  tunnel          50000ms
 
 ```
 
 
 If any required timeouts is not provided timeouts will be populated with the following values.
 ```
-	timeout  connect         50000
-	timeout  client          50000
-	timeout  client-fin      50000
-	timeout  server          50000
-	timeout  tunnel          50000
+	timeout  connect         50000ms
+	timeout  client          50000ms
+	timeout  client-fin      50000ms
+	timeout  server          50000ms
+	timeout  tunnel          50000ms
 ```
 
 ### Time Format
-Some parameters involve values representing time, such as timeouts. These
+Some parameters involve values representing time. These
 values are generally expressed in milliseconds (unless explicitly stated
 otherwise) but may be expressed in any other unit by suffixing the unit to the
 numeric value. It is important to consider this because it will not be repeated

@@ -231,22 +231,22 @@ func (r Ingress) KeepSourceIP() bool {
 
 var timeoutDefaults = map[string]string{
 	// Maximum time to wait for a connection attempt to a server to succeed.
-	"connect": "50000",
+	"connect": "50000ms",
 
 	// Maximum inactivity time on the client side.
 	// Applies when the client is expected to acknowledge or send data.
-	"client": "50000",
+	"client": "50000ms",
 
 	// Inactivity timeout on the client side for half-closed connections.
 	// Applies when the client is expected to acknowledge or send data
 	// while one direction is already shut down.
-	"client-fin": "50000",
+	"client-fin": "50000ms",
 
 	// Maximum inactivity time on the server side.
-	"server": "50000",
+	"server": "50000ms",
 
 	// Timeout to use with WebSocket and CONNECT
-	"tunnel": "50000",
+	"tunnel": "50000ms",
 }
 
 func (r Ingress) Timeouts() map[string]string {
