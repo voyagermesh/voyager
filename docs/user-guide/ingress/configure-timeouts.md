@@ -37,20 +37,20 @@ defaults
 	# timeout {{ key }}  {{ value }}
 	timeout  connect         5s
 	timeout  server          10s
-	timeout  client          50000ms
-	timeout  client-fin      50000ms
-	timeout  tunnel          50000ms
+	timeout  client          50s
+	timeout  client-fin      50s
+	timeout  tunnel          50s
 
 ```
 
 
 If any required timeouts is not provided timeouts will be populated with the following values.
 ```
-	timeout  connect         50000ms
-	timeout  client          50000ms
-	timeout  client-fin      50000ms
-	timeout  server          50000ms
-	timeout  tunnel          50000ms
+	timeout  connect         50s
+	timeout  client          50s
+	timeout  client-fin      50s
+	timeout  server          50s
+	timeout  tunnel          50s
 ```
 
 ### Time Format
