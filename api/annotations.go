@@ -91,11 +91,11 @@ const (
 	//
 	// If the annotation is not set default values used to config defaults section will be:
 	//
-	// timeout  connect         50000
-	// timeout  client          50000
-	// timeout  client-fin      50000
-	// timeout  server          50000
-	// timeout  tunnel          50000
+	// timeout  connect         50s
+	// timeout  client          50s
+	// timeout  client-fin      50s
+	// timeout  server          50s
+	// timeout  tunnel          50s
 	DefaultsTimeOut = EngressKey + "/" + "default-timeout"
 )
 
@@ -231,22 +231,22 @@ func (r Ingress) KeepSourceIP() bool {
 
 var timeoutDefaults = map[string]string{
 	// Maximum time to wait for a connection attempt to a server to succeed.
-	"connect": "50000",
+	"connect": "50s",
 
 	// Maximum inactivity time on the client side.
 	// Applies when the client is expected to acknowledge or send data.
-	"client": "50000",
+	"client": "50s",
 
 	// Inactivity timeout on the client side for half-closed connections.
 	// Applies when the client is expected to acknowledge or send data
 	// while one direction is already shut down.
-	"client-fin": "50000",
+	"client-fin": "50s",
 
 	// Maximum inactivity time on the server side.
-	"server": "50000",
+	"server": "50s",
 
 	// Timeout to use with WebSocket and CONNECT
-	"tunnel": "50000",
+	"tunnel": "50s",
 }
 
 func (r Ingress) Timeouts() map[string]string {
