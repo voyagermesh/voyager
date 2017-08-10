@@ -12,11 +12,13 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/appscode/log"
 	api "github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
 	acf "github.com/appscode/voyager/client/clientset/fake"
+	"github.com/appscode/voyager/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/xenolf/lego/acme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,7 +27,7 @@ import (
 )
 
 func TestLoadProviderCredential(t *testing.T) {
-	fakeController := NewController(fake.NewSimpleClientset(), acf.NewFakeExtensionClient()).New(&api.Certificate{
+	cert := &api.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
@@ -33,7 +35,9 @@ func TestLoadProviderCredential(t *testing.T) {
 		Spec: api.CertificateSpec{
 			ProviderCredentialSecretName: "foosecret",
 		},
-	})
+	}
+
+	fakeController := NewController(fake.NewSimpleClientset(), acf.NewFakeExtensionClient(), config.Options{SyncPeriod: time.Second * 5}, cert)
 	fakeController.acmeClientConfig = &ACMEConfig{
 		ProviderCredentials: make(map[string][]byte),
 	}
@@ -65,11 +69,8 @@ func TestLoadProviderCredential(t *testing.T) {
 
 func TestEnsureClient(t *testing.T) {
 	if testing.Verbose() {
-		fakeController := NewController(fake.NewSimpleClientset(
-			&apiv1.Secret{
-				ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
-			},
-		), acf.NewFakeExtensionClient()).New(&api.Certificate{
+		skipTestIfSecretNotProvided(t)
+		cert := &api.Certificate{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "bar",
@@ -80,7 +81,12 @@ func TestEnsureClient(t *testing.T) {
 				Provider:                     "googlecloud",
 				ProviderCredentialSecretName: "fakesecret",
 			},
-		})
+		}
+		fakeController := NewController(fake.NewSimpleClientset(
+			&apiv1.Secret{
+				ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
+			},
+		), acf.NewFakeExtensionClient(), config.Options{SyncPeriod: time.Second * 5}, cert)
 
 		fakeController.acmeClientConfig = &ACMEConfig{
 			Provider:            "googlecloud",
@@ -102,7 +108,7 @@ func TestEnsureClient(t *testing.T) {
 		assert.Nil(t, err)
 
 		fakeController.ensureACMEClient()
-		secret, err := fakeController.KubeClient.CoreV1().Secrets("bar").Get(defaultUserSecretPrefix+fakeController.certificate.Name, metav1.GetOptions{})
+		secret, err := fakeController.KubeClient.CoreV1().Secrets("bar").Get(defaultUserSecretPrefix+cert.Name, metav1.GetOptions{})
 		assert.Nil(t, err)
 		assert.NotNil(t, secret)
 		assert.Equal(t, 1, len(secret.Data))
@@ -110,11 +116,7 @@ func TestEnsureClient(t *testing.T) {
 }
 
 func TestFakeRegisterACMEUser(t *testing.T) {
-	fakeController := NewController(fake.NewSimpleClientset(
-		&apiv1.Secret{
-			ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
-		},
-	), acf.NewFakeExtensionClient()).New(&api.Certificate{
+	cert := &api.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
@@ -125,7 +127,12 @@ func TestFakeRegisterACMEUser(t *testing.T) {
 			Provider:                     "googlecloud",
 			ProviderCredentialSecretName: "fakesecret",
 		},
-	})
+	}
+	fakeController := NewController(fake.NewSimpleClientset(
+		&apiv1.Secret{
+			ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
+		},
+	), acf.NewFakeExtensionClient(), config.Options{SyncPeriod: time.Second * 5}, cert)
 
 	acmeClient := &ACMEClient{
 		Client: newFakeACMEClient(),
@@ -141,7 +148,7 @@ func TestFakeRegisterACMEUser(t *testing.T) {
 		err := fakeController.registerACMEUser(acmeClient)
 		if !assert.NotNil(t, err) {
 			assert.Nil(t, err)
-			secret, err := fakeController.KubeClient.CoreV1().Secrets("bar").Get(defaultUserSecretPrefix+fakeController.certificate.Name, metav1.GetOptions{})
+			secret, err := fakeController.KubeClient.CoreV1().Secrets("bar").Get(defaultUserSecretPrefix+cert.Name, metav1.GetOptions{})
 			assert.Nil(t, err)
 			if assert.NotNil(t, secret) {
 				assert.Equal(t, 1, len(secret.Data))
@@ -152,7 +159,8 @@ func TestFakeRegisterACMEUser(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	if testing.Verbose() {
-		fakeController := NewController(fake.NewSimpleClientset(), acf.NewFakeExtensionClient()).New(&api.Certificate{
+		skipTestIfSecretNotProvided(t)
+		cert := &api.Certificate{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "bar",
@@ -163,8 +171,9 @@ func TestCreate(t *testing.T) {
 				Provider:                     "googlecloud",
 				ProviderCredentialSecretName: "fakesecret",
 			},
-		})
-		fakeController.ExtClient.Certificates("bar").Create(fakeController.certificate)
+		}
+		fakeController := NewController(fake.NewSimpleClientset(), acf.NewFakeExtensionClient(), config.Options{SyncPeriod: time.Second * 5}, cert)
+		fakeController.ExtClient.Certificates("bar").Create(cert)
 
 		fakeController.acmeClientConfig = &ACMEConfig{
 			ProviderCredentials: make(map[string][]byte),
@@ -187,7 +196,7 @@ func TestCreate(t *testing.T) {
 
 		fakeController.create()
 
-		secret, err := fakeController.KubeClient.CoreV1().Secrets("bar").Get(defaultUserSecretPrefix+fakeController.certificate.Name, metav1.GetOptions{})
+		secret, err := fakeController.KubeClient.CoreV1().Secrets("bar").Get(defaultUserSecretPrefix+cert.Name, metav1.GetOptions{})
 		assert.Nil(t, err)
 		assert.Equal(t, len(secret.Data), 1)
 
@@ -199,7 +208,7 @@ func TestCreate(t *testing.T) {
 		}
 
 		// Check the certificate data
-		secret, err = fakeController.KubeClient.CoreV1().Secrets("bar").Get("cert-"+fakeController.certificate.Name, metav1.GetOptions{})
+		secret, err = fakeController.KubeClient.CoreV1().Secrets("bar").Get("cert-"+cert.Name, metav1.GetOptions{})
 		assert.Nil(t, err)
 		if err != nil {
 			t.Fatal(err)
@@ -314,5 +323,14 @@ func writeJSONResponse(w http.ResponseWriter, body interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	if _, err := w.Write(bs); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func skipTestIfSecretNotProvided(t *testing.T) {
+	if len(os.Getenv("TEST_GCE_PROJECT")) == 0 ||
+		len(os.Getenv("TEST_GCE_SERVICE_ACCOUNT_DATA")) == 0 ||
+		len(os.Getenv("TEST_ACME_USER_EMAIL")) == 0 ||
+		len(os.Getenv("TEST_DNS_DOMAINS")) == 0 {
+		t.Skip("Skipping Test, Secret Not Provided")
 	}
 }

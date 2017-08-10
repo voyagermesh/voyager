@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"sort"
-
+	//"github.com/appscode/go/strings"
 	"github.com/appscode/log"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -20,7 +20,8 @@ func RenderConfig(data TemplateData) (string, error) {
 		log.Error(err)
 		return "", err
 	}
-	return buf.String(), nil
+	config := buf.String()
+	return config, nil
 }
 
 func (td *TemplateData) canonicalize() {

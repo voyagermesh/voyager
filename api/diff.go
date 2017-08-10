@@ -77,17 +77,15 @@ func (r Ingress) IsPortChanged(o Ingress, cloudProvider string) bool {
 	if err != nil {
 		return false
 	}
-	return reflect.DeepEqual(rpm, opm)
+	return !reflect.DeepEqual(rpm, opm)
 }
 
 func (r Ingress) Secrets() []string {
 	secrets := sets.NewString()
 	for _, rule := range r.Spec.Rules {
 		if rule.HTTP != nil {
-			if port := rule.HTTP.Port.IntValue(); port > 0 {
-				if secretName, ok := r.FindTLSSecret(rule.Host); ok && !rule.HTTP.NoSSL {
-					secrets.Insert(secretName)
-				}
+			if secretName, ok := r.FindTLSSecret(rule.Host); ok && !rule.HTTP.NoSSL {
+				secrets.Insert(secretName)
 			}
 		} else if rule.TCP != nil {
 			if secretName, ok := r.FindTLSSecret(rule.Host); ok {

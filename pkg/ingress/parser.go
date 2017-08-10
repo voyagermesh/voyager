@@ -175,11 +175,27 @@ func getBackendName(r *api.Ingress, be api.IngressBackend) string {
 func (c *Controller) generateConfig() error {
 	var td haproxy.TemplateData
 
-	var si haproxy.SharedInfo
+	si := &haproxy.SharedInfo{}
 	si.Sticky = c.Ingress.StickySession()
 	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
 		si.AcceptProxy = c.Ingress.KeepSourceIP()
 	}
+
+	dnsResolvers := make(map[string]*api.DNSResolver)
+	if c.Ingress.Spec.Backend != nil {
+		eps, err := c.serviceEndpoints(dnsResolvers, c.Ingress.Spec.Backend.ServiceName, c.Ingress.Spec.Backend.ServicePort, c.Ingress.Spec.Backend.HostNames)
+		if err != nil {
+			return err
+		}
+		si.DefaultBackend = &haproxy.Backend{
+			Name:         "default-backend", // TODO: Use constant
+			Endpoints:    eps,
+			BackendRules: c.Ingress.Spec.Backend.BackendRule,
+			RewriteRules: c.Ingress.Spec.Backend.RewriteRule,
+			HeaderRules:  c.Ingress.Spec.Backend.HeaderRule,
+		}
+	}
+
 	td.SharedInfo = si
 	td.TimeoutDefaults = c.Ingress.Timeouts()
 
@@ -196,21 +212,6 @@ func (c *Controller) generateConfig() error {
 			}
 		}
 		td.Stats = stats
-	}
-	dnsResolvers := make(map[string]*api.DNSResolver)
-
-	if c.Ingress.Spec.Backend != nil {
-		eps, err := c.serviceEndpoints(dnsResolvers, c.Ingress.Spec.Backend.ServiceName, c.Ingress.Spec.Backend.ServicePort, c.Ingress.Spec.Backend.HostNames)
-		if err != nil {
-			return err
-		}
-		td.DefaultBackend = &haproxy.Backend{
-			Name:         "default-backend", // TODO: Use constant
-			Endpoints:    eps,
-			BackendRules: c.Ingress.Spec.Backend.BackendRule,
-			RewriteRules: c.Ingress.Spec.Backend.RewriteRule,
-			HeaderRules:  c.Ingress.Spec.Backend.HeaderRule,
-		}
 	}
 
 	td.HTTPService = make([]*haproxy.HTTPService, 0)
@@ -274,7 +275,7 @@ func (c *Controller) generateConfig() error {
 			if len(eps) > 0 {
 				def := &haproxy.TCPService{
 					SharedInfo:   si,
-					FrontendName: fmt.Sprintf("tcp-%s", rule.TCP.Port),
+					FrontendName: fmt.Sprintf("tcp-%s", rule.TCP.Port.String()),
 					Host:         rule.Host,
 					Port:         rule.TCP.Port.String(),
 					ALPNOptions:  parseALPNOptions(rule.TCP.ALPN),

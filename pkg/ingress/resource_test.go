@@ -1,6 +1,7 @@
 package ingress
 
 import (
+	"fmt"
 	"testing"
 
 	api "github.com/appscode/voyager/api"
@@ -193,7 +194,7 @@ func TestResourceIsExists(t *testing.T) {
 				},
 			},
 			KubeClient: fake.NewSimpleClientset(
-				&apiv1.ReplicationController{
+				&extensions.Deployment{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "foo",
 						Namespace: "bar",
@@ -227,7 +228,7 @@ func TestResourceIsExists(t *testing.T) {
 				},
 			},
 			KubeClient: fake.NewSimpleClientset(
-				&apiv1.ReplicationController{
+				&extensions.Deployment{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      api.VoyagerPrefix + "fakefoo",
 						Namespace: "bar",
@@ -252,6 +253,7 @@ func TestResourceIsExists(t *testing.T) {
 	}
 
 	for k, v := range testCases {
+		fmt.Println(k.Ingress.Name, k.Ingress.Annotations)
 		assert.Equal(t, v, k.IsExists())
 	}
 }
