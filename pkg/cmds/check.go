@@ -16,9 +16,8 @@ import (
 
 func NewCmdCheck() *cobra.Command {
 	var (
-		ktx           string
-		fromFile      string
-		cloudProvider string
+		ktx      string
+		fromFile string
 	)
 
 	cmd := &cobra.Command{
@@ -36,7 +35,7 @@ func NewCmdCheck() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				err = ing.IsValid(cloudProvider)
+				err = ing.IsValid(opt.CloudProvider)
 				if err != nil {
 					return err
 				}
@@ -75,6 +74,7 @@ func NewCmdCheck() *cobra.Command {
 	}
 	cmd.Flags().StringVar(&ktx, "kube-context", ktx, "Name of Kubeconfig context")
 	cmd.Flags().StringVar(&fromFile, "from-file", fromFile, "YAML formatted file containing ingress")
-	cmd.Flags().StringVar(&cloudProvider, "cloud-provider", cloudProvider, "Name of cloud provider")
+	cmd.Flags().StringVarP(&opt.CloudProvider, "cloud-provider", "c", opt.CloudProvider, "Name of cloud provider")
+	cmd.Flags().StringVar(&opt.IngressClass, "ingress-class", opt.IngressClass, "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
 	return cmd
 }
