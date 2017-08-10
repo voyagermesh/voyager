@@ -27,6 +27,7 @@ func NewCmdVoyager(version string) *cobra.Command {
 
 	rootCmd.AddCommand(NewCmdRun(version))
 	rootCmd.AddCommand(NewCmdExport(version))
+	rootCmd.AddCommand(NewCmdCheck())
 	rootCmd.AddCommand(v.NewCmdVersion())
 
 	return rootCmd
