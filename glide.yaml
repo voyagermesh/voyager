@@ -4,8 +4,6 @@ import:
   version: v2
 - package: github.com/appscode/go
 - package: github.com/appscode/log
-- package: github.com/flosch/pongo2
-  version: master
 - package: github.com/mikespook/golib
 - package: github.com/spf13/cobra
   version: master

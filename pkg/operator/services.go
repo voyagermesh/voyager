@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/appscode/errors"
-	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
 	tapi "github.com/appscode/voyager/api"
 	_ "github.com/appscode/voyager/api/install"
@@ -13,16 +12,14 @@ import (
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
+	core_listers "k8s.io/client-go/listers/core/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
 )
 
 // Blocks caller. Intended to be called as a Go routine.
-func (op *Operator) WatchServices() {
-	defer acrt.HandleCrash()
-
+func (op *Operator) initServiceWatcher() cache.Controller {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
 			return op.KubeClient.CoreV1().Services(apiv1.NamespaceAll).List(metav1.ListOptions{})
@@ -31,9 +28,9 @@ func (op *Operator) WatchServices() {
 			return op.KubeClient.CoreV1().Services(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
-	_, ctrl := cache.NewInformer(lw,
+	indexer, informer := cache.NewIndexerInformer(lw,
 		&apiv1.Service{},
-		op.SyncPeriod,
+		op.Opt.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				if svc, ok := obj.(*apiv1.Service); ok {
@@ -52,8 +49,10 @@ func (op *Operator) WatchServices() {
 				}
 			},
 		},
+		cache.Indexers{},
 	)
-	ctrl.Run(wait.NeverStop)
+	op.ServiceLister = core_listers.NewServiceLister(indexer)
+	return informer
 }
 
 func (op *Operator) restoreServiceIfRequired(svc *apiv1.Service) (bool, error) {
@@ -136,7 +135,7 @@ func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
 			log.Infoln("Checking for service", svc, "to be used to load balance via ingress", engress.Name, engress.Namespace)
 			if engress.HasBackendService(svc.Name, svc.Namespace) {
-				ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.Opt, engress)
+				ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 				if ctrl.IsExists() {
 					// Loadbalancer resource for this ingress is found in its place,
 					// so no need to create the resources. First trying to update

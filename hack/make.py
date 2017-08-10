@@ -164,7 +164,7 @@ def test(type, *args):
         print '{test unit|minikube|e2e}'
 
 def unit_test():
-    die(call(libbuild.GOC + ' test -v . ./pkg/...'))
+    die(call(libbuild.GOC + ' test -v . ./api/... ./client/... ./pkg/...'))
 
 def e2e_test(args):
     st = ' '.join(args)

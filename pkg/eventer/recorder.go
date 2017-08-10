@@ -16,6 +16,7 @@ const (
 	EventReasonCertificateCreateSuccessful = "CreateSuccessful"
 
 	// Ingress Events
+	EventReasonIngressHAProxyConfigCreateFailed      = "HAProxyConfigCreateFailed"
 	EventReasonIngressConfigMapCreateFailed          = "ConfigMapCreateFailed"
 	EventReasonIngressConfigMapCreateSuccessful      = "ConfigMapCreateSuccessful"
 	EventReasonIngressUnsupportedLBType              = "UnsupportedLBType"
@@ -26,6 +27,7 @@ const (
 	EventReasonIngressServiceMonitorCreateFailed     = "ServiceMonitorCreateFailed"
 	EventReasonIngressServiceMonitorCreateSuccessful = "ServiceMonitorCreateSuccessful"
 	EventReasonIngressUpdateFailed                   = "UpdateFailed"
+	EventReasonIngressDeleteFailed                   = "DeleteFailed"
 	EventReasonIngressUpdateSuccessful               = "UpdateSuccessful"
 	EventReasonIngressServiceUpdateFailed            = "ServiceUpdateFailed"
 	EventReasonIngressServiceUpdateSuccessful        = "ServiceUpdateSuccessful"
@@ -33,6 +35,7 @@ const (
 	EventReasonIngressStatsServiceCreateSuccessful   = "StatsServiceCreateSuccessful"
 	EventReasonIngressStatsServiceDeleteFailed       = "StatsServiceDeleteFailed"
 	EventReasonIngressStatsServiceDeleteSuccessful   = "StatsServiceDeleteSuccessful"
+	EventReasonIngressInvalid                        = "IngressInvalid"
 )
 
 func NewEventRecorder(client clientset.Interface, component string) record.EventRecorder {

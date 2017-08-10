@@ -29,7 +29,7 @@ var _ = Describe("IngressWithRBACEnabled", func() {
 		f.Ingress.EventuallyStarted(ing).Should(BeTrue())
 
 		By("Checking generated resource")
-		Expect(f.Ingress.IsTargetCreated(ing)).Should(BeTrue())
+		Expect(f.Ingress.IsExists(ing)).Should(BeTrue())
 	})
 
 	AfterEach(func() {

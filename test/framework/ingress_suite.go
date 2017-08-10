@@ -8,9 +8,9 @@ import (
 	"github.com/appscode/go/types"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
-	"github.com/appscode/voyager/pkg/ingress"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/gomega"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/pkg/api/v1"
 )
@@ -20,7 +20,7 @@ const (
 )
 
 var (
-	testServerResourceName = "e2e-test-server" + rand.Characters(5)
+	testServerResourceName = "e2e-test-server-" + rand.Characters(5)
 )
 
 func (i *ingressInvocation) Setup() error {
@@ -40,6 +40,13 @@ func (i *ingressInvocation) Teardown() {
 			time.Sleep(time.Second * 5)
 		}
 		i.KubeClient.CoreV1().ReplicationControllers(i.Namespace()).Delete(testServerResourceName, &metav1.DeleteOptions{})
+
+		list, err := i.VoyagerClient.Ingresses(metav1.NamespaceAll).List(metav1.ListOptions{})
+		if err == nil {
+			for _, ing := range list.Items {
+				i.VoyagerClient.Ingresses(ing.Namespace).Delete(ing.Name)
+			}
+		}
 	}
 }
 
@@ -68,12 +75,29 @@ func (i *ingressInvocation) Delete(ing *api.Ingress) error {
 	return i.VoyagerClient.Ingresses(i.Namespace()).Delete(ing.Name)
 }
 
-func (i *ingressInvocation) IsTargetCreated(ing *api.Ingress) bool {
-	return i.Controller(ing).IsExists()
-}
+func (i *ingressInvocation) IsExists(ing *api.Ingress) bool {
+	if ing.LBType() == api.LBTypeHostPort {
+		_, err := i.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+		if kerr.IsNotFound(err) {
+			return false
+		}
+	} else {
+		_, err := i.KubeClient.ExtensionsV1beta1().Deployments(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+		if kerr.IsNotFound(err) {
+			return false
+		}
+	}
 
-func (i *ingressInvocation) Controller(ing *api.Ingress) *ingress.Controller {
-	return ingress.NewController(i.KubeClient, i.VoyagerClient, nil, i.VoyagerConfig(), ing)
+	_, err := i.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+	if kerr.IsNotFound(err) {
+		return false
+	}
+
+	_, err = i.KubeClient.CoreV1().ConfigMaps(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+	if kerr.IsNotFound(err) {
+		return false
+	}
+	return true
 }
 
 func (i *ingressInvocation) EventuallyStarted(ing *api.Ingress) GomegaAsyncAssertion {

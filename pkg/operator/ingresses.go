@@ -3,13 +3,12 @@ package operator
 import (
 	"errors"
 
-	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/analytics"
+	"github.com/appscode/voyager/pkg/eventer"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
@@ -17,9 +16,7 @@ import (
 )
 
 // Blocks caller. Intended to be called as a Go routine.
-func (op *Operator) WatchIngresses() {
-	defer acrt.HandleCrash()
-
+func (op *Operator) initIngresseWatcher() cache.Controller {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
 			return op.KubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
@@ -28,9 +25,9 @@ func (op *Operator) WatchIngresses() {
 			return op.KubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
-	_, ctrl := cache.NewInformer(lw,
+	_, informer := cache.NewInformer(lw,
 		&extensions.Ingress{},
-		op.SyncPeriod,
+		op.Opt.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				if ingress, ok := obj.(*extensions.Ingress); ok {
@@ -45,7 +42,16 @@ func (op *Operator) WatchIngresses() {
 						log.Infof("%s %s@%s does not match ingress class", ingress.GroupVersionKind(), ingress.Name, ingress.Namespace)
 						return
 					}
-
+					if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
+						op.recorder.Eventf(
+							engress,
+							apiv1.EventTypeWarning,
+							eventer.EventReasonIngressInvalid,
+							"Reason: %s",
+							err.Error(),
+						)
+						return
+					}
 					go analytics.Send(ingress.GroupVersionKind().String(), "ADD", "success")
 
 					op.AddEngress(engress)
@@ -78,6 +84,16 @@ func (op *Operator) WatchIngresses() {
 					log.Infof("%s %s@%s has unchanged spec and annotations", newIngress.GroupVersionKind(), newIngress.Name, newIngress.Namespace)
 					return
 				}
+				if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
+					op.recorder.Eventf(
+						newEngress,
+						apiv1.EventTypeWarning,
+						eventer.EventReasonIngressInvalid,
+						"Reason: %s",
+						err.Error(),
+					)
+					return
+				}
 				op.UpdateEngress(oldEngress, newEngress)
 			},
 			DeleteFunc: func(obj interface{}) {
@@ -100,5 +116,5 @@ func (op *Operator) WatchIngresses() {
 			},
 		},
 	)
-	ctrl.Run(wait.NeverStop)
+	return informer
 }

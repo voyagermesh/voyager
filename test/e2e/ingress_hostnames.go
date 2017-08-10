@@ -39,7 +39,7 @@ var _ = Describe("IngressWithHostName", func() {
 		f.Ingress.EventuallyStarted(ing).Should(BeTrue())
 
 		By("Checking generated resource")
-		Expect(f.Ingress.IsTargetCreated(ing)).Should(BeTrue())
+		Expect(f.Ingress.IsExists(ing)).Should(BeTrue())
 	})
 
 	AfterEach(func() {
@@ -58,10 +58,12 @@ var _ = Describe("IngressWithHostName", func() {
 							Paths: []api.HTTPIngressPath{
 								{
 									Path: "/testpath",
-									Backend: api.IngressBackend{
-										HostNames:   []string{meta.Name + "-0"},
-										ServiceName: meta.Name,
-										ServicePort: intstr.FromInt(80),
+									Backend: api.HTTPIngressBackend{
+										IngressBackend: api.IngressBackend{
+											HostNames:   []string{meta.Name + "-0"},
+											ServiceName: meta.Name,
+											ServicePort: intstr.FromInt(80),
+										},
 									},
 								},
 							},

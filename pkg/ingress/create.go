@@ -26,11 +26,17 @@ const (
 )
 
 func (c *Controller) Create() error {
-	err := c.generateTemplate()
+	err := c.generateConfig()
 	if err != nil {
+		c.recorder.Eventf(
+			c.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressHAProxyConfigCreateFailed,
+			"Reason: %s",
+			err.Error(),
+		)
 		return errors.FromErr(err).Err()
 	}
-
 	err = c.ensureConfigMap()
 	if err != nil {
 		c.recorder.Eventf(
@@ -64,7 +70,7 @@ func (c *Controller) Create() error {
 		return errors.FromErr(err).Err()
 	}
 
-	if c.Parsed.Stats {
+	if c.Ingress.Stats() {
 		err := c.ensureStatsService()
 		// Error ignored intentionally
 		if err != nil {
@@ -102,7 +108,7 @@ func (c *Controller) ensureConfigMap() error {
 				},
 			},
 			Data: map[string]string{
-				"haproxy.cfg": c.ConfigData,
+				"haproxy.cfg": c.HAProxyConfig,
 			},
 		}
 		_, err = c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Create(cm)
@@ -118,7 +124,7 @@ func (c *Controller) ensureConfigMap() error {
 	}
 
 	cmData := map[string]string{
-		"haproxy.cfg": c.ConfigData,
+		"haproxy.cfg": c.HAProxyConfig,
 	}
 	if !reflect.DeepEqual(cm.Data, cmData) {
 		needsUpdate = true
@@ -332,12 +338,16 @@ func (c *Controller) createHostPortSvc() error {
 	}
 
 	// opening other tcp ports
-	for svcPort, targetPort := range c.Ports {
+	mappings, err := c.Ingress.PortMappings(c.Opt.CloudProvider)
+	if err != nil {
+		return err
+	}
+	for svcPort, target := range mappings {
 		p := apiv1.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
 			Port:       int32(svcPort),
-			TargetPort: intstr.FromInt(targetPort),
+			TargetPort: intstr.FromInt(target.PodPort),
 		}
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
@@ -407,10 +417,7 @@ func (c *Controller) createHostPortSvc() error {
 
 func (c *Controller) createHostPortPods() error {
 	log.Infoln("Creating Daemon type lb for nodeSelector = ", c.Ingress.NodeSelector())
-
-	vs := Volumes(c.SecretNames)
-	vms := VolumeMounts(c.SecretNames)
-	// ignoring errors and trying to create controllers
+	secrets := c.Ingress.Secrets()
 	daemon := &extensions.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.Ingress.OffshootName(),
@@ -456,10 +463,10 @@ func (c *Controller) createHostPortPods() error {
 							},
 							Ports:        []apiv1.ContainerPort{},
 							Resources:    c.Ingress.Spec.Resources,
-							VolumeMounts: vms,
+							VolumeMounts: VolumeMounts(secrets),
 						},
 					},
-					Volumes:     vs,
+					Volumes:     Volumes(secrets),
 					HostNetwork: true,
 				},
 			},
@@ -479,25 +486,21 @@ func (c *Controller) createHostPortPods() error {
 	}
 
 	// adding tcp ports to pod template
-	targetPorts := make(map[int]bool)
-	for _, targetPort := range c.Ports {
-		targetPorts[targetPort] = true
-	}
-	for targetPort := range targetPorts {
+	for _, podPort := range c.Ingress.PodPorts() {
 		p := apiv1.ContainerPort{
-			Name:          "tcp-" + strconv.Itoa(targetPort),
+			Name:          "tcp-" + strconv.Itoa(podPort),
 			Protocol:      "TCP",
-			ContainerPort: int32(targetPort),
-			HostPort:      int32(targetPort),
+			ContainerPort: int32(podPort),
+			HostPort:      int32(podPort),
 		}
 		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, p)
 	}
 
-	if c.Parsed.Stats {
+	if c.Ingress.Stats() {
 		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
 			Name:          api.StatsPortName,
 			Protocol:      "TCP",
-			ContainerPort: int32(c.Parsed.StatsPort),
+			ContainerPort: int32(c.Ingress.StatsPort()),
 		})
 	}
 
@@ -559,12 +562,17 @@ func (c *Controller) createNodePortSvc() error {
 	}
 
 	// opening other tcp ports
-	for svcPort, targetPort := range c.Ports {
+	mappings, err := c.Ingress.PortMappings(c.Opt.CloudProvider)
+	if err != nil {
+		return err
+	}
+	for svcPort, target := range mappings {
 		p := apiv1.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
 			Port:       int32(svcPort),
-			TargetPort: intstr.FromInt(targetPort),
+			TargetPort: intstr.FromInt(target.PodPort),
+			NodePort:   int32(target.NodePort),
 		}
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
@@ -613,6 +621,7 @@ func (c *Controller) createNodePortSvc() error {
 
 func (c *Controller) createNodePortPods() error {
 	log.Infoln("creating NodePort deployment")
+	secrets := c.Ingress.Secrets()
 	deployment := &extensions.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.Ingress.OffshootName(),
@@ -673,10 +682,10 @@ func (c *Controller) createNodePortPods() error {
 							},
 							Ports:        []apiv1.ContainerPort{},
 							Resources:    c.Ingress.Spec.Resources,
-							VolumeMounts: VolumeMounts(c.SecretNames),
+							VolumeMounts: VolumeMounts(secrets),
 						},
 					},
-					Volumes: Volumes(c.SecretNames),
+					Volumes: Volumes(secrets),
 				},
 			},
 		},
@@ -695,24 +704,20 @@ func (c *Controller) createNodePortPods() error {
 	}
 
 	// adding tcp ports to pod template
-	targetPorts := make(map[int]bool)
-	for _, targetPort := range c.Ports {
-		targetPorts[targetPort] = true
-	}
-	for targetPort := range targetPorts {
+	for _, podPort := range c.Ingress.PodPorts() {
 		p := apiv1.ContainerPort{
-			Name:          "tcp-" + strconv.Itoa(targetPort),
+			Name:          "tcp-" + strconv.Itoa(podPort),
 			Protocol:      "TCP",
-			ContainerPort: int32(targetPort),
+			ContainerPort: int32(podPort),
 		}
 		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, p)
 	}
 
-	if c.Parsed.Stats {
+	if c.Ingress.Stats() {
 		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
 			Name:          api.StatsPortName,
 			Protocol:      "TCP",
-			ContainerPort: int32(c.Parsed.StatsPort),
+			ContainerPort: int32(c.Ingress.StatsPort()),
 		})
 	}
 
@@ -772,12 +777,17 @@ func (c *Controller) createLoadBalancerSvc() error {
 	}
 
 	// opening other tcp ports
-	for svcPort, targetPort := range c.Ports {
+	mappings, err := c.Ingress.PortMappings(c.Opt.CloudProvider)
+	if err != nil {
+		return err
+	}
+	for svcPort, target := range mappings {
 		p := apiv1.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
 			Port:       int32(svcPort),
-			TargetPort: intstr.FromInt(targetPort),
+			TargetPort: intstr.FromInt(target.PodPort),
+			NodePort:   int32(target.NodePort),
 		}
 		svc.Spec.Ports = append(svc.Spec.Ports, p)
 	}
@@ -872,7 +882,7 @@ func (c *Controller) ensureStatsService() error {
 				{
 					Name:       api.StatsPortName,
 					Protocol:   "TCP",
-					Port:       int32(c.Parsed.StatsPort),
+					Port:       int32(c.Ingress.StatsPort()),
 					TargetPort: intstr.FromString(api.StatsPortName),
 				},
 			},

@@ -45,7 +45,7 @@ type IngressSpec struct {
 	// rule. At least one of 'backend' or 'rules' must be specified. This field
 	// is optional to allow the loadbalancer controller or defaulting logic to
 	// specify a global default.
-	Backend *IngressBackend `json:"backend,omitempty"`
+	Backend *HTTPIngressBackend `json:"backend,omitempty"`
 
 	// TLS is the TLS configuration. Currently the Ingress only supports a single TLS
 	// port, 443, and assumes TLS termination. If multiple members of this
@@ -126,7 +126,7 @@ type IngressRuleValue struct {
 
 	HTTP *HTTPIngressRuleValue `json:"http,omitempty"`
 
-	TCP []TCPIngressRuleValue `json:"tcp,omitempty"`
+	TCP *TCPIngressRuleValue `json:"tcp,omitempty"`
 }
 
 // HTTPIngressRuleValue is a list of http selectors pointing to backends.
@@ -135,6 +135,15 @@ type IngressRuleValue struct {
 // to match against everything after the last '/' and before the first '?'
 // or '#'.
 type HTTPIngressRuleValue struct {
+	// port to listen http(s) connections.
+	Port intstr.IntOrString `json:"port,omitempty"`
+
+	// Set noSSL = true to force plain text. Else, auto detect like present
+	NoSSL bool `json:"noSSL,omitempty"`
+
+	// Specifies the node port of the referenced service.
+	NodePort intstr.IntOrString `json:"nodePort,omitempty"`
+
 	// A collection of paths that map requests to backends.
 	Paths []HTTPIngressPath `json:"paths"`
 	// TODO: Consider adding fields for Ingress-type specific global
@@ -145,8 +154,11 @@ type TCPIngressRuleValue struct {
 	// port to listen tcp connections.
 	Port intstr.IntOrString `json:"port,omitempty"`
 
-	// SSl cert used to terminate ssl in this port
-	SecretName string `json:"secretName,omitempty"`
+	// Set noSSL = true to force plain text. Else, auto detect like present
+	NoSSL bool `json:"noSSL,omitempty"`
+
+	// Specifies the node port of the referenced service.
+	NodePort intstr.IntOrString `json:"nodePort,omitempty"`
 
 	// Backend to forward the requests.
 	Backend IngressBackend `json:"backend,omitempty"`
@@ -176,13 +188,11 @@ type HTTPIngressPath struct {
 
 	// Backend defines the referenced service endpoint to which the traffic
 	// will be forwarded to.
-	Backend IngressBackend `json:"backend,omitempty"`
+	Backend HTTPIngressBackend `json:"backend,omitempty"`
 }
 
 // IngressBackend describes all endpoints for a given service and port.
 type IngressBackend struct {
-	// TODO (@sadlil) Consider Embedding IngressBackend.
-
 	// Host names to forward traffic to. If empty traffic will be
 	// forwarded to all subsets instance.
 	// If set only matched hosts will get the traffic.
@@ -202,6 +212,10 @@ type IngressBackend struct {
 	// request, response or header rewrite. acls also can be used.
 	// https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#1
 	BackendRule []string `json:"backendRule,omitempty"`
+}
+
+type HTTPIngressBackend struct {
+	IngressBackend `json:",inline,omitempty"`
 
 	// Path rewrite rules with haproxy formatted regex.
 	//

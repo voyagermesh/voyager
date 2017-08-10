@@ -51,9 +51,11 @@ func (i *ingressInvocation) SetSkeletonRule(ing *api.Ingress) {
 					Paths: []api.HTTPIngressPath{
 						{
 							Path: "/testpath",
-							Backend: api.IngressBackend{
-								ServiceName: i.TestServerName(),
-								ServicePort: intstr.FromInt(80),
+							Backend: api.HTTPIngressBackend{
+								IngressBackend: api.IngressBackend{
+									ServiceName: i.TestServerName(),
+									ServicePort: intstr.FromInt(80),
+								},
 							},
 						},
 					},
@@ -75,9 +77,11 @@ func (i *ingressInvocation) SetDaemonSkeletonRule(ing *api.Ingress) {
 					Paths: []api.HTTPIngressPath{
 						{
 							Path: "/testpath",
-							Backend: api.IngressBackend{
-								ServiceName: i.TestServerName(),
-								ServicePort: intstr.FromInt(80),
+							Backend: api.HTTPIngressBackend{
+								IngressBackend: api.IngressBackend{
+									ServiceName: i.TestServerName(),
+									ServicePort: intstr.FromInt(80),
+								},
 							},
 						},
 					},
