@@ -54,8 +54,7 @@ If any required timeouts is not provided timeouts will be populated with the fol
 ```
 
 ### Time Format
-Some parameters involve values representing time. These
-values are generally expressed in milliseconds (unless explicitly stated
+These timeout values are generally expressed in milliseconds (unless explicitly stated
 otherwise) but may be expressed in any other unit by suffixing the unit to the
 numeric value. It is important to consider this because it will not be repeated
 for every keyword. Supported units are :
