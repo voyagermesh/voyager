@@ -130,6 +130,7 @@ func (c *Controller) Process() error {
 	c.acmeClientConfig = &ACMEConfig{
 		Provider:      c.tpr.Spec.Provider,
 		ACMEServerUrl: c.tpr.Spec.ACMEServerURL,
+		ProviderCredentials: make(map[string][]byte),
 	}
 
 	c.acmeCert.Domains = NewDomainCollection(c.tpr.Spec.Domains...)
@@ -382,11 +383,13 @@ func (c *Controller) registerACMEUser(acmeClient *ACMEClient) error {
 }
 
 func (c *Controller) loadProviderCredential() error {
-	cred, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(c.tpr.Spec.ProviderCredentialSecretName, metav1.GetOptions{})
-	if err != nil {
-		return errors.FromErr(err).Err()
+	if len(c.tpr.Spec.ProviderCredentialSecretName) > 0 {
+		cred, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(c.tpr.Spec.ProviderCredentialSecretName, metav1.GetOptions{})
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
+		c.acmeClientConfig.ProviderCredentials = cred.Data
 	}
-	c.acmeClientConfig.ProviderCredentials = cred.Data
 	return nil
 }
 
