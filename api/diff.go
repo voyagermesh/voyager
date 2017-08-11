@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net"
 	"reflect"
-	"sort"
 	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -53,24 +52,27 @@ func (r Ingress) HasChanged(o Ingress) (bool, error) {
 	return !reflect.DeepEqual(ra, oa), nil
 }
 
-func (r Ingress) Ports() []int {
-	usesTLS := func(h string) bool {
-		for _, tls := range r.Spec.TLS {
-			for _, host := range tls.Hosts {
-				if host == h {
-					return true
-				}
+func (r Ingress) FindTLSSecret(h string) (string, bool) {
+	if h == "" {
+		return "", false
+	}
+	for _, tls := range r.Spec.TLS {
+		for _, host := range tls.Hosts {
+			if host == h {
+				return tls.SecretName, true
 			}
 		}
-		return false
 	}
+	return "", false
+}
 
+func (r Ingress) Ports() []int {
 	usesHTTPRule := false
 	ports := map[int]string{}
 	for _, rule := range r.Spec.Rules {
 		if rule.HTTP != nil {
 			usesHTTPRule = true
-			if usesTLS(rule.Host) {
+			if _, found := r.FindTLSSecret(rule.Host); found {
 				ports[443] = "https"
 			} else {
 				ports[80] = "http"
@@ -96,22 +98,16 @@ func (r Ingress) Ports() []int {
 	return result
 }
 
-func (r Ingress) IsPortChanged(o Ingress) bool {
-	rPorts := r.Ports()
-	oPorts := o.Ports()
-
-	if len(rPorts) != len(oPorts) {
-		return true
+func (r Ingress) IsPortChanged(o Ingress, cloudProvider string) bool {
+	rpm, err := r.PortMappings(cloudProvider)
+	if err != nil {
+		return false
 	}
-
-	sort.Ints(rPorts)
-	sort.Ints(oPorts)
-	for i := range rPorts {
-		if rPorts[i] != oPorts[i] {
-			return true
-		}
+	opm, err := o.PortMappings(cloudProvider)
+	if err != nil {
+		return false
 	}
-	return false
+	return !reflect.DeepEqual(rpm, opm)
 }
 
 func (r Ingress) IsSecretChanged(o Ingress) bool {
