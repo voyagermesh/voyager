@@ -17,7 +17,6 @@ imports:
 - name: github.com/appscode/go
   version: 45732d59b2277b9c7ffdc41d2d5c07a899a20a70
   subpackages:
-  - arrays
   - crypto/rand
   - flags
   - runtime
@@ -113,8 +112,6 @@ imports:
   - swagger
 - name: github.com/facebookgo/stack
   version: 751773369052141c013c6e827a71e8f35c07879c
-- name: github.com/flosch/pongo2
-  version: 58f1f3387f7c57843ff829d92a759d08abe5a63f
 - name: github.com/ghodss/yaml
   version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/go-ini/ini
@@ -162,8 +159,6 @@ imports:
   version: 3433f3ea46d9f8019119e7dd41274e112a2359a9
 - name: github.com/jpillora/go-ogle-analytics
   version: 14b04e0594ef6a9fd943363b135656f0ec8c9d0e
-- name: github.com/juju/errors
-  version: c7d06af17c68cd34c835053720b21f6549d9b0ee
 - name: github.com/juju/ratelimit
   version: 77ed1c8a01217656d2080ad51981f6e99adaa177
 - name: github.com/lib/pq
@@ -458,6 +453,7 @@ imports:
   - kubernetes/typed/storage/v1/fake
   - kubernetes/typed/storage/v1beta1
   - kubernetes/typed/storage/v1beta1/fake
+  - listers/core/v1
   - pkg/api
   - pkg/api/install
   - pkg/api/v1

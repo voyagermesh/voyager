@@ -26,8 +26,15 @@ const (
 )
 
 func (c *Controller) Update(mode UpdateMode) error {
-	err := c.generateTemplate()
+	err := c.generateConfig()
 	if err != nil {
+		c.recorder.Eventf(
+			c.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressHAProxyConfigCreateFailed,
+			"Reason: %s",
+			err.Error(),
+		)
 		return errors.FromErr(err).Err()
 	}
 	// Update HAProxy config
@@ -87,7 +94,7 @@ func (c *Controller) Update(mode UpdateMode) error {
 					c.Ingress,
 					apiv1.EventTypeWarning,
 					eventer.EventReasonIngressStatsServiceCreateFailed,
-					"Failed to create Stats Service. Reason: %s",
+					"Failed to create HAProxy stats Service. Reason: %s",
 					err.Error(),
 				)
 			} else {
@@ -95,7 +102,7 @@ func (c *Controller) Update(mode UpdateMode) error {
 					c.Ingress,
 					apiv1.EventTypeNormal,
 					eventer.EventReasonIngressStatsServiceCreateSuccessful,
-					"Successfully created Stats Service %s",
+					"Successfully created HAProxy stats Service %s",
 					c.Ingress.StatsServiceName(),
 				)
 			}
@@ -106,7 +113,7 @@ func (c *Controller) Update(mode UpdateMode) error {
 					c.Ingress,
 					apiv1.EventTypeWarning,
 					eventer.EventReasonIngressStatsServiceDeleteFailed,
-					"Failed to delete Stats Service. Reason: %s",
+					"Failed to delete HAProxy stats Service. Reason: %s",
 					err.Error(),
 				)
 			} else {
@@ -114,7 +121,7 @@ func (c *Controller) Update(mode UpdateMode) error {
 					c.Ingress,
 					apiv1.EventTypeNormal,
 					eventer.EventReasonIngressStatsServiceDeleteSuccessful,
-					"Successfully deleted Stats Service %s",
+					"Successfully deleted HAProxy stats Service %s",
 					c.Ingress.StatsServiceName(),
 				)
 			}
@@ -146,9 +153,9 @@ func (c *Controller) updateConfigMap() error {
 		cMap.Annotations[api.OriginName] = c.Ingress.GetName()
 	}
 
-	if cMap.Data["haproxy.cfg"] != c.ConfigData {
+	if cMap.Data["haproxy.cfg"] != c.HAProxyConfig {
 		log.Infoln("Specs have been changed updating config map data for HAProxy templates")
-		cMap.Data["haproxy.cfg"] = c.ConfigData
+		cMap.Data["haproxy.cfg"] = c.HAProxyConfig
 
 		_, err := c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Update(cMap)
 		if err != nil {
@@ -213,15 +220,24 @@ func (c *Controller) updateLBSvc() error {
 		curPorts[p.Port] = p
 	}
 	svc.Spec.Ports = make([]apiv1.ServicePort, 0)
-	for svcPort, targetPort := range c.Ports {
-		if sp, found := curPorts[int32(svcPort)]; found && sp.TargetPort.IntValue() == targetPort {
+
+	mappings, err := c.Ingress.PortMappings(c.Opt.CloudProvider)
+	if err != nil {
+		return err
+	}
+	for svcPort, target := range mappings {
+		if sp, found := curPorts[int32(svcPort)]; found && sp.TargetPort.IntValue() == target.PodPort {
+			if target.NodePort > 0 {
+				sp.NodePort = int32(target.NodePort) // ensure preferred NodePort is used.
+			}
 			svc.Spec.Ports = append(svc.Spec.Ports, sp)
 		} else {
 			svc.Spec.Ports = append(svc.Spec.Ports, apiv1.ServicePort{
 				Name:       "tcp-" + strconv.Itoa(svcPort),
 				Protocol:   "TCP",
 				Port:       int32(svcPort),
-				TargetPort: intstr.FromInt(targetPort),
+				TargetPort: intstr.FromInt(target.PodPort),
+				NodePort:   int32(target.NodePort),
 			})
 		}
 	}

@@ -4,25 +4,22 @@ import (
 	"reflect"
 
 	"github.com/appscode/errors"
-	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
 	tapi "github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/analytics"
 	"github.com/appscode/voyager/pkg/certificate"
+	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/ingress"
 	"github.com/appscode/voyager/pkg/monitor"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
 )
 
 // Blocks caller. Intended to be called as a Go routine.
-func (op *Operator) WatchIngressTPRs() {
-	defer acrt.HandleCrash()
-
+func (op *Operator) initIngressTPRWatcher() cache.Controller {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
 			return op.ExtClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
@@ -31,15 +28,25 @@ func (op *Operator) WatchIngressTPRs() {
 			return op.ExtClient.Ingresses(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
-	_, ctrl := cache.NewInformer(lw,
+	_, informer := cache.NewInformer(lw,
 		&tapi.Ingress{},
-		op.SyncPeriod,
+		op.Opt.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				if engress, ok := obj.(*tapi.Ingress); ok {
 					log.Infof("%s %s@%s added", engress.GroupVersionKind(), engress.Name, engress.Namespace)
 					if !engress.ShouldHandleIngress(op.Opt.IngressClass) {
 						log.Infof("%s %s@%s does not match ingress class", engress.GroupVersionKind(), engress.Name, engress.Namespace)
+						return
+					}
+					if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
+						op.recorder.Eventf(
+							engress,
+							apiv1.EventTypeWarning,
+							eventer.EventReasonIngressInvalid,
+							"Reason: %s",
+							err.Error(),
+						)
 						return
 					}
 					go analytics.Send(engress.GroupVersionKind().String(), "ADD", "success")
@@ -58,9 +65,18 @@ func (op *Operator) WatchIngressTPRs() {
 					log.Errorln(errors.New("Invalid Ingress object").Err())
 					return
 				}
-
 				if changed, _ := oldEngress.HasChanged(*newEngress); !changed {
 					log.Infof("%s %s@%s has unchanged spec and annotations", newEngress.GroupVersionKind(), newEngress.Name, newEngress.Namespace)
+					return
+				}
+				if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
+					op.recorder.Eventf(
+						newEngress,
+						apiv1.EventTypeWarning,
+						eventer.EventReasonIngressInvalid,
+						"Reason: %s",
+						err.Error(),
+					)
 					return
 				}
 				op.UpdateEngress(oldEngress, newEngress)
@@ -78,11 +94,11 @@ func (op *Operator) WatchIngressTPRs() {
 			},
 		},
 	)
-	ctrl.Run(wait.NeverStop)
+	return informer
 }
 
 func (op *Operator) AddEngress(engress *tapi.Ingress) {
-	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.Opt, engress)
+	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 	if ctrl.IsExists() {
 		// Loadbalancer resource for this ingress is found in its place,
 		// so no need to create the resources. First trying to update
@@ -92,16 +108,19 @@ func (op *Operator) AddEngress(engress *tapi.Ingress) {
 		// recreate the resource from scratch.
 		log.Infoln("Loadbalancer is exists, trying to update")
 
-		if svc, err := op.KubeClient.CoreV1().Services(engress.Namespace).Get(engress.OffshootName(), metav1.GetOptions{}); err == nil {
+		if svc, err := op.ServiceLister.Services(engress.Namespace).Get(engress.OffshootName()); err == nil {
 			// check port
 			curPorts := make(map[int]apiv1.ServicePort)
 			for _, p := range svc.Spec.Ports {
 				curPorts[int(p.Port)] = p
 			}
+			mappings, _ := engress.PortMappings(op.Opt.CloudProvider) // already validated
 
 			var updateFW bool
-			for svcPort, targetPort := range ctrl.Ports {
-				if sp, ok := curPorts[svcPort]; !ok || sp.TargetPort.IntValue() != targetPort {
+			for svcPort, target := range mappings {
+				if sp, ok := curPorts[svcPort]; !ok || // svc port not found
+					sp.TargetPort.IntValue() != target.PodPort || // pod port mismatch
+					(target.NodePort != 0 && target.NodePort != int(sp.NodePort)) { // node port mismatch
 					updateFW = true // new port has to be opened
 					break
 				} else {
@@ -151,8 +170,7 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 		return
 	}
 
-	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.Opt, newEngress)
-
+	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, newEngress)
 	if oldHandled && !newHandled {
 		ctrl.Delete()
 	} else {
@@ -228,7 +246,7 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 }
 
 func (op *Operator) DeleteEngress(engress *tapi.Ingress) {
-	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.Opt, engress)
+	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 	ctrl.Delete()
 
 	for _, meta := range engress.BackendServices() {

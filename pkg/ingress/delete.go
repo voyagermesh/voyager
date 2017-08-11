@@ -30,7 +30,7 @@ func (c *Controller) Delete() error {
 		}
 	}
 
-	if c.Parsed.Stats {
+	if c.Ingress.Stats() {
 		c.ensureStatsServiceDeleted()
 	}
 

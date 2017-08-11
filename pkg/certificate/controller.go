@@ -467,9 +467,11 @@ func (c *Controller) processHTTPCertificate(revert chan struct{}) error {
 						Paths: []api.HTTPIngressPath{
 							{
 								Path: providers.URLPrefix,
-								Backend: api.IngressBackend{
-									ServiceName: c.Opt.OperatorService + "." + c.Opt.OperatorNamespace,
-									ServicePort: intstr.FromInt(c.Opt.HTTPChallengePort),
+								Backend: api.HTTPIngressBackend{
+									IngressBackend: api.IngressBackend{
+										ServiceName: c.Opt.OperatorService + "." + c.Opt.OperatorNamespace,
+										ServicePort: intstr.FromInt(c.Opt.HTTPChallengePort),
+									},
 								},
 							},
 						},

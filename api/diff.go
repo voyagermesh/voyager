@@ -4,9 +4,11 @@ import (
 	"errors"
 	"net"
 	"reflect"
+	"sort"
 	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 const (
@@ -66,38 +68,6 @@ func (r Ingress) FindTLSSecret(h string) (string, bool) {
 	return "", false
 }
 
-func (r Ingress) Ports() []int {
-	usesHTTPRule := false
-	ports := map[int]string{}
-	for _, rule := range r.Spec.Rules {
-		if rule.HTTP != nil {
-			usesHTTPRule = true
-			if _, found := r.FindTLSSecret(rule.Host); found {
-				ports[443] = "https"
-			} else {
-				ports[80] = "http"
-			}
-		}
-		for _, port := range rule.TCP {
-			p := port.Port.IntValue()
-			if p > 0 {
-				ports[p] = "tcp"
-			}
-		}
-	}
-	if !usesHTTPRule && r.Spec.Backend != nil {
-		ports[80] = "http"
-	}
-
-	result := make([]int, len(ports))
-	i := 0
-	for k := range ports {
-		result[i] = k
-		i++
-	}
-	return result
-}
-
 func (r Ingress) IsPortChanged(o Ingress, cloudProvider string) bool {
 	rpm, err := r.PortMappings(cloudProvider)
 	if err != nil {
@@ -110,26 +80,34 @@ func (r Ingress) IsPortChanged(o Ingress, cloudProvider string) bool {
 	return !reflect.DeepEqual(rpm, opm)
 }
 
-func (r Ingress) IsSecretChanged(o Ingress) bool {
-	oldSecretLists := map[string]bool{}
-	for _, rs := range r.Spec.TLS {
-		oldSecretLists[rs.SecretName] = true
-	}
-	for _, rs := range r.Spec.Rules {
-		for _, tcp := range rs.TCP {
-			oldSecretLists[tcp.SecretName] = true
-		}
-	}
-
-	for _, rs := range o.Spec.Rules {
-		for _, port := range rs.TCP {
-			if _, ok := oldSecretLists[port.SecretName]; !ok {
-				return true
+func (r Ingress) Secrets() []string {
+	secrets := sets.NewString()
+	for _, rule := range r.Spec.Rules {
+		if rule.HTTP != nil {
+			if secretName, ok := r.FindTLSSecret(rule.Host); ok && !rule.HTTP.NoSSL {
+				secrets.Insert(secretName)
+			}
+		} else if rule.TCP != nil {
+			if secretName, ok := r.FindTLSSecret(rule.Host); ok {
+				secrets.Insert(secretName)
 			}
 		}
 	}
-	for _, rs := range o.Spec.TLS {
-		if _, ok := oldSecretLists[rs.SecretName]; !ok {
+	return secrets.List()
+}
+
+func (r Ingress) IsSecretChanged(o Ingress) bool {
+	rSecrets := r.Secrets()
+	oSecrets := o.Secrets()
+
+	if len(rSecrets) != len(oSecrets) {
+		return true
+	}
+
+	sort.Strings(rSecrets)
+	sort.Strings(oSecrets)
+	for i := range rSecrets {
+		if rSecrets[i] != oSecrets[i] {
 			return true
 		}
 	}
@@ -210,14 +188,13 @@ func (r Ingress) BackendServices() map[string]metav1.ObjectMeta {
 	if r.Spec.Backend != nil {
 		record(r.Spec.Backend.ServiceName)
 	}
-	for _, rules := range r.Spec.Rules {
-		if rules.HTTP != nil {
-			for _, svc := range rules.HTTP.Paths {
+	for _, rule := range r.Spec.Rules {
+		if rule.HTTP != nil {
+			for _, svc := range rule.HTTP.Paths {
 				record(svc.Backend.ServiceName)
 			}
-		}
-		for _, svc := range rules.TCP {
-			record(svc.Backend.ServiceName)
+		} else if rule.TCP != nil {
+			record(rule.TCP.Backend.ServiceName)
 		}
 	}
 
@@ -239,16 +216,15 @@ func (r Ingress) HasBackendService(name, namespace string) bool {
 			return true
 		}
 	}
-	for _, rules := range r.Spec.Rules {
-		if rules.HTTP != nil {
-			for _, svc := range rules.HTTP.Paths {
+	for _, rule := range r.Spec.Rules {
+		if rule.HTTP != nil {
+			for _, svc := range rule.HTTP.Paths {
 				if fqn(svc.Backend.ServiceName) == svcFQN {
 					return true
 				}
 			}
-		}
-		for _, svc := range rules.TCP {
-			if fqn(svc.Backend.ServiceName) == svcFQN {
+		} else if rule.TCP != nil {
+			if fqn(rule.TCP.Backend.ServiceName) == svcFQN {
 				return true
 			}
 		}

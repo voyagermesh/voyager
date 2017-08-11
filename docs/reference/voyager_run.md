@@ -28,6 +28,7 @@ voyager run [flags]
       --master string                         The address of the Kubernetes API server (overrides any value in kubeconfig)
       --operator-service string               Name of service used to expose voyager operator (default "voyager-operator")
       --rbac                                  Enable RBAC for operator & offshoot Kubernetes objects
+      --resync-period duration                If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out. (default 2m0s)
 ```
 
 ### Options inherited from parent commands

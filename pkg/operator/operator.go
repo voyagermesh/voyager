@@ -2,7 +2,6 @@ package operator
 
 import (
 	"sync"
-	"time"
 
 	"github.com/appscode/log"
 	tapi "github.com/appscode/voyager/api"
@@ -13,19 +12,24 @@ import (
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
+	core "k8s.io/client-go/listers/core/v1"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 )
 
 type Operator struct {
-	KubeClient clientset.Interface
-	ExtClient  tcs.ExtensionInterface
-	PromClient pcm.MonitoringV1alpha1Interface
-	Opt        config.Options
+	KubeClient      clientset.Interface
+	ExtClient       tcs.ExtensionInterface
+	PromClient      pcm.MonitoringV1alpha1Interface
+	ServiceLister   core.ServiceLister
+	EndpointsLister core.EndpointsLister
+	Opt             config.Options
 
-	recorder   record.EventRecorder
-	SyncPeriod time.Duration
+	recorder record.EventRecorder
 	sync.Mutex
 }
 
@@ -41,7 +45,6 @@ func New(
 		PromClient: promClient,
 		Opt:        opt,
 		recorder:   eventer.NewEventRecorder(kubeClient, "voyager operator"),
-		SyncPeriod: 2 * time.Minute,
 	}
 }
 
@@ -87,16 +90,24 @@ func (op *Operator) ensureThirdPartyResource(resourceName string) error {
 }
 
 func (op *Operator) Run() {
-	go op.WatchNamespaces()
-	go op.WatchConfigMaps()
-	go op.WatchServiceMonitors()
-	go op.WatchDaemonSets()
-	go op.WatchDeployments()
-	go op.WatchServices()
-	go op.WatchEndpoints()
+	defer runtime.HandleCrash()
 
-	go op.WatchIngresses()
-	go op.WatchIngressTPRs()
-	go op.WatchCertificateTPRs()
+	informers := []cache.Controller{
+		op.initNamespaceWatcher(),
+		op.initConfigMapWatcher(),
+		op.initDaemonSetWatcher(),
+		op.initDeploymentWatcher(),
+		op.initServiceWatcher(),
+		op.initEndpointWatcher(),
+		op.initIngresseWatcher(),
+		op.initIngressTPRWatcher(),
+		op.initCertificateTPRWatcher(),
+	}
+	if informer := op.initServiceMonitorWatcher(); informer != nil {
+		informers = append(informers, informer)
+	}
+	for i := range informers {
+		go informers[i].Run(wait.NeverStop)
+	}
 	go certificate.CheckCertificates(op.KubeClient, op.ExtClient, op.Opt)
 }

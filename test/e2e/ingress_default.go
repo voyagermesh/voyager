@@ -66,7 +66,7 @@ var _ = Describe("IngressCoreOperations", func() {
 		f.Ingress.EventuallyStarted(ing).Should(BeTrue())
 
 		By("Checking generated resource")
-		Expect(f.Ingress.IsTargetCreated(ing)).Should(BeTrue())
+		Expect(f.Ingress.IsExists(ing)).Should(BeTrue())
 	})
 
 	AfterEach(func() {
@@ -97,7 +97,9 @@ var _ = Describe("IngressCoreOperations", func() {
 			err := f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Delete(ext.Name, &metav1.DeleteOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(f.Ingress.Controller(ing).IsExists, "5m", "10s").Should(BeFalse())
+			Eventually(func() bool {
+				return f.Ingress.IsExists(ing)
+			}, "5m", "10s").Should(BeFalse())
 		})
 	})
 

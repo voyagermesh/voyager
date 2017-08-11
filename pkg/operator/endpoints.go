@@ -4,20 +4,17 @@ import (
 	"errors"
 	"reflect"
 
-	acrt "github.com/appscode/go/runtime"
 	"github.com/appscode/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
+	core_listers "k8s.io/client-go/listers/core/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
 )
 
 // Blocks caller. Intended to be called as a Go routine.
-func (op *Operator) WatchEndpoints() {
-	defer acrt.HandleCrash()
-
+func (op *Operator) initEndpointWatcher() cache.Controller {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
 			return op.KubeClient.CoreV1().Endpoints(apiv1.NamespaceAll).List(metav1.ListOptions{})
@@ -26,9 +23,9 @@ func (op *Operator) WatchEndpoints() {
 			return op.KubeClient.CoreV1().Endpoints(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
-	_, ctrl := cache.NewInformer(lw,
+	indexer, informer := cache.NewIndexerInformer(lw,
 		&apiv1.Endpoints{},
-		op.SyncPeriod,
+		op.Opt.SyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			UpdateFunc: func(old, new interface{}) {
 				oldEndpoints, ok := old.(*apiv1.Endpoints)
@@ -48,14 +45,16 @@ func (op *Operator) WatchEndpoints() {
 
 				// Checking if this endpoint have a service or not. If
 				// this do not have a Service we do not want to update our ingress
-				svc, err := op.KubeClient.CoreV1().Services(newEndpoints.Namespace).Get(newEndpoints.Name, metav1.GetOptions{})
+				svc, err := op.ServiceLister.Services(newEndpoints.Namespace).Get(newEndpoints.Name)
 				if err != nil {
 					log.Warningf("Skipping Endpoints %s@%s, as it has no matching service", newEndpoints.Name, newEndpoints.Namespace)
 					return
 				}
-				op.updateHAProxyConfig(svc)
+				err = op.updateHAProxyConfig(svc)
 			},
 		},
+		cache.Indexers{},
 	)
-	ctrl.Run(wait.NeverStop)
+	op.EndpointsLister = core_listers.NewEndpointsLister(indexer)
+	return informer
 }

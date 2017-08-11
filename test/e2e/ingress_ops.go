@@ -36,7 +36,7 @@ var _ = Describe("IngressOperations", func() {
 		f.Ingress.EventuallyStarted(ing).Should(BeTrue())
 
 		By("Checking generated resource")
-		Expect(f.Ingress.IsTargetCreated(ing)).Should(BeTrue())
+		Expect(f.Ingress.IsExists(ing)).Should(BeTrue())
 	})
 
 	AfterEach(func() {
@@ -65,7 +65,9 @@ var _ = Describe("IngressOperations", func() {
 			err := f.Ingress.Delete(ing)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(f.Ingress.Controller(ing).IsExists, "5m", "10s").Should(BeFalse())
+			Eventually(func() bool {
+				return f.Ingress.IsExists(ing)
+			}, "5m", "10s").Should(BeFalse())
 		}
 	)
 
@@ -287,9 +289,11 @@ var _ = Describe("IngressOperations", func() {
 							HTTP: &api.HTTPIngressRuleValue{
 								Paths: []api.HTTPIngressPath{
 									{
-										Backend: api.IngressBackend{
-											ServiceName: f.Ingress.TestServerName(),
-											ServicePort: intstr.FromInt(80),
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: f.Ingress.TestServerName(),
+												ServicePort: intstr.FromInt(80),
+											},
 											HeaderRule: []string{
 												"X-Ingress-Test-Header ingress.appscode.com",
 											},
@@ -347,29 +351,33 @@ var _ = Describe("IngressOperations", func() {
 								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/old",
-										Backend: api.IngressBackend{
-											ServiceName: f.Ingress.TestServerName(),
-											ServicePort: intstr.FromInt(80),
-											BackendRule: []string{
-												"acl add_url capture.req.uri -m beg /old/add/now",
-												`http-response set-header X-Added-From-Proxy added-from-proxy if add_url`,
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: f.Ingress.TestServerName(),
+												ServicePort: intstr.FromInt(80),
+												BackendRule: []string{
+													"acl add_url capture.req.uri -m beg /old/add/now",
+													`http-response set-header X-Added-From-Proxy added-from-proxy if add_url`,
 
-												"acl rep_url path_beg /old/replace",
-												`reqrep ^([^\ :]*)\ /(.*)$ \1\ /rewrited/from/proxy/\2 if rep_url`,
+													"acl rep_url path_beg /old/replace",
+													`reqrep ^([^\ :]*)\ /(.*)$ \1\ /rewrited/from/proxy/\2 if rep_url`,
+												},
 											},
 										},
 									},
 									{
 										Path: "/test-second",
-										Backend: api.IngressBackend{
-											ServiceName: f.Ingress.TestServerName(),
-											ServicePort: intstr.FromInt(80),
-											BackendRule: []string{
-												"acl add_url capture.req.uri -m beg /test-second",
-												`http-response set-header X-Added-From-Proxy added-from-proxy if add_url`,
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: f.Ingress.TestServerName(),
+												ServicePort: intstr.FromInt(80),
+												BackendRule: []string{
+													"acl add_url capture.req.uri -m beg /test-second",
+													`http-response set-header X-Added-From-Proxy added-from-proxy if add_url`,
 
-												"acl rep_url path_beg /test-second",
-												`reqrep ^([^\ :]*)\ /(.*)$ \1\ /rewrited/from/proxy/\2 if rep_url`,
+													"acl rep_url path_beg /test-second",
+													`reqrep ^([^\ :]*)\ /(.*)$ \1\ /rewrited/from/proxy/\2 if rep_url`,
+												},
 											},
 											HeaderRule: []string{
 												"X-Ingress-Test-Header ingress.appscode.com",
@@ -460,20 +468,27 @@ var _ = Describe("IngressOperations", func() {
 			uing, err := f.Ingress.Get(ing)
 			Expect(err).NotTo(HaveOccurred())
 
-			uing.Spec.Rules[0].HTTP = nil
-			uing.Spec.Rules[0].TCP = []api.TCPIngressRuleValue{
+			uing.Spec.Rules = []api.IngressRule{
 				{
-					Port: intstr.FromString("4545"),
-					Backend: api.IngressBackend{
-						ServiceName: f.Ingress.TestServerName(),
-						ServicePort: intstr.FromString("4545"),
+					IngressRuleValue: api.IngressRuleValue{
+						TCP: &api.TCPIngressRuleValue{
+							Port: intstr.FromString("4545"),
+							Backend: api.IngressBackend{
+								ServiceName: f.Ingress.TestServerName(),
+								ServicePort: intstr.FromString("4545"),
+							},
+						},
 					},
 				},
 				{
-					Port: intstr.FromString("4949"),
-					Backend: api.IngressBackend{
-						ServiceName: f.Ingress.TestServerName(),
-						ServicePort: intstr.FromString("4545"),
+					IngressRuleValue: api.IngressRuleValue{
+						TCP: &api.TCPIngressRuleValue{
+							Port: intstr.FromString("4949"),
+							Backend: api.IngressBackend{
+								ServiceName: f.Ingress.TestServerName(),
+								ServicePort: intstr.FromString("4545"),
+							},
+						},
 					},
 				},
 			}
