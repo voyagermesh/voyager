@@ -1,17 +1,30 @@
-## voyager
+## voyager check
 
-Voyager by Appscode - Secure Ingress Controller for Kubernetes
+Check Ingress
 
 ### Synopsis
 
 
-Voyager by Appscode - Secure Ingress Controller for Kubernetes
+Check Ingress
+
+```
+voyager check [flags]
+```
 
 ### Options
 
 ```
+  -c, --cloud-provider string   Name of cloud provider
+      --from-file string        YAML formatted file containing ingress
+  -h, --help                    help for check
+      --ingress-class string    Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.
+      --kube-context string     Name of Kubeconfig context
+```
+
+### Options inherited from parent commands
+
+```
       --alsologtostderr                  log to standard error as well as files
-  -h, --help                             help for voyager
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files
@@ -21,8 +34,5 @@ Voyager by Appscode - Secure Ingress Controller for Kubernetes
 ```
 
 ### SEE ALSO
-* [voyager check](voyager_check.md)	 - Check Ingress
-* [voyager export](voyager_export.md)	 - Export Prometheus metrics for HAProxy
-* [voyager run](voyager_run.md)	 - Run operator
-* [voyager version](voyager_version.md)	 - Prints binary version number.
+* [voyager](voyager.md)	 - Voyager by Appscode - Secure Ingress Controller for Kubernetes
 

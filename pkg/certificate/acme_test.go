@@ -32,8 +32,7 @@ func TestACMECertData(t *testing.T) {
 			Name:      defaultCertPrefix + "hello",
 			Namespace: "default",
 			Labels: map[string]string{
-				certificateKey:              "true",
-				certificateKey + "/domains": NewDomainCollection("appscode.com").String(),
+				certificateKey: "true",
 			},
 			Annotations: map[string]string{
 				certificateKey: "true",
@@ -62,8 +61,7 @@ func TestACMECertDataError(t *testing.T) {
 			Name:      defaultCertPrefix + "hello",
 			Namespace: "default",
 			Labels: map[string]string{
-				certificateKey:              "true",
-				certificateKey + "/domains": NewDomainCollection("appscode.com").String(),
+				certificateKey: "true",
 			},
 			Annotations: map[string]string{
 				certificateKey: "true",
@@ -77,8 +75,6 @@ func TestACMECertDataError(t *testing.T) {
 
 	_, err := NewACMECertDataFromSecret(certificateSecret, &api.Certificate{})
 	assert.NotNil(t, err)
-	assert.Equal(t, "INTERNAL:Could not find key tls.crt in secret "+defaultCertPrefix+"hello", err.Error())
-
 }
 
 func TestClient(t *testing.T) {

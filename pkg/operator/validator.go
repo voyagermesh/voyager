@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/eventer"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,8 +23,10 @@ func (op *Operator) ValidateIngress() error {
 			return err
 		}
 		if !engress.ShouldHandleIngress(op.Opt.IngressClass) {
+			log.Warningf("Skipping ingress %s@%s, as it is not handled by Voyager.", ing.Name, ing.Namespace)
 			continue
 		}
+		log.Warningf("Checking ingress %s@%s", ing.Name, ing.Namespace)
 		if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
 			op.recorder.Eventf(
 				engress,
@@ -32,7 +35,7 @@ func (op *Operator) ValidateIngress() error {
 				"Reason: %s",
 				err.Error(),
 			)
-			invalidIngresses = append(invalidIngresses, engress.Namespace+"/"+engress.Name)
+			invalidIngresses = append(invalidIngresses, engress.Name+"@"+engress.Namespace)
 		}
 	}
 
@@ -42,8 +45,10 @@ func (op *Operator) ValidateIngress() error {
 	}
 	for _, ing := range engresses.Items {
 		if !ing.ShouldHandleIngress(op.Opt.IngressClass) {
+			log.Warningf("Skipping ingress %s@%s, as it is not handled by Voyager.", ing.Name, ing.Namespace)
 			continue
 		}
+		log.Warningf("Checking ingress %s@%s", ing.Name, ing.Namespace)
 		if err := ing.IsValid(op.Opt.CloudProvider); err != nil {
 			op.recorder.Eventf(
 				&ing,
@@ -52,7 +57,7 @@ func (op *Operator) ValidateIngress() error {
 				"Reason: %s",
 				err.Error(),
 			)
-			invalidIngresses = append(invalidIngresses, ing.Namespace+"/"+ing.Name)
+			invalidIngresses = append(invalidIngresses, ing.Name+"@"+ing.Namespace)
 		}
 	}
 

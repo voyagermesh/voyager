@@ -20,7 +20,8 @@ func RenderConfig(data TemplateData) (string, error) {
 		log.Error(err)
 		return "", err
 	}
-	return buf.String(), nil
+	config := buf.String()
+	return config, nil
 }
 
 func (td *TemplateData) canonicalize() {

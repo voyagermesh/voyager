@@ -44,7 +44,9 @@ libbuild.BIN_MATRIX = {
         'go_version': True,
         'use_cgo': False,
         'distro': {
-            'alpine': ['amd64']
+            'alpine': ['amd64'],
+            'darwin': ['amd64'],
+            'linux': ['amd64']
         }
     }
 }
@@ -164,7 +166,7 @@ def test(type, *args):
         print '{test unit|minikube|e2e}'
 
 def unit_test():
-    die(call(libbuild.GOC + ' test -v . ./pkg/...'))
+    die(call(libbuild.GOC + ' test -v . ./api/... ./client/... ./pkg/...'))
 
 def e2e_test(args):
     st = ' '.join(args)

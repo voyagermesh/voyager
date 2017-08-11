@@ -8,7 +8,7 @@ import (
 )
 
 type TemplateData struct {
-	SharedInfo
+	*SharedInfo
 	TimeoutDefaults map[string]string
 	Stats           *StatsInfo
 	DNSResolvers    []*api.DNSResolver
@@ -31,7 +31,7 @@ type StatsInfo struct {
 }
 
 type HTTPService struct {
-	SharedInfo
+	*SharedInfo
 
 	FrontendName string
 	Port         int
@@ -57,7 +57,7 @@ func (svc HTTPPath) sortKey() string {
 }
 
 type TCPService struct {
-	SharedInfo
+	*SharedInfo
 
 	FrontendName string
 	Host         string
