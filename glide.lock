@@ -1,5 +1,5 @@
 hash: e185d68d8378c8ee6070a469fe80e0d58b34d55444d08eadca23f9f57550088c
-updated: 2017-08-08T15:44:10.503156226-07:00
+updated: 2017-08-10T18:21:49.091908106-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -167,7 +167,7 @@ imports:
 - name: github.com/juju/ratelimit
   version: 77ed1c8a01217656d2080ad51981f6e99adaa177
 - name: github.com/lib/pq
-  version: dd1fe2071026ce53f36a39112e645b4d4f5793a4
+  version: 69552e54d2a9d4c6a2438926a774930f7bc398ec
 - name: github.com/mailru/easyjson
   version: d5b7844b561a7bc640052f1b935f7b800330d7e0
   subpackages:
@@ -267,7 +267,7 @@ imports:
   subpackages:
   - codec
 - name: github.com/xenolf/lego
-  version: e1e824640f726118b9d74d43b7c50a024e7a26af
+  version: 6c6ca179ee6f8ed6ffb961dbf8c416acf195d98b
   repo: https://github.com/appscode/lego.git
   vcs: git
   subpackages:
