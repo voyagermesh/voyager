@@ -190,7 +190,7 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 				}
 			}
 
-			if oldEngress.IsPortChanged(*newEngress) || oldEngress.IsLoadBalancerSourceRangeChanged(*newEngress) {
+			if oldEngress.IsPortChanged(*newEngress, op.Opt.CloudProvider) || oldEngress.IsLoadBalancerSourceRangeChanged(*newEngress) {
 				updateMode |= ingress.UpdateFirewall
 			} else if oldEngress.IsSecretChanged(*newEngress) {
 				updateMode |= ingress.RestartHAProxy
