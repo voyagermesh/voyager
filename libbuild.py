@@ -39,6 +39,7 @@ def _goenv():
 
 GOENV = _goenv()
 GOPATH = GOENV["GOPATH"]
+GOBIN = GOENV["GOPATH"] + '/bin'
 GOHOSTOS = GOENV["GOHOSTOS"]
 GOHOSTARCH = GOENV["GOHOSTARCH"]
 GOC = 'go'
