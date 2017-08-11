@@ -203,7 +203,7 @@ def test_deploy(provider):
 def default():
     gen()
     fmt()
-    die(call('GO15VENDOREXPERIMENT=1 ' + libbuild.GOC + ' install . ./test/...'))
+    die(call('GOBIN={} {} install . ./test/...'.format(libbuild.GOBIN, libbuild.GOC)))
 
 
 if __name__ == "__main__":
