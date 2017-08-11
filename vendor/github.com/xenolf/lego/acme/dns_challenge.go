@@ -194,7 +194,7 @@ func dnsQuery(fqdn string, rtype uint16, nameservers []string, recursive bool) (
 
 		if err == dns.ErrTruncated {
 			tcp := &dns.Client{Net: "tcp", Timeout: DNSTimeout}
-			// If the TCP request suceeds, the err will reset to nil
+			// If the TCP request succeeds, the err will reset to nil
 			in, _, err = tcp.Exchange(m, ns)
 		}
 
@@ -262,7 +262,11 @@ func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
 		if in.Rcode == dns.RcodeSuccess {
 			for _, ans := range in.Answer {
 				if soa, ok := ans.(*dns.SOA); ok {
-					if zone, err := publicsuffix.EffectiveTLDPlusOne(UnFqdn(fqdn)); err == nil {
+					if strings.HasSuffix(fqdn, soa.Hdr.Name) {
+						zone := soa.Hdr.Name
+						fqdnToZone[fqdn] = zone
+						return zone, nil
+					} else if zone, err := publicsuffix.EffectiveTLDPlusOne(UnFqdn(fqdn)); err == nil {
 						zone = ToFqdn(zone)
 						fqdnToZone[fqdn] = zone
 						return zone, nil

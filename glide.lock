@@ -1,5 +1,5 @@
 hash: 4603d45081832651b419c72d01373806592fe66c295a144567aab3fdcbedcda8
-updated: 2017-07-20T16:25:58.916752131-07:00
+updated: 2017-08-10T22:42:09.524815799-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -228,7 +228,7 @@ imports:
   subpackages:
   - codec
 - name: github.com/xenolf/lego
-  version: e1e824640f726118b9d74d43b7c50a024e7a26af
+  version: 8f574e6ca289b530cd3f266f4aa73c9a1161c48a
   repo: https://github.com/appscode/lego.git
   vcs: git
   subpackages:
@@ -326,7 +326,7 @@ imports:
   - cipher
   - json
 - name: gopkg.in/yaml.v2
-  version: 3b4ad1db5b2a649883ff3782f5f9f6fb52be71af
+  version: 25c4ec802a7d637f88d584ab26798e94ad14c13b
 - name: k8s.io/apimachinery
   version: 75b8dd260ef0469d96d578705a87cffd0e09dab8
   subpackages:
