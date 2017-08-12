@@ -69,7 +69,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 			} else {
 				if a.NodePort > 0 {
 					if ei, found := nodePorts[a.NodePort]; found {
-						return fmt.Errorf("spec.rule[%d].http is reusing nodePort %s for addr %s, also used in spec.rule[%d]", ri, a.NodePort, a, ei)
+						return fmt.Errorf("spec.rule[%d].http is reusing nodePort %d for addr %s, also used in spec.rule[%d]", ri, a.NodePort, a, ei)
 					} else {
 						nodePorts[a.NodePort] = ri
 					}
@@ -106,7 +106,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 				return fmt.Errorf("spec.rule[%d].tcp.port %s is invalid. Reason: %s", ri, rule.TCP.Port, err)
 			} else {
 				if ea, found := addrs[a.PodPort]; found {
-					return fmt.Errorf("spec.rule[%d].tcp is reusing addr %s, also used in spec.rule[%d]", ri, a, ea)
+					return fmt.Errorf("spec.rule[%d].tcp is reusing addr %s, also used in spec.rule[%d]", ri, a, ea.RuleIndex)
 				}
 				addrs[a.PodPort] = a
 			}
@@ -117,7 +117,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 					return fmt.Errorf("spec.rule[%d].tcp.nodePort %s may not be specified when `LBType` is `HostPort`", ri, rule.TCP.NodePort)
 				}
 				if ei, found := nodePorts[np]; found {
-					return fmt.Errorf("spec.rule[%d].tcp is reusing nodePort %s for addr %s, also used in spec.rule[%d]", ri, np, a, ei)
+					return fmt.Errorf("spec.rule[%d].tcp is reusing nodePort %d for addr %s, also used in spec.rule[%d]", ri, np, a, ei)
 				} else {
 					a.NodePort = np
 					nodePorts[np] = ri
