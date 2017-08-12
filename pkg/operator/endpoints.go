@@ -51,6 +51,9 @@ func (op *Operator) initEndpointWatcher() cache.Controller {
 					return
 				}
 				err = op.updateHAProxyConfig(svc)
+				if err != nil {
+					log.Errorln(err)
+				}
 			},
 		},
 		cache.Indexers{},
