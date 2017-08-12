@@ -128,8 +128,8 @@ func (c *Controller) HandleIngress(ingress *api.Ingress) error {
 
 func (c *Controller) Process() error {
 	c.acmeClientConfig = &ACMEConfig{
-		Provider:      c.tpr.Spec.Provider,
-		ACMEServerUrl: c.tpr.Spec.ACMEServerURL,
+		Provider:            c.tpr.Spec.Provider,
+		ACMEServerUrl:       c.tpr.Spec.ACMEServerURL,
 		ProviderCredentials: make(map[string][]byte),
 	}
 

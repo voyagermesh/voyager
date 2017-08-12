@@ -12,7 +12,7 @@ import (
 	rbac "k8s.io/client-go/pkg/apis/rbac/v1beta1"
 )
 
-func (c *Controller) ensureServiceAccount() error {
+func (c *controller) ensureServiceAccount() error {
 	sa, err := c.KubeClient.CoreV1().ServiceAccounts(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		sa = &apiv1.ServiceAccount{
@@ -44,7 +44,7 @@ func (c *Controller) ensureServiceAccount() error {
 	return nil
 }
 
-func (c *Controller) ensureRoles() error {
+func (c *controller) ensureRoles() error {
 	defaultRole := &rbac.Role{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.Ingress.OffshootName(),
@@ -115,7 +115,7 @@ func (c *Controller) ensureRoles() error {
 	return nil
 }
 
-func (c *Controller) ensureRoleBinding() error {
+func (c *controller) ensureRoleBinding() error {
 	defaultRoleBinding := &rbac.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.Ingress.OffshootName(),
@@ -170,19 +170,19 @@ func (c *Controller) ensureRoleBinding() error {
 	return nil
 }
 
-func (c *Controller) ensureRoleBindingDeleted() error {
+func (c *controller) ensureRoleBindingDeleted() error {
 	return c.KubeClient.RbacV1beta1().
 		RoleBindings(c.Ingress.Namespace).
 		Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
 }
 
-func (c *Controller) ensureRolesDeleted() error {
+func (c *controller) ensureRolesDeleted() error {
 	return c.KubeClient.RbacV1beta1().
 		Roles(c.Ingress.Namespace).
 		Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
 }
 
-func (c *Controller) ensureServiceAccountDeleted() error {
+func (c *controller) ensureServiceAccountDeleted() error {
 	return c.KubeClient.CoreV1().
 		ServiceAccounts(c.Ingress.Namespace).
 		Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
