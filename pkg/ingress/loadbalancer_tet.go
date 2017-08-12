@@ -12,7 +12,7 @@ import (
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
-func TestLoadBalancerController_IsExistsIsExists(t *testing.T) {
+func TestLoadBalancerController_IsExists(t *testing.T) {
 	testCases := map[*loadBalancerController]bool{
 		{
 			controller: &controller{

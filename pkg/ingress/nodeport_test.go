@@ -12,7 +12,7 @@ import (
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
-func TestNodePortController_IsExistsIsExists(t *testing.T) {
+func TestNodePortController_IsExists(t *testing.T) {
 	testCases := map[*nodePortController]bool{
 		{
 			controller: &controller{
