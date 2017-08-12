@@ -14,7 +14,7 @@ import:
   vcs: git
   version: master
 - package: github.com/aws/aws-sdk-go
-  version: v1.1.36
+  version: v1.6.10
 - package: github.com/Azure/azure-sdk-for-go
   vcs: git
   version: v7.0.1-beta

@@ -1,5 +1,5 @@
-hash: e185d68d8378c8ee6070a469fe80e0d58b34d55444d08eadca23f9f57550088c
-updated: 2017-08-10T20:24:46.900997483-07:00
+hash: 292342d7cd6d8b98d990a23a0aa3482042ade5d2cb7de6bdd6740baf17421ec0
+updated: 2017-08-11T18:08:44.39767445-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -34,7 +34,7 @@ imports:
 - name: github.com/appscode/pat
   version: 48ff78925b7955367d8a048fc2b5cec8efadf8d3
 - name: github.com/aws/aws-sdk-go
-  version: 8f2725740345a0561fa09669f5f75f905404ef8b
+  version: 63ce630574a5ec05ecd8e8de5cea16332a5a684d
   subpackages:
   - aws
   - aws/awserr
@@ -44,11 +44,14 @@ imports:
   - aws/corehandlers
   - aws/credentials
   - aws/credentials/ec2rolecreds
+  - aws/credentials/endpointcreds
+  - aws/credentials/stscreds
   - aws/defaults
   - aws/ec2metadata
+  - aws/endpoints
   - aws/request
   - aws/session
-  - private/endpoints
+  - aws/signer/v4
   - private/protocol
   - private/protocol/ec2query
   - private/protocol/query
@@ -56,12 +59,12 @@ imports:
   - private/protocol/rest
   - private/protocol/restxml
   - private/protocol/xml/xmlutil
-  - private/signer/v4
   - private/waiter
   - service/autoscaling
   - service/ec2
   - service/elb
   - service/route53
+  - service/sts
 - name: github.com/Azure/azure-sdk-for-go
   version: 0984e0641ae43b89283223034574d6465be93bf4
   vcs: git
