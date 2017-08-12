@@ -18,7 +18,7 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-func (c *Controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, name string, port intstr.IntOrString, hostNames []string) ([]*haproxy.Endpoint, error) {
+func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, name string, port intstr.IntOrString, hostNames []string) ([]*haproxy.Endpoint, error) {
 	log.Infoln("getting endpoints for ", c.Ingress.Namespace, name, "port", port)
 
 	// the following lines giving support to
@@ -66,7 +66,7 @@ func (c *Controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, 
 	return c.getEndpoints(service, p, hostNames)
 }
 
-func (c *Controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (eps []*haproxy.Endpoint, err error) {
+func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (eps []*haproxy.Endpoint, err error) {
 	ep, err := c.EndpointsLister.Endpoints(s.Namespace).Get(s.Name)
 	if err != nil {
 		return nil, err
@@ -172,7 +172,7 @@ func getBackendName(r *api.Ingress, be api.IngressBackend) string {
 	return rand.WithUniqSuffix(seed)
 }
 
-func (c *Controller) generateConfig() error {
+func (c *controller) generateConfig() error {
 	var td haproxy.TemplateData
 
 	si := &haproxy.SharedInfo{}

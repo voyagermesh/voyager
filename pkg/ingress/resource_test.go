@@ -13,7 +13,7 @@ import (
 )
 
 func TestResourceIsExists(t *testing.T) {
-	testCases := map[*Controller]bool{
+	testCases := map[*controller]bool{
 		{
 			Ingress: &api.Ingress{
 				ObjectMeta: metav1.ObjectMeta{

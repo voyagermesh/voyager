@@ -3,14 +3,11 @@ package ingress
 import (
 	"reflect"
 	"strconv"
-	"time"
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
-	"github.com/appscode/voyager/pkg/eventer"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
@@ -25,117 +22,7 @@ const (
 	UpdateRBAC                            // Update RBAC Roles as stats secret name is changes
 )
 
-func (c *Controller) Update(mode UpdateMode) error {
-	err := c.generateConfig()
-	if err != nil {
-		c.recorder.Eventf(
-			c.Ingress,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonIngressHAProxyConfigCreateFailed,
-			"Reason: %s",
-			err.Error(),
-		)
-		return errors.FromErr(err).Err()
-	}
-	// Update HAProxy config
-	err = c.updateConfigMap()
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
-
-	if mode&UpdateFirewall > 0 ||
-		mode&RestartHAProxy > 0 ||
-		mode&UpdateStats > 0 {
-		err := c.recreatePods()
-		if err != nil {
-			c.recorder.Eventf(
-				c.Ingress,
-				apiv1.EventTypeWarning,
-				eventer.EventReasonIngressUpdateFailed,
-				"Failed to update Pods, %s", err.Error(),
-			)
-			return errors.FromErr(err).Err()
-		}
-		c.recorder.Eventf(
-			c.Ingress,
-			apiv1.EventTypeNormal,
-			eventer.EventReasonIngressUpdateSuccessful,
-			"Successfully updated Pods",
-		)
-	}
-
-	if mode&UpdateFirewall > 0 {
-		err := c.updateLBSvc()
-		if err != nil {
-			c.recorder.Eventf(
-				c.Ingress,
-				apiv1.EventTypeWarning,
-				eventer.EventReasonIngressServiceUpdateFailed,
-				"Failed to update LBService, %s",
-				err.Error(),
-			)
-			return errors.FromErr(err).Err()
-		}
-		c.recorder.Eventf(
-			c.Ingress,
-			apiv1.EventTypeNormal,
-			eventer.EventReasonIngressServiceUpdateSuccessful,
-			"Successfully updated LBService",
-		)
-
-		go c.updateStatus()
-	}
-
-	if mode&UpdateStats > 0 {
-		if c.Ingress.Stats() {
-			err := c.ensureStatsService()
-			if err != nil {
-				c.recorder.Eventf(
-					c.Ingress,
-					apiv1.EventTypeWarning,
-					eventer.EventReasonIngressStatsServiceCreateFailed,
-					"Failed to create HAProxy stats Service. Reason: %s",
-					err.Error(),
-				)
-			} else {
-				c.recorder.Eventf(
-					c.Ingress,
-					apiv1.EventTypeNormal,
-					eventer.EventReasonIngressStatsServiceCreateSuccessful,
-					"Successfully created HAProxy stats Service %s",
-					c.Ingress.StatsServiceName(),
-				)
-			}
-		} else {
-			err := c.ensureStatsServiceDeleted()
-			if err != nil {
-				c.recorder.Eventf(
-					c.Ingress,
-					apiv1.EventTypeWarning,
-					eventer.EventReasonIngressStatsServiceDeleteFailed,
-					"Failed to delete HAProxy stats Service. Reason: %s",
-					err.Error(),
-				)
-			} else {
-				c.recorder.Eventf(
-					c.Ingress,
-					apiv1.EventTypeNormal,
-					eventer.EventReasonIngressStatsServiceDeleteSuccessful,
-					"Successfully deleted HAProxy stats Service %s",
-					c.Ingress.StatsServiceName(),
-				)
-			}
-		}
-	}
-
-	if mode&UpdateRBAC > 0 {
-		c.ensureRoles()
-	}
-
-	return nil
-}
-
-func (c *Controller) updateConfigMap() error {
+func (c *controller) updateConfigMap() error {
 	cMap, err := c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -169,51 +56,10 @@ func (c *Controller) updateConfigMap() error {
 	return nil
 }
 
-func (c *Controller) recreatePods() error {
-	if !c.SupportsLBType() {
-		return errors.Newf("LBType %s is unsupported for cloud provider: %s", c.Ingress.LBType(), c.Opt.CloudProvider).Err()
-	}
-
-	if c.Ingress.LBType() == api.LBTypeHostPort {
-		err := c.deleteHostPortPods()
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
-		time.Sleep(time.Second * 5)
-		err = c.createHostPortPods()
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
-	} else if c.Ingress.LBType() == api.LBTypeNodePort {
-		err := c.deleteNodePortPods()
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
-		time.Sleep(time.Second * 5)
-		err = c.createNodePortPods()
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
-	} else {
-		// Ignore Error.
-		c.deleteResidualPods()
-		err := c.deleteNodePortPods()
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
-		time.Sleep(time.Second * 5)
-		err = c.createNodePortPods()
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
-	}
-	return nil
-}
-
-func (c *Controller) updateLBSvc() error {
+func (c *controller) updateLBSvc() (*apiv1.Service, error) {
 	svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
 	if err != nil {
-		return errors.FromErr(err).Err()
+		return nil, errors.FromErr(err).Err()
 	}
 	curPorts := make(map[int32]apiv1.ServicePort)
 	for _, p := range svc.Spec.Ports {
@@ -223,7 +69,7 @@ func (c *Controller) updateLBSvc() error {
 
 	mappings, err := c.Ingress.PortMappings(c.Opt.CloudProvider)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	for svcPort, target := range mappings {
 		if sp, found := curPorts[int32(svcPort)]; found && sp.TargetPort.IntValue() == target.PodPort {
@@ -259,41 +105,10 @@ func (c *Controller) updateLBSvc() error {
 		svc.Annotations[api.OriginName] = c.Ingress.GetName()
 	}
 
-	svc, err = c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Update(svc)
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
-
-	// open up firewall
-	log.Infoln("Loadbalancer CloudManager", c.CloudManager, "serviceType", svc.Spec.Type)
-	if (c.Ingress.LBType() == api.LBTypeHostPort) && c.CloudManager != nil {
-		daemonNodes, err := c.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{
-			LabelSelector: labels.SelectorFromSet(c.Ingress.NodeSelector()).String(),
-		})
-		if err != nil {
-			log.Infoln("node not found with nodeSelector, cause", err)
-			return errors.FromErr(err).Err()
-		}
-		// open up firewall
-		log.Debugln("Checking cloud manager", c.CloudManager)
-		if c.CloudManager != nil {
-			log.Debugln("cloud manager not nil")
-			if fw, ok := c.CloudManager.Firewall(); ok {
-				log.Debugln("firewalls found")
-				for _, node := range daemonNodes.Items {
-					err = fw.EnsureFirewall(svc, node.Name)
-					if err != nil {
-						log.Errorln("Failed to ensure loadbalancer for node", node.Name, "cause", err)
-					}
-				}
-				log.Debugln("getting firewalls for cloud manager failed")
-			}
-		}
-	}
-	return nil
+	return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Update(svc)
 }
 
-func (c *Controller) UpdateTargetAnnotations(old *api.Ingress, new *api.Ingress) error {
+func (c *controller) updateServiceAnnotations(old *api.Ingress, new *api.Ingress) error {
 	// Check for changes in ingress.appscode.com/annotations-service
 	if newSvcAns, newOk := new.ServiceAnnotations(c.Opt.CloudProvider); newOk {
 		if oldSvcAns, oldOk := old.ServiceAnnotations(c.Opt.CloudProvider); oldOk {
@@ -307,47 +122,6 @@ func (c *Controller) UpdateTargetAnnotations(old *api.Ingress, new *api.Ingress)
 				svc, err = c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Update(svc)
 				if err != nil {
 					return errors.FromErr(err).Err()
-				}
-			}
-		}
-	}
-
-	// Check for changes in ingress.appscode.com/annotations-pod
-	if newPodAns, newOk := new.PodsAnnotations(); newOk {
-		if oldPodAns, oldOk := old.PodsAnnotations(); oldOk {
-			if !reflect.DeepEqual(oldPodAns, newPodAns) {
-				if c.Ingress.LBType() == api.LBTypeHostPort {
-					daemonset, err := c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-					if err != nil {
-						return errors.FromErr(err).Err()
-					}
-					daemonset.Spec.Template.Annotations = newPodAns
-					daemonset, err = c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Update(daemonset)
-					if err != nil {
-						return errors.FromErr(err).Err()
-					}
-					if daemonset.Spec.Selector != nil {
-						pods, _ := c.KubeClient.CoreV1().Pods(c.Ingress.Namespace).List(metav1.ListOptions{
-							LabelSelector: labels.SelectorFromSet(daemonset.Spec.Selector.MatchLabels).String(),
-						})
-						for _, pod := range pods.Items {
-							pod.Annotations = mergeAnnotations(pod.Annotations, oldPodAns, newPodAns)
-							_, err := c.KubeClient.CoreV1().Pods(c.Ingress.Namespace).Update(&pod)
-							if err != nil {
-								log.Errorln("Failed to Update Pods", err)
-							}
-						}
-					}
-				} else {
-					dep, err := c.KubeClient.ExtensionsV1beta1().Deployments(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-					if err != nil {
-						return errors.FromErr(err).Err()
-					}
-					dep.Spec.Template.Annotations = mergeAnnotations(dep.Spec.Template.Annotations, oldPodAns, newPodAns)
-					_, err = c.KubeClient.ExtensionsV1beta1().Deployments(c.Ingress.Namespace).Update(dep)
-					if err != nil {
-						return errors.FromErr(err).Err()
-					}
 				}
 			}
 		}

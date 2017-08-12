@@ -162,7 +162,26 @@ func (r Ingress) IsValid(cloudProvider string) error {
 			}
 		}
 	}
+	if !r.SupportsLBType(cloudProvider) {
+		return fmt.Errorf("Ingress %s@%s uses sunsupported LBType %s for cloud provider %s", r.Name, r.Namespace, r.LBType(), cloudProvider)
+	}
 	return nil
+}
+
+func (r Ingress) SupportsLBType(cloudProvider string) bool {
+	switch r.LBType() {
+	case LBTypeLoadBalancer:
+		return cloudProvider == "aws" ||
+			cloudProvider == "gce" ||
+			cloudProvider == "gke" ||
+			cloudProvider == "azure" ||
+			cloudProvider == "acs" ||
+			cloudProvider == "minikube"
+	case LBTypeNodePort, LBTypeHostPort:
+		return cloudProvider != "acs"
+	default:
+		return false
+	}
 }
 
 func checkRequiredPort(port intstr.IntOrString) (int, error) {
