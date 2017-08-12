@@ -131,7 +131,7 @@ func NewACMEClient(config *ACMEConfig) (*ACMEClient, error) {
 		return initDNSProvider(pdns.NewDNSProvider())
 	case "rfc2136":
 		return initDNSProvider(rfc2136.NewDNSProvider())
-	case "route53":
+	case "aws", "route53":
 		return initDNSProvider(route53.NewDNSProvider())
 	case "vultr":
 		return initDNSProvider(vultr.NewDNSProvider())
