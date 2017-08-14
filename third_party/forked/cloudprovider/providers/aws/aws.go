@@ -1157,13 +1157,13 @@ func (c *Cloud) EnsureFirewall(apiService *apiv1.Service, hostnames []string) er
 		return err
 	}
 
-	loadBalancerName := cloudprovider.GetLoadBalancerName(apiService)
+	//loadBalancerName := cloudprovider.GetLoadBalancerName(apiService)
 	serviceName := types.NamespacedName{Namespace: apiService.Namespace, Name: apiService.Name}
 
 	// Create a security group for the load balancer
 	var securityGroupID string
 	{
-		sgName := loadBalancerName
+		sgName := apiService.Name + "@" + apiService.Namespace + "@" + c.getClusterName()
 		sgDescription := fmt.Sprintf("Security group for Voyager HostPort Ingress %v", serviceName)
 		securityGroupID, err = c.ensureSecurityGroup(sgName, sgDescription)
 		if err != nil {
@@ -1292,7 +1292,7 @@ func (c *Cloud) updateInstanceSecurityGroups(loadBalancerSecurityGroupId string,
 
 // EnsureFirewallDeleted implements Firewall.EnsureFirewallDeleted.
 func (c *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
-	loadBalancerName := cloudprovider.GetLoadBalancerName(service)
+	//loadBalancerName := cloudprovider.GetLoadBalancerName(service)
 	// Collect the security groups to delete
 	var securityGroupID string
 
@@ -1301,7 +1301,7 @@ func (c *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 		// Note that this is annoying: the load balancer disappears from the API immediately, but it is still
 		// deleting in the background.  We get a DependencyViolation until the load balancer has deleted itself
 
-		sgName := loadBalancerName
+		sgName := service.Name + "@" + service.Namespace + "@" + c.getClusterName()
 
 		filters := []*ec2.Filter{
 			{
@@ -1335,7 +1335,7 @@ func (c *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 			}
 		}
 		if len(securityGroups) > 1 {
-			return fmt.Errorf("Multiple securitygroup found when EnsureFirewallDeleted for service %v", loadBalancerName)
+			return fmt.Errorf("Multiple securitygroup found when EnsureFirewallDeleted for service %v", sgName)
 		}
 		for _, securityGroup := range securityGroups {
 			securityGroupID = *securityGroup.GroupId
