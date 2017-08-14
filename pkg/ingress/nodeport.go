@@ -521,8 +521,10 @@ func (c *nodePortController) ensurePods(old *api.Ingress) (*extensions.Deploymen
 		delete(oldAnn, k)
 	}
 	for k := range oldAnn {
-		delete(current.Annotations, k)
-		needsUpdate = true
+		if _, ok := current.Annotations[k]; ok {
+			delete(current.Annotations, k)
+			needsUpdate = true
+		}
 	}
 
 	if !reflect.DeepEqual(current.Spec.Selector, desired.Spec.Selector) {

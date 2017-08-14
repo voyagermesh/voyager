@@ -101,8 +101,10 @@ func (c *controller) serviceRequiresUpdate(current, desired *apiv1.Service, old 
 		delete(oldAnn, k)
 	}
 	for k := range oldAnn {
-		delete(current.Annotations, k)
-		needsUpdate = true
+		if _, ok := current.Annotations[k]; ok {
+			delete(current.Annotations, k)
+			needsUpdate = true
+		}
 	}
 
 	// LoadBalancer ranges
