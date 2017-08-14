@@ -146,7 +146,7 @@ func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
 					log.Infoln("Loadbalancer is exists, trying to update")
 					cfgErr := ctrl.Update(0, nil)
 					if cfgErr != nil {
-						log.Warningln("Loadbalancer is exists but Soft Update failed. Retring Hard Update")
+						log.Warningln("Loadbalancer update failed", cfgErr)
 					}
 				} else {
 					// This LB should be there. If it is no there. we should create it
