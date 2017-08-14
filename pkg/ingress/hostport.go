@@ -485,9 +485,10 @@ func (c *hostPortController) newPods() *extensions.DaemonSet {
 			Selector: &metav1.LabelSelector{
 				MatchLabels: c.Ingress.OffshootLabels(),
 			},
-			UpdateStrategy: extensions.DaemonSetUpdateStrategy{
-				Type: extensions.RollingUpdateDaemonSetStrategyType,
-			},
+			// TODO: Enable when support for Kubernetes 1.5 is dropped
+			//UpdateStrategy: extensions.DaemonSetUpdateStrategy{
+			//	Type: extensions.RollingUpdateDaemonSetStrategyType,
+			//},
 			// pod templates.
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
@@ -613,6 +614,8 @@ func (c *hostPortController) ensurePods() (*extensions.DaemonSet, error) {
 	}
 	if needsUpdate {
 		current, err = c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Update(current)
+		// TODO: Stop explicitly deleting pods when support for Kube 1.5 is dropped.
+		c.deletePodsForSelector(&metav1.LabelSelector{MatchLabels: c.Ingress.OffshootLabels()})
 		return current, err
 	}
 	return current, nil

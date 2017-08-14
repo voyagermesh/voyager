@@ -553,8 +553,7 @@ func (c *loadBalancerController) ensurePods() (*extensions.Deployment, error) {
 		current.Spec.Template.Spec.ServiceAccountName = desired.Spec.Template.Spec.ServiceAccountName
 	}
 	if needsUpdate {
-		current, err = c.KubeClient.ExtensionsV1beta1().Deployments(c.Ingress.Namespace).Update(current)
-		return current, err
+		return c.KubeClient.ExtensionsV1beta1().Deployments(c.Ingress.Namespace).Update(current)
 	}
 	return current, nil
 }
