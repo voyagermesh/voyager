@@ -123,6 +123,8 @@ func (i *ingressInvocation) GetHTTPEndpoints(ing *api.Ingress) ([]string, error)
 		return getLoadBalancerURLs(i.Config.CloudProviderName, i.KubeClient, ing)
 	case api.LBTypeHostPort:
 		return getHostPortURLs(i.Config.CloudProviderName, i.KubeClient, ing)
+	case api.LBTypeNodePort:
+		return getNodePortURLs(i.Config.CloudProviderName, i.KubeClient, ing)
 	}
 	return nil, errors.New("LBType Not recognized")
 }

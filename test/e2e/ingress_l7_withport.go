@@ -85,4 +85,202 @@ var _ = Describe("IngressWithCustomPorts", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
+
+	Describe("LBType LoadBalancer with NodePort set", func() {
+		BeforeEach(func() {
+			ing.Spec = api.IngressSpec{
+				Rules: []api.IngressRule{
+					{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								NodePort: intstr.FromInt(32766),
+								Paths: []api.HTTPIngressPath{
+									{
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: f.Ingress.TestServerName(),
+												ServicePort: intstr.FromInt(9090),
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+		})
+
+		It("Should check update", func() {
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			svc, err := f.Ingress.GetOffShootService(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(svc.Spec.Ports)).Should(Equal(1))
+			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(80)))
+			Expect(svc.Spec.Ports[0].NodePort).Should(BeNumerically(">=", 1))
+			Expect(svc.Spec.Ports[0].NodePort).Should(Equal(int32(32766)))
+		})
+	})
+
+	Describe("LBType LoadBalancer with NodePort set on update", func() {
+		BeforeEach(func() {
+			ing.Spec = api.IngressSpec{
+				Rules: []api.IngressRule{
+					{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
+									{
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: f.Ingress.TestServerName(),
+												ServicePort: intstr.FromInt(9090),
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+		})
+
+		It("Should check update", func() {
+			if root.Config.CloudProviderName != "minikube" {
+				Skip("CloudProvider Needs to be configured for NodePort")
+			}
+
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			svc, err := f.Ingress.GetOffShootService(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(svc.Spec.Ports)).Should(Equal(1))
+			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(80)))
+			Expect(svc.Spec.Ports[0].NodePort).Should(BeNumerically(">=", 1))
+
+			tobeUpdated, err := f.Ingress.Get(ing)
+			Expect(err).NotTo(HaveOccurred())
+			tobeUpdated.Spec.Rules[0].HTTP.NodePort = intstr.FromInt(32766)
+			err = f.Ingress.Update(tobeUpdated)
+			Expect(err).NotTo(HaveOccurred())
+			Eventually(func() int32 {
+				service, err := f.Ingress.GetOffShootService(tobeUpdated)
+				if err == nil {
+					if len(service.Spec.Ports) > 0 {
+						return service.Spec.Ports[0].NodePort
+					}
+				}
+				return 0
+			}, "5m", "10s").Should(Equal(int32(32766)))
+
+		})
+	})
+
+	Describe("NodePort set", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.LBType] = api.LBTypeNodePort
+			ing.Spec = api.IngressSpec{
+				Rules: []api.IngressRule{
+					{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								NodePort: intstr.FromInt(32766),
+								Paths: []api.HTTPIngressPath{
+									{
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: f.Ingress.TestServerName(),
+												ServicePort: intstr.FromInt(9090),
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+		})
+
+		It("Should check update", func() {
+			if root.Config.CloudProviderName != "minikube" {
+				Skip("CloudProvider needs to be configured for NodePort")
+			}
+
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			svc, err := f.Ingress.GetOffShootService(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(svc.Spec.Ports)).Should(Equal(1))
+			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(80)))
+			Expect(svc.Spec.Ports[0].NodePort).Should(BeNumerically(">=", 1))
+			Expect(svc.Spec.Ports[0].NodePort).Should(Equal(int32(32766)))
+		})
+	})
+
+	Describe("NodePort set on update", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.LBType] = api.LBTypeNodePort
+			ing.Spec = api.IngressSpec{
+				Rules: []api.IngressRule{
+					{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
+									{
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: f.Ingress.TestServerName(),
+												ServicePort: intstr.FromInt(9090),
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+		})
+
+		It("Should check update", func() {
+			if root.Config.CloudProviderName != "minikube" {
+				Skip("CloudProvider needs to be configured for NodePort")
+			}
+
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			svc, err := f.Ingress.GetOffShootService(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(svc.Spec.Ports)).Should(Equal(1))
+			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(80)))
+			Expect(svc.Spec.Ports[0].NodePort).Should(BeNumerically(">=", 1))
+
+			tobeUpdated, err := f.Ingress.Get(ing)
+			Expect(err).NotTo(HaveOccurred())
+			tobeUpdated.Spec.Rules[0].HTTP.NodePort = intstr.FromInt(32766)
+			err = f.Ingress.Update(tobeUpdated)
+			Expect(err).NotTo(HaveOccurred())
+			Eventually(func() int32 {
+				service, err := f.Ingress.GetOffShootService(tobeUpdated)
+				if err == nil {
+					if len(service.Spec.Ports) > 0 {
+						return service.Spec.Ports[0].NodePort
+					}
+				}
+				return 0
+			}, "5m", "10s").Should(Equal(int32(32766)))
+
+		})
+	})
 })

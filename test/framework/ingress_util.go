@@ -410,6 +410,61 @@ func getHostPortURLs(provider string, k kubernetes.Interface, ing *api.Ingress) 
 	return serverAddr, nil
 }
 
+func getNodePortURLs(provider string, k kubernetes.Interface, ing *api.Ingress) ([]string, error) {
+	serverAddr := make([]string, 0)
+
+	nodes, err := k.CoreV1().Nodes().List(metav1.ListOptions{
+		LabelSelector: labels.SelectorFromSet(ing.NodeSelector()).String(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var svc *apiv1.Service;	var ports []int32
+	gomega.Eventually(func() error {
+		svc, err = k.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+		if err == nil {
+			if len(svc.Spec.Ports) > 0 {
+				for _, port := range svc.Spec.Ports {
+					ports = append(ports, port.NodePort)
+				}
+			}
+			return nil
+		}
+		return err
+	}, "10m", "10s").Should(gomega.BeNil())
+	if err != nil {
+		return nil, err
+	}
+
+	for _, node := range nodes.Items {
+		for _, addr := range node.Status.Addresses {
+			if (addr.Type == apiv1.NodeExternalIP) || (provider == "minikube" && addr.Type == apiv1.NodeInternalIP) {
+				for _, port := range ports {
+					var doc bytes.Buffer
+					err = defaultUrlTemplate.Execute(&doc, struct {
+						IP   string
+						Port int32
+					}{
+						addr.Address,
+						port,
+					})
+					if err != nil {
+						return nil, err
+					}
+
+					u, err := url.Parse(doc.String())
+					if err != nil {
+						return nil, err
+					}
+					serverAddr = append(serverAddr, u.String())
+				}
+			}
+		}
+	}
+	return serverAddr, nil
+}
+
 func (i *ingressInvocation) CheckTestServersPortAssignments(ing *api.Ingress) error {
 	i.Mutex.Lock()
 	defer i.Mutex.Unlock()
