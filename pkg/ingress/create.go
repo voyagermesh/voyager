@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-	"time"
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
@@ -43,7 +42,7 @@ func (c *controller) ensureConfigMap() error {
 	}
 
 	needsUpdate := false
-	if val, ok := c.ensureResourceAnnotations(cm.Annotations); ok {
+	if val, ok := c.ensureOriginAnnotations(cm.Annotations); ok {
 		needsUpdate = true
 		cm.Annotations = val
 	}
@@ -168,50 +167,7 @@ func (c *controller) ensureStatsService() error {
 	return nil
 }
 
-func (c *controller) updateStatus() error {
-	var statuses []apiv1.LoadBalancerIngress
-
-	switch c.Ingress.LBType() {
-	case api.LBTypeLoadBalancer:
-		for i := 0; i < 50; i++ {
-			time.Sleep(time.Second * 10)
-			if svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{}); err == nil {
-				if len(svc.Status.LoadBalancer.Ingress) >= 1 {
-					statuses = svc.Status.LoadBalancer.Ingress
-					break
-				}
-			}
-		}
-		// TODO @sadlil consider adding node ip in status for hostport/nodeport mode
-	}
-
-	if len(statuses) > 0 {
-		if c.Ingress.APISchema() == api.APISchemaIngress {
-			ing, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.Ingress.Namespace).Get(c.Ingress.Name, metav1.GetOptions{})
-			if err != nil {
-				return errors.FromErr(err).Err()
-			}
-			ing.Status.LoadBalancer.Ingress = statuses
-			_, err = c.KubeClient.ExtensionsV1beta1().Ingresses(c.Ingress.Namespace).Update(ing)
-			if err != nil {
-				return errors.FromErr(err).Err()
-			}
-		} else {
-			ing, err := c.ExtClient.Ingresses(c.Ingress.Namespace).Get(c.Ingress.Name)
-			if err != nil {
-				return errors.FromErr(err).Err()
-			}
-			ing.Status.LoadBalancer.Ingress = statuses
-			_, err = c.ExtClient.Ingresses(c.Ingress.Namespace).Update(ing)
-			if err != nil {
-				return errors.FromErr(err).Err()
-			}
-		}
-	}
-	return nil
-}
-
-func (c *controller) ensureResourceAnnotations(annotation map[string]string) (map[string]string, bool) {
+func (c *controller) ensureOriginAnnotations(annotation map[string]string) (map[string]string, bool) {
 	needsUpdate := false
 
 	// Copy the given map to avoid updating the original annotations
@@ -274,20 +230,4 @@ func VolumeMounts(secretNames []string) []apiv1.VolumeMount {
 		ms = append(ms, sMount)
 	}
 	return ms
-}
-
-func isServicePortChanged(oldPorts, newPorts []apiv1.ServicePort) bool {
-	// Check if any port changed
-	ports := make(map[int32]bool)
-	for _, port := range oldPorts {
-		// We only use TCP protocol so ports are unique for our scenario
-		ports[port.Port] = true
-	}
-
-	for _, port := range newPorts {
-		if _, ok := ports[port.Port]; !ok {
-			return true
-		}
-	}
-	return false
 }

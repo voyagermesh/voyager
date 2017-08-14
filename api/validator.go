@@ -163,8 +163,13 @@ func (r Ingress) IsValid(cloudProvider string) error {
 		}
 	}
 	if !r.SupportsLBType(cloudProvider) {
-		return fmt.Errorf("Ingress %s@%s uses sunsupported LBType %s for cloud provider %s", r.Name, r.Namespace, r.LBType(), cloudProvider)
+		return fmt.Errorf("Ingress %s@%s uses unsupported LBType %s for cloud provider %s", r.Name, r.Namespace, r.LBType(), cloudProvider)
 	}
+
+	if (r.LBType() == LBTypeNodePort || r.LBType() == LBTypeHostPort) && len(r.Spec.LoadBalancerSourceRanges) > 0 {
+		return fmt.Errorf("Ingress %s@%s of type %s can't use `spec.LoadBalancerSourceRanges`", r.Name, r.Namespace, r.LBType())
+	}
+
 	return nil
 }
 
@@ -177,8 +182,11 @@ func (r Ingress) SupportsLBType(cloudProvider string) bool {
 			cloudProvider == "azure" ||
 			cloudProvider == "acs" ||
 			cloudProvider == "minikube"
-	case LBTypeNodePort, LBTypeHostPort:
+	case LBTypeNodePort:
 		return cloudProvider != "acs"
+	case LBTypeHostPort:
+		// TODO: https://github.com/appscode/voyager/issues/374
+		return cloudProvider != "acs" && cloudProvider != "azure"
 	default:
 		return false
 	}

@@ -1150,30 +1150,20 @@ type portSets struct {
 }
 
 // EnsureFirewall implements LoadBalancer.EnsureLoadBalancer
-func (c *Cloud) EnsureFirewall(apiService *apiv1.Service, hostname string) error {
-	glog.V(2).Infof("EnsureLoadBalancer(%v, %v, %v, %v, %v, %v)",
-		apiService.Namespace, apiService.Name, c.region, apiService.Spec.LoadBalancerIP, apiService.Spec.Ports, hostname)
+func (c *Cloud) EnsureFirewall(apiService *apiv1.Service, hostnames []string) error {
+	glog.V(2).Infof("EnsureFirewall(%v, %v, %v, %v, %v)",
+		apiService.Namespace, apiService.Name, c.region, apiService.Spec.Ports, hostnames)
 
 	if apiService.Spec.SessionAffinity != apiv1.ServiceAffinityNone {
 		// ELB supports sticky sessions, but only when configured for HTTP/HTTPS
-		return fmt.Errorf("unsupported load balancer affinity: %v", apiService.Spec.SessionAffinity)
+		return fmt.Errorf("unsupported service affinity: %v", apiService.Spec.SessionAffinity)
 	}
 
 	if len(apiService.Spec.Ports) == 0 {
-		return errors.New("requested load balancer with no ports")
+		return errors.New("requested security group with no ports")
 	}
 
-	for _, port := range apiService.Spec.Ports {
-		if port.Protocol != apiv1.ProtocolTCP {
-			return errors.New("Only TCP LoadBalancer is supported for AWS ELB")
-		}
-	}
-
-	if apiService.Spec.LoadBalancerIP != "" {
-		return errors.New("LoadBalancerIP cannot be specified for AWS ELB")
-	}
-
-	hostSet := sets.NewString(hostname)
+	hostSet := sets.NewString(hostnames...)
 	instances, err := c.getInstancesByNodeNamesCached(hostSet)
 	if err != nil {
 		return err
@@ -1190,24 +1180,13 @@ func (c *Cloud) EnsureFirewall(apiService *apiv1.Service, hostname string) error
 	// Create a security group for the load balancer
 	var securityGroupID string
 	{
-		sgName := "k8s-elb-" + loadBalancerName
-		sgDescription := fmt.Sprintf("Security group for Kubernetes DaemonNode %s (%v)", loadBalancerName, serviceName)
+		sgName := loadBalancerName
+		sgDescription := fmt.Sprintf("Security group for service %v", serviceName)
 		securityGroupID, err = c.ensureUntaggedSecurityGroup(sgName, sgDescription)
 		if err != nil {
-			glog.Error("Error creating load balancer security group: ", err)
+			glog.Error("Error creating Voyager security group: ", err)
 			return err
 		}
-		err = c.createTags(securityGroupID, map[string]string{
-			"AppsCodeCluster": c.getClusterName(),
-		})
-		if err != nil {
-			// If we retry, ensureClusterTags will recover from this - it
-			// will add the missing tags.  We could delete the security
-			// group here, but that doesn't feel like the right thing, as
-			// the caller is likely to retry the create
-			return fmt.Errorf("error tagging security group: %v", err)
-		}
-
 		ec2SourceRanges := []*ec2.IpRange{}
 		for _, sourceRange := range sourceRanges.StringSlice() {
 			ec2SourceRanges = append(ec2SourceRanges, &ec2.IpRange{CidrIp: aws.String(sourceRange)})
@@ -1234,7 +1213,7 @@ func (c *Cloud) EnsureFirewall(apiService *apiv1.Service, hostname string) error
 
 	err = c.updateInstanceSecurityGroupsForFirewall(securityGroupID, instances)
 	if err != nil {
-		glog.Warning("Error opening ingress rules for the load balancer to the instances: ", err)
+		glog.Warning("Error opening ingress rules of the instances: ", err)
 		return err
 	}
 
@@ -1437,7 +1416,7 @@ func (c *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 		// Note that this is annoying: the load balancer disappears from the API immediately, but it is still
 		// deleting in the background.  We get a DependencyViolation until the load balancer has deleted itself
 
-		sgName := "k8s-elb-" + loadBalancerName
+		sgName := loadBalancerName
 
 		request := &ec2.DescribeSecurityGroupsInput{
 			Filters: []*ec2.Filter{
@@ -1509,7 +1488,6 @@ func (c *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 			}
 		}
 	}
-
 	return nil
 }
 

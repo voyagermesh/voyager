@@ -32,7 +32,7 @@ func (c *controller) ensureServiceAccount() error {
 	}
 
 	needsUpdate := false
-	if val, ok := c.ensureResourceAnnotations(sa.Annotations); ok {
+	if val, ok := c.ensureOriginAnnotations(sa.Annotations); ok {
 		needsUpdate = true
 		sa.Annotations = val
 	}
@@ -98,7 +98,7 @@ func (c *controller) ensureRoles() error {
 	}
 
 	needsUpdate := false
-	if val, ok := c.ensureResourceAnnotations(role.Annotations); ok {
+	if val, ok := c.ensureOriginAnnotations(role.Annotations); ok {
 		needsUpdate = true
 		role.Annotations = val
 	}
@@ -148,7 +148,7 @@ func (c *controller) ensureRoleBinding() error {
 	}
 
 	needsUpdate := false
-	if val, ok := c.ensureResourceAnnotations(roleBinding.Annotations); ok {
+	if val, ok := c.ensureOriginAnnotations(roleBinding.Annotations); ok {
 		needsUpdate = true
 		roleBinding.Annotations = val
 	}

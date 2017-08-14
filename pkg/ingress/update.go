@@ -1,25 +1,22 @@
 package ingress
 
 import (
-	"reflect"
-	"strconv"
+	"net"
+	"strings"
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/sets"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 type UpdateMode int
 
 const (
-	UpdateConfig   UpdateMode = 1 << iota // only reset haproxy config
-	RestartHAProxy                        // secret changes, ports unchanged
-	UpdateFirewall                        // ports changed
-	UpdateStats                           // Update things for stats update
-	UpdateRBAC                            // Update RBAC Roles as stats secret name is changes
+	UpdateStats UpdateMode = 1 << iota // Update things for stats update
+	UpdateRBAC                         // Update RBAC Roles as stats secret name is changes
 )
 
 func (c *controller) updateConfigMap() error {
@@ -56,90 +53,74 @@ func (c *controller) updateConfigMap() error {
 	return nil
 }
 
-func (c *controller) updateLBSvc() (*apiv1.Service, error) {
-	svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-	if err != nil {
-		return nil, errors.FromErr(err).Err()
+func ServiceRequiresUpdate(current, desired *apiv1.Service) (*apiv1.Service, bool) {
+	if current == nil {
+		return nil, false // should never happen
 	}
+
+	needsUpdate := false
+
+	// ports
 	curPorts := make(map[int32]apiv1.ServicePort)
-	for _, p := range svc.Spec.Ports {
+	for _, p := range current.Spec.Ports {
 		curPorts[p.Port] = p
 	}
-	svc.Spec.Ports = make([]apiv1.ServicePort, 0)
+	for _, dp := range desired.Spec.Ports {
+		if cp, ok := curPorts[dp.Port]; !ok || // svc port not found
+			cp.TargetPort.IntValue() != dp.TargetPort.IntValue() || // pod port mismatch
+			(dp.NodePort != 0 && dp.NodePort != cp.NodePort) { // node port mismatch
+			if dp.NodePort == 0 && cp.NodePort > 0 {
+				dp.NodePort = cp.NodePort // avoid reassigning port
+			}
+			needsUpdate = true
+		}
+		delete(curPorts, dp.Port)
+	}
+	if len(curPorts) > 0 {
+		needsUpdate = true
+	}
+	if needsUpdate {
+		current.Spec.Ports = desired.Spec.Ports
+	}
 
-	mappings, err := c.Ingress.PortMappings(c.Opt.CloudProvider)
+	// annotations
+	if current.Annotations == nil {
+		current.Annotations = make(map[string]string)
+	}
+	for k, v := range desired.Annotations {
+		if cv, found := current.Annotations[k]; !found || cv != v {
+			current.Annotations[k] = v
+			needsUpdate = true
+		}
+	}
+
+	// LoadBalancer ranges
+	curRanges := sets.NewString()
+	for _, ips := range current.Spec.LoadBalancerSourceRanges {
+		if k, ok := ipnet(ips); ok {
+			curRanges.Insert(k)
+		}
+	}
+
+	desiredRanges := sets.NewString()
+	for _, ips := range desired.Spec.LoadBalancerSourceRanges {
+		if k, ok := ipnet(ips); ok {
+			desiredRanges.Insert(k)
+		}
+	}
+	if !curRanges.Equal(desiredRanges) {
+		needsUpdate = true
+		current.Spec.LoadBalancerSourceRanges = desired.Spec.LoadBalancerSourceRanges
+	}
+
+	return current, needsUpdate
+}
+
+func ipnet(spec string) (string, bool) {
+	spec = strings.TrimSpace(spec)
+	_, ipnet, err := net.ParseCIDR(spec)
 	if err != nil {
-		return nil, err
+		return "", false
 	}
-	for svcPort, target := range mappings {
-		if sp, found := curPorts[int32(svcPort)]; found && sp.TargetPort.IntValue() == target.PodPort {
-			if target.NodePort > 0 {
-				sp.NodePort = int32(target.NodePort) // ensure preferred NodePort is used.
-			}
-			svc.Spec.Ports = append(svc.Spec.Ports, sp)
-		} else {
-			svc.Spec.Ports = append(svc.Spec.Ports, apiv1.ServicePort{
-				Name:       "tcp-" + strconv.Itoa(svcPort),
-				Protocol:   "TCP",
-				Port:       int32(svcPort),
-				TargetPort: intstr.FromInt(target.PodPort),
-				NodePort:   int32(target.NodePort),
-			})
-		}
-	}
-
-	if svc.Spec.Type == apiv1.ServiceTypeLoadBalancer {
-		// Update Source Range
-		svc.Spec.LoadBalancerSourceRanges = c.Ingress.Spec.LoadBalancerSourceRanges
-	}
-
-	if svc.Annotations == nil {
-		// This is a safety check, annotations will not be nil
-		svc.Annotations = make(map[string]string)
-	}
-	_, sourceNameFound := svc.Annotations[api.OriginName]
-	_, sourceTypeFound := svc.Annotations[api.OriginAPISchema]
-	if !sourceNameFound && !sourceTypeFound {
-		// Old version object
-		svc.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
-		svc.Annotations[api.OriginName] = c.Ingress.GetName()
-	}
-
-	return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Update(svc)
-}
-
-func (c *controller) updateServiceAnnotations(old *api.Ingress, new *api.Ingress) error {
-	// Check for changes in ingress.appscode.com/annotations-service
-	if newSvcAns, newOk := new.ServiceAnnotations(c.Opt.CloudProvider); newOk {
-		if oldSvcAns, oldOk := old.ServiceAnnotations(c.Opt.CloudProvider); oldOk {
-			if !reflect.DeepEqual(oldSvcAns, newSvcAns) {
-				svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-				if err != nil {
-					return errors.FromErr(err).Err()
-				}
-				svc.Annotations = mergeAnnotations(svc.Annotations, oldSvcAns, newSvcAns)
-
-				svc, err = c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Update(svc)
-				if err != nil {
-					return errors.FromErr(err).Err()
-				}
-			}
-		}
-	}
-	return nil
-}
-
-func mergeAnnotations(obj, old, new map[string]string) map[string]string {
-	if obj == nil {
-		obj = make(map[string]string)
-	}
-
-	for k := range old {
-		delete(obj, k)
-	}
-
-	for k, v := range new {
-		obj[k] = v
-	}
-	return obj
+	return ipnet.String(), true
 }

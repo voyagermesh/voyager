@@ -37,7 +37,7 @@ type Interface interface {
 // providers' name length limits.
 func GetLoadBalancerName(service *apiv1.Service) string {
 	//GCE requires that the name of a load balancer starts with a lower case letter.
-	ret := "a" + string(service.UID)
+	ret := service.Name + "@" + service.Namespace // "a" + string(service.UID)
 	ret = strings.Replace(ret, "-", "", -1)
 	//AWS requires that the name of a load balancer is shorter than 32 bytes.
 	if len(ret) > 32 {
@@ -84,7 +84,7 @@ func GetLoadBalancerSourceRanges(service *apiv1.Service) (netsets.IPNet, error) 
 type Firewall interface {
 	// EnsureFirewall creates and/or update firewall rules.
 	// Implementations must treat the *apiv1.Service parameter as read-only and not modify it.
-	EnsureFirewall(service *apiv1.Service, hostname string) error
+	EnsureFirewall(service *apiv1.Service, hostnames []string) error
 
 	// EnsureFirewallDeleted deletes the specified firewall if it
 	// exists, returning nil if the firewall specified either didn't exist or

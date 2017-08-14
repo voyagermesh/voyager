@@ -79,11 +79,10 @@ func (op *Operator) initIngresseWatcher() cache.Controller {
 					log.Errorf("Failed to convert Ingress %s@%s into Engress. Reason %v", newIngress.Name, newIngress.Namespace, err)
 					return
 				}
-
 				if changed, _ := oldEngress.HasChanged(*newEngress); !changed {
-					log.Infof("%s %s@%s has unchanged spec and annotations", newIngress.GroupVersionKind(), newIngress.Name, newIngress.Namespace)
 					return
 				}
+				log.Infof("%s %s@%s has changed", newIngress.GroupVersionKind(), newIngress.Name, newIngress.Namespace)
 				if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
 					op.recorder.Eventf(
 						newEngress,

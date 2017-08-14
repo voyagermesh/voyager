@@ -18,7 +18,6 @@ type Controller interface {
 	IsExists() bool
 	Create() error
 	Update(mode UpdateMode) error
-	UpdateTargetAnnotations(old *api.Ingress, new *api.Ingress) error
 	Delete() error
 }
 
@@ -46,17 +45,17 @@ func NewController(
 	kubeClient clientset.Interface,
 	extClient acs.ExtensionInterface,
 	promClient pcm.MonitoringV1alpha1Interface,
-	services core.ServiceLister,
-	endpoints core.EndpointsLister,
+	serviceLister core.ServiceLister,
+	endpointsLister core.EndpointsLister,
 	opt config.Options,
 	ingress *api.Ingress) Controller {
 	switch ingress.LBType() {
 	case api.LBTypeHostPort:
-		return NewHostPortController(kubeClient, extClient, promClient, services, endpoints, opt, ingress)
+		return NewHostPortController(kubeClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
 	case api.LBTypeNodePort:
-		return NewNodePortController(kubeClient, extClient, promClient, services, endpoints, opt, ingress)
+		return NewNodePortController(kubeClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
 	case api.LBTypeLoadBalancer:
-		return NewLoadBalancerController(kubeClient, extClient, promClient, services, endpoints, opt, ingress)
+		return NewLoadBalancerController(kubeClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
 	}
 	return nil
 }

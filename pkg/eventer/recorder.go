@@ -31,6 +31,7 @@ const (
 	EventReasonIngressUpdateSuccessful               = "UpdateSuccessful"
 	EventReasonIngressServiceUpdateFailed            = "ServiceUpdateFailed"
 	EventReasonIngressServiceUpdateSuccessful        = "ServiceUpdateSuccessful"
+	EventReasonIngressFirewallUpdateFailed           = "FirewallUpdateFailed"
 	EventReasonIngressStatsServiceCreateFailed       = "StatsServiceCreateFailed"
 	EventReasonIngressStatsServiceCreateSuccessful   = "StatsServiceCreateSuccessful"
 	EventReasonIngressStatsServiceDeleteFailed       = "StatsServiceDeleteFailed"

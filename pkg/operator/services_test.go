@@ -24,7 +24,7 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 
 	op := &Operator{KubeClient: fakeClient}
 
-	op.ensureServiceAnnotations(&api.Ingress{
+	op.ensureEgressAnnotations(&api.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
@@ -41,7 +41,7 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 	assert.NotNil(t, svc.Annotations)
 	assert.Contains(t, svc.Annotations, api.EgressPoints)
 
-	op.ensureServiceAnnotations(&api.Ingress{
+	op.ensureEgressAnnotations(&api.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",
@@ -58,7 +58,7 @@ func TestEnsureServiceAnnotation(t *testing.T) {
 	assert.NotNil(t, svc.Annotations)
 	assert.Contains(t, svc.Annotations, api.EgressPoints)
 
-	op.ensureServiceAnnotations(&api.Ingress{
+	op.ensureEgressAnnotations(&api.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "bar",

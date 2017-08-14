@@ -14,9 +14,10 @@ import (
 )
 
 // EnsureFirewall creates and/or update firewall rules.
-func (az *Cloud) EnsureFirewall(service *apiv1.Service, hostname string) error {
+func (az *Cloud) EnsureFirewall(service *apiv1.Service, hostnames []string) error {
 	serviceName := getServiceName(service)
 	glog.V(2).Infof("ensure(%s): START EnsureFirewall", serviceName)
+	hostname := hostnames[0]
 
 	machine, exists, err := az.getVirtualMachine(types.NodeName(hostname))
 	if err != nil {

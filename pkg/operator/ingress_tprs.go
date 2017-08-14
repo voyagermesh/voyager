@@ -66,9 +66,9 @@ func (op *Operator) initIngressTPRWatcher() cache.Controller {
 					return
 				}
 				if changed, _ := oldEngress.HasChanged(*newEngress); !changed {
-					log.Infof("%s %s@%s has unchanged spec and annotations", newEngress.GroupVersionKind(), newEngress.Name, newEngress.Namespace)
 					return
 				}
+				log.Infof("%s %s@%s has changed", newEngress.GroupVersionKind(), newEngress.Name, newEngress.Namespace)
 				if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
 					op.recorder.Eventf(
 						newEngress,
@@ -100,49 +100,8 @@ func (op *Operator) initIngressTPRWatcher() cache.Controller {
 func (op *Operator) AddEngress(engress *tapi.Ingress) {
 	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 	if ctrl.IsExists() {
-		// Loadbalancer resource for this ingress is found in its place,
-		// so no need to create the resources. First trying to update
-		// the configMap only for the rules.
-		// In case of any failure in soft update we will make hard update
-		// to the resource. If hard update encounters errors then we will
-		// recreate the resource from scratch.
-		log.Infoln("Loadbalancer is exists, trying to update")
-
-		if svc, err := op.ServiceLister.Services(engress.Namespace).Get(engress.OffshootName()); err == nil {
-			// check port
-			curPorts := make(map[int]apiv1.ServicePort)
-			for _, p := range svc.Spec.Ports {
-				curPorts[int(p.Port)] = p
-			}
-			mappings, _ := engress.PortMappings(op.Opt.CloudProvider) // already validated
-
-			var updateFW bool
-			for svcPort, target := range mappings {
-				if sp, ok := curPorts[svcPort]; !ok || // svc port not found
-					sp.TargetPort.IntValue() != target.PodPort || // pod port mismatch
-					(target.NodePort != 0 && target.NodePort != int(sp.NodePort)) { // node port mismatch
-					updateFW = true // new port has to be opened
-					break
-				} else {
-					delete(curPorts, svcPort)
-				}
-			}
-			if len(curPorts) > 0 {
-				updateFW = true // additional port was open previously
-			}
-
-			if updateFW {
-				ctrl.Update(ingress.UpdateFirewall | ingress.UpdateStats)
-			} else {
-				ctrl.Update(ingress.UpdateConfig | ingress.UpdateStats)
-			}
-		} else {
-			log.Warningln("Loadbalancer is exists but Soft Update failed. Retrying Hard Update")
-			restartErr := ctrl.Update(ingress.RestartHAProxy)
-			if restartErr != nil {
-				log.Warningln("Loadbalancer is exists, But Hard Update is also failed, recreating with a cleanup")
-				ctrl.Create()
-			}
+		if err := ctrl.Update(ingress.UpdateStats); err != nil {
+			log.Errorln(err)
 		}
 		return
 	} else {
@@ -154,7 +113,7 @@ func (op *Operator) AddEngress(engress *tapi.Ingress) {
 		if err != nil {
 			continue
 		}
-		op.ensureServiceAnnotations(engress, svc)
+		op.ensureEgressAnnotations(engress, svc)
 	}
 
 	err := certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, nil).HandleIngress(engress)
@@ -177,14 +136,6 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 		if ctrl.IsExists() {
 			var updateMode ingress.UpdateMode
 
-			// Ingress Annotations Changed, Apply Changes to Targets
-			// The following method do not update to HAProxy config or restart pod. It only sets the annotations
-			// to the required targets.
-			ctrl.UpdateTargetAnnotations(oldEngress, newEngress)
-
-			if oldEngress.IsKeepSourceChanged(*newEngress, op.Opt.CloudProvider) {
-				updateMode |= ingress.UpdateConfig
-			}
 			if oldEngress.IsStatsChanged(*newEngress) {
 				updateMode |= ingress.UpdateStats
 				if oldEngress.IsStatsSecretChanged(*newEngress) {
@@ -208,17 +159,8 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 				}
 			}
 
-			if oldEngress.IsPortChanged(*newEngress, op.Opt.CloudProvider) || oldEngress.IsLoadBalancerSourceRangeChanged(*newEngress) {
-				updateMode |= ingress.UpdateFirewall
-			} else if oldEngress.IsSecretChanged(*newEngress) {
-				updateMode |= ingress.RestartHAProxy
-			} else {
-				updateMode |= ingress.UpdateConfig
-			}
-			if updateMode > 0 {
-				// For ingress update update HAProxy once
-				ctrl.Update(updateMode)
-			}
+			// For ingress update update HAProxy once
+			ctrl.Update(updateMode)
 		} else {
 			ctrl.Create()
 		}
@@ -236,7 +178,7 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 		if err != nil {
 			continue
 		}
-		op.ensureServiceAnnotations(newEngress, svc)
+		op.ensureEgressAnnotations(newEngress, svc)
 	}
 
 	err := certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, nil).HandleIngress(newEngress)
@@ -254,6 +196,6 @@ func (op *Operator) DeleteEngress(engress *tapi.Ingress) {
 		if err != nil {
 			continue
 		}
-		op.ensureServiceAnnotations(engress, svc)
+		op.ensureEgressAnnotations(engress, svc)
 	}
 }
