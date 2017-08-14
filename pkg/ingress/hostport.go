@@ -29,8 +29,6 @@ import (
 
 type hostPortController struct {
 	*controller
-
-	// kubernetes client
 	CloudManager cloudprovider.Interface
 }
 
@@ -43,7 +41,7 @@ func NewHostPortController(
 	serviceLister core.ServiceLister,
 	endpointsLister core.EndpointsLister,
 	opt config.Options,
-	ingress *api.Ingress) *hostPortController {
+	ingress *api.Ingress) Controller {
 	ctrl := &hostPortController{
 		controller: &controller{
 			KubeClient:      kubeClient,
@@ -296,7 +294,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 		c.Ingress,
 		apiv1.EventTypeNormal,
 		eventer.EventReasonIngressServiceUpdateSuccessful,
-		"Successfully updated LBService",
+		"Successfully updated HostPort Service",
 	)
 
 	if mode&UpdateStats > 0 {

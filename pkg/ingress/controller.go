@@ -11,6 +11,7 @@ import (
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	clientset "k8s.io/client-go/kubernetes"
 	core "k8s.io/client-go/listers/core/v1"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/record"
 )
 
@@ -19,6 +20,7 @@ type Controller interface {
 	Create() error
 	Update(mode UpdateMode, old *api.Ingress) error
 	Delete()
+	EnsureFirewall(svc *apiv1.Service) error
 }
 
 type controller struct {
