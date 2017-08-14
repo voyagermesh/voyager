@@ -1177,7 +1177,16 @@ func (c *Cloud) EnsureFirewall(apiService *apiv1.Service, hostnames []string) er
 
 		permissions := NewIPPermissionSet()
 		for _, port := range apiService.Spec.Ports {
-			portInt64 := int64(port.Port)
+			var portInt64 int64
+			if apiService.Spec.Type == apiv1.ServiceTypeNodePort {
+				if port.NodePort == 0 {
+					glog.Errorf("Ignoring port without NodePort defined: %v", port)
+					continue
+				}
+				portInt64 = int64(port.NodePort)
+			} else {
+				portInt64 = int64(port.Port)
+			}
 			protocol := strings.ToLower(string(port.Protocol))
 
 			permission := &ec2.IpPermission{}

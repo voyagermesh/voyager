@@ -304,6 +304,10 @@ func (c *loadBalancerController) Update(mode UpdateMode, old *api.Ingress) error
 	return nil
 }
 
+func (c *loadBalancerController) EnsureFirewall(svc *apiv1.Service) error {
+	return nil
+}
+
 func (c *loadBalancerController) Delete() {
 	// Ignore Error.
 	c.deleteResidualPods()
@@ -618,15 +622,12 @@ func (c *loadBalancerController) deleteResidualPods() error {
 func (c *loadBalancerController) updateStatus() error {
 	var statuses []apiv1.LoadBalancerIngress
 
-	switch c.Ingress.LBType() {
-	case api.LBTypeLoadBalancer:
-		for i := 0; i < 50; i++ {
-			time.Sleep(time.Second * 10)
-			if svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{}); err == nil {
-				if len(svc.Status.LoadBalancer.Ingress) >= 1 {
-					statuses = svc.Status.LoadBalancer.Ingress
-					break
-				}
+	for i := 0; i < 50; i++ {
+		time.Sleep(time.Second * 10)
+		if svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{}); err == nil {
+			if len(svc.Status.LoadBalancer.Ingress) >= 1 {
+				statuses = svc.Status.LoadBalancer.Ingress
+				break
 			}
 		}
 	}
