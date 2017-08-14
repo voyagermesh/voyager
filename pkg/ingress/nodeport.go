@@ -296,18 +296,18 @@ func (c *nodePortController) Update(mode UpdateMode, old *api.Ingress) error {
 	return nil
 }
 
-func (c *nodePortController) Delete() error {
+func (c *nodePortController) Delete() {
 	err := c.deletePods()
 	if err != nil {
-		return errors.FromErr(err).Err()
+		log.Errorln(err)
 	}
 	err = c.deleteConfigMap()
 	if err != nil {
-		return errors.FromErr(err).Err()
+		log.Errorln(err)
 	}
 	if c.Opt.EnableRBAC {
 		if err := c.ensureRBACDeleted(); err != nil {
-			return err
+			log.Errorln(err)
 		}
 	}
 	err = c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
@@ -316,7 +316,7 @@ func (c *nodePortController) Delete() error {
 	}
 	monSpec, err := c.Ingress.MonitorSpec()
 	if err != nil {
-		return errors.FromErr(err).Err()
+		log.Errorln(err)
 	}
 	if monSpec != nil && monSpec.Prometheus != nil {
 		ctrl := monitor.NewPrometheusController(c.KubeClient, c.PromClient)
@@ -325,7 +325,7 @@ func (c *nodePortController) Delete() error {
 	if c.Ingress.Stats() {
 		c.ensureStatsServiceDeleted()
 	}
-	return nil
+	return
 }
 
 func (c *nodePortController) newService() *apiv1.Service {
@@ -554,10 +554,6 @@ func (c *nodePortController) ensurePods(old *api.Ingress) (*extensions.Deploymen
 	if !reflect.DeepEqual(current.Spec.Template.Spec.Volumes, desired.Spec.Template.Spec.Volumes) {
 		needsUpdate = true
 		current.Spec.Template.Spec.Volumes = desired.Spec.Template.Spec.Volumes
-	}
-	if current.Spec.Template.Spec.HostNetwork != desired.Spec.Template.Spec.HostNetwork {
-		needsUpdate = true
-		current.Spec.Template.Spec.HostNetwork = desired.Spec.Template.Spec.HostNetwork
 	}
 	if current.Spec.Template.Spec.ServiceAccountName != desired.Spec.Template.Spec.ServiceAccountName {
 		needsUpdate = true

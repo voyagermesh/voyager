@@ -34,7 +34,7 @@ var (
 		OperatorService:   "voyager-operator",
 		HTTPChallengePort: 56791,
 		EnableRBAC:        false,
-		SyncPeriod:        2 * time.Minute,
+		SyncPeriod:        30 * time.Second,
 	}
 	enableAnalytics bool = true
 

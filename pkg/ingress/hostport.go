@@ -370,48 +370,52 @@ func (c *hostPortController) EnsureFirewall(svc *apiv1.Service) error {
 	return nil
 }
 
-func (c *hostPortController) Delete() error {
+func (c *hostPortController) Delete() {
 	err := c.deletePods()
 	if err != nil {
-		return errors.FromErr(err).Err()
+		log.Errorln(err)
 	}
 	err = c.deleteConfigMap()
 	if err != nil {
-		return errors.FromErr(err).Err()
+		log.Errorln(err)
 	}
 	if c.Opt.EnableRBAC {
 		if err := c.ensureRBACDeleted(); err != nil {
-			return err
+			log.Errorln(err)
 		}
 	}
-	svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-	if err == nil {
-		// delete service
-		err = c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
-		if c.CloudManager != nil {
-			if fw, ok := c.CloudManager.Firewall(); ok {
-				err = fw.EnsureFirewallDeleted(svc)
-				if err != nil {
-					return errors.FromErr(err).Err()
-				}
+
+	// delete service
+	err = c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
+	if err != nil {
+		log.Errorln(err)
+	}
+
+	if c.CloudManager != nil {
+		if fw, ok := c.CloudManager.Firewall(); ok {
+			err = fw.EnsureFirewallDeleted(&apiv1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      c.Ingress.OffshootName(),
+					Namespace: c.Ingress.Namespace,
+				},
+			})
+			if err != nil {
+				log.Errorln(err)
 			}
 		}
 	}
+
 	if c.Ingress.Stats() {
 		c.ensureStatsServiceDeleted()
 	}
 	monSpec, err := c.Ingress.MonitorSpec()
 	if err != nil {
-		return errors.FromErr(err).Err()
+		log.Errorln(err)
 	}
 	if monSpec != nil && monSpec.Prometheus != nil {
 		ctrl := monitor.NewPrometheusController(c.KubeClient, c.PromClient)
 		ctrl.DeleteMonitor(c.Ingress, monSpec)
 	}
-	return nil
 }
 
 func (c *hostPortController) newService() *apiv1.Service {
