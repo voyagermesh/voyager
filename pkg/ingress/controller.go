@@ -17,7 +17,7 @@ import (
 type Controller interface {
 	IsExists() bool
 	Create() error
-	Update(mode UpdateMode) error
+	Update(mode UpdateMode, old *api.Ingress) error
 	Delete() error
 }
 

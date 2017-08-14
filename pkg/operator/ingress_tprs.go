@@ -100,7 +100,7 @@ func (op *Operator) initIngressTPRWatcher() cache.Controller {
 func (op *Operator) AddEngress(engress *tapi.Ingress) {
 	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 	if ctrl.IsExists() {
-		if err := ctrl.Update(ingress.UpdateStats); err != nil {
+		if err := ctrl.Update(ingress.UpdateStats, nil); err != nil {
 			log.Errorln(err)
 		}
 		return
@@ -160,7 +160,7 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 			}
 
 			// For ingress update update HAProxy once
-			ctrl.Update(updateMode)
+			ctrl.Update(updateMode, oldEngress)
 		} else {
 			ctrl.Create()
 		}

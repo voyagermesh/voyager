@@ -109,7 +109,7 @@ func (c *nodePortController) Create() error {
 		}
 	}
 
-	_, err = c.ensurePods()
+	_, err = c.ensurePods(nil)
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
@@ -126,7 +126,7 @@ func (c *nodePortController) Create() error {
 		eventer.EventReasonIngressControllerCreateSuccessful,
 		"Successfully created NodePortPods")
 
-	_, err = c.ensureService()
+	_, err = c.ensureService(nil)
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
@@ -194,7 +194,7 @@ func (c *nodePortController) Create() error {
 	return nil
 }
 
-func (c *nodePortController) Update(mode UpdateMode) error {
+func (c *nodePortController) Update(mode UpdateMode, old *api.Ingress) error {
 	err := c.generateConfig()
 	if err != nil {
 		c.recorder.Eventf(
@@ -212,7 +212,7 @@ func (c *nodePortController) Update(mode UpdateMode) error {
 		return errors.FromErr(err).Err()
 	}
 
-	_, err = c.ensurePods()
+	_, err = c.ensurePods(old)
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
@@ -229,7 +229,7 @@ func (c *nodePortController) Update(mode UpdateMode) error {
 		"Successfully updated Pods",
 	)
 
-	_, err = c.ensureService()
+	_, err = c.ensureService(old)
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
@@ -373,7 +373,7 @@ func (c *nodePortController) newService() *apiv1.Service {
 	return svc
 }
 
-func (c *nodePortController) ensureService() (*apiv1.Service, error) {
+func (c *nodePortController) ensureService(old *api.Ingress) (*apiv1.Service, error) {
 	desired := c.newService()
 	current, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
@@ -381,7 +381,7 @@ func (c *nodePortController) ensureService() (*apiv1.Service, error) {
 	} else if err != nil {
 		return nil, err
 	}
-	if svc, needsUpdate := ServiceRequiresUpdate(current, desired); needsUpdate {
+	if svc, needsUpdate := c.serviceRequiresUpdate(current, desired, old); needsUpdate {
 		return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Update(svc)
 	}
 	return current, nil
@@ -492,7 +492,7 @@ func (c *nodePortController) newPods() *extensions.Deployment {
 	return deployment
 }
 
-func (c *nodePortController) ensurePods() (*extensions.Deployment, error) {
+func (c *nodePortController) ensurePods(old *api.Ingress) (*extensions.Deployment, error) {
 	desired := c.newPods()
 	current, err := c.KubeClient.ExtensionsV1beta1().Deployments(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
@@ -502,10 +502,29 @@ func (c *nodePortController) ensurePods() (*extensions.Deployment, error) {
 	}
 
 	needsUpdate := false
-	if val, ok := c.ensureOriginAnnotations(current.Annotations); ok {
-		needsUpdate = true
-		current.Annotations = val
+
+	// annotations
+	if current.Annotations == nil {
+		current.Annotations = make(map[string]string)
 	}
+	oldAnn := map[string]string{}
+	if old != nil {
+		if a, ok := old.PodsAnnotations(); ok {
+			oldAnn = a
+		}
+	}
+	for k, v := range desired.Annotations {
+		if cv, found := current.Annotations[k]; !found || cv != v {
+			current.Annotations[k] = v
+			needsUpdate = true
+		}
+		delete(oldAnn, k)
+	}
+	for k := range oldAnn {
+		delete(current.Annotations, k)
+		needsUpdate = true
+	}
+
 	if !reflect.DeepEqual(current.Spec.Selector, desired.Spec.Selector) {
 		needsUpdate = true
 		current.Spec.Selector = desired.Spec.Selector

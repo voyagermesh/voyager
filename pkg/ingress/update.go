@@ -53,7 +53,7 @@ func (c *controller) updateConfigMap() error {
 	return nil
 }
 
-func ServiceRequiresUpdate(current, desired *apiv1.Service) (*apiv1.Service, bool) {
+func (c *controller) serviceRequiresUpdate(current, desired *apiv1.Service, old *api.Ingress) (*apiv1.Service, bool) {
 	if current == nil {
 		return nil, false // should never happen
 	}
@@ -87,11 +87,22 @@ func ServiceRequiresUpdate(current, desired *apiv1.Service) (*apiv1.Service, boo
 	if current.Annotations == nil {
 		current.Annotations = make(map[string]string)
 	}
+	oldAnn := map[string]string{}
+	if old != nil {
+		if a, ok := old.ServiceAnnotations(c.Opt.CloudProvider); ok {
+			oldAnn = a
+		}
+	}
 	for k, v := range desired.Annotations {
 		if cv, found := current.Annotations[k]; !found || cv != v {
 			current.Annotations[k] = v
 			needsUpdate = true
 		}
+		delete(oldAnn, k)
+	}
+	for k := range oldAnn {
+		delete(current.Annotations, k)
+		needsUpdate = true
 	}
 
 	// LoadBalancer ranges
@@ -123,4 +134,19 @@ func ipnet(spec string) (string, bool) {
 		return "", false
 	}
 	return ipnet.String(), true
+}
+
+func mergeAnnotations(obj, old, new map[string]string) map[string]string {
+	if obj == nil {
+		obj = make(map[string]string)
+	}
+
+	for k := range old {
+		delete(obj, k)
+	}
+
+	for k, v := range new {
+		obj[k] = v
+	}
+	return obj
 }
