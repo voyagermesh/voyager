@@ -1,6 +1,7 @@
 package ingress
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -309,9 +310,16 @@ func (c *controller) generateConfig() error {
 		td.DNSResolvers = append(td.DNSResolvers, dnsResolvers[k])
 	}
 
-	var err error
-	c.HAProxyConfig, err = haproxy.RenderConfig(td)
-	return err
+	if jb, err := json.MarshalIndent(&td, "", "  "); err != nil {
+		log.Debugf("Rendering haproxy.cfg for Ingress %s@%s using data:", c.Ingress.Name, c.Ingress.Namespace, string(jb))
+	}
+	if cfg, err := haproxy.RenderConfig(td); err != nil {
+		return err
+	} else {
+		c.HAProxyConfig = cfg
+		log.Debugf("Generated haproxy.cfg for Ingress %s@%s:", c.Ingress.Name, c.Ingress.Namespace, cfg)
+	}
+	return nil
 }
 
 func parseALPNOptions(opt []string) string {

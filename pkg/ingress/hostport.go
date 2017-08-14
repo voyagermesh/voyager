@@ -40,17 +40,17 @@ func NewHostPortController(
 	kubeClient clientset.Interface,
 	extClient acs.ExtensionInterface,
 	promClient pcm.MonitoringV1alpha1Interface,
-	services core.ServiceLister,
-	endpoints core.EndpointsLister,
+	serviceLister core.ServiceLister,
+	endpointsLister core.EndpointsLister,
 	opt config.Options,
-	ingress *api.Ingress) Controller {
+	ingress *api.Ingress) *hostPortController {
 	ctrl := &hostPortController{
 		controller: &controller{
 			KubeClient:      kubeClient,
 			ExtClient:       extClient,
 			PromClient:      promClient,
-			ServiceLister:   services,
-			EndpointsLister: endpoints,
+			ServiceLister:   serviceLister,
+			EndpointsLister: endpointsLister,
 			Opt:             opt,
 			Ingress:         ingress,
 			recorder:        eventer.NewEventRecorder(kubeClient, "voyager operator"),
@@ -137,7 +137,7 @@ func (c *hostPortController) Create() error {
 		}
 	}
 
-	err = c.createHostPortPods()
+	_, err = c.ensurePods()
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
@@ -155,14 +155,24 @@ func (c *hostPortController) Create() error {
 		"Successfully created HostPortPods",
 	)
 
-	time.Sleep(time.Second * 10)
-	err = c.createHostPortSvc()
+	svc, err := c.ensureService()
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
 			apiv1.EventTypeWarning,
 			eventer.EventReasonIngressServiceCreateFailed,
 			"Failed to create HostPortService, Reason: %s",
+			err.Error(),
+		)
+		return errors.FromErr(err).Err()
+	}
+	err = c.EnsureFirewall(svc)
+	if err != nil {
+		c.recorder.Eventf(
+			c.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressFirewallUpdateFailed,
+			"Failed to ensure firewall, %s",
 			err.Error(),
 		)
 		return errors.FromErr(err).Err()
@@ -242,86 +252,52 @@ func (c *hostPortController) Update(mode UpdateMode) error {
 		return errors.FromErr(err).Err()
 	}
 
-	if mode&UpdateFirewall > 0 ||
-		mode&RestartHAProxy > 0 ||
-		mode&UpdateStats > 0 {
-		err := c.deleteHostPortPods()
-		if err != nil {
-			c.recorder.Eventf(
-				c.Ingress,
-				apiv1.EventTypeWarning,
-				eventer.EventReasonIngressUpdateFailed,
-				"Failed to update Pods, %s", err.Error(),
-			)
-			return errors.FromErr(err).Err()
-		}
-		time.Sleep(time.Second * 5)
-		err = c.createHostPortPods()
-		if err != nil {
-			c.recorder.Eventf(
-				c.Ingress,
-				apiv1.EventTypeWarning,
-				eventer.EventReasonIngressUpdateFailed,
-				"Failed to update Pods, %s", err.Error(),
-			)
-			return errors.FromErr(err).Err()
-		}
+	_, err = c.ensurePods()
+	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
-			apiv1.EventTypeNormal,
-			eventer.EventReasonIngressUpdateSuccessful,
-			"Successfully updated Pods",
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressUpdateFailed,
+			"Failed to update Pods, %s", err.Error(),
 		)
+		return errors.FromErr(err).Err()
 	}
+	c.recorder.Eventf(
+		c.Ingress,
+		apiv1.EventTypeNormal,
+		eventer.EventReasonIngressUpdateSuccessful,
+		"Successfully updated Pods",
+	)
 
-	if mode&UpdateFirewall > 0 {
-		svc, err := c.updateLBSvc()
-		if err != nil {
-			c.recorder.Eventf(
-				c.Ingress,
-				apiv1.EventTypeWarning,
-				eventer.EventReasonIngressServiceUpdateFailed,
-				"Failed to update LBService, %s",
-				err.Error(),
-			)
-			return errors.FromErr(err).Err()
-		}
-
-		// open up firewall
-		if c.CloudManager != nil {
-			daemonNodes, err := c.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{
-				LabelSelector: labels.SelectorFromSet(c.Ingress.NodeSelector()).String(),
-			})
-			if err != nil {
-				log.Infoln("node not found with nodeSelector, cause", err)
-				return errors.FromErr(err).Err()
-			}
-			// open up firewall
-			log.Debugln("Checking cloud manager", c.CloudManager)
-			if c.CloudManager != nil {
-				log.Debugln("cloud manager not nil")
-				if fw, ok := c.CloudManager.Firewall(); ok {
-					log.Debugln("firewalls found")
-					for _, node := range daemonNodes.Items {
-						err = fw.EnsureFirewall(svc, node.Name)
-						if err != nil {
-							log.Errorln("Failed to ensure loadbalancer for node", node.Name, "cause", err)
-						}
-					}
-					log.Debugln("getting firewalls for cloud manager failed")
-				}
-			}
-		}
-
+	svc, err := c.ensureService()
+	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
-			apiv1.EventTypeNormal,
-			eventer.EventReasonIngressServiceUpdateSuccessful,
-			"Successfully updated LBService",
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressServiceUpdateFailed,
+			"Failed to update LBService, %s",
+			err.Error(),
 		)
-
-		go c.updateStatus()
+		return errors.FromErr(err).Err()
 	}
+
+	err = c.EnsureFirewall(svc)
+	if err != nil {
+		c.recorder.Eventf(
+			c.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressFirewallUpdateFailed,
+			"Failed to ensure firewall, %s",
+			err.Error(),
+		)
+		return errors.FromErr(err).Err()
+	}
+	c.recorder.Eventf(
+		c.Ingress,
+		apiv1.EventTypeNormal,
+		eventer.EventReasonIngressServiceUpdateSuccessful,
+		"Successfully updated LBService",
+	)
 
 	if mode&UpdateStats > 0 {
 		if c.Ingress.Stats() {
@@ -372,36 +348,22 @@ func (c *hostPortController) Update(mode UpdateMode) error {
 	return nil
 }
 
-func (c *hostPortController) UpdateTargetAnnotations(old *api.Ingress, new *api.Ingress) error {
-	// Check for changes in ingress.appscode.com/annotations-service
-	c.updateServiceAnnotations(old, new)
-
-	// Check for changes in ingress.appscode.com/annotations-pod
-	if newPodAns, newOk := new.PodsAnnotations(); newOk {
-		if oldPodAns, oldOk := old.PodsAnnotations(); oldOk {
-			if !reflect.DeepEqual(oldPodAns, newPodAns) {
-				daemonset, err := c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-				if err != nil {
-					return errors.FromErr(err).Err()
-				}
-				daemonset.Spec.Template.Annotations = newPodAns
-				daemonset, err = c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Update(daemonset)
-				if err != nil {
-					return errors.FromErr(err).Err()
-				}
-				if daemonset.Spec.Selector != nil {
-					pods, _ := c.KubeClient.CoreV1().Pods(c.Ingress.Namespace).List(metav1.ListOptions{
-						LabelSelector: labels.SelectorFromSet(daemonset.Spec.Selector.MatchLabels).String(),
-					})
-					for _, pod := range pods.Items {
-						pod.Annotations = mergeAnnotations(pod.Annotations, oldPodAns, newPodAns)
-						_, err := c.KubeClient.CoreV1().Pods(c.Ingress.Namespace).Update(&pod)
-						if err != nil {
-							log.Errorln("Failed to Update Pods", err)
-						}
-					}
-				}
-
+func (c *hostPortController) EnsureFirewall(svc *apiv1.Service) error {
+	if c.CloudManager != nil {
+		if fw, ok := c.CloudManager.Firewall(); ok {
+			nodes, err := c.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{
+				LabelSelector: labels.SelectorFromSet(c.Ingress.NodeSelector()).String(),
+			})
+			if err != nil {
+				return err
+			}
+			hostnames := make([]string, len(nodes.Items))
+			for i, node := range nodes.Items {
+				hostnames[i] = node.Name
+			}
+			err = fw.EnsureFirewall(svc, hostnames)
+			if err != nil {
+				return err
 			}
 		}
 	}
@@ -409,7 +371,7 @@ func (c *hostPortController) UpdateTargetAnnotations(old *api.Ingress, new *api.
 }
 
 func (c *hostPortController) Delete() error {
-	err := c.deleteHostPortPods()
+	err := c.deletePods()
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
@@ -438,6 +400,9 @@ func (c *hostPortController) Delete() error {
 			}
 		}
 	}
+	if c.Ingress.Stats() {
+		c.ensureStatsServiceDeleted()
+	}
 	monSpec, err := c.Ingress.MonitorSpec()
 	if err != nil {
 		return errors.FromErr(err).Err()
@@ -446,13 +411,10 @@ func (c *hostPortController) Delete() error {
 		ctrl := monitor.NewPrometheusController(c.KubeClient, c.PromClient)
 		ctrl.DeleteMonitor(c.Ingress, monSpec)
 	}
-	if c.Ingress.Stats() {
-		c.ensureStatsServiceDeleted()
-	}
 	return nil
 }
 
-func (c *hostPortController) createHostPortSvc() error {
+func (c *hostPortController) newService() *apiv1.Service {
 	// Create a Headless service without selectors
 	// We just want kubernetes to assign a stable UID to the service. This is used inside EnsureFirewall()
 	svc := &apiv1.Service{
@@ -473,10 +435,7 @@ func (c *hostPortController) createHostPortSvc() error {
 	}
 
 	// opening other tcp ports
-	mappings, err := c.Ingress.PortMappings(c.Opt.CloudProvider)
-	if err != nil {
-		return err
-	}
+	mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
 	for svcPort, target := range mappings {
 		p := apiv1.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(svcPort),
@@ -492,66 +451,24 @@ func (c *hostPortController) createHostPortSvc() error {
 			svc.Annotations[k] = v
 		}
 	}
-
-	updateFW := false
-	s, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(svc.Name, metav1.GetOptions{})
-	if kerr.IsNotFound(err) {
-		svc, err = c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Create(svc)
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
-		updateFW = true
-	} else if err != nil {
-		return errors.FromErr(err).Err()
-	} else {
-		needsUpdate := false
-		if val, ok := c.ensureResourceAnnotations(s.Annotations); ok {
-			s.Annotations = val
-			needsUpdate = true
-		}
-
-		if isServicePortChanged(s.Spec.Ports, svc.Spec.Ports) {
-			needsUpdate = true
-			s.Spec.Ports = svc.Spec.Ports
-
-			// Port changed, need to update Firewall
-			updateFW = true
-		}
-
-		if needsUpdate {
-			_, err = c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Update(s)
-			if err != nil {
-				return errors.FromErr(err).Err()
-			}
-		}
-	}
-
-	if updateFW && c.CloudManager != nil {
-		daemonNodes, err := c.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{
-			LabelSelector: labels.SelectorFromSet(c.Ingress.NodeSelector()).String(),
-		})
-		if err != nil {
-			log.Infoln("node not found with nodeSelector, cause", err)
-			return errors.FromErr(err).Err()
-		}
-		// open up firewall
-		log.Debugln("Checking cloud manager", c.CloudManager)
-		if fw, ok := c.CloudManager.Firewall(); ok {
-			log.Debugln("firewalls found")
-			for _, node := range daemonNodes.Items {
-				err = fw.EnsureFirewall(svc, node.Name)
-				if err != nil {
-					log.Errorln("Failed to ensure loadbalancer for node", node.Name, "cause", err)
-				}
-			}
-			log.Debugln("getting firewalls for cloud manager failed")
-		}
-	}
-	return nil
+	return svc
 }
 
-func (c *hostPortController) createHostPortPods() error {
-	log.Infoln("Creating Daemon type lb for nodeSelector = ", c.Ingress.NodeSelector())
+func (c *hostPortController) ensureService() (*apiv1.Service, error) {
+	desired := c.newService()
+	current, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
+	if kerr.IsNotFound(err) {
+		return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Create(desired)
+	} else if err != nil {
+		return nil, err
+	}
+	if svc, needsUpdate := ServiceRequiresUpdate(current, desired); needsUpdate {
+		return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Update(svc)
+	}
+	return current, nil
+}
+
+func (c *hostPortController) newPods() *extensions.DaemonSet {
 	secrets := c.Ingress.Secrets()
 	daemon := &extensions.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -568,7 +485,9 @@ func (c *hostPortController) createHostPortPods() error {
 			Selector: &metav1.LabelSelector{
 				MatchLabels: c.Ingress.OffshootLabels(),
 			},
-
+			UpdateStrategy: extensions.DaemonSetUpdateStrategy{
+				Type: extensions.RollingUpdateDaemonSetStrategyType,
+			},
 			// pod templates.
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
@@ -612,10 +531,7 @@ func (c *hostPortController) createHostPortPods() error {
 		daemon.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
 	}
 
-	exporter, err := c.getExporterSidecar()
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
+	exporter, _ := c.getExporterSidecar()
 	if exporter != nil {
 		daemon.Spec.Template.Spec.Containers = append(daemon.Spec.Template.Spec.Containers, *exporter)
 	}
@@ -630,7 +546,6 @@ func (c *hostPortController) createHostPortPods() error {
 		}
 		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, p)
 	}
-
 	if c.Ingress.Stats() {
 		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
 			Name:          api.StatsPortName,
@@ -643,47 +558,70 @@ func (c *hostPortController) createHostPortPods() error {
 		daemon.Spec.Template.Annotations = ans
 	}
 
-	dm, err := c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Get(daemon.Name, metav1.GetOptions{})
+	return daemon
+}
+
+func (c *hostPortController) ensurePods() (*extensions.DaemonSet, error) {
+	desired := c.newPods()
+	current, err := c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		log.Infoln("creating DaemonSets controller")
-		_, err := c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Create(daemon)
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
-		return nil
+		return c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Create(desired)
 	} else if err != nil {
-		return errors.FromErr(err).Err()
+		return nil, err
 	}
 
 	needsUpdate := false
-	if val, ok := c.ensureResourceAnnotations(dm.Annotations); ok {
+	if val, ok := c.ensureOriginAnnotations(current.Annotations); ok {
 		needsUpdate = true
-		dm.Annotations = val
+		current.Annotations = val
 	}
-
-	if !reflect.DeepEqual(dm.Spec, daemon.Spec) {
+	if !reflect.DeepEqual(current.Spec.Selector, desired.Spec.Selector) {
 		needsUpdate = true
-		dm.Spec = daemon.Spec
+		current.Spec.Selector = desired.Spec.Selector
 	}
-
+	if !reflect.DeepEqual(current.Spec.UpdateStrategy, desired.Spec.UpdateStrategy) {
+		needsUpdate = true
+		current.Spec.UpdateStrategy = desired.Spec.UpdateStrategy
+	}
+	if !reflect.DeepEqual(current.Spec.Template.ObjectMeta, desired.Spec.Template.ObjectMeta) {
+		needsUpdate = true
+		current.Spec.Template.ObjectMeta = desired.Spec.Template.ObjectMeta
+	}
+	if !reflect.DeepEqual(current.Spec.Template.Annotations, desired.Spec.Template.Annotations) {
+		needsUpdate = true
+		current.Spec.Template.Annotations = desired.Spec.Template.Annotations
+	}
+	if !reflect.DeepEqual(current.Spec.Template.Spec.NodeSelector, desired.Spec.Template.Spec.NodeSelector) {
+		needsUpdate = true
+		current.Spec.Template.Spec.NodeSelector = desired.Spec.Template.Spec.NodeSelector
+	}
+	if !reflect.DeepEqual(current.Spec.Template.Spec.Containers, desired.Spec.Template.Spec.Containers) {
+		needsUpdate = true
+		current.Spec.Template.Spec.Containers = desired.Spec.Template.Spec.Containers
+	}
+	if !reflect.DeepEqual(current.Spec.Template.Spec.Volumes, desired.Spec.Template.Spec.Volumes) {
+		needsUpdate = true
+		current.Spec.Template.Spec.Volumes = desired.Spec.Template.Spec.Volumes
+	}
+	if current.Spec.Template.Spec.HostNetwork != desired.Spec.Template.Spec.HostNetwork {
+		needsUpdate = true
+		current.Spec.Template.Spec.HostNetwork = desired.Spec.Template.Spec.HostNetwork
+	}
+	if current.Spec.Template.Spec.ServiceAccountName != desired.Spec.Template.Spec.ServiceAccountName {
+		needsUpdate = true
+		current.Spec.Template.Spec.ServiceAccountName = desired.Spec.Template.Spec.ServiceAccountName
+	}
 	if needsUpdate {
-		_, err = c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Update(dm)
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
+		current, err = c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Update(current)
+		return current, err
 	}
-	return nil
+	return current, nil
 }
 
-func (c *hostPortController) deleteHostPortPods() error {
-	d, err := c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+func (c *hostPortController) deletePods() error {
+	err := c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
 	if err != nil {
-		return nil
+		log.Errorln(err)
 	}
-	err = c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
-	c.deletePodsForSelector(d.Spec.Selector.MatchLabels)
-	return nil
+	return c.deletePodsForSelector(&metav1.LabelSelector{MatchLabels: c.Ingress.OffshootLabels()})
 }

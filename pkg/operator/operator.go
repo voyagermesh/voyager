@@ -94,6 +94,7 @@ func (op *Operator) Run() {
 
 	informers := []cache.Controller{
 		op.initNamespaceWatcher(),
+		op.initNodeWatcher(),
 		op.initConfigMapWatcher(),
 		op.initDaemonSetWatcher(),
 		op.initDeploymentWatcher(),

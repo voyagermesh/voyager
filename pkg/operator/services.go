@@ -144,28 +144,23 @@ func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
 					// to the resource. If hard update encounters errors then we will
 					// recreate the resource from scratch.
 					log.Infoln("Loadbalancer is exists, trying to update")
-					cfgErr := ctrl.Update(ingress.UpdateConfig)
+					cfgErr := ctrl.Update(0)
 					if cfgErr != nil {
 						log.Warningln("Loadbalancer is exists but Soft Update failed. Retring Hard Update")
-						restartErr := ctrl.Update(ingress.RestartHAProxy)
-						if restartErr != nil {
-							log.Warningln("Loadbalancer is exists, But Hard Update is also failed, recreating with a cleanup")
-							ctrl.Create()
-						}
 					}
 				} else {
 					// This LB should be there. If it is no there. we should create it
 					log.Infoln("Loadbalancer is not found, recreating with a cleanup")
 					ctrl.Create()
 				}
-				op.ensureServiceAnnotations(engress, svc)
+				op.ensureEgressAnnotations(engress, svc)
 			}
 		}
 	}
 	return nil
 }
 
-func (op *Operator) ensureServiceAnnotations(r *tapi.Ingress, svc *apiv1.Service) {
+func (op *Operator) ensureEgressAnnotations(r *tapi.Ingress, svc *apiv1.Service) {
 	if svc.Annotations == nil {
 		svc.Annotations = make(map[string]string)
 	}

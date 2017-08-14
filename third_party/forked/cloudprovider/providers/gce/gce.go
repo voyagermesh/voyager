@@ -381,12 +381,8 @@ func isHTTPErrorCode(err error, code int) bool {
 // Due to an interesting series of design decisions, this handles both creating
 // new load balancers and updating existing load balancers, recognizing when
 // each is needed.
-func (gce *GCECloud) EnsureFirewall(apiService *apiv1.Service, hostName string) error {
-	if hostName == "" {
-		return fmt.Errorf("Cannot EnsureFirewall() with no hosts")
-	}
-
-	hosts, err := gce.getInstancesByNames([]string{hostName})
+func (gce *GCECloud) EnsureFirewall(apiService *apiv1.Service, hostnames []string) error {
+	hosts, err := gce.getInstancesByNames(hostnames)
 	if err != nil {
 		return err
 	}
