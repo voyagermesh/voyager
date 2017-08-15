@@ -239,7 +239,7 @@ var _ = Describe("IngressTLS", func() {
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
 								NoSSL: true,
-								Port: intstr.FromInt(443),
+								Port:  intstr.FromInt(443),
 								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/testpath",
