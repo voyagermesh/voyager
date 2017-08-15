@@ -29,8 +29,6 @@ import (
 
 type hostPortController struct {
 	*controller
-
-	// kubernetes client
 	CloudManager cloudprovider.Interface
 }
 
@@ -43,7 +41,7 @@ func NewHostPortController(
 	serviceLister core.ServiceLister,
 	endpointsLister core.EndpointsLister,
 	opt config.Options,
-	ingress *api.Ingress) *hostPortController {
+	ingress *api.Ingress) Controller {
 	ctrl := &hostPortController{
 		controller: &controller{
 			KubeClient:      kubeClient,
@@ -137,7 +135,7 @@ func (c *hostPortController) Create() error {
 		}
 	}
 
-	_, err = c.ensurePods()
+	_, err = c.ensurePods(nil)
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
@@ -155,7 +153,7 @@ func (c *hostPortController) Create() error {
 		"Successfully created HostPortPods",
 	)
 
-	svc, err := c.ensureService()
+	svc, err := c.ensureService(nil)
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
@@ -234,7 +232,7 @@ func (c *hostPortController) Create() error {
 	return nil
 }
 
-func (c *hostPortController) Update(mode UpdateMode) error {
+func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 	err := c.generateConfig()
 	if err != nil {
 		c.recorder.Eventf(
@@ -252,7 +250,7 @@ func (c *hostPortController) Update(mode UpdateMode) error {
 		return errors.FromErr(err).Err()
 	}
 
-	_, err = c.ensurePods()
+	_, err = c.ensurePods(old)
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
@@ -269,7 +267,7 @@ func (c *hostPortController) Update(mode UpdateMode) error {
 		"Successfully updated Pods",
 	)
 
-	svc, err := c.ensureService()
+	svc, err := c.ensureService(old)
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
@@ -296,7 +294,7 @@ func (c *hostPortController) Update(mode UpdateMode) error {
 		c.Ingress,
 		apiv1.EventTypeNormal,
 		eventer.EventReasonIngressServiceUpdateSuccessful,
-		"Successfully updated LBService",
+		"Successfully updated HostPort Service",
 	)
 
 	if mode&UpdateStats > 0 {
@@ -370,48 +368,52 @@ func (c *hostPortController) EnsureFirewall(svc *apiv1.Service) error {
 	return nil
 }
 
-func (c *hostPortController) Delete() error {
+func (c *hostPortController) Delete() {
 	err := c.deletePods()
 	if err != nil {
-		return errors.FromErr(err).Err()
+		log.Errorln(err)
 	}
 	err = c.deleteConfigMap()
 	if err != nil {
-		return errors.FromErr(err).Err()
+		log.Errorln(err)
 	}
 	if c.Opt.EnableRBAC {
 		if err := c.ensureRBACDeleted(); err != nil {
-			return err
+			log.Errorln(err)
 		}
 	}
-	svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-	if err == nil {
-		// delete service
-		err = c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
-		if c.CloudManager != nil {
-			if fw, ok := c.CloudManager.Firewall(); ok {
-				err = fw.EnsureFirewallDeleted(svc)
-				if err != nil {
-					return errors.FromErr(err).Err()
-				}
+
+	// delete service
+	err = c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
+	if err != nil {
+		log.Errorln(err)
+	}
+
+	if c.CloudManager != nil {
+		if fw, ok := c.CloudManager.Firewall(); ok {
+			err = fw.EnsureFirewallDeleted(&apiv1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      c.Ingress.OffshootName(),
+					Namespace: c.Ingress.Namespace,
+				},
+			})
+			if err != nil {
+				log.Errorln(err)
 			}
 		}
 	}
+
 	if c.Ingress.Stats() {
 		c.ensureStatsServiceDeleted()
 	}
 	monSpec, err := c.Ingress.MonitorSpec()
 	if err != nil {
-		return errors.FromErr(err).Err()
+		log.Errorln(err)
 	}
 	if monSpec != nil && monSpec.Prometheus != nil {
 		ctrl := monitor.NewPrometheusController(c.KubeClient, c.PromClient)
 		ctrl.DeleteMonitor(c.Ingress, monSpec)
 	}
-	return nil
 }
 
 func (c *hostPortController) newService() *apiv1.Service {
@@ -454,7 +456,7 @@ func (c *hostPortController) newService() *apiv1.Service {
 	return svc
 }
 
-func (c *hostPortController) ensureService() (*apiv1.Service, error) {
+func (c *hostPortController) ensureService(old *api.Ingress) (*apiv1.Service, error) {
 	desired := c.newService()
 	current, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
@@ -462,7 +464,7 @@ func (c *hostPortController) ensureService() (*apiv1.Service, error) {
 	} else if err != nil {
 		return nil, err
 	}
-	if svc, needsUpdate := ServiceRequiresUpdate(current, desired); needsUpdate {
+	if svc, needsUpdate := c.serviceRequiresUpdate(current, desired, old); needsUpdate {
 		return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Update(svc)
 	}
 	return current, nil
@@ -562,7 +564,7 @@ func (c *hostPortController) newPods() *extensions.DaemonSet {
 	return daemon
 }
 
-func (c *hostPortController) ensurePods() (*extensions.DaemonSet, error) {
+func (c *hostPortController) ensurePods(old *api.Ingress) (*extensions.DaemonSet, error) {
 	desired := c.newPods()
 	current, err := c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
@@ -572,10 +574,31 @@ func (c *hostPortController) ensurePods() (*extensions.DaemonSet, error) {
 	}
 
 	needsUpdate := false
-	if val, ok := c.ensureOriginAnnotations(current.Annotations); ok {
-		needsUpdate = true
-		current.Annotations = val
+
+	// annotations
+	if current.Annotations == nil {
+		current.Annotations = make(map[string]string)
 	}
+	oldAnn := map[string]string{}
+	if old != nil {
+		if a, ok := old.PodsAnnotations(); ok {
+			oldAnn = a
+		}
+	}
+	for k, v := range desired.Annotations {
+		if cv, found := current.Annotations[k]; !found || cv != v {
+			current.Annotations[k] = v
+			needsUpdate = true
+		}
+		delete(oldAnn, k)
+	}
+	for k := range oldAnn {
+		if _, ok := current.Annotations[k]; ok {
+			delete(current.Annotations, k)
+			needsUpdate = true
+		}
+	}
+
 	if !reflect.DeepEqual(current.Spec.Selector, desired.Spec.Selector) {
 		needsUpdate = true
 		current.Spec.Selector = desired.Spec.Selector

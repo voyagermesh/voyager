@@ -87,8 +87,8 @@ func init() {
 }
 
 // Raw access to the underlying GCE service, probably should only be used for e2e tests
-func (g *GCECloud) GetComputeService() *compute.Service {
-	return g.service
+func (gce *GCECloud) GetComputeService() *compute.Service {
+	return gce.service
 }
 
 func getProjectAndZone() (string, string, error) {
@@ -407,7 +407,7 @@ func (gce *GCECloud) EnsureFirewall(apiService *apiv1.Service, hostnames []strin
 	}
 	glog.V(6).Infof("EnsureFirewall = %v, sourceRanges = %v", loadBalancerName, sourceRanges)
 
-	firewallExists, firewallNeedsUpdate, err := gce.firewallNeedsUpdate(loadBalancerName, serviceName.String(), gce.region, "", ports, sourceRanges)
+	firewallExists, firewallNeedsUpdate, err := gce.firewallNeedsUpdate(loadBalancerName, serviceName.String(), gce.region, "", apiService, sourceRanges)
 	if err != nil {
 		return err
 	}
@@ -435,7 +435,7 @@ func (gce *GCECloud) EnsureFirewall(apiService *apiv1.Service, hostnames []strin
 	return nil
 }
 
-func (gce *GCECloud) firewallNeedsUpdate(name, serviceName, region, ipAddress string, ports []apiv1.ServicePort, sourceRanges netsets.IPNet) (exists bool, needsUpdate bool, err error) {
+func (gce *GCECloud) firewallNeedsUpdate(name, serviceName, region, ipAddress string, svc *apiv1.Service, sourceRanges netsets.IPNet) (exists bool, needsUpdate bool, err error) {
 	fw, err := gce.service.Firewalls.Get(gce.projectID, makeFirewallName(name)).Do()
 	if err != nil {
 		if isHTTPErrorCode(err, http.StatusNotFound) {
@@ -450,9 +450,18 @@ func (gce *GCECloud) firewallNeedsUpdate(name, serviceName, region, ipAddress st
 		return true, true, nil
 	}
 	// Make sure the allowed ports match.
-	allowedPorts := make([]string, len(ports))
-	for ix := range ports {
-		allowedPorts[ix] = strconv.Itoa(int(ports[ix].Port))
+	allowedPorts := make([]string, len(svc.Spec.Ports))
+	for ix := range svc.Spec.Ports {
+		port := svc.Spec.Ports[ix]
+		if svc.Spec.Type == apiv1.ServiceTypeNodePort {
+			if port.NodePort == 0 {
+				glog.Errorf("Ignoring port without NodePort defined: %v", port)
+				continue
+			}
+			allowedPorts[ix] = strconv.Itoa(int(port.NodePort))
+		} else {
+			allowedPorts[ix] = strconv.Itoa(int(port.Port))
+		}
 	}
 	if !slicesEqual(allowedPorts, fw.Allowed[0].Ports) {
 		return true, true, nil

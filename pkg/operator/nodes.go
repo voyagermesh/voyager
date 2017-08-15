@@ -71,20 +71,25 @@ func (op *Operator) updateFirewall(ing *api.Ingress, node *apiv1.Node) {
 		log.Warningf("Skipping ingress %s@%s, as it is not handled by Voyager.", ing.Name, ing.Namespace)
 		return
 	}
-	if getLBType(ing.Annotations) == api.LBTypeHostPort {
-		if selector := labels.SelectorFromSet(ing.NodeSelector()); selector.Matches(labels.Set(node.Labels)) {
-			ctrl := ingress.NewHostPortController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, ing)
-			if svc, err := op.ServiceLister.Services(ing.Namespace).Get(ing.OffshootName()); err == nil {
-				ctrl.EnsureFirewall(svc)
-			} else {
-				op.recorder.Eventf(
-					ing,
-					apiv1.EventTypeWarning,
-					eventer.EventReasonIngressFirewallUpdateFailed,
-					"Failed to update firewall, Reason: %s",
-					err.Error(),
-				)
-			}
+	t := ing.LBType()
+	if t == api.LBTypeLoadBalancer {
+		return
+	} else if t == api.LBTypeHostPort {
+		if selector := labels.SelectorFromSet(ing.NodeSelector()); !selector.Matches(labels.Set(node.Labels)) {
+			return
 		}
+	}
+
+	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, ing)
+	if svc, err := op.ServiceLister.Services(ing.Namespace).Get(ing.OffshootName()); err == nil {
+		ctrl.EnsureFirewall(svc)
+	} else {
+		op.recorder.Eventf(
+			ing,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressFirewallUpdateFailed,
+			"Failed to update firewall, Reason: %s",
+			err.Error(),
+		)
 	}
 }

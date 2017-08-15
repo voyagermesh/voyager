@@ -110,7 +110,7 @@ func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*tapi.Ingress, error) {
 }
 
 func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
-	ing, err := op.KubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
+	ing, err := op.KubeClient.ExtensionsV1beta1().Ingresses(svc.Namespace).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -144,9 +144,9 @@ func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
 					// to the resource. If hard update encounters errors then we will
 					// recreate the resource from scratch.
 					log.Infoln("Loadbalancer is exists, trying to update")
-					cfgErr := ctrl.Update(0)
+					cfgErr := ctrl.Update(0, nil)
 					if cfgErr != nil {
-						log.Warningln("Loadbalancer is exists but Soft Update failed. Retring Hard Update")
+						log.Warningln("Loadbalancer update failed", cfgErr)
 					}
 				} else {
 					// This LB should be there. If it is no there. we should create it

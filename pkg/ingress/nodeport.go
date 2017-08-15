@@ -14,7 +14,9 @@ import (
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/monitor"
+	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
+	fakecloudprovider "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,6 +29,7 @@ import (
 
 type nodePortController struct {
 	*controller
+	CloudManager cloudprovider.Interface
 }
 
 var _ Controller = &nodePortController{}
@@ -39,7 +42,7 @@ func NewNodePortController(
 	endpointsLister core.EndpointsLister,
 	opt config.Options,
 	ingress *api.Ingress) Controller {
-	return &nodePortController{
+	ctrl := &hostPortController{
 		controller: &controller{
 			KubeClient:      kubeClient,
 			ExtClient:       extClient,
@@ -51,6 +54,29 @@ func NewNodePortController(
 			recorder:        eventer.NewEventRecorder(kubeClient, "voyager operator"),
 		},
 	}
+	log.Infoln("Initializing cloud manager for provider", opt.CloudProvider)
+	if opt.CloudProvider == "aws" || opt.CloudProvider == "gce" || opt.CloudProvider == "azure" {
+		cloudInterface, err := cloudprovider.InitCloudProvider(opt.CloudProvider, opt.CloudConfigFile)
+		if err != nil {
+			log.Errorln("Failed to initialize cloud provider:"+opt.CloudProvider, err)
+		} else {
+			log.Infoln("Initialized cloud provider: "+opt.CloudProvider, cloudInterface)
+			ctrl.CloudManager = cloudInterface
+		}
+	} else if opt.CloudProvider == "gke" {
+		cloudInterface, err := cloudprovider.InitCloudProvider("gce", opt.CloudConfigFile)
+		if err != nil {
+			log.Errorln("Failed to initialize cloud provider:"+opt.CloudProvider, err)
+		} else {
+			log.Infoln("Initialized cloud provider: "+opt.CloudProvider, cloudInterface)
+			ctrl.CloudManager = cloudInterface
+		}
+	} else if opt.CloudProvider == "minikube" {
+		ctrl.CloudManager = &fakecloudprovider.FakeCloud{}
+	} else {
+		log.Infoln("No cloud manager found for provider", opt.CloudProvider)
+	}
+	return ctrl
 }
 
 func (c *nodePortController) IsExists() bool {
@@ -109,7 +135,7 @@ func (c *nodePortController) Create() error {
 		}
 	}
 
-	_, err = c.ensurePods()
+	_, err = c.ensurePods(nil)
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
@@ -126,13 +152,24 @@ func (c *nodePortController) Create() error {
 		eventer.EventReasonIngressControllerCreateSuccessful,
 		"Successfully created NodePortPods")
 
-	_, err = c.ensureService()
+	svc, err := c.ensureService(nil)
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
 			apiv1.EventTypeWarning,
 			eventer.EventReasonIngressServiceCreateFailed,
 			"Failed to create NodePortService, Reason: %s",
+			err.Error(),
+		)
+		return errors.FromErr(err).Err()
+	}
+	err = c.EnsureFirewall(svc)
+	if err != nil {
+		c.recorder.Eventf(
+			c.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressFirewallUpdateFailed,
+			"Failed to ensure firewall, %s",
 			err.Error(),
 		)
 		return errors.FromErr(err).Err()
@@ -194,7 +231,7 @@ func (c *nodePortController) Create() error {
 	return nil
 }
 
-func (c *nodePortController) Update(mode UpdateMode) error {
+func (c *nodePortController) Update(mode UpdateMode, old *api.Ingress) error {
 	err := c.generateConfig()
 	if err != nil {
 		c.recorder.Eventf(
@@ -212,7 +249,7 @@ func (c *nodePortController) Update(mode UpdateMode) error {
 		return errors.FromErr(err).Err()
 	}
 
-	_, err = c.ensurePods()
+	_, err = c.ensurePods(old)
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
@@ -229,7 +266,7 @@ func (c *nodePortController) Update(mode UpdateMode) error {
 		"Successfully updated Pods",
 	)
 
-	_, err = c.ensureService()
+	svc, err := c.ensureService(old)
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
@@ -240,11 +277,23 @@ func (c *nodePortController) Update(mode UpdateMode) error {
 		)
 		return errors.FromErr(err).Err()
 	}
+
+	err = c.EnsureFirewall(svc)
+	if err != nil {
+		c.recorder.Eventf(
+			c.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressFirewallUpdateFailed,
+			"Failed to ensure firewall, %s",
+			err.Error(),
+		)
+		return errors.FromErr(err).Err()
+	}
 	c.recorder.Eventf(
 		c.Ingress,
 		apiv1.EventTypeNormal,
 		eventer.EventReasonIngressServiceUpdateSuccessful,
-		"Successfully updated LBService",
+		"Successfully updated NodePort Service",
 	)
 
 	if mode&UpdateStats > 0 {
@@ -296,18 +345,50 @@ func (c *nodePortController) Update(mode UpdateMode) error {
 	return nil
 }
 
-func (c *nodePortController) Delete() error {
+func (c *nodePortController) EnsureFirewall(svc *apiv1.Service) error {
+	if c.CloudManager != nil {
+		if fw, ok := c.CloudManager.Firewall(); ok {
+			// Wait for all NodePorts to be assigned first.
+			for i := 0; i < 50; i++ {
+				time.Sleep(time.Second * 10)
+				if svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{}); err == nil {
+					for _, port := range svc.Spec.Ports {
+						if port.NodePort <= 0 {
+							break
+						}
+					}
+				}
+			}
+
+			nodes, err := c.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
+			if err != nil {
+				return err
+			}
+			hostnames := make([]string, len(nodes.Items))
+			for i, node := range nodes.Items {
+				hostnames[i] = node.Name
+			}
+			err = fw.EnsureFirewall(svc, hostnames)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (c *nodePortController) Delete() {
 	err := c.deletePods()
 	if err != nil {
-		return errors.FromErr(err).Err()
+		log.Errorln(err)
 	}
 	err = c.deleteConfigMap()
 	if err != nil {
-		return errors.FromErr(err).Err()
+		log.Errorln(err)
 	}
 	if c.Opt.EnableRBAC {
 		if err := c.ensureRBACDeleted(); err != nil {
-			return err
+			log.Errorln(err)
 		}
 	}
 	err = c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
@@ -316,7 +397,7 @@ func (c *nodePortController) Delete() error {
 	}
 	monSpec, err := c.Ingress.MonitorSpec()
 	if err != nil {
-		return errors.FromErr(err).Err()
+		log.Errorln(err)
 	}
 	if monSpec != nil && monSpec.Prometheus != nil {
 		ctrl := monitor.NewPrometheusController(c.KubeClient, c.PromClient)
@@ -325,7 +406,7 @@ func (c *nodePortController) Delete() error {
 	if c.Ingress.Stats() {
 		c.ensureStatsServiceDeleted()
 	}
-	return nil
+	return
 }
 
 func (c *nodePortController) newService() *apiv1.Service {
@@ -373,7 +454,7 @@ func (c *nodePortController) newService() *apiv1.Service {
 	return svc
 }
 
-func (c *nodePortController) ensureService() (*apiv1.Service, error) {
+func (c *nodePortController) ensureService(old *api.Ingress) (*apiv1.Service, error) {
 	desired := c.newService()
 	current, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
@@ -381,7 +462,7 @@ func (c *nodePortController) ensureService() (*apiv1.Service, error) {
 	} else if err != nil {
 		return nil, err
 	}
-	if svc, needsUpdate := ServiceRequiresUpdate(current, desired); needsUpdate {
+	if svc, needsUpdate := c.serviceRequiresUpdate(current, desired, old); needsUpdate {
 		return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Update(svc)
 	}
 	return current, nil
@@ -492,7 +573,7 @@ func (c *nodePortController) newPods() *extensions.Deployment {
 	return deployment
 }
 
-func (c *nodePortController) ensurePods() (*extensions.Deployment, error) {
+func (c *nodePortController) ensurePods(old *api.Ingress) (*extensions.Deployment, error) {
 	desired := c.newPods()
 	current, err := c.KubeClient.ExtensionsV1beta1().Deployments(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
@@ -502,10 +583,31 @@ func (c *nodePortController) ensurePods() (*extensions.Deployment, error) {
 	}
 
 	needsUpdate := false
-	if val, ok := c.ensureOriginAnnotations(current.Annotations); ok {
-		needsUpdate = true
-		current.Annotations = val
+
+	// annotations
+	if current.Annotations == nil {
+		current.Annotations = make(map[string]string)
 	}
+	oldAnn := map[string]string{}
+	if old != nil {
+		if a, ok := old.PodsAnnotations(); ok {
+			oldAnn = a
+		}
+	}
+	for k, v := range desired.Annotations {
+		if cv, found := current.Annotations[k]; !found || cv != v {
+			current.Annotations[k] = v
+			needsUpdate = true
+		}
+		delete(oldAnn, k)
+	}
+	for k := range oldAnn {
+		if _, ok := current.Annotations[k]; ok {
+			delete(current.Annotations, k)
+			needsUpdate = true
+		}
+	}
+
 	if !reflect.DeepEqual(current.Spec.Selector, desired.Spec.Selector) {
 		needsUpdate = true
 		current.Spec.Selector = desired.Spec.Selector
@@ -533,10 +635,6 @@ func (c *nodePortController) ensurePods() (*extensions.Deployment, error) {
 	if !reflect.DeepEqual(current.Spec.Template.Spec.Volumes, desired.Spec.Template.Spec.Volumes) {
 		needsUpdate = true
 		current.Spec.Template.Spec.Volumes = desired.Spec.Template.Spec.Volumes
-	}
-	if current.Spec.Template.Spec.HostNetwork != desired.Spec.Template.Spec.HostNetwork {
-		needsUpdate = true
-		current.Spec.Template.Spec.HostNetwork = desired.Spec.Template.Spec.HostNetwork
 	}
 	if current.Spec.Template.Spec.ServiceAccountName != desired.Spec.Template.Spec.ServiceAccountName {
 		needsUpdate = true

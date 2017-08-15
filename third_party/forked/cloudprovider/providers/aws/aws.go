@@ -1006,27 +1006,10 @@ func (c *Cloud) ensureClusterTags(resourceID string, tags []*ec2.Tag) error {
 // Makes sure the security group exists.
 // For multi-cluster isolation, name must be globally unique, for example derived from the service UUID.
 // Returns the security group id or error
-func (c *Cloud) ensureSecurityGroup(name string, description string) (string, error) {
-	groupID, err := c.ensureUntaggedSecurityGroup(name, description)
-	if err != nil {
-		return "", err
-	}
-
-	err = c.createTags(groupID, c.filterTags)
-	if err != nil {
-		// If we retry, ensureClusterTags will recover from this - it
-		// will add the missing tags.  We could delete the security
-		// group here, but that doesn't feel like the right thing, as
-		// the caller is likely to retry the create
-		return "", fmt.Errorf("error tagging security group: %v", err)
-	}
-	return groupID, nil
-}
-
 // Makes sure the security group exists.
 // For multi-cluster isolation, name must be globally unique, for example derived from the service UUID.
 // Returns the security group id or error
-func (c *Cloud) ensureUntaggedSecurityGroup(name string, description string) (string, error) {
+func (c *Cloud) ensureSecurityGroup(name string, description string) (string, error) {
 	groupID := ""
 	attempt := 0
 	for {
@@ -1149,7 +1132,7 @@ type portSets struct {
 	numbers sets.Int64
 }
 
-// EnsureFirewall implements LoadBalancer.EnsureLoadBalancer
+// EnsureFirewall implements Firewall.EnsureFirewall
 func (c *Cloud) EnsureFirewall(apiService *apiv1.Service, hostnames []string) error {
 	glog.V(2).Infof("EnsureFirewall(%v, %v, %v, %v, %v)",
 		apiService.Namespace, apiService.Name, c.region, apiService.Spec.Ports, hostnames)
@@ -1174,15 +1157,15 @@ func (c *Cloud) EnsureFirewall(apiService *apiv1.Service, hostnames []string) er
 		return err
 	}
 
-	loadBalancerName := cloudprovider.GetLoadBalancerName(apiService)
+	//loadBalancerName := cloudprovider.GetLoadBalancerName(apiService)
 	serviceName := types.NamespacedName{Namespace: apiService.Namespace, Name: apiService.Name}
 
 	// Create a security group for the load balancer
 	var securityGroupID string
 	{
-		sgName := loadBalancerName
-		sgDescription := fmt.Sprintf("Security group for service %v", serviceName)
-		securityGroupID, err = c.ensureUntaggedSecurityGroup(sgName, sgDescription)
+		sgName := apiService.Name + "@" + apiService.Namespace + "@" + c.getClusterName()
+		sgDescription := fmt.Sprintf("Security group for Voyager HostPort Ingress %v", serviceName)
+		securityGroupID, err = c.ensureSecurityGroup(sgName, sgDescription)
 		if err != nil {
 			glog.Error("Error creating Voyager security group: ", err)
 			return err
@@ -1194,7 +1177,16 @@ func (c *Cloud) EnsureFirewall(apiService *apiv1.Service, hostnames []string) er
 
 		permissions := NewIPPermissionSet()
 		for _, port := range apiService.Spec.Ports {
-			portInt64 := int64(port.Port)
+			var portInt64 int64
+			if apiService.Spec.Type == apiv1.ServiceTypeNodePort {
+				if port.NodePort == 0 {
+					glog.Errorf("Ignoring port without NodePort defined: %v", port)
+					continue
+				}
+				portInt64 = int64(port.NodePort)
+			} else {
+				portInt64 = int64(port.Port)
+			}
 			protocol := strings.ToLower(string(port.Protocol))
 
 			permission := &ec2.IpPermission{}
@@ -1211,76 +1203,14 @@ func (c *Cloud) EnsureFirewall(apiService *apiv1.Service, hostnames []string) er
 		}
 	}
 
-	err = c.updateInstanceSecurityGroupsForFirewall(securityGroupID, instances)
+	err = c.updateInstanceSecurityGroups(securityGroupID, instances)
 	if err != nil {
-		glog.Warning("Error opening ingress rules of the instances: ", err)
+		glog.Warning("Error opening firewall of the instances: ", err)
 		return err
-	}
-
-	{
-		// Add to network interface
-		for _, instance := range instances {
-			// Get the actual list of groups that allow ingress from the load-balancer
-			attrRequest := &ec2.ModifyInstanceAttributeInput{}
-			attrRequest.InstanceId = instance.InstanceId
-			attrRequest.Groups = []*string{aws.String(securityGroupID)}
-			for _, sg := range instance.SecurityGroups {
-				attrRequest.Groups = append(attrRequest.Groups, sg.GroupId)
-			}
-			_, err := c.ec2.ModifyInstanceAttribute(attrRequest)
-			if err != nil {
-				glog.Warning("Error adding security group to the instance: ", instance.InstanceId, err)
-				return err
-			}
-		}
 	}
 
 	// TODO: Wait for creation?
 	return nil
-}
-
-// Returns the first security group for an instance, or nil
-// We only create instances with one security group, so we don't expect multiple security groups.
-// However, if there are multiple security groups, we will choose the one tagged with our cluster filter.
-// Otherwise we will return an error.
-func findSecurityGroupForInstance(instance *ec2.Instance, taggedSecurityGroups map[string]*ec2.SecurityGroup) (*ec2.GroupIdentifier, error) {
-	instanceID := aws.StringValue(instance.InstanceId)
-
-	var tagged []*ec2.GroupIdentifier
-	var untagged []*ec2.GroupIdentifier
-	for _, group := range instance.SecurityGroups {
-		groupID := aws.StringValue(group.GroupId)
-		if groupID == "" {
-			glog.Warningf("Ignoring security group without id for instance %q: %v", instanceID, group)
-			continue
-		}
-		_, isTagged := taggedSecurityGroups[groupID]
-		if isTagged {
-			tagged = append(tagged, group)
-		} else {
-			untagged = append(untagged, group)
-		}
-	}
-
-	if len(tagged) > 0 {
-		// We create instances with one SG
-		// If users create multiple SGs, they must tag one of them as being k8s owned
-		if len(tagged) != 1 {
-			return nil, fmt.Errorf("Multiple tagged security groups found for instance %s; ensure only the k8s security group is tagged", instanceID)
-		}
-		return tagged[0], nil
-	}
-
-	if len(untagged) > 0 {
-		// For back-compat, we will allow a single untagged SG
-		if len(untagged) != 1 {
-			return nil, fmt.Errorf("Multiple untagged security groups found for instance %s; ensure the k8s security group is tagged", instanceID)
-		}
-		return untagged[0], nil
-	}
-
-	glog.Warningf("No security group found for instance %q", instanceID)
-	return nil, nil
 }
 
 // Return all the security groups that are tagged as being part of our cluster
@@ -1304,100 +1234,64 @@ func (c *Cloud) getTaggedSecurityGroups() (map[string]*ec2.SecurityGroup, error)
 	return m, nil
 }
 
-func (s *Cloud) updateInstanceSecurityGroupsForFirewall(loadBalancerSecurityGroupId string, allInstances []*ec2.Instance) error {
-	// Get the actual list of groups that allow ingress from the load-balancer
-	describeRequest := &ec2.DescribeSecurityGroupsInput{}
-	filters := []*ec2.Filter{}
-	filters = append(filters, newEc2Filter("ip-permission.group-id", loadBalancerSecurityGroupId))
-	describeRequest.Filters = s.addFilters(filters)
-	actualGroups, err := s.ec2.DescribeSecurityGroups(describeRequest)
-	if err != nil {
-		return fmt.Errorf("error querying security groups for ELB: %v", err)
+// loadBalancerSecurityGroupId
+func (c *Cloud) updateInstanceSecurityGroups(loadBalancerSecurityGroupId string, instances []*ec2.Instance) error {
+	hostSet := sets.NewString()
+	for _, instance := range instances {
+		hostSet.Insert(*instance.PrivateDnsName)
 	}
 
-	taggedSecurityGroups, err := s.getTaggedSecurityGroups()
-	if err != nil {
-		return fmt.Errorf("error querying for tagged security groups: %v", err)
-	}
+	{
+		filters := []*ec2.Filter{
+			newEc2Filter("instance.group-id", loadBalancerSecurityGroupId),
+		}
+		filters = c.addFilters(filters)
+		request := &ec2.DescribeInstancesInput{
+			Filters: filters,
+		}
 
-	// Open the firewall from the load balancer to the instance
-	// We don't actually have a trivial way to know in advance which security group the instance is in
-	// (it is probably the minion security group, but we don't easily have that).
-	// However, we _do_ have the list of security groups on the instance records.
-
-	// Map containing the changes we want to make; true to add, false to remove
-	instanceSecurityGroupIds := map[string]bool{}
-
-	// Scan instances for groups we want open
-	for _, instance := range allInstances {
-		securityGroup, err := findSecurityGroupForInstance(instance, taggedSecurityGroups)
+		exposedInstances, err := c.ec2.DescribeInstances(request)
 		if err != nil {
+			glog.Warningf("error querying instances with security group %v: %v", loadBalancerSecurityGroupId, err)
 			return err
 		}
+		for _, instance := range exposedInstances {
+			if instance.PrivateDnsName == nil || !hostSet.Has(*instance.PrivateDnsName) {
+				glog.Infof("Removing voyager security group %s from instance %s", loadBalancerSecurityGroupId, *instance.PrivateDnsName)
+				// Remove Ingress SG from remaining instances
+				attrRequest := &ec2.ModifyInstanceAttributeInput{}
+				attrRequest.InstanceId = instance.InstanceId
+				for _, sg := range instance.SecurityGroups {
+					if sg.GroupId != nil && *sg.GroupId == loadBalancerSecurityGroupId {
+						continue
+					}
+					attrRequest.Groups = append(attrRequest.Groups, sg.GroupId)
+				}
+				_, err := c.ec2.ModifyInstanceAttribute(attrRequest)
+				if err != nil {
+					glog.Warning("Error adding security group to the instance: ", instance.InstanceId, err)
+					return err
+				}
 
-		if securityGroup == nil {
-			glog.Warning("Ignoring instance without security group: ", orEmpty(instance.InstanceId))
-			continue
-		}
-		id := aws.StringValue(securityGroup.GroupId)
-		if id == "" {
-			glog.Warningf("found security group without id: %v", securityGroup)
-			continue
-		}
-
-		instanceSecurityGroupIds[id] = true
-	}
-
-	// Compare to actual groups
-	for _, actualGroup := range actualGroups {
-		actualGroupID := aws.StringValue(actualGroup.GroupId)
-		if actualGroupID == "" {
-			glog.Warning("Ignoring group without ID: ", actualGroup)
-			continue
-		}
-
-		adding, found := instanceSecurityGroupIds[actualGroupID]
-		if found && adding {
-			// We don't need to make a change; the permission is already in place
-			delete(instanceSecurityGroupIds, actualGroupID)
-		} else {
-			// This group is not needed by allInstances; delete it
-			instanceSecurityGroupIds[actualGroupID] = false
+			}
 		}
 	}
 
-	for instanceSecurityGroupId, add := range instanceSecurityGroupIds {
-		if add {
-			glog.V(2).Infof("Adding rule for traffic from the load balancer (%s) to instances (%s)", loadBalancerSecurityGroupId, instanceSecurityGroupId)
-		} else {
-			glog.V(2).Infof("Removing rule for traffic from the load balancer (%s) to instance (%s)", loadBalancerSecurityGroupId, instanceSecurityGroupId)
-		}
-		sourceGroupId := &ec2.UserIdGroupPair{}
-		sourceGroupId.GroupId = &loadBalancerSecurityGroupId
-
-		allProtocols := "-1"
-
-		permission := &ec2.IpPermission{}
-		permission.IpProtocol = &allProtocols
-		permission.UserIdGroupPairs = []*ec2.UserIdGroupPair{sourceGroupId}
-
-		permissions := []*ec2.IpPermission{permission}
-
-		if add {
-			changed, err := s.addSecurityGroupIngress(instanceSecurityGroupId, permissions)
+	{
+		// Add to network interface
+		for _, instance := range instances {
+			glog.Infof("Adding voyager security group %s to instance %s", loadBalancerSecurityGroupId, *instance.PrivateDnsName)
+			// Get the actual list of groups that allow ingress from the load-balancer
+			attrRequest := &ec2.ModifyInstanceAttributeInput{}
+			attrRequest.InstanceId = instance.InstanceId
+			attrRequest.Groups = []*string{aws.String(loadBalancerSecurityGroupId)}
+			for _, sg := range instance.SecurityGroups {
+				attrRequest.Groups = append(attrRequest.Groups, sg.GroupId)
+			}
+			_, err := c.ec2.ModifyInstanceAttribute(attrRequest)
 			if err != nil {
+				glog.Warning("Error adding security group to the instance: ", instance.InstanceId, err)
 				return err
-			}
-			if !changed {
-				glog.Warning("Allowing ingress was not needed; concurrent change? groupId=", instanceSecurityGroupId)
-			}
-		} else {
-			changed, err := s.removeSecurityGroupIngress(instanceSecurityGroupId, permissions)
-			if err != nil {
-				return err
-			}
-			if !changed {
-				glog.Warning("Revoking ingress was not needed; concurrent change? groupId=", instanceSecurityGroupId)
 			}
 		}
 	}
@@ -1407,7 +1301,7 @@ func (s *Cloud) updateInstanceSecurityGroupsForFirewall(loadBalancerSecurityGrou
 
 // EnsureFirewallDeleted implements Firewall.EnsureFirewallDeleted.
 func (c *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
-	loadBalancerName := cloudprovider.GetLoadBalancerName(service)
+	//loadBalancerName := cloudprovider.GetLoadBalancerName(service)
 	// Collect the security groups to delete
 	var securityGroupID string
 
@@ -1416,36 +1310,32 @@ func (c *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 		// Note that this is annoying: the load balancer disappears from the API immediately, but it is still
 		// deleting in the background.  We get a DependencyViolation until the load balancer has deleted itself
 
-		sgName := loadBalancerName
+		sgName := service.Name + "@" + service.Namespace + "@" + c.getClusterName()
 
-		request := &ec2.DescribeSecurityGroupsInput{
-			Filters: []*ec2.Filter{
-				{
-					Name: aws.String("vpc-id"),
-					Values: []*string{
-						aws.String(c.vpcID),
-					},
-				},
-				{
-					Name: aws.String("tag:KubernetesCluster"),
-					Values: []*string{
-						aws.String(c.cfg.Global.KubernetesClusterTag),
-					},
-				},
-				{
-					Name: aws.String("group-name"),
-					Values: []*string{
-						aws.String(sgName),
-					},
+		filters := []*ec2.Filter{
+			{
+				Name: aws.String("vpc-id"),
+				Values: []*string{
+					aws.String(c.vpcID),
 				},
 			},
+			{
+				Name: aws.String("group-name"),
+				Values: []*string{
+					aws.String(sgName),
+				},
+			},
+		}
+		filters = c.addFilters(filters)
+		request := &ec2.DescribeSecurityGroupsInput{
+			Filters: filters,
 		}
 		securityGroups, err := c.ec2.DescribeSecurityGroups(request)
 		if err != nil {
 			ignore := false
 			if awsError, ok := err.(awserr.Error); ok {
 				if awsError.Code() == "DependencyViolation" {
-					glog.V(2).Infof("Ignoring DependencyViolation while deleting load-balancer security group (%s), assuming because LB is in process of deleting", securityGroupID)
+					glog.V(2).Infof("Ignoring DependencyViolation while deleting load-balancer security group (%s), assuming because Voyager security group is in process of deleting", securityGroupID)
 					ignore = true
 				}
 			}
@@ -1454,7 +1344,7 @@ func (c *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 			}
 		}
 		if len(securityGroups) > 1 {
-			return fmt.Errorf("Multiple securitygroup found when EnsureFirewallDeleted for service %v", loadBalancerName)
+			return fmt.Errorf("Multiple securitygroup found when EnsureFirewallDeleted for service %v", sgName)
 		}
 		for _, securityGroup := range securityGroups {
 			securityGroupID = *securityGroup.GroupId
@@ -1464,9 +1354,9 @@ func (c *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 
 	{
 		// De-authorize the load balancer security group from the instances security group
-		err := c.updateInstanceSecurityGroupsForFirewall(securityGroupID, nil)
+		err := c.updateInstanceSecurityGroups(securityGroupID, nil)
 		if err != nil {
-			glog.Error("Error deregistering load balancer from instance security groups: ", err)
+			glog.Error("Error deregistering voyager security group from instance security groups: ", err)
 			return err
 		}
 	}
