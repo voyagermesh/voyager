@@ -2,6 +2,7 @@ package framework
 
 import (
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/appscode/go/crypto/rand"
@@ -151,6 +152,32 @@ func (i *ingressInvocation) DoHTTP(retryCount int, ing *api.Ingress, eps []strin
 func (i *ingressInvocation) DoHTTPWithHeader(retryCount int, ing *api.Ingress, eps []string, method, path string, h map[string]string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
 		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Header(h).Path(path).DoWithRetry(retryCount)
+		if err != nil {
+			return err
+		}
+
+		log.Infoln("HTTP Response received from server", *resp)
+		if !matcher(resp) {
+			return errors.New("Failed to match")
+		}
+	}
+	return nil
+}
+
+func (i *ingressInvocation) DoHTTPs(retryCount int, host, cert string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+	for _, url := range eps {
+		if strings.HasPrefix(url, "http://") {
+			url = "https://" + url[len("http://"):]
+		}
+
+		cl := testserverclient.NewTestHTTPClient(url).WithHost(host).Method(method).Path(path)
+		if len(cert) > 0 {
+			cl = cl.WithCert(cert)
+		} else {
+			cl = cl.WithInsecure()
+		}
+
+		resp, err := cl.DoWithRetry(retryCount)
 		if err != nil {
 			return err
 		}

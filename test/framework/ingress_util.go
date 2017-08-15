@@ -420,7 +420,8 @@ func getNodePortURLs(provider string, k kubernetes.Interface, ing *api.Ingress) 
 		return nil, err
 	}
 
-	var svc *apiv1.Service;	var ports []int32
+	var svc *apiv1.Service
+	var ports []int32
 	gomega.Eventually(func() error {
 		svc, err = k.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 		if err == nil {
@@ -827,4 +828,18 @@ func (i *ingressInvocation) DeleteResourceWithBackendWeight(meta metav1.ObjectMe
 	i.KubeClient.CoreV1().Services(meta.Namespace).Delete(meta.Name, &metav1.DeleteOptions{
 		OrphanDependents: &orphan,
 	})
+}
+
+func (i *ingressInvocation) TLSHostName() string {
+	if i.Config.CloudProviderName == "minikube" {
+		return "http.appscode.dev:" + i.TLSNodePortForMiniKube()
+	}
+	return "http.appscode.dev"
+}
+
+func (i *ingressInvocation) TLSNodePortForMiniKube() string {
+	if i.Config.CloudProviderName == "minikube" {
+		return "32765"
+	}
+	return ""
 }

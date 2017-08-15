@@ -181,7 +181,7 @@ frontend {{ .FrontendName }}
 	{{- range $path := .Paths }}
 	{{ if $path.Host }}acl host_acl_{{ $path.Backend.Name }} {{ $path.Host | host_name }}{{ end }}
 	{{ if $path.Path }}acl url_acl_{{ $path.Backend.Name }} path_beg {{ $path.Path }}{{ end }}
-	use_backend {{ $path.Backend.Name }} {{ if or $path.Host $path.Path }}if {{ end }}{{ if $path.Host }}host_acl_{{ $path.Backend.Name }}{{ end }}{{ if $path.Path }}url_acl_{{ $path.Backend.Name }}{{ end -}}
+	use_backend {{ $path.Backend.Name }} {{ if or $path.Host $path.Path }}if {{ end }}{{ if $path.Host }}host_acl_{{ $path.Backend.Name }}{{ end }}{{ if $path.Path }} url_acl_{{ $path.Backend.Name }}{{ end -}}
 	{{ end }}
 	{{ if .DefaultBackend }}
 	default_backend {{ .DefaultBackend.Name }}
