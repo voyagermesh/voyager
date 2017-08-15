@@ -145,7 +145,6 @@ func (t *httpClient) do(parse bool) (*Response, error) {
 
 	resp, err := t.client.Do(req)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 
