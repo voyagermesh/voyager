@@ -64,7 +64,7 @@ var _ = Describe("IngressWithRBACEnabled", func() {
 			_, err = f.KubeClient.RbacV1beta1().RoleBindings(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
 				return Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok"))
 			})

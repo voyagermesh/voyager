@@ -2,6 +2,7 @@ package framework
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"time"
 
@@ -130,13 +131,24 @@ func (i *ingressInvocation) GetHTTPEndpoints(ing *api.Ingress) ([]string, error)
 	return nil, errors.New("LBType Not recognized")
 }
 
+func (i *ingressInvocation) FilterEndpointsForPort(eps []string, port v1.ServicePort) []string {
+	ret := make([]string, 0)
+	for _, p := range eps {
+		if strings.HasSuffix(p, ":"+strconv.FormatInt(int64(port.Port), 10)) ||
+			strings.HasSuffix(p, ":"+strconv.FormatInt(int64(port.NodePort), 10)) {
+			ret = append(ret, p)
+		}
+	}
+	return ret
+}
+
 func (i *ingressInvocation) GetOffShootService(ing *api.Ingress) (*v1.Service, error) {
 	return i.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 }
 
-func (i *ingressInvocation) DoHTTP(retryCount int, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTP(retryCount int, host string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Path(path).DoWithRetry(retryCount)
+		resp, err := testserverclient.NewTestHTTPClient(url).WithHost(host).Method(method).Path(path).DoWithRetry(retryCount)
 		if err != nil {
 			return err
 		}
@@ -193,6 +205,21 @@ func (i *ingressInvocation) DoHTTPs(retryCount int, host, cert string, ing *api.
 func (i *ingressInvocation) DoHTTPTestRedirect(retryCount int, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
 		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Path(path).DoTestRedirectWithRetry(retryCount)
+		if err != nil {
+			return err
+		}
+
+		log.Infoln("HTTP Response received from server", *resp)
+		if !matcher(resp) {
+			return errors.New("Failed to match")
+		}
+	}
+	return nil
+}
+
+func (i *ingressInvocation) DoHTTPsTestRedirect(retryCount int, host string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+	for _, url := range eps {
+		resp, err := testserverclient.NewTestHTTPClient(url).WithHost(host).Method(method).Path(path).DoTestRedirectWithRetry(retryCount)
 		if err != nil {
 			return err
 		}

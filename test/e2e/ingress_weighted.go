@@ -96,7 +96,7 @@ var _ = Describe("IngressWithHostName", func() {
 
 			var dep1Counter, dep2Counter int
 			for i := 1; i <= 100; i++ {
-				err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/testpath", func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath", func(r *testserverclient.Response) bool {
 					if strings.HasPrefix(r.PodName, "dep-1-"+meta.Name) {
 						dep1Counter++
 					} else if strings.HasPrefix(r.PodName, "dep-2-"+meta.Name) {

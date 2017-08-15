@@ -52,7 +52,7 @@ var _ = Describe("IngressOperations", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -315,7 +315,7 @@ var _ = Describe("IngressOperations", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-				err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/override/testpath/ok")) &&
@@ -399,14 +399,14 @@ var _ = Describe("IngressOperations", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-				err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/old/replace", func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/old/replace", func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/rewrited/from/proxy/old/replace"))
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/old/add/now", func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/old/add/now", func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/old/add/now")) &&
@@ -414,7 +414,7 @@ var _ = Describe("IngressOperations", func() {
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/test-second", func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/test-second", func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/override/rewrited/from/proxy/test-second")) &&
@@ -449,7 +449,7 @@ var _ = Describe("IngressOperations", func() {
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
 			By("Calling new HTTP path")
-			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/newTestPath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/newTestPath/ok", func(r *testserverclient.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/newTestPath/ok"))
@@ -457,7 +457,7 @@ var _ = Describe("IngressOperations", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Checking old path")
-			err = f.Ingress.DoHTTP(framework.NoRetry, ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
 				return true
 			})
 			Expect(err).To(HaveOccurred())
