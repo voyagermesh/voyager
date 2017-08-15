@@ -1,6 +1,6 @@
 [![CLA assistant](https://cla-assistant.io/readme/badge/appscode/libbuild)](https://cla-assistant.io/appscode/libbuild)
 
-[Website](https://appscode.com) • [Slack](https://slack.appscode.com) • [Forum](https://discuss.appscode.com) • [Twitter](https://twitter.com/AppsCodeHQ)
+[Website](https://appscode.com) • [Slack](https://slack.appscode.com) • [Twitter](https://twitter.com/AppsCodeHQ)
 
 Common build scripts used by AppsCode repositories.
 
