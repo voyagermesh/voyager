@@ -1213,29 +1213,8 @@ func (c *Cloud) EnsureFirewall(apiService *apiv1.Service, hostnames []string) er
 	return nil
 }
 
-// Return all the security groups that are tagged as being part of our cluster
-func (c *Cloud) getTaggedSecurityGroups() (map[string]*ec2.SecurityGroup, error) {
-	request := &ec2.DescribeSecurityGroupsInput{}
-	request.Filters = c.addFilters(nil)
-	groups, err := c.ec2.DescribeSecurityGroups(request)
-	if err != nil {
-		return nil, fmt.Errorf("error querying security groups: %v", err)
-	}
-
-	m := make(map[string]*ec2.SecurityGroup)
-	for _, group := range groups {
-		id := aws.StringValue(group.GroupId)
-		if id == "" {
-			glog.Warningf("Ignoring group without id: %v", group)
-			continue
-		}
-		m[id] = group
-	}
-	return m, nil
-}
-
-// loadBalancerSecurityGroupId
-func (c *Cloud) updateInstanceSecurityGroups(loadBalancerSecurityGroupId string, instances []*ec2.Instance) error {
+// ingressSecurityGroupId
+func (c *Cloud) updateInstanceSecurityGroups(ingressSecurityGroupId string, instances []*ec2.Instance) error {
 	hostSet := sets.NewString()
 	for _, instance := range instances {
 		hostSet.Insert(*instance.PrivateDnsName)
@@ -1243,26 +1222,26 @@ func (c *Cloud) updateInstanceSecurityGroups(loadBalancerSecurityGroupId string,
 
 	{
 		filters := []*ec2.Filter{
-			newEc2Filter("instance.group-id", loadBalancerSecurityGroupId),
+			newEc2Filter("instance.group-id", ingressSecurityGroupId),
+			newEc2Filter("tag:VoyagerCluster", c.getClusterName()),
 		}
-		filters = c.addFilters(filters)
 		request := &ec2.DescribeInstancesInput{
 			Filters: filters,
 		}
 
 		exposedInstances, err := c.ec2.DescribeInstances(request)
 		if err != nil {
-			glog.Warningf("error querying instances with security group %v: %v", loadBalancerSecurityGroupId, err)
+			glog.Warningf("error querying instances with security group %v: %v", ingressSecurityGroupId, err)
 			return err
 		}
 		for _, instance := range exposedInstances {
 			if instance.PrivateDnsName == nil || !hostSet.Has(*instance.PrivateDnsName) {
-				glog.Infof("Removing voyager security group %s from instance %s", loadBalancerSecurityGroupId, *instance.PrivateDnsName)
+				glog.Infof("Removing voyager security group %s from instance %s", ingressSecurityGroupId, *instance.PrivateDnsName)
 				// Remove Ingress SG from remaining instances
 				attrRequest := &ec2.ModifyInstanceAttributeInput{}
 				attrRequest.InstanceId = instance.InstanceId
 				for _, sg := range instance.SecurityGroups {
-					if sg.GroupId != nil && *sg.GroupId == loadBalancerSecurityGroupId {
+					if sg.GroupId != nil && *sg.GroupId == ingressSecurityGroupId {
 						continue
 					}
 					attrRequest.Groups = append(attrRequest.Groups, sg.GroupId)
@@ -1280,11 +1259,11 @@ func (c *Cloud) updateInstanceSecurityGroups(loadBalancerSecurityGroupId string,
 	{
 		// Add to network interface
 		for _, instance := range instances {
-			glog.Infof("Adding voyager security group %s to instance %s", loadBalancerSecurityGroupId, *instance.PrivateDnsName)
+			glog.Infof("Adding voyager security group %s to instance %s", ingressSecurityGroupId, *instance.PrivateDnsName)
 			// Get the actual list of groups that allow ingress from the load-balancer
 			attrRequest := &ec2.ModifyInstanceAttributeInput{}
 			attrRequest.InstanceId = instance.InstanceId
-			attrRequest.Groups = []*string{aws.String(loadBalancerSecurityGroupId)}
+			attrRequest.Groups = []*string{aws.String(ingressSecurityGroupId)}
 			for _, sg := range instance.SecurityGroups {
 				attrRequest.Groups = append(attrRequest.Groups, sg.GroupId)
 			}
@@ -1313,20 +1292,10 @@ func (c *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 		sgName := service.Name + "@" + service.Namespace + "@" + c.getClusterName()
 
 		filters := []*ec2.Filter{
-			{
-				Name: aws.String("vpc-id"),
-				Values: []*string{
-					aws.String(c.vpcID),
-				},
-			},
-			{
-				Name: aws.String("group-name"),
-				Values: []*string{
-					aws.String(sgName),
-				},
-			},
+			newEc2Filter("vpc-id", c.vpcID),
+			newEc2Filter("group-name", sgName),
+			newEc2Filter("tag:VoyagerCluster", c.getClusterName()),
 		}
-		filters = c.addFilters(filters)
 		request := &ec2.DescribeSecurityGroupsInput{
 			Filters: filters,
 		}
