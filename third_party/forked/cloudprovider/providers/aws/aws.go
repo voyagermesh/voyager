@@ -48,6 +48,10 @@ const ProviderName = "aws"
 // logically independent clusters running in the same AZ
 const TagNameKubernetesCluster = "KubernetesCluster"
 
+// TagNameVoyagerCluster is Voyager's version of `TagNameKubernetesCluster`. This is kept separate to avoid
+// errors like: https://github.com/appscode/voyager/pull/397
+const TagNameVoyagerCluster = "VoyagerCluster"
+
 // MaxReadThenCreateRetries sets the maximum number of attempts we will make when
 // we read to see if something exists and then try to create it if we didn't find it.
 // This can fail once in a consistent system if done in parallel
@@ -976,14 +980,17 @@ func (c *Cloud) removeSecurityGroupIngress(securityGroupID string, removePermiss
 // Ensure that a resource has the correct tags
 // If it has no tags, we assume that this was a problem caused by an error in between creation and tagging,
 // and we add the tags.  If it has a different cluster's tags, that is an error.
-func (c *Cloud) ensureClusterTags(resourceID string, tags []*ec2.Tag) error {
+func (c *Cloud) ensureVoyagerTags(resourceID string, tags []*ec2.Tag) error {
 	actualTags := make(map[string]string)
 	for _, tag := range tags {
 		actualTags[aws.StringValue(tag.Key)] = aws.StringValue(tag.Value)
 	}
 
+	clusterTags := map[string]string{
+		TagNameVoyagerCluster: c.getClusterName(),
+	}
 	addTags := make(map[string]string)
-	for k, expected := range c.filterTags {
+	for k, expected := range clusterTags {
 		actual := actualTags[k]
 		if actual == expected {
 			continue
@@ -1036,7 +1043,7 @@ func (c *Cloud) ensureSecurityGroup(name string, description string) (string, er
 			if len(securityGroups) > 1 {
 				glog.Warningf("Found multiple security groups with name: %q", name)
 			}
-			err := c.ensureClusterTags(aws.StringValue(securityGroups[0].GroupId), securityGroups[0].Tags)
+			err := c.ensureVoyagerTags(aws.StringValue(securityGroups[0].GroupId), securityGroups[0].Tags)
 			if err != nil {
 				return "", err
 			}
@@ -1073,7 +1080,7 @@ func (c *Cloud) ensureSecurityGroup(name string, description string) (string, er
 		return "", fmt.Errorf("created security group, but id was not returned: %s", name)
 	}
 
-	err := c.createTags(groupID, c.filterTags)
+	err := c.ensureVoyagerTags(groupID, nil)
 	if err != nil {
 		// If we retry, ensureClusterTags will recover from this - it
 		// will add the missing tags.  We could delete the security
@@ -1223,7 +1230,7 @@ func (c *Cloud) updateInstanceSecurityGroups(ingressSecurityGroupId string, inst
 	{
 		filters := []*ec2.Filter{
 			newEc2Filter("instance.group-id", ingressSecurityGroupId),
-			newEc2Filter("tag:VoyagerCluster", c.getClusterName()),
+			newEc2Filter("tag:"+TagNameKubernetesCluster, c.getClusterName()),
 		}
 		request := &ec2.DescribeInstancesInput{
 			Filters: filters,
@@ -1294,22 +1301,24 @@ func (c *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 		filters := []*ec2.Filter{
 			newEc2Filter("vpc-id", c.vpcID),
 			newEc2Filter("group-name", sgName),
-			newEc2Filter("tag:VoyagerCluster", c.getClusterName()),
+			newEc2Filter("tag:"+TagNameVoyagerCluster, c.getClusterName()),
 		}
 		request := &ec2.DescribeSecurityGroupsInput{
 			Filters: filters,
 		}
+		glog.V(3).Infof("[%s/%s]: Looking up security group %v to delete", service.Namespace, service.Name, request)
 		securityGroups, err := c.ec2.DescribeSecurityGroups(request)
+		glog.V(3).Infof("[%s/%s]: Found security group: %v", service.Namespace, service.Name, securityGroups)
 		if err != nil {
 			ignore := false
 			if awsError, ok := err.(awserr.Error); ok {
 				if awsError.Code() == "DependencyViolation" {
-					glog.V(2).Infof("Ignoring DependencyViolation while deleting load-balancer security group (%s), assuming because Voyager security group is in process of deleting", securityGroupID)
+					glog.V(2).Infof("Ignoring DependencyViolation while describing ingress security group (%s), assuming because Voyager security group is in process of deleting", securityGroupID)
 					ignore = true
 				}
 			}
 			if !ignore {
-				return fmt.Errorf("error while deleting load balancer security group (%s): %v", securityGroupID, err)
+				return fmt.Errorf("error while describing load balancer security group (%s): %v", sgName, err)
 			}
 		}
 		if len(securityGroups) > 1 {
@@ -1322,7 +1331,7 @@ func (c *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 	}
 
 	{
-		// De-authorize the load balancer security group from the instances security group
+		// De-authorize the ingress security group from the instances security group
 		err := c.updateInstanceSecurityGroups(securityGroupID, nil)
 		if err != nil {
 			glog.Error("Error deregistering voyager security group from instance security groups: ", err)
@@ -1330,7 +1339,8 @@ func (c *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 		}
 	}
 
-	{
+	attempt := 0
+	for {
 		request := &ec2.DeleteSecurityGroupInput{}
 		request.GroupId = &securityGroupID
 		_, err := c.ec2.DeleteSecurityGroup(request)
@@ -1338,13 +1348,20 @@ func (c *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 			ignore := false
 			if awsError, ok := err.(awserr.Error); ok {
 				if awsError.Code() == "DependencyViolation" {
-					glog.V(2).Infof("Ignoring DependencyViolation while deleting load-balancer security group (%s), assuming because LB is in process of deleting", securityGroupID)
+					glog.V(2).Infof("[%s/%s] Attempt %d: Ignoring DependencyViolation while deleting ingress security group (%s), assuming because SG is in process of deleting", service.Namespace, service.Name, attempt, securityGroupID)
 					ignore = true
 				}
 			}
 			if !ignore {
-				return fmt.Errorf("error while deleting load balancer security group (%s): %v", securityGroupID, err)
+				return fmt.Errorf("error while deleting ingress security group (%s): %v", securityGroupID, err)
 			}
+
+			attempt++
+			if attempt >= 10 {
+				return fmt.Errorf("error while deleting ingress security group (%s). Please file a bug report with voyager operator logs here: https://github.com/appscode/voyager/issues/new", securityGroupID)
+			}
+			time.Sleep(3 * time.Second)
+			continue
 		}
 	}
 	return nil
