@@ -261,3 +261,18 @@ func (i *ingressInvocation) DoTCP(retryCount int, ing *api.Ingress, eps []string
 	}
 	return nil
 }
+
+func (i *ingressInvocation) DoTCPWithSSL(retryCount int, cert string, ing *api.Ingress, eps []string, matcher func(resp *testserverclient.Response) bool) error {
+	for _, url := range eps {
+		resp, err := testserverclient.NewTestTCPClient(url).WithSSL(cert).DoWithRetry(retryCount)
+		if err != nil {
+			return err
+		}
+
+		log.Infoln("TCP Response received from server", *resp)
+		if !matcher(resp) {
+			return errors.New("Failed to match")
+		}
+	}
+	return nil
+}

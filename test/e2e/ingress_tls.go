@@ -177,7 +177,7 @@ var _ = Describe("IngressTLS", func() {
 						Host: "http.appscode.dev",
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
-								Port: intstr.FromInt(80),
+								Port:  intstr.FromInt(80),
 								NoSSL: true,
 								Paths: []api.HTTPIngressPath{
 									{

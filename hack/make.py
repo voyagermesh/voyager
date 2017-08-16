@@ -173,15 +173,15 @@ def unit_test():
 
 def e2e_test(args):
     st = ' '.join(args)
-    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -ginkgo.v -ginkgo.progress -ginkgo.trace -v=2 ' + st))
+    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -ginkgo.v -ginkgo.progress -ginkgo.trace -v=1 ' + st))
 
 def e2e_test_minikube(args):
     st = ' '.join(args)
-    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -ginkgo.v -ginkgo.progress -ginkgo.trace -v=2 -cloud-provider=minikube ' + st))
+    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -ginkgo.v -ginkgo.progress -ginkgo.trace -v=1 -cloud-provider=minikube ' + st))
 
 def integration_test(args):
     st = ' '.join(args)
-    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -ginkgo.v -ginkgo.progress -ginkgo.trace -v=2 -in-cluster=true ' + st))
+    die(call(libbuild.GOC + ' test -v ./test/e2e/... -timeout 10h -args -ginkgo.v -ginkgo.progress -ginkgo.trace -v=1 -in-cluster=true ' + st))
 
 def test_deploy(provider):
     with open(libbuild.REPO_ROOT + '/hack/deploy/deployments.yaml', 'r') as f:
