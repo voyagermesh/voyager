@@ -60,6 +60,47 @@ var _ = Describe("IngressTLS", func() {
 		}
 	})
 
+	var (
+		shouldTestRedirect = func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			svc, err := f.Ingress.GetOffShootService(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(svc.Spec.Ports)).Should(Equal(2))
+			Expect(svc.Spec.Ports[0].Port).To(Or(Equal(int32(80)), Equal(int32(443))))
+			Expect(svc.Spec.Ports[1].Port).To(Or(Equal(int32(80)), Equal(int32(443))))
+
+			var httpPort, httpsPort apiv1.ServicePort
+			for _, p := range svc.Spec.Ports {
+				if p.Port == 80 {
+					httpPort = p
+				}
+
+				if p.Port == 443 {
+					httpsPort = p
+				}
+			}
+
+			err = f.Ingress.DoHTTPsTestRedirect(framework.MaxRetry, "http.appscode.dev", ing, f.Ingress.FilterEndpointsForPort(eps, httpPort), "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+				return Expect(r.Status).Should(Equal(301)) &&
+					Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
+					Expect(r.ResponseHeader.Get("Location")).Should(Equal("https://http.appscode.dev/testpath/ok"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoHTTPs(framework.MaxRetry, "http.appscode.dev", "", ing, f.Ingress.FilterEndpointsForPort(eps, httpsPort), "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+					Expect(r.Method).Should(Equal("GET")) &&
+					Expect(r.Path).Should(Equal("/testpath/ok")) &&
+					Expect(r.Host).Should(Equal("http.appscode.dev"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+		}
+	)
+
 	Describe("Https response", func() {
 		BeforeEach(func() {
 			ing.Spec = api.IngressSpec{
@@ -117,7 +158,7 @@ var _ = Describe("IngressTLS", func() {
 		})
 	})
 
-	Describe("Https redirect", func() {
+	Describe("Https redirect port specified", func() {
 		BeforeEach(func() {
 			if f.Ingress.Config.CloudProviderName == "minikube" {
 				ing.Annotations[api.LBType] = api.LBTypeHostPort
@@ -136,7 +177,7 @@ var _ = Describe("IngressTLS", func() {
 						Host: "http.appscode.dev",
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
-								Port:  intstr.FromInt(80),
+								Port: intstr.FromInt(80),
 								NoSSL: true,
 								Paths: []api.HTTPIngressPath{
 									{
@@ -184,44 +225,75 @@ var _ = Describe("IngressTLS", func() {
 			}
 		})
 
-		It("Should redirect HTTP", func() {
-			By("Getting HTTP endpoints")
-			eps, err := f.Ingress.GetHTTPEndpoints(ing)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(eps)).Should(BeNumerically(">=", 1))
+		It("Should redirect HTTP", shouldTestRedirect)
+	})
 
-			svc, err := f.Ingress.GetOffShootService(ing)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(svc.Spec.Ports)).Should(Equal(2))
-			Expect(svc.Spec.Ports[0].Port).To(Or(Equal(int32(80)), Equal(int32(443))))
-			Expect(svc.Spec.Ports[1].Port).To(Or(Equal(int32(80)), Equal(int32(443))))
-
-			var httpPort, httpsPort apiv1.ServicePort
-			for _, p := range svc.Spec.Ports {
-				if p.Port == 80 {
-					httpPort = p
-				}
-
-				if p.Port == 443 {
-					httpsPort = p
-				}
+	Describe("Https redirect port not specified", func() {
+		BeforeEach(func() {
+			if f.Ingress.Config.CloudProviderName == "minikube" {
+				ing.Annotations[api.LBType] = api.LBTypeHostPort
+				f.Ingress.Mutex.Lock()
 			}
 
-			err = f.Ingress.DoHTTPsTestRedirect(framework.MaxRetry, "http.appscode.dev", ing, f.Ingress.FilterEndpointsForPort(eps, httpPort), "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
-				return Expect(r.Status).Should(Equal(301)) &&
-					Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
-					Expect(r.ResponseHeader.Get("Location")).Should(Equal("https://http.appscode.dev/testpath/ok"))
-			})
-			Expect(err).NotTo(HaveOccurred())
-
-			err = f.Ingress.DoHTTPs(framework.MaxRetry, "http.appscode.dev", "", ing, f.Ingress.FilterEndpointsForPort(eps, httpsPort), "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
-				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
-					Expect(r.Method).Should(Equal("GET")) &&
-					Expect(r.Path).Should(Equal("/testpath/ok")) &&
-					Expect(r.Host).Should(Equal("http.appscode.dev"))
-			})
-			Expect(err).NotTo(HaveOccurred())
+			ing.Spec = api.IngressSpec{
+				TLS: []api.IngressTLS{
+					{
+						SecretName: secret.Name,
+						Hosts:      []string{"http.appscode.dev"},
+					},
+				},
+				Rules: []api.IngressRule{
+					{
+						Host: "http.appscode.dev",
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								NoSSL: true,
+								Paths: []api.HTTPIngressPath{
+									{
+										Path: "/testpath",
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												BackendRule: []string{
+													"redirect scheme https code 301 if !{ ssl_fc }",
+												},
+												ServiceName: f.Ingress.TestServerName(),
+												ServicePort: intstr.FromInt(80),
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					{
+						Host: "http.appscode.dev",
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
+									{
+										Path: "/testpath",
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: f.Ingress.TestServerName(),
+												ServicePort: intstr.FromInt(80),
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
 		})
+
+		AfterEach(func() {
+			if f.Ingress.Config.CloudProviderName == "minikube" {
+				f.Ingress.Mutex.Unlock()
+			}
+		})
+
+		It("Should redirect HTTP", shouldTestRedirect)
 	})
 
 	Describe("Http in port 443", func() {
