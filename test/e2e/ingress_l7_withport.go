@@ -93,7 +93,7 @@ var _ = Describe("IngressWithCustomPorts", func() {
 					{
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
-								NodePort: intstr.FromInt(32766),
+								NodePort: intstr.FromInt(32700),
 								Paths: []api.HTTPIngressPath{
 									{
 										Backend: api.HTTPIngressBackend{
@@ -121,7 +121,7 @@ var _ = Describe("IngressWithCustomPorts", func() {
 			Expect(len(svc.Spec.Ports)).Should(Equal(1))
 			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(80)))
 			Expect(svc.Spec.Ports[0].NodePort).Should(BeNumerically(">=", 1))
-			Expect(svc.Spec.Ports[0].NodePort).Should(Equal(int32(32766)))
+			Expect(svc.Spec.Ports[0].NodePort).Should(Equal(int32(32700)))
 		})
 	})
 
@@ -166,7 +166,7 @@ var _ = Describe("IngressWithCustomPorts", func() {
 
 			tobeUpdated, err := f.Ingress.Get(ing)
 			Expect(err).NotTo(HaveOccurred())
-			tobeUpdated.Spec.Rules[0].HTTP.NodePort = intstr.FromInt(32766)
+			tobeUpdated.Spec.Rules[0].HTTP.NodePort = intstr.FromInt(32701)
 			err = f.Ingress.Update(tobeUpdated)
 			Expect(err).NotTo(HaveOccurred())
 			Eventually(func() int32 {
@@ -177,7 +177,7 @@ var _ = Describe("IngressWithCustomPorts", func() {
 					}
 				}
 				return 0
-			}, "5m", "10s").Should(Equal(int32(32766)))
+			}, "5m", "10s").Should(Equal(int32(32701)))
 
 		})
 	})
@@ -190,7 +190,7 @@ var _ = Describe("IngressWithCustomPorts", func() {
 					{
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
-								NodePort: intstr.FromInt(32766),
+								NodePort: intstr.FromInt(32702),
 								Paths: []api.HTTPIngressPath{
 									{
 										Backend: api.HTTPIngressBackend{
@@ -222,7 +222,7 @@ var _ = Describe("IngressWithCustomPorts", func() {
 			Expect(len(svc.Spec.Ports)).Should(Equal(1))
 			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(80)))
 			Expect(svc.Spec.Ports[0].NodePort).Should(BeNumerically(">=", 1))
-			Expect(svc.Spec.Ports[0].NodePort).Should(Equal(int32(32766)))
+			Expect(svc.Spec.Ports[0].NodePort).Should(Equal(int32(32702)))
 		})
 	})
 
@@ -268,7 +268,7 @@ var _ = Describe("IngressWithCustomPorts", func() {
 
 			tobeUpdated, err := f.Ingress.Get(ing)
 			Expect(err).NotTo(HaveOccurred())
-			tobeUpdated.Spec.Rules[0].HTTP.NodePort = intstr.FromInt(32766)
+			tobeUpdated.Spec.Rules[0].HTTP.NodePort = intstr.FromInt(32705)
 			err = f.Ingress.Update(tobeUpdated)
 			Expect(err).NotTo(HaveOccurred())
 			Eventually(func() int32 {
@@ -279,7 +279,7 @@ var _ = Describe("IngressWithCustomPorts", func() {
 					}
 				}
 				return 0
-			}, "5m", "10s").Should(Equal(int32(32766)))
+			}, "5m", "10s").Should(Equal(int32(32705)))
 
 		})
 	})

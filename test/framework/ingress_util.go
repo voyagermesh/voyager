@@ -830,16 +830,6 @@ func (i *ingressInvocation) DeleteResourceWithBackendWeight(meta metav1.ObjectMe
 	})
 }
 
-func (i *ingressInvocation) TLSHostName() string {
-	if i.Config.CloudProviderName == "minikube" {
-		return "http.appscode.dev:" + i.TLSNodePortForMiniKube()
-	}
-	return "http.appscode.dev"
-}
-
-func (i *ingressInvocation) TLSNodePortForMiniKube() string {
-	if i.Config.CloudProviderName == "minikube" {
-		return "32765"
-	}
-	return ""
+func (i *ingressInvocation) GetFreeNodePort() int32 {
+	return int32(32766)
 }

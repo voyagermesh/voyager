@@ -103,16 +103,21 @@ var _ = Describe("IngressTLS", func() {
 
 	Describe("Https response", func() {
 		BeforeEach(func() {
+			if f.Ingress.Config.CloudProviderName == "minikube" {
+				ing.Annotations[api.LBType] = api.LBTypeHostPort
+				f.Ingress.Mutex.Lock()
+			}
+
 			ing.Spec = api.IngressSpec{
 				TLS: []api.IngressTLS{
 					{
 						SecretName: secret.Name,
-						Hosts:      []string{f.Ingress.TLSHostName()},
+						Hosts:      []string{"http.appscode.dev"},
 					},
 				},
 				Rules: []api.IngressRule{
 					{
-						Host: f.Ingress.TLSHostName(),
+						Host: "http.appscode.dev",
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
 								Paths: []api.HTTPIngressPath{
@@ -131,9 +136,11 @@ var _ = Describe("IngressTLS", func() {
 					},
 				},
 			}
+		})
 
+		AfterEach(func() {
 			if f.Ingress.Config.CloudProviderName == "minikube" {
-				ing.Spec.Rules[0].HTTP.NodePort = intstr.FromString(f.Ingress.TLSNodePortForMiniKube())
+				f.Ingress.Mutex.Unlock()
 			}
 		})
 
@@ -148,11 +155,11 @@ var _ = Describe("IngressTLS", func() {
 			Expect(len(svc.Spec.Ports)).Should(Equal(1))
 			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(443)))
 
-			err = f.Ingress.DoHTTPs(framework.MaxRetry, f.Ingress.TLSHostName(), "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTPs(framework.MaxRetry, "http.appscode.dev", "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok")) &&
-					Expect(r.Host).Should(Equal(f.Ingress.TLSHostName()))
+					Expect(r.Host).Should(Equal("http.appscode.dev"))
 			})
 			Expect(err).NotTo(HaveOccurred())
 		})
