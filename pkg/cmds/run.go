@@ -89,6 +89,15 @@ func run() {
 	if opt.HAProxyImage == "" {
 		log.Fatalln("Missing required flag --haproxy-image")
 	}
+	if opt.CloudProvider == "$CLOUD_PROVIDER" {
+		log.Fatalln("Invalid cloud provider `--cloud-provider=$CLOUD_PROVIDER`")
+	}
+	if opt.CloudConfigFile == "$CLOUD_CONFIG" {
+		log.Fatalln("Invalid cloud config file `--cloud-config=$CLOUD_CONFIG`")
+	}
+	if opt.IngressClass == "$INGRESS_CLASS" {
+		log.Fatalln("Invalid ingress class `--ingress-class=$INGRESS_CLASS`")
+	}
 
 	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
 	if err != nil {
