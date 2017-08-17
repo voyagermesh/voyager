@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	MaxRetry = 50
+	MaxRetry = 100
 	NoRetry  = 1
 )
 
