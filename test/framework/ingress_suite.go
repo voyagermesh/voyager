@@ -77,11 +77,11 @@ func (i *ingressInvocation) Delete(ing *api.Ingress) error {
 	return i.VoyagerClient.Ingresses(i.Namespace()).Delete(ing.Name)
 }
 
-func (i *ingressInvocation) IsExists(ing *api.Ingress) bool {
+func (i *ingressInvocation) IsExistsEventually(ing *api.Ingress) bool {
 	if Eventually(func() error {
-		err := i.isExists(ing)
+		err := i.IsExists(ing)
 		if err != nil {
-			log.Errorln("IsExists failed with error,", err)
+			log.Errorln("IsExistsEventually failed with error,", err)
 		}
 		return err
 	}, "5m", "10s").Should(BeNil()) {
@@ -91,7 +91,7 @@ func (i *ingressInvocation) IsExists(ing *api.Ingress) bool {
 	return false
 }
 
-func (i *ingressInvocation) isExists(ing *api.Ingress) error {
+func (i *ingressInvocation) IsExists(ing *api.Ingress) error {
 	var err error
 	if ing.LBType() == api.LBTypeHostPort {
 		_, err = i.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})

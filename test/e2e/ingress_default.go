@@ -66,7 +66,7 @@ var _ = Describe("IngressCoreOperations", func() {
 		f.Ingress.EventuallyStarted(ing).Should(BeTrue())
 
 		By("Checking generated resource")
-		Expect(f.Ingress.IsExists(ing)).Should(BeTrue())
+		Expect(f.Ingress.IsExistsEventually(ing)).Should(BeTrue())
 	})
 
 	AfterEach(func() {
@@ -98,7 +98,7 @@ var _ = Describe("IngressCoreOperations", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() bool {
-				return f.Ingress.IsExists(ing)
+				return f.Ingress.IsExists(ing) == nil
 			}, "5m", "10s").Should(BeFalse())
 		})
 	})

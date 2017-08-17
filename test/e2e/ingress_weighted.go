@@ -40,7 +40,7 @@ var _ = Describe("IngressWithHostName", func() {
 		f.Ingress.EventuallyStarted(ing).Should(BeTrue())
 
 		By("Checking generated resource")
-		Expect(f.Ingress.IsExists(ing)).Should(BeTrue())
+		Expect(f.Ingress.IsExistsEventually(ing)).Should(BeTrue())
 	})
 
 	AfterEach(func() {
