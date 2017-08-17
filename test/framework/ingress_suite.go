@@ -79,7 +79,11 @@ func (i *ingressInvocation) Delete(ing *api.Ingress) error {
 
 func (i *ingressInvocation) IsExists(ing *api.Ingress) bool {
 	if Eventually(func() error {
-		return i.isExists(ing)
+		err := i.isExists(ing)
+		if err != nil {
+			log.Errorln("IsExists failed with error,", err)
+		}
+		return err
 	}, "5m", "10s").Should(BeNil()) {
 		return true
 	}
