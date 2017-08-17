@@ -90,6 +90,19 @@ var _ = Describe("IngressTCP", func() {
 						},
 					},
 				},
+				{
+					Host: "http.appscode.dev",
+					IngressRuleValue: api.IngressRuleValue{
+						TCP: &api.TCPIngressRuleValue{
+							Port: intstr.FromInt(4949),
+							NoSSL: true,
+							Backend: api.IngressBackend{
+								ServiceName: f.Ingress.TestServerName(),
+								ServicePort: intstr.FromInt(4545),
+							},
+						},
+					},
+				},
 			}
 		})
 
@@ -101,11 +114,12 @@ var _ = Describe("IngressTCP", func() {
 
 			svc, err := f.Ingress.GetOffShootService(ing)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(len(svc.Spec.Ports)).Should(Equal(2))
-			Expect(svc.Spec.Ports[0].Port).To(Or(Equal(int32(4242)), Equal(int32(4141))))
-			Expect(svc.Spec.Ports[1].Port).To(Or(Equal(int32(4242)), Equal(int32(4141))))
+			Expect(len(svc.Spec.Ports)).Should(Equal(3))
+			Expect(svc.Spec.Ports[0].Port).To(Or(Equal(int32(4242)), Equal(int32(4141)), Equal(int32(4949))))
+			Expect(svc.Spec.Ports[1].Port).To(Or(Equal(int32(4242)), Equal(int32(4141)), Equal(int32(4949))))
+			Expect(svc.Spec.Ports[2].Port).To(Or(Equal(int32(4242)), Equal(int32(4141)), Equal(int32(4949))))
 
-			var tcpNoSSL, tcpSSL apiv1.ServicePort
+			var tcpNoSSL, tcpSSL, tcpWithNoSSL apiv1.ServicePort
 			for _, p := range svc.Spec.Ports {
 				if p.Port == 4242 {
 					tcpNoSSL = p
@@ -114,10 +128,19 @@ var _ = Describe("IngressTCP", func() {
 				if p.Port == 4343 {
 					tcpSSL = p
 				}
+
+				if p.Port == 4949 {
+					tcpWithNoSSL = p
+				}
 			}
 
 			err = f.Ingress.DoTCP(framework.MaxRetry, ing, f.Ingress.FilterEndpointsForPort(eps, tcpNoSSL), func(r *testserverclient.Response) bool {
 				return Expect(r.ServerPort).Should(Equal(":4343"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoTCP(framework.MaxRetry, ing, f.Ingress.FilterEndpointsForPort(eps, tcpWithNoSSL), func(r *testserverclient.Response) bool {
+				return Expect(r.ServerPort).Should(Equal(":4545"))
 			})
 			Expect(err).NotTo(HaveOccurred())
 
