@@ -100,8 +100,6 @@ func (c *loadBalancerController) Create() error {
 		c.Ingress.OffshootName(),
 	)
 
-	time.Sleep(time.Second * 5)
-
 	// If RBAC is enabled we need to ensure service account
 	if c.Opt.EnableRBAC {
 		if err := c.ensureRBAC(); err != nil {

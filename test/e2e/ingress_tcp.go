@@ -94,7 +94,7 @@ var _ = Describe("IngressTCP", func() {
 					Host: "http.appscode.dev",
 					IngressRuleValue: api.IngressRuleValue{
 						TCP: &api.TCPIngressRuleValue{
-							Port: intstr.FromInt(4949),
+							Port:  intstr.FromInt(4949),
 							NoSSL: true,
 							Backend: api.IngressBackend{
 								ServiceName: f.Ingress.TestServerName(),

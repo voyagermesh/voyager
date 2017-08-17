@@ -3,7 +3,6 @@ package ingress
 import (
 	"reflect"
 	"strconv"
-	"time"
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
@@ -125,8 +124,6 @@ func (c *hostPortController) Create() error {
 		"Successfully created ConfigMap %s",
 		c.Ingress.OffshootName(),
 	)
-
-	time.Sleep(time.Second * 5)
 
 	// If RBAC is enabled we need to ensure service account
 	if c.Opt.EnableRBAC {
