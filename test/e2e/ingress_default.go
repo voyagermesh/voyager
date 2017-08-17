@@ -114,7 +114,7 @@ var _ = Describe("IngressCoreOperations", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Waiting some time for update to be applied")
-			time.Sleep(time.Second * 5)
+			time.Sleep(time.Second * 10)
 
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)

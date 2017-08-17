@@ -78,28 +78,39 @@ func (i *ingressInvocation) Delete(ing *api.Ingress) error {
 }
 
 func (i *ingressInvocation) IsExists(ing *api.Ingress) bool {
+	if Eventually(func() error {
+		return i.isExists(ing)
+	}, "5m", "10s").Should(BeNil()) {
+		return true
+	}
+
+	return false
+}
+
+func (i *ingressInvocation) isExists(ing *api.Ingress) error {
+	var err error
 	if ing.LBType() == api.LBTypeHostPort {
-		_, err := i.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+		_, err = i.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
-			return false
+			return err
 		}
 	} else {
-		_, err := i.KubeClient.ExtensionsV1beta1().Deployments(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+		_, err = i.KubeClient.ExtensionsV1beta1().Deployments(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
-			return false
+			return err
 		}
 	}
 
-	_, err := i.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+	_, err = i.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		return false
+		return err
 	}
 
 	_, err = i.KubeClient.CoreV1().ConfigMaps(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		return false
+		return err
 	}
-	return true
+	return nil
 }
 
 func (i *ingressInvocation) EventuallyStarted(ing *api.Ingress) GomegaAsyncAssertion {
@@ -109,7 +120,7 @@ func (i *ingressInvocation) EventuallyStarted(ing *api.Ingress) GomegaAsyncAsser
 			return false
 		}
 
-		if ing.Annotations[api.LBType] == api.LBTypeLoadBalancer {
+		if ing.LBType() != api.LBTypeHostPort {
 			_, err = i.KubeClient.CoreV1().Endpoints(i.Namespace()).Get(ing.OffshootName(), metav1.GetOptions{})
 			if err != nil {
 				return false

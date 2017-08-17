@@ -123,6 +123,7 @@ var _ = Describe("IngressOperations", func() {
 		Describe("With NodePort Service", func() {
 			BeforeEach(func() {
 				ing.Annotations[api.LBType] = api.LBTypeNodePort
+				ing.Spec.Rules[0].HTTP.NodePort = intstr.FromInt(32345)
 			})
 			It("Should create nodeport service", func() {
 				var svc *v1.Service
@@ -133,10 +134,7 @@ var _ = Describe("IngressOperations", func() {
 				}, "10m", "5s").Should(BeNil())
 				Expect(svc).ShouldNot(BeNil())
 				Expect(svc.Spec.Type).Should(Equal(v1.ServiceTypeNodePort))
-
-				for _, port := range svc.Spec.Ports {
-					Expect(port.NodePort).Should(BeNumerically(">", 0))
-				}
+				Expect(svc.Spec.Ports[0].NodePort).Should(Equal(int32(32345)))
 			})
 		})
 

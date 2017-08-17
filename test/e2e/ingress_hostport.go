@@ -90,7 +90,7 @@ var _ = Describe("IngressHostPort", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Waiting some time for update to be applied")
-			time.Sleep(time.Second * 5)
+			time.Sleep(time.Second * 10)
 
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
@@ -145,8 +145,6 @@ var _ = Describe("IngressHostPort", func() {
 			err = f.Ingress.Update(uing)
 			Expect(err).NotTo(HaveOccurred())
 
-			By("Waiting some time for update to be applied")
-			time.Sleep(time.Second * 5)
 			Eventually(func() error {
 				svc, err := f.KubeClient.CoreV1().Services(ing.GetNamespace()).Get(ing.OffshootName(), metav1.GetOptions{})
 				if err != nil {
@@ -158,7 +156,7 @@ var _ = Describe("IngressHostPort", func() {
 					}
 				}
 				return errors.New("TCP port not found")
-			}, "5m", "10s").Should(BeNil())
+			}, "5m", "20s").Should(BeNil())
 
 			if f.Config.CloudProviderName != "minikube" {
 				eps, err := f.Ingress.GetHTTPEndpoints(ing)
