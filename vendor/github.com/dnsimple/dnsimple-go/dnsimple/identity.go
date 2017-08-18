@@ -15,8 +15,8 @@ type WhoamiData struct {
 	Account *Account `json:"account,omitempty"`
 }
 
-// whoamiResponse represents a response from an API method that returns a Whoami struct.
-type whoamiResponse struct {
+// WhoamiResponse represents a response from an API method that returns a Whoami struct.
+type WhoamiResponse struct {
 	Response
 	Data *WhoamiData `json:"data"`
 }
@@ -24,9 +24,9 @@ type whoamiResponse struct {
 // Whoami gets the current authenticate context.
 //
 // See https://developer.dnsimple.com/v2/whoami
-func (s *IdentityService) Whoami() (*whoamiResponse, error) {
+func (s *IdentityService) Whoami() (*WhoamiResponse, error) {
 	path := versioned("/whoami")
-	whoamiResponse := &whoamiResponse{}
+	whoamiResponse := &WhoamiResponse{}
 
 	resp, err := s.client.get(path, whoamiResponse)
 	if err != nil {

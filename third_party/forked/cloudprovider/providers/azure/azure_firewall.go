@@ -55,7 +55,8 @@ func (az *Cloud) EnsureFirewall(service *apiv1.Service, hostnames []string) erro
 	}
 	if sgNeedsUpdate {
 		glog.V(3).Infof("ensure(%s): sg(%s) - updating", serviceName, *sg.Name)
-		_, err := az.SecurityGroupsClient.CreateOrUpdate(az.ResourceGroup, *sg.Name, sg, nil)
+		_, errchan := az.SecurityGroupsClient.CreateOrUpdate(az.ResourceGroup, *sg.Name, sg, nil)
+		err := <-errchan
 		if err != nil {
 			return err
 		}
@@ -88,7 +89,8 @@ func (az *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 		}
 		if sgNeedsUpdate {
 			glog.V(3).Infof("delete(%s): sg(%s) - updating", serviceName, az.SecurityGroupName)
-			_, err := az.SecurityGroupsClient.CreateOrUpdate(az.ResourceGroup, *reconciledSg.Name, reconciledSg, nil)
+			_, errchan := az.SecurityGroupsClient.CreateOrUpdate(az.ResourceGroup, *reconciledSg.Name, reconciledSg, nil)
+			err := <-errchan
 			if err != nil {
 				return err
 			}
@@ -120,8 +122,8 @@ func (az *Cloud) reconcileFirewall(sg network.SecurityGroup, service *apiv1.Serv
 				DestinationPortRange:     to.StringPtr(strconv.Itoa(int(port.NodePort))),
 				SourceAddressPrefix:      to.StringPtr("Internet"),
 				DestinationAddressPrefix: to.StringPtr(destAddr),
-				Access:    network.Allow,
-				Direction: network.Inbound,
+				Access:    network.SecurityRuleAccessAllow,
+				Direction: network.SecurityRuleDirectionInbound,
 			},
 		}
 	}

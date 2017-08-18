@@ -7,14 +7,14 @@ import (
 // Delegation represents a list of name servers that correspond to a domain delegation.
 type Delegation []string
 
-// delegationResponse represents a response from an API method that returns a delegation struct.
-type delegationResponse struct {
+// DelegationResponse represents a response from an API method that returns a delegation struct.
+type DelegationResponse struct {
 	Response
 	Data *Delegation `json:"data"`
 }
 
-// vanityDelegationResponse represents a response for vanity name server enable and disable operations.
-type vanityDelegationResponse struct {
+// VanityDelegationResponse represents a response for vanity name server enable and disable operations.
+type VanityDelegationResponse struct {
 	Response
 	Data []VanityNameServer `json:"data"`
 }
@@ -22,9 +22,9 @@ type vanityDelegationResponse struct {
 // GetDomainDelegation gets the current delegated name servers for the domain.
 //
 // See https://developer.dnsimple.com/v2/registrar/delegation/#get
-func (s *RegistrarService) GetDomainDelegation(accountID string, domainName string) (*delegationResponse, error) {
+func (s *RegistrarService) GetDomainDelegation(accountID string, domainName string) (*DelegationResponse, error) {
 	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/delegation", accountID, domainName))
-	delegationResponse := &delegationResponse{}
+	delegationResponse := &DelegationResponse{}
 
 	resp, err := s.client.get(path, delegationResponse)
 	if err != nil {
@@ -38,9 +38,9 @@ func (s *RegistrarService) GetDomainDelegation(accountID string, domainName stri
 // ChangeDomainDelegation updates the delegated name severs for the domain.
 //
 // See https://developer.dnsimple.com/v2/registrar/delegation/#get
-func (s *RegistrarService) ChangeDomainDelegation(accountID string, domainName string, newDelegation *Delegation) (*delegationResponse, error) {
+func (s *RegistrarService) ChangeDomainDelegation(accountID string, domainName string, newDelegation *Delegation) (*DelegationResponse, error) {
 	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/delegation", accountID, domainName))
-	delegationResponse := &delegationResponse{}
+	delegationResponse := &DelegationResponse{}
 
 	resp, err := s.client.put(path, newDelegation, delegationResponse)
 	if err != nil {
@@ -54,9 +54,9 @@ func (s *RegistrarService) ChangeDomainDelegation(accountID string, domainName s
 // ChangeDomainDelegationToVanity enables vanity name servers for the given domain.
 //
 // See https://developer.dnsimple.com/v2/registrar/delegation/#delegateToVanity
-func (s *RegistrarService) ChangeDomainDelegationToVanity(accountID string, domainName string, newDelegation *Delegation) (*vanityDelegationResponse, error) {
+func (s *RegistrarService) ChangeDomainDelegationToVanity(accountID string, domainName string, newDelegation *Delegation) (*VanityDelegationResponse, error) {
 	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/delegation/vanity", accountID, domainName))
-	delegationResponse := &vanityDelegationResponse{}
+	delegationResponse := &VanityDelegationResponse{}
 
 	resp, err := s.client.put(path, newDelegation, delegationResponse)
 	if err != nil {
@@ -70,9 +70,9 @@ func (s *RegistrarService) ChangeDomainDelegationToVanity(accountID string, doma
 // ChangeDomainDelegationFromVanity disables vanity name servers for the given domain.
 //
 // See https://developer.dnsimple.com/v2/registrar/delegation/#dedelegateFromVanity
-func (s *RegistrarService) ChangeDomainDelegationFromVanity(accountID string, domainName string) (*vanityDelegationResponse, error) {
+func (s *RegistrarService) ChangeDomainDelegationFromVanity(accountID string, domainName string) (*VanityDelegationResponse, error) {
 	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/delegation/vanity", accountID, domainName))
-	delegationResponse := &vanityDelegationResponse{}
+	delegationResponse := &VanityDelegationResponse{}
 
 	resp, err := s.client.delete(path, nil, nil)
 	if err != nil {
