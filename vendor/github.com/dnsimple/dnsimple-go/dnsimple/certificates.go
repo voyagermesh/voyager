@@ -45,20 +45,20 @@ func certificatePath(accountID, domainIdentifier, certificateID string) (path st
 	return
 }
 
-// certificateResponse represents a response from an API method that returns a Certificate struct.
-type certificateResponse struct {
+// CertificateResponse represents a response from an API method that returns a Certificate struct.
+type CertificateResponse struct {
 	Response
 	Data *Certificate `json:"data"`
 }
 
-// certificateBundleResponse represents a response from an API method that returns a CertificatBundle struct.
-type certificateBundleResponse struct {
+// CertificateBundleResponse represents a response from an API method that returns a CertificatBundle struct.
+type CertificateBundleResponse struct {
 	Response
 	Data *CertificateBundle `json:"data"`
 }
 
-// certificatesResponse represents a response from an API method that returns a collection of Certificate struct.
-type certificatesResponse struct {
+// CertificatesResponse represents a response from an API method that returns a collection of Certificate struct.
+type CertificatesResponse struct {
 	Response
 	Data []Certificate `json:"data"`
 }
@@ -66,9 +66,9 @@ type certificatesResponse struct {
 // ListCertificates list the certificates for a domain.
 //
 // See https://developer.dnsimple.com/v2/domains/certificates#list
-func (s *CertificatesService) ListCertificates(accountID, domainIdentifier string, options *ListOptions) (*certificatesResponse, error) {
+func (s *CertificatesService) ListCertificates(accountID, domainIdentifier string, options *ListOptions) (*CertificatesResponse, error) {
 	path := versioned(certificatePath(accountID, domainIdentifier, ""))
-	certificatesResponse := &certificatesResponse{}
+	certificatesResponse := &CertificatesResponse{}
 
 	path, err := addURLQueryOptions(path, options)
 	if err != nil {
@@ -87,9 +87,9 @@ func (s *CertificatesService) ListCertificates(accountID, domainIdentifier strin
 // GetCertificate fetches the certificate.
 //
 // See https://developer.dnsimple.com/v2/domains/certificates#get
-func (s *CertificatesService) GetCertificate(accountID, domainIdentifier string, certificateID int) (*certificateResponse, error) {
+func (s *CertificatesService) GetCertificate(accountID, domainIdentifier string, certificateID int) (*CertificateResponse, error) {
 	path := versioned(certificatePath(accountID, domainIdentifier, strconv.Itoa(certificateID)))
-	certificateResponse := &certificateResponse{}
+	certificateResponse := &CertificateResponse{}
 
 	resp, err := s.client.get(path, certificateResponse)
 	if err != nil {
@@ -104,9 +104,9 @@ func (s *CertificatesService) GetCertificate(accountID, domainIdentifier string,
 // as well the root certificate and the intermediate chain.
 //
 // See https://developer.dnsimple.com/v2/domains/certificates#download
-func (s *CertificatesService) DownloadCertificate(accountID, domainIdentifier string, certificateID int) (*certificateBundleResponse, error) {
+func (s *CertificatesService) DownloadCertificate(accountID, domainIdentifier string, certificateID int) (*CertificateBundleResponse, error) {
 	path := versioned(certificatePath(accountID, domainIdentifier, strconv.Itoa(certificateID)) + "/download")
-	certificateBundleResponse := &certificateBundleResponse{}
+	certificateBundleResponse := &CertificateBundleResponse{}
 
 	resp, err := s.client.get(path, certificateBundleResponse)
 	if err != nil {
@@ -120,9 +120,9 @@ func (s *CertificatesService) DownloadCertificate(accountID, domainIdentifier st
 // GetCertificatePrivateKey fetches the certificate private key.
 //
 // See https://developer.dnsimple.com/v2/domains/certificates#get-private-key
-func (s *CertificatesService) GetCertificatePrivateKey(accountID, domainIdentifier string, certificateID int) (*certificateBundleResponse, error) {
+func (s *CertificatesService) GetCertificatePrivateKey(accountID, domainIdentifier string, certificateID int) (*CertificateBundleResponse, error) {
 	path := versioned(certificatePath(accountID, domainIdentifier, strconv.Itoa(certificateID)) + "/private_key")
-	certificateBundleResponse := &certificateBundleResponse{}
+	certificateBundleResponse := &CertificateBundleResponse{}
 
 	resp, err := s.client.get(path, certificateBundleResponse)
 	if err != nil {

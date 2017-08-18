@@ -23,6 +23,8 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/Azure/azure-sdk-for-go/arm/network"
+	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	"github.com/ghodss/yaml"
@@ -84,12 +86,12 @@ func NewCloud(configReader io.Reader) (cloudprovider.Interface, error) {
 		}
 	}
 
-	oauthConfig, err := az.Environment.OAuthConfigForTenant(az.TenantID)
+	oauthConfig, err := adal.NewOAuthConfig(az.Environment.ActiveDirectoryEndpoint, az.TenantID)
 	if err != nil {
 		return nil, err
 	}
 
-	servicePrincipalToken, err := azure.NewServicePrincipalToken(
+	servicePrincipalToken, err := adal.NewServicePrincipalToken(
 		*oauthConfig,
 		az.AADClientID,
 		az.AADClientSecret,
@@ -100,16 +102,16 @@ func NewCloud(configReader io.Reader) (cloudprovider.Interface, error) {
 
 	az.InterfacesClient = network.NewInterfacesClient(az.SubscriptionID)
 	az.InterfacesClient.BaseURI = az.Environment.ResourceManagerEndpoint
-	az.InterfacesClient.Authorizer = servicePrincipalToken
+	az.InterfacesClient.Authorizer = autorest.NewBearerAuthorizer(servicePrincipalToken)
 
 	az.VirtualMachinesClient = compute.NewVirtualMachinesClient(az.SubscriptionID)
 	az.VirtualMachinesClient.BaseURI = az.Environment.ResourceManagerEndpoint
-	az.VirtualMachinesClient.Authorizer = servicePrincipalToken
+	az.VirtualMachinesClient.Authorizer = autorest.NewBearerAuthorizer(servicePrincipalToken)
 	az.VirtualMachinesClient.PollingDelay = 5 * time.Second
 
 	az.SecurityGroupsClient = network.NewSecurityGroupsClient(az.SubscriptionID)
 	az.SecurityGroupsClient.BaseURI = az.Environment.ResourceManagerEndpoint
-	az.SecurityGroupsClient.Authorizer = servicePrincipalToken
+	az.SecurityGroupsClient.Authorizer = autorest.NewBearerAuthorizer(servicePrincipalToken)
 
 	return &az, nil
 }
