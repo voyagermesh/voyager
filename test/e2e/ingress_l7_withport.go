@@ -50,6 +50,7 @@ var _ = Describe("IngressWithCustomPorts", func() {
 								Port: intstr.FromInt(9090),
 								Paths: []api.HTTPIngressPath{
 									{
+										Path: "/testpath",
 										Backend: api.HTTPIngressBackend{
 											IngressBackend: api.IngressBackend{
 												ServiceName: f.Ingress.TestServerName(),
