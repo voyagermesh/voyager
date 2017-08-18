@@ -8,8 +8,7 @@ import (
 )
 
 const (
-	EngressKey      = "ingress.appscode.com"
-	AlphaEngressKey = "ingress.alpha.appscode.com"
+	EngressKey = "ingress.appscode.com"
 
 	APISchema        = EngressKey + "/" + "api-schema" // APISchema = {APIGroup}/{APIVersion}
 	APISchemaEngress = GroupName + "/v1beta1"
@@ -111,7 +110,7 @@ const (
 	//   option dontlognull
 	//   no option clitcpka
 	//
-	DefaultsOption = AlphaEngressKey + "/" + "default-option"
+	DefaultsOption = EngressKey + "/" + "default-option"
 )
 
 func (r Ingress) OffshootName() string {
@@ -285,7 +284,7 @@ func (r Ingress) Timeouts() map[string]string {
 	return ans
 }
 
-func (r Ingress) Options() map[string]bool {
+func (r Ingress) HAProxyOptions() map[string]bool {
 	ans, _ := getMap(r.Annotations, DefaultsOption)
 	if ans == nil {
 		ans = make(map[string]string)
@@ -299,6 +298,12 @@ func (r Ingress) Options() map[string]bool {
 		}
 		ret[k] = val
 	}
+
+	if len(ret) == 0 {
+		ret["http-server-close"] = true
+		ret["dontlognull"] = true
+	}
+
 	return ret
 }
 
