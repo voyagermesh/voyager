@@ -48,7 +48,7 @@ func TestGetTimeOuts(t *testing.T) {
 func TestGetOptions(t *testing.T) {
 	ing := &Ingress{
 		ObjectMeta: v1.ObjectMeta{Annotations: map[string]string{
-			"ingress.appscode.com/default-option": `{"positive-options": "true", "negative-options": "false"}`,
+			"ingress.appscode.com/default-option": `{"positive-options": "true", "negative-options": "false", "to-be-ignored": ""}`,
 		}},
 	}
 	opt := ing.HAProxyOptions()
