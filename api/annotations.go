@@ -97,6 +97,20 @@ const (
 	// timeout  server          50s
 	// timeout  tunnel          50s
 	DefaultsTimeOut = EngressKey + "/" + "default-timeout"
+
+	// https://github.com/appscode/voyager/issues/343
+	// Supports all valid options for defaults section of HAProxy config
+	// https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.2-option%20abortonclose
+	// from the list from here
+	// expects a json encoded map
+	// ie: "ingress.appscode.com/default-option": {"http-keep-alive": "true", "dontlognull": "true", "clitcpka": "false"}
+	// This will be appended in the defaults section of HAProxy as
+	//
+	//   option http-keep-alive
+	//   option dontlognull
+	//   no option clitcpka
+	//
+	DefaultsOption = EngressKey + "/" + "default-option"
 )
 
 func (r Ingress) OffshootName() string {
@@ -268,6 +282,29 @@ func (r Ingress) Timeouts() map[string]string {
 	}
 
 	return ans
+}
+
+func (r Ingress) HAProxyOptions() map[string]bool {
+	ans, _ := getMap(r.Annotations, DefaultsOption)
+	if ans == nil {
+		ans = make(map[string]string)
+	}
+
+	ret := make(map[string]bool)
+	for k := range ans {
+		val, err := getBool(ans, k)
+		if err != nil {
+			continue
+		}
+		ret[k] = val
+	}
+
+	if len(ret) == 0 {
+		ret["http-server-close"] = true
+		ret["dontlognull"] = true
+	}
+
+	return ret
 }
 
 // ref: https://github.com/kubernetes/kubernetes/blob/078238a461a0872a8eacb887fbb3d0085714604c/staging/src/k8s.io/apiserver/pkg/apis/example/v1/types.go#L134
