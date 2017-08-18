@@ -31,14 +31,14 @@ func templatePath(accountID string, templateIdentifier string) (path string) {
 	return
 }
 
-// templateResponse represents a response from an API method that returns a Template struct.
-type templateResponse struct {
+// TemplateResponse represents a response from an API method that returns a Template struct.
+type TemplateResponse struct {
 	Response
 	Data *Template `json:"data"`
 }
 
-// templatesResponse represents a response from an API method that returns a collection of Template struct.
-type templatesResponse struct {
+// TemplatesResponse represents a response from an API method that returns a collection of Template struct.
+type TemplatesResponse struct {
 	Response
 	Data []Template `json:"data"`
 }
@@ -46,9 +46,9 @@ type templatesResponse struct {
 // ListTemplates list the templates for an account.
 //
 // See https://developer.dnsimple.com/v2/templates/#list
-func (s *TemplatesService) ListTemplates(accountID string, options *ListOptions) (*templatesResponse, error) {
+func (s *TemplatesService) ListTemplates(accountID string, options *ListOptions) (*TemplatesResponse, error) {
 	path := versioned(templatePath(accountID, ""))
-	templatesResponse := &templatesResponse{}
+	templatesResponse := &TemplatesResponse{}
 
 	path, err := addURLQueryOptions(path, options)
 	if err != nil {
@@ -67,9 +67,9 @@ func (s *TemplatesService) ListTemplates(accountID string, options *ListOptions)
 // CreateTemplate creates a new template.
 //
 // See https://developer.dnsimple.com/v2/templates/#create
-func (s *TemplatesService) CreateTemplate(accountID string, templateAttributes Template) (*templateResponse, error) {
+func (s *TemplatesService) CreateTemplate(accountID string, templateAttributes Template) (*TemplateResponse, error) {
 	path := versioned(templatePath(accountID, ""))
-	templateResponse := &templateResponse{}
+	templateResponse := &TemplateResponse{}
 
 	resp, err := s.client.post(path, templateAttributes, templateResponse)
 	if err != nil {
@@ -83,9 +83,9 @@ func (s *TemplatesService) CreateTemplate(accountID string, templateAttributes T
 // GetTemplate fetches a template.
 //
 // See https://developer.dnsimple.com/v2/templates/#get
-func (s *TemplatesService) GetTemplate(accountID string, templateIdentifier string) (*templateResponse, error) {
+func (s *TemplatesService) GetTemplate(accountID string, templateIdentifier string) (*TemplateResponse, error) {
 	path := versioned(templatePath(accountID, templateIdentifier))
-	templateResponse := &templateResponse{}
+	templateResponse := &TemplateResponse{}
 
 	resp, err := s.client.get(path, templateResponse)
 	if err != nil {
@@ -99,9 +99,9 @@ func (s *TemplatesService) GetTemplate(accountID string, templateIdentifier stri
 // UpdateTemplate updates a template.
 //
 // See https://developer.dnsimple.com/v2/templates/#update
-func (s *TemplatesService) UpdateTemplate(accountID string, templateIdentifier string, templateAttributes Template) (*templateResponse, error) {
+func (s *TemplatesService) UpdateTemplate(accountID string, templateIdentifier string, templateAttributes Template) (*TemplateResponse, error) {
 	path := versioned(templatePath(accountID, templateIdentifier))
-	templateResponse := &templateResponse{}
+	templateResponse := &TemplateResponse{}
 
 	resp, err := s.client.patch(path, templateAttributes, templateResponse)
 	if err != nil {
@@ -115,9 +115,9 @@ func (s *TemplatesService) UpdateTemplate(accountID string, templateIdentifier s
 // DeleteTemplate deletes a template.
 //
 // See https://developer.dnsimple.com/v2/templates/#delete
-func (s *TemplatesService) DeleteTemplate(accountID string, templateIdentifier string) (*templateResponse, error) {
+func (s *TemplatesService) DeleteTemplate(accountID string, templateIdentifier string) (*TemplateResponse, error) {
 	path := versioned(templatePath(accountID, templateIdentifier))
-	templateResponse := &templateResponse{}
+	templateResponse := &TemplateResponse{}
 
 	resp, err := s.client.delete(path, nil, nil)
 	if err != nil {
