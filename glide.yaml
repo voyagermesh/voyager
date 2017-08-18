@@ -16,10 +16,9 @@ import:
 - package: github.com/aws/aws-sdk-go
   version: v1.6.10
 - package: github.com/Azure/azure-sdk-for-go
-  vcs: git
-  version: v7.0.1-beta
+  version: v10.2.1-beta
 - package: github.com/Azure/go-autorest
-  version: e0c77ecbe74311e03f2a629834d2110f031f1453
+  version: ~8.1.1
 - package: cloud.google.com/go
   version: v0.2.0
 - package: k8s.io/kubernetes

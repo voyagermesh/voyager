@@ -1,5 +1,5 @@
-hash: 292342d7cd6d8b98d990a23a0aa3482042ade5d2cb7de6bdd6740baf17421ec0
-updated: 2017-08-11T18:08:44.39767445-07:00
+hash: 18238fb3081a0201d7e27fb7998e3950a41cbd744768a1adca8878fe46fd87e9
+updated: 2017-08-17T22:31:19.127419702-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -66,15 +66,15 @@ imports:
   - service/route53
   - service/sts
 - name: github.com/Azure/azure-sdk-for-go
-  version: 0984e0641ae43b89283223034574d6465be93bf4
-  vcs: git
+  version: 2d49bb8f2cee530cc16f1f1a9f0aae763dee257d
   subpackages:
   - arm/compute
   - arm/network
 - name: github.com/Azure/go-autorest
-  version: e0c77ecbe74311e03f2a629834d2110f031f1453
+  version: f6e08fe5e4d45c9a66e40196d3fed5f37331d224
   subpackages:
   - autorest
+  - autorest/adal
   - autorest/azure
   - autorest/date
   - autorest/to
@@ -100,7 +100,7 @@ imports:
 - name: github.com/dgrijalva/jwt-go
   version: 01aeca54ebda6e0fbfafd0a524d234159c05ec20
 - name: github.com/dnsimple/dnsimple-go
-  version: 5a5b427618a76f9eed5ede0f3e6306fbd9311d2e
+  version: d1105abc03b313d7b8d9b04364f6bd053b346e59
   subpackages:
   - dnsimple
 - name: github.com/docker/distribution
@@ -251,7 +251,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
 - name: github.com/spf13/cobra
-  version: b26b538f693051ac6518e65672de3144ce3fbedc
+  version: cb731b898346822cc0c225c28550a8a29d93c732
   subpackages:
   - doc
 - name: github.com/spf13/pflag
@@ -358,14 +358,14 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/ini.v1
-  version: d3de07a94d22b4a0972deb4b96d790c2c0ce8333
+  version: 20b96f641a5ea98f2f8619ff4f3e061cff4833bd
 - name: gopkg.in/square/go-jose.v1
   version: aa2e30fdd1fe9dd3394119af66451ae790d50e0d
   subpackages:
   - cipher
   - json
 - name: gopkg.in/yaml.v2
-  version: 25c4ec802a7d637f88d584ab26798e94ad14c13b
+  version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
 - name: k8s.io/apimachinery
   version: 75b8dd260ef0469d96d578705a87cffd0e09dab8
   subpackages:

@@ -35,7 +35,7 @@ const (
 func getProtocolsFromKubernetesProtocol(protocol apiv1.Protocol) (network.TransportProtocol, network.SecurityRuleProtocol, network.ProbeProtocol, error) {
 	switch protocol {
 	case apiv1.ProtocolTCP:
-		return network.TransportProtocolTCP, network.TCP, network.ProbeProtocolTCP, nil
+		return network.TransportProtocolTCP, network.SecurityRuleProtocolTCP, network.ProbeProtocolTCP, nil
 	default:
 		return "", "", "", fmt.Errorf("Only TCP is supported for Azure LoadBalancers")
 	}
