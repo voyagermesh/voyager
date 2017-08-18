@@ -248,7 +248,7 @@ func (c *controller) generateConfig() error {
 			}
 
 			var key httpKey
-			if _, foundTLS := c.Ingress.FindTLSSecret(rule.Host); foundTLS && !rule.HTTP.NoSSL {
+			if _, foundTLS := c.Ingress.FindTLSSecret(rule.Host); foundTLS && !rule.HTTP.NoTLS {
 				key.UsesSSL = true
 				if port := rule.HTTP.Port.IntValue(); port > 0 {
 					key.Port = port
@@ -287,7 +287,7 @@ func (c *controller) generateConfig() error {
 						Endpoints:    eps,
 					},
 				}
-				if secretName, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoSSL {
+				if secretName, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoTLS {
 					def.SecretName = secretName
 				}
 				td.TCPService = append(td.TCPService, def)

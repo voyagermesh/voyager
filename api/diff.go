@@ -84,7 +84,7 @@ func (r Ingress) Secrets() []string {
 	secrets := sets.NewString()
 	for _, rule := range r.Spec.Rules {
 		if rule.HTTP != nil {
-			if secretName, ok := r.FindTLSSecret(rule.Host); ok && !rule.HTTP.NoSSL {
+			if secretName, ok := r.FindTLSSecret(rule.Host); ok && !rule.HTTP.NoTLS {
 				secrets.Insert(secretName)
 			}
 		} else if rule.TCP != nil {

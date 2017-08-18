@@ -138,8 +138,8 @@ type HTTPIngressRuleValue struct {
 	// port to listen http(s) connections.
 	Port intstr.IntOrString `json:"port,omitempty"`
 
-	// Set noSSL = true to force plain text. Else, auto detect like present
-	NoSSL bool `json:"noSSL,omitempty"`
+	// Set noTLS = true to force plain text. Else, auto detect like present
+	NoTLS bool `json:"noTLS,omitempty"`
 
 	// Specifies the node port of the referenced service.
 	NodePort intstr.IntOrString `json:"nodePort,omitempty"`
@@ -154,8 +154,8 @@ type TCPIngressRuleValue struct {
 	// port to listen tcp connections.
 	Port intstr.IntOrString `json:"port,omitempty"`
 
-	// Set noSSL = true to force plain text. Else, auto detect like present
-	NoSSL bool `json:"noSSL,omitempty"`
+	// Set noTLS = true to force plain text. Else, auto detect like present
+	NoTLS bool `json:"noTLS,omitempty"`
 
 	// Specifies the node port of the referenced service.
 	NodePort intstr.IntOrString `json:"nodePort,omitempty"`

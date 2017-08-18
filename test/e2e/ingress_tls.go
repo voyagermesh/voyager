@@ -185,7 +185,7 @@ var _ = Describe("IngressTLS", func() {
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
 								Port:  intstr.FromInt(80),
-								NoSSL: true,
+								NoTLS: true,
 								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/testpath",
@@ -254,7 +254,7 @@ var _ = Describe("IngressTLS", func() {
 						Host: "http.appscode.dev",
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
-								NoSSL: true,
+								NoTLS: true,
 								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/testpath",
@@ -317,7 +317,7 @@ var _ = Describe("IngressTLS", func() {
 						Host: "443-with-out-ssl.test.com",
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
-								NoSSL: true,
+								NoTLS: true,
 								Port:  intstr.FromInt(443),
 								Paths: []api.HTTPIngressPath{
 									{
