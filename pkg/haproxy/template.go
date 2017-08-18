@@ -53,11 +53,10 @@ global
 defaults
 	log global
 
-	option http-server-close
-
-	# Disable logging of null connections (haproxy connections like checks).
-	# This avoids excessive logs from haproxy internals.
-	option dontlognull
+	# Defaults Options provided by user
+	{{- range $k, $v := .OptionsDefaults }}
+	{{ if not $v }}no {{ end }}option {{ $k -}}
+	{{ end }}
 
 	# Timeout values
 	{{- range $k, $v := .TimeoutDefaults }}

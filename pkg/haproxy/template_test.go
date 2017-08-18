@@ -63,6 +63,12 @@ func TestTemplate(t *testing.T) {
 			"client": "2s",
 			"fin":    "1d",
 		},
+		OptionsDefaults: map[string]bool{
+			"full-value":     true,
+			"full-value-two": true,
+			"with-no":        false,
+			"with-no-two":    false,
+		},
 		Stats: &StatsInfo{Port: 1234},
 		DNSResolvers: []*api.DNSResolver{
 			{Name: "first", NameServer: []string{"foo:54", "bar:53"}, Retries: 5, Timeout: map[string]string{"client": "5s", "fin": "1d"}, Hold: map[string]string{"client": "5s", "fin": "1d"}},

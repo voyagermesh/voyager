@@ -10,6 +10,7 @@ import (
 type TemplateData struct {
 	*SharedInfo
 	TimeoutDefaults map[string]string
+	OptionsDefaults map[string]bool
 	Stats           *StatsInfo
 	DNSResolvers    []*api.DNSResolver
 	HTTPService     []*HTTPService

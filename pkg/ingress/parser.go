@@ -199,6 +199,7 @@ func (c *controller) generateConfig() error {
 
 	td.SharedInfo = si
 	td.TimeoutDefaults = c.Ingress.Timeouts()
+	td.OptionsDefaults = c.Ingress.Options()
 
 	if c.Ingress.Stats() {
 		stats := &haproxy.StatsInfo{}
