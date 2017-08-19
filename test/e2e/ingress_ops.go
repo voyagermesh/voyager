@@ -36,7 +36,7 @@ var _ = Describe("IngressOperations", func() {
 		f.Ingress.EventuallyStarted(ing).Should(BeTrue())
 
 		By("Checking generated resource")
-		Expect(f.Ingress.IsExists(ing)).Should(BeTrue())
+		Expect(f.Ingress.IsExistsEventually(ing)).Should(BeTrue())
 	})
 
 	AfterEach(func() {
@@ -52,7 +52,7 @@ var _ = Describe("IngressOperations", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -66,7 +66,7 @@ var _ = Describe("IngressOperations", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() bool {
-				return f.Ingress.IsExists(ing)
+				return f.Ingress.IsExists(ing) == nil
 			}, "5m", "10s").Should(BeFalse())
 		}
 	)
@@ -123,6 +123,7 @@ var _ = Describe("IngressOperations", func() {
 		Describe("With NodePort Service", func() {
 			BeforeEach(func() {
 				ing.Annotations[api.LBType] = api.LBTypeNodePort
+				ing.Spec.Rules[0].HTTP.NodePort = intstr.FromInt(32345)
 			})
 			It("Should create nodeport service", func() {
 				var svc *v1.Service
@@ -133,10 +134,7 @@ var _ = Describe("IngressOperations", func() {
 				}, "10m", "5s").Should(BeNil())
 				Expect(svc).ShouldNot(BeNil())
 				Expect(svc.Spec.Type).Should(Equal(v1.ServiceTypeNodePort))
-
-				for _, port := range svc.Spec.Ports {
-					Expect(port.NodePort).Should(BeNumerically(">", 0))
-				}
+				Expect(svc.Spec.Ports[0].NodePort).Should(Equal(int32(32345)))
 			})
 		})
 
@@ -315,7 +313,7 @@ var _ = Describe("IngressOperations", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-				err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/override/testpath/ok")) &&
@@ -399,14 +397,14 @@ var _ = Describe("IngressOperations", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-				err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/old/replace", func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/old/replace", func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/rewrited/from/proxy/old/replace"))
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/old/add/now", func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/old/add/now", func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/old/add/now")) &&
@@ -414,7 +412,7 @@ var _ = Describe("IngressOperations", func() {
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/test-second", func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/test-second", func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/override/rewrited/from/proxy/test-second")) &&
@@ -449,7 +447,7 @@ var _ = Describe("IngressOperations", func() {
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
 			By("Calling new HTTP path")
-			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/newTestPath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/newTestPath/ok", func(r *testserverclient.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/newTestPath/ok"))
@@ -457,7 +455,7 @@ var _ = Describe("IngressOperations", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Checking old path")
-			err = f.Ingress.DoHTTP(framework.NoRetry, ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
 				return true
 			})
 			Expect(err).To(HaveOccurred())

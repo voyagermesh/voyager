@@ -2,6 +2,8 @@ package framework
 
 import (
 	"errors"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/appscode/go/crypto/rand"
@@ -75,29 +77,44 @@ func (i *ingressInvocation) Delete(ing *api.Ingress) error {
 	return i.VoyagerClient.Ingresses(i.Namespace()).Delete(ing.Name)
 }
 
-func (i *ingressInvocation) IsExists(ing *api.Ingress) bool {
+func (i *ingressInvocation) IsExistsEventually(ing *api.Ingress) bool {
+	if Eventually(func() error {
+		err := i.IsExists(ing)
+		if err != nil {
+			log.Errorln("IsExistsEventually failed with error,", err)
+		}
+		return err
+	}, "5m", "10s").Should(BeNil()) {
+		return true
+	}
+
+	return false
+}
+
+func (i *ingressInvocation) IsExists(ing *api.Ingress) error {
+	var err error
 	if ing.LBType() == api.LBTypeHostPort {
-		_, err := i.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+		_, err = i.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
-			return false
+			return err
 		}
 	} else {
-		_, err := i.KubeClient.ExtensionsV1beta1().Deployments(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+		_, err = i.KubeClient.ExtensionsV1beta1().Deployments(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
-			return false
+			return err
 		}
 	}
 
-	_, err := i.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+	_, err = i.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		return false
+		return err
 	}
 
 	_, err = i.KubeClient.CoreV1().ConfigMaps(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		return false
+		return err
 	}
-	return true
+	return nil
 }
 
 func (i *ingressInvocation) EventuallyStarted(ing *api.Ingress) GomegaAsyncAssertion {
@@ -107,7 +124,7 @@ func (i *ingressInvocation) EventuallyStarted(ing *api.Ingress) GomegaAsyncAsser
 			return false
 		}
 
-		if ing.Annotations[api.LBType] == api.LBTypeLoadBalancer {
+		if ing.LBType() != api.LBTypeHostPort {
 			_, err = i.KubeClient.CoreV1().Endpoints(i.Namespace()).Get(ing.OffshootName(), metav1.GetOptions{})
 			if err != nil {
 				return false
@@ -123,17 +140,30 @@ func (i *ingressInvocation) GetHTTPEndpoints(ing *api.Ingress) ([]string, error)
 		return getLoadBalancerURLs(i.Config.CloudProviderName, i.KubeClient, ing)
 	case api.LBTypeHostPort:
 		return getHostPortURLs(i.Config.CloudProviderName, i.KubeClient, ing)
+	case api.LBTypeNodePort:
+		return getNodePortURLs(i.Config.CloudProviderName, i.KubeClient, ing)
 	}
 	return nil, errors.New("LBType Not recognized")
+}
+
+func (i *ingressInvocation) FilterEndpointsForPort(eps []string, port v1.ServicePort) []string {
+	ret := make([]string, 0)
+	for _, p := range eps {
+		if strings.HasSuffix(p, ":"+strconv.FormatInt(int64(port.Port), 10)) ||
+			strings.HasSuffix(p, ":"+strconv.FormatInt(int64(port.NodePort), 10)) {
+			ret = append(ret, p)
+		}
+	}
+	return ret
 }
 
 func (i *ingressInvocation) GetOffShootService(ing *api.Ingress) (*v1.Service, error) {
 	return i.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 }
 
-func (i *ingressInvocation) DoHTTP(retryCount int, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTP(retryCount int, host string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Path(path).DoWithRetry(retryCount)
+		resp, err := testserverclient.NewTestHTTPClient(url).WithHost(host).Method(method).Path(path).DoWithRetry(retryCount)
 		if err != nil {
 			return err
 		}
@@ -161,9 +191,50 @@ func (i *ingressInvocation) DoHTTPWithHeader(retryCount int, ing *api.Ingress, e
 	return nil
 }
 
+func (i *ingressInvocation) DoHTTPs(retryCount int, host, cert string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+	for _, url := range eps {
+		if strings.HasPrefix(url, "http://") {
+			url = "https://" + url[len("http://"):]
+		}
+
+		cl := testserverclient.NewTestHTTPClient(url).WithHost(host).Method(method).Path(path)
+		if len(cert) > 0 {
+			cl = cl.WithCert(cert)
+		} else {
+			cl = cl.WithInsecure()
+		}
+
+		resp, err := cl.DoWithRetry(retryCount)
+		if err != nil {
+			return err
+		}
+
+		log.Infoln("HTTP Response received from server", *resp)
+		if !matcher(resp) {
+			return errors.New("Failed to match")
+		}
+	}
+	return nil
+}
+
 func (i *ingressInvocation) DoHTTPTestRedirect(retryCount int, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
 		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Path(path).DoTestRedirectWithRetry(retryCount)
+		if err != nil {
+			return err
+		}
+
+		log.Infoln("HTTP Response received from server", *resp)
+		if !matcher(resp) {
+			return errors.New("Failed to match")
+		}
+	}
+	return nil
+}
+
+func (i *ingressInvocation) DoHTTPsTestRedirect(retryCount int, host string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+	for _, url := range eps {
+		resp, err := testserverclient.NewTestHTTPClient(url).WithHost(host).Method(method).Path(path).DoTestRedirectWithRetry(retryCount)
 		if err != nil {
 			return err
 		}
@@ -194,6 +265,21 @@ func (i *ingressInvocation) DoHTTPStatus(retryCount int, ing *api.Ingress, eps [
 func (i *ingressInvocation) DoTCP(retryCount int, ing *api.Ingress, eps []string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
 		resp, err := testserverclient.NewTestTCPClient(url).DoWithRetry(retryCount)
+		if err != nil {
+			return err
+		}
+
+		log.Infoln("TCP Response received from server", *resp)
+		if !matcher(resp) {
+			return errors.New("Failed to match")
+		}
+	}
+	return nil
+}
+
+func (i *ingressInvocation) DoTCPWithSSL(retryCount int, cert string, ing *api.Ingress, eps []string, matcher func(resp *testserverclient.Response) bool) error {
+	for _, url := range eps {
+		resp, err := testserverclient.NewTestTCPClient(url).WithSSL(cert).DoWithRetry(retryCount)
 		if err != nil {
 			return err
 		}

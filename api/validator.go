@@ -41,7 +41,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 			}
 			if a.PodPort == 0 {
 				// detect port
-				if _, foundTLS := r.FindTLSSecret(rule.Host); foundTLS && !rule.HTTP.NoSSL {
+				if _, foundTLS := r.FindTLSSecret(rule.Host); foundTLS && !rule.HTTP.NoTLS {
 					a.PodPort = 443
 				} else {
 					a.PodPort = 80

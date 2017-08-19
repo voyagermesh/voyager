@@ -1,6 +1,8 @@
 package testserverclient
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -12,20 +14,22 @@ type httpClient struct {
 	baseURL string
 	method  string
 	path    string
+	host    string
 	header  map[string]string
 }
 
 type Response struct {
-	Status         int         `json:"-"`
-	ResponseHeader http.Header `json:"-"`
-	Type           string      `json:"type,omitempty"`
-	PodName        string      `json:"podName,omitempty"`
-	Host           string      `json:"host,omitempty"`
-	ServerPort     string      `json:"serverPort,omitempty"`
-	Path           string      `json:"path,omitempty"`
-	Method         string      `json:"method,omitempty"`
-	RequestHeaders http.Header `json:"headers,omitempty"`
-	Body           string      `json:"body,omitempty"`
+	Status          int         `json:"-"`
+	ResponseHeader  http.Header `json:"-"`
+	Type            string      `json:"type,omitempty"`
+	PodName         string      `json:"podName,omitempty"`
+	Host            string      `json:"host,omitempty"`
+	ServerPort      string      `json:"serverPort,omitempty"`
+	Path            string      `json:"path,omitempty"`
+	Method          string      `json:"method,omitempty"`
+	RequestHeaders  http.Header `json:"headers,omitempty"`
+	Body            string      `json:"body,omitempty"`
+	HTTPSServerName string      `json:"-"`
 }
 
 func NewTestHTTPClient(url string) *httpClient {
@@ -36,6 +40,27 @@ func NewTestHTTPClient(url string) *httpClient {
 	}
 }
 
+func (t *httpClient) WithCert(cert string) *httpClient {
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM([]byte(cert))
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			RootCAs: caCertPool,
+		},
+	}
+	t.client.Transport = tr
+	return t
+}
+
+func (t *httpClient) WithInsecure() *httpClient {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	t.client.Transport = tr
+	return t
+}
+
 func (t *httpClient) Method(method string) *httpClient {
 	t.method = method
 	return t
@@ -44,6 +69,11 @@ func (t *httpClient) Method(method string) *httpClient {
 func (t *httpClient) Path(path string) *httpClient {
 	path = strings.TrimPrefix(path, "/")
 	t.path = path
+	return t
+}
+
+func (t *httpClient) WithHost(host string) *httpClient {
+	t.host = host
 	return t
 }
 
@@ -107,6 +137,11 @@ func (t *httpClient) do(parse bool) (*Response, error) {
 		req.Header.Add(k, v)
 	}
 
+	if len(t.host) > 0 {
+		req.Header.Add("Host", t.host)
+		req.Host = t.host
+	}
+
 	resp, err := t.client.Do(req)
 	if err != nil {
 		return nil, err
@@ -116,6 +151,13 @@ func (t *httpClient) do(parse bool) (*Response, error) {
 		Status:         resp.StatusCode,
 		ResponseHeader: resp.Header,
 	}
+
+	if t.client.Transport != nil {
+		if resp.TLS != nil {
+			responseStruct.HTTPSServerName = resp.TLS.ServerName
+		}
+	}
+
 	if parse {
 		err = json.NewDecoder(resp.Body).Decode(responseStruct)
 		if err != nil {

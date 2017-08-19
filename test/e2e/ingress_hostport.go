@@ -41,7 +41,7 @@ var _ = Describe("IngressHostPort", func() {
 		f.Ingress.EventuallyStarted(ing).Should(BeTrue())
 
 		By("Checking generated resource")
-		Expect(f.Ingress.IsExists(ing)).Should(BeTrue())
+		Expect(f.Ingress.IsExistsEventually(ing)).Should(BeTrue())
 	})
 
 	AfterEach(func() {
@@ -58,7 +58,7 @@ var _ = Describe("IngressHostPort", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -74,7 +74,7 @@ var _ = Describe("IngressHostPort", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() bool {
-				return f.Ingress.IsExists(ing)
+				return f.Ingress.IsExists(ing) == nil
 			}, "5m", "10s").Should(BeFalse())
 		})
 	})
@@ -90,7 +90,7 @@ var _ = Describe("IngressHostPort", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Waiting some time for update to be applied")
-			time.Sleep(time.Second * 5)
+			time.Sleep(time.Second * 10)
 
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
@@ -98,7 +98,7 @@ var _ = Describe("IngressHostPort", func() {
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
 			By("Calling new HTTP path")
-			err = f.Ingress.DoHTTP(framework.MaxRetry, ing, eps, "GET", "/newTestPath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/newTestPath/ok", func(r *testserverclient.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/newTestPath/ok"))
@@ -106,7 +106,7 @@ var _ = Describe("IngressHostPort", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Checking old path")
-			err = f.Ingress.DoHTTP(framework.NoRetry, ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
 				return true
 			})
 			Expect(err).To(HaveOccurred())
@@ -145,8 +145,6 @@ var _ = Describe("IngressHostPort", func() {
 			err = f.Ingress.Update(uing)
 			Expect(err).NotTo(HaveOccurred())
 
-			By("Waiting some time for update to be applied")
-			time.Sleep(time.Second * 5)
 			Eventually(func() error {
 				svc, err := f.KubeClient.CoreV1().Services(ing.GetNamespace()).Get(ing.OffshootName(), metav1.GetOptions{})
 				if err != nil {
@@ -158,7 +156,7 @@ var _ = Describe("IngressHostPort", func() {
 					}
 				}
 				return errors.New("TCP port not found")
-			}, "5m", "10s").Should(BeNil())
+			}, "5m", "20s").Should(BeNil())
 
 			if f.Config.CloudProviderName != "minikube" {
 				eps, err := f.Ingress.GetHTTPEndpoints(ing)

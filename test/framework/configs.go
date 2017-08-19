@@ -51,7 +51,7 @@ func enableLogging() {
 			return
 		}
 	}
-	flags.SetLogLevel(4)
+	flags.SetLogLevel(2)
 }
 
 func (c *E2EConfig) validate() {

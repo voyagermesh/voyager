@@ -1,6 +1,8 @@
 package testserverclient
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"net"
 	"strings"
@@ -8,7 +10,9 @@ import (
 )
 
 type tcpClient struct {
-	url string
+	url  string
+	ssl  bool
+	cert string
 }
 
 func NewTestTCPClient(url string) *tcpClient {
@@ -20,6 +24,12 @@ func NewTestTCPClient(url string) *tcpClient {
 	return &tcpClient{
 		url: url,
 	}
+}
+
+func (t *tcpClient) WithSSL(cert string) *tcpClient {
+	t.ssl = true
+	t.cert = cert
+	return t
 }
 
 func (t *tcpClient) DoWithRetry(limit int) (*Response, error) {
@@ -39,6 +49,18 @@ func (t *tcpClient) do() (*Response, error) {
 	conn, err := net.Dial("tcp", t.url)
 	if err != nil {
 		return nil, err
+	}
+
+	if t.ssl {
+		config := &tls.Config{}
+		if len(t.cert) > 0 {
+			roots := x509.NewCertPool()
+			roots.AppendCertsFromPEM([]byte(t.cert))
+			config = &tls.Config{RootCAs: roots}
+		} else {
+			config = &tls.Config{InsecureSkipVerify: true}
+		}
+		conn = tls.Client(conn, config)
 	}
 
 	resp := &Response{}
