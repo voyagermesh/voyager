@@ -1,5 +1,5 @@
-hash: 18238fb3081a0201d7e27fb7998e3950a41cbd744768a1adca8878fe46fd87e9
-updated: 2017-08-17T22:31:19.127419702-07:00
+hash: 575e0a52e2520aeba3acce6629c584025a56026ff3e8cdebdc99c2e92f851fcb
+updated: 2017-08-18T21:20:53.063605217-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -367,7 +367,7 @@ imports:
 - name: gopkg.in/yaml.v2
   version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
 - name: k8s.io/apimachinery
-  version: 75b8dd260ef0469d96d578705a87cffd0e09dab8
+  version: 85ace5365f33b16fc735c866a12e3c765b9700f2
   subpackages:
   - pkg/api/errors
   - pkg/api/meta
@@ -412,7 +412,7 @@ imports:
   - third_party/forked/golang/json
   - third_party/forked/golang/reflect
 - name: k8s.io/client-go
-  version: 3627aeb7d4f6ade38f995d2c923e459146493c7e
+  version: 21300e3e11c918b8e6a70fb7293b310683d6c046
   subpackages:
   - discovery
   - discovery/fake
