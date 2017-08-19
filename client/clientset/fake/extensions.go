@@ -17,7 +17,7 @@ type FakeExtensionClient struct {
 var _ clientset.ExtensionInterface = &FakeExtensionClient{}
 
 func NewFakeExtensionClient(objects ...runtime.Object) *FakeExtensionClient {
-	o := testing.NewObjectTracker(kapi.Registry, kapi.Scheme, kapi.Codecs.UniversalDecoder())
+	o := testing.NewObjectTracker(kapi.Scheme, kapi.Codecs.UniversalDecoder())
 	for _, obj := range objects {
 		if obj.GetObjectKind().GroupVersionKind().Group == tapi.GroupName {
 			if err := o.Add(obj); err != nil {
@@ -27,7 +27,7 @@ func NewFakeExtensionClient(objects ...runtime.Object) *FakeExtensionClient {
 	}
 
 	fakePtr := testing.Fake{}
-	fakePtr.AddReactor("*", "*", testing.ObjectReaction(o, kapi.Registry.RESTMapper()))
+	fakePtr.AddReactor("*", "*", testing.ObjectReaction(o))
 
 	fakePtr.AddWatchReactor("*", testing.DefaultWatchReactor(watch.NewFake(), nil))
 
