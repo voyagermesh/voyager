@@ -51,11 +51,11 @@ func (c *PrometheusController) DeleteMonitor(r *api.Ingress, spec *api.MonitorSp
 }
 
 func (c *PrometheusController) SupportsCoreOSOperator() bool {
-	_, err := c.kubeClient.ExtensionsV1beta1().ThirdPartyResources().Get("prometheus."+prom.TPRGroup, metav1.GetOptions{})
+	_, err := c.kubeClient.ExtensionsV1beta1().ThirdPartyResources().Get("prometheus."+prom.Group, metav1.GetOptions{})
 	if err != nil {
 		return false
 	}
-	_, err = c.kubeClient.ExtensionsV1beta1().ThirdPartyResources().Get("service-monitor."+prom.TPRGroup, metav1.GetOptions{})
+	_, err = c.kubeClient.ExtensionsV1beta1().ThirdPartyResources().Get("service-monitor."+prom.Group, metav1.GetOptions{})
 	if err != nil {
 		return false
 	}
@@ -74,7 +74,7 @@ func (c *PrometheusController) ensureServiceMonitor(r *api.Ingress, old, new *ap
 		}
 	}
 
-	actual, err := c.promClient.ServiceMonitors(new.Prometheus.Namespace).Get(name)
+	actual, err := c.promClient.ServiceMonitors(new.Prometheus.Namespace).Get(name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		return c.createServiceMonitor(r, new)
 	} else if err != nil {

@@ -15,6 +15,7 @@ type FakeCertificate struct {
 }
 
 var certResource = tapi.V1beta1SchemeGroupVersion.WithResource(tapi.ResourceTypeCertificate)
+var certKind = tapi.V1beta1SchemeGroupVersion.WithKind(tapi.ResourceKindCertificate)
 
 var _ clientset.CertificateInterface = &FakeCertificate{}
 
@@ -32,7 +33,7 @@ func (mock *FakeCertificate) Get(name string) (*tapi.Certificate, error) {
 // List returns the a of Certificates.
 func (mock *FakeCertificate) List(opts metav1.ListOptions) (*tapi.CertificateList, error) {
 	obj, err := mock.Fake.
-		Invokes(testing.NewListAction(certResource, mock.ns, opts), &tapi.Certificate{})
+		Invokes(testing.NewListAction(certResource, certKind, mock.ns, opts), &tapi.Certificate{})
 
 	if obj == nil {
 		return nil, err
