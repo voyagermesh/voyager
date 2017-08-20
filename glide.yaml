@@ -3,6 +3,8 @@ import:
 - package: github.com/appscode/errors
   version: v2
 - package: github.com/appscode/go
+- package: github.com/appscode/kutil
+  version: release-3.0
 - package: github.com/appscode/log
 - package: github.com/mikespook/golib
 - package: github.com/spf13/cobra
