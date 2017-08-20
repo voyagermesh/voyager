@@ -2,13 +2,12 @@ package ingress
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 
 	"github.com/appscode/errors"
+	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
@@ -19,49 +18,22 @@ const (
 )
 
 func (c *controller) ensureConfigMap() error {
-	log.Infoln("Creating ConfigMap for engress")
-	cm, err := c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-	if kerr.IsNotFound(err) {
-		cm = &apiv1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      c.Ingress.OffshootName(),
-				Namespace: c.Ingress.Namespace,
-				Annotations: map[string]string{
-					api.OriginAPISchema: c.Ingress.APISchema(),
-					api.OriginName:      c.Ingress.GetName(),
-				},
-			},
-			Data: map[string]string{
-				"haproxy.cfg": c.HAProxyConfig,
-			},
+	meta := metav1.ObjectMeta{
+		Namespace: c.Ingress.Namespace,
+		Name:      c.Ingress.OffshootName(),
+	}
+	_, err := core_util.EnsureConfigMap(c.KubeClient, meta, func(obj *apiv1.ConfigMap) *apiv1.ConfigMap {
+		if obj.Annotations == nil {
+			obj.Annotations = map[string]string{}
 		}
-		_, err = c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Create(cm)
-		return err
-	} else if err != nil {
-		return errors.FromErr(err).Err()
-	}
-
-	needsUpdate := false
-	if val, ok := c.ensureOriginAnnotations(cm.Annotations); ok {
-		needsUpdate = true
-		cm.Annotations = val
-	}
-
-	cmData := map[string]string{
-		"haproxy.cfg": c.HAProxyConfig,
-	}
-	if !reflect.DeepEqual(cm.Data, cmData) {
-		needsUpdate = true
-		cm.Data = cmData
-	}
-
-	if needsUpdate {
-		_, err = c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Update(cm)
-		if err != nil {
-			return errors.FromErr(err).Err()
+		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
+		obj.Annotations[api.OriginName] = c.Ingress.GetName()
+		obj.Data = map[string]string{
+			"haproxy.cfg": c.HAProxyConfig,
 		}
-	}
-	return nil
+		return obj
+	})
+	return err
 }
 
 func (c *controller) ensureRBAC() error {
@@ -114,57 +86,43 @@ func (c *controller) getExporterSidecar() (*apiv1.Container, error) {
 }
 
 func (c *controller) ensureStatsService() error {
-	svc := &apiv1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      c.Ingress.StatsServiceName(),
-			Namespace: c.Ingress.Namespace,
-			Annotations: map[string]string{
-				api.OriginAPISchema: c.Ingress.APISchema(),
-				api.OriginName:      c.Ingress.GetName(),
-			},
-			Labels: c.Ingress.StatsLabels(),
-		},
-		Spec: apiv1.ServiceSpec{
-			Ports: []apiv1.ServicePort{
-				{
-					Name:       api.StatsPortName,
-					Protocol:   "TCP",
-					Port:       int32(c.Ingress.StatsPort()),
-					TargetPort: intstr.FromString(api.StatsPortName),
-				},
-			},
-			Selector: c.Ingress.OffshootLabels(),
-		},
-	}
-	monSpec, err := c.Ingress.MonitorSpec()
-	if err == nil && monSpec != nil && monSpec.Prometheus != nil {
-		svc.Spec.Ports = append(svc.Spec.Ports, apiv1.ServicePort{
-			Name:       api.ExporterPortName,
-			Protocol:   "TCP",
-			Port:       int32(monSpec.Prometheus.Port),
-			TargetPort: intstr.FromString(api.ExporterPortName),
-		})
+	meta := metav1.ObjectMeta{
+		Name:      c.Ingress.StatsServiceName(),
+		Namespace: c.Ingress.Namespace,
 	}
 
-	s, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.StatsServiceName(), metav1.GetOptions{})
-	if kerr.IsNotFound(err) {
-		_, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Create(svc)
-		if err != nil {
-			return errors.FromErr(err).Err()
+	_, err := core_util.EnsureService(c.KubeClient, meta, func(obj *apiv1.Service) *apiv1.Service {
+		if obj.Annotations == nil {
+			obj.Annotations = map[string]string{}
 		}
-		return err
-	} else if err != nil {
-		log.Errorln(err)
-		return errors.FromErr(err).Err()
-	}
-	s.Labels = svc.Labels
-	s.Annotations = svc.Annotations
-	s.Spec = svc.Spec
-	_, err = c.KubeClient.CoreV1().Services(s.Namespace).Update(s)
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
-	return nil
+		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
+		obj.Annotations[api.OriginName] = c.Ingress.GetName()
+
+		obj.Labels = c.Ingress.StatsLabels()
+
+		obj.Spec.Ports = []apiv1.ServicePort{
+			{
+				Name:       api.StatsPortName,
+				Protocol:   "TCP",
+				Port:       int32(c.Ingress.StatsPort()),
+				TargetPort: intstr.FromString(api.StatsPortName),
+			},
+		}
+		obj.Spec.Selector = c.Ingress.OffshootLabels()
+
+		monSpec, err := c.Ingress.MonitorSpec()
+		if err == nil && monSpec != nil && monSpec.Prometheus != nil {
+			obj.Spec.Ports = append(obj.Spec.Ports, apiv1.ServicePort{
+				Name:       api.ExporterPortName,
+				Protocol:   "TCP",
+				Port:       int32(monSpec.Prometheus.Port),
+				TargetPort: intstr.FromString(api.ExporterPortName),
+			})
+		}
+
+		return obj
+	})
+	return err
 }
 
 func (c *controller) ensureOriginAnnotations(annotation map[string]string) (map[string]string, bool) {

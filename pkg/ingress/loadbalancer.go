@@ -1,12 +1,14 @@
 package ingress
 
 import (
-	"reflect"
+	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/appscode/errors"
 	"github.com/appscode/go/types"
+	core_util "github.com/appscode/kutil/core/v1"
+	ext_util "github.com/appscode/kutil/extensions/v1beta1"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	_ "github.com/appscode/voyager/api/install"
@@ -130,6 +132,7 @@ func (c *loadBalancerController) Create() error {
 
 	_, err = c.ensureService(nil)
 	if err != nil {
+		fmt.Println("===========================================", err)
 		c.recorder.Eventf(
 			c.Ingress,
 			apiv1.EventTypeWarning,
@@ -340,69 +343,64 @@ func (c *loadBalancerController) Delete() {
 	return
 }
 
-func (c *loadBalancerController) newService() *apiv1.Service {
-	svc := &apiv1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      c.Ingress.OffshootName(),
-			Namespace: c.Ingress.Namespace,
-			Annotations: map[string]string{
-				api.OriginAPISchema: c.Ingress.APISchema(),
-				api.OriginName:      c.Ingress.GetName(),
-			},
-		},
-		Spec: apiv1.ServiceSpec{
-			Type:                     apiv1.ServiceTypeLoadBalancer,
-			Ports:                    []apiv1.ServicePort{},
-			Selector:                 c.Ingress.OffshootLabels(),
-			LoadBalancerSourceRanges: c.Ingress.Spec.LoadBalancerSourceRanges,
-		},
-	}
-
-	// opening other tcp ports
-	mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
-	for svcPort, target := range mappings {
-		p := apiv1.ServicePort{
-			Name:       "tcp-" + strconv.Itoa(svcPort),
-			Protocol:   "TCP",
-			Port:       int32(svcPort),
-			TargetPort: intstr.FromInt(target.PodPort),
-			NodePort:   int32(target.NodePort),
-		}
-		svc.Spec.Ports = append(svc.Spec.Ports, p)
-	}
-
-	if ans, ok := c.Ingress.ServiceAnnotations(c.Opt.CloudProvider); ok {
-		for k, v := range ans {
-			svc.Annotations[k] = v
-		}
-	}
-
-	switch c.Opt.CloudProvider {
-	case "gce", "gke":
-		if ip := c.Ingress.LoadBalancerIP(); ip != nil {
-			svc.Spec.LoadBalancerIP = ip.String()
-		}
-	}
-	return svc
-}
-
 func (c *loadBalancerController) ensureService(old *api.Ingress) (*apiv1.Service, error) {
-	desired := c.newService()
-	current, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
-	if kerr.IsNotFound(err) {
-		return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Create(desired)
-	} else if err != nil {
-		return nil, err
+	meta := metav1.ObjectMeta{
+		Namespace: c.Ingress.Namespace,
+		Name:      c.Ingress.OffshootName(),
 	}
-	if svc, needsUpdate := c.serviceRequiresUpdate(current, desired, old); needsUpdate {
-		return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Update(svc)
-	}
-	return current, nil
+	return core_util.EnsureService(c.KubeClient, meta, func(obj *apiv1.Service) *apiv1.Service {
+		if obj.Annotations == nil {
+			obj.Annotations = map[string]string{}
+		}
+		oldAnn := map[string]string{}
+		if old != nil {
+			if a, ok := old.ServiceAnnotations(c.Opt.CloudProvider); ok {
+				oldAnn = a
+			}
+		}
+		if desired, ok := c.Ingress.ServiceAnnotations(c.Opt.CloudProvider); ok {
+			for k, v := range desired {
+				obj.Annotations[k] = v
+				delete(oldAnn, k)
+			}
+		}
+		for k := range oldAnn {
+			delete(obj.Annotations, k)
+		}
+		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
+		obj.Annotations[api.OriginName] = c.Ingress.GetName()
+
+		obj.Spec.Type = apiv1.ServiceTypeLoadBalancer
+		obj.Spec.Ports = []apiv1.ServicePort{}
+		obj.Spec.Selector = c.Ingress.OffshootLabels()
+		obj.Spec.LoadBalancerSourceRanges = c.Ingress.Spec.LoadBalancerSourceRanges
+
+		// opening other tcp ports
+		mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
+		for svcPort, target := range mappings {
+			p := apiv1.ServicePort{
+				Name:       "tcp-" + strconv.Itoa(svcPort),
+				Protocol:   "TCP",
+				Port:       int32(svcPort),
+				TargetPort: intstr.FromInt(target.PodPort),
+				NodePort:   int32(target.NodePort),
+			}
+			obj.Spec.Ports = append(obj.Spec.Ports, p)
+		}
+
+		switch c.Opt.CloudProvider {
+		case "gce", "gke":
+			if ip := c.Ingress.LoadBalancerIP(); ip != nil {
+				obj.Spec.LoadBalancerIP = ip.String()
+			}
+		}
+		return obj
+	})
 }
 
 func (c *loadBalancerController) newPods() *extensions.Deployment {
 	secrets := c.Ingress.Secrets()
-	deployment := &extensions.Deployment{
+	obj := &extensions.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.Ingress.OffshootName(),
 			Namespace: c.Ingress.Namespace,
@@ -472,12 +470,12 @@ func (c *loadBalancerController) newPods() *extensions.Deployment {
 	}
 
 	if c.Opt.EnableRBAC {
-		deployment.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
+		obj.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
 	}
 
 	exporter, _ := c.getExporterSidecar()
 	if exporter != nil {
-		deployment.Spec.Template.Spec.Containers = append(deployment.Spec.Template.Spec.Containers, *exporter)
+		obj.Spec.Template.Spec.Containers = append(obj.Spec.Template.Spec.Containers, *exporter)
 	}
 
 	// adding tcp ports to pod template
@@ -487,11 +485,11 @@ func (c *loadBalancerController) newPods() *extensions.Deployment {
 			Protocol:      "TCP",
 			ContainerPort: int32(podPort),
 		}
-		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, p)
+		obj.Spec.Template.Spec.Containers[0].Ports = append(obj.Spec.Template.Spec.Containers[0].Ports, p)
 	}
 
 	if c.Ingress.Stats() {
-		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
+		obj.Spec.Template.Spec.Containers[0].Ports = append(obj.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
 			Name:          api.StatsPortName,
 			Protocol:      "TCP",
 			ContainerPort: int32(c.Ingress.StatsPort()),
@@ -499,82 +497,135 @@ func (c *loadBalancerController) newPods() *extensions.Deployment {
 	}
 
 	if ans, ok := c.Ingress.PodsAnnotations(); ok {
-		deployment.Spec.Template.Annotations = ans
+		obj.Spec.Template.Annotations = ans
 	}
-	return deployment
+	return obj
 }
 
 func (c *loadBalancerController) ensurePods(old *api.Ingress) (*extensions.Deployment, error) {
-	desired := c.newPods()
-	current, err := c.KubeClient.ExtensionsV1beta1().Deployments(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
-	if kerr.IsNotFound(err) {
-		return c.KubeClient.ExtensionsV1beta1().Deployments(c.Ingress.Namespace).Create(desired)
-	} else if err != nil {
-		return nil, err
+	meta := metav1.ObjectMeta{
+		Namespace: c.Ingress.Namespace,
+		Name:      c.Ingress.OffshootName(),
 	}
-
-	needsUpdate := false
-
-	// annotations
-	if current.Annotations == nil {
-		current.Annotations = make(map[string]string)
-	}
-	oldAnn := map[string]string{}
-	if old != nil {
-		if a, ok := old.PodsAnnotations(); ok {
-			oldAnn = a
+	return ext_util.EnsureDeployment(c.KubeClient, meta, func(obj *extensions.Deployment) *extensions.Deployment {
+		if obj.Annotations == nil {
+			obj.Annotations = map[string]string{}
 		}
-	}
-	for k, v := range desired.Annotations {
-		if cv, found := current.Annotations[k]; !found || cv != v {
-			current.Annotations[k] = v
-			needsUpdate = true
-		}
-		delete(oldAnn, k)
-	}
-	for k := range oldAnn {
-		if _, ok := current.Annotations[k]; ok {
-			delete(current.Annotations, k)
-			needsUpdate = true
-		}
-	}
+		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
+		obj.Annotations[api.OriginName] = c.Ingress.GetName()
 
-	if !reflect.DeepEqual(current.Spec.Selector, desired.Spec.Selector) {
-		needsUpdate = true
-		current.Spec.Selector = desired.Spec.Selector
-	}
-	if !reflect.DeepEqual(current.Spec.Template.ObjectMeta, desired.Spec.Template.ObjectMeta) {
-		needsUpdate = true
-		current.Spec.Template.ObjectMeta = desired.Spec.Template.ObjectMeta
-	}
-	if !reflect.DeepEqual(current.Spec.Template.Annotations, desired.Spec.Template.Annotations) {
-		needsUpdate = true
-		current.Spec.Template.Annotations = desired.Spec.Template.Annotations
-	}
-	if !reflect.DeepEqual(current.Spec.Template.Spec.Affinity, desired.Spec.Template.Spec.Affinity) {
-		needsUpdate = true
-		current.Spec.Template.Spec.Affinity = desired.Spec.Template.Spec.Affinity
-	}
-	if !reflect.DeepEqual(current.Spec.Template.Spec.NodeSelector, desired.Spec.Template.Spec.NodeSelector) {
-		needsUpdate = true
-		current.Spec.Template.Spec.NodeSelector = desired.Spec.Template.Spec.NodeSelector
-	}
-	if !reflect.DeepEqual(current.Spec.Template.Spec.Containers, desired.Spec.Template.Spec.Containers) {
-		needsUpdate = true
-		current.Spec.Template.Spec.Containers = desired.Spec.Template.Spec.Containers
-	}
-	if !reflect.DeepEqual(current.Spec.Template.Spec.Volumes, desired.Spec.Template.Spec.Volumes) {
-		needsUpdate = true
-		current.Spec.Template.Spec.Volumes = desired.Spec.Template.Spec.Volumes
-	}
-	if current.Spec.Template.Spec.ServiceAccountName != desired.Spec.Template.Spec.ServiceAccountName {
-		needsUpdate = true
-		current.Spec.Template.Spec.ServiceAccountName = desired.Spec.Template.Spec.ServiceAccountName
-	}
-	if needsUpdate {
-		return c.KubeClient.ExtensionsV1beta1().Deployments(c.Ingress.Namespace).Update(current)
-	}
-	return current, nil
+		obj.Labels = c.Ingress.OffshootLabels()
+
+		secrets := c.Ingress.Secrets()
+		obj.Spec = extensions.DeploymentSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: c.Ingress.OffshootLabels(),
+			},
+			// pod templates.
+			Template: apiv1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: c.Ingress.OffshootLabels(),
+				},
+				Spec: apiv1.PodSpec{
+					Affinity: &apiv1.Affinity{
+						PodAntiAffinity: &apiv1.PodAntiAffinity{
+							PreferredDuringSchedulingIgnoredDuringExecution: []apiv1.WeightedPodAffinityTerm{
+								{
+									Weight: 100,
+									PodAffinityTerm: apiv1.PodAffinityTerm{
+										TopologyKey: "kubernetes.io/hostname",
+										LabelSelector: &metav1.LabelSelector{
+											MatchLabels: c.Ingress.OffshootLabels(),
+										},
+									},
+								},
+							},
+						},
+					},
+					NodeSelector: c.Ingress.NodeSelector(),
+					Containers: []apiv1.Container{
+						{
+							Name:  "haproxy",
+							Image: c.Opt.HAProxyImage,
+							Env: []apiv1.EnvVar{
+								{
+									Name: "KUBE_NAMESPACE",
+									ValueFrom: &apiv1.EnvVarSource{
+										FieldRef: &apiv1.ObjectFieldSelector{
+											FieldPath: "metadata.namespace",
+										},
+									},
+								},
+							},
+							Args: []string{
+								"--config-map=" + c.Ingress.OffshootName(),
+								"--mount-location=" + "/etc/haproxy",
+								"--boot-cmd=" + "/etc/sv/reloader/reload",
+								"--v=4",
+							},
+							Ports:        []apiv1.ContainerPort{},
+							Resources:    c.Ingress.Spec.Resources,
+							VolumeMounts: VolumeMounts(secrets),
+						},
+					},
+					Volumes: Volumes(secrets),
+				},
+			},
+		}
+
+		// This allows using pod autoscaler
+		if obj.Spec.Replicas == nil || types.Int32(obj.Spec.Replicas) <= 1 {
+			obj.Spec.Replicas = types.Int32P(c.Ingress.Replicas())
+		}
+
+		if c.Opt.EnableRBAC {
+			obj.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
+		}
+
+		exporter, _ := c.getExporterSidecar()
+		if exporter != nil {
+			obj.Spec.Template.Spec.Containers = append(obj.Spec.Template.Spec.Containers, *exporter)
+		}
+
+		// adding tcp ports to pod template
+		for _, podPort := range c.Ingress.PodPorts() {
+			p := apiv1.ContainerPort{
+				Name:          "tcp-" + strconv.Itoa(podPort),
+				Protocol:      "TCP",
+				ContainerPort: int32(podPort),
+			}
+			obj.Spec.Template.Spec.Containers[0].Ports = append(obj.Spec.Template.Spec.Containers[0].Ports, p)
+		}
+
+		if c.Ingress.Stats() {
+			obj.Spec.Template.Spec.Containers[0].Ports = append(obj.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
+				Name:          api.StatsPortName,
+				Protocol:      "TCP",
+				ContainerPort: int32(c.Ingress.StatsPort()),
+			})
+		}
+
+		if obj.Spec.Template.Annotations == nil {
+			obj.Spec.Template.Annotations = map[string]string{}
+		}
+		oldAnn := map[string]string{}
+		if old != nil {
+			if a, ok := old.PodsAnnotations(); ok {
+				oldAnn = a
+			}
+		}
+		if desired, ok := c.Ingress.PodsAnnotations(); ok {
+			for k, v := range desired {
+				obj.Spec.Template.Annotations[k] = v
+				delete(oldAnn, k)
+			}
+		}
+		for k := range oldAnn {
+			delete(obj.Spec.Template.Annotations, k)
+		}
+
+		return obj
+	})
 }
 
 func (c *loadBalancerController) deletePods() error {
