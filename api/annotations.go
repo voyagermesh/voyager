@@ -135,6 +135,9 @@ const (
 	//    certificate sent by the server. If <hostname> can’t be found, then the TLS handshake is aborted.
 	// ie.
 	// ingress.appscode.com/backend-tls: "ssl verify none"
+	//
+	// If this annotation is not set HAProxy will connect to backend as http,
+	// This value should not be set if the backend do not support https resolution.
 	BackendTLSOptions = EngressKey + "/backend-tls"
 )
 
