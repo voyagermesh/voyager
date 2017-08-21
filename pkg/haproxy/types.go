@@ -97,4 +97,21 @@ type Endpoint struct {
 	UseDNSResolver bool
 	DNSResolver    string
 	CheckHealth    bool
+
+	// Available Options
+	//   ssl :
+	//   Creates a TLS/SSL socket when connecting to this server in order to cipher/decipher the traffic
+	//
+	// verify [none|required] :
+	// Sets HAProxy‘s behavior regarding the certificated presented by the server:
+	//   none :
+	//   doesn’t verify the certificate of the server
+	//
+	//   required (default value) :
+	//   TLS handshake is aborted if the validation of the certificate presented by the server returns an error.
+	//
+	// veryfyhost <hostname> :
+	// Sets a <hostname> to look for in the Subject and SubjectAlternateNames fields provided in the
+	// certificate sent by the server. If <hostname> can’t be found, then the TLS handshake is aborted.
+	TLSOption string
 }

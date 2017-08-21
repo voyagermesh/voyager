@@ -150,14 +150,14 @@ backend {{ .DefaultBackend.Name }}
 	{{- range $e := .DefaultBackend.Endpoints }}
 	{{- if $e.ExternalName }}
 	{{- if $e.UseDNSResolver }}
-	server {{ $e.Name }} {{ $e.ExternalName }}:{{ $e.Port -}} {{ if $e.DNSResolver }} {{ if $e.CheckHealth }} check {{ end }} resolvers {{ $e.DNSResolver }} resolve-prefer ipv4 {{ end -}}
+	server {{ $e.Name }} {{ $e.ExternalName }}:{{ $e.Port -}} {{ if $e.DNSResolver }} {{ if $e.CheckHealth }} check {{ end }} resolvers {{ $e.DNSResolver }} resolve-prefer ipv4 {{ end -}} {{ if $e.TLSOption }} {{ $e.TLSOption }} {{ end -}}
 	{{- else if not $.DefaultBackend.BackendRules }}
 	acl https ssl_fc
 	http-request redirect location https://{{$e.ExternalName}}:{{ $e.Port }} code 301 if https
 	http-request redirect location http://{{$e.ExternalName}}:{{ $e.Port }} code 301 unless https
 	{{ end -}}
 	{{- else }}
-	server {{ $e.Name }} {{ $e.IP }}:{{ $e.Port -}} {{ if $e.Weight }} weight {{ $e.Weight }}{{ end -}} {{ if $.Sticky }} cookie {{ $e.Name }}{{ end -}}
+	server {{ $e.Name }} {{ $e.IP }}:{{ $e.Port -}} {{ if $e.Weight }} weight {{ $e.Weight }}{{ end -}} {{ if $.Sticky }} cookie {{ $e.Name }}{{ end -}} {{ if $e.TLSOption }} {{ $e.TLSOption }} {{ end -}}
 	{{ end -}}
 	{{ end -}}
 `))
@@ -207,12 +207,12 @@ backend {{ $path.Backend.Name }}
 	{{- range $e := $path.Backend.Endpoints }}
 	{{- if $e.ExternalName }}
 	{{- if $e.UseDNSResolver }}
-	server {{ $e.Name }} {{ $e.ExternalName }}:{{ $e.Port -}} {{ if $e.DNSResolver }} {{ if $e.CheckHealth }} check {{ end }} resolvers {{ $e.DNSResolver }} resolve-prefer ipv4 {{ end -}}
+	server {{ $e.Name }} {{ $e.ExternalName }}:{{ $e.Port -}} {{ if $e.DNSResolver }} {{ if $e.CheckHealth }} check {{ end }} resolvers {{ $e.DNSResolver }} resolve-prefer ipv4 {{ end -}} {{ if $e.TLSOption }} {{ $e.TLSOption }} {{ end -}}
 	{{- else if not $path.Backend.BackendRules }}
 	http-request redirect location {{ if $.UsesSSL }}https://{{ else }}http://{{ end }}{{$e.ExternalName}}:{{ $e.Port }} code 301
 	{{- end }}
 	{{- else }}
-	server {{ $e.Name }} {{ $e.IP }}:{{ $e.Port -}} {{ if $e.Weight }} weight {{ $e.Weight }} {{ end -}} {{ if $.Sticky }} cookie {{ $e.Name }} {{ end -}}
+	server {{ $e.Name }} {{ $e.IP }}:{{ $e.Port -}} {{ if $e.Weight }} weight {{ $e.Weight }} {{ end -}} {{ if $.Sticky }} cookie {{ $e.Name }} {{ end -}} {{ if $e.TLSOption }} {{ $e.TLSOption }} {{ end -}}
 	{{ end -}}
 	{{ end }}
 {{ end -}}
@@ -240,9 +240,9 @@ backend {{ .Backend.Name }}
 
 	{{- range $e := .Backend.Endpoints }}
 	{{- if $e.ExternalName }}
-	server {{ $e.Name }} {{ $e.ExternalName }}:{{ $e.Port -}} {{ if $e.DNSResolver }} {{ if $e.CheckHealth }} check{{ end }} resolvers {{ $e.DNSResolver }} resolve-prefer ipv4{{ end -}}
+	server {{ $e.Name }} {{ $e.ExternalName }}:{{ $e.Port -}} {{ if $e.DNSResolver }} {{ if $e.CheckHealth }} check{{ end }} resolvers {{ $e.DNSResolver }} resolve-prefer ipv4{{ end -}} {{ if $e.TLSOption }} {{ $e.TLSOption }} {{ end -}}
 	{{- else }}
-	server {{ $e.Name }} {{ $e.IP }}:{{ $e.Port -}} {{ if $e.Weight }} weight {{ $e.Weight }}{{ end -}}
+	server {{ $e.Name }} {{ $e.IP }}:{{ $e.Port -}} {{ if $e.Weight }} weight {{ $e.Weight }}{{ end -}} {{ if $e.TLSOption }} {{ $e.TLSOption }} {{ end -}}
 	{{ end -}}
 	{{ end -}}
 `))
