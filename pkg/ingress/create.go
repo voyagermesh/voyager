@@ -100,17 +100,15 @@ func (c *controller) ensureStatsService() error {
 
 		obj.Labels = c.Ingress.StatsLabels()
 
-		obj.Spec = apiv1.ServiceSpec{
-			Ports: []apiv1.ServicePort{
-				{
-					Name:       api.StatsPortName,
-					Protocol:   "TCP",
-					Port:       int32(c.Ingress.StatsPort()),
-					TargetPort: intstr.FromString(api.StatsPortName),
-				},
+		obj.Spec.Ports = []apiv1.ServicePort{
+			{
+				Name:       api.StatsPortName,
+				Protocol:   "TCP",
+				Port:       int32(c.Ingress.StatsPort()),
+				TargetPort: intstr.FromString(api.StatsPortName),
 			},
-			Selector: c.Ingress.OffshootLabels(),
 		}
+		obj.Spec.Selector = c.Ingress.OffshootLabels()
 
 		monSpec, err := c.Ingress.MonitorSpec()
 		if err == nil && monSpec != nil && monSpec.Prometheus != nil {

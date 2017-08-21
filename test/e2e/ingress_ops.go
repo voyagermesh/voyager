@@ -251,7 +251,7 @@ var _ = Describe("IngressOperations", func() {
 					"192.0.0.0/24",
 				}
 			})
-			It("Should keep LoadBalancerSourceRanges", func() {
+			FIt("Should keep LoadBalancerSourceRanges", func() {
 				var svc *v1.Service
 				Eventually(func() error {
 					var err error
@@ -264,7 +264,7 @@ var _ = Describe("IngressOperations", func() {
 
 				tobeUpdated, err := f.Ingress.Get(ing)
 				Expect(err).NotTo(HaveOccurred())
-				tobeUpdated.Spec.LoadBalancerSourceRanges = []string{"192.10.0.0/24"}
+				tobeUpdated.Spec.LoadBalancerSourceRanges = []string{"192.101.0.0/24"}
 				err = f.Ingress.Update(tobeUpdated)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -273,7 +273,7 @@ var _ = Describe("IngressOperations", func() {
 					svc, err = f.Ingress.GetOffShootService(ing)
 					Expect(err).NotTo(HaveOccurred())
 					return len(svc.Spec.LoadBalancerSourceRanges)
-				}, "10m", "5s").Should(Equal(1))
+				}, "5m", "10s").Should(Equal(1))
 				Expect(len(svc.Spec.LoadBalancerSourceRanges)).Should(Equal(len(tobeUpdated.Spec.LoadBalancerSourceRanges)))
 				Expect(svc.Spec.LoadBalancerSourceRanges).Should(Equal(tobeUpdated.Spec.LoadBalancerSourceRanges))
 			})

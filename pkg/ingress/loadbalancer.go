@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"time"
 
+	"fmt"
 	"github.com/appscode/errors"
 	"github.com/appscode/go/types"
 	core_util "github.com/appscode/kutil/core/v1"
@@ -131,6 +132,7 @@ func (c *loadBalancerController) Create() error {
 
 	_, err = c.ensureService(nil)
 	if err != nil {
+		fmt.Println("===========================================", err)
 		c.recorder.Eventf(
 			c.Ingress,
 			apiv1.EventTypeWarning,
@@ -368,12 +370,11 @@ func (c *loadBalancerController) ensureService(old *api.Ingress) (*apiv1.Service
 		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
 		obj.Annotations[api.OriginName] = c.Ingress.GetName()
 
-		obj.Spec = apiv1.ServiceSpec{
-			Type:                     apiv1.ServiceTypeLoadBalancer,
-			Ports:                    []apiv1.ServicePort{},
-			Selector:                 c.Ingress.OffshootLabels(),
-			LoadBalancerSourceRanges: c.Ingress.Spec.LoadBalancerSourceRanges,
-		}
+		obj.Spec.Type = apiv1.ServiceTypeLoadBalancer
+		obj.Spec.Ports = []apiv1.ServicePort{}
+		obj.Spec.Selector = c.Ingress.OffshootLabels()
+		obj.Spec.LoadBalancerSourceRanges = c.Ingress.Spec.LoadBalancerSourceRanges
+
 		// opening other tcp ports
 		mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
 		for svcPort, target := range mappings {
@@ -604,7 +605,7 @@ func (c *loadBalancerController) ensurePods(old *api.Ingress) (*extensions.Deplo
 			})
 		}
 
-		if obj.Spec.Template.Annotations != nil {
+		if obj.Spec.Template.Annotations == nil {
 			obj.Spec.Template.Annotations = map[string]string{}
 		}
 		oldAnn := map[string]string{}

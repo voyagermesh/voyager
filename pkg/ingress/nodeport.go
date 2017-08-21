@@ -435,13 +435,9 @@ func (c *nodePortController) ensureService(old *api.Ingress) (*apiv1.Service, er
 		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
 		obj.Annotations[api.OriginName] = c.Ingress.GetName()
 
-		obj.Spec = apiv1.ServiceSpec{
-			Type:     apiv1.ServiceTypeNodePort,
-			Ports:    []apiv1.ServicePort{},
-			Selector: c.Ingress.OffshootLabels(),
-			// https://github.com/kubernetes/kubernetes/issues/33586
-			// LoadBalancerSourceRanges: lbc.Config.Spec.LoadBalancerSourceRanges,
-		}
+		obj.Spec.Type = apiv1.ServiceTypeNodePort
+		obj.Spec.Ports = []apiv1.ServicePort{}
+		obj.Spec.Selector = c.Ingress.OffshootLabels()
 
 		// opening other tcp ports
 		mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
@@ -562,7 +558,7 @@ func (c *nodePortController) ensurePods(old *api.Ingress) (*extensions.Deploymen
 			})
 		}
 
-		if obj.Spec.Template.Annotations != nil {
+		if obj.Spec.Template.Annotations == nil {
 			obj.Spec.Template.Annotations = map[string]string{}
 		}
 		oldAnn := map[string]string{}

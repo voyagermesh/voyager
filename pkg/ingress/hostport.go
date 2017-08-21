@@ -442,11 +442,9 @@ func (c *hostPortController) ensureService(old *api.Ingress) (*apiv1.Service, er
 		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
 		obj.Annotations[api.OriginName] = c.Ingress.GetName()
 
-		obj.Spec = apiv1.ServiceSpec{
-			Type:      apiv1.ServiceTypeClusterIP,
-			ClusterIP: "None",
-			Ports:     []apiv1.ServicePort{},
-		}
+		obj.Spec.Type = apiv1.ServiceTypeClusterIP
+		obj.Spec.Ports = []apiv1.ServicePort{}
+		obj.Spec.ClusterIP = "None"
 
 		// opening other tcp ports
 		mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
@@ -547,7 +545,7 @@ func (c *hostPortController) ensurePods(old *api.Ingress) (*extensions.DaemonSet
 			})
 		}
 
-		if obj.Spec.Template.Annotations != nil {
+		if obj.Spec.Template.Annotations == nil {
 			obj.Spec.Template.Annotations = map[string]string{}
 		}
 		oldAnn := map[string]string{}

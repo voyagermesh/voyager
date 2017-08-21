@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/appscode/kutil"
+	"github.com/appscode/log"
 	"github.com/golang/glog"
 	"github.com/mattbaird/jsonpatch"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -22,7 +23,11 @@ func CreateOrPatchService(c clientset.Interface, meta metav1.ObjectMeta, transfo
 	} else if err != nil {
 		return nil, err
 	}
-	return PatchService(c, cur, transform)
+	patchedSvc, err := PatchService(c, cur, transform)
+	if err != nil {
+		log.Errorln("Patching service failed, reason", err)
+	}
+	return patchedSvc, err
 }
 
 func PatchService(c clientset.Interface, cur *apiv1.Service, transform func(*apiv1.Service) *apiv1.Service) (*apiv1.Service, error) {
@@ -47,6 +52,7 @@ func PatchService(c clientset.Interface, cur *apiv1.Service, transform func(*api
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("Patching Service %s@%s with %s.", cur.Name, cur.Namespace, string(pb))
 	glog.V(5).Infof("Patching Service %s@%s with %s.", cur.Name, cur.Namespace, string(pb))
 	return c.CoreV1().Services(cur.Namespace).Patch(cur.Name, types.JSONPatchType, pb)
 }
