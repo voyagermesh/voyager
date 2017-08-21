@@ -110,7 +110,7 @@ const (
 	//   option dontlognull
 	//   no option clitcpka
 	//
-	DefaultsOption = EngressKey + "/default-option"
+	DefaultsOption = EngressKey + "/" + "default-option"
 
 	// Available Options
 	//   ssl:
