@@ -132,6 +132,11 @@ func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePo
 							}
 						}
 					}
+
+					if s.Annotations != nil {
+						ep.TLSOption = s.Annotations[api.BackendTLSOptions]
+					}
+
 					eps = append(eps, ep)
 				}
 			}

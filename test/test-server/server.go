@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"net"
 	"net/http"
@@ -44,6 +45,30 @@ func RunHTTPServerOnPort(port string) {
 	http.ListenAndServe(port, HttpServerHandler{port})
 }
 
+type HttpsServerHandler struct {
+	port string
+}
+
+func (h HttpsServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	resp := &Response{
+		Type:       "http",
+		PodName:    os.Getenv("POD_NAME"),
+		Host:       r.Host,
+		ServerPort: h.port,
+		Path:       r.URL.Path,
+		Method:     r.Method,
+		Headers:    r.Header,
+	}
+	fmt.Println("Request on url", r.URL.Path)
+	json.NewEncoder(w).Encode(resp)
+}
+
+func RunHTTPsServerOnPort(port string) {
+	fmt.Println("https server running")
+	GenCert("http.appscode.dev,ssl.appscode.dev")
+	http.ListenAndServeTLS(port, "cert.pem", "key.pem", HttpsServerHandler{port})
+}
+
 type TCPServerHandler struct {
 	port string
 }
@@ -77,6 +102,8 @@ func RunTCPServerOnPort(port string) {
 }
 
 func main() {
+	flag.Parse()
+
 	go RunHTTPServerOnPort(":8080")
 	go RunHTTPServerOnPort(":8989")
 	go RunHTTPServerOnPort(":9090")
@@ -84,6 +111,9 @@ func main() {
 	go RunTCPServerOnPort(":4343")
 	go RunTCPServerOnPort(":4545")
 	go RunTCPServerOnPort(":5656")
+
+	go RunHTTPsServerOnPort(":6443")
+	go RunHTTPsServerOnPort(":3443")
 
 	hold()
 }

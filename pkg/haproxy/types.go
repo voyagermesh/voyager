@@ -97,4 +97,6 @@ type Endpoint struct {
 	UseDNSResolver bool
 	DNSResolver    string
 	CheckHealth    bool
+
+	TLSOption string
 }
