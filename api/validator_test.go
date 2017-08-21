@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,7 +12,9 @@ import (
 func TestIsValid(t *testing.T) {
 	for k, result := range dataTables {
 		err := k.IsValid("aws")
-		assert.Equal(t, err == nil, result, "%v", err)
+		if !assert.Equal(t, err == nil, result){
+			fmt.Println(*k)
+		}
 	}
 }
 

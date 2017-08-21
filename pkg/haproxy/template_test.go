@@ -235,5 +235,7 @@ func TestTemplate(t *testing.T) {
 	}
 	config, err := RenderConfig(testParsedConfig)
 	assert.Nil(t, err)
-	fmt.Println(config)
+	if testing.Verbose() {
+		fmt.Println(err, "\n", config)
+	}
 }
