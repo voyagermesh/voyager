@@ -149,6 +149,41 @@ func (i *ingressInvocation) createTestServerService() error {
 			},
 		},
 	})
+	if err != nil {
+		return err
+	}
+
+	_, err = i.KubeClient.CoreV1().Services(i.Namespace()).Create(&apiv1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      testServerHTTpsResourceName,
+			Namespace: i.Namespace(),
+			Labels: map[string]string{
+				"app": i.app,
+			},
+			Annotations: map[string]string{
+				"ingress.appscode.com/backend-tls": "ssl verify none",
+			},
+		},
+		Spec: apiv1.ServiceSpec{
+			Ports: []apiv1.ServicePort{
+				{
+					Name:       "http-1",
+					Port:       443,
+					TargetPort: intstr.FromInt(6443),
+					Protocol:   "TCP",
+				},
+				{
+					Name:       "http-2",
+					Port:       3443,
+					TargetPort: intstr.FromInt(3443),
+					Protocol:   "TCP",
+				},
+			},
+			Selector: map[string]string{
+				"app": i.app,
+			},
+		},
+	})
 	return err
 }
 
@@ -180,6 +215,14 @@ func (i *ingressInvocation) testServerPodSpec() apiv1.PodSpec {
 					{
 						Name:          "http-3",
 						ContainerPort: 9090,
+					},
+					{
+						Name:          "https-1",
+						ContainerPort: 6443,
+					},
+					{
+						Name:          "https-2",
+						ContainerPort: 3443,
 					},
 					{
 						Name:          "tcp-1",

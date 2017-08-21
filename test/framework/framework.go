@@ -74,3 +74,7 @@ func (f *Framework) Invoke() *Invocation {
 		Ingress:        &ingressInvocation{rootInvocation: r},
 	}
 }
+
+func (f *rootInvocation) App() string {
+	return f.app
+}

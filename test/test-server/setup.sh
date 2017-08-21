@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VERSION=1.4
+VERSION=2.0
 
 build() {
     rm -rf dist/*
