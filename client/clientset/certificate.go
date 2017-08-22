@@ -3,6 +3,7 @@ package clientset
 import (
 	tapi "github.com/appscode/voyager/api"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/rest"
 )
@@ -19,6 +20,7 @@ type CertificateInterface interface {
 	Delete(name string) error
 	Watch(opts metav1.ListOptions) (watch.Interface, error)
 	UpdateStatus(certificate *tapi.Certificate) (*tapi.Certificate, error)
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (*tapi.Certificate, error)
 }
 
 type CertificateImpl struct {
@@ -103,6 +105,19 @@ func (c *CertificateImpl) UpdateStatus(certificate *tapi.Certificate) (result *t
 		Name(certificate.Name).
 		SubResource("status").
 		Body(certificate).
+		Do().
+		Into(result)
+	return
+}
+
+func (c *CertificateImpl) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *tapi.Certificate, err error) {
+	result = &tapi.Certificate{}
+	err = c.r.Patch(pt).
+		Namespace(c.ns).
+		Resource(tapi.ResourceTypeCertificate).
+		SubResource(subresources...).
+		Name(name).
+		Body(data).
 		Do().
 		Into(result)
 	return
