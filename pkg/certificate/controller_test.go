@@ -7,6 +7,8 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -332,5 +334,48 @@ func skipTestIfSecretNotProvided(t *testing.T) {
 		len(os.Getenv("TEST_ACME_USER_EMAIL")) == 0 ||
 		len(os.Getenv("TEST_DNS_DOMAINS")) == 0 {
 		t.Skip("Skipping Test, Secret Not Provided")
+	}
+}
+
+func TestCertificateRenewTime(t *testing.T) {
+	demoNotAfter := time.Now().Add(time.Hour * 24 * 6)
+	res := demoNotAfter.After(time.Now().Add(time.Hour * 24 * 7))
+	assert.Equal(t, res, false)
+
+	demoNotAfter = time.Now().Add(time.Hour * 24 * 25)
+	res = demoNotAfter.After(time.Now().Add(time.Hour * 24 * 7))
+	assert.Equal(t, res, true)
+}
+
+const (
+	testCertMultiDomain = `-----BEGIN CERTIFICATE-----
+MIIDPDCCAiSgAwIBAgIJAIpp+gWuABI6MA0GCSqGSIb3DQEBCwUAMD8xCzAJBgNV
+BAYTAlNMMRAwDgYDVQQIDAdXZXN0ZXJuMRAwDgYDVQQHDAdDb2xvbWJvMQwwCgYD
+VQQLDANBQkMwHhcNMTcwODIyMDcxNDA0WhcNMjcwODIwMDcxNDA0WjA/MQswCQYD
+VQQGEwJTTDEQMA4GA1UECAwHV2VzdGVybjEQMA4GA1UEBwwHQ29sb21ibzEMMAoG
+A1UECwwDQUJDMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAllDFusm4
+Bre/20b6XBTicFvp8J/TIPTSvJ5SpUcPrfoyPVQTEcVsezPnmYOa5sunsyuhQqnN
+LUecYfgrsGvtUrVmUKGQXm5D8ybpPN0YA+oSuB3d21XW02+ZHsUI9wC/y+nVl4d8
+HVYNA0D/3AEkSJzKZBgtHIY0szcDKa0o5byaO0QXG5EOIChfJtTg7XkOG5aHzELD
+gRfUJVuq70aLMyKxXpPssmzvJtOe878uSQimBm1vYGr7ll3fhI4XEWgOU+uKL2Sz
+GZpfIL41Wd0gh0FbKDe3X3tZ5CFsn3gHI9AyOThL5qA+5EHdTSBkMcyRrcw2zFOm
+Xo/MpMiU+maIIQIDAQABozswOTAJBgNVHRMEAjAAMAsGA1UdDwQEAwIF4DAfBgNV
+HREEGDAWggl0ZXN0MS5jb22CCXRlc3QyLmNvbTANBgkqhkiG9w0BAQsFAAOCAQEA
+hTqbF6T4E4jf1fmmO2D6GUIkPBRr54Bx5Sp3+a4igDzgpFCg8doC9GJD588Z7vt8
+ZsiYyZpQcCYWRa/+i/voBqWLl0h1z9xlLU7FkPOnJG7Ww29rDq+DdsptxW7xGyLP
+rNwOItn+lVnroFIsJeV9+r+ZWpUtvYPpkeyjBadGknqnk6hJ2ODozBrY9U2Uf65O
+84brwiknmZxbxPhmTLH5PiYlJLOmbHRNIPHIzdISlSYeRJVF7dkaRnSxeEjux+DJ
+83274kS4U+MjHUfyVqE9IK4qVCkV/pTpgyvn1gcyp2BF2h62xVwxdDHO//C0EZYw
+HYKHTpHd5CCQE4WXPEB8aQ==
+-----END CERTIFICATE-----
+`
+)
+
+func TestDecodeCert(t *testing.T) {
+	pemBlock, _ := pem.Decode([]byte(testCertMultiDomain))
+	crt, err := x509.ParseCertificate(pemBlock.Bytes)
+	if assert.Nil(t, err) {
+		fmt.Println(crt.Subject.CommonName)
+		fmt.Println(crt.DNSNames)
 	}
 }

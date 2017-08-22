@@ -10,7 +10,6 @@ import (
 	"sync"
 
 	"github.com/appscode/errors"
-	stringutil "github.com/appscode/go/strings"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	"github.com/appscode/voyager/pkg/certificate/providers"
@@ -30,6 +29,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/route53"
 	"github.com/xenolf/lego/providers/dns/vultr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
@@ -272,9 +272,9 @@ func (c *ACMECertData) ToSecret(name, namespace string) *apiv1.Secret {
 }
 
 func (a ACMECertData) EqualDomains(c *x509.Certificate) bool {
-	certDomains := []string{
-		c.Subject.CommonName,
-	}
-	certDomains = append(certDomains, c.DNSNames...)
-	return stringutil.EqualSlice(certDomains, a.Domains.StringSlice())
+	certDomains := sets.NewString(c.Subject.CommonName)
+	certDomains.Insert(c.DNSNames...)
+
+	acmeDomains := sets.NewString(a.Domains.StringSlice()...)
+	return certDomains.Equal(acmeDomains)
 }

@@ -122,6 +122,7 @@ func (c *Controller) Process() error {
 			)
 		}
 
+		c.acmeCert.Domains = NewDomainCollection(c.tpr.Spec.Domains...)
 		if !c.acmeCert.EqualDomains(c.crt) {
 			err := c.renew()
 			if err != nil {
