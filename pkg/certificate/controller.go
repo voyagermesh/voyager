@@ -102,7 +102,7 @@ func (c *Controller) Process() error {
 			return errors.FromErr(err).WithMessage("Error decoding x509 encoded certificate").Err()
 		}
 		if !c.crt.NotAfter.After(time.Now().Add(time.Hour * 24 * 7)) {
-			log.Infoln("certificate is expiring in 7 days, attempting renew")
+			log.Infoln("Certificate is expiring in 7 days, attempting renew")
 			err := c.renew()
 			if err != nil {
 				c.recorder.Eventf(
@@ -124,6 +124,7 @@ func (c *Controller) Process() error {
 
 		c.acmeCert.Domains = NewDomainCollection(c.tpr.Spec.Domains...)
 		if !c.acmeCert.EqualDomains(c.crt) {
+			log.Infof("Domains not equal, tpr domains %v, cert dns %v, cert common name %v", c.tpr.Spec.Domains, c.crt.DNSNames, c.crt.Subject.CommonName)
 			err := c.renew()
 			if err != nil {
 				c.recorder.Eventf(
