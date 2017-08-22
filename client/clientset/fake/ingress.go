@@ -5,6 +5,7 @@ import (
 	"github.com/appscode/voyager/client/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/testing"
 )
@@ -94,4 +95,12 @@ func (mock *FakeIngress) UpdateStatus(srv *tapi.Ingress) (*tapi.Ingress, error) 
 func (mock *FakeIngress) Watch(opts metav1.ListOptions) (watch.Interface, error) {
 	return mock.Fake.
 		InvokesWatch(testing.NewWatchAction(ingressResource, mock.ns, opts))
+}
+
+func (mock *FakeIngress) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *tapi.Ingress, err error) {
+	obj, err := mock.Fake.Invokes(testing.NewPatchSubresourceAction(ingressResource, mock.ns, name, data, subresources...), &tapi.Ingress{})
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*tapi.Ingress), err
 }

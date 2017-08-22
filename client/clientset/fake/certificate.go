@@ -5,6 +5,7 @@ import (
 	"github.com/appscode/voyager/client/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/testing"
 )
@@ -94,4 +95,12 @@ func (mock *FakeCertificate) UpdateStatus(srv *tapi.Certificate) (*tapi.Certific
 func (mock *FakeCertificate) Watch(opts metav1.ListOptions) (watch.Interface, error) {
 	return mock.Fake.
 		InvokesWatch(testing.NewWatchAction(certResource, mock.ns, opts))
+}
+
+func (mock *FakeCertificate) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *tapi.Certificate, err error) {
+	obj, err := mock.Fake.Invokes(testing.NewPatchSubresourceAction(certResource, mock.ns, name, data, subresources...), &tapi.Certificate{})
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*tapi.Certificate), err
 }
