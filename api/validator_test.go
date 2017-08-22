@@ -12,9 +12,9 @@ import (
 
 func TestIsValid(t *testing.T) {
 	for k, result := range dataTables {
-		err := k.IsValid("aws")
-		if !assert.Equal(t, err == nil, result){
-			fmt.Println("Failed Tests:", k.Name)
+		err := k.IsValid("minikube")
+		if !assert.Equal(t, err == nil, result) {
+			fmt.Println("Failed Tests:", k.Name, "Reason\n", err)
 		}
 	}
 }
