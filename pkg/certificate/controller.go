@@ -571,7 +571,7 @@ func (c *Controller) restartHAProxyIfRequired() {
 									c.KubeClient.CoreV1().RESTClient(),
 									c.KubeConfig,
 									pod,
-									[]string{"/restart"},
+									[]string{"/etc/sv/reloader/restart"},
 								)
 							}
 						}
