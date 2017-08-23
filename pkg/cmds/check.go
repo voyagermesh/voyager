@@ -62,7 +62,7 @@ func NewCmdCheck() *cobra.Command {
 				return err
 			}
 
-			w := operator.New(kubeClient, extClient, promClient, opt)
+			w := operator.New(config, kubeClient, extClient, promClient, opt)
 			// https://github.com/appscode/voyager/issues/346
 			err = w.ValidateIngress()
 			if err != nil {
