@@ -1,5 +1,5 @@
 hash: 9c73a0e9aa26633788ebbd9d81ecadc4fdc41c5e5db461086ee43faac7c6879e
-updated: 2017-08-18T21:02:45.391034736-07:00
+updated: 2017-08-24T02:01:31.395185149-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -90,7 +90,7 @@ imports:
   subpackages:
   - pkg/client/monitoring/v1alpha1
 - name: github.com/cpuguy83/go-md2man
-  version: a65d4d2de4d5f7c74868dfa9b202a3c8be315aaa
+  version: 71acacd42f85e5e82f70a55327789582a5200a90
   subpackages:
   - md2man
 - name: github.com/davecgh/go-spew
@@ -251,7 +251,9 @@ imports:
   - model
   - version
 - name: github.com/prometheus/procfs
-  version: 454a56f35412459b5e684fd5ec0f9211b94f002a
+  version: 65c1f6f8f0fc1e2185eb9863a3bc751496404259
+  subpackages:
+  - xfs
 - name: github.com/PuerkitoBio/purell
   version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
 - name: github.com/PuerkitoBio/urlesc
@@ -263,7 +265,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
 - name: github.com/spf13/cobra
-  version: cb731b898346822cc0c225c28550a8a29d93c732
+  version: 2df9a531813370438a4d79bfc33e21f58063ed87
   subpackages:
   - doc
 - name: github.com/spf13/pflag

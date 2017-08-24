@@ -3,6 +3,7 @@ package clientset
 import (
 	tapi "github.com/appscode/voyager/api"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/rest"
 )
@@ -21,6 +22,7 @@ type IngressInterface interface {
 	Delete(name string) error
 	Watch(opts metav1.ListOptions) (watch.Interface, error)
 	UpdateStatus(ExtendedIngress *tapi.Ingress) (*tapi.Ingress, error)
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (*tapi.Ingress, error)
 }
 
 // IngressImpl implements IngressesGetter interface
@@ -114,6 +116,19 @@ func (c *IngressImpl) UpdateStatus(extendedIngress *tapi.Ingress) (result *tapi.
 		Name(extendedIngress.Name).
 		SubResource("status").
 		Body(extendedIngress).
+		Do().
+		Into(result)
+	return
+}
+
+func (c *IngressImpl) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *tapi.Ingress, err error) {
+	result = &tapi.Ingress{}
+	err = c.r.Patch(pt).
+		Namespace(c.ns).
+		Resource(tapi.ResourceTypeIngress).
+		SubResource(subresources...).
+		Name(name).
+		Body(data).
 		Do().
 		Into(result)
 	return
