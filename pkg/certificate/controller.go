@@ -28,6 +28,7 @@ import (
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/record"
+	"github.com/appscode/go/strings"
 )
 
 const (
@@ -512,68 +513,64 @@ func (c *Controller) processHTTPCertificate(revert chan struct{}) error {
 }
 
 func (c *Controller) restartHAProxyIfRequired() {
-	ticker := time.NewTicker(time.Minute)
-	for range ticker.C {
-		ing, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Namespace).List(metav1.ListOptions{})
+	renewedCert, _ := pem.Decode(c.renewedCertificateResource.Certificate)
+	parsedRenewedCert, err := x509.ParseCertificate(renewedCert.Bytes)
+	if err != nil {
+		log.Errorln("Failed starting HAProxy reload", err)
+		return
+	}
+
+	ing, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Namespace).List(metav1.ListOptions{})
+	if err != nil {
+		log.Errorln(err)
+		return
+	}
+	eng, err := c.ExtClient.Ingresses(c.tpr.Namespace).List(metav1.ListOptions{})
+	if err != nil {
+		log.Errorln(err)
+		return
+	}
+
+	items := make([]tapi.Ingress, len(ing.Items))
+	for i, item := range ing.Items {
+		e, err := tapi.NewEngressFromIngress(item)
 		if err != nil {
 			log.Errorln(err)
 			continue
 		}
-		eng, err := c.ExtClient.Ingresses(c.tpr.Namespace).List(metav1.ListOptions{})
-		if err != nil {
-			log.Errorln(err)
-			continue
-		}
+		items[i] = *e
+	}
+	items = append(items, eng.Items...)
+	for _, ing := range items {
+		if strings.Contains(ing.Secrets(), defaultCertPrefix+c.tpr.Name) {
+			podList, err := c.KubeClient.CoreV1().Pods(ing.Namespace).List(metav1.ListOptions{
+				LabelSelector: labels.SelectorFromSet(labels.Set(ing.OffshootLabels())).String(),
+			})
+			if err == nil {
+				for _, pod := range podList.Items {
+					for range time.NewTicker(time.Second*20).C {
+						out := util.Exec(
+							c.KubeClient.CoreV1().RESTClient(),
+							c.KubeConfig,
+							pod,
+							[]string{"cat /srv/haproxy/secrets/" + defaultCertPrefix + c.tpr.Name + "/tls.crt"},
+						)
 
-		items := make([]tapi.Ingress, len(ing.Items))
-		for i, item := range ing.Items {
-			e, err := tapi.NewEngressFromIngress(item)
-			if err != nil {
-				log.Errorln(err)
-				continue
-			}
-			items[i] = *e
-		}
-		items = append(items, eng.Items...)
+						pemBlock, _ := pem.Decode([]byte(out))
+						parsedCert, err := x509.ParseCertificate(pemBlock.Bytes)
+						if err != nil {
+							log.Errorln(err)
+							continue
+						}
 
-		for _, ing := range items {
-		CheckLoop:
-			for _, secret := range ing.Secrets() {
-				if defaultCertPrefix+c.tpr.Name == secret {
-					podList, err := c.KubeClient.CoreV1().Pods(ing.Namespace).List(metav1.ListOptions{
-						LabelSelector: labels.SelectorFromSet(labels.Set(ing.OffshootLabels())).String(),
-					})
-					if err == nil {
-						for _, pod := range podList.Items {
-							out := util.Exec(
+						if parsedCert.Equal(parsedRenewedCert) {
+							util.Exec(
 								c.KubeClient.CoreV1().RESTClient(),
 								c.KubeConfig,
 								pod,
-								[]string{"cat /srv/haproxy/secrets/" + defaultCertPrefix + c.tpr.Name + "/tls.crt"},
+								[]string{"/etc/sv/reloader/restart"},
 							)
-
-							pemBlock, _ := pem.Decode([]byte(out))
-							parsedCert, err := x509.ParseCertificate(pemBlock.Bytes)
-							if err != nil {
-								log.Errorln(err)
-								break CheckLoop
-							}
-
-							renewedCert, _ := pem.Decode(c.renewedCertificateResource.Certificate)
-							parsedRenewedCert, err := x509.ParseCertificate(renewedCert.Bytes)
-							if err != nil {
-								log.Errorln(err)
-								break CheckLoop
-							}
-
-							if parsedCert.Equal(parsedRenewedCert) {
-								util.Exec(
-									c.KubeClient.CoreV1().RESTClient(),
-									c.KubeConfig,
-									pod,
-									[]string{"/etc/sv/reloader/restart"},
-								)
-							}
+							break
 						}
 					}
 				}
