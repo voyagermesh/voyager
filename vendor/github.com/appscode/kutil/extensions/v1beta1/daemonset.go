@@ -7,17 +7,21 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/appscode/jsonpatch"
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/cenkalti/backoff"
 	"github.com/golang/glog"
-	"github.com/mattbaird/jsonpatch"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	clientset "k8s.io/client-go/kubernetes"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
+
+func EnsureDaemonSet(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.DaemonSet) *extensions.DaemonSet) (*extensions.DaemonSet, error) {
+	return CreateOrPatchDaemonSet(c, meta, transform)
+}
 
 func CreateOrPatchDaemonSet(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.DaemonSet) *extensions.DaemonSet) (*extensions.DaemonSet, error) {
 	cur, err := c.ExtensionsV1beta1().DaemonSets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})

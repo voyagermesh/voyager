@@ -7,16 +7,20 @@ import (
 	"time"
 
 	. "github.com/appscode/go/types"
+	"github.com/appscode/jsonpatch"
 	"github.com/appscode/kutil"
 	"github.com/cenkalti/backoff"
 	"github.com/golang/glog"
-	"github.com/mattbaird/jsonpatch"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	clientset "k8s.io/client-go/kubernetes"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
+
+func EnsureDeployment(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.Deployment) *extensions.Deployment) (*extensions.Deployment, error) {
+	return CreateOrPatchDeployment(c, meta, transform)
+}
 
 func CreateOrPatchDeployment(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.Deployment) *extensions.Deployment) (*extensions.Deployment, error) {
 	cur, err := c.ExtensionsV1beta1().Deployments(meta.Namespace).Get(meta.Name, metav1.GetOptions{})

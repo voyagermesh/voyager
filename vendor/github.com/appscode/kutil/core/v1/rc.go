@@ -7,16 +7,20 @@ import (
 	"time"
 
 	. "github.com/appscode/go/types"
+	"github.com/appscode/jsonpatch"
 	"github.com/appscode/kutil"
 	"github.com/cenkalti/backoff"
 	"github.com/golang/glog"
-	"github.com/mattbaird/jsonpatch"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
+
+func EnsureRC(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.ReplicationController) *apiv1.ReplicationController) (*apiv1.ReplicationController, error) {
+	return CreateOrPatchRC(c, meta, transform)
+}
 
 func CreateOrPatchRC(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.ReplicationController) *apiv1.ReplicationController) (*apiv1.ReplicationController, error) {
 	cur, err := c.CoreV1().ReplicationControllers(meta.Namespace).Get(meta.Name, metav1.GetOptions{})

@@ -420,7 +420,7 @@ func (c *hostPortController) ensureService(old *api.Ingress) (*apiv1.Service, er
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	return core_util.CreateOrPatchService(c.KubeClient, meta, func(obj *apiv1.Service) *apiv1.Service {
+	return core_util.EnsureService(c.KubeClient, meta, func(obj *apiv1.Service) *apiv1.Service {
 		if obj.Annotations == nil {
 			obj.Annotations = map[string]string{}
 		}
@@ -466,7 +466,7 @@ func (c *hostPortController) ensurePods(old *api.Ingress) (*extensions.DaemonSet
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	return ext_util.CreateOrPatchDaemonSet(c.KubeClient, meta, func(obj *extensions.DaemonSet) *extensions.DaemonSet {
+	return ext_util.EnsureDaemonSet(c.KubeClient, meta, func(obj *extensions.DaemonSet) *extensions.DaemonSet {
 		if obj.Annotations == nil {
 			obj.Annotations = map[string]string{}
 		}

@@ -15,7 +15,7 @@ func (c *controller) ensureServiceAccount() error {
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	_, err := core_util.CreateOrPatchServiceAccount(c.KubeClient, meta, func(obj *apiv1.ServiceAccount) *apiv1.ServiceAccount {
+	_, err := core_util.EnsureServiceAccount(c.KubeClient, meta, func(obj *apiv1.ServiceAccount) *apiv1.ServiceAccount {
 		if obj.Annotations == nil {
 			obj.Annotations = map[string]string{}
 		}
@@ -31,7 +31,7 @@ func (c *controller) ensureRoles() error {
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	_, err := rbac_util.CreateOrPatchRole(c.KubeClient, meta, func(obj *rbac.Role) *rbac.Role {
+	_, err := rbac_util.EnsureRole(c.KubeClient, meta, func(obj *rbac.Role) *rbac.Role {
 		if obj.Annotations == nil {
 			obj.Annotations = map[string]string{}
 		}
@@ -79,7 +79,7 @@ func (c *controller) ensureRoleBinding() error {
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	_, err := rbac_util.CreateOrPatchRoleBinding(c.KubeClient, meta, func(obj *rbac.RoleBinding) *rbac.RoleBinding {
+	_, err := rbac_util.EnsureRoleBinding(c.KubeClient, meta, func(obj *rbac.RoleBinding) *rbac.RoleBinding {
 		if obj.Annotations == nil {
 			obj.Annotations = map[string]string{}
 		}

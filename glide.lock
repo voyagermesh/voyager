@@ -1,5 +1,5 @@
 hash: 230417d52496ef53041e98e3b168f939c4956e6b080f1fcd956fab962e7e9ab1
-updated: 2017-08-21T01:37:17.841899198-07:00
+updated: 2017-08-22T17:29:35.668105327-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -29,8 +29,10 @@ imports:
   version: 599f8e0f418ba29629985265f8caff016d4ea661
   subpackages:
   - exporter
+- name: github.com/appscode/jsonpatch
+  version: 3cdd2454b5443228620ea11294085ec3489936a6
 - name: github.com/appscode/kutil
-  version: d0b4285b23ce60dedabd915a96e31255001ce6d3
+  version: f4dae2e69f91b361c9096ac34923465e96f742d3
   subpackages:
   - core/v1
   - extensions/v1beta1
@@ -100,7 +102,7 @@ imports:
   subpackages:
   - pkg/client/monitoring/v1alpha1
 - name: github.com/cpuguy83/go-md2man
-  version: a65d4d2de4d5f7c74868dfa9b202a3c8be315aaa
+  version: 71acacd42f85e5e82f70a55327789582a5200a90
   subpackages:
   - md2man
 - name: github.com/davecgh/go-spew
@@ -182,8 +184,6 @@ imports:
   - buffer
   - jlexer
   - jwriter
-- name: github.com/mattbaird/jsonpatch
-  version: d220c21cb65bebf730343aee4c00ba60be2d3235
 - name: github.com/matttproud/golang_protobuf_extensions
   version: fc2b8d3a73c4867e51861bbdd5ae3c1f0869dd6a
   subpackages:
@@ -376,6 +376,8 @@ imports:
   subpackages:
   - cipher
   - json
+- name: gopkg.in/warnings.v0
+  version: 8a331561fe74dadba6edfc59f3be66c22c3b065d
 - name: gopkg.in/yaml.v2
   version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
 - name: k8s.io/apimachinery

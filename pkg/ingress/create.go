@@ -22,7 +22,7 @@ func (c *controller) ensureConfigMap() error {
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	_, err := core_util.CreateOrPatchConfigMap(c.KubeClient, meta, func(obj *apiv1.ConfigMap) *apiv1.ConfigMap {
+	_, err := core_util.EnsureConfigMap(c.KubeClient, meta, func(obj *apiv1.ConfigMap) *apiv1.ConfigMap {
 		if obj.Annotations == nil {
 			obj.Annotations = map[string]string{}
 		}
@@ -91,7 +91,7 @@ func (c *controller) ensureStatsService() error {
 		Namespace: c.Ingress.Namespace,
 	}
 
-	_, err := core_util.CreateOrPatchService(c.KubeClient, meta, func(obj *apiv1.Service) *apiv1.Service {
+	_, err := core_util.EnsureService(c.KubeClient, meta, func(obj *apiv1.Service) *apiv1.Service {
 		if obj.Annotations == nil {
 			obj.Annotations = map[string]string{}
 		}

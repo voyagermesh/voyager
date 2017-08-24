@@ -1,10 +1,10 @@
 package ingress
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
-	"fmt"
 	"github.com/appscode/errors"
 	"github.com/appscode/go/types"
 	core_util "github.com/appscode/kutil/core/v1"
@@ -348,7 +348,7 @@ func (c *loadBalancerController) ensureService(old *api.Ingress) (*apiv1.Service
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	return core_util.CreateOrPatchService(c.KubeClient, meta, func(obj *apiv1.Service) *apiv1.Service {
+	return core_util.EnsureService(c.KubeClient, meta, func(obj *apiv1.Service) *apiv1.Service {
 		if obj.Annotations == nil {
 			obj.Annotations = map[string]string{}
 		}
@@ -507,7 +507,7 @@ func (c *loadBalancerController) ensurePods(old *api.Ingress) (*extensions.Deplo
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	return ext_util.CreateOrPatchDeployment(c.KubeClient, meta, func(obj *extensions.Deployment) *extensions.Deployment {
+	return ext_util.EnsureDeployment(c.KubeClient, meta, func(obj *extensions.Deployment) *extensions.Deployment {
 		if obj.Annotations == nil {
 			obj.Annotations = map[string]string{}
 		}
