@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/appscode/errors"
+	"github.com/appscode/go/strings"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	tapi "github.com/appscode/voyager/api"
@@ -28,7 +29,6 @@ import (
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/record"
-	"github.com/appscode/go/strings"
 )
 
 const (
@@ -96,47 +96,6 @@ func (c *Controller) Process() error {
 	c.acmeCert.Domains = NewDomainCollection(c.tpr.Spec.Domains...)
 	// Check if a cert already exists for this Certificate Instance
 	secret, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(defaultCertPrefix+c.tpr.Name, metav1.GetOptions{})
-	if err == nil {
-		var err error
-		c.acmeCert, err = NewACMECertDataFromSecret(secret, c.tpr)
-		if err != nil {
-			return errors.FromErr(err).WithMessage("Error decoding acme certificate").Err()
-		}
-
-		// Decode cert
-		pemBlock, _ := pem.Decode(c.acmeCert.Cert)
-		c.crt, err = x509.ParseCertificate(pemBlock.Bytes)
-		if err != nil {
-			return errors.FromErr(err).WithMessage("Error decoding x509 encoded certificate").Err()
-		}
-
-		c.acmeCert.Domains = NewDomainCollection(c.tpr.Spec.Domains...)
-		if !c.crt.NotAfter.After(time.Now().Add(time.Hour*24*7)) ||
-			!c.acmeCert.EqualDomains(c.crt) {
-			log.Infof("Trying to renew certificate for, tpr domains %v, cert dns %v, cert common name %v", c.tpr.Spec.Domains, c.crt.DNSNames, c.crt.Subject.CommonName)
-			err := c.renew()
-			if err != nil {
-				c.recorder.Eventf(
-					c.tpr,
-					apiv1.EventTypeWarning,
-					eventer.EventReasonCertificateRenewFailed,
-					"Failed to renew certificate, Reason %s",
-					err.Error(),
-				)
-				return err
-			}
-			c.recorder.Eventf(
-				c.tpr,
-				apiv1.EventTypeNormal,
-				eventer.EventReasonCertificateRenewSuccessful,
-				"Successfully renewed certificate, voyager pods that mount this secret needs to restart.",
-			)
-
-			// Try to restart every HAProxy that mount this cert
-			go c.restartHAProxyIfRequired()
-		}
-	}
-
 	if kerr.IsNotFound(err) || !c.tpr.Status.CertificateObtained {
 		// Certificate Not found as secret. We must create it now.
 		err := c.create()
@@ -156,6 +115,51 @@ func (c *Controller) Process() error {
 			eventer.EventReasonCertificateCreateSuccessful,
 			"Successfully created certificate",
 		)
+		return nil
+	}
+
+	// Secret is exists, try to renew certificate if necessary
+	c.acmeCert, err = NewACMECertDataFromSecret(secret, c.tpr)
+	if err != nil {
+		return errors.FromErr(err).WithMessage("Error decoding acme certificate").Err()
+	}
+
+	// Decode cert
+	pemBlock, _ := pem.Decode(c.acmeCert.Cert)
+	c.crt, err = x509.ParseCertificate(pemBlock.Bytes)
+	if err != nil {
+		return errors.FromErr(err).WithMessage("Error decoding x509 encoded certificate").Err()
+	}
+
+	c.acmeCert.Domains = NewDomainCollection(c.tpr.Spec.Domains...)
+	if !c.crt.NotAfter.After(time.Now().Add(time.Hour*24*7)) ||
+		!c.acmeCert.EqualDomains(c.crt) {
+		log.Infof(
+			"Trying to renew certificate for, tpr domains %v, cert dns %v, cert common name %v",
+			c.tpr.Spec.Domains,
+			c.crt.DNSNames,
+			c.crt.Subject.CommonName,
+		)
+		err := c.renew()
+		if err != nil {
+			c.recorder.Eventf(
+				c.tpr,
+				apiv1.EventTypeWarning,
+				eventer.EventReasonCertificateRenewFailed,
+				"Failed to renew certificate, Reason %s",
+				err.Error(),
+			)
+			return err
+		}
+		c.recorder.Eventf(
+			c.tpr,
+			apiv1.EventTypeNormal,
+			eventer.EventReasonCertificateRenewSuccessful,
+			"Successfully renewed certificate, voyager pods that mount this secret needs to restart.",
+		)
+
+		// Try to restart every HAProxy that mount this cert
+		go c.restartHAProxyIfRequired()
 	}
 	return nil
 }
@@ -457,7 +461,8 @@ func (c *Controller) processHTTPCertificate(revert chan struct{}) error {
 		}()
 	case "extensions/v1beta1":
 		revertRequired := false
-		i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Spec.HTTPProviderIngressReference.Namespace).Get(c.tpr.Spec.HTTPProviderIngressReference.Name, metav1.GetOptions{})
+		i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Spec.HTTPProviderIngressReference.Namespace).
+			Get(c.tpr.Spec.HTTPProviderIngressReference.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -493,7 +498,8 @@ func (c *Controller) processHTTPCertificate(revert chan struct{}) error {
 			select {
 			case <-revert:
 				if revertRequired {
-					i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Spec.HTTPProviderIngressReference.Namespace).Get(c.tpr.Spec.HTTPProviderIngressReference.Name, metav1.GetOptions{})
+					i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Spec.HTTPProviderIngressReference.Namespace).
+						Get(c.tpr.Spec.HTTPProviderIngressReference.Name, metav1.GetOptions{})
 					if err == nil {
 						i.Spec = prevSpecs
 						i.Spec.TLS = append(i.Spec.TLS, extensions.IngressTLS{
@@ -548,7 +554,7 @@ func (c *Controller) restartHAProxyIfRequired() {
 			})
 			if err == nil {
 				for _, pod := range podList.Items {
-					for range time.NewTicker(time.Second*20).C {
+					for range time.NewTicker(time.Second * 20).C {
 						out := util.Exec(
 							c.KubeClient.CoreV1().RESTClient(),
 							c.KubeConfig,

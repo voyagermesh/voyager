@@ -17,7 +17,7 @@ func CheckCertificates(config *rest.Config, kubeClient clientset.Interface, extC
 	Time := clock.New()
 	for {
 		select {
-		case <-Time.After(time.Hour * 24):
+		case <-Time.After(time.Minute * 5):
 			result, err := extClient.Certificates(apiv1.NamespaceAll).List(metav1.ListOptions{})
 			if err != nil {
 				log.Error(err)
