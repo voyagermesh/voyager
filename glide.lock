@@ -1,5 +1,5 @@
 hash: 962ef7518fe63301b61fb8ba56215ce4a2eb8d88b8237e7941dfa66fcb9b4b0f
-updated: 2017-08-25T11:11:56.597423859+06:00
+updated: 2017-08-25T16:21:30.289287403+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -544,7 +544,6 @@ imports:
   - util/flowcontrol
   - util/homedir
   - util/integer
-  - util/workqueue
 - name: k8s.io/kubernetes
   version: d090cd0e2bf432034b42de5d098d999bc99de043
   subpackages:
