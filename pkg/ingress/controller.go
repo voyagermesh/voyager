@@ -9,6 +9,7 @@ import (
 	"github.com/appscode/voyager/pkg/config"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	clientset "k8s.io/client-go/kubernetes"
 	core "k8s.io/client-go/listers/core/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
@@ -25,6 +26,7 @@ type Controller interface {
 
 type controller struct {
 	KubeClient      clientset.Interface
+	CRDClient       apiextensionsclient.Interface
 	ExtClient       acs.ExtensionInterface
 	PromClient      pcm.MonitoringV1alpha1Interface
 	ServiceLister   core.ServiceLister
@@ -45,6 +47,7 @@ type controller struct {
 
 func NewController(
 	kubeClient clientset.Interface,
+	crdClient apiextensionsclient.Interface,
 	extClient acs.ExtensionInterface,
 	promClient pcm.MonitoringV1alpha1Interface,
 	serviceLister core.ServiceLister,
@@ -53,11 +56,11 @@ func NewController(
 	ingress *api.Ingress) Controller {
 	switch ingress.LBType() {
 	case api.LBTypeHostPort:
-		return NewHostPortController(kubeClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
+		return NewHostPortController(kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
 	case api.LBTypeNodePort:
-		return NewNodePortController(kubeClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
+		return NewNodePortController(kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
 	case api.LBTypeLoadBalancer:
-		return NewLoadBalancerController(kubeClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
+		return NewLoadBalancerController(kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
 	}
 	return nil
 }

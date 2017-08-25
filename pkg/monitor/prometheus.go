@@ -9,6 +9,7 @@ import (
 	"github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	_ "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
@@ -17,11 +18,13 @@ import (
 type PrometheusController struct {
 	kubeClient clientset.Interface
 	promClient v1alpha1.MonitoringV1alpha1Interface
+	crdClient  apiextensionsclient.Interface
 }
 
-func NewPrometheusController(kubeClient clientset.Interface, promClient v1alpha1.MonitoringV1alpha1Interface) Monitor {
+func NewPrometheusController(kubeClient clientset.Interface, crdClient apiextensionsclient.Interface, promClient v1alpha1.MonitoringV1alpha1Interface) Monitor {
 	return &PrometheusController{
 		kubeClient: kubeClient,
+		crdClient:  crdClient,
 		promClient: promClient,
 	}
 }
@@ -51,11 +54,11 @@ func (c *PrometheusController) DeleteMonitor(r *api.Ingress, spec *api.MonitorSp
 }
 
 func (c *PrometheusController) SupportsCoreOSOperator() bool {
-	_, err := c.kubeClient.ExtensionsV1beta1().ThirdPartyResources().Get("prometheus."+prom.Group, metav1.GetOptions{})
+	_, err := c.crdClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get(prom.PrometheusName+"."+prom.Group, metav1.GetOptions{})
 	if err != nil {
 		return false
 	}
-	_, err = c.kubeClient.ExtensionsV1beta1().ThirdPartyResources().Get("service-monitor."+prom.Group, metav1.GetOptions{})
+	_, err = c.crdClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get(prom.ServiceMonitorName+"."+prom.Group, metav1.GetOptions{})
 	if err != nil {
 		return false
 	}
