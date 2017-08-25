@@ -125,10 +125,10 @@ func (*extendedCodec) DecodeParameters(parameters url.Values, from schema.GroupV
 	if len(parameters) == 0 {
 		return nil
 	}
-	_, okDelete := into.(*metav1.DeleteOptions)
-	if _, okList := into.(*metav1.ListOptions); okList || okDelete {
-		from = schema.GroupVersion{Version: "v1"}
-	}
+	//_, okDelete := into.(*metav1.DeleteOptions)
+	//if _, okList := into.(*metav1.ListOptions); okList || okDelete {
+	//	from = schema.GroupVersion{Group: metav1.GroupName, Version: "v1"}
+	//}
 	return runtime.NewParameterCodec(kapi.Scheme).DecodeParameters(parameters, from, into)
 }
 
@@ -139,10 +139,10 @@ func (ec *extendedCodec) EncodeParameters(obj runtime.Object, to schema.GroupVer
 	if obj == nil {
 		return result, nil
 	}
-	_, okDelete := obj.(*metav1.DeleteOptions)
-	if _, okList := obj.(*metav1.ListOptions); okList || okDelete {
-		to = schema.GroupVersion{Version: "v1"}
-	}
+	//_, okDelete := obj.(*metav1.DeleteOptions)
+	//if _, okList := obj.(*metav1.ListOptions); okList || okDelete {
+	//	to = schema.GroupVersion{Group: metav1.GroupName, Version: "v1"}
+	//}
 	return runtime.NewParameterCodec(kapi.Scheme).EncodeParameters(obj, to)
 }
 

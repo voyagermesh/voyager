@@ -20,6 +20,7 @@ import (
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/clientcmd"
@@ -105,6 +106,7 @@ func run() {
 	}
 
 	kubeClient = clientset.NewForConfigOrDie(config)
+	crdClient := apiextensionsclient.NewForConfigOrDie(config)
 	extClient = acs.NewForConfigOrDie(config)
 	promClient, err := pcm.NewForConfig(config)
 	if err != nil {
@@ -113,7 +115,7 @@ func run() {
 
 	log.Infoln("Starting Voyager operator...")
 
-	w := operator.New(kubeClient, extClient, promClient, opt)
+	w := operator.New(kubeClient, crdClient, extClient, promClient, opt)
 	err = w.Setup()
 	if err != nil {
 		log.Fatalln(err)

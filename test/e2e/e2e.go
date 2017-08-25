@@ -35,6 +35,7 @@ func RunE2ETestSuit(t *testing.T) {
 var _ = BeforeSuite(func() {
 	controller := operator.New(
 		root.KubeClient,
+		root.CRDClient,
 		root.VoyagerClient,
 		nil,
 		config.Options{

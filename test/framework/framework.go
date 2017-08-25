@@ -7,6 +7,7 @@ import (
 	voyagerclient "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/config"
 	. "github.com/onsi/gomega"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -19,6 +20,7 @@ const (
 type Framework struct {
 	KubeClient    clientset.Interface
 	VoyagerClient voyagerclient.ExtensionInterface
+	CRDClient     apiextensionsclient.Interface
 	Config        E2EConfig
 	namespace     string
 	voyagerConfig config.Options
@@ -48,6 +50,7 @@ func New() *Framework {
 	return &Framework{
 		KubeClient:    clientset.NewForConfigOrDie(c),
 		VoyagerClient: voyagerclient.NewForConfigOrDie(c),
+		CRDClient:     apiextensionsclient.NewForConfigOrDie(c),
 		Config:        testConfigs,
 		namespace:     testConfigs.TestNamespace,
 		voyagerConfig: config.Options{

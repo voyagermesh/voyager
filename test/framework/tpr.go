@@ -9,12 +9,13 @@ import (
 
 func (f *Framework) EventuallyTPR() GomegaAsyncAssertion {
 	return Eventually(func() error {
-		_, err := f.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Get(vapi.ResourceNameIngress+"."+vapi.GroupName, metav1.GetOptions{})
+		crdClient := f.CRDClient.ApiextensionsV1beta1().CustomResourceDefinitions()
+		_, err := crdClient.Get(vapi.ResourceTypeIngress+"."+vapi.GroupName, metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
 
-		_, err = f.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Get(vapi.ResourceNameCertificate+"."+vapi.GroupName, metav1.GetOptions{})
+		_, err = crdClient.Get(vapi.ResourceTypeCertificate+"."+vapi.GroupName, metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
