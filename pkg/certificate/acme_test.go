@@ -112,3 +112,29 @@ func TestClient(t *testing.T) {
 		assert.Nil(t, err)
 	}
 }
+
+func TestEqualDomain(t *testing.T) {
+	cert := &x509.Certificate{
+		DNSNames: []string{"test1.com", "test2.com"},
+	}
+	cert.Subject.CommonName = "test.com"
+	tpr := &api.Certificate{Spec: api.CertificateSpec{Domains: []string{"test.com", "test1.com", "test2.com"}}}
+	a := ACMECertData{Domains: NewDomainCollection(tpr.Spec.Domains...)}
+	assert.Equal(t, a.EqualDomains(cert), true)
+
+	cert = &x509.Certificate{
+		DNSNames: []string{"test1.com", "test2.com"},
+	}
+	cert.Subject.CommonName = "test.com"
+	tpr = &api.Certificate{Spec: api.CertificateSpec{Domains: []string{"test.com", "test1.com", "test3.com"}}}
+	a = ACMECertData{Domains: NewDomainCollection(tpr.Spec.Domains...)}
+	assert.Equal(t, a.EqualDomains(cert), false)
+
+	cert = &x509.Certificate{
+		DNSNames: []string{"test1.com", "test2.com"},
+	}
+	cert.Subject.CommonName = "test.com"
+	tpr = &api.Certificate{Spec: api.CertificateSpec{Domains: []string{"test.com", "test1.com", "test3.com", "test2.com"}}}
+	a = ACMECertData{Domains: NewDomainCollection(tpr.Spec.Domains...)}
+	assert.Equal(t, a.EqualDomains(cert), false)
+}

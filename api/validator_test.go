@@ -1,22 +1,27 @@
 package api
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 func TestIsValid(t *testing.T) {
 	for k, result := range dataTables {
-		err := k.IsValid("aws")
-		assert.Equal(t, err == nil, result, "%v", err)
+		err := k.IsValid("minikube")
+		if !assert.Equal(t, err == nil, result) {
+			fmt.Println("Failed Tests:", k.Name, "Reason\n", err)
+		}
 	}
 }
 
 var dataTables = map[*Ingress]bool{
 	{
+		ObjectMeta: v1.ObjectMeta{Name: "No Backend Service For TCP"},
 		Spec: IngressSpec{
 			Rules: []IngressRule{
 				{
@@ -30,6 +35,7 @@ var dataTables = map[*Ingress]bool{
 		},
 	}: false,
 	{
+		ObjectMeta: v1.ObjectMeta{Name: "No Listen Port for TCP"},
 		Spec: IngressSpec{
 			Rules: []IngressRule{
 				{
@@ -46,6 +52,7 @@ var dataTables = map[*Ingress]bool{
 		},
 	}: false,
 	{
+		ObjectMeta: v1.ObjectMeta{Name: "TCP and HTTP in Same Port specified"},
 		Spec: IngressSpec{
 			Rules: []IngressRule{
 				{
@@ -80,6 +87,7 @@ var dataTables = map[*Ingress]bool{
 		},
 	}: false,
 	{
+		ObjectMeta: v1.ObjectMeta{Name: "TCP and HTTP in Same Port not specified"},
 		Spec: IngressSpec{
 			Rules: []IngressRule{
 				{
@@ -113,6 +121,7 @@ var dataTables = map[*Ingress]bool{
 		},
 	}: false,
 	{
+		ObjectMeta: v1.ObjectMeta{Name: "HTTP with host and path"},
 		Spec: IngressSpec{
 			Rules: []IngressRule{
 				{
@@ -156,6 +165,7 @@ var dataTables = map[*Ingress]bool{
 		},
 	}: true,
 	{
+		ObjectMeta: v1.ObjectMeta{Name: "HTTP with hosts"},
 		Spec: IngressSpec{
 			Rules: []IngressRule{
 				{
@@ -198,6 +208,7 @@ var dataTables = map[*Ingress]bool{
 		},
 	}: true,
 	{
+		ObjectMeta: v1.ObjectMeta{Name: "TCP multi in Same Port"},
 		Spec: IngressSpec{
 			Rules: []IngressRule{
 				{
@@ -226,6 +237,7 @@ var dataTables = map[*Ingress]bool{
 		},
 	}: false,
 	{
+		ObjectMeta: v1.ObjectMeta{Name: "TCP with different port"},
 		Spec: IngressSpec{
 			Rules: []IngressRule{
 				{
@@ -254,6 +266,7 @@ var dataTables = map[*Ingress]bool{
 		},
 	}: true,
 	{
+		ObjectMeta: v1.ObjectMeta{Name: "Multi rule"},
 		Spec: IngressSpec{
 			Backend: &HTTPIngressBackend{
 				IngressBackend: IngressBackend{
@@ -362,10 +375,9 @@ var dataTables = map[*Ingress]bool{
 			},
 		},
 	}: true,
-	// https://github.com/appscode/voyager/issues/420
 	{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "nginx-ingress-app1",
+			Name:      "https://github.com/appscode/voyager/issues/420",
 			Namespace: "default",
 			Annotations: map[string]string{
 				"ingress.appscode.com/type": "HostPort",
