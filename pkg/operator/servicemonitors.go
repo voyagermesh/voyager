@@ -1,9 +1,9 @@
 package operator
 
 import (
+	"github.com/appscode/kutil"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
-	"github.com/appscode/voyager/pkg/util"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -14,7 +14,7 @@ import (
 
 // Blocks caller. Intended to be called as a Go routine.
 func (op *Operator) initServiceMonitorWatcher() cache.Controller {
-	if !util.IsPreferredAPIResource(op.KubeClient, prom.TPRGroup+"/"+prom.TPRVersion, prom.TPRServiceMonitorsKind) {
+	if !kutil.IsPreferredAPIResource(op.KubeClient, prom.TPRGroup+"/"+prom.TPRVersion, prom.TPRServiceMonitorsKind) {
 		log.Warningf("Skipping watching non-preferred GroupVersion:%s Kind:%s", prom.TPRGroup+"/"+prom.TPRVersion, prom.TPRServiceMonitorsKind)
 		return nil
 	}

@@ -1,5 +1,5 @@
-hash: 575e0a52e2520aeba3acce6629c584025a56026ff3e8cdebdc99c2e92f851fcb
-updated: 2017-08-18T21:20:53.063605217-07:00
+hash: 230417d52496ef53041e98e3b168f939c4956e6b080f1fcd956fab962e7e9ab1
+updated: 2017-08-22T17:29:35.668105327-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -23,10 +23,20 @@ imports:
   - strings
   - types
   - version
+- name: github.com/appscode/go-version
+  version: 97adb342c1792e9f59701c1d96bf3612d0fc7621
 - name: github.com/appscode/haproxy_exporter
   version: 599f8e0f418ba29629985265f8caff016d4ea661
   subpackages:
   - exporter
+- name: github.com/appscode/jsonpatch
+  version: 3cdd2454b5443228620ea11294085ec3489936a6
+- name: github.com/appscode/kutil
+  version: f4dae2e69f91b361c9096ac34923465e96f742d3
+  subpackages:
+  - core/v1
+  - extensions/v1beta1
+  - rbac/v1beta1
 - name: github.com/appscode/log
   version: 68e0e42e42c01371f3950571fc87c2298a51dd8f
   subpackages:
@@ -85,12 +95,14 @@ imports:
   version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
   subpackages:
   - quantile
+- name: github.com/cenkalti/backoff
+  version: 32cd0c5b3aef12c76ed64aaf678f6c79736be7dc
 - name: github.com/coreos/prometheus-operator
   version: 0d446f3052e47b5ad95989d9a8ffe4f6675e69b5
   subpackages:
   - pkg/client/monitoring/v1alpha1
 - name: github.com/cpuguy83/go-md2man
-  version: a65d4d2de4d5f7c74868dfa9b202a3c8be315aaa
+  version: 71acacd42f85e5e82f70a55327789582a5200a90
   subpackages:
   - md2man
 - name: github.com/davecgh/go-spew
@@ -251,7 +263,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
 - name: github.com/spf13/cobra
-  version: cb731b898346822cc0c225c28550a8a29d93c732
+  version: 4a7b7e65864c064d48dce82efbbfed2bdc0bf2aa
   subpackages:
   - doc
 - name: github.com/spf13/pflag
@@ -358,12 +370,14 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/ini.v1
-  version: 20b96f641a5ea98f2f8619ff4f3e061cff4833bd
+  version: d3de07a94d22b4a0972deb4b96d790c2c0ce8333
 - name: gopkg.in/square/go-jose.v1
   version: aa2e30fdd1fe9dd3394119af66451ae790d50e0d
   subpackages:
   - cipher
   - json
+- name: gopkg.in/warnings.v0
+  version: 8a331561fe74dadba6edfc59f3be66c22c3b065d
 - name: gopkg.in/yaml.v2
   version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
 - name: k8s.io/apimachinery

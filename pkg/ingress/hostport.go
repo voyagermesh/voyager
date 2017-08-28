@@ -1,10 +1,12 @@
 package ingress
 
 import (
-	"reflect"
 	"strconv"
 
 	"github.com/appscode/errors"
+	"github.com/appscode/kutil"
+	core_util "github.com/appscode/kutil/core/v1"
+	ext_util "github.com/appscode/kutil/extensions/v1beta1"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	_ "github.com/appscode/voyager/api/install"
@@ -413,81 +415,71 @@ func (c *hostPortController) Delete() {
 	}
 }
 
-func (c *hostPortController) newService() *apiv1.Service {
-	// Create a Headless service without selectors
-	// We just want kubernetes to assign a stable UID to the service. This is used inside EnsureFirewall()
-	svc := &apiv1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      c.Ingress.OffshootName(),
-			Namespace: c.Ingress.Namespace,
-			Annotations: map[string]string{
-				api.OriginAPISchema: c.Ingress.APISchema(),
-				api.OriginName:      c.Ingress.GetName(),
-			},
-		},
-
-		Spec: apiv1.ServiceSpec{
-			Type:      apiv1.ServiceTypeClusterIP,
-			ClusterIP: "None",
-			Ports:     []apiv1.ServicePort{},
-		},
-	}
-
-	// opening other tcp ports
-	mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
-	for svcPort, target := range mappings {
-		p := apiv1.ServicePort{
-			Name:       "tcp-" + strconv.Itoa(svcPort),
-			Protocol:   "TCP",
-			Port:       int32(svcPort),
-			TargetPort: intstr.FromInt(target.PodPort),
-		}
-		svc.Spec.Ports = append(svc.Spec.Ports, p)
-	}
-
-	if ans, ok := c.Ingress.ServiceAnnotations(c.Opt.CloudProvider); ok {
-		for k, v := range ans {
-			svc.Annotations[k] = v
-		}
-	}
-	return svc
-}
-
 func (c *hostPortController) ensureService(old *api.Ingress) (*apiv1.Service, error) {
-	desired := c.newService()
-	current, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
-	if kerr.IsNotFound(err) {
-		return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Create(desired)
-	} else if err != nil {
-		return nil, err
+	meta := metav1.ObjectMeta{
+		Namespace: c.Ingress.Namespace,
+		Name:      c.Ingress.OffshootName(),
 	}
-	if svc, needsUpdate := c.serviceRequiresUpdate(current, desired, old); needsUpdate {
-		return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Update(svc)
-	}
-	return current, nil
+	return core_util.EnsureService(c.KubeClient, meta, func(obj *apiv1.Service) *apiv1.Service {
+		if obj.Annotations == nil {
+			obj.Annotations = map[string]string{}
+		}
+		oldAnn := map[string]string{}
+		if old != nil {
+			if a, ok := old.ServiceAnnotations(c.Opt.CloudProvider); ok {
+				oldAnn = a
+			}
+		}
+		if desired, ok := c.Ingress.ServiceAnnotations(c.Opt.CloudProvider); ok {
+			for k, v := range desired {
+				obj.Annotations[k] = v
+				delete(oldAnn, k)
+			}
+		}
+		for k := range oldAnn {
+			delete(obj.Annotations, k)
+		}
+		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
+		obj.Annotations[api.OriginName] = c.Ingress.GetName()
+
+		obj.Spec.Type = apiv1.ServiceTypeClusterIP
+		obj.Spec.Ports = []apiv1.ServicePort{}
+		obj.Spec.ClusterIP = "None"
+
+		// opening other tcp ports
+		mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
+		for svcPort, target := range mappings {
+			p := apiv1.ServicePort{
+				Name:       "tcp-" + strconv.Itoa(svcPort),
+				Protocol:   "TCP",
+				Port:       int32(svcPort),
+				TargetPort: intstr.FromInt(target.PodPort),
+			}
+			obj.Spec.Ports = append(obj.Spec.Ports, p)
+		}
+		return obj
+	})
 }
 
-func (c *hostPortController) newPods() *extensions.DaemonSet {
-	secrets := c.Ingress.Secrets()
-	daemon := &extensions.DaemonSet{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      c.Ingress.OffshootName(),
-			Namespace: c.Ingress.Namespace,
-			Labels:    c.Ingress.OffshootLabels(),
-			Annotations: map[string]string{
-				api.OriginAPISchema: c.Ingress.APISchema(),
-				api.OriginName:      c.Ingress.GetName(),
-			},
-		},
+func (c *hostPortController) ensurePods(old *api.Ingress) (*extensions.DaemonSet, error) {
+	meta := metav1.ObjectMeta{
+		Namespace: c.Ingress.Namespace,
+		Name:      c.Ingress.OffshootName(),
+	}
+	return ext_util.EnsureDaemonSet(c.KubeClient, meta, func(obj *extensions.DaemonSet) *extensions.DaemonSet {
+		if obj.Annotations == nil {
+			obj.Annotations = map[string]string{}
+		}
+		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
+		obj.Annotations[api.OriginName] = c.Ingress.GetName()
 
-		Spec: extensions.DaemonSetSpec{
+		obj.Labels = c.Ingress.OffshootLabels()
+
+		secrets := c.Ingress.Secrets()
+		obj.Spec = extensions.DaemonSetSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: c.Ingress.OffshootLabels(),
 			},
-			// TODO: Enable when support for Kubernetes 1.5 is dropped
-			//UpdateStrategy: extensions.DaemonSetUpdateStrategy{
-			//	Type: extensions.RollingUpdateDaemonSetStrategyType,
-			//},
 			// pod templates.
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
@@ -524,121 +516,61 @@ func (c *hostPortController) newPods() *extensions.DaemonSet {
 					HostNetwork: true,
 				},
 			},
-		},
-	}
-
-	if c.Opt.EnableRBAC {
-		daemon.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
-	}
-
-	exporter, _ := c.getExporterSidecar()
-	if exporter != nil {
-		daemon.Spec.Template.Spec.Containers = append(daemon.Spec.Template.Spec.Containers, *exporter)
-	}
-
-	// adding tcp ports to pod template
-	for _, podPort := range c.Ingress.PodPorts() {
-		p := apiv1.ContainerPort{
-			Name:          "tcp-" + strconv.Itoa(podPort),
-			Protocol:      "TCP",
-			ContainerPort: int32(podPort),
-			HostPort:      int32(podPort),
 		}
-		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, p)
-	}
-	if c.Ingress.Stats() {
-		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
-			Name:          api.StatsPortName,
-			Protocol:      "TCP",
-			ContainerPort: int32(c.Ingress.StatsPort()),
-		})
-	}
 
-	if ans, ok := c.Ingress.PodsAnnotations(); ok {
-		daemon.Spec.Template.Annotations = ans
-	}
-
-	return daemon
-}
-
-func (c *hostPortController) ensurePods(old *api.Ingress) (*extensions.DaemonSet, error) {
-	desired := c.newPods()
-	current, err := c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
-	if kerr.IsNotFound(err) {
-		return c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Create(desired)
-	} else if err != nil {
-		return nil, err
-	}
-
-	needsUpdate := false
-
-	// annotations
-	if current.Annotations == nil {
-		current.Annotations = make(map[string]string)
-	}
-	oldAnn := map[string]string{}
-	if old != nil {
-		if a, ok := old.PodsAnnotations(); ok {
-			oldAnn = a
+		if c.Opt.EnableRBAC {
+			obj.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
 		}
-	}
-	for k, v := range desired.Annotations {
-		if cv, found := current.Annotations[k]; !found || cv != v {
-			current.Annotations[k] = v
-			needsUpdate = true
-		}
-		delete(oldAnn, k)
-	}
-	for k := range oldAnn {
-		if _, ok := current.Annotations[k]; ok {
-			delete(current.Annotations, k)
-			needsUpdate = true
-		}
-	}
 
-	if !reflect.DeepEqual(current.Spec.Selector, desired.Spec.Selector) {
-		needsUpdate = true
-		current.Spec.Selector = desired.Spec.Selector
-	}
-	if !reflect.DeepEqual(current.Spec.UpdateStrategy, desired.Spec.UpdateStrategy) {
-		needsUpdate = true
-		current.Spec.UpdateStrategy = desired.Spec.UpdateStrategy
-	}
-	if !reflect.DeepEqual(current.Spec.Template.ObjectMeta, desired.Spec.Template.ObjectMeta) {
-		needsUpdate = true
-		current.Spec.Template.ObjectMeta = desired.Spec.Template.ObjectMeta
-	}
-	if !reflect.DeepEqual(current.Spec.Template.Annotations, desired.Spec.Template.Annotations) {
-		needsUpdate = true
-		current.Spec.Template.Annotations = desired.Spec.Template.Annotations
-	}
-	if !reflect.DeepEqual(current.Spec.Template.Spec.NodeSelector, desired.Spec.Template.Spec.NodeSelector) {
-		needsUpdate = true
-		current.Spec.Template.Spec.NodeSelector = desired.Spec.Template.Spec.NodeSelector
-	}
-	if !reflect.DeepEqual(current.Spec.Template.Spec.Containers, desired.Spec.Template.Spec.Containers) {
-		needsUpdate = true
-		current.Spec.Template.Spec.Containers = desired.Spec.Template.Spec.Containers
-	}
-	if !reflect.DeepEqual(current.Spec.Template.Spec.Volumes, desired.Spec.Template.Spec.Volumes) {
-		needsUpdate = true
-		current.Spec.Template.Spec.Volumes = desired.Spec.Template.Spec.Volumes
-	}
-	if current.Spec.Template.Spec.HostNetwork != desired.Spec.Template.Spec.HostNetwork {
-		needsUpdate = true
-		current.Spec.Template.Spec.HostNetwork = desired.Spec.Template.Spec.HostNetwork
-	}
-	if current.Spec.Template.Spec.ServiceAccountName != desired.Spec.Template.Spec.ServiceAccountName {
-		needsUpdate = true
-		current.Spec.Template.Spec.ServiceAccountName = desired.Spec.Template.Spec.ServiceAccountName
-	}
-	if needsUpdate {
-		current, err = c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Update(current)
-		// TODO: Stop explicitly deleting pods when support for Kube 1.5 is dropped.
-		c.deletePodsForSelector(&metav1.LabelSelector{MatchLabels: c.Ingress.OffshootLabels()})
-		return current, err
-	}
-	return current, nil
+		exporter, _ := c.getExporterSidecar()
+		if exporter != nil {
+			obj.Spec.Template.Spec.Containers = append(obj.Spec.Template.Spec.Containers, *exporter)
+		}
+
+		// adding tcp ports to pod template
+		for _, podPort := range c.Ingress.PodPorts() {
+			p := apiv1.ContainerPort{
+				Name:          "tcp-" + strconv.Itoa(podPort),
+				Protocol:      "TCP",
+				ContainerPort: int32(podPort),
+				HostPort:      int32(podPort),
+			}
+			obj.Spec.Template.Spec.Containers[0].Ports = append(obj.Spec.Template.Spec.Containers[0].Ports, p)
+		}
+		if c.Ingress.Stats() {
+			obj.Spec.Template.Spec.Containers[0].Ports = append(obj.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
+				Name:          api.StatsPortName,
+				Protocol:      "TCP",
+				ContainerPort: int32(c.Ingress.StatsPort()),
+			})
+		}
+
+		if obj.Spec.Template.Annotations == nil {
+			obj.Spec.Template.Annotations = map[string]string{}
+		}
+		oldAnn := map[string]string{}
+		if old != nil {
+			if a, ok := old.PodsAnnotations(); ok {
+				oldAnn = a
+			}
+		}
+		if desired, ok := c.Ingress.PodsAnnotations(); ok {
+			for k, v := range desired {
+				obj.Spec.Template.Annotations[k] = v
+				delete(oldAnn, k)
+			}
+		}
+		for k := range oldAnn {
+			delete(obj.Spec.Template.Annotations, k)
+		}
+
+		if ok, err := kutil.CheckAPIVersion(c.KubeClient, "> 1.5"); err == nil && ok {
+			obj.Spec.UpdateStrategy = extensions.DaemonSetUpdateStrategy{
+				Type: extensions.RollingUpdateDaemonSetStrategyType,
+			}
+		}
+		return obj
+	})
 }
 
 func (c *hostPortController) deletePods() error {
