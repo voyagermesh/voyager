@@ -225,8 +225,9 @@ func (c *controller) generateConfig() error {
 	td.TCPService = make([]*haproxy.TCPService, 0)
 
 	type httpKey struct {
-		Port    int
-		UsesSSL bool
+		Port     int
+		NodePort int
+		UsesSSL  bool
 	}
 	httpServices := make(map[httpKey][]*haproxy.HTTPPath)
 	for _, rule := range c.Ingress.Spec.Rules {
@@ -268,6 +269,7 @@ func (c *controller) generateConfig() error {
 					key.Port = 80
 				}
 			}
+			key.NodePort = rule.HTTP.NodePort.IntValue()
 
 			if v, ok := httpServices[key]; ok {
 				httpServices[key] = append(v, httpPaths...)
@@ -306,6 +308,7 @@ func (c *controller) generateConfig() error {
 			SharedInfo:   si,
 			FrontendName: fmt.Sprintf("http-%d", key.Port),
 			Port:         key.Port,
+			NodePort:     key.NodePort,
 			UsesSSL:      key.UsesSSL,
 			Paths:        value,
 		})
