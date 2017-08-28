@@ -8,6 +8,7 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
+	"fmt"
 )
 
 func Exec(restClient rest.Interface, config *rest.Config, pod apiv1.Pod, cmd []string) string {
@@ -22,6 +23,8 @@ func Exec(restClient rest.Interface, config *rest.Config, pod apiv1.Pod, cmd []s
 		Param("stdout", "true").
 		Param("stderr", "true").
 		Param("tty", "false")
+
+	fmt.Println(req.URL())
 
 	exec, err := remotecommand.NewExecutor(config, "POST", req.URL())
 	if err != nil {
