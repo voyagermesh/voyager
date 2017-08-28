@@ -181,6 +181,15 @@ func getBackendName(r *api.Ingress, be api.IngressBackend) string {
 func (c *controller) generateConfig() error {
 	var td haproxy.TemplateData
 
+	var nodePortSvc *apiv1.Service
+	if c.Ingress.LBType() == api.LBTypeNodePort {
+		var err error
+		nodePortSvc, err = c.KubeClient.CoreV1().Services(c.Ingress.GetNamespace()).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+	}
+
 	si := &haproxy.SharedInfo{}
 	si.Sticky = c.Ingress.StickySession()
 	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
@@ -225,8 +234,9 @@ func (c *controller) generateConfig() error {
 	td.TCPService = make([]*haproxy.TCPService, 0)
 
 	type httpKey struct {
-		Port    int
-		UsesSSL bool
+		Port     int
+		NodePort int32
+		UsesSSL  bool
 	}
 	httpServices := make(map[httpKey][]*haproxy.HTTPPath)
 	for _, rule := range c.Ingress.Spec.Rules {
@@ -269,6 +279,14 @@ func (c *controller) generateConfig() error {
 				}
 			}
 
+			if c.Ingress.LBType() == api.LBTypeNodePort && nodePortSvc != nil {
+				for _, port := range nodePortSvc.Spec.Ports {
+					if port.Port == int32(key.Port) {
+						key.NodePort = port.NodePort
+					}
+				}
+			}
+
 			if v, ok := httpServices[key]; ok {
 				httpServices[key] = append(v, httpPaths...)
 			} else {
@@ -306,6 +324,7 @@ func (c *controller) generateConfig() error {
 			SharedInfo:   si,
 			FrontendName: fmt.Sprintf("http-%d", key.Port),
 			Port:         key.Port,
+			NodePort:     key.NodePort,
 			UsesSSL:      key.UsesSSL,
 			Paths:        value,
 		})

@@ -116,7 +116,7 @@ func (op *Operator) AddEngress(engress *tapi.Ingress) {
 		op.ensureEgressAnnotations(engress, svc)
 	}
 
-	err := certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, nil).HandleIngress(engress)
+	err := certificate.NewController(op.KubeConfig, op.KubeClient, op.ExtClient, op.Opt, nil).HandleIngress(engress)
 	if err != nil {
 		log.Error(err)
 	}
@@ -181,7 +181,7 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 		op.ensureEgressAnnotations(newEngress, svc)
 	}
 
-	err := certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, nil).HandleIngress(newEngress)
+	err := certificate.NewController(op.KubeConfig, op.KubeClient, op.ExtClient, op.Opt, nil).HandleIngress(newEngress)
 	if err != nil {
 		log.Error(err)
 	}

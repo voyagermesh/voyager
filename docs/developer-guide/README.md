@@ -160,5 +160,5 @@ versions:
 
 ```console
 # Create Third Party Resources
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/3.1.4/api/extensions/tprs.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/3.2.0-rc.0/api/extensions/tprs.yaml
 ```

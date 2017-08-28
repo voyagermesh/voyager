@@ -9,6 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -18,6 +19,7 @@ const (
 )
 
 type Framework struct {
+	KubeConfig    *rest.Config
 	KubeClient    clientset.Interface
 	VoyagerClient voyagerclient.ExtensionInterface
 	CRDClient     apiextensionsclient.Interface
@@ -48,6 +50,7 @@ func New() *Framework {
 	Expect(err).NotTo(HaveOccurred())
 
 	return &Framework{
+		KubeConfig:    c,
 		KubeClient:    clientset.NewForConfigOrDie(c),
 		VoyagerClient: voyagerclient.NewForConfigOrDie(c),
 		CRDClient:     apiextensionsclient.NewForConfigOrDie(c),

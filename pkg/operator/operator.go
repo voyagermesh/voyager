@@ -19,11 +19,13 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
 	core "k8s.io/client-go/listers/core/v1"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 )
 
 type Operator struct {
+	KubeConfig      *rest.Config
 	KubeClient      clientset.Interface
 	CRDClient       apiextensionsclient.Interface
 	ExtClient       tcs.ExtensionInterface
@@ -37,6 +39,7 @@ type Operator struct {
 }
 
 func New(
+	config *rest.Config,
 	kubeClient clientset.Interface,
 	crdClient apiextensionsclient.Interface,
 	extClient tcs.ExtensionInterface,
@@ -44,6 +47,7 @@ func New(
 	opt config.Options,
 ) *Operator {
 	return &Operator{
+		KubeConfig: config,
 		KubeClient: kubeClient,
 		CRDClient:  crdClient,
 		ExtClient:  extClient,
@@ -136,5 +140,5 @@ func (op *Operator) Run() {
 	for i := range informers {
 		go informers[i].Run(wait.NeverStop)
 	}
-	go certificate.CheckCertificates(op.KubeClient, op.ExtClient, op.Opt)
+	go certificate.CheckCertificates(op.KubeConfig, op.KubeClient, op.ExtClient, op.Opt)
 }

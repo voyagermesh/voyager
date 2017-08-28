@@ -26,6 +26,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/rest"
+)
+
+var (
+	fakeConfig = &rest.Config{}
 )
 
 func TestLoadProviderCredential(t *testing.T) {
@@ -39,7 +44,7 @@ func TestLoadProviderCredential(t *testing.T) {
 		},
 	}
 
-	fakeController := NewController(fake.NewSimpleClientset(), acf.NewFakeExtensionClient(), config.Options{SyncPeriod: time.Second * 5}, cert)
+	fakeController := NewController(fakeConfig, fake.NewSimpleClientset(), acf.NewFakeExtensionClient(), config.Options{SyncPeriod: time.Second * 5}, cert)
 	fakeController.acmeClientConfig = &ACMEConfig{
 		ProviderCredentials: make(map[string][]byte),
 	}
@@ -84,7 +89,7 @@ func TestEnsureClient(t *testing.T) {
 				ProviderCredentialSecretName: "fakesecret",
 			},
 		}
-		fakeController := NewController(fake.NewSimpleClientset(
+		fakeController := NewController(fakeConfig, fake.NewSimpleClientset(
 			&apiv1.Secret{
 				ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
 			},
@@ -130,7 +135,7 @@ func TestFakeRegisterACMEUser(t *testing.T) {
 			ProviderCredentialSecretName: "fakesecret",
 		},
 	}
-	fakeController := NewController(fake.NewSimpleClientset(
+	fakeController := NewController(fakeConfig, fake.NewSimpleClientset(
 		&apiv1.Secret{
 			ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
 		},
@@ -174,7 +179,7 @@ func TestCreate(t *testing.T) {
 				ProviderCredentialSecretName: "fakesecret",
 			},
 		}
-		fakeController := NewController(fake.NewSimpleClientset(), acf.NewFakeExtensionClient(), config.Options{SyncPeriod: time.Second * 5}, cert)
+		fakeController := NewController(fakeConfig, fake.NewSimpleClientset(), acf.NewFakeExtensionClient(), config.Options{SyncPeriod: time.Second * 5}, cert)
 		fakeController.ExtClient.Certificates("bar").Create(cert)
 
 		fakeController.acmeClientConfig = &ACMEConfig{
