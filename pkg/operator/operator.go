@@ -17,11 +17,13 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 	core "k8s.io/client-go/listers/core/v1"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 )
 
 type Operator struct {
+	KubeConfig      *rest.Config
 	KubeClient      clientset.Interface
 	ExtClient       tcs.ExtensionInterface
 	PromClient      pcm.MonitoringV1alpha1Interface
@@ -34,12 +36,14 @@ type Operator struct {
 }
 
 func New(
+	config *rest.Config,
 	kubeClient clientset.Interface,
 	extClient tcs.ExtensionInterface,
 	promClient pcm.MonitoringV1alpha1Interface,
 	opt config.Options,
 ) *Operator {
 	return &Operator{
+		KubeConfig: config,
 		KubeClient: kubeClient,
 		ExtClient:  extClient,
 		PromClient: promClient,
@@ -110,5 +114,5 @@ func (op *Operator) Run() {
 	for i := range informers {
 		go informers[i].Run(wait.NeverStop)
 	}
-	go certificate.CheckCertificates(op.KubeClient, op.ExtClient, op.Opt)
+	go certificate.CheckCertificates(op.KubeConfig, op.KubeClient, op.ExtClient, op.Opt)
 }
