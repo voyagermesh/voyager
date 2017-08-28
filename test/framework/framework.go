@@ -8,6 +8,7 @@ import (
 	"github.com/appscode/voyager/pkg/config"
 	. "github.com/onsi/gomega"
 	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -17,6 +18,7 @@ const (
 )
 
 type Framework struct {
+	KubeConfig    *rest.Config
 	KubeClient    clientset.Interface
 	VoyagerClient voyagerclient.ExtensionInterface
 	Config        E2EConfig
@@ -46,6 +48,7 @@ func New() *Framework {
 	Expect(err).NotTo(HaveOccurred())
 
 	return &Framework{
+		KubeConfig:    c,
 		KubeClient:    clientset.NewForConfigOrDie(c),
 		VoyagerClient: voyagerclient.NewForConfigOrDie(c),
 		Config:        testConfigs,
