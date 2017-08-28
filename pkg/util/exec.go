@@ -7,8 +7,7 @@ import (
 	"github.com/appscode/log"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/rest"
-	"k8s.io/kubernetes/pkg/client/unversioned/remotecommand"
-	remotecommandserver "k8s.io/kubernetes/pkg/kubelet/server/remotecommand"
+	"k8s.io/client-go/tools/remotecommand"
 )
 
 func Exec(restClient rest.Interface, config *rest.Config, pod apiv1.Pod, cmd []string) string {
@@ -35,11 +34,10 @@ func Exec(restClient rest.Interface, config *rest.Config, pod apiv1.Pod, cmd []s
 	}
 
 	err = exec.Stream(remotecommand.StreamOptions{
-		SupportedProtocols: remotecommandserver.SupportedStreamingProtocols,
-		Stdin:              newStringReader(cmd),
-		Stdout:             dw,
-		Stderr:             dw,
-		Tty:                false,
+		Stdin:  newStringReader(cmd),
+		Stdout: dw,
+		Stderr: dw,
+		Tty:    false,
 	})
 	if err != nil {
 		log.Errorln(err)
