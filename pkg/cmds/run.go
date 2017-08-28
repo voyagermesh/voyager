@@ -16,6 +16,7 @@ import (
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/analytics"
 	"github.com/appscode/voyager/pkg/config"
+	"github.com/appscode/voyager/pkg/migrator"
 	"github.com/appscode/voyager/pkg/operator"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -120,6 +121,11 @@ func run() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	if err = migrator.NewMigrator(kubeClient, crdClient, extClient).RunMigration(); err != nil {
+		log.Fatalln(err)
+	}
+
 	// https://github.com/appscode/voyager/issues/346
 	err = w.ValidateIngress()
 	if err != nil {
