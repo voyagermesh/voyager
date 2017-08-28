@@ -21,6 +21,7 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
 	core "k8s.io/client-go/listers/core/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
@@ -244,6 +245,7 @@ func (c *nodePortController) Update(mode UpdateMode, old *api.Ingress) error {
 		)
 		return errors.FromErr(err).Err()
 	}
+
 	err = c.EnsureFirewall(svc)
 	if err != nil {
 		c.recorder.Eventf(
@@ -347,20 +349,12 @@ func (c *nodePortController) Update(mode UpdateMode, old *api.Ingress) error {
 }
 
 func (c *nodePortController) EnsureFirewall(svc *apiv1.Service) error {
+	if err := c.waitForServiceToStart(); err != nil {
+		return err
+	}
+
 	if c.CloudManager != nil {
 		if fw, ok := c.CloudManager.Firewall(); ok {
-			// Wait for all NodePorts to be assigned first.
-			for i := 0; i < 50; i++ {
-				time.Sleep(time.Second * 10)
-				if svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{}); err == nil {
-					for _, port := range svc.Spec.Ports {
-						if port.NodePort <= 0 {
-							break
-						}
-					}
-				}
-			}
-
 			nodes, err := c.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
 			if err != nil {
 				return err
@@ -408,6 +402,23 @@ func (c *nodePortController) Delete() {
 		c.ensureStatsServiceDeleted()
 	}
 	return
+}
+
+func (c *nodePortController) waitForServiceToStart() error {
+	return wait.Poll(time.Second*5, time.Minute*5, wait.ConditionFunc(func() (bool, error) {
+		svc, err := c.KubeClient.CoreV1().
+			Services(c.Ingress.Namespace).
+			Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		if err != nil {
+			return false, err
+		}
+		for _, port := range svc.Spec.Ports {
+			if port.NodePort <= 0 {
+				return false, errors.New("Port not assigned")
+			}
+		}
+		return true, nil
+	}))
 }
 
 func (c *nodePortController) newService() *apiv1.Service {
