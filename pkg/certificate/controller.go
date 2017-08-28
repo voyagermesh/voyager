@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/appscode/errors"
-	stringz "github.com/appscode/go/strings"
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
@@ -30,14 +29,6 @@ import (
 const (
 	defaultCertPrefix       = "cert-"
 	defaultUserSecretPrefix = "acme-"
-
-	certificateAnnotationKeyEnabled                      = "certificate.appscode.com/enabled"
-	certificateAnnotationKeyName                         = "certificate.appscode.com/name"
-	certificateAnnotationKeyProvider                     = "certificate.appscode.com/provider"
-	certificateAnnotationKeyEmail                        = "certificate.appscode.com/email"
-	certificateAnnotationKeyProviderCredentialSecretName = "certificate.appscode.com/provider-secret"
-	certificateAnnotationKeyACMEUserSecretName           = "certificate.appscode.com/user-secret"
-	certificateAnnotationKeyACMEServerURL                = "certificate.appscode.com/server-url"
 )
 
 type Controller struct {
@@ -69,56 +60,17 @@ func NewController(kubeClient clientset.Interface, extClient acs.ExtensionInterf
 
 func (c *Controller) HandleIngress(ingress *api.Ingress) error {
 	if ingress.Annotations != nil {
-		if val, ok := ingress.Annotations[certificateAnnotationKeyEnabled]; ok && val == "true" {
-			certificateName := ingress.Annotations[certificateAnnotationKeyName]
-			// Check if a certificate already exists.
-			certificate, err := c.ExtClient.Certificates(ingress.Namespace).Get(certificateName)
+		if cert, ok := ingress.CertificateSpec(); ok {
+			issuedCert, err := c.ExtClient.Certificates(ingress.Namespace).Get(cert.Name)
 			if err == nil {
 				// Certificate exists mount it.
 				return nil
 			}
-			if kerr.IsNotFound(err) || !certificate.Status.CertificateObtained {
-				newCertificate := &api.Certificate{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      certificateName,
-						Namespace: ingress.Namespace,
-					},
-					Spec: api.CertificateSpec{
-						Provider: ingress.Annotations[certificateAnnotationKeyProvider],
-						Email:    ingress.Annotations[certificateAnnotationKeyEmail],
-						ProviderCredentialSecretName: ingress.Annotations[certificateAnnotationKeyProviderCredentialSecretName],
-						HTTPProviderIngressReference: apiv1.ObjectReference{
-							Kind:            "Ingress",
-							Name:            ingress.Name,
-							Namespace:       ingress.Namespace,
-							ResourceVersion: ingress.ResourceVersion,
-							UID:             ingress.UID,
-						},
-						ACMEUserSecretName: ingress.Annotations[certificateAnnotationKeyACMEUserSecretName],
-						ACMEServerURL:      ingress.Annotations[certificateAnnotationKeyACMEServerURL],
-					},
-				}
-				if v, ok := ingress.Annotations[api.APISchema]; ok {
-					if v == api.APISchemaIngress {
-						newCertificate.Spec.HTTPProviderIngressReference.APIVersion = api.APISchemaIngress
-					} else {
-						newCertificate.Spec.HTTPProviderIngressReference.APIVersion = api.APISchemaEngress
-					}
-				}
-				for _, rule := range ingress.Spec.Rules {
-					found := false
-					for _, tls := range ingress.Spec.TLS {
-						if stringz.Contains(tls.Hosts, rule.Host) {
-							found = true
-						}
-					}
-					if !found {
-						newCertificate.Spec.Domains = append(newCertificate.Spec.Domains, rule.Host)
-					}
-				}
-				_, err := c.ExtClient.Certificates(newCertificate.Namespace).Create(newCertificate)
+
+			if kerr.IsNotFound(err) || !issuedCert.Status.CertificateObtained {
+				_, err := c.ExtClient.Certificates(cert.Namespace).Create(cert)
 				if err != nil {
-					errors.FromErr(err).Err()
+					return err
 				}
 			}
 		}
@@ -150,7 +102,7 @@ func (c *Controller) Process() error {
 			return errors.FromErr(err).WithMessage("Error decoding x509 encoded certificate").Err()
 		}
 		if !c.crt.NotAfter.After(time.Now().Add(time.Hour * 24 * 7)) {
-			log.Infoln("certificate is expiring in 7 days, attempting renew")
+			log.Infoln("Certificate is expiring in 7 days, attempting renew")
 			err := c.renew()
 			if err != nil {
 				c.recorder.Eventf(
@@ -170,7 +122,9 @@ func (c *Controller) Process() error {
 			)
 		}
 
+		c.acmeCert.Domains = NewDomainCollection(c.tpr.Spec.Domains...)
 		if !c.acmeCert.EqualDomains(c.crt) {
+			log.Infof("Domains not equal, tpr domains %v, cert dns %v, cert common name %v", c.tpr.Spec.Domains, c.crt.DNSNames, c.crt.Subject.CommonName)
 			err := c.renew()
 			if err != nil {
 				c.recorder.Eventf(
