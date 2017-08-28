@@ -40,6 +40,12 @@ func NewCmdCheck() *cobra.Command {
 					return err
 				}
 				fmt.Println("No validation error was found.")
+
+				bi, err := yaml.Marshal(ing)
+				if err != nil {
+					return err
+				}
+				fmt.Println(string(bi))
 				return nil
 			}
 
