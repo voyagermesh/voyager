@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -364,6 +365,96 @@ var dataTables = map[*Ingress]bool{
 										IngressBackend: IngressBackend{
 											ServiceName: "foo",
 											ServicePort: intstr.FromString("8989"),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}: true,
+	{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "https://github.com/appscode/voyager/issues/420",
+			Namespace: "default",
+			Annotations: map[string]string{
+				"ingress.appscode.com/type": "HostPort",
+			},
+		},
+		Spec: IngressSpec{
+			TLS: []IngressTLS{
+				{
+					SecretName: "voyager-cert",
+					Hosts: []string{
+						"minicluster.example.com",
+					},
+				},
+			},
+			Rules: []IngressRule{
+				{
+					Host: "minicluster.example.com",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Paths: []HTTPIngressPath{
+								{
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "cluster-nginx",
+											ServicePort: intstr.FromString("80"),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Host: "minicluster.example.com",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							NoTLS: true,
+							Paths: []HTTPIngressPath{
+								{
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "cluster-nginx",
+											ServicePort: intstr.FromString("80"),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Host: "domain1.com",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Paths: []HTTPIngressPath{
+								{
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "cluster-nginx",
+											ServicePort: intstr.FromString("80"),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Host: "domain2.com",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Paths: []HTTPIngressPath{
+								{
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "cluster-nginx",
+											ServicePort: intstr.FromString("80"),
 										},
 									},
 								},

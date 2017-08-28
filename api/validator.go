@@ -9,19 +9,26 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 )
 
-type address struct {
+type indices struct {
 	RuleIndex int
+	PathIndex int
+}
 
-	Protocol string // tcp, http
-	Host     string
-	PodPort  int
-	NodePort int
+type Paths map[string]indices
 
-	Paths map[string]int
+type address struct {
+	Protocol       string // tcp, http
+	PodPort        int
+	NodePort       int
+	FirstRuleIndex int
+	Hosts          map[string]Paths
 }
 
 func (a address) String() string {
-	return fmt.Sprintf("%s:%d", a.Host, a.PodPort)
+	for h := range a.Hosts {
+		return fmt.Sprintf("%s:%d", h, a.PodPort)
+	}
+	return fmt.Sprintf(":%d", a.PodPort)
 }
 
 func (r Ingress) IsValid(cloudProvider string) error {
@@ -31,57 +38,65 @@ func (r Ingress) IsValid(cloudProvider string) error {
 	for ri, rule := range r.Spec.Rules {
 		if rule.HTTP != nil {
 			usesHTTPRule = true
-			a := &address{RuleIndex: ri, Protocol: "http", Host: rule.Host, Paths: make(map[string]int)}
-
-			//addr := address{Host: rule.Host}
 			var err error
-			a.PodPort, err = checkOptionalPort(rule.HTTP.Port)
+			var podPort, nodePort int
+			podPort, err = checkOptionalPort(rule.HTTP.Port)
 			if err != nil {
 				return fmt.Errorf("spec.rule[%d].http.port %s is invalid. Reason: %s", ri, rule.HTTP.Port, err)
 			}
-			if a.PodPort == 0 {
+			if podPort == 0 {
 				// detect port
 				if _, foundTLS := r.FindTLSSecret(rule.Host); foundTLS && !rule.HTTP.NoTLS {
-					a.PodPort = 443
+					podPort = 443
 				} else {
-					a.PodPort = 80
+					podPort = 80
 				}
 			}
-			if np, err := checkOptionalPort(rule.HTTP.NodePort); err != nil {
+			if nodePort, err = checkOptionalPort(rule.HTTP.NodePort); err != nil {
 				return fmt.Errorf("spec.rule[%d].http.nodePort %s is invalid. Reason: %s", ri, rule.HTTP.NodePort, err)
-			} else if np > 0 {
+			} else if nodePort > 0 {
 				if r.LBType() == LBTypeHostPort {
 					return fmt.Errorf("spec.rule[%d].http.nodePort %s may not be specified when `LBType` is `HostPort`", ri, rule.HTTP.NodePort)
 				}
-				a.NodePort = np
 			}
 
-			if ea, found := addrs[a.PodPort]; found {
+			var a *address
+			if ea, found := addrs[podPort]; found {
 				if ea.Protocol == "tcp" {
-					return fmt.Errorf("spec.rule[%d].http is reusing port %d, also used in spec.rule[%d]", ri, a.PodPort, ea.RuleIndex)
+					return fmt.Errorf("spec.rule[%d].http is reusing port %d, also used in spec.rule[%d]", ri, a.PodPort, ea.FirstRuleIndex)
 				}
-				if a.NodePort != ea.NodePort {
-					return fmt.Errorf("spec.rule[%d].http.nodePort %d does not match with spec.rule[%d].http.nodePort %d", ri, a.NodePort, ea.RuleIndex, ea.NodePort)
+				if nodePort != ea.NodePort {
+					return fmt.Errorf("spec.rule[%d].http.nodePort %d does not match with nodePort %d", ri, a.NodePort, ea.NodePort)
 				} else {
-					nodePorts[a.NodePort] = ri
+					nodePorts[nodePort] = ri
 				}
 				a = ea // paths will be merged into the original one
 			} else {
-				if a.NodePort > 0 {
-					if ei, found := nodePorts[a.NodePort]; found {
+				if nodePort > 0 {
+					if ei, found := nodePorts[nodePort]; found {
 						return fmt.Errorf("spec.rule[%d].http is reusing nodePort %d for addr %s, also used in spec.rule[%d]", ri, a.NodePort, a, ei)
 					} else {
-						nodePorts[a.NodePort] = ri
+						nodePorts[nodePort] = ri
 					}
 				}
-				addrs[a.PodPort] = a
+				a = &address{
+					Protocol:       "http",
+					PodPort:        podPort,
+					NodePort:       nodePort,
+					FirstRuleIndex: ri,
+					Hosts:          map[string]Paths{},
+				}
+				addrs[podPort] = a
 			}
 
 			for pi, path := range rule.HTTP.Paths {
-				if ei, found := a.Paths[path.Path]; found {
-					return fmt.Errorf("spec.rule[%d].http.paths[%d] is reusing path %s for addr %s, also used in spec.rule[%d].http.paths[%d]", ri, pi, path, a, ri, ei)
+				if _, found := a.Hosts[rule.Host]; !found {
+					a.Hosts[rule.Host] = Paths{}
 				}
-				a.Paths[path.Path] = pi
+				if ei, found := a.Hosts[rule.Host][path.Path]; found {
+					return fmt.Errorf("spec.rule[%d].http.paths[%d] is reusing path %s for addr %s, also used in spec.rule[%d].http.paths[%d]", ri, pi, path.Path, a, ei.RuleIndex, ei)
+				}
+				a.Hosts[rule.Host][path.Path] = indices{RuleIndex: ri, PathIndex: pi}
 
 				if path.Backend.ServiceName == "" {
 					return fmt.Errorf("spec.rule[%d].http.paths[%d] is missing serviceName for addr %s and path %s", ri, pi, a, path.Path)
@@ -99,16 +114,20 @@ func (r Ingress) IsValid(cloudProvider string) error {
 				}
 			}
 		} else if rule.TCP != nil {
-			a := &address{RuleIndex: ri, Protocol: "tcp", Host: rule.Host}
-
-			var err error
-			if a.PodPort, err = checkRequiredPort(rule.TCP.Port); err != nil {
+			var a *address
+			if podPort, err := checkRequiredPort(rule.TCP.Port); err != nil {
 				return fmt.Errorf("spec.rule[%d].tcp.port %s is invalid. Reason: %s", ri, rule.TCP.Port, err)
 			} else {
-				if ea, found := addrs[a.PodPort]; found {
-					return fmt.Errorf("spec.rule[%d].tcp is reusing addr %s, also used in spec.rule[%d]", ri, a, ea.RuleIndex)
+				if ea, found := addrs[podPort]; found {
+					return fmt.Errorf("spec.rule[%d].tcp is reusing addr %s, also used in spec.rule[%d]", ri, ea, ea.FirstRuleIndex)
 				}
-				addrs[a.PodPort] = a
+				a = &address{
+					Protocol:       "tcp",
+					PodPort:        podPort,
+					FirstRuleIndex: ri,
+					Hosts:          map[string]Paths{rule.Host: {}},
+				}
+				addrs[podPort] = a
 			}
 			if np, err := checkOptionalPort(rule.TCP.NodePort); err != nil {
 				return fmt.Errorf("spec.rule[%d].tcp.nodePort %s is invalid. Reason: %s", ri, rule.TCP.NodePort, err)
