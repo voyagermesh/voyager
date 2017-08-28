@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	ExporterSidecarTag = "appscode/voyager:3.1.4"
+	ExporterSidecarTag = "appscode/voyager:3.2.0-rc.0"
 )
 
 func (c *controller) ensureConfigMap() error {

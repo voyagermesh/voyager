@@ -21,12 +21,12 @@ $ export CLOUD_CONFIG=<path>            # The path to the cloud provider configu
                                         # Voyager uses this to connect to cloud provider api.
 
 # Install without RBAC roles
-$ curl https://raw.githubusercontent.com/appscode/voyager/3.1.4/hack/deploy/without-rbac.yaml \
+$ curl https://raw.githubusercontent.com/appscode/voyager/3.2.0-rc.0/hack/deploy/without-rbac.yaml \
     | envsubst \
     | kubectl apply -f -
 
 # Install with RBAC roles
-$ curl https://raw.githubusercontent.com/appscode/voyager/3.1.4/hack/deploy/with-rbac.yaml \
+$ curl https://raw.githubusercontent.com/appscode/voyager/3.2.0-rc.0/hack/deploy/with-rbac.yaml \
     | envsubst \
     | kubectl apply -f -
 ```
@@ -44,7 +44,7 @@ Now Create Your Ingress/Certificates.
       --analytics                             Send analytical event to Google Analytics (default true)
   -c, --cloud-provider string                 Name of cloud provider
       --cloud-config string                   The path to the cloud provider configuration file.  Empty string for no configuration file.
-      --haproxy-image string                  haproxy image name to be run (default "appscode/haproxy:1.7.6-3.1.0")
+      --haproxy-image string                  haproxy image name to be run (default "appscode/haproxy:1.7.6-3.2.0-rc.0")
       --haproxy.server-metric-fields string   Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1 (default "2,3,4,5,6,7,8,9,13,14,15,16,17,18,21,24,33,35,38,39,40,41,42,43,44")
       --haproxy.timeout duration              Timeout for trying to get stats from HAProxy. (default 5s)
   -h, --help                                  help for run
