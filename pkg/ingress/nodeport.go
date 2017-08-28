@@ -109,7 +109,16 @@ func (c *nodePortController) Create() error {
 		)
 		return errors.FromErr(err).Err()
 	}
-
+	if err := c.waitForNodePortAssignment(); err != nil {
+		c.recorder.Eventf(
+			c.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressServiceCreateFailed,
+			"Timeout waiting for NodePort assignment, %s",
+			err.Error(),
+		)
+		return errors.FromErr(err).Err()
+	}
 	err = c.EnsureFirewall(svc)
 	if err != nil {
 		c.recorder.Eventf(
@@ -245,7 +254,16 @@ func (c *nodePortController) Update(mode UpdateMode, old *api.Ingress) error {
 		)
 		return errors.FromErr(err).Err()
 	}
-
+	if err := c.waitForNodePortAssignment(); err != nil {
+		c.recorder.Eventf(
+			c.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressServiceUpdateFailed,
+			"Timeout waiting for NodePort assignment, %s",
+			err.Error(),
+		)
+		return errors.FromErr(err).Err()
+	}
 	err = c.EnsureFirewall(svc)
 	if err != nil {
 		c.recorder.Eventf(
@@ -349,10 +367,6 @@ func (c *nodePortController) Update(mode UpdateMode, old *api.Ingress) error {
 }
 
 func (c *nodePortController) EnsureFirewall(svc *apiv1.Service) error {
-	if err := c.waitForServiceToStart(); err != nil {
-		return err
-	}
-
 	if c.CloudManager != nil {
 		if fw, ok := c.CloudManager.Firewall(); ok {
 			nodes, err := c.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
@@ -404,7 +418,7 @@ func (c *nodePortController) Delete() {
 	return
 }
 
-func (c *nodePortController) waitForServiceToStart() error {
+func (c *nodePortController) waitForNodePortAssignment() error {
 	return wait.Poll(time.Second*5, time.Minute*5, wait.ConditionFunc(func() (bool, error) {
 		svc, err := c.KubeClient.CoreV1().
 			Services(c.Ingress.Namespace).
