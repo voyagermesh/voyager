@@ -178,7 +178,7 @@ frontend {{ .FrontendName }}
 	option forwardfor
 
 	{{- range $path := .Paths }}
-	{{ if  or (or (eq $.Port 80) (eq $.Port 443)) (or (eq $.NodePort 80) (eq $.NodePort 443)) }}
+	{{ if  or (eq $.Port 80) (eq $.Port 443) }}
 	{{ if $path.Host }}acl host_acl_{{ $path.Backend.Name }} {{ $path.Host | host_name }}{{ end }}
 	{{- end }}
 	{{ if $path.Host }}acl host_acl_{{ $path.Backend.Name }} {{ $path.Host | host_name }}{{ if $.NodePort }}:{{ $.NodePort }}{{ else }}:{{ $.Port }}{{ end }}{{ end }}

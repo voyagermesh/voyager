@@ -36,7 +36,7 @@ type HTTPService struct {
 
 	FrontendName string
 	Port         int
-	NodePort     int
+	NodePort     int32
 	UsesSSL      bool
 	Paths        []*HTTPPath
 }

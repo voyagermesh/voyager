@@ -96,7 +96,32 @@ func (c *nodePortController) IsExists() bool {
 }
 
 func (c *nodePortController) Create() error {
-	err := c.generateConfig()
+	// Create the service before creating pods or config
+	svc, err := c.ensureService(nil)
+	if err != nil {
+		c.recorder.Eventf(
+			c.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressServiceCreateFailed,
+			"Failed to create NodePortService, Reason: %s",
+			err.Error(),
+		)
+		return errors.FromErr(err).Err()
+	}
+
+	err = c.EnsureFirewall(svc)
+	if err != nil {
+		c.recorder.Eventf(
+			c.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressFirewallUpdateFailed,
+			"Failed to ensure firewall, %s",
+			err.Error(),
+		)
+		return errors.FromErr(err).Err()
+	}
+
+	err = c.generateConfig()
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
@@ -150,28 +175,6 @@ func (c *nodePortController) Create() error {
 		eventer.EventReasonIngressControllerCreateSuccessful,
 		"Successfully created NodePortPods")
 
-	svc, err := c.ensureService(nil)
-	if err != nil {
-		c.recorder.Eventf(
-			c.Ingress,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonIngressServiceCreateFailed,
-			"Failed to create NodePortService, Reason: %s",
-			err.Error(),
-		)
-		return errors.FromErr(err).Err()
-	}
-	err = c.EnsureFirewall(svc)
-	if err != nil {
-		c.recorder.Eventf(
-			c.Ingress,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonIngressFirewallUpdateFailed,
-			"Failed to ensure firewall, %s",
-			err.Error(),
-		)
-		return errors.FromErr(err).Err()
-	}
 	c.recorder.Eventf(
 		c.Ingress,
 		apiv1.EventTypeNormal,
@@ -230,7 +233,30 @@ func (c *nodePortController) Create() error {
 }
 
 func (c *nodePortController) Update(mode UpdateMode, old *api.Ingress) error {
-	err := c.generateConfig()
+	svc, err := c.ensureService(old)
+	if err != nil {
+		c.recorder.Eventf(
+			c.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressServiceUpdateFailed,
+			"Failed to update LBService, %s",
+			err.Error(),
+		)
+		return errors.FromErr(err).Err()
+	}
+	err = c.EnsureFirewall(svc)
+	if err != nil {
+		c.recorder.Eventf(
+			c.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressFirewallUpdateFailed,
+			"Failed to ensure firewall, %s",
+			err.Error(),
+		)
+		return errors.FromErr(err).Err()
+	}
+
+	err = c.generateConfig()
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
@@ -264,29 +290,6 @@ func (c *nodePortController) Update(mode UpdateMode, old *api.Ingress) error {
 		"Successfully updated Pods",
 	)
 
-	svc, err := c.ensureService(old)
-	if err != nil {
-		c.recorder.Eventf(
-			c.Ingress,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonIngressServiceUpdateFailed,
-			"Failed to update LBService, %s",
-			err.Error(),
-		)
-		return errors.FromErr(err).Err()
-	}
-
-	err = c.EnsureFirewall(svc)
-	if err != nil {
-		c.recorder.Eventf(
-			c.Ingress,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonIngressFirewallUpdateFailed,
-			"Failed to ensure firewall, %s",
-			err.Error(),
-		)
-		return errors.FromErr(err).Err()
-	}
 	c.recorder.Eventf(
 		c.Ingress,
 		apiv1.EventTypeNormal,

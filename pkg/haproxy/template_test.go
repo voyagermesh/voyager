@@ -171,7 +171,7 @@ func TestTemplate(t *testing.T) {
 						Host: "ex.appscode.dev",
 						Path: "/yara",
 						Backend: Backend{
-							Name:         "yara",
+							Name: "yara",
 							Endpoints: []*Endpoint{
 								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify required"},
 							},
@@ -189,7 +189,7 @@ func TestTemplate(t *testing.T) {
 						Host: "ex.appscode.dev",
 						Path: "/yara",
 						Backend: Backend{
-							Name:         "yara",
+							Name: "yara",
 							Endpoints: []*Endpoint{
 								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify required"},
 							},
