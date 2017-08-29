@@ -29,7 +29,7 @@ In this example the domains DNS providers are `googlecloude`. Example Test `test
 ```yaml
 kind: Secret
 metadata:
-  name: ssl-appscode-io
+  name: test-gcp-secret
   namespace: default
 data:
   GCE_PROJECT: <project-name>
