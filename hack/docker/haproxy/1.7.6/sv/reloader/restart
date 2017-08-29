@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+source /etc/envvars
+
+CERT_DIR=/etc/ssl/private/haproxy
+mkdir -p /etc/ssl/private/haproxy
+
+# http://stackoverflow.com/a/2108296
+for dir in /srv/haproxy/secrets/*/
+do
+	# remove trailing /
+	dir=${dir%*/}
+	# just basename
+	secret=${dir##*/}
+
+	cat $dir/tls.crt >  $CERT_DIR/$secret.pem
+	echo '\n' >>  $CERT_DIR/$secret.pem
+	cat $dir/tls.key >> $CERT_DIR/$secret.pem
+done
+
+haproxy -c -f /etc/haproxy/haproxy.cfg
+sv reload haproxy

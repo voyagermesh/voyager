@@ -105,6 +105,7 @@ func TestTemplate(t *testing.T) {
 						},
 					},
 					{
+						Host: "test.appscode.dev",
 						Path: "/rebeka",
 						Backend: Backend{
 							Name:         "rebecka",
@@ -154,6 +155,43 @@ func TestTemplate(t *testing.T) {
 							Endpoints: []*Endpoint{
 								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify required"},
 								{Name: "first", IP: "10.244.2.2", Port: "2324", TLSOption: "ssl verify none"},
+							},
+						},
+					},
+				},
+			},
+			{
+				SharedInfo:   &SharedInfo{Sticky: true},
+				FrontendName: "four",
+				Port:         8334,
+				NodePort:     32000,
+				UsesSSL:      true,
+				Paths: []*HTTPPath{
+					{
+						Host: "ex.appscode.dev",
+						Path: "/yara",
+						Backend: Backend{
+							Name: "yara",
+							Endpoints: []*Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify required"},
+							},
+						},
+					},
+				},
+			},
+			{
+				SharedInfo:   &SharedInfo{Sticky: true},
+				FrontendName: "five",
+				Port:         80,
+				UsesSSL:      true,
+				Paths: []*HTTPPath{
+					{
+						Host: "ex.appscode.dev",
+						Path: "/yara",
+						Backend: Backend{
+							Name: "yara",
+							Endpoints: []*Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify required"},
 							},
 						},
 					},
@@ -235,5 +273,7 @@ func TestTemplate(t *testing.T) {
 	}
 	config, err := RenderConfig(testParsedConfig)
 	assert.Nil(t, err)
-	fmt.Println(config)
+	if testing.Verbose() {
+		fmt.Println(err, "\n", config)
+	}
 }

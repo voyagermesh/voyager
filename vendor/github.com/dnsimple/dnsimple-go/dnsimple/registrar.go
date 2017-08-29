@@ -19,8 +19,8 @@ type DomainCheck struct {
 	Premium   bool   `json:"premium"`
 }
 
-// DomainCheckResponse represents a response from a domain check request.
-type DomainCheckResponse struct {
+// domainCheckResponse represents a response from a domain check request.
+type domainCheckResponse struct {
 	Response
 	Data *DomainCheck `json:"data"`
 }
@@ -28,9 +28,9 @@ type DomainCheckResponse struct {
 // CheckDomain checks a domain name.
 //
 // See https://developer.dnsimple.com/v2/registrar/#check
-func (s *RegistrarService) CheckDomain(accountID, domainName string) (*DomainCheckResponse, error) {
+func (s *RegistrarService) CheckDomain(accountID, domainName string) (*domainCheckResponse, error) {
 	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/check", accountID, domainName))
-	checkResponse := &DomainCheckResponse{}
+	checkResponse := &domainCheckResponse{}
 
 	resp, err := s.client.get(path, checkResponse)
 	if err != nil {
@@ -50,8 +50,8 @@ type DomainPremiumPrice struct {
 	Action string `json:"action"`
 }
 
-// DomainPremiumPriceResponse represents a response from a domain premium price request.
-type DomainPremiumPriceResponse struct {
+// domainPremiumPriceResponse represents a response from a domain premium price request.
+type domainPremiumPriceResponse struct {
 	Response
 	Data *DomainPremiumPrice `json:"data"`
 }
@@ -70,10 +70,10 @@ type DomainPremiumPriceOptions struct {
 // - renewal
 //
 // See https://developer.dnsimple.com/v2/registrar/#premium-price
-func (s *RegistrarService) GetDomainPremiumPrice(accountID, domainName string, options *DomainPremiumPriceOptions) (*DomainPremiumPriceResponse, error) {
+func (s *RegistrarService) GetDomainPremiumPrice(accountID, domainName string, options *DomainPremiumPriceOptions) (*domainPremiumPriceResponse, error) {
 	var err error
 	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/premium_price", accountID, domainName))
-	priceResponse := &DomainPremiumPriceResponse{}
+	priceResponse := &domainPremiumPriceResponse{}
 
 	if options != nil {
 		path, err = addURLQueryOptions(path, options)
@@ -91,19 +91,6 @@ func (s *RegistrarService) GetDomainPremiumPrice(accountID, domainName string, o
 	return priceResponse, nil
 }
 
-// DomainRegisterRequest represents the attributes you can pass to a register API request.
-// Some attributes are mandatory.
-type DomainRegisterRequest struct {
-	// The ID of the Contact to use as registrant for the domain
-	RegistrantID int `json:"registrant_id"`
-	// Set to true to enable the whois privacy service. An extra cost may apply.
-	// Default to false.
-	EnableWhoisPrivacy bool `json:"whois_privacy,omitempty"`
-	// Set to true to enable the auto-renewal of the domain.
-	// Default to true.
-	EnableAutoRenewal bool `json:"auto_renew,omitempty"`
-}
-
 // DomainRegistration represents the result of a domain renewal call.
 type DomainRegistration struct {
 	ID           int    `json:"id"`
@@ -118,18 +105,31 @@ type DomainRegistration struct {
 	UpdatedAt    string `json:"updated_at,omitempty"`
 }
 
-// DomainRegistrationResponse represents a response from an API method that results in a domain registration.
-type DomainRegistrationResponse struct {
+// domainRegistrationResponse represents a response from an API method that results in a domain registration.
+type domainRegistrationResponse struct {
 	Response
 	Data *DomainRegistration `json:"data"`
+}
+
+// DomainRegisterRequest represents the attributes you can pass to a register API request.
+// Some attributes are mandatory.
+type DomainRegisterRequest struct {
+	// The ID of the Contact to use as registrant for the domain
+	RegistrantID int `json:"registrant_id"`
+	// Set to true to enable the whois privacy service. An extra cost may apply.
+	// Default to false.
+	EnableWhoisPrivacy bool `json:"whois_privacy,omitempty"`
+	// Set to true to enable the auto-renewal of the domain.
+	// Default to true.
+	EnableAutoRenewal bool `json:"auto_renew,omitempty"`
 }
 
 // RegisterDomain registers a domain name.
 //
 // See https://developer.dnsimple.com/v2/registrar/#register
-func (s *RegistrarService) RegisterDomain(accountID string, domainName string, request *DomainRegisterRequest) (*DomainRegistrationResponse, error) {
-	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/registration", accountID, domainName))
-	registrationResponse := &DomainRegistrationResponse{}
+func (s *RegistrarService) RegisterDomain(accountID string, domainName string, request *DomainRegisterRequest) (*domainRegistrationResponse, error) {
+	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/registrations", accountID, domainName))
+	registrationResponse := &domainRegistrationResponse{}
 
 	// TODO: validate mandatory attributes RegistrantID
 
@@ -140,6 +140,25 @@ func (s *RegistrarService) RegisterDomain(accountID string, domainName string, r
 
 	registrationResponse.HttpResponse = resp
 	return registrationResponse, nil
+}
+
+// DomainTransfer represents the result of a domain renewal call.
+type DomainTransfer struct {
+	ID           int    `json:"id"`
+	DomainID     int    `json:"domain_id"`
+	RegistrantID int    `json:"registrant_id"`
+	State        string `json:"state"`
+	AutoRenew    bool   `json:"auto_renew"`
+	WhoisPrivacy bool   `json:"whois_privacy"`
+	PremiumPrice string `json:"premium_price"`
+	CreatedAt    string `json:"created_at,omitempty"`
+	UpdatedAt    string `json:"updated_at,omitempty"`
+}
+
+// domainTransferResponse represents a response from an API method that results in a domain transfer.
+type domainTransferResponse struct {
+	Response
+	Data *DomainTransfer `json:"data"`
 }
 
 // DomainTransferRequest represents the attributes you can pass to a transfer API request.
@@ -158,31 +177,12 @@ type DomainTransferRequest struct {
 	EnableAutoRenewal bool `json:"auto_renew,omitempty"`
 }
 
-// DomainTransfer represents the result of a domain renewal call.
-type DomainTransfer struct {
-	ID           int    `json:"id"`
-	DomainID     int    `json:"domain_id"`
-	RegistrantID int    `json:"registrant_id"`
-	State        string `json:"state"`
-	AutoRenew    bool   `json:"auto_renew"`
-	WhoisPrivacy bool   `json:"whois_privacy"`
-	PremiumPrice string `json:"premium_price"`
-	CreatedAt    string `json:"created_at,omitempty"`
-	UpdatedAt    string `json:"updated_at,omitempty"`
-}
-
-// DomainTransferResponse represents a response from an API method that results in a domain transfer.
-type DomainTransferResponse struct {
-	Response
-	Data *DomainTransfer `json:"data"`
-}
-
 // TransferDomain transfers a domain name.
 //
 // See https://developer.dnsimple.com/v2/registrar/#transfer
-func (s *RegistrarService) TransferDomain(accountID string, domainName string, request *DomainTransferRequest) (*DomainTransferResponse, error) {
-	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/transfer", accountID, domainName))
-	transferResponse := &DomainTransferResponse{}
+func (s *RegistrarService) TransferDomain(accountID string, domainName string, request *DomainTransferRequest) (*domainTransferResponse, error) {
+	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/transfers", accountID, domainName))
+	transferResponse := &domainTransferResponse{}
 
 	// TODO: validate mandatory attributes RegistrantID
 
@@ -195,8 +195,8 @@ func (s *RegistrarService) TransferDomain(accountID string, domainName string, r
 	return transferResponse, nil
 }
 
-// DomainTransferOutResponse represents a response from an API method that results in a domain transfer out.
-type DomainTransferOutResponse struct {
+// domainTransferOutResponse represents a response from an API method that results in a domain transfer out.
+type domainTransferOutResponse struct {
 	Response
 	Data *Domain `json:"data"`
 }
@@ -204,9 +204,9 @@ type DomainTransferOutResponse struct {
 // Transfer out a domain name.
 //
 // See https://developer.dnsimple.com/v2/registrar/#transfer-out
-func (s *RegistrarService) TransferDomainOut(accountID string, domainName string) (*DomainTransferOutResponse, error) {
-	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/transfer_out", accountID, domainName))
-	transferResponse := &DomainTransferOutResponse{}
+func (s *RegistrarService) TransferDomainOut(accountID string, domainName string) (*domainTransferOutResponse, error) {
+	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/authorize_transfer_out", accountID, domainName))
+	transferResponse := &domainTransferOutResponse{}
 
 	resp, err := s.client.post(path, nil, nil)
 	if err != nil {
@@ -215,13 +215,6 @@ func (s *RegistrarService) TransferDomainOut(accountID string, domainName string
 
 	transferResponse.HttpResponse = resp
 	return transferResponse, nil
-}
-
-// DomainRenewRequest represents the attributes you can pass to a renew API request.
-// Some attributes are mandatory.
-type DomainRenewRequest struct {
-	// The number of years
-	Period int `json:"period"`
 }
 
 // DomainRenewal represents the result of a domain renewal call.
@@ -235,18 +228,25 @@ type DomainRenewal struct {
 	UpdatedAt    string `json:"updated_at,omitempty"`
 }
 
-// DomainRenewalResponse represents a response from an API method that returns a domain renewal.
-type DomainRenewalResponse struct {
+// domainRenewalResponse represents a response from an API method that returns a domain renewal.
+type domainRenewalResponse struct {
 	Response
 	Data *DomainRenewal `json:"data"`
+}
+
+// DomainRenewRequest represents the attributes you can pass to a renew API request.
+// Some attributes are mandatory.
+type DomainRenewRequest struct {
+	// The number of years
+	Period int `json:"period"`
 }
 
 // RenewDomain renews a domain name.
 //
 // See https://developer.dnsimple.com/v2/registrar/#register
-func (s *RegistrarService) RenewDomain(accountID string, domainName string, request *DomainRenewRequest) (*DomainRenewalResponse, error) {
-	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/renewal", accountID, domainName))
-	renewalResponse := &DomainRenewalResponse{}
+func (s *RegistrarService) RenewDomain(accountID string, domainName string, request *DomainRenewRequest) (*domainRenewalResponse, error) {
+	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/renewals", accountID, domainName))
+	renewalResponse := &domainRenewalResponse{}
 
 	resp, err := s.client.post(path, request, renewalResponse)
 	if err != nil {

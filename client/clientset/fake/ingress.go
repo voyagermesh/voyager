@@ -16,6 +16,7 @@ type FakeIngress struct {
 }
 
 var ingressResource = tapi.V1beta1SchemeGroupVersion.WithResource(tapi.ResourceTypeIngress)
+var ingressKind = tapi.V1beta1SchemeGroupVersion.WithKind(tapi.ResourceKindIngress)
 
 var _ clientset.IngressInterface = &FakeIngress{}
 
@@ -33,7 +34,7 @@ func (mock *FakeIngress) Get(name string) (*tapi.Ingress, error) {
 // List returns the a of Ingresss.
 func (mock *FakeIngress) List(opts metav1.ListOptions) (*tapi.IngressList, error) {
 	obj, err := mock.Fake.
-		Invokes(testing.NewListAction(ingressResource, mock.ns, opts), &tapi.Ingress{})
+		Invokes(testing.NewListAction(ingressResource, ingressKind, mock.ns, opts), &tapi.Ingress{})
 
 	if obj == nil {
 		return nil, err

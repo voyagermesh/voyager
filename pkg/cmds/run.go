@@ -16,10 +16,12 @@ import (
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/analytics"
 	"github.com/appscode/voyager/pkg/config"
+	"github.com/appscode/voyager/pkg/migrator"
 	"github.com/appscode/voyager/pkg/operator"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/clientcmd"
@@ -29,7 +31,7 @@ var (
 	masterURL      string
 	kubeconfigPath string
 	opt            config.Options = config.Options{
-		HAProxyImage:      "appscode/haproxy:1.7.6-3.1.0",
+		HAProxyImage:      "appscode/haproxy:1.7.6-3.2.0-rc.0",
 		OperatorNamespace: namespace(),
 		OperatorService:   "voyager-operator",
 		HTTPChallengePort: 56791,
@@ -105,6 +107,7 @@ func run() {
 	}
 
 	kubeClient = clientset.NewForConfigOrDie(config)
+	crdClient := apiextensionsclient.NewForConfigOrDie(config)
 	extClient = acs.NewForConfigOrDie(config)
 	promClient, err := pcm.NewForConfig(config)
 	if err != nil {
@@ -113,11 +116,16 @@ func run() {
 
 	log.Infoln("Starting Voyager operator...")
 
-	w := operator.New(kubeClient, extClient, promClient, opt)
+	w := operator.New(config, kubeClient, crdClient, extClient, promClient, opt)
 	err = w.Setup()
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	if err = migrator.NewMigrator(kubeClient, crdClient).RunMigration(); err != nil {
+		log.Fatalln(err)
+	}
+
 	// https://github.com/appscode/voyager/issues/346
 	err = w.ValidateIngress()
 	if err != nil {

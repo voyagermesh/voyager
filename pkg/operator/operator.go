@@ -9,20 +9,25 @@ import (
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
+	"github.com/appscode/voyager/pkg/util"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
+	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
 	core "k8s.io/client-go/listers/core/v1"
-	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 )
 
 type Operator struct {
+	KubeConfig      *rest.Config
 	KubeClient      clientset.Interface
+	CRDClient       apiextensionsclient.Interface
 	ExtClient       tcs.ExtensionInterface
 	PromClient      pcm.MonitoringV1alpha1Interface
 	ServiceLister   core.ServiceLister
@@ -34,13 +39,17 @@ type Operator struct {
 }
 
 func New(
+	config *rest.Config,
 	kubeClient clientset.Interface,
+	crdClient apiextensionsclient.Interface,
 	extClient tcs.ExtensionInterface,
 	promClient pcm.MonitoringV1alpha1Interface,
 	opt config.Options,
 ) *Operator {
 	return &Operator{
+		KubeConfig: config,
 		KubeClient: kubeClient,
+		CRDClient:  crdClient,
 		ExtClient:  extClient,
 		PromClient: promClient,
 		Opt:        opt,
@@ -51,42 +60,63 @@ func New(
 func (op *Operator) Setup() error {
 	log.Infoln("Ensuring TPR registration")
 
-	if err := op.ensureThirdPartyResource(tapi.ResourceNameIngress + "." + tapi.V1beta1SchemeGroupVersion.Group); err != nil {
+	if err := op.ensureCustomResourceDefinitions(); err != nil {
 		return err
 	}
-	if err := op.ensureThirdPartyResource(tapi.ResourceNameCertificate + "." + tapi.V1beta1SchemeGroupVersion.Group); err != nil {
-		return err
-	}
+
 	return nil
 }
 
-func (op *Operator) ensureThirdPartyResource(resourceName string) error {
-	_, err := op.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Get(resourceName, metav1.GetOptions{})
-	if !kerr.IsNotFound(err) {
-		return err
-	}
-
-	thirdPartyResource := &extensions.ThirdPartyResource{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "extensions/v1beta1",
-			Kind:       "ThirdPartyResource",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: resourceName,
-			Labels: map[string]string{
-				"app": "voyager",
+func (op *Operator) ensureCustomResourceDefinitions() error {
+	crds := []*apiextensions.CustomResourceDefinition{
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:   tapi.ResourceTypeIngress + "." + tapi.V1beta1SchemeGroupVersion.Group,
+				Labels: map[string]string{"app": "voyager"},
+			},
+			Spec: apiextensions.CustomResourceDefinitionSpec{
+				Group:   tapi.GroupName,
+				Version: tapi.V1beta1SchemeGroupVersion.Version,
+				Scope:   apiextensions.NamespaceScoped,
+				Names: apiextensions.CustomResourceDefinitionNames{
+					Singular:   tapi.ResourceNameIngress,
+					Plural:     tapi.ResourceTypeIngress,
+					Kind:       tapi.ResourceKindIngress,
+					ShortNames: []string{"ing"},
+				},
 			},
 		},
-		Description: "Voyager by AppsCode - Secure Ingress Controller for Kubernetes",
-		Versions: []extensions.APIVersion{
-			{
-				Name: tapi.V1beta1SchemeGroupVersion.Version,
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:   tapi.ResourceTypeCertificate + "." + tapi.V1beta1SchemeGroupVersion.Group,
+				Labels: map[string]string{"app": "voyager"},
+			},
+			Spec: apiextensions.CustomResourceDefinitionSpec{
+				Group:   tapi.GroupName,
+				Version: tapi.V1beta1SchemeGroupVersion.Version,
+				Scope:   apiextensions.NamespaceScoped,
+				Names: apiextensions.CustomResourceDefinitionNames{
+					Singular:   tapi.ResourceNameCertificate,
+					Plural:     tapi.ResourceTypeCertificate,
+					Kind:       tapi.ResourceKindCertificate,
+					ShortNames: []string{"cert"},
+				},
 			},
 		},
 	}
-
-	_, err = op.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Create(thirdPartyResource)
-	return err
+	for _, crd := range crds {
+		_, err := op.CRDClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get(crd.Name, metav1.GetOptions{})
+		if kerr.IsNotFound(err) {
+			_, err = op.CRDClient.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return util.WaitForCRDReady(
+		op.KubeClient.CoreV1().RESTClient(),
+		crds,
+	)
 }
 
 func (op *Operator) Run() {
@@ -110,5 +140,5 @@ func (op *Operator) Run() {
 	for i := range informers {
 		go informers[i].Run(wait.NeverStop)
 	}
-	go certificate.CheckCertificates(op.KubeClient, op.ExtClient, op.Opt)
+	go certificate.CheckCertificates(op.KubeConfig, op.KubeClient, op.ExtClient, op.Opt)
 }

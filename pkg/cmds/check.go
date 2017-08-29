@@ -10,6 +10,7 @@ import (
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -63,12 +64,13 @@ func NewCmdCheck() *cobra.Command {
 
 			kubeClient = clientset.NewForConfigOrDie(config)
 			extClient = acs.NewForConfigOrDie(config)
+			crdClient := apiextensionsclient.NewForConfigOrDie(config)
 			promClient, err := pcm.NewForConfig(config)
 			if err != nil {
 				return err
 			}
 
-			w := operator.New(kubeClient, extClient, promClient, opt)
+			w := operator.New(config, kubeClient, crdClient, extClient, promClient, opt)
 			// https://github.com/appscode/voyager/issues/346
 			err = w.ValidateIngress()
 			if err != nil {

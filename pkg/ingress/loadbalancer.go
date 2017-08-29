@@ -16,6 +16,7 @@ import (
 	"github.com/appscode/voyager/pkg/monitor"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -33,6 +34,7 @@ var _ Controller = &loadBalancerController{}
 
 func NewLoadBalancerController(
 	kubeClient clientset.Interface,
+	crdClient apiextensionsclient.Interface,
 	extClient acs.ExtensionInterface,
 	promClient pcm.MonitoringV1alpha1Interface,
 	serviceLister core.ServiceLister,
@@ -42,6 +44,7 @@ func NewLoadBalancerController(
 	return &loadBalancerController{
 		controller: &controller{
 			KubeClient:      kubeClient,
+			CRDClient:       crdClient,
 			ExtClient:       extClient,
 			PromClient:      promClient,
 			ServiceLister:   serviceLister,
@@ -175,7 +178,7 @@ func (c *loadBalancerController) Create() error {
 		return errors.FromErr(err).Err()
 	}
 	if monSpec != nil && monSpec.Prometheus != nil {
-		ctrl := monitor.NewPrometheusController(c.KubeClient, c.PromClient)
+		ctrl := monitor.NewPrometheusController(c.KubeClient, c.CRDClient, c.PromClient)
 		err := ctrl.AddMonitor(c.Ingress, monSpec)
 		// Error Ignored intentionally
 		if err != nil {
@@ -331,7 +334,7 @@ func (c *loadBalancerController) Delete() {
 		log.Errorln(err)
 	}
 	if monSpec != nil && monSpec.Prometheus != nil {
-		ctrl := monitor.NewPrometheusController(c.KubeClient, c.PromClient)
+		ctrl := monitor.NewPrometheusController(c.KubeClient, c.CRDClient, c.PromClient)
 		ctrl.DeleteMonitor(c.Ingress, monSpec)
 	}
 	if c.Ingress.Stats() {

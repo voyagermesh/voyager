@@ -18,9 +18,11 @@ import (
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	fakecloudprovider "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
 	core "k8s.io/client-go/listers/core/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
@@ -36,6 +38,7 @@ var _ Controller = &nodePortController{}
 
 func NewNodePortController(
 	kubeClient clientset.Interface,
+	crdClient apiextensionsclient.Interface,
 	extClient acs.ExtensionInterface,
 	promClient pcm.MonitoringV1alpha1Interface,
 	serviceLister core.ServiceLister,
@@ -45,6 +48,7 @@ func NewNodePortController(
 	ctrl := &nodePortController{
 		controller: &controller{
 			KubeClient:      kubeClient,
+			CRDClient:       crdClient,
 			ExtClient:       extClient,
 			PromClient:      promClient,
 			ServiceLister:   serviceLister,
@@ -96,7 +100,41 @@ func (c *nodePortController) IsExists() bool {
 }
 
 func (c *nodePortController) Create() error {
-	err := c.generateConfig()
+	// Create the service before creating pods or config
+	svc, err := c.ensureService(nil)
+	if err != nil {
+		c.recorder.Eventf(
+			c.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressServiceCreateFailed,
+			"Failed to create NodePortService, Reason: %s",
+			err.Error(),
+		)
+		return errors.FromErr(err).Err()
+	}
+	if err := c.waitForNodePortAssignment(); err != nil {
+		c.recorder.Eventf(
+			c.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressServiceCreateFailed,
+			"Timeout waiting for NodePort assignment, %s",
+			err.Error(),
+		)
+		return errors.FromErr(err).Err()
+	}
+	err = c.EnsureFirewall(svc)
+	if err != nil {
+		c.recorder.Eventf(
+			c.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressFirewallUpdateFailed,
+			"Failed to ensure firewall, %s",
+			err.Error(),
+		)
+		return errors.FromErr(err).Err()
+	}
+
+	err = c.generateConfig()
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
@@ -150,28 +188,6 @@ func (c *nodePortController) Create() error {
 		eventer.EventReasonIngressControllerCreateSuccessful,
 		"Successfully created NodePortPods")
 
-	svc, err := c.ensureService(nil)
-	if err != nil {
-		c.recorder.Eventf(
-			c.Ingress,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonIngressServiceCreateFailed,
-			"Failed to create NodePortService, Reason: %s",
-			err.Error(),
-		)
-		return errors.FromErr(err).Err()
-	}
-	err = c.EnsureFirewall(svc)
-	if err != nil {
-		c.recorder.Eventf(
-			c.Ingress,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonIngressFirewallUpdateFailed,
-			"Failed to ensure firewall, %s",
-			err.Error(),
-		)
-		return errors.FromErr(err).Err()
-	}
 	c.recorder.Eventf(
 		c.Ingress,
 		apiv1.EventTypeNormal,
@@ -206,7 +222,7 @@ func (c *nodePortController) Create() error {
 		return errors.FromErr(err).Err()
 	}
 	if monSpec != nil && monSpec.Prometheus != nil {
-		ctrl := monitor.NewPrometheusController(c.KubeClient, c.PromClient)
+		ctrl := monitor.NewPrometheusController(c.KubeClient, c.CRDClient, c.PromClient)
 		err := ctrl.AddMonitor(c.Ingress, monSpec)
 		// Error Ignored intentionally
 		if err != nil {
@@ -230,7 +246,40 @@ func (c *nodePortController) Create() error {
 }
 
 func (c *nodePortController) Update(mode UpdateMode, old *api.Ingress) error {
-	err := c.generateConfig()
+	svc, err := c.ensureService(old)
+	if err != nil {
+		c.recorder.Eventf(
+			c.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressServiceUpdateFailed,
+			"Failed to update LBService, %s",
+			err.Error(),
+		)
+		return errors.FromErr(err).Err()
+	}
+	if err := c.waitForNodePortAssignment(); err != nil {
+		c.recorder.Eventf(
+			c.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressServiceUpdateFailed,
+			"Timeout waiting for NodePort assignment, %s",
+			err.Error(),
+		)
+		return errors.FromErr(err).Err()
+	}
+	err = c.EnsureFirewall(svc)
+	if err != nil {
+		c.recorder.Eventf(
+			c.Ingress,
+			apiv1.EventTypeWarning,
+			eventer.EventReasonIngressFirewallUpdateFailed,
+			"Failed to ensure firewall, %s",
+			err.Error(),
+		)
+		return errors.FromErr(err).Err()
+	}
+
+	err = c.generateConfig()
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress,
@@ -264,29 +313,6 @@ func (c *nodePortController) Update(mode UpdateMode, old *api.Ingress) error {
 		"Successfully updated Pods",
 	)
 
-	svc, err := c.ensureService(old)
-	if err != nil {
-		c.recorder.Eventf(
-			c.Ingress,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonIngressServiceUpdateFailed,
-			"Failed to update LBService, %s",
-			err.Error(),
-		)
-		return errors.FromErr(err).Err()
-	}
-
-	err = c.EnsureFirewall(svc)
-	if err != nil {
-		c.recorder.Eventf(
-			c.Ingress,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonIngressFirewallUpdateFailed,
-			"Failed to ensure firewall, %s",
-			err.Error(),
-		)
-		return errors.FromErr(err).Err()
-	}
 	c.recorder.Eventf(
 		c.Ingress,
 		apiv1.EventTypeNormal,
@@ -346,18 +372,6 @@ func (c *nodePortController) Update(mode UpdateMode, old *api.Ingress) error {
 func (c *nodePortController) EnsureFirewall(svc *apiv1.Service) error {
 	if c.CloudManager != nil {
 		if fw, ok := c.CloudManager.Firewall(); ok {
-			// Wait for all NodePorts to be assigned first.
-			for i := 0; i < 50; i++ {
-				time.Sleep(time.Second * 10)
-				if svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{}); err == nil {
-					for _, port := range svc.Spec.Ports {
-						if port.NodePort <= 0 {
-							break
-						}
-					}
-				}
-			}
-
 			nodes, err := c.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
 			if err != nil {
 				return err
@@ -398,13 +412,30 @@ func (c *nodePortController) Delete() {
 		log.Errorln(err)
 	}
 	if monSpec != nil && monSpec.Prometheus != nil {
-		ctrl := monitor.NewPrometheusController(c.KubeClient, c.PromClient)
+		ctrl := monitor.NewPrometheusController(c.KubeClient, c.CRDClient, c.PromClient)
 		ctrl.DeleteMonitor(c.Ingress, monSpec)
 	}
 	if c.Ingress.Stats() {
 		c.ensureStatsServiceDeleted()
 	}
 	return
+}
+
+func (c *nodePortController) waitForNodePortAssignment() error {
+	return wait.Poll(time.Second*5, time.Minute*5, wait.ConditionFunc(func() (bool, error) {
+		svc, err := c.KubeClient.CoreV1().
+			Services(c.Ingress.Namespace).
+			Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		if err != nil {
+			return false, err
+		}
+		for _, port := range svc.Spec.Ports {
+			if port.NodePort <= 0 {
+				return false, errors.New("Port not assigned")
+			}
+		}
+		return true, nil
+	}))
 }
 
 func (c *nodePortController) newService() *apiv1.Service {

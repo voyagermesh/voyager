@@ -135,7 +135,7 @@ func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
 			log.Infoln("Checking for service", svc, "to be used to load balance via ingress", engress.Name, engress.Namespace)
 			if engress.HasBackendService(svc.Name, svc.Namespace) {
-				ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
+				ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 				if ctrl.IsExists() {
 					// Loadbalancer resource for this ingress is found in its place,
 					// so no need to create the resources. First trying to update
