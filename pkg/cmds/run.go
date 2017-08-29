@@ -122,7 +122,7 @@ func run() {
 		log.Fatalln(err)
 	}
 
-	if err = migrator.NewMigrator(kubeClient, crdClient, extClient).RunMigration(); err != nil {
+	if err = migrator.NewMigrator(kubeClient, crdClient).RunMigration(); err != nil {
 		log.Fatalln(err)
 	}
 

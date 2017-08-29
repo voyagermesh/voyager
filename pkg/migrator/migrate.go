@@ -7,7 +7,6 @@ import (
 
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
-	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/util"
 	"github.com/hashicorp/go-version"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -28,17 +27,15 @@ type migrationState struct {
 type migrator struct {
 	kubeClient       clientset.Interface
 	apiExtKubeClient apiextensionsclient.Interface
-	extClient        acs.ExtensionInterface
 
 	migrationState *migrationState
 }
 
-func NewMigrator(kubeClient clientset.Interface, apiExtKubeClient apiextensionsclient.Interface, extClient acs.ExtensionInterface) *migrator {
+func NewMigrator(kubeClient clientset.Interface, apiExtKubeClient apiextensionsclient.Interface) *migrator {
 	return &migrator{
 		migrationState:   &migrationState{},
 		kubeClient:       kubeClient,
 		apiExtKubeClient: apiExtKubeClient,
-		extClient:        extClient,
 	}
 }
 
@@ -282,7 +279,7 @@ func (m *migrator) createTPR(resourceName string) error {
 
 func (m *migrator) waitForTPRsReady() error {
 	labelMap := map[string]string{
-		"app": "searchlight",
+		"app": "voyager",
 	}
 
 	return wait.Poll(3*time.Second, 10*time.Minute, func() (bool, error) {
