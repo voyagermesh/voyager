@@ -1,14 +1,15 @@
 package util
 
 import (
+	"fmt"
 	"io"
 	"strings"
 
 	"github.com/appscode/log"
+	remotecommandconsts "k8s.io/apimachinery/pkg/util/remotecommand"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
-	"fmt"
 )
 
 func Exec(restClient rest.Interface, config *rest.Config, pod apiv1.Pod, cmd []string) string {
@@ -37,10 +38,11 @@ func Exec(restClient rest.Interface, config *rest.Config, pod apiv1.Pod, cmd []s
 	}
 
 	err = exec.Stream(remotecommand.StreamOptions{
-		Stdin:  newStringReader(cmd),
-		Stdout: dw,
-		Stderr: dw,
-		Tty:    false,
+		SupportedProtocols: remotecommandconsts.SupportedStreamingProtocols,
+		Stdin:              newStringReader(cmd),
+		Stdout:             dw,
+		Stderr:             dw,
+		Tty:                false,
 	})
 	if err != nil {
 		log.Errorln(err)
