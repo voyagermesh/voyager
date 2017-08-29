@@ -26,7 +26,7 @@ spec:
 
 For testing purpose you may use Let's Encrypt's staging URL `https://acme-staging.api.letsencrypt.org/directory` as `acmeStagingURL`
 
-In this example the domains DNS providers are `googlecloude`. Example Test `test-gcp-secret` should look like
+In this example the domains DNS providers are `googlecloud`. Example Test `test-gcp-secret` should look like
 ```yaml
 kind: Secret
 metadata:
