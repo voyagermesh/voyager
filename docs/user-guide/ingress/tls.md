@@ -57,14 +57,17 @@ metadata:
   name: test-ingress
   namespace: default
 spec:
+  tls:
+    - secretName: testsecret
+      hosts:
+      - appscode.example.com
   rules:
-  - tcp:
-    - host: appscode.example.com
+  - host: appscode.example.com
+    tcp:
       port: '9898'
       backend:
         serviceName: tcp-service
         servicePort: '50077'
-      secretName: testsecret
 
 ```
 You need to set  the secretName field with the TCP rule to use a certificate.
