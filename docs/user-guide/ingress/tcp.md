@@ -12,8 +12,8 @@ metadata:
   namespace: default
 spec:
   rules:
-  - tcp:
-    - host: appscode.example.com
+  - host: appscode.example.com
+    tcp:
       port: '9898'
       backend:
         serviceName: tcp-service
