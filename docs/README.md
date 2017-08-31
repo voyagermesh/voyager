@@ -35,6 +35,8 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
   - [Configure Custom Timeouts for HAProxy](docs/user-guide/ingress/configure-timeouts.md)
   - [Custom port for HTTP](docs/user-guide/ingress/custom-http-port.md)
   - [Set NodePort](docs/user-guide/ingress/node-port.md)
+  - [Backend TLS](docs/user-guide/ingress/backend-tls.md)
+  - [Configure Options](docs/user-guide/ingress/configure-options.md)
 
 ### Comparison with Kubernetes
 | Feauture | [Kube Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) | AppsCode Ingress |
