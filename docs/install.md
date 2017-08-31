@@ -76,3 +76,9 @@ $ kubectl get thirdpartyresources -l app=voyager
 ```
 
 Now, you are ready to create your first ingress using Voyager.
+
+## Using kubectl
+Since Voyager uses its own TPR/CRD, you need to use full resource kind to find it with kubectl.
+```console
+$ kubectl get ingress.voyager.appscode.com --all-namespaces
+```
