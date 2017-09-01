@@ -26,7 +26,7 @@ NAME               DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
 voyager-my-app     2         2         2            2           1d
 ```
 
-# Horizontal Pod Autoscaling
+## Horizontal Pod Autoscaling
 
 [Kubernetes has the HorizontalPodAutoscaler object for autoscaling pods](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/).
 
@@ -64,3 +64,5 @@ NAME                  REFERENCE                        TARGETS    MINPODS   MAXP
 voyager-my-app        Deployment/voyager-my-app        0% / 20%   2         10        2          1d
 ```
 
+## Node Autoscaling
+If you are using [autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) to dynamically add and remove nodes, you might be interested in using `ingress.appscode.com/node-selector` to control which hosts are selected to run HAProxy pods. This is a recommended annotation for HostPort type ingress.
