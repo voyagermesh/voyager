@@ -80,5 +80,15 @@ Now, you are ready to create your first ingress using Voyager.
 ## Using kubectl
 Since Voyager uses its own TPR/CRD, you need to use full resource kind to find it with kubectl.
 ```console
+# List all voyager ingress
 $ kubectl get ingress.voyager.appscode.com --all-namespaces
+
+# List voyager ingress for a namespace
+$ kubectl get ingress.voyager.appscode.com -n <namespace>
+
+# Get Ingress YAML
+$ kubectl get ingress.voyager.appscode.com -n <namespace> <ingress-name> -o yaml
+
+# Describe Ingress. Very useful to debug problems.
+$ kubectl describe ingress.voyager.appscode.com -n <namespace> <ingress-name>
 ```
