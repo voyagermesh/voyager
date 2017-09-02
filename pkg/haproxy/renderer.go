@@ -15,7 +15,7 @@ func RenderConfig(data TemplateData) (string, error) {
 	}
 	data.canonicalize()
 	var buf bytes.Buffer
-	err := haproxyTemplate.Execute(&buf, data)
+	err := haproxyTemplate.ExecuteTemplate(&buf, "haproxy.cfg", data)
 	if err != nil {
 		log.Error(err)
 		return "", err

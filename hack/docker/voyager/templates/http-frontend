@@ -1,0 +1,26 @@
+frontend {{ .FrontendName }}
+	{{ if .UsesSSL -}}
+	bind *:{{ .Port }} {{ if .AcceptProxy }}accept-proxy{{ end }} ssl no-sslv3 no-tlsv10 no-tls-tickets crt /etc/ssl/private/haproxy/ alpn http/1.1
+	# Mark all cookies as secure
+	rsprep ^Set-Cookie:\ (.*) Set-Cookie:\ \1;\ Secure
+	# Add the HSTS header with a 6 month max-age
+	rspadd  Strict-Transport-Security:\ max-age=15768000
+	{{ else -}}
+	bind *:{{ .Port }} {{ if .AcceptProxy }}accept-proxy{{ end }}
+	{{ end }}
+	mode http
+	option httplog
+	option forwardfor
+
+	{{- range $path := .Paths }}
+	{{ if  and (or (eq $.Port 80) (eq $.Port 443)) (not $.NodePort) }}
+	{{ if $path.Host }}acl host_acl_{{ $path.Backend.Name }} {{ $path.Host | host_name }}{{ end }}
+	{{- end }}
+	{{ if $path.Host }}acl host_acl_{{ $path.Backend.Name }} {{ $path.Host | host_name }}{{ if $.NodePort }}:{{ $.NodePort }}{{ else }}:{{ $.Port }}{{ end }}{{ end }}
+	{{ if $path.Path }}acl url_acl_{{ $path.Backend.Name }} path_beg {{ $path.Path }}{{ end }}
+	use_backend {{ $path.Backend.Name }} {{ if or $path.Host $path.Path }}if {{ end }}{{ if $path.Host }}host_acl_{{ $path.Backend.Name }}{{ end }}{{ if $path.Path }} url_acl_{{ $path.Backend.Name }}{{ end -}}
+	{{ end }}
+	{{ if .DefaultBackend }}
+	default_backend {{ .DefaultBackend.Name }}
+	{{ end -}}
+

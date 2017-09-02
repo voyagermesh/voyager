@@ -1,0 +1,29 @@
+backend {{ .DefaultBackend.Name }}
+	{{ if .Sticky }}cookie SERVERID insert indirect nocache{{- end -}}
+	{{- range $rule := .DefaultBackend.BackendRules }}
+	{{ $rule -}}
+	{{ end }}
+
+	{{- range $rule := .DefaultBackend.RewriteRules }}
+	reqrep {{ $rule -}}
+	{{ end }}
+
+	{{- range $index, $rule := .DefaultBackend.HeaderRules }}
+	acl ___header_x_{{ $index }}_exists req.hdr({{ $rule | header_name }}) -m found
+	http-request add-header {{ $rule }} unless ___header_x_{{ $index }}_exists
+	{{- end }}
+
+	{{- range $e := .DefaultBackend.Endpoints }}
+	{{- if $e.ExternalName }}
+	{{- if $e.UseDNSResolver }}
+	server {{ $e.Name }} {{ $e.ExternalName }}:{{ $e.Port -}} {{ if $e.DNSResolver }} {{ if $e.CheckHealth }} check {{ end }} resolvers {{ $e.DNSResolver }} resolve-prefer ipv4 {{ end -}} {{ if $e.TLSOption }} {{ $e.TLSOption }} {{ end -}}
+	{{- else if not $.DefaultBackend.BackendRules }}
+	acl https ssl_fc
+	http-request redirect location https://{{$e.ExternalName}}:{{ $e.Port }} code 301 if https
+	http-request redirect location http://{{$e.ExternalName}}:{{ $e.Port }} code 301 unless https
+	{{ end -}}
+	{{- else }}
+	server {{ $e.Name }} {{ $e.IP }}:{{ $e.Port -}} {{ if $e.Weight }} weight {{ $e.Weight }}{{ end -}} {{ if $.Sticky }} cookie {{ $e.Name }}{{ end -}} {{ if $e.TLSOption }} {{ $e.TLSOption }} {{ end -}}
+	{{ end -}}
+	{{ end -}}
+
