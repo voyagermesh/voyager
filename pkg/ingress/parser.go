@@ -195,6 +195,9 @@ func (c *controller) generateConfig() error {
 	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
 		si.AcceptProxy = c.Ingress.KeepSourceIP()
 	}
+	if c.Ingress.AcceptProxy() {
+		si.AcceptProxy = true
+	}
 
 	dnsResolvers := make(map[string]*api.DNSResolver)
 	if c.Ingress.Spec.Backend != nil {

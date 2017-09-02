@@ -81,6 +81,9 @@ const (
 	// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
 	KeepSourceIP = EngressKey + "/" + "keep-source-ip"
 
+	// Enforces the use of the PROXY protocol over any connection accepted by HAProxy.
+	AcceptProxy = EngressKey + "/" + "accept-proxy"
+
 	// Annotations applied to resources offshoot from an ingress
 	OriginAPISchema = EngressKey + "/" + "origin-api-schema" // APISchema = {APIGroup}/{APIVersion}
 	OriginName      = EngressKey + "/" + "origin-name"
@@ -280,6 +283,11 @@ func (r Ingress) PodsAnnotations() (map[string]string, bool) {
 
 func (r Ingress) KeepSourceIP() bool {
 	v, _ := getBool(r.Annotations, KeepSourceIP)
+	return v
+}
+
+func (r Ingress) AcceptProxy() bool {
+	v, _ := getBool(r.Annotations, AcceptProxy)
 	return v
 }
 

@@ -472,11 +472,6 @@ func (c *nodePortController) newService() *apiv1.Service {
 			svc.Annotations[k] = v
 		}
 	}
-
-	if c.Opt.CloudProvider == "aws" && c.Ingress.KeepSourceIP() {
-		// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
-		svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
-	}
 	return svc
 }
 
