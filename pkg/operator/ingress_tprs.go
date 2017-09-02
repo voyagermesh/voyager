@@ -6,7 +6,6 @@ import (
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
 	tapi "github.com/appscode/voyager/api"
-	"github.com/appscode/voyager/pkg/analytics"
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/ingress"
@@ -49,7 +48,6 @@ func (op *Operator) initIngressTPRWatcher() cache.Controller {
 						)
 						return
 					}
-					go analytics.Send(engress.GroupVersionKind().String(), "ADD", "success")
 
 					op.AddEngress(engress)
 				}
@@ -88,7 +86,6 @@ func (op *Operator) initIngressTPRWatcher() cache.Controller {
 						log.Infof("%s %s@%s does not match ingress class", engress.GroupVersionKind(), engress.Name, engress.Namespace)
 						return
 					}
-					go analytics.Send(engress.GroupVersionKind().String(), "DELETE", "success")
 					op.DeleteEngress(engress)
 				}
 			},

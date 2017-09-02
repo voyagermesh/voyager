@@ -14,7 +14,6 @@ import (
 	"github.com/appscode/pat"
 	"github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
-	"github.com/appscode/voyager/pkg/analytics"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/operator"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
@@ -36,7 +35,6 @@ var (
 		EnableRBAC:        false,
 		SyncPeriod:        30 * time.Second,
 	}
-	enableAnalytics bool = true
 
 	address                   string        = fmt.Sprintf(":%d", api.DefaultExporterPortNumber)
 	haProxyServerMetricFields string        = hpe.ServerMetrics.String()
@@ -51,15 +49,6 @@ func NewCmdRun(version string) *cobra.Command {
 		Use:               "run",
 		Short:             "Run operator",
 		DisableAutoGenTag: true,
-		PreRun: func(cmd *cobra.Command, args []string) {
-			if enableAnalytics {
-				analytics.Enable()
-			}
-			analytics.Send("operator", "started", version)
-		},
-		PostRun: func(cmd *cobra.Command, args []string) {
-			analytics.Send("operator", "stopped", version)
-		},
 		Run: func(cmd *cobra.Command, args []string) {
 			run()
 		},
@@ -72,7 +61,6 @@ func NewCmdRun(version string) *cobra.Command {
 	cmd.Flags().StringVar(&opt.HAProxyImage, "haproxy-image", opt.HAProxyImage, "haproxy image name to be run")
 	cmd.Flags().StringVar(&opt.IngressClass, "ingress-class", opt.IngressClass, "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
 	cmd.Flags().BoolVar(&opt.EnableRBAC, "rbac", opt.EnableRBAC, "Enable RBAC for operator & offshoot Kubernetes objects")
-	cmd.Flags().BoolVar(&enableAnalytics, "analytics", enableAnalytics, "Send analytical event to Google Analytics")
 
 	cmd.Flags().StringVar(&opt.OperatorService, "operator-service", opt.OperatorService, "Name of service used to expose voyager operator")
 	cmd.Flags().IntVar(&opt.HTTPChallengePort, "http-challenge-port", opt.HTTPChallengePort, "Port used to answer ACME HTTP challenge")
