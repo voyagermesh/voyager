@@ -15,7 +15,6 @@ voyager run [flags]
 
 ```
       --address string                        Address to listen on for web interface and telemetry. (default ":56790")
-      --analytics                             Send analytical event to Google Analytics (default true)
       --cloud-config string                   The path to the cloud provider configuration file.  Empty string for no configuration file.
   -c, --cloud-provider string                 Name of cloud provider
       --haproxy-image string                  haproxy image name to be run (default "appscode/haproxy:1.7.6-3.2.0-rc.0")
@@ -35,6 +34,7 @@ voyager run [flags]
 
 ```
       --alsologtostderr                  log to standard error as well as files
+      --analytics                        Send analytical events to Google Guard (default true)
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files
