@@ -27,14 +27,14 @@ voyager run [flags]
       --master string                         The address of the Kubernetes API server (overrides any value in kubeconfig)
       --operator-service string               Name of service used to expose voyager operator (default "voyager-operator")
       --rbac                                  Enable RBAC for operator & offshoot Kubernetes objects
-      --resync-period duration                If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out. (default 30s)
+      --resync-period duration                If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out. (default 5m0s)
 ```
 
 ### Options inherited from parent commands
 
 ```
       --alsologtostderr                  log to standard error as well as files
-      --analytics                        Send analytical events to Google Guard (default true)
+      --analytics                        Send analytical events to Google Analytics (default true)
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files
