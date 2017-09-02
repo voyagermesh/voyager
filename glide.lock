@@ -1,5 +1,5 @@
-hash: 575e0a52e2520aeba3acce6629c584025a56026ff3e8cdebdc99c2e92f851fcb
-updated: 2017-08-27T21:00:47.067541128-07:00
+hash: b842d99c481fedf52f7f94c28c3d3148e62e991e8d27df8fe157b601e8cc2359
+updated: 2017-09-01T19:42:43.156354712-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -15,7 +15,7 @@ imports:
 - name: github.com/appscode/errors
   version: 748883e321a9f99fe901bd2663c7af3fcae43ea4
 - name: github.com/appscode/go
-  version: 45732d59b2277b9c7ffdc41d2d5c07a899a20a70
+  version: d1fbd14e5c6e78557c12f6d2c9c282b3c0d0c612
   subpackages:
   - crypto/rand
   - flags
@@ -264,7 +264,7 @@ imports:
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 61f87aac8082fa8c3c5655c7608d7478d46ac2ad
+  version: bc8b88226a1210b016e9993b1d75f858c9c8f778
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
@@ -281,12 +281,12 @@ imports:
   version: 300106c228d52c8941d4b3de6054a6062a86dda3
 - name: github.com/shurcooL/sanitized_anchor_name
   version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
-- name: github.com/Sirupsen/logrus
-  version: 51fe59aca108dc5680109e7b2051cbdcfa5a253c
 - name: github.com/sirupsen/logrus
   version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
+- name: github.com/Sirupsen/logrus
+  version: 51fe59aca108dc5680109e7b2051cbdcfa5a253c
 - name: github.com/spf13/cobra
-  version: 2df9a531813370438a4d79bfc33e21f58063ed87
+  version: 3c0b56b677e04926dfa835a1b3f11cd4f62f076e
   subpackages:
   - doc
 - name: github.com/spf13/pflag
@@ -394,7 +394,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/ini.v1
-  version: 20b96f641a5ea98f2f8619ff4f3e061cff4833bd
+  version: d3de07a94d22b4a0972deb4b96d790c2c0ce8333
 - name: gopkg.in/square/go-jose.v1
   version: aa2e30fdd1fe9dd3394119af66451ae790d50e0d
   subpackages:

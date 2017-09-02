@@ -15,7 +15,6 @@ voyager export [flags]
 
 ```
       --address string                        Address to listen on for web interface and telemetry. (default ":56790")
-      --analytics                             Send analytical event to Google Analytics (default true)
       --haproxy.server-metric-fields string   Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1 (default "2,3,4,5,6,7,8,9,13,14,15,16,17,18,21,24,33,35,38,39,40,41,42,43,44")
       --haproxy.timeout duration              Timeout for trying to get stats from HAProxy. (default 5s)
   -h, --help                                  help for export
@@ -27,6 +26,7 @@ voyager export [flags]
 
 ```
       --alsologtostderr                  log to standard error as well as files
+      --analytics                        Send analytical events to Google Guard (default true)
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files

@@ -38,6 +38,8 @@ import:
   version: v0.8.0
 - package: github.com/prometheus/common
   version: master
+- package: github.com/prometheus/procfs
+  version: 454a56f35412459b5e684fd5ec0f9211b94f002a
 - package: github.com/sirupsen/logrus
   version: v0.11.5
 - package: gopkg.in/yaml.v2
