@@ -46,7 +46,7 @@ func (op *Operator) initNodeWatcher() cache.Controller {
 
 	indexer, informer := cache.NewInformer(lw,
 		&apiv1.Node{},
-		op.Opt.SyncPeriod,
+		op.Opt.ResyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc:    handler,
 			DeleteFunc: handler,

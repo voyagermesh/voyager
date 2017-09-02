@@ -26,7 +26,7 @@ func (op *Operator) initCertificateTPRWatcher() cache.Controller {
 	}
 	_, informer := cache.NewInformer(lw,
 		&sapi.Certificate{},
-		op.Opt.SyncPeriod,
+		op.Opt.ResyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				if cert, ok := obj.(*sapi.Certificate); ok {

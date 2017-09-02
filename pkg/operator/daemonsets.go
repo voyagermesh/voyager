@@ -23,7 +23,7 @@ func (op *Operator) initDaemonSetWatcher() cache.Controller {
 	}
 	_, informer := cache.NewInformer(lw,
 		&extensions.DaemonSet{},
-		op.Opt.SyncPeriod,
+		op.Opt.ResyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			DeleteFunc: func(obj interface{}) {
 				if daemon, ok := obj.(*extensions.DaemonSet); ok {

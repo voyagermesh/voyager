@@ -41,7 +41,7 @@ func NewCmdVoyager(version string) *cobra.Command {
 	flag.CommandLine.Parse([]string{})
 	rootCmd.PersistentFlags().BoolVar(&enableAnalytics, "analytics", enableAnalytics, "Send analytical events to Google Analytics")
 
-	rootCmd.AddCommand(NewCmdRun(version))
+	rootCmd.AddCommand(NewCmdRun())
 	rootCmd.AddCommand(NewCmdExport(version))
 	rootCmd.AddCommand(NewCmdCheck())
 	rootCmd.AddCommand(v.NewCmdVersion())

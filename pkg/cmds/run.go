@@ -33,7 +33,7 @@ var (
 		OperatorService:   "voyager-operator",
 		HTTPChallengePort: 56791,
 		EnableRBAC:        false,
-		SyncPeriod:        30 * time.Second,
+		ResyncPeriod:      5 * time.Minute,
 	}
 
 	address                   string        = fmt.Sprintf(":%d", api.DefaultExporterPortNumber)
@@ -44,7 +44,7 @@ var (
 	extClient  acs.ExtensionInterface
 )
 
-func NewCmdRun(version string) *cobra.Command {
+func NewCmdRun() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "run",
 		Short:             "Run operator",
@@ -61,10 +61,10 @@ func NewCmdRun(version string) *cobra.Command {
 	cmd.Flags().StringVar(&opt.HAProxyImage, "haproxy-image", opt.HAProxyImage, "haproxy image name to be run")
 	cmd.Flags().StringVar(&opt.IngressClass, "ingress-class", opt.IngressClass, "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
 	cmd.Flags().BoolVar(&opt.EnableRBAC, "rbac", opt.EnableRBAC, "Enable RBAC for operator & offshoot Kubernetes objects")
+	cmd.Flags().DurationVar(&opt.ResyncPeriod, "resync-period", opt.ResyncPeriod, "If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out.")
 
 	cmd.Flags().StringVar(&opt.OperatorService, "operator-service", opt.OperatorService, "Name of service used to expose voyager operator")
 	cmd.Flags().IntVar(&opt.HTTPChallengePort, "http-challenge-port", opt.HTTPChallengePort, "Port used to answer ACME HTTP challenge")
-	cmd.Flags().DurationVar(&opt.SyncPeriod, "resync-period", opt.SyncPeriod, "If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out.")
 
 	cmd.Flags().StringVar(&address, "address", address, "Address to listen on for web interface and telemetry.")
 	cmd.Flags().StringVar(&haProxyServerMetricFields, "haproxy.server-metric-fields", haProxyServerMetricFields, "Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1")

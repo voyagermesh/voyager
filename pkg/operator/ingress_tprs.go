@@ -29,7 +29,7 @@ func (op *Operator) initIngressTPRWatcher() cache.Controller {
 	}
 	_, informer := cache.NewInformer(lw,
 		&tapi.Ingress{},
-		op.Opt.SyncPeriod,
+		op.Opt.ResyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				if engress, ok := obj.(*tapi.Ingress); ok {

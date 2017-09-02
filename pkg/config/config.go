@@ -11,5 +11,5 @@ type Options struct {
 	OperatorNamespace string
 	OperatorService   string
 	HTTPChallengePort int
-	SyncPeriod        time.Duration
+	ResyncPeriod      time.Duration
 }
