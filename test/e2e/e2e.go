@@ -4,7 +4,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/appscode/go/runtime"
 	"github.com/appscode/voyager/pkg/config"
+	"github.com/appscode/voyager/pkg/haproxy"
 	"github.com/appscode/voyager/pkg/operator"
 	"github.com/appscode/voyager/test/framework"
 	. "github.com/onsi/ginkgo"
@@ -33,7 +35,7 @@ func RunE2ETestSuit(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
-	controller := operator.New(
+	op := operator.New(
 		root.KubeConfig,
 		root.KubeClient,
 		root.VoyagerClient,
@@ -51,9 +53,13 @@ var _ = BeforeSuite(func() {
 
 	if !root.Config.InCluster {
 		By("Running Controller in Local mode")
-		err := controller.Setup()
+		err := op.Setup()
 		Expect(err).NotTo(HaveOccurred())
-		go controller.Run()
+
+		err = haproxy.LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*", "")
+		Expect(err).NotTo(HaveOccurred())
+
+		go op.Run()
 	}
 	root.EventuallyTPR().Should(Succeed())
 
