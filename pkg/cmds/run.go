@@ -15,6 +15,7 @@ import (
 	"github.com/appscode/voyager/api"
 	acs "github.com/appscode/voyager/client/clientset"
 	"github.com/appscode/voyager/pkg/config"
+	haproxy "github.com/appscode/voyager/pkg/haproxy"
 	"github.com/appscode/voyager/pkg/operator"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -35,6 +36,9 @@ var (
 		EnableRBAC:        false,
 		ResyncPeriod:      5 * time.Minute,
 	}
+
+	builtinTemplates = "/srv/voyager/templates/*"
+	customTemplates  = ""
 
 	address                   string        = fmt.Sprintf(":%d", api.DefaultExporterPortNumber)
 	haProxyServerMetricFields string        = hpe.ServerMetrics.String()
@@ -62,6 +66,7 @@ func NewCmdRun() *cobra.Command {
 	cmd.Flags().StringVar(&opt.IngressClass, "ingress-class", opt.IngressClass, "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
 	cmd.Flags().BoolVar(&opt.EnableRBAC, "rbac", opt.EnableRBAC, "Enable RBAC for operator & offshoot Kubernetes objects")
 	cmd.Flags().DurationVar(&opt.ResyncPeriod, "resync-period", opt.ResyncPeriod, "If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out.")
+	cmd.Flags().StringVar(&customTemplates, "custom-templates", customTemplates, "Glob pattern of custom HAProxy template files used to override built-in templates")
 
 	cmd.Flags().StringVar(&opt.OperatorService, "operator-service", opt.OperatorService, "Name of service used to expose voyager operator")
 	cmd.Flags().IntVar(&opt.HTTPChallengePort, "http-challenge-port", opt.HTTPChallengePort, "Port used to answer ACME HTTP challenge")
@@ -95,6 +100,11 @@ func run() {
 	kubeClient = clientset.NewForConfigOrDie(config)
 	extClient = acs.NewForConfigOrDie(config)
 	promClient, err := pcm.NewForConfig(config)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	err = haproxy.LoadTemplates(builtinTemplates, customTemplates)
 	if err != nil {
 		log.Fatalln(err)
 	}

@@ -1,0 +1,9 @@
+frontend http-frontend
+	bind *:80 {{ if .AcceptProxy }}accept-proxy{{ end }}
+
+	mode http
+	option httplog
+	option forwardfor
+
+	default_backend {{ .DefaultBackend.Name }}
+

@@ -1,0 +1,19 @@
+backend {{ .Backend.Name }}
+	mode tcp
+
+	{{- range $rule := .Backend.BackendRules }}
+	{{ $rule }}
+	{{ end -}}
+
+	{{- if $.Sticky }}
+	stick-table type ip size 100k expire 30m
+	stick on src
+	{{ end -}}
+
+	{{- range $e := .Backend.Endpoints }}
+	{{- if $e.ExternalName }}
+	server {{ $e.Name }} {{ $e.ExternalName }}:{{ $e.Port -}} {{ if $e.DNSResolver }} {{ if $e.CheckHealth }} check{{ end }} resolvers {{ $e.DNSResolver }} resolve-prefer ipv4{{ end -}} {{ if $e.TLSOption }} {{ $e.TLSOption }} {{ end -}}
+	{{- else }}
+	server {{ $e.Name }} {{ $e.IP }}:{{ $e.Port -}} {{ if $e.Weight }} weight {{ $e.Weight }}{{ end -}} {{ if $e.TLSOption }} {{ $e.TLSOption }} {{ end -}}
+	{{ end -}}
+	{{ end -}}

@@ -1,0 +1,8 @@
+listen stats
+	bind *:{{ .Port }}
+	mode http
+	stats enable
+	stats realm Haproxy\ Statistics
+	stats uri /
+	{{ if .Username }}stats auth {{ .Username }}:{{ .PassWord }}{{ end -}}
+

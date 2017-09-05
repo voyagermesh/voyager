@@ -1,0 +1,14 @@
+resolvers {{ .Name }}
+	{{- range $index, $ns := .NameServer }}
+	nameserver dns{{ $index }} {{ $ns -}}
+	{{ end }}
+	{{ if .Retries -}}
+	resolve_retries {{ .Retries -}}
+	{{ end -}}
+	{{- range $event, $time := .Timeout }}
+	timeout {{ $event }} {{ $time -}}
+	{{ end -}}
+	{{- range $status, $period := .Hold }}
+	hold {{ $status }} {{ $period -}}
+	{{ end -}}
+
