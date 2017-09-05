@@ -93,6 +93,20 @@ func (c *nodePortController) IsExists() bool {
 	if kerr.IsNotFound(err) {
 		return false
 	}
+	if c.Opt.EnableRBAC {
+		_, err = c.KubeClient.CoreV1().ServiceAccounts(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		if kerr.IsNotFound(err) {
+			return false
+		}
+		_, err = c.KubeClient.RbacV1beta1().Roles(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		if kerr.IsNotFound(err) {
+			return false
+		}
+		_, err = c.KubeClient.RbacV1beta1().RoleBindings(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		if kerr.IsNotFound(err) {
+			return false
+		}
+	}
 	return true
 }
 
