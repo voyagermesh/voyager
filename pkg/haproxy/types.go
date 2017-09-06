@@ -20,8 +20,6 @@ type TemplateData struct {
 type SharedInfo struct {
 	// Add accept-proxy to bind statements
 	AcceptProxy bool
-	// stick requests to specified servers.
-	Sticky         bool
 	DefaultBackend *Backend
 }
 
@@ -83,6 +81,8 @@ type Backend struct {
 	// Deprecated
 	HeaderRules []string
 	Endpoints   []*Endpoint
+
+	StickyEnabled bool
 }
 
 func (be *Backend) canonicalize() {
@@ -99,5 +99,5 @@ type Endpoint struct {
 	DNSResolver    string
 	CheckHealth    bool
 
-	TLSOption string
+	TLSOption     string
 }

@@ -20,8 +20,6 @@ const (
 
 	VoyagerPrefix = "voyager-"
 
-	StickySession = EngressKey + "/" + "sticky-session"
-
 	// LB stats options
 	StatsOn          = EngressKey + "/" + "stats"
 	StatsPort        = EngressKey + "/" + "stats-port"
@@ -154,6 +152,11 @@ const (
 	certificateAnnotationKeyProviderCredentialSecretName = "certificate.appscode.com/provider-secret"
 	certificateAnnotationKeyACMEUserSecretName           = "certificate.appscode.com/user-secret"
 	certificateAnnotationKeyACMEServerURL                = "certificate.appscode.com/server-url"
+
+	// Sticky session configures proxy to use sticky connection
+	// to the backend servers. Annotations should be applied to service.
+	// ie: "ingress.appscode.com/sticky-session": true
+	StickySession = EngressKey + "/" + "sticky-session"
 )
 
 func (r Ingress) OffshootName() string {
@@ -185,11 +188,6 @@ func (r Ingress) APISchema() string {
 		return v
 	}
 	return APISchemaEngress
-}
-
-func (r Ingress) StickySession() bool {
-	v, _ := getBool(r.Annotations, StickySession)
-	return v
 }
 
 func (r Ingress) Stats() bool {

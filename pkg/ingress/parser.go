@@ -19,7 +19,7 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, name string, port intstr.IntOrString, hostNames []string) ([]*haproxy.Endpoint, error) {
+func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, name string, port intstr.IntOrString, hostNames []string) (*haproxy.Backend, error) {
 	log.Infoln("getting endpoints for ", c.Ingress.Namespace, name, "port", port)
 
 	// the following lines giving support to
@@ -58,16 +58,16 @@ func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, 
 			ep.DNSResolver = resolver.Name
 			ep.CheckHealth = resolver.CheckHealth
 		}
-		return []*haproxy.Endpoint{&ep}, nil
+		return &haproxy.Backend{Endpoints: []*haproxy.Endpoint{&ep}}, nil
 	}
 	p, ok := getSpecifiedPort(service.Spec.Ports, port)
 	if !ok {
-		return nil, fmt.Errorf("Service port %s unavailable for service %s", port.String(), service.Name)
+		return nil, fmt.Errorf("service port %s unavailable for service %s", port.String(), service.Name)
 	}
 	return c.getEndpoints(service, p, hostNames)
 }
 
-func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (eps []*haproxy.Endpoint, err error) {
+func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (*haproxy.Backend, error) {
 	ep, err := c.EndpointsLister.Endpoints(s.Namespace).Get(s.Name)
 	if err != nil {
 		return nil, err
@@ -84,6 +84,7 @@ func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePo
 		pods[pod.Name] = pod
 	}
 
+	eps := make([]*haproxy.Endpoint, 0)
 	// The intent here is to create a union of all subsets that match a targetPort.
 	// We know the endpoint already matches the service, so all pod ips that have
 	// the target port are capable of service traffic for it.
@@ -142,7 +143,14 @@ func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePo
 			}
 		}
 	}
-	return
+	var stickyEnabled bool
+	if s.Annotations != nil {
+		stickyEnabled, _ = strconv.ParseBool(s.Annotations[api.StickySession])
+	}
+	return &haproxy.Backend{
+		Endpoints:     eps,
+		StickyEnabled: stickyEnabled,
+	}, nil
 }
 
 func isForwardable(hostNames []string, hostName string) bool {
@@ -191,7 +199,6 @@ func (c *controller) generateConfig() error {
 	}
 
 	si := &haproxy.SharedInfo{}
-	si.Sticky = c.Ingress.StickySession()
 	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
 		si.AcceptProxy = c.Ingress.KeepSourceIP()
 	}
@@ -201,16 +208,17 @@ func (c *controller) generateConfig() error {
 
 	dnsResolvers := make(map[string]*api.DNSResolver)
 	if c.Ingress.Spec.Backend != nil {
-		eps, err := c.serviceEndpoints(dnsResolvers, c.Ingress.Spec.Backend.ServiceName, c.Ingress.Spec.Backend.ServicePort, c.Ingress.Spec.Backend.HostNames)
+		bk, err := c.serviceEndpoints(dnsResolvers, c.Ingress.Spec.Backend.ServiceName, c.Ingress.Spec.Backend.ServicePort, c.Ingress.Spec.Backend.HostNames)
 		if err != nil {
 			return err
 		}
 		si.DefaultBackend = &haproxy.Backend{
-			Name:         "default-backend", // TODO: Use constant
-			Endpoints:    eps,
-			BackendRules: c.Ingress.Spec.Backend.BackendRule,
-			RewriteRules: c.Ingress.Spec.Backend.RewriteRule,
-			HeaderRules:  c.Ingress.Spec.Backend.HeaderRule,
+			Name:          "default-backend", // TODO: Use constant
+			Endpoints:     bk.Endpoints,
+			BackendRules:  c.Ingress.Spec.Backend.BackendRule,
+			RewriteRules:  c.Ingress.Spec.Backend.RewriteRule,
+			HeaderRules:   c.Ingress.Spec.Backend.HeaderRule,
+			StickyEnabled: bk.StickyEnabled,
 		}
 	}
 
@@ -246,20 +254,21 @@ func (c *controller) generateConfig() error {
 		if rule.HTTP != nil {
 			httpPaths := make([]*haproxy.HTTPPath, 0)
 			for _, path := range rule.HTTP.Paths {
-				eps, err := c.serviceEndpoints(dnsResolvers, path.Backend.ServiceName, path.Backend.ServicePort, path.Backend.HostNames)
+				bk, err := c.serviceEndpoints(dnsResolvers, path.Backend.ServiceName, path.Backend.ServicePort, path.Backend.HostNames)
 				if err != nil {
 					return err
 				}
-				if len(eps) > 0 {
+				if len(bk.Endpoints) > 0 {
 					httpPaths = append(httpPaths, &haproxy.HTTPPath{
 						Host: rule.Host,
 						Path: path.Path,
 						Backend: haproxy.Backend{
-							Name:         getBackendName(c.Ingress, path.Backend.IngressBackend),
-							Endpoints:    eps,
-							BackendRules: path.Backend.BackendRule,
-							RewriteRules: path.Backend.RewriteRule,
-							HeaderRules:  path.Backend.HeaderRule,
+							Name:          getBackendName(c.Ingress, path.Backend.IngressBackend),
+							Endpoints:     bk.Endpoints,
+							BackendRules:  path.Backend.BackendRule,
+							RewriteRules:  path.Backend.RewriteRule,
+							HeaderRules:   path.Backend.HeaderRule,
+							StickyEnabled: bk.StickyEnabled,
 						},
 					})
 				}
@@ -296,11 +305,11 @@ func (c *controller) generateConfig() error {
 				httpServices[key] = httpPaths
 			}
 		} else if rule.TCP != nil {
-			eps, err := c.serviceEndpoints(dnsResolvers, rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort, rule.TCP.Backend.HostNames)
+			bk, err := c.serviceEndpoints(dnsResolvers, rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort, rule.TCP.Backend.HostNames)
 			if err != nil {
 				return err
 			}
-			if len(eps) > 0 {
+			if len(bk.Endpoints) > 0 {
 				def := &haproxy.TCPService{
 					SharedInfo:   si,
 					FrontendName: fmt.Sprintf("tcp-%s", rule.TCP.Port.String()),
@@ -308,9 +317,10 @@ func (c *controller) generateConfig() error {
 					Port:         rule.TCP.Port.String(),
 					ALPNOptions:  parseALPNOptions(rule.TCP.ALPN),
 					Backend: haproxy.Backend{
-						Name:         getBackendName(c.Ingress, rule.TCP.Backend),
-						BackendRules: rule.TCP.Backend.BackendRule,
-						Endpoints:    eps,
+						Name:          getBackendName(c.Ingress, rule.TCP.Backend),
+						BackendRules:  rule.TCP.Backend.BackendRule,
+						Endpoints:     bk.Endpoints,
+						StickyEnabled: bk.StickyEnabled,
 					},
 				}
 				if secretName, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoTLS {
