@@ -1,5 +1,8 @@
-```console
-cat > /tmp/defaults <<EOF
+# Using Custom Templates
+
+```yaml
+$ cat /tmp/defaults
+
 defaults
 	log global
 
@@ -19,7 +22,6 @@ defaults
 	# default traffic mode is http
 	# mode is overwritten in case of tcp services
 	mode http
-EOF
 ```
 
 kubectl create configmap -n kube-system voyager-templates --from-file=/tmp/defaults
