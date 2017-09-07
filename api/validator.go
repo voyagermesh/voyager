@@ -32,6 +32,12 @@ func (a address) String() string {
 }
 
 func (r Ingress) IsValid(cloudProvider string) error {
+	for ri, rule := range r.Spec.FrontendRules {
+		if _, err := checkRequiredPort(rule.Port); err != nil {
+			return fmt.Errorf("spec.frontendRules[%d].port %s is invalid. Reason: %s", ri, rule.Port, err)
+		}
+	}
+
 	addrs := make(map[int]*address)
 	nodePorts := make(map[int]int)
 	usesHTTPRule := false

@@ -243,8 +243,8 @@ type IngressRef struct {
 }
 
 type FrontendRule struct {
-	// Port indicates the frontend port where HAProxy is listing for connection
-	Port  intstr.IntOrString `json:"port,omitempty"`
+	// Port indicates the frontend port where HAProxy is listening for connection
+	Port intstr.IntOrString `json:"port,omitempty"`
 	// Serialized rules
-	Rules []string           `json:"rules,omitempty"`
+	Rules []string `json:"rules,omitempty"`
 }
