@@ -19,7 +19,7 @@ data:
   GOOGLE_APPLICATION_CREDENTIALS: <credential>
 ```
 
-Create the ingress resource
+Create the Creatificate object
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Certificate
