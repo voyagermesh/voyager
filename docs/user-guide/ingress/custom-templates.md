@@ -4,7 +4,7 @@ Voyager can use custom templates provided by users to render HAProxy configurati
 
 In this example, we are going to overwrite the [defaults.cfg](/hack/docker/voyager/templates/defaults.cfg) template which is used to render the `[defaults](https://github.com/appscode/voyager/blob/3ae30cd023ff8fa6301d2656bf9fbc5765529691/hack/docker/voyager/templates/haproxy.cfg#L6)` section of HAProxy config.
 
-```yaml
+```console
 $ cat /tmp/defaults.cfg
 
 # my custom template
