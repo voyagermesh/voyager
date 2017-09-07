@@ -2,7 +2,7 @@
 
 If you are using a `NodePort` or `LoadBalancer` type Ingress, a `NodePort` or `LoadBalancer` type Service is used to expose HAProxy pods respectively. If no node port is specified for each HAProxy Service port, Kubernetes will randomly assign one for you.
 
-Since 3.2.0, you have the option to specify a NodePort for each HAProxy Service port. This allows you to guarantee that the port will not get changed, as you make changes to an Ingress object. If you specify nothing, Kubernetes will auto assign as before.
+Since 3.2.0-rc.2, you have the option to specify a NodePort for each HAProxy Service port. This allows you to guarantee that the port will not get changed, as you make changes to an Ingress object. If you specify nothing, Kubernetes will auto assign as before.
 
 Below is an example Ingress that demonstrates this feature:
 
@@ -124,7 +124,7 @@ backend test-server.default:80-iv3d2y
 	server pod-172.17.0.5 172.17.0.5:8080
 
 frontend tcp-4343
-	bind *:4343   
+	bind *:4343
 	mode tcp
 	default_backend test-server.default:80-kfk4b2
 
