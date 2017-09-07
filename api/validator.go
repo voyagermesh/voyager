@@ -32,6 +32,12 @@ func (a address) String() string {
 }
 
 func (r Ingress) IsValid(cloudProvider string) error {
+	for ri, rule := range r.Spec.FrontendRules {
+		if _, err := checkRequiredPort(rule.Port); err != nil {
+			return fmt.Errorf("spec.frontendRules[%d].port %s is invalid. Reason: %s", ri, rule.Port, err)
+		}
+	}
+
 	addrs := make(map[int]*address)
 	nodePorts := make(map[int]int)
 	usesHTTPRule := false
@@ -63,28 +69,28 @@ func (r Ingress) IsValid(cloudProvider string) error {
 			var a *address
 			if ea, found := addrs[podPort]; found {
 				if ea.Protocol == "tcp" {
-					return fmt.Errorf("spec.rule[%d].http is reusing port %d, also used in spec.rule[%d]", ri, a.PodPort, ea.FirstRuleIndex)
+					return fmt.Errorf("spec.rule[%d].http is reusing port %d, also used in spec.rule[%d]", ri, ea.PodPort, ea.FirstRuleIndex)
 				}
 				if nodePort != ea.NodePort {
-					return fmt.Errorf("spec.rule[%d].http.nodePort %d does not match with nodePort %d", ri, a.NodePort, ea.NodePort)
+					return fmt.Errorf("spec.rule[%d].http.nodePort %d does not match with nodePort %d", ri, ea.NodePort, ea.NodePort)
 				} else {
 					nodePorts[nodePort] = ri
 				}
 				a = ea // paths will be merged into the original one
 			} else {
-				if nodePort > 0 {
-					if ei, found := nodePorts[nodePort]; found {
-						return fmt.Errorf("spec.rule[%d].http is reusing nodePort %d for addr %s, also used in spec.rule[%d]", ri, a.NodePort, a, ei)
-					} else {
-						nodePorts[nodePort] = ri
-					}
-				}
 				a = &address{
 					Protocol:       "http",
 					PodPort:        podPort,
 					NodePort:       nodePort,
 					FirstRuleIndex: ri,
 					Hosts:          map[string]Paths{},
+				}
+				if nodePort > 0 {
+					if ei, found := nodePorts[nodePort]; found {
+						return fmt.Errorf("spec.rule[%d].http is reusing nodePort %d for addr %s, also used in spec.rule[%d]", ri, nodePort, a, ei)
+					} else {
+						nodePorts[nodePort] = ri
+					}
 				}
 				addrs[podPort] = a
 			}
