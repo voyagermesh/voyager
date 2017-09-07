@@ -82,3 +82,5 @@ spec:
           name: templates
 EOF
 ```
+
+This will restart the Voyager operator pods. After start, Voyager pod will update any existing HAProxy configuration to the new templates.
