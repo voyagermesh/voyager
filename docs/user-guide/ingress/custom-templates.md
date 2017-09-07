@@ -7,10 +7,10 @@ In this example, we are going to overwrite the [defaults.cfg](/hack/docker/voyag
 ```console
 $ cat /tmp/defaults.cfg
 
-# my custom template
 defaults
 	log global
 
+	# my custom template
 	# https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.2-option%20abortonclose
 	option dontlog-normal
 	log /dev/log local0 notice alert
