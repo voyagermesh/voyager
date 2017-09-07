@@ -20,6 +20,8 @@ type TemplateData struct {
 type SharedInfo struct {
 	// Add accept-proxy to bind statements
 	AcceptProxy bool
+	// stick requests to specified servers.
+	StickyIngress  bool
 	DefaultBackend *Backend
 }
 
@@ -99,5 +101,5 @@ type Endpoint struct {
 	DNSResolver    string
 	CheckHealth    bool
 
-	TLSOption     string
+	TLSOption string
 }

@@ -199,6 +199,7 @@ func (c *controller) generateConfig() error {
 	}
 
 	si := &haproxy.SharedInfo{}
+	si.StickyIngress = c.Ingress.StickyIngress()
 	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
 		si.AcceptProxy = c.Ingress.KeepSourceIP()
 	}

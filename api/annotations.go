@@ -153,9 +153,13 @@ const (
 	certificateAnnotationKeyACMEUserSecretName           = "certificate.appscode.com/user-secret"
 	certificateAnnotationKeyACMEServerURL                = "certificate.appscode.com/server-url"
 
-	// Sticky session configures proxy to use sticky connection
-	// to the backend servers. Annotations should be applied to service.
-	// ie: "ingress.appscode.com/sticky-session": true
+	// StickyIngress configures HAProxy to use sticky connection
+	// to the backend servers.
+	// Annotations could  be applied to both backend Service or Ingress.
+	// ie: "ingress.appscode.com/sticky-session": "true"
+	// If applied to Ingress, all the backend connection would be sticky
+	// If applied to Service and Ingress do not have this annotaion only
+	// connection to that backend service will be sticky.
 	StickySession = EngressKey + "/" + "sticky-session"
 )
 
@@ -188,6 +192,11 @@ func (r Ingress) APISchema() string {
 		return v
 	}
 	return APISchemaEngress
+}
+
+func (r Ingress) StickyIngress() bool {
+	v, _ := getBool(r.Annotations, StickySession)
+	return v
 }
 
 func (r Ingress) Stats() bool {

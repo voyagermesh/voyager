@@ -6,9 +6,9 @@ import (
 	"testing"
 	"text/template"
 
+	"github.com/appscode/go/runtime"
 	"github.com/appscode/voyager/api"
 	"github.com/stretchr/testify/assert"
-	"github.com/appscode/go/runtime"
 )
 
 func TestHeaderNameFilter(t *testing.T) {
@@ -128,11 +128,11 @@ func TestTemplate(t *testing.T) {
 					{
 						Path: "/kool",
 						Backend: Backend{
-							Name:         "kool",
+							Name:          "kool",
 							StickyEnabled: true,
-							BackendRules: []string{"first rule", "second rule"},
-							RewriteRules: []string{"first rule", "second rule"},
-							HeaderRules:  []string{"firstName value", "secondName value"},
+							BackendRules:  []string{"first rule", "second rule"},
+							RewriteRules:  []string{"first rule", "second rule"},
+							HeaderRules:   []string{"firstName value", "secondName value"},
 							Endpoints: []*Endpoint{
 								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true},
 								{Name: "first", IP: "10.244.2.2", Port: "2324"},
@@ -150,11 +150,11 @@ func TestTemplate(t *testing.T) {
 					{
 						Path: "/kool",
 						Backend: Backend{
-							Name:         "kool",
+							Name:          "kool",
 							StickyEnabled: true,
-							BackendRules: []string{"first rule", "second rule"},
-							RewriteRules: []string{"first rule", "second rule"},
-							HeaderRules:  []string{"firstName value", "secondName value"},
+							BackendRules:  []string{"first rule", "second rule"},
+							RewriteRules:  []string{"first rule", "second rule"},
+							HeaderRules:   []string{"firstName value", "secondName value"},
 							Endpoints: []*Endpoint{
 								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify required"},
 								{Name: "first", IP: "10.244.2.2", Port: "2324", TLSOption: "ssl verify none"},
@@ -174,7 +174,7 @@ func TestTemplate(t *testing.T) {
 						Host: "ex.appscode.dev",
 						Path: "/yara",
 						Backend: Backend{
-							Name: "yara",
+							Name:          "yara",
 							StickyEnabled: true,
 							Endpoints: []*Endpoint{
 								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify required"},
@@ -193,7 +193,7 @@ func TestTemplate(t *testing.T) {
 						Host: "ex.appscode.dev",
 						Path: "/yara",
 						Backend: Backend{
-							Name: "yara",
+							Name:          "yara",
 							StickyEnabled: true,
 							Endpoints: []*Endpoint{
 								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify required"},
@@ -280,7 +280,7 @@ func TestTemplate(t *testing.T) {
 				Host:         "hello.ok.domain",
 				Port:         "4449",
 				Backend: Backend{
-					Name: "kate-becket",
+					Name:          "kate-becket",
 					StickyEnabled: true,
 					Endpoints: []*Endpoint{
 						{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify none"},
