@@ -37,7 +37,7 @@ var (
 		ResyncPeriod:      5 * time.Minute,
 	}
 
-	builtinTemplates = "/srv/voyager/templates/*"
+	builtinTemplates = "/srv/voyager/templates/*.cfg"
 	customTemplates  = ""
 
 	address                   string        = fmt.Sprintf(":%d", api.DefaultExporterPortNumber)
