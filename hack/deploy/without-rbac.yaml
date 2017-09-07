@@ -17,10 +17,9 @@ spec:
         args:
         - run
         - --v=3
-        - --cloud-provider=minikube
-        - --cloud-config=
-        - --ingress-class=
-        - --custom-templates=/srv/voyager/custom/*.cfg
+        - --cloud-provider=$CLOUD_PROVIDER
+        - --cloud-config=$CLOUD_CONFIG # ie. /etc/kubernetes/azure.json for azure
+        - --ingress-class=$INGRESS_CLASS
         image: appscode/voyager:3.2.0-rc.3
         ports:
         - containerPort: 56790
@@ -30,16 +29,10 @@ spec:
           - mountPath: /etc/kubernetes
             name: cloudconfig
             readOnly: true
-          - mountPath: /srv/voyager/custom
-            name: templates
-            readOnly: true
       volumes:
         - hostPath:
             path: /etc/kubernetes
           name: cloudconfig
-        - configMap:
-            name: voyager-templates
-          name: templates
 ---
 apiVersion: v1
 kind: Service
