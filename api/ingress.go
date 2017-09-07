@@ -53,6 +53,16 @@ type IngressSpec struct {
 	// port according to the hostname specified through the SNI TLS extension.
 	TLS []IngressTLS `json:"tls,omitempty"`
 
+	// Frontend rules specifies a set of rules that should be applied in
+	// HAProxy frontend configuration. The set of keywords are from here
+	// https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.1
+	// Only frontend sections can be applied here. It is up to user to
+	// provide valid set of rules.
+	// This possible to configure acls or other options in this section for
+	// a frontend section in HAProxy config.
+	// Frontend rules will be mapped with Ingress Rules according to port.
+	FrontendRules []ListenerRule `json:"frontendRules,omitempty"`
+
 	// A list of host rules used to configure the Ingress. If unspecified, or
 	// no rule matches, all traffic is sent to the default backend.
 	Rules []IngressRule `json:"rules,omitempty"`
@@ -146,8 +156,6 @@ type HTTPIngressRuleValue struct {
 
 	// A collection of paths that map requests to backends.
 	Paths []HTTPIngressPath `json:"paths"`
-	// TODO: Consider adding fields for Ingress-type specific global
-	// options usable by a loadbalancer, like http keep-alive.
 }
 
 type TCPIngressRuleValue struct {
@@ -159,6 +167,8 @@ type TCPIngressRuleValue struct {
 
 	// Specifies the node port of the referenced service.
 	NodePort intstr.IntOrString `json:"nodePort,omitempty"`
+
+	FrontendRule []string `json:"frontendRule,omitempty"`
 
 	// Backend to forward the requests.
 	Backend IngressBackend `json:"backend,omitempty"`
@@ -232,4 +242,11 @@ type IngressRef struct {
 	APISchema string `json:"apiSchema"`
 	Name      string `json:"name"`
 	Namespace string `json:"namespace"`
+}
+
+type ListenerRule struct {
+	// Port indicates the frontend port where HAProxy is listing for connection
+	Port  intstr.IntOrString `json:"port,omitempty"`
+	// Serialized rules
+	Rules []string           `json:"rules,omitempty"`
 }

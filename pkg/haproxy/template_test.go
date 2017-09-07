@@ -80,6 +80,7 @@ func TestTemplate(t *testing.T) {
 				SharedInfo:   si,
 				FrontendName: "one",
 				Port:         80,
+				FrontendRules: []string{},
 				Paths: []*HTTPPath{
 					{
 						Path: "/elijah",
@@ -122,6 +123,7 @@ func TestTemplate(t *testing.T) {
 				SharedInfo:   &SharedInfo{Sticky: true},
 				FrontendName: "two",
 				Port:         933,
+				FrontendRules: []string{},
 				UsesSSL:      true,
 				Paths: []*HTTPPath{
 					{
@@ -143,6 +145,7 @@ func TestTemplate(t *testing.T) {
 				SharedInfo:   &SharedInfo{Sticky: true},
 				FrontendName: "three",
 				Port:         9334,
+				FrontendRules: []string{},
 				UsesSSL:      true,
 				Paths: []*HTTPPath{
 					{
@@ -165,6 +168,7 @@ func TestTemplate(t *testing.T) {
 				FrontendName: "four",
 				Port:         8334,
 				NodePort:     32000,
+				FrontendRules: []string{},
 				UsesSSL:      true,
 				Paths: []*HTTPPath{
 					{
@@ -183,6 +187,7 @@ func TestTemplate(t *testing.T) {
 				SharedInfo:   &SharedInfo{Sticky: true},
 				FrontendName: "five",
 				Port:         80,
+				FrontendRules: []string{},
 				UsesSSL:      true,
 				Paths: []*HTTPPath{
 					{
@@ -197,12 +202,31 @@ func TestTemplate(t *testing.T) {
 					},
 				},
 			},
+			{
+				SharedInfo:   si,
+				FrontendName: "http-with-frontend-rule",
+				Port:         80,
+				FrontendRules: []string{"rule one", "rule two"},
+				Paths: []*HTTPPath{
+					{
+						Host: "ex.appscode.dev",
+						Path: "/yara",
+						Backend: Backend{
+							Name: "yara",
+							Endpoints: []*Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323"},
+							},
+						},
+					},
+				},
+			},
 		},
 		TCPService: []*TCPService{
 			{
 				SharedInfo:   si,
 				FrontendName: "stefan",
 				Port:         "333",
+				FrontendRules: []string{},
 				Backend: Backend{
 					Name:         "stefan",
 					BackendRules: []string{"first rule", "second rule"},
@@ -217,6 +241,7 @@ func TestTemplate(t *testing.T) {
 				FrontendName: "daemon",
 				Host:         "hello.ok.domain",
 				Port:         "4444",
+				FrontendRules: []string{},
 				SecretName:   "this-is-secret",
 				PEMName:      "secret-pem",
 				Backend: Backend{
@@ -233,6 +258,7 @@ func TestTemplate(t *testing.T) {
 				ALPNOptions:  "alpn h2options",
 				Host:         "hello.ok.domain",
 				Port:         "4444",
+				FrontendRules: []string{},
 				Backend: Backend{
 					Name: "katherin",
 					Endpoints: []*Endpoint{
@@ -247,6 +273,7 @@ func TestTemplate(t *testing.T) {
 				ALPNOptions:  "alpn h2options",
 				Host:         "hello.ok.domain",
 				Port:         "4444",
+				FrontendRules: []string{},
 				Backend: Backend{
 					Name: "kate-becket",
 					Endpoints: []*Endpoint{
@@ -261,11 +288,25 @@ func TestTemplate(t *testing.T) {
 				ALPNOptions:  "alpn h2options",
 				Host:         "hello.ok.domain",
 				Port:         "4445",
+				FrontendRules: []string{},
 				Backend: Backend{
 					Name: "kate-becket",
 					Endpoints: []*Endpoint{
 						{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify none"},
 						{Name: "first", IP: "10.244.2.2", Port: "2324", ExternalName: "ext-name", TLSOption: "ssl verify required"},
+					},
+				},
+			},
+			{
+				SharedInfo:   si,
+				FrontendName: "with-frontend-rules",
+				Port:         "4445",
+				FrontendRules: []string{"rule one", "rule two"},
+				Backend: Backend{
+					Name: "kate-becket",
+					Endpoints: []*Endpoint{
+						{Name: "first", IP: "10.244.2.1", Port: "2323"},
+						{Name: "first", IP: "10.244.2.2", Port: "2324"},
 					},
 				},
 			},

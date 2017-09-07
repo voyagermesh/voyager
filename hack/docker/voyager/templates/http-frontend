@@ -12,6 +12,11 @@ frontend {{ .FrontendName }}
 	option httplog
 	option forwardfor
 
+    {{ range $rule := .FrontendRules }}
+    {{ $rule -}}
+    {{ end }}
+
+
 	{{- range $path := .Paths }}
 	{{ if  and (or (eq $.Port 80) (eq $.Port 443)) (not $.NodePort) }}
 	{{ if $path.Host }}acl host_acl_{{ $path.Backend.Name }} {{ $path.Host | host_name }}{{ end }}

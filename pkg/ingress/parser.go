@@ -302,11 +302,12 @@ func (c *controller) generateConfig() error {
 			}
 			if len(eps) > 0 {
 				def := &haproxy.TCPService{
-					SharedInfo:   si,
-					FrontendName: fmt.Sprintf("tcp-%s", rule.TCP.Port.String()),
-					Host:         rule.Host,
-					Port:         rule.TCP.Port.String(),
-					ALPNOptions:  parseALPNOptions(rule.TCP.ALPN),
+					SharedInfo:    si,
+					FrontendName:  fmt.Sprintf("tcp-%s", rule.TCP.Port.String()),
+					Host:          rule.Host,
+					Port:          rule.TCP.Port.String(),
+					ALPNOptions:   parseALPNOptions(rule.TCP.ALPN),
+					FrontendRules: getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, rule.TCP.Port.IntValue()),
 					Backend: haproxy.Backend{
 						Name:         getBackendName(c.Ingress, rule.TCP.Backend),
 						BackendRules: rule.TCP.Backend.BackendRule,
@@ -324,12 +325,13 @@ func (c *controller) generateConfig() error {
 	for key := range httpServices {
 		value := httpServices[key]
 		td.HTTPService = append(td.HTTPService, &haproxy.HTTPService{
-			SharedInfo:   si,
-			FrontendName: fmt.Sprintf("http-%d", key.Port),
-			Port:         key.Port,
-			NodePort:     key.NodePort,
-			UsesSSL:      key.UsesSSL,
-			Paths:        value,
+			SharedInfo:    si,
+			FrontendName:  fmt.Sprintf("http-%d", key.Port),
+			Port:          key.Port,
+			FrontendRules: getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, key.Port),
+			NodePort:      key.NodePort,
+			UsesSSL:       key.UsesSSL,
+			Paths:         value,
 		})
 	}
 
@@ -348,6 +350,15 @@ func (c *controller) generateConfig() error {
 		log.Debugf("Generated haproxy.cfg for Ingress %s@%s:", c.Ingress.Name, c.Ingress.Namespace, cfg)
 	}
 	return nil
+}
+
+func getFrontendRulesForPort(rules []api.ListenerRule, port int) []string {
+	for _, rule := range rules {
+		if rule.Port.IntValue() == port {
+			return rule.Rules
+		}
+	}
+	return []string{}
 }
 
 func parseALPNOptions(opt []string) string {

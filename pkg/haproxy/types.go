@@ -34,11 +34,12 @@ type StatsInfo struct {
 type HTTPService struct {
 	*SharedInfo
 
-	FrontendName string
-	Port         int
-	NodePort     int32
-	UsesSSL      bool
-	Paths        []*HTTPPath
+	FrontendName  string
+	Port          int
+	NodePort      int32
+	UsesSSL       bool
+	FrontendRules []string
+	Paths         []*HTTPPath
 }
 
 func (svc HTTPService) sortKey() string {
@@ -61,13 +62,14 @@ func (svc HTTPPath) sortKey() string {
 type TCPService struct {
 	*SharedInfo
 
-	FrontendName string
-	Host         string
-	Port         string
-	SecretName   string
-	PEMName      string
-	Backend      Backend
-	ALPNOptions  string
+	FrontendName  string
+	Host          string
+	Port          string
+	FrontendRules []string
+	SecretName    string
+	PEMName       string
+	Backend       Backend
+	ALPNOptions   string
 }
 
 func (svc TCPService) sortKey() string {
