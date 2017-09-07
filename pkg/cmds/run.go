@@ -37,7 +37,7 @@ var (
 		ResyncPeriod:      5 * time.Minute,
 	}
 
-	builtinTemplates = "/srv/voyager/templates/*"
+	builtinTemplates = "/srv/voyager/templates/*.cfg"
 	customTemplates  = ""
 
 	address                   string        = fmt.Sprintf(":%d", api.DefaultExporterPortNumber)
@@ -92,6 +92,11 @@ func run() {
 		log.Fatalln("Invalid ingress class `--ingress-class=$INGRESS_CLASS`")
 	}
 
+	err := haproxy.LoadTemplates(builtinTemplates, customTemplates)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
 	if err != nil {
 		log.Fatalf("Could not get Kubernetes config: %s", err)
@@ -100,11 +105,6 @@ func run() {
 	kubeClient = clientset.NewForConfigOrDie(config)
 	extClient = acs.NewForConfigOrDie(config)
 	promClient, err := pcm.NewForConfig(config)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	err = haproxy.LoadTemplates(builtinTemplates, customTemplates)
 	if err != nil {
 		log.Fatalln(err)
 	}

@@ -20,8 +20,6 @@ const (
 
 	VoyagerPrefix = "voyager-"
 
-	StickySession = EngressKey + "/" + "sticky-session"
-
 	// LB stats options
 	StatsOn          = EngressKey + "/" + "stats"
 	StatsPort        = EngressKey + "/" + "stats-port"
@@ -154,6 +152,15 @@ const (
 	certificateAnnotationKeyProviderCredentialSecretName = "certificate.appscode.com/provider-secret"
 	certificateAnnotationKeyACMEUserSecretName           = "certificate.appscode.com/user-secret"
 	certificateAnnotationKeyACMEServerURL                = "certificate.appscode.com/server-url"
+
+	// StickyIngress configures HAProxy to use sticky connection
+	// to the backend servers.
+	// Annotations could  be applied to either Ingress or backend Service (since 3.2+).
+	// ie: ingress.appscode.com/sticky-session: "true"
+	// If applied to Ingress, all the backend connections would be sticky
+	// If applied to Service and Ingress do not have this annotation only
+	// connection to that backend service will be sticky.
+	StickySession = EngressKey + "/" + "sticky-session"
 )
 
 func (r Ingress) OffshootName() string {
@@ -187,7 +194,7 @@ func (r Ingress) APISchema() string {
 	return APISchemaEngress
 }
 
-func (r Ingress) StickySession() bool {
+func (r Ingress) Sticky() bool {
 	v, _ := getBool(r.Annotations, StickySession)
 	return v
 }
