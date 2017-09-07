@@ -1,7 +1,7 @@
 # Using Custom Templates
 
 ```yaml
-$ cat /tmp/defaults
+$ cat /tmp/defaults.cfg
 
 defaults
 	log global
@@ -24,10 +24,11 @@ defaults
 	mode http
 ```
 
-kubectl create configmap -n kube-system voyager-templates --from-file=/tmp/defaults
+kubectl create configmap -n kube-system voyager-templates --from-file=/tmp/defaults.cfg
 
 ```yaml
 cat <<EOF | kubectl apply -f -
+
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -50,7 +51,7 @@ spec:
         - --cloud-provider=minikube
         - --cloud-config=
         - --ingress-class=
-        - '--custom-templates=/srv/voyager/custom/*'
+        - --custom-templates=/srv/voyager/custom/*.cfg
         image: appscode/voyager:3.2.0-rc.2
         ports:
         - containerPort: 56790
@@ -61,13 +62,14 @@ spec:
             name: cloudconfig
             readOnly: true
           - mountPath: /srv/voyager/custom
-            name: voyager-templates
+            name: templates
             readOnly: true
       volumes:
         - hostPath:
             path: /etc/kubernetes
           name: cloudconfig
         - configMap:
-          name: voyager-templates
+            name: voyager-templates
+          name: templates
 EOF
 ```
