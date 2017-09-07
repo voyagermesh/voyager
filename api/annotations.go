@@ -194,7 +194,7 @@ func (r Ingress) APISchema() string {
 	return APISchemaEngress
 }
 
-func (r Ingress) StickyIngress() bool {
+func (r Ingress) Sticky() bool {
 	v, _ := getBool(r.Annotations, StickySession)
 	return v
 }

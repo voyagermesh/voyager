@@ -19,9 +19,7 @@ type TemplateData struct {
 
 type SharedInfo struct {
 	// Add accept-proxy to bind statements
-	AcceptProxy bool
-	// stick requests to specified servers.
-	StickyIngress  bool
+	AcceptProxy    bool
 	DefaultBackend *Backend
 }
 
@@ -84,7 +82,7 @@ type Backend struct {
 	HeaderRules []string
 	Endpoints   []*Endpoint
 
-	StickyEnabled bool
+	Sticky bool
 }
 
 func (be *Backend) canonicalize() {

@@ -5,7 +5,7 @@ backend {{ .Backend.Name }}
 	{{ $rule }}
 	{{ end -}}
 
-	{{- if or $.StickyIngress .Backend.StickyEnabled }}
+	{{- if .Backend.Sticky }}
 	stick-table type ip size 100k expire 30m
 	stick on src
 	{{ end -}}
