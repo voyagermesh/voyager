@@ -6,6 +6,7 @@ import (
 	"testing"
 	"text/template"
 
+	"github.com/appscode/go/runtime"
 	"github.com/appscode/voyager/api"
 	"github.com/stretchr/testify/assert"
 )
@@ -120,7 +121,7 @@ func TestTemplate(t *testing.T) {
 				},
 			},
 			{
-				SharedInfo:   &SharedInfo{Sticky: true},
+				SharedInfo:   si,
 				FrontendName: "two",
 				Port:         933,
 				FrontendRules: []string{},
@@ -130,6 +131,7 @@ func TestTemplate(t *testing.T) {
 						Path: "/kool",
 						Backend: Backend{
 							Name:         "kool",
+							Sticky:       true,
 							BackendRules: []string{"first rule", "second rule"},
 							RewriteRules: []string{"first rule", "second rule"},
 							HeaderRules:  []string{"firstName value", "secondName value"},
@@ -142,7 +144,7 @@ func TestTemplate(t *testing.T) {
 				},
 			},
 			{
-				SharedInfo:   &SharedInfo{Sticky: true},
+				SharedInfo:   si,
 				FrontendName: "three",
 				Port:         9334,
 				FrontendRules: []string{},
@@ -152,6 +154,7 @@ func TestTemplate(t *testing.T) {
 						Path: "/kool",
 						Backend: Backend{
 							Name:         "kool",
+							Sticky:       true,
 							BackendRules: []string{"first rule", "second rule"},
 							RewriteRules: []string{"first rule", "second rule"},
 							HeaderRules:  []string{"firstName value", "secondName value"},
@@ -164,7 +167,7 @@ func TestTemplate(t *testing.T) {
 				},
 			},
 			{
-				SharedInfo:   &SharedInfo{Sticky: true},
+				SharedInfo:   si,
 				FrontendName: "four",
 				Port:         8334,
 				NodePort:     32000,
@@ -175,7 +178,8 @@ func TestTemplate(t *testing.T) {
 						Host: "ex.appscode.dev",
 						Path: "/yara",
 						Backend: Backend{
-							Name: "yara",
+							Name:   "yara",
+							Sticky: true,
 							Endpoints: []*Endpoint{
 								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify required"},
 							},
@@ -184,7 +188,7 @@ func TestTemplate(t *testing.T) {
 				},
 			},
 			{
-				SharedInfo:   &SharedInfo{Sticky: true},
+				SharedInfo:   si,
 				FrontendName: "five",
 				Port:         80,
 				FrontendRules: []string{},
@@ -194,7 +198,8 @@ func TestTemplate(t *testing.T) {
 						Host: "ex.appscode.dev",
 						Path: "/yara",
 						Backend: Backend{
-							Name: "yara",
+							Name:   "yara",
+							Sticky: true,
 							Endpoints: []*Endpoint{
 								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify required"},
 							},
@@ -310,11 +315,28 @@ func TestTemplate(t *testing.T) {
 					},
 				},
 			},
+			{
+				SharedInfo:   si,
+				FrontendName: "with-sticky-options",
+				Host:         "hello.ok.domain",
+				Port:         "4449",
+				Backend: Backend{
+					Name:   "kate-becket",
+					Sticky: true,
+					Endpoints: []*Endpoint{
+						{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify none"},
+						{Name: "first", IP: "10.244.2.2", Port: "2324", ExternalName: "ext-name", TLSOption: "ssl verify required"},
+					},
+				},
+			},
 		},
 	}
-	config, err := RenderConfig(testParsedConfig)
-	assert.Nil(t, err)
-	if testing.Verbose() {
-		fmt.Println(err, "\n", config)
+	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*", "")
+	if assert.Nil(t, err) {
+		config, err := RenderConfig(testParsedConfig)
+		assert.Nil(t, err)
+		if testing.Verbose() {
+			fmt.Println(err, "\n", config)
+		}
 	}
 }

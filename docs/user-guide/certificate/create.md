@@ -9,7 +9,18 @@ Voyager requires Service account secret for your specified dns provider. This Se
 The following example will create a certificate from Lets Encrypt Prod. If you want to create a certificate from
 another ACME server [see this example](create-with-custom-provider.md)
 
+Create the DNS provider secret first.
+```yaml
+kind: Secret
+metadata:
+  name: test-gcp-secret
+  namespace: default
+data:
+  GCE_PROJECT: <project-name>
+  GOOGLE_APPLICATION_CREDENTIALS: <credential>
+```
 
+Create the Certificate resource now.
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Certificate
@@ -24,22 +35,12 @@ spec:
   provider: googlecloud
   providerCredentialSecretName: test-gcp-secret
 ```
-
-In this example the domains DNS providers are `googlecloude`. Example Test `test-gcp-secret` should look like
-```yaml
-kind: Secret
-metadata:
-  name: test-gcp-secret
-  namespace: default
-data:
-  GCE_PROJECT: <project-name>
-  GOOGLE_APPLICATION_CREDENTIALS: <credential>
-```
+In this example the domains DNS providers are `googlecloude`.
 
 See the Supported Providers List [here](provider.md)
 
 ```console
-kubectl create -f example.yaml
+kubectl create -f hack/example/certificate.yaml
 ```
 
 After submitting the Certificate configuration to the Kubernetes API it will be processed by the Voyager. You can view the process logs via
@@ -120,6 +121,7 @@ spec:
     Namespace: foo
     Name: base-ingress
 ```
+
 
 When your certificate is issued, you will see a `kubernetes.io/tls` type secret.
 
