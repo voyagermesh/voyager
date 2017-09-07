@@ -8,6 +8,18 @@ Voyager requires Service account secret for your specified dns provider. This Se
 ### Create a Kubernetes Certificate Object
 The following example will create a certificate from Lets Encrypt Staging.
 
+Create the DNS provider secret first
+```yaml
+kind: Secret
+metadata:
+  name: test-gcp-secret
+  namespace: default
+data:
+  GCE_PROJECT: <project-name>
+  GOOGLE_APPLICATION_CREDENTIALS: <credential>
+```
+
+Create the Creatificate object
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Certificate
@@ -26,21 +38,10 @@ spec:
 
 For testing purpose you may use Let's Encrypt's staging URL `https://acme-staging.api.letsencrypt.org/directory` as `acmeStagingURL`
 
-In this example the domains DNS providers are `googlecloud`. Example Test `test-gcp-secret` should look like
-```yaml
-kind: Secret
-metadata:
-  name: test-gcp-secret
-  namespace: default
-data:
-  GCE_PROJECT: <project-name>
-  GOOGLE_APPLICATION_CREDENTIALS: <credential>
-```
-
-See the Supported Providers List [here](provider.md)
+In this example the DNS provider is `googlecloud`. To see the full list of supported providers, visit [here](provider.md) .
 
 ```console
-kubectl create -f example.yaml
+kubectl create -f hack/example/certificate.yaml
 ```
 
 After submitting the Certificate configuration to the Kubernetes API it will be processed by the Voyager. You can view the process logs via
@@ -75,3 +76,6 @@ Data
 tls.crt:        3411 bytes
 tls.key:        1679 bytes
 ```
+
+> HTTP provider certificate can be also be created applying annotations to ingress. But you can't create a
+certificate and mount the secret same time in the ingress.
