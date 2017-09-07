@@ -38,9 +38,7 @@ spec:
 
 For testing purpose you may use Let's Encrypt's staging URL `https://acme-staging.api.letsencrypt.org/directory` as `acmeStagingURL`
 
-In this example the domains DNS providers are `googlecloud`.
-
-See the Supported Providers List [here](provider.md)
+In this example the DNS provider is `googlecloud`. To see the full list of supported providers, visit [here](provider.md) .
 
 ```console
 kubectl create -f hack/example/certificate.yaml
