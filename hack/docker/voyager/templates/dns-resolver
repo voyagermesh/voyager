@@ -10,5 +10,4 @@ resolvers {{ .Name }}
 	{{ end -}}
 	{{- range $status, $period := .Hold }}
 	hold {{ $status }} {{ $period -}}
-	{{ end -}}
-
+	{{ end }}

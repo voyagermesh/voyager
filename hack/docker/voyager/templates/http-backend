@@ -1,6 +1,6 @@
 {{- range $path := .Paths }}
 backend {{ $path.Backend.Name }}
-	{{ if $.Sticky }}cookie SERVERID insert indirect nocache{{- end -}}
+	{{ if $path.Backend.Sticky }}cookie SERVERID insert indirect nocache{{- end -}}
 	{{- range $rule := $path.Backend.BackendRules }}
 	{{ $rule -}}
 	{{ end }}
@@ -22,7 +22,7 @@ backend {{ $path.Backend.Name }}
 	http-request redirect location {{ if $.UsesSSL }}https://{{ else }}http://{{ end }}{{$e.ExternalName}}:{{ $e.Port }} code 301
 	{{- end }}
 	{{- else }}
-	server {{ $e.Name }} {{ $e.IP }}:{{ $e.Port -}} {{ if $e.Weight }} weight {{ $e.Weight }} {{ end -}} {{ if $.Sticky }} cookie {{ $e.Name }} {{ end -}} {{ if $e.TLSOption }} {{ $e.TLSOption }} {{ end -}}
+	server {{ $e.Name }} {{ $e.IP }}:{{ $e.Port -}} {{ if $e.Weight }} weight {{ $e.Weight }} {{ end -}} {{ if $path.Backend.Sticky }} cookie {{ $e.Name }} {{ end -}} {{ if $e.TLSOption }} {{ $e.TLSOption }} {{ end -}}
 	{{ end -}}
 	{{ end }}
 {{ end -}}
