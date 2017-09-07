@@ -29,11 +29,15 @@ defaults
 	mode http
 ```
 
-kubectl create configmap -n kube-system voyager-templates --from-file=/tmp/defaults.cfg
+Now create a ConfigMap using the defaults.cfg as key and the file content as the value.
+```console
+$ kubectl create configmap -n kube-system voyager-templates --from-file=/tmp/defaults.cfg
+```
+
+Now, update the appropriate installer YAMLs in [`/hack/deploy/with*-rbac.yaml`](/hack/deploy) for your cluster to mount the ConfigMap `voyager-templates` and set `--custom-templates` flag. Below is the updated YAML for a minikube cluster without RBAC.
 
 ```yaml
 cat <<EOF | kubectl apply -f -
-
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
