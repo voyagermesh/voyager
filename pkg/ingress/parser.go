@@ -366,7 +366,7 @@ func (c *controller) generateConfig() error {
 	return nil
 }
 
-func getFrontendRulesForPort(rules []api.ListenerRule, port int) []string {
+func getFrontendRulesForPort(rules []api.FrontendRule, port int) []string {
 	for _, rule := range rules {
 		if rule.Port.IntValue() == port {
 			return rule.Rules

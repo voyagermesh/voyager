@@ -61,7 +61,7 @@ type IngressSpec struct {
 	// This possible to configure acls or other options in this section for
 	// a frontend section in HAProxy config.
 	// Frontend rules will be mapped with Ingress Rules according to port.
-	FrontendRules []ListenerRule `json:"frontendRules,omitempty"`
+	FrontendRules []FrontendRule `json:"frontendRules,omitempty"`
 
 	// A list of host rules used to configure the Ingress. If unspecified, or
 	// no rule matches, all traffic is sent to the default backend.
@@ -242,7 +242,7 @@ type IngressRef struct {
 	Namespace string `json:"namespace"`
 }
 
-type ListenerRule struct {
+type FrontendRule struct {
 	// Port indicates the frontend port where HAProxy is listing for connection
 	Port  intstr.IntOrString `json:"port,omitempty"`
 	// Serialized rules
