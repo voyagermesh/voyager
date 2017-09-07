@@ -14,7 +14,7 @@ metadata:
   namespace: default
 spec:
   rules:
-  - host: appscode.example.com
+  - host: one.example.com
     http:
       port: '8989'
       nodePort: '32666'
