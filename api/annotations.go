@@ -158,7 +158,7 @@ const (
 	// Annotations could  be applied to either Ingress or backend Service (since 3.2+).
 	// ie: ingress.appscode.com/sticky-session: "true"
 	// If applied to Ingress, all the backend connections would be sticky
-	// If applied to Service and Ingress do not have this annotaion only
+	// If applied to Service and Ingress do not have this annotation only
 	// connection to that backend service will be sticky.
 	StickySession = EngressKey + "/" + "sticky-session"
 )
