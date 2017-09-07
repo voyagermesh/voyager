@@ -78,19 +78,19 @@ func (r Ingress) IsValid(cloudProvider string) error {
 				}
 				a = ea // paths will be merged into the original one
 			} else {
-				if nodePort > 0 {
-					if ei, found := nodePorts[nodePort]; found {
-						return fmt.Errorf("spec.rule[%d].http is reusing nodePort %d for addr %s, also used in spec.rule[%d]", ri, nodePort, a, ei)
-					} else {
-						nodePorts[nodePort] = ri
-					}
-				}
 				a = &address{
 					Protocol:       "http",
 					PodPort:        podPort,
 					NodePort:       nodePort,
 					FirstRuleIndex: ri,
 					Hosts:          map[string]Paths{},
+				}
+				if nodePort > 0 {
+					if ei, found := nodePorts[nodePort]; found {
+						return fmt.Errorf("spec.rule[%d].http is reusing nodePort %d for addr %s, also used in spec.rule[%d]", ri, nodePort, a, ei)
+					} else {
+						nodePorts[nodePort] = ri
+					}
 				}
 				addrs[podPort] = a
 			}
