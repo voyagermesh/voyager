@@ -40,7 +40,7 @@ hosting. This plugin also support configurable application ports with all the fe
   - [Specify NodePort](/docs/user-guide/ingress/node-port.md)
   - [Backend TLS](/docs/user-guide/ingress/backend-tls.md)
   - [Configure Options](/docs/user-guide/ingress/configure-options.md)
-  - [Use Custom HAProxy Templates](/docs/user-guide/ingress/custom-templates.md)
+  - [Using Custom HAProxy Templates](/docs/user-guide/ingress/custom-templates.md)
 
 ### Comparison with Kubernetes
 | Feauture | Kube Ingress | AppsCode Ingress |
