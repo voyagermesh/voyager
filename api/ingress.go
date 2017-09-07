@@ -58,8 +58,7 @@ type IngressSpec struct {
 	// https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.1
 	// Only frontend sections can be applied here. It is up to user to
 	// provide valid set of rules.
-	// This possible to configure acls or other options in this section for
-	// a frontend section in HAProxy config.
+	// This allows acls or other options in frontend sections in HAProxy config.
 	// Frontend rules will be mapped with Ingress Rules according to port.
 	FrontendRules []FrontendRule `json:"frontendRules,omitempty"`
 
