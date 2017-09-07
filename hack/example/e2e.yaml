@@ -49,7 +49,35 @@ kind: Ingress
 metadata:
   name: test-ingress
   namespace: default
+  annotations:
+    ingress.appscode.com/type: NodePort
 spec:
-  backend:
-    serviceName: test-server
-    servicePort: '80'
+  rules:
+  - host: one.example.com
+    http:
+      port: '8989'
+      nodePort: '32666'
+      paths:
+      - path: /t1
+        backend:
+          serviceName: test-server
+          servicePort: '80'
+      - path: /t2
+        backend:
+          serviceName: test-server
+          servicePort: '80'
+  - host: other.example.com
+    http:
+      port: '8989'
+      nodePort: '32666'
+      paths:
+      - backend:
+          serviceName: test-server
+          servicePort: '80'
+  - host: appscode.example.com
+    tcp:
+      port: '4343'
+      nodePort: '32667'
+      backend:
+        serviceName: test-server
+        servicePort: '80'
