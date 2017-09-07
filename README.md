@@ -13,30 +13,30 @@ This also support configurable application ports with all the options available 
 is a [complex ingress example](hack/example/ingress.yaml) that shows how various features can be used.
 You can find the generated HAProxy Configuration [here](hack/example/haproxy_generated.cfg).
 
-**Feautures**
+**Features**
 
-  - [HTTP](docs/user-guide/ingress/single-service.md) and [TCP](docs/user-guide/ingress/tcp.md) loadbalancing,
-  - [TLS Termination](docs/user-guide/ingress/tls.md),
-  - Multi-cloud supports,
-  - [Name and Path based virtual hosting](docs/user-guide/ingress/named-virtual-hosting.md),
-  - [Cross namespace routing support](docs/user-guide/ingress/named-virtual-hosting.md#cross-namespace-traffic-routing),
-  - [URL and Request Header Re-writing](docs/user-guide/ingress/header-rewrite.md),
-  - [Wildcard Name based virtual hosting](docs/user-guide/ingress/named-virtual-hosting.md),
+  - [HTTP](/docs/user-guide/ingress/single-service.md) and [TCP](/docs/user-guide/ingress/tcp.md) loadbalancing,
+  - [TLS Termination](/docs/user-guide/ingress/tls.md),
+  - Multi-cloud support,
+  - [Name and Path based virtual hosting](/docs/user-guide/ingress/named-virtual-hosting.md),
+  - [Cross namespace routing support](/docs/user-guide/ingress/named-virtual-hosting.md#cross-namespace-traffic-routing),
+  - [URL and Request Header Re-writing](/docs/user-guide/ingress/header-rewrite.md),
+  - [Wildcard Name based virtual hosting](/docs/user-guide/ingress/named-virtual-hosting.md),
   - Persistent sessions, Loadbalancer stats.
-  - [Route Traffic to StatefulSet Pods Based on Host Name](docs/user-guide/ingress/statefulset-pod.md)
-  - [Weighted Loadbalancing for Canary Deployment](docs/user-guide/ingress/weighted.md)
-  - [Customize generated HAProxy config via BackendRule](docs/user-guide/ingress/backend-rule.md) (can be used for [http rewriting](https://www.haproxy.com/doc/aloha/7.0/haproxy/http_rewriting.html), add [health checks](https://www.haproxy.com/doc/aloha/7.0/haproxy/healthchecks.html), etc.)
-  - [Add Custom Annotation to LoadBalancer Service and Pods](docs/user-guide/ingress/annotations.md)
-  - [Supports Loadbalancer Source Range](docs/user-guide/ingress/source-range.md)
-  - [Supports redirects/DNS resolution for `ExternalName` type service](docs/user-guide/ingress/external-svc.md)
-  - [Expose HAProxy stats for Prometheus](docs/user-guide/ingress/stats-and-prometheus.md)
-  - [Supports AWS certificate manager](docs/user-guide/ingress/aws-cert-manager.md)
-  - [Scale load balancer using HorizontalPodAutoscaling](docs/user-guide/ingress/replicas-and-autoscaling.md)
-  - [Configure Custom Timeouts for HAProxy](docs/user-guide/ingress/configure-timeouts.md)
-  - [Custom port for HTTP](docs/user-guide/ingress/custom-http-port.md)
-  - [Set NodePort](docs/user-guide/ingress/node-port.md)
-  - [Backend TLS](docs/user-guide/ingress/backend-tls.md)
-  - [Configure Options](docs/user-guide/ingress/configure-options.md)
+  - [Route Traffic to StatefulSet Pods Based on Host Name](/docs/user-guide/ingress/statefulset-pod.md)
+  - [Weighted Loadbalancing for Canary Deployment](/docs/user-guide/ingress/weighted.md)
+  - [Customize generated HAProxy config via BackendRule](/docs/user-guide/ingress/backend-rule.md) (can be used for [http rewriting](https://www.haproxy.com/doc/aloha/7.0/haproxy/http_rewriting.html), add [health checks](https://www.haproxy.com/doc/aloha/7.0/haproxy/healthchecks.html), etc.)
+  - [Add Custom Annotation to LoadBalancer Service and Pods](/docs/user-guide/ingress/annotations.md)
+  - [Supports Loadbalancer Source Range](/docs/user-guide/ingress/source-range.md)
+  - [Supports redirects/DNS resolution for `ExternalName` type service](/docs/user-guide/ingress/external-svc.md)
+  - [Expose HAProxy stats for Prometheus](/docs/user-guide/ingress/stats-and-prometheus.md)
+  - [Supports AWS certificate manager](/docs/user-guide/ingress/aws-cert-manager.md)
+  - [Scale load balancer using HorizontalPodAutoscaling](/docs/user-guide/ingress/replicas-and-autoscaling.md)
+  - [Configure Custom Timeouts for HAProxy](/docs/user-guide/ingress/configure-timeouts.md)
+  - [Custom port for HTTP](/docs/user-guide/ingress/custom-http-port.md)
+  - [Specify NodePort](/docs/user-guide/ingress/node-port.md)
+  - [Backend TLS](/docs/user-guide/ingress/backend-tls.md)
+  - [Configure Options](/docs/user-guide/ingress/configure-options.md)
 
 
 ### Comparison with Kubernetes

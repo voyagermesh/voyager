@@ -18,24 +18,28 @@ This is built on top of the HAProxy, to support high availability, sticky sessio
 hosting. This plugin also support configurable application ports with all the features available in Kubernetes Ingress. [Read More](#what-is-appscode-ingress)
 
 ### Core features of AppsCode Ingress:
-  - [HTTP](single-service.md) and [TCP](tcp.md) loadbalancing,
-  - [TLS Termination](tls.md),
-  - Multi-cloud supports,
-  - [Name and Path based virtual hosting](named-virtual-hosting.md),
-  - [Cross namespace routing support](named-virtual-hosting.md),
-  - [URL and Request Header Re-writing](header-rewrite.md),
-  - [Wildcard Name based virtual hosting](named-virtual-hosting.md),
-  - Persistent sessions, Loadbalancer stats,
-  - [Route Traffic to StatefulSet Pods Based on Host Name](statefulset-pod.md)
-  - [Weighted Loadbalancing for Canary Deployment](weighted.md)
-  - [Customize generated HAProxy config via BackendRule](backend-rule.md)
-  - [Add Custom Annotation to LoadBalancer Service and Pods](annotations.md)
-  - [Supports Loadbalancer Source Range](source-range.md)
-  - [Supports redirects/DNS resolution for `ExternalName` type service](external-svc.md)
-  - [Expose HAProxy stats for Prometheus](stats-and-prometheus.md)
-  - [Supports AWS certificate manager](aws-cert-manager.md)
-  - [Scale load balancer using HorizontalPodAutoscaling](replicas-and-autoscaling.md)
-  - [Configure Custom Timeouts for HAProxy](configure-timeouts.md)
+  - [HTTP](/docs/user-guide/ingress/single-service.md) and [TCP](/docs/user-guide/ingress/tcp.md) loadbalancing,
+  - [TLS Termination](/docs/user-guide/ingress/tls.md),
+  - Multi-cloud support,
+  - [Name and Path based virtual hosting](/docs/user-guide/ingress/named-virtual-hosting.md),
+  - [Cross namespace routing support](/docs/user-guide/ingress/named-virtual-hosting.md#cross-namespace-traffic-routing),
+  - [URL and Request Header Re-writing](/docs/user-guide/ingress/header-rewrite.md),
+  - [Wildcard Name based virtual hosting](/docs/user-guide/ingress/named-virtual-hosting.md),
+  - Persistent sessions, Loadbalancer stats.
+  - [Route Traffic to StatefulSet Pods Based on Host Name](/docs/user-guide/ingress/statefulset-pod.md)
+  - [Weighted Loadbalancing for Canary Deployment](/docs/user-guide/ingress/weighted.md)
+  - [Customize generated HAProxy config via BackendRule](/docs/user-guide/ingress/backend-rule.md) (can be used for [http rewriting](https://www.haproxy.com/doc/aloha/7.0/haproxy/http_rewriting.html), add [health checks](https://www.haproxy.com/doc/aloha/7.0/haproxy/healthchecks.html), etc.)
+  - [Add Custom Annotation to LoadBalancer Service and Pods](/docs/user-guide/ingress/annotations.md)
+  - [Supports Loadbalancer Source Range](/docs/user-guide/ingress/source-range.md)
+  - [Supports redirects/DNS resolution for `ExternalName` type service](/docs/user-guide/ingress/external-svc.md)
+  - [Expose HAProxy stats for Prometheus](/docs/user-guide/ingress/stats-and-prometheus.md)
+  - [Supports AWS certificate manager](/docs/user-guide/ingress/aws-cert-manager.md)
+  - [Scale load balancer using HorizontalPodAutoscaling](/docs/user-guide/ingress/replicas-and-autoscaling.md)
+  - [Configure Custom Timeouts for HAProxy](/docs/user-guide/ingress/configure-timeouts.md)
+  - [Custom port for HTTP](/docs/user-guide/ingress/custom-http-port.md)
+  - [Specify NodePort](/docs/user-guide/ingress/node-port.md)
+  - [Backend TLS](/docs/user-guide/ingress/backend-tls.md)
+  - [Configure Options](/docs/user-guide/ingress/configure-options.md)
 
 ### Comparison with Kubernetes
 | Feauture | Kube Ingress | AppsCode Ingress |
