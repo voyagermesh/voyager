@@ -63,10 +63,10 @@ func (r Ingress) IsValid(cloudProvider string) error {
 			var a *address
 			if ea, found := addrs[podPort]; found {
 				if ea.Protocol == "tcp" {
-					return fmt.Errorf("spec.rule[%d].http is reusing port %d, also used in spec.rule[%d]", ri, a.PodPort, ea.FirstRuleIndex)
+					return fmt.Errorf("spec.rule[%d].http is reusing port %d, also used in spec.rule[%d]", ri, ea.PodPort, ea.FirstRuleIndex)
 				}
 				if nodePort != ea.NodePort {
-					return fmt.Errorf("spec.rule[%d].http.nodePort %d does not match with nodePort %d", ri, a.NodePort, ea.NodePort)
+					return fmt.Errorf("spec.rule[%d].http.nodePort %d does not match with nodePort %d", ri, ea.NodePort, ea.NodePort)
 				} else {
 					nodePorts[nodePort] = ri
 				}
@@ -74,7 +74,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 			} else {
 				if nodePort > 0 {
 					if ei, found := nodePorts[nodePort]; found {
-						return fmt.Errorf("spec.rule[%d].http is reusing nodePort %d for addr %s, also used in spec.rule[%d]", ri, a.NodePort, a, ei)
+						return fmt.Errorf("spec.rule[%d].http is reusing nodePort %d for addr %s, also used in spec.rule[%d]", ri, nodePort, a, ei)
 					} else {
 						nodePorts[nodePort] = ri
 					}
