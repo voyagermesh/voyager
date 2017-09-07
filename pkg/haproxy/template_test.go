@@ -304,19 +304,6 @@ func TestTemplate(t *testing.T) {
 			},
 			{
 				SharedInfo:   si,
-				FrontendName: "with-frontend-rules",
-				Port:         "4445",
-				FrontendRules: []string{"rule one", "rule two"},
-				Backend: Backend{
-					Name: "kate-becket",
-					Endpoints: []*Endpoint{
-						{Name: "first", IP: "10.244.2.1", Port: "2323"},
-						{Name: "first", IP: "10.244.2.2", Port: "2324"},
-					},
-				},
-			},
-			{
-				SharedInfo:   si,
 				FrontendName: "with-sticky-options",
 				Host:         "hello.ok.domain",
 				Port:         "4449",
@@ -329,9 +316,22 @@ func TestTemplate(t *testing.T) {
 					},
 				},
 			},
+			{
+				SharedInfo:   si,
+				FrontendName: "with-frontend-rules",
+				Port:         "4445",
+				FrontendRules: []string{"rule one", "rule two"},
+				Backend: Backend{
+					Name: "kate-becket",
+					Endpoints: []*Endpoint{
+						{Name: "first", IP: "10.244.2.1", Port: "2323"},
+						{Name: "first", IP: "10.244.2.2", Port: "2324"},
+					},
+				},
+			},
 		},
 	}
-	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*", "")
+	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
 	if assert.Nil(t, err) {
 		config, err := RenderConfig(testParsedConfig)
 		assert.Nil(t, err)
