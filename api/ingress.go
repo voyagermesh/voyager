@@ -168,8 +168,6 @@ type TCPIngressRuleValue struct {
 	// Specifies the node port of the referenced service.
 	NodePort intstr.IntOrString `json:"nodePort,omitempty"`
 
-	FrontendRule []string `json:"frontendRule,omitempty"`
-
 	// Backend to forward the requests.
 	Backend IngressBackend `json:"backend,omitempty"`
 
