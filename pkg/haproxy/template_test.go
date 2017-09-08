@@ -57,35 +57,6 @@ func TestTemplate(t *testing.T) {
 				{Name: "first", IP: "10.244.2.2", Port: "2324"},
 			},
 		},
-		Auth: &AuthConfig{
-			Realm: "Required",
-			Users: map[string][]AuthUser{
-				"auth": {
-					{
-						Username: "foo",
-						Password: "bar",
-						Encrypted: true,
-					},
-					{
-						Username: "foo2",
-						Password: "bar2",
-						Encrypted: false,
-					},
-				},
-				"auth2": {
-					{
-						Username: "foo",
-						Password: "bar",
-						Encrypted: true,
-					},
-					{
-						Username: "foo2",
-						Password: "bar2",
-						Encrypted: false,
-					},
-				},
-			},
-		},
 	}
 	testParsedConfig := TemplateData{
 		SharedInfo: si,
