@@ -38,6 +38,7 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
   - [Backend TLS](/docs/user-guide/ingress/backend-tls.md)
   - [Configure Options](/docs/user-guide/ingress/configure-options.md)
   - [Using Custom HAProxy Templates](/docs/user-guide/ingress/custom-templates.md)
+  - [Configure Basic Auth for HTTP Backends](docs/user-guide/ingress/basic-auth.md)
 
 ### Comparison with Kubernetes
 | Feauture | [Kube Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) | AppsCode Ingress |

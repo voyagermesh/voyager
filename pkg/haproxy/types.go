@@ -21,6 +21,7 @@ type SharedInfo struct {
 	// Add accept-proxy to bind statements
 	AcceptProxy    bool
 	DefaultBackend *Backend
+	Auth           *AuthConfig
 }
 
 type StatsInfo struct {
@@ -102,4 +103,15 @@ type Endpoint struct {
 	CheckHealth    bool
 
 	TLSOption string
+}
+
+type AuthConfig struct {
+	Realm string
+	Users map[string][]AuthUser
+}
+
+type AuthUser struct {
+	Username  string
+	Password  string
+	Encrypted bool
 }

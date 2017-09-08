@@ -57,6 +57,35 @@ func TestTemplate(t *testing.T) {
 				{Name: "first", IP: "10.244.2.2", Port: "2324"},
 			},
 		},
+		Auth: &AuthConfig{
+			Realm: "Required",
+			Users: map[string][]AuthUser{
+				"auth": {
+					{
+						Username: "foo",
+						Password: "bar",
+						Encrypted: true,
+					},
+					{
+						Username: "foo2",
+						Password: "bar2",
+						Encrypted: false,
+					},
+				},
+				"auth2": {
+					{
+						Username: "foo",
+						Password: "bar",
+						Encrypted: true,
+					},
+					{
+						Username: "foo2",
+						Password: "bar2",
+						Encrypted: false,
+					},
+				},
+			},
+		},
 	}
 	testParsedConfig := TemplateData{
 		SharedInfo: si,
@@ -340,3 +369,124 @@ func TestTemplate(t *testing.T) {
 		}
 	}
 }
+
+func TestTemplateAuth(t *testing.T) {
+	si := &SharedInfo{
+		DefaultBackend: &Backend{
+			Name:         "default",
+			Endpoints: []*Endpoint{
+				{Name: "first", IP: "10.244.2.1", Port: "2323"},
+				{Name: "first", IP: "10.244.2.2", Port: "2324"},
+			},
+		},
+		Auth: &AuthConfig{
+			Realm: "Required",
+			Users: map[string][]AuthUser{
+				"auth": {
+					{
+						Username: "foo",
+						Password: "#bar",
+						Encrypted: true,
+					},
+					{
+						Username: "foo2",
+						Password: "bar2",
+						Encrypted: false,
+					},
+				},
+				"auth2": {
+					{
+						Username: "foo",
+						Password: "#bar",
+						Encrypted: true,
+					},
+					{
+						Username: "foo2",
+						Password: "bar2",
+						Encrypted: false,
+					},
+				},
+			},
+		},
+	}
+	testParsedConfig := TemplateData{
+		SharedInfo: si,
+		TimeoutDefaults: map[string]string{
+			"client": "2s",
+			"fin":    "1d",
+		},
+		HTTPService: []*HTTPService{
+			{
+				SharedInfo:    si,
+				FrontendName:  "one",
+				Port:          80,
+				FrontendRules: []string{},
+				Paths: []*HTTPPath{
+					{
+						Path: "/elijah",
+						Backend: Backend{
+							Name:         "elijah",
+							Endpoints: []*Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323"},
+								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+							},
+						},
+					},
+					{
+						Path: "/nicklause",
+						Backend: Backend{
+							Name: "nicklause",
+							Endpoints: []*Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323"},
+								{Name: "first", IP: "10.244.2.2", Port: "2324", CheckHealth: true},
+							},
+						},
+					},
+				},
+			},
+			{
+				SharedInfo:    si,
+				FrontendName:  "two",
+				Port:          933,
+				FrontendRules: []string{},
+				Paths: []*HTTPPath{
+					{
+						Path: "/kool",
+						Backend: Backend{
+							Name:         "kool",
+							Endpoints: []*Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true},
+								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+							},
+						},
+					},
+				},
+			},
+		},
+		TCPService: []*TCPService{
+			{
+				SharedInfo:    si,
+				FrontendName:  "stefan",
+				Port:          "333",
+				FrontendRules: []string{},
+				Backend: Backend{
+					Name:         "stefan",
+					BackendRules: []string{"first rule", "second rule"},
+					Endpoints: []*Endpoint{
+						{Name: "first", IP: "10.244.2.1", Port: "2323"},
+						{Name: "first", IP: "10.244.2.2", Port: "2324"},
+					},
+				},
+			},
+		},
+	}
+	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
+	if assert.Nil(t, err) {
+		config, err := RenderConfig(testParsedConfig)
+		assert.Nil(t, err)
+		if testing.Verbose() {
+			fmt.Println(err, "\n", config)
+		}
+	}
+}
+

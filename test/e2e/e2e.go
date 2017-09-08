@@ -56,7 +56,7 @@ var _ = BeforeSuite(func() {
 		err := op.Setup()
 		Expect(err).NotTo(HaveOccurred())
 
-		err = haproxy.LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*", "")
+		err = haproxy.LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
 		Expect(err).NotTo(HaveOccurred())
 
 		go op.Run()
