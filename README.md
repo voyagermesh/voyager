@@ -127,7 +127,8 @@ To disable stats collection, run the operator with the flag** `--analytics=false
  - xenolf/lego https://github.com/appscode/lego
  - kelseyhightower/kube-cert-manager https://github.com/kelseyhightower/kube-cert-manager
  - PalmStoneGames/kube-cert-manager https://github.com/PalmStoneGames/kube-cert-manager
- - [Kubernetes cloudprovider implementation](https://github.com/kubernetes/kubernetes/tree/master/pkg/cloudprovider) 
+ - [Kubernetes cloudprovider implementation](https://github.com/kubernetes/kubernetes/tree/master/pkg/cloudprovider)
+ - [HAProxy Ingress](https://github.com/kubernetes/ingress/tree/master/examples/auth/basic/haproxy)
 
 ## Support
 If you have any questions, you can reach out to us.

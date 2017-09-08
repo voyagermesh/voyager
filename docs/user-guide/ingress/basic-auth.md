@@ -6,7 +6,7 @@ Voyager Ingress controller.
 
 ## Using Basic Authentication
 
-HAProxy Ingress read user and password from `auth` file stored on secrets, one user
+Voyager Ingress read user and password from files stored on secrets, one user
 and password per line. Secret name, realm and type are configured with annotations
 in the ingress resource:
 
@@ -94,3 +94,6 @@ Content-Type: text/plain; charset=utf-8
 ```
 
 Using `jane:guest` user/passwd should have the same output.
+
+## Acknowledgement
+  - [HAProxy Ingress](https://github.com/kubernetes/ingress/tree/master/examples/auth/basic/haproxy)
