@@ -37,6 +37,7 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
   - [Set NodePort](docs/user-guide/ingress/node-port.md)
   - [Backend TLS](docs/user-guide/ingress/backend-tls.md)
   - [Configure Options](docs/user-guide/ingress/configure-options.md)
+  - [Configure Basic Auth for HTTP Backends](docs/user-guide/ingress/basic-auth.md)
 
 ### Comparison with Kubernetes
 | Feauture | [Kube Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) | AppsCode Ingress |
