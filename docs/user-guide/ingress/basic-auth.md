@@ -16,11 +16,11 @@ in the ingress resource:
 
 Each line of the `auth` file should have:
 
-* user and insecure password separated with a pair of colons: `<username>::<plain-text-passwd>`; or
+* user and insecure password separated with a pair of colons: `<username>::<plain-text-password>`; or
 * user and an encrypted password separated with colons: `<username>:<encrypted-passwd>`
 
-HAProxy evaluates encrypted passwords with
-[crypt](http://man7.org/linux/man-pages/man3/crypt.3.html) function. Use `mkpasswd` or
+If passwords are provided in plain text, Voyager operator will encrypt them before rendering HAProxy configuration.
+HAProxy evaluates encrypted passwords with [crypt](http://man7.org/linux/man-pages/man3/crypt.3.html) function. Use `mkpasswd` or
 `makepasswd` to create it. `mkpasswd` can be found on Alpine Linux container.
 
 ## Configure
