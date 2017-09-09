@@ -15,6 +15,8 @@ import (
 	_ "github.com/appscode/voyager/api/install"
 	"github.com/appscode/voyager/pkg/haproxy"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
+	"github.com/tredoe/osutil/user/crypt"
+	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -240,7 +242,10 @@ func (c *controller) generateConfig() error {
 		if secret.Data == nil {
 			return fmt.Errorf("secret data missing")
 		}
-		si.Auth.Users = getAuthUsers(secret.Data)
+		si.Auth.Users, err = getAuthUsers(secret.Data)
+		if err != nil {
+			return err
+		}
 	}
 
 	td.SharedInfo = si
@@ -383,7 +388,7 @@ func (c *controller) generateConfig() error {
 	return nil
 }
 
-func getAuthUsers(data map[string][]byte) map[string][]haproxy.AuthUser {
+func getAuthUsers(data map[string][]byte) (map[string][]haproxy.AuthUser, error) {
 	ret := make(map[string][]haproxy.AuthUser, 0)
 	for name, data := range data {
 		users := make([]haproxy.AuthUser, 0)
@@ -395,25 +400,26 @@ func getAuthUsers(data map[string][]byte) map[string][]haproxy.AuthUser {
 			}
 			sep := strings.Index(line, ":")
 			if sep == -1 {
-				log.Warningf("Missing ':' on userlist")
-				continue
+				return nil, fmt.Errorf("Missing ':' on userlist")
 			}
 			userName := line[0:sep]
 			if userName == "" {
-				log.Warningf("Missing username on userlist")
-				continue
+				return nil, fmt.Errorf("Missing username on userlist")
 			}
 			if sep == len(line)-1 || line[sep:] == "::" {
-				log.Warningf("Missing '%v' password on userlist", userName)
-				continue
+				return nil, fmt.Errorf("Missing '%v' password on userlist", userName)
 			}
 			user := haproxy.AuthUser{}
 			// if usr::pwd
 			if string(line[sep+1]) == ":" {
+				pass, err := crypt.NewFromHash(sha512_crypt.MagicPrefix).Generate([]byte(line[sep+2:]), nil)
+				if err != nil {
+					return nil, err
+				}
 				user = haproxy.AuthUser{
 					Username:  userName,
-					Password:  line[sep+2:],
-					Encrypted: false,
+					Password:  pass,
+					Encrypted: true,
 				}
 			} else {
 				user = haproxy.AuthUser{
@@ -426,7 +432,7 @@ func getAuthUsers(data map[string][]byte) map[string][]haproxy.AuthUser {
 		}
 		ret[name] = users
 	}
-	return ret
+	return ret, nil
 }
 
 func getFrontendRulesForPort(rules []api.FrontendRule, port int) []string {

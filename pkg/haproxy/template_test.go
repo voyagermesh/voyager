@@ -344,7 +344,7 @@ func TestTemplate(t *testing.T) {
 func TestTemplateAuth(t *testing.T) {
 	si := &SharedInfo{
 		DefaultBackend: &Backend{
-			Name:         "default",
+			Name: "default",
 			Endpoints: []*Endpoint{
 				{Name: "first", IP: "10.244.2.1", Port: "2323"},
 				{Name: "first", IP: "10.244.2.2", Port: "2324"},
@@ -355,25 +355,25 @@ func TestTemplateAuth(t *testing.T) {
 			Users: map[string][]AuthUser{
 				"auth": {
 					{
-						Username: "foo",
-						Password: "#bar",
+						Username:  "foo",
+						Password:  "#bar",
 						Encrypted: true,
 					},
 					{
-						Username: "foo2",
-						Password: "bar2",
+						Username:  "foo2",
+						Password:  "bar2",
 						Encrypted: false,
 					},
 				},
 				"auth2": {
 					{
-						Username: "foo",
-						Password: "#bar",
+						Username:  "foo",
+						Password:  "#bar",
 						Encrypted: true,
 					},
 					{
-						Username: "foo2",
-						Password: "bar2",
+						Username:  "foo2",
+						Password:  "bar2",
 						Encrypted: false,
 					},
 				},
@@ -396,7 +396,7 @@ func TestTemplateAuth(t *testing.T) {
 					{
 						Path: "/elijah",
 						Backend: Backend{
-							Name:         "elijah",
+							Name: "elijah",
 							Endpoints: []*Endpoint{
 								{Name: "first", IP: "10.244.2.1", Port: "2323"},
 								{Name: "first", IP: "10.244.2.2", Port: "2324"},
@@ -424,7 +424,7 @@ func TestTemplateAuth(t *testing.T) {
 					{
 						Path: "/kool",
 						Backend: Backend{
-							Name:         "kool",
+							Name: "kool",
 							Endpoints: []*Endpoint{
 								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true},
 								{Name: "first", IP: "10.244.2.2", Port: "2324"},
@@ -460,4 +460,3 @@ func TestTemplateAuth(t *testing.T) {
 		}
 	}
 }
-
