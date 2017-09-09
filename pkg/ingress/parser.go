@@ -1,6 +1,8 @@
 package ingress
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -13,6 +15,8 @@ import (
 	_ "github.com/appscode/voyager/api/install"
 	"github.com/appscode/voyager/pkg/haproxy"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
+	"github.com/tredoe/osutil/user/crypt"
+	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -226,6 +230,24 @@ func (c *controller) generateConfig() error {
 		}
 	}
 
+	if c.Ingress.AuthEnabled() {
+		si.Auth = &haproxy.AuthConfig{
+			Realm: c.Ingress.AuthRealm(),
+		}
+
+		secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(c.Ingress.AuthSecretName(), metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		if secret.Data == nil {
+			return fmt.Errorf("secret data missing")
+		}
+		si.Auth.Users, err = getAuthUsers(secret.Data)
+		if err != nil {
+			return err
+		}
+	}
+
 	td.SharedInfo = si
 	td.TimeoutDefaults = c.Ingress.Timeouts()
 	td.OptionsDefaults = c.Ingress.HAProxyOptions()
@@ -364,6 +386,53 @@ func (c *controller) generateConfig() error {
 		log.Debugf("Generated haproxy.cfg for Ingress %s@%s:", c.Ingress.Name, c.Ingress.Namespace, cfg)
 	}
 	return nil
+}
+
+func getAuthUsers(data map[string][]byte) (map[string][]haproxy.AuthUser, error) {
+	ret := make(map[string][]haproxy.AuthUser, 0)
+	for name, data := range data {
+		users := make([]haproxy.AuthUser, 0)
+		scanner := bufio.NewScanner(bytes.NewReader(data))
+		for scanner.Scan() {
+			line := strings.TrimSpace(scanner.Text())
+			if len(line) <= 0 {
+				continue
+			}
+			sep := strings.Index(line, ":")
+			if sep == -1 {
+				return nil, fmt.Errorf("Missing ':' on userlist")
+			}
+			userName := line[0:sep]
+			if userName == "" {
+				return nil, fmt.Errorf("Missing username on userlist")
+			}
+			if sep == len(line)-1 || line[sep:] == "::" {
+				return nil, fmt.Errorf("Missing '%v' password on userlist", userName)
+			}
+			user := haproxy.AuthUser{}
+			// if usr::pwd
+			if string(line[sep+1]) == ":" {
+				pass, err := crypt.NewFromHash(sha512_crypt.MagicPrefix).Generate([]byte(line[sep+2:]), nil)
+				if err != nil {
+					return nil, err
+				}
+				user = haproxy.AuthUser{
+					Username:  userName,
+					Password:  pass,
+					Encrypted: true,
+				}
+			} else {
+				user = haproxy.AuthUser{
+					Username:  userName,
+					Password:  line[sep+1:],
+					Encrypted: true,
+				}
+			}
+			users = append(users, user)
+		}
+		ret[name] = users
+	}
+	return ret, nil
 }
 
 func getFrontendRulesForPort(rules []api.FrontendRule, port int) []string {

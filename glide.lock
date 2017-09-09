@@ -1,5 +1,5 @@
-hash: b842d99c481fedf52f7f94c28c3d3148e62e991e8d27df8fe157b601e8cc2359
-updated: 2017-09-01T19:42:43.156354712-07:00
+hash: 1dff9acd5562bf75b535a77287853faf2d29ae1ce5abc4c5a08b2d09a3cf424b
+updated: 2017-09-09T12:16:05.803768329-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -251,7 +251,7 @@ imports:
 - name: github.com/orcaman/concurrent-map
   version: 2ae17bc4c860c83513ee50feb9746f3e50d7515d
 - name: github.com/ovh/go-ovh
-  version: d95f6f91b1fb339a53fc438df7289cd85756193b
+  version: 4b1fea467323b74c5f462f0947f402b428ca0626
   subpackages:
   - ovh
 - name: github.com/prometheus/client_golang
@@ -264,7 +264,7 @@ imports:
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: bc8b88226a1210b016e9993b1d75f858c9c8f778
+  version: 2f17f4a9d485bf34b4bfaccc273805040e4f86c8
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
@@ -286,7 +286,7 @@ imports:
 - name: github.com/Sirupsen/logrus
   version: 51fe59aca108dc5680109e7b2051cbdcfa5a253c
 - name: github.com/spf13/cobra
-  version: 3c0b56b677e04926dfa835a1b3f11cd4f62f076e
+  version: b78744579491c1ceeaaa3b40205e56b0591b93a3
   subpackages:
   - doc
 - name: github.com/spf13/pflag
@@ -295,6 +295,12 @@ imports:
   version: 37e84520dcf74488f67654f9c775b9752c232dc1
   subpackages:
   - dns
+- name: github.com/tredoe/osutil
+  version: 7d3ee1afa71c90fd1514c8f557ae6c5f414208eb
+  subpackages:
+  - user/crypt
+  - user/crypt/common
+  - user/crypt/sha512_crypt
 - name: github.com/ugorji/go
   version: ded73eae5db7e7a0ef6f55aace87a2873c5d2b74
   subpackages:
@@ -394,7 +400,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/ini.v1
-  version: d3de07a94d22b4a0972deb4b96d790c2c0ce8333
+  version: 20b96f641a5ea98f2f8619ff4f3e061cff4833bd
 - name: gopkg.in/square/go-jose.v1
   version: aa2e30fdd1fe9dd3394119af66451ae790d50e0d
   subpackages:

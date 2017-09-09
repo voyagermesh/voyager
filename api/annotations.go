@@ -161,6 +161,24 @@ const (
 	// If applied to Service and Ingress do not have this annotation only
 	// connection to that backend service will be sticky.
 	StickySession = EngressKey + "/" + "sticky-session"
+
+	// Basic Auth: Follows ingress controller standard
+	// https://github.com/kubernetes/ingress/tree/master/examples/auth/basic/haproxy
+	// HAProxy Ingress read user and password from auth file stored on secrets, one
+	// user and password per line.
+	// Each line of the auth file should have:
+	// user and insecure password separated with a pair of colons: <username>::<plain-text-passwd>; or
+	// user and an encrypted password separated with colons: <username>:<encrypted-passwd>
+	// Secret name, realm and type are configured with annotations in the ingress
+	// Auth can only be applied to HTTP backends.
+	// Only supported type is basic
+	AuthType = "ingress.kubernetes.io/auth-type"
+
+	// an optional string with authentication realm
+	AuthRealm = "ingress.kubernetes.io/auth-realm"
+
+	// name of the auth secret
+	AuthSecret = "ingress.kubernetes.io/auth-secret"
 )
 
 func (r Ingress) OffshootName() string {
@@ -412,6 +430,32 @@ func (r Ingress) CertificateSpec() (*Certificate, bool) {
 		return newCertificate, true
 	}
 	return nil, false
+}
+
+func (r Ingress) AuthEnabled() bool {
+	if r.Annotations == nil {
+		return false
+	}
+
+	// Check auth type is basic; other auth mode is not supported
+	if val := getString(r.Annotations, AuthType); val != "basic" {
+		return false
+	}
+
+	// Check secret name is not empty
+	if val := getString(r.Annotations, AuthSecret); len(val) == 0 {
+		return false
+	}
+
+	return true
+}
+
+func (r Ingress) AuthRealm() string {
+	return getString(r.Annotations, AuthRealm)
+}
+
+func (r Ingress) AuthSecretName() string {
+	return getString(r.Annotations, AuthSecret)
 }
 
 // ref: https://github.com/kubernetes/kubernetes/blob/078238a461a0872a8eacb887fbb3d0085714604c/staging/src/k8s.io/apiserver/pkg/apis/example/v1/types.go#L134
