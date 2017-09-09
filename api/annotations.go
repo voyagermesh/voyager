@@ -162,7 +162,7 @@ const (
 	// connection to that backend service will be sticky.
 	StickySession = EngressKey + "/" + "sticky-session"
 
-	// Basic Auth; Follows haproxy ingress controller standard
+	// Basic Auth: Follows ingress controller standard
 	// https://github.com/kubernetes/ingress/tree/master/examples/auth/basic/haproxy
 	// HAProxy Ingress read user and password from auth file stored on secrets, one
 	// user and password per line.
@@ -177,7 +177,7 @@ const (
 	// an optional string with authentication realm
 	AuthRealm = "ingress.kubernetes.io/auth-realm"
 
-	// name of the secret
+	// name of the auth secret
 	AuthSecret = "ingress.kubernetes.io/auth-secret"
 )
 
