@@ -12,9 +12,9 @@ import (
 	"github.com/appscode/errors"
 	"github.com/appscode/go/strings"
 	"github.com/appscode/log"
-	"github.com/appscode/voyager/api"
-	tapi "github.com/appscode/voyager/api"
-	acs "github.com/appscode/voyager/client/clientset"
+	tapi "github.com/appscode/voyager/apis/voyager"
+	tapi_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
+	acs "github.com/appscode/voyager/client/internalclientset/typed/voyager/internalversion"
 	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
@@ -39,11 +39,11 @@ const (
 type Controller struct {
 	KubeConfig *rest.Config
 	KubeClient clientset.Interface
-	ExtClient  acs.ExtensionInterface
+	ExtClient  acs.VoyagerInterface
 	Opt        config.Options
 	recorder   record.EventRecorder
 
-	tpr                        *api.Certificate
+	tpr                        *tapi.Certificate
 	acmeCert                   ACMECertData
 	crt                        *x509.Certificate
 	renewedCertificateResource acme.CertificateResource
@@ -55,7 +55,7 @@ type Controller struct {
 	userSecretName string
 }
 
-func NewController(config *rest.Config, kubeClient clientset.Interface, extClient acs.ExtensionInterface, opt config.Options, tpr *api.Certificate) *Controller {
+func NewController(config *rest.Config, kubeClient clientset.Interface, extClient acs.VoyagerInterface, opt config.Options, tpr *tapi.Certificate) *Controller {
 	return &Controller{
 		KubeConfig: config,
 		KubeClient: kubeClient,
@@ -66,10 +66,10 @@ func NewController(config *rest.Config, kubeClient clientset.Interface, extClien
 	}
 }
 
-func (c *Controller) HandleIngress(ingress *api.Ingress) error {
+func (c *Controller) HandleIngress(ingress *tapi.Ingress) error {
 	if ingress.Annotations != nil {
 		if cert, ok := ingress.CertificateSpec(); ok {
-			issuedCert, err := c.ExtClient.Certificates(ingress.Namespace).Get(cert.Name)
+			issuedCert, err := c.ExtClient.Certificates(ingress.Namespace).Get(cert.Name, metav1.GetOptions{})
 			if err == nil {
 				// Certificate exists mount it.
 				return nil
@@ -357,18 +357,18 @@ func (c *Controller) save(cert acme.CertificateResource) error {
 		errors.FromErr(err).Err()
 	}
 
-	k8sCert, err := c.ExtClient.Certificates(c.tpr.Namespace).Get(c.tpr.Name)
+	k8sCert, err := c.ExtClient.Certificates(c.tpr.Namespace).Get(c.tpr.Name, metav1.GetOptions{})
 	if err != nil {
 		log.Errorln("failed to load cert object,", err)
 	}
 
 	// Update certificate data to add Details Information
 	t := metav1.Now()
-	k8sCert.Status = api.CertificateStatus{
+	k8sCert.Status = tapi.CertificateStatus{
 		CertificateObtained: true,
 		CreationTime:        &t,
 		ACMEUserSecretName:  c.userSecretName,
-		Details: api.ACMECertificateDetails{
+		Details: tapi.ACMECertificateDetails{
 			Domain:        cert.Domain,
 			CertURL:       cert.CertURL,
 			CertStableURL: cert.CertStableURL,
@@ -404,25 +404,25 @@ func (c *Controller) processHTTPCertificate(revert chan struct{}) error {
 	defer c.acmeClient.HTTPProviderLock.Unlock()
 
 	switch c.tpr.Spec.HTTPProviderIngressReference.APIVersion {
-	case api.V1beta1SchemeGroupVersion.String():
+	case tapi_v1beta1.SchemeGroupVersion.String():
 		revertRequired := false
 		i, err := c.ExtClient.Ingresses(c.tpr.Spec.HTTPProviderIngressReference.Namespace).
-			Get(c.tpr.Spec.HTTPProviderIngressReference.Name)
+			Get(c.tpr.Spec.HTTPProviderIngressReference.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
 		// make a copy of previous spec.
 		prevSpecs := i.Spec
 		for _, host := range c.tpr.Spec.Domains {
-			rule := api.IngressRule{
+			rule := tapi.IngressRule{
 				Host: host,
-				IngressRuleValue: api.IngressRuleValue{
-					HTTP: &api.HTTPIngressRuleValue{
-						Paths: []api.HTTPIngressPath{
+				IngressRuleValue: tapi.IngressRuleValue{
+					HTTP: &tapi.HTTPIngressRuleValue{
+						Paths: []tapi.HTTPIngressPath{
 							{
 								Path: providers.URLPrefix,
-								Backend: api.HTTPIngressBackend{
-									IngressBackend: api.IngressBackend{
+								Backend: tapi.HTTPIngressBackend{
+									IngressBackend: tapi.IngressBackend{
 										ServiceName: c.Opt.OperatorService + "." + c.Opt.OperatorNamespace,
 										ServicePort: intstr.FromInt(c.Opt.HTTPChallengePort),
 									},
@@ -446,10 +446,10 @@ func (c *Controller) processHTTPCertificate(revert chan struct{}) error {
 			case <-revert:
 				if revertRequired {
 					i, err := c.ExtClient.Ingresses(c.tpr.Spec.HTTPProviderIngressReference.Namespace).
-						Get(c.tpr.Spec.HTTPProviderIngressReference.Name)
+						Get(c.tpr.Spec.HTTPProviderIngressReference.Name, metav1.GetOptions{})
 					if err == nil {
 						i.Spec = prevSpecs
-						i.Spec.TLS = append(i.Spec.TLS, api.IngressTLS{
+						i.Spec.TLS = append(i.Spec.TLS, tapi.IngressTLS{
 							Hosts:      c.tpr.Spec.Domains,
 							SecretName: defaultCertPrefix + c.tpr.Name,
 						})

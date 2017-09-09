@@ -7,7 +7,7 @@ import (
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
-	"github.com/appscode/voyager/api"
+	api "github.com/appscode/voyager/apis/voyager"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"

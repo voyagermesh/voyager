@@ -2,7 +2,7 @@ package operator
 
 import (
 	"github.com/appscode/log"
-	"github.com/appscode/voyager/api"
+	api "github.com/appscode/voyager/apis/voyager"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/ingress"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

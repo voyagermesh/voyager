@@ -1,7 +1,7 @@
 package monitor
 
 import (
-	"github.com/appscode/voyager/api"
+	api "github.com/appscode/voyager/apis/voyager"
 )
 
 type Monitor interface {

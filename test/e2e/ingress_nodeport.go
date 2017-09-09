@@ -3,7 +3,8 @@ package e2e
 import (
 	"net/http"
 
-	"github.com/appscode/voyager/api"
+	tapi "github.com/appscode/voyager/apis/voyager"
+	tapi_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"
@@ -14,7 +15,7 @@ import (
 var _ = Describe("IngressNodePort", func() {
 	var (
 		f   *framework.Invocation
-		ing *api.Ingress
+		ing *tapi_v1beta1.Ingress
 	)
 
 	BeforeEach(func() {
@@ -42,7 +43,7 @@ var _ = Describe("IngressNodePort", func() {
 
 	Describe("Create", func() {
 		BeforeEach(func() {
-			ing.Annotations[api.LBType] = api.LBTypeNodePort
+			ing.Annotations[tapi.LBType] = tapi.LBTypeNodePort
 			ing.Spec.Rules[0].Host = "test.appscode.dev"
 			ing.Spec.Rules[0].HTTP.NodePort = intstr.FromInt(32368)
 		})

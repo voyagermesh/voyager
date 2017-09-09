@@ -11,7 +11,7 @@ import (
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
-	"github.com/appscode/voyager/api"
+	api "github.com/appscode/voyager/apis/voyager"
 	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/providers/dns/cloudflare"

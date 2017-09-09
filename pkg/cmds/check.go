@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/appscode/voyager/api"
-	acs "github.com/appscode/voyager/client/clientset"
+	api "github.com/appscode/voyager/apis/voyager"
+	acs "github.com/appscode/voyager/client/internalclientset/typed/voyager/internalversion"
 	"github.com/appscode/voyager/pkg/operator"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	"github.com/ghodss/yaml"

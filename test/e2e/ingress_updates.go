@@ -3,7 +3,7 @@ package e2e
 import (
 	"time"
 
-	"github.com/appscode/voyager/api"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

@@ -3,7 +3,8 @@ package e2e
 import (
 	"net/http"
 
-	"github.com/appscode/voyager/api"
+	tapi "github.com/appscode/voyager/apis/voyager"
+	tapi_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"
@@ -14,7 +15,7 @@ import (
 var _ = Describe("IngressWithCustomPorts", func() {
 	var (
 		f   *framework.Invocation
-		ing *api.Ingress
+		ing *tapi_v1beta1.Ingress
 	)
 
 	BeforeEach(func() {
@@ -42,17 +43,17 @@ var _ = Describe("IngressWithCustomPorts", func() {
 
 	Describe("Create", func() {
 		BeforeEach(func() {
-			ing.Spec = api.IngressSpec{
-				Rules: []api.IngressRule{
+			ing.Spec = tapi_v1beta1.IngressSpec{
+				Rules: []tapi_v1beta1.IngressRule{
 					{
-						IngressRuleValue: api.IngressRuleValue{
-							HTTP: &api.HTTPIngressRuleValue{
+						IngressRuleValue: tapi_v1beta1.IngressRuleValue{
+							HTTP: &tapi_v1beta1.HTTPIngressRuleValue{
 								Port: intstr.FromInt(9090),
-								Paths: []api.HTTPIngressPath{
+								Paths: []tapi_v1beta1.HTTPIngressPath{
 									{
 										Path: "/testpath",
-										Backend: api.HTTPIngressBackend{
-											IngressBackend: api.IngressBackend{
+										Backend: tapi_v1beta1.HTTPIngressBackend{
+											IngressBackend: tapi_v1beta1.IngressBackend{
 												ServiceName: f.Ingress.TestServerName(),
 												ServicePort: intstr.FromInt(9090),
 											},
@@ -89,16 +90,16 @@ var _ = Describe("IngressWithCustomPorts", func() {
 
 	Describe("LBType LoadBalancer with NodePort set", func() {
 		BeforeEach(func() {
-			ing.Spec = api.IngressSpec{
-				Rules: []api.IngressRule{
+			ing.Spec = tapi_v1beta1.IngressSpec{
+				Rules: []tapi_v1beta1.IngressRule{
 					{
-						IngressRuleValue: api.IngressRuleValue{
-							HTTP: &api.HTTPIngressRuleValue{
+						IngressRuleValue: tapi_v1beta1.IngressRuleValue{
+							HTTP: &tapi_v1beta1.HTTPIngressRuleValue{
 								NodePort: intstr.FromInt(32700),
-								Paths: []api.HTTPIngressPath{
+								Paths: []tapi_v1beta1.HTTPIngressPath{
 									{
-										Backend: api.HTTPIngressBackend{
-											IngressBackend: api.IngressBackend{
+										Backend: tapi_v1beta1.HTTPIngressBackend{
+											IngressBackend: tapi_v1beta1.IngressBackend{
 												ServiceName: f.Ingress.TestServerName(),
 												ServicePort: intstr.FromInt(9090),
 											},
@@ -128,15 +129,15 @@ var _ = Describe("IngressWithCustomPorts", func() {
 
 	Describe("LBType LoadBalancer with NodePort set on update", func() {
 		BeforeEach(func() {
-			ing.Spec = api.IngressSpec{
-				Rules: []api.IngressRule{
+			ing.Spec = tapi_v1beta1.IngressSpec{
+				Rules: []tapi_v1beta1.IngressRule{
 					{
-						IngressRuleValue: api.IngressRuleValue{
-							HTTP: &api.HTTPIngressRuleValue{
-								Paths: []api.HTTPIngressPath{
+						IngressRuleValue: tapi_v1beta1.IngressRuleValue{
+							HTTP: &tapi_v1beta1.HTTPIngressRuleValue{
+								Paths: []tapi_v1beta1.HTTPIngressPath{
 									{
-										Backend: api.HTTPIngressBackend{
-											IngressBackend: api.IngressBackend{
+										Backend: tapi_v1beta1.HTTPIngressBackend{
+											IngressBackend: tapi_v1beta1.IngressBackend{
 												ServiceName: f.Ingress.TestServerName(),
 												ServicePort: intstr.FromInt(9090),
 											},
@@ -185,17 +186,17 @@ var _ = Describe("IngressWithCustomPorts", func() {
 
 	Describe("NodePort set", func() {
 		BeforeEach(func() {
-			ing.Annotations[api.LBType] = api.LBTypeNodePort
-			ing.Spec = api.IngressSpec{
-				Rules: []api.IngressRule{
+			ing.Annotations[tapi.LBType] = tapi.LBTypeNodePort
+			ing.Spec = tapi_v1beta1.IngressSpec{
+				Rules: []tapi_v1beta1.IngressRule{
 					{
-						IngressRuleValue: api.IngressRuleValue{
-							HTTP: &api.HTTPIngressRuleValue{
+						IngressRuleValue: tapi_v1beta1.IngressRuleValue{
+							HTTP: &tapi_v1beta1.HTTPIngressRuleValue{
 								NodePort: intstr.FromInt(32702),
-								Paths: []api.HTTPIngressPath{
+								Paths: []tapi_v1beta1.HTTPIngressPath{
 									{
-										Backend: api.HTTPIngressBackend{
-											IngressBackend: api.IngressBackend{
+										Backend: tapi_v1beta1.HTTPIngressBackend{
+											IngressBackend: tapi_v1beta1.IngressBackend{
 												ServiceName: f.Ingress.TestServerName(),
 												ServicePort: intstr.FromInt(9090),
 											},
@@ -229,16 +230,16 @@ var _ = Describe("IngressWithCustomPorts", func() {
 
 	Describe("NodePort set on update", func() {
 		BeforeEach(func() {
-			ing.Annotations[api.LBType] = api.LBTypeNodePort
-			ing.Spec = api.IngressSpec{
-				Rules: []api.IngressRule{
+			ing.Annotations[tapi.LBType] = tapi.LBTypeNodePort
+			ing.Spec = tapi_v1beta1.IngressSpec{
+				Rules: []tapi_v1beta1.IngressRule{
 					{
-						IngressRuleValue: api.IngressRuleValue{
-							HTTP: &api.HTTPIngressRuleValue{
-								Paths: []api.HTTPIngressPath{
+						IngressRuleValue: tapi_v1beta1.IngressRuleValue{
+							HTTP: &tapi_v1beta1.HTTPIngressRuleValue{
+								Paths: []tapi_v1beta1.HTTPIngressPath{
 									{
-										Backend: api.HTTPIngressBackend{
-											IngressBackend: api.IngressBackend{
+										Backend: tapi_v1beta1.HTTPIngressBackend{
+											IngressBackend: tapi_v1beta1.IngressBackend{
 												ServiceName: f.Ingress.TestServerName(),
 												ServicePort: intstr.FromInt(9090),
 											},

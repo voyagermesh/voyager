@@ -497,7 +497,7 @@ func (fr *Framer) ReadFrame() (Frame, error) {
 }
 
 // connError returns ConnectionError(code) but first
-// stashes away a public reason to the caller can optionally relay it
+// voyageres away a public reason to the caller can optionally relay it
 // to the peer before hanging up on them. This might help others debug
 // their implementations.
 func (fr *Framer) connError(code ErrCode, reason string) error {

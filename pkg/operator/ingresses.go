@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/appscode/log"
-	"github.com/appscode/voyager/api"
+	api "github.com/appscode/voyager/apis/voyager"
 	"github.com/appscode/voyager/pkg/eventer"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"

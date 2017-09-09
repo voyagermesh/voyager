@@ -4,8 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/appscode/voyager/api"
-	"github.com/appscode/voyager/client/clientset"
+	api "github.com/appscode/voyager/apis/voyager"
 	"github.com/stretchr/testify/assert"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"

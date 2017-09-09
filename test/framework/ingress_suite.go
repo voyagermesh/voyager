@@ -9,7 +9,8 @@ import (
 	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/go/types"
 	"github.com/appscode/log"
-	"github.com/appscode/voyager/api"
+	tapi "github.com/appscode/voyager/apis/voyager"
+	tapi_vebeta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/gomega"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -45,10 +46,10 @@ func (i *ingressInvocation) Teardown() {
 		}
 		i.KubeClient.CoreV1().ReplicationControllers(i.Namespace()).Delete(testServerResourceName, &metav1.DeleteOptions{})
 
-		list, err := i.VoyagerClient.Ingresses(metav1.NamespaceAll).List(metav1.ListOptions{})
+		list, err := i.V1beta1Client.Ingresses(metav1.NamespaceAll).List(metav1.ListOptions{})
 		if err == nil {
 			for _, ing := range list.Items {
-				i.VoyagerClient.Ingresses(ing.Namespace).Delete(ing.Name)
+				i.V1beta1Client.Ingresses(ing.Namespace).Delete(ing.Name, &metav1.DeleteOptions{})
 			}
 		}
 	}
@@ -62,28 +63,28 @@ func (i *ingressInvocation) TestServerHTTPSName() string {
 	return testServerHTTpsResourceName
 }
 
-func (i *ingressInvocation) Create(ing *api.Ingress) error {
-	_, err := i.VoyagerClient.Ingresses(i.Namespace()).Create(ing)
+func (i *ingressInvocation) Create(ing *tapi_vebeta1.Ingress) error {
+	_, err := i.V1beta1Client.Ingresses(i.Namespace()).Create(ing)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (i *ingressInvocation) Get(ing *api.Ingress) (*api.Ingress, error) {
-	return i.VoyagerClient.Ingresses(i.Namespace()).Get(ing.Name)
+func (i *ingressInvocation) Get(ing *tapi_vebeta1.Ingress) (*tapi_vebeta1.Ingress, error) {
+	return i.V1beta1Client.Ingresses(i.Namespace()).Get(ing.Name, metav1.GetOptions{})
 }
 
-func (i *ingressInvocation) Update(ing *api.Ingress) error {
-	_, err := i.VoyagerClient.Ingresses(i.Namespace()).Update(ing)
+func (i *ingressInvocation) Update(ing *tapi_vebeta1.Ingress) error {
+	_, err := i.V1beta1Client.Ingresses(i.Namespace()).Update(ing)
 	return err
 }
 
-func (i *ingressInvocation) Delete(ing *api.Ingress) error {
-	return i.VoyagerClient.Ingresses(i.Namespace()).Delete(ing.Name)
+func (i *ingressInvocation) Delete(ing *tapi_vebeta1.Ingress) error {
+	return i.V1beta1Client.Ingresses(i.Namespace()).Delete(ing.Name, &metav1.DeleteOptions{})
 }
 
-func (i *ingressInvocation) IsExistsEventually(ing *api.Ingress) bool {
+func (i *ingressInvocation) IsExistsEventually(ing *tapi_vebeta1.Ingress) bool {
 	if Eventually(func() error {
 		err := i.IsExists(ing)
 		if err != nil {
@@ -97,9 +98,9 @@ func (i *ingressInvocation) IsExistsEventually(ing *api.Ingress) bool {
 	return false
 }
 
-func (i *ingressInvocation) IsExists(ing *api.Ingress) error {
+func (i *ingressInvocation) IsExists(ing *tapi_vebeta1.Ingress) error {
 	var err error
-	if ing.LBType() == api.LBTypeHostPort {
+	if ing.LBType() == tapi.LBTypeHostPort {
 		_, err = i.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
 			return err
@@ -123,14 +124,14 @@ func (i *ingressInvocation) IsExists(ing *api.Ingress) error {
 	return nil
 }
 
-func (i *ingressInvocation) EventuallyStarted(ing *api.Ingress) GomegaAsyncAssertion {
+func (i *ingressInvocation) EventuallyStarted(ing *tapi_vebeta1.Ingress) GomegaAsyncAssertion {
 	return Eventually(func() bool {
 		_, err := i.KubeClient.CoreV1().Services(i.Namespace()).Get(ing.OffshootName(), metav1.GetOptions{})
 		if err != nil {
 			return false
 		}
 
-		if ing.LBType() != api.LBTypeHostPort {
+		if ing.LBType() != tapi.LBTypeHostPort {
 			_, err = i.KubeClient.CoreV1().Endpoints(i.Namespace()).Get(ing.OffshootName(), metav1.GetOptions{})
 			if err != nil {
 				return false
@@ -140,13 +141,13 @@ func (i *ingressInvocation) EventuallyStarted(ing *api.Ingress) GomegaAsyncAsser
 	}, "10m", "20s")
 }
 
-func (i *ingressInvocation) GetHTTPEndpoints(ing *api.Ingress) ([]string, error) {
+func (i *ingressInvocation) GetHTTPEndpoints(ing *tapi_vebeta1.Ingress) ([]string, error) {
 	switch ing.LBType() {
-	case api.LBTypeLoadBalancer:
+	case tapi.LBTypeLoadBalancer:
 		return getLoadBalancerURLs(i.Config.CloudProviderName, i.KubeClient, ing)
-	case api.LBTypeHostPort:
+	case tapi.LBTypeHostPort:
 		return getHostPortURLs(i.Config.CloudProviderName, i.KubeClient, ing)
-	case api.LBTypeNodePort:
+	case tapi.LBTypeNodePort:
 		return getNodePortURLs(i.Config.CloudProviderName, i.KubeClient, ing)
 	}
 	return nil, errors.New("LBType Not recognized")
@@ -163,11 +164,11 @@ func (i *ingressInvocation) FilterEndpointsForPort(eps []string, port v1.Service
 	return ret
 }
 
-func (i *ingressInvocation) GetOffShootService(ing *api.Ingress) (*v1.Service, error) {
+func (i *ingressInvocation) GetOffShootService(ing *tapi_vebeta1.Ingress) (*v1.Service, error) {
 	return i.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 }
 
-func (i *ingressInvocation) DoHTTP(retryCount int, host string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTP(retryCount int, host string, ing *tapi_vebeta1.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
 		resp, err := testserverclient.NewTestHTTPClient(url).WithHost(host).Method(method).Path(path).DoWithRetry(retryCount)
 		if err != nil {
@@ -182,7 +183,7 @@ func (i *ingressInvocation) DoHTTP(retryCount int, host string, ing *api.Ingress
 	return nil
 }
 
-func (i *ingressInvocation) DoHTTPWithHeader(retryCount int, ing *api.Ingress, eps []string, method, path string, h map[string]string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTPWithHeader(retryCount int, ing *tapi_vebeta1.Ingress, eps []string, method, path string, h map[string]string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
 		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Header(h).Path(path).DoWithRetry(retryCount)
 		if err != nil {
@@ -197,7 +198,7 @@ func (i *ingressInvocation) DoHTTPWithHeader(retryCount int, ing *api.Ingress, e
 	return nil
 }
 
-func (i *ingressInvocation) DoHTTPs(retryCount int, host, cert string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTPs(retryCount int, host, cert string, ing *tapi_vebeta1.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
 		if strings.HasPrefix(url, "http://") {
 			url = "https://" + url[len("http://"):]
@@ -223,7 +224,7 @@ func (i *ingressInvocation) DoHTTPs(retryCount int, host, cert string, ing *api.
 	return nil
 }
 
-func (i *ingressInvocation) DoHTTPTestRedirect(retryCount int, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTPTestRedirect(retryCount int, ing *tapi_vebeta1.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
 		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Path(path).DoTestRedirectWithRetry(retryCount)
 		if err != nil {
@@ -238,7 +239,7 @@ func (i *ingressInvocation) DoHTTPTestRedirect(retryCount int, ing *api.Ingress,
 	return nil
 }
 
-func (i *ingressInvocation) DoHTTPsTestRedirect(retryCount int, host string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTPsTestRedirect(retryCount int, host string, ing *tapi_vebeta1.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
 		resp, err := testserverclient.NewTestHTTPClient(url).WithHost(host).Method(method).Path(path).DoTestRedirectWithRetry(retryCount)
 		if err != nil {
@@ -253,7 +254,7 @@ func (i *ingressInvocation) DoHTTPsTestRedirect(retryCount int, host string, ing
 	return nil
 }
 
-func (i *ingressInvocation) DoHTTPStatus(retryCount int, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTPStatus(retryCount int, ing *tapi_vebeta1.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
 		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Path(path).DoStatusWithRetry(retryCount)
 		if err != nil {
@@ -268,7 +269,7 @@ func (i *ingressInvocation) DoHTTPStatus(retryCount int, ing *api.Ingress, eps [
 	return nil
 }
 
-func (i *ingressInvocation) DoTCP(retryCount int, ing *api.Ingress, eps []string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoTCP(retryCount int, ing *tapi_vebeta1.Ingress, eps []string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
 		resp, err := testserverclient.NewTestTCPClient(url).DoWithRetry(retryCount)
 		if err != nil {
@@ -283,7 +284,7 @@ func (i *ingressInvocation) DoTCP(retryCount int, ing *api.Ingress, eps []string
 	return nil
 }
 
-func (i *ingressInvocation) DoTCPWithSSL(retryCount int, cert string, ing *api.Ingress, eps []string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoTCPWithSSL(retryCount int, cert string, ing *tapi_vebeta1.Ingress, eps []string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
 		resp, err := testserverclient.NewTestTCPClient(url).WithSSL(cert).DoWithRetry(retryCount)
 		if err != nil {

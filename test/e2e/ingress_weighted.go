@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/appscode/voyager/api"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"
@@ -79,7 +79,7 @@ var _ = Describe("IngressWithHostName", func() {
 				Skip("Minikube do not support this")
 			}
 			// Check Status for ingress
-			baseIngress, err := f.VoyagerClient.Ingresses(ing.Namespace).Get(ing.Name)
+			baseIngress, err := f.V1beta1Client.Ingresses(ing.Namespace).Get(ing.Name, metav1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			svc, err := f.Ingress.GetOffShootService(ing)

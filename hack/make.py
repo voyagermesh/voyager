@@ -82,17 +82,17 @@ def version():
 
 
 def fmt():
-    libbuild.ungroup_go_imports('*.go', 'api', 'client', 'pkg', 'test', 'third_party')
-    die(call('goimports -w *.go api client pkg test third_party'))
-    call('gofmt -s -w *.go api client pkg test third_party')
+    libbuild.ungroup_go_imports('*.go', 'apis', 'client', 'pkg', 'test', 'third_party')
+    die(call('goimports -w *.go apis client pkg test third_party'))
+    call('gofmt -s -w *.go apis client pkg test third_party')
 
 
 def vet():
-    call('go vet *.go ./api/... ./client/... ./pkg/... ./test/...')
+    call('go vet *.go ./apis/... ./client/... ./pkg/... ./test/...')
 
 
 def lint():
-    call('golint *.go ./api/... ./client/... ./pkg/... ./test/...')
+    call('golint *.go ./apis/... ./client/... ./pkg/... ./test/...')
 
 
 def gen():

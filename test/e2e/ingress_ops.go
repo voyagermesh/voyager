@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/appscode/voyager/api"
+	tapi "github.com/appscode/voyager/apis/voyager"
+	tapi_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"
@@ -19,7 +20,7 @@ import (
 var _ = Describe("IngressOperations", func() {
 	var (
 		f   *framework.Invocation
-		ing *api.Ingress
+		ing *tapi_v1beta1.Ingress
 	)
 
 	BeforeEach(func() {
@@ -78,7 +79,7 @@ var _ = Describe("IngressOperations", func() {
 				Skip("Minikube do not support this")
 			}
 			// Check Status for ingress
-			baseIngress, err := f.VoyagerClient.Ingresses(ing.Namespace).Get(ing.Name)
+			baseIngress, err := f.V1beta1Client.Ingresses(ing.Namespace).Get(ing.Name, metav1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			svc, err := f.Ingress.GetOffShootService(ing)
@@ -91,7 +92,7 @@ var _ = Describe("IngressOperations", func() {
 
 		Describe("With persistent IP", func() {
 			BeforeEach(func() {
-				ing.Annotations[api.LoadBalancerIP] = f.Config.LBPersistIP
+				ing.Annotations[tapi.LoadBalancerIP] = f.Config.LBPersistIP
 			})
 			It("Should persist service IP", func() {
 				if len(f.Config.LBPersistIP) == 0 {
@@ -108,7 +109,7 @@ var _ = Describe("IngressOperations", func() {
 
 				Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
 				By("Wait for resource to be deleted", shouldDeleteResource)
-				ing.Annotations[api.LoadBalancerIP] = f.Config.LBPersistIP
+				ing.Annotations[tapi.LoadBalancerIP] = f.Config.LBPersistIP
 				Expect(f.Ingress.Create(ing)).NotTo(HaveOccurred())
 
 				By("Checking HTTP Response", shouldResponseHTTP)
@@ -122,7 +123,7 @@ var _ = Describe("IngressOperations", func() {
 
 		Describe("With NodePort Service", func() {
 			BeforeEach(func() {
-				ing.Annotations[api.LBType] = api.LBTypeNodePort
+				ing.Annotations[tapi.LBType] = tapi.LBTypeNodePort
 				ing.Spec.Rules[0].HTTP.NodePort = intstr.FromInt(32345)
 			})
 			It("Should create nodeport service", func() {
@@ -140,8 +141,8 @@ var _ = Describe("IngressOperations", func() {
 
 		Describe("With custom target annotations", func() {
 			BeforeEach(func() {
-				ing.Annotations[api.ServiceAnnotations] = `{"foo": "bar", "service-annotation": "set"}`
-				ing.Annotations[api.PodAnnotations] = `{"foo": "bar", "pod-annotation": "set"}`
+				ing.Annotations[tapi.ServiceAnnotations] = `{"foo": "bar", "service-annotation": "set"}`
+				ing.Annotations[tapi.PodAnnotations] = `{"foo": "bar", "pod-annotation": "set"}`
 			})
 			It("Should persist service IP", func() {
 				By("Getting HTTP endpoints")
@@ -172,7 +173,7 @@ var _ = Describe("IngressOperations", func() {
 
 				toBeUpdated, err := f.Ingress.Get(ing)
 				Expect(err).NotTo(HaveOccurred())
-				toBeUpdated.Annotations[api.ServiceAnnotations] = `{"bar": "foo", "second-service-annotation": "set"}`
+				toBeUpdated.Annotations[tapi.ServiceAnnotations] = `{"bar": "foo", "second-service-annotation": "set"}`
 				err = f.Ingress.Update(toBeUpdated)
 				Expect(err).NotTo(HaveOccurred())
 				time.Sleep(time.Second * 20)
@@ -189,7 +190,7 @@ var _ = Describe("IngressOperations", func() {
 
 				toBeUpdated, err = f.Ingress.Get(ing)
 				Expect(err).NotTo(HaveOccurred())
-				toBeUpdated.Annotations[api.PodAnnotations] = `{"bar": "foo", "second-pod-annotation": "set"}`
+				toBeUpdated.Annotations[tapi.PodAnnotations] = `{"bar": "foo", "second-pod-annotation": "set"}`
 				err = f.Ingress.Update(toBeUpdated)
 				Expect(err).NotTo(HaveOccurred())
 				time.Sleep(time.Second * 20)
@@ -214,8 +215,8 @@ var _ = Describe("IngressOperations", func() {
 
 		Describe("With Stats", func() {
 			BeforeEach(func() {
-				ing.Annotations[api.StatsOn] = `true`
-				ing.Annotations[api.StatsPort] = `8787`
+				ing.Annotations[tapi.StatsOn] = `true`
+				ing.Annotations[tapi.StatsPort] = `8787`
 			})
 			It("Should test stat service", func() {
 				var svc *v1.Service
@@ -231,8 +232,8 @@ var _ = Describe("IngressOperations", func() {
 				tobeUpdated, err := f.Ingress.Get(ing)
 				Expect(err).NotTo(HaveOccurred())
 
-				delete(tobeUpdated.Annotations, api.StatsOn)
-				Expect(tobeUpdated.Annotations).ShouldNot(HaveKey(api.StatsOn))
+				delete(tobeUpdated.Annotations, tapi.StatsOn)
+				Expect(tobeUpdated.Annotations).ShouldNot(HaveKey(tapi.StatsOn))
 
 				err = f.Ingress.Update(tobeUpdated)
 				Expect(err).NotTo(HaveOccurred())
@@ -281,14 +282,14 @@ var _ = Describe("IngressOperations", func() {
 
 		Describe("With Rules", func() {
 			BeforeEach(func() {
-				ing.Spec.Rules = []api.IngressRule{
+				ing.Spec.Rules = []tapi_v1beta1.IngressRule{
 					{
-						IngressRuleValue: api.IngressRuleValue{
-							HTTP: &api.HTTPIngressRuleValue{
-								Paths: []api.HTTPIngressPath{
+						IngressRuleValue: tapi_v1beta1.IngressRuleValue{
+							HTTP: &tapi_v1beta1.HTTPIngressRuleValue{
+								Paths: []tapi_v1beta1.HTTPIngressPath{
 									{
-										Backend: api.HTTPIngressBackend{
-											IngressBackend: api.IngressBackend{
+										Backend: tapi_v1beta1.HTTPIngressBackend{
+											IngressBackend: tapi_v1beta1.IngressBackend{
 												ServiceName: f.Ingress.TestServerName(),
 												ServicePort: intstr.FromInt(80),
 											},
@@ -327,13 +328,13 @@ var _ = Describe("IngressOperations", func() {
 					"GET",
 					"/testpath/ok",
 					map[string]string{
-						"X-Ingress-Test-Header": api.GroupName + "/v1beta1",
+						"X-Ingress-Test-Header": tapi.GroupName + "/v1beta1",
 					},
 					func(r *testserverclient.Response) bool {
 						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 							Expect(r.Method).Should(Equal("GET")) &&
 							Expect(r.Path).Should(Equal("/override/testpath/ok")) &&
-							Expect(r.RequestHeaders.Get("X-Ingress-Test-Header")).Should(Equal(api.GroupName+"/v1beta1"))
+							Expect(r.RequestHeaders.Get("X-Ingress-Test-Header")).Should(Equal(tapi.GroupName+"/v1beta1"))
 					},
 				)
 				Expect(err).NotTo(HaveOccurred())
@@ -342,15 +343,15 @@ var _ = Describe("IngressOperations", func() {
 
 		Describe("With BackendRules", func() {
 			BeforeEach(func() {
-				ing.Spec.Rules = []api.IngressRule{
+				ing.Spec.Rules = []tapi_v1beta1.IngressRule{
 					{
-						IngressRuleValue: api.IngressRuleValue{
-							HTTP: &api.HTTPIngressRuleValue{
-								Paths: []api.HTTPIngressPath{
+						IngressRuleValue: tapi_v1beta1.IngressRuleValue{
+							HTTP: &tapi_v1beta1.HTTPIngressRuleValue{
+								Paths: []tapi_v1beta1.HTTPIngressPath{
 									{
 										Path: "/old",
-										Backend: api.HTTPIngressBackend{
-											IngressBackend: api.IngressBackend{
+										Backend: tapi_v1beta1.HTTPIngressBackend{
+											IngressBackend: tapi_v1beta1.IngressBackend{
 												ServiceName: f.Ingress.TestServerName(),
 												ServicePort: intstr.FromInt(80),
 												BackendRule: []string{
@@ -365,8 +366,8 @@ var _ = Describe("IngressOperations", func() {
 									},
 									{
 										Path: "/test-second",
-										Backend: api.HTTPIngressBackend{
-											IngressBackend: api.IngressBackend{
+										Backend: tapi_v1beta1.HTTPIngressBackend{
+											IngressBackend: tapi_v1beta1.IngressBackend{
 												ServiceName: f.Ingress.TestServerName(),
 												ServicePort: intstr.FromInt(80),
 												BackendRule: []string{
@@ -466,12 +467,12 @@ var _ = Describe("IngressOperations", func() {
 			uing, err := f.Ingress.Get(ing)
 			Expect(err).NotTo(HaveOccurred())
 
-			uing.Spec.Rules = []api.IngressRule{
+			uing.Spec.Rules = []tapi_v1beta1.IngressRule{
 				{
-					IngressRuleValue: api.IngressRuleValue{
-						TCP: &api.TCPIngressRuleValue{
+					IngressRuleValue: tapi_v1beta1.IngressRuleValue{
+						TCP: &tapi_v1beta1.TCPIngressRuleValue{
 							Port: intstr.FromString("4545"),
-							Backend: api.IngressBackend{
+							Backend: tapi_v1beta1.IngressBackend{
 								ServiceName: f.Ingress.TestServerName(),
 								ServicePort: intstr.FromString("4545"),
 							},
@@ -479,10 +480,10 @@ var _ = Describe("IngressOperations", func() {
 					},
 				},
 				{
-					IngressRuleValue: api.IngressRuleValue{
-						TCP: &api.TCPIngressRuleValue{
+					IngressRuleValue: tapi_v1beta1.IngressRuleValue{
+						TCP: &tapi_v1beta1.TCPIngressRuleValue{
 							Port: intstr.FromString("4949"),
-							Backend: api.IngressBackend{
+							Backend: tapi_v1beta1.IngressBackend{
 								ServiceName: f.Ingress.TestServerName(),
 								ServicePort: intstr.FromString("4545"),
 							},

@@ -5,7 +5,7 @@ import (
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
-	tapi "github.com/appscode/voyager/api"
+	tapi "github.com/appscode/voyager/apis/voyager"
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/ingress"

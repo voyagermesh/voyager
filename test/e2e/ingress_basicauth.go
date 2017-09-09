@@ -3,7 +3,8 @@ package e2e
 import (
 	"net/http"
 
-	"github.com/appscode/voyager/api"
+	tapi "github.com/appscode/voyager/apis/voyager"
+	tapi_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"
@@ -16,7 +17,7 @@ import (
 var _ = Describe("IngressWithBasicAuth", func() {
 	var (
 		f      *framework.Invocation
-		ing    *api.Ingress
+		ing    *tapi_v1beta1.Ingress
 		secret *apiv1.Secret
 	)
 
@@ -65,19 +66,19 @@ var _ = Describe("IngressWithBasicAuth", func() {
 	Describe("Create", func() {
 		BeforeEach(func() {
 			ing.Annotations = map[string]string{
-				api.AuthType:   "basic",
-				api.AuthRealm:  "Realm returned",
-				api.AuthSecret: secret.Name,
+				tapi.AuthType:   "basic",
+				tapi.AuthRealm:  "Realm returned",
+				tapi.AuthSecret: secret.Name,
 			}
-			ing.Spec.Rules = []api.IngressRule{
+			ing.Spec.Rules = []tapi_v1beta1.IngressRule{
 				{
-					IngressRuleValue: api.IngressRuleValue{
-						HTTP: &api.HTTPIngressRuleValue{
-							Paths: []api.HTTPIngressPath{
+					IngressRuleValue: tapi_v1beta1.IngressRuleValue{
+						HTTP: &tapi_v1beta1.HTTPIngressRuleValue{
+							Paths: []tapi_v1beta1.HTTPIngressPath{
 								{
 									Path: "/testpath",
-									Backend: api.HTTPIngressBackend{
-										IngressBackend: api.IngressBackend{
+									Backend: tapi_v1beta1.HTTPIngressBackend{
+										IngressBackend: tapi_v1beta1.IngressBackend{
 											ServiceName: f.Ingress.TestServerName(),
 											ServicePort: intstr.FromInt(80),
 										},

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/appscode/voyager/api"
+	api "github.com/appscode/voyager/apis/voyager"
 	"github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	_ "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"

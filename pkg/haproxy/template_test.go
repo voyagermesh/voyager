@@ -7,7 +7,7 @@ import (
 	"text/template"
 
 	"github.com/appscode/go/runtime"
-	"github.com/appscode/voyager/api"
+	api "github.com/appscode/voyager/apis/voyager"
 	"github.com/stretchr/testify/assert"
 )
 

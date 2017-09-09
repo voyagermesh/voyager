@@ -6,8 +6,7 @@ import (
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
-	tapi "github.com/appscode/voyager/api"
-	_ "github.com/appscode/voyager/api/install"
+	tapi "github.com/appscode/voyager/apis/voyager"
 	"github.com/appscode/voyager/pkg/ingress"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -104,7 +103,7 @@ func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*tapi.Ingress, error) {
 		}
 		return tapi.NewEngressFromIngress(ingress)
 	} else if sourceType == tapi.APISchemaEngress {
-		return op.ExtClient.Ingresses(meta.Namespace).Get(sourceName)
+		return op.ExtClient.Ingresses(meta.Namespace).Get(sourceName, metav1.GetOptions{})
 	}
 	return nil, fmt.Errorf("Unknown ingress type %s", sourceType)
 }

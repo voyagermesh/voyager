@@ -6,9 +6,8 @@ import (
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
-	"github.com/appscode/voyager/api"
-	_ "github.com/appscode/voyager/api/install"
-	acs "github.com/appscode/voyager/client/clientset"
+	api "github.com/appscode/voyager/apis/voyager"
+	acs "github.com/appscode/voyager/client/internalclientset/typed/voyager/internalversion"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/monitor"
@@ -37,7 +36,7 @@ var _ Controller = &hostPortController{}
 func NewHostPortController(
 	kubeClient clientset.Interface,
 	crdClient apiextensionsclient.Interface,
-	extClient acs.ExtensionInterface,
+	extClient acs.VoyagerInterface,
 	promClient pcm.MonitoringV1alpha1Interface,
 	serviceLister core.ServiceLister,
 	endpointsLister core.EndpointsLister,

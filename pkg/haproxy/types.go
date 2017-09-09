@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/appscode/voyager/api"
+	api "github.com/appscode/voyager/apis/voyager"
 )
 
 type TemplateData struct {

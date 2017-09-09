@@ -2,7 +2,7 @@ package operator
 
 import (
 	"github.com/appscode/log"
-	"github.com/appscode/voyager/api"
+	api "github.com/appscode/voyager/apis/voyager"
 	"github.com/appscode/voyager/pkg/util"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
