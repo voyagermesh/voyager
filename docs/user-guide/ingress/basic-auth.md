@@ -44,26 +44,25 @@ $ kubectl create secret generic mypasswd --from-file auth
 $ rm -fv auth
 ```
 
-Create an Ingress with Basic Auth Annotations
+Create an Ingress with Basic Auth annotations
 ```yaml
-  apiVersion: voyager.appscode.com/v1beta1
-  kind: Ingress
-  metadata:
-    annotations:
-      ingress.kubernetes.io/auth-type: basic
-      ingress.kubernetes.io/auth-realm: My Server
-      ingress.kubernetes.io/auth-secret: mypasswd
-    name: hello-basic-auth
-    namespace: default
-  spec:
-    rules:
-    - http:
-        paths:
-        - path: /testpath
-          backend:
-            serviceName: backend
-            servicePort: 80
-
+apiVersion: voyager.appscode.com/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    ingress.kubernetes.io/auth-type: basic
+    ingress.kubernetes.io/auth-realm: My Server
+    ingress.kubernetes.io/auth-secret: mypasswd
+  name: hello-basic-auth
+  namespace: default
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /testpath
+        backend:
+          serviceName: test-server
+          servicePort: 80
 ```
 
 Test without user and password:
