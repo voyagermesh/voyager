@@ -39,21 +39,10 @@ build_docker() {
 	cp $REPO_ROOT/dist/voyager/voyager-alpine-amd64 voyager
 	chmod 755 voyager
 
-	cat >Dockerfile <<EOL
-FROM alpine
-
-RUN set -x \
-  && apk update \
-  && apk add ca-certificates \
-  && rm -rf /var/cache/apk/*
-
-COPY voyager /voyager
-ENTRYPOINT ["/voyager"]
-EOL
 	local cmd="docker build -t appscode/$IMG:$TAG ."
 	echo $cmd; $cmd
 
-	rm voyager Dockerfile
+	rm voyager
 	popd
 }
 

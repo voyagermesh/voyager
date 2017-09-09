@@ -38,12 +38,15 @@ import:
   version: v0.8.0
 - package: github.com/prometheus/common
   version: master
+- package: github.com/prometheus/procfs
+  version: 454a56f35412459b5e684fd5ec0f9211b94f002a
 - package: github.com/sirupsen/logrus
   version: v0.11.5
 - package: gopkg.in/yaml.v2
   version: v2
 - package: k8s.io/apiextensions-apiserver
   version: 5fa44608f6b9b2180a2fd1ecb52e651fd0397794
+- package: github.com/tredoe/osutil
 testImport:
 - package: github.com/stretchr/testify
   version: v1.1.4

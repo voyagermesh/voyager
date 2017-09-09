@@ -9,7 +9,6 @@ import (
 	"github.com/appscode/pat"
 	acs "github.com/appscode/voyager/client/clientset"
 	_ "github.com/appscode/voyager/client/clientset/fake"
-	"github.com/appscode/voyager/pkg/analytics"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	clientset "k8s.io/client-go/kubernetes"
@@ -21,15 +20,6 @@ func NewCmdExport(version string) *cobra.Command {
 		Use:               "export",
 		Short:             "Export Prometheus metrics for HAProxy",
 		DisableAutoGenTag: true,
-		PreRun: func(cmd *cobra.Command, args []string) {
-			if enableAnalytics {
-				analytics.Enable()
-			}
-			analytics.Send("exporter", "started", version)
-		},
-		PostRun: func(cmd *cobra.Command, args []string) {
-			analytics.Send("exporter", "stopped", version)
-		},
 		Run: func(cmd *cobra.Command, args []string) {
 			export()
 		},
@@ -37,7 +27,6 @@ func NewCmdExport(version string) *cobra.Command {
 
 	cmd.Flags().StringVar(&masterURL, "master", masterURL, "The address of the Kubernetes API server (overrides any value in kubeconfig)")
 	cmd.Flags().StringVar(&kubeconfigPath, "kubeconfig", kubeconfigPath, "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
-	cmd.Flags().BoolVar(&enableAnalytics, "analytics", enableAnalytics, "Send analytical event to Google Analytics")
 
 	cmd.Flags().StringVar(&address, "address", address, "Address to listen on for web interface and telemetry.")
 	cmd.Flags().StringVar(&haProxyServerMetricFields, "haproxy.server-metric-fields", haProxyServerMetricFields, "Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1")

@@ -50,6 +50,14 @@ metadata:
   name: test-ingress
   namespace: default
 spec:
-  backend:
-    serviceName: test-server
-    servicePort: '80'
+  rules:
+  - http:
+      paths:
+      - path: /testpath
+        backend:
+          serviceName: test-server
+          servicePort: 80
+      - path: /
+        backend:
+          serviceName: test-server
+          servicePort: 80

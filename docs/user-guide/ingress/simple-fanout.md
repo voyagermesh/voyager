@@ -36,7 +36,7 @@ as long as the services (s1, s2) exist. When it has done so, you will see the ad
 the Status of Ingress.
 
 ## Next Reading
-- [Virtual Hosting](named-virtual-hostin.md)
+- [Virtual Hosting](named-virtual-hosting.md)
 - [URL and Header Rewriting](header-rewrite.md)
 - [TCP Loadbalancing](tcp.md)
 - [TLS Termination](tls.md)

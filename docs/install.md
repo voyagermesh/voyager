@@ -19,12 +19,12 @@ $ export CLOUD_CONFIG=<path>            # The path to the cloud provider configu
                                         # Voyager uses this to connect to cloud provider api.
 
 # Install without RBAC roles
-$ curl https://raw.githubusercontent.com/appscode/voyager/3.2.0-rc.0/hack/deploy/without-rbac.yaml \
+$ curl https://raw.githubusercontent.com/appscode/voyager/3.2.0-rc.3/hack/deploy/without-rbac.yaml \
     | envsubst \
     | kubectl apply -f -
 
 # Install with RBAC roles
-$ curl https://raw.githubusercontent.com/appscode/voyager/3.2.0-rc.0/hack/deploy/with-rbac.yaml \
+$ curl https://raw.githubusercontent.com/appscode/voyager/3.2.0-rc.3/hack/deploy/with-rbac.yaml \
     | envsubst \
     | kubectl apply -f -
 ```
@@ -76,3 +76,19 @@ $ kubectl get thirdpartyresources -l app=voyager
 ```
 
 Now, you are ready to create your first ingress using Voyager.
+
+## Using kubectl
+Since Voyager uses its own TPR/CRD, you need to use full resource kind to find it with kubectl.
+```console
+# List all voyager ingress
+$ kubectl get ingress.voyager.appscode.com --all-namespaces
+
+# List voyager ingress for a namespace
+$ kubectl get ingress.voyager.appscode.com -n <namespace>
+
+# Get Ingress YAML
+$ kubectl get ingress.voyager.appscode.com -n <namespace> <ingress-name> -o yaml
+
+# Describe Ingress. Very useful to debug problems.
+$ kubectl describe ingress.voyager.appscode.com -n <namespace> <ingress-name>
+```

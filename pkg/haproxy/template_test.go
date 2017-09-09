@@ -6,6 +6,7 @@ import (
 	"testing"
 	"text/template"
 
+	"github.com/appscode/go/runtime"
 	"github.com/appscode/voyager/api"
 	"github.com/stretchr/testify/assert"
 )
@@ -77,9 +78,10 @@ func TestTemplate(t *testing.T) {
 		},
 		HTTPService: []*HTTPService{
 			{
-				SharedInfo:   si,
-				FrontendName: "one",
-				Port:         80,
+				SharedInfo:    si,
+				FrontendName:  "one",
+				Port:          80,
+				FrontendRules: []string{},
 				Paths: []*HTTPPath{
 					{
 						Path: "/elijah",
@@ -119,15 +121,17 @@ func TestTemplate(t *testing.T) {
 				},
 			},
 			{
-				SharedInfo:   &SharedInfo{Sticky: true},
-				FrontendName: "two",
-				Port:         933,
-				UsesSSL:      true,
+				SharedInfo:    si,
+				FrontendName:  "two",
+				Port:          933,
+				FrontendRules: []string{},
+				UsesSSL:       true,
 				Paths: []*HTTPPath{
 					{
 						Path: "/kool",
 						Backend: Backend{
 							Name:         "kool",
+							Sticky:       true,
 							BackendRules: []string{"first rule", "second rule"},
 							RewriteRules: []string{"first rule", "second rule"},
 							HeaderRules:  []string{"firstName value", "secondName value"},
@@ -140,15 +144,17 @@ func TestTemplate(t *testing.T) {
 				},
 			},
 			{
-				SharedInfo:   &SharedInfo{Sticky: true},
-				FrontendName: "three",
-				Port:         9334,
-				UsesSSL:      true,
+				SharedInfo:    si,
+				FrontendName:  "three",
+				Port:          9334,
+				FrontendRules: []string{},
+				UsesSSL:       true,
 				Paths: []*HTTPPath{
 					{
 						Path: "/kool",
 						Backend: Backend{
 							Name:         "kool",
+							Sticky:       true,
 							BackendRules: []string{"first rule", "second rule"},
 							RewriteRules: []string{"first rule", "second rule"},
 							HeaderRules:  []string{"firstName value", "secondName value"},
@@ -161,17 +167,19 @@ func TestTemplate(t *testing.T) {
 				},
 			},
 			{
-				SharedInfo:   &SharedInfo{Sticky: true},
-				FrontendName: "four",
-				Port:         8334,
-				NodePort:     32000,
-				UsesSSL:      true,
+				SharedInfo:    si,
+				FrontendName:  "four",
+				Port:          8334,
+				NodePort:      32000,
+				FrontendRules: []string{},
+				UsesSSL:       true,
 				Paths: []*HTTPPath{
 					{
 						Host: "ex.appscode.dev",
 						Path: "/yara",
 						Backend: Backend{
-							Name: "yara",
+							Name:   "yara",
+							Sticky: true,
 							Endpoints: []*Endpoint{
 								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify required"},
 							},
@@ -180,10 +188,30 @@ func TestTemplate(t *testing.T) {
 				},
 			},
 			{
-				SharedInfo:   &SharedInfo{Sticky: true},
-				FrontendName: "five",
-				Port:         80,
-				UsesSSL:      true,
+				SharedInfo:    si,
+				FrontendName:  "five",
+				Port:          80,
+				FrontendRules: []string{},
+				UsesSSL:       true,
+				Paths: []*HTTPPath{
+					{
+						Host: "ex.appscode.dev",
+						Path: "/yara",
+						Backend: Backend{
+							Name:   "yara",
+							Sticky: true,
+							Endpoints: []*Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify required"},
+							},
+						},
+					},
+				},
+			},
+			{
+				SharedInfo:    si,
+				FrontendName:  "http-with-frontend-rule",
+				Port:          80,
+				FrontendRules: []string{"rule one", "rule two"},
 				Paths: []*HTTPPath{
 					{
 						Host: "ex.appscode.dev",
@@ -191,7 +219,7 @@ func TestTemplate(t *testing.T) {
 						Backend: Backend{
 							Name: "yara",
 							Endpoints: []*Endpoint{
-								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify required"},
+								{Name: "first", IP: "10.244.2.1", Port: "2323"},
 							},
 						},
 					},
@@ -200,9 +228,10 @@ func TestTemplate(t *testing.T) {
 		},
 		TCPService: []*TCPService{
 			{
-				SharedInfo:   si,
-				FrontendName: "stefan",
-				Port:         "333",
+				SharedInfo:    si,
+				FrontendName:  "stefan",
+				Port:          "333",
+				FrontendRules: []string{},
 				Backend: Backend{
 					Name:         "stefan",
 					BackendRules: []string{"first rule", "second rule"},
@@ -213,12 +242,13 @@ func TestTemplate(t *testing.T) {
 				},
 			},
 			{
-				SharedInfo:   si,
-				FrontendName: "daemon",
-				Host:         "hello.ok.domain",
-				Port:         "4444",
-				SecretName:   "this-is-secret",
-				PEMName:      "secret-pem",
+				SharedInfo:    si,
+				FrontendName:  "daemon",
+				Host:          "hello.ok.domain",
+				Port:          "4444",
+				FrontendRules: []string{},
+				SecretName:    "this-is-secret",
+				PEMName:       "secret-pem",
 				Backend: Backend{
 					Name: "daemon",
 					Endpoints: []*Endpoint{
@@ -228,11 +258,12 @@ func TestTemplate(t *testing.T) {
 				},
 			},
 			{
-				SharedInfo:   si,
-				FrontendName: "katherin",
-				ALPNOptions:  "alpn h2options",
-				Host:         "hello.ok.domain",
-				Port:         "4444",
+				SharedInfo:    si,
+				FrontendName:  "katherin",
+				ALPNOptions:   "alpn h2options",
+				Host:          "hello.ok.domain",
+				Port:          "4444",
+				FrontendRules: []string{},
 				Backend: Backend{
 					Name: "katherin",
 					Endpoints: []*Endpoint{
@@ -242,11 +273,12 @@ func TestTemplate(t *testing.T) {
 				},
 			},
 			{
-				SharedInfo:   si,
-				FrontendName: "kate-becket",
-				ALPNOptions:  "alpn h2options",
-				Host:         "hello.ok.domain",
-				Port:         "4444",
+				SharedInfo:    si,
+				FrontendName:  "kate-becket",
+				ALPNOptions:   "alpn h2options",
+				Host:          "hello.ok.domain",
+				Port:          "4444",
+				FrontendRules: []string{},
 				Backend: Backend{
 					Name: "kate-becket",
 					Endpoints: []*Endpoint{
@@ -256,11 +288,12 @@ func TestTemplate(t *testing.T) {
 				},
 			},
 			{
-				SharedInfo:   si,
-				FrontendName: "rick-castle",
-				ALPNOptions:  "alpn h2options",
-				Host:         "hello.ok.domain",
-				Port:         "4445",
+				SharedInfo:    si,
+				FrontendName:  "rick-castle",
+				ALPNOptions:   "alpn h2options",
+				Host:          "hello.ok.domain",
+				Port:          "4445",
+				FrontendRules: []string{},
 				Backend: Backend{
 					Name: "kate-becket",
 					Endpoints: []*Endpoint{
@@ -269,11 +302,161 @@ func TestTemplate(t *testing.T) {
 					},
 				},
 			},
+			{
+				SharedInfo:   si,
+				FrontendName: "with-sticky-options",
+				Host:         "hello.ok.domain",
+				Port:         "4449",
+				Backend: Backend{
+					Name:   "kate-becket",
+					Sticky: true,
+					Endpoints: []*Endpoint{
+						{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify none"},
+						{Name: "first", IP: "10.244.2.2", Port: "2324", ExternalName: "ext-name", TLSOption: "ssl verify required"},
+					},
+				},
+			},
+			{
+				SharedInfo:    si,
+				FrontendName:  "with-frontend-rules",
+				Port:          "4445",
+				FrontendRules: []string{"rule one", "rule two"},
+				Backend: Backend{
+					Name: "kate-becket",
+					Endpoints: []*Endpoint{
+						{Name: "first", IP: "10.244.2.1", Port: "2323"},
+						{Name: "first", IP: "10.244.2.2", Port: "2324"},
+					},
+				},
+			},
 		},
 	}
-	config, err := RenderConfig(testParsedConfig)
-	assert.Nil(t, err)
-	if testing.Verbose() {
-		fmt.Println(err, "\n", config)
+	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
+	if assert.Nil(t, err) {
+		config, err := RenderConfig(testParsedConfig)
+		assert.Nil(t, err)
+		if testing.Verbose() {
+			fmt.Println(err, "\n", config)
+		}
+	}
+}
+
+func TestTemplateAuth(t *testing.T) {
+	si := &SharedInfo{
+		DefaultBackend: &Backend{
+			Name: "default",
+			Endpoints: []*Endpoint{
+				{Name: "first", IP: "10.244.2.1", Port: "2323"},
+				{Name: "first", IP: "10.244.2.2", Port: "2324"},
+			},
+		},
+		Auth: &AuthConfig{
+			Realm: "Required",
+			Users: map[string][]AuthUser{
+				"auth": {
+					{
+						Username:  "foo",
+						Password:  "#bar",
+						Encrypted: true,
+					},
+					{
+						Username:  "foo2",
+						Password:  "bar2",
+						Encrypted: false,
+					},
+				},
+				"auth2": {
+					{
+						Username:  "foo",
+						Password:  "#bar",
+						Encrypted: true,
+					},
+					{
+						Username:  "foo2",
+						Password:  "bar2",
+						Encrypted: false,
+					},
+				},
+			},
+		},
+	}
+	testParsedConfig := TemplateData{
+		SharedInfo: si,
+		TimeoutDefaults: map[string]string{
+			"client": "2s",
+			"fin":    "1d",
+		},
+		HTTPService: []*HTTPService{
+			{
+				SharedInfo:    si,
+				FrontendName:  "one",
+				Port:          80,
+				FrontendRules: []string{},
+				Paths: []*HTTPPath{
+					{
+						Path: "/elijah",
+						Backend: Backend{
+							Name: "elijah",
+							Endpoints: []*Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323"},
+								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+							},
+						},
+					},
+					{
+						Path: "/nicklause",
+						Backend: Backend{
+							Name: "nicklause",
+							Endpoints: []*Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323"},
+								{Name: "first", IP: "10.244.2.2", Port: "2324", CheckHealth: true},
+							},
+						},
+					},
+				},
+			},
+			{
+				SharedInfo:    si,
+				FrontendName:  "two",
+				Port:          933,
+				FrontendRules: []string{},
+				Paths: []*HTTPPath{
+					{
+						Path: "/kool",
+						Backend: Backend{
+							Name: "kool",
+							Endpoints: []*Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true},
+								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+							},
+						},
+					},
+				},
+			},
+		},
+		TCPService: []*TCPService{
+			{
+				SharedInfo:    si,
+				FrontendName:  "stefan",
+				Port:          "333",
+				FrontendRules: []string{},
+				Backend: Backend{
+					Name:         "stefan",
+					BackendRules: []string{"first rule", "second rule"},
+					Endpoints: []*Endpoint{
+						{Name: "first", IP: "10.244.2.1", Port: "2323"},
+						{Name: "first", IP: "10.244.2.2", Port: "2324"},
+					},
+				},
+			},
+		},
+	}
+	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
+	if assert.Nil(t, err) {
+		config, err := RenderConfig(testParsedConfig)
+		assert.Nil(t, err)
+		if testing.Verbose() {
+			fmt.Println(err, "\n", config)
+		}
 	}
 }

@@ -29,7 +29,7 @@ func (op *Operator) initServiceMonitorWatcher() cache.Controller {
 	}
 	_, informer := cache.NewInformer(lw,
 		&prom.ServiceMonitor{},
-		op.Opt.SyncPeriod,
+		op.Opt.ResyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			DeleteFunc: func(obj interface{}) {
 				if svcmon, ok := obj.(*prom.ServiceMonitor); ok {

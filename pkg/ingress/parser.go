@@ -1,6 +1,8 @@
 package ingress
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -13,13 +15,15 @@ import (
 	_ "github.com/appscode/voyager/api/install"
 	"github.com/appscode/voyager/pkg/haproxy"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
+	"github.com/tredoe/osutil/user/crypt"
+	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, name string, port intstr.IntOrString, hostNames []string) ([]*haproxy.Endpoint, error) {
+func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, name string, port intstr.IntOrString, hostNames []string) (*haproxy.Backend, error) {
 	log.Infoln("getting endpoints for ", c.Ingress.Namespace, name, "port", port)
 
 	// the following lines giving support to
@@ -58,16 +62,16 @@ func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, 
 			ep.DNSResolver = resolver.Name
 			ep.CheckHealth = resolver.CheckHealth
 		}
-		return []*haproxy.Endpoint{&ep}, nil
+		return &haproxy.Backend{Endpoints: []*haproxy.Endpoint{&ep}}, nil
 	}
 	p, ok := getSpecifiedPort(service.Spec.Ports, port)
 	if !ok {
-		return nil, fmt.Errorf("Service port %s unavailable for service %s", port.String(), service.Name)
+		return nil, fmt.Errorf("service port %s unavailable for service %s", port.String(), service.Name)
 	}
 	return c.getEndpoints(service, p, hostNames)
 }
 
-func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (eps []*haproxy.Endpoint, err error) {
+func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (*haproxy.Backend, error) {
 	ep, err := c.EndpointsLister.Endpoints(s.Namespace).Get(s.Name)
 	if err != nil {
 		return nil, err
@@ -84,6 +88,7 @@ func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePo
 		pods[pod.Name] = pod
 	}
 
+	eps := make([]*haproxy.Endpoint, 0)
 	// The intent here is to create a union of all subsets that match a targetPort.
 	// We know the endpoint already matches the service, so all pod ips that have
 	// the target port are capable of service traffic for it.
@@ -142,7 +147,18 @@ func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePo
 			}
 		}
 	}
-	return
+	return &haproxy.Backend{
+		Endpoints: eps,
+		Sticky:    c.Ingress.Sticky() || isServiceSticky(s.Annotations),
+	}, nil
+}
+
+func isServiceSticky(annotations map[string]string) bool {
+	var sticky bool
+	if annotations != nil {
+		sticky, _ = strconv.ParseBool(annotations[api.StickySession])
+	}
+	return sticky
 }
 
 func isForwardable(hostNames []string, hostName string) bool {
@@ -191,23 +207,44 @@ func (c *controller) generateConfig() error {
 	}
 
 	si := &haproxy.SharedInfo{}
-	si.Sticky = c.Ingress.StickySession()
 	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
 		si.AcceptProxy = c.Ingress.KeepSourceIP()
+	}
+	if c.Ingress.AcceptProxy() {
+		si.AcceptProxy = true
 	}
 
 	dnsResolvers := make(map[string]*api.DNSResolver)
 	if c.Ingress.Spec.Backend != nil {
-		eps, err := c.serviceEndpoints(dnsResolvers, c.Ingress.Spec.Backend.ServiceName, c.Ingress.Spec.Backend.ServicePort, c.Ingress.Spec.Backend.HostNames)
+		bk, err := c.serviceEndpoints(dnsResolvers, c.Ingress.Spec.Backend.ServiceName, c.Ingress.Spec.Backend.ServicePort, c.Ingress.Spec.Backend.HostNames)
 		if err != nil {
 			return err
 		}
 		si.DefaultBackend = &haproxy.Backend{
 			Name:         "default-backend", // TODO: Use constant
-			Endpoints:    eps,
+			Endpoints:    bk.Endpoints,
 			BackendRules: c.Ingress.Spec.Backend.BackendRule,
 			RewriteRules: c.Ingress.Spec.Backend.RewriteRule,
 			HeaderRules:  c.Ingress.Spec.Backend.HeaderRule,
+			Sticky:       bk.Sticky,
+		}
+	}
+
+	if c.Ingress.AuthEnabled() {
+		si.Auth = &haproxy.AuthConfig{
+			Realm: c.Ingress.AuthRealm(),
+		}
+
+		secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(c.Ingress.AuthSecretName(), metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		if secret.Data == nil {
+			return fmt.Errorf("secret data missing")
+		}
+		si.Auth.Users, err = getAuthUsers(secret.Data)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -243,20 +280,21 @@ func (c *controller) generateConfig() error {
 		if rule.HTTP != nil {
 			httpPaths := make([]*haproxy.HTTPPath, 0)
 			for _, path := range rule.HTTP.Paths {
-				eps, err := c.serviceEndpoints(dnsResolvers, path.Backend.ServiceName, path.Backend.ServicePort, path.Backend.HostNames)
+				bk, err := c.serviceEndpoints(dnsResolvers, path.Backend.ServiceName, path.Backend.ServicePort, path.Backend.HostNames)
 				if err != nil {
 					return err
 				}
-				if len(eps) > 0 {
+				if len(bk.Endpoints) > 0 {
 					httpPaths = append(httpPaths, &haproxy.HTTPPath{
 						Host: rule.Host,
 						Path: path.Path,
 						Backend: haproxy.Backend{
 							Name:         getBackendName(c.Ingress, path.Backend.IngressBackend),
-							Endpoints:    eps,
+							Endpoints:    bk.Endpoints,
 							BackendRules: path.Backend.BackendRule,
 							RewriteRules: path.Backend.RewriteRule,
 							HeaderRules:  path.Backend.HeaderRule,
+							Sticky:       bk.Sticky,
 						},
 					})
 				}
@@ -293,21 +331,23 @@ func (c *controller) generateConfig() error {
 				httpServices[key] = httpPaths
 			}
 		} else if rule.TCP != nil {
-			eps, err := c.serviceEndpoints(dnsResolvers, rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort, rule.TCP.Backend.HostNames)
+			bk, err := c.serviceEndpoints(dnsResolvers, rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort, rule.TCP.Backend.HostNames)
 			if err != nil {
 				return err
 			}
-			if len(eps) > 0 {
+			if len(bk.Endpoints) > 0 {
 				def := &haproxy.TCPService{
-					SharedInfo:   si,
-					FrontendName: fmt.Sprintf("tcp-%s", rule.TCP.Port.String()),
-					Host:         rule.Host,
-					Port:         rule.TCP.Port.String(),
-					ALPNOptions:  parseALPNOptions(rule.TCP.ALPN),
+					SharedInfo:    si,
+					FrontendName:  fmt.Sprintf("tcp-%s", rule.TCP.Port.String()),
+					Host:          rule.Host,
+					Port:          rule.TCP.Port.String(),
+					ALPNOptions:   parseALPNOptions(rule.TCP.ALPN),
+					FrontendRules: getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, rule.TCP.Port.IntValue()),
 					Backend: haproxy.Backend{
 						Name:         getBackendName(c.Ingress, rule.TCP.Backend),
 						BackendRules: rule.TCP.Backend.BackendRule,
-						Endpoints:    eps,
+						Endpoints:    bk.Endpoints,
+						Sticky:       bk.Sticky,
 					},
 				}
 				if secretName, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoTLS {
@@ -321,12 +361,13 @@ func (c *controller) generateConfig() error {
 	for key := range httpServices {
 		value := httpServices[key]
 		td.HTTPService = append(td.HTTPService, &haproxy.HTTPService{
-			SharedInfo:   si,
-			FrontendName: fmt.Sprintf("http-%d", key.Port),
-			Port:         key.Port,
-			NodePort:     key.NodePort,
-			UsesSSL:      key.UsesSSL,
-			Paths:        value,
+			SharedInfo:    si,
+			FrontendName:  fmt.Sprintf("http-%d", key.Port),
+			Port:          key.Port,
+			FrontendRules: getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, key.Port),
+			NodePort:      key.NodePort,
+			UsesSSL:       key.UsesSSL,
+			Paths:         value,
 		})
 	}
 
@@ -345,6 +386,62 @@ func (c *controller) generateConfig() error {
 		log.Debugf("Generated haproxy.cfg for Ingress %s@%s:", c.Ingress.Name, c.Ingress.Namespace, cfg)
 	}
 	return nil
+}
+
+func getAuthUsers(data map[string][]byte) (map[string][]haproxy.AuthUser, error) {
+	ret := make(map[string][]haproxy.AuthUser, 0)
+	for name, data := range data {
+		users := make([]haproxy.AuthUser, 0)
+		scanner := bufio.NewScanner(bytes.NewReader(data))
+		for scanner.Scan() {
+			line := strings.TrimSpace(scanner.Text())
+			if len(line) <= 0 {
+				continue
+			}
+			sep := strings.Index(line, ":")
+			if sep == -1 {
+				return nil, fmt.Errorf("Missing ':' on userlist")
+			}
+			userName := line[0:sep]
+			if userName == "" {
+				return nil, fmt.Errorf("Missing username on userlist")
+			}
+			if sep == len(line)-1 || line[sep:] == "::" {
+				return nil, fmt.Errorf("Missing '%v' password on userlist", userName)
+			}
+			user := haproxy.AuthUser{}
+			// if usr::pwd
+			if string(line[sep+1]) == ":" {
+				pass, err := crypt.NewFromHash(sha512_crypt.MagicPrefix).Generate([]byte(line[sep+2:]), nil)
+				if err != nil {
+					return nil, err
+				}
+				user = haproxy.AuthUser{
+					Username:  userName,
+					Password:  pass,
+					Encrypted: true,
+				}
+			} else {
+				user = haproxy.AuthUser{
+					Username:  userName,
+					Password:  line[sep+1:],
+					Encrypted: true,
+				}
+			}
+			users = append(users, user)
+		}
+		ret[name] = users
+	}
+	return ret, nil
+}
+
+func getFrontendRulesForPort(rules []api.FrontendRule, port int) []string {
+	for _, rule := range rules {
+		if rule.Port.IntValue() == port {
+			return rule.Rules
+		}
+	}
+	return []string{}
 }
 
 func parseALPNOptions(opt []string) string {

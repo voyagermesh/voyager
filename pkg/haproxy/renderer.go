@@ -15,7 +15,7 @@ func RenderConfig(data TemplateData) (string, error) {
 	}
 	data.canonicalize()
 	var buf bytes.Buffer
-	err := haproxyTemplate.Execute(&buf, data)
+	err := haproxyTemplate.ExecuteTemplate(&buf, "haproxy.cfg", data)
 	if err != nil {
 		log.Error(err)
 		return "", err
@@ -33,7 +33,6 @@ func (td *TemplateData) canonicalize() {
 		for j := range svc.Paths {
 			svc.Paths[j].Backend.canonicalize()
 		}
-		sort.Slice(svc.Paths, func(i, j int) bool { return svc.Paths[i].sortKey() < svc.Paths[j].sortKey() })
 	}
 	sort.Slice(td.HTTPService, func(i, j int) bool { return td.HTTPService[i].sortKey() < td.HTTPService[j].sortKey() })
 	sort.Slice(td.TCPService, func(i, j int) bool { return td.TCPService[i].sortKey() < td.TCPService[j].sortKey() })

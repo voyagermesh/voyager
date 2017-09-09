@@ -5,7 +5,6 @@ import (
 
 	"github.com/appscode/log"
 	"github.com/appscode/voyager/api"
-	"github.com/appscode/voyager/pkg/analytics"
 	"github.com/appscode/voyager/pkg/eventer"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -27,7 +26,7 @@ func (op *Operator) initIngresseWatcher() cache.Controller {
 	}
 	_, informer := cache.NewInformer(lw,
 		&extensions.Ingress{},
-		op.Opt.SyncPeriod,
+		op.Opt.ResyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				if ingress, ok := obj.(*extensions.Ingress); ok {
@@ -52,8 +51,6 @@ func (op *Operator) initIngresseWatcher() cache.Controller {
 						)
 						return
 					}
-					go analytics.Send(ingress.GroupVersionKind().String(), "ADD", "success")
-
 					op.AddEngress(engress)
 				}
 			},
@@ -108,8 +105,6 @@ func (op *Operator) initIngresseWatcher() cache.Controller {
 						log.Infof("%s %s@%s does not match ingress class", ingress.GroupVersionKind(), ingress.Name, ingress.Namespace)
 						return
 					}
-
-					go analytics.Send(ingress.GroupVersionKind().String(), "DELETE", "success")
 					op.DeleteEngress(engress)
 				}
 			},

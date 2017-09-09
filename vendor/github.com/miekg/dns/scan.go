@@ -278,7 +278,8 @@ func parseZone(r io.Reader, origin, f string, t chan *Token, include int) {
 				return
 			}
 			neworigin := origin // There may be optionally a new origin set after the filename, if not use current one
-			switch l := <-c; l.value {
+			l := <-c
+			switch l.value {
 			case zBlank:
 				l := <-c
 				if l.value == zString {
@@ -313,7 +314,7 @@ func parseZone(r io.Reader, origin, f string, t chan *Token, include int) {
 				t <- &Token{Error: &ParseError{f, "too deeply nested $INCLUDE", l}}
 				return
 			}
-			parseZone(r1, neworigin, l.token, t, include+1)
+			parseZone(r1, l.token, neworigin, t, include+1)
 			st = zExpectOwnerDir
 		case zExpectDirTtlBl:
 			if l.value != zBlank {
@@ -626,7 +627,6 @@ func zlexer(s *scan, c chan lex) {
 			if stri > 0 {
 				l.value = zString
 				l.token = string(str[:stri])
-				l.tokenUpper = strings.ToUpper(l.token)
 				l.length = stri
 				debug.Printf("[4 %+v]", l.token)
 				c <- l
@@ -663,7 +663,6 @@ func zlexer(s *scan, c chan lex) {
 					owner = true
 					l.value = zNewline
 					l.token = "\n"
-					l.tokenUpper = l.token
 					l.length = 1
 					l.comment = string(com[:comi])
 					debug.Printf("[3 %+v %+v]", l.token, l.comment)
@@ -697,7 +696,6 @@ func zlexer(s *scan, c chan lex) {
 				}
 				l.value = zNewline
 				l.token = "\n"
-				l.tokenUpper = l.token
 				l.length = 1
 				debug.Printf("[1 %+v]", l.token)
 				c <- l
@@ -742,7 +740,6 @@ func zlexer(s *scan, c chan lex) {
 			if stri != 0 {
 				l.value = zString
 				l.token = string(str[:stri])
-				l.tokenUpper = strings.ToUpper(l.token)
 				l.length = stri
 
 				debug.Printf("[%+v]", l.token)
@@ -753,7 +750,6 @@ func zlexer(s *scan, c chan lex) {
 			// send quote itself as separate token
 			l.value = zQuote
 			l.token = "\""
-			l.tokenUpper = l.token
 			l.length = 1
 			c <- l
 			quote = !quote
@@ -779,7 +775,6 @@ func zlexer(s *scan, c chan lex) {
 				brace--
 				if brace < 0 {
 					l.token = "extra closing brace"
-					l.tokenUpper = l.token
 					l.err = true
 					debug.Printf("[%+v]", l.token)
 					c <- l
@@ -804,16 +799,9 @@ func zlexer(s *scan, c chan lex) {
 	if stri > 0 {
 		// Send remainder
 		l.token = string(str[:stri])
-		l.tokenUpper = strings.ToUpper(l.token)
 		l.length = stri
 		l.value = zString
 		debug.Printf("[%+v]", l.token)
-		c <- l
-	}
-	if brace != 0 {
-		l.token = "unbalanced brace"
-		l.tokenUpper = l.token
-		l.err = true
 		c <- l
 	}
 }
@@ -824,8 +812,8 @@ func classToInt(token string) (uint16, bool) {
 	if len(token) < offset+1 {
 		return 0, false
 	}
-	class, err := strconv.ParseUint(token[offset:], 10, 16)
-	if err != nil {
+	class, ok := strconv.Atoi(token[offset:])
+	if ok != nil || class > maxUint16 {
 		return 0, false
 	}
 	return uint16(class), true
@@ -837,8 +825,8 @@ func typeToInt(token string) (uint16, bool) {
 	if len(token) < offset+1 {
 		return 0, false
 	}
-	typ, err := strconv.ParseUint(token[offset:], 10, 16)
-	if err != nil {
+	typ, ok := strconv.Atoi(token[offset:])
+	if ok != nil || typ > maxUint16 {
 		return 0, false
 	}
 	return uint16(typ), true

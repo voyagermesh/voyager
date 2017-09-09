@@ -18,24 +18,30 @@ This is built on top of the HAProxy, to support high availability, sticky sessio
 hosting. This plugin also support configurable application ports with all the features available in Kubernetes Ingress. [Read More](#what-is-appscode-ingress)
 
 ### Core features of AppsCode Ingress:
-  - [HTTP](single-service.md) and [TCP](tcp.md) loadbalancing,
-  - [TLS Termination](tls.md),
-  - Multi-cloud supports,
-  - [Name and Path based virtual hosting](named-virtual-hosting.md),
-  - [Cross namespace routing support](named-virtual-hosting.md),
-  - [URL and Request Header Re-writing](header-rewrite.md),
-  - [Wildcard Name based virtual hosting](named-virtual-hosting.md),
-  - Persistent sessions, Loadbalancer stats,
-  - [Route Traffic to StatefulSet Pods Based on Host Name](statefulset-pod.md)
-  - [Weighted Loadbalancing for Canary Deployment](weighted.md)
-  - [Customize generated HAProxy config via BackendRule](backend-rule.md)
-  - [Add Custom Annotation to LoadBalancer Service and Pods](annotations.md)
-  - [Supports Loadbalancer Source Range](source-range.md)
-  - [Supports redirects/DNS resolution for `ExternalName` type service](external-svc.md)
-  - [Expose HAProxy stats for Prometheus](stats-and-prometheus.md)
-  - [Supports AWS certificate manager](aws-cert-manager.md)
-  - [Scale load balancer using HorizontalPodAutoscaling](replicas-and-autoscaling.md)
-  - [Configure Custom Timeouts for HAProxy](configure-timeouts.md)
+  - [HTTP](/docs/user-guide/ingress/single-service.md) and [TCP](/docs/user-guide/ingress/tcp.md) loadbalancing,
+  - [TLS Termination](/docs/user-guide/ingress/tls.md),
+  - Multi-cloud support,
+  - [Name and Path based virtual hosting](/docs/user-guide/ingress/named-virtual-hosting.md),
+  - [Cross namespace routing support](/docs/user-guide/ingress/named-virtual-hosting.md#cross-namespace-traffic-routing),
+  - [URL and Request Header Re-writing](/docs/user-guide/ingress/header-rewrite.md),
+  - [Wildcard Name based virtual hosting](/docs/user-guide/ingress/named-virtual-hosting.md),
+  - Persistent sessions, Loadbalancer stats.
+  - [Route Traffic to StatefulSet Pods Based on Host Name](/docs/user-guide/ingress/statefulset-pod.md)
+  - [Weighted Loadbalancing for Canary Deployment](/docs/user-guide/ingress/weighted.md)
+  - [Customize generated HAProxy config via BackendRule](/docs/user-guide/ingress/backend-rule.md) (can be used for [http rewriting](https://www.haproxy.com/doc/aloha/7.0/haproxy/http_rewriting.html), add [health checks](https://www.haproxy.com/doc/aloha/7.0/haproxy/healthchecks.html), etc.)
+  - [Add Custom Annotation to LoadBalancer Service and Pods](/docs/user-guide/ingress/annotations.md)
+  - [Supports Loadbalancer Source Range](/docs/user-guide/ingress/source-range.md)
+  - [Supports redirects/DNS resolution for `ExternalName` type service](/docs/user-guide/ingress/external-svc.md)
+  - [Expose HAProxy stats for Prometheus](/docs/user-guide/ingress/stats-and-prometheus.md)
+  - [Supports AWS certificate manager](/docs/user-guide/ingress/aws-cert-manager.md)
+  - [Scale load balancer using HorizontalPodAutoscaling](/docs/user-guide/ingress/replicas-and-autoscaling.md)
+  - [Configure Custom Timeouts for HAProxy](/docs/user-guide/ingress/configure-timeouts.md)
+  - [Custom port for HTTP](/docs/user-guide/ingress/custom-http-port.md)
+  - [Specify NodePort](/docs/user-guide/ingress/node-port.md)
+  - [Backend TLS](/docs/user-guide/ingress/backend-tls.md)
+  - [Configure Options](/docs/user-guide/ingress/configure-options.md)
+  - [Using Custom HAProxy Templates](/docs/user-guide/ingress/custom-templates.md)
+  - [Configure Basic Auth for HTTP Backends](docs/user-guide/ingress/basic-auth.md)
 
 ### Comparison with Kubernetes
 | Feauture | Kube Ingress | AppsCode Ingress |
@@ -107,7 +113,7 @@ If you are using YAML to write your Ingress, you can use any valid YAML syntax, 
 annotations:
   ingress.appscode.com/type: LoadBalancer
   ingress.appscode.com/replicas: '2'
-  ingress.appscode.com/load-balaner-ip: '100.101.102.103'
+  ingress.appscode.com/load-balancer-ip: '100.101.102.103'
   ingress.appscode.com/stats: 'true'
   ingress.appscode.com/stats-port: '2017'
   ingress.appscode.com/stats-secret-name: my-secret
@@ -125,7 +131,7 @@ Below is the full list of supported annotation keys:
 |--------|-----------|----------|--------------|
 | ingress.appscode.com/type | LoadBalancer, HostPort, NodePort | LoadBalancer | `Required`. Indicates type of service used to expose HAProxy to the internet |
 | ingress.appscode.com/replicas | integer | 1 | `Optional`. Indicates number of replicas of HAProxy pods |
-| ingress.appscode.com/load-balaner-ip | string | x | `Optional`. For "gce" and "gke" cloud provider, if this value is set to a valid IPv4 address, it will be assigned to Google cloud network loadbalancer used to expose HAProxy. Usually this is set to a static IP to preserve DNS configuration |
+| ingress.appscode.com/load-balancer-ip | string | x | `Optional`. For "gce" and "gke" cloud provider, if this value is set to a valid IPv4 address, it will be assigned to Google cloud network loadbalancer used to expose HAProxy. Usually this is set to a static IP to preserve DNS configuration |
 | ingress.appscode.com/node-selector | map | x | Indicates which hosts are selected to run HAProxy pods. This is a recommended annotation for `HostPort` type ingress. |
 | ingress.appscode.com/sticky-session | bool | false | `Optional`. Indicates the session affinity for the traffic. If set, session affinity will apply to all the rulses. |
 | ingress.appscode.com/annotations-service | map | x | `Optional`. Annotaiotns applied to service used to expose HAProxy |
@@ -135,7 +141,7 @@ Below is the full list of supported annotation keys:
 | ingress.appscode.com/stats-port | integer | 56789 | `Optional`. Port used to expose HAProxy stats |
 | ingress.appscode.com/stats-secret-name | string | x | `Optional`. Secret used to provide username & password to secure HAProxy stats endpoint. Secret must contain keys `username` and `password` |
 | ingress.appscode.com/stats-service-name | string | `voyager-<ingress-name>-stats` | ClusterIP type service used to expose HAproxy stats. This allows to avoid exposing stats to internet. |
-| ingress.appscode.com/ip | | | Removed since 1.5.6. Use `ingress.appscode.com/load-balaner-ip` |
+| ingress.appscode.com/ip | | | Removed since 1.5.6. Use `ingress.appscode.com/load-balancer-ip` |
 | ingress.appscode.com/persist | | | Removed since 1.5.6. |
 | ingress.appscode.com/daemon.nodeSelector | | | Removed since 1.5.6. Use `ingress.appscode.com/node-selector` |
 | ingress.appscode.com/stickySession | | | Removed since 1.5.6. Use `ingress.appscode.com/sticky-session` |

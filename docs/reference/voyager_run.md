@@ -15,9 +15,9 @@ voyager run [flags]
 
 ```
       --address string                        Address to listen on for web interface and telemetry. (default ":56790")
-      --analytics                             Send analytical event to Google Analytics (default true)
       --cloud-config string                   The path to the cloud provider configuration file.  Empty string for no configuration file.
   -c, --cloud-provider string                 Name of cloud provider
+      --custom-templates string               Glob pattern of custom HAProxy template files used to override built-in templates
       --haproxy-image string                  haproxy image name to be run (default "appscode/haproxy:1.7.6-3.2.0-rc.0")
       --haproxy.server-metric-fields string   Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1 (default "2,3,4,5,6,7,8,9,13,14,15,16,17,18,21,24,33,35,38,39,40,41,42,43,44")
       --haproxy.timeout duration              Timeout for trying to get stats from HAProxy. (default 5s)
@@ -28,13 +28,14 @@ voyager run [flags]
       --master string                         The address of the Kubernetes API server (overrides any value in kubeconfig)
       --operator-service string               Name of service used to expose voyager operator (default "voyager-operator")
       --rbac                                  Enable RBAC for operator & offshoot Kubernetes objects
-      --resync-period duration                If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out. (default 2m0s)
+      --resync-period duration                If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out. (default 5m0s)
 ```
 
 ### Options inherited from parent commands
 
 ```
       --alsologtostderr                  log to standard error as well as files
+      --analytics                        Send analytical events to Google Analytics (default true)
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files

@@ -20,8 +20,6 @@ const (
 
 	VoyagerPrefix = "voyager-"
 
-	StickySession = EngressKey + "/" + "sticky-session"
-
 	// LB stats options
 	StatsOn          = EngressKey + "/" + "stats"
 	StatsPort        = EngressKey + "/" + "stats-port"
@@ -81,6 +79,9 @@ const (
 	// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
 	KeepSourceIP = EngressKey + "/" + "keep-source-ip"
 
+	// Enforces the use of the PROXY protocol over any connection accepted by HAProxy.
+	AcceptProxy = EngressKey + "/" + "accept-proxy"
+
 	// Annotations applied to resources offshoot from an ingress
 	OriginAPISchema = EngressKey + "/" + "origin-api-schema" // APISchema = {APIGroup}/{APIVersion}
 	OriginName      = EngressKey + "/" + "origin-name"
@@ -107,7 +108,7 @@ const (
 	// https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.2-option%20abortonclose
 	// from the list from here
 	// expects a json encoded map
-	// ie: "ingress.appscode.com/default-option": {"http-keep-alive": "true", "dontlognull": "true", "clitcpka": "false"}
+	// ie: "ingress.appscode.com/default-option": '{"http-keep-alive": "true", "dontlognull": "true", "clitcpka": "false"}'
 	// This will be appended in the defaults section of HAProxy as
 	//
 	//   option http-keep-alive
@@ -151,6 +152,33 @@ const (
 	certificateAnnotationKeyProviderCredentialSecretName = "certificate.appscode.com/provider-secret"
 	certificateAnnotationKeyACMEUserSecretName           = "certificate.appscode.com/user-secret"
 	certificateAnnotationKeyACMEServerURL                = "certificate.appscode.com/server-url"
+
+	// StickyIngress configures HAProxy to use sticky connection
+	// to the backend servers.
+	// Annotations could  be applied to either Ingress or backend Service (since 3.2+).
+	// ie: ingress.appscode.com/sticky-session: "true"
+	// If applied to Ingress, all the backend connections would be sticky
+	// If applied to Service and Ingress do not have this annotation only
+	// connection to that backend service will be sticky.
+	StickySession = EngressKey + "/" + "sticky-session"
+
+	// Basic Auth: Follows ingress controller standard
+	// https://github.com/kubernetes/ingress/tree/master/examples/auth/basic/haproxy
+	// HAProxy Ingress read user and password from auth file stored on secrets, one
+	// user and password per line.
+	// Each line of the auth file should have:
+	// user and insecure password separated with a pair of colons: <username>::<plain-text-passwd>; or
+	// user and an encrypted password separated with colons: <username>:<encrypted-passwd>
+	// Secret name, realm and type are configured with annotations in the ingress
+	// Auth can only be applied to HTTP backends.
+	// Only supported type is basic
+	AuthType = "ingress.kubernetes.io/auth-type"
+
+	// an optional string with authentication realm
+	AuthRealm = "ingress.kubernetes.io/auth-realm"
+
+	// name of the auth secret
+	AuthSecret = "ingress.kubernetes.io/auth-secret"
 )
 
 func (r Ingress) OffshootName() string {
@@ -184,7 +212,7 @@ func (r Ingress) APISchema() string {
 	return APISchemaEngress
 }
 
-func (r Ingress) StickySession() bool {
+func (r Ingress) Sticky() bool {
 	v, _ := getBool(r.Annotations, StickySession)
 	return v
 }
@@ -280,6 +308,11 @@ func (r Ingress) PodsAnnotations() (map[string]string, bool) {
 
 func (r Ingress) KeepSourceIP() bool {
 	v, _ := getBool(r.Annotations, KeepSourceIP)
+	return v
+}
+
+func (r Ingress) AcceptProxy() bool {
+	v, _ := getBool(r.Annotations, AcceptProxy)
 	return v
 }
 
@@ -397,6 +430,32 @@ func (r Ingress) CertificateSpec() (*Certificate, bool) {
 		return newCertificate, true
 	}
 	return nil, false
+}
+
+func (r Ingress) AuthEnabled() bool {
+	if r.Annotations == nil {
+		return false
+	}
+
+	// Check auth type is basic; other auth mode is not supported
+	if val := getString(r.Annotations, AuthType); val != "basic" {
+		return false
+	}
+
+	// Check secret name is not empty
+	if val := getString(r.Annotations, AuthSecret); len(val) == 0 {
+		return false
+	}
+
+	return true
+}
+
+func (r Ingress) AuthRealm() string {
+	return getString(r.Annotations, AuthRealm)
+}
+
+func (r Ingress) AuthSecretName() string {
+	return getString(r.Annotations, AuthSecret)
 }
 
 // ref: https://github.com/kubernetes/kubernetes/blob/078238a461a0872a8eacb887fbb3d0085714604c/staging/src/k8s.io/apiserver/pkg/apis/example/v1/types.go#L134

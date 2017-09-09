@@ -44,7 +44,7 @@ func TestLoadProviderCredential(t *testing.T) {
 		},
 	}
 
-	fakeController := NewController(fakeConfig, fake.NewSimpleClientset(), acf.NewFakeExtensionClient(), config.Options{SyncPeriod: time.Second * 5}, cert)
+	fakeController := NewController(fakeConfig, fake.NewSimpleClientset(), acf.NewFakeExtensionClient(), config.Options{ResyncPeriod: time.Second * 5}, cert)
 	fakeController.acmeClientConfig = &ACMEConfig{
 		ProviderCredentials: make(map[string][]byte),
 	}
@@ -93,7 +93,7 @@ func TestEnsureClient(t *testing.T) {
 			&apiv1.Secret{
 				ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
 			},
-		), acf.NewFakeExtensionClient(), config.Options{SyncPeriod: time.Second * 5}, cert)
+		), acf.NewFakeExtensionClient(), config.Options{ResyncPeriod: time.Second * 5}, cert)
 
 		fakeController.acmeClientConfig = &ACMEConfig{
 			Provider:            "googlecloud",
@@ -139,7 +139,7 @@ func TestFakeRegisterACMEUser(t *testing.T) {
 		&apiv1.Secret{
 			ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
 		},
-	), acf.NewFakeExtensionClient(), config.Options{SyncPeriod: time.Second * 5}, cert)
+	), acf.NewFakeExtensionClient(), config.Options{ResyncPeriod: time.Second * 5}, cert)
 
 	acmeClient := &ACMEClient{
 		Client: newFakeACMEClient(),
@@ -179,7 +179,7 @@ func TestCreate(t *testing.T) {
 				ProviderCredentialSecretName: "fakesecret",
 			},
 		}
-		fakeController := NewController(fakeConfig, fake.NewSimpleClientset(), acf.NewFakeExtensionClient(), config.Options{SyncPeriod: time.Second * 5}, cert)
+		fakeController := NewController(fakeConfig, fake.NewSimpleClientset(), acf.NewFakeExtensionClient(), config.Options{ResyncPeriod: time.Second * 5}, cert)
 		fakeController.ExtClient.Certificates("bar").Create(cert)
 
 		fakeController.acmeClientConfig = &ACMEConfig{

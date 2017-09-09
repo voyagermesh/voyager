@@ -6,7 +6,6 @@ import (
 
 	"github.com/appscode/log"
 	sapi "github.com/appscode/voyager/api"
-	"github.com/appscode/voyager/pkg/analytics"
 	"github.com/appscode/voyager/pkg/certificate"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -27,12 +26,11 @@ func (op *Operator) initCertificateTPRWatcher() cache.Controller {
 	}
 	_, informer := cache.NewInformer(lw,
 		&sapi.Certificate{},
-		op.Opt.SyncPeriod,
+		op.Opt.ResyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				if cert, ok := obj.(*sapi.Certificate); ok {
 					log.Infof("%s %s@%s added", cert.GroupVersionKind(), cert.Name, cert.Namespace)
-					go analytics.Send(cert.GroupVersionKind().String(), "ADD", "success")
 
 					err := certificate.NewController(op.KubeConfig, op.KubeClient, op.ExtClient, op.Opt, cert).Process()
 					if err != nil {
@@ -61,8 +59,6 @@ func (op *Operator) initCertificateTPRWatcher() cache.Controller {
 			DeleteFunc: func(obj interface{}) {
 				if cert, ok := obj.(*sapi.Certificate); ok {
 					log.Infof("%s %s@%s deleted", cert.GroupVersionKind(), cert.Name, cert.Namespace)
-
-					go analytics.Send(cert.GroupVersionKind().String(), "DELETE", "success")
 				}
 			},
 		},

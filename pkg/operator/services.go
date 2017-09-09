@@ -30,7 +30,7 @@ func (op *Operator) initServiceWatcher() cache.Controller {
 	}
 	indexer, informer := cache.NewIndexerInformer(lw,
 		&apiv1.Service{},
-		op.Opt.SyncPeriod,
+		op.Opt.ResyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				if svc, ok := obj.(*apiv1.Service); ok {

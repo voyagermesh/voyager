@@ -19,10 +19,9 @@ type TemplateData struct {
 
 type SharedInfo struct {
 	// Add accept-proxy to bind statements
-	AcceptProxy bool
-	// stick requests to specified servers.
-	Sticky         bool
+	AcceptProxy    bool
 	DefaultBackend *Backend
+	Auth           *AuthConfig
 }
 
 type StatsInfo struct {
@@ -34,11 +33,12 @@ type StatsInfo struct {
 type HTTPService struct {
 	*SharedInfo
 
-	FrontendName string
-	Port         int
-	NodePort     int32
-	UsesSSL      bool
-	Paths        []*HTTPPath
+	FrontendName  string
+	Port          int
+	NodePort      int32
+	UsesSSL       bool
+	FrontendRules []string
+	Paths         []*HTTPPath
 }
 
 func (svc HTTPService) sortKey() string {
@@ -61,13 +61,14 @@ func (svc HTTPPath) sortKey() string {
 type TCPService struct {
 	*SharedInfo
 
-	FrontendName string
-	Host         string
-	Port         string
-	SecretName   string
-	PEMName      string
-	Backend      Backend
-	ALPNOptions  string
+	FrontendName  string
+	Host          string
+	Port          string
+	FrontendRules []string
+	SecretName    string
+	PEMName       string
+	Backend       Backend
+	ALPNOptions   string
 }
 
 func (svc TCPService) sortKey() string {
@@ -83,6 +84,8 @@ type Backend struct {
 	// Deprecated
 	HeaderRules []string
 	Endpoints   []*Endpoint
+
+	Sticky bool
 }
 
 func (be *Backend) canonicalize() {
@@ -100,4 +103,15 @@ type Endpoint struct {
 	CheckHealth    bool
 
 	TLSOption string
+}
+
+type AuthConfig struct {
+	Realm string
+	Users map[string][]AuthUser
+}
+
+type AuthUser struct {
+	Username  string
+	Password  string
+	Encrypted bool
 }

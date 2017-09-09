@@ -1,7 +1,6 @@
 package dns
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -82,10 +81,6 @@ func (t *Transfer) inAxfr(id uint16, c chan *Envelope) {
 			return
 		}
 		if first {
-			if in.Rcode != RcodeSuccess {
-				c <- &Envelope{in.Answer, &Error{err: fmt.Sprintf(errXFR, in.Rcode)}}
-				return
-			}
 			if !isSOAFirst(in) {
 				c <- &Envelope{in.Answer, ErrSoa}
 				return
@@ -131,10 +126,6 @@ func (t *Transfer) inIxfr(id uint16, c chan *Envelope) {
 			return
 		}
 		if first {
-			if in.Rcode != RcodeSuccess {
-				c <- &Envelope{in.Answer, &Error{err: fmt.Sprintf(errXFR, in.Rcode)}}
-				return
-			}
 			// A single SOA RR signals "no changes"
 			if len(in.Answer) == 1 && isSOAFirst(in) {
 				c <- &Envelope{in.Answer, nil}
@@ -251,5 +242,3 @@ func isSOALast(in *Msg) bool {
 	}
 	return false
 }
-
-const errXFR = "bad xfr rcode: %d"

@@ -96,6 +96,20 @@ func (c *nodePortController) IsExists() bool {
 	if kerr.IsNotFound(err) {
 		return false
 	}
+	if c.Opt.EnableRBAC {
+		_, err = c.KubeClient.CoreV1().ServiceAccounts(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		if kerr.IsNotFound(err) {
+			return false
+		}
+		_, err = c.KubeClient.RbacV1beta1().Roles(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		if kerr.IsNotFound(err) {
+			return false
+		}
+		_, err = c.KubeClient.RbacV1beta1().RoleBindings(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		if kerr.IsNotFound(err) {
+			return false
+		}
+	}
 	return true
 }
 
@@ -474,11 +488,6 @@ func (c *nodePortController) newService() *apiv1.Service {
 		for k, v := range ans {
 			svc.Annotations[k] = v
 		}
-	}
-
-	if c.Opt.CloudProvider == "aws" && c.Ingress.KeepSourceIP() {
-		// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
-		svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
 	}
 	return svc
 }

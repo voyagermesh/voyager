@@ -7,9 +7,9 @@ import (
 // ApplyTemplate applies a template to the given domain.
 //
 // See https://developer.dnsimple.com/v2/templates/domains/#apply
-func (s *TemplatesService) ApplyTemplate(accountID string, templateIdentifier string, domainID string) (*templateResponse, error) {
+func (s *TemplatesService) ApplyTemplate(accountID string, templateIdentifier string, domainID string) (*TemplateResponse, error) {
 	path := versioned(fmt.Sprintf("%v/templates/%v", domainPath(accountID, domainID), templateIdentifier))
-	templateResponse := &templateResponse{}
+	templateResponse := &TemplateResponse{}
 
 	resp, err := s.client.post(path, nil, nil)
 	if err != nil {
