@@ -1139,6 +1139,15 @@ type portSets struct {
 	numbers sets.Int64
 }
 
+func (c *Cloud) GetSecurityGroupName(service *apiv1.Service) string {
+	ret := service.Name + "@" + service.Namespace + "@" + c.getClusterName()
+	//AWS requires that the name of a load balancer is shorter than 32 bytes.
+	if len(ret) > 32 {
+		ret = ret[:32]
+	}
+	return ret
+}
+
 // EnsureFirewall implements Firewall.EnsureFirewall
 func (c *Cloud) EnsureFirewall(apiService *apiv1.Service, hostnames []string) error {
 	glog.V(2).Infof("EnsureFirewall(%v, %v, %v, %v, %v)",
@@ -1170,7 +1179,7 @@ func (c *Cloud) EnsureFirewall(apiService *apiv1.Service, hostnames []string) er
 	// Create a security group for the load balancer
 	var securityGroupID string
 	{
-		sgName := apiService.Name + "@" + apiService.Namespace + "@" + c.getClusterName()
+		sgName := c.GetSecurityGroupName(apiService)
 		sgDescription := fmt.Sprintf("Security group for Voyager HostPort Ingress %v", serviceName)
 		securityGroupID, err = c.ensureSecurityGroup(sgName, sgDescription)
 		if err != nil {
@@ -1296,7 +1305,7 @@ func (c *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 		// Note that this is annoying: the load balancer disappears from the API immediately, but it is still
 		// deleting in the background.  We get a DependencyViolation until the load balancer has deleted itself
 
-		sgName := service.Name + "@" + service.Namespace + "@" + c.getClusterName()
+		sgName := c.GetSecurityGroupName(service)
 
 		filters := []*ec2.Filter{
 			newEc2Filter("vpc-id", c.vpcID),

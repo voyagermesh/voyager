@@ -35,9 +35,9 @@ type Interface interface {
 
 // TODO(#6812): Use a shorter name that's less likely to be longer than cloud
 // providers' name length limits.
-func GetLoadBalancerName(service *apiv1.Service) string {
+func GetSecurityGroupName(service *apiv1.Service) string {
 	//GCE requires that the name of a load balancer starts with a lower case letter.
-	ret := service.Name + "@" + service.Namespace // "a" + string(service.UID)
+	ret := service.Name + "-" + service.Namespace // "a" + string(service.UID)
 	ret = strings.Replace(ret, "-", "", -1)
 	//AWS requires that the name of a load balancer is shorter than 32 bytes.
 	if len(ret) > 32 {
