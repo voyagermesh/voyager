@@ -49,7 +49,7 @@ func getServiceName(service *apiv1.Service) string {
 
 // This returns a prefix for loadbalancer/security rules.
 func getRulePrefix(service *apiv1.Service) string {
-	return cloudprovider.GetLoadBalancerName(service)
+	return cloudprovider.GetSecurityGroupName(service)
 }
 
 func serviceOwnsRule(service *apiv1.Service, rule string) bool {
