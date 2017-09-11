@@ -42,6 +42,8 @@ hosting. This plugin also support configurable application ports with all the fe
   - [Configure Options](/docs/user-guide/ingress/configure-options.md)
   - [Using Custom HAProxy Templates](/docs/user-guide/ingress/custom-templates.md)
   - [Configure Basic Auth for HTTP Backends](docs/user-guide/ingress/basic-auth.md)
+  - [Configure Sticky session to Backends](docs/user-guide/ingress/sticky-session.md)
+  - [Apply Frontend Rules](docs/user-guide/ingress/frontend-rule.md)
 
 ### Comparison with Kubernetes
 | Feauture | Kube Ingress | AppsCode Ingress |
