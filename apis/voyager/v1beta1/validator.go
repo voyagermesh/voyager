@@ -1,4 +1,4 @@
-package voyager
+package v1beta1
 
 import (
 	"fmt"

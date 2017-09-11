@@ -13,7 +13,6 @@ import (
 	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/go/types"
 	"github.com/appscode/log"
-	api "github.com/appscode/voyager/apis/voyager"
 	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,7 +34,7 @@ func (i *ingressInvocation) GetSkeleton() *api_v1beta1.Ingress {
 			Name:      i.UniqueName(),
 			Namespace: i.Namespace(),
 			Annotations: map[string]string{
-				api.DefaultsTimeOut: `{"connect": "5s", "server": "10s"}`,
+				api_v1beta1.DefaultsTimeOut: `{"connect": "5s", "server": "10s"}`,
 			},
 		},
 		Spec: api_v1beta1.IngressSpec{Rules: make([]api_v1beta1.IngressRule, 0)},
@@ -68,8 +67,8 @@ func (i *ingressInvocation) SetSkeletonRule(ing *api_v1beta1.Ingress) {
 
 func (i *ingressInvocation) SetDaemonSkeletonRule(ing *api_v1beta1.Ingress) {
 	ing.Annotations = map[string]string{
-		api.LBType:       api.LBTypeHostPort,
-		api.NodeSelector: i.DaemonNodeSelector(),
+		api_v1beta1.LBType:       api_v1beta1.LBTypeHostPort,
+		api_v1beta1.NodeSelector: i.DaemonNodeSelector(),
 	}
 	ing.Spec.Rules = []api_v1beta1.IngressRule{
 		{
@@ -757,7 +756,7 @@ func (i *ingressInvocation) CreateResourceWithBackendWeight() (metav1.ObjectMeta
 						"app-version": "v1",
 					},
 					Annotations: map[string]string{
-						api.BackendWeight: "90",
+						api_v1beta1.BackendWeight: "90",
 					},
 				},
 				Spec: apiv1.PodSpec{
@@ -811,7 +810,7 @@ func (i *ingressInvocation) CreateResourceWithBackendWeight() (metav1.ObjectMeta
 						"app-version": "v2",
 					},
 					Annotations: map[string]string{
-						api.BackendWeight: "10",
+						api_v1beta1.BackendWeight: "10",
 					},
 				},
 				Spec: apiv1.PodSpec{

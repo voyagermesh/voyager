@@ -7,7 +7,7 @@ import (
 
 	"github.com/appscode/log"
 	"github.com/appscode/pat"
-	acs "github.com/appscode/voyager/client/internalclientset/typed/voyager/internalversion"
+	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	_ "github.com/appscode/voyager/client/typed/voyager/v1beta1/fake"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"

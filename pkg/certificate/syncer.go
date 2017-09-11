@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/appscode/log"
-	tcs "github.com/appscode/voyager/client/internalclientset/typed/voyager/internalversion"
+	tcs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/benbjohnson/clock"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,7 +13,7 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-func CheckCertificates(config *rest.Config, kubeClient clientset.Interface, extClient tcs.VoyagerInterface, opt config.Options) {
+func CheckCertificates(config *rest.Config, kubeClient clientset.Interface, extClient tcs.VoyagerV1beta1Interface, opt config.Options) {
 	Time := clock.New()
 	for {
 		select {

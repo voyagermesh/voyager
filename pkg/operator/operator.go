@@ -4,9 +4,9 @@ import (
 	"sync"
 
 	"github.com/appscode/log"
-	tapi "github.com/appscode/voyager/apis/voyager"
-	tapi_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
-	tcs "github.com/appscode/voyager/client/internalclientset/typed/voyager/internalversion"
+	api "github.com/appscode/voyager/apis/voyager"
+	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
+	tcs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
@@ -29,7 +29,7 @@ type Operator struct {
 	KubeConfig      *rest.Config
 	KubeClient      clientset.Interface
 	CRDClient       apiextensionsclient.Interface
-	ExtClient       tcs.VoyagerInterface
+	ExtClient       tcs.VoyagerV1beta1Interface
 	PromClient      pcm.MonitoringV1alpha1Interface
 	ServiceLister   core.ServiceLister
 	EndpointsLister core.EndpointsLister
@@ -43,7 +43,7 @@ func New(
 	config *rest.Config,
 	kubeClient clientset.Interface,
 	crdClient apiextensionsclient.Interface,
-	extClient tcs.VoyagerInterface,
+	extClient tcs.VoyagerV1beta1Interface,
 	promClient pcm.MonitoringV1alpha1Interface,
 	opt config.Options,
 ) *Operator {
@@ -72,34 +72,34 @@ func (op *Operator) ensureCustomResourceDefinitions() error {
 	crds := []*apiextensions.CustomResourceDefinition{
 		{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:   tapi.ResourceTypeIngress + "." + tapi_v1beta1.SchemeGroupVersion.Group,
+				Name:   api_v1beta1.ResourceTypeIngress + "." + api_v1beta1.SchemeGroupVersion.Group,
 				Labels: map[string]string{"app": "voyager"},
 			},
 			Spec: apiextensions.CustomResourceDefinitionSpec{
-				Group:   tapi.GroupName,
-				Version: tapi_v1beta1.SchemeGroupVersion.Version,
+				Group:   api.GroupName,
+				Version: api_v1beta1.SchemeGroupVersion.Version,
 				Scope:   apiextensions.NamespaceScoped,
 				Names: apiextensions.CustomResourceDefinitionNames{
-					Singular:   tapi.ResourceNameIngress,
-					Plural:     tapi.ResourceTypeIngress,
-					Kind:       tapi.ResourceKindIngress,
+					Singular:   api_v1beta1.ResourceNameIngress,
+					Plural:     api_v1beta1.ResourceTypeIngress,
+					Kind:       api_v1beta1.ResourceKindIngress,
 					ShortNames: []string{"ing"},
 				},
 			},
 		},
 		{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:   tapi.ResourceTypeCertificate + "." + tapi_v1beta1.SchemeGroupVersion.Group,
+				Name:   api_v1beta1.ResourceTypeCertificate + "." + api_v1beta1.SchemeGroupVersion.Group,
 				Labels: map[string]string{"app": "voyager"},
 			},
 			Spec: apiextensions.CustomResourceDefinitionSpec{
-				Group:   tapi.GroupName,
-				Version: tapi_v1beta1.SchemeGroupVersion.Version,
+				Group:   api.GroupName,
+				Version: api_v1beta1.SchemeGroupVersion.Version,
 				Scope:   apiextensions.NamespaceScoped,
 				Names: apiextensions.CustomResourceDefinitionNames{
-					Singular:   tapi.ResourceNameCertificate,
-					Plural:     tapi.ResourceTypeCertificate,
-					Kind:       tapi.ResourceKindCertificate,
+					Singular:   api_v1beta1.ResourceNameCertificate,
+					Plural:     api_v1beta1.ResourceTypeCertificate,
+					Kind:       api_v1beta1.ResourceKindCertificate,
 					ShortNames: []string{"cert"},
 				},
 			},

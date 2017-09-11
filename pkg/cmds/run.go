@@ -12,8 +12,8 @@ import (
 	hpe "github.com/appscode/haproxy_exporter/exporter"
 	"github.com/appscode/log"
 	"github.com/appscode/pat"
-	api "github.com/appscode/voyager/apis/voyager"
-	acs "github.com/appscode/voyager/client/internalclientset/typed/voyager/internalversion"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	haproxy "github.com/appscode/voyager/pkg/haproxy"
 	"github.com/appscode/voyager/pkg/migrator"
@@ -47,7 +47,7 @@ var (
 	haProxyTimeout            time.Duration = 5 * time.Second
 
 	kubeClient clientset.Interface
-	extClient  acs.VoyagerInterface
+	extClient  acs.VoyagerV1beta1Interface
 )
 
 func NewCmdRun() *cobra.Command {

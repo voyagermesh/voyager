@@ -3,7 +3,7 @@ package operator
 import (
 	"testing"
 
-	api "github.com/appscode/voyager/apis/voyager"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"

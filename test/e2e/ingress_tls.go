@@ -3,8 +3,7 @@ package e2e
 import (
 	"net/http"
 
-	api "github.com/appscode/voyager/apis/voyager"
-	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"
@@ -17,7 +16,7 @@ import (
 var _ = Describe("IngressTLS", func() {
 	var (
 		f      *framework.Invocation
-		ing    *api_v1beta1.Ingress
+		ing    *api.Ingress
 		secret *apiv1.Secret
 	)
 
@@ -109,23 +108,23 @@ var _ = Describe("IngressTLS", func() {
 				f.Ingress.Mutex.Lock()
 			}
 
-			ing.Spec = api_v1beta1.IngressSpec{
-				TLS: []api_v1beta1.IngressTLS{
+			ing.Spec = api.IngressSpec{
+				TLS: []api.IngressTLS{
 					{
 						SecretName: secret.Name,
 						Hosts:      []string{"http.appscode.dev"},
 					},
 				},
-				Rules: []api_v1beta1.IngressRule{
+				Rules: []api.IngressRule{
 					{
 						Host: "http.appscode.dev",
-						IngressRuleValue: api_v1beta1.IngressRuleValue{
-							HTTP: &api_v1beta1.HTTPIngressRuleValue{
-								Paths: []api_v1beta1.HTTPIngressPath{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/testpath",
-										Backend: api_v1beta1.HTTPIngressBackend{
-											IngressBackend: api_v1beta1.IngressBackend{
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
 												ServiceName: f.Ingress.TestServerName(),
 												ServicePort: intstr.FromInt(80),
 											},
@@ -173,25 +172,25 @@ var _ = Describe("IngressTLS", func() {
 				f.Ingress.Mutex.Lock()
 			}
 
-			ing.Spec = api_v1beta1.IngressSpec{
-				TLS: []api_v1beta1.IngressTLS{
+			ing.Spec = api.IngressSpec{
+				TLS: []api.IngressTLS{
 					{
 						SecretName: secret.Name,
 						Hosts:      []string{"http.appscode.dev"},
 					},
 				},
-				Rules: []api_v1beta1.IngressRule{
+				Rules: []api.IngressRule{
 					{
 						Host: "http.appscode.dev",
-						IngressRuleValue: api_v1beta1.IngressRuleValue{
-							HTTP: &api_v1beta1.HTTPIngressRuleValue{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
 								Port:  intstr.FromInt(80),
 								NoTLS: true,
-								Paths: []api_v1beta1.HTTPIngressPath{
+								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/testpath",
-										Backend: api_v1beta1.HTTPIngressBackend{
-											IngressBackend: api_v1beta1.IngressBackend{
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
 												BackendRule: []string{
 													"redirect scheme https code 301 if !{ ssl_fc }",
 												},
@@ -206,14 +205,14 @@ var _ = Describe("IngressTLS", func() {
 					},
 					{
 						Host: "http.appscode.dev",
-						IngressRuleValue: api_v1beta1.IngressRuleValue{
-							HTTP: &api_v1beta1.HTTPIngressRuleValue{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
 								Port: intstr.FromInt(443),
-								Paths: []api_v1beta1.HTTPIngressPath{
+								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/testpath",
-										Backend: api_v1beta1.HTTPIngressBackend{
-											IngressBackend: api_v1beta1.IngressBackend{
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
 												ServiceName: f.Ingress.TestServerName(),
 												ServicePort: intstr.FromInt(80),
 											},
@@ -243,24 +242,24 @@ var _ = Describe("IngressTLS", func() {
 				f.Ingress.Mutex.Lock()
 			}
 
-			ing.Spec = api_v1beta1.IngressSpec{
-				TLS: []api_v1beta1.IngressTLS{
+			ing.Spec = api.IngressSpec{
+				TLS: []api.IngressTLS{
 					{
 						SecretName: secret.Name,
 						Hosts:      []string{"http.appscode.dev"},
 					},
 				},
-				Rules: []api_v1beta1.IngressRule{
+				Rules: []api.IngressRule{
 					{
 						Host: "http.appscode.dev",
-						IngressRuleValue: api_v1beta1.IngressRuleValue{
-							HTTP: &api_v1beta1.HTTPIngressRuleValue{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
 								NoTLS: true,
-								Paths: []api_v1beta1.HTTPIngressPath{
+								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/testpath",
-										Backend: api_v1beta1.HTTPIngressBackend{
-											IngressBackend: api_v1beta1.IngressBackend{
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
 												BackendRule: []string{
 													"redirect scheme https code 301 if !{ ssl_fc }",
 												},
@@ -275,13 +274,13 @@ var _ = Describe("IngressTLS", func() {
 					},
 					{
 						Host: "http.appscode.dev",
-						IngressRuleValue: api_v1beta1.IngressRuleValue{
-							HTTP: &api_v1beta1.HTTPIngressRuleValue{
-								Paths: []api_v1beta1.HTTPIngressPath{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/testpath",
-										Backend: api_v1beta1.HTTPIngressBackend{
-											IngressBackend: api_v1beta1.IngressBackend{
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
 												ServiceName: f.Ingress.TestServerName(),
 												ServicePort: intstr.FromInt(80),
 											},
@@ -306,25 +305,25 @@ var _ = Describe("IngressTLS", func() {
 
 	Describe("Http in port 443", func() {
 		BeforeEach(func() {
-			ing.Spec = api_v1beta1.IngressSpec{
-				TLS: []api_v1beta1.IngressTLS{
+			ing.Spec = api.IngressSpec{
+				TLS: []api.IngressTLS{
 					{
 						SecretName: secret.Name,
 						Hosts:      []string{"443-with-out-ssl.test.com"},
 					},
 				},
-				Rules: []api_v1beta1.IngressRule{
+				Rules: []api.IngressRule{
 					{
 						Host: "443-with-out-ssl.test.com",
-						IngressRuleValue: api_v1beta1.IngressRuleValue{
-							HTTP: &api_v1beta1.HTTPIngressRuleValue{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
 								NoTLS: true,
 								Port:  intstr.FromInt(443),
-								Paths: []api_v1beta1.HTTPIngressPath{
+								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/testpath",
-										Backend: api_v1beta1.HTTPIngressBackend{
-											IngressBackend: api_v1beta1.IngressBackend{
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
 												ServiceName: f.Ingress.TestServerName(),
 												ServicePort: intstr.FromInt(80),
 											},

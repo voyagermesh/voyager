@@ -12,9 +12,9 @@ import (
 	"github.com/appscode/errors"
 	"github.com/appscode/go/strings"
 	"github.com/appscode/log"
-	tapi "github.com/appscode/voyager/apis/voyager"
+	tapi "github.com/appscode/voyager/apis/voyager/v1beta1"
 	tapi_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
-	acs "github.com/appscode/voyager/client/internalclientset/typed/voyager/internalversion"
+	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
@@ -39,7 +39,7 @@ const (
 type Controller struct {
 	KubeConfig *rest.Config
 	KubeClient clientset.Interface
-	ExtClient  acs.VoyagerInterface
+	ExtClient  acs.VoyagerV1beta1Interface
 	Opt        config.Options
 	recorder   record.EventRecorder
 
@@ -55,7 +55,7 @@ type Controller struct {
 	userSecretName string
 }
 
-func NewController(config *rest.Config, kubeClient clientset.Interface, extClient acs.VoyagerInterface, opt config.Options, tpr *tapi.Certificate) *Controller {
+func NewController(config *rest.Config, kubeClient clientset.Interface, extClient acs.VoyagerV1beta1Interface, opt config.Options, tpr *tapi.Certificate) *Controller {
 	return &Controller{
 		KubeConfig: config,
 		KubeClient: kubeClient,

@@ -3,8 +3,8 @@ package ingress
 import (
 	"sync"
 
-	api "github.com/appscode/voyager/apis/voyager"
-	acs "github.com/appscode/voyager/client/internalclientset/typed/voyager/internalversion"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
@@ -26,7 +26,7 @@ type Controller interface {
 type controller struct {
 	KubeClient      clientset.Interface
 	CRDClient       apiextensionsclient.Interface
-	ExtClient       acs.VoyagerInterface
+	ExtClient       acs.VoyagerV1beta1Interface
 	PromClient      pcm.MonitoringV1alpha1Interface
 	ServiceLister   core.ServiceLister
 	EndpointsLister core.EndpointsLister
@@ -47,7 +47,7 @@ type controller struct {
 func NewController(
 	kubeClient clientset.Interface,
 	crdClient apiextensionsclient.Interface,
-	extClient acs.VoyagerInterface,
+	extClient acs.VoyagerV1beta1Interface,
 	promClient pcm.MonitoringV1alpha1Interface,
 	serviceLister core.ServiceLister,
 	endpointsLister core.EndpointsLister,

@@ -5,7 +5,7 @@ import (
 	"reflect"
 
 	"github.com/appscode/log"
-	sapi "github.com/appscode/voyager/apis/voyager"
+	sapi "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"

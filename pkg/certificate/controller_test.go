@@ -17,8 +17,8 @@ import (
 	"time"
 
 	"github.com/appscode/log"
-	api "github.com/appscode/voyager/apis/voyager"
-	acs "github.com/appscode/voyager/client/internalclientset/typed/voyager/internalversion"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	acf "github.com/appscode/voyager/client/typed/voyager/v1beta1/fake"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/stretchr/testify/assert"

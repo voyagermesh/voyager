@@ -8,8 +8,8 @@ import (
 	"github.com/appscode/errors"
 	"github.com/appscode/go/types"
 	"github.com/appscode/log"
-	api "github.com/appscode/voyager/apis/voyager"
-	acs "github.com/appscode/voyager/client/internalclientset/typed/voyager/internalversion"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/monitor"
@@ -38,7 +38,7 @@ var _ Controller = &nodePortController{}
 func NewNodePortController(
 	kubeClient clientset.Interface,
 	crdClient apiextensionsclient.Interface,
-	extClient acs.VoyagerInterface,
+	extClient acs.VoyagerV1beta1Interface,
 	promClient pcm.MonitoringV1alpha1Interface,
 	serviceLister core.ServiceLister,
 	endpointsLister core.EndpointsLister,

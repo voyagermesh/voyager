@@ -1,8 +1,7 @@
 package e2e
 
 import (
-	tapi "github.com/appscode/voyager/apis/voyager"
-	tapi_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"
@@ -15,7 +14,7 @@ import (
 var _ = Describe("IngressWithDNSResolvers", func() {
 	var (
 		f   *framework.Invocation
-		ing *tapi_v1beta1.Ingress
+		ing *api.Ingress
 
 		svcResolveDNSWithNS,
 		svcNotResolvesRedirect,
@@ -35,8 +34,8 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 				Name:      f.Ingress.UniqueName(),
 				Namespace: f.Ingress.Namespace(),
 				Annotations: map[string]string{
-					tapi.UseDNSResolver:         "true",
-					tapi.DNSResolverNameservers: `["8.8.8.8:53", "8.8.4.4:53"]`,
+					api.UseDNSResolver:         "true",
+					api.DNSResolverNameservers: `["8.8.8.8:53", "8.8.4.4:53"]`,
 				},
 			},
 			Spec: apiv1.ServiceSpec{
@@ -99,45 +98,45 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 
 	Describe("ExternalNameResolver", func() {
 		BeforeEach(func() {
-			ing.Spec = tapi_v1beta1.IngressSpec{
-				Backend: &tapi_v1beta1.HTTPIngressBackend{
-					IngressBackend: tapi_v1beta1.IngressBackend{
+			ing.Spec = api.IngressSpec{
+				Backend: &api.HTTPIngressBackend{
+					IngressBackend: api.IngressBackend{
 						ServiceName: svcNotResolvesRedirect.Name,
 						ServicePort: intstr.FromString("80"),
 					}},
-				Rules: []tapi_v1beta1.IngressRule{
+				Rules: []api.IngressRule{
 					{
-						IngressRuleValue: tapi_v1beta1.IngressRuleValue{
-							HTTP: &tapi_v1beta1.HTTPIngressRuleValue{
-								Paths: []tapi_v1beta1.HTTPIngressPath{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/test-dns",
-										Backend: tapi_v1beta1.HTTPIngressBackend{
-											IngressBackend: tapi_v1beta1.IngressBackend{
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
 												ServiceName: svcResolveDNSWithNS.Name,
 												ServicePort: intstr.FromString("80"),
 											}},
 									},
 									{
 										Path: "/test-no-dns",
-										Backend: tapi_v1beta1.HTTPIngressBackend{
-											IngressBackend: tapi_v1beta1.IngressBackend{
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
 												ServiceName: svcNotResolvesRedirect.Name,
 												ServicePort: intstr.FromString("80"),
 											}},
 									},
 									{
 										Path: "/test-no-backend-redirect",
-										Backend: tapi_v1beta1.HTTPIngressBackend{
-											IngressBackend: tapi_v1beta1.IngressBackend{
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
 												ServiceName: svcResolveDNSWithoutNS.Name,
 												ServicePort: intstr.FromString("80"),
 											}},
 									},
 									{
 										Path: "/test-no-backend-rule-redirect",
-										Backend: tapi_v1beta1.HTTPIngressBackend{
-											IngressBackend: tapi_v1beta1.IngressBackend{
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
 												ServiceName: svcNotResolvesRedirect.Name,
 												ServicePort: intstr.FromString("80"),
 												BackendRule: []string{
@@ -151,13 +150,13 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 						},
 					},
 					{
-						IngressRuleValue: tapi_v1beta1.IngressRuleValue{
-							HTTP: &tapi_v1beta1.HTTPIngressRuleValue{
-								Paths: []tapi_v1beta1.HTTPIngressPath{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/redirect-rule",
-										Backend: tapi_v1beta1.HTTPIngressBackend{
-											IngressBackend: tapi_v1beta1.IngressBackend{
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
 												BackendRule: []string{
 													"http-request redirect location https://github.com/appscode/discuss/issues code 301",
 												},
@@ -171,13 +170,13 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 						},
 					},
 					{
-						IngressRuleValue: tapi_v1beta1.IngressRuleValue{
-							HTTP: &tapi_v1beta1.HTTPIngressRuleValue{
-								Paths: []tapi_v1beta1.HTTPIngressPath{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/redirect",
-										Backend: tapi_v1beta1.HTTPIngressBackend{
-											IngressBackend: tapi_v1beta1.IngressBackend{
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
 												ServiceName: svcNotResolvesRedirect.Name,
 												ServicePort: intstr.FromString("80"),
 											},
@@ -188,13 +187,13 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 						},
 					},
 					{
-						IngressRuleValue: tapi_v1beta1.IngressRuleValue{
-							HTTP: &tapi_v1beta1.HTTPIngressRuleValue{
-								Paths: []tapi_v1beta1.HTTPIngressPath{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/back-end",
-										Backend: tapi_v1beta1.HTTPIngressBackend{
-											IngressBackend: tapi_v1beta1.IngressBackend{
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
 												ServiceName: f.Ingress.TestServerName(),
 												ServicePort: intstr.FromString("8989"),
 											},

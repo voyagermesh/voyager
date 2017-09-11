@@ -39,7 +39,7 @@ var _ = BeforeSuite(func() {
 		root.KubeConfig,
 		root.KubeClient,
 		root.CRDClient,
-		root.InternalClient,
+		root.V1beta1Client,
 		nil,
 		config.Options{
 			CloudProvider: root.Config.CloudProviderName,

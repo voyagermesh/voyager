@@ -3,7 +3,6 @@ package v1beta1
 import (
 	"encoding/json"
 
-	"github.com/appscode/voyager/apis/voyager"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
@@ -20,7 +19,7 @@ func NewEngressFromIngress(ing interface{}) (*Ingress, error) {
 	if r.Annotations == nil {
 		r.Annotations = make(map[string]string)
 	}
-	r.Annotations[voyager.APISchema] = voyager.APISchemaIngress
+	r.Annotations[APISchema] = APISchemaIngress
 	return r, nil
 }
 
@@ -37,6 +36,6 @@ func NewIngressFromEngress(ing interface{}) (*extensions.Ingress, error) {
 	if r.Annotations == nil {
 		r.Annotations = make(map[string]string)
 	}
-	r.Annotations[voyager.APISchema] = voyager.APISchemaEngress
+	r.Annotations[APISchema] = APISchemaEngress
 	return r, nil
 }
