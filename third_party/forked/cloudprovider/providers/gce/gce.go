@@ -24,6 +24,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"cloud.google.com/go/compute/metadata"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
@@ -374,6 +375,19 @@ func isHTTPErrorCode(err error, code int) bool {
 	return ok && apiErr.Code == code
 }
 
+func (gce *GCECloud) GetSecurityGroupName(service *apiv1.Service) string {
+	//GCE requires that the name of a load balancer starts with a lower case letter.
+	ret := "k8s-" + strings.ToLower(service.Name+"-"+service.Namespace)
+	// Values must match the following regular expression: '[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?'
+	ret = strings.TrimFunc(ret, func(r rune) bool {
+		return !unicode.IsDigit(r) && !unicode.IsLower(r) && r != '-'
+	})
+	if len(ret) > 64 {
+		ret = ret[:64]
+	}
+	return ret
+}
+
 // EnsureFirewall is an implementation of LoadBalancer.EnsureLoadBalancer.
 // Our load balancers in GCE consist of four separate GCE resources - a static
 // IP address, a firewall rule, a target pool, and a forwarding rule. This
@@ -382,12 +396,13 @@ func isHTTPErrorCode(err error, code int) bool {
 // new load balancers and updating existing load balancers, recognizing when
 // each is needed.
 func (gce *GCECloud) EnsureFirewall(apiService *apiv1.Service, hostnames []string) error {
-	hosts, err := gce.getInstancesByNames(hostnames)
+	hostSet := sets.NewString(hostnames...)
+	hosts, err := gce.getInstancesByNames(hostSet.List())
 	if err != nil {
 		return err
 	}
 
-	loadBalancerName := cloudprovider.GetLoadBalancerName(apiService)
+	fwName := gce.GetSecurityGroupName(apiService)
 	ports := apiService.Spec.Ports
 	portStr := []string{}
 	for _, p := range apiService.Spec.Ports {
@@ -395,7 +410,7 @@ func (gce *GCECloud) EnsureFirewall(apiService *apiv1.Service, hostnames []strin
 	}
 
 	serviceName := types.NamespacedName{Namespace: apiService.Namespace, Name: apiService.Name}
-	glog.V(2).Infof("EnsureFirewall(%v, %v, %v, %v, %v)", loadBalancerName, gce.region, portStr, hosts, serviceName)
+	glog.V(2).Infof("EnsureFirewall(%v, %v, %v, %v, %v)", fwName, gce.region, portStr, hosts, serviceName)
 
 	// Deal with the firewall next. The reason we do this here rather than last
 	// is because the forwarding rule is used as the indicator that the load
@@ -405,30 +420,30 @@ func (gce *GCECloud) EnsureFirewall(apiService *apiv1.Service, hostnames []strin
 	if err != nil {
 		return err
 	}
-	glog.V(6).Infof("EnsureFirewall = %v, sourceRanges = %v", loadBalancerName, sourceRanges)
+	glog.V(6).Infof("EnsureFirewall = %v, sourceRanges = %v", fwName, sourceRanges)
 
-	firewallExists, firewallNeedsUpdate, err := gce.firewallNeedsUpdate(loadBalancerName, serviceName.String(), gce.region, "", apiService, sourceRanges)
+	firewallExists, firewallNeedsUpdate, err := gce.firewallNeedsUpdate(fwName, serviceName.String(), gce.region, "", apiService, sourceRanges)
 	if err != nil {
 		return err
 	}
-	glog.V(6).Infof("EnsureFirewall = %v, firewallExists = %v, firewallNeedsUpdate = %v", loadBalancerName, firewallExists, firewallNeedsUpdate)
+	glog.V(6).Infof("EnsureFirewall = %v, firewallExists = %v, firewallNeedsUpdate = %v", fwName, firewallExists, firewallNeedsUpdate)
 
 	if firewallNeedsUpdate {
 		desc := makeFirewallDescription(serviceName.String(), "")
-		glog.V(6).Infof("EnsureFirewall = %v, desc = %v", loadBalancerName, desc)
+		glog.V(6).Infof("EnsureFirewall = %v, desc = %v", fwName, desc)
 
 		// Unlike forwarding rules and target pools, firewalls can be updated
 		// without needing to be deleted and recreated.
 		if firewallExists {
-			if err := gce.updateFirewall(loadBalancerName, gce.region, desc, sourceRanges, ports, hosts); err != nil {
+			if err := gce.updateFirewall(fwName, gce.region, desc, sourceRanges, ports, hosts); err != nil {
 				return err
 			}
-			glog.V(4).Infof("EnsureFirewall(%v(%v)): updated firewall", loadBalancerName, serviceName)
+			glog.V(4).Infof("EnsureFirewall(%v(%v)): updated firewall", fwName, serviceName)
 		} else {
-			if err := gce.createFirewall(loadBalancerName, gce.region, desc, sourceRanges, ports, hosts); err != nil {
+			if err := gce.createFirewall(fwName, gce.region, desc, sourceRanges, ports, hosts); err != nil {
 				return err
 			}
-			glog.V(4).Infof("EnsureFirewall(%v(%v)): created firewall", loadBalancerName, serviceName)
+			glog.V(4).Infof("EnsureFirewall(%v(%v)): created firewall", fwName, serviceName)
 		}
 	}
 
@@ -436,7 +451,7 @@ func (gce *GCECloud) EnsureFirewall(apiService *apiv1.Service, hostnames []strin
 }
 
 func (gce *GCECloud) firewallNeedsUpdate(name, serviceName, region, ipAddress string, svc *apiv1.Service, sourceRanges netsets.IPNet) (exists bool, needsUpdate bool, err error) {
-	fw, err := gce.service.Firewalls.Get(gce.projectID, makeFirewallName(name)).Do()
+	fw, err := gce.service.Firewalls.Get(gce.projectID, name).Do()
 	if err != nil {
 		if isHTTPErrorCode(err, http.StatusNotFound) {
 			return false, true, nil
@@ -482,10 +497,6 @@ func (gce *GCECloud) firewallNeedsUpdate(name, serviceName, region, ipAddress st
 	return true, false, nil
 }
 
-func makeFirewallName(name string) string {
-	return fmt.Sprintf("k8s-fw-%s", name)
-}
-
 func makeFirewallDescription(serviceName, ipAddress string) string {
 	if ipAddress == "" {
 		return fmt.Sprintf(`{"kubernetes.io/service-name":"%s"}`, serviceName)
@@ -508,8 +519,8 @@ func slicesEqual(x, y []string) bool {
 	return true
 }
 
-func (gce *GCECloud) createFirewall(name, region, desc string, sourceRanges netsets.IPNet, ports []apiv1.ServicePort, hosts []*gceInstance) error {
-	firewall, err := gce.firewallObject(name, region, desc, sourceRanges, ports, hosts)
+func (gce *GCECloud) createFirewall(fwName, region, desc string, sourceRanges netsets.IPNet, ports []apiv1.ServicePort, hosts []*gceInstance) error {
+	firewall, err := gce.firewallObject(fwName, region, desc, sourceRanges, ports, hosts)
 	if err != nil {
 		return err
 	}
@@ -526,12 +537,12 @@ func (gce *GCECloud) createFirewall(name, region, desc string, sourceRanges nets
 	return nil
 }
 
-func (gce *GCECloud) updateFirewall(name, region, desc string, sourceRanges netsets.IPNet, ports []apiv1.ServicePort, hosts []*gceInstance) error {
-	firewall, err := gce.firewallObject(name, region, desc, sourceRanges, ports, hosts)
+func (gce *GCECloud) updateFirewall(fwName, region, desc string, sourceRanges netsets.IPNet, ports []apiv1.ServicePort, hosts []*gceInstance) error {
+	firewall, err := gce.firewallObject(fwName, region, desc, sourceRanges, ports, hosts)
 	if err != nil {
 		return err
 	}
-	op, err := gce.service.Firewalls.Update(gce.projectID, makeFirewallName(name), firewall).Do()
+	op, err := gce.service.Firewalls.Update(gce.projectID, fwName, firewall).Do()
 	if err != nil && !isHTTPErrorCode(err, http.StatusConflict) {
 		return err
 	}
@@ -544,23 +555,24 @@ func (gce *GCECloud) updateFirewall(name, region, desc string, sourceRanges nets
 	return nil
 }
 
-func (gce *GCECloud) firewallObject(name, region, desc string, sourceRanges netsets.IPNet, ports []apiv1.ServicePort, hosts []*gceInstance) (*compute.Firewall, error) {
+func (gce *GCECloud) firewallObject(fwName, region, desc string, sourceRanges netsets.IPNet, ports []apiv1.ServicePort, hosts []*gceInstance) (*compute.Firewall, error) {
 	allowedPorts := make([]string, len(ports))
 	for ix := range ports {
 		allowedPorts[ix] = strconv.Itoa(int(ports[ix].Port))
 	}
+
 	// If the node tags to be used for this cluster have been predefined in the
 	// provider config, just use them. Otherwise, invoke computeHostTags method to get the tags.
 	hostTags := gce.nodeTags
 	if len(hostTags) == 0 {
 		var err error
 		if hostTags, err = gce.computeHostTags(hosts); err != nil {
-			return nil, fmt.Errorf("No node tags supplied and also failed to parse the given lists of hosts for tags. Abort creating firewall rule.")
+			return nil, fmt.Errorf("No node tags supplied and also failed to parse the given lists of hosts for tags. Abort creating firewall rule. Reason: %v.", err)
 		}
 	}
 
 	firewall := &compute.Firewall{
-		Name:         makeFirewallName(name),
+		Name:         fwName,
 		Description:  desc,
 		Network:      gce.networkURL,
 		SourceRanges: sourceRanges.StringSlice(),
@@ -637,7 +649,7 @@ func (gce *GCECloud) computeHostTags(hosts []*gceInstance) ([]string, error) {
 
 				longest_tag := ""
 				for _, tag := range instance.Tags.Items {
-					if strings.HasPrefix(instance.Name, tag) && len(tag) > len(longest_tag) {
+					if instance.Name != tag && len(tag) > len(longest_tag) {
 						longest_tag = tag
 					}
 				}
@@ -660,12 +672,12 @@ func (gce *GCECloud) computeHostTags(hosts []*gceInstance) ([]string, error) {
 
 // EnsureFirewallDeleted is an implementation of Firewall.EnsureFirewallDeleted.
 func (gce *GCECloud) EnsureFirewallDeleted(service *apiv1.Service) error {
-	loadBalancerName := cloudprovider.GetLoadBalancerName(service)
-	glog.V(2).Infof("EnsureFirewallDeleted(%v, %v, %v, %v)", service.Namespace, service.Name, loadBalancerName,
+	fwName := gce.GetSecurityGroupName(service)
+	glog.V(2).Infof("EnsureFirewallDeleted(%v, %v, %v, %v)", service.Namespace, service.Name, fwName,
 		gce.region)
 
 	errs := utilerrors.AggregateGoroutines(
-		func() error { return gce.deleteFirewall(loadBalancerName, gce.region) },
+		func() error { return gce.deleteFirewall(fwName, gce.region) },
 	)
 	if errs != nil {
 		return utilerrors.Flatten(errs)
@@ -673,11 +685,10 @@ func (gce *GCECloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 	return nil
 }
 
-func (gce *GCECloud) deleteFirewall(name, region string) error {
-	fwName := makeFirewallName(name)
+func (gce *GCECloud) deleteFirewall(fwName, region string) error {
 	op, err := gce.service.Firewalls.Delete(gce.projectID, fwName).Do()
 	if err != nil && isHTTPErrorCode(err, http.StatusNotFound) {
-		glog.Infof("Firewall %s already deleted. Continuing to delete other resources.", name)
+		glog.Infof("Firewall %s already deleted. Continuing to delete other resources.", fwName)
 	} else if err != nil {
 		glog.Warningf("Failed to delete firewall %s, got error %v", fwName, err)
 		return err
@@ -688,72 +699,6 @@ func (gce *GCECloud) deleteFirewall(name, region string) error {
 		}
 	}
 	return nil
-}
-
-// Firewall management: These methods are just passthrough to the existing
-// internal firewall creation methods used to manage TCPLoadBalancer.
-
-// GetFirewall returns the Firewall by name.
-func (gce *GCECloud) GetFirewall(name string) (*compute.Firewall, error) {
-	return gce.service.Firewalls.Get(gce.projectID, name).Do()
-}
-
-// CreateFirewall creates the given firewall rule.
-func (gce *GCECloud) CreateFirewall(name, desc string, sourceRanges netsets.IPNet, ports []int64, hostNames []string) error {
-	region, err := GetGCERegion(gce.localZone)
-	if err != nil {
-		return err
-	}
-	// TODO: This completely breaks modularity in the cloudprovider but the methods
-	// shared with the TCPLoadBalancer take apiv1.ServicePorts.
-	svcPorts := []apiv1.ServicePort{}
-	// TODO: Currently the only consumer of this method is the GCE L7
-	// loadbalancer controller, which never needs a protocol other than TCP.
-	// We should pipe through a mapping of port:protocol and default to TCP
-	// if UDP ports are required. This means the method signature will change
-	// forcing downstream clients to refactor interfaces.
-	for _, p := range ports {
-		svcPorts = append(svcPorts, apiv1.ServicePort{Port: int32(p), Protocol: apiv1.ProtocolTCP})
-	}
-	hosts, err := gce.getInstancesByNames(hostNames)
-	if err != nil {
-		return err
-	}
-	return gce.createFirewall(name, region, desc, sourceRanges, svcPorts, hosts)
-}
-
-// DeleteFirewall deletes the given firewall rule.
-func (gce *GCECloud) DeleteFirewall(name string) error {
-	region, err := GetGCERegion(gce.localZone)
-	if err != nil {
-		return err
-	}
-	return gce.deleteFirewall(name, region)
-}
-
-// UpdateFirewall applies the given firewall rule as an update to an existing
-// firewall rule with the same name.
-func (gce *GCECloud) UpdateFirewall(name, desc string, sourceRanges netsets.IPNet, ports []int64, hostNames []string) error {
-	region, err := GetGCERegion(gce.localZone)
-	if err != nil {
-		return err
-	}
-	// TODO: This completely breaks modularity in the cloudprovider but the methods
-	// shared with the TCPLoadBalancer take apiv1.ServicePorts.
-	svcPorts := []apiv1.ServicePort{}
-	// TODO: Currently the only consumer of this method is the GCE L7
-	// loadbalancer controller, which never needs a protocol other than TCP.
-	// We should pipe through a mapping of port:protocol and default to TCP
-	// if UDP ports are required. This means the method signature will change,
-	// forcing downstream clients to refactor interfaces.
-	for _, p := range ports {
-		svcPorts = append(svcPorts, apiv1.ServicePort{Port: int32(p), Protocol: apiv1.ProtocolTCP})
-	}
-	hosts, err := gce.getInstancesByNames(hostNames)
-	if err != nil {
-		return err
-	}
-	return gce.updateFirewall(name, region, desc, sourceRanges, svcPorts, hosts)
 }
 
 // Take a GCE instance 'hostname' and break it down to something that can be fed
