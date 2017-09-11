@@ -22,6 +22,7 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
+	corev1 "k8s.io/client-go/pkg/api/v1"
 )
 
 var Scheme = runtime.NewScheme()
@@ -48,6 +49,7 @@ func init() {
 // After this, RawExtensions in Kubernetes types will serialize kube-aggregator types
 // correctly.
 func AddToScheme(scheme *runtime.Scheme) {
+	corev1.AddToScheme(scheme)
 	voyagerv1beta1.AddToScheme(scheme)
 
 }

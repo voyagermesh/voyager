@@ -43,7 +43,7 @@ func (op *Operator) initIngresseWatcher() cache.Controller {
 					}
 					if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
 						op.recorder.Eventf(
-							engress,
+							eventer.ObjectReferenceFor(engress),
 							apiv1.EventTypeWarning,
 							eventer.EventReasonIngressInvalid,
 							"Reason: %s",
@@ -82,7 +82,7 @@ func (op *Operator) initIngresseWatcher() cache.Controller {
 				log.Infof("%s %s@%s has changed", newIngress.GroupVersionKind(), newIngress.Name, newIngress.Namespace)
 				if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
 					op.recorder.Eventf(
-						newEngress,
+						eventer.ObjectReferenceFor(newEngress),
 						apiv1.EventTypeWarning,
 						eventer.EventReasonIngressInvalid,
 						"Reason: %s",

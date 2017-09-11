@@ -29,7 +29,7 @@ func (op *Operator) ValidateIngress() error {
 		log.Warningf("Checking ingress %s@%s", ing.Name, ing.Namespace)
 		if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
 			op.recorder.Eventf(
-				engress,
+				eventer.ObjectReferenceFor(engress),
 				apiv1.EventTypeWarning,
 				eventer.EventReasonIngressInvalid,
 				"Reason: %s",
@@ -51,7 +51,7 @@ func (op *Operator) ValidateIngress() error {
 		log.Warningf("Checking ingress %s@%s", ing.Name, ing.Namespace)
 		if err := ing.IsValid(op.Opt.CloudProvider); err != nil {
 			op.recorder.Eventf(
-				&ing,
+				eventer.ObjectReferenceFor(&ing),
 				apiv1.EventTypeWarning,
 				eventer.EventReasonIngressInvalid,
 				"Reason: %s",

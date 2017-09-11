@@ -101,7 +101,7 @@ func (c *Controller) Process() error {
 		err := c.create()
 		if err != nil {
 			c.recorder.Eventf(
-				c.tpr,
+				eventer.ObjectReferenceFor(c.tpr),
 				apiv1.EventTypeWarning,
 				eventer.EventReasonCertificateCreateFailed,
 				"Failed to create certificate, Reason: %s",
@@ -110,7 +110,7 @@ func (c *Controller) Process() error {
 			return err
 		}
 		c.recorder.Eventf(
-			c.tpr,
+			eventer.ObjectReferenceFor(c.tpr),
 			apiv1.EventTypeNormal,
 			eventer.EventReasonCertificateCreateSuccessful,
 			"Successfully created certificate",
@@ -143,7 +143,7 @@ func (c *Controller) Process() error {
 		err := c.renew()
 		if err != nil {
 			c.recorder.Eventf(
-				c.tpr,
+				eventer.ObjectReferenceFor(c.tpr),
 				apiv1.EventTypeWarning,
 				eventer.EventReasonCertificateRenewFailed,
 				"Failed to renew certificate, Reason %s",
@@ -152,7 +152,7 @@ func (c *Controller) Process() error {
 			return err
 		}
 		c.recorder.Eventf(
-			c.tpr,
+			eventer.ObjectReferenceFor(c.tpr),
 			apiv1.EventTypeNormal,
 			eventer.EventReasonCertificateRenewSuccessful,
 			"Successfully renewed certificate, voyager pods that mount this secret needs to restart.",
