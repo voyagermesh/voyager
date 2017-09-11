@@ -14,7 +14,6 @@ is a [complex ingress example](hack/example/ingress.yaml) that shows how various
 You can find the generated HAProxy Configuration [here](hack/example/haproxy_generated.cfg).
 
 **Features**
-
   - [HTTP](/docs/user-guide/ingress/single-service.md) and [TCP](/docs/user-guide/ingress/tcp.md) loadbalancing,
   - [TLS Termination](/docs/user-guide/ingress/tls.md),
   - Multi-cloud support,
@@ -39,6 +38,8 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
   - [Configure Options](/docs/user-guide/ingress/configure-options.md)
   - [Using Custom HAProxy Templates](/docs/user-guide/ingress/custom-templates.md)
   - [Configure Basic Auth for HTTP Backends](/docs/user-guide/ingress/basic-auth.md)
+  - [Configure Sticky session to Backends](/docs/user-guide/ingress/sticky-session.md)
+  - [Apply Frontend Rules](/docs/user-guide/ingress/frontend-rule.md)
 
 ### Comparison with Kubernetes
 | Feauture | [Kube Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) | AppsCode Ingress |
