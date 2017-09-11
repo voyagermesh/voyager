@@ -1,5 +1,5 @@
 ## Custom HTTP Port
-Voyager 3.2+ supports opening http port in any non custom port.
+Voyager 3.2+ supports using any non-standard port (beyond 80 and 443) for L7 traffic. If no port is specified, port 80 or 443 will be used depending on whether TLS is used or not.
 
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
