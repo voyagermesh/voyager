@@ -4,19 +4,22 @@ import (
 	"sync"
 
 	"github.com/appscode/log"
-	tapi "github.com/appscode/voyager/api"
-	tcs "github.com/appscode/voyager/client/clientset"
+	api "github.com/appscode/voyager/apis/voyager"
+	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
+	tcs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
+	"github.com/appscode/voyager/pkg/util"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
+	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
 	core "k8s.io/client-go/listers/core/v1"
-	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
@@ -25,7 +28,8 @@ import (
 type Operator struct {
 	KubeConfig      *rest.Config
 	KubeClient      clientset.Interface
-	ExtClient       tcs.ExtensionInterface
+	CRDClient       apiextensionsclient.Interface
+	ExtClient       tcs.VoyagerV1beta1Interface
 	PromClient      pcm.MonitoringV1alpha1Interface
 	ServiceLister   core.ServiceLister
 	EndpointsLister core.EndpointsLister
@@ -38,13 +42,15 @@ type Operator struct {
 func New(
 	config *rest.Config,
 	kubeClient clientset.Interface,
-	extClient tcs.ExtensionInterface,
+	crdClient apiextensionsclient.Interface,
+	extClient tcs.VoyagerV1beta1Interface,
 	promClient pcm.MonitoringV1alpha1Interface,
 	opt config.Options,
 ) *Operator {
 	return &Operator{
 		KubeConfig: config,
 		KubeClient: kubeClient,
+		CRDClient:  crdClient,
 		ExtClient:  extClient,
 		PromClient: promClient,
 		Opt:        opt,
@@ -55,42 +61,63 @@ func New(
 func (op *Operator) Setup() error {
 	log.Infoln("Ensuring TPR registration")
 
-	if err := op.ensureThirdPartyResource(tapi.ResourceNameIngress + "." + tapi.V1beta1SchemeGroupVersion.Group); err != nil {
+	if err := op.ensureCustomResourceDefinitions(); err != nil {
 		return err
 	}
-	if err := op.ensureThirdPartyResource(tapi.ResourceNameCertificate + "." + tapi.V1beta1SchemeGroupVersion.Group); err != nil {
-		return err
-	}
+
 	return nil
 }
 
-func (op *Operator) ensureThirdPartyResource(resourceName string) error {
-	_, err := op.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Get(resourceName, metav1.GetOptions{})
-	if !kerr.IsNotFound(err) {
-		return err
-	}
-
-	thirdPartyResource := &extensions.ThirdPartyResource{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "extensions/v1beta1",
-			Kind:       "ThirdPartyResource",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: resourceName,
-			Labels: map[string]string{
-				"app": "voyager",
+func (op *Operator) ensureCustomResourceDefinitions() error {
+	crds := []*apiextensions.CustomResourceDefinition{
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:   api_v1beta1.ResourceTypeIngress + "." + api_v1beta1.SchemeGroupVersion.Group,
+				Labels: map[string]string{"app": "voyager"},
+			},
+			Spec: apiextensions.CustomResourceDefinitionSpec{
+				Group:   api.GroupName,
+				Version: api_v1beta1.SchemeGroupVersion.Version,
+				Scope:   apiextensions.NamespaceScoped,
+				Names: apiextensions.CustomResourceDefinitionNames{
+					Singular:   api_v1beta1.ResourceNameIngress,
+					Plural:     api_v1beta1.ResourceTypeIngress,
+					Kind:       api_v1beta1.ResourceKindIngress,
+					ShortNames: []string{"ing"},
+				},
 			},
 		},
-		Description: "Voyager by AppsCode - Secure Ingress Controller for Kubernetes",
-		Versions: []extensions.APIVersion{
-			{
-				Name: tapi.V1beta1SchemeGroupVersion.Version,
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:   api_v1beta1.ResourceTypeCertificate + "." + api_v1beta1.SchemeGroupVersion.Group,
+				Labels: map[string]string{"app": "voyager"},
+			},
+			Spec: apiextensions.CustomResourceDefinitionSpec{
+				Group:   api.GroupName,
+				Version: api_v1beta1.SchemeGroupVersion.Version,
+				Scope:   apiextensions.NamespaceScoped,
+				Names: apiextensions.CustomResourceDefinitionNames{
+					Singular:   api_v1beta1.ResourceNameCertificate,
+					Plural:     api_v1beta1.ResourceTypeCertificate,
+					Kind:       api_v1beta1.ResourceKindCertificate,
+					ShortNames: []string{"cert"},
+				},
 			},
 		},
 	}
-
-	_, err = op.KubeClient.ExtensionsV1beta1().ThirdPartyResources().Create(thirdPartyResource)
-	return err
+	for _, crd := range crds {
+		_, err := op.CRDClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get(crd.Name, metav1.GetOptions{})
+		if kerr.IsNotFound(err) {
+			_, err = op.CRDClient.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return util.WaitForCRDReady(
+		op.KubeClient.CoreV1().RESTClient(),
+		crds,
+	)
 }
 
 func (op *Operator) Run() {

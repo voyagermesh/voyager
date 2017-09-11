@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/appscode/log"
-	"github.com/appscode/voyager/api"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -43,7 +43,7 @@ func (op *Operator) initIngresseWatcher() cache.Controller {
 					}
 					if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
 						op.recorder.Eventf(
-							engress,
+							eventer.ObjectReferenceFor(engress),
 							apiv1.EventTypeWarning,
 							eventer.EventReasonIngressInvalid,
 							"Reason: %s",
@@ -82,7 +82,7 @@ func (op *Operator) initIngresseWatcher() cache.Controller {
 				log.Infof("%s %s@%s has changed", newIngress.GroupVersionKind(), newIngress.Name, newIngress.Namespace)
 				if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
 					op.recorder.Eventf(
-						newEngress,
+						eventer.ObjectReferenceFor(newEngress),
 						apiv1.EventTypeWarning,
 						eventer.EventReasonIngressInvalid,
 						"Reason: %s",

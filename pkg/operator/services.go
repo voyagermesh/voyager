@@ -6,8 +6,7 @@ import (
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
-	tapi "github.com/appscode/voyager/api"
-	_ "github.com/appscode/voyager/api/install"
+	tapi "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/ingress"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -104,7 +103,7 @@ func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*tapi.Ingress, error) {
 		}
 		return tapi.NewEngressFromIngress(ingress)
 	} else if sourceType == tapi.APISchemaEngress {
-		return op.ExtClient.Ingresses(meta.Namespace).Get(sourceName)
+		return op.ExtClient.Ingresses(meta.Namespace).Get(sourceName, metav1.GetOptions{})
 	}
 	return nil, fmt.Errorf("Unknown ingress type %s", sourceType)
 }
@@ -135,7 +134,7 @@ func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
 			log.Infoln("Checking for service", svc, "to be used to load balance via ingress", engress.Name, engress.Namespace)
 			if engress.HasBackendService(svc.Name, svc.Namespace) {
-				ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
+				ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 				if ctrl.IsExists() {
 					// Loadbalancer resource for this ingress is found in its place,
 					// so no need to create the resources. First trying to update

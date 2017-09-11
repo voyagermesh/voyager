@@ -22,18 +22,18 @@ import:
 - package: cloud.google.com/go
   version: v0.2.0
 - package: k8s.io/kubernetes
-  version: ~1.6.0
+  version: ~1.7.0
 - package: k8s.io/apimachinery
-  version: 85ace5365f33b16fc735c866a12e3c765b9700f2
+  version: 1fd2e63a9a370677308a42f24fd40c86438afddf
 - package: k8s.io/client-go
-  version: v3.0.0
+  version: v4.0.0
 - package: github.com/appscode/haproxy_exporter
   version: master
 - package: github.com/golang/protobuf
   version: 8ee79997227bf9b34611aee7946ae64735e6fd93
 - package: github.com/lib/pq
 - package: github.com/coreos/prometheus-operator
-  version: v0.10.1
+  version: 1cd5aeb023a31b804a4f9f26922b058010923af3
 - package: github.com/prometheus/client_golang
   version: v0.8.0
 - package: github.com/prometheus/common
@@ -44,6 +44,8 @@ import:
   version: v0.11.5
 - package: gopkg.in/yaml.v2
   version: v2
+- package: k8s.io/apiextensions-apiserver
+  version: 5fa44608f6b9b2180a2fd1ecb52e651fd0397794
 - package: github.com/tredoe/osutil
 testImport:
 - package: github.com/stretchr/testify

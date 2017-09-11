@@ -4,7 +4,8 @@ import (
 	"reflect"
 
 	"github.com/appscode/errors"
-	"github.com/appscode/voyager/api"
+	api "github.com/appscode/voyager/apis/voyager"
+	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
@@ -20,8 +21,8 @@ func (c *controller) ensureServiceAccount() error {
 				Name:      c.Ingress.OffshootName(),
 				Namespace: c.Ingress.Namespace,
 				Annotations: map[string]string{
-					api.OriginAPISchema: c.Ingress.APISchema(),
-					api.OriginName:      c.Ingress.GetName(),
+					api_v1beta1.OriginAPISchema: c.Ingress.APISchema(),
+					api_v1beta1.OriginName:      c.Ingress.GetName(),
 				},
 			},
 		}
@@ -50,8 +51,8 @@ func (c *controller) ensureRoles() error {
 			Name:      c.Ingress.OffshootName(),
 			Namespace: c.Ingress.Namespace,
 			Annotations: map[string]string{
-				api.OriginAPISchema: c.Ingress.APISchema(),
-				api.OriginName:      c.Ingress.GetName(),
+				api_v1beta1.OriginAPISchema: c.Ingress.APISchema(),
+				api_v1beta1.OriginName:      c.Ingress.GetName(),
 			},
 		},
 		Rules: []rbac.PolicyRule{
@@ -64,14 +65,14 @@ func (c *controller) ensureRoles() error {
 	}
 
 	switch c.Ingress.APISchema() {
-	case api.APISchemaEngress:
+	case api_v1beta1.APISchemaEngress:
 		defaultRole.Rules = append(defaultRole.Rules, rbac.PolicyRule{
 			APIGroups:     []string{api.GroupName},
 			Resources:     []string{"ingresses"},
 			ResourceNames: []string{c.Ingress.Name},
 			Verbs:         []string{"get"},
 		})
-	case api.APISchemaIngress:
+	case api_v1beta1.APISchemaIngress:
 		defaultRole.Rules = append(defaultRole.Rules, rbac.PolicyRule{
 			APIGroups:     []string{extensions.GroupName},
 			Resources:     []string{"ingresses"},
@@ -121,8 +122,8 @@ func (c *controller) ensureRoleBinding() error {
 			Name:      c.Ingress.OffshootName(),
 			Namespace: c.Ingress.Namespace,
 			Annotations: map[string]string{
-				api.OriginAPISchema: c.Ingress.APISchema(),
-				api.OriginName:      c.Ingress.GetName(),
+				api_v1beta1.OriginAPISchema: c.Ingress.APISchema(),
+				api_v1beta1.OriginName:      c.Ingress.GetName(),
 			},
 		},
 		RoleRef: rbac.RoleRef{

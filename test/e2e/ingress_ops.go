@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/appscode/voyager/api"
+	internalapi "github.com/appscode/voyager/apis/voyager"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"
@@ -78,7 +79,7 @@ var _ = Describe("IngressOperations", func() {
 				Skip("Minikube do not support this")
 			}
 			// Check Status for ingress
-			baseIngress, err := f.VoyagerClient.Ingresses(ing.Namespace).Get(ing.Name)
+			baseIngress, err := f.V1beta1Client.Ingresses(ing.Namespace).Get(ing.Name, metav1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			svc, err := f.Ingress.GetOffShootService(ing)
@@ -327,13 +328,13 @@ var _ = Describe("IngressOperations", func() {
 					"GET",
 					"/testpath/ok",
 					map[string]string{
-						"X-Ingress-Test-Header": api.GroupName + "/v1beta1",
+						"X-Ingress-Test-Header": internalapi.GroupName + "/v1beta1",
 					},
 					func(r *testserverclient.Response) bool {
 						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 							Expect(r.Method).Should(Equal("GET")) &&
 							Expect(r.Path).Should(Equal("/override/testpath/ok")) &&
-							Expect(r.RequestHeaders.Get("X-Ingress-Test-Header")).Should(Equal(api.GroupName+"/v1beta1"))
+							Expect(r.RequestHeaders.Get("X-Ingress-Test-Header")).Should(Equal(internalapi.GroupName+"/v1beta1"))
 					},
 				)
 				Expect(err).NotTo(HaveOccurred())

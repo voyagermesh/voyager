@@ -4,9 +4,11 @@ import (
 	"sync"
 
 	"github.com/appscode/go/crypto/rand"
-	voyagerclient "github.com/appscode/voyager/client/clientset"
+	"github.com/appscode/voyager/client/internalclientset/typed/voyager/internalversion"
+	v1beta1client "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	. "github.com/onsi/gomega"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -18,12 +20,14 @@ const (
 )
 
 type Framework struct {
-	KubeConfig    *rest.Config
-	KubeClient    clientset.Interface
-	VoyagerClient voyagerclient.ExtensionInterface
-	Config        E2EConfig
-	namespace     string
-	voyagerConfig config.Options
+	KubeConfig     *rest.Config
+	KubeClient     clientset.Interface
+	InternalClient internalversion.VoyagerInterface
+	V1beta1Client  v1beta1client.VoyagerV1beta1Interface
+	CRDClient      apiextensionsclient.Interface
+	Config         E2EConfig
+	namespace      string
+	voyagerConfig  config.Options
 }
 
 type Invocation struct {
@@ -48,11 +52,13 @@ func New() *Framework {
 	Expect(err).NotTo(HaveOccurred())
 
 	return &Framework{
-		KubeConfig:    c,
-		KubeClient:    clientset.NewForConfigOrDie(c),
-		VoyagerClient: voyagerclient.NewForConfigOrDie(c),
-		Config:        testConfigs,
-		namespace:     testConfigs.TestNamespace,
+		KubeConfig:     c,
+		KubeClient:     clientset.NewForConfigOrDie(c),
+		InternalClient: internalversion.NewForConfigOrDie(c),
+		V1beta1Client:  v1beta1client.NewForConfigOrDie(c),
+		CRDClient:      apiextensionsclient.NewForConfigOrDie(c),
+		Config:         testConfigs,
+		namespace:      testConfigs.TestNamespace,
 		voyagerConfig: config.Options{
 			CloudProvider:     testConfigs.CloudProviderName,
 			HAProxyImage:      testConfigs.HAProxyImageName,

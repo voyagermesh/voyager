@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/appscode/voyager/api"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"

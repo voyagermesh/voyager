@@ -5,7 +5,7 @@ import (
 
 	"github.com/appscode/errors"
 	"github.com/appscode/log"
-	tapi "github.com/appscode/voyager/api"
+	tapi "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/ingress"
@@ -40,7 +40,7 @@ func (op *Operator) initIngressTPRWatcher() cache.Controller {
 					}
 					if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
 						op.recorder.Eventf(
-							engress,
+							eventer.ObjectReferenceFor(engress),
 							apiv1.EventTypeWarning,
 							eventer.EventReasonIngressInvalid,
 							"Reason: %s",
@@ -69,7 +69,7 @@ func (op *Operator) initIngressTPRWatcher() cache.Controller {
 				log.Infof("%s %s@%s has changed", newEngress.GroupVersionKind(), newEngress.Name, newEngress.Namespace)
 				if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
 					op.recorder.Eventf(
-						newEngress,
+						eventer.ObjectReferenceFor(newEngress),
 						apiv1.EventTypeWarning,
 						eventer.EventReasonIngressInvalid,
 						"Reason: %s",
@@ -95,7 +95,7 @@ func (op *Operator) initIngressTPRWatcher() cache.Controller {
 }
 
 func (op *Operator) AddEngress(engress *tapi.Ingress) {
-	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
+	ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 	if ctrl.IsExists() {
 		if err := ctrl.Update(ingress.UpdateStats, nil); err != nil {
 			log.Errorln(err)
@@ -126,7 +126,7 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 		return
 	}
 
-	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, newEngress)
+	ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, newEngress)
 	if oldHandled && !newHandled {
 		ctrl.Delete()
 	} else {
@@ -143,7 +143,7 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 			if newMonSpec, newErr := newEngress.MonitorSpec(); newErr == nil {
 				if oldMonSpec, oldErr := oldEngress.MonitorSpec(); oldErr == nil {
 					if !reflect.DeepEqual(oldMonSpec, newMonSpec) {
-						promCtrl := monitor.NewPrometheusController(op.KubeClient, op.PromClient)
+						promCtrl := monitor.NewPrometheusController(op.KubeClient, op.CRDClient, op.PromClient)
 						err := promCtrl.UpdateMonitor(newEngress, oldMonSpec, newMonSpec)
 						if err != nil {
 							return
@@ -185,7 +185,7 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 }
 
 func (op *Operator) DeleteEngress(engress *tapi.Ingress) {
-	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
+	ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 	ctrl.Delete()
 
 	for _, meta := range engress.BackendServices() {

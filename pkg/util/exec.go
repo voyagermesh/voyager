@@ -1,14 +1,15 @@
 package util
 
 import (
+	"fmt"
 	"io"
 	"strings"
 
 	"github.com/appscode/log"
+	remotecommandconsts "k8s.io/apimachinery/pkg/util/remotecommand"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/rest"
-	"k8s.io/kubernetes/pkg/client/unversioned/remotecommand"
-	remotecommandserver "k8s.io/kubernetes/pkg/kubelet/server/remotecommand"
+	"k8s.io/client-go/tools/remotecommand"
 )
 
 func Exec(restClient rest.Interface, config *rest.Config, pod apiv1.Pod, cmd []string) string {
@@ -24,6 +25,8 @@ func Exec(restClient rest.Interface, config *rest.Config, pod apiv1.Pod, cmd []s
 		Param("stderr", "true").
 		Param("tty", "false")
 
+	fmt.Println(req.URL())
+
 	exec, err := remotecommand.NewExecutor(config, "POST", req.URL())
 	if err != nil {
 		log.Errorln(err)
@@ -35,7 +38,7 @@ func Exec(restClient rest.Interface, config *rest.Config, pod apiv1.Pod, cmd []s
 	}
 
 	err = exec.Stream(remotecommand.StreamOptions{
-		SupportedProtocols: remotecommandserver.SupportedStreamingProtocols,
+		SupportedProtocols: remotecommandconsts.SupportedStreamingProtocols,
 		Stdin:              newStringReader(cmd),
 		Stdout:             dw,
 		Stderr:             dw,

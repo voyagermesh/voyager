@@ -2,7 +2,7 @@ package operator
 
 import (
 	"github.com/appscode/log"
-	"github.com/appscode/voyager/api"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/ingress"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -80,7 +80,7 @@ func (op *Operator) updateFirewall(ing *api.Ingress, node *apiv1.Node) {
 		}
 	}
 
-	ctrl := ingress.NewController(op.KubeClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, ing)
+	ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, ing)
 	if svc, err := op.ServiceLister.Services(ing.Namespace).Get(ing.OffshootName()); err == nil {
 		ctrl.EnsureFirewall(svc)
 	} else {

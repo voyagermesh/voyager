@@ -12,14 +12,16 @@ import (
 	hpe "github.com/appscode/haproxy_exporter/exporter"
 	"github.com/appscode/log"
 	"github.com/appscode/pat"
-	"github.com/appscode/voyager/api"
-	acs "github.com/appscode/voyager/client/clientset"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	haproxy "github.com/appscode/voyager/pkg/haproxy"
+	"github.com/appscode/voyager/pkg/migrator"
 	"github.com/appscode/voyager/pkg/operator"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/clientcmd"
@@ -45,7 +47,7 @@ var (
 	haProxyTimeout            time.Duration = 5 * time.Second
 
 	kubeClient clientset.Interface
-	extClient  acs.ExtensionInterface
+	extClient  acs.VoyagerV1beta1Interface
 )
 
 func NewCmdRun() *cobra.Command {
@@ -103,6 +105,7 @@ func run() {
 	}
 
 	kubeClient = clientset.NewForConfigOrDie(config)
+	crdClient := apiextensionsclient.NewForConfigOrDie(config)
 	extClient = acs.NewForConfigOrDie(config)
 	promClient, err := pcm.NewForConfig(config)
 	if err != nil {
@@ -111,11 +114,16 @@ func run() {
 
 	log.Infoln("Starting Voyager operator...")
 
-	w := operator.New(config, kubeClient, extClient, promClient, opt)
+	w := operator.New(config, kubeClient, crdClient, extClient, promClient, opt)
 	err = w.Setup()
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	if err = migrator.NewMigrator(kubeClient, crdClient).RunMigration(); err != nil {
+		log.Fatalln(err)
+	}
+
 	// https://github.com/appscode/voyager/issues/346
 	err = w.ValidateIngress()
 	if err != nil {

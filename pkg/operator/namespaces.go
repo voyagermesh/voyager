@@ -27,12 +27,12 @@ func (op *Operator) initNamespaceWatcher() cache.Controller {
 				if ns, ok := obj.(*apiv1.Namespace); ok {
 					if resources, err := op.ExtClient.Certificates(ns.Name).List(metav1.ListOptions{}); err == nil {
 						for _, resource := range resources.Items {
-							op.ExtClient.Certificates(resource.Namespace).Delete(resource.Name)
+							op.ExtClient.Certificates(resource.Namespace).Delete(resource.Name, &metav1.DeleteOptions{})
 						}
 					}
 					if resources, err := op.ExtClient.Ingresses(ns.Name).List(metav1.ListOptions{}); err == nil {
 						for _, resource := range resources.Items {
-							op.ExtClient.Ingresses(resource.Namespace).Delete(resource.Name)
+							op.ExtClient.Ingresses(resource.Namespace).Delete(resource.Name, &metav1.DeleteOptions{})
 						}
 					}
 				}

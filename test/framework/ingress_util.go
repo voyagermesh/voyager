@@ -13,7 +13,7 @@ import (
 	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/go/types"
 	"github.com/appscode/log"
-	"github.com/appscode/voyager/api"
+	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -28,31 +28,31 @@ var (
 	defaultUrlTemplate = template.Must(template.New("svc-template").Parse("http://{{.IP}}:{{.Port}}"))
 )
 
-func (i *ingressInvocation) GetSkeleton() *api.Ingress {
-	ing := &api.Ingress{
+func (i *ingressInvocation) GetSkeleton() *api_v1beta1.Ingress {
+	ing := &api_v1beta1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      i.UniqueName(),
 			Namespace: i.Namespace(),
 			Annotations: map[string]string{
-				api.DefaultsTimeOut: `{"connect": "5s", "server": "10s"}`,
+				api_v1beta1.DefaultsTimeOut: `{"connect": "5s", "server": "10s"}`,
 			},
 		},
-		Spec: api.IngressSpec{Rules: make([]api.IngressRule, 0)},
+		Spec: api_v1beta1.IngressSpec{Rules: make([]api_v1beta1.IngressRule, 0)},
 	}
 
 	return ing
 }
 
-func (i *ingressInvocation) SetSkeletonRule(ing *api.Ingress) {
-	ing.Spec.Rules = []api.IngressRule{
+func (i *ingressInvocation) SetSkeletonRule(ing *api_v1beta1.Ingress) {
+	ing.Spec.Rules = []api_v1beta1.IngressRule{
 		{
-			IngressRuleValue: api.IngressRuleValue{
-				HTTP: &api.HTTPIngressRuleValue{
-					Paths: []api.HTTPIngressPath{
+			IngressRuleValue: api_v1beta1.IngressRuleValue{
+				HTTP: &api_v1beta1.HTTPIngressRuleValue{
+					Paths: []api_v1beta1.HTTPIngressPath{
 						{
 							Path: "/testpath",
-							Backend: api.HTTPIngressBackend{
-								IngressBackend: api.IngressBackend{
+							Backend: api_v1beta1.HTTPIngressBackend{
+								IngressBackend: api_v1beta1.IngressBackend{
 									ServiceName: i.TestServerName(),
 									ServicePort: intstr.FromInt(80),
 								},
@@ -65,20 +65,20 @@ func (i *ingressInvocation) SetSkeletonRule(ing *api.Ingress) {
 	}
 }
 
-func (i *ingressInvocation) SetDaemonSkeletonRule(ing *api.Ingress) {
+func (i *ingressInvocation) SetDaemonSkeletonRule(ing *api_v1beta1.Ingress) {
 	ing.Annotations = map[string]string{
-		api.LBType:       api.LBTypeHostPort,
-		api.NodeSelector: i.DaemonNodeSelector(),
+		api_v1beta1.LBType:       api_v1beta1.LBTypeHostPort,
+		api_v1beta1.NodeSelector: i.DaemonNodeSelector(),
 	}
-	ing.Spec.Rules = []api.IngressRule{
+	ing.Spec.Rules = []api_v1beta1.IngressRule{
 		{
-			IngressRuleValue: api.IngressRuleValue{
-				HTTP: &api.HTTPIngressRuleValue{
-					Paths: []api.HTTPIngressPath{
+			IngressRuleValue: api_v1beta1.IngressRuleValue{
+				HTTP: &api_v1beta1.HTTPIngressRuleValue{
+					Paths: []api_v1beta1.HTTPIngressPath{
 						{
 							Path: "/testpath",
-							Backend: api.HTTPIngressBackend{
-								IngressBackend: api.IngressBackend{
+							Backend: api_v1beta1.HTTPIngressBackend{
+								IngressBackend: api_v1beta1.IngressBackend{
 									ServiceName: i.TestServerName(),
 									ServicePort: intstr.FromInt(80),
 								},
@@ -313,7 +313,7 @@ func (i *ingressInvocation) DaemonNodeSelector() string {
 	return "{}"
 }
 
-func getLoadBalancerURLs(provider string, k kubernetes.Interface, ing *api.Ingress) ([]string, error) {
+func getLoadBalancerURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.Ingress) ([]string, error) {
 	serverAddr := make([]string, 0)
 	var err error
 	if provider == "minikube" {
@@ -397,7 +397,7 @@ func getLoadBalancerURLs(provider string, k kubernetes.Interface, ing *api.Ingre
 	return serverAddr, nil
 }
 
-func getHostPortURLs(provider string, k kubernetes.Interface, ing *api.Ingress) ([]string, error) {
+func getHostPortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.Ingress) ([]string, error) {
 	serverAddr := make([]string, 0)
 	nodes, err := k.CoreV1().Nodes().List(metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(ing.NodeSelector()).String(),
@@ -453,7 +453,7 @@ func getHostPortURLs(provider string, k kubernetes.Interface, ing *api.Ingress) 
 	return serverAddr, nil
 }
 
-func getNodePortURLs(provider string, k kubernetes.Interface, ing *api.Ingress) ([]string, error) {
+func getNodePortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.Ingress) ([]string, error) {
 	serverAddr := make([]string, 0)
 
 	nodes, err := k.CoreV1().Nodes().List(metav1.ListOptions{
@@ -509,7 +509,7 @@ func getNodePortURLs(provider string, k kubernetes.Interface, ing *api.Ingress) 
 	return serverAddr, nil
 }
 
-func (i *ingressInvocation) CheckTestServersPortAssignments(ing *api.Ingress) error {
+func (i *ingressInvocation) CheckTestServersPortAssignments(ing *api_v1beta1.Ingress) error {
 	i.Mutex.Lock()
 	defer i.Mutex.Unlock()
 
@@ -756,7 +756,7 @@ func (i *ingressInvocation) CreateResourceWithBackendWeight() (metav1.ObjectMeta
 						"app-version": "v1",
 					},
 					Annotations: map[string]string{
-						api.BackendWeight: "90",
+						api_v1beta1.BackendWeight: "90",
 					},
 				},
 				Spec: apiv1.PodSpec{
@@ -810,7 +810,7 @@ func (i *ingressInvocation) CreateResourceWithBackendWeight() (metav1.ObjectMeta
 						"app-version": "v2",
 					},
 					Annotations: map[string]string{
-						api.BackendWeight: "10",
+						api_v1beta1.BackendWeight: "10",
 					},
 				},
 				Spec: apiv1.PodSpec{

@@ -38,7 +38,8 @@ var _ = BeforeSuite(func() {
 	op := operator.New(
 		root.KubeConfig,
 		root.KubeClient,
-		root.VoyagerClient,
+		root.CRDClient,
+		root.V1beta1Client,
 		nil,
 		config.Options{
 			CloudProvider: root.Config.CloudProviderName,

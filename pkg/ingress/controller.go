@@ -3,12 +3,12 @@ package ingress
 import (
 	"sync"
 
-	"github.com/appscode/voyager/api"
-	_ "github.com/appscode/voyager/api/install"
-	acs "github.com/appscode/voyager/client/clientset"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	clientset "k8s.io/client-go/kubernetes"
 	core "k8s.io/client-go/listers/core/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
@@ -25,7 +25,8 @@ type Controller interface {
 
 type controller struct {
 	KubeClient      clientset.Interface
-	ExtClient       acs.ExtensionInterface
+	CRDClient       apiextensionsclient.Interface
+	ExtClient       acs.VoyagerV1beta1Interface
 	PromClient      pcm.MonitoringV1alpha1Interface
 	ServiceLister   core.ServiceLister
 	EndpointsLister core.EndpointsLister
@@ -45,7 +46,8 @@ type controller struct {
 
 func NewController(
 	kubeClient clientset.Interface,
-	extClient acs.ExtensionInterface,
+	crdClient apiextensionsclient.Interface,
+	extClient acs.VoyagerV1beta1Interface,
 	promClient pcm.MonitoringV1alpha1Interface,
 	serviceLister core.ServiceLister,
 	endpointsLister core.EndpointsLister,
@@ -53,11 +55,11 @@ func NewController(
 	ingress *api.Ingress) Controller {
 	switch ingress.LBType() {
 	case api.LBTypeHostPort:
-		return NewHostPortController(kubeClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
+		return NewHostPortController(kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
 	case api.LBTypeNodePort:
-		return NewNodePortController(kubeClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
+		return NewNodePortController(kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
 	case api.LBTypeLoadBalancer:
-		return NewLoadBalancerController(kubeClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
+		return NewLoadBalancerController(kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
 	}
 	return nil
 }

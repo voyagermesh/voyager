@@ -8,7 +8,8 @@ import (
 
 	hpe "github.com/appscode/haproxy_exporter/exporter"
 	"github.com/appscode/pat"
-	"github.com/appscode/voyager/api"
+	api "github.com/appscode/voyager/apis/voyager"
+	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/orcaman/concurrent-map"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -80,7 +81,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				engress, err := api.NewEngressFromIngress(ingress)
+				engress, err := api_v1beta1.NewEngressFromIngress(ingress)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -112,7 +113,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 				reg = r2.(*prometheus.Registry)
 			} else {
 				log.Infof("Configuring exporter for appscode ingress %s in namespace %s", name, namespace)
-				engress, err := extClient.Ingresses(namespace).Get(name)
+				engress, err := extClient.Ingresses(namespace).Get(name, metav1.GetOptions{})
 				if kerr.IsNotFound(err) {
 					http.NotFound(w, r)
 					return
@@ -140,7 +141,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 	http.NotFound(w, r)
 }
 
-func getScrapeURL(r *api.Ingress, podIP string) (string, error) {
+func getScrapeURL(r *api_v1beta1.Ingress, podIP string) (string, error) {
 	if !r.Stats() {
 		return "", errors.New("Stats not exposed")
 	}

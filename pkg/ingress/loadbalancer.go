@@ -8,14 +8,14 @@ import (
 	"github.com/appscode/errors"
 	"github.com/appscode/go/types"
 	"github.com/appscode/log"
-	"github.com/appscode/voyager/api"
-	_ "github.com/appscode/voyager/api/install"
-	acs "github.com/appscode/voyager/client/clientset"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/monitor"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -33,7 +33,8 @@ var _ Controller = &loadBalancerController{}
 
 func NewLoadBalancerController(
 	kubeClient clientset.Interface,
-	extClient acs.ExtensionInterface,
+	crdClient apiextensionsclient.Interface,
+	extClient acs.VoyagerV1beta1Interface,
 	promClient pcm.MonitoringV1alpha1Interface,
 	serviceLister core.ServiceLister,
 	endpointsLister core.EndpointsLister,
@@ -42,6 +43,7 @@ func NewLoadBalancerController(
 	return &loadBalancerController{
 		controller: &controller{
 			KubeClient:      kubeClient,
+			CRDClient:       crdClient,
 			ExtClient:       extClient,
 			PromClient:      promClient,
 			ServiceLister:   serviceLister,
@@ -87,7 +89,7 @@ func (c *loadBalancerController) Create() error {
 	err := c.generateConfig()
 	if err != nil {
 		c.recorder.Eventf(
-			c.Ingress,
+			eventer.ObjectReferenceFor(c.Ingress),
 			apiv1.EventTypeWarning,
 			eventer.EventReasonIngressHAProxyConfigCreateFailed,
 			"Reason: %s",
@@ -98,7 +100,7 @@ func (c *loadBalancerController) Create() error {
 	err = c.ensureConfigMap()
 	if err != nil {
 		c.recorder.Eventf(
-			c.Ingress,
+			eventer.ObjectReferenceFor(c.Ingress),
 			apiv1.EventTypeWarning,
 			eventer.EventReasonIngressConfigMapCreateFailed,
 			"Reason: %s",
@@ -107,7 +109,7 @@ func (c *loadBalancerController) Create() error {
 		return errors.FromErr(err).Err()
 	}
 	c.recorder.Eventf(
-		c.Ingress,
+		eventer.ObjectReferenceFor(c.Ingress),
 		apiv1.EventTypeNormal,
 		eventer.EventReasonIngressConfigMapCreateSuccessful,
 		"Successfully created ConfigMap %s",
@@ -127,7 +129,7 @@ func (c *loadBalancerController) Create() error {
 	_, err = c.ensurePods(nil)
 	if err != nil {
 		c.recorder.Eventf(
-			c.Ingress,
+			eventer.ObjectReferenceFor(c.Ingress),
 			apiv1.EventTypeWarning,
 			eventer.EventReasonIngressControllerCreateFailed,
 			"Failed to create NodePortPods, Reason: %s",
@@ -136,7 +138,7 @@ func (c *loadBalancerController) Create() error {
 		return errors.FromErr(err).Err()
 	}
 	c.recorder.Eventf(
-		c.Ingress,
+		eventer.ObjectReferenceFor(c.Ingress),
 		apiv1.EventTypeNormal,
 		eventer.EventReasonIngressControllerCreateSuccessful,
 		"Successfully created NodePortPods",
@@ -145,7 +147,7 @@ func (c *loadBalancerController) Create() error {
 	_, err = c.ensureService(nil)
 	if err != nil {
 		c.recorder.Eventf(
-			c.Ingress,
+			eventer.ObjectReferenceFor(c.Ingress),
 			apiv1.EventTypeWarning,
 			eventer.EventReasonIngressServiceCreateFailed,
 			"Failed to create LoadBalancerService, Reason: %s",
@@ -154,7 +156,7 @@ func (c *loadBalancerController) Create() error {
 		return errors.FromErr(err).Err()
 	}
 	c.recorder.Eventf(
-		c.Ingress,
+		eventer.ObjectReferenceFor(c.Ingress),
 		apiv1.EventTypeNormal,
 		eventer.EventReasonIngressServiceCreateSuccessful,
 		"Successfully created LoadBalancerService",
@@ -167,7 +169,7 @@ func (c *loadBalancerController) Create() error {
 		// Error ignored intentionally
 		if err != nil {
 			c.recorder.Eventf(
-				c.Ingress,
+				eventer.ObjectReferenceFor(c.Ingress),
 				apiv1.EventTypeWarning,
 				eventer.EventReasonIngressStatsServiceCreateFailed,
 				"Failed to create Stats Service. Reason: %s",
@@ -175,7 +177,7 @@ func (c *loadBalancerController) Create() error {
 			)
 		} else {
 			c.recorder.Eventf(
-				c.Ingress,
+				eventer.ObjectReferenceFor(c.Ingress),
 				apiv1.EventTypeNormal,
 				eventer.EventReasonIngressStatsServiceCreateSuccessful,
 				"Successfully created Stats Service %s",
@@ -189,19 +191,19 @@ func (c *loadBalancerController) Create() error {
 		return errors.FromErr(err).Err()
 	}
 	if monSpec != nil && monSpec.Prometheus != nil {
-		ctrl := monitor.NewPrometheusController(c.KubeClient, c.PromClient)
+		ctrl := monitor.NewPrometheusController(c.KubeClient, c.CRDClient, c.PromClient)
 		err := ctrl.AddMonitor(c.Ingress, monSpec)
 		// Error Ignored intentionally
 		if err != nil {
 			c.recorder.Eventf(
-				c.Ingress,
+				eventer.ObjectReferenceFor(c.Ingress),
 				apiv1.EventTypeWarning,
 				eventer.EventReasonIngressServiceMonitorCreateFailed,
 				err.Error(),
 			)
 		} else {
 			c.recorder.Eventf(
-				c.Ingress,
+				eventer.ObjectReferenceFor(c.Ingress),
 				apiv1.EventTypeNormal,
 				eventer.EventReasonIngressServiceMonitorCreateSuccessful,
 				"Successfully created ServiceMonitor",
@@ -216,7 +218,7 @@ func (c *loadBalancerController) Update(mode UpdateMode, old *api.Ingress) error
 	err := c.generateConfig()
 	if err != nil {
 		c.recorder.Eventf(
-			c.Ingress,
+			eventer.ObjectReferenceFor(c.Ingress),
 			apiv1.EventTypeWarning,
 			eventer.EventReasonIngressHAProxyConfigCreateFailed,
 			"Reason: %s",
@@ -233,7 +235,7 @@ func (c *loadBalancerController) Update(mode UpdateMode, old *api.Ingress) error
 	_, err = c.ensurePods(old)
 	if err != nil {
 		c.recorder.Eventf(
-			c.Ingress,
+			eventer.ObjectReferenceFor(c.Ingress),
 			apiv1.EventTypeWarning,
 			eventer.EventReasonIngressUpdateFailed,
 			"Failed to update Pods, %s", err.Error(),
@@ -241,7 +243,7 @@ func (c *loadBalancerController) Update(mode UpdateMode, old *api.Ingress) error
 		return errors.FromErr(err).Err()
 	}
 	c.recorder.Eventf(
-		c.Ingress,
+		eventer.ObjectReferenceFor(c.Ingress),
 		apiv1.EventTypeNormal,
 		eventer.EventReasonIngressUpdateSuccessful,
 		"Successfully updated Pods",
@@ -250,7 +252,7 @@ func (c *loadBalancerController) Update(mode UpdateMode, old *api.Ingress) error
 	_, err = c.ensureService(old)
 	if err != nil {
 		c.recorder.Eventf(
-			c.Ingress,
+			eventer.ObjectReferenceFor(c.Ingress),
 			apiv1.EventTypeWarning,
 			eventer.EventReasonIngressServiceUpdateFailed,
 			"Failed to update LBService, %s",
@@ -259,7 +261,7 @@ func (c *loadBalancerController) Update(mode UpdateMode, old *api.Ingress) error
 		return errors.FromErr(err).Err()
 	}
 	c.recorder.Eventf(
-		c.Ingress,
+		eventer.ObjectReferenceFor(c.Ingress),
 		apiv1.EventTypeNormal,
 		eventer.EventReasonIngressServiceUpdateSuccessful,
 		"Successfully updated LBService",
@@ -272,7 +274,7 @@ func (c *loadBalancerController) Update(mode UpdateMode, old *api.Ingress) error
 			err := c.ensureStatsService()
 			if err != nil {
 				c.recorder.Eventf(
-					c.Ingress,
+					eventer.ObjectReferenceFor(c.Ingress),
 					apiv1.EventTypeWarning,
 					eventer.EventReasonIngressStatsServiceCreateFailed,
 					"Failed to create HAProxy stats Service. Reason: %s",
@@ -280,7 +282,7 @@ func (c *loadBalancerController) Update(mode UpdateMode, old *api.Ingress) error
 				)
 			} else {
 				c.recorder.Eventf(
-					c.Ingress,
+					eventer.ObjectReferenceFor(c.Ingress),
 					apiv1.EventTypeNormal,
 					eventer.EventReasonIngressStatsServiceCreateSuccessful,
 					"Successfully created HAProxy stats Service %s",
@@ -291,7 +293,7 @@ func (c *loadBalancerController) Update(mode UpdateMode, old *api.Ingress) error
 			err := c.ensureStatsServiceDeleted()
 			if err != nil {
 				c.recorder.Eventf(
-					c.Ingress,
+					eventer.ObjectReferenceFor(c.Ingress),
 					apiv1.EventTypeWarning,
 					eventer.EventReasonIngressStatsServiceDeleteFailed,
 					"Failed to delete HAProxy stats Service. Reason: %s",
@@ -299,7 +301,7 @@ func (c *loadBalancerController) Update(mode UpdateMode, old *api.Ingress) error
 				)
 			} else {
 				c.recorder.Eventf(
-					c.Ingress,
+					eventer.ObjectReferenceFor(c.Ingress),
 					apiv1.EventTypeNormal,
 					eventer.EventReasonIngressStatsServiceDeleteSuccessful,
 					"Successfully deleted HAProxy stats Service %s",
@@ -345,7 +347,7 @@ func (c *loadBalancerController) Delete() {
 		log.Errorln(err)
 	}
 	if monSpec != nil && monSpec.Prometheus != nil {
-		ctrl := monitor.NewPrometheusController(c.KubeClient, c.PromClient)
+		ctrl := monitor.NewPrometheusController(c.KubeClient, c.CRDClient, c.PromClient)
 		ctrl.DeleteMonitor(c.Ingress, monSpec)
 	}
 	if c.Ingress.Stats() {
@@ -656,7 +658,7 @@ func (c *loadBalancerController) updateStatus() error {
 				return errors.FromErr(err).Err()
 			}
 		} else {
-			ing, err := c.ExtClient.Ingresses(c.Ingress.Namespace).Get(c.Ingress.Name)
+			ing, err := c.ExtClient.Ingresses(c.Ingress.Namespace).Get(c.Ingress.Name, metav1.GetOptions{})
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}

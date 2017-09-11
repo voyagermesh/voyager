@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/appscode/log"
-	"github.com/appscode/voyager/api"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
@@ -29,7 +29,7 @@ func (op *Operator) ValidateIngress() error {
 		log.Warningf("Checking ingress %s@%s", ing.Name, ing.Namespace)
 		if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
 			op.recorder.Eventf(
-				engress,
+				eventer.ObjectReferenceFor(engress),
 				apiv1.EventTypeWarning,
 				eventer.EventReasonIngressInvalid,
 				"Reason: %s",
@@ -51,7 +51,7 @@ func (op *Operator) ValidateIngress() error {
 		log.Warningf("Checking ingress %s@%s", ing.Name, ing.Namespace)
 		if err := ing.IsValid(op.Opt.CloudProvider); err != nil {
 			op.recorder.Eventf(
-				&ing,
+				eventer.ObjectReferenceFor(&ing),
 				apiv1.EventTypeWarning,
 				eventer.EventReasonIngressInvalid,
 				"Reason: %s",
