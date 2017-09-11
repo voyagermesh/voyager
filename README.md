@@ -8,13 +8,12 @@ Voyager is a [HAProxy](http://www.haproxy.org/) backed [secure](#certificate) L7
 
 
 ## Ingress
-Voyager provides L7 and L4 loadbalancing using a custom Kubernetes [Ingress](docs/user-guide/ingress) resource. This is built on top of the [HAProxy](http://www.haproxy.org/) to support high availability, sticky sessions, name and path-based virtual hosting.
+Voyager provides L7 and L4 loadbalancing using a custom Kubernetes [Ingress](/docs/user-guide/ingress) resource. This is built on top of the [HAProxy](http://www.haproxy.org/) to support high availability, sticky sessions, name and path-based virtual hosting.
 This also support configurable application ports with all the options available in a standard Kubernetes [Ingress](https://kubernetes.io/docs/user-guide/ingress/). Here 
 is a [complex ingress example](hack/example/ingress.yaml) that shows how various features can be used.
 You can find the generated HAProxy Configuration [here](hack/example/haproxy_generated.cfg).
 
 **Features**
-
   - [HTTP](/docs/user-guide/ingress/single-service.md) and [TCP](/docs/user-guide/ingress/tcp.md) loadbalancing,
   - [TLS Termination](/docs/user-guide/ingress/tls.md),
   - Multi-cloud support,
@@ -38,7 +37,9 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
   - [Backend TLS](/docs/user-guide/ingress/backend-tls.md)
   - [Configure Options](/docs/user-guide/ingress/configure-options.md)
   - [Using Custom HAProxy Templates](/docs/user-guide/ingress/custom-templates.md)
-  - [Configure Basic Auth for HTTP Backends](docs/user-guide/ingress/basic-auth.md)
+  - [Configure Basic Auth for HTTP Backends](/docs/user-guide/ingress/basic-auth.md)
+  - [Configure Sticky session to Backends](/docs/user-guide/ingress/sticky-session.md)
+  - [Apply Frontend Rules](/docs/user-guide/ingress/frontend-rule.md)
 
 ### Comparison with Kubernetes
 | Feauture | [Kube Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) | AppsCode Ingress |
@@ -59,7 +60,7 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
 | Supports AWS certificate manager | :x: | :white_check_mark: |
 
 ## Certificate
-Voyager can automaticallty provision and refresh SSL certificates issued from Let's Encrypt using a custom Kubernetes [Certificate](docs/user-guide/certificate) resource. 
+Voyager can automaticallty provision and refresh SSL certificates issued from Let's Encrypt using a custom Kubernetes [Certificate](/docs/user-guide/certificate) resource. 
 
 **Feautures**
 - Provision free TLS certificates from Let's Encrypt,
@@ -78,7 +79,7 @@ Kubernetes 1.3+
 
 
 ## User Guide
-To deploy voyager in Kubernetes follow this [guide](docs/user-guide/README.md). In short this contains those two steps
+To deploy voyager in Kubernetes follow this [guide](/docs/user-guide/README.md). In short this contains those two steps
 
 1. Create `ingress.voyager.appscode.com` and `certificate.voyager.appscode.com` Third Party Resource
 2. Deploy voyager to kubernetes.
@@ -96,13 +97,13 @@ along side with other controllers.
 ```
 
 ## Developer Guide
-Want to learn whats happening under the hood, read [the developer guide](docs/developer-guide/README.md).
+Want to learn whats happening under the hood, read [the developer guide](/docs/developer-guide/README.md).
 
 ## Contribution
 If you're interested in being a contributor, read [the contribution guide](CONTRIBUTING.md).
 
 ## Building voyager
-Read [Build Instructions](docs/developer-guide/build.md) to build voyager.
+Read [Build Instructions](/docs/developer-guide/build.md) to build voyager.
 
 ## Versioning Policy
 There are 2 parts to versioning policy:
@@ -134,4 +135,3 @@ To disable stats collection, run the operator with the flag** `--analytics=false
 If you have any questions, you can reach out to us.
 * [Slack](https://slack.appscode.com)
 * [Twitter](https://twitter.com/AppsCodeHQ)
-* [Website](https://appscode.com)

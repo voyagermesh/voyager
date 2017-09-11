@@ -95,4 +95,4 @@ Content-Type: text/plain; charset=utf-8
 Using `jane:guest` user/passwd should have the same output.
 
 ## Acknowledgement
-  - This document has been adapted from [/kubernetes/ingress](https://github.com/kubernetes/ingress/tree/master/examples/auth/basic/haproxy) project.
+  - This document has been adapted from [kubernetes/ingress](https://github.com/kubernetes/ingress/tree/master/examples/auth/basic/haproxy) project.
