@@ -393,6 +393,15 @@ func (c *loadBalancerController) newService() *apiv1.Service {
 		}
 	}
 
+	if c.Ingress.LBType() == api.LBTypeLoadBalancer && c.Ingress.KeepSourceIP() {
+		switch c.Opt.CloudProvider {
+		case "gce", "gke", "azure", "acs":
+			// https://github.com/appscode/voyager/issues/276
+			// ref: https://kubernetes.io/docs/tutorials/services/source-ip/#source-ip-for-services-with-typeloadbalancer
+			svc.Spec.ExternalTrafficPolicy = apiv1.ServiceExternalTrafficPolicyTypeLocal
+		}
+	}
+
 	switch c.Opt.CloudProvider {
 	case "gce", "gke":
 		if ip := c.Ingress.LoadBalancerIP(); ip != nil {

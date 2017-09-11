@@ -127,6 +127,11 @@ func (c *controller) serviceRequiresUpdate(current, desired *apiv1.Service, old 
 		current.Spec.LoadBalancerSourceRanges = desired.Spec.LoadBalancerSourceRanges
 	}
 
+	if current.Spec.ExternalTrafficPolicy != desired.Spec.ExternalTrafficPolicy {
+		needsUpdate = true
+		current.Spec.ExternalTrafficPolicy = desired.Spec.ExternalTrafficPolicy
+	}
+
 	return current, needsUpdate
 }
 
