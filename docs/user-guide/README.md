@@ -72,7 +72,7 @@ You can choose the mode in your Ingress YAML using label: [ingress.appscode.com/
 You can deploy Voyager operator with helm by using this [chart](/chart/voyager/README.md).
 
 ## Ingress
-This resource Type is backed by an controller which monitors and manages the resources of AppsCode Ingress Kind. Which is used for maintain and HAProxy backed loadbalancer to the cluster for open communications inside cluster from internet via the loadbalancer.
+This resource Type is backed by a controller which monitors and manages the resources of AppsCode Ingress Kind. Which is used for maintain and HAProxy backed loadbalancer to the cluster for open communications inside cluster from internet via the loadbalancer.
 Even when a resource for AppsCode Ingress type is created, the controller will treat it as a new load balancer request and will create a new load balancer, based on the configurations.
 
 ### Resource
