@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/appscode/errors"
+	"github.com/appscode/go/types"
 	"github.com/appscode/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
@@ -23,7 +24,7 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 	core "k8s.io/client-go/listers/core/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
-	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
 )
 
 type hostPortController struct {
@@ -81,7 +82,7 @@ func NewHostPortController(
 }
 
 func (c *hostPortController) IsExists() bool {
-	_, err := c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+	_, err := c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		return false
 	}
@@ -483,9 +484,9 @@ func (c *hostPortController) ensureService(old *api.Ingress) (*apiv1.Service, er
 	return current, nil
 }
 
-func (c *hostPortController) newPods() *extensions.DaemonSet {
+func (c *hostPortController) newPods() *apps.Deployment {
 	secrets := c.Ingress.Secrets()
-	daemon := &extensions.DaemonSet{
+	daemon := &apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.Ingress.OffshootName(),
 			Namespace: c.Ingress.Namespace,
@@ -495,22 +496,21 @@ func (c *hostPortController) newPods() *extensions.DaemonSet {
 				api.OriginName:      c.Ingress.GetName(),
 			},
 		},
-
-		Spec: extensions.DaemonSetSpec{
+		Spec: apps.DeploymentSpec{
+			Replicas: types.Int32P(c.Ingress.Replicas()),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: c.Ingress.OffshootLabels(),
 			},
-			// TODO: Enable when support for Kubernetes 1.5 is dropped
-			//UpdateStrategy: extensions.DaemonSetUpdateStrategy{
-			//	Type: extensions.RollingUpdateDaemonSetStrategyType,
-			//},
 			// pod templates.
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: c.Ingress.OffshootLabels(),
 				},
 				Spec: apiv1.PodSpec{
-					NodeSelector: c.Ingress.NodeSelector(),
+					Affinity:      c.Ingress.Spec.Affinity,
+					SchedulerName: c.Ingress.Spec.SchedulerName,
+					Tolerations:   c.Ingress.Spec.Tolerations,
+					NodeSelector:  c.Ingress.NodeSelector(),
 					Containers: []apiv1.Container{
 						{
 							Name:  "haproxy",
@@ -577,11 +577,11 @@ func (c *hostPortController) newPods() *extensions.DaemonSet {
 	return daemon
 }
 
-func (c *hostPortController) ensurePods(old *api.Ingress) (*extensions.DaemonSet, error) {
+func (c *hostPortController) ensurePods(old *api.Ingress) (*apps.Deployment, error) {
 	desired := c.newPods()
-	current, err := c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
+	current, err := c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		return c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Create(desired)
+		return c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Create(desired)
 	} else if err != nil {
 		return nil, err
 	}
@@ -616,10 +616,6 @@ func (c *hostPortController) ensurePods(old *api.Ingress) (*extensions.DaemonSet
 		needsUpdate = true
 		current.Spec.Selector = desired.Spec.Selector
 	}
-	if !reflect.DeepEqual(current.Spec.UpdateStrategy, desired.Spec.UpdateStrategy) {
-		needsUpdate = true
-		current.Spec.UpdateStrategy = desired.Spec.UpdateStrategy
-	}
 	if !reflect.DeepEqual(current.Spec.Template.ObjectMeta, desired.Spec.Template.ObjectMeta) {
 		needsUpdate = true
 		current.Spec.Template.ObjectMeta = desired.Spec.Template.ObjectMeta
@@ -627,6 +623,14 @@ func (c *hostPortController) ensurePods(old *api.Ingress) (*extensions.DaemonSet
 	if !reflect.DeepEqual(current.Spec.Template.Annotations, desired.Spec.Template.Annotations) {
 		needsUpdate = true
 		current.Spec.Template.Annotations = desired.Spec.Template.Annotations
+	}
+	if current.Spec.Template.Spec.SchedulerName != desired.Spec.Template.Spec.SchedulerName {
+		needsUpdate = true
+		current.Spec.Template.Spec.SchedulerName = desired.Spec.Template.Spec.SchedulerName
+	}
+	if !reflect.DeepEqual(current.Spec.Template.Spec.Tolerations, desired.Spec.Template.Spec.Tolerations) {
+		needsUpdate = true
+		current.Spec.Template.Spec.Tolerations = desired.Spec.Template.Spec.Tolerations
 	}
 	if !reflect.DeepEqual(current.Spec.Template.Spec.NodeSelector, desired.Spec.Template.Spec.NodeSelector) {
 		needsUpdate = true
@@ -649,16 +653,14 @@ func (c *hostPortController) ensurePods(old *api.Ingress) (*extensions.DaemonSet
 		current.Spec.Template.Spec.ServiceAccountName = desired.Spec.Template.Spec.ServiceAccountName
 	}
 	if needsUpdate {
-		current, err = c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Update(current)
-		// TODO: Stop explicitly deleting pods when support for Kube 1.5 is dropped.
-		c.deletePodsForSelector(&metav1.LabelSelector{MatchLabels: c.Ingress.OffshootLabels()})
+		current, err = c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Update(current)
 		return current, err
 	}
 	return current, nil
 }
 
 func (c *hostPortController) deletePods() error {
-	err := c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
+	err := c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
 	if err != nil {
 		log.Errorln(err)
 	}

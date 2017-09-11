@@ -27,6 +27,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
+	api_v1 "k8s.io/client-go/pkg/api/v1"
 )
 
 func init() {
@@ -499,6 +500,9 @@ func autoConvert_v1beta1_IngressSpec_To_voyager_IngressSpec(in *IngressSpec, out
 	out.Rules = *(*[]voyager.IngressRule)(unsafe.Pointer(&in.Rules))
 	out.LoadBalancerSourceRanges = *(*[]string)(unsafe.Pointer(&in.LoadBalancerSourceRanges))
 	out.Resources = in.Resources
+	out.Affinity = (*api_v1.Affinity)(unsafe.Pointer(in.Affinity))
+	out.SchedulerName = in.SchedulerName
+	out.Tolerations = *(*[]api_v1.Toleration)(unsafe.Pointer(&in.Tolerations))
 	return nil
 }
 
@@ -514,6 +518,9 @@ func autoConvert_voyager_IngressSpec_To_v1beta1_IngressSpec(in *voyager.IngressS
 	out.Rules = *(*[]IngressRule)(unsafe.Pointer(&in.Rules))
 	out.LoadBalancerSourceRanges = *(*[]string)(unsafe.Pointer(&in.LoadBalancerSourceRanges))
 	out.Resources = in.Resources
+	out.Affinity = (*api_v1.Affinity)(unsafe.Pointer(in.Affinity))
+	out.SchedulerName = in.SchedulerName
+	out.Tolerations = *(*[]api_v1.Toleration)(unsafe.Pointer(&in.Tolerations))
 	return nil
 }
 
