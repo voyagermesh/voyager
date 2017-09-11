@@ -66,7 +66,7 @@ spec:
 ```
 You need to set  the secretName field with the TCP rule to use a certificate.
 
-### Serve both HTTP and HTTPS under same host
+### Serve both TLS and non-TLS under same host
 Voyager Ingress can support for TLS and non-TLS traffic for same host in both HTTP and TCP mode. To do that you need to specify `noTLS: true` for the corresponding rule. Here is an example:
 
 ```yaml
@@ -110,7 +110,10 @@ spec:
 ```
 
 For this Ingress, HAProxy will open up 3 separate ports:
-- port 9898: Passes traffic to pods behind tcp-service:50077. Uses no TLS, since `spec.TLS` does not have a matching host.
+
+- port 443: This is used by `spec.rules[0]`. Passes traffic to pods behind test-server:80. Uses TLS, since `spec.TLS` has a matching host.
+
+- port 80: This is used by `spec.rules[1]`. Passes traffic to pods behind test-server:80. __Uses no TLS__, even though `spec.TLS` has a matching host. This is because `http.noTLS` is set to true for this rule.
 
 - port 7878: Passes traffic to pods behind tcp-service:50077. Uses TLS, since `spec.TLS` has a matching host.
 
