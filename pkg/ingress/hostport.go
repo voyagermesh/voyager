@@ -538,6 +538,7 @@ func (c *hostPortController) newPods() *apps.Deployment {
 					},
 					Volumes:     Volumes(secrets),
 					HostNetwork: true,
+					DNSPolicy: apiv1.DNSClusterFirstWithHostNet,
 				},
 			},
 		},
