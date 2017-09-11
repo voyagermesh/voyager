@@ -1,9 +1,9 @@
 ## Frontend Rules
-Frontend rules specifies a set of rules that should be applied in  HAProxy frontend configuration.
+Frontend rules specify a set of rules that are applied to HAProxy frontend configuration.
 The set of keywords are from here https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.1.
-Only frontend sections can be applied here. **It is up to user to provide valid set of rules**.
+Only frontend sections can be applied here. **It is up to user to provide valid sets of rules**.
 This allows acls or other options in frontend sections in HAProxy config.
-Frontend rules will be mapped with Ingress Rules according to port.
+Frontend rules will be mapped to `spec.rules` according to HAProxy port.
 
 
 ```yaml
@@ -41,11 +41,12 @@ spec:
         servicePort: '50077'
 ```
 
-This example ingress shows how to configure frontend rules in ingress resource. All the rules for port 80
-will be applied to all the the backends which listens to port 80.
+This example ingress shows how to configure frontend rules in ingress resource. All the frontend rules for port 80
+will be applied to all the backends which listens to port 80.
 
-## Example: White List IP Addresses using frontend Rule
-This example demonstrates How to white list some ip address for a backend using frontend rule.
+
+## Example: Whitelist IP Addresses using Frontend Rules
+This example demonstrates How to whitelist some IP addresses for a backend using frontend rule.
 
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
