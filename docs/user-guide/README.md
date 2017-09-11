@@ -1,211 +1,137 @@
-# User Guide
-This guide will walk you through deploying the Voyager controller.
+[![Go Report Card](https://goreportcard.com/badge/github.com/appscode/voyager)](https://goreportcard.com/report/github.com/appscode/voyager)
 
-### Deploying Voyager
-Voyager controller communicates with kube-apiserver at inCluster mode if no master or kubeconfig is provided. It watches Ingress and Certificate resource
-to handle corresponding events.
+[Website](https://appscode.com) • [Slack](https://slack.appscode.com) • [Twitter](https://twitter.com/AppsCodeHQ)
 
-```console
-$ export CLOUD_PROVIDER=<provider-name> # ie:
-                                        # - gce
-                                        # - gke
-                                        # - aws
-                                        # - azure
-                                        # - acs (aka, Azure Container Service)
+# voyager
+Voyager is a [HAProxy](http://www.haproxy.org/) backed [secure](#certificate) L7 and L4 [ingress](#ingress) controller for Kubernetes developed by
+[AppsCode](https://appscode.com). This can be used with any Kubernetes cloud providers including aws, gce, gke, azure, acs. This can also be used with bare metal Kubernetes clusters.
 
-$ export CLOUD_CONFIG=<path>            # The path to the cloud provider configuration file.
-                                        # Empty string for no configuration file.
-                                        # Leave it empty for `gce`, `gke`, `aws` and bare metal clusters.
-                                        # For azure/acs, use `/etc/kubernetes/azure.json`.
-                                        # This file was created during the cluster provisioning process.
-                                        # Voyager uses this to connect to cloud provider api.
-
-# Install without RBAC roles
-$ curl https://raw.githubusercontent.com/appscode/voyager/3.2.0-rc.3/hack/deploy/without-rbac.yaml \
-    | envsubst \
-    | kubectl apply -f -
-
-# Install with RBAC roles
-$ curl https://raw.githubusercontent.com/appscode/voyager/3.2.0-rc.3/hack/deploy/with-rbac.yaml \
-    | envsubst \
-    | kubectl apply -f -
-```
-
-There are various cloud provider installer scripts available in [/hack/deploy](/hack/deploy) folder that can set these flags appropriately.
-
-Once Controller is *Running* It will create the [required ThirdPartyResources for ingress and certificates](/docs/developer-guide#third-party-resources).
-Check the Controller is running or not via `kubectl get pods` there should be a pod nameed `appscode-voyager-xxxxxxxxxx-xxxxx`.
-Now Create Your Ingress/Certificates.
-
-
-#### Configuration Options
-```
-      --address string                        Address to listen on for web interface and telemetry. (default ":56790")
-      --analytics                             Send analytical event to Google Analytics (default true)
-  -c, --cloud-provider string                 Name of cloud provider
-      --cloud-config string                   The path to the cloud provider configuration file.  Empty string for no configuration file.
-      --haproxy-image string                  haproxy image name to be run (default "appscode/haproxy:1.7.6-3.2.0-rc.0")
-      --haproxy.server-metric-fields string   Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1 (default "2,3,4,5,6,7,8,9,13,14,15,16,17,18,21,24,33,35,38,39,40,41,42,43,44")
-      --haproxy.timeout duration              Timeout for trying to get stats from HAProxy. (default 5s)
-  -h, --help                                  help for run
-      --ingress-class string                  Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.
-      --kubeconfig string                     Path to kubeconfig file with authorization information (the master location is set by the master flag).
-      --master string                         The address of the Kubernetes API server (overrides any value in kubeconfig)
-```
-
-Voyager can run HAProxy in 3 different modes. `cloud-provider` flag should be set appropriately depending on the mode. These modes are:
-
-- LoadBalancer: In this mode, a Kubernetes LoadBalancer type service is used to expose HAProxy to the internet.
-This is supported for cloud providers known to Kubernetes (`aws`, `gce` and `azure`), `--cloud-provider` flag is required to properly setup this loadbalancer. This mode supports reserved ip on GCE.
-
-- HostPort: In this mode, HAProxy is run as DaemonSet using nodeSelector and hostNetwork:true. As a result,
-HAProxy's IP will be same as the IP address for nodes where it is running. This is supported on any cloud provider
-(known or unknown to Kubernetes). Voyager will open firewall, if a `cloud-provider` is one of `aws`, `gce`, `gke` or
-`azure`. This is not supported for Azure `acs` provider. If cloud provider is unknown (say, running on DigitalOcean), users are required to configure firewall as needed.
-
-- NodePort: In this mode, a Kubernetes NodePort type service is used to expose HAProxy to the internet. This is supported on any cloud provider including
-baremetal clusters. Users are required to configure firewall as needed. This is not supported for Azure `acs` provider. 
-
-You can choose the mode in your Ingress YAML using label: [ingress.appscode.com/type](/docs/user-guide/ingress#configurations-options)
-
-## Run with helm
-You can deploy Voyager operator with helm by using this [chart](/chart/voyager/README.md).
 
 ## Ingress
-This resource Type is backed by a controller which monitors and manages the resources of AppsCode Ingress Kind. Which is used for maintain and HAProxy backed loadbalancer to the cluster for open communications inside cluster from internet via the loadbalancer.
-Even when a resource for AppsCode Ingress type is created, the controller will treat it as a new load balancer request and will create a new load balancer, based on the configurations.
+Voyager provides L7 and L4 loadbalancing using a custom Kubernetes [Ingress](/docs/user-guide/ingress) resource. This is built on top of the [HAProxy](http://www.haproxy.org/) to support high availability, sticky sessions, name and path-based virtual hosting.
+This also support configurable application ports with all the options available in a standard Kubernetes [Ingress](https://kubernetes.io/docs/user-guide/ingress/). Here 
+is a [complex ingress example](hack/example/ingress.yaml) that shows how various features can be used.
+You can find the generated HAProxy Configuration [here](hack/example/haproxy_generated.cfg).
 
-### Resource
-A minimal AppsCode Ingress resource Looks like at the kubernetes level:
+**Features**
+  - [HTTP](/docs/user-guide/ingress/single-service.md) and [TCP](/docs/user-guide/ingress/tcp.md) loadbalancing,
+  - [TLS Termination](/docs/user-guide/ingress/tls.md),
+  - Multi-cloud support,
+  - [Name and Path based virtual hosting](/docs/user-guide/ingress/named-virtual-hosting.md),
+  - [Cross namespace routing support](/docs/user-guide/ingress/named-virtual-hosting.md#cross-namespace-traffic-routing),
+  - [URL and Request Header Re-writing](/docs/user-guide/ingress/header-rewrite.md),
+  - [Wildcard Name based virtual hosting](/docs/user-guide/ingress/named-virtual-hosting.md),
+  - Persistent sessions, Loadbalancer stats.
+  - [Route Traffic to StatefulSet Pods Based on Host Name](/docs/user-guide/ingress/statefulset-pod.md)
+  - [Weighted Loadbalancing for Canary Deployment](/docs/user-guide/ingress/weighted.md)
+  - [Customize generated HAProxy config via BackendRule](/docs/user-guide/ingress/backend-rule.md) (can be used for [http rewriting](https://www.haproxy.com/doc/aloha/7.0/haproxy/http_rewriting.html), add [health checks](https://www.haproxy.com/doc/aloha/7.0/haproxy/healthchecks.html), etc.)
+  - [Add Custom Annotation to LoadBalancer Service and Pods](/docs/user-guide/ingress/annotations.md)
+  - [Supports Loadbalancer Source Range](/docs/user-guide/ingress/source-range.md)
+  - [Supports redirects/DNS resolution for `ExternalName` type service](/docs/user-guide/ingress/external-svc.md)
+  - [Expose HAProxy stats for Prometheus](/docs/user-guide/ingress/stats-and-prometheus.md)
+  - [Supports AWS certificate manager](/docs/user-guide/ingress/aws-cert-manager.md)
+  - [Scale load balancer using HorizontalPodAutoscaling](/docs/user-guide/ingress/replicas-and-autoscaling.md)
+  - [Configure Custom Timeouts for HAProxy](/docs/user-guide/ingress/configure-timeouts.md)
+  - [Custom port for HTTP](/docs/user-guide/ingress/custom-http-port.md)
+  - [Specify NodePort](/docs/user-guide/ingress/node-port.md)
+  - [Backend TLS](/docs/user-guide/ingress/backend-tls.md)
+  - [Configure Options](/docs/user-guide/ingress/configure-options.md)
+  - [Using Custom HAProxy Templates](/docs/user-guide/ingress/custom-templates.md)
+  - [Configure Basic Auth for HTTP Backends](/docs/user-guide/ingress/basic-auth.md)
+  - [Configure Sticky session to Backends](/docs/user-guide/ingress/sticky-session.md)
+  - [Apply Frontend Rules](/docs/user-guide/ingress/frontend-rule.md)
 
-```yaml
-apiVersion: voyager.appscode.com/v1beta1
-kind: Ingress
-metadata:
-  name: test-ingress
-  namespace: default
-spec:
-  rules:
-  - host: appscode.example.com
-    http:
-      paths:
-      - path: '/testPath'
-        backend:
-          serviceName: test-service
-          servicePort: '80'
-          headerRule:
-          - X-Forwarded-Host %[base]
-          rewriteRule:
-          - '^([^\\ :]*)\\ /(.*)$ \\1\\ /testings/\\2'
-          backendRule:
-          - 'acl add_url capture.req.uri -m beg /test-second'
-          - 'http-response set-header X-Added-From-Proxy added-from-proxy if add_url'
-```
-
-POSTing this to Kubernetes, API server will need to create a loadbalancer.
-
-**Line 1-3**: With all other Kubernetes config, AppsCode Ingress resource needs `apiVersion`, `kind` and `metadata` fields.
-`apiVersion` and `kind` needs to be exactly same as `voyager.appscode.com/v1beta1`, and, `specific version` currently as `v1beta1`, to identify the resource
-as AppsCode Ingress. In metadata the `name` and `namespace` indicates the resource identifying name and its Kubernetes namespace.
-
-
-**Line 6**: Ingress spec has all the information needed to configure a loadbalancer. Most importantly, it contains
-a list of rules matched against all incoming requests.
-
-**Line 9**: Each `http rule` contains the following information: A host (eg: foo.bar.com, defaults to *), a
-list of paths (eg: /testPath), each of which has a backend associated (test:80). Both the host and path must
-match content of an incoming request before the loadbalancer directs traffic to backend.
-
-**Line 12-13**: A backend is a service:port combination as described in the services doc. Ingress traffic is
-typically sent directly to the endpoints matching a backend.
-
-**Line 14-15**: `headerRule` are a list of rules applied to the `request header` before sending it to desired backend. For simplicity the header rules are formatted with respect to HAProxy.
-
-**Line 16-17**: `rewriteRule` are a list of rules to be applied in the request URL. It can append, truncate or rewrite
-the request URL. These rules also follow `HAProxy` rewrite rule formats.
-
-**Line 18-20**: `backendRule` are a list of rules to be applied in the backend. It supports full
-spectrum of HAProxy rules.
-
-**Other Parameters**: For the sake of simplicity, the example Ingress has no global config parameters,
-tcp load balancer and tls terminations. We will discuss those later. One can specify a global **default backend**
-in absence of those requests which doesn’t match a rule in spec, are sent to the default backend.
-
-### The Endpoints are like:
-
-|  VERB   |                     ENDPOINT                                | ACTION | BODY
-|---------|-------------------------------------------------------------|--------|-------
-|  GET    | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates          | LIST   | nil
-|  GET    | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | GET    | nil
-|  POST   | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates          | CREATE | JSON
-|  PUT    | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | UPDATE | JSON
-|  DELETE | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | DELETE | nil
-
-### Dive into Ingress
-You can learn more about ingress options by reading [this doc](ingress/README.md).
-
+### Comparison with Kubernetes
+| Feauture | [Kube Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) | AppsCode Ingress |
+|----------|--------------|------------------|
+| HTTP Loadbalancing| :white_check_mark: | :white_check_mark: |
+| TCP Loadbalancing | :x: | :white_check_mark: |
+| TLS Termination | :white_check_mark: | :white_check_mark: |
+| Name and Path based virtual hosting | :x: | :white_check_mark: |
+| Cross Namespace service support | :x: | :white_check_mark: |
+| URL and Header rewriting | :x: | :white_check_mark: |
+| Wildcard name virtual hosting | :x: | :white_check_mark: |
+| Loadbalancer statistics | :x: | :white_check_mark: |
+| Route Traffic to StatefulSet Pods Based on Host Name | :x: | :white_check_mark: |
+| Weighted Loadbalancing for Canary Deployment| :x: | :white_check_mark: |
+| Supports Loadbalancer Source Range | :x: | :white_check_mark: |
+| Supports redirects/DNS resolve for `ExternalName` type service | :x: | :white_check_mark: |
+| Expose HAProxy stats for Prometheus | :x: | :white_check_mark: |
+| Supports AWS certificate manager | :x: | :white_check_mark: |
 
 ## Certificate
-Certificate objects are used to declare one or more Let's Encrypt issued TLS certificates. Cetificate objects are consumed by the Voyager controller.
-Before you can create a Certificate object you must create the Certificate Third Party Resource in your Kubernetes cluster.
+Voyager can automaticallty provision and refresh SSL certificates issued from Let's Encrypt using a custom Kubernetes [Certificate](/docs/user-guide/certificate) resource. 
 
-### Resource
-A minimal Certificate resource looks like at the kubernetes level:
+**Feautures**
+- Provision free TLS certificates from Let's Encrypt,
+- Manage issued certificates using a Kubernetes Third Party Resource,
+- Domain validation using ACME dns-01 challenges,
+- Support for multiple DNS providers,
+- Auto Renew Certificates,
+- Use issued Certificates with Ingress to Secure Communications.
 
-```yaml
-apiVersion: voyager.appscode.com/v1beta1
-kind: Certificate
-metadata:
-  name: test-cert
-  namespace: default
-spec:
-  domains:
-  - foo.example.com
-  - bar.example.com
-  email: jon.doe@example.com
-  provider: googlecloud
-  providerCredentialSecretName: test-gcp-secret
-```
 
-POSTing this to Kubernetes, API server will create a certificate and store it as a secret that can be used to SSL with ingress.
+### Supported Domain Providers
+Read more about supported DNS Providers [here](/docs/user-guide/certificate/provider.md)
 
-**Line 1-3**: With all other Kubernetes config, AppsCode Ingress resource needs `apiVersion`, `kind` and `metadata` fields.
-`apiVersion` and `kind` needs to be exactly same as `voyager.appscode.com/v1beta1`, and, `specific version` currently as `v1beta1`, to identify the resource
-as AppsCode Ingress. In metadata the `name` and `namespace` indicates the resource identifying name and its Kubernetes namespace.
+## Supported Versions
+Kubernetes 1.3+
 
-**Line 7-9**: domains specifies the domain list that the certificate needs to be issued. First on the list will be used as the
-certificate common name.
 
-**Line 10**: The email address used for a user registration.
+## User Guide
+To deploy voyager in Kubernetes follow this [guide](/docs/user-guide/README.md). In short this contains those two steps
 
-**Line 11**: The name of the dns provider.
+1. Create `ingress.voyager.appscode.com` and `certificate.voyager.appscode.com` Third Party Resource
+2. Deploy voyager to kubernetes.
 
-**Line 12**: DNS provider credential that will be used to configure the domains.
-
-### The Endpoints are like:
-
-|  VERB   |                     ENDPOINT                                    | ACTION | BODY
-|---------|-----------------------------------------------------------------|--------|-------
-|  GET    | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates          | LIST   | nil
-|  GET    | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | GET    | nil
-|  POST   | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates          | CREATE | JSON
-|  PUT    | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | UPDATE | JSON
-|  DELETE | /apis/voyager.appscode.com/v1beta1/namespace/`ns`/certificates/`name`   | DELETE | nil
-
-### Dive into Certificates
-You Can Learn more about issuing SSL certificates by reading [this doc](certificate/README.md).
-
-## Running Voyager alongside with other ingress controller
-Voyager can be configured to handle default kubernetes ingress or only ingress.appscode.com. Voyager can also be run
+## Running voyager alongside with other ingress controller
+Voyager can be configured to handle default kubernetes ingress or only ingress.appscode.com. voyager can also be run
 along side with other controllers.
-Read the example how to use [HTTP Provider](/docs/user-guide/certificate/create.md#create-certificate-with-http-provider)
-for certificate.
 
 ```console
   --ingress-class
   // this flag can be set to 'voyager' to handle only ingress
   // with annotation kubernetes.io/ingress.class=voyager.
 
-  // If unset, Voyager will also handle ingress without ingress-class annotation.
+  // If unset, voyager will also handle ingress without ingress-class annotation.
 ```
-Other ingress controller can be run alongside Voyager to handle specific classed ingress.
+
+## Developer Guide
+Want to learn whats happening under the hood, read [the developer guide](/docs/developer-guide/README.md).
+
+## Contribution
+If you're interested in being a contributor, read [the contribution guide](CONTRIBUTING.md).
+
+## Building voyager
+Read [Build Instructions](/docs/developer-guide/build.md) to build voyager.
+
+## Versioning Policy
+There are 2 parts to versioning policy:
+ - Operator version: Voyager __does not follow semver__, rather the _major_ version of operator points to the
+Kubernetes [client-go](https://github.com/kubernetes/client-go#branches-and-tags) version. You can verify this
+from the `glide.yaml` file. This means there might be breaking changes between point releases of the operator.
+This generally manifests as changed annotation keys or their meaning.
+Please always check the release notes for upgrade instructions.
+ - TPR version: appscode.com/v1beta1 is considered in beta. This means any changes to the YAML format will be backward
+compatible among different versions of the operator.
+
+---
+
+**The voyager operator collects anonymous usage statistics to help us learn how the software is being used and how we can improve it.
+To disable stats collection, run the operator with the flag** `--analytics=false`.
+
+---
+
+## Acknowledgement
+ - docker-library/haproxy https://github.com/docker-library/haproxy
+ - kubernetes/contrib https://github.com/kubernetes/contrib/tree/master/service-loadbalancer
+ - kubernetes/ingress https://github.com/kubernetes/ingress
+ - xenolf/lego https://github.com/appscode/lego
+ - kelseyhightower/kube-cert-manager https://github.com/kelseyhightower/kube-cert-manager
+ - PalmStoneGames/kube-cert-manager https://github.com/PalmStoneGames/kube-cert-manager
+ - [Kubernetes cloudprovider implementation](https://github.com/kubernetes/kubernetes/tree/master/pkg/cloudprovider)
+
+## Support
+If you have any questions, you can reach out to us.
+* [Slack](https://slack.appscode.com)
+* [Twitter](https://twitter.com/AppsCodeHQ)
