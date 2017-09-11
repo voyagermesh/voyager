@@ -131,6 +131,8 @@ func run() {
 	}
 	// https://github.com/appscode/voyager/issues/229
 	w.PurgeOffshootsWithDeprecatedLabels()
+	// https://github.com/appscode/voyager/issues/446
+	w.PurgeOffshootsDaemonSet()
 	go w.Run()
 
 	m := pat.New()

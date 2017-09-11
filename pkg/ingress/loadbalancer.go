@@ -22,7 +22,7 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 	core "k8s.io/client-go/listers/core/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
-	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
 )
 
 type loadBalancerController struct {
@@ -56,7 +56,7 @@ func NewLoadBalancerController(
 }
 
 func (c *loadBalancerController) IsExists() bool {
-	_, err := c.KubeClient.ExtensionsV1beta1().Deployments(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+	_, err := c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		return false
 	}
@@ -416,9 +416,9 @@ func (c *loadBalancerController) ensureService(old *api.Ingress) (*apiv1.Service
 	return current, nil
 }
 
-func (c *loadBalancerController) newPods() *extensions.Deployment {
+func (c *loadBalancerController) newPods() *apps.Deployment {
 	secrets := c.Ingress.Secrets()
-	deployment := &extensions.Deployment{
+	deployment := &apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.Ingress.OffshootName(),
 			Namespace: c.Ingress.Namespace,
@@ -429,7 +429,7 @@ func (c *loadBalancerController) newPods() *extensions.Deployment {
 			},
 		},
 
-		Spec: extensions.DeploymentSpec{
+		Spec: apps.DeploymentSpec{
 			Replicas: types.Int32P(c.Ingress.Replicas()),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: c.Ingress.OffshootLabels(),
@@ -440,22 +440,10 @@ func (c *loadBalancerController) newPods() *extensions.Deployment {
 					Labels: c.Ingress.OffshootLabels(),
 				},
 				Spec: apiv1.PodSpec{
-					Affinity: &apiv1.Affinity{
-						PodAntiAffinity: &apiv1.PodAntiAffinity{
-							PreferredDuringSchedulingIgnoredDuringExecution: []apiv1.WeightedPodAffinityTerm{
-								{
-									Weight: 100,
-									PodAffinityTerm: apiv1.PodAffinityTerm{
-										TopologyKey: "kubernetes.io/hostname",
-										LabelSelector: &metav1.LabelSelector{
-											MatchLabels: c.Ingress.OffshootLabels(),
-										},
-									},
-								},
-							},
-						},
-					},
-					NodeSelector: c.Ingress.NodeSelector(),
+					Affinity:      c.Ingress.Spec.Affinity,
+					SchedulerName: c.Ingress.Spec.SchedulerName,
+					Tolerations:   c.Ingress.Spec.Tolerations,
+					NodeSelector:  c.Ingress.NodeSelector(),
 					Containers: []apiv1.Container{
 						{
 							Name:  "haproxy",
@@ -520,11 +508,11 @@ func (c *loadBalancerController) newPods() *extensions.Deployment {
 	return deployment
 }
 
-func (c *loadBalancerController) ensurePods(old *api.Ingress) (*extensions.Deployment, error) {
+func (c *loadBalancerController) ensurePods(old *api.Ingress) (*apps.Deployment, error) {
 	desired := c.newPods()
-	current, err := c.KubeClient.ExtensionsV1beta1().Deployments(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
+	current, err := c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		return c.KubeClient.ExtensionsV1beta1().Deployments(c.Ingress.Namespace).Create(desired)
+		return c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Create(desired)
 	} else if err != nil {
 		return nil, err
 	}
@@ -571,6 +559,14 @@ func (c *loadBalancerController) ensurePods(old *api.Ingress) (*extensions.Deplo
 		needsUpdate = true
 		current.Spec.Template.Spec.Affinity = desired.Spec.Template.Spec.Affinity
 	}
+	if current.Spec.Template.Spec.SchedulerName != desired.Spec.Template.Spec.SchedulerName {
+		needsUpdate = true
+		current.Spec.Template.Spec.SchedulerName = desired.Spec.Template.Spec.SchedulerName
+	}
+	if !reflect.DeepEqual(current.Spec.Template.Spec.Tolerations, desired.Spec.Template.Spec.Tolerations) {
+		needsUpdate = true
+		current.Spec.Template.Spec.Tolerations = desired.Spec.Template.Spec.Tolerations
+	}
 	if !reflect.DeepEqual(current.Spec.Template.Spec.NodeSelector, desired.Spec.Template.Spec.NodeSelector) {
 		needsUpdate = true
 		current.Spec.Template.Spec.NodeSelector = desired.Spec.Template.Spec.NodeSelector
@@ -588,13 +584,13 @@ func (c *loadBalancerController) ensurePods(old *api.Ingress) (*extensions.Deplo
 		current.Spec.Template.Spec.ServiceAccountName = desired.Spec.Template.Spec.ServiceAccountName
 	}
 	if needsUpdate {
-		return c.KubeClient.ExtensionsV1beta1().Deployments(c.Ingress.Namespace).Update(current)
+		return c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Update(current)
 	}
 	return current, nil
 }
 
 func (c *loadBalancerController) deletePods() error {
-	err := c.KubeClient.ExtensionsV1beta1().Deployments(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{
+	err := c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{
 		OrphanDependents: types.FalseP(),
 	})
 	if err != nil {

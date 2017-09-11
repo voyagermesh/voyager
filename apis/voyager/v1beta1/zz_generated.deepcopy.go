@@ -399,6 +399,25 @@ func DeepCopy_v1beta1_IngressSpec(in interface{}, out interface{}, c *conversion
 		} else {
 			out.Resources = *newVal.(*api_v1.ResourceRequirements)
 		}
+		if in.Affinity != nil {
+			in, out := &in.Affinity, &out.Affinity
+			if newVal, err := c.DeepCopy(*in); err != nil {
+				return err
+			} else {
+				*out = newVal.(*api_v1.Affinity)
+			}
+		}
+		if in.Tolerations != nil {
+			in, out := &in.Tolerations, &out.Tolerations
+			*out = make([]api_v1.Toleration, len(*in))
+			for i := range *in {
+				if newVal, err := c.DeepCopy(&(*in)[i]); err != nil {
+					return err
+				} else {
+					(*out)[i] = *newVal.(*api_v1.Toleration)
+				}
+			}
+		}
 		return nil
 	}
 }
