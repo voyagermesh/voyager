@@ -1,7 +1,7 @@
 package eventer
 
 import (
-	"github.com/appscode/log"
+	"github.com/appscode/go/log"
 	voyager "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientset "k8s.io/client-go/kubernetes"

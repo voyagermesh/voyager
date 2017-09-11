@@ -1,11 +1,11 @@
 package operator
 
 import (
+	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
-	"github.com/appscode/log"
 )
 
 func (op *Operator) PurgeOffshootsWithDeprecatedLabels() error {

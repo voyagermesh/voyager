@@ -2,7 +2,7 @@ package errors
 
 import (
 	"bytes"
-	"context"
+	gtx "context"
 	"sync"
 
 	"github.com/facebookgo/stack"
@@ -27,7 +27,7 @@ type traceableError struct {
 	formatter formatterFunc
 
 	// Context values that this error holds to
-	ctx Context
+	ctx gtx.Context
 
 	// Custom error handlers that work with
 	handler []Handler
@@ -67,14 +67,6 @@ var defaultFormatter = func(e error) string {
 	return ""
 }
 
-// Context stands for an context object that holds additional information
-// regarding the error an can be used to parse the values.
-type Context interface {
-	// String returns the string value associated with this context or empty
-	// string. Successive calls to Value returns the same result.
-	String() string
-}
-
 // Error satisfies the error interface
 func (t *traceableError) Error() string {
 	t.lock.Lock()
@@ -107,17 +99,8 @@ func (t *traceableError) TraceString() string {
 	return t.trace.String()
 }
 
-func (t *traceableError) Context() Context {
+func (t *traceableError) Context() gtx.Context {
 	t.lock.Lock()
 	defer t.lock.Unlock()
 	return t.ctx
-}
-
-type goContextWrapper struct {
-	c           context.Context
-	contextFunc func(c context.Context) string
-}
-
-func (g *goContextWrapper) String() string {
-	return g.contextFunc(g.c)
 }

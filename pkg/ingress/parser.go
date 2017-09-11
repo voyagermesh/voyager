@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/appscode/errors"
 	"github.com/appscode/go/crypto/rand"
-	"github.com/appscode/log"
+	"github.com/appscode/go/errors"
+	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/haproxy"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"

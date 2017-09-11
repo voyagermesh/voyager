@@ -1,7 +1,7 @@
 package ingress
 
 import (
-	"github.com/appscode/errors"
+	"github.com/appscode/go/errors"
 	"github.com/appscode/go/types"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

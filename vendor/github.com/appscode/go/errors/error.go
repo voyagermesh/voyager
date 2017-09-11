@@ -2,7 +2,7 @@
 package errors
 
 import (
-	"context"
+	gtx "context"
 	"fmt"
 
 	"github.com/facebookgo/stack"
@@ -61,17 +61,7 @@ func (t *traceableError) WithCause(err error) *traceableError {
 	return t
 }
 
-func (t *traceableError) WithGoContext(c context.Context, f func(context.Context) string) *traceableError {
-	t.lock.Lock()
-	t.ctx = &goContextWrapper{
-		c:           c,
-		contextFunc: f,
-	}
-	t.lock.Unlock()
-	return t
-}
-
-func (t *traceableError) WithContext(c Context) *traceableError {
+func (t *traceableError) WithContext(c gtx.Context) *traceableError {
 	t.lock.Lock()
 	t.ctx = c
 	t.lock.Unlock()

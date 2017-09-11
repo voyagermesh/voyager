@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/appscode/log"
+	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager"
 	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/util"

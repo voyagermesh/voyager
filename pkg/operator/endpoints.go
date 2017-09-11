@@ -4,7 +4,7 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/appscode/log"
+	"github.com/appscode/go/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
