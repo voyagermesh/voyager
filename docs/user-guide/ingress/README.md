@@ -17,7 +17,7 @@ An extended plugin of Kubernetes Ingress by AppsCode, to support both L7 and L4 
 This is built on top of the HAProxy, to support high availability, sticky sessions, name and path-based virtual
 hosting. This plugin also support configurable application ports with all the features available in Kubernetes Ingress. [Read More](#what-is-appscode-ingress)
 
-### Core features of AppsCode Ingress:
+**Features**
   - [HTTP](/docs/user-guide/ingress/single-service.md) and [TCP](/docs/user-guide/ingress/tcp.md) loadbalancing,
   - [TLS Termination](/docs/user-guide/ingress/tls.md),
   - Multi-cloud support,
@@ -42,6 +42,8 @@ hosting. This plugin also support configurable application ports with all the fe
   - [Configure Options](/docs/user-guide/ingress/configure-options.md)
   - [Using Custom HAProxy Templates](/docs/user-guide/ingress/custom-templates.md)
   - [Configure Basic Auth for HTTP Backends](/docs/user-guide/ingress/basic-auth.md)
+  - [Configure Sticky session to Backends](/docs/user-guide/ingress/sticky-session.md)
+  - [Apply Frontend Rules](/docs/user-guide/ingress/frontend-rule.md)
 
 ### Comparison with Kubernetes
 | Feauture | Kube Ingress | AppsCode Ingress |
