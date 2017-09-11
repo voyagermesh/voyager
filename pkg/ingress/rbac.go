@@ -3,7 +3,7 @@ package ingress
 import (
 	"reflect"
 
-	"github.com/appscode/errors"
+	"github.com/appscode/go/errors"
 	api "github.com/appscode/voyager/apis/voyager"
 	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"

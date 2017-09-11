@@ -7,7 +7,7 @@ import (
 
 	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/go/flags"
-	"github.com/appscode/log"
+	"github.com/appscode/go/log"
 	"github.com/mitchellh/go-homedir"
 )
 

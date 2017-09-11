@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/appscode/go/crypto/rand"
+	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
-	"github.com/appscode/log"
 	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

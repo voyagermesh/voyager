@@ -3,7 +3,7 @@ package certificate
 import (
 	"time"
 
-	"github.com/appscode/log"
+	"github.com/appscode/go/log"
 	tcs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/benbjohnson/clock"

@@ -5,7 +5,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/appscode/log"
+	"github.com/appscode/go/log"
 	remotecommandconsts "k8s.io/apimachinery/pkg/util/remotecommand"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/rest"

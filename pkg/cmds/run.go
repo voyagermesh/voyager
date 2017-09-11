@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/appscode/go/log"
 	hpe "github.com/appscode/haproxy_exporter/exporter"
-	"github.com/appscode/log"
 	"github.com/appscode/pat"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"

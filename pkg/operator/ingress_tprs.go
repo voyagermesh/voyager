@@ -3,8 +3,8 @@ package operator
 import (
 	"reflect"
 
-	"github.com/appscode/errors"
-	"github.com/appscode/log"
+	"github.com/appscode/go/errors"
+	"github.com/appscode/go/log"
 	tapi "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/eventer"

@@ -4,9 +4,9 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/appscode/errors"
+	"github.com/appscode/go/errors"
+	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
-	"github.com/appscode/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"

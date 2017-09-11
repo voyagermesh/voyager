@@ -5,7 +5,7 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 
-	"github.com/appscode/log"
+	"github.com/appscode/go/log"
 	"github.com/appscode/pat"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	_ "github.com/appscode/voyager/client/typed/voyager/v1beta1/fake"

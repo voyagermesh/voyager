@@ -5,7 +5,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/appscode/log"
+	"github.com/appscode/go/log"
 )
 
 const URLPrefix = "/.well-known/acme-challenge/"
