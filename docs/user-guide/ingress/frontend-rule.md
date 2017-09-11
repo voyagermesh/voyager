@@ -12,8 +12,6 @@ kind: Ingress
 metadata:
   name: test-ingress
   namespace: default
-  annotation:
-    ingress.appscode.com/sticky-session: 'true'
 spec:
   frontendRules:
   - port: 80  # Applies all the rule in frontend section for port 80
@@ -45,3 +43,40 @@ spec:
 
 This example ingress shows how to configure frontend rules in ingress resource. All the rules for port 80
 will be applied to all the the backends which listens to port 80.
+
+## Example: White List IP Addresses using frontend Rule
+This example demonstrates How to white list some ip address for a backend using frontend rule.
+
+```yaml
+apiVersion: voyager.appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: test-ingress
+  namespace: default
+  annotation:
+    ingress.appscode.com/keep-source-ip: "true"
+spec:
+  frontendRules:
+  - port: 80
+    rules:
+    # you can use IP addresses but also networks in the src acl. Both 192.168.20.0/24 and 192.168.10.3 work.
+    - acl network_allowed src 128.196.0.5 128.196.0.5
+    - block if !network_allowed
+  - port: 9898
+    rules:
+    - acl network_allowed src 20.30.40.50 8.9.9.0/27
+    - tcp-request connection reject if !network_allowed
+  rules:
+  - host: foo.bar.com
+    http:
+      paths:
+      - backend:
+          serviceName: s1
+          servicePort: '80'
+  - host: tcp.bar.com
+    tcp:
+      port: '9898'
+      backend:
+        serviceName: tcp-service
+        servicePort: '50077'
+```
