@@ -15,9 +15,7 @@ spec:
         app: "{{ template "name" . }}"
         release: "{{ .Release.Name }}"
     spec:
-{{- if .Values.rbac.install }}
-      serviceAccountName: {{ template "fullname" . }}
-{{- end }}
+      serviceAccountName: {{ if .Values.rbac.create }}{{ template "fullname" . }}{{ else }}"{{ .Values.rbac.serviceAccountName }}"{{ end }}
       containers:
       - name: operator
         image: "{{ .Values.image }}:{{ .Values.imageTag }}"
@@ -27,7 +25,7 @@ spec:
         - --cloud-config={{ .Values.cloudConfig }}
         - --v={{ .Values.logLevel }}
         - --operator-service={{ template "fullname" . }}
-        - --rbac={{ .Values.rbac.install }}
+        - --rbac={{ .Values.rbac.create }}
         ports:
         - containerPort: 56790
           name: http

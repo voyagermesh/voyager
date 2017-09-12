@@ -40,17 +40,17 @@ The command removes all the Kubernetes components associated with the chart and 
 The following tables lists the configurable parameters of the Voyager chart and their default values.
 
 
-| Parameter              | Description                                                   | Default            |
-| ---------------------- | ------------------------------------------------------------- | ------------------ |
-| `image`                |  Container image to run                                       | `appscode/voyager` |
-| `imageTag`             |  Image tag of container                                       | `3.2.0`            |
-| `cloudProvider`        |  Name of cloud provider                                       | ``                 |
-| `cloudConfig`          |  Path to cloud config                                         | ``                 |
-| `logLevel`             |  Log level for operator                                       | `3`                |
-| `persistence.enabled`  |  Enable mounting cloud config                                 | `false`            |
-| `persistence.hostPath` |  Host mount path for cloud config                             | `/etc/kubernetes`  |
-| `rbac.install`         | install required rbac service account, roles and rolebindings | `false`            |
-| `rbac.apiVersion`      | rbac api version `v1alpha1|v1beta1`                           | `v1beta1`          |
+| Parameter                 | Description                                                   | Default            |
+| --------------------------| ------------------------------------------------------------- | ------------------ |
+| `image`                   | Container image to run                                        | `appscode/voyager` |
+| `imageTag`                | Image tag of container                                        | `3.2.0`            |
+| `cloudProvider`           | Name of cloud provider                                        | ``                 |
+| `cloudConfig`             | Path to cloud config                                          | ``                 |
+| `logLevel`                | Log level for operator                                        | `3`                |
+| `persistence.enabled`     | Enable mounting cloud config                                  | `false`            |
+| `persistence.hostPath`    | Host mount path for cloud config                              | `/etc/kubernetes`  |
+| `rbac.create`             | install required rbac service account, roles and rolebindings | `false`            |
+| `rbac.serviceAccountName` | ServiceAccount Voyager will use (ignored if rbac.create=true) | `default`          |
 
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
@@ -88,7 +88,7 @@ If the output contains "alpha" and/or "beta", you can may install the chart with
 To enable the creation of RBAC resources (On clusters with RBAC). Do the following:
 
 ```console
-$ helm install --name my-release chart/voyager --set rbac.install=true
+$ helm install --name my-release chart/voyager --set rbac.create=true
 ```
 
 ### Changing RBAC manifest apiVersion
@@ -96,5 +96,5 @@ $ helm install --name my-release chart/voyager --set rbac.install=true
 By default the RBAC resources are generated with the "v1beta1" apiVersion. To use "v1alpha1" do the following:
 
 ```console
-$ helm install --name my-release chart/voyager --set rbac.install=true,rbac.apiVersion=v1alpha1
+$ helm install --name my-release chart/voyager --set rbac.create=true,rbac.apiVersion=v1alpha1
 ```
