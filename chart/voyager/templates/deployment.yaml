@@ -24,7 +24,6 @@ spec:
         - --cloud-provider={{ .Values.cloudProvider }}
         - --cloud-config={{ .Values.cloudConfig }}
         - --v={{ .Values.logLevel }}
-        - --operator-service={{ template "fullname" . }}
         - --rbac={{ .Values.rbac.create }}
         ports:
         - containerPort: 56790
