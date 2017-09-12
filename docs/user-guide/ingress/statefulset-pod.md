@@ -2,7 +2,7 @@
 There is the regular way to forward traffic to StatefulSet. Create a service with the pods label selector as
 selector, and use the service name as Backend ServiceName. By following:
 
-```
+```yaml
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
@@ -38,7 +38,7 @@ spec:
 ```
 
 Create another service for StatefulSets pods with selector.
-```
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -55,7 +55,7 @@ spec:
 ```
 
 And Use the service in the ingress Backend service name, as:
-```
+```yaml
 backend:
   serviceName: nginx-service
   servicePort: '80'
