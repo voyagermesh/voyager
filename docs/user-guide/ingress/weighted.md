@@ -103,7 +103,7 @@ spec:
 ```
 
 The following ingress will forward 90% traffic to `deployment-1` and 10% to `deployment-2`
-```
+```yml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
