@@ -2,13 +2,11 @@ package e2e
 
 import (
 	"net/http"
-	"strings"
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -29,9 +27,9 @@ var _ = Describe("IngressTLS", func() {
 	})
 
 	BeforeEach(func() {
-		if f.Ingress.Config.CloudProviderName == "minikube" && !strings.HasPrefix(config.GinkgoConfig.FocusString, "IngressTLS") {
-			Skip("run in minikube only when single specs running")
-		}
+		// if f.Ingress.Config.CloudProviderName == "minikube" && !strings.HasPrefix(config.GinkgoConfig.FocusString, "IngressTLS") {
+		// 	 Skip("run in minikube only when single specs running")
+		// }
 	})
 
 	BeforeEach(func() {
