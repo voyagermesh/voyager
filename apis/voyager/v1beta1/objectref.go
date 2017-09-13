@@ -1,11 +1,10 @@
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-func (r Ingress) ObjectReference() runtime.Object {
+func (r Ingress) ObjectReference() *apiv1.ObjectReference {
 	if r.APISchema() == APISchemaIngress {
 		return &apiv1.ObjectReference{
 			APIVersion:      APISchemaIngress,
@@ -26,7 +25,7 @@ func (r Ingress) ObjectReference() runtime.Object {
 	}
 }
 
-func (c Certificate) ObjectReference() runtime.Object {
+func (c Certificate) ObjectReference() *apiv1.ObjectReference {
 	return &apiv1.ObjectReference{
 		APIVersion:      SchemeGroupVersion.String(),
 		Kind:            ResourceKindCertificate,
