@@ -13,6 +13,7 @@ import (
 )
 
 const (
+	IngressKey = "ingress.kubernetes.io"
 	EngressKey = "ingress.appscode.com"
 
 	APISchema        = EngressKey + "/" + "api-schema" // APISchema = {APIGroup}/{APIVersion}
@@ -161,7 +162,10 @@ const (
 	// If applied to Ingress, all the backend connections would be sticky
 	// If applied to Service and Ingress do not have this annotation only
 	// connection to that backend service will be sticky.
-	StickySession = EngressKey + "/" + "sticky-session"
+	// Deprecated
+	StickySession                    = EngressKey + "/" + "sticky-session"
+	IngressAffinity                  = IngressKey + "/affinity"
+	IngressAffinitySessionCookieName = IngressKey + "/session-cookie-name"
 
 	// Basic Auth: Follows ingress controller standard
 	// https://github.com/kubernetes/ingress/tree/master/examples/auth/basic/haproxy
@@ -173,13 +177,13 @@ const (
 	// Secret name, realm and type are configured with annotations in the ingress
 	// Auth can only be applied to HTTP backends.
 	// Only supported type is basic
-	AuthType = "ingress.kubernetes.io/auth-type"
+	AuthType = IngressKey + "/auth-type"
 
 	// an optional string with authentication realm
-	AuthRealm = "ingress.kubernetes.io/auth-realm"
+	AuthRealm = IngressKey + "/auth-realm"
 
 	// name of the auth secret
-	AuthSecret = "ingress.kubernetes.io/auth-secret"
+	AuthSecret = IngressKey + "/auth-secret"
 )
 
 func (r Ingress) OffshootName() string {
@@ -213,8 +217,22 @@ func (r Ingress) APISchema() string {
 }
 
 func (r Ingress) Sticky() bool {
+	// Specify a method to stick clients to origins across requests.
+	// Like nginx HAProxy only supports the value cookie.
+	if len(GetString(r.Annotations, IngressAffinity)) > 0 {
+		return true
+	}
 	v, _ := GetBool(r.Annotations, StickySession)
 	return v
+}
+
+func (r Ingress) StickySessionCookieName() string {
+	// When affinity is set to cookie, the name of the cookie to use.
+	cookieName := GetString(r.Annotations, IngressAffinitySessionCookieName)
+	if len(cookieName) > 0 {
+		return cookieName
+	}
+	return "SERVERID"
 }
 
 func (r Ingress) Stats() bool {

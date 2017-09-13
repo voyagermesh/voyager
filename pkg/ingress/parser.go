@@ -147,8 +147,9 @@ func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePo
 		}
 	}
 	return &haproxy.Backend{
-		Endpoints: eps,
-		Sticky:    c.Ingress.Sticky() || isServiceSticky(s.Annotations),
+		Endpoints:        eps,
+		Sticky:           c.Ingress.Sticky() || isServiceSticky(s.Annotations),
+		StickyCookieName: c.Ingress.StickySessionCookieName(),
 	}, nil
 }
 
@@ -220,12 +221,13 @@ func (c *controller) generateConfig() error {
 			return err
 		}
 		si.DefaultBackend = &haproxy.Backend{
-			Name:         "default-backend", // TODO: Use constant
-			Endpoints:    bk.Endpoints,
-			BackendRules: c.Ingress.Spec.Backend.BackendRule,
-			RewriteRules: c.Ingress.Spec.Backend.RewriteRule,
-			HeaderRules:  c.Ingress.Spec.Backend.HeaderRule,
-			Sticky:       bk.Sticky,
+			Name:             "default-backend", // TODO: Use constant
+			Endpoints:        bk.Endpoints,
+			BackendRules:     c.Ingress.Spec.Backend.BackendRule,
+			RewriteRules:     c.Ingress.Spec.Backend.RewriteRule,
+			HeaderRules:      c.Ingress.Spec.Backend.HeaderRule,
+			Sticky:           bk.Sticky,
+			StickyCookieName: bk.StickyCookieName,
 		}
 	}
 
@@ -288,12 +290,13 @@ func (c *controller) generateConfig() error {
 						Host: rule.Host,
 						Path: path.Path,
 						Backend: haproxy.Backend{
-							Name:         getBackendName(c.Ingress, path.Backend.IngressBackend),
-							Endpoints:    bk.Endpoints,
-							BackendRules: path.Backend.BackendRule,
-							RewriteRules: path.Backend.RewriteRule,
-							HeaderRules:  path.Backend.HeaderRule,
-							Sticky:       bk.Sticky,
+							Name:             getBackendName(c.Ingress, path.Backend.IngressBackend),
+							Endpoints:        bk.Endpoints,
+							BackendRules:     path.Backend.BackendRule,
+							RewriteRules:     path.Backend.RewriteRule,
+							HeaderRules:      path.Backend.HeaderRule,
+							Sticky:           bk.Sticky,
+							StickyCookieName: bk.StickyCookieName,
 						},
 					})
 				}
@@ -343,10 +346,11 @@ func (c *controller) generateConfig() error {
 					ALPNOptions:   parseALPNOptions(rule.TCP.ALPN),
 					FrontendRules: getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, rule.TCP.Port.IntValue()),
 					Backend: haproxy.Backend{
-						Name:         getBackendName(c.Ingress, rule.TCP.Backend),
-						BackendRules: rule.TCP.Backend.BackendRule,
-						Endpoints:    bk.Endpoints,
-						Sticky:       bk.Sticky,
+						Name:             getBackendName(c.Ingress, rule.TCP.Backend),
+						BackendRules:     rule.TCP.Backend.BackendRule,
+						Endpoints:        bk.Endpoints,
+						Sticky:           bk.Sticky,
+						StickyCookieName: bk.StickyCookieName,
 					},
 				}
 				if secretName, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoTLS {
