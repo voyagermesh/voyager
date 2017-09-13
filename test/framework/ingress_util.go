@@ -112,20 +112,20 @@ func (i *ingressInvocation) createTestServerController() error {
 			Name:      testServerResourceName,
 			Namespace: i.Namespace(),
 			Labels: map[string]string{
-				"app": i.app,
+				"app":             i.app,
 				"e2e-test-server": i.app,
 			},
 		},
 		Spec: apiv1.ReplicationControllerSpec{
 			Replicas: types.Int32P(2),
 			Selector: map[string]string{
-				"app": i.app,
+				"app":             i.app,
 				"e2e-test-server": "i.app",
 			},
 			Template: &apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"app": i.app,
+						"app":             i.app,
 						"e2e-test-server": i.app,
 					},
 				},
@@ -142,14 +142,14 @@ func (i *ingressInvocation) createTestServerService() error {
 			Name:      testServerResourceName,
 			Namespace: i.Namespace(),
 			Labels: map[string]string{
-				"app": i.app,
+				"app":             i.app,
 				"e2e-test-server": i.app,
 			},
 		},
 		Spec: apiv1.ServiceSpec{
 			Ports: i.testServerServicePorts(),
 			Selector: map[string]string{
-				"app": i.app,
+				"app":             i.app,
 				"e2e-test-server": i.app,
 			},
 		},
@@ -163,7 +163,7 @@ func (i *ingressInvocation) createTestServerService() error {
 			Name:      testServerHTTPSResourceName,
 			Namespace: i.Namespace(),
 			Labels: map[string]string{
-				"app": i.app,
+				"app":             i.app,
 				"e2e-test-server": i.app,
 			},
 			Annotations: map[string]string{
@@ -186,7 +186,7 @@ func (i *ingressInvocation) createTestServerService() error {
 				},
 			},
 			Selector: map[string]string{
-				"app": i.app,
+				"app":             i.app,
 				"e2e-test-server": i.app,
 			},
 		},
