@@ -12,7 +12,7 @@ metadata:
     app-version: v1
   annotations:
     ingress.appscode.com/backend-weight: "90"
-  name: deploymet-1
+  name: deployment-1
   namespace: default
 spec:
   replicas: 1
