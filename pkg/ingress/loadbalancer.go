@@ -599,11 +599,12 @@ func (c *loadBalancerController) ensurePods(old *api.Ingress) (*apps.Deployment,
 }
 
 func (c *loadBalancerController) deletePods() error {
+	policy := metav1.DeletePropagationForeground
 	err := c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{
-		OrphanDependents: types.FalseP(),
+		PropagationPolicy: &policy,
 	})
 	if err != nil {
-		log.Errorln(err)
+		return err
 	}
 	return c.deletePodsForSelector(&metav1.LabelSelector{MatchLabels: c.Ingress.OffshootLabels()})
 }

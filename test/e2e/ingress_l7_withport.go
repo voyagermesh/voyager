@@ -47,7 +47,7 @@ var _ = Describe("IngressWithCustomPorts", func() {
 					{
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
-								Port: intstr.FromInt(9090),
+								Port: intstr.FromInt(3001),
 								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/testpath",
@@ -75,7 +75,7 @@ var _ = Describe("IngressWithCustomPorts", func() {
 			svc, err := f.Ingress.GetOffShootService(ing)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(svc.Spec.Ports)).Should(Equal(1))
-			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(9090)))
+			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(3001)))
 
 			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
@@ -88,13 +88,15 @@ var _ = Describe("IngressWithCustomPorts", func() {
 	})
 
 	Describe("LBType LoadBalancer with NodePort set", func() {
+		var nodePort int
 		BeforeEach(func() {
+			nodePort = f.Ingress.GetFreeNodePort(32700)
 			ing.Spec = api.IngressSpec{
 				Rules: []api.IngressRule{
 					{
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
-								NodePort: intstr.FromInt(32700),
+								NodePort: intstr.FromInt(nodePort),
 								Paths: []api.HTTPIngressPath{
 									{
 										Backend: api.HTTPIngressBackend{
@@ -122,7 +124,7 @@ var _ = Describe("IngressWithCustomPorts", func() {
 			Expect(len(svc.Spec.Ports)).Should(Equal(1))
 			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(80)))
 			Expect(svc.Spec.Ports[0].NodePort).Should(BeNumerically(">=", 1))
-			Expect(svc.Spec.Ports[0].NodePort).Should(Equal(int32(32700)))
+			Expect(svc.Spec.Ports[0].NodePort).Should(Equal(int32(nodePort)))
 		})
 	})
 
@@ -165,9 +167,10 @@ var _ = Describe("IngressWithCustomPorts", func() {
 			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(80)))
 			Expect(svc.Spec.Ports[0].NodePort).Should(BeNumerically(">=", 1))
 
+			nodePort := f.Ingress.GetFreeNodePort(32701)
 			tobeUpdated, err := f.Ingress.Get(ing)
 			Expect(err).NotTo(HaveOccurred())
-			tobeUpdated.Spec.Rules[0].HTTP.NodePort = intstr.FromInt(32701)
+			tobeUpdated.Spec.Rules[0].HTTP.NodePort = intstr.FromInt(nodePort)
 			err = f.Ingress.Update(tobeUpdated)
 			Expect(err).NotTo(HaveOccurred())
 			Eventually(func() int32 {
@@ -178,20 +181,22 @@ var _ = Describe("IngressWithCustomPorts", func() {
 					}
 				}
 				return 0
-			}, "5m", "10s").Should(Equal(int32(32701)))
+			}, "5m", "10s").Should(Equal(int32(nodePort)))
 
 		})
 	})
 
 	Describe("NodePort set", func() {
+		var nodePort int
 		BeforeEach(func() {
+			nodePort = f.Ingress.GetFreeNodePort(32702)
 			ing.Annotations[api.LBType] = api.LBTypeNodePort
 			ing.Spec = api.IngressSpec{
 				Rules: []api.IngressRule{
 					{
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
-								NodePort: intstr.FromInt(32702),
+								NodePort: intstr.FromInt(nodePort),
 								Paths: []api.HTTPIngressPath{
 									{
 										Backend: api.HTTPIngressBackend{
@@ -223,7 +228,7 @@ var _ = Describe("IngressWithCustomPorts", func() {
 			Expect(len(svc.Spec.Ports)).Should(Equal(1))
 			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(80)))
 			Expect(svc.Spec.Ports[0].NodePort).Should(BeNumerically(">=", 1))
-			Expect(svc.Spec.Ports[0].NodePort).Should(Equal(int32(32702)))
+			Expect(svc.Spec.Ports[0].NodePort).Should(Equal(int32(nodePort)))
 		})
 	})
 
@@ -267,9 +272,10 @@ var _ = Describe("IngressWithCustomPorts", func() {
 			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(80)))
 			Expect(svc.Spec.Ports[0].NodePort).Should(BeNumerically(">=", 1))
 
+			nodePort := f.Ingress.GetFreeNodePort(32705)
 			tobeUpdated, err := f.Ingress.Get(ing)
 			Expect(err).NotTo(HaveOccurred())
-			tobeUpdated.Spec.Rules[0].HTTP.NodePort = intstr.FromInt(32705)
+			tobeUpdated.Spec.Rules[0].HTTP.NodePort = intstr.FromInt(nodePort)
 			err = f.Ingress.Update(tobeUpdated)
 			Expect(err).NotTo(HaveOccurred())
 			Eventually(func() int32 {
@@ -280,7 +286,7 @@ var _ = Describe("IngressWithCustomPorts", func() {
 					}
 				}
 				return 0
-			}, "5m", "10s").Should(Equal(int32(32705)))
+			}, "5m", "10s").Should(Equal(int32(nodePort)))
 
 		})
 	})

@@ -28,9 +28,6 @@ var _ = Describe("IngressHostPort", func() {
 		if !f.Config.InCluster && f.Config.CloudProviderName != "minikube" {
 			Skip("Test is Running from outside of cluster skipping test")
 		}
-
-		// Lock So that two HostPort ingress not created in the same time
-		f.Ingress.Mutex.Lock()
 	})
 
 	JustBeforeEach(func() {
@@ -45,13 +42,16 @@ var _ = Describe("IngressHostPort", func() {
 	})
 
 	AfterEach(func() {
-		f.Ingress.Mutex.Unlock()
 		if root.Config.Cleanup {
 			f.Ingress.Delete(ing)
 		}
 	})
 
 	Describe("Create", func() {
+		BeforeEach(func() {
+			ing.Spec.Rules[0].HTTP.Port = intstr.FromInt(2001)
+		})
+
 		It("Should response HTTP", func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
@@ -80,12 +80,16 @@ var _ = Describe("IngressHostPort", func() {
 	})
 
 	Describe("Update", func() {
+		BeforeEach(func() {
+			ing.Spec.Rules[0].HTTP.Port = intstr.FromInt(2002)
+		})
+
 		It("Should update Loadbalancer", func() {
 			By("Updating Ingress resource")
 			uing, err := f.Ingress.Get(ing)
 			Expect(err).NotTo(HaveOccurred())
 
-			uing.Spec.Rules[0].HTTP.Paths[0].Path = "/newTestPath"
+			uing.Spec.Rules[0].HTTP.Paths[0].Path = "/newtestpath"
 			err = f.Ingress.Update(uing)
 			Expect(err).NotTo(HaveOccurred())
 
@@ -98,10 +102,10 @@ var _ = Describe("IngressHostPort", func() {
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
 			By("Calling new HTTP path")
-			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/newTestPath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/newtestpath/ok", func(r *testserverclient.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
-					Expect(r.Path).Should(Equal("/newTestPath/ok"))
+					Expect(r.Path).Should(Equal("/newtestpath/ok"))
 			})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -121,7 +125,7 @@ var _ = Describe("IngressHostPort", func() {
 				{
 					IngressRuleValue: api.IngressRuleValue{
 						TCP: &api.TCPIngressRuleValue{
-							Port: intstr.FromString("4545"),
+							Port: intstr.FromString("2003"),
 							Backend: api.IngressBackend{
 								ServiceName: f.Ingress.TestServerName(),
 								ServicePort: intstr.FromString("4545"),
@@ -132,7 +136,7 @@ var _ = Describe("IngressHostPort", func() {
 				{
 					IngressRuleValue: api.IngressRuleValue{
 						TCP: &api.TCPIngressRuleValue{
-							Port: intstr.FromString("4949"),
+							Port: intstr.FromString("2004"),
 							Backend: api.IngressBackend{
 								ServiceName: f.Ingress.TestServerName(),
 								ServicePort: intstr.FromString("4545"),
@@ -151,7 +155,7 @@ var _ = Describe("IngressHostPort", func() {
 					return err
 				}
 				for _, port := range svc.Spec.Ports {
-					if port.Port == 4545 {
+					if port.Port == 2003 {
 						return nil
 					}
 				}

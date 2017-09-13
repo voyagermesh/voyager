@@ -27,6 +27,12 @@ var _ = Describe("IngressTLS", func() {
 	})
 
 	BeforeEach(func() {
+		// if f.Ingress.Config.CloudProviderName == "minikube" && !strings.HasPrefix(config.GinkgoConfig.FocusString, "IngressTLS") {
+		// 	 Skip("run in minikube only when single specs running")
+		// }
+	})
+
+	BeforeEach(func() {
 		secret = &apiv1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      f.Ingress.UniqueName(),
@@ -103,11 +109,6 @@ var _ = Describe("IngressTLS", func() {
 
 	Describe("Https response", func() {
 		BeforeEach(func() {
-			if f.Ingress.Config.CloudProviderName == "minikube" {
-				ing.Annotations[api.LBType] = api.LBTypeHostPort
-				f.Ingress.Mutex.Lock()
-			}
-
 			ing.Spec = api.IngressSpec{
 				TLS: []api.IngressTLS{
 					{
@@ -138,12 +139,6 @@ var _ = Describe("IngressTLS", func() {
 			}
 		})
 
-		AfterEach(func() {
-			if f.Ingress.Config.CloudProviderName == "minikube" {
-				f.Ingress.Mutex.Unlock()
-			}
-		})
-
 		It("Should response HTTPs", func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
@@ -167,11 +162,6 @@ var _ = Describe("IngressTLS", func() {
 
 	Describe("Https redirect port specified", func() {
 		BeforeEach(func() {
-			if f.Ingress.Config.CloudProviderName == "minikube" {
-				ing.Annotations[api.LBType] = api.LBTypeHostPort
-				f.Ingress.Mutex.Lock()
-			}
-
 			ing.Spec = api.IngressSpec{
 				TLS: []api.IngressTLS{
 					{
@@ -226,22 +216,11 @@ var _ = Describe("IngressTLS", func() {
 			}
 		})
 
-		AfterEach(func() {
-			if f.Ingress.Config.CloudProviderName == "minikube" {
-				f.Ingress.Mutex.Unlock()
-			}
-		})
-
 		It("Should redirect HTTP", shouldTestRedirect)
 	})
 
 	Describe("Https redirect port not specified", func() {
 		BeforeEach(func() {
-			if f.Ingress.Config.CloudProviderName == "minikube" {
-				ing.Annotations[api.LBType] = api.LBTypeHostPort
-				f.Ingress.Mutex.Lock()
-			}
-
 			ing.Spec = api.IngressSpec{
 				TLS: []api.IngressTLS{
 					{
@@ -291,12 +270,6 @@ var _ = Describe("IngressTLS", func() {
 						},
 					},
 				},
-			}
-		})
-
-		AfterEach(func() {
-			if f.Ingress.Config.CloudProviderName == "minikube" {
-				f.Ingress.Mutex.Unlock()
 			}
 		})
 

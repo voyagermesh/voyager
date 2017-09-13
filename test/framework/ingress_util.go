@@ -112,18 +112,18 @@ func (i *ingressInvocation) createTestServerController() error {
 			Name:      testServerResourceName,
 			Namespace: i.Namespace(),
 			Labels: map[string]string{
-				"app": i.app,
+				"app": "test-server-" + i.app,
 			},
 		},
 		Spec: apiv1.ReplicationControllerSpec{
 			Replicas: types.Int32P(2),
 			Selector: map[string]string{
-				"app": i.app,
+				"app": "test-server-" + i.app,
 			},
 			Template: &apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"app": i.app,
+						"app": "test-server-" + i.app,
 					},
 				},
 				Spec: i.testServerPodSpec(),
@@ -139,13 +139,13 @@ func (i *ingressInvocation) createTestServerService() error {
 			Name:      testServerResourceName,
 			Namespace: i.Namespace(),
 			Labels: map[string]string{
-				"app": i.app,
+				"app": "test-server-" + i.app,
 			},
 		},
 		Spec: apiv1.ServiceSpec{
 			Ports: i.testServerServicePorts(),
 			Selector: map[string]string{
-				"app": i.app,
+				"app": "test-server-" + i.app,
 			},
 		},
 	})
@@ -155,10 +155,10 @@ func (i *ingressInvocation) createTestServerService() error {
 
 	_, err = i.KubeClient.CoreV1().Services(i.Namespace()).Create(&apiv1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      testServerHTTpsResourceName,
+			Name:      testServerHTTPSResourceName,
 			Namespace: i.Namespace(),
 			Labels: map[string]string{
-				"app": i.app,
+				"app": "test-server-" + i.app,
 			},
 			Annotations: map[string]string{
 				"ingress.appscode.com/backend-tls": "ssl verify none",
@@ -180,7 +180,7 @@ func (i *ingressInvocation) createTestServerService() error {
 				},
 			},
 			Selector: map[string]string{
-				"app": i.app,
+				"app": "test-server-" + i.app,
 			},
 		},
 	})
@@ -551,8 +551,15 @@ func (i *ingressInvocation) CheckTestServersPortAssignments(ing *api_v1beta1.Ing
 		}
 	}
 
+	rc, err = i.KubeClient.CoreV1().ReplicationControllers(i.Config.TestNamespace).Get(i.TestServerName(), metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
 	rc.Spec.Replicas = types.Int32P(2)
-	i.KubeClient.CoreV1().ReplicationControllers(rc.Namespace).Update(rc)
+	rc, err = i.KubeClient.CoreV1().ReplicationControllers(rc.Namespace).Update(rc)
+	if err != nil {
+		return err
+	}
 	svcUpdated, err = i.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		return err
@@ -583,7 +590,7 @@ func (i *ingressInvocation) CreateResourceWithHostNames() (metav1.ObjectMeta, er
 		Name:      i.UniqueName(),
 		Namespace: i.Namespace(),
 		Labels: map[string]string{
-			"app": i.app,
+			"app": "test-server-" + i.app,
 			"v":   i.UniqueName(),
 		},
 	}
@@ -871,8 +878,4 @@ func (i *ingressInvocation) DeleteResourceWithBackendWeight(meta metav1.ObjectMe
 	i.KubeClient.CoreV1().Services(meta.Namespace).Delete(meta.Name, &metav1.DeleteOptions{
 		OrphanDependents: &orphan,
 	})
-}
-
-func (i *ingressInvocation) GetFreeNodePort() int32 {
-	return int32(32766)
 }

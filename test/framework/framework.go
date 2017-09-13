@@ -28,6 +28,7 @@ type Framework struct {
 	Config         E2EConfig
 	namespace      string
 	voyagerConfig  config.Options
+	Mutex          sync.Mutex
 }
 
 type Invocation struct {
@@ -41,7 +42,6 @@ type rootInvocation struct {
 }
 
 type ingressInvocation struct {
-	Mutex sync.Mutex
 	*rootInvocation
 }
 

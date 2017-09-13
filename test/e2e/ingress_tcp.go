@@ -70,7 +70,7 @@ var _ = Describe("IngressTCP", func() {
 				{
 					IngressRuleValue: api.IngressRuleValue{
 						TCP: &api.TCPIngressRuleValue{
-							Port: intstr.FromInt(4242),
+							Port: intstr.FromInt(4001),
 							Backend: api.IngressBackend{
 								ServiceName: f.Ingress.TestServerName(),
 								ServicePort: intstr.FromInt(4343),
@@ -82,7 +82,7 @@ var _ = Describe("IngressTCP", func() {
 					Host: "http.appscode.dev",
 					IngressRuleValue: api.IngressRuleValue{
 						TCP: &api.TCPIngressRuleValue{
-							Port: intstr.FromInt(4141),
+							Port: intstr.FromInt(4002),
 							Backend: api.IngressBackend{
 								ServiceName: f.Ingress.TestServerName(),
 								ServicePort: intstr.FromInt(4545),
@@ -94,7 +94,7 @@ var _ = Describe("IngressTCP", func() {
 					Host: "http.appscode.dev",
 					IngressRuleValue: api.IngressRuleValue{
 						TCP: &api.TCPIngressRuleValue{
-							Port:  intstr.FromInt(4949),
+							Port:  intstr.FromInt(4003),
 							NoTLS: true,
 							Backend: api.IngressBackend{
 								ServiceName: f.Ingress.TestServerName(),
@@ -115,21 +115,21 @@ var _ = Describe("IngressTCP", func() {
 			svc, err := f.Ingress.GetOffShootService(ing)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(svc.Spec.Ports)).Should(Equal(3))
-			Expect(svc.Spec.Ports[0].Port).To(Or(Equal(int32(4242)), Equal(int32(4141)), Equal(int32(4949))))
-			Expect(svc.Spec.Ports[1].Port).To(Or(Equal(int32(4242)), Equal(int32(4141)), Equal(int32(4949))))
-			Expect(svc.Spec.Ports[2].Port).To(Or(Equal(int32(4242)), Equal(int32(4141)), Equal(int32(4949))))
+			Expect(svc.Spec.Ports[0].Port).To(Or(Equal(int32(4001)), Equal(int32(4002)), Equal(int32(4003))))
+			Expect(svc.Spec.Ports[1].Port).To(Or(Equal(int32(4001)), Equal(int32(4002)), Equal(int32(4003))))
+			Expect(svc.Spec.Ports[2].Port).To(Or(Equal(int32(4001)), Equal(int32(4002)), Equal(int32(4003))))
 
 			var tcpNoSSL, tcpSSL, tcpWithNoSSL apiv1.ServicePort
 			for _, p := range svc.Spec.Ports {
-				if p.Port == 4242 {
+				if p.Port == 4001 {
 					tcpNoSSL = p
 				}
 
-				if p.Port == 4343 {
+				if p.Port == 4002 {
 					tcpSSL = p
 				}
 
-				if p.Port == 4949 {
+				if p.Port == 4003 {
 					tcpWithNoSSL = p
 				}
 			}
