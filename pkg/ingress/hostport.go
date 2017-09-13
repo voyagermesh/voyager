@@ -115,7 +115,7 @@ func (c *hostPortController) Create() error {
 	err := c.generateConfig()
 	if err != nil {
 		c.recorder.Eventf(
-			eventer.ObjectReferenceFor(c.Ingress),
+			c.Ingress.ObjectReference(),
 			apiv1.EventTypeWarning,
 			eventer.EventReasonIngressHAProxyConfigCreateFailed,
 			"Reason: %s",
@@ -126,7 +126,7 @@ func (c *hostPortController) Create() error {
 	err = c.ensureConfigMap()
 	if err != nil {
 		c.recorder.Eventf(
-			eventer.ObjectReferenceFor(c.Ingress),
+			c.Ingress.ObjectReference(),
 			apiv1.EventTypeWarning,
 			eventer.EventReasonIngressConfigMapCreateFailed,
 			"Reason: %s",
@@ -135,7 +135,7 @@ func (c *hostPortController) Create() error {
 		return errors.FromErr(err).Err()
 	}
 	c.recorder.Eventf(
-		eventer.ObjectReferenceFor(c.Ingress),
+		c.Ingress.ObjectReference(),
 		apiv1.EventTypeNormal,
 		eventer.EventReasonIngressConfigMapCreateSuccessful,
 		"Successfully created ConfigMap %s",
@@ -152,7 +152,7 @@ func (c *hostPortController) Create() error {
 	_, err = c.ensurePods(nil)
 	if err != nil {
 		c.recorder.Eventf(
-			eventer.ObjectReferenceFor(c.Ingress),
+			c.Ingress.ObjectReference(),
 			apiv1.EventTypeWarning,
 			eventer.EventReasonIngressControllerCreateFailed,
 			"Failed to create HostPortPods, Reason: %s",
@@ -161,7 +161,7 @@ func (c *hostPortController) Create() error {
 		return errors.FromErr(err).Err()
 	}
 	c.recorder.Eventf(
-		eventer.ObjectReferenceFor(c.Ingress),
+		c.Ingress.ObjectReference(),
 		apiv1.EventTypeNormal,
 		eventer.EventReasonIngressControllerCreateSuccessful,
 		"Successfully created HostPortPods",
@@ -170,7 +170,7 @@ func (c *hostPortController) Create() error {
 	svc, err := c.ensureService(nil)
 	if err != nil {
 		c.recorder.Eventf(
-			eventer.ObjectReferenceFor(c.Ingress),
+			c.Ingress.ObjectReference(),
 			apiv1.EventTypeWarning,
 			eventer.EventReasonIngressServiceCreateFailed,
 			"Failed to create HostPortService, Reason: %s",
@@ -181,7 +181,7 @@ func (c *hostPortController) Create() error {
 	err = c.EnsureFirewall(svc)
 	if err != nil {
 		c.recorder.Eventf(
-			eventer.ObjectReferenceFor(c.Ingress),
+			c.Ingress.ObjectReference(),
 			apiv1.EventTypeWarning,
 			eventer.EventReasonIngressFirewallUpdateFailed,
 			"Failed to ensure firewall, %s",
@@ -190,7 +190,7 @@ func (c *hostPortController) Create() error {
 		return errors.FromErr(err).Err()
 	}
 	c.recorder.Eventf(
-		eventer.ObjectReferenceFor(c.Ingress),
+		c.Ingress.ObjectReference(),
 		apiv1.EventTypeNormal,
 		eventer.EventReasonIngressServiceCreateSuccessful,
 		"Successfully created HostPortService",
@@ -201,7 +201,7 @@ func (c *hostPortController) Create() error {
 		// Error ignored intentionally
 		if err != nil {
 			c.recorder.Eventf(
-				eventer.ObjectReferenceFor(c.Ingress),
+				c.Ingress.ObjectReference(),
 				apiv1.EventTypeWarning,
 				eventer.EventReasonIngressStatsServiceCreateFailed,
 				"Failed to create Stats Service. Reason: %s",
@@ -209,7 +209,7 @@ func (c *hostPortController) Create() error {
 			)
 		} else {
 			c.recorder.Eventf(
-				eventer.ObjectReferenceFor(c.Ingress),
+				c.Ingress.ObjectReference(),
 				apiv1.EventTypeNormal,
 				eventer.EventReasonIngressStatsServiceCreateSuccessful,
 				"Successfully created Stats Service %s",
@@ -228,14 +228,14 @@ func (c *hostPortController) Create() error {
 		// Error Ignored intentionally
 		if err != nil {
 			c.recorder.Eventf(
-				eventer.ObjectReferenceFor(c.Ingress),
+				c.Ingress.ObjectReference(),
 				apiv1.EventTypeWarning,
 				eventer.EventReasonIngressServiceMonitorCreateFailed,
 				err.Error(),
 			)
 		} else {
 			c.recorder.Eventf(
-				eventer.ObjectReferenceFor(c.Ingress),
+				c.Ingress.ObjectReference(),
 				apiv1.EventTypeNormal,
 				eventer.EventReasonIngressServiceMonitorCreateSuccessful,
 				"Successfully created ServiceMonitor",
@@ -250,7 +250,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 	err := c.generateConfig()
 	if err != nil {
 		c.recorder.Eventf(
-			eventer.ObjectReferenceFor(c.Ingress),
+			c.Ingress.ObjectReference(),
 			apiv1.EventTypeWarning,
 			eventer.EventReasonIngressHAProxyConfigCreateFailed,
 			"Reason: %s",
@@ -267,7 +267,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 	_, err = c.ensurePods(old)
 	if err != nil {
 		c.recorder.Eventf(
-			eventer.ObjectReferenceFor(c.Ingress),
+			c.Ingress.ObjectReference(),
 			apiv1.EventTypeWarning,
 			eventer.EventReasonIngressUpdateFailed,
 			"Failed to update Pods, %s", err.Error(),
@@ -275,7 +275,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 		return errors.FromErr(err).Err()
 	}
 	c.recorder.Eventf(
-		eventer.ObjectReferenceFor(c.Ingress),
+		c.Ingress.ObjectReference(),
 		apiv1.EventTypeNormal,
 		eventer.EventReasonIngressUpdateSuccessful,
 		"Successfully updated Pods",
@@ -284,7 +284,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 	svc, err := c.ensureService(old)
 	if err != nil {
 		c.recorder.Eventf(
-			eventer.ObjectReferenceFor(c.Ingress),
+			c.Ingress.ObjectReference(),
 			apiv1.EventTypeWarning,
 			eventer.EventReasonIngressServiceUpdateFailed,
 			"Failed to update LBService, %s",
@@ -296,7 +296,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 	err = c.EnsureFirewall(svc)
 	if err != nil {
 		c.recorder.Eventf(
-			eventer.ObjectReferenceFor(c.Ingress),
+			c.Ingress.ObjectReference(),
 			apiv1.EventTypeWarning,
 			eventer.EventReasonIngressFirewallUpdateFailed,
 			"Failed to ensure firewall, %s",
@@ -305,7 +305,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 		return errors.FromErr(err).Err()
 	}
 	c.recorder.Eventf(
-		eventer.ObjectReferenceFor(c.Ingress),
+		c.Ingress.ObjectReference(),
 		apiv1.EventTypeNormal,
 		eventer.EventReasonIngressServiceUpdateSuccessful,
 		"Successfully updated HostPort Service",
@@ -316,7 +316,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 			err := c.ensureStatsService()
 			if err != nil {
 				c.recorder.Eventf(
-					eventer.ObjectReferenceFor(c.Ingress),
+					c.Ingress.ObjectReference(),
 					apiv1.EventTypeWarning,
 					eventer.EventReasonIngressStatsServiceCreateFailed,
 					"Failed to create HAProxy stats Service. Reason: %s",
@@ -324,7 +324,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 				)
 			} else {
 				c.recorder.Eventf(
-					eventer.ObjectReferenceFor(c.Ingress),
+					c.Ingress.ObjectReference(),
 					apiv1.EventTypeNormal,
 					eventer.EventReasonIngressStatsServiceCreateSuccessful,
 					"Successfully created HAProxy stats Service %s",
@@ -335,7 +335,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 			err := c.ensureStatsServiceDeleted()
 			if err != nil {
 				c.recorder.Eventf(
-					eventer.ObjectReferenceFor(c.Ingress),
+					c.Ingress.ObjectReference(),
 					apiv1.EventTypeWarning,
 					eventer.EventReasonIngressStatsServiceDeleteFailed,
 					"Failed to delete HAProxy stats Service. Reason: %s",
@@ -343,7 +343,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 				)
 			} else {
 				c.recorder.Eventf(
-					eventer.ObjectReferenceFor(c.Ingress),
+					c.Ingress.ObjectReference(),
 					apiv1.EventTypeNormal,
 					eventer.EventReasonIngressStatsServiceDeleteSuccessful,
 					"Successfully deleted HAProxy stats Service %s",

@@ -40,7 +40,7 @@ func (op *Operator) initIngressTPRWatcher() cache.Controller {
 					}
 					if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
 						op.recorder.Eventf(
-							eventer.ObjectReferenceFor(engress),
+							engress.ObjectReference(),
 							apiv1.EventTypeWarning,
 							eventer.EventReasonIngressInvalid,
 							"Reason: %s",
@@ -69,7 +69,7 @@ func (op *Operator) initIngressTPRWatcher() cache.Controller {
 				log.Infof("%s %s@%s has changed", newEngress.GroupVersionKind(), newEngress.Name, newEngress.Namespace)
 				if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
 					op.recorder.Eventf(
-						eventer.ObjectReferenceFor(newEngress),
+						newEngress.ObjectReference(),
 						apiv1.EventTypeWarning,
 						eventer.EventReasonIngressInvalid,
 						"Reason: %s",
