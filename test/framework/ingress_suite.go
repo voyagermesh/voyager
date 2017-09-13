@@ -23,7 +23,7 @@ const (
 
 var (
 	testServerResourceName      = "e2e-test-server-" + rand.Characters(5)
-	testServerHTTpsResourceName = "e2e-test-server-https" + rand.Characters(5)
+	testServerHTTPSResourceName = "e2e-test-server-https-" + rand.Characters(5)
 )
 
 func (i *ingressInvocation) Setup() error {
@@ -36,7 +36,7 @@ func (i *ingressInvocation) Setup() error {
 func (i *ingressInvocation) Teardown() {
 	if i.Config.Cleanup {
 		i.KubeClient.CoreV1().Services(i.Namespace()).Delete(testServerResourceName, &metav1.DeleteOptions{})
-		i.KubeClient.CoreV1().Services(i.Namespace()).Delete(testServerHTTpsResourceName, &metav1.DeleteOptions{})
+		i.KubeClient.CoreV1().Services(i.Namespace()).Delete(testServerHTTPSResourceName, &metav1.DeleteOptions{})
 		rc, err := i.KubeClient.CoreV1().ReplicationControllers(i.Namespace()).Get(testServerResourceName, metav1.GetOptions{})
 		if err == nil {
 			rc.Spec.Replicas = types.Int32P(0)
@@ -59,7 +59,7 @@ func (i *ingressInvocation) TestServerName() string {
 }
 
 func (i *ingressInvocation) TestServerHTTPSName() string {
-	return testServerHTTpsResourceName
+	return testServerHTTPSResourceName
 }
 
 func (i *ingressInvocation) Create(ing *api_v1beta1.Ingress) error {

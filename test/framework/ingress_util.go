@@ -113,17 +113,20 @@ func (i *ingressInvocation) createTestServerController() error {
 			Namespace: i.Namespace(),
 			Labels: map[string]string{
 				"app": i.app,
+				"e2e-test-server": i.app,
 			},
 		},
 		Spec: apiv1.ReplicationControllerSpec{
 			Replicas: types.Int32P(2),
 			Selector: map[string]string{
 				"app": i.app,
+				"e2e-test-server": "i.app",
 			},
 			Template: &apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						"app": i.app,
+						"e2e-test-server": i.app,
 					},
 				},
 				Spec: i.testServerPodSpec(),
@@ -140,12 +143,14 @@ func (i *ingressInvocation) createTestServerService() error {
 			Namespace: i.Namespace(),
 			Labels: map[string]string{
 				"app": i.app,
+				"e2e-test-server": i.app,
 			},
 		},
 		Spec: apiv1.ServiceSpec{
 			Ports: i.testServerServicePorts(),
 			Selector: map[string]string{
 				"app": i.app,
+				"e2e-test-server": i.app,
 			},
 		},
 	})
@@ -155,10 +160,11 @@ func (i *ingressInvocation) createTestServerService() error {
 
 	_, err = i.KubeClient.CoreV1().Services(i.Namespace()).Create(&apiv1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      testServerHTTpsResourceName,
+			Name:      testServerHTTPSResourceName,
 			Namespace: i.Namespace(),
 			Labels: map[string]string{
 				"app": i.app,
+				"e2e-test-server": i.app,
 			},
 			Annotations: map[string]string{
 				"ingress.appscode.com/backend-tls": "ssl verify none",
@@ -181,6 +187,7 @@ func (i *ingressInvocation) createTestServerService() error {
 			},
 			Selector: map[string]string{
 				"app": i.app,
+				"e2e-test-server": i.app,
 			},
 		},
 	})
