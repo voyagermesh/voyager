@@ -99,16 +99,9 @@ func (i *ingressInvocation) IsExistsEventually(ing *api_v1beta1.Ingress) bool {
 
 func (i *ingressInvocation) IsExists(ing *api_v1beta1.Ingress) error {
 	var err error
-	if ing.LBType() == api_v1beta1.LBTypeHostPort {
-		_, err = i.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
-		if kerr.IsNotFound(err) {
-			return err
-		}
-	} else {
-		_, err = i.KubeClient.ExtensionsV1beta1().Deployments(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
-		if kerr.IsNotFound(err) {
-			return err
-		}
+	_, err = i.KubeClient.AppsV1beta1().Deployments(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+	if kerr.IsNotFound(err) {
+		return err
 	}
 
 	_, err = i.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
@@ -165,6 +158,27 @@ func (i *ingressInvocation) FilterEndpointsForPort(eps []string, port v1.Service
 
 func (i *ingressInvocation) GetOffShootService(ing *api_v1beta1.Ingress) (*v1.Service, error) {
 	return i.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+}
+
+func (i *ingressInvocation) GetFreeNodePort(p int32) int {
+	svc, err := i.KubeClient.CoreV1().Services(v1.NamespaceAll).List(metav1.ListOptions{})
+	if err != nil {
+		return int(p)
+	}
+	return int(getFreeNodePort(svc.Items, p))
+}
+
+func getFreeNodePort(svc []v1.Service, p int32) int32 {
+	for _, service := range svc {
+		for _, ports := range service.Spec.Ports {
+			if ports.NodePort == p {
+				// Port already in use. Try for the next port
+				p++
+				return getFreeNodePort(svc, p)
+			}
+		}
+	}
+	return p
 }
 
 func (i *ingressInvocation) DoHTTP(retryCount int, host string, ing *api_v1beta1.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {

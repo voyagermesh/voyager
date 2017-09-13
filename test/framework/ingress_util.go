@@ -872,7 +872,3 @@ func (i *ingressInvocation) DeleteResourceWithBackendWeight(meta metav1.ObjectMe
 		OrphanDependents: &orphan,
 	})
 }
-
-func (i *ingressInvocation) GetFreeNodePort() int32 {
-	return int32(32766)
-}
