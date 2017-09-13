@@ -551,8 +551,15 @@ func (i *ingressInvocation) CheckTestServersPortAssignments(ing *api_v1beta1.Ing
 		}
 	}
 
+	rc, err = i.KubeClient.CoreV1().ReplicationControllers(i.Config.TestNamespace).Get(i.TestServerName(), metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
 	rc.Spec.Replicas = types.Int32P(2)
-	i.KubeClient.CoreV1().ReplicationControllers(rc.Namespace).Update(rc)
+	rc, err = i.KubeClient.CoreV1().ReplicationControllers(rc.Namespace).Update(rc)
+	if err != nil {
+		return err
+	}
 	svcUpdated, err = i.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		return err
