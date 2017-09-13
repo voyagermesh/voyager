@@ -7,7 +7,6 @@ import (
 	"github.com/appscode/go/errors"
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/eventer"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
@@ -44,11 +43,11 @@ func (c *controller) updateConfigMap() error {
 
 		_, err := c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Update(cMap)
 		if err != nil {
-			c.recorder.Eventf(eventer.ObjectReferenceFor(c.Ingress), apiv1.EventTypeWarning, "ConfigMapUpdateFailed", "HAProxy configuration Update failed, %s", err.Error())
+			c.recorder.Eventf(c.Ingress.ObjectReference(), apiv1.EventTypeWarning, "ConfigMapUpdateFailed", "HAProxy configuration Update failed, %s", err.Error())
 			return errors.FromErr(err).Err()
 		}
 		// Add event only if the ConfigMap Really Updated
-		c.recorder.Eventf(eventer.ObjectReferenceFor(c.Ingress), apiv1.EventTypeNormal, "ConfigMapUpdated", "ConfigMap Updated, HAProxy will restart itself now via reloader")
+		c.recorder.Eventf(c.Ingress.ObjectReference(), apiv1.EventTypeNormal, "ConfigMapUpdated", "ConfigMap Updated, HAProxy will restart itself now via reloader")
 		log.Infoln("Config Map Updated, HAProxy will restart itself now via reloader")
 	}
 	return nil
