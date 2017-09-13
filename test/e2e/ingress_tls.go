@@ -2,11 +2,13 @@ package e2e
 
 import (
 	"net/http"
+	"strings"
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -24,6 +26,12 @@ var _ = Describe("IngressTLS", func() {
 		f = root.Invoke()
 		ing = f.Ingress.GetSkeleton()
 		f.Ingress.SetSkeletonRule(ing)
+	})
+
+	BeforeEach(func() {
+		if f.Ingress.Config.CloudProviderName == "minikube" && !strings.HasPrefix(config.GinkgoConfig.FocusString, "IngressTLS") {
+			Skip("run in minikube only when single specs running")
+		}
 	})
 
 	BeforeEach(func() {
@@ -103,11 +111,6 @@ var _ = Describe("IngressTLS", func() {
 
 	Describe("Https response", func() {
 		BeforeEach(func() {
-			if f.Ingress.Config.CloudProviderName == "minikube" {
-				ing.Annotations[api.LBType] = api.LBTypeHostPort
-				f.Ingress.Mutex.Lock()
-			}
-
 			ing.Spec = api.IngressSpec{
 				TLS: []api.IngressTLS{
 					{
@@ -138,12 +141,6 @@ var _ = Describe("IngressTLS", func() {
 			}
 		})
 
-		AfterEach(func() {
-			if f.Ingress.Config.CloudProviderName == "minikube" {
-				f.Ingress.Mutex.Unlock()
-			}
-		})
-
 		It("Should response HTTPs", func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
@@ -167,11 +164,6 @@ var _ = Describe("IngressTLS", func() {
 
 	Describe("Https redirect port specified", func() {
 		BeforeEach(func() {
-			if f.Ingress.Config.CloudProviderName == "minikube" {
-				ing.Annotations[api.LBType] = api.LBTypeHostPort
-				f.Ingress.Mutex.Lock()
-			}
-
 			ing.Spec = api.IngressSpec{
 				TLS: []api.IngressTLS{
 					{
@@ -226,22 +218,11 @@ var _ = Describe("IngressTLS", func() {
 			}
 		})
 
-		AfterEach(func() {
-			if f.Ingress.Config.CloudProviderName == "minikube" {
-				f.Ingress.Mutex.Unlock()
-			}
-		})
-
 		It("Should redirect HTTP", shouldTestRedirect)
 	})
 
 	Describe("Https redirect port not specified", func() {
 		BeforeEach(func() {
-			if f.Ingress.Config.CloudProviderName == "minikube" {
-				ing.Annotations[api.LBType] = api.LBTypeHostPort
-				f.Ingress.Mutex.Lock()
-			}
-
 			ing.Spec = api.IngressSpec{
 				TLS: []api.IngressTLS{
 					{
@@ -291,12 +272,6 @@ var _ = Describe("IngressTLS", func() {
 						},
 					},
 				},
-			}
-		})
-
-		AfterEach(func() {
-			if f.Ingress.Config.CloudProviderName == "minikube" {
-				f.Ingress.Mutex.Unlock()
 			}
 		})
 

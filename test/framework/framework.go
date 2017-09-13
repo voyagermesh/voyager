@@ -1,6 +1,8 @@
 package framework
 
 import (
+	"sync"
+
 	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/voyager/client/internalclientset/typed/voyager/internalversion"
 	v1beta1client "github.com/appscode/voyager/client/typed/voyager/v1beta1"
@@ -10,7 +12,6 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"sync"
 )
 
 const (
