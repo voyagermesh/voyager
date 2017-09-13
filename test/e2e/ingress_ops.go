@@ -524,4 +524,27 @@ var _ = Describe("IngressOperations", func() {
 			Expect(err).Should(BeNil())
 		})
 	})
+
+	Describe("With sticky session", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.IngressAffinity] = "true"
+			ing.Annotations[api.IngressAffinitySessionCookieName] = "TEST-COOKIE_NAME"
+		})
+
+		FIt("Should Stick Session", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+					Expect(r.Method).Should(Equal("GET")) &&
+					Expect(r.Path).Should(Equal("/testpath/ok")) &&
+					Expect(r.ResponseHeader.Get("Set-Cookie")).ShouldNot(BeEmpty()) &&
+					Expect(r.ResponseHeader.Get("Set-Cookie")).To(HavePrefix("TEST-COOKIE_NAME="))
+			})
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
 })

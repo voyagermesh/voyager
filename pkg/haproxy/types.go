@@ -85,7 +85,8 @@ type Backend struct {
 	HeaderRules []string
 	Endpoints   []*Endpoint
 
-	Sticky bool
+	Sticky           bool
+	StickyCookieName string
 }
 
 func (be *Backend) canonicalize() {
