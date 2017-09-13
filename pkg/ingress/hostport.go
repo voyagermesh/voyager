@@ -661,14 +661,12 @@ func (c *hostPortController) ensurePods(old *api.Ingress) (*apps.Deployment, err
 }
 
 func (c *hostPortController) deletePods() error {
-	dp, err := c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-	if err == nil {
-		dp.Spec.Replicas = types.Int32P(0)
-		c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Update(dp)
-	}
-	err = c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
+	policy := metav1.DeletePropagationForeground
+	err := c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{
+		PropagationPolicy: &policy,
+	})
 	if err != nil {
-		log.Errorln(err)
+		return err
 	}
 	return c.deletePodsForSelector(&metav1.LabelSelector{MatchLabels: c.Ingress.OffshootLabels()})
 }
