@@ -106,7 +106,7 @@ var _ = Describe("IngressTCP", func() {
 			}
 		})
 
-		FIt("Should test TCP", func() {
+		It("Should test TCP", func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())

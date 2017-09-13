@@ -84,7 +84,7 @@ var _ = Describe("IngressHostPort", func() {
 			ing.Spec.Rules[0].HTTP.Port = intstr.FromInt(2002)
 		})
 
-		FIt("Should update Loadbalancer", func() {
+		It("Should update Loadbalancer", func() {
 			By("Updating Ingress resource")
 			uing, err := f.Ingress.Get(ing)
 			Expect(err).NotTo(HaveOccurred())
