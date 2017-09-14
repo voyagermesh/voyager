@@ -2,7 +2,6 @@ package e2e
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -533,16 +532,13 @@ var _ = Describe("IngressOperations", func() {
 			ing.Annotations[api.IngressAffinitySessionCookieHash] = "md5"
 		})
 
-		FIt("Should Stick Session", func() {
+		It("Should Stick Session", func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
 			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
-
-				fmt.Println(">>>>", r.ResponseHeader)
-
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok")) &&
