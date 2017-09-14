@@ -163,9 +163,14 @@ const (
 	// If applied to Service and Ingress do not have this annotation only
 	// connection to that backend service will be sticky.
 	// Deprecated
-	StickySession                    = EngressKey + "/" + "sticky-session"
-	IngressAffinity                  = IngressKey + "/affinity"
+	StickySession = EngressKey + "/" + "sticky-session"
+	// Specify a method to stick clients to origins across requests.
+	// Only supported value is cookie.
+	IngressAffinity = IngressKey + "/affinity"
+	// When affinity is set to cookie, the name of the cookie to use.
 	IngressAffinitySessionCookieName = IngressKey + "/session-cookie-name"
+	// When affinity is set to cookie, the hash algorithm used: md5, sha, index.
+	IngressAffinitySessionCookieHash = IngressKey + "/session-cookie-hash"
 
 	// Basic Auth: Follows ingress controller standard
 	// https://github.com/kubernetes/ingress/tree/master/examples/auth/basic/haproxy
@@ -233,6 +238,10 @@ func (r Ingress) StickySessionCookieName() string {
 		return cookieName
 	}
 	return "SERVERID"
+}
+
+func (r Ingress) StickySessionCookieHashType() string {
+	return GetString(r.Annotations, IngressAffinitySessionCookieHash)
 }
 
 func (r Ingress) Stats() bool {

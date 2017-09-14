@@ -1,6 +1,10 @@
 package haproxy
 
 import (
+	"crypto/md5"
+	"crypto/sha512"
+	"encoding/base64"
+	"fmt"
 	"strings"
 	"text/template"
 )
@@ -28,10 +32,24 @@ func HostName(v string) string {
 	return "hdr(host) -i " + v
 }
 
+func BackendHash(value string, index int, mode string) string {
+	if mode == "md5" {
+		hash := md5.Sum([]byte(value))
+		return base64.StdEncoding.EncodeToString(hash[:])
+	} else if mode == "sha" {
+		hash := sha512.Sum512([]byte(value))
+		return base64.StdEncoding.EncodeToString(hash[:])
+	} else if mode == "index" {
+		return fmt.Sprintf("%d", index+1)
+	}
+	return value
+}
+
 var (
 	funcMap = template.FuncMap{
-		"header_name": HeaderName,
-		"host_name":   HostName,
+		"header_name":  HeaderName,
+		"host_name":    HostName,
+		"backend_hash": BackendHash,
 	}
 
 	haproxyTemplate *template.Template

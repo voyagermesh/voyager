@@ -150,6 +150,7 @@ func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePo
 		Endpoints:        eps,
 		Sticky:           c.Ingress.Sticky() || isServiceSticky(s.Annotations),
 		StickyCookieName: c.Ingress.StickySessionCookieName(),
+		StickyCookieHash: c.Ingress.StickySessionCookieHashType(),
 	}, nil
 }
 
@@ -228,6 +229,7 @@ func (c *controller) generateConfig() error {
 			HeaderRules:      c.Ingress.Spec.Backend.HeaderRule,
 			Sticky:           bk.Sticky,
 			StickyCookieName: bk.StickyCookieName,
+			StickyCookieHash: bk.StickyCookieHash,
 		}
 	}
 
@@ -297,6 +299,7 @@ func (c *controller) generateConfig() error {
 							HeaderRules:      path.Backend.HeaderRule,
 							Sticky:           bk.Sticky,
 							StickyCookieName: bk.StickyCookieName,
+							StickyCookieHash: bk.StickyCookieHash,
 						},
 					})
 				}
@@ -351,6 +354,7 @@ func (c *controller) generateConfig() error {
 						Endpoints:        bk.Endpoints,
 						Sticky:           bk.Sticky,
 						StickyCookieName: bk.StickyCookieName,
+						StickyCookieHash: bk.StickyCookieHash,
 					},
 				}
 				if secretName, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoTLS {

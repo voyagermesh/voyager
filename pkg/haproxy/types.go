@@ -87,6 +87,7 @@ type Backend struct {
 
 	Sticky           bool
 	StickyCookieName string
+	StickyCookieHash string
 }
 
 func (be *Backend) canonicalize() {
