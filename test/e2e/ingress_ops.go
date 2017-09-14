@@ -529,9 +529,10 @@ var _ = Describe("IngressOperations", func() {
 		BeforeEach(func() {
 			ing.Annotations[api.IngressAffinity] = "true"
 			ing.Annotations[api.IngressAffinitySessionCookieName] = "TEST-COOKIE_NAME"
+			ing.Annotations[api.IngressAffinitySessionCookieHash] = "md5"
 		})
 
-		FIt("Should Stick Session", func() {
+		It("Should Stick Session", func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
