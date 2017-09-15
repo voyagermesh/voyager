@@ -194,6 +194,7 @@ const (
 	// Setting this annotations in ingress will add CORS headers to all HTTP
 	// frontend. If we need to add cors headers only on specific frontend we can also
 	// configure this using FrontendRules for specific frontend.
+	// http://blog.nasrulhazim.com/2017/07/haproxy-setting-up-cors/
 	CORSEnabled = IngressKey + "/enable-cors"
 )
 
