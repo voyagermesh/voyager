@@ -125,7 +125,7 @@ func TestTemplate(t *testing.T) {
 				FrontendName:  "two",
 				Port:          933,
 				FrontendRules: []string{},
-				UsesSSL:       true,
+				OffloadSSL:    true,
 				Paths: []*HTTPPath{
 					{
 						Path: "/kool",
@@ -148,7 +148,7 @@ func TestTemplate(t *testing.T) {
 				FrontendName:  "three",
 				Port:          9334,
 				FrontendRules: []string{},
-				UsesSSL:       true,
+				OffloadSSL:    true,
 				Paths: []*HTTPPath{
 					{
 						Path: "/kool",
@@ -172,7 +172,7 @@ func TestTemplate(t *testing.T) {
 				Port:          8334,
 				NodePort:      32000,
 				FrontendRules: []string{},
-				UsesSSL:       true,
+				OffloadSSL:    true,
 				Paths: []*HTTPPath{
 					{
 						Host: "ex.appscode.dev",
@@ -192,7 +192,7 @@ func TestTemplate(t *testing.T) {
 				FrontendName:  "five",
 				Port:          80,
 				FrontendRules: []string{},
-				UsesSSL:       true,
+				OffloadSSL:    true,
 				Paths: []*HTTPPath{
 					{
 						Host: "ex.appscode.dev",
