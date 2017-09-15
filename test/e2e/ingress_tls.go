@@ -330,4 +330,58 @@ var _ = Describe("IngressTLS", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
+
+	Describe("SSL Passthrough", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.SSLPassthrough] = "true"
+			ing.Spec = api.IngressSpec{
+				TLS: []api.IngressTLS{
+					{
+						SecretName: secret.Name,
+						Hosts:      []string{"http.appscode.dev"},
+					},
+				},
+				Rules: []api.IngressRule{
+					{
+						Host: "http.appscode.dev",
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
+									{
+										Path: "/testpath",
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: f.Ingress.TestServerName(),
+												ServicePort: intstr.FromInt(80),
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+		})
+
+		It("Should Open 443 with HTTP", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			svc, err := f.Ingress.GetOffShootService(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(svc.Spec.Ports)).Should(Equal(1))
+			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(443)))
+
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "http.appscode.dev", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+					Expect(r.Method).Should(Equal("GET")) &&
+					Expect(r.Path).Should(Equal("/testpath/ok")) &&
+					Expect(r.Host).Should(Equal("http.appscode.dev"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
 })

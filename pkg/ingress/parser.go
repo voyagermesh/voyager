@@ -309,8 +309,16 @@ func (c *controller) generateConfig() error {
 			}
 
 			var key httpKey
-			if _, foundTLS := c.Ingress.FindTLSSecret(rule.Host); foundTLS && !rule.HTTP.NoTLS {
+			if _, foundTLS := c.Ingress.FindTLSSecret(rule.Host); foundTLS && !rule.HTTP.NoTLS && !c.Ingress.SSLPassthrough() {
 				key.UsesSSL = true
+				if port := rule.HTTP.Port.IntValue(); port > 0 {
+					key.Port = port
+				} else {
+					key.Port = 443
+				}
+			} else if foundTLS && c.Ingress.SSLPassthrough() && !rule.HTTP.NoTLS {
+				// If SSL Passthrough is enabled keep 443 open just don't offload ssl
+				key.UsesSSL = false
 				if port := rule.HTTP.Port.IntValue(); port > 0 {
 					key.Port = port
 				} else {
