@@ -15,7 +15,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/pkg/api/v1"
-	"fmt"
 )
 
 var _ = Describe("IngressOperations", func() {
@@ -568,6 +567,26 @@ var _ = Describe("IngressOperations", func() {
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok")) &&
 					Expect(r.ResponseHeader.Get("Access-Control-Allow-Origin")).Should(Equal("test.e2e"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+	Describe("With Body Size Enabled", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.ProxyBodySize] = "500"
+		})
+
+		FIt("Should Response Deny", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			err = f.Ingress.DoHTTPStatusWithHeader(framework.NoRetry, ing, eps, "GET", "/testpath/ok", map[string]string{
+				"Content-Length": "600",
+			}, func(r *testserverclient.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusBadRequest))
 			})
 			Expect(err).NotTo(HaveOccurred())
 		})

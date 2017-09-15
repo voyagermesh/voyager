@@ -282,6 +282,21 @@ func (i *ingressInvocation) DoHTTPStatus(retryCount int, ing *api_v1beta1.Ingres
 	return nil
 }
 
+func (i *ingressInvocation) DoHTTPStatusWithHeader(retryCount int, ing *api_v1beta1.Ingress, eps []string, method, path string, h map[string]string, matcher func(resp *testserverclient.Response) bool) error {
+	for _, url := range eps {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Header(h).Path(path).DoStatusWithRetry(retryCount)
+		if err != nil {
+			return err
+		}
+
+		log.Infoln("HTTP Response received from server", *resp)
+		if !matcher(resp) {
+			return errors.New("Failed to match")
+		}
+	}
+	return nil
+}
+
 func (i *ingressInvocation) DoTCP(retryCount int, ing *api_v1beta1.Ingress, eps []string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
 		resp, err := testserverclient.NewTestTCPClient(url).DoWithRetry(retryCount)

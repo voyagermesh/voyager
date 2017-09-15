@@ -196,6 +196,12 @@ const (
 	// configure this using FrontendRules for specific frontend.
 	// http://blog.nasrulhazim.com/2017/07/haproxy-setting-up-cors/
 	CORSEnabled = IngressKey + "/enable-cors"
+
+	// Maximum http request body size. This returns the advertised length of the HTTP request's body in bytes. It
+	// will represent the advertised Content-Length header
+	// http://cbonte.github.io/haproxy-dconv/1.7/configuration.html#7.3.6-req.body_size
+	//
+	ProxyBodySize = IngressKey + "/proxy-body-size"
 )
 
 func (r Ingress) OffshootName() string {
@@ -254,6 +260,10 @@ func (r Ingress) StickySessionCookieHashType() string {
 func (r Ingress) EnableCORS() bool {
 	v, _ := GetBool(r.Annotations, CORSEnabled)
 	return v
+}
+
+func (r Ingress) ProxyBodySize() string {
+	return GetString(r.Annotations, ProxyBodySize)
 }
 
 func (r Ingress) Stats() bool {
