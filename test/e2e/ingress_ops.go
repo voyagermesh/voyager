@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/pkg/api/v1"
+	"fmt"
 )
 
 var _ = Describe("IngressOperations", func() {
@@ -544,6 +545,29 @@ var _ = Describe("IngressOperations", func() {
 					Expect(r.Path).Should(Equal("/testpath/ok")) &&
 					Expect(r.ResponseHeader.Get("Set-Cookie")).ShouldNot(BeEmpty()) &&
 					Expect(r.ResponseHeader.Get("Set-Cookie")).To(HavePrefix("TEST-COOKIE_NAME="))
+			})
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+	Describe("With CORS Enabled", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.CORSEnabled] = "true"
+		})
+
+		It("Should Response CORS", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			err = f.Ingress.DoHTTPWithHeader(framework.MaxRetry, ing, eps, "GET", "/testpath/ok", map[string]string{
+				"Origin": "test.e2e",
+			}, func(r *testserverclient.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+					Expect(r.Method).Should(Equal("GET")) &&
+					Expect(r.Path).Should(Equal("/testpath/ok")) &&
+					Expect(r.ResponseHeader.Get("Access-Control-Allow-Origin")).Should(Equal("test.e2e"))
 			})
 			Expect(err).NotTo(HaveOccurred())
 		})

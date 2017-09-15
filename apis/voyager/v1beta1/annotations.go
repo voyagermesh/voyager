@@ -189,6 +189,12 @@ const (
 
 	// name of the auth secret
 	AuthSecret = IngressKey + "/auth-secret"
+
+	// Enables CORS headers in response.
+	// Setting this annotations in ingress will add CORS headers to all HTTP
+	// frontend. If we need to add cors headers only on specific frontend we can also
+	// configure this using FrontendRules for specific frontend.
+	CORSEnabled = IngressKey + "/enable-cors"
 )
 
 func (r Ingress) OffshootName() string {
@@ -242,6 +248,11 @@ func (r Ingress) StickySessionCookieName() string {
 
 func (r Ingress) StickySessionCookieHashType() string {
 	return GetString(r.Annotations, IngressAffinitySessionCookieHash)
+}
+
+func (r Ingress) EnableCORS() bool {
+	v, _ := GetBool(r.Annotations, CORSEnabled)
+	return v
 }
 
 func (r Ingress) Stats() bool {
