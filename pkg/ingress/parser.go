@@ -207,7 +207,10 @@ func (c *controller) generateConfig() error {
 		}
 	}
 
-	si := &haproxy.SharedInfo{}
+	si := &haproxy.SharedInfo{
+		EnableCORS:    c.Ingress.EnableCORS(),
+		ProxyBodySize: c.Ingress.ProxyBodySize(),
+	}
 	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
 		si.AcceptProxy = c.Ingress.KeepSourceIP()
 	}

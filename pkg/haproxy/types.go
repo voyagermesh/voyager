@@ -22,6 +22,8 @@ type SharedInfo struct {
 	AcceptProxy    bool
 	DefaultBackend *Backend
 	Auth           *AuthConfig
+	EnableCORS     bool
+	ProxyBodySize  string
 }
 
 type StatsInfo struct {
