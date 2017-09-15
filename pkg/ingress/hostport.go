@@ -526,10 +526,10 @@ func (c *hostPortController) newPods() *apps.Deployment {
 								},
 							},
 							Args: []string{
-								"--config-map=" + c.Ingress.OffshootName(),
+								"--configmap=" + c.Ingress.OffshootName(),
 								"--mount-location=" + "/etc/haproxy",
 								"--boot-cmd=" + "/etc/sv/reloader/reload",
-								"--v=4",
+								"--v=3",
 							},
 							Ports:        []apiv1.ContainerPort{},
 							Resources:    c.Ingress.Spec.Resources,
