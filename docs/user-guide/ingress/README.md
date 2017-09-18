@@ -1,12 +1,3 @@
-## Ingress
-In Kubernetes, Services and Pods have IPs which are only routable by cluster network. Inside clusters managed by AppsCode,
-you can route your traffic, to your specific apps, via three ways:
-
-### Services
-`Kubernetes Service Types` allow you to specify what kind of service you want. Default and base type is the
-ClusterIP, which exposes a service to connection, from inside the cluster.
-NodePort and LoadBalancer are the two types exposing services to external traffic. [Read More](http://kubernetes.io/docs/user-guide/services/#publishing-services---service-types)
-
 ### Ingress
 An Ingress is a collection of rules which allow inbound connections to reach the cluster services.
 It can be configured to give services externally-reachable urls, load balance traffic, terminate SSL,
