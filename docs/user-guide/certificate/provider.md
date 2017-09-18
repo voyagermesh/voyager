@@ -38,6 +38,8 @@ Read how to create certificate using [HTTP Provider](/docs/user-guide/certificat
 `GCE_PROJECT`: The name of the Google Cloud project to use <br>
 `GOOGLE_APPLICATION_CREDENTIALS`: Service account json downloaded from Google Cloud console. <br>
 
+This service account should have [necessary permissions](https://github.com/appscode/lego/blob/c6958564222a0451a58df1b4ecb5bc5da4e03aff/providers/dns/googlecloud/googlecloud.go#L44) to view and manage your DNS records hosted by Google Cloud DNS. The required scope is `https://www.googleapis.com/auth/ndev.clouddns.readwrite` .
+
 ### Namecheap
 `NAMECHEAP_API_USER`: The username of the namecheap user <br>
 `NAMECHEAP_API_KEY`: The API key corresponding with the namecheap user <br>
