@@ -415,7 +415,7 @@ func (c *Controller) processHTTPCertificate() error {
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
-		time.Sleep(time.Second*5)
+		time.Sleep(time.Second * 5)
 	case "extensions/v1beta1":
 		i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Spec.HTTPProviderIngressReference.Namespace).
 			Get(c.tpr.Spec.HTTPProviderIngressReference.Name, metav1.GetOptions{})
@@ -455,7 +455,7 @@ func (c *Controller) processHTTPCertificate() error {
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
-		time.Sleep(time.Second*5)
+		time.Sleep(time.Second * 5)
 	default:
 		return errors.New("HTTP Certificate resolver do not have any ingress reference or invalid ingress reference").Err()
 	}
