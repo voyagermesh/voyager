@@ -33,7 +33,8 @@ type Framework struct {
 
 type Invocation struct {
 	*rootInvocation
-	Ingress *ingressInvocation
+	Ingress     *ingressInvocation
+	Certificate *certificateInvocation
 }
 
 type rootInvocation struct {
@@ -42,6 +43,10 @@ type rootInvocation struct {
 }
 
 type ingressInvocation struct {
+	*rootInvocation
+}
+
+type certificateInvocation struct {
 	*rootInvocation
 }
 
@@ -81,6 +86,7 @@ func (f *Framework) Invoke() *Invocation {
 	return &Invocation{
 		rootInvocation: r,
 		Ingress:        &ingressInvocation{rootInvocation: r},
+		Certificate:    &certificateInvocation{rootInvocation: r},
 	}
 }
 

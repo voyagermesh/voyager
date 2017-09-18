@@ -149,14 +149,10 @@ func (c *Controller) create() error {
 		return errors.FromErr(err).Err()
 	}
 	if c.tpr.Spec.Provider == "http" {
-		done := make(chan struct{})
-		defer func() {
-			done <- struct{}{}
-			close(done)
-		}()
-		if err := c.processHTTPCertificate(done); err != nil {
+		if err := c.processHTTPCertificate(); err != nil {
 			return err
 		}
+		log.Errorf("HTTP Ingress is configured, You need ")
 	}
 	cert, errs := c.acmeClient.ObtainCertificate(c.tpr.Spec.Domains, true, nil, true)
 	for k, v := range errs {
@@ -165,7 +161,7 @@ func (c *Controller) create() error {
 	if len(cert.PrivateKey) > 0 {
 		return c.save(cert)
 	}
-	return nil
+	return errors.New("failed to create certificate")
 }
 
 func (c *Controller) renew() error {
@@ -174,12 +170,7 @@ func (c *Controller) renew() error {
 	}
 
 	if c.tpr.Spec.Provider == "http" {
-		done := make(chan struct{})
-		defer func() {
-			done <- struct{}{}
-			close(done)
-		}()
-		if err := c.processHTTPCertificate(done); err != nil {
+		if err := c.processHTTPCertificate(); err != nil {
 			return err
 		}
 	}
@@ -379,84 +370,36 @@ func (c *Controller) update(cert acme.CertificateResource) error {
 	return nil
 }
 
-func (c *Controller) processHTTPCertificate(revert chan struct{}) error {
+func (c *Controller) processHTTPCertificate() error {
 	c.acmeClient.HTTPProviderLock.Lock()
 	defer c.acmeClient.HTTPProviderLock.Unlock()
 
 	switch c.tpr.Spec.HTTPProviderIngressReference.APIVersion {
 	case tapi_v1beta1.SchemeGroupVersion.String():
-		revertRequired := false
 		i, err := c.ExtClient.Ingresses(c.tpr.Spec.HTTPProviderIngressReference.Namespace).
 			Get(c.tpr.Spec.HTTPProviderIngressReference.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
-		// make a copy of previous spec.
-		prevSpecs := i.Spec
-		for _, host := range c.tpr.Spec.Domains {
-			rule := tapi.IngressRule{
-				Host: host,
-				IngressRuleValue: tapi.IngressRuleValue{
-					HTTP: &tapi.HTTPIngressRuleValue{
-						Paths: []tapi.HTTPIngressPath{
-							{
-								Path: providers.URLPrefix,
-								Backend: tapi.HTTPIngressBackend{
-									IngressBackend: tapi.IngressBackend{
-										ServiceName: c.Opt.OperatorService + "." + c.Opt.OperatorNamespace,
-										ServicePort: intstr.FromInt(c.Opt.HTTPChallengePort),
-									},
-								},
-							},
-						},
-					},
-				},
-			}
-
-			i.Spec.Rules = append(i.Spec.Rules, rule)
-		}
-		_, err = c.ExtClient.Ingresses(c.tpr.Namespace).Update(i)
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
-		revertRequired = true
-		// After All is done revert everything
-		defer func() {
-			select {
-			case <-revert:
-				if revertRequired {
-					i, err := c.ExtClient.Ingresses(c.tpr.Spec.HTTPProviderIngressReference.Namespace).
-						Get(c.tpr.Spec.HTTPProviderIngressReference.Name, metav1.GetOptions{})
-					if err == nil {
-						i.Spec = prevSpecs
-						i.Spec.TLS = append(i.Spec.TLS, tapi.IngressTLS{
-							Hosts:      c.tpr.Spec.Domains,
-							SecretName: defaultCertPrefix + c.tpr.Name,
-						})
-						c.ExtClient.Ingresses(c.tpr.Namespace).Update(i)
+		for _, rules := range i.Spec.Rules {
+			if rules.HTTP != nil {
+				for _, path := range rules.HTTP.Paths {
+					if path.Path == providers.URLPrefix {
+						// Rule found no update required
+						return nil
 					}
 				}
-				return
 			}
-		}()
-	case "extensions/v1beta1":
-		revertRequired := false
-		i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Spec.HTTPProviderIngressReference.Namespace).
-			Get(c.tpr.Spec.HTTPProviderIngressReference.Name, metav1.GetOptions{})
-		if err != nil {
-			return errors.FromErr(err).Err()
 		}
-		// make a copy of previous spec.
-		prevSpecs := i.Spec
-		for _, host := range c.tpr.Spec.Domains {
-			rule := extensions.IngressRule{
-				Host: host,
-				IngressRuleValue: extensions.IngressRuleValue{
-					HTTP: &extensions.HTTPIngressRuleValue{
-						Paths: []extensions.HTTPIngressPath{
-							{
-								Path: providers.URLPrefix,
-								Backend: extensions.IngressBackend{
+
+		rule := tapi.IngressRule{
+			IngressRuleValue: tapi.IngressRuleValue{
+				HTTP: &tapi.HTTPIngressRuleValue{
+					Paths: []tapi.HTTPIngressPath{
+						{
+							Path: providers.URLPrefix,
+							Backend: tapi.HTTPIngressBackend{
+								IngressBackend: tapi.IngressBackend{
 									ServiceName: c.Opt.OperatorService + "." + c.Opt.OperatorNamespace,
 									ServicePort: intstr.FromInt(c.Opt.HTTPChallengePort),
 								},
@@ -464,34 +407,55 @@ func (c *Controller) processHTTPCertificate(revert chan struct{}) error {
 						},
 					},
 				},
-			}
-
-			i.Spec.Rules = append(i.Spec.Rules, rule)
+			},
 		}
+		i.Spec.Rules = append(i.Spec.Rules, rule)
+
+		_, err = c.ExtClient.Ingresses(c.tpr.Namespace).Update(i)
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
+		time.Sleep(time.Second*5)
+	case "extensions/v1beta1":
+		i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Spec.HTTPProviderIngressReference.Namespace).
+			Get(c.tpr.Spec.HTTPProviderIngressReference.Name, metav1.GetOptions{})
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
+
+		for _, rules := range i.Spec.Rules {
+			if rules.HTTP != nil {
+				for _, path := range rules.HTTP.Paths {
+					if path.Path == providers.URLPrefix {
+						// Rule found no update required
+						return nil
+					}
+				}
+			}
+		}
+
+		rule := extensions.IngressRule{
+			IngressRuleValue: extensions.IngressRuleValue{
+				HTTP: &extensions.HTTPIngressRuleValue{
+					Paths: []extensions.HTTPIngressPath{
+						{
+							Path: providers.URLPrefix,
+							Backend: extensions.IngressBackend{
+								ServiceName: c.Opt.OperatorService + "." + c.Opt.OperatorNamespace,
+								ServicePort: intstr.FromInt(c.Opt.HTTPChallengePort),
+							},
+						},
+					},
+				},
+			},
+		}
+		i.Spec.Rules = append(i.Spec.Rules, rule)
+
 		_, err = c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Namespace).Update(i)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
-		revertRequired = true
-		// After All is done revert everything
-		defer func() {
-			select {
-			case <-revert:
-				if revertRequired {
-					i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Spec.HTTPProviderIngressReference.Namespace).
-						Get(c.tpr.Spec.HTTPProviderIngressReference.Name, metav1.GetOptions{})
-					if err == nil {
-						i.Spec = prevSpecs
-						i.Spec.TLS = append(i.Spec.TLS, extensions.IngressTLS{
-							Hosts:      c.tpr.Spec.Domains,
-							SecretName: defaultCertPrefix + c.tpr.Name,
-						})
-						c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Namespace).Update(i)
-					}
-				}
-				return
-			}
-		}()
+		time.Sleep(time.Second*5)
 	default:
 		return errors.New("HTTP Certificate resolver do not have any ingress reference or invalid ingress reference").Err()
 	}
