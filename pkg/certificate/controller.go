@@ -66,26 +66,6 @@ func NewController(config *rest.Config, kubeClient clientset.Interface, extClien
 	}
 }
 
-func (c *Controller) HandleIngress(ingress *tapi.Ingress) error {
-	if ingress.Annotations != nil {
-		if cert, ok := ingress.CertificateSpec(); ok {
-			issuedCert, err := c.ExtClient.Certificates(ingress.Namespace).Get(cert.Name, metav1.GetOptions{})
-			if err == nil {
-				// Certificate exists mount it.
-				return nil
-			}
-
-			if kerr.IsNotFound(err) || !issuedCert.Status.CertificateObtained {
-				_, err := c.ExtClient.Certificates(cert.Namespace).Create(cert)
-				if err != nil {
-					return err
-				}
-			}
-		}
-	}
-	return nil
-}
-
 func (c *Controller) Process() error {
 	c.acmeClientConfig = &ACMEConfig{
 		Provider:            c.tpr.Spec.Provider,
