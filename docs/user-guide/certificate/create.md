@@ -17,7 +17,7 @@ metadata:
   namespace: default
 data:
   GCE_PROJECT: <project-name>
-  GOOGLE_APPLICATION_CREDENTIALS: <credential>
+  GOOGLE_APPLICATION_CREDENTIALS: <service-account-json>
 ```
 
 Create the Certificate resource now.
