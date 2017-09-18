@@ -47,6 +47,7 @@ import:
 - package: k8s.io/apiextensions-apiserver
   version: 5fa44608f6b9b2180a2fd1ecb52e651fd0397794
 - package: github.com/tredoe/osutil
+- package: github.com/moul/http2curl
 testImport:
 - package: github.com/stretchr/testify
   version: v1.1.4

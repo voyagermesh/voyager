@@ -1,12 +1,19 @@
 package testserverclient
 
 import (
+	"bytes"
+	"crypto/rand"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
+	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
+
+	"github.com/appscode/log"
+	"github.com/moul/http2curl"
 )
 
 type httpClient struct {
@@ -142,10 +149,20 @@ func (t *httpClient) do(parse bool) (*Response, error) {
 		req.Host = t.host
 	}
 
+	if val := req.Header.Get("Content-Length"); len(val) > 0 {
+		cl, _ := strconv.Atoi(val)
+		req.ContentLength = int64(cl)
+		req.Body = newBody(cl)
+	}
+
 	resp, err := t.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Body = nil
+	command, _ := http2curl.GetCurlCommand(req)
+	log.Warningln("Request:", command)
 
 	responseStruct := &Response{
 		Status:         resp.StatusCode,
@@ -166,3 +183,17 @@ func (t *httpClient) do(parse bool) (*Response, error) {
 	}
 	return responseStruct, nil
 }
+
+func newBody(size int) io.ReadCloser {
+	r := make([]byte, size)
+	rand.Read(r)
+	return &nopCloser{
+		Reader: bytes.NewReader(r),
+	}
+}
+
+type nopCloser struct {
+	io.Reader
+}
+
+func (*nopCloser) Close() error { return nil }

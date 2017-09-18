@@ -548,4 +548,47 @@ var _ = Describe("IngressOperations", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
+
+	Describe("With CORS Enabled", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.CORSEnabled] = "true"
+		})
+
+		It("Should Response CORS", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			err = f.Ingress.DoHTTPWithHeader(framework.MaxRetry, ing, eps, "GET", "/testpath/ok", map[string]string{
+				"Origin": "test.e2e",
+			}, func(r *testserverclient.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+					Expect(r.Method).Should(Equal("GET")) &&
+					Expect(r.Path).Should(Equal("/testpath/ok")) &&
+					Expect(r.ResponseHeader.Get("Access-Control-Allow-Origin")).Should(Equal("test.e2e"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+	Describe("With Body Size Enabled", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.ProxyBodySize] = "500"
+		})
+
+		FIt("Should Response Deny", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			err = f.Ingress.DoHTTPStatusWithHeader(framework.NoRetry, ing, eps, "GET", "/testpath/ok", map[string]string{
+				"Content-Length": "600",
+			}, func(r *testserverclient.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusBadRequest))
+			})
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
 })

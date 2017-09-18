@@ -22,6 +22,8 @@ type SharedInfo struct {
 	AcceptProxy    bool
 	DefaultBackend *Backend
 	Auth           *AuthConfig
+	EnableCORS     bool
+	ProxyBodySize  string
 }
 
 type StatsInfo struct {
@@ -36,13 +38,13 @@ type HTTPService struct {
 	FrontendName  string
 	Port          int
 	NodePort      int32
-	UsesSSL       bool
+	OffloadSSL    bool
 	FrontendRules []string
 	Paths         []*HTTPPath
 }
 
 func (svc HTTPService) sortKey() string {
-	if svc.UsesSSL {
+	if svc.OffloadSSL {
 		return fmt.Sprintf("https://%d", svc.Port)
 	}
 	return fmt.Sprintf("http://%d", svc.Port)

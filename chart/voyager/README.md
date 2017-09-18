@@ -44,8 +44,8 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | --------------------------| ------------------------------------------------------------- | ------------------ |
 | `image`                   | Container image to run                                        | `appscode/voyager` |
 | `imageTag`                | Image tag of container                                        | `3.2.0`            |
-| `cloudProvider`           | Name of cloud provider                                        | ``                 |
-| `cloudConfig`             | Path to cloud config                                          | ``                 |
+| `cloudProvider`           | Name of cloud provider                                        | `nil`              |
+| `cloudConfig`             | Path to cloud config                                          | `nil`              |
 | `logLevel`                | Log level for operator                                        | `3`                |
 | `persistence.enabled`     | Enable mounting cloud config                                  | `false`            |
 | `persistence.hostPath`    | Host mount path for cloud config                              | `/etc/kubernetes`  |
@@ -69,11 +69,7 @@ $ helm install --name my-release --values values.yaml chart/voyager
 ## RBAC
 By default the chart will not install the recommended RBAC roles and rolebindings.
 
-You need to have the following parameter on the api server. See the following document for how to enable [RBAC](https://kubernetes.io/docs/admin/authorization/rbac/)
-
-```
---authorization-mode=RBAC
-```
+You need to have the flag `--authorization-mode=RBAC` on the api server. See the following document for how to enable [RBAC](https://kubernetes.io/docs/admin/authorization/rbac/).
 
 To determine if your cluster supports RBAC, run the the following command:
 
@@ -81,7 +77,7 @@ To determine if your cluster supports RBAC, run the the following command:
 $ kubectl api-versions | grep rbac
 ```
 
-If the output contains "alpha" and/or "beta", you can may install the chart with RBAC enabled (see below).
+If the output contains "beta", you may install the chart with RBAC enabled (see below).
 
 ### Enable RBAC role/rolebinding creation
 
@@ -89,12 +85,4 @@ To enable the creation of RBAC resources (On clusters with RBAC). Do the followi
 
 ```console
 $ helm install --name my-release chart/voyager --set rbac.create=true
-```
-
-### Changing RBAC manifest apiVersion
-
-By default the RBAC resources are generated with the "v1beta1" apiVersion. To use "v1alpha1" do the following:
-
-```console
-$ helm install --name my-release chart/voyager --set rbac.create=true,rbac.apiVersion=v1alpha1
 ```
