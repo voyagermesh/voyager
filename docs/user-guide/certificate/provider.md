@@ -36,7 +36,7 @@ Read how to create certificate using [HTTP Provider](/docs/user-guide/certificat
 
 ### Google Cloud
 `GCE_PROJECT`: The name of the Google Cloud project to use <br>
-`GOOGLE_APPLICATION_CREDENTIALS`: Credential Data. <br>
+`GOOGLE_APPLICATION_CREDENTIALS`: Service account json downloaded from Google Cloud console. <br>
 
 ### Namecheap
 `NAMECHEAP_API_USER`: The username of the namecheap user <br>
