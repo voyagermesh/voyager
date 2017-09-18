@@ -1,5 +1,5 @@
-hash: f19a342987e786a78fe05fe783cf0799c1d96346ef16f8e1cef33791c056ef72
-updated: 2017-09-11T15:15:10.183752912-07:00
+hash: c009c2613fa7f75cef0a4e3971021f5e033cb43bb4c4e0af3db18dfbcb453e72
+updated: 2017-09-15T10:42:50.517375386-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -124,7 +124,7 @@ imports:
 - name: github.com/facebookgo/stack
   version: 751773369052141c013c6e827a71e8f35c07879c
 - name: github.com/ghodss/yaml
-  version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
+  version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/go-ini/ini
   version: 2e44421e256d82ebbf3d4d4fcabe8930b905eff3
 - name: github.com/go-openapi/analysis
@@ -161,7 +161,7 @@ imports:
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/hashicorp/go-version
-  version: 03c5bf6be031b6dd45afec16b1cf94fc8938bc77
+  version: fc61389e27c71d120f87031ca8c88a3428f372dd
 - name: github.com/hashicorp/golang-lru
   version: a0d98a5f288019575c6d1f4bb1573fef2d1fcdc4
   subpackages:
@@ -200,6 +200,8 @@ imports:
   version: 38fe6917d34b267a79c3432369e7dcc379e2d5b3
 - name: github.com/mitchellh/go-homedir
   version: b8bc1bf767474819792c23f32d8286a45736f1c6
+- name: github.com/moul/http2curl
+  version: 4e24498b31dba4683efb9d35c1c8a91e2eda28c8
 - name: github.com/onsi/ginkgo
   version: 67b9df7f55fe1165fd9ad49aca7754cce01a42b8
   subpackages:
@@ -578,7 +580,7 @@ imports:
   - util/homedir
   - util/integer
 - name: k8s.io/kubernetes
-  version: 17d7182a7ccbb167074be7a87f0a68bd00d58d97
+  version: 4bc5e7f9a6c25dc4c03d4d656f2cefd21540e28c
   subpackages:
   - pkg/api
   - pkg/api/install

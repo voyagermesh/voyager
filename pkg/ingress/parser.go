@@ -277,9 +277,9 @@ func (c *controller) generateConfig() error {
 	td.TCPService = make([]*haproxy.TCPService, 0)
 
 	type httpKey struct {
-		Port     int
-		NodePort int32
-		UsesSSL  bool
+		Port       int
+		NodePort   int32
+		OffloadSSL bool
 	}
 	httpServices := make(map[httpKey][]*haproxy.HTTPPath)
 	for _, rule := range c.Ingress.Spec.Rules {
@@ -309,15 +309,23 @@ func (c *controller) generateConfig() error {
 			}
 
 			var key httpKey
-			if _, foundTLS := c.Ingress.FindTLSSecret(rule.Host); foundTLS && !rule.HTTP.NoTLS {
-				key.UsesSSL = true
+			if _, foundTLS := c.Ingress.FindTLSSecret(rule.Host); foundTLS && !rule.HTTP.NoTLS && !c.Ingress.SSLPassthrough() {
+				key.OffloadSSL = true
+				if port := rule.HTTP.Port.IntValue(); port > 0 {
+					key.Port = port
+				} else {
+					key.Port = 443
+				}
+			} else if foundTLS && c.Ingress.SSLPassthrough() && !rule.HTTP.NoTLS {
+				// If SSL Passthrough is enabled keep 443 open just don't offload ssl
+				key.OffloadSSL = false
 				if port := rule.HTTP.Port.IntValue(); port > 0 {
 					key.Port = port
 				} else {
 					key.Port = 443
 				}
 			} else {
-				key.UsesSSL = false
+				key.OffloadSSL = false
 				if port := rule.HTTP.Port.IntValue(); port > 0 {
 					key.Port = port
 				} else {
@@ -376,7 +384,7 @@ func (c *controller) generateConfig() error {
 			Port:          key.Port,
 			FrontendRules: getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, key.Port),
 			NodePort:      key.NodePort,
-			UsesSSL:       key.UsesSSL,
+			OffloadSSL:    key.OffloadSSL,
 			Paths:         value,
 		})
 	}
