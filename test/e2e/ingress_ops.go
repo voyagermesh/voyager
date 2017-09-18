@@ -577,7 +577,7 @@ var _ = Describe("IngressOperations", func() {
 			ing.Annotations[api.ProxyBodySize] = "500"
 		})
 
-		FIt("Should Response Deny", func() {
+		It("Should Response Deny", func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())

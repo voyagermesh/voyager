@@ -10,7 +10,6 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
 	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -89,10 +88,6 @@ func (i *ingressInvocation) SetDaemonSkeletonRule(ing *api_v1beta1.Ingress) {
 			},
 		},
 	}
-}
-
-func (i *ingressInvocation) UniqueName() string {
-	return rand.WithUniqSuffix("e2e-test")
 }
 
 func (i *ingressInvocation) setupTestServers() error {

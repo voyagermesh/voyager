@@ -6,7 +6,6 @@ import (
 	"github.com/appscode/go/errors"
 	"github.com/appscode/go/log"
 	tapi "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/ingress"
 	"github.com/appscode/voyager/pkg/monitor"
@@ -112,11 +111,6 @@ func (op *Operator) AddEngress(engress *tapi.Ingress) {
 		}
 		op.ensureEgressAnnotations(engress, svc)
 	}
-
-	err := certificate.NewController(op.KubeConfig, op.KubeClient, op.ExtClient, op.Opt, nil).HandleIngress(engress)
-	if err != nil {
-		log.Error(err)
-	}
 }
 
 func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
@@ -176,11 +170,6 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 			continue
 		}
 		op.ensureEgressAnnotations(newEngress, svc)
-	}
-
-	err := certificate.NewController(op.KubeConfig, op.KubeClient, op.ExtClient, op.Opt, nil).HandleIngress(newEngress)
-	if err != nil {
-		log.Error(err)
 	}
 }
 
