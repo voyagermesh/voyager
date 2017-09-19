@@ -17,8 +17,9 @@ metadata:
   namespace: default
 data:
   GCE_PROJECT: <project-name>
-  GOOGLE_APPLICATION_CREDENTIALS: <credential>
+  GCE_SERVICE_ACCOUNT_DATA: <service-account-json>
 ```
+This service account should have [necessary permissions](https://github.com/appscode/lego/blob/c6958564222a0451a58df1b4ecb5bc5da4e03aff/providers/dns/googlecloud/googlecloud.go#L44) to view and manage your DNS records hosted by Google Cloud DNS. The required scope is `https://www.googleapis.com/auth/ndev.clouddns.readwrite` .
 
 Create the Certificate resource now.
 ```yaml
@@ -35,7 +36,7 @@ spec:
   provider: googlecloud
   providerCredentialSecretName: test-gcp-secret
 ```
-In this example the domains DNS providers are `googlecloude`.
+In this example the domains DNS providers are `googlecloud`.
 
 See the Supported Providers List [here](provider.md)
 
