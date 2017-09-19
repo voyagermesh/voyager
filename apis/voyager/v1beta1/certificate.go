@@ -34,11 +34,12 @@ type CertificateSpec struct {
 	// Secret contains ACMEUser information. Secret must contain a key `email`
 	// If empty tries to find an Secret via domains
 	// if not found create an ACMEUser and stores as a secret.
+	// Secrets key to be expected:
+	//  email -> required, if not provided it will through error.
+	//  acme-server-url -> custom server url to generate certificates, default is lets encrypt.
+	//  acme-user-data -> user data, if not found one will be created for the provided email,
+	//    and stored in the key.
 	ACMEUserSecretName string `json:"acmeUserSecretName"`
-
-	// ACME server that will be used to obtain this certificate.
-	// optional. Default will use LetsEncrypt.
-	ACMEServerURL string `json:"acmeStagingURL"`
 
 	// Storage backend to store the certificates currently, kubernetes secret and vault.
 	Storage CertificateStorage `json:"storage,omitempty"`
@@ -69,7 +70,7 @@ type CertificateStorageKubernetes struct {
 }
 
 type CertificateStorageVault struct {
-	Name    string `json:"name,omitempty"`
+	Name string `json:"name,omitempty"`
 	// Address is the address of the Vault server. This should be a complete
 	// URL such as "http://vault.example.com:8082".
 	Address string `json:"address,omitempty"`
