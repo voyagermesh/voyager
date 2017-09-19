@@ -28,31 +28,61 @@ type CertificateSpec struct {
 	// domains are added using the Subject Alternate Names extension.
 	Domains []string `json:"domains,omitempty"`
 
-	// DNS Provider.
-	Provider string `json:"provider,omitempty"`
-	Email    string `json:"email,omitempty"`
+	// ChallengeProvider details to verify domains
+	ChallengeProvider ChallengeProvider `json:"challengeProvider"`
 
-	// This is the ingress Reference that will be used if provider is http
-	HTTPProviderIngressReference apiv1.ObjectReference `json:"httpProviderIngressReference,omitempty"`
-
-	// ProviderCredentialSecretName is used to create the acme client, that will do
-	// needed processing in DNS.
-	ProviderCredentialSecretName string `json:"providerCredentialSecretName,omitempty"`
-
-	// Secret contains ACMEUser information. If empty tries to find an Secret via domains
+	// Secret contains ACMEUser information. Secret must contain a key `email`
+	// If empty tries to find an Secret via domains
 	// if not found create an ACMEUser and stores as a secret.
 	ACMEUserSecretName string `json:"acmeUserSecretName"`
 
 	// ACME server that will be used to obtain this certificate.
+	// optional. Default will use LetsEncrypt.
 	ACMEServerURL string `json:"acmeStagingURL"`
+
+	// Storage backend to store the certificates currently, kubernetes secret and vault.
+	Storage CertificateStorage `json:"storage,omitempty"`
+}
+
+type ChallengeProvider struct {
+	HTTP *HTTPChallengeProvider `json:"http,omitempty"`
+	DNS  *DNSChallengeProvider  `json:"dns,omitempty"`
+}
+
+type HTTPChallengeProvider struct {
+	Ingress apiv1.ObjectReference `json:"ingress,omitempty"`
+}
+
+type DNSChallengeProvider struct {
+	ProviderType         string `json:"providerType,omitempty"`
+	CredentialSecretName string `json:"credentialSecretName,omitempty"`
+}
+
+type CertificateStorage struct {
+	Kubernetes *CertificateStorageKubernetes `json:"kubernetes,omitempty"`
+	Vault      *CertificateStorageVault      `json:"vault,omitempty"`
+}
+
+type CertificateStorageKubernetes struct {
+	// Secret name to store the certificate
+	Name string `json:"name,omitempty"`
+}
+
+type CertificateStorageVault struct {
+	Name    string `json:"name,omitempty"`
+	// Address is the address of the Vault server. This should be a complete
+	// URL such as "http://vault.example.com:8082".
+	Address string `json:"address,omitempty"`
+	Prefix  string `json:"prefix,omitempty"`
+	// Should be TokenSecretName? @tamal
+	Token string `json:"token,omitempty"`
 }
 
 type CertificateStatus struct {
 	CertificateObtained bool                   `json:"certificateObtained"`
-	Message             string                 `json:"message"`
 	CreationTime        *metav1.Time           `json:"creationTime,omitempty"`
-	ACMEUserSecretName  string                 `json:"acmeUserSecretName,omitempty"`
-	Details             ACMECertificateDetails `json:"details,omitempty"`
+	Conditions          []CertificateCondition `json:"conditions,omitempty"`
+	Certificate         ACMECertificateDetails `json:"certificate,omitempty"`
 }
 
 type ACMECertificateDetails struct {
@@ -60,6 +90,29 @@ type ACMECertificateDetails struct {
 	CertURL       string `json:"certUrl"`
 	CertStableURL string `json:"certStableUrl"`
 	AccountRef    string `json:"accountRef,omitempty"`
+}
+
+type RequestConditionType string
+
+// These are the possible conditions for a certificate create request.
+const (
+	CertificateCreated RequestConditionType = "Created"
+	CertificateUpdated RequestConditionType = "Updated"
+	CertificateFailed  RequestConditionType = "Failed"
+)
+
+type CertificateCondition struct {
+	// request approval state, currently Approved or Denied.
+	Type RequestConditionType `json:"type" protobuf:"bytes,1,opt,name=type,casttype=RequestConditionType"`
+	// brief reason for the request state
+	// +optional
+	Reason string `json:"reason,omitempty" protobuf:"bytes,2,opt,name=reason"`
+	// human readable message with details about the request state
+	// +optional
+	Message string `json:"message,omitempty" protobuf:"bytes,3,opt,name=message"`
+	// timestamp for the last update to this condition
+	// +optional
+	LastUpdateTime metav1.Time `json:"lastUpdateTime,omitempty" protobuf:"bytes,4,opt,name=lastUpdateTime"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

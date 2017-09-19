@@ -243,3 +243,8 @@ func checkOptionalPort(port intstr.IntOrString) (int, error) {
 	}
 	return 0, fmt.Errorf("Invalid data type %v for port %s", port.Type, port)
 }
+
+func (c Certificate) IsValid() error {
+
+	return nil
+}
