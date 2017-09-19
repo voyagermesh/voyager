@@ -57,7 +57,7 @@ rules:
 - apiGroups: [""]
   resources:
   - nodes
-  verbs: ["list", "get"]
+  verbs: ["list", "watch", "get"]
 - apiGroups: [""]
   resources:
   - serviceaccounts
