@@ -156,9 +156,11 @@ def install():
 
 def test(type, *args):
     die(call(libbuild.GOC + ' install ./...'))
-    #pydotenv.load_dotenv(join(dirname(__file__), 'configs/.env'))
     if type == 'unit':
-        unit_test()
+        unit_test(args)
+    elif type == 'unit-env':
+        pydotenv.load_dotenv(join(dirname(__file__), 'configs/.env'))
+        unit_test(args)
     elif type == 'e2e':
         e2e_test(args)
     elif type == 'minikube':
@@ -168,8 +170,9 @@ def test(type, *args):
     else:
         print '{test unit|minikube|e2e}'
 
-def unit_test():
-    die(call(libbuild.GOC + ' test -v . ./api/... ./client/... ./pkg/...'))
+def unit_test(args):
+    st = ' '.join(args)
+    die(call(libbuild.GOC + ' test -v . ./api/... ./client/... ./pkg/... ' + st))
 
 def e2e_test(args):
     st = ' '.join(args)

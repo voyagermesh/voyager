@@ -32,8 +32,7 @@ import (
 )
 
 const (
-	defaultCertPrefix       = "cert-"
-	defaultUserSecretPrefix = "acme-"
+	defaultCertPrefix = "cert-"
 )
 
 type Controller struct {
@@ -51,8 +50,6 @@ type Controller struct {
 
 	acmeClientConfig *ACMEConfig
 	acmeClient       *ACMEClient
-
-	userSecretName string
 }
 
 func NewController(config *rest.Config, kubeClient clientset.Interface, extClient acs.VoyagerV1beta1Interface, opt config.Options, tpr *tapi.Certificate) *Controller {
@@ -67,11 +64,30 @@ func NewController(config *rest.Config, kubeClient clientset.Interface, extClien
 }
 
 func (c *Controller) Process() error {
-	c.acmeClientConfig = &ACMEConfig{
-		Provider:            c.tpr.Spec.Provider,
-		ACMEServerUrl:       c.tpr.Spec.ACMEServerURL,
-		ProviderCredentials: make(map[string][]byte),
+	acmeConfig := &ACMEConfig{ProviderCredentials: make(map[string][]byte), UserSecret: ACMEUserSecret{}}
+	if c.tpr.Spec.ChallengeProvider.HTTP != nil {
+		acmeConfig.Provider = "http"
+	} else if c.tpr.Spec.ChallengeProvider.DNS != nil {
+		acmeConfig.Provider = c.tpr.Spec.ChallengeProvider.DNS.ProviderType
+		if len(c.tpr.Spec.ChallengeProvider.DNS.CredentialSecretName) > 0 {
+			cred, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(
+				c.tpr.Spec.ChallengeProvider.DNS.CredentialSecretName,
+				metav1.GetOptions{},
+			)
+			if err != nil {
+				c.recorder.Eventf(
+					c.tpr.ObjectReference(),
+					apiv1.EventTypeWarning,
+					eventer.EventReasonCertificateCreateFailed,
+					"Failed to create certificate, Reason: %s",
+					err.Error(),
+				)
+				return err
+			}
+			acmeConfig.ProviderCredentials = cred.Data
+		}
 	}
+	c.acmeClientConfig = acmeConfig
 
 	c.acmeCert.Domains = NewDomainCollection(c.tpr.Spec.Domains...)
 	// Check if a cert already exists for this Certificate Instance
@@ -148,7 +164,7 @@ func (c *Controller) create() error {
 	if err := c.ensureACMEClient(); err != nil {
 		return errors.FromErr(err).Err()
 	}
-	if c.tpr.Spec.Provider == "http" {
+	if c.acmeClientConfig.Provider == "http" {
 		if err := c.processHTTPCertificate(); err != nil {
 			return err
 		}
@@ -169,16 +185,16 @@ func (c *Controller) renew() error {
 		return errors.FromErr(err).Err()
 	}
 
-	if c.tpr.Spec.Provider == "http" {
+	if c.acmeClientConfig.Provider == "http" {
 		if err := c.processHTTPCertificate(); err != nil {
 			return err
 		}
 	}
 	acmeCert := acme.CertificateResource{
-		Domain:        c.tpr.Status.Details.Domain,
-		CertURL:       c.tpr.Status.Details.CertURL,
-		CertStableURL: c.tpr.Status.Details.CertStableURL,
-		AccountRef:    c.tpr.Status.Details.AccountRef,
+		Domain:        c.tpr.Status.Certificate.Domain,
+		CertURL:       c.tpr.Status.Certificate.CertURL,
+		CertStableURL: c.tpr.Status.Certificate.CertStableURL,
+		AccountRef:    c.tpr.Status.Certificate.AccountRef,
 		Certificate:   c.acmeCert.Cert,
 		PrivateKey:    c.acmeCert.PrivateKey,
 	}
@@ -191,40 +207,24 @@ func (c *Controller) renew() error {
 }
 
 func (c *Controller) ensureACMEClient() error {
+	log.Infoln("trying to retrieve acmeUser data")
+	secret, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(c.tpr.Spec.ACMEUserSecretName, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	if _, found := secret.Data[ACMEUserEmail]; !found {
+		return err
+	}
+	c.acmeClientConfig.UserSecret = ACMEUserSecret(secret.Data)
+
+	// No error that means we successfully got an userSecret
 	var acmeUserInfo *ACMEUserData
 	acmeUserRegistered := false
-	log.Infoln("trying to retrive acmeUser data")
-
-	var userSecret *apiv1.Secret
-	err := errors.New("Setting error Not found").Err()
-	if c.tpr.Spec.ACMEUserSecretName != "" {
-		// ACMEUser secret name is provided.
-		userSecret, err = c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(c.tpr.Spec.ACMEUserSecretName, metav1.GetOptions{})
-	}
-	if err != nil && c.tpr.Status.ACMEUserSecretName != "" {
-		// There is a error getting the secret, try the secret name from status, if this was a update request
-		userSecret, err = c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(c.tpr.Status.ACMEUserSecretName, metav1.GetOptions{})
-	}
-	if err != nil {
-		// Trying to find an secret with the same name of Certificates
-		userSecret, err = c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(defaultUserSecretPrefix+c.tpr.Name, metav1.GetOptions{})
-		if err == nil {
-			if _, ok := userSecret.Annotations[certificateKey+"/user-info"]; !ok {
-				err = errors.Newf("No %s annotaion key", certificateKey+"/user-info").Err()
-			}
-		}
-	}
-	// No error that means we successfully got an userSecret
-	if err == nil {
-		c.userSecretName = userSecret.Name
-		c.acmeClientConfig.UserDataMap = userSecret.Data
-		if userInfo, ok := userSecret.Data["user-info"]; ok {
-			acmeUserInfo = &ACMEUserData{}
-			log.Info("ACMEUserInfo data found is secret", userSecret.Name)
-			userError := json.Unmarshal(userInfo, acmeUserInfo)
-			if userError == nil {
-				acmeUserRegistered = true
-			}
+	if data := c.acmeClientConfig.UserSecret.GetUserData(); len(data) > 0 {
+		acmeUserInfo = &ACMEUserData{}
+		userError := json.Unmarshal(data, acmeUserInfo)
+		if userError == nil {
+			acmeUserRegistered = true
 		}
 	}
 
@@ -235,20 +235,14 @@ func (c *Controller) ensureACMEClient() error {
 			return errors.FromErr(err).WithMessage("Failed to generate Key for New Acme User")
 		}
 		acmeUserInfo = &ACMEUserData{
-			Email: c.tpr.Spec.Email,
+			Email: c.acmeClientConfig.UserSecret.GetEmail(),
 			Key: pem.EncodeToMemory(&pem.Block{
 				Type:  "RSA PRIVATE KEY",
 				Bytes: x509.MarshalPKCS1PrivateKey(userKey),
 			}),
 		}
 	}
-
 	c.acmeClientConfig.UserData = acmeUserInfo
-	// Initiate ACME Client for config.
-	if err := c.loadProviderCredential(); err != nil {
-		return errors.FromErr(err).Err()
-	}
-
 	log.V(9).Infoln("Getting NewACMECLient with config", c.acmeClientConfig)
 	acmeClient, err := NewACMEClient(c.acmeClientConfig)
 	if err != nil {
@@ -273,45 +267,12 @@ func (c *Controller) registerACMEUser(acmeClient *ACMEClient) error {
 		return errors.FromErr(err).WithMessage("Failed to registering user for new domain").Err()
 	}
 
-	// Acme User registered Create The acmeUserSecret
-	secret := &apiv1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      c.tpr.Spec.ACMEUserSecretName,
-			Namespace: c.tpr.Namespace,
-			Labels: map[string]string{
-				certificateKey + "/user-info": "true",
-				certificateKey + "/cert-name": c.tpr.Name,
-			},
-			Annotations: map[string]string{
-				certificateKey + "/user-info": "true",
-				certificateKey + "/cert-name": c.tpr.Name,
-			},
-		},
-		Data: map[string][]byte{
-			"user-info": c.acmeClientConfig.UserData.Json(),
-		},
-		Type: "certificate.appscode.com/acme-user-info",
-	}
-	if secret.Name == "" {
-		secret.Name = defaultUserSecretPrefix + c.tpr.Name
-	}
-	c.userSecretName = secret.Name
-	log.Debugln("User Registered saving User Informations with Secret name", c.userSecretName)
-	_, err = c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Create(secret)
+	secret, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(c.tpr.Spec.ACMEUserSecretName, metav1.GetOptions{})
 	if err != nil {
-		return errors.FromErr(err).Err()
+		return err
 	}
-	return nil
-}
-
-func (c *Controller) loadProviderCredential() error {
-	if len(c.tpr.Spec.ProviderCredentialSecretName) > 0 {
-		cred, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(c.tpr.Spec.ProviderCredentialSecretName, metav1.GetOptions{})
-		if err != nil {
-			return errors.FromErr(err).Err()
-		}
-		c.acmeClientConfig.ProviderCredentials = cred.Data
-	}
+	secret.Data[ACMEUserDataJSON] = c.acmeClientConfig.UserData.Json()
+	c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Update(secret)
 	return nil
 }
 
@@ -322,10 +283,12 @@ func (c *Controller) save(cert acme.CertificateResource) error {
 		PrivateKey: cert.PrivateKey,
 	}
 
-	secret := certData.ToSecret(c.tpr.Name, c.tpr.Namespace)
-	_, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Create(secret)
-	if err != nil {
-		errors.FromErr(err).Err()
+	if c.tpr.Spec.Storage.Kubernetes != nil {
+		secret := certData.ToSecret(c.tpr.Name, c.tpr.Namespace, c.tpr.Spec.Storage.Kubernetes.Name)
+		_, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Create(secret)
+		if err != nil {
+			errors.FromErr(err).Err()
+		}
 	}
 
 	k8sCert, err := c.ExtClient.Certificates(c.tpr.Namespace).Get(c.tpr.Name, metav1.GetOptions{})
@@ -338,8 +301,11 @@ func (c *Controller) save(cert acme.CertificateResource) error {
 	k8sCert.Status = tapi.CertificateStatus{
 		CertificateObtained: true,
 		CreationTime:        &t,
-		ACMEUserSecretName:  c.userSecretName,
-		Details: tapi.ACMECertificateDetails{
+		Conditions: []tapi.CertificateCondition{{
+			Type:           tapi.CertificateCreated,
+			LastUpdateTime: t,
+		}},
+		Certificate: tapi.ACMECertificateDetails{
 			Domain:        cert.Domain,
 			CertURL:       cert.CertURL,
 			CertStableURL: cert.CertStableURL,
@@ -357,27 +323,27 @@ func (c *Controller) update(cert acme.CertificateResource) error {
 		PrivateKey: cert.PrivateKey,
 	}
 
-	secret := certData.ToSecret(c.tpr.Name, c.tpr.Namespace)
-	oldSecret, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(secret.Name, metav1.GetOptions{})
-	if err != nil {
-		return errors.FromErr(err).Err()
+	if c.tpr.Spec.Storage.Kubernetes != nil {
+		secret := certData.ToSecret(c.tpr.Name, c.tpr.Namespace, c.tpr.Spec.Storage.Kubernetes.Name)
+		oldSecret, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(secret.Name, metav1.GetOptions{})
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
+		oldSecret.Data = secret.Data
+		_, err = c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Update(oldSecret)
+		if err != nil {
+			return errors.FromErr(err).Err()
+		}
 	}
-	oldSecret.Data = secret.Data
-	_, err = c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Update(oldSecret)
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
+
 	return nil
 }
 
 func (c *Controller) processHTTPCertificate() error {
-	c.acmeClient.HTTPProviderLock.Lock()
-	defer c.acmeClient.HTTPProviderLock.Unlock()
-
-	switch c.tpr.Spec.HTTPProviderIngressReference.APIVersion {
+	switch c.tpr.Spec.ChallengeProvider.HTTP.Ingress.APIVersion {
 	case tapi_v1beta1.SchemeGroupVersion.String():
-		i, err := c.ExtClient.Ingresses(c.tpr.Spec.HTTPProviderIngressReference.Namespace).
-			Get(c.tpr.Spec.HTTPProviderIngressReference.Name, metav1.GetOptions{})
+		i, err := c.ExtClient.Ingresses(c.tpr.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
+			Get(c.tpr.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -417,8 +383,8 @@ func (c *Controller) processHTTPCertificate() error {
 		}
 		time.Sleep(time.Second * 5)
 	case "extensions/v1beta1":
-		i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Spec.HTTPProviderIngressReference.Namespace).
-			Get(c.tpr.Spec.HTTPProviderIngressReference.Name, metav1.GetOptions{})
+		i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
+			Get(c.tpr.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}

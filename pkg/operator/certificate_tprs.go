@@ -7,12 +7,12 @@ import (
 	"github.com/appscode/go/log"
 	sapi "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate"
+	"github.com/appscode/voyager/pkg/eventer"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
-	"github.com/appscode/voyager/pkg/eventer"
 )
 
 // Blocks caller. Intended to be called as a Go routine.

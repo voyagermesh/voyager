@@ -48,7 +48,7 @@ func TestACMECertData(t *testing.T) {
 	cert, err := NewACMECertDataFromSecret(certificateSecret, &api.Certificate{})
 	assert.Nil(t, err)
 
-	convertedCert := cert.ToSecret("hello", "default")
+	convertedCert := cert.ToSecret("hello", "default", "")
 	assert.Equal(t, certificateSecret, convertedCert)
 }
 

@@ -48,8 +48,8 @@ type ACMEClient struct {
 
 func NewACMEClient(config *ACMEConfig) (*ACMEClient, error) {
 	providerUrl := LetsEncryptProdURL
-	if config.ACMEServerUrl != "" {
-		providerUrl = config.ACMEServerUrl
+	if config.UserSecret.GetServerURL() != "" {
+		providerUrl = config.UserSecret.GetServerURL()
 	}
 
 	client, err := acme.NewClient(providerUrl, config.UserData, acme.RSA2048)
@@ -140,12 +140,32 @@ func NewACMEClient(config *ACMEConfig) (*ACMEClient, error) {
 	}
 }
 
+const (
+	ACMEUserEmail    = "acme-email"
+	ACMEUserDataJSON = "acme-user-data"
+	ACMEServerURL    = "acme-server-url"
+)
+
+type ACMEUserSecret map[string][]byte
+
+func (a ACMEUserSecret) GetEmail() string {
+	return string(a[ACMEUserEmail])
+}
+
+func (a ACMEUserSecret) GetUserData() []byte {
+	return a[ACMEUserDataJSON]
+}
+
+func (a ACMEUserSecret) GetServerURL() string {
+	return string(a[ACMEServerURL])
+}
+
 type ACMEConfig struct {
 	Provider            string
-	ACMEServerUrl       string
 	ProviderCredentials map[string][]byte
 	UserData            *ACMEUserData
 	UserDataMap         map[string][]byte
+	UserSecret          ACMEUserSecret
 }
 
 type ACMEUserData struct {
@@ -240,7 +260,7 @@ func NewACMECertDataFromSecret(s *apiv1.Secret, cert *api.Certificate) (ACMECert
 	return acmeCertData, nil
 }
 
-func (c *ACMECertData) ToSecret(name, namespace string) *apiv1.Secret {
+func (c *ACMECertData) ToSecret(name, namespace, secretName string) *apiv1.Secret {
 	log.Infoln("Revived certificates for name", name, "namespace", namespace)
 	data := make(map[string][]byte)
 
@@ -251,6 +271,10 @@ func (c *ACMECertData) ToSecret(name, namespace string) *apiv1.Secret {
 		data[apiv1.TLSPrivateKeyKey] = c.PrivateKey
 	}
 	log.Infoln("Certificate cert length", len(c.Cert), "private key length", len(c.PrivateKey))
+
+	if len(secretName) == 0 {
+		secretName = defaultCertPrefix + name
+	}
 	return &apiv1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "",
@@ -258,7 +282,7 @@ func (c *ACMECertData) ToSecret(name, namespace string) *apiv1.Secret {
 		},
 		Data: data,
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      defaultCertPrefix + name,
+			Name:      secretName,
 			Namespace: namespace,
 			Labels: map[string]string{
 				certificateKey: "true",
