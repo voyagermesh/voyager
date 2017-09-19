@@ -65,7 +65,7 @@ type CertificateStorage struct {
 }
 
 type CertificateStorageKubernetes struct {
-	// Secret name to store the certificate
+	// Secret name to store the certificate, default cert-<certificate-name>
 	Name string `json:"name,omitempty"`
 }
 

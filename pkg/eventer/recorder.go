@@ -14,6 +14,7 @@ const (
 	EventReasonCertificateRenewSuccessful  = "RenewSuccessful"
 	EventReasonCertificateCreateFailed     = "CreateFailed"
 	EventReasonCertificateCreateSuccessful = "CreateSuccessful"
+	EventReasonCertificateInvalid     = "CertificateInvalid"
 
 	// Ingress Events
 	EventReasonIngressHAProxyConfigCreateFailed      = "HAProxyConfigCreateFailed"

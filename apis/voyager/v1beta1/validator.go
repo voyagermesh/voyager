@@ -7,6 +7,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/validation"
+	"net/url"
 )
 
 type indices struct {
@@ -245,6 +246,53 @@ func checkOptionalPort(port intstr.IntOrString) (int, error) {
 }
 
 func (c Certificate) IsValid() error {
+	if len(c.Spec.Domains) == 0 {
+		return fmt.Errorf("doamin list is empty")
+	}
+
+	if c.Spec.ChallengeProvider.HTTP == nil && c.Spec.ChallengeProvider.DNS == nil {
+		return fmt.Errorf("certificate has no valid challange provider")
+	}
+
+	if c.Spec.ChallengeProvider.HTTP != nil && c.Spec.ChallengeProvider.DNS != nil {
+		return fmt.Errorf("invalid provider specification, used both http and dns provider")
+	}
+
+	if c.Spec.ChallengeProvider.HTTP != nil {
+		if len(c.Spec.ChallengeProvider.HTTP.Ingress.Name) == 0 ||
+			len(c.Spec.ChallengeProvider.HTTP.Ingress.Namespace) == 0 ||
+			len(c.Spec.ChallengeProvider.HTTP.Ingress.APIVersion) == 0 {
+			return fmt.Errorf("invalid ingress reference")
+		}
+	}
+
+	if c.Spec.ChallengeProvider.DNS != nil {
+		if len(c.Spec.ChallengeProvider.DNS.ProviderType) == 0 {
+			return fmt.Errorf("no dns provider name specified")
+		}
+	}
+
+	if len(c.Spec.ACMEUserSecretName) == 0 {
+		return fmt.Errorf("no user secret name specified")
+	}
+
+	if c.Spec.Storage.Kubernetes == nil && c.Spec.Storage.Vault == nil {
+		return fmt.Errorf("no storage specified")
+	}
+
+	if c.Spec.Storage.Kubernetes != nil && c.Spec.Storage.Vault != nil {
+		return fmt.Errorf("invalid storage specification, used both storage")
+	}
+
+	if v := c.Spec.Storage.Vault; v != nil {
+		_, err := url.Parse(v.Address)
+		if err != nil {
+			return err
+		}
+		if len(v.Token) == 0 {
+			return fmt.Errorf("no valut token specified")
+		}
+	}
 
 	return nil
 }

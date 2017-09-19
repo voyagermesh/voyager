@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
+	"github.com/appscode/voyager/pkg/eventer"
 )
 
 // Blocks caller. Intended to be called as a Go routine.
@@ -32,6 +33,17 @@ func (op *Operator) initCertificateTPRWatcher() cache.Controller {
 				if cert, ok := obj.(*sapi.Certificate); ok {
 					log.Infof("%s %s@%s added", cert.GroupVersionKind(), cert.Name, cert.Namespace)
 
+					if err := cert.IsValid(); err != nil {
+						op.recorder.Eventf(
+							cert.ObjectReference(),
+							apiv1.EventTypeWarning,
+							eventer.EventReasonCertificateInvalid,
+							"Reason: %s",
+							err.Error(),
+						)
+						return
+					}
+
 					err := certificate.NewController(op.KubeConfig, op.KubeClient, op.ExtClient, op.Opt, cert).Process()
 					if err != nil {
 						log.Error(err)
@@ -49,6 +61,18 @@ func (op *Operator) initCertificateTPRWatcher() cache.Controller {
 					log.Errorln(errors.New("Invalid Certificate object"))
 					return
 				}
+
+				if err := newCert.IsValid(); err != nil {
+					op.recorder.Eventf(
+						newCert.ObjectReference(),
+						apiv1.EventTypeWarning,
+						eventer.EventReasonCertificateInvalid,
+						"Reason: %s",
+						err.Error(),
+					)
+					return
+				}
+
 				if !reflect.DeepEqual(oldCert.Spec, newCert.Spec) {
 					err := certificate.NewController(op.KubeConfig, op.KubeClient, op.ExtClient, op.Opt, newCert).Process()
 					if err != nil {
