@@ -80,5 +80,5 @@ metadata:
   namespace: default
 data:
   GCE_PROJECT: <project-name>
-  GOOGLE_APPLICATION_CREDENTIALS: <credential>
+  GCE_SERVICE_ACCOUNT_DATA: <credential>
 ```
