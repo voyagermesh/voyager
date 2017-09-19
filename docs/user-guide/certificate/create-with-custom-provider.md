@@ -16,7 +16,7 @@ metadata:
   namespace: default
 data:
   GCE_PROJECT: <project-name>
-  GCE_SERVICE_ACCOUNT_DATA: <credential>
+  GCE_SERVICE_ACCOUNT_DATA: <service-account-json>
 ```
 
 Create the Creatificate object
