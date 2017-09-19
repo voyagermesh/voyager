@@ -17,7 +17,7 @@ metadata:
   namespace: default
 data:
   GCE_PROJECT: <project-name>
-  GOOGLE_APPLICATION_CREDENTIALS: <service-account-json>
+  GCE_SERVICE_ACCOUNT_DATA: <service-account-json>
 ```
 
 Create the Certificate resource now.
@@ -35,7 +35,7 @@ spec:
   provider: googlecloud
   providerCredentialSecretName: test-gcp-secret
 ```
-In this example the domains DNS providers are `googlecloude`.
+In this example the domains DNS providers are `googlecloud`.
 
 See the Supported Providers List [here](provider.md)
 
