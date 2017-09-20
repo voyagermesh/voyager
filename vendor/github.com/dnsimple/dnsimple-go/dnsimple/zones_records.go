@@ -28,6 +28,18 @@ func zoneRecordPath(accountID string, zoneID string, recordID int) (path string)
 	return
 }
 
+// zoneRecordResponse represents a response from an API method that returns a ZoneRecord struct.
+type zoneRecordResponse struct {
+	Response
+	Data *ZoneRecord `json:"data"`
+}
+
+// zoneRecordsResponse represents a response from an API method that returns a collection of ZoneRecord struct.
+type zoneRecordsResponse struct {
+	Response
+	Data []ZoneRecord `json:"data"`
+}
+
 // ZoneRecordListOptions specifies the optional parameters you can provide
 // to customize the ZonesService.ListZoneRecords method.
 type ZoneRecordListOptions struct {
@@ -44,24 +56,12 @@ type ZoneRecordListOptions struct {
 	ListOptions
 }
 
-// ZoneRecordResponse represents a response from an API method that returns a ZoneRecord struct.
-type ZoneRecordResponse struct {
-	Response
-	Data *ZoneRecord `json:"data"`
-}
-
-// ZoneRecordsResponse represents a response from an API method that returns a collection of ZoneRecord struct.
-type ZoneRecordsResponse struct {
-	Response
-	Data []ZoneRecord `json:"data"`
-}
-
 // ListRecords lists the zone records for a zone.
 //
 // See https://developer.dnsimple.com/v2/zones/#list
-func (s *ZonesService) ListRecords(accountID string, zoneID string, options *ZoneRecordListOptions) (*ZoneRecordsResponse, error) {
+func (s *ZonesService) ListRecords(accountID string, zoneID string, options *ZoneRecordListOptions) (*zoneRecordsResponse, error) {
 	path := versioned(zoneRecordPath(accountID, zoneID, 0))
-	recordsResponse := &ZoneRecordsResponse{}
+	recordsResponse := &zoneRecordsResponse{}
 
 	path, err := addURLQueryOptions(path, options)
 	if err != nil {
@@ -80,9 +80,9 @@ func (s *ZonesService) ListRecords(accountID string, zoneID string, options *Zon
 // CreateRecord creates a zone record.
 //
 // See https://developer.dnsimple.com/v2/zones/#create
-func (s *ZonesService) CreateRecord(accountID string, zoneID string, recordAttributes ZoneRecord) (*ZoneRecordResponse, error) {
+func (s *ZonesService) CreateRecord(accountID string, zoneID string, recordAttributes ZoneRecord) (*zoneRecordResponse, error) {
 	path := versioned(zoneRecordPath(accountID, zoneID, 0))
-	recordResponse := &ZoneRecordResponse{}
+	recordResponse := &zoneRecordResponse{}
 
 	resp, err := s.client.post(path, recordAttributes, recordResponse)
 	if err != nil {
@@ -96,9 +96,9 @@ func (s *ZonesService) CreateRecord(accountID string, zoneID string, recordAttri
 // GetRecord fetches a zone record.
 //
 // See https://developer.dnsimple.com/v2/zones/#get
-func (s *ZonesService) GetRecord(accountID string, zoneID string, recordID int) (*ZoneRecordResponse, error) {
+func (s *ZonesService) GetRecord(accountID string, zoneID string, recordID int) (*zoneRecordResponse, error) {
 	path := versioned(zoneRecordPath(accountID, zoneID, recordID))
-	recordResponse := &ZoneRecordResponse{}
+	recordResponse := &zoneRecordResponse{}
 
 	resp, err := s.client.get(path, recordResponse)
 	if err != nil {
@@ -112,9 +112,9 @@ func (s *ZonesService) GetRecord(accountID string, zoneID string, recordID int) 
 // UpdateRecord updates a zone record.
 //
 // See https://developer.dnsimple.com/v2/zones/#update
-func (s *ZonesService) UpdateRecord(accountID string, zoneID string, recordID int, recordAttributes ZoneRecord) (*ZoneRecordResponse, error) {
+func (s *ZonesService) UpdateRecord(accountID string, zoneID string, recordID int, recordAttributes ZoneRecord) (*zoneRecordResponse, error) {
 	path := versioned(zoneRecordPath(accountID, zoneID, recordID))
-	recordResponse := &ZoneRecordResponse{}
+	recordResponse := &zoneRecordResponse{}
 	resp, err := s.client.patch(path, recordAttributes, recordResponse)
 
 	if err != nil {
@@ -128,9 +128,9 @@ func (s *ZonesService) UpdateRecord(accountID string, zoneID string, recordID in
 // DeleteRecord PERMANENTLY deletes a zone record from the zone.
 //
 // See https://developer.dnsimple.com/v2/zones/#delete
-func (s *ZonesService) DeleteRecord(accountID string, zoneID string, recordID int) (*ZoneRecordResponse, error) {
+func (s *ZonesService) DeleteRecord(accountID string, zoneID string, recordID int) (*zoneRecordResponse, error) {
 	path := versioned(zoneRecordPath(accountID, zoneID, recordID))
-	recordResponse := &ZoneRecordResponse{}
+	recordResponse := &zoneRecordResponse{}
 
 	resp, err := s.client.delete(path, nil, nil)
 	if err != nil {

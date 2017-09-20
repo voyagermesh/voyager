@@ -426,7 +426,6 @@ func (c *loadBalancerController) ensureService(old *api.Ingress) (*apiv1.Service
 }
 
 func (c *loadBalancerController) newPods() *apps.Deployment {
-	secrets := c.Ingress.Secrets()
 	deployment := &apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.Ingress.OffshootName(),
@@ -475,10 +474,8 @@ func (c *loadBalancerController) newPods() *apps.Deployment {
 							},
 							Ports:        []apiv1.ContainerPort{},
 							Resources:    c.Ingress.Spec.Resources,
-							VolumeMounts: VolumeMounts(secrets),
 						},
 					},
-					Volumes: Volumes(secrets),
 				},
 			},
 		},

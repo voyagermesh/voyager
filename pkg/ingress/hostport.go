@@ -485,7 +485,6 @@ func (c *hostPortController) ensureService(old *api.Ingress) (*apiv1.Service, er
 }
 
 func (c *hostPortController) newPods() *apps.Deployment {
-	secrets := c.Ingress.Secrets()
 	daemon := &apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.Ingress.OffshootName(),
@@ -533,10 +532,8 @@ func (c *hostPortController) newPods() *apps.Deployment {
 							},
 							Ports:        []apiv1.ContainerPort{},
 							Resources:    c.Ingress.Spec.Resources,
-							VolumeMounts: VolumeMounts(secrets),
 						},
 					},
-					Volumes:     Volumes(secrets),
 					HostNetwork: true,
 					DNSPolicy:   apiv1.DNSClusterFirstWithHostNet,
 				},

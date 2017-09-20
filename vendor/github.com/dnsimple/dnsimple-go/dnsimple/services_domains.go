@@ -19,9 +19,9 @@ type DomainServiceSettings struct {
 // AppliedServices lists the applied one-click services for a domain.
 //
 // See https://developer.dnsimple.com/v2/services/domains/#applied
-func (s *ServicesService) AppliedServices(accountID string, domainID string, options *ListOptions) (*ServicesResponse, error) {
+func (s *ServicesService) AppliedServices(accountID string, domainID string, options *ListOptions) (*servicesResponse, error) {
 	path := versioned(domainServicesPath(accountID, domainID, ""))
-	servicesResponse := &ServicesResponse{}
+	servicesResponse := &servicesResponse{}
 
 	path, err := addURLQueryOptions(path, options)
 	if err != nil {
@@ -40,9 +40,9 @@ func (s *ServicesService) AppliedServices(accountID string, domainID string, opt
 // ApplyService applies a one-click services to a domain.
 //
 // See https://developer.dnsimple.com/v2/services/domains/#apply
-func (s *ServicesService) ApplyService(accountID string, serviceIdentifier string, domainID string, settings DomainServiceSettings) (*ServiceResponse, error) {
+func (s *ServicesService) ApplyService(accountID string, serviceIdentifier string, domainID string, settings DomainServiceSettings) (*serviceResponse, error) {
 	path := versioned(domainServicesPath(accountID, domainID, serviceIdentifier))
-	serviceResponse := &ServiceResponse{}
+	serviceResponse := &serviceResponse{}
 
 	resp, err := s.client.post(path, settings, nil)
 	if err != nil {
@@ -56,9 +56,9 @@ func (s *ServicesService) ApplyService(accountID string, serviceIdentifier strin
 // UnapplyService unapplies a one-click services from a domain.
 //
 // See https://developer.dnsimple.com/v2/services/domains/#unapply
-func (s *ServicesService) UnapplyService(accountID string, serviceIdentifier string, domainID string) (*ServiceResponse, error) {
+func (s *ServicesService) UnapplyService(accountID string, serviceIdentifier string, domainID string) (*serviceResponse, error) {
 	path := versioned(domainServicesPath(accountID, domainID, serviceIdentifier))
-	serviceResponse := &ServiceResponse{}
+	serviceResponse := &serviceResponse{}
 
 	resp, err := s.client.delete(path, nil, nil)
 	if err != nil {

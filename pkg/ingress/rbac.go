@@ -61,6 +61,17 @@ func (c *controller) ensureRoles() error {
 				Resources: []string{"configmaps"},
 				Verbs:     []string{"get", "list", "watch"},
 			},
+			// We need to have those permission for secret mounter
+			{
+				APIGroups: []string{apiv1.GroupName},
+				Resources: []string{"secrets"},
+				Verbs:     []string{"get", "list", "watch"},
+			},
+			{
+				APIGroups: []string{apiv1.GroupName},
+				Resources: []string{"certificates"},
+				Verbs:     []string{"get", "list", "watch"},
+			},
 		},
 	}
 
@@ -70,14 +81,14 @@ func (c *controller) ensureRoles() error {
 			APIGroups:     []string{api.GroupName},
 			Resources:     []string{"ingresses"},
 			ResourceNames: []string{c.Ingress.Name},
-			Verbs:         []string{"get"},
+			Verbs:         []string{"get", "list", "watch"},
 		})
 	case api_v1beta1.APISchemaIngress:
 		defaultRole.Rules = append(defaultRole.Rules, rbac.PolicyRule{
 			APIGroups:     []string{extensions.GroupName},
 			Resources:     []string{"ingresses"},
 			ResourceNames: []string{c.Ingress.Name},
-			Verbs:         []string{"get"},
+			Verbs:         []string{"get", "list", "watch"},
 		})
 	}
 
