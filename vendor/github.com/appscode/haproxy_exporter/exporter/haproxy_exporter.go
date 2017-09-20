@@ -26,8 +26,10 @@ const (
 	// # pxname,svname,qcur,qmax,scur,smax,slim,stot,bin,bout,dreq,dresp,ereq,econ,eresp,wretr,wredis,status,weight,act,bck,chkfail,chkdown,lastchg,downtime,qlimit,pid,iid,sid,throttle,lbtot,tracked,type,rate,rate_lim,rate_max,check_status,check_code,check_duration,hrsp_1xx,hrsp_2xx,hrsp_3xx,hrsp_4xx,hrsp_5xx,hrsp_other,hanafail,req_rate,req_rate_max,req_tot,cli_abrt,srv_abrt,
 	// HAProxy 1.5
 	// pxname,svname,qcur,qmax,scur,smax,slim,stot,bin,bout,dreq,dresp,ereq,econ,eresp,wretr,wredis,status,weight,act,bck,chkfail,chkdown,lastchg,downtime,qlimit,pid,iid,sid,throttle,lbtot,tracked,type,rate,rate_lim,rate_max,check_status,check_code,check_duration,hrsp_1xx,hrsp_2xx,hrsp_3xx,hrsp_4xx,hrsp_5xx,hrsp_other,hanafail,req_rate,req_rate_max,req_tot,cli_abrt,srv_abrt,comp_in,comp_out,comp_byp,comp_rsp,lastsess,
-	expectedCsvFieldCount = 52
-	statusField           = 17
+	// HAProxy 1.5.19
+	// pxname,svname,qcur,qmax,scur,smax,slim,stot,bin,bout,dreq,dresp,ereq,econ,eresp,wretr,wredis,status,weight,act,bck,chkfail,chkdown,lastchg,downtime,qlimit,pid,iid,sid,throttle,lbtot,tracked,type,rate,rate_lim,rate_max,check_status,check_code,check_duration,hrsp_1xx,hrsp_2xx,hrsp_3xx,hrsp_4xx,hrsp_5xx,hrsp_other,hanafail,req_rate,req_rate_max,req_tot,cli_abrt,srv_abrt,comp_in,comp_out,comp_byp,comp_rsp,lastsess,last_chk,last_agt,qtime,ctime,rtime,ttime,
+	minimumCsvFieldCount = 33
+	statusField          = 17
 )
 
 var (
@@ -213,6 +215,10 @@ func NewExporter(uri string, ingress, serverMetricFields string, timeout time.Du
 		42: newBackendMetric("http_responses_total", "Total of HTTP responses.", e.getConstLabels(prometheus.Labels{"code": "4xx"})),
 		43: newBackendMetric("http_responses_total", "Total of HTTP responses.", e.getConstLabels(prometheus.Labels{"code": "5xx"})),
 		44: newBackendMetric("http_responses_total", "Total of HTTP responses.", e.getConstLabels(prometheus.Labels{"code": "other"})),
+		58: newBackendMetric("http_queue_time_average_seconds", "Avg. HTTP queue time for last 1024 successful connections.", e.getConstLabels(nil)),
+		59: newBackendMetric("http_connect_time_average_seconds", "Avg. HTTP connect time for last 1024 successful connections.", e.getConstLabels(nil)),
+		60: newBackendMetric("http_response_time_average_seconds", "Avg. HTTP response time for last 1024 successful connections.", e.getConstLabels(nil)),
+		61: newBackendMetric("http_total_time_average_seconds", "Avg. HTTP total time for last 1024 successful connections.", e.getConstLabels(nil)),
 	}
 	e.serverMetrics, err = e.filterServerMetrics(serverMetricFields)
 	return e, err
@@ -368,8 +374,8 @@ func (e *Exporter) collectMetrics(metrics chan<- prometheus.Metric) {
 }
 
 func (e *Exporter) parseRow(csvRow []string) {
-	if len(csvRow) < expectedCsvFieldCount {
-		log.Errorf("Wrong CSV field count: %d vs. %d", len(csvRow), expectedCsvFieldCount)
+	if len(csvRow) < minimumCsvFieldCount {
+		log.Errorf("Parser expected at least %d CSV fields, but got: %d", minimumCsvFieldCount, len(csvRow))
 		e.csvParseFailures.Inc()
 		return
 	}
@@ -405,6 +411,9 @@ func parseStatusField(value string) int64 {
 
 func (e *Exporter) exportCsvFields(metrics map[int]*prometheus.GaugeVec, csvRow []string, labels ...string) {
 	for fieldIdx, metric := range metrics {
+		if fieldIdx > len(csvRow)-1 {
+			break
+		}
 		valueStr := csvRow[fieldIdx]
 		if valueStr == "" {
 			continue
