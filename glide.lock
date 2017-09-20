@@ -1,5 +1,5 @@
 hash: c009c2613fa7f75cef0a4e3971021f5e033cb43bb4c4e0af3db18dfbcb453e72
-updated: 2017-09-15T10:42:50.517375386-07:00
+updated: 2017-09-19T19:44:49.67391272-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -27,7 +27,7 @@ imports:
   - types
   - version
 - name: github.com/appscode/haproxy_exporter
-  version: 599f8e0f418ba29629985265f8caff016d4ea661
+  version: 158da9d29b6dc44b2314954d47eeba10a6a4aa53
   subpackages:
   - exporter
 - name: github.com/appscode/log
