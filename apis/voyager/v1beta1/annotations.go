@@ -5,9 +5,9 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/appscode/voyager/apis/voyager"
-	"time"
 )
 
 const (

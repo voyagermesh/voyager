@@ -226,9 +226,9 @@ func TestTemplate(t *testing.T) {
 				},
 			},
 			{
-				SharedInfo:    &SharedInfo{HSTSMaxAge:100},
-				FrontendName:  "with-max-age",
-				OffloadSSL: true,
+				SharedInfo:   &SharedInfo{HSTSMaxAge: 100},
+				FrontendName: "with-max-age",
+				OffloadSSL:   true,
 			},
 		},
 		TCPService: []*TCPService{
