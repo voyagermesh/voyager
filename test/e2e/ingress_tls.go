@@ -384,4 +384,116 @@ var _ = Describe("IngressTLS", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
+
+	Describe("With HSTS Max Age Specified", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.HSTSMaxAge] = "100"
+			ing.Spec = api.IngressSpec{
+				TLS: []api.IngressTLS{
+					{
+						SecretName: secret.Name,
+						Hosts:      []string{"http.appscode.dev"},
+					},
+				},
+				Rules: []api.IngressRule{
+					{
+						Host: "http.appscode.dev",
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
+									{
+										Path: "/testpath",
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: f.Ingress.TestServerName(),
+												ServicePort: intstr.FromInt(80),
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+		})
+
+		It("Should Set max-age Header to Specified Value", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			svc, err := f.Ingress.GetOffShootService(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(svc.Spec.Ports)).Should(Equal(1))
+			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(443)))
+
+			err = f.Ingress.DoHTTPs(framework.MaxRetry, "http.appscode.dev", "", ing, eps, "GET", "/testpath/ok",
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok")) &&
+						Expect(r.ResponseHeader.Get("Strict-Transport-Security")).Should(Equal("max-age=100"))
+				})
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+	Describe("With HSTS Preload and Subdomains", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.HSTSPreload] = "true"
+			ing.Annotations[api.HSTSIncludeSubDomains] = "true"
+			ing.Spec = api.IngressSpec{
+				TLS: []api.IngressTLS{
+					{
+						SecretName: secret.Name,
+						Hosts:      []string{"http.appscode.dev"},
+					},
+				},
+				Rules: []api.IngressRule{
+					{
+						Host: "http.appscode.dev",
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
+									{
+										Path: "/testpath",
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: f.Ingress.TestServerName(),
+												ServicePort: intstr.FromInt(80),
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+		})
+
+		It("Should Add HSTS preload and includeSubDomains Header", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			svc, err := f.Ingress.GetOffShootService(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(svc.Spec.Ports)).Should(Equal(1))
+			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(443)))
+
+			err = f.Ingress.DoHTTPs(framework.MaxRetry, "http.appscode.dev", "", ing, eps, "GET", "/testpath/ok",
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok")) &&
+						Expect(r.ResponseHeader.Get("Strict-Transport-Security")).
+							Should(Equal("max-age=15768000; preload; includeSubDomains"))
+				})
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
 })
