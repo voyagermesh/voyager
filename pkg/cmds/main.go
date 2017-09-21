@@ -45,6 +45,7 @@ func NewCmdVoyager(version string) *cobra.Command {
 	rootCmd.AddCommand(NewCmdExport(version))
 	rootCmd.AddCommand(NewCmdTLSMount())
 	rootCmd.AddCommand(NewCmdCheck())
+	rootCmd.AddCommand(NewCmdKloader())
 	rootCmd.AddCommand(v.NewCmdVersion())
 
 	return rootCmd

@@ -10,7 +10,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/appscode/log"
+	"github.com/appscode/go/log"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 

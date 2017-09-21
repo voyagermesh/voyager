@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/appscode/log"
+	"github.com/appscode/go/log"
 	"github.com/appscode/voyager/apis/voyager/v1beta1"
 	voyagerv1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"

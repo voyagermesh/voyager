@@ -1,9 +1,8 @@
 package: github.com/appscode/voyager
 import:
-- package: github.com/appscode/errors
-  version: v2
 - package: github.com/appscode/go
-- package: github.com/appscode/log
+- package: github.com/appscode/kloader
+  version: 4.0.1
 - package: github.com/mikespook/golib
 - package: github.com/spf13/cobra
   version: master
