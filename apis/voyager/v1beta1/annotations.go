@@ -5,6 +5,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/appscode/voyager/apis/voyager"
 )
@@ -194,6 +195,14 @@ const (
 
 	// Pass TLS connections directly to backend; do not offload.
 	SSLPassthrough = IngressKey + "/ssl-passthrough"
+
+	EnableHSTS = IngressKey + "/hsts"
+	// This specifies the time (in seconds) the browser should connect to the server using the HTTPS connection.
+	// https://blog.stackpath.com/glossary/hsts/
+	HSTSMaxAge  = IngressKey + "/hsts-max-age"
+	HSTSPreload = IngressKey + "/hsts-preload"
+	// If specified, this HSTS rule applies to all of the site's subdomains as well.
+	HSTSIncludeSubDomains = IngressKey + "/hsts-include-subdomains"
 )
 
 func (r Ingress) OffshootName() string {
@@ -251,6 +260,38 @@ func (r Ingress) StickySessionCookieHashType() string {
 
 func (r Ingress) EnableCORS() bool {
 	v, _ := GetBool(r.Annotations, CORSEnabled)
+	return v
+}
+
+func (r Ingress) EnableHSTS() bool {
+	v, err := GetBool(r.Annotations, EnableHSTS)
+	if err != nil {
+		return true // enable hsts by default
+	}
+	return v
+}
+
+func (r Ingress) HSTSMaxAge() int {
+	v := GetString(r.Annotations, HSTSMaxAge)
+	ageInSec, err := strconv.Atoi(v)
+	if err == nil {
+		return ageInSec
+	}
+	d, err := time.ParseDuration(v)
+	if err == nil {
+		return int(d.Seconds())
+	}
+	// default 6 months
+	return 15768000
+}
+
+func (r Ingress) HSTSPreload() bool {
+	v, _ := GetBool(r.Annotations, HSTSPreload)
+	return v
+}
+
+func (r Ingress) HSTSIncludeSubDomains() bool {
+	v, _ := GetBool(r.Annotations, HSTSIncludeSubDomains)
 	return v
 }
 
