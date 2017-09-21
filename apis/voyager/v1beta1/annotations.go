@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/appscode/voyager/apis/voyager"
+	"time"
 )
 
 const (
@@ -259,8 +260,17 @@ func (r Ingress) EnableCORS() bool {
 }
 
 func (r Ingress) HSTSMaxAge() int {
-	v, _ := GetInt(r.Annotations, HSTSMaxAge)
-	return v
+	v := GetString(r.Annotations, HSTSMaxAge)
+	ageInSec, err := strconv.Atoi(v)
+	if err == nil {
+		return ageInSec
+	}
+	d, err := time.ParseDuration(v)
+	if err == nil {
+		return int(d.Seconds())
+	}
+	// default 6 months
+	return 15768000
 }
 
 func (r Ingress) ProxyBodySize() string {
