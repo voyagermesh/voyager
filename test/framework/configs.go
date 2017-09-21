@@ -8,7 +8,7 @@ import (
 	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/go/flags"
 	"github.com/appscode/go/log"
-	"github.com/mitchellh/go-homedir"
+	"k8s.io/client-go/util/homedir"
 )
 
 func init() {
@@ -60,12 +60,7 @@ func (c *E2EConfig) validate() {
 	}
 
 	if len(c.KubeConfig) == 0 {
-		userHome, err := homedir.Dir()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		c.KubeConfig = filepath.Join(userHome, ".kube/config")
+		c.KubeConfig = filepath.Join(homedir.HomeDir(), ".kube/config")
 	}
 
 	if len(c.TestNamespace) == 0 {

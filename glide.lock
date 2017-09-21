@@ -1,19 +1,11 @@
-hash: c009c2613fa7f75cef0a4e3971021f5e033cb43bb4c4e0af3db18dfbcb453e72
-updated: 2017-09-20T12:41:52.918756648+06:00
+hash: 479ac91e3b925ac6d10610120a5df82a290693ce640563df44fb10b276d1b995
+updated: 2017-09-21T02:07:53.401865363-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
   subpackages:
   - compute/metadata
   - internal
-- name: github.com/alecthomas/template
-  version: a0175ee3bccc567396460bf5acd36800cb10c49c
-  subpackages:
-  - parse
-- name: github.com/alecthomas/units
-  version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
-- name: github.com/appscode/errors
-  version: 748883e321a9f99fe901bd2663c7af3fcae43ea4
 - name: github.com/appscode/go
   version: d1fbd14e5c6e78557c12f6d2c9c282b3c0d0c612
   subpackages:
@@ -21,15 +13,22 @@ imports:
   - crypto/rand
   - errors
   - flags
+  - hold
   - log
   - runtime
   - strings
   - types
   - version
 - name: github.com/appscode/haproxy_exporter
-  version: 158da9d29b6dc44b2314954d47eeba10a6a4aa53
+  version: 125b45c2c942943eea605d165ff5f7533db41797
   subpackages:
   - exporter
+- name: github.com/appscode/kloader
+  version: a479e44d760e4fadf7dbc31f1e39303d5e0a3057
+  subpackages:
+  - cmds
+  - controller
+  - volume
 - name: github.com/appscode/log
   version: 68e0e42e42c01371f3950571fc87c2298a51dd8f
   subpackages:
@@ -89,7 +88,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/coreos/prometheus-operator
-  version: 1cd5aeb023a31b804a4f9f26922b058010923af3
+  version: f5284c9eddc956775e06f854a9bffc6bfece3d9c
   subpackages:
   - pkg/client/monitoring/v1alpha1
 - name: github.com/cpuguy83/go-md2man
@@ -151,7 +150,7 @@ imports:
   subpackages:
   - lru
 - name: github.com/golang/protobuf
-  version: 8ee79997227bf9b34611aee7946ae64735e6fd93
+  version: 4bd1920723d7b7c925de087aa32e2187708897f7
   subpackages:
   - proto
 - name: github.com/google/go-querystring
@@ -182,8 +181,6 @@ imports:
   version: 14b04e0594ef6a9fd943363b135656f0ec8c9d0e
 - name: github.com/juju/ratelimit
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
-- name: github.com/lib/pq
-  version: 23da1db4f16d9658a86ae9b717c245fc078f10f1
 - name: github.com/mailru/easyjson
   version: d5b7844b561a7bc640052f1b935f7b800330d7e0
   subpackages:
@@ -198,21 +195,16 @@ imports:
   version: 5d001d020961ae1c184f9f8152fdc73810481677
 - name: github.com/mikespook/golib
   version: 38fe6917d34b267a79c3432369e7dcc379e2d5b3
-- name: github.com/mitchellh/go-homedir
-  version: b8bc1bf767474819792c23f32d8286a45736f1c6
+  subpackages:
+  - autoinc
+  - idgen
+  - signal
 - name: github.com/moul/http2curl
   version: 9ac6cf4d929b2fa8fd2d2e6dec5bb0feb4f4911d
 - name: github.com/onsi/ginkgo
-  version: 67b9df7f55fe1165fd9ad49aca7754cce01a42b8
+  version: 9eda700730cba42af70d53180f9dcce9266bc2bc
   subpackages:
   - config
-  - ginkgo
-  - ginkgo/convert
-  - ginkgo/interrupthandler
-  - ginkgo/nodot
-  - ginkgo/testrunner
-  - ginkgo/testsuite
-  - ginkgo/watch
   - internal/codelocation
   - internal/containernode
   - internal/failer
@@ -230,11 +222,9 @@ imports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: d59fa0ac68bb5dd932ee8d24eed631cdd519efc3
+  version: c893efa28eb45626cdaa76c9f653b62488858837
   subpackages:
   - format
-  - gstruct
-  - gstruct/errors
   - internal/assertion
   - internal/asyncassertion
   - internal/oraclematcher
@@ -252,7 +242,7 @@ imports:
   subpackages:
   - ovh
 - name: github.com/pkg/errors
-  version: a22138067af1c4942683050411a841ade67fe1eb
+  version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/prometheus/client_golang
   version: c5b7fccd204277076155f10851dad72b76a49317
   subpackages:
@@ -263,7 +253,7 @@ imports:
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 2f17f4a9d485bf34b4bfaccc273805040e4f86c8
+  version: 13ba4ddd0caa9c28ca7b7bffe1dfa9ed8d5ef207
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
@@ -271,7 +261,9 @@ imports:
   - model
   - version
 - name: github.com/prometheus/procfs
-  version: 454a56f35412459b5e684fd5ec0f9211b94f002a
+  version: 65c1f6f8f0fc1e2185eb9863a3bc751496404259
+  subpackages:
+  - xfs
 - name: github.com/PuerkitoBio/purell
   version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
 - name: github.com/PuerkitoBio/urlesc
@@ -280,8 +272,8 @@ imports:
   version: 300106c228d52c8941d4b3de6054a6062a86dda3
 - name: github.com/shurcooL/sanitized_anchor_name
   version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
-- name: github.com/sirupsen/logrus
-  version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
+- name: github.com/Sirupsen/logrus
+  version: 51fe59aca108dc5680109e7b2051cbdcfa5a253c
 - name: github.com/spf13/cobra
   version: b78744579491c1ceeaaa3b40205e56b0591b93a3
   subpackages:
@@ -303,7 +295,7 @@ imports:
   subpackages:
   - codec
 - name: github.com/xenolf/lego
-  version: e26d0543d6593e70cc76efd95912dc7674882432
+  version: c6958564222a0451a58df1b4ecb5bc5da4e03aff
   repo: https://github.com/appscode/lego.git
   vcs: git
   subpackages:
@@ -332,6 +324,9 @@ imports:
   subpackages:
   - context
   - context/ctxhttp
+  - html
+  - html/atom
+  - html/charset
   - http2
   - http2/hpack
   - idna
@@ -355,7 +350,18 @@ imports:
   version: 2910a502d2bf9e43193af9d68ca516529614eed3
   subpackages:
   - cases
+  - encoding
+  - encoding/charmap
+  - encoding/htmlindex
+  - encoding/internal
+  - encoding/internal/identifier
+  - encoding/japanese
+  - encoding/korean
+  - encoding/simplifiedchinese
+  - encoding/traditionalchinese
+  - encoding/unicode
   - internal/tag
+  - internal/utf8internal
   - language
   - runes
   - secure/bidirule
@@ -367,17 +373,12 @@ imports:
 - name: google.golang.org/api
   version: e3824ed33c72bf7e81da0286772c34b987520914
   subpackages:
-  - cloudmonitoring/v2beta2
-  - compute/v0.beta
   - compute/v1
   - container/v1
   - dns/v1
   - gensupport
   - googleapi
   - googleapi/internal/uritemplates
-  - logging/v2beta1
-  - monitoring/v3
-  - pubsub/v1
 - name: google.golang.org/appengine
   version: 12d5545dc1cfa6047a286d5e853841b6471f4c19
   subpackages:
@@ -390,8 +391,6 @@ imports:
   - internal/remote_api
   - internal/urlfetch
   - urlfetch
-- name: gopkg.in/alecthomas/kingpin.v2
-  version: 1087e65c9441605df944fb12c33f0fe7072d18ca
 - name: gopkg.in/gcfg.v1
   version: 27e4946190b4a327b539185f2b5b1f7c84730728
   subpackages:
@@ -401,7 +400,12 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/ini.v1
-  version: d3de07a94d22b4a0972deb4b96d790c2c0ce8333
+  version: 20b96f641a5ea98f2f8619ff4f3e061cff4833bd
+- name: gopkg.in/mgo.v2
+  version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
+  subpackages:
+  - bson
+  - internal/json
 - name: gopkg.in/square/go-jose.v1
   version: aa2e30fdd1fe9dd3394119af66451ae790d50e0d
   subpackages:
@@ -410,7 +414,7 @@ imports:
 - name: gopkg.in/warnings.v0
   version: 8a331561fe74dadba6edfc59f3be66c22c3b065d
 - name: gopkg.in/yaml.v2
-  version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
+  version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/apiextensions-apiserver
   version: 5fa44608f6b9b2180a2fd1ecb52e651fd0397794
   subpackages:
@@ -581,7 +585,7 @@ imports:
   - util/integer
   - util/workqueue
 - name: k8s.io/kubernetes
-  version: d3faa3f8f2e85c8089e80a661955626ae24abf80
+  version: 4bc5e7f9a6c25dc4c03d4d656f2cefd21540e28c
   subpackages:
   - pkg/api
   - pkg/api/install

@@ -1,18 +1,14 @@
 package cmds
 
 import (
-	"flag"
-	golog "log"
-
-	kloader "github.com/appscode/kloader/cmds"
 	v "github.com/appscode/go/version"
+	kloader "github.com/appscode/kloader/cmds"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 )
 
 func NewCmdKloader() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use: "kloader",
+		Use:   "kloader",
 		Short: "Reloads HAProxy when configmap changes",
 	}
 	rootCmd.AddCommand(kloader.NewCheckCmd())
