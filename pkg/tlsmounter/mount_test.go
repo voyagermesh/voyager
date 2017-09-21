@@ -1,15 +1,16 @@
-package operator
+package tlsmounter
 
 import (
+	"os"
+	"testing"
+	"time"
+
 	"github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/cmd/ssl-mounter/app/volume"
+	"github.com/appscode/voyager/pkg/tlsmounter/volume"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
-	"os"
-	"testing"
-	"time"
 )
 
 func TestMount(t *testing.T) {

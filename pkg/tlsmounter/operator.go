@@ -1,7 +1,9 @@
-package operator
+package tlsmounter
 
 import (
 	"errors"
+	"time"
+
 	"github.com/appscode/go/hold"
 	voyagerv1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
@@ -10,7 +12,6 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/rest"
-	"time"
 )
 
 type TLSMountConfig struct {
@@ -23,25 +24,25 @@ type TLSMountConfig struct {
 	VolumeMounter *secretMounter
 }
 
-type Operator struct {
+type SSLMounter struct {
 	*TLSMountConfig
 }
 
-func New(c *TLSMountConfig) *Operator {
-	return &Operator{TLSMountConfig: c}
+func New(c *TLSMountConfig) *SSLMounter {
+	return &SSLMounter{TLSMountConfig: c}
 }
 
-func (op *Operator) Setup() error {
+func (m *SSLMounter) Setup() error {
 	var ingress *voyagerv1beta1.Ingress
-	switch op.IngressRef.APIVersion {
+	switch m.IngressRef.APIVersion {
 	case voyagerv1beta1.SchemeGroupVersion.String():
 		var err error
-		ingress, err = op.VoyagerClient.Ingresses(op.Namespace).Get(op.IngressRef.Name, metav1.GetOptions{})
+		ingress, err = m.VoyagerClient.Ingresses(m.Namespace).Get(m.IngressRef.Name, metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
 	case "extensions/v1beta1":
-		ing, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.Namespace).Get(op.IngressRef.Name, metav1.GetOptions{})
+		ing, err := m.KubeClient.ExtensionsV1beta1().Ingresses(m.Namespace).Get(m.IngressRef.Name, metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
@@ -53,7 +54,7 @@ func (op *Operator) Setup() error {
 		return errors.New("ingress API Schema unrecognized")
 	}
 
-	mounter, err := NewIngressSecretMounter(op.KubeClient, op.VoyagerClient, ingress, op.MountLocation, "", time.Minute*5)
+	mounter, err := NewIngressSecretMounter(m.KubeClient, m.VoyagerClient, ingress, m.MountLocation, "", time.Minute*5)
 	if err != nil {
 		return err
 	}
@@ -62,11 +63,11 @@ func (op *Operator) Setup() error {
 	if err != nil {
 		return err
 	}
-	op.VolumeMounter = mounter
+	m.VolumeMounter = mounter
 	return nil
 }
 
-func (op *Operator) Run() {
-	op.VolumeMounter.Run(wait.NeverStop)
+func (m *SSLMounter) Run() {
+	m.VolumeMounter.Run(wait.NeverStop)
 	hold.Hold()
 }

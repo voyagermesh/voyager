@@ -1,4 +1,4 @@
-package operator
+package tlsmounter
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"github.com/appscode/voyager/apis/voyager/v1beta1"
 	voyagerv1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
-	"github.com/appscode/voyager/cmd/ssl-mounter/app/volume"
+	"github.com/appscode/voyager/pkg/tlsmounter/volume"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"

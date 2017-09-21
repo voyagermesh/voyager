@@ -56,7 +56,7 @@ func NewCmdRun() *cobra.Command {
 		Short:             "Run operator",
 		DisableAutoGenTag: true,
 		Run: func(cmd *cobra.Command, args []string) {
-			run()
+			runOperator()
 		},
 	}
 
@@ -80,7 +80,7 @@ func NewCmdRun() *cobra.Command {
 	return cmd
 }
 
-func run() {
+func runOperator() {
 	if opt.HAProxyImage == "" {
 		log.Fatalln("Missing required flag --haproxy-image")
 	}
