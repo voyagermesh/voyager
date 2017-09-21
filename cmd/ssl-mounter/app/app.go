@@ -3,7 +3,7 @@ package app
 import (
 	"flag"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
-	"github.com/appscode/voyager/cmd/tls-mounter/app/operator"
+	"github.com/appscode/voyager/cmd/ssl-mounter/app/operator"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"io/ioutil"
@@ -61,7 +61,7 @@ func run() {
 	if err := op.Setup(); err != nil {
 		log.Fatalln(err)
 	}
-	op.Watch()
+	op.Run()
 }
 
 func ingressRef() apiv1.ObjectReference {

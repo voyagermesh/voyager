@@ -465,6 +465,18 @@ func (c *loadBalancerController) newPods() *apps.Deployment {
 										},
 									},
 								},
+								{
+									Name:  "INGRESS_API_VERSION",
+									Value: c.Ingress.APISchema(),
+								},
+								{
+									Name:  "INGRESS_NAME",
+									Value: c.Ingress.Name,
+								},
+								{
+									Name:  "INGRESS_SSL_MOUNT_LOCATION",
+									Value: "/etc/ssl/private/haproxy",
+								},
 							},
 							Args: []string{
 								"--configmap=" + c.Ingress.OffshootName(),
@@ -472,8 +484,8 @@ func (c *loadBalancerController) newPods() *apps.Deployment {
 								"--boot-cmd=" + "/etc/sv/reloader/reload",
 								"--v=3",
 							},
-							Ports:        []apiv1.ContainerPort{},
-							Resources:    c.Ingress.Spec.Resources,
+							Ports:     []apiv1.ContainerPort{},
+							Resources: c.Ingress.Spec.Resources,
 						},
 					},
 				},

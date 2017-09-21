@@ -4,7 +4,7 @@ import (
 	"log"
 
 	logs "github.com/appscode/log/golog"
-	"github.com/appscode/voyager/cmd/tls-mounter/app"
+	"github.com/appscode/voyager/cmd/ssl-mounter/app"
 )
 
 func main() {
