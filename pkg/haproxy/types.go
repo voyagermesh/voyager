@@ -24,6 +24,7 @@ type SharedInfo struct {
 	Auth           *AuthConfig
 	EnableCORS     bool
 	ProxyBodySize  string
+	HSTSMaxAge     int
 }
 
 type StatsInfo struct {
