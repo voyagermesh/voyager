@@ -7,11 +7,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/appscode/go/ioutil"
 	"github.com/appscode/go/log"
 	"github.com/appscode/voyager/apis/voyager/v1beta1"
 	voyagerv1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/tlsmounter/volume"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -32,22 +32,22 @@ type secretMounter struct {
 	resyncPeriod  time.Duration
 
 	lock            sync.Mutex
-	fileProjections map[string]volume.FileProjection
-	writer          *volume.AtomicWriter
+	fileProjections map[string]ioutil.FileProjection
+	writer          *ioutil.AtomicWriter
 }
 
 func NewIngressSecretMounter(client clientset.Interface, vclient acs.VoyagerV1beta1Interface, ing *v1beta1.Ingress, mountDir, cmd string, resyncPeriod time.Duration) (*secretMounter, error) {
-	payloads := make(map[string]volume.FileProjection)
+	payloads := make(map[string]ioutil.FileProjection)
 	for _, secret := range ing.Secrets() {
 		sc, err := client.CoreV1().Secrets(ing.Namespace).Get(secret, metav1.GetOptions{})
 		if err != nil {
 			return nil, err
 		}
-		payloads[secret+".pem"] = volume.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
+		payloads[secret+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
 	}
 
 	location := strings.TrimSuffix(mountDir, "/")
-	writer, err := volume.NewAtomicWriter(location)
+	writer, err := ioutil.NewAtomicWriter(location)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func (c *secretMounter) initSecretInformer(stopCh <-chan struct{}) {
 					c.lock.Lock()
 					defer c.lock.Unlock()
 
-					c.fileProjections[secret.Name+".pem"] = volume.FileProjection{Mode: 0777, Data: secretToPEMData(secret)}
+					c.fileProjections[secret.Name+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(secret)}
 					c.MustMount()
 				}
 			}
@@ -104,7 +104,7 @@ func (c *secretMounter) initSecretInformer(stopCh <-chan struct{}) {
 							c.lock.Lock()
 							defer c.lock.Unlock()
 
-							c.fileProjections[newSecret.Name+".pem"] = volume.FileProjection{Mode: 0777, Data: secretToPEMData(newSecret)}
+							c.fileProjections[newSecret.Name+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(newSecret)}
 							c.MustMount()
 						}
 					}
@@ -205,7 +205,7 @@ func (c *secretMounter) initIngressInformer(stopCh <-chan struct{}) {
 						if err != nil {
 							log.Fatalln(err)
 						}
-						c.fileProjections[secret+".pem"] = volume.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
+						c.fileProjections[secret+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
 					}
 					secretsUsedMaps[secret+".pem"] = struct{}{}
 				}

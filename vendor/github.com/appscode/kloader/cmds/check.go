@@ -1,8 +1,8 @@
 package cmds
 
 import (
+	"github.com/appscode/go/log"
 	"github.com/appscode/kloader/controller"
-	"github.com/appscode/log"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
