@@ -230,6 +230,21 @@ func TestTemplate(t *testing.T) {
 				FrontendName: "with-max-age",
 				OffloadSSL:   true,
 			},
+			{
+				SharedInfo:   &SharedInfo{HSTSMaxAge: 100, HSTSIncludeSubDomains: true},
+				FrontendName: "with-subdomains",
+				OffloadSSL:   true,
+			},
+			{
+				SharedInfo:   &SharedInfo{HSTSMaxAge: 100, HSTSPreload: true},
+				FrontendName: "with-preload",
+				OffloadSSL:   true,
+			},
+			{
+				SharedInfo:   &SharedInfo{HSTSMaxAge: 100, HSTSIncludeSubDomains: true, HSTSPreload: true},
+				FrontendName: "with-subdomains-preload",
+				OffloadSSL:   true,
+			},
 		},
 		TCPService: []*TCPService{
 			{

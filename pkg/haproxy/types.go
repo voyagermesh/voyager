@@ -19,12 +19,14 @@ type TemplateData struct {
 
 type SharedInfo struct {
 	// Add accept-proxy to bind statements
-	AcceptProxy    bool
-	DefaultBackend *Backend
-	Auth           *AuthConfig
-	EnableCORS     bool
-	ProxyBodySize  string
-	HSTSMaxAge     int
+	AcceptProxy           bool
+	DefaultBackend        *Backend
+	Auth                  *AuthConfig
+	EnableCORS            bool
+	ProxyBodySize         string
+	HSTSMaxAge            int
+	HSTSPreload           bool
+	HSTSIncludeSubDomains bool
 }
 
 type StatsInfo struct {
