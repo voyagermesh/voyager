@@ -385,7 +385,7 @@ var _ = Describe("IngressTLS", func() {
 		})
 	})
 
-	FDescribe("With HSTS Max Age Specified", func() {
+	Describe("With HSTS Max Age Specified", func() {
 		BeforeEach(func() {
 			ing.Annotations[api.HSTSMaxAge] = "100"
 			ing.Spec = api.IngressSpec{
@@ -440,7 +440,7 @@ var _ = Describe("IngressTLS", func() {
 		})
 	})
 
-	FDescribe("With HSTS Preload and Subdomains", func() {
+	Describe("With HSTS Preload and Subdomains", func() {
 		BeforeEach(func() {
 			ing.Annotations[api.HSTSPreload] = "true"
 			ing.Annotations[api.HSTSIncludeSubDomains] = "true"
