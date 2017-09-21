@@ -11,14 +11,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/rest"
 )
 
 type TLSMountConfig struct {
-	Namespace     string
 	IngressRef    apiv1.ObjectReference
 	MountLocation string
-	KubeConfig    *rest.Config
 	KubeClient    clientset.Interface
 	VoyagerClient acs.VoyagerV1beta1Interface
 	VolumeMounter *secretMounter
@@ -37,12 +34,12 @@ func (m *SSLMounter) Setup() error {
 	switch m.IngressRef.APIVersion {
 	case voyagerv1beta1.SchemeGroupVersion.String():
 		var err error
-		ingress, err = m.VoyagerClient.Ingresses(m.Namespace).Get(m.IngressRef.Name, metav1.GetOptions{})
+		ingress, err = m.VoyagerClient.Ingresses(m.IngressRef.Namespace).Get(m.IngressRef.Name, metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
 	case "extensions/v1beta1":
-		ing, err := m.KubeClient.ExtensionsV1beta1().Ingresses(m.Namespace).Get(m.IngressRef.Name, metav1.GetOptions{})
+		ing, err := m.KubeClient.ExtensionsV1beta1().Ingresses(m.IngressRef.Namespace).Get(m.IngressRef.Name, metav1.GetOptions{})
 		if err != nil {
 			return err
 		}

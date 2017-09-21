@@ -14,11 +14,11 @@ TAG=1.7.9-$TAG
 
 build() {
 	pushd $(dirname "${BASH_SOURCE}")
-	wget -O kloader https://cdn.appscode.com/binaries/kloader/4.0.1/kloader-linux-amd64
-	chmod +x kloader
+	copy $REPO_ROOT/dist/voyager/voyager-alpine-amd64 voyager
+	chmod +x voyager
 	local cmd="docker build -t appscode/$IMG:$TAG ."
 	echo $cmd; $cmd
-	rm kloader
+	rm voyager
 	popd
 }
 

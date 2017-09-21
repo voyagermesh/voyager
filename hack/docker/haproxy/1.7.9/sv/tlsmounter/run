@@ -3,7 +3,7 @@ exec 1> >(logger -s -p daemon.info -t ${PWD##*/})
 exec 2> >(logger -s -p daemon.error -t ${PWD##*/})
 source /etc/envvars
 
-echo "Starting HAProxy configuration watcher and reloader ..."
-cmd="exec voyager kloader run $KLOADER_ARGS"
+echo "Starting TLS mounter ..."
+cmd="exec voyager tls-mounter $TLS_MOUNTER_ARGS"
 echo $cmd
 $cmd
