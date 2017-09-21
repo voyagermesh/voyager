@@ -32,5 +32,4 @@ Reloads HAProxy when configmap changes
 * [voyager](voyager.md)	 - Voyager by Appscode - Secure Ingress Controller for Kubernetes
 * [voyager kloader check](voyager_kloader_check.md)	 - Validate kloader configuration
 * [voyager kloader run](voyager_kloader_run.md)	 - Run and hold kloader
-* [voyager kloader version](voyager_kloader_version.md)	 - Prints binary version number.
 
