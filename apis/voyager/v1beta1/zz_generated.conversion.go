@@ -21,12 +21,13 @@ limitations under the License.
 package v1beta1
 
 import (
+	unsafe "unsafe"
+
 	voyager "github.com/appscode/voyager/apis/voyager"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	api_v1 "k8s.io/client-go/pkg/api/v1"
-	unsafe "unsafe"
 )
 
 func init() {

@@ -46,6 +46,21 @@ func NewIngressSecretMounter(client clientset.Interface, vclient acs.VoyagerV1be
 		payloads[secret+".pem"] = volume.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
 	}
 
+	for _, cert := range ing.Certificates() {
+		if certs, err := vclient.Certificates(cert.Namespace).Get(cert.Name, metav1.GetOptions{}); err != nil {
+			if certs.Spec.Storage.Kubernetes != nil {
+				name := fileNameForCertificate(certs)
+				sc, err := client.CoreV1().Secrets(ing.Namespace).Get(name, metav1.GetOptions{})
+				if err != nil {
+					return nil, err
+				}
+				payloads[name+".pem"] = volume.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
+			} else if certs.Spec.Storage.Vault != nil {
+				// Add from vault
+			}
+		}
+	}
+
 	location := strings.TrimSuffix(mountDir, "/")
 	writer, err := volume.NewAtomicWriter(location)
 	if err != nil {
@@ -67,6 +82,7 @@ func NewIngressSecretMounter(client clientset.Interface, vclient acs.VoyagerV1be
 func (c *secretMounter) Run(stopCh <-chan struct{}) {
 	c.initSecretInformer(stopCh)
 	c.initIngressInformer(stopCh)
+	c.initCertificateInformer(stopCh)
 }
 
 func (c *secretMounter) initSecretInformer(stopCh <-chan struct{}) {
@@ -210,6 +226,24 @@ func (c *secretMounter) initIngressInformer(stopCh <-chan struct{}) {
 					secretsUsedMaps[secret+".pem"] = struct{}{}
 				}
 
+				for _, cert := range newIngress.Certificates() {
+					if certs, err := c.VoyagerClient.Certificates(cert.Namespace).Get(cert.Name, metav1.GetOptions{}); err != nil {
+						if certs.Spec.Storage.Kubernetes != nil {
+							name := fileNameForCertificate(certs)
+							if _, ok := c.fileProjections[name+".pem"]; !ok {
+								sc, err := c.KubeClient.CoreV1().Secrets(c.ing.Namespace).Get(name, metav1.GetOptions{})
+								if err != nil {
+									log.Fatalln(err)
+								}
+								c.fileProjections[name+".pem"] = volume.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
+							}
+							secretsUsedMaps[name+".pem"] = struct{}{}
+						} else if certs.Spec.Storage.Vault != nil {
+							// Add from vault
+						}
+					}
+				}
+
 				for k := range c.fileProjections {
 					if _, ok := secretsUsedMaps[k+".pem"]; !ok {
 						delete(c.fileProjections, k)
@@ -226,6 +260,85 @@ func (c *secretMounter) initIngressInformer(stopCh <-chan struct{}) {
 	go ingressInformer.Run(stopCh)
 }
 
+func (c *secretMounter) initCertificateInformer(stopCh <-chan struct{}) {
+	certInformer := cache.NewSharedIndexInformer(
+		&cache.ListWatch{
+			ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
+				return c.VoyagerClient.Certificates(c.ing.Namespace).List(metav1.ListOptions{})
+			},
+			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+				return c.VoyagerClient.Certificates(c.ing.Namespace).Watch(metav1.ListOptions{})
+			},
+		},
+		&v1beta1.Certificate{},
+		c.resyncPeriod,
+		cache.Indexers{},
+	)
+
+	certInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			if cert, ok := obj.(*v1beta1.Certificate); ok {
+				if c.isCertificateUsedInIngress(cert) {
+					c.lock.Lock()
+					defer c.lock.Unlock()
+
+					if cert.Spec.Storage.Kubernetes != nil {
+						name := fileNameForCertificate(cert)
+						if _, ok := c.fileProjections[name+".pem"]; !ok {
+							sc, err := c.KubeClient.CoreV1().Secrets(c.ing.Namespace).Get(name, metav1.GetOptions{})
+							if err != nil {
+								log.Fatalln(err)
+							}
+							c.fileProjections[name+".pem"] = volume.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
+						}
+					} else if cert.Spec.Storage.Vault != nil {
+						// Add from vault
+					}
+
+					c.MustMount()
+				}
+			}
+		},
+		UpdateFunc: func(old, new interface{}) {
+			if _, oldOK := old.(*v1beta1.Certificate); oldOK {
+				if newCert, newOK := new.(*v1beta1.Certificate); newOK {
+					if c.isCertificateUsedInIngress(newCert) {
+						c.lock.Lock()
+						defer c.lock.Unlock()
+
+						if newCert.Spec.Storage.Kubernetes != nil {
+							name := fileNameForCertificate(newCert)
+							if _, ok := c.fileProjections[name+".pem"]; !ok {
+								sc, err := c.KubeClient.CoreV1().Secrets(c.ing.Namespace).Get(name, metav1.GetOptions{})
+								if err != nil {
+									log.Fatalln(err)
+								}
+								c.fileProjections[name+".pem"] = volume.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
+							}
+						} else if newCert.Spec.Storage.Vault != nil {
+							// Add from vault
+						}
+
+						c.MustMount()
+					}
+				}
+			}
+		},
+		DeleteFunc: func(obj interface{}) {
+			if cert, ok := obj.(*v1beta1.Certificate); ok {
+				if c.isCertificateUsedInIngress(cert) {
+					c.lock.Lock()
+					defer c.lock.Unlock()
+
+					delete(c.fileProjections, fileNameForCertificate(cert)+".pem")
+					c.MustMount()
+				}
+			}
+		},
+	})
+	go certInformer.Run(stopCh)
+}
+
 func (c *secretMounter) isSecretUsedInIngress(s *apiv1.Secret) bool {
 	if s.Namespace != c.ing.Namespace {
 		return false
@@ -233,6 +346,19 @@ func (c *secretMounter) isSecretUsedInIngress(s *apiv1.Secret) bool {
 
 	for _, secret := range c.ing.Secrets() {
 		if s.Name == secret {
+			return true
+		}
+	}
+	return false
+}
+
+func (c *secretMounter) isCertificateUsedInIngress(s *v1beta1.Certificate) bool {
+	if s.Namespace != c.ing.Namespace {
+		return false
+	}
+
+	for _, secret := range c.ing.Certificates() {
+		if s.Name == secret.Name {
 			return true
 		}
 	}
@@ -259,4 +385,15 @@ func secretToPEMData(s *apiv1.Secret) []byte {
 	pemdata.Write([]byte("\n"))
 	pemdata.Write(s.Data[apiv1.TLSPrivateKeyKey])
 	return pemdata.Bytes()
+}
+
+func fileNameForCertificate(c *v1beta1.Certificate) string {
+	if c.Spec.Storage.Kubernetes != nil {
+		name := c.Spec.Storage.Kubernetes.Name
+		if len(name) == 0 {
+			name = "cert-" + c.Name
+		}
+		return name
+	}
+	return ""
 }
