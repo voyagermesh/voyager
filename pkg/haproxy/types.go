@@ -24,6 +24,7 @@ type SharedInfo struct {
 	Auth                  *AuthConfig
 	EnableCORS            bool
 	ProxyBodySize         string
+	EnableHSTS            bool
 	HSTSMaxAge            int
 	HSTSPreload           bool
 	HSTSIncludeSubDomains bool

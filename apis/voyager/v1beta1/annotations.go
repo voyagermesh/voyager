@@ -196,6 +196,7 @@ const (
 	// Pass TLS connections directly to backend; do not offload.
 	SSLPassthrough = IngressKey + "/ssl-passthrough"
 
+	EnableHSTS = IngressKey + "/hsts"
 	// This specifies the time (in seconds) the browser should connect to the server using the HTTPS connection.
 	// https://blog.stackpath.com/glossary/hsts/
 	HSTSMaxAge  = IngressKey + "/hsts-max-age"
@@ -259,6 +260,14 @@ func (r Ingress) StickySessionCookieHashType() string {
 
 func (r Ingress) EnableCORS() bool {
 	v, _ := GetBool(r.Annotations, CORSEnabled)
+	return v
+}
+
+func (r Ingress) EnableHSTS() bool {
+	v, err := GetBool(r.Annotations, EnableHSTS)
+	if err != nil {
+		return true // enable hsts by default
+	}
 	return v
 }
 
