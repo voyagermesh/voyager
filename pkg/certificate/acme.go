@@ -141,9 +141,9 @@ func NewACMEClient(config *ACMEConfig) (*ACMEClient, error) {
 }
 
 const (
-	ACMEUserEmail    = "acme-email"
-	ACMEUserDataJSON = "acme-user-data"
-	ACMEServerURL    = "acme-server-url"
+	ACMEUserEmail    = "ACME_EMAIL"
+	ACMEUserDataJSON = "ACME_USER_DATA"
+	ACMEServerURL    = "ACME_SERVER_URL"
 )
 
 type ACMEUserSecret map[string][]byte

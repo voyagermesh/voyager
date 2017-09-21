@@ -108,6 +108,9 @@ type IngressTLS struct {
 	// by an IngressRule, the SNI host is used for termination and value of the
 	// Host header is used for routing.
 	SecretName string `json:"secretName,omitempty"`
+
+	// Certificate name to used tls termination. Will be ignored if secret name specified.
+	Certificate apiv1.ObjectReference `json:"certificate,omitempty"`
 }
 
 // IngressStatus describe the current state of the Ingress.

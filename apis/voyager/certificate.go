@@ -34,9 +34,9 @@ type CertificateSpec struct {
 	// If empty tries to find an Secret via domains
 	// if not found create an ACMEUser and stores as a secret.
 	// Secrets key to be expected:
-	//  email -> required, if not provided it will through error.
-	//  acme-server-url -> custom server url to generate certificates, default is lets encrypt.
-	//  acme-user-data -> user data, if not found one will be created for the provided email,
+	//  ACME_EMAIL -> required, if not provided it will through error.
+	//  ACME_SERVER_URL -> custom server url to generate certificates, default is lets encrypt.
+	//  ACME_USER_DATA -> user data, if not found one will be created for the provided email,
 	//    and stored in the key.
 	ACMEUserSecretName string `json:"acmeUserSecretName"`
 

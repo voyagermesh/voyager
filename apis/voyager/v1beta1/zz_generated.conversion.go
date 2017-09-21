@@ -21,13 +21,12 @@ limitations under the License.
 package v1beta1
 
 import (
-	unsafe "unsafe"
-
 	voyager "github.com/appscode/voyager/apis/voyager"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	api_v1 "k8s.io/client-go/pkg/api/v1"
+	unsafe "unsafe"
 )
 
 func init() {
@@ -724,6 +723,7 @@ func Convert_voyager_IngressStatus_To_v1beta1_IngressStatus(in *voyager.IngressS
 func autoConvert_v1beta1_IngressTLS_To_voyager_IngressTLS(in *IngressTLS, out *voyager.IngressTLS, s conversion.Scope) error {
 	out.Hosts = *(*[]string)(unsafe.Pointer(&in.Hosts))
 	out.SecretName = in.SecretName
+	out.Certificate = in.Certificate
 	return nil
 }
 
@@ -735,6 +735,7 @@ func Convert_v1beta1_IngressTLS_To_voyager_IngressTLS(in *IngressTLS, out *voyag
 func autoConvert_voyager_IngressTLS_To_v1beta1_IngressTLS(in *voyager.IngressTLS, out *IngressTLS, s conversion.Scope) error {
 	out.Hosts = *(*[]string)(unsafe.Pointer(&in.Hosts))
 	out.SecretName = in.SecretName
+	out.Certificate = in.Certificate
 	return nil
 }
 

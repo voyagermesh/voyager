@@ -9,6 +9,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 const (
@@ -68,6 +69,20 @@ func (r Ingress) FindTLSSecret(h string) (string, bool) {
 	return "", false
 }
 
+func (r Ingress) FindTLSCertificate(h string) (apiv1.ObjectReference, bool) {
+	if h == "" {
+		return apiv1.ObjectReference{}, false
+	}
+	for _, tls := range r.Spec.TLS {
+		for _, host := range tls.Hosts {
+			if host == h && len(tls.SecretName) == 0 {
+				return tls.Certificate, true
+			}
+		}
+	}
+	return apiv1.ObjectReference{}, false
+}
+
 func (r Ingress) IsPortChanged(o Ingress, cloudProvider string) bool {
 	rpm, err := r.PortMappings(cloudProvider)
 	if err != nil {
@@ -94,6 +109,26 @@ func (r Ingress) Secrets() []string {
 		}
 	}
 	return secrets.List()
+}
+
+func (r Ingress) Certificates() []apiv1.ObjectReference {
+	certs := make(map[string]apiv1.ObjectReference)
+	for _, rule := range r.Spec.Rules {
+		if rule.HTTP != nil {
+			if c, ok := r.FindTLSCertificate(rule.Host); ok && !rule.HTTP.NoTLS {
+				certs[c.Name+"/"+c.Namespace] = c
+			}
+		} else if rule.TCP != nil {
+			if c, ok := r.FindTLSCertificate(rule.Host); ok {
+				certs[c.Name+"/"+c.Namespace] = c
+			}
+		}
+	}
+	certList := make([]apiv1.ObjectReference, 0)
+	for _, v := range certs {
+		certList = append(certList, v)
+	}
+	return certList
 }
 
 func (r Ingress) IsSecretChanged(o Ingress) bool {
