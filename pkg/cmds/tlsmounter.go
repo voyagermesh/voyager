@@ -2,7 +2,6 @@ package cmds
 
 import (
 	"log"
-	"os"
 
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/tlsmounter"
@@ -14,9 +13,7 @@ import (
 
 var (
 	ingressRef = apiv1.ObjectReference{
-		APIVersion: os.Getenv("INGRESS_API_VERSION"),
-		Name:       os.Getenv("INGRESS_NAME"),
-		Namespace:  namespace(),
+		Namespace: namespace(),
 	}
 	mountPath = "/etc/ssl/private/haproxy"
 )
