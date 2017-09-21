@@ -31,12 +31,6 @@ func TestACMECertData(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      defaultCertPrefix + "hello",
 			Namespace: "default",
-			Labels: map[string]string{
-				certificateKey: "true",
-			},
-			Annotations: map[string]string{
-				certificateKey: "true",
-			},
 		},
 		Data: map[string][]byte{
 			apiv1.TLSCertKey:       []byte("Certificate key"),
@@ -60,12 +54,6 @@ func TestACMECertDataError(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      defaultCertPrefix + "hello",
 			Namespace: "default",
-			Labels: map[string]string{
-				certificateKey: "true",
-			},
-			Annotations: map[string]string{
-				certificateKey: "true",
-			},
 		},
 		Data: map[string][]byte{
 			apiv1.TLSPrivateKeyKey: []byte("Certificate private key"),
@@ -103,7 +91,7 @@ func TestClient(t *testing.T) {
 		config := &ACMEConfig{
 			Provider: "http",
 			UserData: user,
-			ProviderCredentials: map[string][]byte{
+			DNSCredentials: map[string][]byte{
 				"GCE_SERVICE_ACCOUNT_DATA": []byte(os.Getenv("TEST_GCE_SERVICE_ACCOUNT_DATA")),
 				"GCE_PROJECT":              []byte(os.Getenv("TEST_GCE_PROJECT")),
 			},

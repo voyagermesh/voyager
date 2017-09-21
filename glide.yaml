@@ -14,7 +14,7 @@ import:
 - package: github.com/appscode/log
 - package: github.com/appscode/pat
 - package: github.com/aws/aws-sdk-go
-  version: v1.6.10
+  version: v1.7.0
 - package: github.com/benbjohnson/clock
 - package: github.com/coreos/prometheus-operator
   version: v0.12.0

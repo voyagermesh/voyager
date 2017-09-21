@@ -60,9 +60,9 @@ func TestEnsureClient(t *testing.T) {
 		), acf.NewSimpleClientset().VoyagerV1beta1(), config.Options{ResyncPeriod: time.Second * 5}, cert)
 
 		fakeController.acmeClientConfig = &ACMEConfig{
-			Provider:            "googlecloud",
-			ProviderCredentials: make(map[string][]byte),
-			UserDataMap:         make(map[string][]byte),
+			Provider:       "googlecloud",
+			DNSCredentials: make(map[string][]byte),
+			UserDataMap:    make(map[string][]byte),
 		}
 
 		fakeSecret := &apiv1.Secret{
@@ -164,9 +164,9 @@ func TestCreate(t *testing.T) {
 		fakeController.ExtClient.Certificates("bar").Create(cert)
 
 		fakeController.acmeClientConfig = &ACMEConfig{
-			ProviderCredentials: make(map[string][]byte),
-			UserDataMap:         make(map[string][]byte),
-			Provider:            "googlecloud",
+			DNSCredentials: make(map[string][]byte),
+			UserDataMap:    make(map[string][]byte),
+			Provider:       "googlecloud",
 		}
 
 		fakeSecret := &apiv1.Secret{
@@ -203,9 +203,6 @@ func TestCreate(t *testing.T) {
 			t.Fatal(err)
 		}
 		assert.Equal(t, len(secret.Data), 2)
-		value, ok := secret.Annotations[certificateKey]
-		assert.True(t, ok)
-		assert.Equal(t, "true", value)
 
 		certificate, err := fakeController.ExtClient.Certificates("bar").Get("foo", metav1.GetOptions{})
 		if err != nil {

@@ -1,5 +1,5 @@
-hash: 7b8372acaa2fed408b4127be86afd0c53d27466b19f782bf13abe174873ef433
-updated: 2017-09-21T06:57:16.579833186-07:00
+hash: aa1c4eb15395160157013883756c4a0cf8f4005adca010884f8a3353d1aa72a0
+updated: 2017-09-21T13:19:40.716701825-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -36,7 +36,7 @@ imports:
 - name: github.com/appscode/pat
   version: 48ff78925b7955367d8a048fc2b5cec8efadf8d3
 - name: github.com/aws/aws-sdk-go
-  version: 63ce630574a5ec05ecd8e8de5cea16332a5a684d
+  version: f4b2120243b92fc47d6a4af71b854b8d5f4de8b5
   subpackages:
   - aws
   - aws/awserr
@@ -71,6 +71,7 @@ imports:
   version: 2d49bb8f2cee530cc16f1f1a9f0aae763dee257d
   subpackages:
   - arm/compute
+  - arm/dns
   - arm/network
 - name: github.com/Azure/go-autorest
   version: f6e08fe5e4d45c9a66e40196d3fed5f37331d224
@@ -295,11 +296,12 @@ imports:
   subpackages:
   - codec
 - name: github.com/xenolf/lego
-  version: c6958564222a0451a58df1b4ecb5bc5da4e03aff
+  version: 73630c54d1560c8cfc69e5cce581be02d05baed7
   repo: https://github.com/appscode/lego.git
   vcs: git
   subpackages:
   - acme
+  - providers/dns/azure
   - providers/dns/cloudflare
   - providers/dns/digitalocean
   - providers/dns/dnsimple
@@ -311,7 +313,6 @@ imports:
   - providers/dns/namecheap
   - providers/dns/ovh
   - providers/dns/pdns
-  - providers/dns/rfc2136
   - providers/dns/route53
   - providers/dns/vultr
 - name: golang.org/x/crypto
