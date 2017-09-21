@@ -16,7 +16,7 @@ TAG=1.7.6-$TAG
 
 build() {
 	pushd $(dirname "${BASH_SOURCE}")
-	wget -O kloader https://cdn.appscode.com/binaries/kloader/4.0.0/kloader-linux-amd64
+	wget -O kloader https://cdn.appscode.com/binaries/kloader/4.0.1/kloader-linux-amd64
 	chmod +x kloader
 	local cmd="docker build -t appscode/$IMG:$TAG ."
 	echo $cmd; $cmd
