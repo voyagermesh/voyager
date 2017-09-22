@@ -2,10 +2,12 @@ package operator
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 
 	"github.com/appscode/go/log"
 	sapi "github.com/appscode/voyager/apis/voyager/v1beta1"
+	voyagerv1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/eventer"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,7 +35,7 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 				if cert, ok := obj.(*sapi.Certificate); ok {
 					log.Infof("%s %s@%s added", cert.GroupVersionKind(), cert.Name, cert.Namespace)
 
-					if err := cert.IsValid(); err != nil {
+					if err := op.IsCertificateValid(cert); err != nil {
 						op.recorder.Eventf(
 							cert.ObjectReference(),
 							apiv1.EventTypeWarning,
@@ -62,7 +64,7 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 					return
 				}
 
-				if err := newCert.IsValid(); err != nil {
+				if err := op.IsCertificateValid(newCert); err != nil {
 					op.recorder.Eventf(
 						newCert.ObjectReference(),
 						apiv1.EventTypeWarning,
@@ -88,4 +90,55 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 		},
 	)
 	return informer
+}
+
+// IsCertificateValid is an overloaded function that will call kube apis
+// with information provided in certificate spec, IsValid can not have
+// references for clients, its causes import loops
+func (op *Operator) IsCertificateValid(c *sapi.Certificate) error {
+	if err := c.IsValid(); err != nil {
+		return err
+	}
+
+	if c.Spec.ChallengeProvider.HTTP != nil {
+		switch c.Spec.ChallengeProvider.HTTP.Ingress.APIVersion {
+		case voyagerv1beta1.SchemeGroupVersion.String():
+			var err error
+			_, err = op.ExtClient.Ingresses(c.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
+				Get(c.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
+			if err != nil {
+				return err
+			}
+		case "extensions/v1beta1":
+			ing, err := op.KubeClient.ExtensionsV1beta1().Ingresses(c.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
+				Get(c.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
+			if err != nil {
+				return err
+			}
+			_, err = voyagerv1beta1.NewEngressFromIngress(ing)
+			if err != nil {
+				return err
+			}
+		default:
+			return errors.New("ingress API Schema unrecognized")
+		}
+	}
+
+	if c.Spec.ChallengeProvider.DNS != nil {
+		if len(c.Spec.ChallengeProvider.DNS.ProviderType) == 0 {
+			return fmt.Errorf("no dns provider name specified")
+		}
+	}
+
+	if len(c.Spec.ACMEUserSecretName) == 0 {
+		secret, err := op.KubeClient.CoreV1().Secrets(c.Namespace).Get(c.Spec.ACMEUserSecretName, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+
+		if _, ok := secret.Data[certificate.ACMEUserEmail]; !ok {
+			return fmt.Errorf("no user email is provided in secret")
+		}
+	}
+	return nil
 }
