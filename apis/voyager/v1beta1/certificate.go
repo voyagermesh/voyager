@@ -43,6 +43,26 @@ type CertificateSpec struct {
 
 	// Storage backend to store the certificates currently, kubernetes secret and vault.
 	Storage CertificateStorage `json:"storage,omitempty"`
+
+	// Following fields are deprecated and will removed in future version.
+	// https://github.com/appscode/voyager/pull/506
+	// Deprecated. DNS Provider.
+	Provider string `json:"provider,omitempty"`
+	// Deprecated
+	Email string `json:"email,omitempty"`
+
+	// This is the ingress Reference that will be used if provider is http
+	// Deprecated
+	HTTPProviderIngressReference apiv1.ObjectReference `json:"httpProviderIngressReference,omitempty"`
+
+	// ProviderCredentialSecretName is used to create the acme client, that will do
+	// needed processing in DNS.
+	// Deprecated
+	ProviderCredentialSecretName string `json:"providerCredentialSecretName,omitempty"`
+
+	// ACME server that will be used to obtain this certificate.
+	// Deprecated
+	ACMEServerURL string `json:"acmeStagingURL,omitempty"`
 }
 
 type ChallengeProvider struct {

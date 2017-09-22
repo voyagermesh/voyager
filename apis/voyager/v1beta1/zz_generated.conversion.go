@@ -21,13 +21,12 @@ limitations under the License.
 package v1beta1
 
 import (
-	unsafe "unsafe"
-
 	voyager "github.com/appscode/voyager/apis/voyager"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	api_v1 "k8s.io/client-go/pkg/api/v1"
+	unsafe "unsafe"
 )
 
 func init() {
@@ -208,6 +207,11 @@ func autoConvert_v1beta1_CertificateSpec_To_voyager_CertificateSpec(in *Certific
 	if err := Convert_v1beta1_CertificateStorage_To_voyager_CertificateStorage(&in.Storage, &out.Storage, s); err != nil {
 		return err
 	}
+	out.Provider = in.Provider
+	out.Email = in.Email
+	out.HTTPProviderIngressReference = in.HTTPProviderIngressReference
+	out.ProviderCredentialSecretName = in.ProviderCredentialSecretName
+	out.ACMEServerURL = in.ACMEServerURL
 	return nil
 }
 
@@ -225,6 +229,11 @@ func autoConvert_voyager_CertificateSpec_To_v1beta1_CertificateSpec(in *voyager.
 	if err := Convert_voyager_CertificateStorage_To_v1beta1_CertificateStorage(&in.Storage, &out.Storage, s); err != nil {
 		return err
 	}
+	out.Provider = in.Provider
+	out.Email = in.Email
+	out.HTTPProviderIngressReference = in.HTTPProviderIngressReference
+	out.ProviderCredentialSecretName = in.ProviderCredentialSecretName
+	out.ACMEServerURL = in.ACMEServerURL
 	return nil
 }
 

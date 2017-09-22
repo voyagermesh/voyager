@@ -54,7 +54,7 @@ func NewIngressSecretMounter(client clientset.Interface, vclient acs.VoyagerV1be
 				if err != nil {
 					return nil, err
 				}
-				payloads[name+".pem"] = volume.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
+				payloads[name+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
 			} else if certs.Spec.Storage.Vault != nil {
 				// Add from vault
 			}
@@ -235,7 +235,7 @@ func (c *secretMounter) initIngressInformer(stopCh <-chan struct{}) {
 								if err != nil {
 									log.Fatalln(err)
 								}
-								c.fileProjections[name+".pem"] = volume.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
+								c.fileProjections[name+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
 							}
 							secretsUsedMaps[name+".pem"] = struct{}{}
 						} else if certs.Spec.Storage.Vault != nil {
@@ -289,7 +289,7 @@ func (c *secretMounter) initCertificateInformer(stopCh <-chan struct{}) {
 							if err != nil {
 								log.Fatalln(err)
 							}
-							c.fileProjections[name+".pem"] = volume.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
+							c.fileProjections[name+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
 						}
 					} else if cert.Spec.Storage.Vault != nil {
 						// Add from vault
@@ -313,7 +313,7 @@ func (c *secretMounter) initCertificateInformer(stopCh <-chan struct{}) {
 								if err != nil {
 									log.Fatalln(err)
 								}
-								c.fileProjections[name+".pem"] = volume.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
+								c.fileProjections[name+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
 							}
 						} else if newCert.Spec.Storage.Vault != nil {
 							// Add from vault

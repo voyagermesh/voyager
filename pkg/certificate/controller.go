@@ -338,6 +338,35 @@ func (c *Controller) update(cert acme.CertificateResource) error {
 		}
 	}
 
+	k8sCert, err := c.ExtClient.Certificates(c.tpr.Namespace).Get(c.tpr.Name, metav1.GetOptions{})
+	if err != nil {
+		log.Errorln("failed to load cert object,", err)
+	}
+
+	// Update certificate data to add Details Information
+	t := metav1.Now()
+	k8sCert.Status.Certificate = tapi.ACMECertificateDetails{
+		Domain:        cert.Domain,
+		CertURL:       cert.CertURL,
+		CertStableURL: cert.CertStableURL,
+		AccountRef:    cert.AccountRef,
+	}
+
+	found := false
+	for i := range k8sCert.Status.Conditions {
+		if k8sCert.Status.Conditions[i].Type == tapi.CertificateUpdated {
+			k8sCert.Status.Conditions[i].LastUpdateTime = t
+			found = true
+		}
+	}
+	if !found {
+		k8sCert.Status.Conditions = append(k8sCert.Status.Conditions, tapi.CertificateCondition{
+			Type:           tapi.CertificateUpdated,
+			LastUpdateTime: t,
+		})
+	}
+
+	c.ExtClient.Certificates(c.tpr.Namespace).Update(k8sCert)
 	return nil
 }
 
