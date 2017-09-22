@@ -1,5 +1,5 @@
-hash: 479ac91e3b925ac6d10610120a5df82a290693ce640563df44fb10b276d1b995
-updated: 2017-09-21T02:07:53.401865363-07:00
+hash: aa1c4eb15395160157013883756c4a0cf8f4005adca010884f8a3353d1aa72a0
+updated: 2017-09-21T13:19:40.716701825-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -7,13 +7,14 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/go
-  version: d1fbd14e5c6e78557c12f6d2c9c282b3c0d0c612
+  version: 40c185ab12c60de0218e5e5c319a032498c21695
   subpackages:
   - context
   - crypto/rand
   - errors
   - flags
   - hold
+  - ioutil
   - log
   - runtime
   - strings
@@ -24,11 +25,10 @@ imports:
   subpackages:
   - exporter
 - name: github.com/appscode/kloader
-  version: a479e44d760e4fadf7dbc31f1e39303d5e0a3057
+  version: 09afbadb816d4693febc17a452fae60fab399f48
   subpackages:
   - cmds
   - controller
-  - volume
 - name: github.com/appscode/log
   version: 68e0e42e42c01371f3950571fc87c2298a51dd8f
   subpackages:
@@ -36,7 +36,7 @@ imports:
 - name: github.com/appscode/pat
   version: 48ff78925b7955367d8a048fc2b5cec8efadf8d3
 - name: github.com/aws/aws-sdk-go
-  version: 63ce630574a5ec05ecd8e8de5cea16332a5a684d
+  version: f4b2120243b92fc47d6a4af71b854b8d5f4de8b5
   subpackages:
   - aws
   - aws/awserr
@@ -71,6 +71,7 @@ imports:
   version: 2d49bb8f2cee530cc16f1f1a9f0aae763dee257d
   subpackages:
   - arm/compute
+  - arm/dns
   - arm/network
 - name: github.com/Azure/go-autorest
   version: f6e08fe5e4d45c9a66e40196d3fed5f37331d224
@@ -295,11 +296,12 @@ imports:
   subpackages:
   - codec
 - name: github.com/xenolf/lego
-  version: c6958564222a0451a58df1b4ecb5bc5da4e03aff
+  version: 73630c54d1560c8cfc69e5cce581be02d05baed7
   repo: https://github.com/appscode/lego.git
   vcs: git
   subpackages:
   - acme
+  - providers/dns/azure
   - providers/dns/cloudflare
   - providers/dns/digitalocean
   - providers/dns/dnsimple
@@ -311,7 +313,6 @@ imports:
   - providers/dns/namecheap
   - providers/dns/ovh
   - providers/dns/pdns
-  - providers/dns/rfc2136
   - providers/dns/route53
   - providers/dns/vultr
 - name: golang.org/x/crypto

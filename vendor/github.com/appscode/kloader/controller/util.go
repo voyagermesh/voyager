@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/appscode/log"
+	"github.com/appscode/go/log"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 

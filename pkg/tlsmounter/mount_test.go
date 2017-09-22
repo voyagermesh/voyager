@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/appscode/go/ioutil"
 	"github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/tlsmounter/volume"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
@@ -49,9 +49,9 @@ func TestMount(t *testing.T) {
 }
 
 func TestMountRemove(t *testing.T) {
-	wr, err := volume.NewAtomicWriter(os.TempDir() + "/tls-mount/rm/")
+	wr, err := ioutil.NewAtomicWriter(os.TempDir() + "/tls-mount/rm/")
 	if assert.Nil(t, err) {
-		payload := map[string]volume.FileProjection{
+		payload := map[string]ioutil.FileProjection{
 			"one": {Mode: 0777, Data: []byte("one")},
 			"two": {Mode: 0777, Data: []byte("two")},
 		}

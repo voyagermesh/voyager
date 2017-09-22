@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
+	"fmt"
 	"sync"
 	"time"
 
@@ -48,8 +49,8 @@ type Controller struct {
 	renewedCertificateResource acme.CertificateResource
 	sync.Mutex
 
-	acmeClientConfig *ACMEConfig
-	acmeClient       *ACMEClient
+	acmeConfig *ACMEConfig
+	acmeClient *ACMEClient
 }
 
 func NewController(config *rest.Config, kubeClient clientset.Interface, extClient acs.VoyagerV1beta1Interface, opt config.Options, tpr *tapi.Certificate) *Controller {
@@ -64,11 +65,15 @@ func NewController(config *rest.Config, kubeClient clientset.Interface, extClien
 }
 
 func (c *Controller) Process() error {
-	acmeConfig := &ACMEConfig{ProviderCredentials: make(map[string][]byte), UserSecret: ACMEUserSecret{}}
+	cfg := &ACMEConfig{
+		CloudProvider:  c.Opt.CloudProvider,
+		DNSCredentials: make(map[string][]byte),
+		UserSecret:     ACMEUserSecret{},
+	}
 	if c.tpr.Spec.ChallengeProvider.HTTP != nil {
-		acmeConfig.Provider = "http"
+		cfg.ChallengeProvider = "http"
 	} else if c.tpr.Spec.ChallengeProvider.DNS != nil {
-		acmeConfig.Provider = c.tpr.Spec.ChallengeProvider.DNS.ProviderType
+		cfg.ChallengeProvider = c.tpr.Spec.ChallengeProvider.DNS.ProviderType
 		if len(c.tpr.Spec.ChallengeProvider.DNS.CredentialSecretName) > 0 {
 			cred, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(
 				c.tpr.Spec.ChallengeProvider.DNS.CredentialSecretName,
@@ -84,10 +89,10 @@ func (c *Controller) Process() error {
 				)
 				return err
 			}
-			acmeConfig.ProviderCredentials = cred.Data
+			cfg.DNSCredentials = cred.Data
 		}
 	}
-	c.acmeClientConfig = acmeConfig
+	c.acmeConfig = cfg
 
 	c.acmeCert.Domains = NewDomainCollection(c.tpr.Spec.Domains...)
 	// Check if a cert already exists for this Certificate Instance
@@ -162,13 +167,12 @@ func (c *Controller) Process() error {
 
 func (c *Controller) create() error {
 	if err := c.ensureACMEClient(); err != nil {
-		return errors.FromErr(err).Err()
+		return err
 	}
-	if c.acmeClientConfig.Provider == "http" {
+	if c.acmeConfig.ChallengeProvider == "http" {
 		if err := c.processHTTPCertificate(); err != nil {
 			return err
 		}
-		log.Errorf("HTTP Ingress is configured, You need ")
 	}
 	cert, errs := c.acmeClient.ObtainCertificate(c.tpr.Spec.Domains, true, nil, true)
 	for k, v := range errs {
@@ -185,7 +189,7 @@ func (c *Controller) renew() error {
 		return errors.FromErr(err).Err()
 	}
 
-	if c.acmeClientConfig.Provider == "http" {
+	if c.acmeConfig.ChallengeProvider == "http" {
 		if err := c.processHTTPCertificate(); err != nil {
 			return err
 		}
@@ -207,7 +211,6 @@ func (c *Controller) renew() error {
 }
 
 func (c *Controller) ensureACMEClient() error {
-	log.Infoln("trying to retrieve acmeUser data")
 	secret, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(c.tpr.Spec.ACMEUserSecretName, metav1.GetOptions{})
 	if err != nil {
 		return err
@@ -215,12 +218,12 @@ func (c *Controller) ensureACMEClient() error {
 	if _, found := secret.Data[ACMEUserEmail]; !found {
 		return err
 	}
-	c.acmeClientConfig.UserSecret = ACMEUserSecret(secret.Data)
+	c.acmeConfig.UserSecret = ACMEUserSecret(secret.Data)
 
 	// No error that means we successfully got an userSecret
 	var acmeUserInfo *ACMEUserData
 	acmeUserRegistered := false
-	if data := c.acmeClientConfig.UserSecret.GetUserData(); len(data) > 0 {
+	if data := c.acmeConfig.UserSecret.GetUserData(); len(data) > 0 {
 		acmeUserInfo = &ACMEUserData{}
 		userError := json.Unmarshal(data, acmeUserInfo)
 		if userError == nil {
@@ -229,24 +232,23 @@ func (c *Controller) ensureACMEClient() error {
 	}
 
 	if !acmeUserRegistered {
-		log.Errorln("No ACME user found, Generate a new ACME user")
+		log.Infoln("No ACME user found, Generate a new ACME user")
 		userKey, err := rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
 			return errors.FromErr(err).WithMessage("Failed to generate Key for New Acme User")
 		}
 		acmeUserInfo = &ACMEUserData{
-			Email: c.acmeClientConfig.UserSecret.GetEmail(),
+			Email: c.acmeConfig.UserSecret.GetEmail(),
 			Key: pem.EncodeToMemory(&pem.Block{
 				Type:  "RSA PRIVATE KEY",
 				Bytes: x509.MarshalPKCS1PrivateKey(userKey),
 			}),
 		}
 	}
-	c.acmeClientConfig.UserData = acmeUserInfo
-	log.V(9).Infoln("Getting NewACMECLient with config", c.acmeClientConfig)
-	acmeClient, err := NewACMEClient(c.acmeClientConfig)
+	c.acmeConfig.UserData = acmeUserInfo
+	acmeClient, err := NewACMEClient(c.acmeConfig)
 	if err != nil {
-		return errors.FromErr(err).WithMessage("Failed to create acme client").Err()
+		return fmt.Errorf("failed to create acme client. Reason: %s", err)
 	}
 	c.acmeClient = acmeClient
 
@@ -262,7 +264,7 @@ func (c *Controller) registerACMEUser(acmeClient *ACMEClient) error {
 	if err != nil {
 		return errors.FromErr(err).WithMessage("Failed to registering user for new domain").Err()
 	}
-	c.acmeClientConfig.UserData.Registration = registration
+	c.acmeConfig.UserData.Registration = registration
 	if err := acmeClient.AgreeToTOS(); err != nil {
 		return errors.FromErr(err).WithMessage("Failed to registering user for new domain").Err()
 	}
@@ -271,7 +273,7 @@ func (c *Controller) registerACMEUser(acmeClient *ACMEClient) error {
 	if err != nil {
 		return err
 	}
-	secret.Data[ACMEUserDataJSON] = c.acmeClientConfig.UserData.Json()
+	secret.Data[ACMEUserDataJSON] = c.acmeConfig.UserData.Json()
 	c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Update(secret)
 	return nil
 }

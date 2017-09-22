@@ -31,7 +31,7 @@ var (
 	masterURL      string
 	kubeconfigPath string
 	opt            config.Options = config.Options{
-		HAProxyImage:      "appscode/haproxy:1.7.6-4.0.0-alpha.1",
+		HAProxyImage:      "appscode/haproxy:1.7.9-4.0.0-alpha.1",
 		OperatorNamespace: namespace(),
 		OperatorService:   "voyager-operator",
 		HTTPChallengePort: 56791,
@@ -147,7 +147,7 @@ func runOperator() {
 }
 
 func namespace() string {
-	if ns := os.Getenv("OPERATOR_NAMESPACE"); ns != "" {
+	if ns := os.Getenv("KUBE_NAMESPACE"); ns != "" {
 		return ns
 	}
 	if data, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace"); err == nil {

@@ -59,7 +59,7 @@ func New(
 }
 
 func (op *Operator) Setup() error {
-	log.Infoln("Ensuring TPR registration")
+	log.Infoln("Ensuring CRD registration")
 
 	if err := op.ensureCustomResourceDefinitions(); err != nil {
 		return err
@@ -132,8 +132,8 @@ func (op *Operator) Run() {
 		op.initServiceWatcher(),
 		op.initEndpointWatcher(),
 		op.initIngresseWatcher(),
-		op.initIngressTPRWatcher(),
-		op.initCertificateTPRWatcher(),
+		op.initIngressCRDWatcher(),
+		op.initCertificateCRDWatcher(),
 	}
 	if informer := op.initServiceMonitorWatcher(); informer != nil {
 		informers = append(informers, informer)

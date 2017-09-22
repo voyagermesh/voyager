@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/appscode/kloader/volume"
-	"github.com/appscode/log"
+	"github.com/appscode/go/ioutil"
+	"github.com/appscode/go/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -161,12 +161,12 @@ func (c *secretMounter) processItem(key string) error {
 }
 
 func (c *secretMounter) Mount(secret *apiv1.Secret) {
-	payload := make(map[string]volume.FileProjection)
+	payload := make(map[string]ioutil.FileProjection)
 	for k, v := range secret.Data {
-		payload[k] = volume.FileProjection{Mode: 0777, Data: []byte(v)}
+		payload[k] = ioutil.FileProjection{Mode: 0777, Data: []byte(v)}
 	}
 
-	writer, err := volume.NewAtomicWriter(c.mountLocation)
+	writer, err := ioutil.NewAtomicWriter(c.mountLocation)
 	if err != nil {
 		log.Fatalln("Failed to Create atomic writer, Cause", err)
 	}

@@ -14,9 +14,12 @@ voyager tls-mounter [command] [flags]
 ### Options
 
 ```
-  -h, --help                help for tls-mounter
-      --kubeconfig string   Path to kubeconfig file with authorization information (the master location is set by the master flag).
-      --master string       The address of the Kubernetes API server (overrides any value in kubeconfig)
+  -h, --help                         help for tls-mounter
+      --ingress-api-version string   API version of ingress resource
+      --ingress-name string          Name of ingress resource
+      --kubeconfig string            Path to kubeconfig file with authorization information (the master location is set by the master flag).
+      --master string                The address of the Kubernetes API server (overrides any value in kubeconfig)
+      --mount string                 Path where tls certificates are stored for HAProxy (default "/etc/ssl/private/haproxy")
 ```
 
 ### Options inherited from parent commands

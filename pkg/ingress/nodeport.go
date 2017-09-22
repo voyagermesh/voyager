@@ -536,32 +536,12 @@ func (c *nodePortController) newPods() *apps.Deployment {
 						{
 							Name:  "haproxy",
 							Image: c.Opt.HAProxyImage,
-							Env: []apiv1.EnvVar{
-								{
-									Name: "KUBE_NAMESPACE",
-									ValueFrom: &apiv1.EnvVarSource{
-										FieldRef: &apiv1.ObjectFieldSelector{
-											FieldPath: "metadata.namespace",
-										},
-									},
-								},
-								{
-									Name:  "INGRESS_API_VERSION",
-									Value: c.Ingress.APISchema(),
-								},
-								{
-									Name:  "INGRESS_NAME",
-									Value: c.Ingress.Name,
-								},
-								{
-									Name:  "INGRESS_SSL_MOUNT_LOCATION",
-									Value: "/etc/ssl/private/haproxy",
-								},
-							},
 							Args: []string{
+								"--ingress-api-version=" + c.Ingress.APISchema(),
+								"--ingress-name=" + c.Ingress.Name,
 								"--configmap=" + c.Ingress.OffshootName(),
 								"--mount-location=" + "/etc/haproxy",
-								"--boot-cmd=" + "/etc/sv/reloader/reload",
+								"--boot-cmd=" + "/etc/sv/haproxy/reload",
 								"--v=3",
 							},
 							Ports:     []apiv1.ContainerPort{},

@@ -2,8 +2,8 @@ package cmds
 
 import (
 	"github.com/appscode/go/hold"
+	"github.com/appscode/go/log"
 	"github.com/appscode/kloader/controller"
-	"github.com/appscode/log"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
