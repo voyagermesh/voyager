@@ -195,7 +195,6 @@ func (c *Controller) renew() error {
 		}
 	}
 	acmeCert := acme.CertificateResource{
-		Domain:        c.tpr.Status.Certificate.Domain,
 		CertURL:       c.tpr.Status.Certificate.CertURL,
 		CertStableURL: c.tpr.Status.Certificate.CertStableURL,
 		AccountRef:    c.tpr.Status.Certificate.AccountRef,
@@ -298,6 +297,13 @@ func (c *Controller) save(cert acme.CertificateResource) error {
 		log.Errorln("failed to load cert object,", err)
 	}
 
+	// Decode cert
+	pemBlock, _ := pem.Decode(cert.Certificate)
+	crt, err := x509.ParseCertificate(pemBlock.Bytes)
+	if err != nil {
+		return errors.FromErr(err).WithMessage("Error decoding x509 encoded certificate").Err()
+	}
+
 	// Update certificate data to add Details Information
 	t := metav1.Now()
 	k8sCert.Status = tapi.CertificateStatus{
@@ -308,7 +314,9 @@ func (c *Controller) save(cert acme.CertificateResource) error {
 			LastUpdateTime: t,
 		}},
 		Certificate: tapi.ACMECertificateDetails{
-			Domain:        cert.Domain,
+			SerialNumber:  crt.SerialNumber.String(),
+			NotBefore:     metav1.NewTime(crt.NotBefore),
+			NotAfter:      metav1.NewTime(crt.NotAfter),
 			CertURL:       cert.CertURL,
 			CertStableURL: cert.CertStableURL,
 			AccountRef:    cert.AccountRef,
@@ -343,10 +351,19 @@ func (c *Controller) update(cert acme.CertificateResource) error {
 		log.Errorln("failed to load cert object,", err)
 	}
 
+	// Decode cert
+	pemBlock, _ := pem.Decode(cert.Certificate)
+	crt, err := x509.ParseCertificate(pemBlock.Bytes)
+	if err != nil {
+		return errors.FromErr(err).WithMessage("Error decoding x509 encoded certificate").Err()
+	}
+
 	// Update certificate data to add Details Information
 	t := metav1.Now()
 	k8sCert.Status.Certificate = tapi.ACMECertificateDetails{
-		Domain:        cert.Domain,
+		SerialNumber:  crt.SerialNumber.String(),
+		NotBefore:     metav1.NewTime(crt.NotBefore),
+		NotAfter:      metav1.NewTime(crt.NotAfter),
 		CertURL:       cert.CertURL,
 		CertStableURL: cert.CertStableURL,
 		AccountRef:    cert.AccountRef,

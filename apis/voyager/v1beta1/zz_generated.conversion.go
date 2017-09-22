@@ -94,7 +94,9 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 }
 
 func autoConvert_v1beta1_ACMECertificateDetails_To_voyager_ACMECertificateDetails(in *ACMECertificateDetails, out *voyager.ACMECertificateDetails, s conversion.Scope) error {
-	out.Domain = in.Domain
+	out.SerialNumber = in.SerialNumber
+	out.NotBefore = in.NotBefore
+	out.NotAfter = in.NotAfter
 	out.CertURL = in.CertURL
 	out.CertStableURL = in.CertStableURL
 	out.AccountRef = in.AccountRef
@@ -107,7 +109,9 @@ func Convert_v1beta1_ACMECertificateDetails_To_voyager_ACMECertificateDetails(in
 }
 
 func autoConvert_voyager_ACMECertificateDetails_To_v1beta1_ACMECertificateDetails(in *voyager.ACMECertificateDetails, out *ACMECertificateDetails, s conversion.Scope) error {
-	out.Domain = in.Domain
+	out.SerialNumber = in.SerialNumber
+	out.NotBefore = in.NotBefore
+	out.NotAfter = in.NotAfter
 	out.CertURL = in.CertURL
 	out.CertStableURL = in.CertStableURL
 	out.AccountRef = in.AccountRef

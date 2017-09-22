@@ -108,10 +108,12 @@ type CertificateStatus struct {
 }
 
 type ACMECertificateDetails struct {
-	Domain        string `json:"domain"`
-	CertURL       string `json:"certUrl"`
-	CertStableURL string `json:"certStableUrl"`
-	AccountRef    string `json:"accountRef,omitempty"`
+	SerialNumber  string      `json:"serialNumber,omitempty"`
+	NotBefore     metav1.Time `json:"notBefore,omitempty"`
+	NotAfter      metav1.Time `json:"notAfter,omitempty"`
+	CertURL       string      `json:"certUrl"`
+	CertStableURL string      `json:"certStableUrl"`
+	AccountRef    string      `json:"accountRef,omitempty"`
 }
 
 type RequestConditionType string

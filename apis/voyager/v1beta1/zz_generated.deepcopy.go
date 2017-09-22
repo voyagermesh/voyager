@@ -76,6 +76,8 @@ func DeepCopy_v1beta1_ACMECertificateDetails(in interface{}, out interface{}, c 
 		in := in.(*ACMECertificateDetails)
 		out := out.(*ACMECertificateDetails)
 		*out = *in
+		out.NotBefore = in.NotBefore.DeepCopy()
+		out.NotAfter = in.NotAfter.DeepCopy()
 		return nil
 	}
 }
@@ -171,6 +173,9 @@ func DeepCopy_v1beta1_CertificateStatus(in interface{}, out interface{}, c *conv
 					return err
 				}
 			}
+		}
+		if err := DeepCopy_v1beta1_ACMECertificateDetails(&in.Certificate, &out.Certificate, c); err != nil {
+			return err
 		}
 		return nil
 	}
