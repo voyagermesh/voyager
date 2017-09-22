@@ -18,7 +18,7 @@ func (c *Certificate) Migrate() (bool, *Certificate, *apiv1.Secret) {
 			Ingress: c.Spec.HTTPProviderIngressReference,
 		}
 		required = true
-	} else {
+	} else if len(c.Spec.Provider) > 0 {
 		c.Spec.ChallengeProvider.DNS = &DNSChallengeProvider{
 			ProviderType:         c.Spec.Provider,
 			CredentialSecretName: c.Spec.ProviderCredentialSecretName,

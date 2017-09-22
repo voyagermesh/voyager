@@ -34,6 +34,7 @@ import os.path
 import subprocess
 import sys
 import yaml
+from pathlib import Path
 from os.path import expandvars, join, dirname
 
 libbuild.REPO_ROOT = expandvars('$GOPATH') + '/src/github.com/appscode/voyager'
@@ -156,10 +157,13 @@ def install():
 
 def test(type, *args):
     die(call(libbuild.GOC + ' install ./...'))
+
+    envfile = Path(libbuild.REPO_ROOT + "/hack/configs/.env")
+    if envfile.exists():
+        print 'Loading env file'
+        pydotenv.load_dotenv(libbuild.REPO_ROOT + "/hack/configs/.env")
+
     if type == 'unit':
-        unit_test(args)
-    elif type == 'unit-env':
-        pydotenv.load_dotenv(join(dirname(__file__), 'configs/.env'))
         unit_test(args)
     elif type == 'e2e':
         e2e_test(args)

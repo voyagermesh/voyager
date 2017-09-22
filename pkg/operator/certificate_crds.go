@@ -7,7 +7,6 @@ import (
 
 	"github.com/appscode/go/log"
 	sapi "github.com/appscode/voyager/apis/voyager/v1beta1"
-	voyagerv1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/eventer"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -104,7 +103,7 @@ func (op *Operator) IsCertificateValid(c *sapi.Certificate) error {
 
 	if c.Spec.ChallengeProvider.HTTP != nil {
 		switch c.Spec.ChallengeProvider.HTTP.Ingress.APIVersion {
-		case voyagerv1beta1.SchemeGroupVersion.String():
+		case sapi.SchemeGroupVersion.String():
 			var err error
 			_, err = op.ExtClient.Ingresses(c.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
 				Get(c.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
@@ -117,7 +116,7 @@ func (op *Operator) IsCertificateValid(c *sapi.Certificate) error {
 			if err != nil {
 				return err
 			}
-			_, err = voyagerv1beta1.NewEngressFromIngress(ing)
+			_, err = sapi.NewEngressFromIngress(ing)
 			if err != nil {
 				return err
 			}
@@ -138,7 +137,7 @@ func (op *Operator) IsCertificateValid(c *sapi.Certificate) error {
 			return err
 		}
 
-		if _, ok := secret.Data[voyagerv1beta1.ACMEUserEmail]; !ok {
+		if _, ok := secret.Data[sapi.ACMEUserEmail]; !ok {
 			return fmt.Errorf("no user email is provided in secret")
 		}
 	}

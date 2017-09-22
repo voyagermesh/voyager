@@ -82,7 +82,7 @@ var _ = Describe("CertificateWithHTTPProvider", func() {
 	})
 
 	Describe("Create", func() {
-		FIt("Should check secret", func() {
+		It("Should check secret", func() {
 			Eventually(func() bool {
 				updatedIngress, err := f.Ingress.Get(ing)
 				Expect(err).NotTo(HaveOccurred())
