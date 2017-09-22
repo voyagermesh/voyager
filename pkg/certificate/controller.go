@@ -215,7 +215,7 @@ func (c *Controller) ensureACMEClient() error {
 	if err != nil {
 		return err
 	}
-	if _, found := secret.Data[ACMEUserEmail]; !found {
+	if _, found := secret.Data[tapi.ACMEUserEmail]; !found {
 		return err
 	}
 	c.acmeConfig.UserSecret = ACMEUserSecret(secret.Data)
@@ -273,7 +273,7 @@ func (c *Controller) registerACMEUser(acmeClient *ACMEClient) error {
 	if err != nil {
 		return err
 	}
-	secret.Data[ACMEUserDataJSON] = c.acmeConfig.UserData.Json()
+	secret.Data[tapi.ACMEUserDataJSON] = c.acmeConfig.UserData.Json()
 	c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Update(secret)
 	return nil
 }

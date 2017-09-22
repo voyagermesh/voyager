@@ -46,6 +46,7 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 						return
 					}
 
+					op.EnsureCertificateMigration(cert)
 					err := certificate.NewController(op.KubeConfig, op.KubeClient, op.ExtClient, op.Opt, cert).Process()
 					if err != nil {
 						log.Error(err)
@@ -76,6 +77,7 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 				}
 
 				if !reflect.DeepEqual(oldCert.Spec, newCert.Spec) {
+					op.EnsureCertificateMigration(newCert)
 					err := certificate.NewController(op.KubeConfig, op.KubeClient, op.ExtClient, op.Opt, newCert).Process()
 					if err != nil {
 						log.Error(err)
@@ -136,7 +138,7 @@ func (op *Operator) IsCertificateValid(c *sapi.Certificate) error {
 			return err
 		}
 
-		if _, ok := secret.Data[certificate.ACMEUserEmail]; !ok {
+		if _, ok := secret.Data[voyagerv1beta1.ACMEUserEmail]; !ok {
 			return fmt.Errorf("no user email is provided in secret")
 		}
 	}

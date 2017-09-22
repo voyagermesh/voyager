@@ -16,6 +16,7 @@ import (
 	"github.com/appscode/go/errors"
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	tapi "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/providers/dns/azure"
@@ -260,24 +261,18 @@ func NewACMEClient(cfg *ACMEConfig) (*ACMEClient, error) {
 	}
 }
 
-const (
-	ACMEUserEmail    = "ACME_EMAIL"
-	ACMEUserDataJSON = "ACME_USER_DATA"
-	ACMEServerURL    = "ACME_SERVER_URL"
-)
-
 type ACMEUserSecret map[string][]byte
 
 func (a ACMEUserSecret) GetEmail() string {
-	return string(a[ACMEUserEmail])
+	return string(a[tapi.ACMEUserEmail])
 }
 
 func (a ACMEUserSecret) GetUserData() []byte {
-	return a[ACMEUserDataJSON]
+	return a[tapi.ACMEUserDataJSON]
 }
 
 func (a ACMEUserSecret) GetServerURL() string {
-	if u, found := a[ACMEServerURL]; found {
+	if u, found := a[tapi.ACMEServerURL]; found {
 		return string(u)
 	}
 	return LetsEncryptProdURL

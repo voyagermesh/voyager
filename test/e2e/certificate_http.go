@@ -31,8 +31,8 @@ var _ = Describe("CertificateWithHTTPProvider", func() {
 				Namespace: f.Namespace(),
 			},
 			Data: map[string][]byte{
-				certificate.ACMEUserEmail: []byte("sadlil@appscode.com"),
-				certificate.ACMEServerURL: []byte(certificate.LetsEncryptStagingURL),
+				api.ACMEUserEmail: []byte("sadlil@appscode.com"),
+				api.ACMEServerURL: []byte(certificate.LetsEncryptStagingURL),
 			},
 		}
 
