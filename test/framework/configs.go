@@ -23,6 +23,7 @@ func init() {
 	flag.StringVar(&testConfigs.LBPersistIP, "lb-ip", "", "LoadBalancer persistent IP")
 	flag.StringVar(&testConfigs.TestNamespace, "namespace", "test-"+rand.Characters(5), "Run tests in this namespaces")
 	flag.BoolVar(&testConfigs.RBACEnabled, "rbac", false, "")
+	flag.BoolVar(&testConfigs.TestCertificate, "cert", false, "")
 
 	enableLogging()
 }
@@ -39,6 +40,7 @@ type E2EConfig struct {
 	DaemonHostName    string
 	LBPersistIP       string
 	RBACEnabled       bool
+	TestCertificate bool
 }
 
 var testConfigs E2EConfig

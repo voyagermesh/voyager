@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"fmt"
 	"os"
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -10,7 +11,6 @@ import (
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/pkg/api/v1"
-	"fmt"
 )
 
 var _ = Describe("CertificateWithDNSProvider", func() {
@@ -23,6 +23,9 @@ var _ = Describe("CertificateWithDNSProvider", func() {
 
 	BeforeEach(func() {
 		skipTestIfSecretNotProvided()
+		if !f.Config.TestCertificate {
+			Skip("Certificate Test is not enabled")
+		}
 	})
 
 	BeforeEach(func() {
@@ -30,7 +33,7 @@ var _ = Describe("CertificateWithDNSProvider", func() {
 
 		userSecret = &v1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "user-" +f.Certificate.UniqueName(),
+				Name:      "user-" + f.Certificate.UniqueName(),
 				Namespace: f.Namespace(),
 			},
 			Data: map[string][]byte{
@@ -95,7 +98,7 @@ var _ = Describe("CertificateWithDNSProvider", func() {
 	})
 
 	Describe("Create", func() {
-		FIt("Should check secret", func() {
+		It("Should check secret", func() {
 			Eventually(func() bool {
 				secret, err := f.KubeClient.CoreV1().Secrets(cert.Namespace).Get("cert-"+cert.Name, metav1.GetOptions{})
 				if err != nil {
