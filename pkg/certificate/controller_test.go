@@ -53,16 +53,16 @@ func TestEnsureClient(t *testing.T) {
 			&apiv1.Secret{
 				ObjectMeta: metav1.ObjectMeta{Name: "user", Namespace: "bar"},
 				Data: map[string][]byte{
-					ACMEUserEmail: []byte(os.Getenv("TEST_ACME_USER_EMAIL")),
-					ACMEServerURL: []byte(LetsEncryptStagingURL),
+					api.ACMEUserEmail: []byte(os.Getenv("TEST_ACME_USER_EMAIL")),
+					api.ACMEServerURL: []byte(LetsEncryptStagingURL),
 				},
 			},
 		), acf.NewSimpleClientset().VoyagerV1beta1(), config.Options{ResyncPeriod: time.Second * 5}, cert)
 
-		fakeController.acmeClientConfig = &ACMEConfig{
-			Provider:       "googlecloud",
-			DNSCredentials: make(map[string][]byte),
-			UserDataMap:    make(map[string][]byte),
+		fakeController.acmeConfig = &ACMEConfig{
+			ChallengeProvider: "googlecloud",
+			DNSCredentials:    make(map[string][]byte),
+			UserDataMap:       make(map[string][]byte),
 		}
 
 		fakeSecret := &apiv1.Secret{
@@ -106,8 +106,8 @@ func TestFakeRegisterACMEUser(t *testing.T) {
 		&apiv1.Secret{
 			ObjectMeta: metav1.ObjectMeta{Name: "user", Namespace: "bar"},
 			Data: map[string][]byte{
-				ACMEUserEmail: []byte(os.Getenv("TEST_ACME_USER_EMAIL")),
-				ACMEServerURL: []byte(LetsEncryptStagingURL),
+				api.ACMEUserEmail: []byte(os.Getenv("TEST_ACME_USER_EMAIL")),
+				api.ACMEServerURL: []byte(LetsEncryptStagingURL),
 			},
 		},
 	), acf.NewSimpleClientset().VoyagerV1beta1(), config.Options{ResyncPeriod: time.Second * 5}, cert)
@@ -116,7 +116,7 @@ func TestFakeRegisterACMEUser(t *testing.T) {
 		Client: newFakeACMEClient(),
 	}
 	if acmeClient.Client != nil {
-		fakeController.acmeClientConfig = &ACMEConfig{
+		fakeController.acmeConfig = &ACMEConfig{
 			UserData: &ACMEUserData{
 				Email:        newFakeACMEUser().email,
 				Registration: newFakeACMEUser().regres,
@@ -154,8 +154,8 @@ func TestCreate(t *testing.T) {
 		fakeUser := &apiv1.Secret{
 			ObjectMeta: metav1.ObjectMeta{Name: "user", Namespace: "bar"},
 			Data: map[string][]byte{
-				ACMEUserEmail: []byte(os.Getenv("TEST_ACME_USER_EMAIL")),
-				ACMEServerURL: []byte(LetsEncryptStagingURL),
+				api.ACMEUserEmail: []byte(os.Getenv("TEST_ACME_USER_EMAIL")),
+				api.ACMEServerURL: []byte(LetsEncryptStagingURL),
 			},
 		}
 		_, err := fakeController.KubeClient.CoreV1().Secrets("bar").Create(fakeUser)
@@ -163,10 +163,10 @@ func TestCreate(t *testing.T) {
 
 		fakeController.ExtClient.Certificates("bar").Create(cert)
 
-		fakeController.acmeClientConfig = &ACMEConfig{
-			DNSCredentials: make(map[string][]byte),
-			UserDataMap:    make(map[string][]byte),
-			Provider:       "googlecloud",
+		fakeController.acmeConfig = &ACMEConfig{
+			DNSCredentials:    make(map[string][]byte),
+			UserDataMap:       make(map[string][]byte),
+			ChallengeProvider: "googlecloud",
 		}
 
 		fakeSecret := &apiv1.Secret{

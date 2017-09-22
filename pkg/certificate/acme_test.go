@@ -81,16 +81,16 @@ func TestClient(t *testing.T) {
 	}
 
 	config := &ACMEConfig{
-		Provider: "http",
-		UserData: user,
+		ChallengeProvider: "http",
+		UserData:          user,
 	}
 	_, err = NewACMEClient(config)
 	assert.Nil(t, err)
 
 	if testing.Verbose() {
 		config := &ACMEConfig{
-			Provider: "http",
-			UserData: user,
+			ChallengeProvider: "http",
+			UserData:          user,
 			DNSCredentials: map[string][]byte{
 				"GCE_SERVICE_ACCOUNT_DATA": []byte(os.Getenv("TEST_GCE_SERVICE_ACCOUNT_DATA")),
 				"GCE_PROJECT":              []byte(os.Getenv("TEST_GCE_PROJECT")),
