@@ -24,7 +24,7 @@ func TestNewDomainCollection(t *testing.T) {
 }
 
 func TestACMECertData(t *testing.T) {
-	certificateSecret := &apiv1.Secret{
+	secret := &apiv1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			Kind: "Secret",
 		},
@@ -39,15 +39,15 @@ func TestACMECertData(t *testing.T) {
 		Type: apiv1.SecretTypeTLS,
 	}
 
-	cert, err := NewACMECertDataFromSecret(certificateSecret, &api.Certificate{})
+	cert, err := NewACMECertDataFromSecret(secret, &api.Certificate{})
 	assert.Nil(t, err)
 
 	convertedCert := cert.ToSecret("hello", "default", "")
-	assert.Equal(t, certificateSecret, convertedCert)
+	assert.Equal(t, secret, convertedCert)
 }
 
 func TestACMECertDataError(t *testing.T) {
-	certificateSecret := &apiv1.Secret{
+	secret := &apiv1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			Kind: "Secret",
 		},
@@ -61,7 +61,7 @@ func TestACMECertDataError(t *testing.T) {
 		Type: apiv1.SecretTypeTLS,
 	}
 
-	_, err := NewACMECertDataFromSecret(certificateSecret, &api.Certificate{})
+	_, err := NewACMECertDataFromSecret(secret, &api.Certificate{})
 	assert.NotNil(t, err)
 }
 

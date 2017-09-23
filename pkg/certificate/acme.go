@@ -11,7 +11,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/appscode/go/errors"
 	"github.com/appscode/go/log"
@@ -45,9 +44,6 @@ const (
 
 type ACMEClient struct {
 	*acme.Client
-	mu sync.Mutex
-
-	HTTPProviderLock sync.Mutex
 }
 
 func NewACMEClient(cfg *ACMEConfig) (*ACMEClient, error) {

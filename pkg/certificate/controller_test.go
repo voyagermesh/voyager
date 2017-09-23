@@ -204,12 +204,12 @@ func TestCreate(t *testing.T) {
 		}
 		assert.Equal(t, len(secret.Data), 2)
 
-		certificate, err := fakeController.ExtClient.Certificates("bar").Get("foo", metav1.GetOptions{})
+		cert, err = fakeController.ExtClient.Certificates("bar").Get("foo", metav1.GetOptions{})
 		if err != nil {
 			t.Fatal(err)
 		}
-		log.Infoln(certificate.Status)
-		log.Infoln(certificate.Status.Certificate)
+		log.Infoln(cert.Status)
+		log.Infoln(cert.Status.Certificate)
 	}
 }
 
