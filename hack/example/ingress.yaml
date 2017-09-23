@@ -149,14 +149,12 @@ spec:
         serviceName: apiserver
         servicePort: "50077"
       port: "3443"
-      secretName: cert-example-com
   - host: api.example.com
     tcp:
       backend:
         serviceName: example-apis
         servicePort: "50066"
       port: "3553"
-      secretName: cert-example-com
   - host: diffusion.example.com
     tcp:
       backend:

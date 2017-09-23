@@ -376,6 +376,7 @@ func (c *loadBalancerController) newService() *apiv1.Service {
 			LoadBalancerSourceRanges: c.Ingress.Spec.LoadBalancerSourceRanges,
 		},
 	}
+	svc.ObjectMeta = c.ensureOwnerReference(svc.ObjectMeta)
 
 	// opening other tcp ports
 	mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
@@ -489,6 +490,7 @@ func (c *loadBalancerController) newPods() *apps.Deployment {
 			},
 		},
 	}
+	deployment.ObjectMeta = c.ensureOwnerReference(deployment.ObjectMeta)
 
 	if addr := os.Getenv(vault.EnvVaultAddress); addr != "" {
 		vars := []apiv1.EnvVar{

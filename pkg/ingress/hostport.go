@@ -452,6 +452,7 @@ func (c *hostPortController) newService() *apiv1.Service {
 			Ports:     []apiv1.ServicePort{},
 		},
 	}
+	svc.ObjectMeta = c.ensureOwnerReference(svc.ObjectMeta)
 
 	// opening other tcp ports
 	mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
@@ -549,6 +550,7 @@ func (c *hostPortController) newPods() *apps.Deployment {
 			},
 		},
 	}
+	daemon.ObjectMeta = c.ensureOwnerReference(daemon.ObjectMeta)
 
 	if addr := os.Getenv(vault.EnvVaultAddress); addr != "" {
 		vars := []apiv1.EnvVar{
