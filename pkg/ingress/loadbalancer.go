@@ -373,6 +373,7 @@ func (c *loadBalancerController) newService() *apiv1.Service {
 			LoadBalancerSourceRanges: c.Ingress.Spec.LoadBalancerSourceRanges,
 		},
 	}
+	svc.ObjectMeta = c.ensureOwnerReference(svc.ObjectMeta)
 
 	// opening other tcp ports
 	mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
@@ -483,6 +484,7 @@ func (c *loadBalancerController) newPods() *apps.Deployment {
 			},
 		},
 	}
+	deployment.ObjectMeta = c.ensureOwnerReference(deployment.ObjectMeta)
 
 	if c.Opt.EnableRBAC {
 		deployment.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()

@@ -449,6 +449,7 @@ func (c *hostPortController) newService() *apiv1.Service {
 			Ports:     []apiv1.ServicePort{},
 		},
 	}
+	svc.ObjectMeta = c.ensureOwnerReference(svc.ObjectMeta)
 
 	// opening other tcp ports
 	mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
@@ -543,6 +544,7 @@ func (c *hostPortController) newPods() *apps.Deployment {
 			},
 		},
 	}
+	daemon.ObjectMeta = c.ensureOwnerReference(daemon.ObjectMeta)
 
 	if c.Opt.EnableRBAC {
 		daemon.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
