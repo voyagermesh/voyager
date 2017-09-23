@@ -2,8 +2,8 @@ package operator
 
 import (
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func (op *Operator) MigrateCertificates() error {

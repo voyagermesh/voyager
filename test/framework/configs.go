@@ -40,7 +40,7 @@ type E2EConfig struct {
 	DaemonHostName    string
 	LBPersistIP       string
 	RBACEnabled       bool
-	TestCertificate bool
+	TestCertificate   bool
 }
 
 var testConfigs E2EConfig

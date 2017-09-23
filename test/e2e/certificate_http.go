@@ -22,7 +22,7 @@ var _ = Describe("CertificateWithHTTPProvider", func() {
 		userSecret *v1.Secret
 	)
 
-	BeforeEach(func(){
+	BeforeEach(func() {
 		if !f.Config.TestCertificate {
 			Skip("Certificate Test is not enabled")
 		}
