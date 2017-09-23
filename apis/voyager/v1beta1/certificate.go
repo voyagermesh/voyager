@@ -111,8 +111,8 @@ type ACMECertificateDetails struct {
 	SerialNumber  string      `json:"serialNumber,omitempty"`
 	NotBefore     metav1.Time `json:"notBefore,omitempty"`
 	NotAfter      metav1.Time `json:"notAfter,omitempty"`
-	CertURL       string      `json:"certUrl"`
-	CertStableURL string      `json:"certStableUrl"`
+	CertURL       string      `json:"certURL"`
+	CertStableURL string      `json:"certStableURL"`
 	AccountRef    string      `json:"accountRef,omitempty"`
 }
 
