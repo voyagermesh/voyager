@@ -26,7 +26,7 @@ import (
 type Operator struct {
 	KubeClient      kubernetes.Interface
 	CRDClient       apiextensionsclient.Interface
-	ExtClient       tcs.VoyagerV1beta1Interface
+	VoyagerClient   tcs.VoyagerV1beta1Interface
 	PromClient      pcm.MonitoringV1alpha1Interface
 	ServiceLister   core.ServiceLister
 	EndpointsLister core.EndpointsLister
@@ -44,12 +44,12 @@ func New(
 	opt config.Options,
 ) *Operator {
 	return &Operator{
-		KubeClient: kubeClient,
-		CRDClient:  crdClient,
-		ExtClient:  extClient,
-		PromClient: promClient,
-		Opt:        opt,
-		recorder:   eventer.NewEventRecorder(kubeClient, "voyager operator"),
+		KubeClient:    kubeClient,
+		CRDClient:     crdClient,
+		VoyagerClient: extClient,
+		PromClient:    promClient,
+		Opt:           opt,
+		recorder:      eventer.NewEventRecorder(kubeClient, "voyager operator"),
 	}
 }
 

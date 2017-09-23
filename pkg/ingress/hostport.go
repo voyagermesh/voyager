@@ -47,7 +47,7 @@ func NewHostPortController(
 		controller: &controller{
 			KubeClient:      kubeClient,
 			CRDClient:       crdClient,
-			ExtClient:       extClient,
+			VoyagerClient:   extClient,
 			PromClient:      promClient,
 			ServiceLister:   serviceLister,
 			EndpointsLister: endpointsLister,

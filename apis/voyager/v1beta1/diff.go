@@ -276,3 +276,12 @@ func (c Certificate) ShouldRenew(crt *x509.Certificate) bool {
 	return !crt.NotAfter.After(time.Now().Add(time.Hour*24*7)) ||
 		!crtDomains.Equal(sets.NewString(c.Spec.Domains...))
 }
+
+func (c Certificate) IsRateLimited() bool {
+	for _, cond := range c.Status.Conditions {
+		if cond.Type == CertificateRateLimited {
+			return time.Now().Add(-24 * time.Hour).Before(cond.LastUpdateTime.Time)
+		}
+	}
+	return false
+}

@@ -129,8 +129,9 @@ type RequestConditionType string
 
 // These are the possible conditions for a certificate create request.
 const (
-	CertificateIssued RequestConditionType = "Issued"
-	CertificateFailed RequestConditionType = "Failed"
+	CertificateIssued      RequestConditionType = "Issued"
+	CertificateFailed      RequestConditionType = "Failed"
+	CertificateRateLimited RequestConditionType = "RateLimited"
 )
 
 type CertificateCondition struct {

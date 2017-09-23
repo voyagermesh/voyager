@@ -21,10 +21,10 @@ import (
 func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return op.ExtClient.Certificates(apiv1.NamespaceAll).List(metav1.ListOptions{})
+			return op.VoyagerClient.Certificates(apiv1.NamespaceAll).List(metav1.ListOptions{})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return op.ExtClient.Certificates(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
+			return op.VoyagerClient.Certificates(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
 	_, informer := cache.NewInformer(lw,
@@ -44,7 +44,7 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 						)
 						return
 					}
-					ctrl, err := certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, cert)
+					ctrl, err := certificate.NewController(op.KubeClient, op.VoyagerClient, op.Opt, cert)
 					if err != nil {
 						op.recorder.Event(
 							cert.ObjectReference(),
@@ -94,7 +94,7 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 						)
 						return
 					}
-					ctrl, err := certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, newCert)
+					ctrl, err := certificate.NewController(op.KubeClient, op.VoyagerClient, op.Opt, newCert)
 					if err != nil {
 						op.recorder.Event(
 							newCert.ObjectReference(),
@@ -136,14 +136,18 @@ func (op *Operator) CheckCertificates() {
 	for {
 		select {
 		case <-Time.After(time.Minute * 5):
-			result, err := op.ExtClient.Certificates(apiv1.NamespaceAll).List(metav1.ListOptions{})
+			result, err := op.VoyagerClient.Certificates(apiv1.NamespaceAll).List(metav1.ListOptions{})
 			if err != nil {
 				log.Error(err)
 				continue
 			}
 			for i := range result.Items {
 				cert := result.Items[i]
-				ctrl, err := certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, &cert)
+				if cert.IsRateLimited() {
+					log.Infoln("skipping certificate %s@%s, since rate limited", cert.Name, cert.Namespace)
+					continue
+				}
+				ctrl, err := certificate.NewController(op.KubeClient, op.VoyagerClient, op.Opt, &cert)
 				if err != nil {
 					op.recorder.Event(
 						cert.ObjectReference(),

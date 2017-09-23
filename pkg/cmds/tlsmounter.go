@@ -50,13 +50,13 @@ func runSSLMounter() {
 	if ingressRef.Name == "" {
 		log.Fatalln("Ingress Name not found")
 	}
-	config := &tlsmounter.TLSMountConfig{
-		IngressRef:    ingressRef,
-		MountLocation: mountPath,
+
+	ctrl := tlsmounter.Controller{
 		KubeClient:    clientset.NewForConfigOrDie(c),
 		VoyagerClient: acs.NewForConfigOrDie(c),
+		IngressRef:    ingressRef,
+		MountLocation: mountPath,
 	}
-	ctrl := tlsmounter.New(config)
 	if err := ctrl.Setup(); err != nil {
 		log.Fatalln(err)
 	}

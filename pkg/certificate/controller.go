@@ -5,11 +5,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/json"
-	"encoding/pem"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path"
 	"strings"
 	"time"
 
@@ -22,7 +18,6 @@ import (
 	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
-	vault "github.com/hashicorp/vault/api"
 	"github.com/xenolf/lego/acme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -34,10 +29,10 @@ import (
 )
 
 type Controller struct {
-	KubeClient clientset.Interface
-	ExtClient  acs.VoyagerV1beta1Interface
-	Opt        config.Options
-	recorder   record.EventRecorder
+	KubeClient    clientset.Interface
+	VoyagerClient acs.VoyagerV1beta1Interface
+	Opt           config.Options
+	recorder      record.EventRecorder
 
 	crd               *api.Certificate
 	ChallengeProvider string
@@ -46,17 +41,16 @@ type Controller struct {
 	curCert           *x509.Certificate
 	acmeUser          *ACMEUser
 	acmeClient        *acme.Client
-
-	vaultClient *vault.Client
+	store             *CertStore
 }
 
 func NewController(kubeClient clientset.Interface, extClient acs.VoyagerV1beta1Interface, opt config.Options, tpr *api.Certificate) (*Controller, error) {
 	ctrl := &Controller{
-		KubeClient: kubeClient,
-		ExtClient:  extClient,
-		Opt:        opt,
-		crd:        tpr,
-		recorder:   eventer.NewEventRecorder(kubeClient, "voyager-operator"),
+		KubeClient:    kubeClient,
+		VoyagerClient: extClient,
+		Opt:           opt,
+		crd:           tpr,
+		recorder:      eventer.NewEventRecorder(kubeClient, "voyager-operator"),
 	}
 	err := ctrl.crd.IsValid(ctrl.Opt.CloudProvider)
 	if err != nil {
@@ -86,7 +80,7 @@ func NewController(kubeClient clientset.Interface, extClient acs.VoyagerV1beta1I
 		switch ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.APIVersion {
 		case api.SchemeGroupVersion.String():
 			var err error
-			_, err = ctrl.ExtClient.Ingresses(ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
+			_, err = ctrl.VoyagerClient.Ingresses(ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
 				Get(ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 			if err != nil {
 				return nil, err
@@ -118,32 +112,12 @@ func NewController(kubeClient clientset.Interface, extClient acs.VoyagerV1beta1I
 		}
 	}
 
-	if os.Getenv(vault.EnvVaultAddress) != "" {
-		ctrl.vaultClient, err = vault.NewClient(vault.DefaultConfig())
-		if err != nil {
-			return nil, err
-		}
-		if os.Getenv(vault.EnvVaultToken) == "" {
-			token, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/token")
-			if err != nil {
-				return nil, err
-			}
-			ctrl.vaultClient.SetToken(string(token))
-		}
-	} else {
-		if ctrl.crd.Spec.Storage.Vault != nil {
-			return nil, fmt.Errorf("certificate %s@%s uses vault but vault address is missing", tpr.Name, tpr.Namespace)
-		}
+	ctrl.store, err = NewCertStore(kubeClient, extClient)
+	if err != nil {
+		return nil, err
 	}
-
-	if ctrl.crd.Spec.Storage.Secret != nil {
-		if ctrl.crd.Spec.Storage.Secret.Name == "" {
-			ctrl.crd.Spec.Storage.Secret.Name = "cert-" + tpr.Name
-		}
-	} else if ctrl.crd.Spec.Storage.Vault != nil {
-		if ctrl.crd.Spec.Storage.Vault.Name == "" {
-			ctrl.crd.Spec.Storage.Vault.Name = "cert-" + tpr.Name
-		}
+	if ctrl.store.VaultClient == nil && ctrl.crd.Spec.Storage.Vault != nil {
+		return nil, fmt.Errorf("certificate %s@%s uses vault but vault address is missing", tpr.Name, tpr.Namespace)
 	}
 
 	return ctrl, nil
@@ -151,7 +125,7 @@ func NewController(kubeClient clientset.Interface, extClient acs.VoyagerV1beta1I
 
 func (c *Controller) Process() error {
 	var err error
-	c.curCert, _, err = c.load()
+	c.curCert, _, err = c.store.Get(c.crd)
 	if err != nil {
 		return err
 	}
@@ -224,7 +198,7 @@ func (c *Controller) create() error {
 		return err
 	}
 	if c.ChallengeProvider == "http" {
-		if err := c.processHTTPCertificate(); err != nil {
+		if err := c.updateIngress(); err != nil {
 			return err
 		}
 	}
@@ -234,9 +208,9 @@ func (c *Controller) create() error {
 		for k, v := range errs {
 			causes = append(causes, k+": "+v.Error())
 		}
-		return fmt.Errorf("failed to create certificate. Reason: %s", strings.Join(causes, ", "))
+		return c.processError(fmt.Errorf("failed to create certificate. Reason: %s", strings.Join(causes, ", ")))
 	}
-	return c.save(cert)
+	return c.store.Save(c.crd, cert)
 }
 
 func (c *Controller) renew() error {
@@ -244,7 +218,7 @@ func (c *Controller) renew() error {
 		return err
 	}
 	if c.ChallengeProvider == "http" {
-		if err := c.processHTTPCertificate(); err != nil {
+		if err := c.updateIngress(); err != nil {
 			return err
 		}
 	}
@@ -257,128 +231,32 @@ func (c *Controller) renew() error {
 	}
 	cert, err := c.acmeClient.RenewCertificate(acmeCert, true, true)
 	if err != nil {
-		return err
+		return c.processError(err)
 	}
-	return c.save(cert)
+	return c.store.Save(c.crd, cert)
 }
 
-func (c *Controller) load() (crt *x509.Certificate, key *rsa.PrivateKey, err error) {
-	var pemCrt, pemKey []byte
-
-	if c.crd.Spec.Storage.Secret != nil {
-		var secret *apiv1.Secret
-		secret, err = c.KubeClient.CoreV1().Secrets(c.crd.Namespace).Get(c.crd.Spec.Storage.Secret.Name, metav1.GetOptions{})
-		if err == nil {
-			if data, found := secret.Data["tls.crt"]; !found {
-				err = fmt.Errorf("secret %s@%s is missing tls.crt", c.crd.Spec.Storage.Secret.Name, c.crd.Namespace)
-				return
-			} else {
-				pemCrt = data
-			}
-			if data, found := secret.Data["tls.key"]; !found {
-				err = fmt.Errorf("secret %s@%s is missing tls.key", c.crd.Spec.Storage.Secret.Name, c.crd.Namespace)
-				return
-			} else {
-				pemKey = data
-			}
-		}
-	} else if c.crd.Spec.Storage.Vault != nil {
-		var secret *vault.Secret
-		secret, err = c.vaultClient.Logical().Read(path.Join(c.crd.Spec.Storage.Vault.Prefix, c.crd.Namespace, c.crd.Spec.Storage.Vault.Name))
-		if err != nil {
-			return
-		}
-		if data, found := secret.Data["tls.crt"]; !found {
-			err = fmt.Errorf("secret %s@%s is missing tls.crt", c.crd.Spec.Storage.Secret.Name, c.crd.Namespace)
-			return
-		} else {
-			pemCrt = []byte(data.(string))
-		}
-		if data, found := secret.Data["tls.key"]; !found {
-			err = fmt.Errorf("secret %s@%s is missing tls.key", c.crd.Spec.Storage.Secret.Name, c.crd.Namespace)
-			return
-		} else {
-			pemKey = []byte(data.(string))
-		}
-	}
-
-	if len(pemCrt) > 0 {
-		var certs []*x509.Certificate
-		certs, err = cert.ParseCertsPEM(pemCrt)
-		if err != nil {
-			err = fmt.Errorf("secret %s@%s contains bad certificate. Reason: %s", c.crd.Spec.Storage.Secret.Name, c.crd.Namespace, err)
-			return
-		}
-		crt = certs[0]
-	}
-	if len(pemKey) > 0 {
-		var ki interface{}
-		ki, err = cert.ParsePrivateKeyPEM(pemKey)
-		if err != nil {
-			return
-		}
-		if rsaKey, ok := ki.(*rsa.PrivateKey); ok {
-			key = rsaKey
-		} else {
-			err = fmt.Errorf("key datya is not rsa private key")
-		}
-		return
-	}
-	return
-}
-
-func (c *Controller) save(cert acme.CertificateResource) error {
-	if c.crd.Spec.Storage.Secret != nil {
-		_, err := v1u.CreateOrPatchSecret(c.KubeClient,
-			metav1.ObjectMeta{Namespace: c.crd.Namespace, Name: c.crd.Spec.Storage.Secret.Name},
-			func(in *apiv1.Secret) *apiv1.Secret {
-				in.Type = apiv1.SecretTypeTLS
-				if in.Data == nil {
-					in.Data = make(map[string][]byte)
-				}
-				in.Data["tls.crt"] = cert.Certificate
-				in.Data["tls.key"] = cert.PrivateKey
-				return in
-			})
-		return err
-	} else if c.crd.Spec.Storage.Vault != nil {
-		data := map[string]interface{}{
-			"tls.crt": string(cert.Certificate),
-			"tls.key": string(cert.PrivateKey),
-		}
-		_, err := c.vaultClient.Logical().Write(path.Join(c.crd.Spec.Storage.Vault.Prefix, c.crd.Namespace, c.crd.Spec.Storage.Vault.Name), data)
-		return err
-	}
-
-	// Decode cert
-	pemBlock, _ := pem.Decode(cert.Certificate)
-	crt, err := x509.ParseCertificate(pemBlock.Bytes)
-	if err != nil {
-		return errors.FromErr(err).WithMessage("Error decoding x509 encoded certificate").Err()
-	}
-	_, err = vu.PatchCertificate(c.ExtClient, c.crd, func(in *api.Certificate) *api.Certificate {
+func (c *Controller) processError(err error) error {
+	vu.PatchCertificate(c.VoyagerClient, c.crd, func(in *api.Certificate) *api.Certificate {
 		// Update certificate data to add Details Information
 		t := metav1.Now()
-		in.Status.LastIssuedCertificate = &api.CertificateDetails{
-			SerialNumber:  crt.SerialNumber.String(),
-			NotBefore:     metav1.NewTime(crt.NotBefore),
-			NotAfter:      metav1.NewTime(crt.NotAfter),
-			CertURL:       cert.CertURL,
-			CertStableURL: cert.CertStableURL,
-			AccountRef:    cert.AccountRef,
-		}
-
 		found := false
+		condType := api.CertificateFailed
+		if strings.Contains(err.Error(), "urn:acme:error:rateLimited") {
+			condType = api.CertificateRateLimited
+		}
 		for i := range in.Status.Conditions {
-			if in.Status.Conditions[i].Type == api.CertificateIssued {
+			if in.Status.Conditions[i].Type == condType {
 				in.Status.Conditions[i].LastUpdateTime = t
+				in.Status.Conditions[i].Reason = err.Error()
 				found = true
 			}
 		}
 		if !found {
 			in.Status.Conditions = append(in.Status.Conditions, api.CertificateCondition{
-				Type:           api.CertificateIssued,
+				Type:           condType,
 				LastUpdateTime: t,
+				Reason:         err.Error(),
 			})
 		}
 		return in
@@ -386,10 +264,10 @@ func (c *Controller) save(cert acme.CertificateResource) error {
 	return err
 }
 
-func (c *Controller) processHTTPCertificate() error {
+func (c *Controller) updateIngress() error {
 	switch c.crd.Spec.ChallengeProvider.HTTP.Ingress.APIVersion {
 	case api.SchemeGroupVersion.String():
-		i, err := c.ExtClient.Ingresses(c.crd.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
+		i, err := c.VoyagerClient.Ingresses(c.crd.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
 			Get(c.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -424,7 +302,7 @@ func (c *Controller) processHTTPCertificate() error {
 		}
 		i.Spec.Rules = append(i.Spec.Rules, rule)
 
-		_, err = c.ExtClient.Ingresses(c.crd.Namespace).Update(i)
+		_, err = c.VoyagerClient.Ingresses(c.crd.Namespace).Update(i)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}

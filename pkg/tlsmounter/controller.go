@@ -5,45 +5,45 @@ import (
 	"time"
 
 	"github.com/appscode/go/hold"
-	voyagerv1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	"github.com/appscode/voyager/pkg/certificate"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-type TLSMountConfig struct {
-	IngressRef    apiv1.ObjectReference
-	MountLocation string
+type Controller struct {
 	KubeClient    clientset.Interface
 	VoyagerClient acs.VoyagerV1beta1Interface
+	IngressRef    apiv1.ObjectReference
+	MountLocation string
 	VolumeMounter *secretMounter
+	store         *certificate.CertStore
 }
 
-type SSLMounter struct {
-	*TLSMountConfig
-}
+func (c *Controller) Setup() error {
+	var err error
+	c.store, err = certificate.NewCertStore(c.KubeClient, c.VoyagerClient)
+	if err != nil {
+		return err
+	}
 
-func New(c *TLSMountConfig) *SSLMounter {
-	return &SSLMounter{TLSMountConfig: c}
-}
-
-func (m *SSLMounter) Setup() error {
-	var ingress *voyagerv1beta1.Ingress
-	switch m.IngressRef.APIVersion {
-	case voyagerv1beta1.SchemeGroupVersion.String():
+	var ingress *api.Ingress
+	switch c.IngressRef.APIVersion {
+	case api.SchemeGroupVersion.String():
 		var err error
-		ingress, err = m.VoyagerClient.Ingresses(m.IngressRef.Namespace).Get(m.IngressRef.Name, metav1.GetOptions{})
+		ingress, err = c.VoyagerClient.Ingresses(c.IngressRef.Namespace).Get(c.IngressRef.Name, metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
 	case "extensions/v1beta1":
-		ing, err := m.KubeClient.ExtensionsV1beta1().Ingresses(m.IngressRef.Namespace).Get(m.IngressRef.Name, metav1.GetOptions{})
+		ing, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.IngressRef.Namespace).Get(c.IngressRef.Name, metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
-		ingress, err = voyagerv1beta1.NewEngressFromIngress(ing)
+		ingress, err = api.NewEngressFromIngress(ing)
 		if err != nil {
 			return err
 		}
@@ -51,7 +51,7 @@ func (m *SSLMounter) Setup() error {
 		return errors.New("ingress API Schema unrecognized")
 	}
 
-	mounter, err := NewIngressSecretMounter(m.KubeClient, m.VoyagerClient, ingress, m.MountLocation, "", time.Minute*5)
+	mounter, err := NewIngressSecretMounter(c.KubeClient, c.VoyagerClient, ingress, c.MountLocation, "", time.Minute*5)
 	if err != nil {
 		return err
 	}
@@ -60,11 +60,11 @@ func (m *SSLMounter) Setup() error {
 	if err != nil {
 		return err
 	}
-	m.VolumeMounter = mounter
+	c.VolumeMounter = mounter
 	return nil
 }
 
-func (m *SSLMounter) Run() {
-	m.VolumeMounter.Run(wait.NeverStop)
+func (c *Controller) Run() {
+	c.VolumeMounter.Run(wait.NeverStop)
 	hold.Hold()
 }

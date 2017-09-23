@@ -32,7 +32,7 @@ type Controller interface {
 type controller struct {
 	KubeClient      clientset.Interface
 	CRDClient       apiextensionsclient.Interface
-	ExtClient       acs.VoyagerV1beta1Interface
+	VoyagerClient   acs.VoyagerV1beta1Interface
 	PromClient      pcm.MonitoringV1alpha1Interface
 	ServiceLister   core.ServiceLister
 	EndpointsLister core.EndpointsLister

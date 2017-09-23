@@ -25,14 +25,14 @@ func (op *Operator) initNamespaceWatcher() cache.Controller {
 		cache.ResourceEventHandlerFuncs{
 			DeleteFunc: func(obj interface{}) {
 				if ns, ok := obj.(*apiv1.Namespace); ok {
-					if resources, err := op.ExtClient.Certificates(ns.Name).List(metav1.ListOptions{}); err == nil {
+					if resources, err := op.VoyagerClient.Certificates(ns.Name).List(metav1.ListOptions{}); err == nil {
 						for _, resource := range resources.Items {
-							op.ExtClient.Certificates(resource.Namespace).Delete(resource.Name, &metav1.DeleteOptions{})
+							op.VoyagerClient.Certificates(resource.Namespace).Delete(resource.Name, &metav1.DeleteOptions{})
 						}
 					}
-					if resources, err := op.ExtClient.Ingresses(ns.Name).List(metav1.ListOptions{}); err == nil {
+					if resources, err := op.VoyagerClient.Ingresses(ns.Name).List(metav1.ListOptions{}); err == nil {
 						for _, resource := range resources.Items {
-							op.ExtClient.Ingresses(resource.Namespace).Delete(resource.Name, &metav1.DeleteOptions{})
+							op.VoyagerClient.Ingresses(resource.Namespace).Delete(resource.Name, &metav1.DeleteOptions{})
 						}
 					}
 				}

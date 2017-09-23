@@ -103,7 +103,7 @@ func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*tapi.Ingress, error) {
 		}
 		return tapi.NewEngressFromIngress(ingress)
 	} else if sourceType == tapi.APISchemaEngress {
-		return op.ExtClient.Ingresses(meta.Namespace).Get(sourceName, metav1.GetOptions{})
+		return op.VoyagerClient.Ingresses(meta.Namespace).Get(sourceName, metav1.GetOptions{})
 	}
 	return nil, fmt.Errorf("Unknown ingress type %s", sourceType)
 }
@@ -113,7 +113,7 @@ func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
 	if err != nil {
 		return err
 	}
-	eng, err := op.ExtClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
+	eng, err := op.VoyagerClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -134,7 +134,7 @@ func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
 			log.Infoln("Checking for service", svc, "to be used to load balance via ingress", engress.Name, engress.Namespace)
 			if engress.HasBackendService(svc.Name, svc.Namespace) {
-				ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
+				ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 				if ctrl.IsExists() {
 					// Loadbalancer resource for this ingress is found in its place,
 					// so no need to create the resources. First trying to update

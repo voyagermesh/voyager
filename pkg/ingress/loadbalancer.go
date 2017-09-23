@@ -44,7 +44,7 @@ func NewLoadBalancerController(
 		controller: &controller{
 			KubeClient:      kubeClient,
 			CRDClient:       crdClient,
-			ExtClient:       extClient,
+			VoyagerClient:   extClient,
 			PromClient:      promClient,
 			ServiceLister:   serviceLister,
 			EndpointsLister: endpointsLister,
@@ -670,12 +670,12 @@ func (c *loadBalancerController) updateStatus() error {
 				return errors.FromErr(err).Err()
 			}
 		} else {
-			ing, err := c.ExtClient.Ingresses(c.Ingress.Namespace).Get(c.Ingress.Name, metav1.GetOptions{})
+			ing, err := c.VoyagerClient.Ingresses(c.Ingress.Namespace).Get(c.Ingress.Name, metav1.GetOptions{})
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
 			ing.Status.LoadBalancer.Ingress = statuses
-			_, err = c.ExtClient.Ingresses(c.Ingress.Namespace).Update(ing)
+			_, err = c.VoyagerClient.Ingresses(c.Ingress.Namespace).Update(ing)
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}

@@ -20,10 +20,10 @@ import (
 func (op *Operator) initIngressCRDWatcher() cache.Controller {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return op.ExtClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
+			return op.VoyagerClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return op.ExtClient.Ingresses(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
+			return op.VoyagerClient.Ingresses(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
 	_, informer := cache.NewInformer(lw,
@@ -94,7 +94,7 @@ func (op *Operator) initIngressCRDWatcher() cache.Controller {
 }
 
 func (op *Operator) AddEngress(engress *tapi.Ingress) {
-	ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
+	ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 	if ctrl.IsExists() {
 		if err := ctrl.Update(ingress.UpdateStats, nil); err != nil {
 			log.Errorln(err)
@@ -120,7 +120,7 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 		return
 	}
 
-	ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, newEngress)
+	ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, newEngress)
 	if oldHandled && !newHandled {
 		ctrl.Delete()
 	} else {
@@ -174,7 +174,7 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 }
 
 func (op *Operator) DeleteEngress(engress *tapi.Ingress) {
-	ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
+	ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 	ctrl.Delete()
 
 	for _, meta := range engress.BackendServices() {

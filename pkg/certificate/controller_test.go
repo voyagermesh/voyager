@@ -161,7 +161,7 @@ func TestCreate(t *testing.T) {
 		_, err := fakeController.KubeClient.CoreV1().Secrets("bar").Create(fakeUser)
 		assert.Nil(t, err)
 
-		fakeController.ExtClient.Certificates("bar").Create(cert)
+		fakeController.VoyagerClient.Certificates("bar").Create(cert)
 
 		fakeController.acmeConfig = &ACMEConfig{
 			DNSCredentials:    make(map[string][]byte),
@@ -204,7 +204,7 @@ func TestCreate(t *testing.T) {
 		}
 		assert.Equal(t, len(secret.Data), 2)
 
-		cert, err = fakeController.ExtClient.Certificates("bar").Get("foo", metav1.GetOptions{})
+		cert, err = fakeController.VoyagerClient.Certificates("bar").Get("foo", metav1.GetOptions{})
 		if err != nil {
 			t.Fatal(err)
 		}

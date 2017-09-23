@@ -8,7 +8,7 @@ import (
 )
 
 func (op *Operator) MigrateCertificates() error {
-	certs, err := op.ExtClient.Certificates(metav1.NamespaceAll).List(metav1.ListOptions{})
+	certs, err := op.VoyagerClient.Certificates(metav1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -19,7 +19,7 @@ func (op *Operator) MigrateCertificates() error {
 			return err
 		}
 		if migrate {
-			_, err := op.ExtClient.Certificates(cert.Namespace).Update(&cert)
+			_, err := op.VoyagerClient.Certificates(cert.Namespace).Update(&cert)
 			if err != nil {
 				return err
 			}
