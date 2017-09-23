@@ -48,7 +48,7 @@ func NewIngressSecretMounter(client clientset.Interface, vclient acs.VoyagerV1be
 
 	for _, cert := range ing.Certificates() {
 		if certs, err := vclient.Certificates(cert.Namespace).Get(cert.Name, metav1.GetOptions{}); err != nil {
-			if certs.Spec.Storage.Kubernetes != nil {
+			if certs.Spec.Storage.Secret != nil {
 				name := fileNameForCertificate(certs)
 				sc, err := client.CoreV1().Secrets(ing.Namespace).Get(name, metav1.GetOptions{})
 				if err != nil {
@@ -228,7 +228,7 @@ func (c *secretMounter) initIngressInformer(stopCh <-chan struct{}) {
 
 				for _, cert := range newIngress.Certificates() {
 					if certs, err := c.VoyagerClient.Certificates(cert.Namespace).Get(cert.Name, metav1.GetOptions{}); err != nil {
-						if certs.Spec.Storage.Kubernetes != nil {
+						if certs.Spec.Storage.Secret != nil {
 							name := fileNameForCertificate(certs)
 							if _, ok := c.fileProjections[name+".pem"]; !ok {
 								sc, err := c.KubeClient.CoreV1().Secrets(c.ing.Namespace).Get(name, metav1.GetOptions{})
@@ -282,7 +282,7 @@ func (c *secretMounter) initCertificateInformer(stopCh <-chan struct{}) {
 					c.lock.Lock()
 					defer c.lock.Unlock()
 
-					if cert.Spec.Storage.Kubernetes != nil {
+					if cert.Spec.Storage.Secret != nil {
 						name := fileNameForCertificate(cert)
 						if _, ok := c.fileProjections[name+".pem"]; !ok {
 							sc, err := c.KubeClient.CoreV1().Secrets(c.ing.Namespace).Get(name, metav1.GetOptions{})
@@ -306,7 +306,7 @@ func (c *secretMounter) initCertificateInformer(stopCh <-chan struct{}) {
 						c.lock.Lock()
 						defer c.lock.Unlock()
 
-						if newCert.Spec.Storage.Kubernetes != nil {
+						if newCert.Spec.Storage.Secret != nil {
 							name := fileNameForCertificate(newCert)
 							if _, ok := c.fileProjections[name+".pem"]; !ok {
 								sc, err := c.KubeClient.CoreV1().Secrets(c.ing.Namespace).Get(name, metav1.GetOptions{})
@@ -388,8 +388,8 @@ func secretToPEMData(s *apiv1.Secret) []byte {
 }
 
 func fileNameForCertificate(c *v1beta1.Certificate) string {
-	if c.Spec.Storage.Kubernetes != nil {
-		name := c.Spec.Storage.Kubernetes.Name
+	if c.Spec.Storage.Secret != nil {
+		name := c.Spec.Storage.Secret.Name
 		if len(name) == 0 {
 			name = "cert-" + c.Name
 		}

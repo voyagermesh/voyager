@@ -43,7 +43,7 @@ func TestEnsureClient(t *testing.T) {
 				Domains:            strings.Split(os.Getenv("TEST_DNS_DOMAINS"), ","),
 				ACMEUserSecretName: "user",
 				ChallengeProvider:  api.ChallengeProvider{DNS: &api.DNSChallengeProvider{ProviderType: "googlecloud", CredentialSecretName: "fakesecret"}},
-				Storage:            api.CertificateStorage{Kubernetes: &api.CertificateStorageKubernetes{}},
+				Storage:            api.CertificateStorage{Secret: &api.SecretStore{}},
 			},
 		}
 		fakeController := NewController(fake.NewSimpleClientset(
@@ -96,7 +96,7 @@ func TestFakeRegisterACMEUser(t *testing.T) {
 			Domains:            []string{"example.com"},
 			ACMEUserSecretName: "user",
 			ChallengeProvider:  api.ChallengeProvider{DNS: &api.DNSChallengeProvider{ProviderType: "googlecloud", CredentialSecretName: "fakesecret"}},
-			Storage:            api.CertificateStorage{Kubernetes: &api.CertificateStorageKubernetes{}},
+			Storage:            api.CertificateStorage{Secret: &api.SecretStore{}},
 		},
 	}
 	fakeController := NewController(fake.NewSimpleClientset(
@@ -147,7 +147,7 @@ func TestCreate(t *testing.T) {
 				Domains:            strings.Split(os.Getenv("TEST_DNS_DOMAINS"), ","),
 				ACMEUserSecretName: "user",
 				ChallengeProvider:  api.ChallengeProvider{DNS: &api.DNSChallengeProvider{ProviderType: "googlecloud", CredentialSecretName: "fakesecret"}},
-				Storage:            api.CertificateStorage{Kubernetes: &api.CertificateStorageKubernetes{}},
+				Storage:            api.CertificateStorage{Secret: &api.SecretStore{}},
 			},
 		}
 		fakeController := NewController(fake.NewSimpleClientset(), acf.NewSimpleClientset().VoyagerV1beta1(), config.Options{ResyncPeriod: time.Second * 5}, cert)

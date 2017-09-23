@@ -81,16 +81,16 @@ type DNSChallengeProvider struct {
 }
 
 type CertificateStorage struct {
-	Kubernetes *CertificateStorageKubernetes `json:"kubernetes,omitempty"`
-	Vault      *CertificateStorageVault      `json:"vault,omitempty"`
+	Secret *SecretStore `json:"secret,omitempty"`
+	Vault  *VaultStore  `json:"vault,omitempty"`
 }
 
-type CertificateStorageKubernetes struct {
+type SecretStore struct {
 	// Secret name to store the certificate, default cert-<certificate-name>
 	Name string `json:"name,omitempty"`
 }
 
-type CertificateStorageVault struct {
+type VaultStore struct {
 	Name   string `json:"name,omitempty"`
 	Prefix string `json:"prefix,omitempty"`
 }

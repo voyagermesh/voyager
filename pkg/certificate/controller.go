@@ -275,8 +275,8 @@ func (c *Controller) save(cert acme.CertificateResource) error {
 		PrivateKey: cert.PrivateKey,
 	}
 
-	if c.tpr.Spec.Storage.Kubernetes != nil {
-		secret := certData.ToSecret(c.tpr.Name, c.tpr.Namespace, c.tpr.Spec.Storage.Kubernetes.Name)
+	if c.tpr.Spec.Storage.Secret != nil {
+		secret := certData.ToSecret(c.tpr.Name, c.tpr.Namespace, c.tpr.Spec.Storage.Secret.Name)
 		_, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Create(secret)
 		if err != nil {
 			errors.FromErr(err).Err()
@@ -324,8 +324,8 @@ func (c *Controller) update(cert acme.CertificateResource) error {
 		PrivateKey: cert.PrivateKey,
 	}
 
-	if c.tpr.Spec.Storage.Kubernetes != nil {
-		secret := certData.ToSecret(c.tpr.Name, c.tpr.Namespace, c.tpr.Spec.Storage.Kubernetes.Name)
+	if c.tpr.Spec.Storage.Secret != nil {
+		secret := certData.ToSecret(c.tpr.Name, c.tpr.Namespace, c.tpr.Spec.Storage.Secret.Name)
 		oldSecret, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(secret.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.FromErr(err).Err()

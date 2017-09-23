@@ -43,10 +43,10 @@ func (op *Operator) MigrateCertificate(cert *api.Certificate) (bool, error) {
 		}
 		migrate = true
 	}
-	if cert.Spec.Storage.Kubernetes == nil && cert.Spec.Storage.Vault == nil {
+	if cert.Spec.Storage.Secret == nil && cert.Spec.Storage.Vault == nil {
 		migrate = true
 		cert.Spec.Storage = api.CertificateStorage{
-			Kubernetes: &api.CertificateStorageKubernetes{},
+			Secret: &api.SecretStore{},
 		}
 	}
 

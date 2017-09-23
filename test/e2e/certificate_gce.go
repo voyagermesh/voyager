@@ -79,7 +79,7 @@ var _ = Describe("CertificateWithDNSProvider", func() {
 			},
 			ACMEUserSecretName: userSecret.Name,
 			Storage: api.CertificateStorage{
-				Kubernetes: &api.CertificateStorageKubernetes{},
+				Secret: &api.SecretStore{},
 			},
 		}
 	})
