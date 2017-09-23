@@ -313,7 +313,7 @@ func (c *Controller) save(cert acme.CertificateResource) error {
 			Type:           tapi.CertificateCreated,
 			LastUpdateTime: t,
 		}},
-		Certificate: tapi.ACMECertificateDetails{
+		Certificate: tapi.CertificateDetails{
 			SerialNumber:  crt.SerialNumber.String(),
 			NotBefore:     metav1.NewTime(crt.NotBefore),
 			NotAfter:      metav1.NewTime(crt.NotAfter),
@@ -360,7 +360,7 @@ func (c *Controller) update(cert acme.CertificateResource) error {
 
 	// Update certificate data to add Details Information
 	t := metav1.Now()
-	k8sCert.Status.Certificate = tapi.ACMECertificateDetails{
+	k8sCert.Status.Certificate = tapi.CertificateDetails{
 		SerialNumber:  crt.SerialNumber.String(),
 		NotBefore:     metav1.NewTime(crt.NotBefore),
 		NotAfter:      metav1.NewTime(crt.NotAfter),

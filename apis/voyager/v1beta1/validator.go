@@ -2,7 +2,6 @@ package v1beta1
 
 import (
 	"fmt"
-	"net/url"
 	"strconv"
 	"strings"
 
@@ -287,16 +286,6 @@ func (c Certificate) IsValid() error {
 
 	if c.Spec.Storage.Kubernetes != nil && c.Spec.Storage.Vault != nil {
 		return fmt.Errorf("invalid storage specification, used both storage")
-	}
-
-	if v := c.Spec.Storage.Vault; v != nil {
-		_, err := url.Parse(v.Address)
-		if err != nil {
-			return err
-		}
-		if len(v.Token) == 0 {
-			return fmt.Errorf("no valut token specified")
-		}
 	}
 
 	return nil

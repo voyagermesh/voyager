@@ -91,23 +91,32 @@ type CertificateStorageKubernetes struct {
 }
 
 type CertificateStorageVault struct {
-	Name string `json:"name,omitempty"`
-	// Address is the address of the Vault server. This should be a complete
-	// URL such as "http://vault.example.com:8082".
-	Address string `json:"address,omitempty"`
-	Prefix  string `json:"prefix,omitempty"`
-	// Should be TokenSecretName? @tamal
-	Token string `json:"token,omitempty"`
+	Name   string `json:"name,omitempty"`
+	Prefix string `json:"prefix,omitempty"`
 }
 
 type CertificateStatus struct {
-	CertificateObtained bool                   `json:"certificateObtained"`
-	CreationTime        *metav1.Time           `json:"creationTime,omitempty"`
-	Conditions          []CertificateCondition `json:"conditions,omitempty"`
-	Certificate         ACMECertificateDetails `json:"certificate,omitempty"`
+	CreationTime *metav1.Time           `json:"creationTime,omitempty"`
+	Conditions   []CertificateCondition `json:"conditions,omitempty"`
+	Certificate  CertificateDetails     `json:"certificate,omitempty"`
+	// Deprecated
+	CertificateObtained bool `json:"certificateObtained,omitempty"`
+	// Deprecated
+	Message string `json:"message, omitempty"`
+	// Deprecated
+	ACMEUserSecretName string `json:"acmeUserSecretName,omitempty"`
+	// Deprecated
+	Details ACMECertificateDetails `json:"details,omitempty"`
 }
 
 type ACMECertificateDetails struct {
+	Domain        string `json:"domain"`
+	CertURL       string `json:"certUrl"`
+	CertStableURL string `json:"certStableUrl"`
+	AccountRef    string `json:"accountRef,omitempty"`
+}
+
+type CertificateDetails struct {
 	SerialNumber  string      `json:"serialNumber,omitempty"`
 	NotBefore     metav1.Time `json:"notBefore,omitempty"`
 	NotAfter      metav1.Time `json:"notAfter,omitempty"`
