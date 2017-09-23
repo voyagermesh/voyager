@@ -533,11 +533,6 @@ func DeepCopy_voyager_IngressTLS(in interface{}, out interface{}, c *conversion.
 			*out = make([]string, len(*in))
 			copy(*out, *in)
 		}
-		if in.Certificate != nil {
-			in, out := &in.Certificate, &out.Certificate
-			*out = new(api_v1.ObjectReference)
-			**out = **in
-		}
 		return nil
 	}
 }

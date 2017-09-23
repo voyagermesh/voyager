@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/appscode/go/reflect"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
@@ -32,15 +33,35 @@ func (a address) String() string {
 	return fmt.Sprintf(":%d", a.PodPort)
 }
 
-func (r Ingress) IsValid(cloudProvider string) error {
+func (r *Ingress) IsValid(cloudProvider string) error {
 	for ri, rule := range r.Spec.FrontendRules {
 		if _, err := checkRequiredPort(rule.Port); err != nil {
 			return fmt.Errorf("spec.frontendRules[%d].port %s is invalid. Reason: %s", ri, rule.Port, err)
 		}
 	}
 	for ti, tls := range r.Spec.TLS {
-		if tls.SecretName != "" && tls.Certificate != nil {
-			return fmt.Errorf("spec.tls[%d] specifies both secret name and certificate", ti)
+		if tls.SecretName != "" {
+			if !reflect.IsZero(tls.SecretRef) &&
+				!(tls.SecretRef.Name == tls.SecretName &&
+					(tls.SecretRef.Namespace == "" || tls.SecretRef.Namespace == r.Namespace) &&
+					(tls.SecretRef.Kind == "" || tls.SecretRef.Kind == "Secret")) {
+				return fmt.Errorf("spec.tls[%d] specifies different secret name and secret ref", ti)
+			}
+			tls.SecretRef.APIVersion = "v1"
+			tls.SecretRef.Kind = "Secret"
+			tls.SecretRef.Name = tls.SecretName
+		} else if reflect.IsZero(tls.SecretRef) {
+			return fmt.Errorf("spec.tls[%d] specifies no secret name and secret ref", ti)
+		} else {
+			if tls.SecretRef.Kind != "" && sets.NewString("Secret", "Certificate").Has(tls.SecretRef.Kind) {
+				return fmt.Errorf("spec.tls[%d].secretRef.kind %s is unsupported", ti, tls.SecretRef.Kind)
+			}
+			if tls.SecretRef.Namespace != "" && tls.SecretRef.Namespace != r.Namespace {
+				return fmt.Errorf("spec.tls[%d].secretRef.namespace does not match ingress namespace", ti)
+			}
+			if tls.SecretRef.Name == "" {
+				return fmt.Errorf("spec.tls[%d] specifies no secret name and secret ref name", ti)
+			}
 		}
 	}
 

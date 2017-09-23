@@ -1,7 +1,6 @@
 package tlsmounter
 
 import (
-	"bytes"
 	"reflect"
 
 	"github.com/appscode/go/hold"
@@ -10,7 +9,7 @@ import (
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
-	"k8s.io/apimachinery/pkg/runtime"
+	rt "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	extv1beta1 "k8s.io/client-go/pkg/apis/extensions/v1beta1"
@@ -18,7 +17,7 @@ import (
 )
 
 // wait.NeverStop
-func (c *Controller) Run(stopCh <-chan struct{}) {
+func (c *Controller) Run2(stopCh <-chan struct{}) {
 	c.initSecretInformer(stopCh)
 	c.initIngressInformer(stopCh)
 	c.initCertificateInformer(stopCh)
@@ -28,15 +27,15 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 func (c *Controller) initSecretInformer(stopCh <-chan struct{}) {
 	secretInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
-			ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-				return c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).List(metav1.ListOptions{})
+			ListFunc: func(opts metav1.ListOptions) (rt.Object, error) {
+				return c.k8sClient.CoreV1().Secrets(c.Ingress.Namespace).List(metav1.ListOptions{})
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Watch(metav1.ListOptions{})
+				return c.k8sClient.CoreV1().Secrets(c.Ingress.Namespace).Watch(metav1.ListOptions{})
 			},
 		},
 		&apiv1.Secret{},
-		c.ResyncPeriod,
+		c.options.ResyncPeriod,
 		cache.Indexers{},
 	)
 
@@ -47,7 +46,7 @@ func (c *Controller) initSecretInformer(stopCh <-chan struct{}) {
 					c.lock.Lock()
 					defer c.lock.Unlock()
 
-					c.fileProjections[secret.Name+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(secret)}
+					c.projections[secret.Name+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(secret)}
 					c.MustMount()
 				}
 			}
@@ -60,7 +59,7 @@ func (c *Controller) initSecretInformer(stopCh <-chan struct{}) {
 							c.lock.Lock()
 							defer c.lock.Unlock()
 
-							c.fileProjections[newSecret.Name+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(newSecret)}
+							c.projections[newSecret.Name+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(newSecret)}
 							c.MustMount()
 						}
 					}
@@ -73,7 +72,7 @@ func (c *Controller) initSecretInformer(stopCh <-chan struct{}) {
 					c.lock.Lock()
 					defer c.lock.Unlock()
 
-					delete(c.fileProjections, secret.Name+".pem")
+					delete(c.projections, secret.Name+".pem")
 					c.MustMount()
 				}
 			}
@@ -88,7 +87,7 @@ func (c *Controller) initIngressInformer(stopCh <-chan struct{}) {
 	case api.SchemeGroupVersion.String():
 		ingressInformer = cache.NewSharedIndexInformer(
 			&cache.ListWatch{
-				ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
+				ListFunc: func(opts metav1.ListOptions) (rt.Object, error) {
 					return c.VoyagerClient.Ingresses(c.Ingress.Namespace).List(metav1.ListOptions{
 						FieldSelector: fields.OneTermEqualSelector("metadata.name", c.Ingress.Name).String(),
 					})
@@ -100,25 +99,25 @@ func (c *Controller) initIngressInformer(stopCh <-chan struct{}) {
 				},
 			},
 			&api.Ingress{},
-			c.ResyncPeriod,
+			c.options.ResyncPeriod,
 			cache.Indexers{},
 		)
 	case "extensions/v1beta1":
 		ingressInformer = cache.NewSharedIndexInformer(
 			&cache.ListWatch{
-				ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-					return c.KubeClient.ExtensionsV1beta1().Ingresses(c.Ingress.Namespace).List(metav1.ListOptions{
+				ListFunc: func(opts metav1.ListOptions) (rt.Object, error) {
+					return c.k8sClient.ExtensionsV1beta1().Ingresses(c.Ingress.Namespace).List(metav1.ListOptions{
 						FieldSelector: fields.OneTermEqualSelector("metadata.name", c.Ingress.Name).String(),
 					})
 				},
 				WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-					return c.KubeClient.ExtensionsV1beta1().Ingresses(c.Ingress.Namespace).Watch(metav1.ListOptions{
+					return c.k8sClient.ExtensionsV1beta1().Ingresses(c.Ingress.Namespace).Watch(metav1.ListOptions{
 						FieldSelector: fields.OneTermEqualSelector("metadata.name", c.Ingress.Name).String(),
 					})
 				},
 			},
 			&extv1beta1.Ingress{},
-			c.ResyncPeriod,
+			c.options.ResyncPeriod,
 			cache.Indexers{},
 		)
 	}
@@ -156,12 +155,12 @@ func (c *Controller) initIngressInformer(stopCh <-chan struct{}) {
 				c.lock.Unlock()
 
 				for _, secret := range newIngress.Secrets() {
-					if _, ok := c.fileProjections[secret+".pem"]; !ok {
-						sc, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(secret, metav1.GetOptions{})
+					if _, ok := c.projections[secret+".pem"]; !ok {
+						sc, err := c.k8sClient.CoreV1().Secrets(c.Ingress.Namespace).Get(secret, metav1.GetOptions{})
 						if err != nil {
 							log.Fatalln(err)
 						}
-						c.fileProjections[secret+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
+						c.projections[secret+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
 					}
 					secretsUsedMaps[secret+".pem"] = struct{}{}
 				}
@@ -170,12 +169,12 @@ func (c *Controller) initIngressInformer(stopCh <-chan struct{}) {
 					if certs, err := c.VoyagerClient.Certificates(cert.Namespace).Get(cert.Name, metav1.GetOptions{}); err != nil {
 						if certs.Spec.Storage.Secret != nil {
 							name := fileNameForCertificate(certs)
-							if _, ok := c.fileProjections[name+".pem"]; !ok {
-								sc, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(name, metav1.GetOptions{})
+							if _, ok := c.projections[name+".pem"]; !ok {
+								sc, err := c.k8sClient.CoreV1().Secrets(c.Ingress.Namespace).Get(name, metav1.GetOptions{})
 								if err != nil {
 									log.Fatalln(err)
 								}
-								c.fileProjections[name+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
+								c.projections[name+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
 							}
 							secretsUsedMaps[name+".pem"] = struct{}{}
 						} else if certs.Spec.Storage.Vault != nil {
@@ -184,9 +183,9 @@ func (c *Controller) initIngressInformer(stopCh <-chan struct{}) {
 					}
 				}
 
-				for k := range c.fileProjections {
+				for k := range c.projections {
 					if _, ok := secretsUsedMaps[k+".pem"]; !ok {
-						delete(c.fileProjections, k)
+						delete(c.projections, k)
 					}
 				}
 
@@ -203,7 +202,7 @@ func (c *Controller) initIngressInformer(stopCh <-chan struct{}) {
 func (c *Controller) initCertificateInformer(stopCh <-chan struct{}) {
 	certInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
-			ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
+			ListFunc: func(opts metav1.ListOptions) (rt.Object, error) {
 				return c.VoyagerClient.Certificates(c.Ingress.Namespace).List(metav1.ListOptions{})
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
@@ -211,7 +210,7 @@ func (c *Controller) initCertificateInformer(stopCh <-chan struct{}) {
 			},
 		},
 		&api.Certificate{},
-		c.ResyncPeriod,
+		c.options.ResyncPeriod,
 		cache.Indexers{},
 	)
 
@@ -224,12 +223,12 @@ func (c *Controller) initCertificateInformer(stopCh <-chan struct{}) {
 
 					if cert.Spec.Storage.Secret != nil {
 						name := fileNameForCertificate(cert)
-						if _, ok := c.fileProjections[name+".pem"]; !ok {
-							sc, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(name, metav1.GetOptions{})
+						if _, ok := c.projections[name+".pem"]; !ok {
+							sc, err := c.k8sClient.CoreV1().Secrets(c.Ingress.Namespace).Get(name, metav1.GetOptions{})
 							if err != nil {
 								log.Fatalln(err)
 							}
-							c.fileProjections[name+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
+							c.projections[name+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
 						}
 					} else if cert.Spec.Storage.Vault != nil {
 						// Add from vault
@@ -248,12 +247,12 @@ func (c *Controller) initCertificateInformer(stopCh <-chan struct{}) {
 
 						if newCert.Spec.Storage.Secret != nil {
 							name := fileNameForCertificate(newCert)
-							if _, ok := c.fileProjections[name+".pem"]; !ok {
-								sc, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(name, metav1.GetOptions{})
+							if _, ok := c.projections[name+".pem"]; !ok {
+								sc, err := c.k8sClient.CoreV1().Secrets(c.Ingress.Namespace).Get(name, metav1.GetOptions{})
 								if err != nil {
 									log.Fatalln(err)
 								}
-								c.fileProjections[name+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
+								c.projections[name+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
 							}
 						} else if newCert.Spec.Storage.Vault != nil {
 							// Add from vault
@@ -270,7 +269,7 @@ func (c *Controller) initCertificateInformer(stopCh <-chan struct{}) {
 					c.lock.Lock()
 					defer c.lock.Unlock()
 
-					delete(c.fileProjections, fileNameForCertificate(cert)+".pem")
+					delete(c.projections, fileNameForCertificate(cert)+".pem")
 					c.MustMount()
 				}
 			}
@@ -306,7 +305,7 @@ func (c *Controller) isCertificateUsedInIngress(s *api.Certificate) bool {
 }
 
 func (c *Controller) Mount() error {
-	err := c.writer.Write(c.fileProjections)
+	err := c.writer.Write(c.projections)
 	if err != nil {
 		return err
 	}
@@ -318,22 +317,4 @@ func (c *Controller) MustMount() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-}
-
-func secretToPEMData(s *apiv1.Secret) []byte {
-	pemdata := bytes.NewBuffer(s.Data[apiv1.TLSCertKey])
-	pemdata.Write([]byte("\n"))
-	pemdata.Write(s.Data[apiv1.TLSPrivateKeyKey])
-	return pemdata.Bytes()
-}
-
-func fileNameForCertificate(c *api.Certificate) string {
-	if c.Spec.Storage.Secret != nil {
-		name := c.Spec.Storage.Secret.Name
-		if len(name) == 0 {
-			name = "cert-" + c.Name
-		}
-		return name
-	}
-	return ""
 }

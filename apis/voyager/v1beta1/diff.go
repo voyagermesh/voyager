@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net"
 	"reflect"
-	"sort"
 	"strings"
 	"time"
 
@@ -57,32 +56,18 @@ func (r Ingress) HasChanged(o Ingress) (bool, error) {
 	return !reflect.DeepEqual(ra, oa), nil
 }
 
-func (r Ingress) FindTLSSecret(h string) (string, bool) {
+func (r Ingress) FindTLSSecret(h string) (apiv1.ObjectReference, bool) {
 	if h == "" {
-		return "", false
+		return apiv1.ObjectReference{}, false
 	}
 	for _, tls := range r.Spec.TLS {
 		for _, host := range tls.Hosts {
 			if host == h {
-				return tls.SecretName, true
+				return tls.SecretRef, true
 			}
 		}
 	}
-	return "", false
-}
-
-func (r Ingress) FindTLSCertificate(h string) (*apiv1.ObjectReference, bool) {
-	if h == "" {
-		return nil, false
-	}
-	for _, tls := range r.Spec.TLS {
-		for _, host := range tls.Hosts {
-			if host == h && tls.Certificate != nil {
-				return tls.Certificate, true
-			}
-		}
-	}
-	return nil, false
+	return apiv1.ObjectReference{}, false
 }
 
 func (r Ingress) IsPortChanged(o Ingress, cloudProvider string) bool {
@@ -95,60 +80,6 @@ func (r Ingress) IsPortChanged(o Ingress, cloudProvider string) bool {
 		return false
 	}
 	return !reflect.DeepEqual(rpm, opm)
-}
-
-func (r Ingress) Secrets() []string {
-	secrets := sets.NewString()
-	for _, rule := range r.Spec.Rules {
-		if rule.HTTP != nil {
-			if secretName, ok := r.FindTLSSecret(rule.Host); ok && !rule.HTTP.NoTLS {
-				secrets.Insert(secretName)
-			}
-		} else if rule.TCP != nil {
-			if secretName, ok := r.FindTLSSecret(rule.Host); ok {
-				secrets.Insert(secretName)
-			}
-		}
-	}
-	return secrets.List()
-}
-
-func (r Ingress) Certificates() []apiv1.ObjectReference {
-	certs := make(map[string]apiv1.ObjectReference)
-	for _, rule := range r.Spec.Rules {
-		if rule.HTTP != nil {
-			if c, ok := r.FindTLSCertificate(rule.Host); ok && !rule.HTTP.NoTLS {
-				certs[c.Name+"/"+c.Namespace] = *c
-			}
-		} else if rule.TCP != nil {
-			if c, ok := r.FindTLSCertificate(rule.Host); ok {
-				certs[c.Name+"/"+c.Namespace] = *c
-			}
-		}
-	}
-	certList := make([]apiv1.ObjectReference, 0)
-	for _, v := range certs {
-		certList = append(certList, v)
-	}
-	return certList
-}
-
-func (r Ingress) IsSecretChanged(o Ingress) bool {
-	rSecrets := r.Secrets()
-	oSecrets := o.Secrets()
-
-	if len(rSecrets) != len(oSecrets) {
-		return true
-	}
-
-	sort.Strings(rSecrets)
-	sort.Strings(oSecrets)
-	for i := range rSecrets {
-		if rSecrets[i] != oSecrets[i] {
-			return true
-		}
-	}
-	return false
 }
 
 func (r Ingress) IsLoadBalancerSourceRangeChanged(o Ingress) bool {
