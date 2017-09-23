@@ -74,7 +74,7 @@ func (op *Operator) MigrateCertificate(cert *api.Certificate) (bool, error) {
 		}
 	}
 
-	// Setting deprecated values to empty
+	// Setting deprecated values to zero value
 	cert.Spec.Provider = ""
 	cert.Spec.ProviderCredentialSecretName = ""
 	cert.Spec.Email = ""
