@@ -1,5 +1,5 @@
-hash: aa1c4eb15395160157013883756c4a0cf8f4005adca010884f8a3353d1aa72a0
-updated: 2017-09-22T20:44:47.140988592-07:00
+hash: 00e2aaebff97a0d432f8c71bf1e45862b314b83eeae946d3b885506f5b190c2d
+updated: 2017-09-22T20:53:09.139073461-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -16,6 +16,7 @@ imports:
   - hold
   - ioutil
   - log
+  - log/golog
   - runtime
   - strings
   - types
@@ -29,10 +30,6 @@ imports:
   subpackages:
   - cmds
   - controller
-- name: github.com/appscode/log
-  version: 68e0e42e42c01371f3950571fc87c2298a51dd8f
-  subpackages:
-  - golog
 - name: github.com/appscode/pat
   version: 48ff78925b7955367d8a048fc2b5cec8efadf8d3
 - name: github.com/aws/aws-sdk-go

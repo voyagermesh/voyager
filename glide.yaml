@@ -11,7 +11,6 @@ import:
   version: 0.8.1
 - package: github.com/appscode/kloader
   version: 4.0.2
-- package: github.com/appscode/log
 - package: github.com/appscode/pat
 - package: github.com/aws/aws-sdk-go
   version: v1.7.0
