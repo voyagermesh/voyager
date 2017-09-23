@@ -278,15 +278,11 @@ func Convert_voyager_CertificateSpec_To_v1beta1_CertificateSpec(in *voyager.Cert
 func autoConvert_v1beta1_CertificateStatus_To_voyager_CertificateStatus(in *CertificateStatus, out *voyager.CertificateStatus, s conversion.Scope) error {
 	out.CreationTime = (*v1.Time)(unsafe.Pointer(in.CreationTime))
 	out.Conditions = *(*[]voyager.CertificateCondition)(unsafe.Pointer(&in.Conditions))
-	if err := Convert_v1beta1_CertificateDetails_To_voyager_CertificateDetails(&in.Certificate, &out.Certificate, s); err != nil {
-		return err
-	}
+	out.LastIssuedCertificate = (*voyager.CertificateDetails)(unsafe.Pointer(in.LastIssuedCertificate))
 	out.CertificateObtained = in.CertificateObtained
 	out.Message = in.Message
 	out.ACMEUserSecretName = in.ACMEUserSecretName
-	if err := Convert_v1beta1_ACMECertificateDetails_To_voyager_ACMECertificateDetails(&in.Details, &out.Details, s); err != nil {
-		return err
-	}
+	out.Details = (*voyager.ACMECertificateDetails)(unsafe.Pointer(in.Details))
 	return nil
 }
 
@@ -298,15 +294,11 @@ func Convert_v1beta1_CertificateStatus_To_voyager_CertificateStatus(in *Certific
 func autoConvert_voyager_CertificateStatus_To_v1beta1_CertificateStatus(in *voyager.CertificateStatus, out *CertificateStatus, s conversion.Scope) error {
 	out.CreationTime = (*v1.Time)(unsafe.Pointer(in.CreationTime))
 	out.Conditions = *(*[]CertificateCondition)(unsafe.Pointer(&in.Conditions))
-	if err := Convert_voyager_CertificateDetails_To_v1beta1_CertificateDetails(&in.Certificate, &out.Certificate, s); err != nil {
-		return err
-	}
+	out.LastIssuedCertificate = (*CertificateDetails)(unsafe.Pointer(in.LastIssuedCertificate))
 	out.CertificateObtained = in.CertificateObtained
 	out.Message = in.Message
 	out.ACMEUserSecretName = in.ACMEUserSecretName
-	if err := Convert_voyager_ACMECertificateDetails_To_v1beta1_ACMECertificateDetails(&in.Details, &out.Details, s); err != nil {
-		return err
-	}
+	out.Details = (*ACMECertificateDetails)(unsafe.Pointer(in.Details))
 	return nil
 }
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export TLS_MOUNTER_ARGS="$1 $2"
+export TLS_MOUNTER_ARGS="$1 $2 $3 $4"
 # http://wiki.bash-hackers.org/scripting/posparams#shifting
 shift 2
 export KLOADER_ARGS="$@"

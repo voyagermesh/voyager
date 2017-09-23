@@ -185,8 +185,17 @@ func DeepCopy_v1beta1_CertificateStatus(in interface{}, out interface{}, c *conv
 				}
 			}
 		}
-		if err := DeepCopy_v1beta1_CertificateDetails(&in.Certificate, &out.Certificate, c); err != nil {
-			return err
+		if in.LastIssuedCertificate != nil {
+			in, out := &in.LastIssuedCertificate, &out.LastIssuedCertificate
+			*out = new(CertificateDetails)
+			if err := DeepCopy_v1beta1_CertificateDetails(*in, *out, c); err != nil {
+				return err
+			}
+		}
+		if in.Details != nil {
+			in, out := &in.Details, &out.Details
+			*out = new(ACMECertificateDetails)
+			**out = **in
 		}
 		return nil
 	}

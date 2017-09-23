@@ -114,7 +114,7 @@ func runOperator() {
 
 	log.Infoln("Starting Voyager operator...")
 
-	w := operator.New(config, kubeClient, crdClient, extClient, promClient, opt)
+	w := operator.New(kubeClient, crdClient, extClient, promClient, opt)
 	err = w.Setup()
 	if err != nil {
 		log.Fatalln(err)

@@ -16,6 +16,7 @@ var (
 		Namespace: namespace(),
 	}
 	mountPath = "/etc/ssl/private/haproxy"
+	bashFile  = ""
 )
 
 func NewCmdTLSMount() *cobra.Command {
@@ -33,6 +34,7 @@ func NewCmdTLSMount() *cobra.Command {
 	cmd.Flags().StringVar(&ingressRef.APIVersion, "ingress-api-version", ingressRef.APIVersion, "API version of ingress resource")
 	cmd.Flags().StringVar(&ingressRef.Name, "ingress-name", ingressRef.Name, "Name of ingress resource")
 	cmd.Flags().StringVar(&mountPath, "mount", mountPath, "Path where tls certificates are stored for HAProxy")
+	cmd.Flags().StringVarP(&bashFile, "boot-cmd", "b", "", "Bash script that will be run on every change of the file")
 
 	return cmd
 }

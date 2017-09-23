@@ -1,5 +1,5 @@
-hash: 00e2aaebff97a0d432f8c71bf1e45862b314b83eeae946d3b885506f5b190c2d
-updated: 2017-09-22T20:53:09.139073461-07:00
+hash: 3553c52b7cdc80ff98ca37147d6724450a405fdedff8a1c03e7a2d6cbf1b47ec
+updated: 2017-09-23T00:38:11.578461182-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -18,7 +18,6 @@ imports:
   - log
   - log/golog
   - runtime
-  - strings
   - types
   - version
 - name: github.com/appscode/haproxy_exporter
@@ -30,6 +29,10 @@ imports:
   subpackages:
   - cmds
   - controller
+- name: github.com/appscode/kutil
+  version: 8cedea76cb680f80a476393f7ad9b323ef24704f
+  subpackages:
+  - core/v1
 - name: github.com/appscode/pat
   version: 48ff78925b7955367d8a048fc2b5cec8efadf8d3
 - name: github.com/aws/aws-sdk-go
@@ -108,10 +111,6 @@ imports:
   subpackages:
   - digest
   - reference
-- name: github.com/docker/spdystream
-  version: 449fdfce4d962303d702fec724ef0ad181c92528
-  subpackages:
-  - spdy
 - name: github.com/emicklei/go-restful
   version: ff4f55a206334ef123e4f79bbf348980da81ca46
   subpackages:
@@ -158,7 +157,9 @@ imports:
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/hashicorp/go-version
-  version: fc61389e27c71d120f87031ca8c88a3428f372dd
+  version: ac737305c16432f4c660c6fc68cdcda4b5a0b5ae
+  repo: https://github.com/appscode/go-version.git
+  vcs: git
 - name: github.com/hashicorp/golang-lru
   version: a0d98a5f288019575c6d1f4bb1573fef2d1fcdc4
   subpackages:
@@ -293,7 +294,7 @@ imports:
   subpackages:
   - codec
 - name: github.com/xenolf/lego
-  version: 73630c54d1560c8cfc69e5cce581be02d05baed7
+  version: 66641c9c561e651eb110bec39b5012a51ab64e24
   repo: https://github.com/appscode/lego.git
   vcs: git
   subpackages:
@@ -455,14 +456,11 @@ imports:
   - pkg/util/diff
   - pkg/util/errors
   - pkg/util/framer
-  - pkg/util/httpstream
-  - pkg/util/httpstream/spdy
   - pkg/util/intstr
   - pkg/util/json
   - pkg/util/mergepatch
   - pkg/util/net
   - pkg/util/rand
-  - pkg/util/remotecommand
   - pkg/util/runtime
   - pkg/util/sets
   - pkg/util/strategicpatch
@@ -473,7 +471,6 @@ imports:
   - pkg/version
   - pkg/watch
   - third_party/forked/golang/json
-  - third_party/forked/golang/netutil
   - third_party/forked/golang/reflect
 - name: k8s.io/client-go
   version: d92e8497f71b7b4e0494e5bd204b48d34bd6f254
@@ -574,10 +571,8 @@ imports:
   - tools/clientcmd/api/v1
   - tools/metrics
   - tools/record
-  - tools/remotecommand
   - transport
   - util/cert
-  - util/exec
   - util/flowcontrol
   - util/homedir
   - util/integer

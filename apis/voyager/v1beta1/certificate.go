@@ -96,9 +96,9 @@ type CertificateStorageVault struct {
 }
 
 type CertificateStatus struct {
-	CreationTime *metav1.Time           `json:"creationTime,omitempty"`
-	Conditions   []CertificateCondition `json:"conditions,omitempty"`
-	Certificate  CertificateDetails     `json:"certificate,omitempty"`
+	CreationTime          *metav1.Time           `json:"creationTime,omitempty"`
+	Conditions            []CertificateCondition `json:"conditions,omitempty"`
+	LastIssuedCertificate *CertificateDetails    `json:"lastIssuedCertificate,omitempty"`
 	// Deprecated
 	CertificateObtained bool `json:"certificateObtained,omitempty"`
 	// Deprecated
@@ -106,7 +106,7 @@ type CertificateStatus struct {
 	// Deprecated
 	ACMEUserSecretName string `json:"acmeUserSecretName,omitempty"`
 	// Deprecated
-	Details ACMECertificateDetails `json:"details,omitempty"`
+	Details *ACMECertificateDetails `json:"details,omitempty"`
 }
 
 type ACMECertificateDetails struct {

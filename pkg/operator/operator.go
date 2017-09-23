@@ -4,13 +4,13 @@ import (
 	"sync"
 
 	"github.com/appscode/go/log"
+	"github.com/appscode/kutil"
 	api "github.com/appscode/voyager/apis/voyager"
 	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	tcs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
-	"github.com/appscode/voyager/pkg/util"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -18,16 +18,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
-	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 	core "k8s.io/client-go/listers/core/v1"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 )
 
 type Operator struct {
-	KubeConfig      *rest.Config
-	KubeClient      clientset.Interface
+	KubeClient      kubernetes.Interface
 	CRDClient       apiextensionsclient.Interface
 	ExtClient       tcs.VoyagerV1beta1Interface
 	PromClient      pcm.MonitoringV1alpha1Interface
@@ -40,15 +38,13 @@ type Operator struct {
 }
 
 func New(
-	config *rest.Config,
-	kubeClient clientset.Interface,
+	kubeClient kubernetes.Interface,
 	crdClient apiextensionsclient.Interface,
 	extClient tcs.VoyagerV1beta1Interface,
 	promClient pcm.MonitoringV1alpha1Interface,
 	opt config.Options,
 ) *Operator {
 	return &Operator{
-		KubeConfig: config,
 		KubeClient: kubeClient,
 		CRDClient:  crdClient,
 		ExtClient:  extClient,
@@ -114,10 +110,7 @@ func (op *Operator) ensureCustomResourceDefinitions() error {
 			}
 		}
 	}
-	return util.WaitForCRDReady(
-		op.KubeClient.CoreV1().RESTClient(),
-		crds,
-	)
+	return kutil.WaitForCRDReady(op.KubeClient.CoreV1().RESTClient(), crds)
 }
 
 func (op *Operator) Run() {
@@ -141,5 +134,5 @@ func (op *Operator) Run() {
 	for i := range informers {
 		go informers[i].Run(wait.NeverStop)
 	}
-	go certificate.CheckCertificates(op.KubeConfig, op.KubeClient, op.ExtClient, op.Opt)
+	go certificate.CheckCertificates(op.KubeClient, op.ExtClient, op.Opt)
 }

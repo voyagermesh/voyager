@@ -10,10 +10,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/rest"
 )
 
-func CheckCertificates(config *rest.Config, kubeClient clientset.Interface, extClient tcs.VoyagerV1beta1Interface, opt config.Options) {
+func CheckCertificates(kubeClient clientset.Interface, extClient tcs.VoyagerV1beta1Interface, opt config.Options) {
 	Time := clock.New()
 	for {
 		select {
@@ -24,7 +23,7 @@ func CheckCertificates(config *rest.Config, kubeClient clientset.Interface, extC
 				continue
 			}
 			for i := range result.Items {
-				err = NewController(config, kubeClient, extClient, opt, &result.Items[i]).Process()
+				err = NewController(kubeClient, extClient, opt, &result.Items[i]).Process()
 				if err != nil {
 					log.Error(err)
 				}

@@ -82,15 +82,17 @@ func NewACMEClient(cfg *ACMEConfig) (*ACMEClient, error) {
 		if cfg.CloudProvider == "aws" && len(cfg.DNSCredentials) == 0 {
 			return newDNSProvider(route53.NewDNSProvider())
 		}
-		var accessKeyId, secretAccessKey string
+		var accessKeyId, secretAccessKey, hostedZoneID string
 		if accessKeyId, found = dnsLoader("AWS_ACCESS_KEY_ID"); !found {
 			return nil, fmt.Errorf("dns provider credential lacks required key %s", "AWS_ACCESS_KEY_ID")
 		}
 		if secretAccessKey, found = dnsLoader("AWS_SECRET_ACCESS_KEY"); !found {
 			return nil, fmt.Errorf("dns provider credential lacks required key %s", "AWS_SECRET_ACCESS_KEY")
-			return nil, fmt.Errorf("dns provider credential missing key %s", "")
 		}
-		return newDNSProvider(route53.NewDNSProviderCredentials(accessKeyId, secretAccessKey))
+		if hostedZoneID, found = dnsLoader("AWS_HOSTED_ZONE_ID"); !found {
+			return nil, fmt.Errorf("dns provider credential lacks required key %s", "AWS_HOSTED_ZONE_ID")
+		}
+		return newDNSProvider(route53.NewDNSProviderCredentials(accessKeyId, secretAccessKey, hostedZoneID))
 	case "azure", "acs":
 		var clientId, clientSecret, subscriptionId, tenantId, resourceGroup string
 		if clientId, found = dnsLoader("AZURE_CLIENT_ID"); !found {

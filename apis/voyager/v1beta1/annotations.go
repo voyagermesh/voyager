@@ -205,6 +205,12 @@ const (
 	HSTSIncludeSubDomains = IngressKey + "/hsts-include-subdomains"
 )
 
+const (
+	ACMEUserEmail    = "ACME_EMAIL"
+	ACMEUserDataJSON = "ACME_USER_DATA"
+	ACMEServerURL    = "ACME_SERVER_URL"
+)
+
 func (r Ingress) OffshootName() string {
 	return VoyagerPrefix + r.Name
 }

@@ -46,7 +46,7 @@ func TestEnsureClient(t *testing.T) {
 				Storage:            api.CertificateStorage{Kubernetes: &api.CertificateStorageKubernetes{}},
 			},
 		}
-		fakeController := NewController(fakeConfig, fake.NewSimpleClientset(
+		fakeController := NewController(fake.NewSimpleClientset(
 			&apiv1.Secret{
 				ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
 			},
@@ -99,7 +99,7 @@ func TestFakeRegisterACMEUser(t *testing.T) {
 			Storage:            api.CertificateStorage{Kubernetes: &api.CertificateStorageKubernetes{}},
 		},
 	}
-	fakeController := NewController(fakeConfig, fake.NewSimpleClientset(
+	fakeController := NewController(fake.NewSimpleClientset(
 		&apiv1.Secret{
 			ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
 		},
@@ -150,7 +150,7 @@ func TestCreate(t *testing.T) {
 				Storage:            api.CertificateStorage{Kubernetes: &api.CertificateStorageKubernetes{}},
 			},
 		}
-		fakeController := NewController(fakeConfig, fake.NewSimpleClientset(), acf.NewSimpleClientset().VoyagerV1beta1(), config.Options{ResyncPeriod: time.Second * 5}, cert)
+		fakeController := NewController(fake.NewSimpleClientset(), acf.NewSimpleClientset().VoyagerV1beta1(), config.Options{ResyncPeriod: time.Second * 5}, cert)
 		fakeUser := &apiv1.Secret{
 			ObjectMeta: metav1.ObjectMeta{Name: "user", Namespace: "bar"},
 			Data: map[string][]byte{
@@ -209,7 +209,7 @@ func TestCreate(t *testing.T) {
 			t.Fatal(err)
 		}
 		log.Infoln(cert.Status)
-		log.Infoln(cert.Status.Certificate)
+		log.Infoln(cert.Status.LastIssuedCertificate)
 	}
 }
 

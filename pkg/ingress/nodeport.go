@@ -539,13 +539,27 @@ func (c *nodePortController) newPods() *apps.Deployment {
 							Args: []string{
 								"--ingress-api-version=" + c.Ingress.APISchema(),
 								"--ingress-name=" + c.Ingress.Name,
+								"--v=3",
+								"--boot-cmd=" + "/etc/sv/haproxy/reload",
 								"--configmap=" + c.Ingress.OffshootName(),
 								"--mount-location=" + "/etc/haproxy",
-								"--boot-cmd=" + "/etc/sv/haproxy/reload",
-								"--v=3",
 							},
 							Ports:     []apiv1.ContainerPort{},
 							Resources: c.Ingress.Spec.Resources,
+							VolumeMounts: []apiv1.VolumeMount{
+								{
+									Name:      TLSCertificateVolumeName,
+									MountPath: "/etc/ssl/private/haproxy",
+								},
+							},
+						},
+					},
+					Volumes: []apiv1.Volume{
+						{
+							Name: TLSCertificateVolumeName,
+							VolumeSource: apiv1.VolumeSource{
+								EmptyDir: &apiv1.EmptyDirVolumeSource{},
+							},
 						},
 					},
 				},

@@ -120,7 +120,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 				}
 				for hi, hdr := range path.Backend.HeaderRule {
 					if len(strings.Fields(hdr)) == 1 {
-						return fmt.Errorf("spec.rule[%d].http.paths[%d].backend.headerRule[%d] is invalid for addr %s and path %s.", ri, pi, hi, a, path.Path)
+						return fmt.Errorf("spec.rule[%d].http.paths[%d].backend.headerRule[%d] is invalid for addr %s and path %s", ri, pi, hi, a, path.Path)
 					}
 				}
 			}
@@ -187,17 +187,17 @@ func (r Ingress) IsValid(cloudProvider string) error {
 					}
 				}
 				if !tp80 || sp443 {
-					return fmt.Errorf("Failed to open port 443 on service for AWS cert manager for Ingress %s@%s.", r.Name, r.Namespace)
+					return fmt.Errorf("failed to open port 443 on service for AWS cert manager for Ingress %s@%s", r.Name, r.Namespace)
 				}
 			}
 		}
 	}
 	if !r.SupportsLBType(cloudProvider) {
-		return fmt.Errorf("Ingress %s@%s uses unsupported LBType %s for cloud provider %s", r.Name, r.Namespace, r.LBType(), cloudProvider)
+		return fmt.Errorf("ingress %s@%s uses unsupported LBType %s for cloud provider %s", r.Name, r.Namespace, r.LBType(), cloudProvider)
 	}
 
 	if (r.LBType() == LBTypeNodePort || r.LBType() == LBTypeHostPort) && len(r.Spec.LoadBalancerSourceRanges) > 0 {
-		return fmt.Errorf("Ingress %s@%s of type %s can't use `spec.LoadBalancerSourceRanges`", r.Name, r.Namespace, r.LBType())
+		return fmt.Errorf("ingress %s@%s of type %s can't use `spec.LoadBalancerSourceRanges`", r.Name, r.Namespace, r.LBType())
 	}
 
 	return nil
@@ -225,19 +225,19 @@ func (r Ingress) SupportsLBType(cloudProvider string) bool {
 func checkRequiredPort(port intstr.IntOrString) (int, error) {
 	if port.Type == intstr.Int {
 		if port.IntVal <= 0 {
-			return 0, fmt.Errorf("Port %s must a +ve interger", port)
+			return 0, fmt.Errorf("port %s must a +ve interger", port)
 		}
 		return int(port.IntVal), nil
 	} else if port.Type == intstr.String {
 		return strconv.Atoi(port.StrVal)
 	}
-	return 0, fmt.Errorf("Invalid data type %v for port %s", port.Type, port)
+	return 0, fmt.Errorf("invalid data type %v for port %s", port.Type, port)
 }
 
 func checkOptionalPort(port intstr.IntOrString) (int, error) {
 	if port.Type == intstr.Int {
 		if port.IntVal < 0 {
-			return 0, fmt.Errorf("Port %s can't be -ve interger", port)
+			return 0, fmt.Errorf("port %s can't be -ve interger", port)
 		}
 		return int(port.IntVal), nil
 	} else if port.Type == intstr.String {
@@ -246,7 +246,7 @@ func checkOptionalPort(port intstr.IntOrString) (int, error) {
 		}
 		return strconv.Atoi(port.StrVal)
 	}
-	return 0, fmt.Errorf("Invalid data type %v for port %s", port.Type, port)
+	return 0, fmt.Errorf("invalid data type %v for port %s", port.Type, port)
 }
 
 func (c Certificate) IsValid() error {
@@ -265,7 +265,7 @@ func (c Certificate) IsValid() error {
 	if c.Spec.ChallengeProvider.HTTP != nil {
 		if len(c.Spec.ChallengeProvider.HTTP.Ingress.Name) == 0 ||
 			len(c.Spec.ChallengeProvider.HTTP.Ingress.Namespace) == 0 ||
-			len(c.Spec.ChallengeProvider.HTTP.Ingress.APIVersion) == 0 {
+			(c.Spec.ChallengeProvider.HTTP.Ingress.APIVersion != SchemeGroupVersion.String() && c.Spec.ChallengeProvider.HTTP.Ingress.APIVersion != "extensions/v1beta1") {
 			return fmt.Errorf("invalid ingress reference")
 		}
 	}

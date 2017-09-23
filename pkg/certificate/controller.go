@@ -12,23 +12,19 @@ import (
 
 	"github.com/appscode/go/errors"
 	"github.com/appscode/go/log"
-	"github.com/appscode/go/strings"
 	tapi "github.com/appscode/voyager/apis/voyager/v1beta1"
 	tapi_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
-	"github.com/appscode/voyager/pkg/util"
 	"github.com/xenolf/lego/acme"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/record"
 )
 
@@ -37,7 +33,6 @@ const (
 )
 
 type Controller struct {
-	KubeConfig *rest.Config
 	KubeClient clientset.Interface
 	ExtClient  acs.VoyagerV1beta1Interface
 	Opt        config.Options
@@ -53,9 +48,8 @@ type Controller struct {
 	acmeClient *ACMEClient
 }
 
-func NewController(config *rest.Config, kubeClient clientset.Interface, extClient acs.VoyagerV1beta1Interface, opt config.Options, tpr *tapi.Certificate) *Controller {
+func NewController(kubeClient clientset.Interface, extClient acs.VoyagerV1beta1Interface, opt config.Options, tpr *tapi.Certificate) *Controller {
 	return &Controller{
-		KubeConfig: config,
 		KubeClient: kubeClient,
 		ExtClient:  extClient,
 		Opt:        opt,
@@ -158,9 +152,6 @@ func (c *Controller) Process() error {
 			eventer.EventReasonCertificateRenewSuccessful,
 			"Successfully renewed certificate, voyager pods that mount this secret needs to restart.",
 		)
-
-		// Try to restart every HAProxy that mount this cert
-		go c.restartHAProxyIfRequired()
 	}
 	return nil
 }
@@ -195,9 +186,9 @@ func (c *Controller) renew() error {
 		}
 	}
 	acmeCert := acme.CertificateResource{
-		CertURL:       c.tpr.Status.Certificate.CertURL,
-		CertStableURL: c.tpr.Status.Certificate.CertStableURL,
-		AccountRef:    c.tpr.Status.Certificate.AccountRef,
+		CertURL:       c.tpr.Status.LastIssuedCertificate.CertURL,
+		CertStableURL: c.tpr.Status.LastIssuedCertificate.CertStableURL,
+		AccountRef:    c.tpr.Status.LastIssuedCertificate.AccountRef,
 		Certificate:   c.acmeCert.Cert,
 		PrivateKey:    c.acmeCert.PrivateKey,
 	}
@@ -313,7 +304,7 @@ func (c *Controller) save(cert acme.CertificateResource) error {
 			Type:           tapi.CertificateCreated,
 			LastUpdateTime: t,
 		}},
-		Certificate: tapi.CertificateDetails{
+		LastIssuedCertificate: &tapi.CertificateDetails{
 			SerialNumber:  crt.SerialNumber.String(),
 			NotBefore:     metav1.NewTime(crt.NotBefore),
 			NotAfter:      metav1.NewTime(crt.NotAfter),
@@ -360,7 +351,7 @@ func (c *Controller) update(cert acme.CertificateResource) error {
 
 	// Update certificate data to add Details Information
 	t := metav1.Now()
-	k8sCert.Status.Certificate = tapi.CertificateDetails{
+	k8sCert.Status.LastIssuedCertificate = &tapi.CertificateDetails{
 		SerialNumber:  crt.SerialNumber.String(),
 		NotBefore:     metav1.NewTime(crt.NotBefore),
 		NotAfter:      metav1.NewTime(crt.NotAfter),
@@ -474,71 +465,4 @@ func (c *Controller) processHTTPCertificate() error {
 		return errors.New("HTTP Certificate resolver do not have any ingress reference or invalid ingress reference").Err()
 	}
 	return nil
-}
-
-func (c *Controller) restartHAProxyIfRequired() {
-	renewedCert, _ := pem.Decode(c.renewedCertificateResource.Certificate)
-	parsedRenewedCert, err := x509.ParseCertificate(renewedCert.Bytes)
-	if err != nil {
-		log.Errorln("Failed starting HAProxy reload", err)
-		return
-	}
-
-	ing, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Namespace).List(metav1.ListOptions{})
-	if err != nil {
-		log.Errorln(err)
-		return
-	}
-	eng, err := c.ExtClient.Ingresses(c.tpr.Namespace).List(metav1.ListOptions{})
-	if err != nil {
-		log.Errorln(err)
-		return
-	}
-
-	items := make([]tapi.Ingress, len(ing.Items))
-	for i, item := range ing.Items {
-		e, err := tapi.NewEngressFromIngress(item)
-		if err != nil {
-			log.Errorln(err)
-			continue
-		}
-		items[i] = *e
-	}
-	items = append(items, eng.Items...)
-	for _, ing := range items {
-		if strings.Contains(ing.Secrets(), defaultCertPrefix+c.tpr.Name) {
-			podList, err := c.KubeClient.CoreV1().Pods(ing.Namespace).List(metav1.ListOptions{
-				LabelSelector: labels.SelectorFromSet(labels.Set(ing.OffshootLabels())).String(),
-			})
-			if err == nil {
-				for _, pod := range podList.Items {
-					for range time.NewTicker(time.Second * 20).C {
-						out := util.Exec(
-							c.KubeClient.CoreV1().RESTClient(),
-							c.KubeConfig,
-							pod,
-							[]string{"cat /srv/haproxy/secrets/" + defaultCertPrefix + c.tpr.Name + "/tls.crt"},
-						)
-
-						pemBlock, _ := pem.Decode([]byte(out))
-						parsedCert, err := x509.ParseCertificate(pemBlock.Bytes)
-						if err != nil {
-							log.Errorln(err)
-							continue
-						}
-
-						if parsedCert.Equal(parsedRenewedCert) {
-							util.Exec(
-								c.KubeClient.CoreV1().RESTClient(),
-								c.KubeConfig,
-								pod,
-								[]string{"/etc/sv/reloader/restart"},
-							)
-							break
-						}
-					}
-				}
-			}
-		}
-	}
 }

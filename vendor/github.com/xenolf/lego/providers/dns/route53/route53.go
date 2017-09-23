@@ -87,7 +87,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	}, nil
 }
 
-func NewDNSProviderCredentials(accessKeyId, secretAccessKey string) (*DNSProvider, error) {
+func NewDNSProviderCredentials(accessKeyId, secretAccessKey, hostedZoneID string) (*DNSProvider, error) {
 	r := customRetryer{}
 	r.NumMaxRetries = maxRetries
 	config := aws.Config{
@@ -104,7 +104,10 @@ func NewDNSProviderCredentials(accessKeyId, secretAccessKey string) (*DNSProvide
 	if err != nil {
 		return nil, err
 	}
-	return &DNSProvider{client: route53.New(s)}, nil
+	return &DNSProvider{
+		client:       route53.New(s),
+		hostedZoneID: hostedZoneID,
+	}, nil
 }
 
 // Present creates a TXT record using the specified parameters
