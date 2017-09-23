@@ -38,6 +38,11 @@ func (r Ingress) IsValid(cloudProvider string) error {
 			return fmt.Errorf("spec.frontendRules[%d].port %s is invalid. Reason: %s", ri, rule.Port, err)
 		}
 	}
+	for ti, tls := range r.Spec.TLS {
+		if tls.SecretName != "" && tls.Certificate != nil {
+			return fmt.Errorf("spec.tls[%d] specifies both secret name and certificate", ti)
+		}
+	}
 
 	addrs := make(map[int]*address)
 	nodePorts := make(map[int]int)

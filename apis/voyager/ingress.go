@@ -109,7 +109,7 @@ type IngressTLS struct {
 	SecretName string `json:"secretName,omitempty"`
 
 	// Certificate name to used tls termination. Will be ignored if secret name specified.
-	Certificate apiv1.ObjectReference `json:"certificate,omitempty"`
+	Certificate *apiv1.ObjectReference `json:"certificate,omitempty"`
 }
 
 // IngressStatus describe the current state of the Ingress.

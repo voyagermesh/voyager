@@ -69,18 +69,18 @@ func (r Ingress) FindTLSSecret(h string) (string, bool) {
 	return "", false
 }
 
-func (r Ingress) FindTLSCertificate(h string) (apiv1.ObjectReference, bool) {
+func (r Ingress) FindTLSCertificate(h string) (*apiv1.ObjectReference, bool) {
 	if h == "" {
-		return apiv1.ObjectReference{}, false
+		return nil, false
 	}
 	for _, tls := range r.Spec.TLS {
 		for _, host := range tls.Hosts {
-			if host == h && len(tls.SecretName) == 0 {
+			if host == h && tls.Certificate != nil {
 				return tls.Certificate, true
 			}
 		}
 	}
-	return apiv1.ObjectReference{}, false
+	return nil, false
 }
 
 func (r Ingress) IsPortChanged(o Ingress, cloudProvider string) bool {
@@ -116,11 +116,11 @@ func (r Ingress) Certificates() []apiv1.ObjectReference {
 	for _, rule := range r.Spec.Rules {
 		if rule.HTTP != nil {
 			if c, ok := r.FindTLSCertificate(rule.Host); ok && !rule.HTTP.NoTLS {
-				certs[c.Name+"/"+c.Namespace] = c
+				certs[c.Name+"/"+c.Namespace] = *c
 			}
 		} else if rule.TCP != nil {
 			if c, ok := r.FindTLSCertificate(rule.Host); ok {
-				certs[c.Name+"/"+c.Namespace] = c
+				certs[c.Name+"/"+c.Namespace] = *c
 			}
 		}
 	}
