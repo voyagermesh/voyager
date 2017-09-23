@@ -42,7 +42,7 @@ func TestEnsureClient(t *testing.T) {
 			Spec: api.CertificateSpec{
 				Domains:            strings.Split(os.Getenv("TEST_DNS_DOMAINS"), ","),
 				ACMEUserSecretName: "user",
-				ChallengeProvider:  api.ChallengeProvider{DNS: &api.DNSChallengeProvider{ProviderType: "googlecloud", CredentialSecretName: "fakesecret"}},
+				ChallengeProvider:  api.ChallengeProvider{DNS: &api.DNSChallengeProvider{Provider: "googlecloud", CredentialSecretName: "fakesecret"}},
 				Storage:            api.CertificateStorage{Secret: &api.SecretStore{}},
 			},
 		}
@@ -78,7 +78,7 @@ func TestEnsureClient(t *testing.T) {
 		_, err := fakeController.KubeClient.CoreV1().Secrets("bar").Create(fakeSecret)
 		assert.Nil(t, err)
 
-		fakeController.ensureACMEClient()
+		fakeController.getACMEClient()
 		secret, err := fakeController.KubeClient.CoreV1().Secrets("bar").Get("user", metav1.GetOptions{})
 		assert.Nil(t, err)
 		assert.NotNil(t, secret)
@@ -95,7 +95,7 @@ func TestFakeRegisterACMEUser(t *testing.T) {
 		Spec: api.CertificateSpec{
 			Domains:            []string{"example.com"},
 			ACMEUserSecretName: "user",
-			ChallengeProvider:  api.ChallengeProvider{DNS: &api.DNSChallengeProvider{ProviderType: "googlecloud", CredentialSecretName: "fakesecret"}},
+			ChallengeProvider:  api.ChallengeProvider{DNS: &api.DNSChallengeProvider{Provider: "googlecloud", CredentialSecretName: "fakesecret"}},
 			Storage:            api.CertificateStorage{Secret: &api.SecretStore{}},
 		},
 	}
@@ -123,7 +123,7 @@ func TestFakeRegisterACMEUser(t *testing.T) {
 				Key:          x509.MarshalPKCS1PrivateKey(newFakeACMEUser().privatekey),
 			},
 		}
-		err := fakeController.registerACMEUser(acmeClient)
+		err := fakeController.registerUser(acmeClient)
 		if !assert.NotNil(t, err) {
 			assert.Nil(t, err)
 			secret, err := fakeController.KubeClient.CoreV1().Secrets("bar").Get("user", metav1.GetOptions{})
@@ -146,7 +146,7 @@ func TestCreate(t *testing.T) {
 			Spec: api.CertificateSpec{
 				Domains:            strings.Split(os.Getenv("TEST_DNS_DOMAINS"), ","),
 				ACMEUserSecretName: "user",
-				ChallengeProvider:  api.ChallengeProvider{DNS: &api.DNSChallengeProvider{ProviderType: "googlecloud", CredentialSecretName: "fakesecret"}},
+				ChallengeProvider:  api.ChallengeProvider{DNS: &api.DNSChallengeProvider{Provider: "googlecloud", CredentialSecretName: "fakesecret"}},
 				Storage:            api.CertificateStorage{Secret: &api.SecretStore{}},
 			},
 		}

@@ -76,7 +76,7 @@ type HTTPChallengeProvider struct {
 
 type DNSChallengeProvider struct {
 	// DNS Provider from the list https://github.com/appscode/voyager/blob/master/docs/user-guide/certificate/provider.md
-	ProviderType         string `json:"providerType,omitempty"`
+	Provider             string `json:"provider,omitempty"`
 	CredentialSecretName string `json:"credentialSecretName,omitempty"`
 }
 
@@ -129,9 +129,8 @@ type RequestConditionType string
 
 // These are the possible conditions for a certificate create request.
 const (
-	CertificateCreated RequestConditionType = "Created"
-	CertificateUpdated RequestConditionType = "Updated"
-	CertificateFailed  RequestConditionType = "Failed"
+	CertificateIssued RequestConditionType = "Issued"
+	CertificateFailed RequestConditionType = "Failed"
 )
 
 type CertificateCondition struct {

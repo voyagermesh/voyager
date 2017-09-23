@@ -352,7 +352,7 @@ func Convert_voyager_ChallengeProvider_To_v1beta1_ChallengeProvider(in *voyager.
 }
 
 func autoConvert_v1beta1_DNSChallengeProvider_To_voyager_DNSChallengeProvider(in *DNSChallengeProvider, out *voyager.DNSChallengeProvider, s conversion.Scope) error {
-	out.ProviderType = in.ProviderType
+	out.Provider = in.Provider
 	out.CredentialSecretName = in.CredentialSecretName
 	return nil
 }
@@ -363,7 +363,7 @@ func Convert_v1beta1_DNSChallengeProvider_To_voyager_DNSChallengeProvider(in *DN
 }
 
 func autoConvert_voyager_DNSChallengeProvider_To_v1beta1_DNSChallengeProvider(in *voyager.DNSChallengeProvider, out *DNSChallengeProvider, s conversion.Scope) error {
-	out.ProviderType = in.ProviderType
+	out.Provider = in.Provider
 	out.CredentialSecretName = in.CredentialSecretName
 	return nil
 }

@@ -73,7 +73,7 @@ var _ = Describe("CertificateWithDNSProvider", func() {
 			Domains: []string{os.Getenv("TEST_DNS_DOMAINS")},
 			ChallengeProvider: api.ChallengeProvider{
 				DNS: &api.DNSChallengeProvider{
-					ProviderType:         "googlecloud",
+					Provider:             "googlecloud",
 					CredentialSecretName: credentialSecret.Name,
 				},
 			},

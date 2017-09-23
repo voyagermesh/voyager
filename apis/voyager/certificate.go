@@ -75,7 +75,7 @@ type HTTPChallengeProvider struct {
 }
 
 type DNSChallengeProvider struct {
-	ProviderType         string `json:"providerType,omitempty"`
+	Provider             string `json:"provider,omitempty"`
 	CredentialSecretName string `json:"credentialSecretName,omitempty"`
 }
 

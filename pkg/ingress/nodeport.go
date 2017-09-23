@@ -1,6 +1,8 @@
 package ingress
 
 import (
+	"io/ioutil"
+	"os"
 	"reflect"
 	"strconv"
 	"time"
@@ -17,6 +19,7 @@ import (
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	fakecloudprovider "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
+	vault "github.com/hashicorp/vault/api"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -565,6 +568,29 @@ func (c *nodePortController) newPods() *apps.Deployment {
 				},
 			},
 		},
+	}
+
+	if addr := os.Getenv(vault.EnvVaultAddress); addr != "" {
+		vars := []apiv1.EnvVar{
+			{
+				Name:  vault.EnvVaultAddress,
+				Value: addr,
+			},
+		}
+		if caCert := os.Getenv(vault.EnvVaultCACert); caCert != "" {
+			vars = append(vars, apiv1.EnvVar{
+				Name:  vault.EnvVaultCACert,
+				Value: caCert,
+			})
+		}
+		if caPath := os.Getenv(vault.EnvVaultCAPath); caPath != "" {
+			caCert, _ := ioutil.ReadFile(caPath)
+			vars = append(vars, apiv1.EnvVar{
+				Name:  vault.EnvVaultCACert,
+				Value: string(caCert),
+			})
+		}
+		deployment.Spec.Template.Spec.Containers[0].Env = vars
 	}
 
 	if c.Opt.EnableRBAC {

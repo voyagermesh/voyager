@@ -26,6 +26,8 @@ import:
   repo: https://github.com/appscode/go-version.git
   vcs: git
   version: master
+- package: github.com/hashicorp/vault
+  version: v0.8.3
 - package: github.com/jpillora/go-ogle-analytics
 - package: github.com/moul/http2curl
 - package: github.com/onsi/ginkgo

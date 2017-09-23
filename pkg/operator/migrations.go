@@ -38,7 +38,7 @@ func (op *Operator) MigrateCertificate(cert *api.Certificate) (bool, error) {
 		migrate = true
 	} else if len(cert.Spec.Provider) > 0 {
 		cert.Spec.ChallengeProvider.DNS = &api.DNSChallengeProvider{
-			ProviderType:         cert.Spec.Provider,
+			Provider:             cert.Spec.Provider,
 			CredentialSecretName: cert.Spec.ProviderCredentialSecretName,
 		}
 		migrate = true

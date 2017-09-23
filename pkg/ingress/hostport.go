@@ -1,6 +1,8 @@
 package ingress
 
 import (
+	"io/ioutil"
+	"os"
 	"reflect"
 	"strconv"
 
@@ -16,6 +18,7 @@ import (
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	fakecloudprovider "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
+	vault "github.com/hashicorp/vault/api"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -485,7 +488,7 @@ func (c *hostPortController) ensureService(old *api.Ingress) (*apiv1.Service, er
 }
 
 func (c *hostPortController) newPods() *apps.Deployment {
-	daemon := &apps.Deployment{
+	deployment := &apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.Ingress.OffshootName(),
 			Namespace: c.Ingress.Namespace,
@@ -547,13 +550,36 @@ func (c *hostPortController) newPods() *apps.Deployment {
 		},
 	}
 
+	if addr := os.Getenv(vault.EnvVaultAddress); addr != "" {
+		vars := []apiv1.EnvVar{
+			{
+				Name:  vault.EnvVaultAddress,
+				Value: addr,
+			},
+		}
+		if caCert := os.Getenv(vault.EnvVaultCACert); caCert != "" {
+			vars = append(vars, apiv1.EnvVar{
+				Name:  vault.EnvVaultCACert,
+				Value: caCert,
+			})
+		}
+		if caPath := os.Getenv(vault.EnvVaultCAPath); caPath != "" {
+			caCert, _ := ioutil.ReadFile(caPath)
+			vars = append(vars, apiv1.EnvVar{
+				Name:  vault.EnvVaultCACert,
+				Value: string(caCert),
+			})
+		}
+		deployment.Spec.Template.Spec.Containers[0].Env = vars
+	}
+
 	if c.Opt.EnableRBAC {
-		daemon.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
+		deployment.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
 	}
 
 	exporter, _ := c.getExporterSidecar()
 	if exporter != nil {
-		daemon.Spec.Template.Spec.Containers = append(daemon.Spec.Template.Spec.Containers, *exporter)
+		deployment.Spec.Template.Spec.Containers = append(deployment.Spec.Template.Spec.Containers, *exporter)
 	}
 
 	// adding tcp ports to pod template
@@ -564,10 +590,10 @@ func (c *hostPortController) newPods() *apps.Deployment {
 			ContainerPort: int32(podPort),
 			HostPort:      int32(podPort),
 		}
-		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, p)
+		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, p)
 	}
 	if c.Ingress.Stats() {
-		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
+		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
 			Name:          api.StatsPortName,
 			Protocol:      "TCP",
 			ContainerPort: int32(c.Ingress.StatsPort()),
@@ -575,10 +601,10 @@ func (c *hostPortController) newPods() *apps.Deployment {
 	}
 
 	if ans, ok := c.Ingress.PodsAnnotations(); ok {
-		daemon.Spec.Template.Annotations = ans
+		deployment.Spec.Template.Annotations = ans
 	}
 
-	return daemon
+	return deployment
 }
 
 func (c *hostPortController) ensurePods(old *api.Ingress) (*apps.Deployment, error) {

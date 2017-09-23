@@ -8,7 +8,6 @@ import (
 	api "github.com/appscode/voyager/apis/voyager"
 	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	tcs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
@@ -134,5 +133,5 @@ func (op *Operator) Run() {
 	for i := range informers {
 		go informers[i].Run(wait.NeverStop)
 	}
-	go certificate.CheckCertificates(op.KubeClient, op.ExtClient, op.Opt)
+	go op.CheckCertificates()
 }

@@ -7,29 +7,30 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"sync"
+	"io/ioutil"
+	"os"
+	"path"
+	"strings"
 	"time"
 
 	"github.com/appscode/go/errors"
 	"github.com/appscode/go/log"
-	tapi "github.com/appscode/voyager/apis/voyager/v1beta1"
-	tapi_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
+	v1u "github.com/appscode/kutil/core/v1"
+	vu "github.com/appscode/kutil/voyager/v1beta1"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
+	vault "github.com/hashicorp/vault/api"
 	"github.com/xenolf/lego/acme"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/tools/record"
-)
-
-const (
-	defaultCertPrefix = "cert-"
+	"k8s.io/client-go/util/cert"
 )
 
 type Controller struct {
@@ -38,254 +39,315 @@ type Controller struct {
 	Opt        config.Options
 	recorder   record.EventRecorder
 
-	tpr                        *tapi.Certificate
-	acmeCert                   ACMECertData
-	crt                        *x509.Certificate
-	renewedCertificateResource acme.CertificateResource
-	sync.Mutex
+	crd               *api.Certificate
+	ChallengeProvider string
+	UserSecret        *apiv1.Secret
+	DNSCredentials    map[string][]byte
+	curCert *x509.Certificate
+	acmeUser   *ACMEUser
+	acmeClient *acme.Client
 
-	acmeConfig *ACMEConfig
-	acmeClient *ACMEClient
+	vaultClient *vault.Client
 }
 
-func NewController(kubeClient clientset.Interface, extClient acs.VoyagerV1beta1Interface, opt config.Options, tpr *tapi.Certificate) *Controller {
-	return &Controller{
+func NewController(kubeClient clientset.Interface, extClient acs.VoyagerV1beta1Interface, opt config.Options, tpr *api.Certificate) (*Controller, error) {
+	ctrl := &Controller{
 		KubeClient: kubeClient,
 		ExtClient:  extClient,
 		Opt:        opt,
-		tpr:        tpr,
-		recorder:   eventer.NewEventRecorder(kubeClient, "Voyager operator"),
+		crd:        tpr,
+		recorder:   eventer.NewEventRecorder(kubeClient, "voyager-operator"),
 	}
+	err := ctrl.crd.IsValid(ctrl.Opt.CloudProvider)
+	if err != nil {
+		return nil, err
+	}
+
+	ctrl.UserSecret, err = ctrl.KubeClient.CoreV1().Secrets(ctrl.crd.Namespace).Get(ctrl.crd.Spec.ACMEUserSecretName, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	ctrl.acmeUser = &ACMEUser{}
+
+	if email, ok := ctrl.UserSecret.Data[api.ACMEUserEmail]; !ok {
+		return nil, fmt.Errorf("no acme user email is provided")
+	} else {
+		ctrl.acmeUser.Email = string(email)
+	}
+
+	if u, found := ctrl.UserSecret.Data[api.ACMEServerURL]; found {
+		ctrl.acmeUser.ServerURL = string(u)
+	} else {
+		ctrl.acmeUser.ServerURL = LetsEncryptProdURL
+	}
+
+	if ctrl.crd.Spec.ChallengeProvider.HTTP != nil {
+		ctrl.ChallengeProvider = "http"
+		switch ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.APIVersion {
+		case api.SchemeGroupVersion.String():
+			var err error
+			_, err = ctrl.ExtClient.Ingresses(ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
+				Get(ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
+			if err != nil {
+				return nil, err
+			}
+		case "extensions/v1beta1":
+			ing, err := ctrl.KubeClient.ExtensionsV1beta1().Ingresses(ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
+				Get(ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
+			if err != nil {
+				return nil, err
+			}
+			_, err = api.NewEngressFromIngress(ing)
+			if err != nil {
+				return nil, err
+			}
+		default:
+			return nil, errors.New("ingress API Schema unrecognized")
+		}
+	} else if ctrl.crd.Spec.ChallengeProvider.DNS != nil {
+		ctrl.ChallengeProvider = ctrl.crd.Spec.ChallengeProvider.DNS.Provider
+		if ctrl.crd.Spec.ChallengeProvider.DNS.CredentialSecretName != "" {
+			dnsSecret, err := ctrl.KubeClient.CoreV1().Secrets(ctrl.crd.Namespace).Get(ctrl.crd.Spec.ChallengeProvider.DNS.CredentialSecretName, metav1.GetOptions{})
+			if err != nil {
+				return nil, err
+			}
+			if _, ok := dnsSecret.Data[api.ACMEUserEmail]; !ok {
+				return nil, fmt.Errorf("dns challenge provider credential %s not found", ctrl.crd.Spec.ChallengeProvider.DNS.CredentialSecretName)
+			}
+			ctrl.DNSCredentials = dnsSecret.Data
+		}
+	}
+
+	if os.Getenv(vault.EnvVaultAddress) != "" {
+		ctrl.vaultClient, err = vault.NewClient(vault.DefaultConfig())
+		if err != nil {
+			return nil, err
+		}
+		if os.Getenv(vault.EnvVaultToken) == "" {
+			token, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/token")
+			if err != nil {
+				return nil, err
+			}
+			ctrl.vaultClient.SetToken(string(token))
+		}
+	} else {
+		if ctrl.crd.Spec.Storage.Vault != nil {
+			return nil, fmt.Errorf("certificate %s@%s uses vault but vault address is missing", tpr.Name, tpr.Namespace)
+		}
+	}
+
+	if ctrl.crd.Spec.Storage.Secret != nil {
+		if ctrl.crd.Spec.Storage.Secret.Name == "" {
+			ctrl.crd.Spec.Storage.Secret.Name = "cert-" + tpr.Name
+		}
+	} else if ctrl.crd.Spec.Storage.Vault != nil {
+		if ctrl.crd.Spec.Storage.Vault.Name == "" {
+			ctrl.crd.Spec.Storage.Vault.Name = "cert-" + tpr.Name
+		}
+	}
+
+	return ctrl, nil
 }
 
 func (c *Controller) Process() error {
-	cfg := &ACMEConfig{
-		CloudProvider:  c.Opt.CloudProvider,
-		DNSCredentials: make(map[string][]byte),
-		UserSecret:     ACMEUserSecret{},
+	var err error
+	c.curCert, _, err = c.load()
+	if err != nil {
+		return err
 	}
-	if c.tpr.Spec.ChallengeProvider.HTTP != nil {
-		cfg.ChallengeProvider = "http"
-	} else if c.tpr.Spec.ChallengeProvider.DNS != nil {
-		cfg.ChallengeProvider = c.tpr.Spec.ChallengeProvider.DNS.ProviderType
-		if len(c.tpr.Spec.ChallengeProvider.DNS.CredentialSecretName) > 0 {
-			cred, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(
-				c.tpr.Spec.ChallengeProvider.DNS.CredentialSecretName,
-				metav1.GetOptions{},
-			)
-			if err != nil {
-				c.recorder.Eventf(
-					c.tpr.ObjectReference(),
-					apiv1.EventTypeWarning,
-					eventer.EventReasonCertificateCreateFailed,
-					"Failed to create certificate, Reason: %s",
-					err.Error(),
-				)
-				return err
+	if c.curCert == nil {
+		return c.create()
+	}
+	if c.crd.ShouldRenew(c.curCert) {
+		return c.renew()
+	}
+	return nil
+}
+
+func (c *Controller) getACMEClient() error {
+	var err error
+
+	if data, ok := c.UserSecret.Data[api.ACMERegistrationData]; ok {
+		var reg acme.RegistrationResource
+		if err := json.Unmarshal(data, &reg); err == nil {
+			c.acmeUser.Registration = &reg
+		}
+	}
+
+	if data, ok := c.UserSecret.Data[api.ACMEUserPrivatekey]; ok {
+		if key, err := cert.ParsePrivateKeyPEM(data); err == nil {
+			if rsaKey, ok := key.(*rsa.PrivateKey); ok {
+				c.acmeUser.Key = rsaKey
 			}
-			cfg.DNSCredentials = cred.Data
 		}
 	}
-	c.acmeConfig = cfg
+	registered := c.acmeUser.Registration != nil && c.acmeUser.Key != nil
 
-	c.acmeCert.Domains = NewDomainCollection(c.tpr.Spec.Domains...)
-	// Check if a cert already exists for this Certificate Instance
-	secret, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(defaultCertPrefix+c.tpr.Name, metav1.GetOptions{})
-	if kerr.IsNotFound(err) || !c.tpr.Status.CertificateObtained {
-		// Certificate Not found as secret. We must create it now.
-		err := c.create()
+	if c.acmeUser.Key == nil {
+		log.Infoln("No ACME user found, registering a new ACME user")
+		userKey, err := rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
-			c.recorder.Eventf(
-				c.tpr.ObjectReference(),
-				apiv1.EventTypeWarning,
-				eventer.EventReasonCertificateCreateFailed,
-				"Failed to create certificate, Reason: %s",
-				err.Error(),
-			)
-			return err
+			return errors.FromErr(err).WithMessage("Failed to generate Key for New Acme User")
 		}
-		c.recorder.Eventf(
-			c.tpr.ObjectReference(),
-			apiv1.EventTypeNormal,
-			eventer.EventReasonCertificateCreateSuccessful,
-			"Successfully created certificate",
-		)
-		return nil
+		c.acmeUser.Key = userKey
 	}
 
-	// Secret is exists, try to renew certificate if necessary
-	c.acmeCert, err = NewACMECertDataFromSecret(secret, c.tpr)
+	c.acmeClient, err = c.newACMEClient()
 	if err != nil {
-		return errors.FromErr(err).WithMessage("Error decoding acme certificate").Err()
+		return err
 	}
 
-	// Decode cert
-	pemBlock, _ := pem.Decode(c.acmeCert.Cert)
-	c.crt, err = x509.ParseCertificate(pemBlock.Bytes)
-	if err != nil {
-		return errors.FromErr(err).WithMessage("Error decoding x509 encoded certificate").Err()
-	}
-
-	c.acmeCert.Domains = NewDomainCollection(c.tpr.Spec.Domains...)
-	if !c.crt.NotAfter.After(time.Now().Add(time.Hour*24*7)) ||
-		!c.acmeCert.EqualDomains(c.crt) {
-		log.Infof(
-			"Trying to renew certificate for, tpr domains %v, cert dns %v, cert common name %v",
-			c.tpr.Spec.Domains,
-			c.crt.DNSNames,
-			c.crt.Subject.CommonName,
-		)
-		err := c.renew()
+	if !registered {
+		registration, err := c.acmeClient.Register()
 		if err != nil {
-			c.recorder.Eventf(
-				c.tpr.ObjectReference(),
-				apiv1.EventTypeWarning,
-				eventer.EventReasonCertificateRenewFailed,
-				"Failed to renew certificate, Reason %s",
-				err.Error(),
-			)
-			return err
+			return fmt.Errorf("failed to register user %s. Reason: %s", c.acmeUser.Email, err)
 		}
-		c.recorder.Eventf(
-			c.tpr.ObjectReference(),
-			apiv1.EventTypeNormal,
-			eventer.EventReasonCertificateRenewSuccessful,
-			"Successfully renewed certificate, voyager pods that mount this secret needs to restart.",
-		)
+		if err := c.acmeClient.AgreeToTOS(); err != nil {
+			return fmt.Errorf("failed to register user %s. Reason: %s", c.acmeUser.Email, err)
+		}
+		c.UserSecret, err = v1u.PatchSecret(c.KubeClient, c.UserSecret, func(in *apiv1.Secret) *apiv1.Secret {
+			if in.Data == nil {
+				in.Data = make(map[string][]byte)
+			}
+			in.Data[api.ACMEUserPrivatekey] = cert.EncodePrivateKeyPEM(c.acmeUser.Key.(*rsa.PrivateKey))
+			regBytes, _ := json.Marshal(registration)
+			in.Data[api.ACMERegistrationData] = regBytes
+			return in
+		})
+		return err
 	}
 	return nil
 }
 
 func (c *Controller) create() error {
-	if err := c.ensureACMEClient(); err != nil {
+	if err := c.getACMEClient(); err != nil {
 		return err
 	}
-	if c.acmeConfig.ChallengeProvider == "http" {
+	if c.ChallengeProvider == "http" {
 		if err := c.processHTTPCertificate(); err != nil {
 			return err
 		}
 	}
-	cert, errs := c.acmeClient.ObtainCertificate(c.tpr.Spec.Domains, true, nil, true)
-	for k, v := range errs {
-		log.Errorf("Error occurred for %s, reason %s", k, v.Error())
+	cert, errs := c.acmeClient.ObtainCertificate(c.crd.Spec.Domains, true, nil, true)
+	if len(errs) > 0 {
+		causes := make([]string, 0, len(errs))
+		for k, v := range errs {
+			causes = append(causes, k+": "+v.Error())
+		}
+		return fmt.Errorf("failed to create certificate. Reason: %s", strings.Join(causes, ", "))
 	}
-	if len(cert.PrivateKey) > 0 {
-		return c.save(cert)
-	}
-	return errors.New("failed to create certificate")
+	return c.save(cert)
 }
 
 func (c *Controller) renew() error {
-	if err := c.ensureACMEClient(); err != nil {
-		return errors.FromErr(err).Err()
+	if err := c.getACMEClient(); err != nil {
+		return err
 	}
-
-	if c.acmeConfig.ChallengeProvider == "http" {
+	if c.ChallengeProvider == "http" {
 		if err := c.processHTTPCertificate(); err != nil {
 			return err
 		}
 	}
 	acmeCert := acme.CertificateResource{
-		CertURL:       c.tpr.Status.LastIssuedCertificate.CertURL,
-		CertStableURL: c.tpr.Status.LastIssuedCertificate.CertStableURL,
-		AccountRef:    c.tpr.Status.LastIssuedCertificate.AccountRef,
-		Certificate:   c.acmeCert.Cert,
-		PrivateKey:    c.acmeCert.PrivateKey,
+		CertURL:       c.crd.Status.LastIssuedCertificate.CertURL,
+		CertStableURL: c.crd.Status.LastIssuedCertificate.CertStableURL,
+		AccountRef:    c.crd.Status.LastIssuedCertificate.AccountRef,
+		Certificate:   c.curCert.Raw,
+		PrivateKey:    nil, // issue new private key,
 	}
 	cert, err := c.acmeClient.RenewCertificate(acmeCert, true, true)
 	if err != nil {
-		return errors.FromErr(err).Err()
+		return err
 	}
-	c.renewedCertificateResource = cert
-	return c.update(cert)
+	return c.save(cert)
 }
 
-func (c *Controller) ensureACMEClient() error {
-	secret, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(c.tpr.Spec.ACMEUserSecretName, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	if _, found := secret.Data[tapi.ACMEUserEmail]; !found {
-		return err
-	}
-	c.acmeConfig.UserSecret = ACMEUserSecret(secret.Data)
+func (c *Controller) load() (crt *x509.Certificate, key *rsa.PrivateKey, err error) {
+	var pemCrt, pemKey []byte
 
-	// No error that means we successfully got an userSecret
-	var acmeUserInfo *ACMEUserData
-	acmeUserRegistered := false
-	if data := c.acmeConfig.UserSecret.GetUserData(); len(data) > 0 {
-		acmeUserInfo = &ACMEUserData{}
-		userError := json.Unmarshal(data, acmeUserInfo)
-		if userError == nil {
-			acmeUserRegistered = true
+	if c.crd.Spec.Storage.Secret != nil {
+		var secret *apiv1.Secret
+		secret, err = c.KubeClient.CoreV1().Secrets(c.crd.Namespace).Get(c.crd.Spec.Storage.Secret.Name, metav1.GetOptions{})
+		if err == nil {
+			if data, found := secret.Data["tls.crt"]; !found {
+				err = fmt.Errorf("secret %s@%s is missing tls.crt", c.crd.Spec.Storage.Secret.Name, c.crd.Namespace)
+				return
+			} else {
+				pemCrt = data
+			}
+			if data, found := secret.Data["tls.key"]; !found {
+				err = fmt.Errorf("secret %s@%s is missing tls.key", c.crd.Spec.Storage.Secret.Name, c.crd.Namespace)
+				return
+			} else {
+				pemKey = data
+			}
 		}
-	}
-
-	if !acmeUserRegistered {
-		log.Infoln("No ACME user found, Generate a new ACME user")
-		userKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	} else if c.crd.Spec.Storage.Vault != nil {
+		var secret *vault.Secret
+		secret, err = c.vaultClient.Logical().Read(path.Join(c.crd.Spec.Storage.Vault.Prefix, c.crd.Namespace, c.crd.Spec.Storage.Vault.Name))
 		if err != nil {
-			return errors.FromErr(err).WithMessage("Failed to generate Key for New Acme User")
+			return
 		}
-		acmeUserInfo = &ACMEUserData{
-			Email: c.acmeConfig.UserSecret.GetEmail(),
-			Key: pem.EncodeToMemory(&pem.Block{
-				Type:  "RSA PRIVATE KEY",
-				Bytes: x509.MarshalPKCS1PrivateKey(userKey),
-			}),
+		if data, found := secret.Data["tls.crt"]; !found {
+			err = fmt.Errorf("secret %s@%s is missing tls.crt", c.crd.Spec.Storage.Secret.Name, c.crd.Namespace)
+			return
+		} else {
+			pemCrt = []byte(data.(string))
+		}
+		if data, found := secret.Data["tls.key"]; !found {
+			err = fmt.Errorf("secret %s@%s is missing tls.key", c.crd.Spec.Storage.Secret.Name, c.crd.Namespace)
+			return
+		} else {
+			pemKey = []byte(data.(string))
 		}
 	}
-	c.acmeConfig.UserData = acmeUserInfo
-	acmeClient, err := NewACMEClient(c.acmeConfig)
-	if err != nil {
-		return fmt.Errorf("failed to create acme client. Reason: %s", err)
-	}
-	c.acmeClient = acmeClient
 
-	if !acmeUserRegistered {
-		return c.registerACMEUser(acmeClient)
+	if len(pemCrt) > 0 {
+		var certs []*x509.Certificate
+		certs, err = cert.ParseCertsPEM(pemCrt)
+		if err != nil {
+			err = fmt.Errorf("secret %s@%s contains bad certificate. Reason: %s", c.crd.Spec.Storage.Secret.Name, c.crd.Namespace, err)
+			return
+		}
+		crt = certs[0]
 	}
-	return nil
-}
-
-func (c *Controller) registerACMEUser(acmeClient *ACMEClient) error {
-	log.Debugln("ACME user not registered, registering new ACME user")
-	registration, err := acmeClient.Register()
-	if err != nil {
-		return errors.FromErr(err).WithMessage("Failed to registering user for new domain").Err()
+	if len(pemKey) > 0 {
+		var ki interface{}
+		ki, err = cert.ParsePrivateKeyPEM(pemKey)
+		if err != nil {
+			return
+		}
+		if rsaKey, ok := ki.(*rsa.PrivateKey); ok {
+			key = rsaKey
+		} else {
+			err = fmt.Errorf("key datya is not rsa private key")
+		}
+		return
 	}
-	c.acmeConfig.UserData.Registration = registration
-	if err := acmeClient.AgreeToTOS(); err != nil {
-		return errors.FromErr(err).WithMessage("Failed to registering user for new domain").Err()
-	}
-
-	secret, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(c.tpr.Spec.ACMEUserSecretName, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	secret.Data[tapi.ACMEUserDataJSON] = c.acmeConfig.UserData.Json()
-	c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Update(secret)
-	return nil
+	return
 }
 
 func (c *Controller) save(cert acme.CertificateResource) error {
-	certData := &ACMECertData{
-		Domains:    c.acmeCert.Domains,
-		Cert:       cert.Certificate,
-		PrivateKey: cert.PrivateKey,
-	}
-
-	if c.tpr.Spec.Storage.Secret != nil {
-		secret := certData.ToSecret(c.tpr.Name, c.tpr.Namespace, c.tpr.Spec.Storage.Secret.Name)
-		_, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Create(secret)
-		if err != nil {
-			errors.FromErr(err).Err()
+	if c.crd.Spec.Storage.Secret != nil {
+		_, err := v1u.CreateOrPatchSecret(c.KubeClient,
+			metav1.ObjectMeta{Namespace: c.crd.Namespace, Name: c.crd.Spec.Storage.Secret.Name},
+			func(in *apiv1.Secret) *apiv1.Secret {
+				in.Type = apiv1.SecretTypeTLS
+				if in.Data == nil {
+					in.Data = make(map[string][]byte)
+				}
+				in.Data["tls.crt"] = cert.Certificate
+				in.Data["tls.key"] = cert.PrivateKey
+				return in
+			})
+		return err
+	} else if c.crd.Spec.Storage.Vault != nil {
+		data := map[string]interface{}{
+			"tls.crt": string(cert.Certificate),
+			"tls.key": string(cert.PrivateKey),
 		}
-	}
-
-	k8sCert, err := c.ExtClient.Certificates(c.tpr.Namespace).Get(c.tpr.Name, metav1.GetOptions{})
-	if err != nil {
-		log.Errorln("failed to load cert object,", err)
+		_, err := c.vaultClient.Logical().Write(path.Join(c.crd.Spec.Storage.Vault.Prefix, c.crd.Namespace, c.crd.Spec.Storage.Vault.Name), data)
+		return err
 	}
 
 	// Decode cert
@@ -294,95 +356,41 @@ func (c *Controller) save(cert acme.CertificateResource) error {
 	if err != nil {
 		return errors.FromErr(err).WithMessage("Error decoding x509 encoded certificate").Err()
 	}
-
-	// Update certificate data to add Details Information
-	t := metav1.Now()
-	k8sCert.Status = tapi.CertificateStatus{
-		CertificateObtained: true,
-		CreationTime:        &t,
-		Conditions: []tapi.CertificateCondition{{
-			Type:           tapi.CertificateCreated,
-			LastUpdateTime: t,
-		}},
-		LastIssuedCertificate: &tapi.CertificateDetails{
+	_, err = vu.PatchCertificate(c.ExtClient, c.crd, func(in *api.Certificate) *api.Certificate {
+		// Update certificate data to add Details Information
+		t := metav1.Now()
+		in.Status.LastIssuedCertificate = &api.CertificateDetails{
 			SerialNumber:  crt.SerialNumber.String(),
 			NotBefore:     metav1.NewTime(crt.NotBefore),
 			NotAfter:      metav1.NewTime(crt.NotAfter),
 			CertURL:       cert.CertURL,
 			CertStableURL: cert.CertStableURL,
 			AccountRef:    cert.AccountRef,
-		},
-	}
-	c.ExtClient.Certificates(c.tpr.Namespace).Update(k8sCert)
-	return nil
-}
-
-func (c *Controller) update(cert acme.CertificateResource) error {
-	certData := &ACMECertData{
-		Domains:    c.acmeCert.Domains,
-		Cert:       cert.Certificate,
-		PrivateKey: cert.PrivateKey,
-	}
-
-	if c.tpr.Spec.Storage.Secret != nil {
-		secret := certData.ToSecret(c.tpr.Name, c.tpr.Namespace, c.tpr.Spec.Storage.Secret.Name)
-		oldSecret, err := c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Get(secret.Name, metav1.GetOptions{})
-		if err != nil {
-			return errors.FromErr(err).Err()
 		}
-		oldSecret.Data = secret.Data
-		_, err = c.KubeClient.CoreV1().Secrets(c.tpr.Namespace).Update(oldSecret)
-		if err != nil {
-			return errors.FromErr(err).Err()
+
+		found := false
+		for i := range in.Status.Conditions {
+			if in.Status.Conditions[i].Type == api.CertificateIssued {
+				in.Status.Conditions[i].LastUpdateTime = t
+				found = true
+			}
 		}
-	}
-
-	k8sCert, err := c.ExtClient.Certificates(c.tpr.Namespace).Get(c.tpr.Name, metav1.GetOptions{})
-	if err != nil {
-		log.Errorln("failed to load cert object,", err)
-	}
-
-	// Decode cert
-	pemBlock, _ := pem.Decode(cert.Certificate)
-	crt, err := x509.ParseCertificate(pemBlock.Bytes)
-	if err != nil {
-		return errors.FromErr(err).WithMessage("Error decoding x509 encoded certificate").Err()
-	}
-
-	// Update certificate data to add Details Information
-	t := metav1.Now()
-	k8sCert.Status.LastIssuedCertificate = &tapi.CertificateDetails{
-		SerialNumber:  crt.SerialNumber.String(),
-		NotBefore:     metav1.NewTime(crt.NotBefore),
-		NotAfter:      metav1.NewTime(crt.NotAfter),
-		CertURL:       cert.CertURL,
-		CertStableURL: cert.CertStableURL,
-		AccountRef:    cert.AccountRef,
-	}
-
-	found := false
-	for i := range k8sCert.Status.Conditions {
-		if k8sCert.Status.Conditions[i].Type == tapi.CertificateUpdated {
-			k8sCert.Status.Conditions[i].LastUpdateTime = t
-			found = true
+		if !found {
+			in.Status.Conditions = append(in.Status.Conditions, api.CertificateCondition{
+				Type:           api.CertificateIssued,
+				LastUpdateTime: t,
+			})
 		}
-	}
-	if !found {
-		k8sCert.Status.Conditions = append(k8sCert.Status.Conditions, tapi.CertificateCondition{
-			Type:           tapi.CertificateUpdated,
-			LastUpdateTime: t,
-		})
-	}
-
-	c.ExtClient.Certificates(c.tpr.Namespace).Update(k8sCert)
-	return nil
+		return in
+	})
+	return err
 }
 
 func (c *Controller) processHTTPCertificate() error {
-	switch c.tpr.Spec.ChallengeProvider.HTTP.Ingress.APIVersion {
-	case tapi_v1beta1.SchemeGroupVersion.String():
-		i, err := c.ExtClient.Ingresses(c.tpr.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
-			Get(c.tpr.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
+	switch c.crd.Spec.ChallengeProvider.HTTP.Ingress.APIVersion {
+	case api.SchemeGroupVersion.String():
+		i, err := c.ExtClient.Ingresses(c.crd.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
+			Get(c.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -397,14 +405,14 @@ func (c *Controller) processHTTPCertificate() error {
 			}
 		}
 
-		rule := tapi.IngressRule{
-			IngressRuleValue: tapi.IngressRuleValue{
-				HTTP: &tapi.HTTPIngressRuleValue{
-					Paths: []tapi.HTTPIngressPath{
+		rule := api.IngressRule{
+			IngressRuleValue: api.IngressRuleValue{
+				HTTP: &api.HTTPIngressRuleValue{
+					Paths: []api.HTTPIngressPath{
 						{
 							Path: providers.URLPrefix,
-							Backend: tapi.HTTPIngressBackend{
-								IngressBackend: tapi.IngressBackend{
+							Backend: api.HTTPIngressBackend{
+								IngressBackend: api.IngressBackend{
 									ServiceName: c.Opt.OperatorService + "." + c.Opt.OperatorNamespace,
 									ServicePort: intstr.FromInt(c.Opt.HTTPChallengePort),
 								},
@@ -416,14 +424,14 @@ func (c *Controller) processHTTPCertificate() error {
 		}
 		i.Spec.Rules = append(i.Spec.Rules, rule)
 
-		_, err = c.ExtClient.Ingresses(c.tpr.Namespace).Update(i)
+		_, err = c.ExtClient.Ingresses(c.crd.Namespace).Update(i)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
 		time.Sleep(time.Second * 5)
 	case "extensions/v1beta1":
-		i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
-			Get(c.tpr.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
+		i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.crd.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
+			Get(c.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
@@ -456,7 +464,7 @@ func (c *Controller) processHTTPCertificate() error {
 		}
 		i.Spec.Rules = append(i.Spec.Rules, rule)
 
-		_, err = c.KubeClient.ExtensionsV1beta1().Ingresses(c.tpr.Namespace).Update(i)
+		_, err = c.KubeClient.ExtensionsV1beta1().Ingresses(c.crd.Namespace).Update(i)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}

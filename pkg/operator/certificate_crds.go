@@ -2,13 +2,14 @@ package operator
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/appscode/go/log"
-	sapi "github.com/appscode/voyager/apis/voyager/v1beta1"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/eventer"
+	"github.com/benbjohnson/clock"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -27,11 +28,11 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 		},
 	}
 	_, informer := cache.NewInformer(lw,
-		&sapi.Certificate{},
+		&api.Certificate{},
 		op.Opt.ResyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				if cert, ok := obj.(*sapi.Certificate); ok {
+				if cert, ok := obj.(*api.Certificate); ok {
 					log.Infof("%s %s@%s added", cert.GroupVersionKind(), cert.Name, cert.Namespace)
 					if _, err := op.MigrateCertificate(cert); err != nil {
 						op.recorder.Eventf(
@@ -43,29 +44,40 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 						)
 						return
 					}
-					if err := op.IsCertificateValid(cert); err != nil {
-						op.recorder.Eventf(
+					ctrl, err := certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, cert)
+					if err != nil {
+						op.recorder.Event(
 							cert.ObjectReference(),
 							apiv1.EventTypeWarning,
 							eventer.EventReasonCertificateInvalid,
-							"Reason: %s",
 							err.Error(),
 						)
 						return
 					}
-					err := certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, cert).Process()
-					if err != nil {
-						log.Errorln(err)
+					if err := ctrl.Process(); err != nil {
+						op.recorder.Event(
+							cert.ObjectReference(),
+							apiv1.EventTypeWarning,
+							eventer.EventReasonCertificateInvalid,
+							err.Error(),
+						)
+					} else {
+						op.recorder.Eventf(
+							cert.ObjectReference(),
+							apiv1.EventTypeNormal,
+							eventer.EventReasonCertificateIssueSuccessful,
+							"Successfully issued certificate",
+						)
 					}
 				}
 			},
 			UpdateFunc: func(old, new interface{}) {
-				oldCert, ok := old.(*sapi.Certificate)
+				oldCert, ok := old.(*api.Certificate)
 				if !ok {
 					log.Errorln(errors.New("invalid Certificate object"))
 					return
 				}
-				newCert, ok := new.(*sapi.Certificate)
+				newCert, ok := new.(*api.Certificate)
 				if !ok {
 					log.Errorln(errors.New("invalid Certificate object"))
 					return
@@ -82,24 +94,35 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 						)
 						return
 					}
-					if err := op.IsCertificateValid(newCert); err != nil {
-						op.recorder.Eventf(
+					ctrl, err := certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, newCert)
+					if err != nil {
+						op.recorder.Event(
 							newCert.ObjectReference(),
 							apiv1.EventTypeWarning,
-							eventer.EventReasonCertificateInvalid,
-							"Reason: %s",
+							eventer.EventReasonCertificateIssueFailed,
 							err.Error(),
 						)
 						return
 					}
-					err := certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, newCert).Process()
-					if err != nil {
-						log.Errorln(err)
+					if err := ctrl.Process(); err != nil {
+						op.recorder.Event(
+							newCert.ObjectReference(),
+							apiv1.EventTypeWarning,
+							eventer.EventReasonCertificateInvalid,
+							err.Error(),
+						)
+					} else {
+						op.recorder.Eventf(
+							newCert.ObjectReference(),
+							apiv1.EventTypeNormal,
+							eventer.EventReasonCertificateIssueSuccessful,
+							"Successfully issued certificate",
+						)
 					}
 				}
 			},
 			DeleteFunc: func(obj interface{}) {
-				if cert, ok := obj.(*sapi.Certificate); ok {
+				if cert, ok := obj.(*api.Certificate); ok {
 					log.Infof("%s %s@%s deleted", cert.GroupVersionKind(), cert.Name, cert.Namespace)
 				}
 			},
@@ -108,44 +131,44 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 	return informer
 }
 
-// IsCertificateValid is an overloaded function that will call kube apis
-// with information provided in certificate spec, IsValid can not have
-// references for clients, its causes import loops
-func (op *Operator) IsCertificateValid(c *sapi.Certificate) error {
-	if err := c.IsValid(); err != nil {
-		return err
-	}
-
-	if c.Spec.ChallengeProvider.HTTP != nil {
-		switch c.Spec.ChallengeProvider.HTTP.Ingress.APIVersion {
-		case sapi.SchemeGroupVersion.String():
-			var err error
-			_, err = op.ExtClient.Ingresses(c.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
-				Get(c.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
+func (op *Operator) CheckCertificates() {
+	Time := clock.New()
+	for {
+		select {
+		case <-Time.After(time.Minute * 5):
+			result, err := op.ExtClient.Certificates(apiv1.NamespaceAll).List(metav1.ListOptions{})
 			if err != nil {
-				return err
+				log.Error(err)
+				continue
 			}
-		case "extensions/v1beta1":
-			ing, err := op.KubeClient.ExtensionsV1beta1().Ingresses(c.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
-				Get(c.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
-			if err != nil {
-				return err
+			for i := range result.Items {
+				cert := result.Items[i]
+				ctrl, err := certificate.NewController(op.KubeClient, op.ExtClient, op.Opt, &cert)
+				if err != nil {
+					op.recorder.Event(
+						cert.ObjectReference(),
+						apiv1.EventTypeWarning,
+						eventer.EventReasonCertificateInvalid,
+						err.Error(),
+					)
+					return
+				}
+				if err := ctrl.Process(); err != nil {
+					op.recorder.Event(
+						cert.ObjectReference(),
+						apiv1.EventTypeWarning,
+						eventer.EventReasonCertificateInvalid,
+						err.Error(),
+					)
+				} else {
+					op.recorder.Eventf(
+						cert.ObjectReference(),
+						apiv1.EventTypeNormal,
+						eventer.EventReasonCertificateIssueSuccessful,
+						"Successfully issued certificate",
+					)
+				}
 			}
-			_, err = sapi.NewEngressFromIngress(ing)
-			if err != nil {
-				return err
-			}
-		default:
-			return errors.New("ingress API Schema unrecognized")
 		}
 	}
-
-	secret, err := op.KubeClient.CoreV1().Secrets(c.Namespace).Get(c.Spec.ACMEUserSecretName, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	if _, ok := secret.Data[sapi.ACMEUserEmail]; !ok {
-		return fmt.Errorf("no acme user email is provided")
-	}
-	return nil
 }

@@ -2,9 +2,6 @@ package certificate
 
 import (
 	"crypto"
-	"crypto/x509"
-	"encoding/json"
-	"encoding/pem"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -13,9 +10,6 @@ import (
 	"strings"
 
 	"github.com/appscode/go/errors"
-	"github.com/appscode/go/log"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	tapi "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/providers/dns/azure"
@@ -32,9 +26,6 @@ import (
 	"github.com/xenolf/lego/providers/dns/pdns"
 	"github.com/xenolf/lego/providers/dns/route53"
 	"github.com/xenolf/lego/providers/dns/vultr"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 const (
@@ -42,17 +33,38 @@ const (
 	LetsEncryptProdURL    = "https://acme-v01.api.letsencrypt.org/directory"
 )
 
-type ACMEClient struct {
-	*acme.Client
+type ACMEUser struct {
+	ServerURL    string
+	Email        string
+	Registration *acme.RegistrationResource
+	Key          crypto.PrivateKey
 }
 
-func NewACMEClient(cfg *ACMEConfig) (*ACMEClient, error) {
-	client, err := acme.NewClient(cfg.UserSecret.GetServerURL(), cfg.UserData, acme.RSA2048)
+var _ acme.User = &ACMEUser{}
+
+func (u *ACMEUser) GetEmail() string {
+	return u.Email
+}
+
+func (u *ACMEUser) GetRegistration() *acme.RegistrationResource {
+	return u.Registration
+}
+
+func (u *ACMEUser) GetPrivateKey() crypto.PrivateKey {
+	return u.Key
+}
+
+func (u *ACMEUser) getServerURL() string {
+	return u.ServerURL
+}
+
+func (c *Controller) newACMEClient() (*acme.Client, error) {
+	client, err := acme.NewClient(c.acmeUser.getServerURL(), c.acmeUser, acme.RSA2048)
 	if err != nil {
 		return nil, err
 	}
 
-	newDNSProvider := func(provider acme.ChallengeProvider, err error) (*ACMEClient, error) {
+	newDNSProvider := func(provider acme.ChallengeProvider, err error) (*acme.Client, error) {
 		if err != nil {
 			return nil, err
 		}
@@ -60,26 +72,24 @@ func NewACMEClient(cfg *ACMEConfig) (*ACMEClient, error) {
 			return nil, err
 		}
 		client.ExcludeChallenges([]acme.Challenge{acme.HTTP01, acme.TLSSNI01})
-		return &ACMEClient{Client: client}, nil
+		return client, nil
 	}
 
 	var found bool
 	dnsLoader := func(key string) (value string, found bool) {
-		v, found := cfg.DNSCredentials[key]
+		v, found := c.DNSCredentials[key]
 		return string(v), found
 	}
 
-	switch strings.ToLower(cfg.ChallengeProvider) {
+	switch strings.ToLower(c.ChallengeProvider) {
 	case "http":
 		if err := client.SetChallengeProvider(acme.HTTP01, providers.DefaultHTTPProvider()); err != nil {
 			return nil, err
 		}
 		client.ExcludeChallenges([]acme.Challenge{acme.DNS01, acme.TLSSNI01})
-		return &ACMEClient{
-			Client: client,
-		}, nil
+		return client, nil
 	case "aws", "route53":
-		if cfg.CloudProvider == "aws" && len(cfg.DNSCredentials) == 0 {
+		if c.Opt.CloudProvider == "aws" && len(c.DNSCredentials) == 0 {
 			return newDNSProvider(route53.NewDNSProvider())
 		}
 		var accessKeyId, secretAccessKey, hostedZoneID string
@@ -171,7 +181,7 @@ func NewACMEClient(cfg *ACMEConfig) (*ACMEClient, error) {
 		}
 		return newDNSProvider(gandi.NewDNSProviderCredentials(apiKey))
 	case "googlecloud", "google", "gce", "gke":
-		if (cfg.CloudProvider == "gce" || cfg.CloudProvider == "gke") && len(cfg.DNSCredentials) == 0 {
+		if (c.Opt.CloudProvider == "gce" || c.Opt.CloudProvider == "gke") && len(c.DNSCredentials) == 0 {
 			// ref: https://cloud.google.com/compute/docs/storing-retrieving-metadata
 			// curl "http://metadata.google.internal/computeMetadata/v1/project/project-id" -H "Metadata-Flavor: Google"
 			req, err := http.NewRequest(http.MethodGet, "http://metadata.google.internal/computeMetadata/v1/project/project-id", nil)
@@ -257,159 +267,4 @@ func NewACMEClient(cfg *ACMEConfig) (*ACMEClient, error) {
 	default:
 		return nil, errors.New("Unknown provider specified").Err()
 	}
-}
-
-type ACMEUserSecret map[string][]byte
-
-func (a ACMEUserSecret) GetEmail() string {
-	return string(a[tapi.ACMEUserEmail])
-}
-
-func (a ACMEUserSecret) GetUserData() []byte {
-	return a[tapi.ACMEUserDataJSON]
-}
-
-func (a ACMEUserSecret) GetServerURL() string {
-	if u, found := a[tapi.ACMEServerURL]; found {
-		return string(u)
-	}
-	return LetsEncryptProdURL
-}
-
-type ACMEConfig struct {
-	CloudProvider     string
-	ChallengeProvider string
-	DNSCredentials    map[string][]byte
-	UserData          *ACMEUserData
-	UserDataMap       map[string][]byte
-	UserSecret        ACMEUserSecret
-}
-
-type ACMEUserData struct {
-	Email        string                     `json:"email"`
-	Registration *acme.RegistrationResource `json:"registration"`
-	Key          []byte                     `json:"key"`
-}
-
-type ACMECertDetails struct {
-	Domain        []string `json:"domains"`
-	CertURL       string   `json:"certUrl"`
-	CertStableURL string   `json:"certStableUrl"`
-	AccountRef    string   `json:"accountRef,omitempty"`
-}
-
-func (u *ACMEUserData) GetEmail() string {
-	return u.Email
-}
-
-func (u *ACMEUserData) GetRegistration() *acme.RegistrationResource {
-	return u.Registration
-}
-
-func (u *ACMEUserData) GetPrivateKey() crypto.PrivateKey {
-	pemBlock, _ := pem.Decode(u.Key)
-	if pemBlock.Type != "RSA PRIVATE KEY" {
-		log.Infof("Invalid PEM user key: Expected RSA PRIVATE KEY, got %v", pemBlock.Type)
-	}
-
-	privateKey, err := x509.ParsePKCS1PrivateKey(pemBlock.Bytes)
-	if err != nil {
-		log.Infof("Error while parsing private key: %v", err)
-	}
-
-	return privateKey
-}
-
-func (u *ACMEUserData) Json() []byte {
-	b, err := json.Marshal(u)
-	if err != nil {
-		return []byte("{}")
-	}
-	return b
-}
-
-type DomainCollection []string
-
-func NewDomainCollection(domain ...string) *DomainCollection {
-	d := &DomainCollection{}
-	*d = append(*d, domain...)
-	return d
-}
-
-func (d *DomainCollection) Append(domain ...string) *DomainCollection {
-	*d = append(*d, domain...)
-	return d
-}
-
-func (d *DomainCollection) String() string {
-	val, _ := json.Marshal(d)
-	return string(val)
-}
-
-func (d *DomainCollection) StringSlice() []string {
-	return []string(*d)
-}
-
-func (d *DomainCollection) FromString(data string) *DomainCollection {
-	d = &DomainCollection{}
-	json.Unmarshal([]byte(data), d)
-	return d
-}
-
-type ACMECertData struct {
-	Domains    *DomainCollection
-	Cert       []byte
-	PrivateKey []byte
-}
-
-func NewACMECertDataFromSecret(s *apiv1.Secret, cert *api.Certificate) (ACMECertData, error) {
-	var acmeCertData ACMECertData
-	var ok bool
-	acmeCertData.Domains = NewDomainCollection(cert.Spec.Domains...)
-	acmeCertData.Cert, ok = s.Data[apiv1.TLSCertKey]
-	if !ok {
-		return acmeCertData, errors.New().WithMessagef("Could not find key tls.crt in secret %v", s.Name).Err()
-	}
-	acmeCertData.PrivateKey, ok = s.Data[apiv1.TLSPrivateKeyKey]
-	if !ok {
-		return acmeCertData, errors.New().WithMessagef("Could not find key tls.key in secret %v", s.Name).Err()
-	}
-	return acmeCertData, nil
-}
-
-func (a *ACMECertData) ToSecret(name, namespace, secretName string) *apiv1.Secret {
-	log.Infoln("Revived certificates for name", name, "namespace", namespace)
-	data := make(map[string][]byte)
-
-	if len(a.Cert) > 0 {
-		data[apiv1.TLSCertKey] = a.Cert
-	}
-	if len(a.PrivateKey) > 0 {
-		data[apiv1.TLSPrivateKeyKey] = a.PrivateKey
-	}
-	log.Infoln("Certificate cert length", len(a.Cert), "private key length", len(a.PrivateKey))
-
-	if len(secretName) == 0 {
-		secretName = defaultCertPrefix + name
-	}
-	return &apiv1.Secret{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "",
-			Kind:       "Secret",
-		},
-		Data: data,
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      secretName,
-			Namespace: namespace,
-		},
-		Type: apiv1.SecretTypeTLS,
-	}
-}
-
-func (a ACMECertData) EqualDomains(c *x509.Certificate) bool {
-	certDomains := sets.NewString(c.Subject.CommonName)
-	certDomains.Insert(c.DNSNames...)
-
-	acmeDomains := sets.NewString(a.Domains.StringSlice()...)
-	return certDomains.Equal(acmeDomains)
 }

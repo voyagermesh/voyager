@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
 )
 
@@ -249,7 +250,7 @@ func checkOptionalPort(port intstr.IntOrString) (int, error) {
 	return 0, fmt.Errorf("invalid data type %v for port %s", port.Type, port)
 }
 
-func (c Certificate) IsValid() error {
+func (c Certificate) IsValid(cloudProvider string) error {
 	if len(c.Spec.Domains) == 0 {
 		return fmt.Errorf("doamin list is empty")
 	}
@@ -271,8 +272,15 @@ func (c Certificate) IsValid() error {
 	}
 
 	if c.Spec.ChallengeProvider.DNS != nil {
-		if len(c.Spec.ChallengeProvider.DNS.ProviderType) == 0 {
+		if len(c.Spec.ChallengeProvider.DNS.Provider) == 0 {
 			return fmt.Errorf("no dns provider name specified")
+		}
+		if c.Spec.ChallengeProvider.DNS.CredentialSecretName == "" {
+			useCredentialFromEnv := (cloudProvider == "aws" && c.Spec.ChallengeProvider.DNS.Provider == "aws" && c.Spec.ChallengeProvider.DNS.CredentialSecretName == "") ||
+				(sets.NewString("gce", "gke").Has(cloudProvider) && sets.NewString("googlecloud", "gcloud", "gce", "gke").Has(c.Spec.ChallengeProvider.DNS.Provider) && c.Spec.ChallengeProvider.DNS.CredentialSecretName == "")
+			if !useCredentialFromEnv {
+				return fmt.Errorf("missing dns challenge provider credential")
+			}
 		}
 	}
 

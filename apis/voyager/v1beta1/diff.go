@@ -1,11 +1,13 @@
 package v1beta1
 
 import (
+	"crypto/x509"
 	"errors"
 	"net"
 	"reflect"
 	"sort"
 	"strings"
+	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -265,4 +267,12 @@ func (r Ingress) HasBackendService(name, namespace string) bool {
 		}
 	}
 	return false
+}
+
+func (c Certificate) ShouldRenew(crt *x509.Certificate) bool {
+	crtDomains := sets.NewString(crt.Subject.CommonName)
+	crtDomains.Insert(crt.DNSNames...)
+
+	return !crt.NotAfter.After(time.Now().Add(time.Hour*24*7)) ||
+		!crtDomains.Equal(sets.NewString(c.Spec.Domains...))
 }

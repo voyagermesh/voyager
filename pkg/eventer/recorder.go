@@ -10,12 +10,10 @@ import (
 
 const (
 	// Certificate Events
-	EventReasonCertificateRenewFailed      = "RenewFailed"
-	EventReasonCertificateRenewSuccessful  = "RenewSuccessful"
-	EventReasonCertificateCreateFailed     = "CreateFailed"
-	EventReasonCertificateCreateSuccessful = "CreateSuccessful"
-	EventReasonCertificateInvalid          = "CertificateInvalid"
-	EventReasonCertificateMigration        = "CertificateMigration"
+	EventReasonCertificateIssueFailed     = "IssueFailed"
+	EventReasonCertificateIssueSuccessful = "IssueSuccessful"
+	EventReasonCertificateInvalid         = "CertificateInvalid"
+	EventReasonCertificateMigration       = "CertificateMigration"
 
 	// Ingress Events
 	EventReasonIngressHAProxyConfigCreateFailed      = "HAProxyConfigCreateFailed"
