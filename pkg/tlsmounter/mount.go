@@ -3,100 +3,40 @@ package tlsmounter
 import (
 	"bytes"
 	"reflect"
-	"strings"
-	"sync"
-	"time"
 
+	"github.com/appscode/go/hold"
 	"github.com/appscode/go/ioutil"
 	"github.com/appscode/go/log"
-	"github.com/appscode/voyager/apis/voyager/v1beta1"
-	voyagerv1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
-	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
-	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	extv1beta1 "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/tools/cache"
 )
 
-type secretMounter struct {
-	ing           *v1beta1.Ingress
-	mountLocation string
-	cmdFile       string
-
-	KubeClient    clientset.Interface
-	VoyagerClient acs.VoyagerV1beta1Interface
-	resyncPeriod  time.Duration
-
-	lock            sync.Mutex
-	fileProjections map[string]ioutil.FileProjection
-	writer          *ioutil.AtomicWriter
-}
-
-func NewIngressSecretMounter(client clientset.Interface, vclient acs.VoyagerV1beta1Interface, ing *v1beta1.Ingress, mountDir, cmd string, resyncPeriod time.Duration) (*secretMounter, error) {
-	payloads := make(map[string]ioutil.FileProjection)
-	for _, secret := range ing.Secrets() {
-		sc, err := client.CoreV1().Secrets(ing.Namespace).Get(secret, metav1.GetOptions{})
-		if err != nil {
-			return nil, err
-		}
-		payloads[secret+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
-	}
-
-	for _, cert := range ing.Certificates() {
-		if certs, err := vclient.Certificates(cert.Namespace).Get(cert.Name, metav1.GetOptions{}); err != nil {
-			if certs.Spec.Storage.Secret != nil {
-				name := fileNameForCertificate(certs)
-				sc, err := client.CoreV1().Secrets(ing.Namespace).Get(name, metav1.GetOptions{})
-				if err != nil {
-					return nil, err
-				}
-				payloads[name+".pem"] = ioutil.FileProjection{Mode: 0777, Data: secretToPEMData(sc)}
-			} else if certs.Spec.Storage.Vault != nil {
-				// Add from vault
-			}
-		}
-	}
-
-	location := strings.TrimSuffix(mountDir, "/")
-	writer, err := ioutil.NewAtomicWriter(location)
-	if err != nil {
-		return nil, err
-	}
-
-	return &secretMounter{
-		mountLocation:   location,
-		cmdFile:         cmd,
-		resyncPeriod:    resyncPeriod,
-		KubeClient:      client,
-		VoyagerClient:   vclient,
-		ing:             ing,
-		fileProjections: payloads,
-		writer:          writer,
-	}, nil
-}
-
-func (c *secretMounter) Run(stopCh <-chan struct{}) {
+// wait.NeverStop
+func (c *Controller) Run(stopCh <-chan struct{}) {
 	c.initSecretInformer(stopCh)
 	c.initIngressInformer(stopCh)
 	c.initCertificateInformer(stopCh)
+	hold.Hold()
 }
 
-func (c *secretMounter) initSecretInformer(stopCh <-chan struct{}) {
+func (c *Controller) initSecretInformer(stopCh <-chan struct{}) {
 	secretInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-				return c.KubeClient.CoreV1().Secrets(c.ing.Namespace).List(metav1.ListOptions{})
+				return c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).List(metav1.ListOptions{})
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return c.KubeClient.CoreV1().Secrets(c.ing.Namespace).Watch(metav1.ListOptions{})
+				return c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Watch(metav1.ListOptions{})
 			},
 		},
 		&apiv1.Secret{},
-		c.resyncPeriod,
+		c.ResyncPeriod,
 		cache.Indexers{},
 	)
 
@@ -142,55 +82,55 @@ func (c *secretMounter) initSecretInformer(stopCh <-chan struct{}) {
 	go secretInformer.Run(stopCh)
 }
 
-func (c *secretMounter) initIngressInformer(stopCh <-chan struct{}) {
+func (c *Controller) initIngressInformer(stopCh <-chan struct{}) {
 	var ingressInformer cache.SharedIndexInformer
-	switch c.ing.APIVersion {
-	case voyagerv1beta1.SchemeGroupVersion.String():
+	switch c.Ingress.APIVersion {
+	case api.SchemeGroupVersion.String():
 		ingressInformer = cache.NewSharedIndexInformer(
 			&cache.ListWatch{
 				ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-					return c.VoyagerClient.Ingresses(c.ing.Namespace).List(metav1.ListOptions{
-						FieldSelector: fields.OneTermEqualSelector("metadata.name", c.ing.Name).String(),
+					return c.VoyagerClient.Ingresses(c.Ingress.Namespace).List(metav1.ListOptions{
+						FieldSelector: fields.OneTermEqualSelector("metadata.name", c.Ingress.Name).String(),
 					})
 				},
 				WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-					return c.VoyagerClient.Ingresses(c.ing.Namespace).Watch(metav1.ListOptions{
-						FieldSelector: fields.OneTermEqualSelector("metadata.name", c.ing.Name).String(),
+					return c.VoyagerClient.Ingresses(c.Ingress.Namespace).Watch(metav1.ListOptions{
+						FieldSelector: fields.OneTermEqualSelector("metadata.name", c.Ingress.Name).String(),
 					})
 				},
 			},
-			&v1beta1.Ingress{},
-			c.resyncPeriod,
+			&api.Ingress{},
+			c.ResyncPeriod,
 			cache.Indexers{},
 		)
 	case "extensions/v1beta1":
 		ingressInformer = cache.NewSharedIndexInformer(
 			&cache.ListWatch{
 				ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-					return c.KubeClient.ExtensionsV1beta1().Ingresses(c.ing.Namespace).List(metav1.ListOptions{
-						FieldSelector: fields.OneTermEqualSelector("metadata.name", c.ing.Name).String(),
+					return c.KubeClient.ExtensionsV1beta1().Ingresses(c.Ingress.Namespace).List(metav1.ListOptions{
+						FieldSelector: fields.OneTermEqualSelector("metadata.name", c.Ingress.Name).String(),
 					})
 				},
 				WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-					return c.KubeClient.ExtensionsV1beta1().Ingresses(c.ing.Namespace).Watch(metav1.ListOptions{
-						FieldSelector: fields.OneTermEqualSelector("metadata.name", c.ing.Name).String(),
+					return c.KubeClient.ExtensionsV1beta1().Ingresses(c.Ingress.Namespace).Watch(metav1.ListOptions{
+						FieldSelector: fields.OneTermEqualSelector("metadata.name", c.Ingress.Name).String(),
 					})
 				},
 			},
 			&extv1beta1.Ingress{},
-			c.resyncPeriod,
+			c.ResyncPeriod,
 			cache.Indexers{},
 		)
 	}
 
 	ingressInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		UpdateFunc: func(old, new interface{}) {
-			var newIngress *v1beta1.Ingress
+			var newIngress *api.Ingress
 			ok := false
-			switch c.ing.APIVersion {
-			case voyagerv1beta1.SchemeGroupVersion.String():
-				if _, oldOK := old.(*v1beta1.Ingress); oldOK {
-					if newIng, newOK := new.(*v1beta1.Ingress); newOK {
+			switch c.Ingress.APIVersion {
+			case api.SchemeGroupVersion.String():
+				if _, oldOK := old.(*api.Ingress); oldOK {
+					if newIng, newOK := new.(*api.Ingress); newOK {
 						newIngress = newIng
 						ok = true
 					}
@@ -198,7 +138,7 @@ func (c *secretMounter) initIngressInformer(stopCh <-chan struct{}) {
 			case "extensions/v1beta1":
 				if _, oldOK := old.(*extv1beta1.Ingress); oldOK {
 					if newIng, newOK := new.(*extv1beta1.Ingress); newOK {
-						newExtIng, err := v1beta1.NewEngressFromIngress(newIng)
+						newExtIng, err := api.NewEngressFromIngress(newIng)
 						if err != nil {
 							log.Errorln("Failed to convert ingress", err)
 							return
@@ -217,7 +157,7 @@ func (c *secretMounter) initIngressInformer(stopCh <-chan struct{}) {
 
 				for _, secret := range newIngress.Secrets() {
 					if _, ok := c.fileProjections[secret+".pem"]; !ok {
-						sc, err := c.KubeClient.CoreV1().Secrets(c.ing.Namespace).Get(secret, metav1.GetOptions{})
+						sc, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(secret, metav1.GetOptions{})
 						if err != nil {
 							log.Fatalln(err)
 						}
@@ -231,7 +171,7 @@ func (c *secretMounter) initIngressInformer(stopCh <-chan struct{}) {
 						if certs.Spec.Storage.Secret != nil {
 							name := fileNameForCertificate(certs)
 							if _, ok := c.fileProjections[name+".pem"]; !ok {
-								sc, err := c.KubeClient.CoreV1().Secrets(c.ing.Namespace).Get(name, metav1.GetOptions{})
+								sc, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(name, metav1.GetOptions{})
 								if err != nil {
 									log.Fatalln(err)
 								}
@@ -253,31 +193,31 @@ func (c *secretMounter) initIngressInformer(stopCh <-chan struct{}) {
 				c.MustMount()
 
 				// Update Ingress
-				c.ing = newIngress
+				c.Ingress = newIngress
 			}
 		},
 	})
 	go ingressInformer.Run(stopCh)
 }
 
-func (c *secretMounter) initCertificateInformer(stopCh <-chan struct{}) {
+func (c *Controller) initCertificateInformer(stopCh <-chan struct{}) {
 	certInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-				return c.VoyagerClient.Certificates(c.ing.Namespace).List(metav1.ListOptions{})
+				return c.VoyagerClient.Certificates(c.Ingress.Namespace).List(metav1.ListOptions{})
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return c.VoyagerClient.Certificates(c.ing.Namespace).Watch(metav1.ListOptions{})
+				return c.VoyagerClient.Certificates(c.Ingress.Namespace).Watch(metav1.ListOptions{})
 			},
 		},
-		&v1beta1.Certificate{},
-		c.resyncPeriod,
+		&api.Certificate{},
+		c.ResyncPeriod,
 		cache.Indexers{},
 	)
 
 	certInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
-			if cert, ok := obj.(*v1beta1.Certificate); ok {
+			if cert, ok := obj.(*api.Certificate); ok {
 				if c.isCertificateUsedInIngress(cert) {
 					c.lock.Lock()
 					defer c.lock.Unlock()
@@ -285,7 +225,7 @@ func (c *secretMounter) initCertificateInformer(stopCh <-chan struct{}) {
 					if cert.Spec.Storage.Secret != nil {
 						name := fileNameForCertificate(cert)
 						if _, ok := c.fileProjections[name+".pem"]; !ok {
-							sc, err := c.KubeClient.CoreV1().Secrets(c.ing.Namespace).Get(name, metav1.GetOptions{})
+							sc, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(name, metav1.GetOptions{})
 							if err != nil {
 								log.Fatalln(err)
 							}
@@ -300,8 +240,8 @@ func (c *secretMounter) initCertificateInformer(stopCh <-chan struct{}) {
 			}
 		},
 		UpdateFunc: func(old, new interface{}) {
-			if _, oldOK := old.(*v1beta1.Certificate); oldOK {
-				if newCert, newOK := new.(*v1beta1.Certificate); newOK {
+			if _, oldOK := old.(*api.Certificate); oldOK {
+				if newCert, newOK := new.(*api.Certificate); newOK {
 					if c.isCertificateUsedInIngress(newCert) {
 						c.lock.Lock()
 						defer c.lock.Unlock()
@@ -309,7 +249,7 @@ func (c *secretMounter) initCertificateInformer(stopCh <-chan struct{}) {
 						if newCert.Spec.Storage.Secret != nil {
 							name := fileNameForCertificate(newCert)
 							if _, ok := c.fileProjections[name+".pem"]; !ok {
-								sc, err := c.KubeClient.CoreV1().Secrets(c.ing.Namespace).Get(name, metav1.GetOptions{})
+								sc, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(name, metav1.GetOptions{})
 								if err != nil {
 									log.Fatalln(err)
 								}
@@ -325,7 +265,7 @@ func (c *secretMounter) initCertificateInformer(stopCh <-chan struct{}) {
 			}
 		},
 		DeleteFunc: func(obj interface{}) {
-			if cert, ok := obj.(*v1beta1.Certificate); ok {
+			if cert, ok := obj.(*api.Certificate); ok {
 				if c.isCertificateUsedInIngress(cert) {
 					c.lock.Lock()
 					defer c.lock.Unlock()
@@ -339,12 +279,12 @@ func (c *secretMounter) initCertificateInformer(stopCh <-chan struct{}) {
 	go certInformer.Run(stopCh)
 }
 
-func (c *secretMounter) isSecretUsedInIngress(s *apiv1.Secret) bool {
-	if s.Namespace != c.ing.Namespace {
+func (c *Controller) isSecretUsedInIngress(s *apiv1.Secret) bool {
+	if s.Namespace != c.Ingress.Namespace {
 		return false
 	}
 
-	for _, secret := range c.ing.Secrets() {
+	for _, secret := range c.Ingress.Secrets() {
 		if s.Name == secret {
 			return true
 		}
@@ -352,12 +292,12 @@ func (c *secretMounter) isSecretUsedInIngress(s *apiv1.Secret) bool {
 	return false
 }
 
-func (c *secretMounter) isCertificateUsedInIngress(s *v1beta1.Certificate) bool {
-	if s.Namespace != c.ing.Namespace {
+func (c *Controller) isCertificateUsedInIngress(s *api.Certificate) bool {
+	if s.Namespace != c.Ingress.Namespace {
 		return false
 	}
 
-	for _, secret := range c.ing.Certificates() {
+	for _, secret := range c.Ingress.Certificates() {
 		if s.Name == secret.Name {
 			return true
 		}
@@ -365,7 +305,7 @@ func (c *secretMounter) isCertificateUsedInIngress(s *v1beta1.Certificate) bool 
 	return false
 }
 
-func (c *secretMounter) Mount() error {
+func (c *Controller) Mount() error {
 	err := c.writer.Write(c.fileProjections)
 	if err != nil {
 		return err
@@ -373,7 +313,7 @@ func (c *secretMounter) Mount() error {
 	return nil
 }
 
-func (c *secretMounter) MustMount() {
+func (c *Controller) MustMount() {
 	err := c.Mount()
 	if err != nil {
 		log.Fatalln(err)
@@ -387,7 +327,7 @@ func secretToPEMData(s *apiv1.Secret) []byte {
 	return pemdata.Bytes()
 }
 
-func fileNameForCertificate(c *v1beta1.Certificate) string {
+func fileNameForCertificate(c *api.Certificate) string {
 	if c.Spec.Storage.Secret != nil {
 		name := c.Spec.Storage.Secret.Name
 		if len(name) == 0 {
