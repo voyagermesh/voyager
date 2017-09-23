@@ -2,6 +2,7 @@ package cmds
 
 import (
 	"log"
+	"time"
 
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/tlsmounter"
@@ -17,8 +18,9 @@ func NewCmdTLSMount() *cobra.Command {
 		IngressRef: apiv1.ObjectReference{
 			Namespace: namespace(),
 		},
-		MountPath: "/etc/ssl/private/haproxy",
-		CmdFile:   "",
+		MountPath:    "/etc/ssl/private/haproxy",
+		CmdFile:      "",
+		ResyncPeriod: 5 * time.Minute,
 	}
 	cmd := &cobra.Command{
 		Use:               "tls-mounter [command]",
@@ -51,6 +53,7 @@ func NewCmdTLSMount() *cobra.Command {
 	cmd.Flags().StringVar(&ctrl.IngressRef.Name, "ingress-name", ctrl.IngressRef.Name, "Name of ingress resource")
 	cmd.Flags().StringVar(&ctrl.MountPath, "mount", ctrl.MountPath, "Path where tls certificates are stored for HAProxy")
 	cmd.Flags().StringVarP(&ctrl.CmdFile, "boot-cmd", "b", ctrl.CmdFile, "Bash script that will be run on every change of the file")
+	cmd.Flags().DurationVar(&ctrl.ResyncPeriod, "resync-period", ctrl.ResyncPeriod, "If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out.")
 
 	return cmd
 }

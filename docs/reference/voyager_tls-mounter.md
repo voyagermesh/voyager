@@ -14,12 +14,14 @@ voyager tls-mounter [command] [flags]
 ### Options
 
 ```
+  -b, --boot-cmd string              Bash script that will be run on every change of the file
   -h, --help                         help for tls-mounter
       --ingress-api-version string   API version of ingress resource
       --ingress-name string          Name of ingress resource
       --kubeconfig string            Path to kubeconfig file with authorization information (the master location is set by the master flag).
       --master string                The address of the Kubernetes API server (overrides any value in kubeconfig)
       --mount string                 Path where tls certificates are stored for HAProxy (default "/etc/ssl/private/haproxy")
+      --resync-period duration       If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out. (default 5m0s)
 ```
 
 ### Options inherited from parent commands
