@@ -1,8 +1,8 @@
 #!/bin/bash
 
-export TLS_MOUNTER_ARGS="$1 $2 $3 $4"
+export TLS_MOUNTER_ARGS="$1 $2 $3 $4 $5"
 # http://wiki.bash-hackers.org/scripting/posparams#shifting
-shift 2
+shift 3
 export KLOADER_ARGS="$@"
 export > /etc/envvars
 

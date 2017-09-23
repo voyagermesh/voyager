@@ -460,6 +460,7 @@ func (c *loadBalancerController) newPods() *apps.Deployment {
 							Args: []string{
 								"--ingress-api-version=" + c.Ingress.APISchema(),
 								"--ingress-name=" + c.Ingress.Name,
+								"--cloud-provider=" + c.Opt.CloudProvider,
 								"--v=3",
 								"--boot-cmd=" + "/etc/sv/haproxy/reload",
 								"--configmap=" + c.Ingress.OffshootName(),
