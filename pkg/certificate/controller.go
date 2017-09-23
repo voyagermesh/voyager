@@ -43,9 +43,9 @@ type Controller struct {
 	ChallengeProvider string
 	UserSecret        *apiv1.Secret
 	DNSCredentials    map[string][]byte
-	curCert *x509.Certificate
-	acmeUser   *ACMEUser
-	acmeClient *acme.Client
+	curCert           *x509.Certificate
+	acmeUser          *ACMEUser
+	acmeClient        *acme.Client
 
 	vaultClient *vault.Client
 }

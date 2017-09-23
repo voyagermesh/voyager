@@ -1,14 +1,18 @@
 package ingress
 
 import (
+	"io/ioutil"
+	"os"
 	"sync"
 
 	"github.com/appscode/go/types"
+	v1u "github.com/appscode/kutil/core/v1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
+	vault "github.com/hashicorp/vault/api"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
@@ -84,4 +88,27 @@ func (c *controller) ensureOwnerReference(in metav1.ObjectMeta) metav1.ObjectMet
 	in.OwnerReferences[fi].UID = c.Ingress.UID
 	in.OwnerReferences[fi].BlockOwnerDeletion = types.TrueP()
 	return in
+}
+
+func (c *controller) ensureEnvVars(vars []apiv1.EnvVar) []apiv1.EnvVar {
+	if addr := os.Getenv(vault.EnvVaultAddress); addr != "" {
+		vars = v1u.UpsertEnvVar(vars, apiv1.EnvVar{
+			Name:  vault.EnvVaultAddress,
+			Value: addr,
+		})
+		if caCert := os.Getenv(vault.EnvVaultCACert); caCert != "" {
+			vars = v1u.UpsertEnvVar(vars, apiv1.EnvVar{
+				Name:  vault.EnvVaultCACert,
+				Value: caCert,
+			})
+		}
+		if caPath := os.Getenv(vault.EnvVaultCAPath); caPath != "" {
+			caCert, _ := ioutil.ReadFile(caPath)
+			vars = v1u.UpsertEnvVar(vars, apiv1.EnvVar{
+				Name:  vault.EnvVaultCACert,
+				Value: string(caCert),
+			})
+		}
+	}
+	return vars
 }
