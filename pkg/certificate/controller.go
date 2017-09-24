@@ -202,7 +202,7 @@ func (c *Controller) create() error {
 			return err
 		}
 	}
-	cert, errs := c.acmeClient.ObtainCertificate(c.crd.Spec.Domains, true, nil, true)
+	cert, errs := c.acmeClient.ObtainCertificate(c.crd.Spec.Domains, true, nil, false)
 	if len(errs) > 0 {
 		causes := make([]string, 0, len(errs))
 		for k, v := range errs {
@@ -229,7 +229,7 @@ func (c *Controller) renew() error {
 		Certificate:   c.curCert.Raw,
 		PrivateKey:    nil, // issue new private key,
 	}
-	cert, err := c.acmeClient.RenewCertificate(acmeCert, true, true)
+	cert, err := c.acmeClient.RenewCertificate(acmeCert, true, false)
 	if err != nil {
 		return c.processError(err)
 	}
