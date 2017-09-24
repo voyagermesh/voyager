@@ -15,6 +15,7 @@ voyager tls-mounter [command] [flags]
 
 ```
   -b, --boot-cmd string              Bash script that will be run on every change of the file
+  -c, --cloud-provider string        Name of cloud provider
   -h, --help                         help for tls-mounter
       --ingress-api-version string   API version of ingress resource
       --ingress-name string          Name of ingress resource
