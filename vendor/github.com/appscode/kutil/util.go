@@ -2,8 +2,11 @@ package kutil
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"os"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-version"
@@ -13,6 +16,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/rest"
 )
 
@@ -20,6 +24,18 @@ const (
 	RetryInterval = 50 * time.Millisecond
 	RetryTimeout  = 2 * time.Second
 )
+
+func Namespace() string {
+	if ns := os.Getenv("KUBE_NAMESPACE"); ns != "" {
+		return ns
+	}
+	if data, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace"); err == nil {
+		if ns := strings.TrimSpace(string(data)); len(ns) > 0 {
+			return ns
+		}
+	}
+	return apiv1.NamespaceDefault
+}
 
 func IsPreferredAPIResource(c clientset.Interface, groupVersion, kind string) bool {
 	if resourceList, err := c.Discovery().ServerPreferredResources(); err == nil {

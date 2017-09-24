@@ -80,24 +80,13 @@ func (c *controller) ensureRoles() error {
 		defaultRole.Rules = append(defaultRole.Rules, rbac.PolicyRule{
 			APIGroups:     []string{api.GroupName},
 			Resources:     []string{"ingresses"},
-			ResourceNames: []string{c.Ingress.Name},
 			Verbs:         []string{"get", "list", "watch"},
 		})
 	case api_v1beta1.APISchemaIngress:
 		defaultRole.Rules = append(defaultRole.Rules, rbac.PolicyRule{
 			APIGroups:     []string{extensions.GroupName},
 			Resources:     []string{"ingresses"},
-			ResourceNames: []string{c.Ingress.Name},
 			Verbs:         []string{"get", "list", "watch"},
-		})
-	}
-
-	if c.Ingress.Stats() && len(c.Ingress.StatsSecretName()) > 0 {
-		defaultRole.Rules = append(defaultRole.Rules, rbac.PolicyRule{
-			APIGroups:     []string{apiv1.GroupName},
-			Resources:     []string{"secret"},
-			ResourceNames: []string{c.Ingress.StatsSecretName()},
-			Verbs:         []string{"get"},
 		})
 	}
 
