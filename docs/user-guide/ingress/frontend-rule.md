@@ -82,18 +82,14 @@ spec:
         servicePort: '50077'
 ```
 
+## FAQ
 
-tl;dr; You can't reject TCP connections using frontend rules in this case, :disappointed: (edited)
- ```The PROXY protocol dictates the layer
-3/4 addresses of the incoming connection to be used everywhere an address is
-used, with the only exception of "tcp-request connection" rules which will
-only see the real connection address.
+### Why does not IP whitelisting work in LoadBalancer type Ingress in AWS?
+
+From [HAProxy official documentation](https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#5.1-accept-proxy):
+ ```
+The PROXY protocol dictates the layer 3/4 addresses of the incoming connection to be used everywhere an address is
+used, with the only exception of "tcp-request connection" rules which will only see the real connection address.
 ```
-https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#5.1-accept-proxy
-The issue is that `keep-source-ip: true` annotation will enable `accept-proxy` option is HAProxy.
-But HAProxy does not use the IP received via PROXY protocol with `tcp-request connection reject`, instead HAProxy uses the real IP it detected (which is the IP address of ELB in your case). (edited)
-This is actually an important security feature, as I think about it. Otherwise, any one can open a TCP connection and spoof their IP using the PROXY protocol header and by pass the whitelist.
-This works with HTTP on the backend rules, because in HTTP mode, it checks the header and by using `accept-proxy`, we have told HAProxy to trust the header in PROXY protocol.
-So, for TCP connections that are behind ELB (or other proxies), you need to reject connection at ELB layer.
-This is my current understanding of this issue.
-if you were running a bare metal cluster, where traffic directly hits HAProxy, `tcp-request connection reject` will behave as you would expect.
+
+The issue is that `keep-source-ip: true` annotation will enable `accept-proxy` option in HAProxy. But HAProxy does not use the IP received via PROXY protocol with `tcp-request connection reject`. Instead HAProxy uses the real IP it detected (which is the IP address of ELB in this case). This is actually an important security feature. Otherwise, any one can open a TCP connection and spoof their IP using the PROXY protocol header and by pass the whitelist. This works with HTTP on the backend rules, because in HTTP mode, HAPproxy checks the header and by using `accept-proxy`, we have told HAProxy to trust the header in PROXY protocol. So, for TCP connections that are behind ELB, you need to reject connection at ELB layer using `spec.loadBalancerSourceRanges` in Ingress. If you were running a bare-metal cluster, where traffic directly hits HAProxy, `tcp-request connection reject` will behave as expected.
