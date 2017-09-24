@@ -33,31 +33,6 @@ const (
 	LetsEncryptProdURL    = "https://acme-v01.api.letsencrypt.org/directory"
 )
 
-type ACMEUser struct {
-	ServerURL    string
-	Email        string
-	Registration *acme.RegistrationResource
-	Key          crypto.PrivateKey
-}
-
-var _ acme.User = &ACMEUser{}
-
-func (u *ACMEUser) GetEmail() string {
-	return u.Email
-}
-
-func (u *ACMEUser) GetRegistration() *acme.RegistrationResource {
-	return u.Registration
-}
-
-func (u *ACMEUser) GetPrivateKey() crypto.PrivateKey {
-	return u.Key
-}
-
-func (u *ACMEUser) getServerURL() string {
-	return u.ServerURL
-}
-
 func (c *Controller) newACMEClient() (*acme.Client, error) {
 	client, err := acme.NewClient(c.acmeUser.getServerURL(), c.acmeUser, acme.RSA2048)
 	if err != nil {
@@ -267,4 +242,29 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 	default:
 		return nil, errors.New("Unknown provider specified").Err()
 	}
+}
+
+type ACMEUser struct {
+	ServerURL    string
+	Email        string
+	Registration *acme.RegistrationResource
+	Key          crypto.PrivateKey
+}
+
+var _ acme.User = &ACMEUser{}
+
+func (u *ACMEUser) GetEmail() string {
+	return u.Email
+}
+
+func (u *ACMEUser) GetRegistration() *acme.RegistrationResource {
+	return u.Registration
+}
+
+func (u *ACMEUser) GetPrivateKey() crypto.PrivateKey {
+	return u.Key
+}
+
+func (u *ACMEUser) getServerURL() string {
+	return u.ServerURL
 }
