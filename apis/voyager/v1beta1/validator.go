@@ -5,7 +5,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/appscode/go/reflect"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
 )
 
@@ -31,10 +33,35 @@ func (a address) String() string {
 	return fmt.Sprintf(":%d", a.PodPort)
 }
 
-func (r Ingress) IsValid(cloudProvider string) error {
+func (r *Ingress) IsValid(cloudProvider string) error {
 	for ri, rule := range r.Spec.FrontendRules {
 		if _, err := checkRequiredPort(rule.Port); err != nil {
 			return fmt.Errorf("spec.frontendRules[%d].port %s is invalid. Reason: %s", ri, rule.Port, err)
+		}
+	}
+	for ti, tls := range r.Spec.TLS {
+		if tls.SecretName != "" {
+			if !reflect.IsZero(tls.SecretRef) &&
+				!(tls.SecretRef.Name == tls.SecretName &&
+					(tls.SecretRef.Namespace == "" || tls.SecretRef.Namespace == r.Namespace) &&
+					(tls.SecretRef.Kind == "" || tls.SecretRef.Kind == "Secret")) {
+				return fmt.Errorf("spec.tls[%d] specifies different secret name and secret ref", ti)
+			}
+			tls.SecretRef.APIVersion = "v1"
+			tls.SecretRef.Kind = "Secret"
+			tls.SecretRef.Name = tls.SecretName
+		} else if reflect.IsZero(tls.SecretRef) {
+			return fmt.Errorf("spec.tls[%d] specifies no secret name and secret ref", ti)
+		} else {
+			if tls.SecretRef.Kind != "" && sets.NewString("Secret", "Certificate").Has(tls.SecretRef.Kind) {
+				return fmt.Errorf("spec.tls[%d].secretRef.kind %s is unsupported", ti, tls.SecretRef.Kind)
+			}
+			if tls.SecretRef.Namespace != "" && tls.SecretRef.Namespace != r.Namespace {
+				return fmt.Errorf("spec.tls[%d].secretRef.namespace does not match ingress namespace", ti)
+			}
+			if tls.SecretRef.Name == "" {
+				return fmt.Errorf("spec.tls[%d] specifies no secret name and secret ref name", ti)
+			}
 		}
 	}
 
@@ -115,7 +142,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 				}
 				for hi, hdr := range path.Backend.HeaderRule {
 					if len(strings.Fields(hdr)) == 1 {
-						return fmt.Errorf("spec.rule[%d].http.paths[%d].backend.headerRule[%d] is invalid for addr %s and path %s.", ri, pi, hi, a, path.Path)
+						return fmt.Errorf("spec.rule[%d].http.paths[%d].backend.headerRule[%d] is invalid for addr %s and path %s", ri, pi, hi, a, path.Path)
 					}
 				}
 			}
@@ -182,17 +209,17 @@ func (r Ingress) IsValid(cloudProvider string) error {
 					}
 				}
 				if !tp80 || sp443 {
-					return fmt.Errorf("Failed to open port 443 on service for AWS cert manager for Ingress %s@%s.", r.Name, r.Namespace)
+					return fmt.Errorf("failed to open port 443 on service for AWS cert manager for Ingress %s@%s", r.Name, r.Namespace)
 				}
 			}
 		}
 	}
 	if !r.SupportsLBType(cloudProvider) {
-		return fmt.Errorf("Ingress %s@%s uses unsupported LBType %s for cloud provider %s", r.Name, r.Namespace, r.LBType(), cloudProvider)
+		return fmt.Errorf("ingress %s@%s uses unsupported LBType %s for cloud provider %s", r.Name, r.Namespace, r.LBType(), cloudProvider)
 	}
 
 	if (r.LBType() == LBTypeNodePort || r.LBType() == LBTypeHostPort) && len(r.Spec.LoadBalancerSourceRanges) > 0 {
-		return fmt.Errorf("Ingress %s@%s of type %s can't use `spec.LoadBalancerSourceRanges`", r.Name, r.Namespace, r.LBType())
+		return fmt.Errorf("ingress %s@%s of type %s can't use `spec.LoadBalancerSourceRanges`", r.Name, r.Namespace, r.LBType())
 	}
 
 	return nil
@@ -220,19 +247,19 @@ func (r Ingress) SupportsLBType(cloudProvider string) bool {
 func checkRequiredPort(port intstr.IntOrString) (int, error) {
 	if port.Type == intstr.Int {
 		if port.IntVal <= 0 {
-			return 0, fmt.Errorf("Port %s must a +ve interger", port)
+			return 0, fmt.Errorf("port %s must a +ve interger", port)
 		}
 		return int(port.IntVal), nil
 	} else if port.Type == intstr.String {
 		return strconv.Atoi(port.StrVal)
 	}
-	return 0, fmt.Errorf("Invalid data type %v for port %s", port.Type, port)
+	return 0, fmt.Errorf("invalid data type %v for port %s", port.Type, port)
 }
 
 func checkOptionalPort(port intstr.IntOrString) (int, error) {
 	if port.Type == intstr.Int {
 		if port.IntVal < 0 {
-			return 0, fmt.Errorf("Port %s can't be -ve interger", port)
+			return 0, fmt.Errorf("port %s can't be -ve interger", port)
 		}
 		return int(port.IntVal), nil
 	} else if port.Type == intstr.String {
@@ -241,5 +268,54 @@ func checkOptionalPort(port intstr.IntOrString) (int, error) {
 		}
 		return strconv.Atoi(port.StrVal)
 	}
-	return 0, fmt.Errorf("Invalid data type %v for port %s", port.Type, port)
+	return 0, fmt.Errorf("invalid data type %v for port %s", port.Type, port)
+}
+
+func (c Certificate) IsValid(cloudProvider string) error {
+	if len(c.Spec.Domains) == 0 {
+		return fmt.Errorf("doamin list is empty")
+	}
+
+	if c.Spec.ChallengeProvider.HTTP == nil && c.Spec.ChallengeProvider.DNS == nil {
+		return fmt.Errorf("certificate has no valid challange provider")
+	}
+
+	if c.Spec.ChallengeProvider.HTTP != nil && c.Spec.ChallengeProvider.DNS != nil {
+		return fmt.Errorf("invalid provider specification, used both http and dns provider")
+	}
+
+	if c.Spec.ChallengeProvider.HTTP != nil {
+		if len(c.Spec.ChallengeProvider.HTTP.Ingress.Name) == 0 ||
+			len(c.Spec.ChallengeProvider.HTTP.Ingress.Namespace) == 0 ||
+			(c.Spec.ChallengeProvider.HTTP.Ingress.APIVersion != SchemeGroupVersion.String() && c.Spec.ChallengeProvider.HTTP.Ingress.APIVersion != "extensions/v1beta1") {
+			return fmt.Errorf("invalid ingress reference")
+		}
+	}
+
+	if c.Spec.ChallengeProvider.DNS != nil {
+		if len(c.Spec.ChallengeProvider.DNS.Provider) == 0 {
+			return fmt.Errorf("no dns provider name specified")
+		}
+		if c.Spec.ChallengeProvider.DNS.CredentialSecretName == "" {
+			useCredentialFromEnv := (cloudProvider == "aws" && c.Spec.ChallengeProvider.DNS.Provider == "aws" && c.Spec.ChallengeProvider.DNS.CredentialSecretName == "") ||
+				(sets.NewString("gce", "gke").Has(cloudProvider) && sets.NewString("googlecloud", "gcloud", "gce", "gke").Has(c.Spec.ChallengeProvider.DNS.Provider) && c.Spec.ChallengeProvider.DNS.CredentialSecretName == "")
+			if !useCredentialFromEnv {
+				return fmt.Errorf("missing dns challenge provider credential")
+			}
+		}
+	}
+
+	if len(c.Spec.ACMEUserSecretName) == 0 {
+		return fmt.Errorf("no user secret name specified")
+	}
+
+	if c.Spec.Storage.Secret == nil && c.Spec.Storage.Vault == nil {
+		return fmt.Errorf("no storage specified")
+	}
+
+	if c.Spec.Storage.Secret != nil && c.Spec.Storage.Vault != nil {
+		return fmt.Errorf("invalid storage specification, used both storage")
+	}
+
+	return nil
 }

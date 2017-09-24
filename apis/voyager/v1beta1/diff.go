@@ -1,14 +1,16 @@
 package v1beta1
 
 import (
+	"crypto/x509"
 	"errors"
 	"net"
 	"reflect"
-	"sort"
 	"strings"
+	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 const (
@@ -54,18 +56,18 @@ func (r Ingress) HasChanged(o Ingress) (bool, error) {
 	return !reflect.DeepEqual(ra, oa), nil
 }
 
-func (r Ingress) FindTLSSecret(h string) (string, bool) {
+func (r Ingress) FindTLSSecret(h string) (apiv1.ObjectReference, bool) {
 	if h == "" {
-		return "", false
+		return apiv1.ObjectReference{}, false
 	}
 	for _, tls := range r.Spec.TLS {
 		for _, host := range tls.Hosts {
 			if host == h {
-				return tls.SecretName, true
+				return tls.SecretRef, true
 			}
 		}
 	}
-	return "", false
+	return apiv1.ObjectReference{}, false
 }
 
 func (r Ingress) IsPortChanged(o Ingress, cloudProvider string) bool {
@@ -78,40 +80,6 @@ func (r Ingress) IsPortChanged(o Ingress, cloudProvider string) bool {
 		return false
 	}
 	return !reflect.DeepEqual(rpm, opm)
-}
-
-func (r Ingress) Secrets() []string {
-	secrets := sets.NewString()
-	for _, rule := range r.Spec.Rules {
-		if rule.HTTP != nil {
-			if secretName, ok := r.FindTLSSecret(rule.Host); ok && !rule.HTTP.NoTLS {
-				secrets.Insert(secretName)
-			}
-		} else if rule.TCP != nil {
-			if secretName, ok := r.FindTLSSecret(rule.Host); ok {
-				secrets.Insert(secretName)
-			}
-		}
-	}
-	return secrets.List()
-}
-
-func (r Ingress) IsSecretChanged(o Ingress) bool {
-	rSecrets := r.Secrets()
-	oSecrets := o.Secrets()
-
-	if len(rSecrets) != len(oSecrets) {
-		return true
-	}
-
-	sort.Strings(rSecrets)
-	sort.Strings(oSecrets)
-	for i := range rSecrets {
-		if rSecrets[i] != oSecrets[i] {
-			return true
-		}
-	}
-	return false
 }
 
 func (r Ingress) IsLoadBalancerSourceRangeChanged(o Ingress) bool {
@@ -230,4 +198,36 @@ func (r Ingress) HasBackendService(name, namespace string) bool {
 		}
 	}
 	return false
+}
+
+func (c Certificate) ShouldRenew(crt *x509.Certificate) bool {
+	crtDomains := sets.NewString(crt.Subject.CommonName)
+	crtDomains.Insert(crt.DNSNames...)
+
+	return !crt.NotAfter.After(time.Now().Add(time.Hour*24*7)) ||
+		!crtDomains.Equal(sets.NewString(c.Spec.Domains...))
+}
+
+func (c Certificate) IsRateLimited() bool {
+	for _, cond := range c.Status.Conditions {
+		if cond.Type == CertificateRateLimited {
+			return time.Now().Add(-24 * time.Hour).Before(cond.LastUpdateTime.Time)
+		}
+	}
+	return false
+}
+
+func (c Certificate) SecretName() string {
+	if c.Spec.Storage.Secret != nil {
+		if c.Spec.Storage.Secret.Name == "" {
+			return "cert-" + c.Name
+		}
+		return c.Spec.Storage.Secret.Name
+	} else if c.Spec.Storage.Vault != nil {
+		if c.Spec.Storage.Vault.Name == "" {
+			return "cert-" + c.Name
+		}
+		return c.Spec.Storage.Vault.Name
+	}
+	return ""
 }

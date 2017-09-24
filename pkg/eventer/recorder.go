@@ -10,10 +10,10 @@ import (
 
 const (
 	// Certificate Events
-	EventReasonCertificateRenewFailed      = "RenewFailed"
-	EventReasonCertificateRenewSuccessful  = "RenewSuccessful"
-	EventReasonCertificateCreateFailed     = "CreateFailed"
-	EventReasonCertificateCreateSuccessful = "CreateSuccessful"
+	EventReasonCertificateIssueFailed     = "IssueFailed"
+	EventReasonCertificateIssueSuccessful = "IssueSuccessful"
+	EventReasonCertificateInvalid         = "CertificateInvalid"
+	EventReasonCertificateMigration       = "CertificateMigration"
 
 	// Ingress Events
 	EventReasonIngressHAProxyConfigCreateFailed      = "HAProxyConfigCreateFailed"
@@ -37,6 +37,7 @@ const (
 	EventReasonIngressStatsServiceDeleteFailed       = "StatsServiceDeleteFailed"
 	EventReasonIngressStatsServiceDeleteSuccessful   = "StatsServiceDeleteSuccessful"
 	EventReasonIngressInvalid                        = "IngressInvalid"
+	EventReasonIngressTLSMountFailed                 = "TLSMountFailed"
 )
 
 func NewEventRecorder(client clientset.Interface, component string) record.EventRecorder {

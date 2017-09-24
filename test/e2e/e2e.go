@@ -36,7 +36,6 @@ func RunE2ETestSuit(t *testing.T) {
 
 var _ = BeforeSuite(func() {
 	op := operator.New(
-		root.KubeConfig,
 		root.KubeClient,
 		root.CRDClient,
 		root.V1beta1Client,

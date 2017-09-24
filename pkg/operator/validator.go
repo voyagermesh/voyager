@@ -39,7 +39,7 @@ func (op *Operator) ValidateIngress() error {
 		}
 	}
 
-	engresses, err := op.ExtClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
+	engresses, err := op.VoyagerClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}

@@ -24,19 +24,13 @@ func TestNewDomainCollection(t *testing.T) {
 }
 
 func TestACMECertData(t *testing.T) {
-	certificateSecret := &apiv1.Secret{
+	secret := &apiv1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			Kind: "Secret",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      defaultCertPrefix + "hello",
 			Namespace: "default",
-			Labels: map[string]string{
-				certificateKey: "true",
-			},
-			Annotations: map[string]string{
-				certificateKey: "true",
-			},
 		},
 		Data: map[string][]byte{
 			apiv1.TLSCertKey:       []byte("Certificate key"),
@@ -45,27 +39,21 @@ func TestACMECertData(t *testing.T) {
 		Type: apiv1.SecretTypeTLS,
 	}
 
-	cert, err := NewACMECertDataFromSecret(certificateSecret, &api.Certificate{})
+	cert, err := NewACMECertDataFromSecret(secret, &api.Certificate{})
 	assert.Nil(t, err)
 
-	convertedCert := cert.ToSecret("hello", "default")
-	assert.Equal(t, certificateSecret, convertedCert)
+	convertedCert := cert.ToSecret("hello", "default", "")
+	assert.Equal(t, secret, convertedCert)
 }
 
 func TestACMECertDataError(t *testing.T) {
-	certificateSecret := &apiv1.Secret{
+	secret := &apiv1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			Kind: "Secret",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      defaultCertPrefix + "hello",
 			Namespace: "default",
-			Labels: map[string]string{
-				certificateKey: "true",
-			},
-			Annotations: map[string]string{
-				certificateKey: "true",
-			},
 		},
 		Data: map[string][]byte{
 			apiv1.TLSPrivateKeyKey: []byte("Certificate private key"),
@@ -73,7 +61,7 @@ func TestACMECertDataError(t *testing.T) {
 		Type: apiv1.SecretTypeTLS,
 	}
 
-	_, err := NewACMECertDataFromSecret(certificateSecret, &api.Certificate{})
+	_, err := NewACMECertDataFromSecret(secret, &api.Certificate{})
 	assert.NotNil(t, err)
 }
 
@@ -93,17 +81,17 @@ func TestClient(t *testing.T) {
 	}
 
 	config := &ACMEConfig{
-		Provider: "http",
-		UserData: user,
+		ChallengeProvider: "http",
+		UserData:          user,
 	}
 	_, err = NewACMEClient(config)
 	assert.Nil(t, err)
 
 	if testing.Verbose() {
 		config := &ACMEConfig{
-			Provider: "http",
-			UserData: user,
-			ProviderCredentials: map[string][]byte{
+			ChallengeProvider: "http",
+			UserData:          user,
+			DNSCredentials: map[string][]byte{
 				"GCE_SERVICE_ACCOUNT_DATA": []byte(os.Getenv("TEST_GCE_SERVICE_ACCOUNT_DATA")),
 				"GCE_PROJECT":              []byte(os.Getenv("TEST_GCE_PROJECT")),
 			},

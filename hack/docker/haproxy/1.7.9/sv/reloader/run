@@ -4,6 +4,6 @@ exec 2> >(logger -s -p daemon.error -t ${PWD##*/})
 source /etc/envvars
 
 echo "Starting HAProxy configuration watcher and reloader ..."
-cmd="exec /kloader run $KLOADER_ARGS"
+cmd="exec voyager kloader run $KLOADER_ARGS"
 echo $cmd
 $cmd

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	clientset "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/stretchr/testify/assert"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -49,22 +50,22 @@ func TestEnsureCustomResourceDefinitions(t *testing.T) {
 		}}}},
 	})
 	if assert.Nil(t, err) {
-		v, err := voyagerClient.Ingresses("default").Get("test-ingress")
+		v, err := voyagerClient.Ingresses("default").Get("test-ingress", v1.GetOptions{})
 		assert.Nil(t, err)
 		assert.Equal(t, v.Name, "test-ingress")
 
-		defer voyagerClient.Ingresses("default").Delete("test-ingress")
+		defer voyagerClient.Ingresses("default").Delete("test-ingress", &v1.DeleteOptions{})
 	}
 
 	_, err = voyagerClient.Certificates("default").Create(&api.Certificate{
 		ObjectMeta: v1.ObjectMeta{Name: "test-cert", Namespace: "default"},
 	})
 	if assert.Nil(t, err) {
-		v, err := voyagerClient.Certificates("default").Get("test-cert")
+		v, err := voyagerClient.Certificates("default").Get("test-cert", v1.GetOptions{})
 		assert.Nil(t, err)
 		assert.Equal(t, v.Name, "test-cert")
 
-		defer voyagerClient.Certificates("default").Delete("test-cert")
+		defer voyagerClient.Certificates("default").Delete("test-cert", &v1.DeleteOptions{})
 	}
 
 	crdClient.ApiextensionsV1beta1().CustomResourceDefinitions().Delete("ingresses.voyager.appscode.com", &v1.DeleteOptions{})

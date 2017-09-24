@@ -1,7 +1,6 @@
 package certificate
 
 import (
-	"bytes"
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
@@ -18,8 +17,7 @@ import (
 
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
-	acf "github.com/appscode/voyager/client/typed/voyager/v1beta1/fake"
+	acf "github.com/appscode/voyager/client/fake"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/xenolf/lego/acme"
@@ -33,47 +31,6 @@ var (
 	fakeConfig = &rest.Config{}
 )
 
-func TestLoadProviderCredential(t *testing.T) {
-	cert := &api.Certificate{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "foo",
-			Namespace: "bar",
-		},
-		Spec: api.CertificateSpec{
-			ProviderCredentialSecretName: "foosecret",
-		},
-	}
-
-	fakeController := NewController(fakeConfig, fake.NewSimpleClientset(), acf.NewFakeExtensionClient(), config.Options{ResyncPeriod: time.Second * 5}, cert)
-	fakeController.acmeClientConfig = &ACMEConfig{
-		ProviderCredentials: make(map[string][]byte),
-	}
-
-	fakeController.loadProviderCredential()
-	assert.Equal(t, len(fakeController.acmeClientConfig.ProviderCredentials), 0)
-
-	fakeSecret := &apiv1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "foosecret",
-			Namespace: "bar",
-		},
-		Data: map[string][]byte{
-			"foo-data": []byte("foo-data"),
-		},
-	}
-
-	s, err := fakeController.KubeClient.CoreV1().Secrets("bar").Create(fakeSecret)
-	assert.Nil(t, err)
-	assert.Equal(t, "foosecret", s.Name)
-	assert.Equal(t, "bar", s.Namespace)
-	log.Debugln("Secret Created.", *s)
-
-	fakeController.loadProviderCredential()
-	assert.Equal(t, len(fakeController.acmeClientConfig.ProviderCredentials), 1)
-	assert.Equal(t, string(fakeController.acmeClientConfig.ProviderCredentials["foo-data"]), "foo-data")
-	log.Debugln("Provider credential", fakeController.acmeClientConfig.ProviderCredentials)
-}
-
 func TestEnsureClient(t *testing.T) {
 	if testing.Verbose() {
 		skipTestIfSecretNotProvided(t)
@@ -83,22 +40,29 @@ func TestEnsureClient(t *testing.T) {
 				Namespace: "bar",
 			},
 			Spec: api.CertificateSpec{
-				Domains:                      strings.Split(os.Getenv("TEST_DNS_DOMAINS"), ","),
-				Email:                        os.Getenv("TEST_ACME_USER_EMAIL"),
-				Provider:                     "googlecloud",
-				ProviderCredentialSecretName: "fakesecret",
+				Domains:            strings.Split(os.Getenv("TEST_DNS_DOMAINS"), ","),
+				ACMEUserSecretName: "user",
+				ChallengeProvider:  api.ChallengeProvider{DNS: &api.DNSChallengeProvider{Provider: "googlecloud", CredentialSecretName: "fakesecret"}},
+				Storage:            api.CertificateStorage{Secret: &api.SecretStore{}},
 			},
 		}
-		fakeController := NewController(fakeConfig, fake.NewSimpleClientset(
+		fakeController := NewController(fake.NewSimpleClientset(
 			&apiv1.Secret{
 				ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
 			},
-		), acf.NewFakeExtensionClient(), config.Options{ResyncPeriod: time.Second * 5}, cert)
+			&apiv1.Secret{
+				ObjectMeta: metav1.ObjectMeta{Name: "user", Namespace: "bar"},
+				Data: map[string][]byte{
+					api.ACMEUserEmail: []byte(os.Getenv("TEST_ACME_USER_EMAIL")),
+					api.ACMEServerURL: []byte(LetsEncryptStagingURL),
+				},
+			},
+		), acf.NewSimpleClientset().VoyagerV1beta1(), config.Options{ResyncPeriod: time.Second * 5}, cert)
 
-		fakeController.acmeClientConfig = &ACMEConfig{
-			Provider:            "googlecloud",
-			ProviderCredentials: make(map[string][]byte),
-			UserDataMap:         make(map[string][]byte),
+		fakeController.acmeConfig = &ACMEConfig{
+			ChallengeProvider: "googlecloud",
+			DNSCredentials:    make(map[string][]byte),
+			UserDataMap:       make(map[string][]byte),
 		}
 
 		fakeSecret := &apiv1.Secret{
@@ -114,11 +78,11 @@ func TestEnsureClient(t *testing.T) {
 		_, err := fakeController.KubeClient.CoreV1().Secrets("bar").Create(fakeSecret)
 		assert.Nil(t, err)
 
-		fakeController.ensureACMEClient()
-		secret, err := fakeController.KubeClient.CoreV1().Secrets("bar").Get(defaultUserSecretPrefix+cert.Name, metav1.GetOptions{})
+		fakeController.getACMEClient()
+		secret, err := fakeController.KubeClient.CoreV1().Secrets("bar").Get("user", metav1.GetOptions{})
 		assert.Nil(t, err)
 		assert.NotNil(t, secret)
-		assert.Equal(t, 1, len(secret.Data))
+		assert.Equal(t, 2, len(secret.Data))
 	}
 }
 
@@ -129,36 +93,43 @@ func TestFakeRegisterACMEUser(t *testing.T) {
 			Namespace: "bar",
 		},
 		Spec: api.CertificateSpec{
-			Domains:                      []string{"example.com"},
-			Email:                        newFakeACMEUser().email,
-			Provider:                     "googlecloud",
-			ProviderCredentialSecretName: "fakesecret",
+			Domains:            []string{"example.com"},
+			ACMEUserSecretName: "user",
+			ChallengeProvider:  api.ChallengeProvider{DNS: &api.DNSChallengeProvider{Provider: "googlecloud", CredentialSecretName: "fakesecret"}},
+			Storage:            api.CertificateStorage{Secret: &api.SecretStore{}},
 		},
 	}
-	fakeController := NewController(fakeConfig, fake.NewSimpleClientset(
+	fakeController := NewController(fake.NewSimpleClientset(
 		&apiv1.Secret{
 			ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
 		},
-	), acf.NewFakeExtensionClient(), config.Options{ResyncPeriod: time.Second * 5}, cert)
+		&apiv1.Secret{
+			ObjectMeta: metav1.ObjectMeta{Name: "user", Namespace: "bar"},
+			Data: map[string][]byte{
+				api.ACMEUserEmail: []byte(os.Getenv("TEST_ACME_USER_EMAIL")),
+				api.ACMEServerURL: []byte(LetsEncryptStagingURL),
+			},
+		},
+	), acf.NewSimpleClientset().VoyagerV1beta1(), config.Options{ResyncPeriod: time.Second * 5}, cert)
 
 	acmeClient := &ACMEClient{
 		Client: newFakeACMEClient(),
 	}
 	if acmeClient.Client != nil {
-		fakeController.acmeClientConfig = &ACMEConfig{
+		fakeController.acmeConfig = &ACMEConfig{
 			UserData: &ACMEUserData{
 				Email:        newFakeACMEUser().email,
 				Registration: newFakeACMEUser().regres,
 				Key:          x509.MarshalPKCS1PrivateKey(newFakeACMEUser().privatekey),
 			},
 		}
-		err := fakeController.registerACMEUser(acmeClient)
+		err := fakeController.registerUser(acmeClient)
 		if !assert.NotNil(t, err) {
 			assert.Nil(t, err)
-			secret, err := fakeController.KubeClient.CoreV1().Secrets("bar").Get(defaultUserSecretPrefix+cert.Name, metav1.GetOptions{})
+			secret, err := fakeController.KubeClient.CoreV1().Secrets("bar").Get("user", metav1.GetOptions{})
 			assert.Nil(t, err)
 			if assert.NotNil(t, secret) {
-				assert.Equal(t, 1, len(secret.Data))
+				assert.Equal(t, 2, len(secret.Data))
 			}
 		}
 	}
@@ -173,19 +144,29 @@ func TestCreate(t *testing.T) {
 				Namespace: "bar",
 			},
 			Spec: api.CertificateSpec{
-				Domains:                      strings.Split(os.Getenv("TEST_DNS_DOMAINS"), ","),
-				Email:                        os.Getenv("TEST_ACME_USER_EMAIL"),
-				Provider:                     "googlecloud",
-				ProviderCredentialSecretName: "fakesecret",
+				Domains:            strings.Split(os.Getenv("TEST_DNS_DOMAINS"), ","),
+				ACMEUserSecretName: "user",
+				ChallengeProvider:  api.ChallengeProvider{DNS: &api.DNSChallengeProvider{Provider: "googlecloud", CredentialSecretName: "fakesecret"}},
+				Storage:            api.CertificateStorage{Secret: &api.SecretStore{}},
 			},
 		}
-		fakeController := NewController(fakeConfig, fake.NewSimpleClientset(), acf.NewFakeExtensionClient(), config.Options{ResyncPeriod: time.Second * 5}, cert)
-		fakeController.ExtClient.Certificates("bar").Create(cert)
+		fakeController := NewController(fake.NewSimpleClientset(), acf.NewSimpleClientset().VoyagerV1beta1(), config.Options{ResyncPeriod: time.Second * 5}, cert)
+		fakeUser := &apiv1.Secret{
+			ObjectMeta: metav1.ObjectMeta{Name: "user", Namespace: "bar"},
+			Data: map[string][]byte{
+				api.ACMEUserEmail: []byte(os.Getenv("TEST_ACME_USER_EMAIL")),
+				api.ACMEServerURL: []byte(LetsEncryptStagingURL),
+			},
+		}
+		_, err := fakeController.KubeClient.CoreV1().Secrets("bar").Create(fakeUser)
+		assert.Nil(t, err)
 
-		fakeController.acmeClientConfig = &ACMEConfig{
-			ProviderCredentials: make(map[string][]byte),
-			UserDataMap:         make(map[string][]byte),
-			Provider:            "googlecloud",
+		fakeController.VoyagerClient.Certificates("bar").Create(cert)
+
+		fakeController.acmeConfig = &ACMEConfig{
+			DNSCredentials:    make(map[string][]byte),
+			UserDataMap:       make(map[string][]byte),
+			ChallengeProvider: "googlecloud",
 		}
 
 		fakeSecret := &apiv1.Secret{
@@ -198,14 +179,15 @@ func TestCreate(t *testing.T) {
 				"GCE_SERVICE_ACCOUNT_DATA": []byte(os.Getenv("TEST_GCE_SERVICE_ACCOUNT_DATA")),
 			},
 		}
-		_, err := fakeController.KubeClient.CoreV1().Secrets("bar").Create(fakeSecret)
+		_, err = fakeController.KubeClient.CoreV1().Secrets("bar").Create(fakeSecret)
 		assert.Nil(t, err)
 
-		fakeController.create()
-
-		secret, err := fakeController.KubeClient.CoreV1().Secrets("bar").Get(defaultUserSecretPrefix+cert.Name, metav1.GetOptions{})
+		err = fakeController.Process()
 		assert.Nil(t, err)
-		assert.Equal(t, len(secret.Data), 1)
+
+		secret, err := fakeController.KubeClient.CoreV1().Secrets("bar").Get("user", metav1.GetOptions{})
+		assert.Nil(t, err)
+		assert.Equal(t, len(secret.Data), 3)
 
 		list, err := fakeController.KubeClient.CoreV1().Secrets("").List(metav1.ListOptions{})
 		if err == nil {
@@ -221,38 +203,14 @@ func TestCreate(t *testing.T) {
 			t.Fatal(err)
 		}
 		assert.Equal(t, len(secret.Data), 2)
-		value, ok := secret.Annotations[certificateKey]
-		assert.True(t, ok)
-		assert.Equal(t, "true", value)
 
-		certificate, err := fakeController.ExtClient.Certificates("bar").Get("foo")
+		cert, err = fakeController.VoyagerClient.Certificates("bar").Get("foo", metav1.GetOptions{})
 		if err != nil {
 			t.Fatal(err)
 		}
-		log.Infoln(certificate.Status)
-		log.Infoln(certificate.Status.Details)
+		log.Infoln(cert.Status)
+		log.Infoln(cert.Status.LastIssuedCertificate)
 	}
-}
-
-func TestDemoCertificates(t *testing.T) {
-	c := &api.Certificate{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test-do-token",
-			Namespace: "default",
-		},
-		Spec: api.CertificateSpec{
-			Domains:  []string{"john.example.com"},
-			Provider: "digitalocean",
-			Email:    "john@example.com",
-			ProviderCredentialSecretName: "mysecret",
-		},
-	}
-
-	w := bytes.NewBuffer(nil)
-	err := acs.ExtendedCodec.Encode(c, w)
-	assert.Nil(t, err)
-	assert.NotEqual(t, 0, len(w.String()))
-	assert.Equal(t, "Certificate", c.TypeMeta.Kind)
 }
 
 type mockUser struct {

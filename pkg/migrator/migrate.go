@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/appscode/go/log"
+	"github.com/appscode/kutil"
 	api "github.com/appscode/voyager/apis/voyager"
 	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/util"
 	"github.com/hashicorp/go-version"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -183,10 +183,7 @@ func (m *migrator) createCRDs() error {
 			}
 		}
 	}
-	return util.WaitForCRDReady(
-		m.kubeClient.CoreV1().RESTClient(),
-		crds,
-	)
+	return kutil.WaitForCRDReady(m.kubeClient.CoreV1().RESTClient(), crds)
 }
 
 func (m *migrator) rollback() error {

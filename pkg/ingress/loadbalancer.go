@@ -44,7 +44,7 @@ func NewLoadBalancerController(
 		controller: &controller{
 			KubeClient:      kubeClient,
 			CRDClient:       crdClient,
-			ExtClient:       extClient,
+			VoyagerClient:   extClient,
 			PromClient:      promClient,
 			ServiceLister:   serviceLister,
 			EndpointsLister: endpointsLister,
@@ -427,7 +427,6 @@ func (c *loadBalancerController) ensureService(old *api.Ingress) (*apiv1.Service
 }
 
 func (c *loadBalancerController) newPods() *apps.Deployment {
-	secrets := c.Ingress.Secrets()
 	deployment := &apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.Ingress.OffshootName(),
@@ -458,33 +457,39 @@ func (c *loadBalancerController) newPods() *apps.Deployment {
 						{
 							Name:  "haproxy",
 							Image: c.Opt.HAProxyImage,
-							Env: []apiv1.EnvVar{
-								{
-									Name: "KUBE_NAMESPACE",
-									ValueFrom: &apiv1.EnvVarSource{
-										FieldRef: &apiv1.ObjectFieldSelector{
-											FieldPath: "metadata.namespace",
-										},
-									},
-								},
-							},
 							Args: []string{
+								"--ingress-api-version=" + c.Ingress.APISchema(),
+								"--ingress-name=" + c.Ingress.Name,
+								"--cloud-provider=" + c.Opt.CloudProvider,
+								"--v=3",
+								"--boot-cmd=" + "/etc/sv/haproxy/reload",
 								"--configmap=" + c.Ingress.OffshootName(),
 								"--mount-location=" + "/etc/haproxy",
-								"--boot-cmd=" + "/etc/sv/reloader/reload",
-								"--v=3",
 							},
-							Ports:        []apiv1.ContainerPort{},
-							Resources:    c.Ingress.Spec.Resources,
-							VolumeMounts: VolumeMounts(secrets),
+							Ports:     []apiv1.ContainerPort{},
+							Resources: c.Ingress.Spec.Resources,
+							VolumeMounts: []apiv1.VolumeMount{
+								{
+									Name:      TLSCertificateVolumeName,
+									MountPath: "/etc/ssl/private/haproxy",
+								},
+							},
 						},
 					},
-					Volumes: Volumes(secrets),
+					Volumes: []apiv1.Volume{
+						{
+							Name: TLSCertificateVolumeName,
+							VolumeSource: apiv1.VolumeSource{
+								EmptyDir: &apiv1.EmptyDirVolumeSource{},
+							},
+						},
+					},
 				},
 			},
 		},
 	}
 	deployment.ObjectMeta = c.ensureOwnerReference(deployment.ObjectMeta)
+	deployment.Spec.Template.Spec.Containers[0].Env = c.ensureEnvVars(deployment.Spec.Template.Spec.Containers[0].Env)
 
 	if c.Opt.EnableRBAC {
 		deployment.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
@@ -666,12 +671,12 @@ func (c *loadBalancerController) updateStatus() error {
 				return errors.FromErr(err).Err()
 			}
 		} else {
-			ing, err := c.ExtClient.Ingresses(c.Ingress.Namespace).Get(c.Ingress.Name, metav1.GetOptions{})
+			ing, err := c.VoyagerClient.Ingresses(c.Ingress.Namespace).Get(c.Ingress.Name, metav1.GetOptions{})
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
 			ing.Status.LoadBalancer.Ingress = statuses
-			_, err = c.ExtClient.Ingresses(c.Ingress.Namespace).Update(ing)
+			_, err = c.VoyagerClient.Ingresses(c.Ingress.Namespace).Update(ing)
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}

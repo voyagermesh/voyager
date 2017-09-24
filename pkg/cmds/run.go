@@ -2,15 +2,13 @@ package cmds
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	_ "net/http/pprof"
-	"os"
-	"strings"
 	"time"
 
 	"github.com/appscode/go/log"
 	hpe "github.com/appscode/haproxy_exporter/exporter"
+	"github.com/appscode/kutil"
 	"github.com/appscode/pat"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
@@ -23,7 +21,6 @@ import (
 	"github.com/spf13/cobra"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	clientset "k8s.io/client-go/kubernetes"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -32,7 +29,7 @@ var (
 	kubeconfigPath string
 	opt            config.Options = config.Options{
 		HAProxyImage:      "appscode/haproxy:1.7.9-4.0.0-alpha.1",
-		OperatorNamespace: namespace(),
+		OperatorNamespace: kutil.Namespace(),
 		OperatorService:   "voyager-operator",
 		HTTPChallengePort: 56791,
 		EnableRBAC:        false,
@@ -56,7 +53,7 @@ func NewCmdRun() *cobra.Command {
 		Short:             "Run operator",
 		DisableAutoGenTag: true,
 		Run: func(cmd *cobra.Command, args []string) {
-			run()
+			runOperator()
 		},
 	}
 
@@ -80,7 +77,7 @@ func NewCmdRun() *cobra.Command {
 	return cmd
 }
 
-func run() {
+func runOperator() {
 	if opt.HAProxyImage == "" {
 		log.Fatalln("Missing required flag --haproxy-image")
 	}
@@ -114,7 +111,7 @@ func run() {
 
 	log.Infoln("Starting Voyager operator...")
 
-	w := operator.New(config, kubeClient, crdClient, extClient, promClient, opt)
+	w := operator.New(kubeClient, crdClient, extClient, promClient, opt)
 	err = w.Setup()
 	if err != nil {
 		log.Fatalln(err)
@@ -128,6 +125,12 @@ func run() {
 	err = w.ValidateIngress()
 	if err != nil {
 		log.Fatalln(err)
+	}
+
+	// https://github.com/appscode/voyager/pull/506
+	err = w.MigrateCertificates()
+	if err != nil {
+		log.Fatalln("Failed certificate migrations:", err)
 	}
 	// https://github.com/appscode/voyager/issues/229
 	w.PurgeOffshootsWithDeprecatedLabels()
@@ -144,16 +147,4 @@ func run() {
 	http.Handle("/", m)
 	log.Infoln("Listening on", address)
 	log.Fatal(http.ListenAndServe(address, nil))
-}
-
-func namespace() string {
-	if ns := os.Getenv("OPERATOR_NAMESPACE"); ns != "" {
-		return ns
-	}
-	if data, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace"); err == nil {
-		if ns := strings.TrimSpace(string(data)); len(ns) > 0 {
-			return ns
-		}
-	}
-	return apiv1.NamespaceDefault
 }

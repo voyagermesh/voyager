@@ -14,18 +14,6 @@ type EmailForward struct {
 	UpdatedAt string `json:"updated_at,omitempty"`
 }
 
-// EmailForwardResponse represents a response from an API method that returns an EmailForward struct.
-type EmailForwardResponse struct {
-	Response
-	Data *EmailForward `json:"data"`
-}
-
-// EmailForwardsResponse represents a response from an API method that returns a collection of EmailForward struct.
-type EmailForwardsResponse struct {
-	Response
-	Data []EmailForward `json:"data"`
-}
-
 func emailForwardPath(accountID string, domainIdentifier string, forwardID int) (path string) {
 	path = fmt.Sprintf("%v/email_forwards", domainPath(accountID, domainIdentifier))
 	if forwardID != 0 {
@@ -34,12 +22,24 @@ func emailForwardPath(accountID string, domainIdentifier string, forwardID int) 
 	return
 }
 
+// emailForwardResponse represents a response from an API method that returns an EmailForward struct.
+type emailForwardResponse struct {
+	Response
+	Data *EmailForward `json:"data"`
+}
+
+// emailForwardsResponse represents a response from an API method that returns a collection of EmailForward struct.
+type emailForwardsResponse struct {
+	Response
+	Data []EmailForward `json:"data"`
+}
+
 // ListEmailForwards lists the email forwards for a domain.
 //
 // See https://developer.dnsimple.com/v2/domains/email-forwards/#list
-func (s *DomainsService) ListEmailForwards(accountID string, domainIdentifier string, options *ListOptions) (*EmailForwardsResponse, error) {
+func (s *DomainsService) ListEmailForwards(accountID string, domainIdentifier string, options *ListOptions) (*emailForwardsResponse, error) {
 	path := versioned(emailForwardPath(accountID, domainIdentifier , 0))
-	forwardsResponse := &EmailForwardsResponse{}
+	forwardsResponse := &emailForwardsResponse{}
 
 	path, err := addURLQueryOptions(path, options)
 	if err != nil {
@@ -58,9 +58,9 @@ func (s *DomainsService) ListEmailForwards(accountID string, domainIdentifier st
 // CreateEmailForward creates a new email forward.
 //
 // See https://developer.dnsimple.com/v2/domains/email-forwards/#create
-func (s *DomainsService) CreateEmailForward(accountID string, domainIdentifier string, forwardAttributes EmailForward) (*EmailForwardResponse, error) {
+func (s *DomainsService) CreateEmailForward(accountID string, domainIdentifier string, forwardAttributes EmailForward) (*emailForwardResponse, error) {
 	path := versioned(emailForwardPath(accountID, domainIdentifier, 0))
-	forwardResponse := &EmailForwardResponse{}
+	forwardResponse := &emailForwardResponse{}
 
 	resp, err := s.client.post(path, forwardAttributes, forwardResponse)
 	if err != nil {
@@ -74,9 +74,9 @@ func (s *DomainsService) CreateEmailForward(accountID string, domainIdentifier s
 // GetEmailForward fetches an email forward.
 //
 // See https://developer.dnsimple.com/v2/domains/email-forwards/#get
-func (s *DomainsService) GetEmailForward(accountID string, domainIdentifier string, forwardID int) (*EmailForwardResponse, error) {
+func (s *DomainsService) GetEmailForward(accountID string, domainIdentifier string, forwardID int) (*emailForwardResponse, error) {
 	path := versioned(emailForwardPath(accountID, domainIdentifier, forwardID))
-	forwardResponse := &EmailForwardResponse{}
+	forwardResponse := &emailForwardResponse{}
 
 	resp, err := s.client.get(path, forwardResponse)
 	if err != nil {
@@ -90,9 +90,9 @@ func (s *DomainsService) GetEmailForward(accountID string, domainIdentifier stri
 // DeleteEmailForward PERMANENTLY deletes an email forward from the domain.
 //
 // See https://developer.dnsimple.com/v2/domains/email-forwards/#delete
-func (s *DomainsService) DeleteEmailForward(accountID string, domainIdentifier string, forwardID int) (*EmailForwardResponse, error) {
+func (s *DomainsService) DeleteEmailForward(accountID string, domainIdentifier string, forwardID int) (*emailForwardResponse, error) {
 	path := versioned(emailForwardPath(accountID, domainIdentifier, forwardID))
-	forwardResponse := &EmailForwardResponse{}
+	forwardResponse := &emailForwardResponse{}
 
 	resp, err := s.client.delete(path, nil, nil)
 	if err != nil {

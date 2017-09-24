@@ -10,27 +10,58 @@ import (
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/pkg/api/v1"
 )
 
 var _ = Describe("CertificateWithHTTPProvider", func() {
 	var (
-		f    *framework.Invocation
-		ing  *api.Ingress
-		cert *api.Certificate
+		f          *framework.Invocation
+		ing        *api.Ingress
+		cert       *api.Certificate
+		userSecret *v1.Secret
 	)
 
 	BeforeEach(func() {
+		if !f.Config.TestCertificate {
+			Skip("Certificate Test is not enabled")
+		}
+	})
+
+	BeforeEach(func() {
 		f = root.Invoke()
+
+		userSecret = &v1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      f.Certificate.UniqueName(),
+				Namespace: f.Namespace(),
+			},
+			Data: map[string][]byte{
+				api.ACMEUserEmail: []byte("sadlil@appscode.com"),
+				api.ACMEServerURL: []byte(certificate.LetsEncryptStagingURL),
+			},
+		}
+
+		_, err := f.KubeClient.CoreV1().Secrets(userSecret.Namespace).Create(userSecret)
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	BeforeEach(func() {
 		ing = f.Ingress.GetSkeleton()
 		f.Ingress.SetSkeletonRule(ing)
 
 		cert = f.Certificate.GetSkeleton()
 		cert.Spec = api.CertificateSpec{
-			Provider:                     "http",
-			Domains:                      []string{"http.appscode.dev", "test.appscode.dev"},
-			Email:                        "sadlil@appscode.com",
-			ACMEServerURL:                certificate.LetsEncryptStagingURL,
-			HTTPProviderIngressReference: *ing.ObjectReference(),
+			Domains: []string{"http.appscode.dev", "test.appscode.dev"},
+			ChallengeProvider: api.ChallengeProvider{
+				HTTP: &api.HTTPChallengeProvider{
+					Ingress: *ing.ObjectReference(),
+				},
+			},
+			ACMEUserSecretName: userSecret.Name,
+			Storage: api.CertificateStorage{
+				Secret: &api.SecretStore{},
+			},
 		}
 	})
 
@@ -52,6 +83,7 @@ var _ = Describe("CertificateWithHTTPProvider", func() {
 	AfterEach(func() {
 		if root.Config.Cleanup {
 			f.Ingress.Delete(ing)
+			f.KubeClient.CoreV1().Secrets(userSecret.Namespace).Delete(userSecret.Name, &metav1.DeleteOptions{})
 		}
 	})
 

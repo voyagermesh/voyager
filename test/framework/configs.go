@@ -8,7 +8,7 @@ import (
 	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/go/flags"
 	"github.com/appscode/go/log"
-	"github.com/mitchellh/go-homedir"
+	"k8s.io/client-go/util/homedir"
 )
 
 func init() {
@@ -23,6 +23,7 @@ func init() {
 	flag.StringVar(&testConfigs.LBPersistIP, "lb-ip", "", "LoadBalancer persistent IP")
 	flag.StringVar(&testConfigs.TestNamespace, "namespace", "test-"+rand.Characters(5), "Run tests in this namespaces")
 	flag.BoolVar(&testConfigs.RBACEnabled, "rbac", false, "")
+	flag.BoolVar(&testConfigs.TestCertificate, "cert", false, "")
 
 	enableLogging()
 }
@@ -39,6 +40,7 @@ type E2EConfig struct {
 	DaemonHostName    string
 	LBPersistIP       string
 	RBACEnabled       bool
+	TestCertificate   bool
 }
 
 var testConfigs E2EConfig
@@ -60,12 +62,7 @@ func (c *E2EConfig) validate() {
 	}
 
 	if len(c.KubeConfig) == 0 {
-		userHome, err := homedir.Dir()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		c.KubeConfig = filepath.Join(userHome, ".kube/config")
+		c.KubeConfig = filepath.Join(homedir.HomeDir(), ".kube/config")
 	}
 
 	if len(c.TestNamespace) == 0 {

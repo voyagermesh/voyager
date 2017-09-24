@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/appscode/log"
+	"github.com/appscode/go/log"
 	"github.com/moul/http2curl"
 )
 

@@ -35,7 +35,7 @@ func (op *Operator) initNodeWatcher() cache.Controller {
 					op.updateFirewall(engress, node)
 				}
 			}
-			engresses, err := op.ExtClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
+			engresses, err := op.VoyagerClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
 			if err == nil {
 				for _, engress := range engresses.Items {
 					op.updateFirewall(&engress, node)
@@ -80,7 +80,7 @@ func (op *Operator) updateFirewall(ing *api.Ingress, node *apiv1.Node) {
 		}
 	}
 
-	ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.ExtClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, ing)
+	ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, ing)
 	if svc, err := op.ServiceLister.Services(ing.Namespace).Get(ing.OffshootName()); err == nil {
 		ctrl.EnsureFirewall(svc)
 	} else {

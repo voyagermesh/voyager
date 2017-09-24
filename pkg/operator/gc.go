@@ -35,7 +35,7 @@ func (op *Operator) PurgeOffshootsWithDeprecatedLabels() error {
 		return err
 	}
 
-	engresses, err := op.ExtClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
+	engresses, err := op.VoyagerClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
 	if err == nil {
 		for _, ing := range engresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
@@ -96,7 +96,7 @@ func (op *Operator) PurgeOffshootsDaemonSet() error {
 		return err
 	}
 
-	engresses, err := op.ExtClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
+	engresses, err := op.VoyagerClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
 	if err == nil {
 		for _, ing := range engresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
@@ -105,7 +105,7 @@ func (op *Operator) PurgeOffshootsDaemonSet() error {
 					if ds.Spec.Template.Spec.Affinity != nil && ing.Spec.Affinity == nil {
 						log.Infoln("Updating Ingress %s@%s to add `spec.affinity`", ing.Name, ing.Namespace)
 						ing.Spec.Affinity = ds.Spec.Template.Spec.Affinity
-						_, err = op.ExtClient.Ingresses(ing.Namespace).Update(&ing)
+						_, err = op.VoyagerClient.Ingresses(ing.Namespace).Update(&ing)
 						if err != nil {
 							return err
 						}

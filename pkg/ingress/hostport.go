@@ -47,7 +47,7 @@ func NewHostPortController(
 		controller: &controller{
 			KubeClient:      kubeClient,
 			CRDClient:       crdClient,
-			ExtClient:       extClient,
+			VoyagerClient:   extClient,
 			PromClient:      promClient,
 			ServiceLister:   serviceLister,
 			EndpointsLister: endpointsLister,
@@ -486,8 +486,7 @@ func (c *hostPortController) ensureService(old *api.Ingress) (*apiv1.Service, er
 }
 
 func (c *hostPortController) newPods() *apps.Deployment {
-	secrets := c.Ingress.Secrets()
-	daemon := &apps.Deployment{
+	deployment := &apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.Ingress.OffshootName(),
 			Namespace: c.Ingress.Namespace,
@@ -516,43 +515,49 @@ func (c *hostPortController) newPods() *apps.Deployment {
 						{
 							Name:  "haproxy",
 							Image: c.Opt.HAProxyImage,
-							Env: []apiv1.EnvVar{
-								{
-									Name: "KUBE_NAMESPACE",
-									ValueFrom: &apiv1.EnvVarSource{
-										FieldRef: &apiv1.ObjectFieldSelector{
-											FieldPath: "metadata.namespace",
-										},
-									},
-								},
-							},
 							Args: []string{
+								"--ingress-api-version=" + c.Ingress.APISchema(),
+								"--ingress-name=" + c.Ingress.Name,
+								"--cloud-provider=" + c.Opt.CloudProvider,
+								"--v=3",
+								"--boot-cmd=" + "/etc/sv/haproxy/reload",
 								"--configmap=" + c.Ingress.OffshootName(),
 								"--mount-location=" + "/etc/haproxy",
-								"--boot-cmd=" + "/etc/sv/reloader/reload",
-								"--v=3",
 							},
-							Ports:        []apiv1.ContainerPort{},
-							Resources:    c.Ingress.Spec.Resources,
-							VolumeMounts: VolumeMounts(secrets),
+							Ports:     []apiv1.ContainerPort{},
+							Resources: c.Ingress.Spec.Resources,
+							VolumeMounts: []apiv1.VolumeMount{
+								{
+									Name:      TLSCertificateVolumeName,
+									MountPath: "/etc/ssl/private/haproxy",
+								},
+							},
 						},
 					},
-					Volumes:     Volumes(secrets),
 					HostNetwork: true,
 					DNSPolicy:   apiv1.DNSClusterFirstWithHostNet,
+					Volumes: []apiv1.Volume{
+						{
+							Name: TLSCertificateVolumeName,
+							VolumeSource: apiv1.VolumeSource{
+								EmptyDir: &apiv1.EmptyDirVolumeSource{},
+							},
+						},
+					},
 				},
 			},
 		},
 	}
-	daemon.ObjectMeta = c.ensureOwnerReference(daemon.ObjectMeta)
+	deployment.ObjectMeta = c.ensureOwnerReference(deployment.ObjectMeta)
+	deployment.Spec.Template.Spec.Containers[0].Env = c.ensureEnvVars(deployment.Spec.Template.Spec.Containers[0].Env)
 
 	if c.Opt.EnableRBAC {
-		daemon.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
+		deployment.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
 	}
 
 	exporter, _ := c.getExporterSidecar()
 	if exporter != nil {
-		daemon.Spec.Template.Spec.Containers = append(daemon.Spec.Template.Spec.Containers, *exporter)
+		deployment.Spec.Template.Spec.Containers = append(deployment.Spec.Template.Spec.Containers, *exporter)
 	}
 
 	// adding tcp ports to pod template
@@ -563,10 +568,10 @@ func (c *hostPortController) newPods() *apps.Deployment {
 			ContainerPort: int32(podPort),
 			HostPort:      int32(podPort),
 		}
-		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, p)
+		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, p)
 	}
 	if c.Ingress.Stats() {
-		daemon.Spec.Template.Spec.Containers[0].Ports = append(daemon.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
+		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
 			Name:          api.StatsPortName,
 			Protocol:      "TCP",
 			ContainerPort: int32(c.Ingress.StatsPort()),
@@ -574,10 +579,10 @@ func (c *hostPortController) newPods() *apps.Deployment {
 	}
 
 	if ans, ok := c.Ingress.PodsAnnotations(); ok {
-		daemon.Spec.Template.Annotations = ans
+		deployment.Spec.Template.Annotations = ans
 	}
 
-	return daemon
+	return deployment
 }
 
 func (c *hostPortController) ensurePods(old *api.Ingress) (*apps.Deployment, error) {

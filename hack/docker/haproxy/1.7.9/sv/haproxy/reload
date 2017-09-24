@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -eou pipefail
+
+source /etc/envvars
+
+haproxy -c -f /etc/haproxy/haproxy.cfg
+sv reload haproxy

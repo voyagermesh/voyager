@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export TLS_MOUNTER_ARGS="$1 $2 $3 $4 $5"
+# http://wiki.bash-hackers.org/scripting/posparams#shifting
+shift 3
 export KLOADER_ARGS="$@"
 export > /etc/envvars
 
@@ -8,24 +11,15 @@ export > /etc/envvars
 # create haproxy.cfg dir
 mkdir /etc/haproxy
 
-CERT_DIR=/etc/ssl/private/haproxy
+echo "Mounting TLS certificates ..."
 mkdir -p /etc/ssl/private/haproxy
-
-# http://stackoverflow.com/a/2108296
-for dir in /srv/haproxy/secrets/*/
-do
-	# remove trailing /
-	dir=${dir%*/}
-	# just basename
-	secret=${dir##*/}
-
-	cat $dir/tls.crt >  $CERT_DIR/$secret.pem
-	echo '\n' >>  $CERT_DIR/$secret.pem
-	cat $dir/tls.key >> $CERT_DIR/$secret.pem
-done
+cmd="voyager tls-mounter $TLS_MOUNTER_ARGS"
+echo $cmd
+$cmd
+rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
 
 echo "Checking HAProxy configuration ..."
-cmd="/kloader check $KLOADER_ARGS"
+cmd="voyager kloader check $KLOADER_ARGS"
 echo $cmd
 $cmd
 rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi

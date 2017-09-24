@@ -3,7 +3,6 @@ package ingress
 import (
 	"fmt"
 	"reflect"
-	"strings"
 
 	"github.com/appscode/go/errors"
 	"github.com/appscode/go/log"
@@ -15,7 +14,8 @@ import (
 )
 
 const (
-	ExporterSidecarTag = "appscode/voyager:3.2.1"
+	ExporterSidecarTag       = "appscode/voyager:3.2.1"
+	TLSCertificateVolumeName = "voyager-certdir"
 )
 
 func (c *controller) ensureConfigMap() error {
@@ -186,48 +186,4 @@ func (c *controller) ensureOriginAnnotations(annotation map[string]string) (map[
 		ret[api.OriginName] = c.Ingress.GetName()
 	}
 	return ret, needsUpdate
-}
-
-func Volumes(secretNames []string) []apiv1.Volume {
-	skipper := make(map[string]bool)
-	vs := make([]apiv1.Volume, 0)
-	for _, s := range secretNames {
-		if strings.TrimSpace(s) == "" {
-			continue
-		}
-		if _, ok := skipper[s+"-secret-volume"]; ok {
-			continue
-		}
-		skipper[s+"-secret-volume"] = true
-		sVolume := apiv1.Volume{
-			Name: s + "-secret-volume",
-			VolumeSource: apiv1.VolumeSource{
-				Secret: &apiv1.SecretVolumeSource{
-					SecretName: s,
-				},
-			},
-		}
-		vs = append(vs, sVolume)
-	}
-	return vs
-}
-
-func VolumeMounts(secretNames []string) []apiv1.VolumeMount {
-	skipper := make(map[string]bool)
-	ms := make([]apiv1.VolumeMount, 0)
-	for _, s := range secretNames {
-		if strings.TrimSpace(s) == "" {
-			continue
-		}
-		if _, ok := skipper[s+"-secret-volume"]; ok {
-			continue
-		}
-		skipper[s+"-secret-volume"] = true
-		sMount := apiv1.VolumeMount{
-			Name:      s + "-secret-volume",
-			MountPath: "/srv/haproxy/secrets/" + s,
-		}
-		ms = append(ms, sMount)
-	}
-	return ms
 }
