@@ -4,10 +4,70 @@ import (
 	"fmt"
 
 	"github.com/appscode/go/log"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/golang/glog"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
+	rt "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/runtime"
-	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	"k8s.io/apimachinery/pkg/watch"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/util/workqueue"
 )
+
+func (c *Controller) initIngressWatcher() {
+	lw := &cache.ListWatch{
+		ListFunc: func(opts metav1.ListOptions) (rt.Object, error) {
+			return c.k8sClient.ExtensionsV1beta1().Ingresses(c.options.IngressRef.Namespace).List(metav1.ListOptions{
+				FieldSelector: fields.OneTermEqualSelector("metadata.name", c.options.IngressRef.Name).String(),
+			})
+		},
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+			return c.k8sClient.ExtensionsV1beta1().Ingresses(c.options.IngressRef.Namespace).Watch(metav1.ListOptions{
+				FieldSelector: fields.OneTermEqualSelector("metadata.name", c.options.IngressRef.Name).String(),
+			})
+		},
+	}
+
+	// create the workqueue
+	c.ingQueue = workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "ingress")
+
+	// Bind the workqueue to a cache with the help of an informer. This way we make sure that
+	// whenever the cache is updated, the pod key is added to the workqueue.
+	// Note that when we finally process the item from the workqueue, we might see a newer version
+	// of the Secret than the version which was responsible for triggering the update.
+	c.ingIndexer, c.ingInformer = cache.NewIndexerInformer(lw, &apiv1.Secret{}, c.options.ResyncPeriod, cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			if r, err := api.NewEngressFromIngress(obj); err == nil {
+				if err := r.IsValid(c.options.CloudProvider); err == nil {
+					key, err := cache.MetaNamespaceKeyFunc(obj)
+					if err == nil {
+						c.ingQueue.Add(key)
+					}
+				}
+			}
+		},
+		UpdateFunc: func(old interface{}, new interface{}) {
+			if r, err := api.NewEngressFromIngress(new); err == nil {
+				if err := r.IsValid(c.options.CloudProvider); err == nil {
+					key, err := cache.MetaNamespaceKeyFunc(new)
+					if err == nil {
+						c.ingQueue.Add(key)
+					}
+				}
+			}
+		},
+		DeleteFunc: func(obj interface{}) {
+			// IndexerInformer uses a delta queue, therefore for deletes we have to use this
+			// key function.
+			key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
+			if err == nil {
+				c.ingQueue.Add(key)
+			}
+		},
+	}, cache.Indexers{})
+}
 
 func (c *Controller) runIngressWatcher() {
 	for c.processNextIngress() {
@@ -26,7 +86,7 @@ func (c *Controller) processNextIngress() bool {
 	defer c.ingQueue.Done(key)
 
 	// Invoke the method containing the business logic
-	err := c.runIngressInitializer(key.(string))
+	err := c.syncIngress(key.(string))
 	if err == nil {
 		// Forget about the #AddRateLimited history of the key on every successful synchronization.
 		// This ensures that future processing of updates for this key is not delayed because of
@@ -56,7 +116,7 @@ func (c *Controller) processNextIngress() bool {
 // syncToStdout is the business logic of the controller. In this controller it simply prints
 // information about the deployment to stdout. In case an error happened, it has to simply return the error.
 // The retry logic should not be part of the business logic.
-func (c *Controller) runIngressInitializer(key string) error {
+func (c *Controller) syncIngress(key string) error {
 	obj, exists, err := c.ingIndexer.GetByKey(key)
 	if err != nil {
 		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
@@ -67,8 +127,13 @@ func (c *Controller) runIngressInitializer(key string) error {
 		// Below we will warm up our cache with a Ingress, so that we will see a delete for one d
 		fmt.Printf("Ingress %s does not exist anymore\n", key)
 	} else {
-		d := obj.(*extensions.Ingress)
+		d, err := api.NewEngressFromIngress(obj)
+		if err != nil {
+			return err
+		}
 		fmt.Printf("Sync/Add/Update for Ingress %s\n", d.GetName())
+
+		return c.mountIngress(d)
 	}
 	return nil
 }

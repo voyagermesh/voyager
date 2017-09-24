@@ -372,8 +372,15 @@ func (c *controller) generateConfig() error {
 						StickyCookieHash: bk.StickyCookieHash,
 					},
 				}
-				if secretName, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoTLS {
-					def.SecretName = secretName
+				if ref, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoTLS {
+					if ref.Kind == api.ResourceKindCertificate {
+						crd, err := c.VoyagerClient.Certificates(c.Ingress.Namespace).Get(ref.Name, metav1.GetOptions{})
+						if err == nil {
+							def.SecretName = crd.SecretName()
+						}
+					} else {
+						def.SecretName = ref.Name
+					}
 				}
 				td.TCPService = append(td.TCPService, def)
 			}

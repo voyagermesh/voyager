@@ -51,36 +51,21 @@ func NewCertStore(kubeClient clientset.Interface, voyagerClient acs.VoyagerV1bet
 	return store, nil
 }
 
-func (s *CertStore) Name(crd *api.Certificate) string {
-	if crd.Spec.Storage.Secret != nil {
-		if crd.Spec.Storage.Secret.Name == "" {
-			return "cert-" + crd.Name
-		}
-		return crd.Spec.Storage.Secret.Name
-	} else if crd.Spec.Storage.Vault != nil {
-		if crd.Spec.Storage.Vault.Name == "" {
-			return "cert-" + crd.Name
-		}
-		return crd.Spec.Storage.Vault.Name
-	}
-	return ""
-}
-
 func (s *CertStore) Get(crd *api.Certificate) (crt *x509.Certificate, key *rsa.PrivateKey, err error) {
 	var pemCrt, pemKey []byte
 
 	if crd.Spec.Storage.Secret != nil {
 		var secret *apiv1.Secret
-		secret, err = s.KubeClient.CoreV1().Secrets(crd.Namespace).Get(s.Name(crd), metav1.GetOptions{})
+		secret, err = s.KubeClient.CoreV1().Secrets(crd.Namespace).Get(crd.SecretName(), metav1.GetOptions{})
 		if err == nil {
-			if data, found := secret.Data["tls.crt"]; !found {
-				err = fmt.Errorf("secret %s@%s is missing tls.crt", s.Name(crd), crd.Namespace)
+			if data, found := secret.Data[apiv1.TLSCertKey]; !found {
+				err = fmt.Errorf("secret %s@%s is missing tls.crt", crd.SecretName(), crd.Namespace)
 				return
 			} else {
 				pemCrt = data
 			}
-			if data, found := secret.Data["tls.key"]; !found {
-				err = fmt.Errorf("secret %s@%s is missing tls.key", s.Name(crd), crd.Namespace)
+			if data, found := secret.Data[apiv1.TLSPrivateKeyKey]; !found {
+				err = fmt.Errorf("secret %s@%s is missing tls.key", crd.SecretName(), crd.Namespace)
 				return
 			} else {
 				pemKey = data
@@ -88,18 +73,18 @@ func (s *CertStore) Get(crd *api.Certificate) (crt *x509.Certificate, key *rsa.P
 		}
 	} else if crd.Spec.Storage.Vault != nil {
 		var secret *vault.Secret
-		secret, err = s.VaultClient.Logical().Read(path.Join(crd.Spec.Storage.Vault.Prefix, crd.Namespace, s.Name(crd)))
+		secret, err = s.VaultClient.Logical().Read(path.Join(crd.Spec.Storage.Vault.Prefix, crd.Namespace, crd.SecretName()))
 		if err != nil {
 			return
 		}
-		if data, found := secret.Data["tls.crt"]; !found {
-			err = fmt.Errorf("secret %s@%s is missing tls.crt", s.Name(crd), crd.Namespace)
+		if data, found := secret.Data[apiv1.TLSCertKey]; !found {
+			err = fmt.Errorf("secret %s@%s is missing tls.crt", crd.SecretName(), crd.Namespace)
 			return
 		} else {
 			pemCrt = []byte(data.(string))
 		}
-		if data, found := secret.Data["tls.key"]; !found {
-			err = fmt.Errorf("secret %s@%s is missing tls.key", s.Name(crd), crd.Namespace)
+		if data, found := secret.Data[apiv1.TLSPrivateKeyKey]; !found {
+			err = fmt.Errorf("secret %s@%s is missing tls.key", crd.SecretName(), crd.Namespace)
 			return
 		} else {
 			pemKey = []byte(data.(string))
@@ -110,7 +95,7 @@ func (s *CertStore) Get(crd *api.Certificate) (crt *x509.Certificate, key *rsa.P
 		var certs []*x509.Certificate
 		certs, err = cert.ParseCertsPEM(pemCrt)
 		if err != nil {
-			err = fmt.Errorf("secret %s@%s contains bad certificate. Reason: %s", s.Name(crd), crd.Namespace, err)
+			err = fmt.Errorf("secret %s@%s contains bad certificate. Reason: %s", crd.SecretName(), crd.Namespace, err)
 			return
 		}
 		crt = certs[0]
@@ -134,23 +119,23 @@ func (s *CertStore) Get(crd *api.Certificate) (crt *x509.Certificate, key *rsa.P
 func (s *CertStore) Save(crd *api.Certificate, cert acme.CertificateResource) error {
 	if crd.Spec.Storage.Secret != nil {
 		_, err := v1u.CreateOrPatchSecret(s.KubeClient,
-			metav1.ObjectMeta{Namespace: crd.Namespace, Name: s.Name(crd)},
+			metav1.ObjectMeta{Namespace: crd.Namespace, Name: crd.SecretName()},
 			func(in *apiv1.Secret) *apiv1.Secret {
 				in.Type = apiv1.SecretTypeTLS
 				if in.Data == nil {
 					in.Data = make(map[string][]byte)
 				}
-				in.Data["tls.crt"] = cert.Certificate
-				in.Data["tls.key"] = cert.PrivateKey
+				in.Data[apiv1.TLSCertKey] = cert.Certificate
+				in.Data[apiv1.TLSPrivateKeyKey] = cert.PrivateKey
 				return in
 			})
 		return err
 	} else if crd.Spec.Storage.Vault != nil {
 		data := map[string]interface{}{
-			"tls.crt": string(cert.Certificate),
-			"tls.key": string(cert.PrivateKey),
+			apiv1.TLSCertKey:       string(cert.Certificate),
+			apiv1.TLSPrivateKeyKey: string(cert.PrivateKey),
 		}
-		_, err := s.VaultClient.Logical().Write(path.Join(crd.Spec.Storage.Vault.Prefix, crd.Namespace, s.Name(crd)), data)
+		_, err := s.VaultClient.Logical().Write(path.Join(crd.Spec.Storage.Vault.Prefix, crd.Namespace, crd.SecretName()), data)
 		return err
 	}
 

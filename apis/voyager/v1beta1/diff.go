@@ -216,3 +216,18 @@ func (c Certificate) IsRateLimited() bool {
 	}
 	return false
 }
+
+func (c Certificate) SecretName() string {
+	if c.Spec.Storage.Secret != nil {
+		if c.Spec.Storage.Secret.Name == "" {
+			return "cert-" + c.Name
+		}
+		return c.Spec.Storage.Secret.Name
+	} else if c.Spec.Storage.Vault != nil {
+		if c.Spec.Storage.Vault.Name == "" {
+			return "cert-" + c.Name
+		}
+		return c.Spec.Storage.Vault.Name
+	}
+	return ""
+}
