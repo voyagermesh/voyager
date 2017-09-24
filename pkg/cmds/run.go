@@ -2,15 +2,13 @@ package cmds
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	_ "net/http/pprof"
-	"os"
-	"strings"
 	"time"
 
 	"github.com/appscode/go/log"
 	hpe "github.com/appscode/haproxy_exporter/exporter"
+	"github.com/appscode/kutil"
 	"github.com/appscode/pat"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
@@ -23,7 +21,6 @@ import (
 	"github.com/spf13/cobra"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	clientset "k8s.io/client-go/kubernetes"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -32,7 +29,7 @@ var (
 	kubeconfigPath string
 	opt            config.Options = config.Options{
 		HAProxyImage:      "appscode/haproxy:1.7.9-4.0.0-alpha.1",
-		OperatorNamespace: namespace(),
+		OperatorNamespace: kutil.Namespace(),
 		OperatorService:   "voyager-operator",
 		HTTPChallengePort: 56791,
 		EnableRBAC:        false,
@@ -150,16 +147,4 @@ func runOperator() {
 	http.Handle("/", m)
 	log.Infoln("Listening on", address)
 	log.Fatal(http.ListenAndServe(address, nil))
-}
-
-func namespace() string {
-	if ns := os.Getenv("KUBE_NAMESPACE"); ns != "" {
-		return ns
-	}
-	if data, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace"); err == nil {
-		if ns := strings.TrimSpace(string(data)); len(ns) > 0 {
-			return ns
-		}
-	}
-	return apiv1.NamespaceDefault
 }
