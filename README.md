@@ -75,7 +75,12 @@ Voyager can automaticallty provision and refresh SSL certificates issued from Le
 Read more about supported DNS Providers [here](/docs/user-guide/certificate/provider.md)
 
 ## Supported Versions
-Kubernetes 1.3+
+Please pick a version of Voyager that matches your Kubernetes installation.
+
+| Voyager Version                                                           | Kubernetes Version |
+|---------------------------------------------------------------------------|--------------------|
+| [4.0.0-rc.0](https://github.com/appscode/voyager/releases/tag/4.0.0-rc.0) | 1.7.x+             |
+| [3.2.1](https://github.com/appscode/voyager/releases/tag/3.2.1)           | 1.5.x - 1.7.x      |
 
 
 ## User Guide
