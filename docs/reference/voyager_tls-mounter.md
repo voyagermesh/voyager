@@ -1,25 +1,27 @@
-## voyager export
+## voyager tls-mounter
 
-Export Prometheus metrics for HAProxy
+Mounts TLS certificates in HAProxy pods
 
 ### Synopsis
 
 
-Export Prometheus metrics for HAProxy
+Mounts TLS certificates in HAProxy pods
 
 ```
-voyager export [flags]
+voyager tls-mounter [command] [flags]
 ```
 
 ### Options
 
 ```
-      --address string                        Address to listen on for web interface and telemetry. (default ":56790")
-      --haproxy.server-metric-fields string   Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1 (default "2,3,4,5,6,7,8,9,13,14,15,16,17,18,21,24,33,35,38,39,40,41,42,43,44")
-      --haproxy.timeout duration              Timeout for trying to get stats from HAProxy. (default 5s)
-  -h, --help                                  help for export
-      --kubeconfig string                     Path to kubeconfig file with authorization information (the master location is set by the master flag).
-      --master string                         The address of the Kubernetes API server (overrides any value in kubeconfig)
+  -b, --boot-cmd string              Bash script that will be run on every change of the file
+  -h, --help                         help for tls-mounter
+      --ingress-api-version string   API version of ingress resource
+      --ingress-name string          Name of ingress resource
+      --kubeconfig string            Path to kubeconfig file with authorization information (the master location is set by the master flag).
+      --master string                The address of the Kubernetes API server (overrides any value in kubeconfig)
+      --mount string                 Path where tls certificates are stored for HAProxy (default "/etc/ssl/private/haproxy")
+      --resync-period duration       If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out. (default 5m0s)
 ```
 
 ### Options inherited from parent commands

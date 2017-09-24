@@ -1,25 +1,16 @@
-## voyager export
+## voyager kloader
 
-Export Prometheus metrics for HAProxy
+Reloads HAProxy when configmap changes
 
 ### Synopsis
 
 
-Export Prometheus metrics for HAProxy
-
-```
-voyager export [flags]
-```
+Reloads HAProxy when configmap changes
 
 ### Options
 
 ```
-      --address string                        Address to listen on for web interface and telemetry. (default ":56790")
-      --haproxy.server-metric-fields string   Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1 (default "2,3,4,5,6,7,8,9,13,14,15,16,17,18,21,24,33,35,38,39,40,41,42,43,44")
-      --haproxy.timeout duration              Timeout for trying to get stats from HAProxy. (default 5s)
-  -h, --help                                  help for export
-      --kubeconfig string                     Path to kubeconfig file with authorization information (the master location is set by the master flag).
-      --master string                         The address of the Kubernetes API server (overrides any value in kubeconfig)
+  -h, --help   help for kloader
 ```
 
 ### Options inherited from parent commands
@@ -39,4 +30,6 @@ voyager export [flags]
 
 ### SEE ALSO
 * [voyager](voyager.md)	 - Voyager by Appscode - Secure Ingress Controller for Kubernetes
+* [voyager kloader check](voyager_kloader_check.md)	 - Validate kloader configuration
+* [voyager kloader run](voyager_kloader_run.md)	 - Run and hold kloader
 
