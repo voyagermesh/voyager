@@ -374,11 +374,6 @@ func (c *nodePortController) Update(mode UpdateMode, old *api.Ingress) error {
 			}
 		}
 	}
-
-	if mode&UpdateRBAC > 0 {
-		c.ensureRoles()
-	}
-
 	return nil
 }
 

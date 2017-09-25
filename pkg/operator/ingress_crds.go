@@ -126,12 +126,8 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 	} else {
 		if ctrl.IsExists() {
 			var updateMode ingress.UpdateMode
-
 			if oldEngress.IsStatsChanged(*newEngress) {
 				updateMode |= ingress.UpdateStats
-				if oldEngress.IsStatsSecretChanged(*newEngress) {
-					updateMode |= ingress.UpdateRBAC
-				}
 			}
 			// Check for changes in ingress.appscode.com/monitoring-agent
 			if newMonSpec, newErr := newEngress.MonitorSpec(); newErr == nil {
