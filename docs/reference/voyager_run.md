@@ -18,7 +18,7 @@ voyager run [flags]
       --cloud-config string                   The path to the cloud provider configuration file.  Empty string for no configuration file.
   -c, --cloud-provider string                 Name of cloud provider
       --custom-templates string               Glob pattern of custom HAProxy template files used to override built-in templates
-      --haproxy-image string                  haproxy image name to be run (default "appscode/haproxy:1.7.9-4.0.0-rc.0")
+      --haproxy-image string                  haproxy image name to be run (default "appscode/haproxy:1.7.9-4.0.0-rc.1")
       --haproxy.server-metric-fields string   Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1 (default "2,3,4,5,6,7,8,9,13,14,15,16,17,18,21,24,33,35,38,39,40,41,42,43,44")
       --haproxy.timeout duration              Timeout for trying to get stats from HAProxy. (default 5s)
   -h, --help                                  help for run
