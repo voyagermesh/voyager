@@ -203,6 +203,8 @@ const (
 	HSTSPreload = IngressKey + "/hsts-preload"
 	// If specified, this HSTS rule applies to all of the site's subdomains as well.
 	HSTSIncludeSubDomains = IngressKey + "/hsts-include-subdomains"
+
+	WhitelistSourceRange = IngressKey + "/whitelist-source-range"
 )
 
 const (
@@ -300,6 +302,10 @@ func (r Ingress) HSTSPreload() bool {
 func (r Ingress) HSTSIncludeSubDomains() bool {
 	v, _ := GetBool(r.Annotations, HSTSIncludeSubDomains)
 	return v
+}
+
+func (r Ingress) WhitelistSourceRange() string {
+	return GetString(r.Annotations, WhitelistSourceRange)
 }
 
 func (r Ingress) ProxyBodySize() string {

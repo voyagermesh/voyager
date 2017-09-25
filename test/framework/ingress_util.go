@@ -36,7 +36,10 @@ func (i *ingressInvocation) GetSkeleton() *api_v1beta1.Ingress {
 				api_v1beta1.DefaultsTimeOut: `{"connect": "5s", "server": "10s"}`,
 			},
 		},
-		Spec: api_v1beta1.IngressSpec{Rules: make([]api_v1beta1.IngressRule, 0)},
+		Spec: api_v1beta1.IngressSpec{
+			Rules:         make([]api_v1beta1.IngressRule, 0),
+			FrontendRules: make([]api_v1beta1.FrontendRule, 0),
+		},
 	}
 
 	return ing
@@ -60,6 +63,33 @@ func (i *ingressInvocation) SetSkeletonRule(ing *api_v1beta1.Ingress) {
 					},
 				},
 			},
+		},
+		{
+			IngressRuleValue: api_v1beta1.IngressRuleValue{
+				HTTP: &api_v1beta1.HTTPIngressRuleValue{
+					Port: intstr.FromInt(3124),
+					Paths: []api_v1beta1.HTTPIngressPath{
+						{
+							Path: "/testpath",
+							Backend: api_v1beta1.HTTPIngressBackend{
+								IngressBackend: api_v1beta1.IngressBackend{
+									ServiceName: i.TestServerName(),
+									ServicePort: intstr.FromInt(80),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func (i *ingressInvocation) SetSkeletonFrontendRule(ing *api_v1beta1.Ingress) {
+	ing.Spec.FrontendRules = []api_v1beta1.FrontendRule{
+		{
+			Port:  intstr.FromInt(3124),
+			Rules: []string{"timeout client 60s"},
 		},
 	}
 }

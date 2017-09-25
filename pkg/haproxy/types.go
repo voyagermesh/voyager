@@ -28,6 +28,7 @@ type SharedInfo struct {
 	HSTSMaxAge            int
 	HSTSPreload           bool
 	HSTSIncludeSubDomains bool
+	WhitelistSourceRange  string
 }
 
 type StatsInfo struct {

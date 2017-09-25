@@ -27,6 +27,7 @@ var _ = Describe("IngressOperations", func() {
 		f = root.Invoke()
 		ing = f.Ingress.GetSkeleton()
 		f.Ingress.SetSkeletonRule(ing)
+		f.Ingress.SetSkeletonFrontendRule(ing)
 	})
 
 	JustBeforeEach(func() {
@@ -589,6 +590,22 @@ var _ = Describe("IngressOperations", func() {
 				return Expect(r.Status).Should(Equal(http.StatusBadRequest))
 			})
 			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+	Describe("With Whitelist Specified", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.WhitelistSourceRange] = "192.168.99.100"
+		})
+
+		It("Should Add Whitelisted Ips", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			// Manually check if whitelisted ips are added to each frontend rule of generated HAProxy config
+			// TODO @ dipta: how to test if whitelist is actually working?
 		})
 	})
 })

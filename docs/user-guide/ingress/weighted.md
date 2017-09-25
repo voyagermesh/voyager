@@ -10,8 +10,6 @@ metadata:
   labels:
     app: deployment
     app-version: v1
-  annotations:
-    ingress.appscode.com/backend-weight: "90"
   name: deployment-1
   namespace: default
 spec:
@@ -49,8 +47,6 @@ metadata:
   labels:
     app: deployment
     app-version: v2
-  annotations:
-      ingress.appscode.com/backend-weight: "10"
   name: deploymet-2
   namespace: default
 spec:

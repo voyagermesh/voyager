@@ -150,4 +150,46 @@ var _ = Describe("IngressTCP", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
+
+	FDescribe("With Whitelist Specified", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.WhitelistSourceRange] = "192.168.99.100"
+			ing.Spec.Rules = []api.IngressRule{
+				{
+					IngressRuleValue: api.IngressRuleValue{
+						TCP: &api.TCPIngressRuleValue{
+							Port: intstr.FromInt(4001),
+							NoTLS: true,
+							Backend: api.IngressBackend{
+								ServiceName: f.Ingress.TestServerName(),
+								ServicePort: intstr.FromInt(4343),
+							},
+						},
+					},
+				},
+				{
+					IngressRuleValue: api.IngressRuleValue{
+						TCP: &api.TCPIngressRuleValue{
+							Port: intstr.FromInt(4002),
+							NoTLS: true,
+							Backend: api.IngressBackend{
+								ServiceName: f.Ingress.TestServerName(),
+								ServicePort: intstr.FromInt(4545),
+							},
+						},
+					},
+				},
+			}
+		})
+
+		It("Should Add Whitelisted Ips to TCP Frontend", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			// Manually check if whitelisted ips are added to each tcp frontend rule of generated HAProxy config
+			// TODO @ dipta: how to test if whitelist is actually working?
+		})
+	})
 })
