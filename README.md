@@ -60,7 +60,7 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
 | Supports AWS certificate manager | :x: | :white_check_mark: |
 
 ## Certificate
-Voyager can automaticallty provision and refresh SSL certificates issued from Let's Encrypt using a custom Kubernetes [Certificate](/docs/user-guide/certificate) resource. 
+Voyager can automaticallty provision and refresh SSL certificates issued from Let's Encrypt using a custom Kubernetes [Certificate](/docs/user-guide/certificate) resource.
 
 **Feautures**
 - Provision free TLS certificates from Let's Encrypt,
@@ -77,10 +77,10 @@ Read more about supported DNS Providers [here](/docs/user-guide/certificate/prov
 ## Supported Versions
 Please pick a version of Voyager that matches your Kubernetes installation.
 
-| Voyager Version                                                                      | Kubernetes Version |
-|--------------------------------------------------------------------------------------|--------------------|
-| [4.0.0-rc.1 (uses CRD)](https://github.com/appscode/voyager/releases/tag/4.0.0-rc.1) | 1.7.x+             |
-| [3.2.1 (uses TPR)](https://github.com/appscode/voyager/releases/tag/3.2.1)           | 1.5.x - 1.7.x      |
+| Voyager Version                                                                      | Docs                                                                   | Kubernetes Version |
+|--------------------------------------------------------------------------------------|------------------------------------------------------------------------|--------------------|
+| [4.0.0-rc.1](https://github.com/appscode/voyager/releases/tag/4.0.0-rc.1) (uses CRD) | [User Guide](https://github.com/appscode/voyager/tree/4.0.0-rc.1/docs) | 1.7.x+             |
+| [3.2.1](https://github.com/appscode/voyager/releases/tag/3.2.1) (uses TPR)           | [User Guide](https://github.com/appscode/voyager/tree/3.2.1/docs)      | 1.5.x - 1.7.x      |
 
 
 ## User Guide
