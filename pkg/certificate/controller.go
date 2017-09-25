@@ -18,7 +18,6 @@ import (
 	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
-	"github.com/tamalsaha/go-oneliners"
 	"github.com/xenolf/lego/acme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -174,7 +173,6 @@ func (c *Controller) getACMEClient() error {
 		if err != nil {
 			return fmt.Errorf("failed to register user %s. Reason: %s", c.acmeUser.Email, err)
 		}
-		oneliners.FILE(registration)
 		c.acmeUser.Registration = registration
 		if err := c.acmeClient.AgreeToTOS(); err != nil {
 			return fmt.Errorf("failed to register user %s. Reason: %s", c.acmeUser.Email, err)
