@@ -214,6 +214,7 @@ func (c *controller) generateConfig() error {
 		HSTSMaxAge:            c.Ingress.HSTSMaxAge(),
 		HSTSPreload:           c.Ingress.HSTSPreload(),
 		HSTSIncludeSubDomains: c.Ingress.HSTSIncludeSubDomains(),
+		WhitelistSourceRange:  c.Ingress.WhitelistSourceRange(),
 	}
 	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
 		si.AcceptProxy = c.Ingress.KeepSourceIP()
