@@ -161,7 +161,7 @@ func (c *Controller) getACMEClient() error {
 		log.Infoln("No ACME user found, registering a new ACME user")
 		userKey, err := rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
-			return errors.FromErr(err).WithMessage("Failed to generate Key for New Acme User")
+			return fmt.Errorf("failed to generate key for Acme User")
 		}
 		c.acmeUser.Key = userKey
 	}

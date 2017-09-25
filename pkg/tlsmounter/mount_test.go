@@ -52,8 +52,8 @@ func TestMountRemove(t *testing.T) {
 	wr, err := ioutil.NewAtomicWriter(os.TempDir() + "/tls-mount/rm/")
 	if assert.Nil(t, err) {
 		payload := map[string]ioutil.FileProjection{
-			"one": {Mode: 0777, Data: []byte("one")},
-			"two": {Mode: 0777, Data: []byte("two")},
+			"one": {Mode: 0755, Data: []byte("one")},
+			"two": {Mode: 0755, Data: []byte("two")},
 		}
 		wr.Write(payload)
 

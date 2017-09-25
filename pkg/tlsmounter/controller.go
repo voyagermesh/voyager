@@ -50,7 +50,6 @@ type Controller struct {
 	recorder      record.EventRecorder
 
 	store *certificate.CertStore
-	// Ingress *api.Ingress
 
 	lock   sync.Mutex
 	writer *ioutilz.AtomicWriter
@@ -173,22 +172,6 @@ func (c *Controller) initTLSCache(ing *api.Ingress) error {
 		}
 	}
 	return nil
-}
-
-func secretToPEMData(s *apiv1.Secret) ([]byte, error) {
-	var buf bytes.Buffer
-	if data, found := s.Data[apiv1.TLSCertKey]; found {
-		buf.Write(data)
-	} else {
-		return nil, fmt.Errorf("secret %s@%s is missing required key %s", s.Name, s.Namespace, apiv1.TLSCertKey)
-	}
-	buf.WriteRune('\n')
-	if data, found := s.Data[apiv1.TLSPrivateKeyKey]; found {
-		buf.Write(data)
-	} else {
-		return nil, fmt.Errorf("secret %s@%s is missing required key %s", s.Name, s.Namespace, apiv1.TLSPrivateKeyKey)
-	}
-	return buf.Bytes(), nil
 }
 
 func certificateToPEMData(crt *x509.Certificate, key *rsa.PrivateKey) []byte {
