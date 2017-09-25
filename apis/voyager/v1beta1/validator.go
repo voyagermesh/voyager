@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/appscode/go/reflect"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 type indices struct {
@@ -41,16 +41,20 @@ func (r *Ingress) IsValid(cloudProvider string) error {
 	}
 	for ti, tls := range r.Spec.TLS {
 		if tls.SecretName != "" {
-			if !reflect.IsZero(tls.SecretRef) &&
+			if tls.SecretRef != nil &&
 				!(tls.SecretRef.Name == tls.SecretName &&
 					(tls.SecretRef.Namespace == "" || tls.SecretRef.Namespace == r.Namespace) &&
 					(tls.SecretRef.Kind == "" || tls.SecretRef.Kind == "Secret")) {
 				return fmt.Errorf("spec.tls[%d] specifies different secret name and secret ref", ti)
 			}
-			tls.SecretRef.APIVersion = "v1"
-			tls.SecretRef.Kind = "Secret"
-			tls.SecretRef.Name = tls.SecretName
-		} else if reflect.IsZero(tls.SecretRef) {
+			if r.Spec.TLS[ti].SecretRef == nil {
+				r.Spec.TLS[ti].SecretRef = &apiv1.ObjectReference{
+					APIVersion: "v1",
+					Kind:       "Secret",
+					Name:       tls.SecretName,
+				}
+			}
+		} else if tls.SecretRef == nil {
 			return fmt.Errorf("spec.tls[%d] specifies no secret name and secret ref", ti)
 		} else {
 			if tls.SecretRef.Kind != "" && sets.NewString("Secret", "Certificate").Has(tls.SecretRef.Kind) {

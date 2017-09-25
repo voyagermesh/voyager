@@ -56,9 +56,9 @@ func (r Ingress) HasChanged(o Ingress) (bool, error) {
 	return !reflect.DeepEqual(ra, oa), nil
 }
 
-func (r Ingress) FindTLSSecret(h string) (apiv1.ObjectReference, bool) {
+func (r Ingress) FindTLSSecret(h string) (*apiv1.ObjectReference, bool) {
 	if h == "" {
-		return apiv1.ObjectReference{}, false
+		return nil, false
 	}
 	for _, tls := range r.Spec.TLS {
 		for _, host := range tls.Hosts {
@@ -67,7 +67,7 @@ func (r Ingress) FindTLSSecret(h string) (apiv1.ObjectReference, bool) {
 			}
 		}
 	}
-	return apiv1.ObjectReference{}, false
+	return nil, false
 }
 
 func (r Ingress) IsPortChanged(o Ingress, cloudProvider string) bool {
