@@ -288,6 +288,7 @@ func (c *Client) QueryRegistration() (*RegistrationResource, error) {
 // the server.
 func (c *Client) AgreeToTOS() error {
 	reg := c.user.GetRegistration()
+
 	reg.Body.Agreement = c.user.GetRegistration().TosURL
 	reg.Body.Resource = "reg"
 	_, err := postJSON(c.jws, c.user.GetRegistration().URI, c.user.GetRegistration().Body, nil)
