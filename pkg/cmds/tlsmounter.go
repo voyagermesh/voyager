@@ -3,6 +3,7 @@ package cmds
 import (
 	"time"
 
+	"github.com/appscode/go/log"
 	"github.com/appscode/kutil"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/tlsmounter"
@@ -10,7 +11,6 @@ import (
 	kubernetes "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/clientcmd"
-	"github.com/appscode/go/log"
 )
 
 var (
