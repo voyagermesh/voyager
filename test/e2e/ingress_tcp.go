@@ -151,7 +151,7 @@ var _ = Describe("IngressTCP", func() {
 		})
 	})
 
-	FDescribe("With Whitelist Specified", func() {
+	Describe("With Whitelist Specified", func() {
 		BeforeEach(func() {
 			ing.Annotations[api.WhitelistSourceRange] = "192.168.99.100"
 			ing.Spec.Rules = []api.IngressRule{
