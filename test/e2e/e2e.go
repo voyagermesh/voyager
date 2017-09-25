@@ -61,7 +61,7 @@ var _ = BeforeSuite(func() {
 
 		go op.Run()
 	}
-	root.EventuallyTPR().Should(Succeed())
+	root.EventuallyCRD().Should(Succeed())
 
 	Eventually(invocation.Ingress.Setup).Should(BeNil())
 })
