@@ -77,10 +77,10 @@ Read more about supported DNS Providers [here](/docs/user-guide/certificate/prov
 ## Supported Versions
 Please pick a version of Voyager that matches your Kubernetes installation.
 
-| Voyager Version                                                           | Kubernetes Version |
-|---------------------------------------------------------------------------|--------------------|
-| [4.0.0-rc.1](https://github.com/appscode/voyager/releases/tag/4.0.0-rc.1) | 1.7.x+             |
-| [3.2.1](https://github.com/appscode/voyager/releases/tag/3.2.1)           | 1.5.x - 1.7.x      |
+| Voyager Version                                                                      | Kubernetes Version |
+|--------------------------------------------------------------------------------------|--------------------|
+| [4.0.0-rc.1 (uses CRD)](https://github.com/appscode/voyager/releases/tag/4.0.0-rc.1) | 1.7.x+             |
+| [3.2.1 (uses TPR)](https://github.com/appscode/voyager/releases/tag/3.2.1)           | 1.5.x - 1.7.x      |
 
 
 ## User Guide
