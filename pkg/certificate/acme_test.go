@@ -1,128 +1,65 @@
 package certificate
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
-	"encoding/pem"
-	"os"
 	"testing"
 
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	"github.com/appscode/voyager/apis/voyager/v1beta1"
+	fakevoyager "github.com/appscode/voyager/client/fake"
+	"github.com/appscode/voyager/pkg/config"
 	"github.com/stretchr/testify/assert"
-	"github.com/xenolf/lego/acme"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/fake"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-func TestNewDomainCollection(t *testing.T) {
-	d := NewDomainCollection("a.com")
-	assert.Equal(t, `["a.com"]`, d.String())
-
-	d.Append("hello.world").Append("foo.bar")
-	assert.Equal(t, `["a.com","hello.world","foo.bar"]`, d.String())
-}
-
-func TestACMECertData(t *testing.T) {
-	secret := &apiv1.Secret{
-		TypeMeta: metav1.TypeMeta{
-			Kind: "Secret",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      defaultCertPrefix + "hello",
-			Namespace: "default",
-		},
-		Data: map[string][]byte{
-			apiv1.TLSCertKey:       []byte("Certificate key"),
-			apiv1.TLSPrivateKeyKey: []byte("Certificate private key"),
-		},
-		Type: apiv1.SecretTypeTLS,
-	}
-
-	cert, err := NewACMECertDataFromSecret(secret, &api.Certificate{})
-	assert.Nil(t, err)
-
-	convertedCert := cert.ToSecret("hello", "default", "")
-	assert.Equal(t, secret, convertedCert)
-}
-
-func TestACMECertDataError(t *testing.T) {
-	secret := &apiv1.Secret{
-		TypeMeta: metav1.TypeMeta{
-			Kind: "Secret",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      defaultCertPrefix + "hello",
-			Namespace: "default",
-		},
-		Data: map[string][]byte{
-			apiv1.TLSPrivateKeyKey: []byte("Certificate private key"),
-		},
-		Type: apiv1.SecretTypeTLS,
-	}
-
-	_, err := NewACMECertDataFromSecret(secret, &api.Certificate{})
-	assert.NotNil(t, err)
-}
-
 func TestClient(t *testing.T) {
-	keyBits := 32 // small value keeps test fast
-	key, err := rsa.GenerateKey(rand.Reader, keyBits)
-	if err != nil {
-		t.Fatal("Could not generate test key:", err)
-	}
-	user := &ACMEUserData{
-		Email:        "test@test.com",
-		Registration: new(acme.RegistrationResource),
-		Key: pem.EncodeToMemory(&pem.Block{
-			Type:  "RSA PRIVATE KEY",
-			Bytes: x509.MarshalPKCS1PrivateKey(key),
-		}),
-	}
-
-	config := &ACMEConfig{
-		ChallengeProvider: "http",
-		UserData:          user,
-	}
-	_, err = NewACMEClient(config)
-	assert.Nil(t, err)
-
-	if testing.Verbose() {
-		config := &ACMEConfig{
-			ChallengeProvider: "http",
-			UserData:          user,
-			DNSCredentials: map[string][]byte{
-				"GCE_SERVICE_ACCOUNT_DATA": []byte(os.Getenv("TEST_GCE_SERVICE_ACCOUNT_DATA")),
-				"GCE_PROJECT":              []byte(os.Getenv("TEST_GCE_PROJECT")),
+	controller, err := NewController(
+		fake.NewSimpleClientset(
+			&apiv1.Secret{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      "foo",
+					Namespace: "bar",
+				},
+				Data: map[string][]byte{
+					v1beta1.ACMEUserEmail: []byte("test@test.com"),
+					v1beta1.ACMEServerURL: []byte(LetsEncryptStagingURL),
+				},
 			},
-		}
-		_, err = NewACMEClient(config)
-		assert.Nil(t, err)
-	}
-}
-
-func TestEqualDomain(t *testing.T) {
-	cert := &x509.Certificate{
-		DNSNames: []string{"test1.com", "test2.com"},
-	}
-	cert.Subject.CommonName = "test.com"
-	tpr := &api.Certificate{Spec: api.CertificateSpec{Domains: []string{"test.com", "test1.com", "test2.com"}}}
-	a := ACMECertData{Domains: NewDomainCollection(tpr.Spec.Domains...)}
-	assert.Equal(t, a.EqualDomains(cert), true)
-
-	cert = &x509.Certificate{
-		DNSNames: []string{"test1.com", "test2.com"},
-	}
-	cert.Subject.CommonName = "test.com"
-	tpr = &api.Certificate{Spec: api.CertificateSpec{Domains: []string{"test.com", "test1.com", "test3.com"}}}
-	a = ACMECertData{Domains: NewDomainCollection(tpr.Spec.Domains...)}
-	assert.Equal(t, a.EqualDomains(cert), false)
-
-	cert = &x509.Certificate{
-		DNSNames: []string{"test1.com", "test2.com"},
-	}
-	cert.Subject.CommonName = "test.com"
-	tpr = &api.Certificate{Spec: api.CertificateSpec{Domains: []string{"test.com", "test1.com", "test3.com", "test2.com"}}}
-	a = ACMECertData{Domains: NewDomainCollection(tpr.Spec.Domains...)}
-	assert.Equal(t, a.EqualDomains(cert), false)
+		),
+		fakevoyager.NewSimpleClientset(
+			&v1beta1.Ingress{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      "foo",
+					Namespace: "bar",
+				},
+			},
+		).VoyagerV1beta1(),
+		config.Options{},
+		&v1beta1.Certificate{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      "foo",
+				Namespace: "bar",
+			},
+			Spec: v1beta1.CertificateSpec{
+				Domains: []string{"test.com"},
+				ChallengeProvider: v1beta1.ChallengeProvider{
+					HTTP: &v1beta1.HTTPChallengeProvider{
+						Ingress: apiv1.ObjectReference{
+							APIVersion: "voyager.appscode.com/v1beta1",
+							Kind:       "Ingress",
+							Name:       "foo",
+							Namespace:  "bar",
+						},
+					},
+				},
+				ACMEUserSecretName: "foo",
+				Storage: v1beta1.CertificateStorage{
+					Secret: &v1beta1.SecretStore{},
+				},
+			},
+		},
+	)
+	assert.Nil(t, err)
+	err = controller.getACMEClient()
+	assert.Nil(t, err)
 }

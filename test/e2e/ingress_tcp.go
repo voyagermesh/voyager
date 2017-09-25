@@ -158,7 +158,7 @@ var _ = Describe("IngressTCP", func() {
 				{
 					IngressRuleValue: api.IngressRuleValue{
 						TCP: &api.TCPIngressRuleValue{
-							Port: intstr.FromInt(4001),
+							Port:  intstr.FromInt(4001),
 							NoTLS: true,
 							Backend: api.IngressBackend{
 								ServiceName: f.Ingress.TestServerName(),
@@ -170,7 +170,7 @@ var _ = Describe("IngressTCP", func() {
 				{
 					IngressRuleValue: api.IngressRuleValue{
 						TCP: &api.TCPIngressRuleValue{
-							Port: intstr.FromInt(4002),
+							Port:  intstr.FromInt(4002),
 							NoTLS: true,
 							Backend: api.IngressBackend{
 								ServiceName: f.Ingress.TestServerName(),

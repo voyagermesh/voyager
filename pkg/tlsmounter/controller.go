@@ -40,7 +40,7 @@ type Options struct {
 }
 
 func (opts Options) UsesEngress() bool {
-	return opts.IngressRef.Kind == api.SchemeGroupVersion.String()
+	return opts.IngressRef.APIVersion == api.SchemeGroupVersion.String()
 }
 
 type Controller struct {

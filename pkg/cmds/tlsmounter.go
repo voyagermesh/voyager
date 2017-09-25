@@ -1,13 +1,12 @@
 package cmds
 
 import (
-	"log"
 	"time"
 
+	"github.com/appscode/go/log"
 	"github.com/appscode/kutil"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/tlsmounter"
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	kubernetes "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
@@ -52,7 +51,7 @@ func runTLSMounter() {
 	// creates the connection
 	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
 	if err != nil {
-		glog.Fatal(err)
+		log.Fatal(err)
 	}
 
 	// creates the clientset

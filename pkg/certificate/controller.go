@@ -105,9 +105,6 @@ func NewController(kubeClient clientset.Interface, extClient acs.VoyagerV1beta1I
 			if err != nil {
 				return nil, err
 			}
-			if _, ok := dnsSecret.Data[api.ACMEUserEmail]; !ok {
-				return nil, fmt.Errorf("dns challenge provider credential %s not found", ctrl.crd.Spec.ChallengeProvider.DNS.CredentialSecretName)
-			}
 			ctrl.DNSCredentials = dnsSecret.Data
 		}
 	}
@@ -132,7 +129,7 @@ func (c *Controller) Process() error {
 	if c.curCert == nil {
 		return c.create()
 	}
-	if c.crd.ShouldRenew(c.curCert) {
+	if c.curCert != nil && c.crd.ShouldRenew(c.curCert) {
 		return c.renew()
 	}
 	return nil
@@ -176,6 +173,7 @@ func (c *Controller) getACMEClient() error {
 		if err != nil {
 			return fmt.Errorf("failed to register user %s. Reason: %s", c.acmeUser.Email, err)
 		}
+		c.acmeUser.Registration = registration
 		if err := c.acmeClient.AgreeToTOS(); err != nil {
 			return fmt.Errorf("failed to register user %s. Reason: %s", c.acmeUser.Email, err)
 		}
@@ -184,7 +182,7 @@ func (c *Controller) getACMEClient() error {
 				in.Data = make(map[string][]byte)
 			}
 			in.Data[api.ACMEUserPrivatekey] = cert.EncodePrivateKeyPEM(c.acmeUser.Key.(*rsa.PrivateKey))
-			regBytes, _ := json.Marshal(registration)
+			regBytes, _ := json.Marshal(c.acmeUser.Registration)
 			in.Data[api.ACMERegistrationData] = regBytes
 			return in
 		})
