@@ -1,6 +1,5 @@
 package e2e
 
-/*
 import (
 	"net/http"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -497,4 +496,3 @@ var _ = Describe("IngressTLS", func() {
 		})
 	})
 })
-*/
