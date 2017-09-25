@@ -264,6 +264,13 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 		return errors.FromErr(err).Err()
 	}
 
+	// If RBAC is enabled we need to ensure service account
+	if c.Opt.EnableRBAC {
+		if err := c.ensureRBAC(); err != nil {
+			return err
+		}
+	}
+
 	_, err = c.ensurePods(old)
 	if err != nil {
 		c.recorder.Eventf(
