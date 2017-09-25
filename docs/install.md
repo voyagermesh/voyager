@@ -70,9 +70,9 @@ $ kubectl get pods --all-namespaces -l app=voyager --watch
 
 Once the operator pods are running, you can cancel the above command by typing `Ctrl+C`.
 
-Now, to confirm TPR groups have been registered by the operator, run the following command:
+Now, to confirm CRD groups have been registered by the operator, run the following command:
 ```console
-$ kubectl get thirdpartyresources -l app=voyager
+$ kubectl get crd -l app=voyager
 ```
 
 Now, you are ready to create your first ingress using Voyager.

@@ -33,7 +33,7 @@ $ kubectl delete ingress.voyager.appscode.com --all --cascade=false
 $ kubectl delete certificate.voyager.appscode.com --all --cascade=false
 ```
 
-5. Delete the old TPR-registration.
+5. Delete the old CRD-registration.
 ```console
-kubectl delete thirdpartyresource -l app=voyager
+kubectl delete crd -l app=voyager
 ```

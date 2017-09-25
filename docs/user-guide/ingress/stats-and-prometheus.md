@@ -26,7 +26,7 @@ Voyager operator can create [service monitors](https://coreos.com/operators/prom
  - `/extensions/v1beta1/namespaces/:ns/ingresses/:name/metrics` :  Scrape this endpoint to monitor HAProxy running for a Kubernetes ingress
  - `/voyager.appscode.com/v1beta1/namespaces/:ns/ingresses/:name/metrics`: Scrape this endpoint to monitor HAProxy running for an AppsCode extended ingress
 
-First deploy Prometheus operator so that Prometheus TPR groups are registered. Then, to enable this feature, please use the following annotations:
+First deploy Prometheus operator so that Prometheus CRD groups are registered. Then, to enable this feature, please use the following annotations:
 
 |  Keys  |   Value  |  Default |  Description |
 |--------|-----------|----------|-------------|

@@ -10,6 +10,12 @@ metadata:
     release: "{{ .Release.Name }}"
 rules:
 - apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - "*"
+- apiGroups:
   - extensions
   resources:
   - thirdpartyresources
