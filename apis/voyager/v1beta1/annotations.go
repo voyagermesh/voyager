@@ -305,8 +305,7 @@ func (r Ingress) HSTSIncludeSubDomains() bool {
 }
 
 func (r Ingress) WhitelistSourceRange() string {
-	v := GetString(r.Annotations, WhitelistSourceRange)
-	return v
+	return GetString(r.Annotations, WhitelistSourceRange)
 }
 
 func (r Ingress) ProxyBodySize() string {
