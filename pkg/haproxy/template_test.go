@@ -250,6 +250,11 @@ func TestTemplate(t *testing.T) {
 				FrontendName: "with-subdomains-preload",
 				OffloadSSL:   true,
 			},
+			{
+				SharedInfo:   &SharedInfo{WhitelistSourceRange: "192.168.100.1 192.168.99.100"},
+				FrontendName: "with-whitelist-http",
+				OffloadSSL:   true,
+			},
 		},
 		TCPService: []*TCPService{
 			{
@@ -353,6 +358,11 @@ func TestTemplate(t *testing.T) {
 						{Name: "first", IP: "10.244.2.2", Port: "2324"},
 					},
 				},
+			},
+			{
+				SharedInfo:   &SharedInfo{WhitelistSourceRange: "192.168.100.1 192.168.99.100"},
+				FrontendName: "with-whitelist-tcp",
+				Port:         "4446",
 			},
 		},
 	}
