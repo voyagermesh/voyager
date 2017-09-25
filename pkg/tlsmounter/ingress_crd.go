@@ -41,7 +41,7 @@ func (c *Controller) initIngressCRDWatcher() {
 	// whenever the cache is updated, the pod key is added to the workqueue.
 	// Note that when we finally process the item from the workqueue, we might see a newer version
 	// of the Secret than the version which was responsible for triggering the update.
-	c.engIndexer, c.engInformer = cache.NewIndexerInformer(lw, &apiv1.Secret{}, c.options.ResyncPeriod, cache.ResourceEventHandlerFuncs{
+	c.engIndexer, c.engInformer = cache.NewIndexerInformer(lw, &api.Ingress{}, c.options.ResyncPeriod, cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			if r, ok := obj.(*api.Ingress); ok {
 				if err := r.IsValid(c.options.CloudProvider); err == nil {

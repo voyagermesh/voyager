@@ -201,10 +201,10 @@ func (c *Controller) projectSecret(r *apiv1.Secret, projections map[string]iouti
 			return err
 		}
 		if !crts[0].Equal(crt) {
-			projections[pemPath] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(crt, key)}
+			projections[r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(crt, key)}
 		}
 	} else {
-		projections[pemPath] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(crt, key)}
+		projections[r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(crt, key)}
 	}
 	return nil
 }
