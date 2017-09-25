@@ -14,6 +14,10 @@ spec:
       labels:
         app: "{{ template "name" . }}"
         release: "{{ .Release.Name }}"
+{{- if and .Values.criticalAddon (eq .Release.Namespace "kube-system") }}
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+{{- end -}}
     spec:
       serviceAccountName: {{ if .Values.rbac.create }}{{ template "fullname" . }}{{ else }}"{{ .Values.rbac.serviceAccountName }}"{{ end }}
       containers:
@@ -38,4 +42,9 @@ spec:
         - hostPath:
             path: {{ .Values.persistence.hostPath | quote }}
           name: cloudconfig
+{{- end -}}
+{{- if and .Values.criticalAddon (eq .Release.Namespace "kube-system") }}
+      tolerations:
+      - key: "CriticalAddonsOnly"
+        operator: "Exists"
 {{- end -}}

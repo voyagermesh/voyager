@@ -7,7 +7,10 @@ imageTag: 4.0.0-rc.1
 cloudProvider:
 ## The path to the cloud provider configuration file. Empty string for no configuration file.
 ## ie. for azure use /etc/kubernetes/azure.json
-# cloudConfig: /etc/kubernetes/azure.json
+cloudConfig: ''
+## Installs voyager operator as critical addon
+## https://kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/
+criticalAddon: false
 ## Log level for voyager
 logLevel: 3
 persistence:
