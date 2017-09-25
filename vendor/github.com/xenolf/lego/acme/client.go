@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"github.com/tamalsaha/go-oneliners"
 )
 
 var (
@@ -287,8 +288,9 @@ func (c *Client) QueryRegistration() (*RegistrationResource, error) {
 // AgreeToTOS updates the Client registration and sends the agreement to
 // the server.
 func (c *Client) AgreeToTOS() error {
+	oneliners.FILE(c.user)
 	reg := c.user.GetRegistration()
-
+	oneliners.FILE(reg, reg.TosURL)
 	reg.Body.Agreement = c.user.GetRegistration().TosURL
 	reg.Body.Resource = "reg"
 	_, err := postJSON(c.jws, c.user.GetRegistration().URI, c.user.GetRegistration().Body, nil)

@@ -16,6 +16,7 @@ import (
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	vault "github.com/hashicorp/vault/api"
 	"github.com/xenolf/lego/acme"
+	k8serror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
@@ -57,6 +58,9 @@ func (s *CertStore) Get(crd *api.Certificate) (crt *x509.Certificate, key *rsa.P
 	if crd.Spec.Storage.Secret != nil {
 		var secret *apiv1.Secret
 		secret, err = s.KubeClient.CoreV1().Secrets(crd.Namespace).Get(crd.SecretName(), metav1.GetOptions{})
+		if k8serror.IsNotFound(err) {
+			return nil, nil, nil
+		}
 		if err == nil {
 			if data, found := secret.Data[apiv1.TLSCertKey]; !found {
 				err = fmt.Errorf("secret %s@%s is missing tls.crt", crd.SecretName(), crd.Namespace)
@@ -74,6 +78,10 @@ func (s *CertStore) Get(crd *api.Certificate) (crt *x509.Certificate, key *rsa.P
 	} else if crd.Spec.Storage.Vault != nil {
 		var secret *vault.Secret
 		secret, err = s.VaultClient.Logical().Read(path.Join(crd.Spec.Storage.Vault.Prefix, crd.Namespace, crd.SecretName()))
+		if secret == nil && err == nil {
+			return nil, nil, nil
+		}
+
 		if err != nil {
 			return
 		}
