@@ -4,6 +4,6 @@ RUN set -x \
   && apk add --update --no-cache ca-certificates
 
 COPY templates /srv/voyager/templates/
-COPY voyager /voyager
+COPY voyager /usr/bin/voyager
 
-ENTRYPOINT ["/voyager"]
+ENTRYPOINT ["voyager"]
