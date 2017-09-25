@@ -16,7 +16,6 @@ type UpdateMode int
 
 const (
 	UpdateStats UpdateMode = 1 << iota // Update things for stats update
-	UpdateRBAC                         // Update RBAC Roles as stats secret name is changes
 )
 
 func (c *controller) updateConfigMap() error {
