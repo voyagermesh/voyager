@@ -117,7 +117,7 @@ Kubernetes [client-go](https://github.com/kubernetes/client-go#branches-and-tags
 from the `glide.yaml` file. This means there might be breaking changes between point releases of the operator.
 This generally manifests as changed annotation keys or their meaning.
 Please always check the release notes for upgrade instructions.
- - TPR version: appscode.com/v1beta1 is considered in beta. This means any changes to the YAML format will be backward
+ - CRD version: appscode.com/v1beta1 is considered in beta. This means any changes to the YAML format will be backward
 compatible among different versions of the operator.
 
 ---

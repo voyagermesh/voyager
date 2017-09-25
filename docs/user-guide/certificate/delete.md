@@ -1,5 +1,5 @@
 ## Deleting a Certificate
-Deleting a Kubernetes Certificate object will only delete the certificate TPR from kubernetes.
+Deleting a Kubernetes Certificate object will only delete the certificate CRD from kubernetes.
 It will not delete the obtained certificate and user account secret from kubernetes. User have to manually delete
 the secrets for removing those.
 
