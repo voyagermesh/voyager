@@ -10,7 +10,6 @@ import (
 	"github.com/golang/glog"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
 	rt "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -24,12 +23,14 @@ func (c *Controller) initIngressCRDWatcher() {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (rt.Object, error) {
 			return c.VoyagerClient.Ingresses(c.options.IngressRef.Namespace).List(metav1.ListOptions{
-				FieldSelector: fields.OneTermEqualSelector("metadata.name", c.options.IngressRef.Name).String(),
+			// https://github.com/kubernetes/kubernetes/issues/51046
+			//FieldSelector: fields.OneTermEqualSelector("metadata.name", c.options.IngressRef.Name).String(),
 			})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 			return c.VoyagerClient.Ingresses(c.options.IngressRef.Namespace).Watch(metav1.ListOptions{
-				FieldSelector: fields.OneTermEqualSelector("metadata.name", c.options.IngressRef.Name).String(),
+			// https://github.com/kubernetes/kubernetes/issues/51046
+			//FieldSelector: fields.OneTermEqualSelector("metadata.name", c.options.IngressRef.Name).String(),
 			})
 		},
 	}
@@ -44,6 +45,9 @@ func (c *Controller) initIngressCRDWatcher() {
 	c.engIndexer, c.engInformer = cache.NewIndexerInformer(lw, &api.Ingress{}, c.options.ResyncPeriod, cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			if r, ok := obj.(*api.Ingress); ok {
+				if r.Name != c.options.IngressRef.Name {
+					return
+				}
 				if err := r.IsValid(c.options.CloudProvider); err == nil {
 					key, err := cache.MetaNamespaceKeyFunc(obj)
 					if err == nil {
@@ -54,6 +58,9 @@ func (c *Controller) initIngressCRDWatcher() {
 		},
 		UpdateFunc: func(old interface{}, new interface{}) {
 			if r, ok := new.(*api.Ingress); ok {
+				if r.Name != c.options.IngressRef.Name {
+					return
+				}
 				if err := r.IsValid(c.options.CloudProvider); err == nil {
 					key, err := cache.MetaNamespaceKeyFunc(new)
 					if err == nil {
@@ -63,11 +70,16 @@ func (c *Controller) initIngressCRDWatcher() {
 			}
 		},
 		DeleteFunc: func(obj interface{}) {
-			// IndexerInformer uses a delta queue, therefore for deletes we have to use this
-			// key function.
-			key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
-			if err == nil {
-				c.engQueue.Add(key)
+			if r, ok := obj.(*api.Ingress); ok {
+				if r.Name != c.options.IngressRef.Name {
+					return
+				}
+				// IndexerInformer uses a delta queue, therefore for deletes we have to use this
+				// key function.
+				key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
+				if err == nil {
+					c.engQueue.Add(key)
+				}
 			}
 		},
 	}, cache.Indexers{})
@@ -203,6 +215,7 @@ func (c *Controller) mountIngress(ing *api.Ingress) error {
 	projections := map[string]ioutilz.FileProjection{}
 	err := c.projectIngress(ing, projections)
 	if err != nil {
+		fmt.Println(">>>>>>>>>>>>>>>>>>>>>>", err)
 		return err
 	}
 	if len(projections) > 0 {
