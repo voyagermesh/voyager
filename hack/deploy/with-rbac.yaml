@@ -15,7 +15,8 @@ rules:
   - extensions
   resources:
   - thirdpartyresources
-  verbs: ["get", "create", "list"]
+  verbs:
+  - "*"
 - apiGroups:
   - voyager.appscode.com
   resources: ["*"]
