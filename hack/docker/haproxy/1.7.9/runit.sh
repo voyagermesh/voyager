@@ -13,7 +13,7 @@ mkdir /etc/haproxy
 
 echo "Mounting TLS certificates ..."
 mkdir -p /etc/ssl/private/haproxy
-cmd="voyager tls-mounter $TLS_MOUNTER_ARGS"
+cmd="voyager tls-mounter --init-only $TLS_MOUNTER_ARGS"
 echo $cmd
 $cmd
 rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
