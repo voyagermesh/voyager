@@ -39,7 +39,7 @@ func (c *Controller) initCertificateCRDWatcher() {
 	// whenever the cache is updated, the pod key is added to the workqueue.
 	// Note that when we finally process the item from the workqueue, we might see a newer version
 	// of the Secret than the version which was responsible for triggering the update.
-	c.cIndexer, c.cInformer = cache.NewIndexerInformer(lw, &apiv1.Secret{}, c.options.ResyncPeriod, cache.ResourceEventHandlerFuncs{
+	c.cIndexer, c.cInformer = cache.NewIndexerInformer(lw, &api.Certificate{}, c.options.ResyncPeriod, cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			if r, ok := obj.(*api.Certificate); ok {
 				if c.isCertificateUsedInIngress(r) {
@@ -148,7 +148,18 @@ func (c *Controller) syncCertificate(key string) error {
 		d := obj.(*api.Certificate)
 		fmt.Printf("Sync/Add/Update for Certificate %s\n", d.GetName())
 
-		return c.mountCertificate(d)
+		err := c.mountCertificate(d)
+		if err != nil {
+			if r, e2 := c.getIngress(); e2 == nil {
+				c.recorder.Event(
+					r.ObjectReference(),
+					apiv1.EventTypeWarning,
+					eventer.EventReasonIngressTLSMountFailed,
+					err.Error(),
+				)
+			}
+			return err
+		}
 	}
 	return nil
 }
@@ -165,10 +176,15 @@ func (c *Controller) getCertificate(name string) (*api.Certificate, error) {
 }
 
 func (c *Controller) projectCertificate(r *api.Certificate, projections map[string]ioutilz.FileProjection) error {
-	crt, key, err := c.store.Get(r)
+	pemCrt, pemKey, err := c.store.Get(r)
 	if err != nil {
 		return err
 	}
+	certs, err := cert.ParseCertsPEM(pemCrt)
+	if err != nil {
+		return err
+	}
+	crt := certs[0]
 
 	pemPath := filepath.Join(c.options.MountPath, r.SecretName()+".pem")
 	if _, err := os.Stat(pemPath); !os.IsNotExist(err) {
@@ -182,10 +198,10 @@ func (c *Controller) projectCertificate(r *api.Certificate, projections map[stri
 			return err
 		}
 		if !crts[0].Equal(crt) {
-			projections[r.SecretName()+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(crt, key)}
+			projections[r.SecretName()+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
 		}
 	} else {
-		projections[r.SecretName()+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(crt, key)}
+		projections[r.SecretName()+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
 	}
 	return nil
 }
@@ -197,25 +213,13 @@ func (c *Controller) mountCertificate(crt *api.Certificate) error {
 		return err
 	}
 	if len(projections) > 0 {
-		r, err := c.getIngress()
-		if err != nil {
-			return err
-		}
-
 		c.lock.Lock()
 		defer c.lock.Unlock()
 		err = c.writer.Write(projections)
 		if err != nil {
-			c.recorder.Event(
-				r.ObjectReference(),
-				apiv1.EventTypeWarning,
-				eventer.EventReasonIngressTLSMountFailed,
-				err.Error(),
-			)
 			return err
-		} else {
-			return runCmd(c.options.CmdFile)
 		}
+		return runCmd(c.options.CmdFile)
 	}
 	return nil
 }

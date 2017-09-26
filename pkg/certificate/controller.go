@@ -121,15 +121,21 @@ func NewController(kubeClient clientset.Interface, extClient acs.VoyagerV1beta1I
 }
 
 func (c *Controller) Process() error {
-	var err error
-	c.curCert, _, err = c.store.Get(c.crd)
+	pemCrt, _, err := c.store.Get(c.crd)
 	if err != nil {
 		return err
 	}
-	if c.curCert == nil {
+	if pemCrt == nil {
 		return c.create()
 	}
-	if c.curCert != nil && c.crd.ShouldRenew(c.curCert) {
+
+	var certs []*x509.Certificate
+	certs, err = cert.ParseCertsPEM(pemCrt)
+	if err != nil {
+		return fmt.Errorf("secret %s@%s contains bad certificate. Reason: %s", c.crd.SecretName(), c.crd.Namespace, err)
+	}
+	c.curCert = certs[0]
+	if c.crd.ShouldRenew(c.curCert) {
 		return c.renew()
 	}
 	return nil
