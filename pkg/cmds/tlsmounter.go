@@ -11,6 +11,7 @@ import (
 	kubernetes "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/clientcmd"
+	"os"
 )
 
 var (
@@ -23,9 +24,10 @@ var (
 		ResyncPeriod:   5 * time.Minute,
 		MaxNumRequeues: 5,
 	}
+	initOnly = false
 )
 
-func NewCmdTLSMount() *cobra.Command {
+func NewCmdTLSMounter() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "tls-mounter [command]",
 		Short:             `Mounts TLS certificates in HAProxy pods`,
@@ -43,6 +45,7 @@ func NewCmdTLSMount() *cobra.Command {
 	cmd.Flags().StringVarP(&opts.CmdFile, "boot-cmd", "b", opts.CmdFile, "Bash script that will be run on every change of the file")
 	cmd.Flags().DurationVar(&opts.ResyncPeriod, "resync-period", opts.ResyncPeriod, "If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out.")
 	cmd.Flags().StringVarP(&opts.CloudProvider, "cloud-provider", "c", opts.CloudProvider, "Name of cloud provider")
+	cmd.Flags().BoolVar(&initOnly, "init-only", initOnly, "If true, only inits tls mount")
 
 	return cmd
 }
@@ -61,6 +64,10 @@ func runTLSMounter() {
 	ctrl := tlsmounter.New(k8sClient, voyagerClient, opts)
 	if err := ctrl.Setup(); err != nil {
 		log.Fatalln(err)
+	}
+
+	if initOnly {
+		os.Exit(0)
 	}
 
 	// Now let's start the controller
