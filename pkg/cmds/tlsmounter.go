@@ -1,6 +1,7 @@
 package cmds
 
 import (
+	"os"
 	"time"
 
 	"github.com/appscode/go/log"
@@ -11,7 +12,6 @@ import (
 	kubernetes "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/clientcmd"
-	"os"
 )
 
 var (
