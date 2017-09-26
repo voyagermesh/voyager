@@ -29,6 +29,7 @@ type SharedInfo struct {
 	HSTSPreload           bool
 	HSTSIncludeSubDomains bool
 	WhitelistSourceRange  string
+	MaxConnections        int
 }
 
 type StatsInfo struct {
@@ -106,6 +107,7 @@ type Endpoint struct {
 	IP             string
 	Port           string
 	Weight         int
+	MaxConnections int
 	ExternalName   string
 	UseDNSResolver bool
 	DNSResolver    string

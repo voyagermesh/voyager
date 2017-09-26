@@ -608,4 +608,41 @@ var _ = Describe("IngressOperations", func() {
 			// TODO @ dipta: how to test if whitelist is actually working?
 		})
 	})
+
+	Describe("With Global MaxConnections Specified", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.MaxConnections] = "2999"
+		})
+
+		It("Should Add maxcon value to Global HAProxy Config", shouldResponseHTTP)
+	})
+
+	Describe("With Pod MaxConnections Specified", func() {
+		BeforeEach(func() {
+			meta, err := f.Ingress.CreateResourceWithBackendMaxConn()
+			Expect(err).NotTo(HaveOccurred())
+
+			ing.Spec.Rules = []api.IngressRule{
+				{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
+								{
+									Path: "/testpath",
+									Backend: api.HTTPIngressBackend{
+										IngressBackend: api.IngressBackend{
+											ServiceName: meta.Name,
+											ServicePort: intstr.FromInt(80),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+		})
+
+		It("Should Add maxcon value to Specific HAProxy Backend", shouldResponseHTTP)
+	})
 })

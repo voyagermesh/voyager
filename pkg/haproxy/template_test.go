@@ -57,6 +57,7 @@ func TestTemplate(t *testing.T) {
 				{Name: "first", IP: "10.244.2.2", Port: "2324"},
 			},
 		},
+		MaxConnections: 3000,
 	}
 	testParsedConfig := TemplateData{
 		SharedInfo: si,
@@ -254,6 +255,22 @@ func TestTemplate(t *testing.T) {
 				SharedInfo:   &SharedInfo{WhitelistSourceRange: "192.168.100.1 192.168.99.100"},
 				FrontendName: "with-whitelist-http",
 				OffloadSSL:   true,
+			},
+			{
+				SharedInfo:   si,
+				FrontendName: "http-with-backend-maxconn",
+				Port:         80,
+				Paths: []*HTTPPath{
+					{
+						Backend: Backend{
+							Name: "backend-maxconn",
+							Endpoints: []*Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323", MaxConnections: 20, Weight: 2},
+								{Name: "second", IP: "10.244.2.2", Port: "2323", Weight: 5},
+							},
+						},
+					},
+				},
 			},
 		},
 		TCPService: []*TCPService{
