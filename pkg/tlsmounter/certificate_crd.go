@@ -165,10 +165,15 @@ func (c *Controller) getCertificate(name string) (*api.Certificate, error) {
 }
 
 func (c *Controller) projectCertificate(r *api.Certificate, projections map[string]ioutilz.FileProjection) error {
-	crt, key, err := c.store.Get(r)
+	pemCrt, pemKey, err := c.store.Get(r)
 	if err != nil {
 		return err
 	}
+	certs, err := cert.ParseCertsPEM(pemCrt)
+	if err != nil {
+		return err
+	}
+	crt := certs[0]
 
 	pemPath := filepath.Join(c.options.MountPath, r.SecretName()+".pem")
 	if _, err := os.Stat(pemPath); !os.IsNotExist(err) {
@@ -182,10 +187,10 @@ func (c *Controller) projectCertificate(r *api.Certificate, projections map[stri
 			return err
 		}
 		if !crts[0].Equal(crt) {
-			projections[r.SecretName()+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(crt, key)}
+			projections[r.SecretName()+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
 		}
 	} else {
-		projections[r.SecretName()+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(crt, key)}
+		projections[r.SecretName()+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
 	}
 	return nil
 }

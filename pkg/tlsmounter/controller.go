@@ -2,8 +2,6 @@ package tlsmounter
 
 import (
 	"bytes"
-	"crypto/rsa"
-	"crypto/x509"
 	"errors"
 	"fmt"
 	"os/exec"
@@ -26,7 +24,6 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
-	"k8s.io/client-go/util/cert"
 	"k8s.io/client-go/util/workqueue"
 )
 
@@ -174,11 +171,11 @@ func (c *Controller) initTLSCache(ing *api.Ingress) error {
 	return nil
 }
 
-func certificateToPEMData(crt *x509.Certificate, key *rsa.PrivateKey) []byte {
+func certificateToPEMData(crt, key []byte) []byte {
 	var buf bytes.Buffer
-	buf.Write(cert.EncodeCertPEM(crt))
+	buf.Write(crt)
 	buf.WriteRune('\n')
-	buf.Write(cert.EncodePrivateKeyPEM(key))
+	buf.Write(key)
 	return buf.Bytes()
 }
 
