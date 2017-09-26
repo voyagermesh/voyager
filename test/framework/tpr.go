@@ -7,7 +7,7 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-func (f *Framework) EventuallyTPR() GomegaAsyncAssertion {
+func (f *Framework) EventuallyCRD() GomegaAsyncAssertion {
 	return Eventually(func() error {
 		crdClient := f.CRDClient.ApiextensionsV1beta1().CustomResourceDefinitions()
 		_, err := crdClient.Get(vapi.ResourceTypeIngress+"."+vapi.GroupName, metav1.GetOptions{})
