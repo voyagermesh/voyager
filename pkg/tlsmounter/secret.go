@@ -147,7 +147,11 @@ func (c *Controller) syncSecret(key string) error {
 		secret := obj.(*apiv1.Secret)
 		fmt.Printf("Sync/Add/Update for Secret %s\n", secret.GetName())
 
-		return c.mountSecret(secret)
+		err := c.mountSecret(secret)
+		if err != nil {
+			log.Errorln(err)
+			return err
+		}
 	}
 	return nil
 }
@@ -170,7 +174,7 @@ func (c *Controller) projectSecret(r *apiv1.Secret, projections map[string]iouti
 	}
 
 	pemCrt, found := r.Data[apiv1.TLSCertKey]
-	if found {
+	if !found {
 		return fmt.Errorf("secret %s@%s is missing tls.crt", r.Name, c.options.IngressRef.Namespace)
 	}
 	secretCerts, err := cert.ParseCertsPEM(pemCrt)
