@@ -148,7 +148,18 @@ func (c *Controller) syncCertificate(key string) error {
 		d := obj.(*api.Certificate)
 		fmt.Printf("Sync/Add/Update for Certificate %s\n", d.GetName())
 
-		return c.mountCertificate(d)
+		err := c.mountCertificate(d)
+		if err != nil {
+			if r, e2 := c.getIngress(); e2 == nil {
+				c.recorder.Event(
+					r.ObjectReference(),
+					apiv1.EventTypeWarning,
+					eventer.EventReasonIngressTLSMountFailed,
+					err.Error(),
+				)
+			}
+			return err
+		}
 	}
 	return nil
 }
@@ -202,25 +213,13 @@ func (c *Controller) mountCertificate(crt *api.Certificate) error {
 		return err
 	}
 	if len(projections) > 0 {
-		r, err := c.getIngress()
-		if err != nil {
-			return err
-		}
-
 		c.lock.Lock()
 		defer c.lock.Unlock()
 		err = c.writer.Write(projections)
 		if err != nil {
-			c.recorder.Event(
-				r.ObjectReference(),
-				apiv1.EventTypeWarning,
-				eventer.EventReasonIngressTLSMountFailed,
-				err.Error(),
-			)
 			return err
-		} else {
-			return runCmd(c.options.CmdFile)
 		}
+		return runCmd(c.options.CmdFile)
 	}
 	return nil
 }

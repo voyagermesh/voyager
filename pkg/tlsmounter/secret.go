@@ -149,7 +149,14 @@ func (c *Controller) syncSecret(key string) error {
 
 		err := c.mountSecret(secret)
 		if err != nil {
-			log.Errorln(err)
+			if r, e2 := c.getIngress(); e2 == nil {
+				c.recorder.Event(
+					r.ObjectReference(),
+					apiv1.EventTypeWarning,
+					eventer.EventReasonIngressTLSMountFailed,
+					err.Error(),
+				)
+			}
 			return err
 		}
 	}
@@ -209,25 +216,13 @@ func (c *Controller) mountSecret(s *apiv1.Secret) error {
 		return err
 	}
 	if len(projections) > 0 {
-		r, err := c.getIngress()
-		if err != nil {
-			return err
-		}
-
 		c.lock.Lock()
 		defer c.lock.Unlock()
 		err = c.writer.Write(projections)
 		if err != nil {
-			c.recorder.Event(
-				r.ObjectReference(),
-				apiv1.EventTypeWarning,
-				eventer.EventReasonIngressTLSMountFailed,
-				err.Error(),
-			)
 			return err
-		} else {
-			return runCmd(c.options.CmdFile)
 		}
+		return runCmd(c.options.CmdFile)
 	}
 	return nil
 }

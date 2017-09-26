@@ -146,7 +146,16 @@ func (c *Controller) syncIngressCRD(key string) error {
 		d := obj.(*api.Ingress)
 		fmt.Printf("Sync/Add/Update for Ingress %s\n", d.GetName())
 
-		return c.mountIngress(d)
+		err = c.mountIngress(d)
+		if err != nil {
+			c.recorder.Event(
+				d.ObjectReference(),
+				apiv1.EventTypeWarning,
+				eventer.EventReasonIngressTLSMountFailed,
+				err.Error(),
+			)
+			return err
+		}
 	}
 	return nil
 }
@@ -215,7 +224,6 @@ func (c *Controller) mountIngress(ing *api.Ingress) error {
 	projections := map[string]ioutilz.FileProjection{}
 	err := c.projectIngress(ing, projections)
 	if err != nil {
-		fmt.Println(">>>>>>>>>>>>>>>>>>>>>>", err)
 		return err
 	}
 	if len(projections) > 0 {
@@ -223,16 +231,9 @@ func (c *Controller) mountIngress(ing *api.Ingress) error {
 		defer c.lock.Unlock()
 		err := c.writer.Write(projections)
 		if err != nil {
-			c.recorder.Event(
-				ing.ObjectReference(),
-				apiv1.EventTypeWarning,
-				eventer.EventReasonIngressTLSMountFailed,
-				err.Error(),
-			)
 			return err
-		} else {
-			return runCmd(c.options.CmdFile)
 		}
+		return runCmd(c.options.CmdFile)
 	}
 	return nil
 }

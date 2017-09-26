@@ -173,9 +173,9 @@ func (c *Controller) initTLSCache(ing *api.Ingress) error {
 
 func certificateToPEMData(crt, key []byte) []byte {
 	var buf bytes.Buffer
-	buf.Write(crt)
+	buf.Write(bytes.TrimSpace(crt))
 	buf.WriteRune('\n')
-	buf.Write(key)
+	buf.Write(bytes.TrimSpace(key))
 	return buf.Bytes()
 }
 

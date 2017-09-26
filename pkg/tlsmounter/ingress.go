@@ -5,12 +5,14 @@ import (
 
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	rt "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/watch"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 	extension "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
@@ -133,7 +135,16 @@ func (c *Controller) syncIngress(key string) error {
 		}
 		fmt.Printf("Sync/Add/Update for Ingress %s\n", d.GetName())
 
-		return c.mountIngress(d)
+		err = c.mountIngress(d)
+		if err != nil {
+			c.recorder.Event(
+				d.ObjectReference(),
+				apiv1.EventTypeWarning,
+				eventer.EventReasonIngressTLSMountFailed,
+				err.Error(),
+			)
+			return err
+		}
 	}
 	return nil
 }
