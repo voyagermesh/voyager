@@ -646,7 +646,7 @@ var _ = Describe("IngressOperations", func() {
 		})
 	})
 
-	FDescribe("With Global MaxConnections (1) Specified", func() {
+	Describe("With Global MaxConnections (1) Specified", func() {
 		BeforeEach(func() {
 			ing.Annotations[api.MaxConnections] = "1"
 			ing.Annotations[api.DefaultsTimeOut] = `{"connect": "300s", "server": "300s"}`
@@ -690,7 +690,7 @@ var _ = Describe("IngressOperations", func() {
 		})
 	})
 
-	FDescribe("With Global MaxConnections (2) Specified", func() {
+	Describe("With Global MaxConnections (2) Specified", func() {
 		BeforeEach(func() {
 			ing.Annotations[api.MaxConnections] = "2"
 			ing.Annotations[api.DefaultsTimeOut] = `{"connect": "300s", "server": "300s"}`
@@ -760,6 +760,6 @@ var _ = Describe("IngressOperations", func() {
 
 		It("Should Add maxcon value to Specific HAProxy Backend", shouldResponseHTTP)
 
-		// TODO @ dipta: Test whether request blocking works or not
+		// TODO @ dipta: Test whether request blocking works or not for each pod
 	})
 })
