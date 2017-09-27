@@ -27,7 +27,6 @@ var _ = Describe("IngressOperations", func() {
 		f = root.Invoke()
 		ing = f.Ingress.GetSkeleton()
 		f.Ingress.SetSkeletonRule(ing)
-		f.Ingress.SetSkeletonFrontendRule(ing)
 	})
 
 	JustBeforeEach(func() {
@@ -595,6 +594,44 @@ var _ = Describe("IngressOperations", func() {
 
 	Describe("With Whitelist Specified", func() {
 		BeforeEach(func() {
+			ing.Spec.Rules = []api.IngressRule{
+				{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
+								{
+									Path: "/testpath",
+									Backend: api.HTTPIngressBackend{
+										IngressBackend: api.IngressBackend{
+											ServiceName: f.Ingress.TestServerName(),
+											ServicePort: intstr.FromInt(80),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Port: intstr.FromInt(3124),
+							Paths: []api.HTTPIngressPath{
+								{
+									Path: "/testpath",
+									Backend: api.HTTPIngressBackend{
+										IngressBackend: api.IngressBackend{
+											ServiceName: f.Ingress.TestServerName(),
+											ServicePort: intstr.FromInt(80),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+			f.Ingress.SetSkeletonFrontendRule(ing)
 			ing.Annotations[api.WhitelistSourceRange] = "192.168.99.100"
 		})
 
