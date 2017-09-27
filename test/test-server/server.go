@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"syscall"
 	"strconv"
+	"syscall"
 	"time"
 )
 

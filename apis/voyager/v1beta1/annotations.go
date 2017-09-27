@@ -205,7 +205,7 @@ const (
 	HSTSIncludeSubDomains = IngressKey + "/hsts-include-subdomains"
 
 	WhitelistSourceRange = IngressKey + "/whitelist-source-range"
-	MaxConnections = IngressKey + "/max-connections"
+	MaxConnections       = IngressKey + "/max-connections"
 )
 
 const (

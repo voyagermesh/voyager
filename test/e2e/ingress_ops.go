@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/pkg/api/v1"
+	"sync"
 )
 
 var _ = Describe("IngressOperations", func() {
@@ -549,7 +550,7 @@ var _ = Describe("IngressOperations", func() {
 		})
 	})
 
-	Describe("With CORS Enabled", func() {
+	FDescribe("With CORS Enabled", func() {
 		BeforeEach(func() {
 			ing.Annotations[api.CORSEnabled] = "true"
 		})
@@ -648,10 +649,52 @@ var _ = Describe("IngressOperations", func() {
 
 	Describe("With Global MaxConnections Specified", func() {
 		BeforeEach(func() {
-			ing.Annotations[api.MaxConnections] = "2999"
+			ing.Annotations[api.MaxConnections] = "1"
 		})
 
-		It("Should Add maxcon value to Global HAProxy Config", shouldResponseHTTP)
+		// It("Should Add maxcon value to Specific HAProxy Backend", shouldResponseHTTP)
+
+		It("Should Add maxcon value to Global HAProxy Config", func() {
+			By("Getting HTTP endpoints")
+
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			eps = []string{eps[0]} // consider only one endpoint without any retry
+
+			var wg sync.WaitGroup
+			wg.Add(2)
+
+			var err1, err2 error
+
+			go func() {
+				defer wg.Done()
+				err1 = f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 100, "", ing, eps, "GET",
+					"/testpath/ok?delay=30",
+					func(r *testserverclient.Response) bool {
+						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+							Expect(r.Method).Should(Equal("GET")) &&
+							Expect(r.Path).Should(Equal("/testpath/ok"))
+					})
+			}()
+
+			go func() {
+				defer wg.Done()
+				err2 = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET",
+					"/testpath/ok",
+					func(r *testserverclient.Response) bool {
+						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+							Expect(r.Method).Should(Equal("GET")) &&
+							Expect(r.Path).Should(Equal("/testpath/ok"))
+					})
+			}()
+
+			wg.Wait()
+
+			Expect(err1).NotTo(HaveOccurred())
+			Expect(err2).NotTo(HaveOccurred())
+		})
 	})
 
 	Describe("With Pod MaxConnections Specified", func() {
