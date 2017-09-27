@@ -1,7 +1,6 @@
 package certificate
 
 import (
-	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
@@ -20,7 +19,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/util/cert"
 )
 
 type CertStore struct {
@@ -52,9 +50,7 @@ func NewCertStore(kubeClient clientset.Interface, voyagerClient acs.VoyagerV1bet
 	return store, nil
 }
 
-func (s *CertStore) Get(crd *api.Certificate) (crt *x509.Certificate, key *rsa.PrivateKey, err error) {
-	var pemCrt, pemKey []byte
-
+func (s *CertStore) Get(crd *api.Certificate) (pemCrt, pemKey []byte, err error) {
 	if crd.Spec.Storage.Secret != nil {
 		var secret *apiv1.Secret
 		secret, err = s.KubeClient.CoreV1().Secrets(crd.Namespace).Get(crd.SecretName(), metav1.GetOptions{})
@@ -78,13 +74,13 @@ func (s *CertStore) Get(crd *api.Certificate) (crt *x509.Certificate, key *rsa.P
 	} else if crd.Spec.Storage.Vault != nil {
 		var secret *vault.Secret
 		secret, err = s.VaultClient.Logical().Read(path.Join(crd.Spec.Storage.Vault.Prefix, crd.Namespace, crd.SecretName()))
+		if err != nil {
+			return
+		}
 		if secret == nil && err == nil {
 			return nil, nil, nil
 		}
 
-		if err != nil {
-			return
-		}
 		if data, found := secret.Data[apiv1.TLSCertKey]; !found {
 			err = fmt.Errorf("secret %s@%s is missing tls.crt", crd.SecretName(), crd.Namespace)
 			return
@@ -97,29 +93,6 @@ func (s *CertStore) Get(crd *api.Certificate) (crt *x509.Certificate, key *rsa.P
 		} else {
 			pemKey = []byte(data.(string))
 		}
-	}
-
-	if len(pemCrt) > 0 {
-		var certs []*x509.Certificate
-		certs, err = cert.ParseCertsPEM(pemCrt)
-		if err != nil {
-			err = fmt.Errorf("secret %s@%s contains bad certificate. Reason: %s", crd.SecretName(), crd.Namespace, err)
-			return
-		}
-		crt = certs[0]
-	}
-	if len(pemKey) > 0 {
-		var ki interface{}
-		ki, err = cert.ParsePrivateKeyPEM(pemKey)
-		if err != nil {
-			return
-		}
-		if rsaKey, ok := ki.(*rsa.PrivateKey); ok {
-			key = rsaKey
-		} else {
-			err = fmt.Errorf("key datya is not rsa private key")
-		}
-		return
 	}
 	return
 }

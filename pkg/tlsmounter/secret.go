@@ -1,8 +1,6 @@
 package tlsmounter
 
 import (
-	"crypto/rsa"
-	"crypto/x509"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -149,7 +147,18 @@ func (c *Controller) syncSecret(key string) error {
 		secret := obj.(*apiv1.Secret)
 		fmt.Printf("Sync/Add/Update for Secret %s\n", secret.GetName())
 
-		return c.mountSecret(secret)
+		err := c.mountSecret(secret)
+		if err != nil {
+			if r, e2 := c.getIngress(); e2 == nil {
+				c.recorder.Event(
+					r.ObjectReference(),
+					apiv1.EventTypeWarning,
+					eventer.EventReasonIngressTLSMountFailed,
+					err.Error(),
+				)
+			}
+			return err
+		}
 	}
 	return nil
 }
@@ -166,27 +175,18 @@ func (c *Controller) getSecret(name string) (*apiv1.Secret, error) {
 }
 
 func (c *Controller) projectSecret(r *apiv1.Secret, projections map[string]ioutilz.FileProjection) error {
-	var crt *x509.Certificate
-	var key *rsa.PrivateKey
-	if data, found := r.Data[apiv1.TLSCertKey]; !found {
-		return fmt.Errorf("secret %s@%s is missing tls.crt", r.Name, c.options.IngressRef.Namespace)
-	} else {
-		crts, err := cert.ParseCertsPEM(data)
-		if err != nil {
-			return err
-		}
-		crt = crts[0]
-	}
-	if data, found := r.Data[apiv1.TLSPrivateKeyKey]; !found {
+	pemKey, found := r.Data[apiv1.TLSPrivateKeyKey]
+	if !found {
 		return fmt.Errorf("secret %s@%s is missing tls.key", r.Name, c.options.IngressRef.Namespace)
-	} else {
-		ki, err := cert.ParsePrivateKeyPEM(data)
-		if err != nil {
-			return err
-		}
-		if k, ok := ki.(*rsa.PrivateKey); ok {
-			key = k
-		}
+	}
+
+	pemCrt, found := r.Data[apiv1.TLSCertKey]
+	if !found {
+		return fmt.Errorf("secret %s@%s is missing tls.crt", r.Name, c.options.IngressRef.Namespace)
+	}
+	secretCerts, err := cert.ParseCertsPEM(pemCrt)
+	if err != nil {
+		return err
 	}
 
 	pemPath := filepath.Join(c.options.MountPath, r.Name+".pem")
@@ -196,15 +196,15 @@ func (c *Controller) projectSecret(r *apiv1.Secret, projections map[string]iouti
 		if err != nil {
 			return err
 		}
-		crts, err := cert.ParseCertsPEM(pemBytes)
+		diskCerts, err := cert.ParseCertsPEM(pemBytes)
 		if err != nil {
 			return err
 		}
-		if !crts[0].Equal(crt) {
-			projections[r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(crt, key)}
+		if !diskCerts[0].Equal(secretCerts[0]) {
+			projections[r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
 		}
 	} else {
-		projections[r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(crt, key)}
+		projections[r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
 	}
 	return nil
 }
@@ -216,25 +216,13 @@ func (c *Controller) mountSecret(s *apiv1.Secret) error {
 		return err
 	}
 	if len(projections) > 0 {
-		r, err := c.getIngress()
-		if err != nil {
-			return err
-		}
-
 		c.lock.Lock()
 		defer c.lock.Unlock()
 		err = c.writer.Write(projections)
 		if err != nil {
-			c.recorder.Event(
-				r.ObjectReference(),
-				apiv1.EventTypeWarning,
-				eventer.EventReasonIngressTLSMountFailed,
-				err.Error(),
-			)
 			return err
-		} else {
-			return runCmd(c.options.CmdFile)
 		}
+		return runCmd(c.options.CmdFile)
 	}
 	return nil
 }
