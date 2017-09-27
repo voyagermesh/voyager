@@ -15,7 +15,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/pkg/api/v1"
-	"sync"
 )
 
 var _ = Describe("IngressOperations", func() {
@@ -550,7 +549,7 @@ var _ = Describe("IngressOperations", func() {
 		})
 	})
 
-	FDescribe("With CORS Enabled", func() {
+	Describe("With CORS Enabled", func() {
 		BeforeEach(func() {
 			ing.Annotations[api.CORSEnabled] = "true"
 		})
@@ -647,30 +646,23 @@ var _ = Describe("IngressOperations", func() {
 		})
 	})
 
-	Describe("With Global MaxConnections Specified", func() {
+	FDescribe("With Global MaxConnections (1) Specified", func() {
 		BeforeEach(func() {
 			ing.Annotations[api.MaxConnections] = "1"
+			ing.Annotations[api.DefaultsTimeOut] = `{"connect": "300s", "server": "300s"}`
 		})
 
-		// It("Should Add maxcon value to Specific HAProxy Backend", shouldResponseHTTP)
-
-		It("Should Add maxcon value to Global HAProxy Config", func() {
+		It("Should Allow 1 Connection Concurrently", func() {
 			By("Getting HTTP endpoints")
 
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			eps = []string{eps[0]} // consider only one endpoint without any retry
-
-			var wg sync.WaitGroup
-			wg.Add(2)
-
-			var err1, err2 error
-
+			errChan := make(chan error)
 			go func() {
-				defer wg.Done()
-				err1 = f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 100, "", ing, eps, "GET",
+				// request-1: take 30s to response
+				errChan <- f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 300, "", ing, eps, "GET",
 					"/testpath/ok?delay=30",
 					func(r *testserverclient.Response) bool {
 						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
@@ -679,10 +671,43 @@ var _ = Describe("IngressOperations", func() {
 					})
 			}()
 
+			time.Sleep(time.Second * 5) // to ensure request-1 always hits server before request-2
+
+			// request-2: responses instantaneously
+			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET",
+				"/testpath/ok",
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok"))
+				})
+
+			// request-1 should block request-2 since maxconn = 1
+			// request-2 should be timeout (sleep: 5s + client-timeout: 5s < request-1: 30s)
+			Expect(err).To(HaveOccurred())
+			Expect(<-errChan).NotTo(HaveOccurred()) // check request-1
+
+		})
+	})
+
+	FDescribe("With Global MaxConnections (2) Specified", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.MaxConnections] = "2"
+			ing.Annotations[api.DefaultsTimeOut] = `{"connect": "300s", "server": "300s"}`
+		})
+
+		It("Should Allow 2 Connections Concurrently", func() {
+			By("Getting HTTP endpoints")
+
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			errChan := make(chan error)
 			go func() {
-				defer wg.Done()
-				err2 = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET",
-					"/testpath/ok",
+				// request-1: take 30s to response
+				errChan <- f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 300, "", ing, eps, "GET",
+					"/testpath/ok?delay=30",
 					func(r *testserverclient.Response) bool {
 						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 							Expect(r.Method).Should(Equal("GET")) &&
@@ -690,10 +715,20 @@ var _ = Describe("IngressOperations", func() {
 					})
 			}()
 
-			wg.Wait()
+			time.Sleep(time.Second * 5) // to ensure request-1 always hits server before request-2
 
-			Expect(err1).NotTo(HaveOccurred())
-			Expect(err2).NotTo(HaveOccurred())
+			// request-2: responses instantaneously
+			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET",
+				"/testpath/ok",
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok"))
+				})
+
+			Expect(err).NotTo(HaveOccurred())       // request-1 should not block request-2 since maxconn = 2
+			Expect(<-errChan).NotTo(HaveOccurred()) // check request-1
+
 		})
 	})
 
@@ -724,5 +759,7 @@ var _ = Describe("IngressOperations", func() {
 		})
 
 		It("Should Add maxcon value to Specific HAProxy Backend", shouldResponseHTTP)
+
+		// TODO @ dipta: Test whether request blocking works or not
 	})
 })
