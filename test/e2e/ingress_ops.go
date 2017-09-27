@@ -674,7 +674,7 @@ var _ = Describe("IngressOperations", func() {
 			time.Sleep(time.Second * 5) // to ensure request-1 always hits server before request-2
 
 			// request-2: responses instantaneously
-			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET",
+			err = f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 5, "", ing, eps, "GET",
 				"/testpath/ok",
 				func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
@@ -718,7 +718,7 @@ var _ = Describe("IngressOperations", func() {
 			time.Sleep(time.Second * 5) // to ensure request-1 always hits server before request-2
 
 			// request-2: responses instantaneously
-			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET",
+			err = f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 5, "", ing, eps, "GET",
 				"/testpath/ok",
 				func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
@@ -782,7 +782,7 @@ var _ = Describe("IngressOperations", func() {
 			time.Sleep(time.Second * 5) // to ensure request-1 always hits server before request-2
 
 			// request-2: responses instantaneously
-			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET",
+			err = f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 5, "", ing, eps, "GET",
 				"/testpath/ok",
 				func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
@@ -848,7 +848,7 @@ var _ = Describe("IngressOperations", func() {
 			time.Sleep(time.Second * 5) // to ensure request-1 always hits server before request-2
 
 			// request-2: responses instantaneously
-			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET",
+			err = f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 5, "", ing, eps, "GET",
 				"/testpath/ok",
 				func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
