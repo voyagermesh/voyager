@@ -64,24 +64,6 @@ func (i *ingressInvocation) SetSkeletonRule(ing *api_v1beta1.Ingress) {
 				},
 			},
 		},
-		{
-			IngressRuleValue: api_v1beta1.IngressRuleValue{
-				HTTP: &api_v1beta1.HTTPIngressRuleValue{
-					Port: intstr.FromInt(3124),
-					Paths: []api_v1beta1.HTTPIngressPath{
-						{
-							Path: "/testpath",
-							Backend: api_v1beta1.HTTPIngressBackend{
-								IngressBackend: api_v1beta1.IngressBackend{
-									ServiceName: i.TestServerName(),
-									ServicePort: intstr.FromInt(80),
-								},
-							},
-						},
-					},
-				},
-			},
-		},
 	}
 }
 
