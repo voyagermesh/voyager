@@ -663,7 +663,7 @@ var _ = Describe("IngressOperations", func() {
 			go func() {
 				// request-1: take 30s to response
 				errChan <- f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 300, "", ing, eps, "GET",
-					"/testpath/ok?delay=30",
+					"/testpath/ok?delay=30s",
 					func(r *testserverclient.Response) bool {
 						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 							Expect(r.Method).Should(Equal("GET")) &&
@@ -707,7 +707,7 @@ var _ = Describe("IngressOperations", func() {
 			go func() {
 				// request-1: take 30s to response
 				errChan <- f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 300, "", ing, eps, "GET",
-					"/testpath/ok?delay=30",
+					"/testpath/ok?delay=30s",
 					func(r *testserverclient.Response) bool {
 						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 							Expect(r.Method).Should(Equal("GET")) &&
@@ -771,7 +771,7 @@ var _ = Describe("IngressOperations", func() {
 			go func() {
 				// request-1: take 30s to response
 				errChan <- f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 300, "", ing, eps, "GET",
-					"/testpath/ok?delay=30",
+					"/testpath/ok?delay=30s",
 					func(r *testserverclient.Response) bool {
 						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 							Expect(r.Method).Should(Equal("GET")) &&
@@ -837,7 +837,7 @@ var _ = Describe("IngressOperations", func() {
 			go func() {
 				// request-1: take 30s to response
 				errChan <- f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 300, "", ing, eps, "GET",
-					"/testpath/ok?delay=30",
+					"/testpath/ok?delay=30s",
 					func(r *testserverclient.Response) bool {
 						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 							Expect(r.Method).Should(Equal("GET")) &&

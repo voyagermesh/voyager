@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 )
@@ -29,9 +28,8 @@ type HttpServerHandler struct {
 }
 
 func (h HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if delay, err := strconv.Atoi(r.URL.Query().Get("delay")); err == nil {
-		fmt.Println("delay", delay)
-		time.Sleep(time.Second * time.Duration(delay))
+	if delay, err := time.ParseDuration(r.URL.Query().Get("delay")); err == nil {
+		time.Sleep(delay)
 	}
 
 	resp := &Response{
@@ -57,9 +55,8 @@ type HttpsServerHandler struct {
 }
 
 func (h HttpsServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if delay, err := strconv.Atoi(r.URL.Query().Get("delay")); err == nil {
-		fmt.Println("delay", delay)
-		time.Sleep(time.Second * time.Duration(delay))
+	if delay, err := time.ParseDuration(r.URL.Query().Get("delay")); err == nil {
+		time.Sleep(delay)
 	}
 
 	resp := &Response{

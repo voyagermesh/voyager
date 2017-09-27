@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	testServerImage = "appscode/test-server:2.1"
+	testServerImage = "appscode/test-server:2.2"
 )
 
 var (

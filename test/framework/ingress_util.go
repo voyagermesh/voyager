@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"os/exec"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -21,7 +22,6 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
-	"strconv"
 )
 
 var (
@@ -940,7 +940,7 @@ func (i *ingressInvocation) CreateResourceWithBackendMaxConn(maxconn int) (metav
 					Containers: []apiv1.Container{
 						{
 							Name:  "server",
-							Image: "appscode/test-server:2.1",
+							Image: "appscode/test-server:2.2",
 							Env: []apiv1.EnvVar{
 								{
 									Name: "POD_NAME",
