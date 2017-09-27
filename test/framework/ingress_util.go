@@ -21,6 +21,7 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	"strconv"
 )
 
 var (
@@ -887,7 +888,7 @@ func (i *ingressInvocation) DeleteResourceWithBackendWeight(meta metav1.ObjectMe
 	})
 }
 
-func (i *ingressInvocation) CreateResourceWithBackendMaxConn() (metav1.ObjectMeta, error) {
+func (i *ingressInvocation) CreateResourceWithBackendMaxConn(maxconn int) (metav1.ObjectMeta, error) {
 	meta := metav1.ObjectMeta{
 		Name:      i.UniqueName(),
 		Namespace: i.Namespace(),
@@ -932,68 +933,14 @@ func (i *ingressInvocation) CreateResourceWithBackendMaxConn() (metav1.ObjectMet
 						"app-version": "v1",
 					},
 					Annotations: map[string]string{
-						api_v1beta1.MaxConnections: "20",
+						api_v1beta1.MaxConnections: strconv.Itoa(maxconn),
 					},
 				},
 				Spec: apiv1.PodSpec{
 					Containers: []apiv1.Container{
 						{
 							Name:  "server",
-							Image: "appscode/test-server:1.1",
-							Env: []apiv1.EnvVar{
-								{
-									Name: "POD_NAME",
-									ValueFrom: &apiv1.EnvVarSource{
-										FieldRef: &apiv1.ObjectFieldSelector{
-											FieldPath: "metadata.name",
-										},
-									},
-								},
-							},
-							Ports: []apiv1.ContainerPort{
-								{
-									Name:          "http-1",
-									ContainerPort: 8080,
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	})
-	if err != nil {
-		return meta, err
-	}
-
-	_, err = i.KubeClient.ExtensionsV1beta1().Deployments(i.Namespace()).Create(&extensions.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "dep-2-" + meta.Name,
-			Namespace: meta.Namespace,
-		},
-		Spec: extensions.DeploymentSpec{
-			Replicas: types.Int32P(1),
-			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					"app":         "deployment",
-					"app-version": "v2",
-				},
-			},
-			Template: apiv1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{
-						"app":         "deployment",
-						"app-version": "v2",
-					},
-					Annotations: map[string]string{
-						api_v1beta1.MaxConnections: "30",
-					},
-				},
-				Spec: apiv1.PodSpec{
-					Containers: []apiv1.Container{
-						{
-							Name:  "server",
-							Image: "appscode/test-server:1.1",
+							Image: "appscode/test-server:2.1",
 							Env: []apiv1.EnvVar{
 								{
 									Name: "POD_NAME",
