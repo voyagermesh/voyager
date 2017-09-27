@@ -23,13 +23,11 @@ var _ = Describe("CertificateWithHTTPProvider", func() {
 	)
 
 	BeforeEach(func() {
+		f = root.Invoke()
+
 		if !f.Config.TestCertificate {
 			Skip("Certificate Test is not enabled")
 		}
-	})
-
-	BeforeEach(func() {
-		f = root.Invoke()
 
 		userSecret = &v1.Secret{
 			ObjectMeta: metav1.ObjectMeta{

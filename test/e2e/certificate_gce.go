@@ -22,14 +22,12 @@ var _ = Describe("CertificateWithDNSProvider", func() {
 	)
 
 	BeforeEach(func() {
+		f = root.Invoke()
+
 		skipTestIfSecretNotProvided()
 		if !f.Config.TestCertificate {
 			Skip("Certificate Test is not enabled")
 		}
-	})
-
-	BeforeEach(func() {
-		f = root.Invoke()
 
 		userSecret = &v1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
