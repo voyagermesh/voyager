@@ -205,6 +205,7 @@ const (
 	HSTSIncludeSubDomains = IngressKey + "/hsts-include-subdomains"
 
 	WhitelistSourceRange = IngressKey + "/whitelist-source-range"
+	MaxConnections       = IngressKey + "/max-connections"
 )
 
 const (
@@ -306,6 +307,11 @@ func (r Ingress) HSTSIncludeSubDomains() bool {
 
 func (r Ingress) WhitelistSourceRange() string {
 	return GetString(r.Annotations, WhitelistSourceRange)
+}
+
+func (r Ingress) MaxConnections() int {
+	v, _ := GetInt(r.Annotations, MaxConnections)
+	return v
 }
 
 func (r Ingress) ProxyBodySize() string {

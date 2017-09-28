@@ -645,4 +645,220 @@ var _ = Describe("IngressOperations", func() {
 			// TODO @ dipta: how to test if whitelist is actually working?
 		})
 	})
+
+	Describe("With Global MaxConnections (1) Specified", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.MaxConnections] = "1"
+			ing.Annotations[api.DefaultsTimeOut] = `{"connect": "300s", "server": "300s"}`
+		})
+
+		It("Should Allow 1 Connection Concurrently", func() {
+			By("Getting HTTP endpoints")
+
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			errChan := make(chan error)
+			go func() {
+				// request-1: take 30s to response
+				errChan <- f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 300, "", ing, eps, "GET",
+					"/testpath/ok?delay=30s",
+					func(r *testserverclient.Response) bool {
+						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+							Expect(r.Method).Should(Equal("GET")) &&
+							Expect(r.Path).Should(Equal("/testpath/ok"))
+					})
+			}()
+
+			time.Sleep(time.Second * 5) // to ensure request-1 always hits server before request-2
+
+			// request-2: responses instantaneously
+			err = f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 5, "", ing, eps, "GET",
+				"/testpath/ok",
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok"))
+				})
+
+			// request-1 should block request-2 since maxconn = 1
+			// request-2 should be timeout (sleep: 5s + client-timeout: 5s < request-1: 30s)
+			Expect(err).To(HaveOccurred())
+			Expect(<-errChan).NotTo(HaveOccurred()) // check request-1
+
+		})
+	})
+
+	Describe("With Global MaxConnections (2) Specified", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.MaxConnections] = "2"
+			ing.Annotations[api.DefaultsTimeOut] = `{"connect": "300s", "server": "300s"}`
+		})
+
+		It("Should Allow 2 Connections Concurrently", func() {
+			By("Getting HTTP endpoints")
+
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			errChan := make(chan error)
+			go func() {
+				// request-1: take 30s to response
+				errChan <- f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 300, "", ing, eps, "GET",
+					"/testpath/ok?delay=30s",
+					func(r *testserverclient.Response) bool {
+						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+							Expect(r.Method).Should(Equal("GET")) &&
+							Expect(r.Path).Should(Equal("/testpath/ok"))
+					})
+			}()
+
+			time.Sleep(time.Second * 5) // to ensure request-1 always hits server before request-2
+
+			// request-2: responses instantaneously
+			err = f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 5, "", ing, eps, "GET",
+				"/testpath/ok",
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok"))
+				})
+
+			Expect(err).NotTo(HaveOccurred())       // request-1 should not block request-2 since maxconn = 2
+			Expect(<-errChan).NotTo(HaveOccurred()) // check request-1
+
+		})
+	})
+
+	Describe("With Pod MaxConnections (1) Specified", func() {
+		BeforeEach(func() {
+			meta, err := f.Ingress.CreateResourceWithBackendMaxConn(1)
+			Expect(err).NotTo(HaveOccurred())
+
+			ing.Spec.Rules = []api.IngressRule{
+				{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
+								{
+									Path: "/testpath",
+									Backend: api.HTTPIngressBackend{
+										IngressBackend: api.IngressBackend{
+											ServiceName: meta.Name,
+											ServicePort: intstr.FromInt(80),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+
+			ing.Annotations[api.DefaultsTimeOut] = `{"connect": "300s", "server": "300s"}`
+		})
+
+		It("Should Allow 1 Connection Concurrently", func() {
+			By("Getting HTTP endpoints")
+
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			errChan := make(chan error)
+			go func() {
+				// request-1: take 30s to response
+				errChan <- f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 300, "", ing, eps, "GET",
+					"/testpath/ok?delay=30s",
+					func(r *testserverclient.Response) bool {
+						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+							Expect(r.Method).Should(Equal("GET")) &&
+							Expect(r.Path).Should(Equal("/testpath/ok"))
+					})
+			}()
+
+			time.Sleep(time.Second * 5) // to ensure request-1 always hits server before request-2
+
+			// request-2: responses instantaneously
+			err = f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 5, "", ing, eps, "GET",
+				"/testpath/ok",
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok"))
+				})
+
+			// request-1 should block request-2 since maxconn = 1
+			// request-2 should be timeout (sleep: 5s + client-timeout: 5s < request-1: 30s)
+			Expect(err).To(HaveOccurred())
+			Expect(<-errChan).NotTo(HaveOccurred()) // check request-1
+
+		})
+	})
+
+	Describe("With Pod MaxConnections (2) Specified", func() {
+		BeforeEach(func() {
+			meta, err := f.Ingress.CreateResourceWithBackendMaxConn(2)
+			Expect(err).NotTo(HaveOccurred())
+
+			ing.Spec.Rules = []api.IngressRule{
+				{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
+								{
+									Path: "/testpath",
+									Backend: api.HTTPIngressBackend{
+										IngressBackend: api.IngressBackend{
+											ServiceName: meta.Name,
+											ServicePort: intstr.FromInt(80),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+
+			ing.Annotations[api.DefaultsTimeOut] = `{"connect": "300s", "server": "300s"}`
+		})
+
+		It("Should Allow 2 Connections Concurrently", func() {
+			By("Getting HTTP endpoints")
+
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			errChan := make(chan error)
+			go func() {
+				// request-1: take 30s to response
+				errChan <- f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 300, "", ing, eps, "GET",
+					"/testpath/ok?delay=30s",
+					func(r *testserverclient.Response) bool {
+						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+							Expect(r.Method).Should(Equal("GET")) &&
+							Expect(r.Path).Should(Equal("/testpath/ok"))
+					})
+			}()
+
+			time.Sleep(time.Second * 5) // to ensure request-1 always hits server before request-2
+
+			// request-2: responses instantaneously
+			err = f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 5, "", ing, eps, "GET",
+				"/testpath/ok",
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok"))
+				})
+
+			Expect(err).NotTo(HaveOccurred())       // request-1 should not block request-2 since maxconn = 2
+			Expect(<-errChan).NotTo(HaveOccurred()) // check request-1
+
+		})
+	})
 })

@@ -133,6 +133,9 @@ func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePo
 								if val, ok := pod.Annotations[api.BackendWeight]; ok {
 									ep.Weight, _ = strconv.Atoi(val)
 								}
+								if val, ok := pod.Annotations[api.MaxConnections]; ok {
+									ep.MaxConnections, _ = strconv.Atoi(val)
+								}
 							}
 						}
 					}
@@ -215,6 +218,7 @@ func (c *controller) generateConfig() error {
 		HSTSPreload:           c.Ingress.HSTSPreload(),
 		HSTSIncludeSubDomains: c.Ingress.HSTSIncludeSubDomains(),
 		WhitelistSourceRange:  c.Ingress.WhitelistSourceRange(),
+		MaxConnections:        c.Ingress.MaxConnections(),
 	}
 	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
 		si.AcceptProxy = c.Ingress.KeepSourceIP()
