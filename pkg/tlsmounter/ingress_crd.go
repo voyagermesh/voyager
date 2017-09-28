@@ -224,7 +224,6 @@ func (c *Controller) mountIngress(ing *api.Ingress) error {
 	projections := map[string]ioutilz.FileProjection{}
 	err := c.projectIngress(ing, projections)
 	if err != nil {
-		fmt.Println(">>>>>>>>>>>>>>>>>>>>>>", err)
 		return err
 	}
 	if len(projections) > 0 {
