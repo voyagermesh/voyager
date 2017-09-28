@@ -47,6 +47,14 @@ func NewTestHTTPClient(url string) *httpClient {
 	}
 }
 
+func NewTestHTTPClientWithTimeout(url string, timeout int) *httpClient {
+	url = strings.TrimSuffix(url, "/")
+	return &httpClient{
+		client:  &http.Client{Timeout: time.Second * time.Duration(timeout)},
+		baseURL: url,
+	}
+}
+
 func (t *httpClient) WithCert(cert string) *httpClient {
 	caCertPool := x509.NewCertPool()
 	caCertPool.AppendCertsFromPEM([]byte(cert))

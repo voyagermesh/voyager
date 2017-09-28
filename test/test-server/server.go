@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 type Response struct {
@@ -27,6 +28,10 @@ type HttpServerHandler struct {
 }
 
 func (h HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if delay, err := time.ParseDuration(r.URL.Query().Get("delay")); err == nil {
+		time.Sleep(delay)
+	}
+
 	resp := &Response{
 		Type:       "http",
 		PodName:    os.Getenv("POD_NAME"),
@@ -50,6 +55,10 @@ type HttpsServerHandler struct {
 }
 
 func (h HttpsServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if delay, err := time.ParseDuration(r.URL.Query().Get("delay")); err == nil {
+		time.Sleep(delay)
+	}
+
 	resp := &Response{
 		Type:       "http",
 		PodName:    os.Getenv("POD_NAME"),
