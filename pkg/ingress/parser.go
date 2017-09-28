@@ -119,7 +119,7 @@ func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePo
 			for _, epAddress := range ss.Addresses {
 				if isForwardable(hostNames, epAddress.Hostname) {
 					ep := &haproxy.Endpoint{
-						Name: "pod-" + epAddress.IP,
+						Name: getEndpointName(epAddress),
 						IP:   epAddress.IP,
 						Port: targetPort,
 					}
@@ -483,4 +483,11 @@ func parseALPNOptions(opt []string) string {
 		return ""
 	}
 	return "alpn " + strings.Join(opt, ",")
+}
+
+func getEndpointName(ep apiv1.EndpointAddress) string {
+	if ep.TargetRef != nil {
+		return "pod-" + ep.TargetRef.Name
+	}
+	return "pod-" + ep.IP
 }
