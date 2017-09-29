@@ -25,44 +25,126 @@ type CertificateSpec struct {
 	// domains are added using the Subject Alternate Names extension.
 	Domains []string `json:"domains,omitempty"`
 
-	// DNS Provider.
+	// ChallengeProvider details to verify domains
+	ChallengeProvider ChallengeProvider `json:"challengeProvider"`
+
+	// Secret contains ACMEUser information. Secret must contain a key `email`
+	// If empty tries to find an Secret via domains
+	// if not found create an ACMEUser and stores as a secret.
+	// Secrets key to be expected:
+	//  ACME_EMAIL -> required, if not provided it will through error.
+	//  ACME_SERVER_URL -> custom server url to generate certificates, default is lets encrypt.
+	//  ACME_USER_DATA -> user data, if not found one will be created for the provided email,
+	//    and stored in the key.
+	ACMEUserSecretName string `json:"acmeUserSecretName"`
+
+	// Storage backend to store the certificates currently, kubernetes secret and vault.
+	Storage CertificateStorage `json:"storage,omitempty"`
+
+	// Following fields are deprecated and will removed in future version.
+	// https://github.com/appscode/voyager/pull/506
+	// Deprecated. DNS Provider.
 	Provider string `json:"provider,omitempty"`
-	Email    string `json:"email,omitempty"`
+	// Deprecated
+	Email string `json:"email,omitempty"`
 
 	// This is the ingress Reference that will be used if provider is http
-	HTTPProviderIngressReference api.ObjectReference `json:"httpProviderIngressReference,omitempty"`
+	// Deprecated
+	HTTPProviderIngressReference apiv1.ObjectReference `json:"httpProviderIngressReference,omitempty"`
 
 	// ProviderCredentialSecretName is used to create the acme client, that will do
 	// needed processing in DNS.
+	// Deprecated
 	ProviderCredentialSecretName string `json:"providerCredentialSecretName,omitempty"`
 
-	// Secret contains ACMEUser information. If empty tries to find an Secret via domains
-	// if not found create an ACMEUser and stores as a secret.
-	ACMEUserSecretName string `json:"acmeUserSecretName"`
-
 	// ACME server that will be used to obtain this certificate.
-	ACMEServerURL string `json:"acmeStagingURL"`
+	// Deprecated
+	ACMEServerURL string `json:"acmeStagingURL,omitempty"`
+}
+
+type ChallengeProvider struct {
+	HTTP *HTTPChallengeProvider `json:"http,omitempty"`
+	DNS  *DNSChallengeProvider  `json:"dns,omitempty"`
+}
+
+type HTTPChallengeProvider struct {
+	Ingress apiv1.ObjectReference `json:"ingress,omitempty"`
+}
+
+type DNSChallengeProvider struct {
+	// DNS Provider from the list https://github.com/appscode/voyager/blob/master/docs/user-guide/certificate/provider.md
+	Provider             string `json:"provider,omitempty"`
+	CredentialSecretName string `json:"credentialSecretName,omitempty"`
+}
+
+type CertificateStorage struct {
+	Secret *SecretStore `json:"secret,omitempty"`
+	Vault  *VaultStore  `json:"vault,omitempty"`
+}
+
+type SecretStore struct {
+	// Secret name to store the certificate, default cert-<certificate-name>
+	Name string `json:"name,omitempty"`
+}
+
+type VaultStore struct {
+	Name   string `json:"name,omitempty"`
+	Prefix string `json:"prefix,omitempty"`
 }
 
 type CertificateStatus struct {
-	CertificateObtained bool                   `json:"certificateObtained"`
-	Message             string                 `json:"message"`
-	Created             time.Time              `json:"created,omitempty"`
-	ACMEUserSecretName  string                 `json:"acmeUserSecretName,omitempty"`
-	Details             ACMECertificateDetails `json:"details,omitempty"`
+	CreationTime          *metav1.Time           `json:"creationTime,omitempty"`
+	Conditions            []CertificateCondition `json:"conditions,omitempty"`
+	LastIssuedCertificate *CertificateDetails    `json:"lastIssuedCertificate,omitempty"`
+	// Deprecated
+	CertificateObtained bool `json:"certificateObtained,omitempty"`
+	// Deprecated
+	Message string `json:"message, omitempty"`
+	// Deprecated
+	ACMEUserSecretName string `json:"acmeUserSecretName,omitempty"`
+	// Deprecated
+	Details *ACMECertificateDetails `json:"details,omitempty"`
+}
+
+type ACMECertificateDetails struct {
+	Domain        string `json:"domain"`
+	CertURL       string `json:"certUrl"`
+	CertStableURL string `json:"certStableUrl"`
+	AccountRef    string `json:"accountRef,omitempty"`
+}
+
+type CertificateDetails struct {
+	SerialNumber  string      `json:"serialNumber,omitempty"`
+	NotBefore     metav1.Time `json:"notBefore,omitempty"`
+	NotAfter      metav1.Time `json:"notAfter,omitempty"`
+	CertURL       string      `json:"certURL"`
+	CertStableURL string      `json:"certStableURL"`
+	AccountRef    string      `json:"accountRef,omitempty"`
+}
+
+type RequestConditionType string
+
+// These are the possible conditions for a certificate create request.
+const (
+	CertificateIssued      RequestConditionType = "Issued"
+	CertificateFailed      RequestConditionType = "Failed"
+	CertificateRateLimited RequestConditionType = "RateLimited"
+)
+
+type CertificateCondition struct {
+	// request approval state, currently Approved or Denied.
+	Type RequestConditionType `json:"type" protobuf:"bytes,1,opt,name=type,casttype=RequestConditionType"`
+	// brief reason for the request state
+	// +optional
+	Reason string `json:"reason,omitempty" protobuf:"bytes,2,opt,name=reason"`
+	// human readable message with details about the request state
+	// +optional
+	Message string `json:"message,omitempty" protobuf:"bytes,3,opt,name=message"`
+	// timestamp for the last update to this condition
+	// +optional
+	LastUpdateTime metav1.Time `json:"lastUpdateTime,omitempty" protobuf:"bytes,4,opt,name=lastUpdateTime"`
 }
 ```
-
-### Explanation
-  - apiVersion - The Kubernetes API version. See Certificate Third Party Resource.
-  - kind - The Kubernetes object type.
-  - metadata.name - The name of the Certificate object.
-  - spec.domains - The DNS domains to obtain a for. First on the list will be the Common Name for the certificate.
-  - spec.email - The email address used for registration.
-  - spec.provider - The name of the dns provider plugin.
-  - spec.providerCredentialSecretName - The Kubernetes secret that holds dns provider configuration.
-  - spec.acmeUserSecretName - acme user information to use for obtaining certificates. If none is provided one will be created
-  - spec.acmeStagingURL - server to obtain a certificate from. Default uses Let's Encrypt.
 
 ### Supported Providers
 [This Providers](provider.md) are supported as domain's DNS provider. The `providerCredentialSecretName` Must match the
@@ -70,6 +152,7 @@ format.
 
 ## Usage
 - [Creating a Certificate](create.md)
+- [Creating a Certificate with custom provider](create-with-custom-provider.md)
 - [Deleting a Certificate](delete.md)
 - [Consuming Certificates](consume.md)
 
@@ -80,11 +163,3 @@ to create and or manage a certificate resource with Voyager controller. Read Mor
 
 Read the example how to use [HTTP Provider](/docs/user-guide/certificate/create.md#create-certificate-with-http-provider)
 for certificate.
-
-```
-certificate.appscode.com/enabled         // Enable certifiacte with ingress
-certificate.appscode.com/name            // Name of the certificate
-certificate.appscode.com/provider        // Name of the DNS provider
-certificate.appscode.com/email           // Email address to use for registration
-certificate.appscode.com/provider-secret // DNS provider secrets to manage DNS
-```

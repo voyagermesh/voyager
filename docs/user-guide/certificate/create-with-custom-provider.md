@@ -19,7 +19,18 @@ data:
   GCE_SERVICE_ACCOUNT_DATA: <service-account-json>
 ```
 
-Create the Creatificate object
+Create ACME User Secret with key ACME_EMAIL.
+```yaml
+kind: Secret
+metadata:
+  name: test-user-secret
+  namespace: default
+data:
+  ACME_EMAIL: test@appscode.com
+  ACME_SERVER_URL: https://acme-staging.api.letsencrypt.org/directory
+```
+
+Create the Certificate resource.
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Certificate
@@ -30,16 +41,14 @@ spec:
   domains:
   - foo.example.com
   - bar.example.com
-  email: jon.doe@example.com
-  provider: googlecloud
-  providerCredentialSecretName: test-gcp-secret
-  acmeStagingURL: <Your custom ACME Server URL>
+  acmeUserSecretName: test-user-secret
+  challengeProvider:
+    dns:
+      provider: googlecloud
+      credentialSecretName: test-gcp-secret
+  storage:
+    secretStore: {}
 ```
-
-For testing purpose you may use Let's Encrypt's staging URL `https://acme-staging.api.letsencrypt.org/directory` as `acmeStagingURL`
-
-In this example the DNS provider is `googlecloud`. To see the full list of supported providers, visit [here](provider.md) .
-
 ```console
 kubectl create -f hack/example/certificate.yaml
 ```
@@ -50,7 +59,8 @@ kubectl logs -f appscode-voyager
 ```
 
 ### Results
-This object will create a certificate named `cert-test-cert`.
+This object will create a certificate named `cert-test-cert`. This certificate will created from the custom acme server
+that is provided in the secret.
 
 ```console
 kubectl get secrets cert-test-cert
@@ -76,6 +86,3 @@ Data
 tls.crt:        3411 bytes
 tls.key:        1679 bytes
 ```
-
-> HTTP provider certificate can be also be created applying annotations to ingress. But you can't create a
-certificate and mount the secret same time in the ingress.
