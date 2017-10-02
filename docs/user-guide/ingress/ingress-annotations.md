@@ -6,27 +6,27 @@ Voyager supports applying specified annotations in ingress or in backend service
 configuration will be applied on all backend of the ingress, if applied to service configurations will only apply on those backends.
 
 ## Ingress Annotations
-All following annotations are assumed to be prefixed with `ingress.kubernetes.io/`. Voyager also supports some particular defines
-annotation, [which are described here](#voyager-annotations).
+All following annotations are assumed to be prefixed with `ingress.kubernetes.io/`.
+Voyager also supports some particular defines annotation, [which are described here](#voyager-annotations).
 
 | Name | Details | Annotation applies to |
-| --- | :---: | --- |
+| --- |----| --- |
 | **[TLS](https://github.com/kubernetes/ingress/blob/master/docs/annotations.md#tls-related)** |
 | `ssl-passthrough` | Pass TLS connections directly to backend; do not offload.   |  ingress |
-| `hsts` | :heavy_check_mark: |`FrontendRule` |
-| `hsts-max-age` | :heavy_check_mark: | `FrontendRule`|
-| `hsts-preload` | :heavy_check_mark: |`FrontendRule` |
-| `hsts-include-subdomains` | :heavy_check_mark: | `FrontendRule`|
+| `hsts` | Enable HSTS | ingress |
+| `hsts-max-age` | Specifies the time (in seconds) the browser should connect to the server using the HTTPS connection. | ingress|
+| `hsts-preload` | Enable HSTS preload | ingress |
+| `hsts-include-subdomains` | HSTS rule applies to all of the site's sub domains | ingress |
 | **[Authentication](https://github.com/kubernetes/ingress/blob/master/docs/annotations.md#authentication-related)** |
-| `auth-type` | :heavy_check_mark: | [Basic Auth](https://github.com/appscode/voyager/blob/release-4.0/docs/user-guide/ingress/basic-auth.md) |
-| `auth-secret` | :heavy_check_mark: | [Basic Auth](https://github.com/appscode/voyager/blob/release-4.0/docs/user-guide/ingress/basic-auth.md) |
-| `auth-realm` | :heavy_check_mark: | [Basic Auth](https://github.com/appscode/voyager/blob/release-4.0/docs/user-guide/ingress/basic-auth.md) |
+| `auth-type` | [Enable Basic Auth](basic-auth.md) | ingress, service |
+| `auth-secret` | [Basic Auth user secret](basic-auth.md) | ingress, service |
+| `auth-realm` | [Basic Auth realm](basic-auth.md) | ingress, service |
 | **[Miscellaneous](https://github.com/kubernetes/ingress/blob/master/docs/annotations.md#miscellaneous)** |
-| `enable-cors` | :heavy_check_mark:  | [Frontend Rule](http://blog.nasrulhazim.com/2017/07/haproxy-setting-up-cors/) |
-| `affinity` | :heavy_check_mark: | [Sticky session](https://github.com/appscode/voyager/blob/release-4.0/docs/user-guide/ingress/sticky-session.md) |
-| `session-cookie-name` | :heavy_check_mark: | [Custom template](https://github.com/appscode/voyager/blob/release-4.0/docs/user-guide/ingress/custom-templates.md) |
-| `session-cookie-hash` | :heavy_check_mark: | |
-| `proxy-body-size` | :heavy_check_mark:  ||
+| `enable-cors` | [Enables CORS headers in HTTP response](cors.md) | ingress |
+| `affinity` | [Sticky session](sticky-session.md). only supported value is cookie | ingress, service |
+| `session-cookie-name` | [Sticky session cookie name to set](sticky-session.md) | ingress, service |
+| `session-cookie-hash` | [Sticky session cookie type](sticky-session.md) | ingress, service |
+| `proxy-body-size` | Maximum http request body size. This returns the advertised length of the HTTP request's body in bytes. | ingress |
 
 
 ## Voyager Annotations
@@ -36,14 +36,14 @@ can be applied on ingress or backends.
 | Name | Details | Annotation applies to |
 |------|---------|---------------------|
 | type | Defines loadbalancer type | ingress |
-| replicas | [Scale load balancer](/docs/user-guide/ingress/replicas-and-autoscaling.md)| ingress |
+| replicas | [Scale load balancer replica](/docs/user-guide/ingress/replicas-and-autoscaling.md)| ingress |
 | backend-weight | [Weighted Loadbalancing for Canary Deployment](weighted.md)| pod |
-| annotations-service | [Add Custom Annotation to LoadBalancer Service and Pods](annotations.md)| ingress |
-| annotations-pod | [Add Custom Annotation to LoadBalancer Service and Pods](annotations.md) | ingress |
+| annotations-service | [Add Custom Annotation to LoadBalancer Service](annotations.md)| ingress |
+| annotations-pod | [Add Custom Annotation to LoadBalancer Pods](annotations.md) | ingress |
 | accept-proxy | Accept proxy protocol | ingress |
 | default-timeout | [Configure Custom Timeouts for HAProxy](configure-timeouts.md) | ingress |
-| default-option | [Configure Options](configure-options.md) | ingress |
-| backend-tls | [Backend TLS](backend-tls.md) | service, ingress |
+| default-option | [Configure Options for HAProxy](configure-options.md) | ingress |
+| backend-tls | [TLS enabled Backend](backend-tls.md) | service, ingress |
 | sticky-session (deprecated) | [Configure Sticky session to Backends](sticky-session.md) | service, ingress |
 | use-dns-resolver | [Supports redirects/DNS resolution for `ExternalName` type service](external-svc.md) | ingress |
 | dns-resolver-nameservers | [Supports redirects/DNS resolution for `ExternalName` type service](external-svc.md) |ingress|
