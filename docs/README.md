@@ -40,6 +40,7 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
   - [Configure Basic Auth for HTTP Backends](/docs/user-guide/ingress/basic-auth.md)
   - [Configure Sticky session to Backends](/docs/user-guide/ingress/sticky-session.md)
   - [Apply Frontend Rules](/docs/user-guide/ingress/frontend-rule.md)
+  - [Supported Annotations](/docs/user-guide/ingress/ingress-annotations.md)
 
 ### Comparison with Kubernetes
 | Feauture | [Kube Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) | AppsCode Ingress |
