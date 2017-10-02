@@ -119,7 +119,7 @@ annotations:
     }
 ```
 
-Below is the full list of supported annotation keys:
+Below is the full list of supported annotation keys, [voyager also support standard ingress annotations](ingress-annotations.md):
 
 |  Keys  |   Value   |  Default |  Description |
 |--------|-----------|----------|--------------|
@@ -152,19 +152,6 @@ ingress.appscode.com/node-selector
 ingress.appscode.com/load-balaner-ip
 ```
 The issue is being [tracked here.](https://github.com/appscode/voyager/issues/143)
-
-
-The following annotations can be applied in an Ingress, if you want to manage Certificate with the
-same ingress resource. Learn more by reading the [certificate doc](../certificate/README.md).
-```
- certificate.appscode.com/enabled
- certificate.appscode.com/name
- certificate.appscode.com/provider
- certificate.appscode.com/email
- certificate.appscode.com/provider-secret
- certificate.appscode.com/user-secret
- certificate.appscode.com/server-url
-```
 
 ## Next Reading
 - [Single Service example](single-service.md)
