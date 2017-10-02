@@ -417,7 +417,7 @@ func (c *nodePortController) Delete() {
 			log.Errorln(err)
 		}
 	}
-	err = c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
+	err = c.ensureServiceDeleted()
 	if err != nil {
 		log.Errorln(err)
 	}
