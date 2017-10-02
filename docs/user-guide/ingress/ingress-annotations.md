@@ -26,7 +26,7 @@ Voyager also supports some particular defines annotation, [which are described h
 | `affinity` | [Sticky session](sticky-session.md). only supported value is cookie | ingress, service |
 | `session-cookie-name` | [Sticky session cookie name to set](sticky-session.md) | ingress, service |
 | `session-cookie-hash` | [Sticky session cookie type](sticky-session.md) | ingress, service |
-| `proxy-body-size` | Maximum http request body size. This returns the advertised length of the HTTP request's body in bytes. | ingress |
+| `proxy-body-size` | Maximum http request body size. This limits the advertised length of the HTTP request's body in bytes. | ingress |
 
 
 ## Voyager Annotations
