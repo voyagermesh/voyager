@@ -261,7 +261,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 		})
 	})
 
-	FDescribe("Both Global and Service Auth", func() {
+	Describe("Both Global and Service Auth", func() {
 		BeforeEach(func() {
 			ing.Annotations = map[string]string{
 				api.AuthType:   "basic",
