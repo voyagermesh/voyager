@@ -30,6 +30,7 @@ type SharedInfo struct {
 	HSTSIncludeSubDomains bool
 	WhitelistSourceRange  string
 	MaxConnections        int
+	ForceMatchServicePort bool
 }
 
 type StatsInfo struct {
