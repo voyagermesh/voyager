@@ -85,6 +85,7 @@ func (svc TCPService) sortKey() string {
 
 type Backend struct {
 	Name string
+	Auth *AuthConfig
 
 	BackendRules []string
 	// Deprecated

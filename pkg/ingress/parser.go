@@ -150,6 +150,7 @@ func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePo
 		}
 	}
 	return &haproxy.Backend{
+		Auth:             c.getServiceAuth(s),
 		Endpoints:        eps,
 		Sticky:           c.Ingress.Sticky() || isServiceSticky(s.Annotations),
 		StickyCookieName: c.Ingress.StickySessionCookieName(),
@@ -235,6 +236,7 @@ func (c *controller) generateConfig() error {
 		}
 		si.DefaultBackend = &haproxy.Backend{
 			Name:             "default-backend", // TODO: Use constant
+			Auth:             bk.Auth,
 			Endpoints:        bk.Endpoints,
 			BackendRules:     c.Ingress.Spec.Backend.BackendRule,
 			RewriteRules:     c.Ingress.Spec.Backend.RewriteRule,
@@ -249,7 +251,6 @@ func (c *controller) generateConfig() error {
 		si.Auth = &haproxy.AuthConfig{
 			Realm: c.Ingress.AuthRealm(),
 		}
-
 		secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(c.Ingress.AuthSecretName(), metav1.GetOptions{})
 		if err != nil {
 			return err
@@ -305,6 +306,7 @@ func (c *controller) generateConfig() error {
 						Path: path.Path,
 						Backend: haproxy.Backend{
 							Name:             getBackendName(c.Ingress, path.Backend.IngressBackend),
+							Auth:             bk.Auth,
 							Endpoints:        bk.Endpoints,
 							BackendRules:     path.Backend.BackendRule,
 							RewriteRules:     path.Backend.RewriteRule,
@@ -490,4 +492,38 @@ func getEndpointName(ep apiv1.EndpointAddress) string {
 		return "pod-" + ep.TargetRef.Name
 	}
 	return "pod-" + ep.IP
+}
+
+func (c *controller) getServiceAuth(s *apiv1.Service) *haproxy.AuthConfig {
+	if c.Ingress.AuthEnabled() { // global auth enabled
+		return nil
+	}
+
+	// Check auth type is basic; other auth mode is not supported
+	authType, ok := s.Annotations[api.AuthType]
+	if !ok || authType != "basic" {
+		return nil
+	}
+
+	authSecret, ok := s.Annotations[api.AuthSecret]
+	if !ok {
+		return nil
+	}
+
+	authRealm, ok := s.Annotations[api.AuthRealm]
+
+	secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(authSecret, metav1.GetOptions{})
+	if err != nil || secret.Data == nil {
+		return nil
+	}
+
+	users, err := getAuthUsers(secret.Data)
+	if err != nil {
+		return nil
+	}
+
+	return &haproxy.AuthConfig{
+		Realm: authRealm,
+		Users: users,
+	}
 }

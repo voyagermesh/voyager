@@ -969,3 +969,87 @@ func (i *ingressInvocation) CreateResourceWithBackendMaxConn(maxconn int) (metav
 
 	return meta, nil
 }
+
+func (i *ingressInvocation) CreateResourceWithServiceAuth(secret *apiv1.Secret) (metav1.ObjectMeta, error) {
+	meta := metav1.ObjectMeta{
+		Name:      i.UniqueName(),
+		Namespace: i.Namespace(),
+		Annotations: map[string]string{
+			api_v1beta1.AuthType:   "basic",
+			api_v1beta1.AuthRealm:  "Realm returned",
+			api_v1beta1.AuthSecret: secret.Name,
+		},
+	}
+	_, err := i.KubeClient.CoreV1().Services(i.Namespace()).Create(&apiv1.Service{
+		ObjectMeta: meta,
+		Spec: apiv1.ServiceSpec{
+			Ports: []apiv1.ServicePort{
+				{
+					Name:       "http-1",
+					Port:       80,
+					TargetPort: intstr.FromInt(8080),
+					Protocol:   "TCP",
+				},
+			},
+			Selector: map[string]string{
+				"app": "deployment",
+			},
+		},
+	})
+	if err != nil {
+		return meta, err
+	}
+
+	_, err = i.KubeClient.ExtensionsV1beta1().Deployments(i.Namespace()).Create(&extensions.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "dep-1-" + meta.Name,
+			Namespace: meta.Namespace,
+		},
+		Spec: extensions.DeploymentSpec{
+			Replicas: types.Int32P(1),
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"app":         "deployment",
+					"app-version": "v1",
+				},
+			},
+			Template: apiv1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"app":         "deployment",
+						"app-version": "v1",
+					},
+				},
+				Spec: apiv1.PodSpec{
+					Containers: []apiv1.Container{
+						{
+							Name:  "server",
+							Image: "appscode/test-server:2.2",
+							Env: []apiv1.EnvVar{
+								{
+									Name: "POD_NAME",
+									ValueFrom: &apiv1.EnvVarSource{
+										FieldRef: &apiv1.ObjectFieldSelector{
+											FieldPath: "metadata.name",
+										},
+									},
+								},
+							},
+							Ports: []apiv1.ContainerPort{
+								{
+									Name:          "http-1",
+									ContainerPort: 8080,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		return meta, err
+	}
+
+	return meta, nil
+}
