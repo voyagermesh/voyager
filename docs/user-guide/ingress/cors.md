@@ -27,7 +27,7 @@ spec:
 
 Applying the annotation in ingress will have the following effects, will add the CORS Header in the response.
 ```
-curl -v -X 'GET' -k -H 'Origin: foo.bar.com' 'http://foo.bar.com'
+$ curl -v -X 'GET' -k -H 'Origin: foo.bar.com' 'http://foo.bar.com'
  HTTP/1.1 200 OK
  Date: Mon, 02 Oct 2017 12:31:00 GMT
  Content-Length: 280

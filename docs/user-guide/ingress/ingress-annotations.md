@@ -13,10 +13,10 @@ Voyager also supports some particular defines annotation, [which are described h
 | --- |----| --- |
 | **[TLS](https://github.com/kubernetes/ingress/blob/master/docs/annotations.md#tls-related)** |
 | `ssl-passthrough` | Pass TLS connections directly to backend; do not offload.   |  ingress |
-| `hsts` | Enable HSTS | ingress |
-| `hsts-max-age` | Specifies the time (in seconds) the browser should connect to the server using the HTTPS connection. | ingress|
-| `hsts-preload` | Enable HSTS preload | ingress |
-| `hsts-include-subdomains` | HSTS rule applies to all of the site's sub domains | ingress |
+| `hsts` | [Enable HSTS](hsts.md) | ingress |
+| `hsts-max-age` | [Specifies the time (in seconds) the browser should connect to the server using the HTTPS connection.](hsts.md) | ingress|
+| `hsts-preload` | [Enable HSTS preload](hsts.md) | ingress |
+| `hsts-include-subdomains` | [HSTS rule applies to all of the site's sub domains](hsts.md) | ingress |
 | **[Authentication](https://github.com/kubernetes/ingress/blob/master/docs/annotations.md#authentication-related)** |
 | `auth-type` | [Enable Basic Auth](basic-auth.md) | ingress, service |
 | `auth-secret` | [Basic Auth user secret](basic-auth.md) | ingress, service |
