@@ -128,7 +128,7 @@ func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
 	}
 	items = append(items, eng.Items...)
 
-	log.Infoln("Updating All Ingress, got total", len(items))
+	log.Infof("Checking all Ingresses, got total", len(items))
 	for i := range items {
 		engress := &items[i]
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
