@@ -23,6 +23,7 @@ func EnsurePod(c clientset.Interface, meta metav1.ObjectMeta, transform func(*ap
 func CreateOrPatchPod(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.Pod) *apiv1.Pod) (*apiv1.Pod, error) {
 	cur, err := c.CoreV1().Pods(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
+		glog.V(3).Infof("Creating Pod %s/%s with %s.", meta.Namespace, meta.Name)
 		return c.CoreV1().Pods(meta.Namespace).Create(transform(&apiv1.Pod{ObjectMeta: meta}))
 	} else if err != nil {
 		return nil, err
@@ -48,7 +49,7 @@ func PatchPod(c clientset.Interface, cur *apiv1.Pod, transform func(*apiv1.Pod) 
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, nil
 	}
-	glog.V(5).Infof("Patching Pod %s@%s.", cur.Name, cur.Namespace)
+	glog.V(3).Infof("Patching Pod %s/%s with %s", cur.Namespace, cur.Name, string(patch))
 	return c.CoreV1().Pods(cur.Namespace).Patch(cur.Name, types.StrategicMergePatchType, patch)
 }
 
@@ -63,12 +64,12 @@ func TryPatchPod(c clientset.Interface, meta metav1.ObjectMeta, transform func(*
 			result, e2 = PatchPod(c, cur, transform)
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to patch Pod %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
+		glog.Errorf("Attempt %d failed to patch Pod %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
 		return false, nil
 	})
 
 	if err != nil {
-		err = fmt.Errorf("failed to patch Pod %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
+		err = fmt.Errorf("failed to patch Pod %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
 }
@@ -84,12 +85,12 @@ func TryUpdatePod(c clientset.Interface, meta metav1.ObjectMeta, transform func(
 			result, e2 = c.CoreV1().Pods(cur.Namespace).Update(transform(cur))
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update Pod %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
+		glog.Errorf("Attempt %d failed to update Pod %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
 		return false, nil
 	})
 
 	if err != nil {
-		err = fmt.Errorf("failed to update Pod %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
+		err = fmt.Errorf("failed to update Pod %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
 }
