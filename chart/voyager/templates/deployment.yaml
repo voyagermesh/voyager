@@ -29,6 +29,9 @@ spec:
         - --cloud-config={{ .Values.cloudConfig }}
         - --v={{ .Values.logLevel }}
         - --rbac={{ .Values.rbac.create }}
+        {{- if .Values.ingressClass }}
+        - --ingress-class={{ .Values.ingressClass }}
+        {{- end }}
         ports:
         - containerPort: 56790
           name: http

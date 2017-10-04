@@ -22,3 +22,7 @@ rbac:
   create: false
   ## Ignored if rbac.create is true
   serviceAccountName: default
+
+# this flag can be set to 'voyager' to handle only ingress
+# with annotation kubernetes.io/ingress.class=voyager.
+ingressClass:
