@@ -31,6 +31,7 @@ type SharedInfo struct {
 	WhitelistSourceRange  string
 	MaxConnections        int
 	ForceMatchServicePort bool
+	ForceSSLRedirect      bool
 }
 
 type StatsInfo struct {
