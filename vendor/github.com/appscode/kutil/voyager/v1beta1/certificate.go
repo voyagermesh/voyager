@@ -23,7 +23,13 @@ func CreateOrPatchCertificate(c tcs.VoyagerV1beta1Interface, meta metav1.ObjectM
 	cur, err := c.Certificates(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Certificate %s/%s.", meta.Namespace, meta.Name)
-		return c.Certificates(meta.Namespace).Create(transform(&aci.Certificate{ObjectMeta: meta}))
+		return c.Certificates(meta.Namespace).Create(transform(&aci.Certificate{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Certificate",
+				APIVersion: aci.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}

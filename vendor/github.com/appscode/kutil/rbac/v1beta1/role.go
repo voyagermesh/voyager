@@ -23,7 +23,13 @@ func CreateOrPatchRole(c clientset.Interface, meta metav1.ObjectMeta, transform 
 	cur, err := c.RbacV1beta1().Roles(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Role %s/%s.", meta.Namespace, meta.Name)
-		return c.RbacV1beta1().Roles(meta.Namespace).Create(transform(&rbac.Role{ObjectMeta: meta}))
+		return c.RbacV1beta1().Roles(meta.Namespace).Create(transform(&rbac.Role{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Role",
+				APIVersion: rbac.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}

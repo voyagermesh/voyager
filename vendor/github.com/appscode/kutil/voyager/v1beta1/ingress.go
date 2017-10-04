@@ -23,7 +23,13 @@ func CreateOrPatchIngress(c tcs.VoyagerV1beta1Interface, meta metav1.ObjectMeta,
 	cur, err := c.Ingresses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Ingress %s/%s.", meta.Namespace, meta.Name)
-		return c.Ingresses(meta.Namespace).Create(transform(&aci.Ingress{ObjectMeta: meta}))
+		return c.Ingresses(meta.Namespace).Create(transform(&aci.Ingress{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Ingress",
+				APIVersion: aci.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}

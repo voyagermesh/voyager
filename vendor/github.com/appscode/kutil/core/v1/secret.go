@@ -23,7 +23,13 @@ func CreateOrPatchSecret(c clientset.Interface, meta metav1.ObjectMeta, transfor
 	cur, err := c.CoreV1().Secrets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Secret %s/%s.", meta.Namespace, meta.Name)
-		return c.CoreV1().Secrets(meta.Namespace).Create(transform(&apiv1.Secret{ObjectMeta: meta}))
+		return c.CoreV1().Secrets(meta.Namespace).Create(transform(&apiv1.Secret{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Secret",
+				APIVersion: apiv1.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}
