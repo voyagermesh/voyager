@@ -23,7 +23,7 @@ func EnsureRC(c clientset.Interface, meta metav1.ObjectMeta, transform func(*api
 func CreateOrPatchRC(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.ReplicationController) *apiv1.ReplicationController) (*apiv1.ReplicationController, error) {
 	cur, err := c.CoreV1().ReplicationControllers(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating ReplicationController %s/%s with %s.", meta.Namespace, meta.Name)
+		glog.V(3).Infof("Creating ReplicationController %s/%s.", meta.Namespace, meta.Name)
 		return c.CoreV1().ReplicationControllers(meta.Namespace).Create(transform(&apiv1.ReplicationController{ObjectMeta: meta}))
 	} else if err != nil {
 		return nil, err

@@ -22,7 +22,7 @@ func EnsureRoleBinding(c clientset.Interface, meta metav1.ObjectMeta, transform 
 func CreateOrPatchRoleBinding(c clientset.Interface, meta metav1.ObjectMeta, transform func(*rbac.RoleBinding) *rbac.RoleBinding) (*rbac.RoleBinding, error) {
 	cur, err := c.RbacV1beta1().RoleBindings(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating RoleBinding %s/%s with %s.", meta.Namespace, meta.Name)
+		glog.V(3).Infof("Creating RoleBinding %s/%s.", meta.Namespace, meta.Name)
 		return c.RbacV1beta1().RoleBindings(meta.Namespace).Create(transform(&rbac.RoleBinding{ObjectMeta: meta}))
 	} else if err != nil {
 		return nil, err

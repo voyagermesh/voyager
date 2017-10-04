@@ -22,7 +22,7 @@ func EnsureCertificate(c tcs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, tr
 func CreateOrPatchCertificate(c tcs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(alert *aci.Certificate) *aci.Certificate) (*aci.Certificate, error) {
 	cur, err := c.Certificates(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating Certificate %s/%s with %s.", meta.Namespace, meta.Name)
+		glog.V(3).Infof("Creating Certificate %s/%s.", meta.Namespace, meta.Name)
 		return c.Certificates(meta.Namespace).Create(transform(&aci.Certificate{ObjectMeta: meta}))
 	} else if err != nil {
 		return nil, err

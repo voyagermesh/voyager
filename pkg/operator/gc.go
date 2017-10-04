@@ -103,7 +103,7 @@ func (op *Operator) PurgeOffshootsDaemonSet() error {
 				name := api.VoyagerPrefix + ing.Name
 				if ds, err := op.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).Get(name, metav1.GetOptions{}); err == nil {
 					if ds.Spec.Template.Spec.Affinity != nil && ing.Spec.Affinity == nil {
-						log.Infoln("Updating Ingress %s@%s to add `spec.affinity`", ing.Name, ing.Namespace)
+						log.Infof("Updating Ingress %s@%s to add `spec.affinity`", ing.Name, ing.Namespace)
 						ing.Spec.Affinity = ds.Spec.Template.Spec.Affinity
 						_, err = op.VoyagerClient.Ingresses(ing.Namespace).Update(&ing)
 						if err != nil {
