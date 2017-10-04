@@ -6,7 +6,7 @@ Making those correctly accessible to Voyager will require specifying the secret 
 The Secret will need the Key name exactly provided.
 
 ### HTTP (beta)
-HTTP Provider will requires an [Ingress](/docs/user-guide/ingress) reference to resolve with.
+HTTP Provider will requires an running [Ingress](/docs/user-guide/ingress) reference to resolve with.
 Reference an Ingress name for http provider. Ingress IP should be setted as domain A record in its provider.
 Read how to create certificate using [HTTP Provider](/docs/user-guide/certificate/create.md#create-certificate-with-http-provider)
 

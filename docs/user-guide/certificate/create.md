@@ -20,7 +20,17 @@ data:
   GCE_SERVICE_ACCOUNT_DATA: <service-account-json>
 ```
 
-Create the Certificate resource now.
+Create ACME User Secret with key ACME_EMAIL.
+```yaml
+kind: Secret
+metadata:
+  name: test-user-secret
+  namespace: default
+data:
+  ACME_EMAIL: test@appscode.com
+```
+
+Create the Certificate resource.
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Certificate
@@ -31,9 +41,13 @@ spec:
   domains:
   - foo.example.com
   - bar.example.com
-  email: jon.doe@example.com
-  provider: googlecloud
-  providerCredentialSecretName: test-gcp-secret
+  acmeUserSecretName: test-user-secret
+  challengeProvider:
+    dns:
+      provider: googlecloud
+      credentialSecretName: test-gcp-secret
+  storage:
+    secretStore: {}
 ```
 In this example the domains DNS providers are `googlecloud`.
 
@@ -78,8 +92,7 @@ tls.key:        1679 bytes
 
 ### Create Certificate with HTTP Provider
 
-Your ingress must be present before a certificate can be issues from Let's Encrypt using HTTP validation. Your ingress must terminate SSL(/docs/user-guide/ingress/tls.md) for the desired domains. Here is an example ingress definition:
-
+Your ingress must be **running before a certificate can be issues** from Let's Encrypt using HTTP validation.
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
@@ -87,10 +100,6 @@ metadata:
   name: base-ingress
   namespace: foo
 spec:
-  tls:
-    - secretName: cert-test-cert
-      hosts:
-      - foo.example.com
   rules:
   - host: foo.example.com
     http:
@@ -99,10 +108,11 @@ spec:
           serviceName: test-service
           servicePort: 80
 ```
-Now create the ingress. Once the ingress is configured, it will show a IP address or CNAME in the ingres status. Now, go to your domain registrar's website and set IP/CNAME for your domain(s). Now, you are ready to issue a SSL certificate using HTTP provier.
+Now create the ingress. Once the ingress is configured, it will show a IP address or CNAME in the ingres status.
+Now, go to your domain registrar's website and set IP/CNAME for your domain(s). Now, you are ready to issue a SSL certificate using
+HTTP provider.
 
 Below is an example certificate definition. Please note that to use HTTP Provider, you need to point to the ingress created in above.
-
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Certificate
@@ -113,13 +123,16 @@ spec:
   domains:
   - foo.example.com
   - bar.example.com
-  email: jon.doe@example.com
-  provider: http
-  httpProviderIngressReference:
-    apiVersion: voyager.appscode.com/v1beta1
-    kind: Ingress
-    Namespace: foo
-    Name: base-ingress
+  acmeUserSecretName: test-user-secret
+  challengeProvider:
+    http:
+      ingress:
+        apiVersion: voyager.appscode.com/v1beta1
+        kind: Ingress
+        name: base-ingress
+        namespace: default
+  storage:
+    secretStore: {}
 ```
 
 

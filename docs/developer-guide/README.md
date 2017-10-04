@@ -16,7 +16,7 @@ development environment, please follow [these instructions](https://golang.org/d
 #### Download Source
 
 ```console
-$ go get github.com/appscode/voyager
+$ go get -u -v github.com/appscode/voyager
 $ cd $(go env GOPATH)/src/github.com/appscode/voyager
 ```
 
@@ -135,30 +135,48 @@ Certificate watcher watch and process certificates third party data and obtain a
 
 
 ### Third Party Resources
-`voyager` depends on two Third Party Resource Object `ingress.voyager.appscode.com` and `certificate.voyager.appscode.com`. Those two objects
+`voyager` depends on two Custom Resource Definition Object `ingress.voyager.appscode.com` and `certificate.voyager.appscode.com`. Those two objects
 can be created using following data.
 
 ```yaml
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
 metadata:
-  name: ingress.voyager.appscode.com
-apiVersion: extensions/v1beta1
-kind: ThirdPartyResource
-description: "Extended ingress support for Kubernetes by AppsCode"
-versions:
-  - name: v1beta1
-```
-
-```yaml
+  name: certificates.voyager.appscode.com
+  labels:
+    app: voyager
+spec:
+  group: voyager.appscode.com
+  names:
+    kind: Certificate
+    listKind: CertificateList
+    plural: certificates
+    shortNames:
+    - cert
+    singular: certificate
+  scope: Namespaced
+  version: v1beta1
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
 metadata:
-  name: certificate.voyager.appscode.com
-apiVersion: extensions/v1beta1
-kind: ThirdPartyResource
-description: "A specification of a Let's Encrypt Certificate to manage."
-versions:
-  - name: v1beta1
+  name: ingresses.voyager.appscode.com
+  labels:
+    app: voyager
+spec:
+  group: voyager.appscode.com
+  names:
+    kind: Ingress
+    listKind: IngressList
+    plural: ingresses
+    shortNames:
+    - ing
+    singular: ingress
+  scope: Namespaced
+  version: v1beta1
 ```
 
 ```console
 # Create Third Party Resources
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/4.0.0-rc.1/api/extensions/tprs.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/4.0.0-rc.1/apis/voyager/v1beta1/crds.yaml
 ```

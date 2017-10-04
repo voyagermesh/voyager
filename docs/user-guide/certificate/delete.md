@@ -15,5 +15,5 @@ kubectl delete secret cert-test-cert
 
 **Delete Lets Encrypt User Account Secret**
 ```
-kubectl delete secret acme-test-cert
+kubectl delete secret test-user-secret
 ```
