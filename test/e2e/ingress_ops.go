@@ -861,4 +861,58 @@ var _ = Describe("IngressOperations", func() {
 
 		})
 	})
+
+	Describe("With Limit RPM", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.LimitRPM] = "2"
+		})
+
+		FIt("Should Allow 2 Connections In one minute", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET",
+				"/testpath/ok",
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET",
+				"/testpath/ok",
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoHTTP(5, "", ing, eps, "GET",
+				"/testpath/ok",
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok"))
+				},
+			)
+			Expect(err).To(HaveOccurred())
+
+			time.Sleep(time.Minute)
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET",
+				"/testpath/ok",
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
 })

@@ -1,6 +1,8 @@
 package e2e
 
 import (
+	"time"
+
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
@@ -190,6 +192,60 @@ var _ = Describe("IngressTCP", func() {
 
 			// Manually check if whitelisted ips are added to each tcp frontend rule of generated HAProxy config
 			// TODO @ dipta: how to test if whitelist is actually working?
+		})
+	})
+
+	Describe("Create TCP With Limit RPM", func() {
+		BeforeEach(func() {
+			ing.Spec.Rules = []api.IngressRule{
+				{
+					IngressRuleValue: api.IngressRuleValue{
+						TCP: &api.TCPIngressRuleValue{
+							Port: intstr.FromInt(4001),
+							Backend: api.IngressBackend{
+								ServiceName: f.Ingress.TestServerName(),
+								ServicePort: intstr.FromInt(4343),
+							},
+						},
+					},
+				},
+			}
+			ing.Annotations[api.LimitRPM] = "2"
+		})
+
+		It("Should test TCP Connections", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			svc, err := f.Ingress.GetOffShootService(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(svc.Spec.Ports)).Should(Equal(1))
+			Expect(svc.Spec.Ports[0].Port).To(Equal(int32(4001)))
+
+			err = f.Ingress.DoTCP(framework.MaxRetry, ing, eps, func(r *testserverclient.Response) bool {
+				return Expect(r.ServerPort).Should(Equal(":4343"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoTCP(framework.MaxRetry, ing, eps, func(r *testserverclient.Response) bool {
+				return Expect(r.ServerPort).Should(Equal(":4343"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoTCP(3, ing, eps, func(r *testserverclient.Response) bool {
+				return Expect(r.ServerPort).Should(Equal(":4343"))
+			})
+			Expect(err).To(HaveOccurred())
+
+			// Wait for the rates to be reset
+			time.Sleep(time.Minute)
+
+			err = f.Ingress.DoTCP(framework.MaxRetry, ing, eps, func(r *testserverclient.Response) bool {
+				return Expect(r.ServerPort).Should(Equal(":4343"))
+			})
+			Expect(err).NotTo(HaveOccurred())
 		})
 	})
 })
