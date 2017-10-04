@@ -128,11 +128,10 @@ func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
 	}
 	items = append(items, eng.Items...)
 
-	log.Infof("Checking all Ingresses, got total", len(items))
 	for i := range items {
 		engress := &items[i]
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
-			log.Infoln("Checking for service", svc, "to be used to load balance via ingress", engress.Name, engress.Namespace)
+			log.Infof("Checking %s %s/%s for Service %s/%s", engress.APISchema(), engress.Namespace, engress.Name, svc.Namespace, svc.Name)
 			if engress.HasBackendService(svc.Name, svc.Namespace) {
 				ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 				if ctrl.IsExists() {
