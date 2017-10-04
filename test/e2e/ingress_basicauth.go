@@ -90,7 +90,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			}
 		})
 
-		It("Should response HTTP weighted", func() {
+		It("Should response HTTP", func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
@@ -108,7 +108,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 				"GET",
 				"/testpath",
 				map[string]string{
-					"Authorization": "Basic Zm9vOmJhcg==",
+					"Authorization": "Basic Zm9vOmJhcg==", // foo:bar
 				},
 				func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
@@ -125,7 +125,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 				"GET",
 				"/testpath",
 				map[string]string{
-					"Authorization": "Basic YXV0aDItZm9vOmJhcg==",
+					"Authorization": "Basic YXV0aDItZm9vOmJhcg==", // auth2-foo:bar
 				},
 				func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
@@ -142,7 +142,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 				"GET",
 				"/testpath",
 				map[string]string{
-					"Authorization": "Basic amFuZTpndWVzdA==",
+					"Authorization": "Basic amFuZTpndWVzdA==", // jane:guest
 				},
 				func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
@@ -191,7 +191,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = f.Ingress.DoHTTPWithHeader(
+			err = f.Ingress.DoHTTPStatusWithHeader(
 				framework.NoRetry,
 				ing,
 				eps,
@@ -201,12 +201,10 @@ var _ = Describe("IngressWithBasicAuth", func() {
 					"Authorization": "Basic wrongPass",
 				},
 				func(r *testserverclient.Response) bool {
-					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
-						Expect(r.Method).Should(Equal("GET")) &&
-						Expect(r.Path).Should(Equal("/testpath"))
+					return Expect(r.Status).Should(Equal(http.StatusUnauthorized))
 				},
 			)
-			Expect(err).To(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 
 			err = f.Ingress.DoHTTPWithHeader(
 				framework.NoRetry,
@@ -215,7 +213,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 				"GET",
 				"/testpath",
 				map[string]string{
-					"Authorization": "Basic Zm9vOmJhcg==",
+					"Authorization": "Basic Zm9vOmJhcg==", // foo:bar
 				},
 				func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
@@ -232,7 +230,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 				"GET",
 				"/testpath",
 				map[string]string{
-					"Authorization": "Basic YXV0aDItZm9vOmJhcg==",
+					"Authorization": "Basic YXV0aDItZm9vOmJhcg==", // auth2-foo:bar
 				},
 				func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
@@ -249,7 +247,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 				"GET",
 				"/testpath",
 				map[string]string{
-					"Authorization": "Basic amFuZTpndWVzdA==",
+					"Authorization": "Basic amFuZTpndWVzdA==", // jane:guest
 				},
 				func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
@@ -316,7 +314,8 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = f.Ingress.DoHTTPWithHeader(
+			// should Unauthorized, since 'secret2' will be replaced by global 'secret'
+			err = f.Ingress.DoHTTPStatusWithHeader(
 				framework.NoRetry,
 				ing,
 				eps,
@@ -326,12 +325,10 @@ var _ = Describe("IngressWithBasicAuth", func() {
 					"Authorization": "Basic YXV0aDMtZm9vOmJhcg==", // auth3-foo:bar
 				},
 				func(r *testserverclient.Response) bool {
-					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
-						Expect(r.Method).Should(Equal("GET")) &&
-						Expect(r.Path).Should(Equal("/testpath"))
+					return Expect(r.Status).Should(Equal(http.StatusUnauthorized))
 				},
 			)
-			Expect(err).To(HaveOccurred()) // should error, since 'secret2' will be replaced by global 'secret'
+			Expect(err).NotTo(HaveOccurred())
 
 			err = f.Ingress.DoHTTPWithHeader(
 				framework.NoRetry,
@@ -340,7 +337,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 				"GET",
 				"/testpath",
 				map[string]string{
-					"Authorization": "Basic Zm9vOmJhcg==",
+					"Authorization": "Basic Zm9vOmJhcg==", // foo:bar
 				},
 				func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
@@ -357,7 +354,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 				"GET",
 				"/testpath",
 				map[string]string{
-					"Authorization": "Basic YXV0aDItZm9vOmJhcg==",
+					"Authorization": "Basic YXV0aDItZm9vOmJhcg==", // auth2-foo:bar
 				},
 				func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
@@ -374,7 +371,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 				"GET",
 				"/testpath",
 				map[string]string{
-					"Authorization": "Basic amFuZTpndWVzdA==",
+					"Authorization": "Basic amFuZTpndWVzdA==", // jane:guest
 				},
 				func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
