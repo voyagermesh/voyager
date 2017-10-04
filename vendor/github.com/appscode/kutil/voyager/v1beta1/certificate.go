@@ -26,7 +26,7 @@ func CreateOrPatchCertificate(c tcs.VoyagerV1beta1Interface, meta metav1.ObjectM
 		return c.Certificates(meta.Namespace).Create(transform(&aci.Certificate{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Certificate",
-				APIVersion: aci.SchemeGroupVersion.Version,
+				APIVersion: aci.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

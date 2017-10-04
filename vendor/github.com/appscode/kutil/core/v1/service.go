@@ -26,7 +26,7 @@ func CreateOrPatchService(c clientset.Interface, meta metav1.ObjectMeta, transfo
 		return c.CoreV1().Services(meta.Namespace).Create(transform(&apiv1.Service{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Service",
-				APIVersion: apiv1.SchemeGroupVersion.Version,
+				APIVersion: apiv1.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

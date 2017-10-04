@@ -26,7 +26,7 @@ func CreateOrPatchConfigMap(c clientset.Interface, meta metav1.ObjectMeta, trans
 		return c.CoreV1().ConfigMaps(meta.Namespace).Create(transform(&apiv1.ConfigMap{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "ConfigMap",
-				APIVersion: apiv1.SchemeGroupVersion.Version,
+				APIVersion: apiv1.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

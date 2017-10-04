@@ -1,5 +1,5 @@
 hash: d5ae2d2b40198a6382da2cc54ab5ea65baee84e166e05c1749e6a751066cdbbc
-updated: 2017-10-04T14:46:27.363987919-07:00
+updated: 2017-10-04T15:33:44.48018264-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -30,7 +30,7 @@ imports:
   - cmds
   - controller
 - name: github.com/appscode/kutil
-  version: c55d409f3f2ffc095607426e67946f9ec98b0c95
+  version: fed3d3a5ae37d782118eb4f17e642bfd321ae4c3
   subpackages:
   - core/v1
   - rbac/v1beta1
@@ -95,7 +95,7 @@ imports:
   subpackages:
   - pkg/client/monitoring/v1alpha1
 - name: github.com/cpuguy83/go-md2man
-  version: 71acacd42f85e5e82f70a55327789582a5200a90
+  version: 1d903dcb749992f3741d744c0f8376b4bd7eb3e1
   subpackages:
   - md2man
 - name: github.com/davecgh/go-spew
@@ -147,7 +147,7 @@ imports:
   - proto
   - sortkeys
 - name: github.com/golang/glog
-  version: 44145f04b68cf362d9c4df2182967c2275eaefed
+  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
 - name: github.com/golang/groupcache
   version: 02826c3e79038b59d737d3b1c0a1d937f71a4433
   subpackages:

@@ -26,7 +26,7 @@ func CreateOrPatchIngress(c tcs.VoyagerV1beta1Interface, meta metav1.ObjectMeta,
 		return c.Ingresses(meta.Namespace).Create(transform(&aci.Ingress{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Ingress",
-				APIVersion: aci.SchemeGroupVersion.Version,
+				APIVersion: aci.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

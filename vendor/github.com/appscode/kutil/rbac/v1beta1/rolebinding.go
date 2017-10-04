@@ -26,7 +26,7 @@ func CreateOrPatchRoleBinding(c clientset.Interface, meta metav1.ObjectMeta, tra
 		return c.RbacV1beta1().RoleBindings(meta.Namespace).Create(transform(&rbac.RoleBinding{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "RoleBinding",
-				APIVersion: rbac.SchemeGroupVersion.Version,
+				APIVersion: rbac.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

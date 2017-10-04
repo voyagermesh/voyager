@@ -26,7 +26,7 @@ func CreateOrPatchRole(c clientset.Interface, meta metav1.ObjectMeta, transform 
 		return c.RbacV1beta1().Roles(meta.Namespace).Create(transform(&rbac.Role{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Role",
-				APIVersion: rbac.SchemeGroupVersion.Version,
+				APIVersion: rbac.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

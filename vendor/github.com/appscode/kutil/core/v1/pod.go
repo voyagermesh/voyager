@@ -27,7 +27,7 @@ func CreateOrPatchPod(c clientset.Interface, meta metav1.ObjectMeta, transform f
 		return c.CoreV1().Pods(meta.Namespace).Create(transform(&apiv1.Pod{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Pod",
-				APIVersion: apiv1.SchemeGroupVersion.Version,
+				APIVersion: apiv1.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

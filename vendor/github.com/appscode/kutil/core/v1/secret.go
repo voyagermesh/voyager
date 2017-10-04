@@ -26,7 +26,7 @@ func CreateOrPatchSecret(c clientset.Interface, meta metav1.ObjectMeta, transfor
 		return c.CoreV1().Secrets(meta.Namespace).Create(transform(&apiv1.Secret{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Secret",
-				APIVersion: apiv1.SchemeGroupVersion.Version,
+				APIVersion: apiv1.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

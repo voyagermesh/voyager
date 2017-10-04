@@ -26,7 +26,7 @@ func CreateOrPatchServiceAccount(c clientset.Interface, meta metav1.ObjectMeta, 
 		return c.CoreV1().ServiceAccounts(meta.Namespace).Create(transform(&apiv1.ServiceAccount{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "ServiceAccount",
-				APIVersion: apiv1.SchemeGroupVersion.Version,
+				APIVersion: apiv1.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

@@ -27,7 +27,7 @@ func CreateOrPatchRC(c clientset.Interface, meta metav1.ObjectMeta, transform fu
 		return c.CoreV1().ReplicationControllers(meta.Namespace).Create(transform(&apiv1.ReplicationController{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "ReplicationController",
-				APIVersion: apiv1.SchemeGroupVersion.Version,
+				APIVersion: apiv1.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))
