@@ -497,11 +497,13 @@ func (c *nodePortController) ensureService(old *api.Ingress) (*apiv1.Service, er
 	desired := c.newService()
 	current, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
+		log.Infoln("creating service %s/%s", desired.Namespace, desired.Name)
 		return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Create(desired)
 	} else if err != nil {
 		return nil, err
 	}
 	if svc, needsUpdate := c.serviceRequiresUpdate(current, desired, old); needsUpdate {
+		log.Infoln("updating service %s/%s", desired.Namespace, desired.Name)
 		return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Update(svc)
 	}
 	return current, nil
@@ -610,6 +612,7 @@ func (c *nodePortController) ensurePods(old *api.Ingress) (*apps.Deployment, err
 	desired := c.newPods()
 	current, err := c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
+		log.Infoln("creating deployment %s/%s", desired.Namespace, desired.Name)
 		return c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Create(desired)
 	} else if err != nil {
 		return nil, err
@@ -682,6 +685,7 @@ func (c *nodePortController) ensurePods(old *api.Ingress) (*apps.Deployment, err
 		current.Spec.Template.Spec.ServiceAccountName = desired.Spec.Template.Spec.ServiceAccountName
 	}
 	if needsUpdate {
+		log.Infoln("updating deployment %s/%s", desired.Namespace, desired.Name)
 		return c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Update(current)
 	}
 	return current, nil

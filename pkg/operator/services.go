@@ -142,14 +142,13 @@ func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
 					// In case of any failure in soft update we will make hard update
 					// to the resource. If hard update encounters errors then we will
 					// recreate the resource from scratch.
-					log.Infoln("Loadbalancer is exists, trying to update")
+					log.Infoln("Ingress offshoots exist, trying to update")
 					cfgErr := ctrl.Update(0, nil)
 					if cfgErr != nil {
 						log.Infoln("Loadbalancer update failed", cfgErr)
 					}
 				} else {
-					// This LB should be there. If it is no there. we should create it
-					log.Infoln("Loadbalancer is not found, recreating with a cleanup")
+					log.Infoln("One or more Ingress offshoots are missing, trying to create")
 					ctrl.Create()
 				}
 				op.ensureEgressAnnotations(engress, svc)
