@@ -40,7 +40,6 @@ func (op *Operator) initServiceWatcher() cache.Controller {
 			DeleteFunc: func(obj interface{}) {
 				if svc, ok := obj.(*apiv1.Service); ok {
 					log.Infof("Service %s@%s deleted", svc.Name, svc.Namespace)
-
 					if restored, err := op.restoreServiceIfRequired(svc); err == nil && restored {
 						return
 					}
@@ -131,7 +130,6 @@ func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
 	for i := range items {
 		engress := &items[i]
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
-			log.Infof("Checking %s %s/%s for Service %s/%s", engress.APISchema(), engress.Namespace, engress.Name, svc.Namespace, svc.Name)
 			if engress.HasBackendService(svc.Name, svc.Namespace) {
 				ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 				if ctrl.IsExists() {
@@ -141,13 +139,13 @@ func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
 					// In case of any failure in soft update we will make hard update
 					// to the resource. If hard update encounters errors then we will
 					// recreate the resource from scratch.
-					log.Infoln("Ingress offshoots exist, trying to update")
+					log.Infof("Offshoots of %s Ingress %s/%s exist, trying to update", engress.APISchema(), engress.Namespace, engress.Name)
 					cfgErr := ctrl.Update(0, nil)
 					if cfgErr != nil {
-						log.Infoln("Loadbalancer update failed", cfgErr)
+						log.Infof("Failed to update offshoots of %s Ingress %s/%s. Reason: %s", engress.APISchema(), engress.Namespace, engress.Name, cfgErr)
 					}
 				} else {
-					log.Infoln("One or more Ingress offshoots are missing, trying to create")
+					log.Infof("One or more offshoots of %s Ingress %s/%s is missing, trying to create", engress.APISchema(), engress.Namespace, engress.Name)
 					ctrl.Create()
 				}
 				op.ensureEgressAnnotations(engress, svc)
