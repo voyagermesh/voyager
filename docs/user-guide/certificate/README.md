@@ -1,5 +1,6 @@
 # Certificate
-Voyager comes with a built-in certificate manager that can issue free TLS/SSL certificates from Let's Encrypt and keep them updated. 
+
+Voyager comes with a built-in certificate manager that can issue free TLS/SSL certificates from Let's Encrypt.
 
 
 Voyager can automatically provision and refresh SSL certificates issued from Let's Encrypt using a custom Kubernetes Certificate resource.

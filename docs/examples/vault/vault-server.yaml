@@ -9,32 +9,32 @@ spec:
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: vault-server
+  name: vault
   namespace: vault
   labels:
-    app: vault-server
+    app: vault
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: vault-server
+        app: vault
     spec:
       containers:
-        - name: vault
-          image: "vault:0.8.3"
+        - name: server
+          image: vault:0.8.3
           args:
             - "server"
             - "-dev"
             - "-log-level=debug"
-            - "-dev-root-token-id=3e4a5ba1-kube-422b-d1db-844979cab098"
+            - "-dev-root-token-id=goldfish"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: vault-server
-  name: vault-server
+    app: vault
+  name: vault
   namespace: vault
 spec:
   ports:
@@ -42,4 +42,43 @@ spec:
     protocol: TCP
     targetPort: 8200
   selector:
-    app: vault-server
+    app: vault
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: goldfish
+  namespace: vault
+  labels:
+    app: goldfish
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: goldfish
+    spec:
+      containers:
+        - name: ui
+          image: vault:0.8.3
+          args:
+            - "server"
+            - "-dev"
+            - "-log-level=debug"
+            - "-dev-root-token-id=goldfish"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: goldfish
+  name: goldfish
+  namespace: goldfish
+spec:
+  type: NodePort
+  ports:
+  - port: 8000
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    app: goldfish
