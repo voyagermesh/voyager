@@ -55,7 +55,7 @@ func (c *controller) ensureRoles() error {
 				Verbs:     []string{"get", "list", "watch"},
 			},
 			{
-				APIGroups: []string{apiv1.GroupName},
+				APIGroups: []string{api.SchemeGroupVersion.Group},
 				Resources: []string{"certificates"},
 				Verbs:     []string{"get", "list", "watch"},
 			},

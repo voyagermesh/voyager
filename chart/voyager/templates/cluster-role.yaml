@@ -29,7 +29,7 @@ rules:
   - monitoring.coreos.com
   resources:
   - servicemonitors
-  verbs: ["get", "create", "update"]
+  verbs: ["get", "create", "update", "patch"]
 - apiGroups:
   - apps
   resources:
@@ -52,7 +52,7 @@ rules:
 - apiGroups: [""]
   resources:
   - secrets
-  verbs: ["get", "list", "watch", "create", "update"]
+  verbs: ["get", "list", "watch", "create", "update", "patch"]
 - apiGroups: [""]
   resources:
   - namespaces
@@ -72,10 +72,11 @@ rules:
 - apiGroups: [""]
   resources:
   - serviceaccounts
-  verbs: ["get", "create", "delete"]
-- apiGroups: ["rbac.authorization.k8s.io"]
+  verbs: ["get", "create", "delete", "patch"]
+- apiGroups:
+  - rbac.authorization.k8s.io
   resources:
-  - roles
   - rolebindings
-  verbs: ["get", "create", "delete"]
+  - roles
+  verbs: ["get", "create", "delete", "patch"]
 {{ end }}
