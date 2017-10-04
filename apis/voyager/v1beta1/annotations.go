@@ -206,6 +206,9 @@ const (
 
 	WhitelistSourceRange = IngressKey + "/whitelist-source-range"
 	MaxConnections       = IngressKey + "/max-connections"
+
+	// https://github.com/appscode/voyager/issues/552
+	ForceServicePort = EngressKey + "/force-service-port"
 )
 
 const (
@@ -270,6 +273,11 @@ func (r Ingress) StickySessionCookieHashType() string {
 
 func (r Ingress) EnableCORS() bool {
 	v, _ := GetBool(r.Annotations, CORSEnabled)
+	return v
+}
+
+func (r Ingress) ForceServicePort() bool {
+	v, _ := GetBool(r.Annotations, ForceServicePort)
 	return v
 }
 
