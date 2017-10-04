@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vault
+spec:
+  finalizers:
+  - kubernetes
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: vault-server
+  namespace: vault
+  labels:
+    app: vault-server
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: vault-server
+    spec:
+      containers:
+        - name: vault
+          image: "vault:0.8.3"
+          args:
+            - "server"
+            - "-dev"
+            - "-log-level=debug"
+            - "-dev-root-token-id=3e4a5ba1-kube-422b-d1db-844979cab098"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: vault-server
+  name: vault-server
+  namespace: vault
+spec:
+  ports:
+  - port: 8200
+    protocol: TCP
+    targetPort: 8200
+  selector:
+    app: vault-server

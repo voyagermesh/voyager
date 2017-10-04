@@ -1,4 +1,19 @@
-## Certificates
+# Certificate
+Voyager comes with a built-in certificate manager that can issue TLS/SSL certificates from Let's Encrypt and keep them updated. 
+
+
+Voyager can automatically provision and refresh SSL certificates issued from Let's Encrypt using a custom Kubernetes Certificate resource.
+
+Features
+
+Provision free TLS certificates from Let's Encrypt,
+Manage issued certificates using a Kubernetes Third Party Resource,
+Domain validation using ACME dns-01 challenges,
+Support for multiple DNS providers,
+Auto Renew Certificates,
+Use issued Certificates with Ingress to Secure Communications.
+
+
 Voyager manages certificates objects to create Certificates default from Let's Encrypt.
 
 ### Core features of AppsCode Certificates:

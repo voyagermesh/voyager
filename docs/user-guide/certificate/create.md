@@ -30,6 +30,17 @@ data:
   ACME_EMAIL: test@appscode.com
 ```
 
+Create ACME User Secret with key ACME_EMAIL.
+```yaml
+kind: Secret
+metadata:
+  name: test-user-secret
+  namespace: default
+data:
+  ACME_EMAIL: test@appscode.com
+  ACME_SERVER_URL: https://acme-staging.api.letsencrypt.org/directory
+```
+
 Create the Certificate resource.
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1

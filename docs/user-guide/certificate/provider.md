@@ -1,14 +1,16 @@
-# Configuring your challenge provider(s)
+# Let's Encrypt Challenge Providers
+
+## http-01
+HTTP Provider will requires an running [Ingress](/docs/user-guide/ingress) reference to resolve with.
+Reference an Ingress name for http provider. Ingress IP should be setted as domain A record in its provider.
+Read how to create certificate using [HTTP Provider](/docs/user-guide/certificate/create.md#create-certificate-with-http-provider)
+
 
 ## DNS Providers
 Voyager uses kubernetes secret within the pod to fetch credentials required for various DNS providers.
 Making those correctly accessible to Voyager will require specifying the secret name inside an certificate objects.
 The Secret will need the Key name exactly provided.
 
-### HTTP (beta)
-HTTP Provider will requires an running [Ingress](/docs/user-guide/ingress) reference to resolve with.
-Reference an Ingress name for http provider. Ingress IP should be setted as domain A record in its provider.
-Read how to create certificate using [HTTP Provider](/docs/user-guide/certificate/create.md#create-certificate-with-http-provider)
 
 ### Cloudflare
 `CLOUDFLARE_EMAIL`: The email of the cloudflare user <br>
