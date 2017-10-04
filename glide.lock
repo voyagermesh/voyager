@@ -1,5 +1,5 @@
 hash: d5ae2d2b40198a6382da2cc54ab5ea65baee84e166e05c1749e6a751066cdbbc
-updated: 2017-10-03T22:42:48.257612089-07:00
+updated: 2017-10-04T11:30:03.606022167-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -30,7 +30,7 @@ imports:
   - cmds
   - controller
 - name: github.com/appscode/kutil
-  version: 9c54837494cd68da396b0a9cb7afebb55366f554
+  version: 8fdf30e692e219df7314290db5d492e7244038a4
   subpackages:
   - core/v1
   - rbac/v1beta1
@@ -105,7 +105,7 @@ imports:
 - name: github.com/dgrijalva/jwt-go
   version: 01aeca54ebda6e0fbfafd0a524d234159c05ec20
 - name: github.com/dnsimple/dnsimple-go
-  version: 84b1b693f39ee2d2749fd651148024c014679dbd
+  version: f2d9b723cc9547d182e24ac2e527ae25d25fc93f
   subpackages:
   - dnsimple
 - name: github.com/docker/distribution

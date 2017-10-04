@@ -27,6 +27,11 @@ rules:
   - servicemonitors
   verbs: ["get", "create", "update"]
 - apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs: ["*"]
+- apiGroups:
   - extensions
   resources:
   - deployments
