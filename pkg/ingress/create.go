@@ -67,13 +67,13 @@ func (c *controller) ensureConfigMap() error {
 
 func (c *controller) ensureRBAC() error {
 	if err := c.ensureServiceAccount(); err != nil {
-		return errors.FromErr(err).Err()
+		return err
 	}
 	if err := c.ensureRoles(); err != nil {
-		return errors.FromErr(err).Err()
+		return err
 	}
 	if err := c.ensureRoleBinding(); err != nil {
-		return errors.FromErr(err).Err()
+		return err
 	}
 	return nil
 }

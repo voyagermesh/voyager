@@ -144,9 +144,22 @@ func (c *hostPortController) Create() error {
 
 	// If RBAC is enabled we need to ensure service account
 	if c.Opt.EnableRBAC {
-		if err := c.ensureRBAC(); err != nil {
-			return err
+		err := c.ensureRBAC()
+		if err != nil {
+			c.recorder.Event(
+				c.Ingress.ObjectReference(),
+				apiv1.EventTypeWarning,
+				eventer.EventReasonIngressRBACFailed,
+				err.Error(),
+			)
+			return errors.FromErr(err).Err()
 		}
+		c.recorder.Eventf(
+			c.Ingress.ObjectReference(),
+			apiv1.EventTypeNormal,
+			eventer.EventReasonIngressRBACSuccessful,
+			"Successfully applied RBAC",
+		)
 	}
 
 	_, err = c.ensurePods(nil)
@@ -266,9 +279,22 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 
 	// If RBAC is enabled we need to ensure service account
 	if c.Opt.EnableRBAC {
-		if err := c.ensureRBAC(); err != nil {
-			return err
+		err := c.ensureRBAC()
+		if err != nil {
+			c.recorder.Event(
+				c.Ingress.ObjectReference(),
+				apiv1.EventTypeWarning,
+				eventer.EventReasonIngressRBACFailed,
+				err.Error(),
+			)
+			return errors.FromErr(err).Err()
 		}
+		c.recorder.Eventf(
+			c.Ingress.ObjectReference(),
+			apiv1.EventTypeNormal,
+			eventer.EventReasonIngressRBACSuccessful,
+			"Successfully applied RBAC",
+		)
 	}
 
 	_, err = c.ensurePods(old)
