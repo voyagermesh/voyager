@@ -19,7 +19,6 @@ const (
 )
 
 func (c *controller) ensureConfigMap() error {
-	log.Infoln("Creating ConfigMap for engress")
 	cm, err := c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		cm = &apiv1.ConfigMap{
@@ -35,6 +34,7 @@ func (c *controller) ensureConfigMap() error {
 				"haproxy.cfg": c.HAProxyConfig,
 			},
 		}
+		log.Infoln("Creating ConfigMap %s/%s", cm.Namespace, cm.Name)
 		_, err = c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Create(cm)
 		return err
 	} else if err != nil {
@@ -56,6 +56,7 @@ func (c *controller) ensureConfigMap() error {
 	}
 
 	if needsUpdate {
+		log.Infoln("Updating ConfigMap %s/%s", cm.Namespace, cm.Name)
 		_, err = c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Update(cm)
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -148,6 +149,7 @@ func (c *controller) ensureStatsService() error {
 
 	s, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.StatsServiceName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
+		log.Infoln("Creating Service %s/%s", svc.Namespace, svc.Name)
 		_, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Create(svc)
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -160,6 +162,7 @@ func (c *controller) ensureStatsService() error {
 	s.Labels = svc.Labels
 	s.Annotations = svc.Annotations
 	s.Spec = svc.Spec
+	log.Infoln("Updating Service %s/%s", s.Namespace, s.Name)
 	_, err = c.KubeClient.CoreV1().Services(s.Namespace).Update(s)
 	if err != nil {
 		return errors.FromErr(err).Err()
