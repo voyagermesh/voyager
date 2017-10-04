@@ -209,6 +209,13 @@ const (
 
 	// https://github.com/appscode/voyager/issues/552
 	ForceServicePort = EngressKey + "/force-service-port"
+
+	// Limit requests per second per IP address
+	LimitRPS = IngressKey + "/limit-rps"
+
+	LimitRPM = IngressKey + "/limit-rpm"
+
+	LimitConnection = IngressKey + "/limit-connection"
 )
 
 const (
@@ -516,6 +523,22 @@ func (r Ingress) AuthRealm() string {
 func (r Ingress) AuthSecretName() string {
 	return GetString(r.Annotations, AuthSecret)
 }
+
+func (r Ingress) LimitRPS() int {
+	value, _ := GetInt(r.Annotations, LimitRPS)
+	return value
+}
+
+func (r Ingress) LimitRPM() int {
+	value, _ := GetInt(r.Annotations, LimitRPM)
+	return value
+}
+
+func (r Ingress) LimitConnections() int {
+	value, _ := GetInt(r.Annotations, LimitConnection)
+	return value
+}
+
 
 // ref: https://github.com/kubernetes/kubernetes/blob/078238a461a0872a8eacb887fbb3d0085714604c/staging/src/k8s.io/apiserver/pkg/apis/example/v1/types.go#L134
 // Deprecated, for newer ones use '{"k1":"v1", "k2", "v2"}' form
