@@ -24,7 +24,13 @@ func CreateOrPatchRC(c clientset.Interface, meta metav1.ObjectMeta, transform fu
 	cur, err := c.CoreV1().ReplicationControllers(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating ReplicationController %s/%s.", meta.Namespace, meta.Name)
-		return c.CoreV1().ReplicationControllers(meta.Namespace).Create(transform(&apiv1.ReplicationController{ObjectMeta: meta}))
+		return c.CoreV1().ReplicationControllers(meta.Namespace).Create(transform(&apiv1.ReplicationController{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "ReplicationController",
+				APIVersion: apiv1.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}

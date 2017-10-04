@@ -23,7 +23,13 @@ func CreateOrPatchServiceAccount(c clientset.Interface, meta metav1.ObjectMeta, 
 	cur, err := c.CoreV1().ServiceAccounts(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating ServiceAccount %s/%s.", meta.Namespace, meta.Name)
-		return c.CoreV1().ServiceAccounts(meta.Namespace).Create(transform(&apiv1.ServiceAccount{ObjectMeta: meta}))
+		return c.CoreV1().ServiceAccounts(meta.Namespace).Create(transform(&apiv1.ServiceAccount{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "ServiceAccount",
+				APIVersion: apiv1.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}

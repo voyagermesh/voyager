@@ -23,7 +23,13 @@ func CreateOrPatchService(c clientset.Interface, meta metav1.ObjectMeta, transfo
 	cur, err := c.CoreV1().Services(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Service %s/%s.", meta.Namespace, meta.Name)
-		return c.CoreV1().Services(meta.Namespace).Create(transform(&apiv1.Service{ObjectMeta: meta}))
+		return c.CoreV1().Services(meta.Namespace).Create(transform(&apiv1.Service{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Service",
+				APIVersion: apiv1.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}

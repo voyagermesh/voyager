@@ -23,7 +23,13 @@ func CreateOrPatchConfigMap(c clientset.Interface, meta metav1.ObjectMeta, trans
 	cur, err := c.CoreV1().ConfigMaps(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating ConfigMap %s/%s.", meta.Namespace, meta.Name)
-		return c.CoreV1().ConfigMaps(meta.Namespace).Create(transform(&apiv1.ConfigMap{ObjectMeta: meta}))
+		return c.CoreV1().ConfigMaps(meta.Namespace).Create(transform(&apiv1.ConfigMap{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "ConfigMap",
+				APIVersion: apiv1.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}

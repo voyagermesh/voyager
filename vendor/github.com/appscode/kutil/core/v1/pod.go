@@ -24,7 +24,13 @@ func CreateOrPatchPod(c clientset.Interface, meta metav1.ObjectMeta, transform f
 	cur, err := c.CoreV1().Pods(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Pod %s/%s.", meta.Namespace, meta.Name)
-		return c.CoreV1().Pods(meta.Namespace).Create(transform(&apiv1.Pod{ObjectMeta: meta}))
+		return c.CoreV1().Pods(meta.Namespace).Create(transform(&apiv1.Pod{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Pod",
+				APIVersion: apiv1.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}
