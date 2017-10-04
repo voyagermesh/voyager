@@ -1,5 +1,5 @@
 hash: d5ae2d2b40198a6382da2cc54ab5ea65baee84e166e05c1749e6a751066cdbbc
-updated: 2017-09-25T16:49:23.867672649-07:00
+updated: 2017-10-03T22:42:48.257612089-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -30,7 +30,7 @@ imports:
   - cmds
   - controller
 - name: github.com/appscode/kutil
-  version: 81416f2ec1a1e6009abf8455e083c5a5b0fda763
+  version: 9c54837494cd68da396b0a9cb7afebb55366f554
   subpackages:
   - core/v1
   - rbac/v1beta1
@@ -314,7 +314,7 @@ imports:
 - name: github.com/Sirupsen/logrus
   version: 51fe59aca108dc5680109e7b2051cbdcfa5a253c
 - name: github.com/spf13/cobra
-  version: b78744579491c1ceeaaa3b40205e56b0591b93a3
+  version: 0dacccfbaabc71b872087c1719c5380d3e185173
   subpackages:
   - doc
 - name: github.com/spf13/pflag
@@ -619,7 +619,7 @@ imports:
   - util/integer
   - util/workqueue
 - name: k8s.io/kubernetes
-  version: 4bc5e7f9a6c25dc4c03d4d656f2cefd21540e28c
+  version: 8e1552342355496b62754e61ad5f802a0f3f1fa7
   subpackages:
   - pkg/api
   - pkg/api/install
