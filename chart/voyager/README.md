@@ -52,6 +52,7 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `persistence.hostPath`    | Host mount path for cloud config                              | `/etc/kubernetes`  |
 | `rbac.create`             | install required rbac service account, roles and rolebindings | `false`            |
 | `rbac.serviceAccountName` | ServiceAccount Voyager will use (ignored if rbac.create=true) | `default`          |
+| `ingressClass`            | Ingress class to watch for. If empty, it handles all ingress  | ``                 |
 
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
