@@ -40,7 +40,6 @@ func (op *Operator) initServiceWatcher() cache.Controller {
 			DeleteFunc: func(obj interface{}) {
 				if svc, ok := obj.(*apiv1.Service); ok {
 					log.Infof("Service %s@%s deleted", svc.Name, svc.Namespace)
-
 					if restored, err := op.restoreServiceIfRequired(svc); err == nil && restored {
 						return
 					}
@@ -128,11 +127,9 @@ func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
 	}
 	items = append(items, eng.Items...)
 
-	log.Infoln("Updating All Ingress, got total", len(items))
 	for i := range items {
 		engress := &items[i]
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
-			log.Infoln("Checking for service", svc, "to be used to load balance via ingress", engress.Name, engress.Namespace)
 			if engress.HasBackendService(svc.Name, svc.Namespace) {
 				ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 				if ctrl.IsExists() {
@@ -142,14 +139,13 @@ func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
 					// In case of any failure in soft update we will make hard update
 					// to the resource. If hard update encounters errors then we will
 					// recreate the resource from scratch.
-					log.Infoln("Loadbalancer is exists, trying to update")
+					log.Infof("Offshoots of %s Ingress %s/%s exist, trying to update", engress.APISchema(), engress.Namespace, engress.Name)
 					cfgErr := ctrl.Update(0, nil)
 					if cfgErr != nil {
-						log.Infoln("Loadbalancer update failed", cfgErr)
+						log.Infof("Failed to update offshoots of %s Ingress %s/%s. Reason: %s", engress.APISchema(), engress.Namespace, engress.Name, cfgErr)
 					}
 				} else {
-					// This LB should be there. If it is no there. we should create it
-					log.Infoln("Loadbalancer is not found, recreating with a cleanup")
+					log.Infof("One or more offshoots of %s Ingress %s/%s is missing, trying to create", engress.APISchema(), engress.Namespace, engress.Name)
 					ctrl.Create()
 				}
 				op.ensureEgressAnnotations(engress, svc)

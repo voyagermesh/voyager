@@ -14,12 +14,11 @@ import (
 )
 
 const (
-	ExporterSidecarTag       = "appscode/voyager:4.0.0-rc.2"
+	ExporterSidecarTag       = "appscode/voyager:4.0.0-rc.3"
 	TLSCertificateVolumeName = "voyager-certdir"
 )
 
 func (c *controller) ensureConfigMap() error {
-	log.Infoln("Creating ConfigMap for engress")
 	cm, err := c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		cm = &apiv1.ConfigMap{
@@ -35,6 +34,7 @@ func (c *controller) ensureConfigMap() error {
 				"haproxy.cfg": c.HAProxyConfig,
 			},
 		}
+		log.Infof("Creating ConfigMap %s/%s", cm.Namespace, cm.Name)
 		_, err = c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Create(cm)
 		return err
 	} else if err != nil {
@@ -56,6 +56,7 @@ func (c *controller) ensureConfigMap() error {
 	}
 
 	if needsUpdate {
+		log.Infof("Updating ConfigMap %s/%s", cm.Namespace, cm.Name)
 		_, err = c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Update(cm)
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -65,21 +66,15 @@ func (c *controller) ensureConfigMap() error {
 }
 
 func (c *controller) ensureRBAC() error {
-	log.Infoln("Creating ServiceAccount for ingress", c.Ingress.OffshootName())
 	if err := c.ensureServiceAccount(); err != nil {
-		return errors.FromErr(err).Err()
+		return err
 	}
-
-	log.Infoln("Creating Roles for ingress", c.Ingress.OffshootName())
 	if err := c.ensureRoles(); err != nil {
-		return errors.FromErr(err).Err()
+		return err
 	}
-
-	log.Infoln("Creating RoleBinding for ingress", c.Ingress.OffshootName())
 	if err := c.ensureRoleBinding(); err != nil {
-		return errors.FromErr(err).Err()
+		return err
 	}
-
 	return nil
 }
 
@@ -148,6 +143,7 @@ func (c *controller) ensureStatsService() error {
 
 	s, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.StatsServiceName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
+		log.Infof("Creating Service %s/%s", svc.Namespace, svc.Name)
 		_, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Create(svc)
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -160,6 +156,7 @@ func (c *controller) ensureStatsService() error {
 	s.Labels = svc.Labels
 	s.Annotations = svc.Annotations
 	s.Spec = svc.Spec
+	log.Infof("Updating Service %s/%s", s.Namespace, s.Name)
 	_, err = c.KubeClient.CoreV1().Services(s.Namespace).Update(s)
 	if err != nil {
 		return errors.FromErr(err).Err()

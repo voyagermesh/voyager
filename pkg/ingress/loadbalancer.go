@@ -118,9 +118,22 @@ func (c *loadBalancerController) Create() error {
 
 	// If RBAC is enabled we need to ensure service account
 	if c.Opt.EnableRBAC {
-		if err := c.ensureRBAC(); err != nil {
-			return err
+		err := c.ensureRBAC()
+		if err != nil {
+			c.recorder.Event(
+				c.Ingress.ObjectReference(),
+				apiv1.EventTypeWarning,
+				eventer.EventReasonIngressRBACFailed,
+				err.Error(),
+			)
+			return errors.FromErr(err).Err()
 		}
+		c.recorder.Eventf(
+			c.Ingress.ObjectReference(),
+			apiv1.EventTypeNormal,
+			eventer.EventReasonIngressRBACSuccessful,
+			"Successfully applied RBAC",
+		)
 	}
 
 	// deleteResidualPods is a safety checking deletion of previous version RC
@@ -231,11 +244,25 @@ func (c *loadBalancerController) Update(mode UpdateMode, old *api.Ingress) error
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
+
 	// If RBAC is enabled we need to ensure service account
 	if c.Opt.EnableRBAC {
-		if err := c.ensureRBAC(); err != nil {
-			return err
+		err := c.ensureRBAC()
+		if err != nil {
+			c.recorder.Event(
+				c.Ingress.ObjectReference(),
+				apiv1.EventTypeWarning,
+				eventer.EventReasonIngressRBACFailed,
+				err.Error(),
+			)
+			return errors.FromErr(err).Err()
 		}
+		c.recorder.Eventf(
+			c.Ingress.ObjectReference(),
+			apiv1.EventTypeNormal,
+			eventer.EventReasonIngressRBACSuccessful,
+			"Successfully applied RBAC",
+		)
 	}
 
 	_, err = c.ensurePods(old)
@@ -417,11 +444,13 @@ func (c *loadBalancerController) ensureService(old *api.Ingress) (*apiv1.Service
 	desired := c.newService()
 	current, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
+		log.Infof("Creating Service %s/%s", desired.Namespace, desired.Name)
 		return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Create(desired)
 	} else if err != nil {
 		return nil, err
 	}
 	if svc, needsUpdate := c.serviceRequiresUpdate(current, desired, old); needsUpdate {
+		log.Infof("Updating Service %s/%s", desired.Namespace, desired.Name)
 		return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Update(svc)
 	}
 	return current, nil
@@ -529,6 +558,7 @@ func (c *loadBalancerController) ensurePods(old *api.Ingress) (*apps.Deployment,
 	desired := c.newPods()
 	current, err := c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
+		log.Infof("Creating Deployment %s/%s", desired.Namespace, desired.Name)
 		return c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Create(desired)
 	} else if err != nil {
 		return nil, err
@@ -601,6 +631,7 @@ func (c *loadBalancerController) ensurePods(old *api.Ingress) (*apps.Deployment,
 		current.Spec.Template.Spec.ServiceAccountName = desired.Spec.Template.Spec.ServiceAccountName
 	}
 	if needsUpdate {
+		log.Infof("Updating Deployment %s/%s", desired.Namespace, desired.Name)
 		return c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Update(current)
 	}
 	return current, nil
