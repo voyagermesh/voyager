@@ -1,9 +1,11 @@
 package operator
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
+	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/errors"
 	"github.com/appscode/go/log"
 	tapi "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -32,18 +34,20 @@ func (op *Operator) initServiceWatcher() cache.Controller {
 		op.Opt.ResyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
+				ctx := etx.Background()
 				if svc, ok := obj.(*apiv1.Service); ok {
-					log.Infof("Service %s@%s added", svc.Name, svc.Namespace)
-					op.updateHAProxyConfig(svc)
+					log.New(ctx).Infof("Service %s@%s added", svc.Name, svc.Namespace)
+					op.updateHAProxyConfig(ctx, svc)
 				}
 			},
 			DeleteFunc: func(obj interface{}) {
+				ctx := etx.Background()
 				if svc, ok := obj.(*apiv1.Service); ok {
-					log.Infof("Service %s@%s deleted", svc.Name, svc.Namespace)
-					if restored, err := op.restoreServiceIfRequired(svc); err == nil && restored {
+					log.New(ctx).Infof("Service %s@%s deleted", svc.Name, svc.Namespace)
+					if restored, err := op.restoreServiceIfRequired(ctx, svc); err == nil && restored {
 						return
 					}
-					op.updateHAProxyConfig(svc)
+					op.updateHAProxyConfig(ctx, svc)
 				}
 			},
 		},
@@ -53,7 +57,7 @@ func (op *Operator) initServiceWatcher() cache.Controller {
 	return informer
 }
 
-func (op *Operator) restoreServiceIfRequired(svc *apiv1.Service) (bool, error) {
+func (op *Operator) restoreServiceIfRequired(ctx context.Context, svc *apiv1.Service) (bool, error) {
 	if svc.Annotations == nil {
 		return false, nil
 	}
@@ -69,7 +73,7 @@ func (op *Operator) restoreServiceIfRequired(svc *apiv1.Service) (bool, error) {
 	}
 
 	// Ingress Still exists, restore resource
-	log.Infof("Service %s@%s requires restoration", svc.Name, svc.Namespace)
+	log.New(ctx).Infof("Service %s@%s requires restoration", svc.Name, svc.Namespace)
 	svc.Spec.ClusterIP = "" // Remove cluster IP
 	svc.SelfLink = ""
 	svc.ResourceVersion = ""
@@ -92,7 +96,7 @@ func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*tapi.Ingress, error) {
 	sourceName, sourceNameFound := meta.Annotations[tapi.OriginName]
 	sourceType, sourceTypeFound := meta.Annotations[tapi.OriginAPISchema]
 	if !sourceNameFound && !sourceTypeFound {
-		return nil, errors.New("No Types or Name found").Err()
+		return nil, errors.New("no Types or Name found").Err()
 	}
 
 	if sourceType == tapi.APISchemaIngress {
@@ -104,10 +108,11 @@ func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*tapi.Ingress, error) {
 	} else if sourceType == tapi.APISchemaEngress {
 		return op.VoyagerClient.Ingresses(meta.Namespace).Get(sourceName, metav1.GetOptions{})
 	}
-	return nil, fmt.Errorf("Unknown ingress type %s", sourceType)
+	return nil, fmt.Errorf("unknown ingress type %s", sourceType)
 }
 
-func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
+func (op *Operator) updateHAProxyConfig(ctx context.Context, svc *apiv1.Service) error {
+	logger := log.New(ctx)
 	ing, err := op.KubeClient.ExtensionsV1beta1().Ingresses(svc.Namespace).List(metav1.ListOptions{})
 	if err != nil {
 		return err
@@ -131,7 +136,7 @@ func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
 		engress := &items[i]
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
 			if engress.HasBackendService(svc.Name, svc.Namespace) {
-				ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
+				ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 				if ctrl.IsExists() {
 					// Loadbalancer resource for this ingress is found in its place,
 					// so no need to create the resources. First trying to update
@@ -139,13 +144,13 @@ func (op *Operator) updateHAProxyConfig(svc *apiv1.Service) error {
 					// In case of any failure in soft update we will make hard update
 					// to the resource. If hard update encounters errors then we will
 					// recreate the resource from scratch.
-					log.Infof("Offshoots of %s Ingress %s/%s exist, trying to update", engress.APISchema(), engress.Namespace, engress.Name)
+					logger.Infof("Offshoots of %s Ingress %s/%s exist, trying to update", engress.APISchema(), engress.Namespace, engress.Name)
 					cfgErr := ctrl.Update(0, nil)
 					if cfgErr != nil {
-						log.Infof("Failed to update offshoots of %s Ingress %s/%s. Reason: %s", engress.APISchema(), engress.Namespace, engress.Name, cfgErr)
+						logger.Infof("Failed to update offshoots of %s Ingress %s/%s. Reason: %s", engress.APISchema(), engress.Namespace, engress.Name, cfgErr)
 					}
 				} else {
-					log.Infof("One or more offshoots of %s Ingress %s/%s is missing, trying to create", engress.APISchema(), engress.Namespace, engress.Name)
+					logger.Infof("One or more offshoots of %s Ingress %s/%s is missing, trying to create", engress.APISchema(), engress.Namespace, engress.Name)
 					ctrl.Create()
 				}
 				op.ensureEgressAnnotations(engress, svc)

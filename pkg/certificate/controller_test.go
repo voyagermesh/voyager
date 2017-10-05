@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acf "github.com/appscode/voyager/client/fake"
 	"github.com/appscode/voyager/pkg/config"
@@ -119,7 +118,7 @@ func TestCreate(t *testing.T) {
 			list, err := fakeController.KubeClient.CoreV1().Secrets("").List(metav1.ListOptions{})
 			if err == nil {
 				for _, item := range list.Items {
-					log.Infoln("List for Secrets that created", item.Name, item.Namespace)
+					c.logger.Infoln("List for Secrets that created", item.Name, item.Namespace)
 				}
 			}
 
@@ -135,8 +134,8 @@ func TestCreate(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			log.Infoln(cert.Status)
-			log.Infoln(cert.Status.LastIssuedCertificate)
+			c.logger.Infoln(cert.Status)
+			c.logger.Infoln(cert.Status.LastIssuedCertificate)
 		}
 	}
 }

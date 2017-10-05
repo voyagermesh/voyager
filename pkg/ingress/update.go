@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/appscode/go/errors"
-	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -37,7 +36,7 @@ func (c *controller) updateConfigMap() error {
 	}
 
 	if cMap.Data["haproxy.cfg"] != c.HAProxyConfig {
-		log.Infoln("Specs have been changed updating config map data for HAProxy templates")
+		c.logger.Infoln("Specs have been changed updating config map data for HAProxy templates")
 		cMap.Data["haproxy.cfg"] = c.HAProxyConfig
 
 		_, err := c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Update(cMap)
@@ -47,7 +46,7 @@ func (c *controller) updateConfigMap() error {
 		}
 		// Add event only if the ConfigMap Really Updated
 		c.recorder.Eventf(c.Ingress.ObjectReference(), apiv1.EventTypeNormal, "ConfigMapUpdated", "ConfigMap Updated, HAProxy will restart itself now via reloader")
-		log.Infoln("Config Map Updated, HAProxy will restart itself now via reloader")
+		c.logger.Infoln("Config Map Updated, HAProxy will restart itself now via reloader")
 	}
 	return nil
 }

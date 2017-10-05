@@ -1,6 +1,7 @@
 package ingress
 
 import (
+	"context"
 	"reflect"
 	"strconv"
 	"time"
@@ -36,6 +37,7 @@ type nodePortController struct {
 var _ Controller = &nodePortController{}
 
 func NewNodePortController(
+	ctx context.Context,
 	kubeClient clientset.Interface,
 	crdClient apiextensionsclient.Interface,
 	extClient acs.VoyagerV1beta1Interface,
@@ -44,8 +46,9 @@ func NewNodePortController(
 	endpointsLister core.EndpointsLister,
 	opt config.Options,
 	ingress *api.Ingress) Controller {
-	ctrl := &nodePortController{
+	c := &nodePortController{
 		controller: &controller{
+			logger:          log.New(ctx),
 			KubeClient:      kubeClient,
 			CRDClient:       crdClient,
 			VoyagerClient:   extClient,
@@ -57,29 +60,29 @@ func NewNodePortController(
 			recorder:        eventer.NewEventRecorder(kubeClient, "voyager operator"),
 		},
 	}
-	log.Infoln("Initializing cloud manager for provider", opt.CloudProvider)
+	c.logger.Infoln("Initializing cloud manager for provider", opt.CloudProvider)
 	if opt.CloudProvider == "aws" || opt.CloudProvider == "gce" || opt.CloudProvider == "azure" {
 		cloudInterface, err := cloudprovider.InitCloudProvider(opt.CloudProvider, opt.CloudConfigFile)
 		if err != nil {
-			log.Errorln("Failed to initialize cloud provider:"+opt.CloudProvider, err)
+			c.logger.Errorln("Failed to initialize cloud provider:"+opt.CloudProvider, err)
 		} else {
-			log.Infoln("Initialized cloud provider: "+opt.CloudProvider, cloudInterface)
-			ctrl.CloudManager = cloudInterface
+			c.logger.Infoln("Initialized cloud provider: "+opt.CloudProvider, cloudInterface)
+			c.CloudManager = cloudInterface
 		}
 	} else if opt.CloudProvider == "gke" {
 		cloudInterface, err := cloudprovider.InitCloudProvider("gce", opt.CloudConfigFile)
 		if err != nil {
-			log.Errorln("Failed to initialize cloud provider:"+opt.CloudProvider, err)
+			c.logger.Errorln("Failed to initialize cloud provider:"+opt.CloudProvider, err)
 		} else {
-			log.Infoln("Initialized cloud provider: "+opt.CloudProvider, cloudInterface)
-			ctrl.CloudManager = cloudInterface
+			c.logger.Infoln("Initialized cloud provider: "+opt.CloudProvider, cloudInterface)
+			c.CloudManager = cloudInterface
 		}
 	} else if opt.CloudProvider == "minikube" {
-		ctrl.CloudManager = &fakecloudprovider.FakeCloud{}
+		c.CloudManager = &fakecloudprovider.FakeCloud{}
 	} else {
-		log.Infoln("No cloud manager found for provider", opt.CloudProvider)
+		c.logger.Infoln("No cloud manager found for provider", opt.CloudProvider)
 	}
-	return ctrl
+	return c
 }
 
 func (c *nodePortController) IsExists() bool {
@@ -113,7 +116,7 @@ func (c *nodePortController) IsExists() bool {
 }
 
 func (c *nodePortController) Create() error {
-	// Create the service before creating pods or config
+	// Service is created first so that NodePorts can be used in the haproxy.conf
 	svc, err := c.ensureService(nil)
 	if err != nil {
 		c.recorder.Eventf(
@@ -433,24 +436,37 @@ func (c *nodePortController) EnsureFirewall(svc *apiv1.Service) error {
 func (c *nodePortController) Delete() {
 	err := c.deletePods()
 	if err != nil {
-		log.Errorln(err)
+		c.logger.Errorln(err)
 	}
 	err = c.deleteConfigMap()
 	if err != nil {
-		log.Errorln(err)
+		c.logger.Errorln(err)
 	}
 	if c.Opt.EnableRBAC {
 		if err := c.ensureRBACDeleted(); err != nil {
-			log.Errorln(err)
+			c.logger.Errorln(err)
 		}
 	}
 	err = c.ensureServiceDeleted()
 	if err != nil {
-		log.Errorln(err)
+		c.logger.Errorln(err)
+	}
+	if c.CloudManager != nil {
+		if fw, ok := c.CloudManager.Firewall(); ok {
+			err = fw.EnsureFirewallDeleted(&apiv1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      c.Ingress.OffshootName(),
+					Namespace: c.Ingress.Namespace,
+				},
+			})
+			if err != nil {
+				c.logger.Errorln(err)
+			}
+		}
 	}
 	monSpec, err := c.Ingress.MonitorSpec()
 	if err != nil {
-		log.Errorln(err)
+		c.logger.Errorln(err)
 	}
 	if monSpec != nil && monSpec.Prometheus != nil {
 		ctrl := monitor.NewPrometheusController(c.KubeClient, c.CRDClient, c.PromClient)
@@ -524,13 +540,13 @@ func (c *nodePortController) ensureService(old *api.Ingress) (*apiv1.Service, er
 	desired := c.newService()
 	current, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		log.Infof("Creating Service %s/%s", desired.Namespace, desired.Name)
+		c.logger.Infof("Creating Service %s/%s", desired.Namespace, desired.Name)
 		return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Create(desired)
 	} else if err != nil {
 		return nil, err
 	}
 	if svc, needsUpdate := c.serviceRequiresUpdate(current, desired, old); needsUpdate {
-		log.Infof("Updating Service %s/%s", desired.Namespace, desired.Name)
+		c.logger.Infof("Updating Service %s/%s", desired.Namespace, desired.Name)
 		return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Update(svc)
 	}
 	return current, nil
@@ -639,7 +655,7 @@ func (c *nodePortController) ensurePods(old *api.Ingress) (*apps.Deployment, err
 	desired := c.newPods()
 	current, err := c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		log.Infof("Creating Deployment %s/%s", desired.Namespace, desired.Name)
+		c.logger.Infof("Creating Deployment %s/%s", desired.Namespace, desired.Name)
 		return c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Create(desired)
 	} else if err != nil {
 		return nil, err
@@ -712,13 +728,14 @@ func (c *nodePortController) ensurePods(old *api.Ingress) (*apps.Deployment, err
 		current.Spec.Template.Spec.ServiceAccountName = desired.Spec.Template.Spec.ServiceAccountName
 	}
 	if needsUpdate {
-		log.Infof("Updating Deployment %s/%s", desired.Namespace, desired.Name)
+		c.logger.Infof("Updating Deployment %s/%s", desired.Namespace, desired.Name)
 		return c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Update(current)
 	}
 	return current, nil
 }
 
 func (c *nodePortController) deletePods() error {
+	c.logger.Infof("Deleting Deployment %s/%s", c.Ingress.Namespace, c.Ingress.OffshootName())
 	policy := metav1.DeletePropagationForeground
 	err := c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{
 		PropagationPolicy: &policy,

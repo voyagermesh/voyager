@@ -1,6 +1,9 @@
 package operator
 
 import (
+	"context"
+
+	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,8 +29,9 @@ func (op *Operator) initConfigMapWatcher() cache.Controller {
 		cache.ResourceEventHandlerFuncs{
 			DeleteFunc: func(obj interface{}) {
 				if cfgmap, ok := obj.(*apiv1.ConfigMap); ok {
-					log.Infof("ConfigMap %s@%s deleted", cfgmap.Name, cfgmap.Namespace)
-					op.restoreConfigMapIfRequired(cfgmap)
+					ctx := etx.Background()
+					log.New(ctx).Infof("ConfigMap %s@%s deleted", cfgmap.Name, cfgmap.Namespace)
+					op.restoreConfigMapIfRequired(ctx, cfgmap)
 				}
 			},
 		},
@@ -35,7 +39,7 @@ func (op *Operator) initConfigMapWatcher() cache.Controller {
 	return informer
 }
 
-func (op *Operator) restoreConfigMapIfRequired(cfgmap *apiv1.ConfigMap) error {
+func (op *Operator) restoreConfigMapIfRequired(ctx context.Context, cfgmap *apiv1.ConfigMap) error {
 	if cfgmap.Annotations == nil {
 		return nil
 	}
@@ -47,7 +51,7 @@ func (op *Operator) restoreConfigMapIfRequired(cfgmap *apiv1.ConfigMap) error {
 	}
 
 	// Ingress Still exists, restore resource
-	log.Infof("ConfigMap %s@%s requires restoration", cfgmap.Name, cfgmap.Namespace)
+	log.New(ctx).Infof("ConfigMap %s@%s requires restoration", cfgmap.Name, cfgmap.Namespace)
 	cfgmap.SelfLink = ""
 	cfgmap.ResourceVersion = ""
 	// Old resource and annotations are missing so we need to add the annotations
