@@ -8,6 +8,7 @@ import (
 )
 
 func (c *controller) deleteConfigMap() error {
+	c.logger.Infof("Deleting ConfigMap %s/%s", c.Ingress.Namespace, c.Ingress.OffshootName())
 	err := c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
 	if err != nil && !kerr.IsNotFound(err) {
 		return errors.FromErr(err).Err()
@@ -21,6 +22,7 @@ func (c *controller) deletePodsForSelector(selector *metav1.LabelSelector) error
 	if err != nil {
 		return err
 	}
+	c.logger.Infof("Deleting Pods in namespace %s with label", c.Ingress.Namespace, r.String())
 	err = c.KubeClient.CoreV1().Pods(c.Ingress.Namespace).DeleteCollection(&metav1.DeleteOptions{
 		GracePeriodSeconds: types.Int64P(0),
 	}, metav1.ListOptions{
@@ -33,6 +35,7 @@ func (c *controller) deletePodsForSelector(selector *metav1.LabelSelector) error
 }
 
 func (c *controller) ensureServiceDeleted() error {
+	c.logger.Infof("Deleting Service %s/%s", c.Ingress.Namespace, c.Ingress.OffshootName())
 	err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
 	if err != nil && !kerr.IsNotFound(err) {
 		return errors.FromErr(err).Err()
@@ -41,6 +44,7 @@ func (c *controller) ensureServiceDeleted() error {
 }
 
 func (c *controller) ensureStatsServiceDeleted() error {
+	c.logger.Infof("Deleting Deployment %s/%s", c.Ingress.Namespace, c.Ingress.StatsServiceName())
 	err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Delete(
 		c.Ingress.StatsServiceName(),
 		&metav1.DeleteOptions{},

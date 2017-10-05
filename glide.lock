@@ -1,5 +1,5 @@
-hash: d5ae2d2b40198a6382da2cc54ab5ea65baee84e166e05c1749e6a751066cdbbc
-updated: 2017-10-04T15:33:44.48018264-07:00
+hash: 8920c20cb293a9513c32f82dde5ff60a845af40bb76a53cef8c6cde8100e2720
+updated: 2017-10-05T07:47:29.839704233-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -7,7 +7,7 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/go
-  version: 5f5a94d551a6a3147a2dfc5e287da0fc251b1bac
+  version: b2ff0c0b3293cc848d781d1efb57ffda5fa0226e
   subpackages:
   - context
   - crypto/rand
@@ -95,7 +95,7 @@ imports:
   subpackages:
   - pkg/client/monitoring/v1alpha1
 - name: github.com/cpuguy83/go-md2man
-  version: 1d903dcb749992f3741d744c0f8376b4bd7eb3e1
+  version: 71acacd42f85e5e82f70a55327789582a5200a90
   subpackages:
   - md2man
 - name: github.com/davecgh/go-spew
@@ -164,6 +164,8 @@ imports:
   - query
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
+- name: github.com/google/uuid
+  version: 7e072fc3a7be179aee6d3359e46015aa8c995314
 - name: github.com/hashicorp/errwrap
   version: 7554cd9344cec97297fa6649b055a8c98c2a1e55
 - name: github.com/hashicorp/go-cleanhttp
@@ -619,7 +621,7 @@ imports:
   - util/integer
   - util/workqueue
 - name: k8s.io/kubernetes
-  version: 8e1552342355496b62754e61ad5f802a0f3f1fa7
+  version: bc6162cc70b4a39a7f39391564e0dd0be60b39e9
   subpackages:
   - pkg/api
   - pkg/api/install

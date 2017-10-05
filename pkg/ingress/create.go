@@ -5,7 +5,6 @@ import (
 	"reflect"
 
 	"github.com/appscode/go/errors"
-	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,7 +33,7 @@ func (c *controller) ensureConfigMap() error {
 				"haproxy.cfg": c.HAProxyConfig,
 			},
 		}
-		log.Infof("Creating ConfigMap %s/%s", cm.Namespace, cm.Name)
+		c.logger.Infof("Creating ConfigMap %s/%s", cm.Namespace, cm.Name)
 		_, err = c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Create(cm)
 		return err
 	} else if err != nil {
@@ -56,7 +55,7 @@ func (c *controller) ensureConfigMap() error {
 	}
 
 	if needsUpdate {
-		log.Infof("Updating ConfigMap %s/%s", cm.Namespace, cm.Name)
+		c.logger.Infof("Updating ConfigMap %s/%s", cm.Namespace, cm.Name)
 		_, err = c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Update(cm)
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -143,20 +142,20 @@ func (c *controller) ensureStatsService() error {
 
 	s, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.StatsServiceName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		log.Infof("Creating Service %s/%s", svc.Namespace, svc.Name)
+		c.logger.Infof("Creating Service %s/%s", svc.Namespace, svc.Name)
 		_, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Create(svc)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}
 		return err
 	} else if err != nil {
-		log.Errorln(err)
+		c.logger.Errorln(err)
 		return errors.FromErr(err).Err()
 	}
 	s.Labels = svc.Labels
 	s.Annotations = svc.Annotations
 	s.Spec = svc.Spec
-	log.Infof("Updating Service %s/%s", s.Namespace, s.Name)
+	c.logger.Infof("Updating Service %s/%s", s.Namespace, s.Name)
 	_, err = c.KubeClient.CoreV1().Services(s.Namespace).Update(s)
 	if err != nil {
 		return errors.FromErr(err).Err()

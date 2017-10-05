@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"time"
 
+	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate"
@@ -33,7 +34,8 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				if cert, ok := obj.(*api.Certificate); ok {
-					log.Infof("%s %s@%s added", cert.GroupVersionKind(), cert.Name, cert.Namespace)
+					ctx := etx.Background()
+					log.New(ctx).Infof("%s %s@%s added", cert.GroupVersionKind(), cert.Name, cert.Namespace)
 					if _, err := op.MigrateCertificate(cert); err != nil {
 						op.recorder.Eventf(
 							cert.ObjectReference(),
@@ -44,7 +46,7 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 						)
 						return
 					}
-					ctrl, err := certificate.NewController(op.KubeClient, op.VoyagerClient, op.Opt, cert)
+					ctrl, err := certificate.NewController(ctx, op.KubeClient, op.VoyagerClient, op.Opt, cert)
 					if err != nil {
 						op.recorder.Event(
 							cert.ObjectReference(),
@@ -72,14 +74,16 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 				}
 			},
 			UpdateFunc: func(old, new interface{}) {
+				ctx := etx.Background()
+				logger := log.New(ctx)
 				oldCert, ok := old.(*api.Certificate)
 				if !ok {
-					log.Errorln(errors.New("invalid Certificate object"))
+					logger.Errorln(errors.New("invalid Certificate object"))
 					return
 				}
 				newCert, ok := new.(*api.Certificate)
 				if !ok {
-					log.Errorln(errors.New("invalid Certificate object"))
+					logger.Errorln(errors.New("invalid Certificate object"))
 					return
 				}
 
@@ -94,7 +98,7 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 						)
 						return
 					}
-					ctrl, err := certificate.NewController(op.KubeClient, op.VoyagerClient, op.Opt, newCert)
+					ctrl, err := certificate.NewController(ctx, op.KubeClient, op.VoyagerClient, op.Opt, newCert)
 					if err != nil {
 						op.recorder.Event(
 							newCert.ObjectReference(),
@@ -123,7 +127,7 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 			},
 			DeleteFunc: func(obj interface{}) {
 				if cert, ok := obj.(*api.Certificate); ok {
-					log.Infof("%s %s@%s deleted", cert.GroupVersionKind(), cert.Name, cert.Namespace)
+					log.New(etx.Background()).Infof("%s %s@%s deleted", cert.GroupVersionKind(), cert.Name, cert.Namespace)
 				}
 			},
 		},
@@ -133,6 +137,7 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 
 func (op *Operator) CheckCertificates() {
 	Time := clock.New()
+	ctx := etx.Background()
 	for {
 		select {
 		case <-Time.After(time.Minute * 5):
@@ -147,7 +152,7 @@ func (op *Operator) CheckCertificates() {
 					log.Infoln("skipping certificate %s@%s, since rate limited", cert.Name, cert.Namespace)
 					continue
 				}
-				ctrl, err := certificate.NewController(op.KubeClient, op.VoyagerClient, op.Opt, &cert)
+				ctrl, err := certificate.NewController(ctx, op.KubeClient, op.VoyagerClient, op.Opt, &cert)
 				if err != nil {
 					op.recorder.Event(
 						cert.ObjectReference(),

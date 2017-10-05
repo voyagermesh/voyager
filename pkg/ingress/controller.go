@@ -1,10 +1,12 @@
 package ingress
 
 import (
+	"context"
 	"io/ioutil"
 	"os"
 	"sync"
 
+	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
 	v1u "github.com/appscode/kutil/core/v1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -47,10 +49,12 @@ type controller struct {
 	// contains raw configMap data parsed from the cfg file.
 	HAProxyConfig string
 
+	logger *log.Logger
 	sync.Mutex
 }
 
 func NewController(
+	ctx context.Context,
 	kubeClient clientset.Interface,
 	crdClient apiextensionsclient.Interface,
 	extClient acs.VoyagerV1beta1Interface,
@@ -61,11 +65,11 @@ func NewController(
 	ingress *api.Ingress) Controller {
 	switch ingress.LBType() {
 	case api.LBTypeHostPort:
-		return NewHostPortController(kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
+		return NewHostPortController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
 	case api.LBTypeNodePort:
-		return NewNodePortController(kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
+		return NewNodePortController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
 	case api.LBTypeLoadBalancer:
-		return NewLoadBalancerController(kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
+		return NewLoadBalancerController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
 	}
 	return nil
 }

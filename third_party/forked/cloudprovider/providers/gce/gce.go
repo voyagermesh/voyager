@@ -403,10 +403,25 @@ func (gce *GCECloud) EnsureFirewall(apiService *apiv1.Service, hostnames []strin
 	}
 
 	fwName := gce.GetSecurityGroupName(apiService)
-	ports := apiService.Spec.Ports
-	portStr := []string{}
-	for _, p := range apiService.Spec.Ports {
-		portStr = append(portStr, fmt.Sprintf("%s/%d", p.Protocol, p.Port))
+	ports := make([]apiv1.ServicePort, 0, len(apiService.Spec.Ports))
+	portStr := make([]string, 0, len(apiService.Spec.Ports))
+	if apiService.Spec.Type == apiv1.ServiceTypeNodePort {
+		for _, p := range apiService.Spec.Ports {
+			if p.NodePort == 0 {
+				return fmt.Errorf("service %s/%s port %d has no associated NodePort", apiService.Namespace, apiService.Name, p.Port)
+			}
+			ports = append(ports, apiv1.ServicePort{
+				Name:     p.Name,
+				Protocol: p.Protocol,
+				Port:     p.NodePort,
+			})
+			portStr = append(portStr, fmt.Sprintf("%s/%d", p.Protocol, p.NodePort))
+		}
+	} else {
+		ports = apiService.Spec.Ports
+		for _, p := range apiService.Spec.Ports {
+			portStr = append(portStr, fmt.Sprintf("%s/%d", p.Protocol, p.Port))
+		}
 	}
 
 	serviceName := types.NamespacedName{Namespace: apiService.Namespace, Name: apiService.Name}

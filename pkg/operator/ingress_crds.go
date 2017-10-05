@@ -1,9 +1,10 @@
 package operator
 
 import (
+	"context"
 	"reflect"
 
-	"github.com/appscode/go/errors"
+	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
 	tapi "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
@@ -31,10 +32,12 @@ func (op *Operator) initIngressCRDWatcher() cache.Controller {
 		op.Opt.ResyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
+				ctx := etx.Background()
+				logger := log.New(ctx)
 				if engress, ok := obj.(*tapi.Ingress); ok {
-					log.Infof("%s %s@%s added", engress.GroupVersionKind(), engress.Name, engress.Namespace)
+					logger.Infof("%s %s@%s added", engress.APISchema(), engress.Name, engress.Namespace)
 					if !engress.ShouldHandleIngress(op.Opt.IngressClass) {
-						log.Infof("%s %s@%s does not match ingress class", engress.GroupVersionKind(), engress.Name, engress.Namespace)
+						logger.Infof("%s %s@%s does not match ingress class", engress.APISchema(), engress.Name, engress.Namespace)
 						return
 					}
 					if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
@@ -48,24 +51,26 @@ func (op *Operator) initIngressCRDWatcher() cache.Controller {
 						return
 					}
 
-					op.AddEngress(engress)
+					op.AddEngress(ctx, engress)
 				}
 			},
 			UpdateFunc: func(old, new interface{}) {
+				ctx := etx.Background()
+				logger := log.New(ctx)
 				oldEngress, ok := old.(*tapi.Ingress)
 				if !ok {
-					log.Errorln(errors.New("Invalid Ingress object").Err())
+					logger.Errorln("Invalid Ingress object")
 					return
 				}
 				newEngress, ok := new.(*tapi.Ingress)
 				if !ok {
-					log.Errorln(errors.New("Invalid Ingress object").Err())
+					logger.Errorln("Invalid Ingress object")
 					return
 				}
 				if changed, _ := oldEngress.HasChanged(*newEngress); !changed {
 					return
 				}
-				log.Infof("%s %s@%s has changed", newEngress.GroupVersionKind(), newEngress.Name, newEngress.Namespace)
+				logger.Infof("%s %s@%s has changed", newEngress.APISchema(), newEngress.Name, newEngress.Namespace)
 				if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
 					op.recorder.Eventf(
 						newEngress.ObjectReference(),
@@ -76,16 +81,18 @@ func (op *Operator) initIngressCRDWatcher() cache.Controller {
 					)
 					return
 				}
-				op.UpdateEngress(oldEngress, newEngress)
+				op.UpdateEngress(ctx, oldEngress, newEngress)
 			},
 			DeleteFunc: func(obj interface{}) {
 				if engress, ok := obj.(*tapi.Ingress); ok {
-					log.Infof("%s %s@%s deleted", engress.GroupVersionKind(), engress.Name, engress.Namespace)
+					ctx := etx.Background()
+					logger := log.New(ctx)
+					logger.Infof("%s %s@%s deleted", engress.APISchema(), engress.Name, engress.Namespace)
 					if !engress.ShouldHandleIngress(op.Opt.IngressClass) {
-						log.Infof("%s %s@%s does not match ingress class", engress.GroupVersionKind(), engress.Name, engress.Namespace)
+						logger.Infof("%s %s@%s does not match ingress class", engress.APISchema(), engress.Name, engress.Namespace)
 						return
 					}
-					op.DeleteEngress(engress)
+					op.DeleteEngress(ctx, engress)
 				}
 			},
 		},
@@ -93,8 +100,8 @@ func (op *Operator) initIngressCRDWatcher() cache.Controller {
 	return informer
 }
 
-func (op *Operator) AddEngress(engress *tapi.Ingress) {
-	ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
+func (op *Operator) AddEngress(ctx context.Context, engress *tapi.Ingress) {
+	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 	if ctrl.IsExists() {
 		if err := ctrl.Update(ingress.UpdateStats, nil); err != nil {
 			log.Errorln(err)
@@ -113,14 +120,14 @@ func (op *Operator) AddEngress(engress *tapi.Ingress) {
 	}
 }
 
-func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
+func (op *Operator) UpdateEngress(ctx context.Context, oldEngress, newEngress *tapi.Ingress) {
 	oldHandled := oldEngress.ShouldHandleIngress(op.Opt.IngressClass)
 	newHandled := newEngress.ShouldHandleIngress(op.Opt.IngressClass)
 	if !oldHandled && !newHandled {
 		return
 	}
 
-	ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, newEngress)
+	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, newEngress)
 	if oldHandled && !newHandled {
 		ctrl.Delete()
 	} else {
@@ -169,8 +176,8 @@ func (op *Operator) UpdateEngress(oldEngress, newEngress *tapi.Ingress) {
 	}
 }
 
-func (op *Operator) DeleteEngress(engress *tapi.Ingress) {
-	ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
+func (op *Operator) DeleteEngress(ctx context.Context, engress *tapi.Ingress) {
+	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 	ctrl.Delete()
 
 	for _, meta := range engress.BackendServices() {

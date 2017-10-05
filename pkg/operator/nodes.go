@@ -1,6 +1,9 @@
 package operator
 
 import (
+	"context"
+
+	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
@@ -25,6 +28,8 @@ func (op *Operator) initNodeWatcher() cache.Controller {
 
 	handler := func(obj interface{}) {
 		if node, ok := obj.(*apiv1.Node); ok {
+			ctx := etx.Background()
+
 			ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
 			if err == nil {
 				for _, ing := range ingresses.Items {
@@ -32,13 +37,13 @@ func (op *Operator) initNodeWatcher() cache.Controller {
 					if err != nil {
 						return
 					}
-					op.updateFirewall(engress, node)
+					op.updateFirewall(ctx, engress, node)
 				}
 			}
 			engresses, err := op.VoyagerClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
 			if err == nil {
 				for _, engress := range engresses.Items {
-					op.updateFirewall(&engress, node)
+					op.updateFirewall(ctx, &engress, node)
 				}
 			}
 		}
@@ -66,9 +71,9 @@ func (op *Operator) initNodeWatcher() cache.Controller {
 	return informer
 }
 
-func (op *Operator) updateFirewall(ing *api.Ingress, node *apiv1.Node) {
+func (op *Operator) updateFirewall(ctx context.Context, ing *api.Ingress, node *apiv1.Node) {
 	if !ing.ShouldHandleIngress(op.Opt.IngressClass) {
-		log.Warningf("Skipping ingress %s@%s, as it is not handled by Voyager.", ing.Name, ing.Namespace)
+		log.New(ctx).Warningf("Skipping ingress %s@%s, as it is not handled by Voyager.", ing.Name, ing.Namespace)
 		return
 	}
 	t := ing.LBType()
@@ -80,7 +85,7 @@ func (op *Operator) updateFirewall(ing *api.Ingress, node *apiv1.Node) {
 		}
 	}
 
-	ctrl := ingress.NewController(op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, ing)
+	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, ing)
 	if svc, err := op.ServiceLister.Services(ing.Namespace).Get(ing.OffshootName()); err == nil {
 		ctrl.EnsureFirewall(svc)
 	} else {
