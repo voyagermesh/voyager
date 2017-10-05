@@ -67,6 +67,8 @@ func (i *ingressInvocation) Create(ing *api_v1beta1.Ingress) error {
 	if err != nil {
 		return err
 	}
+	log.Warningln("Log: $ kubectl logs -f", ing.OffshootName(), "-n", ing.Namespace)
+	log.Warningln("Exec: $ kubectl exec", ing.OffshootName(), "-n", ing.Namespace, "sh")
 	return nil
 }
 

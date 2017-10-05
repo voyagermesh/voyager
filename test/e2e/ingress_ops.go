@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/appscode/go/log"
 	internalapi "github.com/appscode/voyager/apis/voyager"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
@@ -893,7 +894,7 @@ var _ = Describe("IngressOperations", func() {
 			)
 			Expect(err).NotTo(HaveOccurred())
 
-			err = f.Ingress.DoHTTP(5, "", ing, eps, "GET",
+			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET",
 				"/testpath/ok",
 				func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
@@ -903,7 +904,9 @@ var _ = Describe("IngressOperations", func() {
 			)
 			Expect(err).To(HaveOccurred())
 
-			time.Sleep(time.Minute)
+			log.Warningln("Waiting 2 minute for timer to be reset")
+			time.Sleep(time.Minute*2)
+			log.Warningln("Request should response")
 			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET",
 				"/testpath/ok",
 				func(r *testserverclient.Response) bool {
