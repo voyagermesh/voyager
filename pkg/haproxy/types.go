@@ -15,6 +15,13 @@ type TemplateData struct {
 	DNSResolvers    []*api.DNSResolver
 	HTTPService     []*HTTPService
 	TCPService      []*TCPService
+	ErrorFiles      []*ErrorFile
+}
+
+type ErrorFile struct {
+	StatusCode int
+	Command    string
+	Value      string
 }
 
 type SharedInfo struct {

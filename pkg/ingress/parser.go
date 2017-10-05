@@ -265,6 +265,14 @@ func (c *controller) generateConfig() error {
 		}
 	}
 
+	if len(c.Ingress.ErrorFilesConfigMapName()) > 0 {
+		errorFiles, err := c.getErrorFiles()
+		if err != nil {
+			return err
+		}
+		td.ErrorFiles = errorFiles
+	}
+
 	td.SharedInfo = si
 	td.TimeoutDefaults = c.Ingress.Timeouts()
 	td.OptionsDefaults = c.Ingress.HAProxyOptions()
@@ -527,4 +535,59 @@ func (c *controller) getServiceAuth(s *apiv1.Service) *haproxy.AuthConfig {
 		Realm: authRealm,
 		Users: users,
 	}
+}
+
+func (c *controller) getErrorFiles() ([]*haproxy.ErrorFile, error) {
+	configMap, err := c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Get(c.Ingress.ErrorFilesConfigMapName(), metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	errorFiles := make([]*haproxy.ErrorFile, 0)
+
+	for key, val := range configMap.Data {
+		if strings.HasSuffix(key, ".http") {
+			statusCode, err := strconv.Atoi(strings.TrimSuffix(key, ".http"))
+			if err != nil {
+				return nil, err
+			}
+
+			if checkStatusCode(statusCode) {
+				errorFiles = append(errorFiles, &haproxy.ErrorFile{
+					StatusCode: statusCode,
+					Command:    ErrorFilesCommand,
+					Value:      ErrorFilesLocation + "/" + key,
+				})
+			}
+		} else {
+			statusCode, err := strconv.Atoi(key)
+			if err != nil {
+				return nil, err
+			}
+
+			str := strings.SplitN(val, " ", 2)
+			if len(str) < 2 {
+				return nil, err
+			}
+
+			if checkStatusCode(statusCode) {
+				errorFiles = append(errorFiles, &haproxy.ErrorFile{
+					StatusCode: statusCode,
+					Command:    str[0],
+					Value:      str[1],
+				})
+			}
+		}
+	}
+	return errorFiles, nil
+}
+
+func checkStatusCode(code int) bool {
+	codes := []int{200, 400, 403, 405, 408, 429, 500, 502, 503, 504}
+	for i := range codes {
+		if codes[i] == code {
+			return true
+		}
+	}
+	return false
 }

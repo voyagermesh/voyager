@@ -210,6 +210,9 @@ const (
 	// https://github.com/appscode/voyager/issues/552
 	ForceServicePort = EngressKey + "/force-service-port"
 	ForceSSLRedirect = IngressKey + "/force-ssl-redirect"
+
+	// https://github.com/appscode/voyager/issues/525
+	ErrorFiles = EngressKey + "/errorfiles"
 )
 
 const (
@@ -521,6 +524,10 @@ func (r Ingress) AuthRealm() string {
 
 func (r Ingress) AuthSecretName() string {
 	return GetString(r.Annotations, AuthSecret)
+}
+
+func (r Ingress) ErrorFilesConfigMapName() string {
+	return GetString(r.Annotations, ErrorFiles)
 }
 
 // ref: https://github.com/kubernetes/kubernetes/blob/078238a461a0872a8eacb887fbb3d0085714604c/staging/src/k8s.io/apiserver/pkg/apis/example/v1/types.go#L134

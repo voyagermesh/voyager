@@ -554,6 +554,28 @@ func (c *loadBalancerController) newPods() *apps.Deployment {
 	if ans, ok := c.Ingress.PodsAnnotations(); ok {
 		deployment.Spec.Template.Annotations = ans
 	}
+
+	if len(c.Ingress.ErrorFilesConfigMapName()) > 0 {
+		deployment.Spec.Template.Spec.Containers[0].VolumeMounts = append(
+			deployment.Spec.Template.Spec.Containers[0].VolumeMounts,
+			apiv1.VolumeMount{
+				Name:      ErrorFilesVolumeName,
+				MountPath: ErrorFilesLocation,
+			})
+
+		deployment.Spec.Template.Spec.Volumes = append(
+			deployment.Spec.Template.Spec.Volumes,
+			apiv1.Volume{
+				Name: ErrorFilesVolumeName,
+				VolumeSource: apiv1.VolumeSource{
+					ConfigMap: &apiv1.ConfigMapVolumeSource{
+						LocalObjectReference: apiv1.LocalObjectReference{
+							Name: c.Ingress.ErrorFilesConfigMapName(),
+						},
+					},
+				},
+			})
+	}
 	return deployment
 }
 

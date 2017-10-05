@@ -62,6 +62,18 @@ func TestTemplate(t *testing.T) {
 	}
 	testParsedConfig := TemplateData{
 		SharedInfo: si,
+		ErrorFiles: []*ErrorFile{
+			{
+				StatusCode: 403,
+				Command:    "errorfile",
+				Value:      "/srv/voyager/errorfiles/403.http",
+			},
+			{
+				StatusCode: 402,
+				Command:    "errorloc",
+				Value:      "goolge.com",
+			},
+		},
 		TimeoutDefaults: map[string]string{
 			"client": "2s",
 			"fin":    "1d",
