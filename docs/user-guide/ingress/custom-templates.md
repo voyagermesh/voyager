@@ -61,7 +61,7 @@ spec:
         - --cloud-config=
         - --ingress-class=
         - --custom-templates=/srv/voyager/custom/*.cfg
-        image: appscode/voyager:3.2.1
+        image: appscode/voyager:3.2.2
         ports:
         - containerPort: 56790
           name: http
