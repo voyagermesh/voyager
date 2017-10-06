@@ -10,6 +10,5 @@ type Options struct {
 	EnableRBAC        bool
 	OperatorNamespace string
 	OperatorService   string
-	HTTPChallengePort int
 	ResyncPeriod      time.Duration
 }

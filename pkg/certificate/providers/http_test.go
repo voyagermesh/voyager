@@ -1,6 +1,7 @@
 package providers
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -10,7 +11,7 @@ import (
 func TestNotFound(t *testing.T) {
 	defaultHTTPProvider.serve()
 	time.Sleep(time.Second * 5)
-	resp, err := http.Get("http://127.0.0.1:56791" + URLPrefix + "token")
+	resp, err := http.Get(fmt.Sprintf("http://127.0.0.1:%d/.well-known/acme-challenge/token", ACMEResponderPort))
 	if err != nil {
 		t.Fatal("expected Nil, found", err)
 	}
@@ -32,8 +33,8 @@ func TestNotFound(t *testing.T) {
 func TestFound(t *testing.T) {
 	defaultHTTPProvider.serve()
 	time.Sleep(time.Second * 5)
-	defaultHTTPProvider.Present("127.0.0.1:56791", "token", "key")
-	resp, err := http.Get("http://127.0.0.1:56791" + URLPrefix + "token")
+	defaultHTTPProvider.Present(fmt.Sprintf("127.0.0.1:%d", ACMEResponderPort), "token", "key")
+	resp, err := http.Get(fmt.Sprintf("http://127.0.0.1:%d/.well-known/acme-challenge/token", ACMEResponderPort))
 	if err != nil {
 		t.Fatal("expected Nil, found", err)
 	}

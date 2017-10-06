@@ -31,7 +31,6 @@ var (
 		HAProxyImage:      "appscode/haproxy:1.7.9-4.0.0-rc.5",
 		OperatorNamespace: kutil.Namespace(),
 		OperatorService:   "voyager-operator",
-		HTTPChallengePort: 56791,
 		EnableRBAC:        false,
 		ResyncPeriod:      5 * time.Minute,
 	}
@@ -68,7 +67,6 @@ func NewCmdRun() *cobra.Command {
 	cmd.Flags().StringVar(&customTemplates, "custom-templates", customTemplates, "Glob pattern of custom HAProxy template files used to override built-in templates")
 
 	cmd.Flags().StringVar(&opt.OperatorService, "operator-service", opt.OperatorService, "Name of service used to expose voyager operator")
-	cmd.Flags().IntVar(&opt.HTTPChallengePort, "http-challenge-port", opt.HTTPChallengePort, "Port used to answer ACME HTTP challenge")
 
 	cmd.Flags().StringVar(&address, "address", address, "Address to listen on for web interface and telemetry.")
 	cmd.Flags().StringVar(&haProxyServerMetricFields, "haproxy.server-metric-fields", haProxyServerMetricFields, "Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1")
