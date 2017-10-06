@@ -8,7 +8,6 @@ import (
 	"os"
 	"path"
 
-	"github.com/appscode/go/errors"
 	v1u "github.com/appscode/kutil/core/v1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
@@ -59,13 +58,13 @@ func (s *CertStore) Get(crd *api.Certificate) (pemCrt, pemKey []byte, err error)
 		}
 		if err == nil {
 			if data, found := secret.Data[apiv1.TLSCertKey]; !found {
-				err = fmt.Errorf("secret %s@%s is missing tls.crt", crd.SecretName(), crd.Namespace)
+				err = fmt.Errorf("secret %s/%s is missing tls.crt", crd.Namespace, crd.SecretName())
 				return
 			} else {
 				pemCrt = data
 			}
 			if data, found := secret.Data[apiv1.TLSPrivateKeyKey]; !found {
-				err = fmt.Errorf("secret %s@%s is missing tls.key", crd.SecretName(), crd.Namespace)
+				err = fmt.Errorf("secret %s/%s is missing tls.key", crd.Namespace, crd.SecretName())
 				return
 			} else {
 				pemKey = data
@@ -82,13 +81,13 @@ func (s *CertStore) Get(crd *api.Certificate) (pemCrt, pemKey []byte, err error)
 		}
 
 		if data, found := secret.Data[apiv1.TLSCertKey]; !found {
-			err = fmt.Errorf("secret %s@%s is missing tls.crt", crd.SecretName(), crd.Namespace)
+			err = fmt.Errorf("secret %s/%s is missing tls.crt", crd.Namespace, crd.SecretName())
 			return
 		} else {
 			pemCrt = []byte(data.(string))
 		}
 		if data, found := secret.Data[apiv1.TLSPrivateKeyKey]; !found {
-			err = fmt.Errorf("secret %s@%s is missing tls.key", crd.SecretName(), crd.Namespace)
+			err = fmt.Errorf("secret %s/%s is missing tls.key", crd.Namespace, crd.SecretName())
 			return
 		} else {
 			pemKey = []byte(data.(string))
@@ -110,21 +109,25 @@ func (s *CertStore) Save(crd *api.Certificate, cert acme.CertificateResource) er
 				in.Data[apiv1.TLSPrivateKeyKey] = cert.PrivateKey
 				return in
 			})
-		return err
+		if err != nil {
+			return err
+		}
 	} else if crd.Spec.Storage.Vault != nil {
 		data := map[string]interface{}{
 			apiv1.TLSCertKey:       string(cert.Certificate),
 			apiv1.TLSPrivateKeyKey: string(cert.PrivateKey),
 		}
 		_, err := s.VaultClient.Logical().Write(path.Join(crd.Spec.Storage.Vault.Prefix, crd.Namespace, crd.SecretName()), data)
-		return err
+		if err != nil {
+			return err
+		}
 	}
 
 	// Decode cert
 	pemBlock, _ := pem.Decode(cert.Certificate)
 	crt, err := x509.ParseCertificate(pemBlock.Bytes)
 	if err != nil {
-		return errors.FromErr(err).WithMessage("Error decoding x509 encoded certificate").Err()
+		return fmt.Errorf("failed to parse tls.crt for Certificate %s/%s. Reason: %s", crd.Namespace, crd.Name, err)
 	}
 	_, err = vu.PatchCertificate(s.VoyagerClient, crd, func(in *api.Certificate) *api.Certificate {
 		// Update certificate data to add Details Information

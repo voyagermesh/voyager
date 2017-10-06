@@ -30,9 +30,13 @@ spec:
         - --v={{ .Values.logLevel }}
         - --rbac={{ .Values.rbac.create }}
         - --ingress-class={{ .Values.ingressClass }}
+        - --operator-service={{ template "fullname" . }}
         ports:
         - containerPort: 56790
-          name: http
+          name: ops
+          protocol: TCP
+        - containerPort: 56791
+          name: acme
           protocol: TCP
 {{- if .Values.persistence.enabled }}
         volumeMounts:

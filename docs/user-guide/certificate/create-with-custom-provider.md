@@ -47,7 +47,7 @@ spec:
       provider: googlecloud
       credentialSecretName: test-gcp-secret
   storage:
-    secretStore: {}
+    secret: {}
 ```
 ```console
 kubectl create -f hack/example/certificate.yaml
@@ -59,24 +59,24 @@ kubectl logs -f appscode-voyager
 ```
 
 ### Results
-This object will create a certificate named `cert-test-cert`. This certificate will created from the custom acme server
+This object will create a secret named `tls-test-cert`. This certificate will created from the custom acme server
 that is provided in the secret.
 
 ```console
-kubectl get secrets cert-test-cert
+kubectl get secrets tls-test-cert
 ```
 
 ```
 NAME      TYPE                DATA      AGE
-cert-test-cert    kubernetes.io/tls   2         20m
+tls-test-cert    kubernetes.io/tls   2         20m
 ```
 
 ```
-kubectl describe secrets cert-test-cert
+kubectl describe secrets tls-test-cert
 ```
 
 ```
-Name:           cert-test-cert
+Name:           tls-test-cert
 Namespace:      default
 
 Type:   kubernetes.io/tls

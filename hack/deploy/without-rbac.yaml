@@ -25,7 +25,10 @@ spec:
         image: appscode/voyager:4.0.0-rc.5
         ports:
         - containerPort: 56790
-          name: http
+          name: ops
+          protocol: TCP
+        - containerPort: 56791
+          name: acme
           protocol: TCP
         volumeMounts:
           - mountPath: /etc/kubernetes
@@ -48,8 +51,11 @@ metadata:
   namespace: kube-system
 spec:
   ports:
-  - name: http
+  - name: ops
     port: 56790
-    targetPort: http
+    targetPort: ops
+  - name: acme
+    port: 56791
+    targetPort: acme
   selector:
     app: voyager

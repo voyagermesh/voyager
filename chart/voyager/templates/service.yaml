@@ -9,9 +9,12 @@ metadata:
     heritage: "{{ .Release.Service }}"
 spec:
   ports:
-  - name: http
+  - name: ops
     port: 56790
-    targetPort: http
+    targetPort: ops
+  - name: acme
+    port: 56791
+    targetPort: acme
   selector:
     app: "{{ template "name" . }}"
     release: "{{ .Release.Name }}"
