@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	etx "github.com/appscode/go/context"
+	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acf "github.com/appscode/voyager/client/fake"
 	"github.com/appscode/voyager/pkg/config"
@@ -46,7 +48,7 @@ func TestEnsureClient(t *testing.T) {
 			},
 		}
 
-		fakeController, err := NewController(fake.NewSimpleClientset(
+		fakeController, err := NewController(etx.Background(), fake.NewSimpleClientset(
 			&apiv1.Secret{
 				ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
 			},
@@ -106,7 +108,7 @@ func TestCreate(t *testing.T) {
 			},
 		}
 
-		fakeController, err := NewController(fake.NewSimpleClientset(fakeUser, fakeSecret), acf.NewSimpleClientset().VoyagerV1beta1(), config.Options{ResyncPeriod: time.Second * 5}, cert)
+		fakeController, err := NewController(etx.Background(), fake.NewSimpleClientset(fakeUser, fakeSecret), acf.NewSimpleClientset().VoyagerV1beta1(), config.Options{ResyncPeriod: time.Second * 5}, cert)
 		if assert.Nil(t, err) {
 			err = fakeController.Process()
 			assert.Nil(t, err)
@@ -118,7 +120,7 @@ func TestCreate(t *testing.T) {
 			list, err := fakeController.KubeClient.CoreV1().Secrets("").List(metav1.ListOptions{})
 			if err == nil {
 				for _, item := range list.Items {
-					c.logger.Infoln("List for Secrets that created", item.Name, item.Namespace)
+					log.Infoln("List for Secrets that created", item.Name, item.Namespace)
 				}
 			}
 
@@ -134,8 +136,8 @@ func TestCreate(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			c.logger.Infoln(cert.Status)
-			c.logger.Infoln(cert.Status.LastIssuedCertificate)
+			log.Infoln(cert.Status)
+			log.Infoln(cert.Status.LastIssuedCertificate)
 		}
 	}
 }

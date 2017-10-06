@@ -83,13 +83,13 @@ func NewController(ctx context.Context, kubeClient clientset.Interface, extClien
 		switch ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.APIVersion {
 		case api.SchemeGroupVersion.String():
 			var err error
-			_, err = ctrl.VoyagerClient.Ingresses(ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
+			_, err = ctrl.VoyagerClient.Ingresses(ctrl.crd.Namespace).
 				Get(ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 			if err != nil {
 				return nil, err
 			}
 		case "extensions/v1beta1":
-			ing, err := ctrl.KubeClient.ExtensionsV1beta1().Ingresses(ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
+			ing, err := ctrl.KubeClient.ExtensionsV1beta1().Ingresses(ctrl.crd.Namespace).
 				Get(ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 			if err != nil {
 				return nil, err
@@ -274,7 +274,7 @@ func (c *Controller) processError(err error) error {
 func (c *Controller) updateIngress() error {
 	switch c.crd.Spec.ChallengeProvider.HTTP.Ingress.APIVersion {
 	case api.SchemeGroupVersion.String():
-		i, err := c.VoyagerClient.Ingresses(c.crd.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
+		i, err := c.VoyagerClient.Ingresses(c.crd.Namespace).
 			Get(c.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -315,7 +315,7 @@ func (c *Controller) updateIngress() error {
 		}
 		time.Sleep(time.Second * 5)
 	case "extensions/v1beta1":
-		i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.crd.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
+		i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.crd.Namespace).
 			Get(c.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.FromErr(err).Err()

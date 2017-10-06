@@ -8,7 +8,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 type indices struct {
@@ -43,12 +42,11 @@ func (r *Ingress) IsValid(cloudProvider string) error {
 		if tls.SecretName != "" {
 			if tls.SecretRef != nil &&
 				!(tls.SecretRef.Name == tls.SecretName &&
-					(tls.SecretRef.Namespace == "" || tls.SecretRef.Namespace == r.Namespace) &&
 					(tls.SecretRef.Kind == "" || tls.SecretRef.Kind == "Secret")) {
 				return fmt.Errorf("spec.tls[%d] specifies different secret name and secret ref", ti)
 			}
 			if r.Spec.TLS[ti].SecretRef == nil {
-				r.Spec.TLS[ti].SecretRef = &apiv1.ObjectReference{
+				r.Spec.TLS[ti].SecretRef = &LocalTypedReference{
 					APIVersion: "v1",
 					Kind:       "Secret",
 					Name:       tls.SecretName,
@@ -59,9 +57,6 @@ func (r *Ingress) IsValid(cloudProvider string) error {
 		} else {
 			if tls.SecretRef.Kind != "" && sets.NewString("Secret", "Certificate").Has(tls.SecretRef.Kind) {
 				return fmt.Errorf("spec.tls[%d].secretRef.kind %s is unsupported", ti, tls.SecretRef.Kind)
-			}
-			if tls.SecretRef.Namespace != "" && tls.SecretRef.Namespace != r.Namespace {
-				return fmt.Errorf("spec.tls[%d].secretRef.namespace does not match ingress namespace", ti)
 			}
 			if tls.SecretRef.Name == "" {
 				return fmt.Errorf("spec.tls[%d] specifies no secret name and secret ref name", ti)
@@ -290,7 +285,6 @@ func (c Certificate) IsValid(cloudProvider string) error {
 
 	if c.Spec.ChallengeProvider.HTTP != nil {
 		if len(c.Spec.ChallengeProvider.HTTP.Ingress.Name) == 0 ||
-			len(c.Spec.ChallengeProvider.HTTP.Ingress.Namespace) == 0 ||
 			(c.Spec.ChallengeProvider.HTTP.Ingress.APIVersion != SchemeGroupVersion.String() && c.Spec.ChallengeProvider.HTTP.Ingress.APIVersion != "extensions/v1beta1") {
 			return fmt.Errorf("invalid ingress reference")
 		}
