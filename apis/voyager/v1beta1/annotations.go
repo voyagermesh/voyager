@@ -215,10 +215,16 @@ const (
 	ErrorFiles = EngressKey + "/errorfiles"
 
 	// Limit requests per second per IP address
+	// http://cbonte.github.io/haproxy-dconv/1.8/configuration.html#7.3.3-sc_conn_rate
+	// https://serverfault.com/a/679172/349346
+	// https://discourse.haproxy.org/t/solved-how-to-configure-basic-ddos-protection-when-behind-aws-elb-x-forwarded-for/932
+	// https://www.haproxy.com/blog/use-a-load-balancer-as-a-first-row-of-defense-against-ddos/
 	LimitRPS = IngressKey + "/limit-rps"
-
+	// Limit requests per minute per IP address
 	LimitRPM = IngressKey + "/limit-rpm"
 
+	// http://cbonte.github.io/haproxy-dconv/1.8/configuration.html#7.3.3-src_conn_cur
+	// https://www.haproxy.com/blog/use-a-load-balancer-as-a-first-row-of-defense-against-ddos/
 	LimitConnection = IngressKey + "/limit-connection"
 )
 
