@@ -307,10 +307,6 @@ func (c Certificate) IsValid(cloudProvider string) error {
 		return fmt.Errorf("no user secret name specified")
 	}
 
-	if c.Spec.Storage.Secret == nil && c.Spec.Storage.Vault == nil {
-		return fmt.Errorf("no storage specified")
-	}
-
 	if c.Spec.Storage.Secret != nil && c.Spec.Storage.Vault != nil {
 		return fmt.Errorf("invalid storage specification, used both storage")
 	}

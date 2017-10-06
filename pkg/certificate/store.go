@@ -50,27 +50,7 @@ func NewCertStore(kubeClient clientset.Interface, voyagerClient acs.VoyagerV1bet
 }
 
 func (s *CertStore) Get(crd *api.Certificate) (pemCrt, pemKey []byte, err error) {
-	if crd.Spec.Storage.Secret != nil {
-		var secret *apiv1.Secret
-		secret, err = s.KubeClient.CoreV1().Secrets(crd.Namespace).Get(crd.SecretName(), metav1.GetOptions{})
-		if k8serror.IsNotFound(err) {
-			return nil, nil, nil
-		}
-		if err == nil {
-			if data, found := secret.Data[apiv1.TLSCertKey]; !found {
-				err = fmt.Errorf("secret %s/%s is missing tls.crt", crd.Namespace, crd.SecretName())
-				return
-			} else {
-				pemCrt = data
-			}
-			if data, found := secret.Data[apiv1.TLSPrivateKeyKey]; !found {
-				err = fmt.Errorf("secret %s/%s is missing tls.key", crd.Namespace, crd.SecretName())
-				return
-			} else {
-				pemKey = data
-			}
-		}
-	} else if crd.Spec.Storage.Vault != nil {
+	if crd.Spec.Storage.Vault != nil {
 		var secret *vault.Secret
 		secret, err = s.VaultClient.Logical().Read(path.Join(crd.Spec.Storage.Vault.Prefix, crd.Namespace, crd.SecretName()))
 		if err != nil {
@@ -92,12 +72,41 @@ func (s *CertStore) Get(crd *api.Certificate) (pemCrt, pemKey []byte, err error)
 		} else {
 			pemKey = []byte(data.(string))
 		}
+	} else {
+		var secret *apiv1.Secret
+		secret, err = s.KubeClient.CoreV1().Secrets(crd.Namespace).Get(crd.SecretName(), metav1.GetOptions{})
+		if k8serror.IsNotFound(err) {
+			return nil, nil, nil
+		}
+		if err == nil {
+			if data, found := secret.Data[apiv1.TLSCertKey]; !found {
+				err = fmt.Errorf("secret %s/%s is missing tls.crt", crd.Namespace, crd.SecretName())
+				return
+			} else {
+				pemCrt = data
+			}
+			if data, found := secret.Data[apiv1.TLSPrivateKeyKey]; !found {
+				err = fmt.Errorf("secret %s/%s is missing tls.key", crd.Namespace, crd.SecretName())
+				return
+			} else {
+				pemKey = data
+			}
+		}
 	}
 	return
 }
 
 func (s *CertStore) Save(crd *api.Certificate, cert acme.CertificateResource) error {
-	if crd.Spec.Storage.Secret != nil {
+	if crd.Spec.Storage.Vault != nil {
+		data := map[string]interface{}{
+			apiv1.TLSCertKey:       string(cert.Certificate),
+			apiv1.TLSPrivateKeyKey: string(cert.PrivateKey),
+		}
+		_, err := s.VaultClient.Logical().Write(path.Join(crd.Spec.Storage.Vault.Prefix, crd.Namespace, crd.SecretName()), data)
+		if err != nil {
+			return err
+		}
+	} else {
 		_, err := v1u.CreateOrPatchSecret(s.KubeClient,
 			metav1.ObjectMeta{Namespace: crd.Namespace, Name: crd.SecretName()},
 			func(in *apiv1.Secret) *apiv1.Secret {
@@ -109,15 +118,6 @@ func (s *CertStore) Save(crd *api.Certificate, cert acme.CertificateResource) er
 				in.Data[apiv1.TLSPrivateKeyKey] = cert.PrivateKey
 				return in
 			})
-		if err != nil {
-			return err
-		}
-	} else if crd.Spec.Storage.Vault != nil {
-		data := map[string]interface{}{
-			apiv1.TLSCertKey:       string(cert.Certificate),
-			apiv1.TLSPrivateKeyKey: string(cert.PrivateKey),
-		}
-		_, err := s.VaultClient.Logical().Write(path.Join(crd.Spec.Storage.Vault.Prefix, crd.Namespace, crd.SecretName()), data)
 		if err != nil {
 			return err
 		}
