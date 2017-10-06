@@ -18,6 +18,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/sets"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
@@ -543,51 +544,30 @@ func (c *controller) getErrorFiles() ([]*haproxy.ErrorFile, error) {
 		return nil, err
 	}
 
-	errorFiles := make([]*haproxy.ErrorFile, 0)
-
-	for key, val := range configMap.Data {
-		if strings.HasSuffix(key, ".http") {
-			statusCode, err := strconv.Atoi(strings.TrimSuffix(key, ".http"))
-			if err != nil {
+	commands := sets.NewString("errorfile", "errorloc", "errorloc302", "errorloc303")
+	codes := []string{"200", "400", "403", "405", "408", "429", "500", "502", "503", "504"}
+	errorFiles := make([]*haproxy.ErrorFile, 0, len(codes))
+	for _, statusCode := range codes {
+		if _, found := configMap.Data[statusCode+".http"]; found {
+			errorFiles = append(errorFiles, &haproxy.ErrorFile{
+				StatusCode: statusCode,
+				Command:    ErrorFilesCommand,
+				Value:      fmt.Sprintf("%s/%s.http", ErrorFilesLocation, statusCode),
+			})
+		} else if val, found := configMap.Data[statusCode]; found {
+			parts := strings.SplitN(val, " ", 2)
+			if len(parts) < 2 {
 				return nil, err
 			}
-
-			if checkStatusCode(statusCode) {
-				errorFiles = append(errorFiles, &haproxy.ErrorFile{
-					StatusCode: statusCode,
-					Command:    ErrorFilesCommand,
-					Value:      ErrorFilesLocation + "/" + key,
-				})
+			if !commands.Has(parts[0]) {
+				return nil, fmt.Errorf("found unknown errofile command %s", parts[0])
 			}
-		} else {
-			statusCode, err := strconv.Atoi(key)
-			if err != nil {
-				return nil, err
-			}
-
-			str := strings.SplitN(val, " ", 2)
-			if len(str) < 2 {
-				return nil, err
-			}
-
-			if checkStatusCode(statusCode) {
-				errorFiles = append(errorFiles, &haproxy.ErrorFile{
-					StatusCode: statusCode,
-					Command:    str[0],
-					Value:      str[1],
-				})
-			}
+			errorFiles = append(errorFiles, &haproxy.ErrorFile{
+				StatusCode: statusCode,
+				Command:    parts[0],
+				Value:      parts[1],
+			})
 		}
 	}
 	return errorFiles, nil
-}
-
-func checkStatusCode(code int) bool {
-	codes := []int{200, 400, 403, 405, 408, 429, 500, 502, 503, 504}
-	for i := range codes {
-		if codes[i] == code {
-			return true
-		}
-	}
-	return false
 }

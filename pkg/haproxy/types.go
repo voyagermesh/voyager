@@ -19,7 +19,7 @@ type TemplateData struct {
 }
 
 type ErrorFile struct {
-	StatusCode int
+	StatusCode string
 	Command    string
 	Value      string
 }
