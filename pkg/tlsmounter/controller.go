@@ -148,7 +148,7 @@ func (c *Controller) initIngressIndexer() (*api.Ingress, error) {
 
 func (c *Controller) initTLSCache(ing *api.Ingress) error {
 	for _, tls := range ing.Spec.TLS {
-		if tls.TLSRef.Kind == "Certificate" {
+		if strings.EqualFold(tls.TLSRef.Kind, api.ResourceKindCertificate) {
 			crd, err := c.VoyagerClient.Certificates(c.options.IngressRef.Namespace).Get(tls.TLSRef.Name, metav1.GetOptions{})
 			if err != nil {
 				return err
