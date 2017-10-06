@@ -10,9 +10,9 @@ import (
 
 	"github.com/appscode/go/errors"
 	v1u "github.com/appscode/kutil/core/v1"
-	vu "github.com/appscode/kutil/voyager/v1beta1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	vu "github.com/appscode/voyager/client/typed/voyager/v1beta1/util"
 	vault "github.com/hashicorp/vault/api"
 	"github.com/xenolf/lego/acme"
 	k8serror "k8s.io/apimachinery/pkg/api/errors"
