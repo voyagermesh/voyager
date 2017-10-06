@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	ioutilz "github.com/appscode/go/ioutil"
 	"github.com/appscode/go/log"
@@ -79,7 +80,7 @@ func (c *Controller) isSecretUsedInIngress(s *apiv1.Secret) bool {
 		return false
 	}
 	for _, tls := range r.Spec.TLS {
-		if s.Name == tls.SecretRef.Name && (tls.SecretRef.Kind == "Secret" || tls.SecretRef.Kind == "") {
+		if s.Name == tls.TLSRef.Name && (strings.EqualFold(tls.TLSRef.Kind, "Secret") || tls.TLSRef.Kind == "") {
 			return true
 		}
 	}

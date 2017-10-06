@@ -206,7 +206,7 @@ func DeepCopy_voyager_CertificateStorage(in interface{}, out interface{}, c *con
 		*out = *in
 		if in.Secret != nil {
 			in, out := &in.Secret, &out.Secret
-			*out = new(SecretStore)
+			*out = new(api_v1.LocalObjectReference)
 			**out = **in
 		}
 		if in.Vault != nil {
@@ -534,8 +534,8 @@ func DeepCopy_voyager_IngressTLS(in interface{}, out interface{}, c *conversion.
 			*out = make([]string, len(*in))
 			copy(*out, *in)
 		}
-		if in.SecretRef != nil {
-			in, out := &in.SecretRef, &out.SecretRef
+		if in.TLSRef != nil {
+			in, out := &in.TLSRef, &out.TLSRef
 			*out = new(LocalTypedReference)
 			**out = **in
 		}

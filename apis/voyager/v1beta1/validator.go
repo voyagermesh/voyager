@@ -40,25 +40,25 @@ func (r *Ingress) IsValid(cloudProvider string) error {
 	}
 	for ti, tls := range r.Spec.TLS {
 		if tls.SecretName != "" {
-			if tls.SecretRef != nil &&
-				!(tls.SecretRef.Name == tls.SecretName &&
-					(tls.SecretRef.Kind == "" || tls.SecretRef.Kind == "Secret")) {
+			if tls.TLSRef != nil &&
+				!(tls.TLSRef.Name == tls.SecretName &&
+					(tls.TLSRef.Kind == "" || tls.TLSRef.Kind == "Secret")) {
 				return fmt.Errorf("spec.tls[%d] specifies different secret name and secret ref", ti)
 			}
-			if r.Spec.TLS[ti].SecretRef == nil {
-				r.Spec.TLS[ti].SecretRef = &LocalTypedReference{
+			if r.Spec.TLS[ti].TLSRef == nil {
+				r.Spec.TLS[ti].TLSRef = &LocalTypedReference{
 					APIVersion: "v1",
 					Kind:       "Secret",
 					Name:       tls.SecretName,
 				}
 			}
-		} else if tls.SecretRef == nil {
+		} else if tls.TLSRef == nil {
 			return fmt.Errorf("spec.tls[%d] specifies no secret name and secret ref", ti)
 		} else {
-			if tls.SecretRef.Kind != "" && sets.NewString("Secret", "Certificate").Has(tls.SecretRef.Kind) {
-				return fmt.Errorf("spec.tls[%d].secretRef.kind %s is unsupported", ti, tls.SecretRef.Kind)
+			if tls.TLSRef.Kind != "" && sets.NewString("Secret", "Certificate").Has(tls.TLSRef.Kind) {
+				return fmt.Errorf("spec.tls[%d].secretRef.kind %s is unsupported", ti, tls.TLSRef.Kind)
 			}
-			if tls.SecretRef.Name == "" {
+			if tls.TLSRef.Name == "" {
 				return fmt.Errorf("spec.tls[%d] specifies no secret name and secret ref name", ti)
 			}
 		}

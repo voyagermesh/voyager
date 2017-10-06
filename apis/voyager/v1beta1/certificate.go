@@ -2,6 +2,7 @@ package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 const (
@@ -80,13 +81,8 @@ type DNSChallengeProvider struct {
 }
 
 type CertificateStorage struct {
-	Secret *SecretStore `json:"secret,omitempty"`
-	Vault  *VaultStore  `json:"vault,omitempty"`
-}
-
-type SecretStore struct {
-	// Secret name to store the certificate, default cert-<certificate-name>
-	Name string `json:"name,omitempty"`
+	Secret *apiv1.LocalObjectReference `json:"secret,omitempty"`
+	Vault  *VaultStore                 `json:"vault,omitempty"`
 }
 
 type VaultStore struct {
