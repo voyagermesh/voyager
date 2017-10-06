@@ -38,6 +38,7 @@ type SharedInfo struct {
 	WhitelistSourceRange  string
 	MaxConnections        int
 	ForceMatchServicePort bool
+	Limit                 *Limit
 	ForceSSLRedirect      bool
 }
 
@@ -135,4 +136,10 @@ type AuthUser struct {
 	Username  string
 	Password  string
 	Encrypted bool
+}
+
+type Limit struct {
+	Connection int
+	TimeSecond int
+	Rate       int
 }

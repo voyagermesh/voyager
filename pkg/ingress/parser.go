@@ -221,8 +221,20 @@ func (c *controller) generateConfig() error {
 		WhitelistSourceRange:  c.Ingress.WhitelistSourceRange(),
 		MaxConnections:        c.Ingress.MaxConnections(),
 		ForceMatchServicePort: c.Ingress.ForceServicePort(),
-		ForceSSLRedirect:      c.Ingress.ForceSSLRedirect(),
+		Limit: &haproxy.Limit{
+			Connection: c.Ingress.LimitConnections(),
+		},
+		ForceSSLRedirect: c.Ingress.ForceSSLRedirect(),
 	}
+
+	if val := c.Ingress.LimitRPM(); val > 0 {
+		si.Limit.TimeSecond = 60
+		si.Limit.Rate = val
+	} else if val := c.Ingress.LimitRPS(); val > 0 {
+		si.Limit.TimeSecond = 1
+		si.Limit.Rate = val
+	}
+
 	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
 		si.AcceptProxy = c.Ingress.KeepSourceIP()
 	}

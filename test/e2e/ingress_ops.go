@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/appscode/go/log"
 	internalapi "github.com/appscode/voyager/apis/voyager"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
@@ -859,6 +860,119 @@ var _ = Describe("IngressOperations", func() {
 			Expect(err).NotTo(HaveOccurred())       // request-1 should not block request-2 since maxconn = 2
 			Expect(<-errChan).NotTo(HaveOccurred()) // check request-1
 
+		})
+	})
+
+	Describe("With Limit RPM", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.LimitRPM] = "2"
+		})
+
+		It("Should Allow 2 Connections In one minute", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET",
+				"/testpath/ok",
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET",
+				"/testpath/ok",
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET",
+				"/testpath/ok",
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok"))
+				},
+			)
+			Expect(err).To(HaveOccurred())
+
+			log.Warningln("Waiting 2 minute for timer to be reset")
+			time.Sleep(time.Minute * 2)
+			log.Warningln("Request should response")
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET",
+				"/testpath/ok",
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+	Describe("With Limit Max Concurrent connection per ip", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.LimitConnection] = "2"
+			ing.Annotations[api.DefaultsTimeOut] = `{"connect": "300s", "server": "300s"}`
+		})
+
+		It("Should Allow 2 From IP Connections", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			errChan := make(chan error)
+			for i := 1; i <= 2; i++ {
+				go func() {
+					err := f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 150, "", ing, eps, "GET",
+						"/testpath/ok?delay=60s",
+						func(r *testserverclient.Response) bool {
+							return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+								Expect(r.Method).Should(Equal("GET")) &&
+								Expect(r.Path).Should(Equal("/testpath/ok"))
+						},
+					)
+					errChan <- err
+				}()
+			}
+
+			// Ensure this request must occurred after two long running request
+			time.Sleep(time.Second * 10)
+			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET",
+				"/testpath/ok",
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok"))
+				},
+			)
+			Expect(err).To(HaveOccurred())
+
+			Expect(<-errChan).NotTo(HaveOccurred())
+			Expect(<-errChan).NotTo(HaveOccurred())
+
+			log.Warningln("Waiting 2 minute for timer to be reset")
+			time.Sleep(time.Minute * 1)
+			log.Warningln("Request should response")
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET",
+				"/testpath/ok",
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
 		})
 	})
 })

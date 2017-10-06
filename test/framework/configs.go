@@ -8,6 +8,7 @@ import (
 	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/go/flags"
 	"github.com/appscode/go/log"
+	logs "github.com/appscode/go/log/golog"
 	"k8s.io/client-go/util/homedir"
 )
 
@@ -46,6 +47,10 @@ type E2EConfig struct {
 var testConfigs E2EConfig
 
 func enableLogging() {
+	defer func() {
+		logs.InitLogs()
+		defer logs.FlushLogs()
+	}()
 	flag.Set("logtostderr", "true")
 	logLevelFlag := flag.Lookup("v")
 	if logLevelFlag != nil {
