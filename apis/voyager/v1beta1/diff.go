@@ -217,8 +217,11 @@ func (c Certificate) IsRateLimited() bool {
 }
 
 func (c Certificate) SecretName() string {
-	if c.Spec.Storage.Vault != nil && c.Spec.Storage.Vault.Name != "" {
-		return c.Spec.Storage.Vault.Name
+	if c.Spec.Storage.Vault != nil {
+		if c.Spec.Storage.Vault.Name != "" {
+			return c.Spec.Storage.Vault.Name
+		}
+		return "tls-" + c.Name
 	}
 	if c.Spec.Storage.Secret != nil && c.Spec.Storage.Secret.Name != "" {
 		return c.Spec.Storage.Secret.Name
