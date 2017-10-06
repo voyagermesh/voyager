@@ -224,7 +224,7 @@ func (c *controller) generateConfig() error {
 		Limit: &haproxy.Limit{
 			Connection: c.Ingress.LimitConnections(),
 		},
-		ForceSSLRedirect:      c.Ingress.ForceSSLRedirect(),
+		ForceSSLRedirect: c.Ingress.ForceSSLRedirect(),
 	}
 
 	if val := c.Ingress.LimitRPM(); val > 0 {
