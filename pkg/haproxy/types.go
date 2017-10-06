@@ -15,6 +15,13 @@ type TemplateData struct {
 	DNSResolvers    []*api.DNSResolver
 	HTTPService     []*HTTPService
 	TCPService      []*TCPService
+	ErrorFiles      []*ErrorFile
+}
+
+type ErrorFile struct {
+	StatusCode string
+	Command    string
+	Value      string
 }
 
 type SharedInfo struct {
@@ -32,6 +39,7 @@ type SharedInfo struct {
 	MaxConnections        int
 	ForceMatchServicePort bool
 	Limit                 *Limit
+	ForceSSLRedirect      bool
 }
 
 type StatsInfo struct {

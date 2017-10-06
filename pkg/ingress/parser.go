@@ -18,6 +18,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/sets"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
@@ -223,6 +224,7 @@ func (c *controller) generateConfig() error {
 		Limit: &haproxy.Limit{
 			Connection: c.Ingress.LimitConnections(),
 		},
+		ForceSSLRedirect:      c.Ingress.ForceSSLRedirect(),
 	}
 
 	if val := c.Ingress.LimitRPM(); val > 0 {
@@ -274,6 +276,14 @@ func (c *controller) generateConfig() error {
 		if err != nil {
 			return err
 		}
+	}
+
+	if len(c.Ingress.ErrorFilesConfigMapName()) > 0 {
+		errorFiles, err := c.getErrorFiles()
+		if err != nil {
+			return err
+		}
+		td.ErrorFiles = errorFiles
 	}
 
 	td.SharedInfo = si
@@ -538,4 +548,38 @@ func (c *controller) getServiceAuth(s *apiv1.Service) *haproxy.AuthConfig {
 		Realm: authRealm,
 		Users: users,
 	}
+}
+
+func (c *controller) getErrorFiles() ([]*haproxy.ErrorFile, error) {
+	configMap, err := c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Get(c.Ingress.ErrorFilesConfigMapName(), metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	commands := sets.NewString("errorfile", "errorloc", "errorloc302", "errorloc303")
+	codes := []string{"200", "400", "403", "405", "408", "429", "500", "502", "503", "504"}
+	errorFiles := make([]*haproxy.ErrorFile, 0, len(codes))
+	for _, statusCode := range codes {
+		if _, found := configMap.Data[statusCode+".http"]; found {
+			errorFiles = append(errorFiles, &haproxy.ErrorFile{
+				StatusCode: statusCode,
+				Command:    ErrorFilesCommand,
+				Value:      fmt.Sprintf("%s/%s.http", ErrorFilesLocation, statusCode),
+			})
+		} else if val, found := configMap.Data[statusCode]; found {
+			parts := strings.SplitN(val, " ", 2)
+			if len(parts) < 2 {
+				return nil, err
+			}
+			if !commands.Has(parts[0]) {
+				return nil, fmt.Errorf("found unknown errofile command %s", parts[0])
+			}
+			errorFiles = append(errorFiles, &haproxy.ErrorFile{
+				StatusCode: statusCode,
+				Command:    parts[0],
+				Value:      parts[1],
+			})
+		}
+	}
+	return errorFiles, nil
 }

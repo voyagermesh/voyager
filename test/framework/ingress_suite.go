@@ -286,6 +286,22 @@ func (i *ingressInvocation) DoHTTPTestRedirect(retryCount int, ing *api_v1beta1.
 	return nil
 }
 
+func (i *ingressInvocation) DoHTTPTestRedirectWithHeader(retryCount int, ing *api_v1beta1.Ingress, eps []string, method, path string,
+	h map[string]string, matcher func(resp *testserverclient.Response) bool) error {
+	for _, url := range eps {
+		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Header(h).Path(path).DoTestRedirectWithRetry(retryCount)
+		if err != nil {
+			return err
+		}
+
+		log.Infoln("HTTP Response received from server", *resp)
+		if !matcher(resp) {
+			return errors.New("Failed to match")
+		}
+	}
+	return nil
+}
+
 func (i *ingressInvocation) DoHTTPsTestRedirect(retryCount int, host string, ing *api_v1beta1.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
 		resp, err := testserverclient.NewTestHTTPClient(url).WithHost(host).Method(method).Path(path).DoTestRedirectWithRetry(retryCount)

@@ -209,6 +209,10 @@ const (
 
 	// https://github.com/appscode/voyager/issues/552
 	ForceServicePort = EngressKey + "/force-service-port"
+	ForceSSLRedirect = IngressKey + "/force-ssl-redirect"
+
+	// https://github.com/appscode/voyager/issues/525
+	ErrorFiles = EngressKey + "/errorfiles"
 
 	// Limit requests per second per IP address
 	LimitRPS = IngressKey + "/limit-rps"
@@ -326,6 +330,11 @@ func (r Ingress) WhitelistSourceRange() string {
 
 func (r Ingress) MaxConnections() int {
 	v, _ := GetInt(r.Annotations, MaxConnections)
+	return v
+}
+
+func (r Ingress) ForceSSLRedirect() bool {
+	v, _ := GetBool(r.Annotations, ForceSSLRedirect)
 	return v
 }
 
@@ -522,6 +531,10 @@ func (r Ingress) AuthRealm() string {
 
 func (r Ingress) AuthSecretName() string {
 	return GetString(r.Annotations, AuthSecret)
+}
+
+func (r Ingress) ErrorFilesConfigMapName() string {
+	return GetString(r.Annotations, ErrorFiles)
 }
 
 func (r Ingress) LimitRPS() int {
