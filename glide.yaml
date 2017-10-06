@@ -60,6 +60,8 @@ import:
   version: v4.0.0
 - package: k8s.io/kubernetes
   version: ~1.7.0
+- package: github.com/google/uuid
+  version: master
 testImport:
 - package: github.com/stretchr/testify
   version: v1.1.4

@@ -10,7 +10,6 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 const (
@@ -56,14 +55,14 @@ func (r Ingress) HasChanged(o Ingress) (bool, error) {
 	return !reflect.DeepEqual(ra, oa), nil
 }
 
-func (r Ingress) FindTLSSecret(h string) (*apiv1.ObjectReference, bool) {
+func (r Ingress) FindTLSSecret(h string) (*LocalTypedReference, bool) {
 	if h == "" {
 		return nil, false
 	}
 	for _, tls := range r.Spec.TLS {
 		for _, host := range tls.Hosts {
 			if host == h {
-				return tls.SecretRef, true
+				return tls.TLSRef, true
 			}
 		}
 	}

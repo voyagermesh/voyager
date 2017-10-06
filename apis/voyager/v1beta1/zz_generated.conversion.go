@@ -27,6 +27,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
+	types "k8s.io/apimachinery/pkg/types"
 	api_v1 "k8s.io/client-go/pkg/api/v1"
 )
 
@@ -86,8 +87,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_voyager_IngressStatus_To_v1beta1_IngressStatus,
 		Convert_v1beta1_IngressTLS_To_voyager_IngressTLS,
 		Convert_voyager_IngressTLS_To_v1beta1_IngressTLS,
-		Convert_v1beta1_SecretStore_To_voyager_SecretStore,
-		Convert_voyager_SecretStore_To_v1beta1_SecretStore,
+		Convert_v1beta1_LocalTypedReference_To_voyager_LocalTypedReference,
+		Convert_voyager_LocalTypedReference_To_v1beta1_LocalTypedReference,
 		Convert_v1beta1_TCPIngressRuleValue_To_voyager_TCPIngressRuleValue,
 		Convert_voyager_TCPIngressRuleValue_To_v1beta1_TCPIngressRuleValue,
 		Convert_v1beta1_VaultStore_To_voyager_VaultStore,
@@ -242,7 +243,9 @@ func autoConvert_v1beta1_CertificateSpec_To_voyager_CertificateSpec(in *Certific
 	}
 	out.Provider = in.Provider
 	out.Email = in.Email
-	out.HTTPProviderIngressReference = in.HTTPProviderIngressReference
+	if err := Convert_v1beta1_LocalTypedReference_To_voyager_LocalTypedReference(&in.HTTPProviderIngressReference, &out.HTTPProviderIngressReference, s); err != nil {
+		return err
+	}
 	out.ProviderCredentialSecretName = in.ProviderCredentialSecretName
 	out.ACMEServerURL = in.ACMEServerURL
 	return nil
@@ -264,7 +267,9 @@ func autoConvert_voyager_CertificateSpec_To_v1beta1_CertificateSpec(in *voyager.
 	}
 	out.Provider = in.Provider
 	out.Email = in.Email
-	out.HTTPProviderIngressReference = in.HTTPProviderIngressReference
+	if err := Convert_voyager_LocalTypedReference_To_v1beta1_LocalTypedReference(&in.HTTPProviderIngressReference, &out.HTTPProviderIngressReference, s); err != nil {
+		return err
+	}
 	out.ProviderCredentialSecretName = in.ProviderCredentialSecretName
 	out.ACMEServerURL = in.ACMEServerURL
 	return nil
@@ -308,7 +313,7 @@ func Convert_voyager_CertificateStatus_To_v1beta1_CertificateStatus(in *voyager.
 }
 
 func autoConvert_v1beta1_CertificateStorage_To_voyager_CertificateStorage(in *CertificateStorage, out *voyager.CertificateStorage, s conversion.Scope) error {
-	out.Secret = (*voyager.SecretStore)(unsafe.Pointer(in.Secret))
+	out.Secret = (*api_v1.LocalObjectReference)(unsafe.Pointer(in.Secret))
 	out.Vault = (*voyager.VaultStore)(unsafe.Pointer(in.Vault))
 	return nil
 }
@@ -319,7 +324,7 @@ func Convert_v1beta1_CertificateStorage_To_voyager_CertificateStorage(in *Certif
 }
 
 func autoConvert_voyager_CertificateStorage_To_v1beta1_CertificateStorage(in *voyager.CertificateStorage, out *CertificateStorage, s conversion.Scope) error {
-	out.Secret = (*SecretStore)(unsafe.Pointer(in.Secret))
+	out.Secret = (*api_v1.LocalObjectReference)(unsafe.Pointer(in.Secret))
 	out.Vault = (*VaultStore)(unsafe.Pointer(in.Vault))
 	return nil
 }
@@ -396,7 +401,9 @@ func Convert_voyager_FrontendRule_To_v1beta1_FrontendRule(in *voyager.FrontendRu
 }
 
 func autoConvert_v1beta1_HTTPChallengeProvider_To_voyager_HTTPChallengeProvider(in *HTTPChallengeProvider, out *voyager.HTTPChallengeProvider, s conversion.Scope) error {
-	out.Ingress = in.Ingress
+	if err := Convert_v1beta1_LocalTypedReference_To_voyager_LocalTypedReference(&in.Ingress, &out.Ingress, s); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -406,7 +413,9 @@ func Convert_v1beta1_HTTPChallengeProvider_To_voyager_HTTPChallengeProvider(in *
 }
 
 func autoConvert_voyager_HTTPChallengeProvider_To_v1beta1_HTTPChallengeProvider(in *voyager.HTTPChallengeProvider, out *HTTPChallengeProvider, s conversion.Scope) error {
-	out.Ingress = in.Ingress
+	if err := Convert_voyager_LocalTypedReference_To_v1beta1_LocalTypedReference(&in.Ingress, &out.Ingress, s); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -722,7 +731,7 @@ func Convert_voyager_IngressStatus_To_v1beta1_IngressStatus(in *voyager.IngressS
 func autoConvert_v1beta1_IngressTLS_To_voyager_IngressTLS(in *IngressTLS, out *voyager.IngressTLS, s conversion.Scope) error {
 	out.Hosts = *(*[]string)(unsafe.Pointer(&in.Hosts))
 	out.SecretName = in.SecretName
-	out.SecretRef = (*api_v1.ObjectReference)(unsafe.Pointer(in.SecretRef))
+	out.TLSRef = (*voyager.LocalTypedReference)(unsafe.Pointer(in.TLSRef))
 	return nil
 }
 
@@ -734,7 +743,7 @@ func Convert_v1beta1_IngressTLS_To_voyager_IngressTLS(in *IngressTLS, out *voyag
 func autoConvert_voyager_IngressTLS_To_v1beta1_IngressTLS(in *voyager.IngressTLS, out *IngressTLS, s conversion.Scope) error {
 	out.Hosts = *(*[]string)(unsafe.Pointer(&in.Hosts))
 	out.SecretName = in.SecretName
-	out.SecretRef = (*api_v1.ObjectReference)(unsafe.Pointer(in.SecretRef))
+	out.TLSRef = (*LocalTypedReference)(unsafe.Pointer(in.TLSRef))
 	return nil
 }
 
@@ -743,24 +752,32 @@ func Convert_voyager_IngressTLS_To_v1beta1_IngressTLS(in *voyager.IngressTLS, ou
 	return autoConvert_voyager_IngressTLS_To_v1beta1_IngressTLS(in, out, s)
 }
 
-func autoConvert_v1beta1_SecretStore_To_voyager_SecretStore(in *SecretStore, out *voyager.SecretStore, s conversion.Scope) error {
+func autoConvert_v1beta1_LocalTypedReference_To_voyager_LocalTypedReference(in *LocalTypedReference, out *voyager.LocalTypedReference, s conversion.Scope) error {
+	out.Kind = in.Kind
 	out.Name = in.Name
+	out.UID = types.UID(in.UID)
+	out.APIVersion = in.APIVersion
+	out.ResourceVersion = in.ResourceVersion
 	return nil
 }
 
-// Convert_v1beta1_SecretStore_To_voyager_SecretStore is an autogenerated conversion function.
-func Convert_v1beta1_SecretStore_To_voyager_SecretStore(in *SecretStore, out *voyager.SecretStore, s conversion.Scope) error {
-	return autoConvert_v1beta1_SecretStore_To_voyager_SecretStore(in, out, s)
+// Convert_v1beta1_LocalTypedReference_To_voyager_LocalTypedReference is an autogenerated conversion function.
+func Convert_v1beta1_LocalTypedReference_To_voyager_LocalTypedReference(in *LocalTypedReference, out *voyager.LocalTypedReference, s conversion.Scope) error {
+	return autoConvert_v1beta1_LocalTypedReference_To_voyager_LocalTypedReference(in, out, s)
 }
 
-func autoConvert_voyager_SecretStore_To_v1beta1_SecretStore(in *voyager.SecretStore, out *SecretStore, s conversion.Scope) error {
+func autoConvert_voyager_LocalTypedReference_To_v1beta1_LocalTypedReference(in *voyager.LocalTypedReference, out *LocalTypedReference, s conversion.Scope) error {
+	out.Kind = in.Kind
 	out.Name = in.Name
+	out.UID = types.UID(in.UID)
+	out.APIVersion = in.APIVersion
+	out.ResourceVersion = in.ResourceVersion
 	return nil
 }
 
-// Convert_voyager_SecretStore_To_v1beta1_SecretStore is an autogenerated conversion function.
-func Convert_voyager_SecretStore_To_v1beta1_SecretStore(in *voyager.SecretStore, out *SecretStore, s conversion.Scope) error {
-	return autoConvert_voyager_SecretStore_To_v1beta1_SecretStore(in, out, s)
+// Convert_voyager_LocalTypedReference_To_v1beta1_LocalTypedReference is an autogenerated conversion function.
+func Convert_voyager_LocalTypedReference_To_v1beta1_LocalTypedReference(in *voyager.LocalTypedReference, out *LocalTypedReference, s conversion.Scope) error {
+	return autoConvert_voyager_LocalTypedReference_To_v1beta1_LocalTypedReference(in, out, s)
 }
 
 func autoConvert_v1beta1_TCPIngressRuleValue_To_voyager_TCPIngressRuleValue(in *TCPIngressRuleValue, out *voyager.TCPIngressRuleValue, s conversion.Scope) error {

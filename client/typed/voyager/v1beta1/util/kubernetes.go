@@ -1,4 +1,4 @@
-package v1beta1
+package util
 
 import (
 	"errors"
@@ -6,12 +6,12 @@ import (
 	"reflect"
 
 	"github.com/appscode/kutil"
-	voyager "github.com/appscode/voyager/apis/voyager/v1beta1"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 func GetGroupVersionKind(v interface{}) schema.GroupVersionKind {
-	return voyager.SchemeGroupVersion.WithKind(kutil.GetKind(v))
+	return api.SchemeGroupVersion.WithKind(kutil.GetKind(v))
 }
 
 func AssignTypeKind(v interface{}) error {
@@ -20,13 +20,13 @@ func AssignTypeKind(v interface{}) error {
 	}
 
 	switch u := v.(type) {
-	case *voyager.Ingress:
-		u.APIVersion = voyager.SchemeGroupVersion.String()
-		u.Kind = kutil.GetKind(v)
+	case *api.Ingress:
+		u.APIVersion = api.SchemeGroupVersion.String()
+		u.Kind = api.ResourceKindIngress
 		return nil
-	case *voyager.Certificate:
-		u.APIVersion = voyager.SchemeGroupVersion.String()
-		u.Kind = kutil.GetKind(v)
+	case *api.Certificate:
+		u.APIVersion = api.SchemeGroupVersion.String()
+		u.Kind = api.ResourceKindCertificate
 		return nil
 	}
 	return errors.New("unknown api object type")

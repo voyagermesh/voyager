@@ -1,6 +1,7 @@
 package certificate
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -12,9 +13,9 @@ import (
 	"github.com/appscode/go/errors"
 	"github.com/appscode/go/log"
 	v1u "github.com/appscode/kutil/core/v1"
-	vu "github.com/appscode/kutil/voyager/v1beta1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	vu "github.com/appscode/voyager/client/typed/voyager/v1beta1/util"
 	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
@@ -42,10 +43,12 @@ type Controller struct {
 	acmeUser          *ACMEUser
 	acmeClient        *acme.Client
 	store             *CertStore
+	logger            *log.Logger
 }
 
-func NewController(kubeClient clientset.Interface, extClient acs.VoyagerV1beta1Interface, opt config.Options, tpr *api.Certificate) (*Controller, error) {
+func NewController(ctx context.Context, kubeClient clientset.Interface, extClient acs.VoyagerV1beta1Interface, opt config.Options, tpr *api.Certificate) (*Controller, error) {
 	ctrl := &Controller{
+		logger:        log.New(ctx),
 		KubeClient:    kubeClient,
 		VoyagerClient: extClient,
 		Opt:           opt,
@@ -80,13 +83,13 @@ func NewController(kubeClient clientset.Interface, extClient acs.VoyagerV1beta1I
 		switch ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.APIVersion {
 		case api.SchemeGroupVersion.String():
 			var err error
-			_, err = ctrl.VoyagerClient.Ingresses(ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
+			_, err = ctrl.VoyagerClient.Ingresses(ctrl.crd.Namespace).
 				Get(ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 			if err != nil {
 				return nil, err
 			}
 		case "extensions/v1beta1":
-			ing, err := ctrl.KubeClient.ExtensionsV1beta1().Ingresses(ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
+			ing, err := ctrl.KubeClient.ExtensionsV1beta1().Ingresses(ctrl.crd.Namespace).
 				Get(ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 			if err != nil {
 				return nil, err
@@ -161,7 +164,7 @@ func (c *Controller) getACMEClient() error {
 	registered := c.acmeUser.Registration != nil && c.acmeUser.Key != nil
 
 	if c.acmeUser.Key == nil {
-		log.Infoln("No ACME user found, registering a new ACME user")
+		c.logger.Infoln("No ACME user found, registering a new ACME user")
 		userKey, err := rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
 			return fmt.Errorf("failed to generate key for Acme User")
@@ -271,7 +274,7 @@ func (c *Controller) processError(err error) error {
 func (c *Controller) updateIngress() error {
 	switch c.crd.Spec.ChallengeProvider.HTTP.Ingress.APIVersion {
 	case api.SchemeGroupVersion.String():
-		i, err := c.VoyagerClient.Ingresses(c.crd.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
+		i, err := c.VoyagerClient.Ingresses(c.crd.Namespace).
 			Get(c.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -312,7 +315,7 @@ func (c *Controller) updateIngress() error {
 		}
 		time.Sleep(time.Second * 5)
 	case "extensions/v1beta1":
-		i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.crd.Spec.ChallengeProvider.HTTP.Ingress.Namespace).
+		i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.crd.Namespace).
 			Get(c.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.FromErr(err).Err()

@@ -1,6 +1,9 @@
 package operator
 
 import (
+	"context"
+
+	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -28,8 +31,9 @@ func (op *Operator) initDeploymentWatcher() cache.Controller {
 		cache.ResourceEventHandlerFuncs{
 			DeleteFunc: func(obj interface{}) {
 				if deployment, ok := obj.(*extensions.Deployment); ok {
-					log.Infof("Deployment %s@%s deleted", deployment.Name, deployment.Namespace)
-					op.restoreDeploymentIfRequired(deployment)
+					ctx := etx.Background()
+					log.New(ctx).Infof("Deployment %s@%s deleted", deployment.Name, deployment.Namespace)
+					op.restoreDeploymentIfRequired(ctx, deployment)
 				}
 			},
 		},
@@ -37,7 +41,7 @@ func (op *Operator) initDeploymentWatcher() cache.Controller {
 	return informer
 }
 
-func (op *Operator) restoreDeploymentIfRequired(deployment *extensions.Deployment) error {
+func (op *Operator) restoreDeploymentIfRequired(ctx context.Context, deployment *extensions.Deployment) error {
 	if deployment.Annotations == nil {
 		return nil
 	}
@@ -49,7 +53,7 @@ func (op *Operator) restoreDeploymentIfRequired(deployment *extensions.Deploymen
 	}
 
 	// Ingress Still exists, restore resource
-	log.Infof("Deployment %s@%s requires restoration", deployment.Name, deployment.Namespace)
+	log.New(ctx).Infof("Deployment %s@%s requires restoration", deployment.Name, deployment.Namespace)
 	deployment.Spec.Paused = false
 	if types.Int32(deployment.Spec.Replicas) < 1 {
 		deployment.Spec.Replicas = types.Int32P(engress.Replicas())

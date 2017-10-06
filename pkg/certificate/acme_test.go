@@ -3,7 +3,8 @@ package certificate
 import (
 	"testing"
 
-	"github.com/appscode/voyager/apis/voyager/v1beta1"
+	etx "github.com/appscode/go/context"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	fakevoyager "github.com/appscode/voyager/client/fake"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/stretchr/testify/assert"
@@ -14,6 +15,7 @@ import (
 
 func TestClient(t *testing.T) {
 	controller, err := NewController(
+		etx.Background(),
 		fake.NewSimpleClientset(
 			&apiv1.Secret{
 				ObjectMeta: v1.ObjectMeta{
@@ -21,13 +23,13 @@ func TestClient(t *testing.T) {
 					Namespace: "bar",
 				},
 				Data: map[string][]byte{
-					v1beta1.ACMEUserEmail: []byte("test@test.com"),
-					v1beta1.ACMEServerURL: []byte(LetsEncryptStagingURL),
+					api.ACMEUserEmail: []byte("test@test.com"),
+					api.ACMEServerURL: []byte(LetsEncryptStagingURL),
 				},
 			},
 		),
 		fakevoyager.NewSimpleClientset(
-			&v1beta1.Ingress{
+			&api.Ingress{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
@@ -35,26 +37,25 @@ func TestClient(t *testing.T) {
 			},
 		).VoyagerV1beta1(),
 		config.Options{},
-		&v1beta1.Certificate{
+		&api.Certificate{
 			ObjectMeta: v1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "bar",
 			},
-			Spec: v1beta1.CertificateSpec{
+			Spec: api.CertificateSpec{
 				Domains: []string{"test.com"},
-				ChallengeProvider: v1beta1.ChallengeProvider{
-					HTTP: &v1beta1.HTTPChallengeProvider{
-						Ingress: apiv1.ObjectReference{
+				ChallengeProvider: api.ChallengeProvider{
+					HTTP: &api.HTTPChallengeProvider{
+						Ingress: api.LocalTypedReference{
 							APIVersion: "voyager.appscode.com/v1beta1",
 							Kind:       "Ingress",
 							Name:       "foo",
-							Namespace:  "bar",
 						},
 					},
 				},
 				ACMEUserSecretName: "foo",
-				Storage: v1beta1.CertificateStorage{
-					Secret: &v1beta1.SecretStore{},
+				Storage: api.CertificateStorage{
+					Secret: &api.SecretStore{},
 				},
 			},
 		},

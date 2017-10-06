@@ -1,6 +1,9 @@
 package operator
 
 import (
+	"context"
+
+	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,8 +30,9 @@ func (op *Operator) initDaemonSetWatcher() cache.Controller {
 		cache.ResourceEventHandlerFuncs{
 			DeleteFunc: func(obj interface{}) {
 				if daemon, ok := obj.(*extensions.DaemonSet); ok {
-					log.Infof("DaemonSet %s@%s deleted", daemon.Name, daemon.Namespace)
-					op.restoreDaemonSetIfRequired(daemon)
+					ctx := etx.Background()
+					log.New(ctx).Infof("DaemonSet %s@%s deleted", daemon.Name, daemon.Namespace)
+					op.restoreDaemonSetIfRequired(ctx, daemon)
 				}
 			},
 		},
@@ -36,7 +40,7 @@ func (op *Operator) initDaemonSetWatcher() cache.Controller {
 	return informer
 }
 
-func (op *Operator) restoreDaemonSetIfRequired(daemon *extensions.DaemonSet) error {
+func (op *Operator) restoreDaemonSetIfRequired(ctx context.Context, daemon *extensions.DaemonSet) error {
 	if daemon.Annotations == nil {
 		return nil
 	}
@@ -47,7 +51,7 @@ func (op *Operator) restoreDaemonSetIfRequired(daemon *extensions.DaemonSet) err
 		return err
 	}
 	// Ingress Still exists, restore resource
-	log.Infof("DaemonSet %s@%s requires restoration", daemon.Name, daemon.Namespace)
+	log.New(ctx).Infof("DaemonSet %s@%s requires restoration", daemon.Name, daemon.Namespace)
 	daemon.SelfLink = ""
 	daemon.ResourceVersion = ""
 	// Old resource and annotations are missing so we need to add the annotations

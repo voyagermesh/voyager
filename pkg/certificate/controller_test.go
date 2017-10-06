@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acf "github.com/appscode/voyager/client/fake"
@@ -47,7 +48,7 @@ func TestEnsureClient(t *testing.T) {
 			},
 		}
 
-		fakeController, err := NewController(fake.NewSimpleClientset(
+		fakeController, err := NewController(etx.Background(), fake.NewSimpleClientset(
 			&apiv1.Secret{
 				ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
 			},
@@ -107,7 +108,7 @@ func TestCreate(t *testing.T) {
 			},
 		}
 
-		fakeController, err := NewController(fake.NewSimpleClientset(fakeUser, fakeSecret), acf.NewSimpleClientset().VoyagerV1beta1(), config.Options{ResyncPeriod: time.Second * 5}, cert)
+		fakeController, err := NewController(etx.Background(), fake.NewSimpleClientset(fakeUser, fakeSecret), acf.NewSimpleClientset().VoyagerV1beta1(), config.Options{ResyncPeriod: time.Second * 5}, cert)
 		if assert.Nil(t, err) {
 			err = fakeController.Process()
 			assert.Nil(t, err)

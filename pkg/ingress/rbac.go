@@ -1,6 +1,9 @@
 package ingress
 
 import (
+	"encoding/json"
+	"fmt"
+
 	core_util "github.com/appscode/kutil/core/v1"
 	rbac_util "github.com/appscode/kutil/rbac/v1beta1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -74,6 +77,12 @@ func (c *controller) ensureRoles() error {
 				Verbs:     []string{"get", "list", "watch"},
 			})
 		}
+
+		rb, _ := json.MarshalIndent(in, "", "  ")
+		fmt.Println()
+		fmt.Println(string(rb))
+		fmt.Println()
+
 		return in
 	})
 	return err
@@ -111,18 +120,21 @@ func (c *controller) ensureRoleBinding() error {
 }
 
 func (c *controller) ensureRoleBindingDeleted() error {
+	c.logger.Infof("Deleting RoleBinding %s/%s", c.Ingress.Namespace, c.Ingress.OffshootName())
 	return c.KubeClient.RbacV1beta1().
 		RoleBindings(c.Ingress.Namespace).
 		Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
 }
 
 func (c *controller) ensureRolesDeleted() error {
+	c.logger.Infof("Deleting Role %s/%s", c.Ingress.Namespace, c.Ingress.OffshootName())
 	return c.KubeClient.RbacV1beta1().
 		Roles(c.Ingress.Namespace).
 		Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
 }
 
 func (c *controller) ensureServiceAccountDeleted() error {
+	c.logger.Infof("Deleting ServiceAccount %s/%s", c.Ingress.Namespace, c.Ingress.OffshootName())
 	return c.KubeClient.CoreV1().
 		ServiceAccounts(c.Ingress.Namespace).
 		Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})

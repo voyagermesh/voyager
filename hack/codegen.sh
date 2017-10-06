@@ -13,6 +13,11 @@ pushd $REPO_ROOT
 docker run --rm -ti -u $(id -u):$(id -g) \
     -v "$REPO_ROOT":"$DOCKER_REPO_ROOT" \
     -w "$DOCKER_REPO_ROOT/apis/voyager/v1beta1" \
+    appscode/gengo:canary codecgen -o types.generated.go types.go
+
+docker run --rm -ti -u $(id -u):$(id -g) \
+    -v "$REPO_ROOT":"$DOCKER_REPO_ROOT" \
+    -w "$DOCKER_REPO_ROOT/apis/voyager/v1beta1" \
     appscode/gengo:canary codecgen -o certificate.generated.go certificate.go
 
 docker run --rm -ti -u $(id -u):$(id -g) \

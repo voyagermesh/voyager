@@ -10,7 +10,6 @@ import (
 
 	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/go/errors"
-	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/haproxy"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
@@ -23,7 +22,7 @@ import (
 )
 
 func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, name string, port intstr.IntOrString, hostNames []string) (*haproxy.Backend, error) {
-	log.Infoln("getting endpoints for ", c.Ingress.Namespace, name, "port", port)
+	c.logger.Infoln("getting endpoints for ", c.Ingress.Namespace, name, "port", port)
 
 	// the following lines giving support to
 	// serviceName.namespaceName or serviceName in the same namespace to the
@@ -34,15 +33,15 @@ func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, 
 		name = name[:strings.Index(name, ".")]
 	}
 
-	log.Infoln("looking for services in namespace", namespace, "with name", name)
+	c.logger.Infoln("looking for services in namespace", namespace, "with name", name)
 	service, err := c.ServiceLister.Services(namespace).Get(name)
 	if err != nil {
-		log.Warningln(err)
+		c.logger.Warningln(err)
 		return nil, err
 	}
 
 	if service.Spec.Type == apiv1.ServiceTypeExternalName {
-		log.Infof("Found ServiceType ExternalName for service %s, Checking DNS resolver options", service.Name)
+		c.logger.Infof("Found ServiceType ExternalName for service %s, Checking DNS resolver options", service.Name)
 		// https://kubernetes.io/docs/concepts/services-networking/service/#services-without-selectors
 		ep := haproxy.Endpoint{
 			Name:         "external",
@@ -110,12 +109,12 @@ func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePo
 				if len(ss.Ports) == 1 {
 					targetPort = strconv.Itoa(int(epPort.Port))
 				} else {
-					log.Debugf("Target port %s empty for service %s. skipping.", servicePort.String(), s.Name)
+					c.logger.Debugf("Target port %s empty for service %s. skipping.", servicePort.String(), s.Name)
 					continue
 				}
 			}
 
-			log.Infof("Found target port %s for service %s", targetPort, s.Name)
+			c.logger.Infof("Found target port %s for service %s", targetPort, s.Name)
 			for _, epAddress := range ss.Addresses {
 				if isForwardable(hostNames, epAddress.Hostname) {
 					ep := &haproxy.Endpoint{
@@ -127,7 +126,7 @@ func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePo
 						// Use PodList via service selector
 						pod, ok := pods[epAddress.TargetRef.Name]
 						if !ok {
-							log.Errorln("Error getting endpoint pod", err)
+							c.logger.Errorln("Error getting endpoint pod", err)
 						} else {
 							if pod.Annotations != nil {
 								if val, ok := pod.Annotations[api.BackendWeight]; ok {
@@ -426,13 +425,13 @@ func (c *controller) generateConfig() error {
 	}
 
 	if jb, err := json.MarshalIndent(&td, "", "  "); err != nil {
-		log.Debugf("Rendering haproxy.cfg for Ingress %s@%s using data:", c.Ingress.Name, c.Ingress.Namespace, string(jb))
+		c.logger.Debugf("Rendering haproxy.cfg for Ingress %s@%s using data:", c.Ingress.Name, c.Ingress.Namespace, string(jb))
 	}
 	if cfg, err := haproxy.RenderConfig(td); err != nil {
 		return err
 	} else {
 		c.HAProxyConfig = cfg
-		log.Debugf("Generated haproxy.cfg for Ingress %s@%s:", c.Ingress.Name, c.Ingress.Namespace, cfg)
+		c.logger.Debugf("Generated haproxy.cfg for Ingress %s/%s", c.Ingress.Namespace, c.Ingress.Name)
 	}
 	return nil
 }

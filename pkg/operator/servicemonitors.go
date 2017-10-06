@@ -1,6 +1,9 @@
 package operator
 
 import (
+	"context"
+
+	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -32,9 +35,10 @@ func (op *Operator) initServiceMonitorWatcher() cache.Controller {
 		op.Opt.ResyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			DeleteFunc: func(obj interface{}) {
+				ctx := etx.Background()
 				if svcmon, ok := obj.(*prom.ServiceMonitor); ok {
-					log.Infof("ServiceMonitor %s@%s deleted", svcmon.Name, svcmon.Namespace)
-					op.restoreServiceMonitorIfRequired(svcmon)
+					log.New(ctx).Infof("ServiceMonitor %s@%s deleted", svcmon.Name, svcmon.Namespace)
+					op.restoreServiceMonitorIfRequired(ctx, svcmon)
 				}
 			},
 		},
@@ -42,7 +46,7 @@ func (op *Operator) initServiceMonitorWatcher() cache.Controller {
 	return informer
 }
 
-func (op *Operator) restoreServiceMonitorIfRequired(svcmon *prom.ServiceMonitor) error {
+func (op *Operator) restoreServiceMonitorIfRequired(ctx context.Context, svcmon *prom.ServiceMonitor) error {
 	if svcmon.Annotations == nil {
 		return nil
 	}
@@ -61,7 +65,7 @@ func (op *Operator) restoreServiceMonitorIfRequired(svcmon *prom.ServiceMonitor)
 	}
 
 	// Ingress Still exists, restore resource
-	log.Infof("ServiceMonitor %s@%s requires restoration", svcmon.Name, svcmon.Namespace)
+	log.New(ctx).Infof("ServiceMonitor %s@%s requires restoration", svcmon.Name, svcmon.Namespace)
 	svcmon.SelfLink = ""
 	svcmon.ResourceVersion = ""
 	// Old resource and annotations are missing so we need to add the annotations

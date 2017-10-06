@@ -53,7 +53,7 @@ type CertificateSpec struct {
 
 	// This is the ingress Reference that will be used if provider is http
 	// Deprecated
-	HTTPProviderIngressReference apiv1.ObjectReference `json:"httpProviderIngressReference,omitempty"`
+	HTTPProviderIngressReference LocalTypedReference `json:"httpProviderIngressReference,omitempty"`
 
 	// ProviderCredentialSecretName is used to create the acme client, that will do
 	// needed processing in DNS.
@@ -71,7 +71,7 @@ type ChallengeProvider struct {
 }
 
 type HTTPChallengeProvider struct {
-	Ingress apiv1.ObjectReference `json:"ingress,omitempty"`
+	Ingress LocalTypedReference `json:"ingress,omitempty"`
 }
 
 type DNSChallengeProvider struct {
@@ -81,13 +81,8 @@ type DNSChallengeProvider struct {
 }
 
 type CertificateStorage struct {
-	Secret *SecretStore `json:"secret,omitempty"`
-	Vault  *VaultStore  `json:"vault,omitempty"`
-}
-
-type SecretStore struct {
-	// Secret name to store the certificate, default cert-<certificate-name>
-	Name string `json:"name,omitempty"`
+	Secret *apiv1.LocalObjectReference `json:"secret,omitempty"`
+	Vault  *VaultStore                 `json:"vault,omitempty"`
 }
 
 type VaultStore struct {

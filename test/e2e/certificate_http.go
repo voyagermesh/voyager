@@ -12,6 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/pkg/api/v1"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 var _ = Describe("CertificateWithHTTPProvider", func() {
@@ -53,12 +54,18 @@ var _ = Describe("CertificateWithHTTPProvider", func() {
 			Domains: []string{"http.appscode.dev", "test.appscode.dev"},
 			ChallengeProvider: api.ChallengeProvider{
 				HTTP: &api.HTTPChallengeProvider{
-					Ingress: *ing.ObjectReference(),
+					Ingress: api.LocalTypedReference{
+						APIVersion:      ing.APISchema(),
+						Kind:            api.ResourceKindIngress,
+						Name:            ing.Name,
+						UID:             ing.UID,
+						ResourceVersion: ing.ResourceVersion,
+					},
 				},
 			},
 			ACMEUserSecretName: userSecret.Name,
 			Storage: api.CertificateStorage{
-				Secret: &api.SecretStore{},
+				Secret: &apiv1.LocalObjectReference{},
 			},
 		}
 	})

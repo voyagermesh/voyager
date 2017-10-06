@@ -2,6 +2,7 @@ package tlsmounter
 
 import (
 	"fmt"
+	"strings"
 
 	ioutilz "github.com/appscode/go/ioutil"
 	"github.com/appscode/go/log"
@@ -197,8 +198,8 @@ func (c *Controller) getIngress() (*api.Ingress, error) {
 
 func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]ioutilz.FileProjection) error {
 	for _, tls := range ing.Spec.TLS {
-		if tls.SecretRef.Kind == api.ResourceKindCertificate {
-			r, err := c.getCertificate(tls.SecretRef.Name)
+		if strings.EqualFold(tls.TLSRef.Kind, api.ResourceKindCertificate) {
+			r, err := c.getCertificate(tls.TLSRef.Name)
 			if err != nil {
 				return err
 			}
@@ -207,7 +208,7 @@ func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]iou
 				return err
 			}
 		} else {
-			r, err := c.getSecret(tls.SecretRef.Name)
+			r, err := c.getSecret(tls.TLSRef.Name)
 			if err != nil {
 				return err
 			}

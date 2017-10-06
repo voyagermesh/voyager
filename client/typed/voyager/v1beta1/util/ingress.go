@@ -1,12 +1,12 @@
-package v1beta1
+package util
 
 import (
 	"encoding/json"
 	"fmt"
 
 	"github.com/appscode/kutil"
-	aci "github.com/appscode/voyager/apis/voyager/v1beta1"
-	tcs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/golang/glog"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,18 +15,18 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
-func EnsureIngress(c tcs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(alert *aci.Ingress) *aci.Ingress) (*aci.Ingress, error) {
+func EnsureIngress(c acs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(alert *api.Ingress) *api.Ingress) (*api.Ingress, error) {
 	return CreateOrPatchIngress(c, meta, transform)
 }
 
-func CreateOrPatchIngress(c tcs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(alert *aci.Ingress) *aci.Ingress) (*aci.Ingress, error) {
+func CreateOrPatchIngress(c acs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(alert *api.Ingress) *api.Ingress) (*api.Ingress, error) {
 	cur, err := c.Ingresses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Ingress %s/%s.", meta.Namespace, meta.Name)
-		return c.Ingresses(meta.Namespace).Create(transform(&aci.Ingress{
+		return c.Ingresses(meta.Namespace).Create(transform(&api.Ingress{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Ingress",
-				APIVersion: aci.SchemeGroupVersion.String(),
+				APIVersion: api.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))
@@ -36,7 +36,7 @@ func CreateOrPatchIngress(c tcs.VoyagerV1beta1Interface, meta metav1.ObjectMeta,
 	return PatchIngress(c, cur, transform)
 }
 
-func PatchIngress(c tcs.VoyagerV1beta1Interface, cur *aci.Ingress, transform func(*aci.Ingress) *aci.Ingress) (*aci.Ingress, error) {
+func PatchIngress(c acs.VoyagerV1beta1Interface, cur *api.Ingress, transform func(*api.Ingress) *api.Ingress) (*api.Ingress, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, err
@@ -59,7 +59,7 @@ func PatchIngress(c tcs.VoyagerV1beta1Interface, cur *aci.Ingress, transform fun
 	return result, err
 }
 
-func TryPatchIngress(c tcs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(*aci.Ingress) *aci.Ingress) (result *aci.Ingress, err error) {
+func TryPatchIngress(c acs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(*api.Ingress) *api.Ingress) (result *api.Ingress, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -80,7 +80,7 @@ func TryPatchIngress(c tcs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, tran
 	return
 }
 
-func TryUpdateIngress(c tcs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(*aci.Ingress) *aci.Ingress) (result *aci.Ingress, err error) {
+func TryUpdateIngress(c acs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(*api.Ingress) *api.Ingress) (result *api.Ingress, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++

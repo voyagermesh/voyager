@@ -1,6 +1,7 @@
 package ingress
 
 import (
+	"context"
 	"reflect"
 	"strconv"
 	"time"
@@ -32,6 +33,7 @@ type loadBalancerController struct {
 var _ Controller = &loadBalancerController{}
 
 func NewLoadBalancerController(
+	ctx context.Context,
 	kubeClient clientset.Interface,
 	crdClient apiextensionsclient.Interface,
 	extClient acs.VoyagerV1beta1Interface,
@@ -42,6 +44,7 @@ func NewLoadBalancerController(
 	ingress *api.Ingress) Controller {
 	return &loadBalancerController{
 		controller: &controller{
+			logger:          log.New(ctx),
 			KubeClient:      kubeClient,
 			CRDClient:       crdClient,
 			VoyagerClient:   extClient,
@@ -355,24 +358,24 @@ func (c *loadBalancerController) Delete() {
 	c.deleteResidualPods()
 	err := c.deletePods()
 	if err != nil {
-		log.Errorln(err)
+		c.logger.Errorln(err)
 	}
 	err = c.deleteConfigMap()
 	if err != nil {
-		log.Errorln(err)
+		c.logger.Errorln(err)
 	}
 	if c.Opt.EnableRBAC {
 		if err := c.ensureRBACDeleted(); err != nil {
-			log.Errorln(err)
+			c.logger.Errorln(err)
 		}
 	}
 	err = c.ensureServiceDeleted()
 	if err != nil {
-		log.Errorln(err)
+		c.logger.Errorln(err)
 	}
 	monSpec, err := c.Ingress.MonitorSpec()
 	if err != nil {
-		log.Errorln(err)
+		c.logger.Errorln(err)
 	}
 	if monSpec != nil && monSpec.Prometheus != nil {
 		ctrl := monitor.NewPrometheusController(c.KubeClient, c.CRDClient, c.PromClient)
@@ -444,13 +447,13 @@ func (c *loadBalancerController) ensureService(old *api.Ingress) (*apiv1.Service
 	desired := c.newService()
 	current, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		log.Infof("Creating Service %s/%s", desired.Namespace, desired.Name)
+		c.logger.Infof("Creating Service %s/%s", desired.Namespace, desired.Name)
 		return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Create(desired)
 	} else if err != nil {
 		return nil, err
 	}
 	if svc, needsUpdate := c.serviceRequiresUpdate(current, desired, old); needsUpdate {
-		log.Infof("Updating Service %s/%s", desired.Namespace, desired.Name)
+		c.logger.Infof("Updating Service %s/%s", desired.Namespace, desired.Name)
 		return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Update(svc)
 	}
 	return current, nil
@@ -558,7 +561,7 @@ func (c *loadBalancerController) ensurePods(old *api.Ingress) (*apps.Deployment,
 	desired := c.newPods()
 	current, err := c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		log.Infof("Creating Deployment %s/%s", desired.Namespace, desired.Name)
+		c.logger.Infof("Creating Deployment %s/%s", desired.Namespace, desired.Name)
 		return c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Create(desired)
 	} else if err != nil {
 		return nil, err
@@ -631,7 +634,7 @@ func (c *loadBalancerController) ensurePods(old *api.Ingress) (*apps.Deployment,
 		current.Spec.Template.Spec.ServiceAccountName = desired.Spec.Template.Spec.ServiceAccountName
 	}
 	if needsUpdate {
-		log.Infof("Updating Deployment %s/%s", desired.Namespace, desired.Name)
+		c.logger.Infof("Updating Deployment %s/%s", desired.Namespace, desired.Name)
 		return c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Update(current)
 	}
 	return current, nil
@@ -652,18 +655,18 @@ func (c *loadBalancerController) deletePods() error {
 func (c *loadBalancerController) deleteResidualPods() error {
 	rc, err := c.KubeClient.CoreV1().ReplicationControllers(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
 	if err != nil {
-		log.Warningln(err)
+		c.logger.Warningln(err)
 		return err
 	}
 	// resize the controller to zero (effectively deleting all pods) before deleting it.
 	rc.Spec.Replicas = types.Int32P(0)
 	_, err = c.KubeClient.CoreV1().ReplicationControllers(c.Ingress.Namespace).Update(rc)
 	if err != nil {
-		log.Warningln(err)
+		c.logger.Warningln(err)
 		return err
 	}
 
-	log.Debugln("Waiting before delete the RC")
+	c.logger.Debugln("Waiting before delete the RC")
 	time.Sleep(time.Second * 5)
 	// if update failed still trying to delete the controller.
 	falseVar := false
@@ -671,7 +674,7 @@ func (c *loadBalancerController) deleteResidualPods() error {
 		OrphanDependents: &falseVar,
 	})
 	if err != nil {
-		log.Warningln(err)
+		c.logger.Warningln(err)
 		return err
 	}
 

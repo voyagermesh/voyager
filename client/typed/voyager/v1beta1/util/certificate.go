@@ -1,12 +1,12 @@
-package v1beta1
+package util
 
 import (
 	"encoding/json"
 	"fmt"
 
 	"github.com/appscode/kutil"
-	aci "github.com/appscode/voyager/apis/voyager/v1beta1"
-	tcs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/golang/glog"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,18 +15,18 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
-func EnsureCertificate(c tcs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(alert *aci.Certificate) *aci.Certificate) (*aci.Certificate, error) {
+func EnsureCertificate(c acs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(alert *api.Certificate) *api.Certificate) (*api.Certificate, error) {
 	return CreateOrPatchCertificate(c, meta, transform)
 }
 
-func CreateOrPatchCertificate(c tcs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(alert *aci.Certificate) *aci.Certificate) (*aci.Certificate, error) {
+func CreateOrPatchCertificate(c acs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(alert *api.Certificate) *api.Certificate) (*api.Certificate, error) {
 	cur, err := c.Certificates(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Certificate %s/%s.", meta.Namespace, meta.Name)
-		return c.Certificates(meta.Namespace).Create(transform(&aci.Certificate{
+		return c.Certificates(meta.Namespace).Create(transform(&api.Certificate{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Certificate",
-				APIVersion: aci.SchemeGroupVersion.String(),
+				APIVersion: api.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))
@@ -36,7 +36,7 @@ func CreateOrPatchCertificate(c tcs.VoyagerV1beta1Interface, meta metav1.ObjectM
 	return PatchCertificate(c, cur, transform)
 }
 
-func PatchCertificate(c tcs.VoyagerV1beta1Interface, cur *aci.Certificate, transform func(*aci.Certificate) *aci.Certificate) (*aci.Certificate, error) {
+func PatchCertificate(c acs.VoyagerV1beta1Interface, cur *api.Certificate, transform func(*api.Certificate) *api.Certificate) (*api.Certificate, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, err
@@ -59,7 +59,7 @@ func PatchCertificate(c tcs.VoyagerV1beta1Interface, cur *aci.Certificate, trans
 	return result, err
 }
 
-func TryPatchCertificate(c tcs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(*aci.Certificate) *aci.Certificate) (result *aci.Certificate, err error) {
+func TryPatchCertificate(c acs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(*api.Certificate) *api.Certificate) (result *api.Certificate, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -80,7 +80,7 @@ func TryPatchCertificate(c tcs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, 
 	return
 }
 
-func TryUpdateCertificate(c tcs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(*aci.Certificate) *aci.Certificate) (result *aci.Certificate, err error) {
+func TryUpdateCertificate(c acs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(*api.Certificate) *api.Certificate) (result *api.Certificate, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++

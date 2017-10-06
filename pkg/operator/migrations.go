@@ -46,7 +46,7 @@ func (op *Operator) MigrateCertificate(cert *api.Certificate) (bool, error) {
 	if cert.Spec.Storage.Secret == nil && cert.Spec.Storage.Vault == nil {
 		migrate = true
 		cert.Spec.Storage = api.CertificateStorage{
-			Secret: &api.SecretStore{},
+			Secret: &apiv1.LocalObjectReference{},
 		}
 	}
 
@@ -79,7 +79,7 @@ func (op *Operator) MigrateCertificate(cert *api.Certificate) (bool, error) {
 	cert.Spec.ProviderCredentialSecretName = ""
 	cert.Spec.Email = ""
 	cert.Spec.ACMEServerURL = ""
-	cert.Spec.HTTPProviderIngressReference = apiv1.ObjectReference{}
+	cert.Spec.HTTPProviderIngressReference = api.LocalTypedReference{}
 
 	cert.Status.CertificateObtained = false
 	cert.Status.Message = ""

@@ -1,9 +1,9 @@
 package operator
 
 import (
-	"errors"
 	"reflect"
 
+	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -28,14 +28,17 @@ func (op *Operator) initEndpointWatcher() cache.Controller {
 		op.Opt.ResyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			UpdateFunc: func(old, new interface{}) {
+				ctx := etx.Background()
+				logger := log.New(ctx)
+
 				oldEndpoints, ok := old.(*apiv1.Endpoints)
 				if !ok {
-					log.Errorln(errors.New("Invalid Endpoints object"))
+					logger.Errorln("invalid Endpoints object")
 					return
 				}
 				newEndpoints, ok := new.(*apiv1.Endpoints)
 				if !ok {
-					log.Errorln(errors.New("Invalid Endpoints object"))
+					logger.Errorln("invalid Endpoints object")
 					return
 				}
 
@@ -47,10 +50,10 @@ func (op *Operator) initEndpointWatcher() cache.Controller {
 				// this do not have a Service we do not want to update our ingress
 				svc, err := op.ServiceLister.Services(newEndpoints.Namespace).Get(newEndpoints.Name)
 				if err != nil {
-					log.Warningf("Skipping Endpoints %s@%s, as it has no matching service", newEndpoints.Name, newEndpoints.Namespace)
+					logger.Warningf("Skipping Endpoints %s@%s, as it has no matching service", newEndpoints.Name, newEndpoints.Namespace)
 					return
 				}
-				err = op.updateHAProxyConfig(svc)
+				err = op.updateHAProxyConfig(ctx, svc)
 				if err != nil {
 					log.Errorln(err)
 				}
