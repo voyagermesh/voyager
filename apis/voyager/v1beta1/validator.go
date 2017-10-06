@@ -56,7 +56,7 @@ func (r *Ingress) IsValid(cloudProvider string) error {
 			return fmt.Errorf("spec.tls[%d] specifies no secret name and secret ref", ti)
 		} else {
 			if tls.TLSRef.Kind != "" && sets.NewString("Secret", "Certificate").Has(tls.TLSRef.Kind) {
-				return fmt.Errorf("spec.tls[%d].secretRef.kind %s is unsupported", ti, tls.TLSRef.Kind)
+				return fmt.Errorf("spec.tls[%d].tlsRef.kind %s is unsupported", ti, tls.TLSRef.Kind)
 			}
 			if tls.TLSRef.Name == "" {
 				return fmt.Errorf("spec.tls[%d] specifies no secret name and secret ref name", ti)
