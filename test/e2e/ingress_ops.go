@@ -925,7 +925,7 @@ var _ = Describe("IngressOperations", func() {
 			ing.Annotations[api.DefaultsTimeOut] = `{"connect": "300s", "server": "300s"}`
 		})
 
-		FIt("Should Allow 2 From IP Connections", func() {
+		It("Should Allow 2 From IP Connections", func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
