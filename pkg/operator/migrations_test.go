@@ -7,6 +7,7 @@ import (
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/client-go/kubernetes/fake"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 func TestCertificateMigrations(t *testing.T) {
@@ -41,7 +42,7 @@ var output []api.Certificate = []api.Certificate{
 			},
 			Domains:            []string{"http.appscode.com"},
 			ACMEUserSecretName: "acme-",
-			Storage:            api.CertificateStorage{Secret: &api.SecretStore{}},
+			Storage:            api.CertificateStorage{Secret: &apiv1.LocalObjectReference{}},
 		},
 	},
 }

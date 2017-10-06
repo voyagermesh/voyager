@@ -109,8 +109,8 @@ type IngressTLS struct {
 	// Deprecated
 	SecretName string `json:"secretName,omitempty"`
 
-	// SecretRef to used tls termination.
-	SecretRef *LocalTypedReference `json:"secretRef,omitempty"`
+	// TLSRef to used tls termination.
+	TLSRef *LocalTypedReference `json:"tlsRef,omitempty"`
 }
 
 // IngressStatus describe the current state of the Ingress.

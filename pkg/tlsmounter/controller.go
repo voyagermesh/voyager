@@ -148,8 +148,8 @@ func (c *Controller) initIngressIndexer() (*api.Ingress, error) {
 
 func (c *Controller) initTLSCache(ing *api.Ingress) error {
 	for _, tls := range ing.Spec.TLS {
-		if tls.SecretRef.Kind == "Certificate" {
-			crd, err := c.VoyagerClient.Certificates(c.options.IngressRef.Namespace).Get(tls.SecretRef.Name, metav1.GetOptions{})
+		if tls.TLSRef.Kind == "Certificate" {
+			crd, err := c.VoyagerClient.Certificates(c.options.IngressRef.Namespace).Get(tls.TLSRef.Name, metav1.GetOptions{})
 			if err != nil {
 				return err
 			}
@@ -158,7 +158,7 @@ func (c *Controller) initTLSCache(ing *api.Ingress) error {
 				return err
 			}
 		} else {
-			sc, err := c.k8sClient.CoreV1().Secrets(c.options.IngressRef.Namespace).Get(tls.SecretRef.Name, metav1.GetOptions{})
+			sc, err := c.k8sClient.CoreV1().Secrets(c.options.IngressRef.Namespace).Get(tls.TLSRef.Name, metav1.GetOptions{})
 			if err != nil {
 				return err
 			}

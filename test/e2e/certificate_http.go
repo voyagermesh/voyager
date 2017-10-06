@@ -12,6 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/pkg/api/v1"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 var _ = Describe("CertificateWithHTTPProvider", func() {
@@ -64,7 +65,7 @@ var _ = Describe("CertificateWithHTTPProvider", func() {
 			},
 			ACMEUserSecretName: userSecret.Name,
 			Storage: api.CertificateStorage{
-				Secret: &api.SecretStore{},
+				Secret: &apiv1.LocalObjectReference{},
 			},
 		}
 	})

@@ -2,6 +2,7 @@ package voyager
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 const (
@@ -79,8 +80,8 @@ type DNSChallengeProvider struct {
 }
 
 type CertificateStorage struct {
-	Secret *SecretStore `json:"secret,omitempty"`
-	Vault  *VaultStore  `json:"vault,omitempty"`
+	Secret *apiv1.LocalObjectReference `json:"secret,omitempty"`
+	Vault  *VaultStore                 `json:"vault,omitempty"`
 }
 
 type SecretStore struct {
