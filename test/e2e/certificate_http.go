@@ -53,7 +53,13 @@ var _ = Describe("CertificateWithHTTPProvider", func() {
 			Domains: []string{"http.appscode.dev", "test.appscode.dev"},
 			ChallengeProvider: api.ChallengeProvider{
 				HTTP: &api.HTTPChallengeProvider{
-					Ingress: *ing.ObjectReference(),
+					Ingress: api.LocalTypedReference{
+						APIVersion:      ing.APISchema(),
+						Kind:            api.ResourceKindIngress,
+						Name:            ing.Name,
+						UID:             ing.UID,
+						ResourceVersion: ing.ResourceVersion,
+					},
 				},
 			},
 			ACMEUserSecretName: userSecret.Name,

@@ -79,7 +79,7 @@ func (op *Operator) MigrateCertificate(cert *api.Certificate) (bool, error) {
 	cert.Spec.ProviderCredentialSecretName = ""
 	cert.Spec.Email = ""
 	cert.Spec.ACMEServerURL = ""
-	cert.Spec.HTTPProviderIngressReference = apiv1.ObjectReference{}
+	cert.Spec.HTTPProviderIngressReference = api.LocalTypedReference{}
 
 	cert.Status.CertificateObtained = false
 	cert.Status.Message = ""

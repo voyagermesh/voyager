@@ -7,7 +7,6 @@ import (
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/client-go/kubernetes/fake"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 func TestCertificateMigrations(t *testing.T) {
@@ -28,7 +27,7 @@ var testInput []api.Certificate = []api.Certificate{
 	{
 		Spec: api.CertificateSpec{
 			Provider:                     "http",
-			HTTPProviderIngressReference: apiv1.ObjectReference{Name: "test", Namespace: "default", APIVersion: "voyager.appscode.com/v1beta1"},
+			HTTPProviderIngressReference: api.LocalTypedReference{Name: "test", APIVersion: "voyager.appscode.com/v1beta1"},
 			Domains: []string{"http.appscode.com"},
 		},
 	},
@@ -38,7 +37,7 @@ var output []api.Certificate = []api.Certificate{
 	{
 		Spec: api.CertificateSpec{
 			ChallengeProvider: api.ChallengeProvider{
-				HTTP: &api.HTTPChallengeProvider{Ingress: apiv1.ObjectReference{Name: "test", Namespace: "default", APIVersion: "voyager.appscode.com/v1beta1"}},
+				HTTP: &api.HTTPChallengeProvider{Ingress: api.LocalTypedReference{Name: "test", APIVersion: "voyager.appscode.com/v1beta1"}},
 			},
 			Domains:            []string{"http.appscode.com"},
 			ACMEUserSecretName: "acme-",
