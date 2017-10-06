@@ -220,6 +220,7 @@ func (c *controller) generateConfig() error {
 		WhitelistSourceRange:  c.Ingress.WhitelistSourceRange(),
 		MaxConnections:        c.Ingress.MaxConnections(),
 		ForceMatchServicePort: c.Ingress.ForceServicePort(),
+		ForceSSLRedirect:      c.Ingress.ForceSSLRedirect(),
 	}
 	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
 		si.AcceptProxy = c.Ingress.KeepSourceIP()

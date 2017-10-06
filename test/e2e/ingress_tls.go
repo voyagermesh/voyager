@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"net/http"
+	"strings"
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
@@ -492,6 +493,52 @@ var _ = Describe("IngressTLS", func() {
 						Expect(r.Path).Should(Equal("/testpath/ok")) &&
 						Expect(r.ResponseHeader.Get("Strict-Transport-Security")).
 							Should(Equal("max-age=15768000; preload; includeSubDomains"))
+				})
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+	Describe("Force SSL Redirect", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.ForceSSLRedirect] = "true"
+		})
+
+		It("Should redirect HTTP", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			httpsAddr := strings.Replace(eps[0], "http", "https", 1) + "/testpath/ok"
+
+			err = f.Ingress.DoHTTPTestRedirect(framework.NoRetry, ing, eps, "GET", "/testpath/ok",
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(301)) &&
+						Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
+						Expect(r.ResponseHeader.Get("Location")).Should(Equal(httpsAddr))
+				})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoHTTPTestRedirectWithHeader(framework.NoRetry, ing, eps, "GET", "/testpath/ok",
+				map[string]string{
+					"X-Forwarded-Proto": "http",
+				},
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(301)) &&
+						Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
+						Expect(r.ResponseHeader.Get("Location")).Should(Equal(httpsAddr))
+				})
+			Expect(err).NotTo(HaveOccurred())
+
+			// should not redirect, should response normally
+			err = f.Ingress.DoHTTPWithHeader(framework.NoRetry, ing, eps, "GET", "/testpath/ok",
+				map[string]string{
+					"X-Forwarded-Proto": "https",
+				},
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(200)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok"))
 				})
 			Expect(err).NotTo(HaveOccurred())
 		})

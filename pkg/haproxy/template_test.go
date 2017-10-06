@@ -57,7 +57,8 @@ func TestTemplate(t *testing.T) {
 				{Name: "first", IP: "10.244.2.2", Port: "2324"},
 			},
 		},
-		MaxConnections: 3000,
+		MaxConnections:   3000,
+		ForceSSLRedirect: true,
 	}
 	testParsedConfig := TemplateData{
 		SharedInfo: si,
@@ -588,6 +589,29 @@ func TestTemplateServiceAuth(t *testing.T) {
 					},
 				},
 			},
+		},
+	}
+	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
+	if assert.Nil(t, err) {
+		config, err := RenderConfig(testParsedConfig)
+		assert.Nil(t, err)
+		if testing.Verbose() {
+			fmt.Println(err, "\n", config)
+		}
+	}
+}
+
+func TestDefaultFrontend(t *testing.T) {
+	testParsedConfig := TemplateData{
+		SharedInfo: &SharedInfo{
+			DefaultBackend: &Backend{
+				Name: "default",
+				Endpoints: []*Endpoint{
+					{Name: "first", IP: "10.244.2.1", Port: "2323"},
+					{Name: "second", IP: "10.244.2.2", Port: "2324"},
+				},
+			},
+			ForceSSLRedirect: true,
 		},
 	}
 	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")

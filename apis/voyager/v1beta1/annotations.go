@@ -209,6 +209,7 @@ const (
 
 	// https://github.com/appscode/voyager/issues/552
 	ForceServicePort = EngressKey + "/force-service-port"
+	ForceSSLRedirect = IngressKey + "/force-ssl-redirect"
 )
 
 const (
@@ -319,6 +320,11 @@ func (r Ingress) WhitelistSourceRange() string {
 
 func (r Ingress) MaxConnections() int {
 	v, _ := GetInt(r.Annotations, MaxConnections)
+	return v
+}
+
+func (r Ingress) ForceSSLRedirect() bool {
+	v, _ := GetBool(r.Annotations, ForceSSLRedirect)
 	return v
 }
 
