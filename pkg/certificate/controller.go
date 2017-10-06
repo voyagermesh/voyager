@@ -307,7 +307,7 @@ func (c *Controller) updateIngress() error {
 				},
 			},
 		}
-		i.Spec.Rules = append(i.Spec.Rules, rule)
+		i.Spec.Rules = append([]api.IngressRule{rule}, i.Spec.Rules...)
 
 		_, err = c.VoyagerClient.Ingresses(c.crd.Namespace).Update(i)
 		if err != nil {
@@ -347,7 +347,7 @@ func (c *Controller) updateIngress() error {
 				},
 			},
 		}
-		i.Spec.Rules = append(i.Spec.Rules, rule)
+		i.Spec.Rules = append([]extensions.IngressRule{rule}, i.Spec.Rules...)
 
 		_, err = c.KubeClient.ExtensionsV1beta1().Ingresses(c.crd.Namespace).Update(i)
 		if err != nil {
