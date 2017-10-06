@@ -76,6 +76,14 @@ func NewHostPortController(
 			c.logger.Infoln("Initialized cloud provider: "+opt.CloudProvider, cloudInterface)
 			c.CloudManager = cloudInterface
 		}
+	} else if opt.CloudProvider == "acs" {
+		cloudInterface, err := cloudprovider.InitCloudProvider("azure", opt.CloudConfigFile)
+		if err != nil {
+			c.logger.Errorln("Failed to initialize cloud provider:"+opt.CloudProvider, err)
+		} else {
+			c.logger.Infoln("Initialized cloud provider: "+opt.CloudProvider, cloudInterface)
+			c.CloudManager = cloudInterface
+		}
 	} else if opt.CloudProvider == "minikube" {
 		c.CloudManager = &fakecloudprovider.FakeCloud{}
 	} else {
