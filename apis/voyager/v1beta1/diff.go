@@ -62,7 +62,7 @@ func (r Ingress) FindTLSSecret(h string) (*LocalTypedReference, bool) {
 	for _, tls := range r.Spec.TLS {
 		for _, host := range tls.Hosts {
 			if host == h {
-				return tls.TLSRef, true
+				return tls.Ref, true
 			}
 		}
 	}

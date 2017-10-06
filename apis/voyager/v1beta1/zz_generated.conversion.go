@@ -731,7 +731,7 @@ func Convert_voyager_IngressStatus_To_v1beta1_IngressStatus(in *voyager.IngressS
 func autoConvert_v1beta1_IngressTLS_To_voyager_IngressTLS(in *IngressTLS, out *voyager.IngressTLS, s conversion.Scope) error {
 	out.Hosts = *(*[]string)(unsafe.Pointer(&in.Hosts))
 	out.SecretName = in.SecretName
-	out.TLSRef = (*voyager.LocalTypedReference)(unsafe.Pointer(in.TLSRef))
+	out.Ref = (*voyager.LocalTypedReference)(unsafe.Pointer(in.Ref))
 	return nil
 }
 
@@ -743,7 +743,7 @@ func Convert_v1beta1_IngressTLS_To_voyager_IngressTLS(in *IngressTLS, out *voyag
 func autoConvert_voyager_IngressTLS_To_v1beta1_IngressTLS(in *voyager.IngressTLS, out *IngressTLS, s conversion.Scope) error {
 	out.Hosts = *(*[]string)(unsafe.Pointer(&in.Hosts))
 	out.SecretName = in.SecretName
-	out.TLSRef = (*LocalTypedReference)(unsafe.Pointer(in.TLSRef))
+	out.Ref = (*LocalTypedReference)(unsafe.Pointer(in.Ref))
 	return nil
 }
 

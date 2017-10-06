@@ -80,7 +80,7 @@ func (c *Controller) isSecretUsedInIngress(s *apiv1.Secret) bool {
 		return false
 	}
 	for _, tls := range r.Spec.TLS {
-		if s.Name == tls.TLSRef.Name && (strings.EqualFold(tls.TLSRef.Kind, "Secret") || tls.TLSRef.Kind == "") {
+		if s.Name == tls.Ref.Name && (strings.EqualFold(tls.Ref.Kind, "Secret") || tls.Ref.Kind == "") {
 			return true
 		}
 	}

@@ -197,9 +197,13 @@ func (c *Controller) getIngress() (*api.Ingress, error) {
 }
 
 func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]ioutilz.FileProjection) error {
+	err := ing.IsValid(c.options.CloudProvider)
+	if err != nil {
+		return err
+	}
 	for _, tls := range ing.Spec.TLS {
-		if strings.EqualFold(tls.TLSRef.Kind, api.ResourceKindCertificate) {
-			r, err := c.getCertificate(tls.TLSRef.Name)
+		if strings.EqualFold(tls.Ref.Kind, api.ResourceKindCertificate) {
+			r, err := c.getCertificate(tls.Ref.Name)
 			if err != nil {
 				return err
 			}
@@ -208,7 +212,7 @@ func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]iou
 				return err
 			}
 		} else {
-			r, err := c.getSecret(tls.TLSRef.Name)
+			r, err := c.getSecret(tls.Ref.Name)
 			if err != nil {
 				return err
 			}
