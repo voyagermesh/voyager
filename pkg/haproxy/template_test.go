@@ -64,12 +64,12 @@ func TestTemplate(t *testing.T) {
 		SharedInfo: si,
 		ErrorFiles: []*ErrorFile{
 			{
-				StatusCode: 403,
+				StatusCode: "403",
 				Command:    "errorfile",
 				Value:      "/srv/voyager/errorfiles/403.http",
 			},
 			{
-				StatusCode: 402,
+				StatusCode: "402",
 				Command:    "errorloc",
 				Value:      "goolge.com",
 			},
