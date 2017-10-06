@@ -81,7 +81,7 @@ func (c *Controller) isCertificateUsedInIngress(s *api.Certificate) bool {
 		return false
 	}
 	for _, tls := range r.Spec.TLS {
-		if s.Name == tls.TLSRef.Name && strings.EqualFold(tls.TLSRef.Kind, api.ResourceKindCertificate) {
+		if s.Name == tls.Ref.Name && strings.EqualFold(tls.Ref.Kind, api.ResourceKindCertificate) {
 			return true
 		}
 	}
