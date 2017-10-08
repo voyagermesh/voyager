@@ -20,6 +20,19 @@ func TestIsValid(t *testing.T) {
 
 var dataTables = map[*Ingress]bool{
 	{
+		ObjectMeta: metav1.ObjectMeta{Name: "spec.rule[0] can specify either HTTP or TCP"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{},
+						TCP:  &TCPIngressRuleValue{},
+					},
+				},
+			},
+		},
+	}: false,
+	{
 		ObjectMeta: metav1.ObjectMeta{Name: "No Backend Service For TCP"},
 		Spec: IngressSpec{
 			Rules: []IngressRule{
