@@ -68,7 +68,7 @@ func (r *Ingress) IsValid(cloudProvider string) error {
 	nodePorts := make(map[int]int)
 	usesHTTPRule := false
 	for ri, rule := range r.Spec.Rules {
-		if rule.HTTP != nil {
+		if rule.HTTP != nil && rule.TCP == nil {
 			usesHTTPRule = true
 			var err error
 			var podPort, nodePort int
@@ -145,7 +145,7 @@ func (r *Ingress) IsValid(cloudProvider string) error {
 					}
 				}
 			}
-		} else if rule.TCP != nil {
+		} else if rule.TCP != nil && rule.HTTP == nil {
 			var a *address
 			if podPort, err := checkRequiredPort(rule.TCP.Port); err != nil {
 				return fmt.Errorf("spec.rule[%d].tcp.port %s is invalid. Reason: %s", ri, rule.TCP.Port, err)
