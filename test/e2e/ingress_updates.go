@@ -45,7 +45,7 @@ var _ = Describe("IngressUpdates", func() {
 		BeforeEach(func() {
 			ing.Spec.Rules = []api.IngressRule{
 				{
-					Host: "http.appscode.dev",
+					Host: "http.appscode.test",
 					IngressRuleValue: api.IngressRuleValue{
 						HTTP: &api.HTTPIngressRuleValue{
 							Paths: []api.HTTPIngressPath{
