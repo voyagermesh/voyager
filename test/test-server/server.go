@@ -74,7 +74,7 @@ func (h HttpsServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func RunHTTPsServerOnPort(port string) {
 	fmt.Println("https server running")
-	GenCert("http.appscode.dev,ssl.appscode.dev")
+	GenCert("http.appscode.test,ssl.appscode.test")
 	http.ListenAndServeTLS(port, "cert.pem", "key.pem", HttpsServerHandler{port})
 }
 

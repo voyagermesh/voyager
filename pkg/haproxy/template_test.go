@@ -122,7 +122,7 @@ func TestTemplate(t *testing.T) {
 						},
 					},
 					{
-						Host: "test.appscode.dev",
+						Host: "test.appscode.test",
 						Path: "/rebeka",
 						Backend: Backend{
 							Name:         "rebecka",
@@ -190,7 +190,7 @@ func TestTemplate(t *testing.T) {
 				OffloadSSL:    true,
 				Paths: []*HTTPPath{
 					{
-						Host: "ex.appscode.dev",
+						Host: "ex.appscode.test",
 						Path: "/yara",
 						Backend: Backend{
 							Name:   "yara",
@@ -210,7 +210,7 @@ func TestTemplate(t *testing.T) {
 				OffloadSSL:    true,
 				Paths: []*HTTPPath{
 					{
-						Host: "ex.appscode.dev",
+						Host: "ex.appscode.test",
 						Path: "/yara",
 						Backend: Backend{
 							Name:   "yara",
@@ -229,7 +229,7 @@ func TestTemplate(t *testing.T) {
 				FrontendRules: []string{"rule one", "rule two"},
 				Paths: []*HTTPPath{
 					{
-						Host: "ex.appscode.dev",
+						Host: "ex.appscode.test",
 						Path: "/yara",
 						Backend: Backend{
 							Name: "yara",
