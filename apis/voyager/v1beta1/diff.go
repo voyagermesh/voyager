@@ -230,3 +230,14 @@ func (c Certificate) SecretName() string {
 	}
 	return ""
 }
+
+func (r Ingress) UsesAuthSecret(name, namespace string) bool {
+	if r.Namespace != namespace {
+		return false
+	}
+
+	if r.AuthSecretName() == name {
+		return true
+	}
+	return false
+}

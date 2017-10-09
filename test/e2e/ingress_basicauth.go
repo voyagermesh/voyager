@@ -11,6 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
+	"time"
 )
 
 var _ = Describe("IngressWithBasicAuth", func() {
@@ -380,6 +381,97 @@ var _ = Describe("IngressWithBasicAuth", func() {
 				},
 			)
 			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+	Describe("Secret Update", func() {
+		BeforeEach(func() {
+			ing.Annotations = map[string]string{
+				api.AuthType:   "basic",
+				api.AuthRealm:  "Realm returned",
+				api.AuthSecret: secret.Name,
+			}
+			ing.Spec.Rules = []api.IngressRule{
+				{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
+								{
+									Path: "/testpath",
+									Backend: api.HTTPIngressBackend{
+										IngressBackend: api.IngressBackend{
+											ServiceName: f.Ingress.TestServerName(),
+											ServicePort: intstr.FromInt(80),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+		})
+
+		It("Should response HTTP", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			err = f.Ingress.DoHTTPStatus(framework.NoRetry, ing, eps, "GET", "/testpath", func(r *testserverclient.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusUnauthorized))
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoHTTPWithHeader(
+				framework.MaxRetry,
+				ing,
+				eps,
+				"GET",
+				"/testpath",
+				map[string]string{
+					"Authorization": "Basic Zm9vOmJhcg==", // foo:bar
+				},
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			sec, err := f.KubeClient.CoreV1().Secrets(secret.Namespace).Get(secret.Name, metav1.GetOptions{})
+			Expect(err).NotTo(HaveOccurred())
+
+			sec.Data["auth3"] = []byte(`foo3::bar3`)
+			_, err = f.KubeClient.CoreV1().Secrets(secret.Namespace).Update(sec)
+			Expect(err).NotTo(HaveOccurred())
+
+			// Wait for update to be done
+			time.Sleep(time.Second*30)
+
+			err = f.Ingress.DoHTTPStatus(framework.NoRetry, ing, eps, "GET", "/testpath", func(r *testserverclient.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusUnauthorized))
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoHTTPWithHeader(
+				framework.MaxRetry,
+				ing,
+				eps,
+				"GET",
+				"/testpath",
+				map[string]string{
+					"Authorization": "Basic Zm9vMzpiYXIz", // foo3:bar3
+				},
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+
 		})
 	})
 })

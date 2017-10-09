@@ -113,25 +113,11 @@ func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*tapi.Ingress, error) {
 
 func (op *Operator) updateHAProxyConfig(ctx context.Context, svc *apiv1.Service) error {
 	logger := log.New(ctx)
-	ing, err := op.KubeClient.ExtensionsV1beta1().Ingresses(svc.Namespace).List(metav1.ListOptions{})
+
+	items, err := op.listIngresses()
 	if err != nil {
 		return err
 	}
-	eng, err := op.VoyagerClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
-	if err != nil {
-		return err
-	}
-
-	items := make([]tapi.Ingress, len(ing.Items))
-	for i, item := range ing.Items {
-		e, err := tapi.NewEngressFromIngress(item)
-		if err != nil {
-			continue
-		}
-		items[i] = *e
-	}
-	items = append(items, eng.Items...)
-
 	for i := range items {
 		engress := &items[i]
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
