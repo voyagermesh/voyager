@@ -49,7 +49,7 @@ func (op *Operator) initSecretWatcher() cache.Controller {
 						for i := range items {
 							engress := &items[i]
 							if engress.ShouldHandleIngress(op.Opt.IngressClass) || op.IngressServiceUsesAuthSecret(engress, newSecret) {
-								if engress.UsesAuthSecret(newSecret.Name, newSecret.Namespace) {
+								if engress.UsesAuthSecret(newSecret.Namespace, newSecret.Name) {
 									ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 									if ctrl.IsExists() {
 										cfgErr := ctrl.Update(0, nil)

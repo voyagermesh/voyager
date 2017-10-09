@@ -229,7 +229,7 @@ func (c Certificate) SecretName() string {
 	return "tls-" + c.Name
 }
 
-func (r Ingress) UsesAuthSecret(name, namespace string) bool {
+func (r Ingress) UsesAuthSecret(namespace, name string) bool {
 	if r.Namespace != namespace {
 		return false
 	}
