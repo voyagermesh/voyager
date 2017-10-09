@@ -14,6 +14,7 @@ import (
 	. "github.com/onsi/gomega"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/pkg/api/v1"
 )
 
@@ -67,7 +68,25 @@ func (i *ingressInvocation) Create(ing *api_v1beta1.Ingress) error {
 	if err != nil {
 		return err
 	}
+	go i.printInfoForDebug(ing)
 	return nil
+}
+func (i *ingressInvocation) printInfoForDebug(ing *api_v1beta1.Ingress) {
+	for {
+		pods, err := i.KubeClient.CoreV1().Pods(ing.Namespace).List(metav1.ListOptions{
+			LabelSelector: labels.SelectorFromSet(labels.Set(ing.OffshootLabels())).String(),
+		})
+		if err == nil {
+			if len(pods.Items) > 0 {
+				for _, pod := range pods.Items {
+					log.Warningln("Log: $ kubectl logs -f", pod.Name, "-n", ing.Namespace)
+					log.Warningln("Exec: $ kubectl exec", pod.Name, "-n", ing.Namespace, "sh")
+				}
+				return
+			}
+		}
+		time.Sleep(time.Second * 2)
+	}
 }
 
 func (i *ingressInvocation) Get(ing *api_v1beta1.Ingress) (*api_v1beta1.Ingress, error) {

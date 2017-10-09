@@ -129,7 +129,16 @@ func (c *Controller) Process() error {
 		return err
 	}
 	if pemCrt == nil {
-		return c.create()
+		err := c.create()
+		if err == nil {
+			c.recorder.Eventf(
+				c.crd.ObjectReference(),
+				apiv1.EventTypeNormal,
+				eventer.EventReasonCertificateIssueSuccessful,
+				"Successfully issued certificate",
+			)
+		}
+		return err
 	}
 
 	var certs []*x509.Certificate
@@ -139,7 +148,16 @@ func (c *Controller) Process() error {
 	}
 	c.curCert = certs[0]
 	if c.crd.ShouldRenew(c.curCert) {
-		return c.renew()
+		err := c.renew()
+		if err == nil {
+			c.recorder.Eventf(
+				c.crd.ObjectReference(),
+				apiv1.EventTypeNormal,
+				eventer.EventReasonCertificateIssueSuccessful,
+				"Successfully renewed certificate",
+			)
+		}
+		return err
 	}
 	return nil
 }
@@ -299,7 +317,7 @@ func (c *Controller) updateIngress() error {
 							Backend: api.HTTPIngressBackend{
 								IngressBackend: api.IngressBackend{
 									ServiceName: c.Opt.OperatorService + "." + c.Opt.OperatorNamespace,
-									ServicePort: intstr.FromInt(c.Opt.HTTPChallengePort),
+									ServicePort: intstr.FromInt(providers.ACMEResponderPort),
 								},
 							},
 						},
@@ -307,7 +325,7 @@ func (c *Controller) updateIngress() error {
 				},
 			},
 		}
-		i.Spec.Rules = append(i.Spec.Rules, rule)
+		i.Spec.Rules = append([]api.IngressRule{rule}, i.Spec.Rules...)
 
 		_, err = c.VoyagerClient.Ingresses(c.crd.Namespace).Update(i)
 		if err != nil {
@@ -340,14 +358,14 @@ func (c *Controller) updateIngress() error {
 							Path: providers.URLPrefix,
 							Backend: extensions.IngressBackend{
 								ServiceName: c.Opt.OperatorService + "." + c.Opt.OperatorNamespace,
-								ServicePort: intstr.FromInt(c.Opt.HTTPChallengePort),
+								ServicePort: intstr.FromInt(providers.ACMEResponderPort),
 							},
 						},
 					},
 				},
 			},
 		}
-		i.Spec.Rules = append(i.Spec.Rules, rule)
+		i.Spec.Rules = append([]extensions.IngressRule{rule}, i.Spec.Rules...)
 
 		_, err = c.KubeClient.ExtensionsV1beta1().Ingresses(c.crd.Namespace).Update(i)
 		if err != nil {

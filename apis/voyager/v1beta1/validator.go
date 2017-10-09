@@ -40,25 +40,25 @@ func (r *Ingress) IsValid(cloudProvider string) error {
 	}
 	for ti, tls := range r.Spec.TLS {
 		if tls.SecretName != "" {
-			if tls.TLSRef != nil &&
-				!(tls.TLSRef.Name == tls.SecretName &&
-					(tls.TLSRef.Kind == "" || tls.TLSRef.Kind == "Secret")) {
+			if tls.Ref != nil &&
+				!(tls.Ref.Name == tls.SecretName &&
+					(tls.Ref.Kind == "" || strings.EqualFold(tls.Ref.Kind, "Secret"))) {
 				return fmt.Errorf("spec.tls[%d] specifies different secret name and secret ref", ti)
 			}
-			if r.Spec.TLS[ti].TLSRef == nil {
-				r.Spec.TLS[ti].TLSRef = &LocalTypedReference{
+			if r.Spec.TLS[ti].Ref == nil {
+				r.Spec.TLS[ti].Ref = &LocalTypedReference{
 					APIVersion: "v1",
 					Kind:       "Secret",
 					Name:       tls.SecretName,
 				}
 			}
-		} else if tls.TLSRef == nil {
+		} else if tls.Ref == nil {
 			return fmt.Errorf("spec.tls[%d] specifies no secret name and secret ref", ti)
 		} else {
-			if tls.TLSRef.Kind != "" && sets.NewString("Secret", "Certificate").Has(tls.TLSRef.Kind) {
-				return fmt.Errorf("spec.tls[%d].secretRef.kind %s is unsupported", ti, tls.TLSRef.Kind)
+			if tls.Ref.Kind != "" && !(strings.EqualFold(tls.Ref.Kind, "Secret") || strings.EqualFold(tls.Ref.Kind, "Certificate")) {
+				return fmt.Errorf("spec.tls[%d].ref.kind %s is unsupported", ti, tls.Ref.Kind)
 			}
-			if tls.TLSRef.Name == "" {
+			if tls.Ref.Name == "" {
 				return fmt.Errorf("spec.tls[%d] specifies no secret name and secret ref name", ti)
 			}
 		}
@@ -68,7 +68,7 @@ func (r *Ingress) IsValid(cloudProvider string) error {
 	nodePorts := make(map[int]int)
 	usesHTTPRule := false
 	for ri, rule := range r.Spec.Rules {
-		if rule.HTTP != nil {
+		if rule.HTTP != nil && rule.TCP == nil {
 			usesHTTPRule = true
 			var err error
 			var podPort, nodePort int
@@ -145,7 +145,7 @@ func (r *Ingress) IsValid(cloudProvider string) error {
 					}
 				}
 			}
-		} else if rule.TCP != nil {
+		} else if rule.TCP != nil && rule.HTTP == nil {
 			var a *address
 			if podPort, err := checkRequiredPort(rule.TCP.Port); err != nil {
 				return fmt.Errorf("spec.rule[%d].tcp.port %s is invalid. Reason: %s", ri, rule.TCP.Port, err)
@@ -305,10 +305,6 @@ func (c Certificate) IsValid(cloudProvider string) error {
 
 	if len(c.Spec.ACMEUserSecretName) == 0 {
 		return fmt.Errorf("no user secret name specified")
-	}
-
-	if c.Spec.Storage.Secret == nil && c.Spec.Storage.Vault == nil {
-		return fmt.Errorf("no storage specified")
 	}
 
 	if c.Spec.Storage.Secret != nil && c.Spec.Storage.Vault != nil {

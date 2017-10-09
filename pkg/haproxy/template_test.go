@@ -59,6 +59,7 @@ func TestTemplate(t *testing.T) {
 		},
 		MaxConnections:   3000,
 		ForceSSLRedirect: true,
+		Limit:            &Limit{Rate: 5, TimeSecond: 20},
 	}
 	testParsedConfig := TemplateData{
 		SharedInfo: si,

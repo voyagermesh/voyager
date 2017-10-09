@@ -62,7 +62,7 @@ func (r Ingress) FindTLSSecret(h string) (*LocalTypedReference, bool) {
 	for _, tls := range r.Spec.TLS {
 		for _, host := range tls.Hosts {
 			if host == h {
-				return tls.TLSRef, true
+				return tls.Ref, true
 			}
 		}
 	}
@@ -217,18 +217,16 @@ func (c Certificate) IsRateLimited() bool {
 }
 
 func (c Certificate) SecretName() string {
-	if c.Spec.Storage.Secret != nil {
-		if c.Spec.Storage.Secret.Name == "" {
-			return "cert-" + c.Name
+	if c.Spec.Storage.Vault != nil {
+		if c.Spec.Storage.Vault.Name != "" {
+			return c.Spec.Storage.Vault.Name
 		}
-		return c.Spec.Storage.Secret.Name
-	} else if c.Spec.Storage.Vault != nil {
-		if c.Spec.Storage.Vault.Name == "" {
-			return "cert-" + c.Name
-		}
-		return c.Spec.Storage.Vault.Name
+		return "tls-" + c.Name
 	}
-	return ""
+	if c.Spec.Storage.Secret != nil && c.Spec.Storage.Secret.Name != "" {
+		return c.Spec.Storage.Secret.Name
+	}
+	return "tls-" + c.Name
 }
 
 func (r Ingress) UsesAuthSecret(name, namespace string) bool {

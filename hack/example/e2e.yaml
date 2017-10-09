@@ -49,6 +49,8 @@ kind: Ingress
 metadata:
   name: test-ingress
   namespace: default
+  annotations:
+    ingress.appscode.com/stats: "true"
 spec:
   rules:
   - http:

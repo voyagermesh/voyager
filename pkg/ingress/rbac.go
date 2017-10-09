@@ -1,9 +1,6 @@
 package ingress
 
 import (
-	"encoding/json"
-	"fmt"
-
 	core_util "github.com/appscode/kutil/core/v1"
 	rbac_util "github.com/appscode/kutil/rbac/v1beta1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -77,12 +74,6 @@ func (c *controller) ensureRoles() error {
 				Verbs:     []string{"get", "list", "watch"},
 			})
 		}
-
-		rb, _ := json.MarshalIndent(in, "", "  ")
-		fmt.Println()
-		fmt.Println(string(rb))
-		fmt.Println()
-
 		return in
 	})
 	return err

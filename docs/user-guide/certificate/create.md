@@ -47,7 +47,7 @@ spec:
       provider: googlecloud
       credentialSecretName: test-gcp-secret
   storage:
-    secretStore: {}
+    secret: {}
 ```
 In this example the domains DNS providers are `googlecloud`.
 
@@ -63,23 +63,23 @@ kubectl logs -f appscode-voyager
 ```
 
 ### Results
-This object will create a certificate named `cert-test-cert`.
+This object will create a secret named `tls-test-cert`.
 
 ```console
-kubectl get secrets cert-test-cert
+kubectl get secrets tls-test-cert
 ```
 
 ```
 NAME      TYPE                DATA      AGE
-cert-test-cert    kubernetes.io/tls   2         20m
+tls-test-cert    kubernetes.io/tls   2         20m
 ```
 
 ```
-kubectl describe secrets cert-test-cert
+kubectl describe secrets tls-test-cert
 ```
 
 ```
-Name:           cert-test-cert
+Name:           tls-test-cert
 Namespace:      default
 
 Type:   kubernetes.io/tls
@@ -132,17 +132,17 @@ spec:
         name: base-ingress
         namespace: default
   storage:
-    secretStore: {}
+    secret: {}
 ```
 
 
 When your certificate is issued, you will see a `kubernetes.io/tls` type secret.
 
 ```console
-kubectl get secrets cert-test-cert
+kubectl get secrets tls-test-cert
 ```
 
 ```
 NAME      TYPE                DATA      AGE
-cert-test-cert    kubernetes.io/tls   2         20m
+tls-test-cert    kubernetes.io/tls   2         20m
 ```

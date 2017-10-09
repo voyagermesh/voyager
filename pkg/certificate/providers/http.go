@@ -1,6 +1,7 @@
 package providers
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"sync"
@@ -8,7 +9,10 @@ import (
 	"github.com/appscode/go/log"
 )
 
-const URLPrefix = "/.well-known/acme-challenge/"
+const (
+	URLPrefix         = "/.well-known/acme-challenge/"
+	ACMEResponderPort = 56791
+)
 
 func init() {
 	defaultHTTPProvider.serve()
@@ -86,7 +90,7 @@ func (s *HTTPProviderServer) serve() {
 
 			httpServer := &http.Server{
 				Handler: mux,
-				Addr:    ":56791",
+				Addr:    fmt.Sprintf(":%d", ACMEResponderPort),
 			}
 			// Once httpServer is shut down we don't want any lingering
 			// connections, so disable KeepAlives.

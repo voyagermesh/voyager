@@ -115,13 +115,6 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 							eventer.EventReasonCertificateInvalid,
 							err.Error(),
 						)
-					} else {
-						op.recorder.Eventf(
-							newCert.ObjectReference(),
-							apiv1.EventTypeNormal,
-							eventer.EventReasonCertificateIssueSuccessful,
-							"Successfully issued certificate",
-						)
 					}
 				}
 			},
@@ -168,13 +161,6 @@ func (op *Operator) CheckCertificates() {
 						apiv1.EventTypeWarning,
 						eventer.EventReasonCertificateInvalid,
 						err.Error(),
-					)
-				} else {
-					op.recorder.Eventf(
-						cert.ObjectReference(),
-						apiv1.EventTypeNormal,
-						eventer.EventReasonCertificateIssueSuccessful,
-						"Successfully issued certificate",
 					)
 				}
 			}

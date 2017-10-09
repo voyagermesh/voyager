@@ -8,6 +8,7 @@ import (
 	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/go/flags"
 	"github.com/appscode/go/log"
+	logs "github.com/appscode/go/log/golog"
 	"k8s.io/client-go/util/homedir"
 )
 
@@ -15,7 +16,7 @@ func init() {
 	flag.StringVar(&testConfigs.Master, "master", "", "The address of the Kubernetes API server (overrides any value in kubeconfig)")
 	flag.StringVar(&testConfigs.KubeConfig, "kubeconfig", "", "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
 	flag.StringVar(&testConfigs.CloudProviderName, "cloud-provider", "", "Name of cloud provider")
-	flag.StringVar(&testConfigs.HAProxyImageName, "haproxy-image", "appscode/haproxy:1.7.9-4.0.0-rc.4", "haproxy image name to be run")
+	flag.StringVar(&testConfigs.HAProxyImageName, "haproxy-image", "appscode/haproxy:1.7.9-4.0.0-rc.9", "haproxy image name to be run")
 	flag.StringVar(&testConfigs.IngressClass, "ingress-class", "", "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
 	flag.BoolVar(&testConfigs.Cleanup, "cleanup", true, "")
 	flag.BoolVar(&testConfigs.InCluster, "in-cluster", false, "")
@@ -46,6 +47,10 @@ type E2EConfig struct {
 var testConfigs E2EConfig
 
 func enableLogging() {
+	defer func() {
+		logs.InitLogs()
+		defer logs.FlushLogs()
+	}()
 	flag.Set("logtostderr", "true")
 	logLevelFlag := flag.Lookup("v")
 	if logLevelFlag != nil {

@@ -534,8 +534,8 @@ func DeepCopy_voyager_IngressTLS(in interface{}, out interface{}, c *conversion.
 			*out = make([]string, len(*in))
 			copy(*out, *in)
 		}
-		if in.TLSRef != nil {
-			in, out := &in.TLSRef, &out.TLSRef
+		if in.Ref != nil {
+			in, out := &in.Ref, &out.Ref
 			*out = new(LocalTypedReference)
 			**out = **in
 		}
