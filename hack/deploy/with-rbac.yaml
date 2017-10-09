@@ -158,7 +158,7 @@ spec:
     port: 56790
     targetPort: ops
   - name: acme
-    port: 56792
+    port: 56791
     targetPort: acme
   selector:
     app: voyager
