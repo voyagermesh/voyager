@@ -19,6 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	core "k8s.io/client-go/listers/core/v1"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 )
@@ -126,6 +127,7 @@ func (op *Operator) Run() {
 		op.initIngresseWatcher(),
 		op.initIngressCRDWatcher(),
 		op.initCertificateCRDWatcher(),
+		op.initSecretWatcher(),
 	}
 	if informer := op.initServiceMonitorWatcher(); informer != nil {
 		informers = append(informers, informer)
@@ -134,4 +136,26 @@ func (op *Operator) Run() {
 		go informers[i].Run(wait.NeverStop)
 	}
 	go op.CheckCertificates()
+}
+
+func (op *Operator) listIngresses() ([]api_v1beta1.Ingress, error) {
+	ing, err := op.KubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+	eng, err := op.VoyagerClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	items := make([]api_v1beta1.Ingress, len(ing.Items))
+	for i, item := range ing.Items {
+		e, err := api_v1beta1.NewEngressFromIngress(item)
+		if err != nil {
+			continue
+		}
+		items[i] = *e
+	}
+	items = append(items, eng.Items...)
+	return items, nil
 }

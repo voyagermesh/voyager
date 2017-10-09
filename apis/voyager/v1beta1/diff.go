@@ -228,3 +228,14 @@ func (c Certificate) SecretName() string {
 	}
 	return "tls-" + c.Name
 }
+
+func (r Ingress) UsesAuthSecret(namespace, name string) bool {
+	if r.Namespace != namespace {
+		return false
+	}
+
+	if r.AuthSecretName() == name {
+		return true
+	}
+	return false
+}
