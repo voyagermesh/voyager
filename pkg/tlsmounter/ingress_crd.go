@@ -147,7 +147,7 @@ func (c *Controller) syncIngressCRD(key string) error {
 		d := obj.(*api.Ingress)
 		fmt.Printf("Sync/Add/Update for Ingress %s\n", d.GetName())
 
-		err = c.mountIngress(d)
+		err = c.mountIngress(d, true)
 		if err != nil {
 			c.recorder.Event(
 				d.ObjectReference(),
@@ -225,7 +225,7 @@ func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]iou
 	return nil
 }
 
-func (c *Controller) mountIngress(ing *api.Ingress) error {
+func (c *Controller) mountIngress(ing *api.Ingress, reload bool) error {
 	projections := map[string]ioutilz.FileProjection{}
 	err := c.projectIngress(ing, projections)
 	if err != nil {
@@ -238,7 +238,10 @@ func (c *Controller) mountIngress(ing *api.Ingress) error {
 		if err != nil {
 			return err
 		}
-		return runCmd(c.options.CmdFile)
+		if reload {
+			return runCmd(c.options.CmdFile)
+		}
+		return nil
 	}
 	return nil
 }
