@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -624,8 +625,11 @@ func (c *controller) getTLSAuth(fr api.FrontendRule) (*haproxy.TLSAuth, error) {
 				Headers:      fr.Auth.TLS.Headers,
 				ErrorPage:    fr.Auth.TLS.ErrorPage,
 			}
-			if len(htls.VerifyClient) <= 0 {
-				htls.VerifyClient = string(api.TLSAuthVerifyOptional)
+			if u, err := url.Parse(fr.Auth.TLS.ErrorPage); err == nil {
+				htls.ErrorPath = u.Path
+			}
+			if htls.VerifyClient == "" {
+				htls.VerifyClient = string(api.TLSAuthVerifyRequired)
 			}
 
 			return htls, nil

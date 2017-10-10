@@ -151,4 +151,5 @@ type TLSAuth struct {
 	VerifyClient string
 	Headers      map[string]string
 	ErrorPage    string
+	ErrorPath    string
 }
