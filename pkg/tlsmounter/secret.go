@@ -11,6 +11,7 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/golang/glog"
+	"github.com/tamalsaha/go-oneliners"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	rt "k8s.io/apimachinery/pkg/runtime"
@@ -20,7 +21,6 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/cert"
 	"k8s.io/client-go/util/workqueue"
-	"github.com/tamalsaha/go-oneliners"
 )
 
 func (c *Controller) initSecretWatcher() {
@@ -269,7 +269,7 @@ func (c *Controller) mountSecret(s *apiv1.Secret) error {
 			return err
 		}
 		oneliners.FILE("Projecting Secret", s.Name)
-		if !c.initOnly {
+		if !c.options.InitOnly {
 			return runCmd(c.options.CmdFile)
 		}
 	}

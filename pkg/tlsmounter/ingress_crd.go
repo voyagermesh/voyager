@@ -9,6 +9,7 @@ import (
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/golang/glog"
+	"github.com/tamalsaha/go-oneliners"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	rt "k8s.io/apimachinery/pkg/runtime"
@@ -18,7 +19,6 @@ import (
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
-	"github.com/tamalsaha/go-oneliners"
 )
 
 func (c *Controller) initIngressCRDWatcher() {
@@ -256,7 +256,7 @@ func (c *Controller) mountIngress(ing *api.Ingress) error {
 			return err
 		}
 		oneliners.FILE("Mount ingress")
-		if !c.initOnly {
+		if !c.options.InitOnly {
 			// Do not run cmd in initOnly as it will restart the HAProxy
 			// But the config map is not still mounted.
 			return runCmd(c.options.CmdFile)

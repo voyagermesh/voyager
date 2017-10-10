@@ -67,8 +67,6 @@ type Controller struct {
 	cQueue    workqueue.RateLimitingInterface
 	cIndexer  cache.Indexer
 	cInformer cache.Controller
-
-	initOnly bool
 }
 
 func New(client kubernetes.Interface, voyagerClient acs.VoyagerV1beta1Interface, opt Options) *Controller {
