@@ -92,3 +92,19 @@ $ kubectl get ingress.voyager.appscode.com -n <namespace> <ingress-name> -o yaml
 # Describe Ingress. Very useful to debug problems.
 $ kubectl describe ingress.voyager.appscode.com -n <namespace> <ingress-name>
 ```
+
+## Detect Voyager version
+```console
+$ POD_NAMESPACE=kube-system
+$ POD_NAME=$(kubectl get pods -n $POD_NAMESPACE -l app=voyager -o jsonpath={.items[0].metadata.name})
+$ kubectl exec -it $POD_NAME -n $POD_NAMESPACE voyager version
+
+Version = 4.0.0-rc.9
+VersionStrategy = tag
+Os = alpine
+Arch = amd64
+CommitHash = ab0b38d8f5d5b4b4508768a594a9d98f2c76abd8
+GitBranch = release-4.0
+GitTag = 4.0.0-rc.9
+CommitTimestamp = 2017-10-08T12:45:26
+```
