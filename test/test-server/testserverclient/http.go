@@ -68,6 +68,11 @@ func (t *httpClient) WithCert(cert string) *httpClient {
 	return t
 }
 
+func (t *httpClient) WithTransport(tr *http.Transport) *httpClient {
+	t.client.Transport = tr
+	return t
+}
+
 func (t *httpClient) WithInsecure() *httpClient {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},

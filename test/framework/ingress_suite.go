@@ -2,6 +2,7 @@ package framework
 
 import (
 	"errors"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -258,6 +259,26 @@ func (i *ingressInvocation) DoHTTPs(retryCount int, host, cert string, ing *api_
 			cl = cl.WithInsecure()
 		}
 
+		resp, err := cl.DoWithRetry(retryCount)
+		if err != nil {
+			return err
+		}
+
+		log.Infoln("HTTP Response received from server", *resp)
+		if !matcher(resp) {
+			return errors.New("Failed to match")
+		}
+	}
+	return nil
+}
+
+func (i *ingressInvocation) DoHTTPsWithTransport(retryCount int, host string, tr *http.Transport, ing *api_v1beta1.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+	for _, url := range eps {
+		if strings.HasPrefix(url, "http://") {
+			url = "https://" + url[len("http://"):]
+		}
+
+		cl := testserverclient.NewTestHTTPClient(url).WithHost(host).WithTransport(tr).Method(method).Path(path)
 		resp, err := cl.DoWithRetry(retryCount)
 		if err != nil {
 			return err
