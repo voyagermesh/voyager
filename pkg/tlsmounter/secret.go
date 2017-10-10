@@ -240,8 +240,7 @@ func (c *Controller) projectAuthSecret(r *apiv1.Secret, projections map[string]i
 		return fmt.Errorf("secret %s@%s is missing ca.crt", r.Name, c.options.IngressRef.Namespace)
 	}
 
-	pemPath := filepath.Join(c.options.MountPath, r.Name+".pem")
-	projections[pemPath] = ioutilz.FileProjection{Mode: 0755, Data: ca}
+	projections[r.Name+"-ca.pem"] = ioutilz.FileProjection{Mode: 0755, Data: ca}
 	return nil
 }
 
