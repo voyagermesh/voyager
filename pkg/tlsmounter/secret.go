@@ -42,7 +42,7 @@ func (c *Controller) initSecretWatcher() {
 	c.sIndexer, c.sInformer = cache.NewIndexerInformer(lw, &apiv1.Secret{}, c.options.ResyncPeriod, cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			if r, ok := obj.(*apiv1.Secret); ok {
-				if c.isSecretUsedInIngress(r) {
+				if c.isSecretUsedInIngress(r) || c.isSecretUsedInIngressTLSAuth(r) {
 					key, err := cache.MetaNamespaceKeyFunc(obj)
 					if err == nil {
 						c.sQueue.Add(key)
@@ -52,7 +52,7 @@ func (c *Controller) initSecretWatcher() {
 		},
 		UpdateFunc: func(old interface{}, new interface{}) {
 			if r, ok := new.(*apiv1.Secret); ok {
-				if c.isSecretUsedInIngress(r) {
+				if c.isSecretUsedInIngress(r) || c.isSecretUsedInIngressTLSAuth(r) {
 					key, err := cache.MetaNamespaceKeyFunc(new)
 					if err == nil {
 						c.sQueue.Add(key)
@@ -85,6 +85,17 @@ func (c *Controller) isSecretUsedInIngress(s *apiv1.Secret) bool {
 		}
 	}
 
+	return false
+}
+
+func (c *Controller) isSecretUsedInIngressTLSAuth(s *apiv1.Secret) bool {
+	if s.Namespace != c.options.IngressRef.Namespace {
+		return false
+	}
+	r, err := c.getIngress()
+	if err != nil {
+		return false
+	}
 	for _, fr := range r.Spec.FrontendRules {
 		if fr.Auth != nil {
 			if fr.Auth.TLS != nil && fr.Auth.TLS.SecretName == s.Name {
@@ -232,17 +243,20 @@ func (c *Controller) projectAuthSecret(r *apiv1.Secret, projections map[string]i
 
 func (c *Controller) mountSecret(s *apiv1.Secret) error {
 	projections := map[string]ioutilz.FileProjection{}
-	if s.Type == apiv1.SecretTypeTLS {
+	if c.isSecretUsedInIngress(s) {
 		err := c.projectSecret(s, projections)
 		if err != nil {
 			return err
 		}
-	} else {
+	}
+
+	if c.isSecretUsedInIngressTLSAuth(s) {
 		err := c.projectAuthSecret(s, projections)
 		if err != nil {
 			return err
 		}
 	}
+
 	if len(projections) > 0 {
 		c.lock.Lock()
 		defer c.lock.Unlock()
