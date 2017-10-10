@@ -199,7 +199,7 @@ func (c *Controller) getSecret(name string) (*apiv1.Secret, error) {
 	return obj.(*apiv1.Secret), nil
 }
 
-func (c *Controller) projectSecret(r *apiv1.Secret, projections map[string]ioutilz.FileProjection) error {
+func (c *Controller) projectTLSSecret(r *apiv1.Secret, projections map[string]ioutilz.FileProjection) error {
 	pemKey, found := r.Data[apiv1.TLSPrivateKeyKey]
 	if !found {
 		return fmt.Errorf("secret %s@%s is missing tls.key", r.Name, c.options.IngressRef.Namespace)
@@ -248,7 +248,7 @@ func (c *Controller) projectAuthSecret(r *apiv1.Secret, projections map[string]i
 func (c *Controller) mountSecret(s *apiv1.Secret) error {
 	projections := map[string]ioutilz.FileProjection{}
 	if c.isSecretUsedForTLSTermination(s) {
-		err := c.projectSecret(s, projections)
+		err := c.projectTLSSecret(s, projections)
 		if err != nil {
 			return err
 		}

@@ -216,7 +216,7 @@ func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]iou
 			if err != nil {
 				return err
 			}
-			err = c.projectSecret(r, projections)
+			err = c.projectTLSSecret(r, projections)
 			if err != nil {
 				return err
 			}
