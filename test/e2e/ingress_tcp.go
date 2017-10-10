@@ -34,8 +34,8 @@ var _ = Describe("IngressTCP", func() {
 			},
 			Type: apiv1.SecretTypeTLS,
 			StringData: map[string]string{
-				"tls.key": fakeHTTPAppsCodeDevKey,
-				"tls.crt": fakeHTTPAppsCodeDevCert,
+				"tls.key": fakeHTTPAppsCodeTestKey,
+				"tls.crt": fakeHTTPAppsCodeTestCert,
 			},
 		}
 		_, err := f.KubeClient.CoreV1().Secrets(secret.Namespace).Create(secret)

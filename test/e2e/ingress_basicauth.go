@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"net/http"
+	"time"
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
@@ -11,7 +12,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
-	"time"
 )
 
 var _ = Describe("IngressWithBasicAuth", func() {
@@ -448,7 +448,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// Wait for update to be done
-			time.Sleep(time.Second*30)
+			time.Sleep(time.Second * 30)
 
 			err = f.Ingress.DoHTTPStatus(framework.NoRetry, ing, eps, "GET", "/testpath", func(r *testserverclient.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusUnauthorized))

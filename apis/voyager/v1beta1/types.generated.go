@@ -8,10 +8,11 @@ package v1beta1
 import (
 	"errors"
 	"fmt"
-	codec1978 "github.com/ugorji/go/codec"
-	pkg1_types "k8s.io/apimachinery/pkg/types"
 	"reflect"
 	"runtime"
+
+	codec1978 "github.com/ugorji/go/codec"
+	pkg1_types "k8s.io/apimachinery/pkg/types"
 )
 
 const (

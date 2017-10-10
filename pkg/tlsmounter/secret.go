@@ -84,6 +84,13 @@ func (c *Controller) isSecretUsedInIngress(s *apiv1.Secret) bool {
 			return true
 		}
 	}
+
+	for _, fr := range r.Spec.FrontendRules {
+		if fr.TLSAuth != nil && fr.TLSAuth.SecretName == s.Name {
+			return true
+		}
+	}
+
 	return false
 }
 
@@ -210,16 +217,34 @@ func (c *Controller) projectSecret(r *apiv1.Secret, projections map[string]iouti
 	return nil
 }
 
+func (c *Controller) projectAuthSecret(r *apiv1.Secret, projections map[string]ioutilz.FileProjection) error {
+	ca, found := r.Data["ca.crt"]
+	if !found {
+		return fmt.Errorf("secret %s@%s is missing ca.crt", r.Name, c.options.IngressRef.Namespace)
+	}
+
+	pemPath := filepath.Join(c.options.MountPath, r.Name+".pem")
+	projections[pemPath] = ioutilz.FileProjection{Mode: 0755, Data: ca}
+	return nil
+}
+
 func (c *Controller) mountSecret(s *apiv1.Secret) error {
 	projections := map[string]ioutilz.FileProjection{}
-	err := c.projectSecret(s, projections)
-	if err != nil {
-		return err
+	if s.Type == apiv1.SecretTypeTLS {
+		err := c.projectSecret(s, projections)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := c.projectAuthSecret(s, projections)
+		if err != nil {
+			return err
+		}
 	}
 	if len(projections) > 0 {
 		c.lock.Lock()
 		defer c.lock.Unlock()
-		err = c.writer.Write(projections)
+		err := c.writer.Write(projections)
 		if err != nil {
 			return err
 		}

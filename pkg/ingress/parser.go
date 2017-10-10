@@ -385,13 +385,15 @@ func (c *controller) generateConfig() error {
 				return err
 			}
 			if len(bk.Endpoints) > 0 {
+				fr := getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, rule.TCP.Port.IntValue())
 				def := &haproxy.TCPService{
 					SharedInfo:    si,
 					FrontendName:  fmt.Sprintf("tcp-%s", rule.TCP.Port.String()),
 					Host:          rule.Host,
 					Port:          rule.TCP.Port.String(),
 					ALPNOptions:   parseALPNOptions(rule.TCP.ALPN),
-					FrontendRules: getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, rule.TCP.Port.IntValue()),
+					FrontendRules: fr.Rules,
+					TLSAuth:       fr.TLSAuth,
 					Backend: haproxy.Backend{
 						Name:             getBackendName(c.Ingress, rule.TCP.Backend),
 						BackendRules:     rule.TCP.Backend.BackendRule,
@@ -418,11 +420,13 @@ func (c *controller) generateConfig() error {
 
 	for key := range httpServices {
 		value := httpServices[key]
+		fr := getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, key.Port)
 		td.HTTPService = append(td.HTTPService, &haproxy.HTTPService{
 			SharedInfo:    si,
 			FrontendName:  fmt.Sprintf("http-%d", key.Port),
 			Port:          key.Port,
-			FrontendRules: getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, key.Port),
+			FrontendRules: fr.Rules,
+			TLSAuth:       fr.TLSAuth,
 			NodePort:      key.NodePort,
 			OffloadSSL:    key.OffloadSSL,
 			Paths:         value,
@@ -493,13 +497,13 @@ func getAuthUsers(data map[string][]byte) (map[string][]haproxy.AuthUser, error)
 	return ret, nil
 }
 
-func getFrontendRulesForPort(rules []api.FrontendRule, port int) []string {
+func getFrontendRulesForPort(rules []api.FrontendRule, port int) api.FrontendRule {
 	for _, rule := range rules {
 		if rule.Port.IntValue() == port {
-			return rule.Rules
+			return rule
 		}
 	}
-	return []string{}
+	return api.FrontendRule{}
 }
 
 func parseALPNOptions(opt []string) string {

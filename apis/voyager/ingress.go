@@ -273,8 +273,8 @@ type FrontendRule struct {
 }
 
 type TLSAuth struct {
-	SecretName string `json:"secretName,omitempty"`
-	VerifyClient string `json:"verifyClient,omitempty"`
-	Headers map[string]string `json:"headers,omitempty"`
-	ErrorPage string `json:"errorPage,omitempty"`
+	SecretName   string            `json:"secretName,omitempty"`
+	VerifyClient string            `json:"verifyClient,omitempty"`
+	Headers      map[string]string `json:"headers,omitempty"`
+	ErrorPage    string            `json:"errorPage,omitempty"`
 }
