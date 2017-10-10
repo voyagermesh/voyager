@@ -34,7 +34,7 @@ type Options struct {
 	CmdFile        string
 	ResyncPeriod   time.Duration
 	MaxNumRequeues int
-	InitOnly bool
+	InitOnly       bool
 }
 
 func (opts Options) UsesEngress() bool {

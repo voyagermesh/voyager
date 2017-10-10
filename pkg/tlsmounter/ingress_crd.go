@@ -18,6 +18,7 @@ import (
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
+	"github.com/tamalsaha/go-oneliners"
 )
 
 func (c *Controller) initIngressCRDWatcher() {
@@ -254,6 +255,7 @@ func (c *Controller) mountIngress(ing *api.Ingress) error {
 		if err != nil {
 			return err
 		}
+		oneliners.FILE("Mount ingress")
 		if !c.initOnly {
 			// Do not run cmd in initOnly as it will restart the HAProxy
 			// But the config map is not still mounted.

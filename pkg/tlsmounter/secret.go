@@ -20,6 +20,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/cert"
 	"k8s.io/client-go/util/workqueue"
+	"github.com/tamalsaha/go-oneliners"
 )
 
 func (c *Controller) initSecretWatcher() {
@@ -267,7 +268,10 @@ func (c *Controller) mountSecret(s *apiv1.Secret) error {
 		if err != nil {
 			return err
 		}
-		return runCmd(c.options.CmdFile)
+		oneliners.FILE("Projecting Secret", s.Name)
+		if !c.initOnly {
+			return runCmd(c.options.CmdFile)
+		}
 	}
 	return nil
 }

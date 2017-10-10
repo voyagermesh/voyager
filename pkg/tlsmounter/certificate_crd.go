@@ -21,6 +21,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/cert"
 	"k8s.io/client-go/util/workqueue"
+	"github.com/tamalsaha/go-oneliners"
 )
 
 func (c *Controller) initCertificateCRDWatcher() {
@@ -220,7 +221,10 @@ func (c *Controller) mountCertificate(crt *api.Certificate) error {
 		if err != nil {
 			return err
 		}
-		return runCmd(c.options.CmdFile)
+		oneliners.FILE("Mounting Certificates")
+		if !c.initOnly {
+			return runCmd(c.options.CmdFile)
+		}
 	}
 	return nil
 }
