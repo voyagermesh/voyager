@@ -13,6 +13,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
+	"fmt"
 )
 
 var _ = Describe("IngressWithTLSAuth", func() {
@@ -93,7 +94,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 				TLS: []api.IngressTLS{
 					{
 						SecretName: tlsSecret.Name,
-						Hosts:      []string{"http.appscode.dev"},
+						Hosts:      []string{"http.appscode.test"},
 					},
 				},
 				Rules: []api.IngressRule{
@@ -125,7 +126,10 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTPsTestRedirect(framework.MaxRetry, "http.appscode.test", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			// time.Sleep(time.Hour)
+
+			err = f.Ingress.DoHTTPsTestRedirect(framework.NoRetry, "http.appscode.test", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+				fmt.Println(*r)
 				return Expect(r.Status).Should(Equal(301)) &&
 					Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
 					Expect(r.ResponseHeader.Get("Location")).Should(Equal("https://http.appscode.test/testpath/ok"))
@@ -152,6 +156,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 					Expect(r.Path).Should(Equal("/testpath"))
 			})
 			Expect(err).NotTo(HaveOccurred())
+
 		})
 	})
 })

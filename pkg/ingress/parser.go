@@ -620,7 +620,7 @@ func (c *controller) getTLSAuth(fr api.FrontendRule) (*haproxy.TLSAuth, error) {
 			}
 
 			htls := &haproxy.TLSAuth{
-				CAFile:       fr.Auth.TLS.SecretName + "-ca.pem",
+				CAFile:       fr.Auth.TLS.SecretName + "-ca.crt",
 				VerifyClient: string(fr.Auth.TLS.VerifyClient),
 				Headers:      fr.Auth.TLS.Headers,
 				ErrorPage:    fr.Auth.TLS.ErrorPage,

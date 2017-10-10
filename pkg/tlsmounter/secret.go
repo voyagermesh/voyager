@@ -215,7 +215,7 @@ func (c *Controller) projectTLSSecret(r *apiv1.Secret, projections map[string]io
 		return err
 	}
 
-	pemPath := filepath.Join(c.options.MountPath, r.Name+".pem")
+	pemPath := filepath.Join(c.options.MountPath, "cert/" + r.Name+".pem")
 	if _, err := os.Stat(pemPath); !os.IsNotExist(err) {
 		// path/to/whatever exists
 		pemBytes, err := ioutil.ReadFile(pemPath)
@@ -227,10 +227,10 @@ func (c *Controller) projectTLSSecret(r *apiv1.Secret, projections map[string]io
 			return err
 		}
 		if !diskCerts[0].Equal(secretCerts[0]) {
-			projections[r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
+			projections["cert/" + r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
 		}
 	} else {
-		projections[r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
+		projections["cert/" + r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
 	}
 	return nil
 }
@@ -241,7 +241,7 @@ func (c *Controller) projectAuthSecret(r *apiv1.Secret, projections map[string]i
 		return fmt.Errorf("secret %s@%s is missing ca.crt", r.Name, c.options.IngressRef.Namespace)
 	}
 
-	projections[r.Name+"-ca.pem"] = ioutilz.FileProjection{Mode: 0755, Data: ca}
+	projections["ca/" + r.Name+"-ca.crt"] = ioutilz.FileProjection{Mode: 0755, Data: ca}
 	return nil
 }
 
