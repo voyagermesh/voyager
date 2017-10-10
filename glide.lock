@@ -1,5 +1,5 @@
-hash: 8920c20cb293a9513c32f82dde5ff60a845af40bb76a53cef8c6cde8100e2720
-updated: 2017-10-05T19:02:09.092774577-07:00
+hash: 066c8ecd093adc40e859fde6fbbc9656f734c3914ce2741d4d79443c0256a770
+updated: 2017-10-10T11:01:30.690888294-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -30,7 +30,7 @@ imports:
   - cmds
   - controller
 - name: github.com/appscode/kutil
-  version: f23ee81f4bb9fcced03b907400f105469b9898fc
+  version: edecb186bc1f64f153c2581b18b42440890906f0
   subpackages:
   - core/v1
   - rbac/v1beta1
@@ -90,7 +90,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/coreos/prometheus-operator
-  version: f5284c9eddc956775e06f854a9bffc6bfece3d9c
+  version: bcb91cabbe1b8427d6aa85c9bd649ba0c2af75c9
   subpackages:
   - pkg/client/monitoring/v1alpha1
 - name: github.com/cpuguy83/go-md2man
@@ -146,7 +146,7 @@ imports:
   - proto
   - sortkeys
 - name: github.com/golang/glog
-  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
+  version: 44145f04b68cf362d9c4df2182967c2275eaefed
 - name: github.com/golang/groupcache
   version: 02826c3e79038b59d737d3b1c0a1d937f71a4433
   subpackages:
@@ -315,7 +315,7 @@ imports:
 - name: github.com/Sirupsen/logrus
   version: 51fe59aca108dc5680109e7b2051cbdcfa5a253c
 - name: github.com/spf13/cobra
-  version: d5bde60e022436203e377c47806e001418c16af3
+  version: 4d6af280c76ff7d266434f2dba207c4b75dfc076
   subpackages:
   - doc
 - name: github.com/spf13/pflag
