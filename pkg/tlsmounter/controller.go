@@ -168,6 +168,21 @@ func (c *Controller) initTLSCache(ing *api.Ingress) error {
 			}
 		}
 	}
+
+	for _, fr := range ing.Spec.FrontendRules {
+		if fr.Auth != nil {
+			if fr.Auth.TLS != nil {
+				stls, err := c.k8sClient.CoreV1().Secrets(c.options.IngressRef.Namespace).Get(fr.Auth.TLS.SecretName, metav1.GetOptions{})
+				if err != nil {
+					return err
+				}
+				err = c.sIndexer.Add(stls)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
 	return nil
 }
 

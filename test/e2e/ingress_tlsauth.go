@@ -83,7 +83,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 						Port: intstr.FromInt(443),
 						Auth: &api.AuthOption{
 							TLS: &api.TLSAuth{
-								SecretName:   tlsSecret.Name,
+								SecretName:   caSecret.Name,
 								VerifyClient: api.TLSAuthVerifyRequired,
 								ErrorPage:    "https://http.appscode.test/testpath/ok",
 							},
@@ -119,7 +119,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			}
 		})
 
-		It("Should response HTTP", func() {
+		FIt("Should response HTTP", func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
