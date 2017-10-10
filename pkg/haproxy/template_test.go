@@ -648,7 +648,7 @@ func TestTLSAuth(t *testing.T) {
 				FrontendName:  "one",
 				Port:          80,
 				FrontendRules: []string{},
-				TLSAuth: &api.TLSAuth{
+				TLSAuth: &TLSAuth{
 					SecretName:   "foo",
 					VerifyClient: "required",
 					Headers: map[string]string{
@@ -676,7 +676,7 @@ func TestTLSAuth(t *testing.T) {
 				OffloadSSL:    true,
 				Port:          90,
 				FrontendRules: []string{},
-				TLSAuth: &api.TLSAuth{
+				TLSAuth: &TLSAuth{
 					SecretName: "foo",
 					ErrorPage:  "google.com",
 				},

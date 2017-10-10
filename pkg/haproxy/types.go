@@ -56,7 +56,7 @@ type HTTPService struct {
 	NodePort      int32
 	OffloadSSL    bool
 	FrontendRules []string
-	TLSAuth       *api.TLSAuth
+	TLSAuth       *TLSAuth
 	Paths         []*HTTPPath
 }
 
@@ -88,7 +88,7 @@ type TCPService struct {
 	PEMName       string
 	Backend       Backend
 	ALPNOptions   string
-	TLSAuth       *api.TLSAuth
+	TLSAuth       *TLSAuth
 }
 
 func (svc TCPService) sortKey() string {
@@ -144,4 +144,11 @@ type Limit struct {
 	Connection int
 	TimeSecond int
 	Rate       int
+}
+
+type TLSAuth struct {
+	SecretName   string
+	VerifyClient string
+	Headers      map[string]string
+	ErrorPage    string
 }

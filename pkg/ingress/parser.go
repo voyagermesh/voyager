@@ -404,9 +404,23 @@ func (c *controller) generateConfig() error {
 				}
 				if fr.Auth != nil {
 					if fr.Auth.TLS != nil {
-						def.TLSAuth = fr.Auth.TLS
+						tlsAuthSec, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(fr.Auth.TLS.SecretName, metav1.GetOptions{})
+						if err != nil {
+							return err
+						}
+
+						if _, ok := tlsAuthSec.Data["ca.crt"]; !ok {
+							return fmt.Errorf("key ca.crt not found in TLSAuthSecret %s", tlsAuthSec.Name)
+						}
+
+						def.TLSAuth = &haproxy.TLSAuth{
+							SecretName:   fr.Auth.TLS.SecretName,
+							VerifyClient: string(fr.Auth.TLS.VerifyClient),
+							Headers:      fr.Auth.TLS.Headers,
+							ErrorPage:    fr.Auth.TLS.ErrorPage,
+						}
 						if len(def.TLSAuth.VerifyClient) <= 0 {
-							def.TLSAuth.VerifyClient = api.TLSAuthVerifyOptional
+							def.TLSAuth.VerifyClient = string(api.TLSAuthVerifyOptional)
 						}
 					}
 				}
@@ -440,9 +454,23 @@ func (c *controller) generateConfig() error {
 		}
 		if fr.Auth != nil {
 			if fr.Auth.TLS != nil {
-				srv.TLSAuth = fr.Auth.TLS
+				tlsAuthSec, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(fr.Auth.TLS.SecretName, metav1.GetOptions{})
+				if err != nil {
+					return err
+				}
+
+				if _, ok := tlsAuthSec.Data["ca.crt"]; !ok {
+					return fmt.Errorf("key ca.crt not found in TLSAuthSecret %s", tlsAuthSec.Name)
+				}
+
+				srv.TLSAuth = &haproxy.TLSAuth{
+					SecretName:   fr.Auth.TLS.SecretName,
+					VerifyClient: string(fr.Auth.TLS.VerifyClient),
+					Headers:      fr.Auth.TLS.Headers,
+					ErrorPage:    fr.Auth.TLS.ErrorPage,
+				}
 				if len(srv.TLSAuth.VerifyClient) <= 0 {
-					srv.TLSAuth.VerifyClient = api.TLSAuthVerifyOptional
+					srv.TLSAuth.VerifyClient = string(api.TLSAuthVerifyOptional)
 				}
 			}
 		}
