@@ -414,7 +414,7 @@ func (c *controller) generateConfig() error {
 						}
 
 						def.TLSAuth = &haproxy.TLSAuth{
-							SecretName:   fr.Auth.TLS.SecretName,
+							CAFile:       fr.Auth.TLS.SecretName,
 							VerifyClient: string(fr.Auth.TLS.VerifyClient),
 							Headers:      fr.Auth.TLS.Headers,
 							ErrorPage:    fr.Auth.TLS.ErrorPage,
@@ -464,7 +464,7 @@ func (c *controller) generateConfig() error {
 				}
 
 				srv.TLSAuth = &haproxy.TLSAuth{
-					SecretName:   fr.Auth.TLS.SecretName,
+					CAFile:       fr.Auth.TLS.SecretName,
 					VerifyClient: string(fr.Auth.TLS.VerifyClient),
 					Headers:      fr.Auth.TLS.Headers,
 					ErrorPage:    fr.Auth.TLS.ErrorPage,

@@ -147,7 +147,7 @@ type Limit struct {
 }
 
 type TLSAuth struct {
-	SecretName   string
+	CAFile       string
 	VerifyClient string
 	Headers      map[string]string
 	ErrorPage    string
