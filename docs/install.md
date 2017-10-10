@@ -94,6 +94,7 @@ $ kubectl describe ingress.voyager.appscode.com -n <namespace> <ingress-name>
 ```
 
 ## Detect Voyager version
+To detect Voyager version, exec into the operator pod and run `voyager version` command.
 ```console
 $ POD_NAMESPACE=kube-system
 $ POD_NAME=$(kubectl get pods -n $POD_NAMESPACE -l app=voyager -o jsonpath={.items[0].metadata.name})
