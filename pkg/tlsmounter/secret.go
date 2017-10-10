@@ -42,7 +42,7 @@ func (c *Controller) initSecretWatcher() {
 	c.sIndexer, c.sInformer = cache.NewIndexerInformer(lw, &apiv1.Secret{}, c.options.ResyncPeriod, cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			if r, ok := obj.(*apiv1.Secret); ok {
-				if c.isSecretUsedInIngress(r) || c.isSecretUsedInIngressTLSAuth(r) {
+				if c.isSecretUsedInIngress(r) {
 					key, err := cache.MetaNamespaceKeyFunc(obj)
 					if err == nil {
 						c.sQueue.Add(key)
@@ -52,7 +52,7 @@ func (c *Controller) initSecretWatcher() {
 		},
 		UpdateFunc: func(old interface{}, new interface{}) {
 			if r, ok := new.(*apiv1.Secret); ok {
-				if c.isSecretUsedInIngress(r) || c.isSecretUsedInIngressTLSAuth(r) {
+				if c.isSecretUsedInIngress(r) {
 					key, err := cache.MetaNamespaceKeyFunc(new)
 					if err == nil {
 						c.sQueue.Add(key)
@@ -72,6 +72,10 @@ func (c *Controller) initSecretWatcher() {
 }
 
 func (c *Controller) isSecretUsedInIngress(s *apiv1.Secret) bool {
+	return c.isSecretUsedForTLSTermination(s) || c.isSecretUsedForTLSAuth(s)
+}
+
+func (c *Controller) isSecretUsedForTLSTermination(s *apiv1.Secret) bool {
 	if s.Namespace != c.options.IngressRef.Namespace {
 		return false
 	}
@@ -88,7 +92,7 @@ func (c *Controller) isSecretUsedInIngress(s *apiv1.Secret) bool {
 	return false
 }
 
-func (c *Controller) isSecretUsedInIngressTLSAuth(s *apiv1.Secret) bool {
+func (c *Controller) isSecretUsedForTLSAuth(s *apiv1.Secret) bool {
 	if s.Namespace != c.options.IngressRef.Namespace {
 		return false
 	}
@@ -243,14 +247,14 @@ func (c *Controller) projectAuthSecret(r *apiv1.Secret, projections map[string]i
 
 func (c *Controller) mountSecret(s *apiv1.Secret) error {
 	projections := map[string]ioutilz.FileProjection{}
-	if c.isSecretUsedInIngress(s) {
+	if c.isSecretUsedForTLSTermination(s) {
 		err := c.projectSecret(s, projections)
 		if err != nil {
 			return err
 		}
 	}
 
-	if c.isSecretUsedInIngressTLSAuth(s) {
+	if c.isSecretUsedForTLSAuth(s) {
 		err := c.projectAuthSecret(s, projections)
 		if err != nil {
 			return err
