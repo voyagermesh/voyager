@@ -254,7 +254,11 @@ func (c *Controller) mountIngress(ing *api.Ingress) error {
 		if err != nil {
 			return err
 		}
-		return runCmd(c.options.CmdFile)
+		if !c.initOnly {
+			// Do not run cmd in initOnly as it will restart the HAProxy
+			// But the config map is not still mounted.
+			return runCmd(c.options.CmdFile)
+		}
 	}
 	return nil
 }
