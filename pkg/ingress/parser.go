@@ -393,7 +393,6 @@ func (c *controller) generateConfig() error {
 					Port:          rule.TCP.Port.String(),
 					ALPNOptions:   parseALPNOptions(rule.TCP.ALPN),
 					FrontendRules: fr.Rules,
-					TLSAuth:       fr.TLSAuth,
 					Backend: haproxy.Backend{
 						Name:             getBackendName(c.Ingress, rule.TCP.Backend),
 						BackendRules:     rule.TCP.Backend.BackendRule,
@@ -402,6 +401,14 @@ func (c *controller) generateConfig() error {
 						StickyCookieName: bk.StickyCookieName,
 						StickyCookieHash: bk.StickyCookieHash,
 					},
+				}
+				if fr.Auth != nil {
+					if fr.Auth.TLS != nil {
+						def.TLSAuth = fr.Auth.TLS
+						if len(def.TLSAuth.VerifyClient) <= 0 {
+							def.TLSAuth.VerifyClient = api.TLSAuthVerifyOptional
+						}
+					}
 				}
 				if ref, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoTLS {
 					if ref.Kind == api.ResourceKindCertificate {
@@ -421,16 +428,26 @@ func (c *controller) generateConfig() error {
 	for key := range httpServices {
 		value := httpServices[key]
 		fr := getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, key.Port)
-		td.HTTPService = append(td.HTTPService, &haproxy.HTTPService{
+
+		srv := &haproxy.HTTPService{
 			SharedInfo:    si,
 			FrontendName:  fmt.Sprintf("http-%d", key.Port),
 			Port:          key.Port,
 			FrontendRules: fr.Rules,
-			TLSAuth:       fr.TLSAuth,
 			NodePort:      key.NodePort,
 			OffloadSSL:    key.OffloadSSL,
 			Paths:         value,
-		})
+		}
+		if fr.Auth != nil {
+			if fr.Auth.TLS != nil {
+				srv.TLSAuth = fr.Auth.TLS
+				if len(srv.TLSAuth.VerifyClient) <= 0 {
+					srv.TLSAuth.VerifyClient = api.TLSAuthVerifyOptional
+				}
+			}
+		}
+
+		td.HTTPService = append(td.HTTPService, srv)
 	}
 
 	td.DNSResolvers = make([]*api.DNSResolver, 0)

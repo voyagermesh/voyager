@@ -224,14 +224,16 @@ func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]iou
 	}
 
 	for _, fr := range ing.Spec.FrontendRules {
-		if fr.TLSAuth != nil {
-			r, err := c.getSecret(fr.TLSAuth.SecretName)
-			if err != nil {
-				return err
-			}
-			err = c.projectAuthSecret(r, projections)
-			if err != nil {
-				return err
+		if fr.Auth != nil {
+			if fr.Auth.TLS != nil {
+				r, err := c.getSecret(fr.Auth.TLS.SecretName)
+				if err != nil {
+					return err
+				}
+				err = c.projectAuthSecret(r, projections)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}

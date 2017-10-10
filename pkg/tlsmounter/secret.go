@@ -86,8 +86,10 @@ func (c *Controller) isSecretUsedInIngress(s *apiv1.Secret) bool {
 	}
 
 	for _, fr := range r.Spec.FrontendRules {
-		if fr.TLSAuth != nil && fr.TLSAuth.SecretName == s.Name {
-			return true
+		if fr.Auth != nil {
+			if fr.Auth.TLS != nil && fr.Auth.TLS.SecretName == s.Name {
+				return true
+			}
 		}
 	}
 

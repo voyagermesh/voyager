@@ -269,12 +269,24 @@ type FrontendRule struct {
 	// Serialized rules
 	Rules []string `json:"rules,omitempty"`
 
-	TLSAuth *TLSAuth `json:"tlsAuth,omitempty"`
+	Auth *AuthOption `json:"auth,omitempty"`
 }
 
+type AuthOption struct {
+	TLS *TLSAuth `json:"tls,omitempty"`
+}
+
+type TLSAuthVerifyOption string
+
+const (
+	TLSAuthVerifyNone     TLSAuthVerifyOption = "none"
+	TLSAuthVerifyOptional TLSAuthVerifyOption = "optional"
+	TLSAuthVerifyRequired TLSAuthVerifyOption = "required"
+)
+
 type TLSAuth struct {
-	SecretName   string            `json:"secretName,omitempty"`
-	VerifyClient string            `json:"verifyClient,omitempty"`
-	Headers      map[string]string `json:"headers,omitempty"`
-	ErrorPage    string            `json:"errorPage,omitempty"`
+	SecretName   string              `json:"secretName,omitempty"`
+	VerifyClient TLSAuthVerifyOption `json:"verifyClient,omitempty"`
+	Headers      map[string]string   `json:"headers,omitempty"`
+	ErrorPage    string              `json:"errorPage,omitempty"`
 }
