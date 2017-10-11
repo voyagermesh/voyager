@@ -2,9 +2,6 @@ package tlsmounter
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	"strings"
 
 	ioutilz "github.com/appscode/go/ioutil"
@@ -17,7 +14,6 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/util/cert"
 	"k8s.io/client-go/util/workqueue"
 )
 
@@ -181,47 +177,27 @@ func (c *Controller) getSecret(name string) (*apiv1.Secret, error) {
 	return obj.(*apiv1.Secret), nil
 }
 
-func (c *Controller) projectTLSSecret(r *apiv1.Secret, projections map[string]ioutilz.FileProjection) (bool, error) {
+func (c *Controller) projectTLSSecret(r *apiv1.Secret, projections map[string]ioutilz.FileProjection) error {
 	pemKey, found := r.Data[apiv1.TLSPrivateKeyKey]
 	if !found {
-		return false, fmt.Errorf("secret %s@%s is missing tls.key", r.Name, c.options.IngressRef.Namespace)
+		return fmt.Errorf("secret %s@%s is missing tls.key", r.Name, c.options.IngressRef.Namespace)
 	}
 
 	pemCrt, found := r.Data[apiv1.TLSCertKey]
 	if !found {
-		return false, fmt.Errorf("secret %s@%s is missing tls.crt", r.Name, c.options.IngressRef.Namespace)
-	}
-	secretCerts, err := cert.ParseCertsPEM(pemCrt)
-	if err != nil {
-		return false, err
-	}
-
-	pemPath := filepath.Join(c.options.MountPath, "tls/"+r.Name+".pem")
-	if _, err := os.Stat(pemPath); !os.IsNotExist(err) {
-		// path/to/whatever exists
-		pemBytes, err := ioutil.ReadFile(pemPath)
-		if err != nil {
-			return false, err
-		}
-		diskCerts, err := cert.ParseCertsPEM(pemBytes)
-		if err != nil {
-			return false, err
-		}
-
-		projections["tls/"+r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
-		return !diskCerts[0].Equal(secretCerts[0]), nil
+		return fmt.Errorf("secret %s@%s is missing tls.crt", r.Name, c.options.IngressRef.Namespace)
 	}
 
 	projections["tls/"+r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
-	return true, nil
+	return nil
 }
 
-func (c *Controller) projectAuthSecret(r *apiv1.Secret, projections map[string]ioutilz.FileProjection) (bool, error) {
+func (c *Controller) projectAuthSecret(r *apiv1.Secret, projections map[string]ioutilz.FileProjection) error {
 	ca, found := r.Data["ca.crt"]
 	if !found {
-		return false, fmt.Errorf("secret %s@%s is missing ca.crt", r.Name, c.options.IngressRef.Namespace)
+		return fmt.Errorf("secret %s@%s is missing ca.crt", r.Name, c.options.IngressRef.Namespace)
 	}
 
 	projections["ca/"+r.Name+"-ca.crt"] = ioutilz.FileProjection{Mode: 0755, Data: ca}
-	return true, nil
+	return nil
 }

@@ -1,9 +1,6 @@
 package tlsmounter
 
 import (
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	"strings"
 
 	ioutilz "github.com/appscode/go/ioutil"
@@ -17,7 +14,6 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/util/cert"
 	"k8s.io/client-go/util/workqueue"
 )
 
@@ -157,33 +153,11 @@ func (c *Controller) getCertificate(name string) (*api.Certificate, error) {
 	return obj.(*api.Certificate), nil
 }
 
-func (c *Controller) projectCertificate(r *api.Certificate, projections map[string]ioutilz.FileProjection) (bool, error) {
+func (c *Controller) projectCertificate(r *api.Certificate, projections map[string]ioutilz.FileProjection) error {
 	pemCrt, pemKey, err := c.store.Get(r)
 	if err != nil {
-		return false, err
+		return err
 	}
-	certs, err := cert.ParseCertsPEM(pemCrt)
-	if err != nil {
-		return false, err
-	}
-	crt := certs[0]
-
-	pemPath := filepath.Join(c.options.MountPath, "tls/"+r.SecretName()+".pem")
-	if _, err := os.Stat(pemPath); !os.IsNotExist(err) {
-		// path/to/whatever exists
-		pemBytes, err := ioutil.ReadFile(pemPath)
-		if err != nil {
-			return false, err
-		}
-		crts, err := cert.ParseCertsPEM(pemBytes)
-		if err != nil {
-			return false, err
-		}
-
-		projections["tls/"+r.SecretName()+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
-		return !crts[0].Equal(crt), nil
-	}
-
 	projections["tls/"+r.SecretName()+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
-	return true, nil
+	return nil
 }

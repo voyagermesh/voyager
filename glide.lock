@@ -1,5 +1,5 @@
-hash: 8920c20cb293a9513c32f82dde5ff60a845af40bb76a53cef8c6cde8100e2720
-updated: 2017-10-10T22:52:48.281494989-07:00
+hash: c1d52141d9591d55b80804b706526951a3afad4d765ecdc713243f95d0591d61
+updated: 2017-10-11T02:19:59.178057822-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -7,7 +7,7 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/go
-  version: b2ff0c0b3293cc848d781d1efb57ffda5fa0226e
+  version: f719fe83ed5dd094e07c4456dc68e1227131d581
   subpackages:
   - context
   - crypto/rand
@@ -25,7 +25,7 @@ imports:
   subpackages:
   - exporter
 - name: github.com/appscode/kloader
-  version: 09afbadb816d4693febc17a452fae60fab399f48
+  version: 6ee71211e6c8d0f20606a58e18abf5cbf799f2a5
   subpackages:
   - cmds
   - controller
