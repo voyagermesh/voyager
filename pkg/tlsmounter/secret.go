@@ -159,10 +159,15 @@ func (c *Controller) processNextSecret() bool {
 // The retry logic should not be part of the business logic.
 func (c *Controller) syncSecret(key string) error {
 	key, err := cache.MetaNamespaceKeyFunc(cache.ExplicitKey(c.options.IngressRef.Namespace + "/" + c.options.IngressRef.Name))
-	if err == nil {
-		c.sQueue.Add(key)
+	if err != nil {
+		return err
 	}
-	return err
+	if c.options.UsesEngress() {
+		c.engQueue.Add(key)
+	} else {
+		c.ingQueue.Add(key)
+	}
+	return nil
 }
 
 func (c *Controller) getSecret(name string) (*apiv1.Secret, error) {
@@ -191,7 +196,7 @@ func (c *Controller) projectTLSSecret(r *apiv1.Secret, projections map[string]io
 		return false, err
 	}
 
-	pemPath := filepath.Join(c.options.MountPath, "cert/"+r.Name+".pem")
+	pemPath := filepath.Join(c.options.MountPath, "tls/"+r.Name+".pem")
 	if _, err := os.Stat(pemPath); !os.IsNotExist(err) {
 		// path/to/whatever exists
 		pemBytes, err := ioutil.ReadFile(pemPath)
@@ -203,11 +208,11 @@ func (c *Controller) projectTLSSecret(r *apiv1.Secret, projections map[string]io
 			return false, err
 		}
 
-		projections["cert/"+r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
+		projections["tls/"+r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
 		return !diskCerts[0].Equal(secretCerts[0]), nil
 	}
 
-	projections["cert/"+r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
+	projections["tls/"+r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
 	return true, nil
 }
 

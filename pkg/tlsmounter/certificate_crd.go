@@ -135,10 +135,15 @@ func (c *Controller) processNextCertificate() bool {
 // The retry logic should not be part of the business logic.
 func (c *Controller) syncCertificate(key string) error {
 	key, err := cache.MetaNamespaceKeyFunc(cache.ExplicitKey(c.options.IngressRef.Namespace + "/" + c.options.IngressRef.Name))
-	if err == nil {
-		c.sQueue.Add(key)
+	if err != nil {
+		return err
 	}
-	return err
+	if c.options.UsesEngress() {
+		c.engQueue.Add(key)
+	} else {
+		c.ingQueue.Add(key)
+	}
+	return nil
 }
 
 func (c *Controller) getCertificate(name string) (*api.Certificate, error) {
@@ -163,7 +168,7 @@ func (c *Controller) projectCertificate(r *api.Certificate, projections map[stri
 	}
 	crt := certs[0]
 
-	pemPath := filepath.Join(c.options.MountPath, "cert/"+r.SecretName()+".pem")
+	pemPath := filepath.Join(c.options.MountPath, "tls/"+r.SecretName()+".pem")
 	if _, err := os.Stat(pemPath); !os.IsNotExist(err) {
 		// path/to/whatever exists
 		pemBytes, err := ioutil.ReadFile(pemPath)
@@ -175,10 +180,10 @@ func (c *Controller) projectCertificate(r *api.Certificate, projections map[stri
 			return false, err
 		}
 
-		projections["cert/"+r.SecretName()+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
+		projections["tls/"+r.SecretName()+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
 		return !crts[0].Equal(crt), nil
 	}
 
-	projections["cert/"+r.SecretName()+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
+	projections["tls/"+r.SecretName()+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
 	return true, nil
 }

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -48,7 +47,6 @@ type Controller struct {
 
 	store *certificate.CertStore
 
-	lock   sync.Mutex
 	writer *ioutilz.AtomicWriter
 
 	sQueue    workqueue.RateLimitingInterface

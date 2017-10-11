@@ -202,7 +202,7 @@ func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]iou
 	if err != nil {
 		return false, err
 	}
-	reload := false
+	changed := false
 	for _, tls := range ing.Spec.TLS {
 		oneliners.FILE()
 		if strings.EqualFold(tls.Ref.Kind, api.ResourceKindCertificate) {
@@ -210,21 +210,21 @@ func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]iou
 			if err != nil {
 				return false, err
 			}
-			changed, err := c.projectCertificate(r, projections)
+			crtChanged, err := c.projectCertificate(r, projections)
 			if err != nil {
 				return false, err
 			}
-			reload = reload || changed
+			changed = changed || crtChanged
 		} else {
 			r, err := c.getSecret(tls.Ref.Name)
 			if err != nil {
 				return false, err
 			}
-			changed, err := c.projectTLSSecret(r, projections)
+			secChanged, err := c.projectTLSSecret(r, projections)
 			if err != nil {
 				return false, err
 			}
-			reload = reload || changed
+			changed = changed || secChanged
 		}
 	}
 
@@ -235,16 +235,16 @@ func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]iou
 				if err != nil {
 					return false, err
 				}
-				changed, err := c.projectAuthSecret(r, projections)
+				secChanged, err := c.projectAuthSecret(r, projections)
 				if err != nil {
 					return false, err
 				}
-				reload = reload || changed
+				changed = changed || secChanged
 			}
 		}
 	}
 
-	return reload, nil
+	return changed, nil
 }
 
 func (c *Controller) mountIngress(ing *api.Ingress, reload bool) error {
@@ -253,15 +253,13 @@ func (c *Controller) mountIngress(ing *api.Ingress, reload bool) error {
 	if err != nil {
 		return err
 	}
-	if len(projections) > 0 {
-		c.lock.Lock()
-		defer c.lock.Unlock()
+	if changed {
 		err := c.writer.Write(projections)
 		if err != nil {
 			return err
 		}
 		oneliners.FILE("Mount ingress")
-		if reload && changed {
+		if reload {
 			return runCmd(c.options.CmdFile)
 		}
 		return nil
