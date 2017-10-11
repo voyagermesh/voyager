@@ -197,55 +197,59 @@ func (c *Controller) getIngress() (*api.Ingress, error) {
 	return i, nil
 }
 
-func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]ioutilz.FileProjection) error {
+func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]ioutilz.FileProjection) (bool, error) {
 	err := ing.IsValid(c.options.CloudProvider)
 	if err != nil {
-		return err
+		return false, err
 	}
+	reload := false
 	for _, tls := range ing.Spec.TLS {
 		oneliners.FILE()
 		if strings.EqualFold(tls.Ref.Kind, api.ResourceKindCertificate) {
 			r, err := c.getCertificate(tls.Ref.Name)
 			if err != nil {
-				return err
+				return false, err
 			}
-			err = c.projectCertificate(r, projections)
+			changed, err := c.projectCertificate(r, projections)
 			if err != nil {
-				return err
+				return false, err
 			}
+			reload = reload || changed
 		} else {
 			r, err := c.getSecret(tls.Ref.Name)
 			if err != nil {
-				return err
+				return false, err
 			}
-			err = c.projectTLSSecret(r, projections)
+			changed, err := c.projectTLSSecret(r, projections)
 			if err != nil {
-				return err
+				return false, err
+			}
+			reload = reload || changed
+		}
+	}
+
+	for _, fr := range ing.Spec.FrontendRules {
+		if fr.Auth != nil {
+			if fr.Auth.TLS != nil {
+				r, err := c.getSecret(fr.Auth.TLS.SecretName)
+				if err != nil {
+					return false, err
+				}
+				changed, err := c.projectAuthSecret(r, projections)
+				if err != nil {
+					return false, err
+				}
+				reload = reload || changed
 			}
 		}
 	}
 
-	//for _, fr := range ing.Spec.FrontendRules {
-	//	if fr.Auth != nil {
-	//		if fr.Auth.TLS != nil {
-	//			r, err := c.getSecret(fr.Auth.TLS.SecretName)
-	//			if err != nil {
-	//				return err
-	//			}
-	//			err = c.projectAuthSecret(r, projections)
-	//			if err != nil {
-	//				return err
-	//			}
-	//		}
-	//	}
-	//}
-
-	return nil
+	return reload, nil
 }
 
 func (c *Controller) mountIngress(ing *api.Ingress) error {
 	projections := map[string]ioutilz.FileProjection{}
-	err := c.projectIngress(ing, projections)
+	changed, err := c.projectIngress(ing, projections)
 	if err != nil {
 		return err
 	}
@@ -257,7 +261,7 @@ func (c *Controller) mountIngress(ing *api.Ingress) error {
 			return err
 		}
 		oneliners.FILE("Mount ingress")
-		if !c.options.InitOnly {
+		if !c.options.InitOnly && changed {
 			// Do not run cmd in initOnly as it will restart the HAProxy
 			// But the config map is not still mounted.
 			return runCmd(c.options.CmdFile)
