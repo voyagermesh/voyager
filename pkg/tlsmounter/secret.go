@@ -196,7 +196,7 @@ func (c *Controller) projectTLSSecret(r *apiv1.Secret, projections map[string]io
 		return false, err
 	}
 
-	pemPath := filepath.Join(c.options.MountPath, "cert/"+r.Name+".pem")
+	pemPath := filepath.Join(c.options.MountPath, "tls/"+r.Name+".pem")
 	if _, err := os.Stat(pemPath); !os.IsNotExist(err) {
 		// path/to/whatever exists
 		pemBytes, err := ioutil.ReadFile(pemPath)
@@ -208,11 +208,11 @@ func (c *Controller) projectTLSSecret(r *apiv1.Secret, projections map[string]io
 			return false, err
 		}
 
-		projections["cert/"+r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
+		projections["tls/"+r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
 		return !diskCerts[0].Equal(secretCerts[0]), nil
 	}
 
-	projections["cert/"+r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
+	projections["tls/"+r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
 	return true, nil
 }
 
