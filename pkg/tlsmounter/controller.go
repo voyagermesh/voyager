@@ -34,7 +34,6 @@ type Options struct {
 	CmdFile        string
 	ResyncPeriod   time.Duration
 	MaxNumRequeues int
-	InitOnly       bool
 }
 
 func (opts Options) UsesEngress() bool {
@@ -113,6 +112,8 @@ func (c *Controller) Setup() (err error) {
 	if err != nil {
 		return
 	}
+	// Do not run cmd in initOnly as it will restart the HAProxy
+	// But the config map is not still mounted.
 	err = c.mountIngress(ing, false)
 	return
 }

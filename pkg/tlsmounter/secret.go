@@ -9,9 +9,7 @@ import (
 
 	ioutilz "github.com/appscode/go/ioutil"
 	"github.com/appscode/go/log"
-	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/golang/glog"
-	"github.com/tamalsaha/go-oneliners"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	rt "k8s.io/apimachinery/pkg/runtime"
@@ -160,33 +158,11 @@ func (c *Controller) processNextSecret() bool {
 // information about the secret to stdout. In case an error happened, it has to simply return the error.
 // The retry logic should not be part of the business logic.
 func (c *Controller) syncSecret(key string) error {
-	obj, exists, err := c.sIndexer.GetByKey(key)
-	if err != nil {
-		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
-		return err
+	key, err := cache.MetaNamespaceKeyFunc(cache.ExplicitKey(c.options.IngressRef.Namespace + "/" + c.options.IngressRef.Name))
+	if err == nil {
+		c.sQueue.Add(key)
 	}
-
-	if !exists {
-		// Below we will warm up our cache with a Secret, so that we will see a delete for one secret
-		fmt.Printf("Secret %s does not exist anymore\n", key)
-	} else {
-		secret := obj.(*apiv1.Secret)
-		fmt.Printf("Sync/Add/Update for Secret %s\n", secret.GetName())
-
-		err := c.mountSecret(secret)
-		if err != nil {
-			if r, e2 := c.getIngress(); e2 == nil {
-				c.recorder.Event(
-					r.ObjectReference(),
-					apiv1.EventTypeWarning,
-					eventer.EventReasonIngressTLSMountFailed,
-					err.Error(),
-				)
-			}
-			return err
-		}
-	}
-	return nil
+	return err
 }
 
 func (c *Controller) getSecret(name string) (*apiv1.Secret, error) {
@@ -200,19 +176,19 @@ func (c *Controller) getSecret(name string) (*apiv1.Secret, error) {
 	return obj.(*apiv1.Secret), nil
 }
 
-func (c *Controller) projectTLSSecret(r *apiv1.Secret, projections map[string]ioutilz.FileProjection) error {
+func (c *Controller) projectTLSSecret(r *apiv1.Secret, projections map[string]ioutilz.FileProjection) (bool, error) {
 	pemKey, found := r.Data[apiv1.TLSPrivateKeyKey]
 	if !found {
-		return fmt.Errorf("secret %s@%s is missing tls.key", r.Name, c.options.IngressRef.Namespace)
+		return false, fmt.Errorf("secret %s@%s is missing tls.key", r.Name, c.options.IngressRef.Namespace)
 	}
 
 	pemCrt, found := r.Data[apiv1.TLSCertKey]
 	if !found {
-		return fmt.Errorf("secret %s@%s is missing tls.crt", r.Name, c.options.IngressRef.Namespace)
+		return false, fmt.Errorf("secret %s@%s is missing tls.crt", r.Name, c.options.IngressRef.Namespace)
 	}
 	secretCerts, err := cert.ParseCertsPEM(pemCrt)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	pemPath := filepath.Join(c.options.MountPath, "cert/"+r.Name+".pem")
@@ -220,58 +196,27 @@ func (c *Controller) projectTLSSecret(r *apiv1.Secret, projections map[string]io
 		// path/to/whatever exists
 		pemBytes, err := ioutil.ReadFile(pemPath)
 		if err != nil {
-			return err
+			return false, err
 		}
 		diskCerts, err := cert.ParseCertsPEM(pemBytes)
 		if err != nil {
-			return err
+			return false, err
 		}
-		if !diskCerts[0].Equal(secretCerts[0]) {
-			projections["cert/"+r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
-		}
-	} else {
+
 		projections["cert/"+r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
+		return !diskCerts[0].Equal(secretCerts[0]), nil
 	}
-	return nil
+
+	projections["cert/"+r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
+	return true, nil
 }
 
-func (c *Controller) projectAuthSecret(r *apiv1.Secret, projections map[string]ioutilz.FileProjection) error {
+func (c *Controller) projectAuthSecret(r *apiv1.Secret, projections map[string]ioutilz.FileProjection) (bool, error) {
 	ca, found := r.Data["ca.crt"]
 	if !found {
-		return fmt.Errorf("secret %s@%s is missing ca.crt", r.Name, c.options.IngressRef.Namespace)
+		return false, fmt.Errorf("secret %s@%s is missing ca.crt", r.Name, c.options.IngressRef.Namespace)
 	}
 
 	projections["ca/"+r.Name+"-ca.crt"] = ioutilz.FileProjection{Mode: 0755, Data: ca}
-	return nil
-}
-
-func (c *Controller) mountSecret(s *apiv1.Secret) error {
-	projections := map[string]ioutilz.FileProjection{}
-	if c.isSecretUsedForTLSTermination(s) {
-		err := c.projectTLSSecret(s, projections)
-		if err != nil {
-			return err
-		}
-	}
-
-	if c.isSecretUsedForTLSAuth(s) {
-		err := c.projectAuthSecret(s, projections)
-		if err != nil {
-			return err
-		}
-	}
-
-	if len(projections) > 0 {
-		c.lock.Lock()
-		defer c.lock.Unlock()
-		err := c.writer.Write(projections)
-		if err != nil {
-			return err
-		}
-		oneliners.FILE("Projecting Secret", s.Name)
-		if !c.options.InitOnly {
-			return runCmd(c.options.CmdFile)
-		}
-	}
-	return nil
+	return true, nil
 }

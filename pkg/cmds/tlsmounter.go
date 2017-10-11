@@ -23,8 +23,8 @@ var (
 		CmdFile:        "",
 		ResyncPeriod:   5 * time.Minute,
 		MaxNumRequeues: 5,
-		InitOnly:       false,
 	}
+	initOnly bool
 )
 
 func NewCmdTLSMounter() *cobra.Command {
@@ -45,7 +45,7 @@ func NewCmdTLSMounter() *cobra.Command {
 	cmd.Flags().StringVarP(&opts.CmdFile, "boot-cmd", "b", opts.CmdFile, "Bash script that will be run on every change of the file")
 	cmd.Flags().DurationVar(&opts.ResyncPeriod, "resync-period", opts.ResyncPeriod, "If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out.")
 	cmd.Flags().StringVarP(&opts.CloudProvider, "cloud-provider", "c", opts.CloudProvider, "Name of cloud provider")
-	cmd.Flags().BoolVar(&opts.InitOnly, "init-only", opts.InitOnly, "If true, exits after initial tls mount")
+	cmd.Flags().BoolVar(&initOnly, "init-only", initOnly, "If true, exits after initial tls mount")
 
 	return cmd
 }
@@ -66,7 +66,7 @@ func runTLSMounter() {
 		log.Fatalln(err)
 	}
 
-	if opts.InitOnly {
+	if initOnly {
 		os.Exit(0)
 	}
 
