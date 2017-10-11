@@ -9,7 +9,6 @@ import (
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/golang/glog"
-	"github.com/tamalsaha/go-oneliners"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	rt "k8s.io/apimachinery/pkg/runtime"
@@ -148,7 +147,7 @@ func (c *Controller) syncIngressCRD(key string) error {
 		d := obj.(*api.Ingress)
 		fmt.Printf("Sync/Add/Update for Ingress %s\n", d.GetName())
 
-		err = c.mountIngress(d)
+		err = c.mountIngress(d, true)
 		if err != nil {
 			c.recorder.Event(
 				d.ObjectReference(),
@@ -203,7 +202,6 @@ func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]iou
 		return err
 	}
 	for _, tls := range ing.Spec.TLS {
-		oneliners.FILE()
 		if strings.EqualFold(tls.Ref.Kind, api.ResourceKindCertificate) {
 			r, err := c.getCertificate(tls.Ref.Name)
 			if err != nil {
@@ -243,7 +241,7 @@ func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]iou
 	return nil
 }
 
-func (c *Controller) mountIngress(ing *api.Ingress) error {
+func (c *Controller) mountIngress(ing *api.Ingress, reload bool) error {
 	projections := map[string]ioutilz.FileProjection{}
 	err := c.projectIngress(ing, projections)
 	if err != nil {
@@ -256,12 +254,10 @@ func (c *Controller) mountIngress(ing *api.Ingress) error {
 		if err != nil {
 			return err
 		}
-		oneliners.FILE("Mount ingress")
-		if !c.options.InitOnly {
-			// Do not run cmd in initOnly as it will restart the HAProxy
-			// But the config map is not still mounted.
+		if reload {
 			return runCmd(c.options.CmdFile)
 		}
+		return nil
 	}
 	return nil
 }

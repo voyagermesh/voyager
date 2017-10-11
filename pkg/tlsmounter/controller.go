@@ -113,7 +113,7 @@ func (c *Controller) Setup() (err error) {
 	if err != nil {
 		return
 	}
-	err = c.mountIngress(ing)
+	err = c.mountIngress(ing, false)
 	return
 }
 

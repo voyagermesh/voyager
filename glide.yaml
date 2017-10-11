@@ -18,7 +18,7 @@ import:
   version: v1.7.0
 - package: github.com/benbjohnson/clock
 - package: github.com/coreos/prometheus-operator
-  version: v0.12.0
+  version: v0.13.0
 - package: github.com/ghodss/yaml
   version: v1.0.0
 - package: github.com/golang/glog
