@@ -10,6 +10,7 @@ import (
 	"github.com/appscode/go/log"
 	logs "github.com/appscode/go/log/golog"
 	"k8s.io/client-go/util/homedir"
+	"os"
 )
 
 func init() {
@@ -25,6 +26,7 @@ func init() {
 	flag.StringVar(&testConfigs.TestNamespace, "namespace", "test-"+rand.Characters(5), "Run tests in this namespaces")
 	flag.BoolVar(&testConfigs.RBACEnabled, "rbac", false, "")
 	flag.BoolVar(&testConfigs.TestCertificate, "cert", false, "")
+	flag.StringVar(&testConfigs.DumpLocation, "dump", os.TempDir(), "")
 
 	enableLogging()
 }
@@ -42,6 +44,7 @@ type E2EConfig struct {
 	LBPersistIP       string
 	RBACEnabled       bool
 	TestCertificate   bool
+	DumpLocation      string
 }
 
 var testConfigs E2EConfig

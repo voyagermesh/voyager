@@ -5,7 +5,9 @@ import (
 	"crypto/x509"
 	"fmt"
 	"net/http"
-	"time"
+
+	"io/ioutil"
+	"os"
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
@@ -135,18 +137,6 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			time.Sleep(time.Hour)
-
-			err = f.Ingress.DoHTTPsStatus(framework.NoRetry, "http.appscode.test", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
-				fmt.Println(*r)
-				return Expect(r.Status).Should(Equal(301)) &&
-					Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
-					Expect(r.ResponseHeader.Get("Location")).Should(Equal("https://http.appscode.test/testpath/ok"))
-			})
-			fmt.Println("========================", err)
-			// Expect(err).NotTo(HaveOccurred())
-
-			// TLS Auth
 			ccrt, ckey, err := f.CertManager.NewClientCertPair()
 			Expect(err).NotTo(HaveOccurred())
 			clientCert, err := tls.X509KeyPair(ccrt, ckey)
@@ -162,6 +152,24 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			tlsConfig.BuildNameToCertificate()
 			tr := &http.Transport{TLSClientConfig: tlsConfig}
 
+			if len(f.Config.DumpLocation) > 0 {
+				ioutil.WriteFile(f.Config.DumpLocation+"/ca.crt", f.CertManager.CACert(), os.ModePerm)
+				ioutil.WriteFile(f.Config.DumpLocation+"/client.crt", ccrt, os.ModePerm)
+				ioutil.WriteFile(f.Config.DumpLocation+"/client.key", ckey, os.ModePerm)
+			}
+
+			//time.Sleep(time.Hour)
+
+			err = f.Ingress.DoHTTPsStatus(framework.NoRetry, "http.appscode.test", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+				fmt.Println(*r)
+				return Expect(r.Status).Should(Equal(301)) &&
+					Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
+					Expect(r.ResponseHeader.Get("Location")).Should(Equal("https://http.appscode.test/testpath/ok"))
+			})
+			fmt.Println("========================", err)
+			// Expect(err).NotTo(HaveOccurred())
+
+			// TLS Auth
 			err = f.Ingress.DoHTTPsWithTransport(framework.MaxRetry, "http.appscode.test", tr, ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
 				fmt.Println(*r)
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
