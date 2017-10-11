@@ -148,7 +148,7 @@ func (c *Controller) syncIngressCRD(key string) error {
 		d := obj.(*api.Ingress)
 		fmt.Printf("Sync/Add/Update for Ingress %s\n", d.GetName())
 
-		err = c.mountIngress(d)
+		err = c.mountIngress(d, true)
 		if err != nil {
 			c.recorder.Event(
 				d.ObjectReference(),
@@ -247,7 +247,7 @@ func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]iou
 	return reload, nil
 }
 
-func (c *Controller) mountIngress(ing *api.Ingress) error {
+func (c *Controller) mountIngress(ing *api.Ingress, reload bool) error {
 	projections := map[string]ioutilz.FileProjection{}
 	changed, err := c.projectIngress(ing, projections)
 	if err != nil {
@@ -261,11 +261,10 @@ func (c *Controller) mountIngress(ing *api.Ingress) error {
 			return err
 		}
 		oneliners.FILE("Mount ingress")
-		if !c.options.InitOnly && changed {
-			// Do not run cmd in initOnly as it will restart the HAProxy
-			// But the config map is not still mounted.
+		if reload && changed {
 			return runCmd(c.options.CmdFile)
 		}
+		return nil
 	}
 	return nil
 }

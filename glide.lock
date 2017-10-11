@@ -90,7 +90,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/coreos/prometheus-operator
-  version: f5284c9eddc956775e06f854a9bffc6bfece3d9c
+  version: bcb91cabbe1b8427d6aa85c9bd649ba0c2af75c9
   subpackages:
   - pkg/client/monitoring/v1alpha1
 - name: github.com/cpuguy83/go-md2man
