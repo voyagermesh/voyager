@@ -159,10 +159,15 @@ func (c *Controller) processNextSecret() bool {
 // The retry logic should not be part of the business logic.
 func (c *Controller) syncSecret(key string) error {
 	key, err := cache.MetaNamespaceKeyFunc(cache.ExplicitKey(c.options.IngressRef.Namespace + "/" + c.options.IngressRef.Name))
-	if err == nil {
-		c.sQueue.Add(key)
+	if err != nil {
+		return err
 	}
-	return err
+	if c.options.UsesEngress() {
+		c.engQueue.Add(key)
+	} else {
+		c.ingQueue.Add(key)
+	}
+	return nil
 }
 
 func (c *Controller) getSecret(name string) (*apiv1.Secret, error) {
