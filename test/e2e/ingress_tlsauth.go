@@ -3,6 +3,7 @@ package e2e
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"net/http"
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -13,7 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
-	"fmt"
+	"time"
 )
 
 var _ = Describe("IngressWithTLSAuth", func() {
@@ -93,8 +94,11 @@ var _ = Describe("IngressWithTLSAuth", func() {
 				},
 				TLS: []api.IngressTLS{
 					{
-						SecretName: tlsSecret.Name,
-						Hosts:      []string{"http.appscode.test"},
+						Ref: &api.LocalTypedReference{
+							Kind: "Secret",
+							Name: tlsSecret.Name,
+						},
+						Hosts: []string{"http.appscode.test"},
 					},
 				},
 				Rules: []api.IngressRule{
@@ -126,7 +130,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			// time.Sleep(time.Hour)
+			time.Sleep(time.Hour)
 
 			err = f.Ingress.DoHTTPsTestRedirect(framework.NoRetry, "http.appscode.test", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
 				fmt.Println(*r)

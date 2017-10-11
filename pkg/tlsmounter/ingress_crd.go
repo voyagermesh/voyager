@@ -203,6 +203,7 @@ func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]iou
 		return err
 	}
 	for _, tls := range ing.Spec.TLS {
+		oneliners.FILE()
 		if strings.EqualFold(tls.Ref.Kind, api.ResourceKindCertificate) {
 			r, err := c.getCertificate(tls.Ref.Name)
 			if err != nil {
@@ -224,20 +225,20 @@ func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]iou
 		}
 	}
 
-	for _, fr := range ing.Spec.FrontendRules {
-		if fr.Auth != nil {
-			if fr.Auth.TLS != nil {
-				r, err := c.getSecret(fr.Auth.TLS.SecretName)
-				if err != nil {
-					return err
-				}
-				err = c.projectAuthSecret(r, projections)
-				if err != nil {
-					return err
-				}
-			}
-		}
-	}
+	//for _, fr := range ing.Spec.FrontendRules {
+	//	if fr.Auth != nil {
+	//		if fr.Auth.TLS != nil {
+	//			r, err := c.getSecret(fr.Auth.TLS.SecretName)
+	//			if err != nil {
+	//				return err
+	//			}
+	//			err = c.projectAuthSecret(r, projections)
+	//			if err != nil {
+	//				return err
+	//			}
+	//		}
+	//	}
+	//}
 
 	return nil
 }
