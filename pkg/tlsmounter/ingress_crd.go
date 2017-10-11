@@ -197,34 +197,32 @@ func (c *Controller) getIngress() (*api.Ingress, error) {
 	return i, nil
 }
 
-func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]ioutilz.FileProjection) (bool, error) {
+func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]ioutilz.FileProjection) error {
 	err := ing.IsValid(c.options.CloudProvider)
 	if err != nil {
-		return false, err
+		return err
 	}
-	changed := false
+
 	for _, tls := range ing.Spec.TLS {
 		oneliners.FILE()
 		if strings.EqualFold(tls.Ref.Kind, api.ResourceKindCertificate) {
 			r, err := c.getCertificate(tls.Ref.Name)
 			if err != nil {
-				return false, err
+				return err
 			}
-			crtChanged, err := c.projectCertificate(r, projections)
+			err = c.projectCertificate(r, projections)
 			if err != nil {
-				return false, err
+				return err
 			}
-			changed = changed || crtChanged
 		} else {
 			r, err := c.getSecret(tls.Ref.Name)
 			if err != nil {
-				return false, err
+				return err
 			}
-			secChanged, err := c.projectTLSSecret(r, projections)
+			err = c.projectTLSSecret(r, projections)
 			if err != nil {
-				return false, err
+				return err
 			}
-			changed = changed || secChanged
 		}
 	}
 
@@ -233,36 +231,32 @@ func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]iou
 			if fr.Auth.TLS != nil {
 				r, err := c.getSecret(fr.Auth.TLS.SecretName)
 				if err != nil {
-					return false, err
+					return err
 				}
-				secChanged, err := c.projectAuthSecret(r, projections)
+				err = c.projectAuthSecret(r, projections)
 				if err != nil {
-					return false, err
+					return err
 				}
-				changed = changed || secChanged
 			}
 		}
 	}
 
-	return changed, nil
+	return nil
 }
 
 func (c *Controller) mountIngress(ing *api.Ingress, reload bool) error {
 	projections := map[string]ioutilz.FileProjection{}
-	changed, err := c.projectIngress(ing, projections)
+	err := c.projectIngress(ing, projections)
 	if err != nil {
 		return err
 	}
-	if changed {
-		err := c.writer.Write(projections)
-		if err != nil {
-			return err
-		}
-		oneliners.FILE("Mount ingress")
-		if reload {
-			return runCmd(c.options.CmdFile)
-		}
-		return nil
+	changed, err := c.writer.Write(projections)
+	if err != nil {
+		return err
+	}
+	oneliners.FILE("Mount ingress")
+	if changed && reload {
+		return runCmd(c.options.CmdFile)
 	}
 	return nil
 }
