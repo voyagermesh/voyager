@@ -50,42 +50,42 @@ func NewAtomicWriter(targetDir string) (*AtomicWriter, error) {
 	return &AtomicWriter{targetDir: targetDir}, nil
 }
 
-func (w *AtomicWriter) Write(payload map[string]FileProjection) error {
+func (w *AtomicWriter) Write(payload map[string]FileProjection) (bool, error) {
 	cleanPayload, err := validatePayload(payload)
 	if err != nil {
 		log.Errorf("invalid payload: %v", err)
-		return err
+		return false, err
 	}
 
 	pathsToRemove, err := w.pathsToRemove(cleanPayload)
 	if err != nil {
 		log.Errorf("error determining user-visible files to remove: %v", err)
-		return err
+		return false, err
 	}
 
 	if should, err := w.shouldWritePayload(cleanPayload); err != nil {
 		log.Errorf("error determining whether payload should be written to disk: %v", err)
-		return err
+		return false, err
 	} else if !should && len(pathsToRemove) == 0 {
 		log.V(4).Infof("no update required for target directory %v", w.targetDir)
-		return nil
+		return false, nil
 	} else {
 		log.V(4).Infof("write required for target directory %v", w.targetDir)
 	}
 
 	if err = w.writePayloadToDir(cleanPayload, w.targetDir); err != nil {
 		log.Errorf("error writing payload to ts data directory %s: %v", w.targetDir, err)
-		return err
+		return false, err
 	} else {
 		log.V(4).Infof("performed write of new data to ts data directory: %s", w.targetDir)
 	}
 
 	if err = w.removeUserVisiblePaths(pathsToRemove); err != nil {
 		log.Errorf("error removing old visible symlinks: %v", err)
-		return err
+		return false, err
 	}
 
-	return nil
+	return true, nil
 }
 
 // validatePayload returns an error if any path in the payload  returns a copy of the payload with the paths cleaned.

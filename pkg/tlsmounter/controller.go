@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -48,7 +47,6 @@ type Controller struct {
 
 	store *certificate.CertStore
 
-	lock   sync.Mutex
 	writer *ioutilz.AtomicWriter
 
 	sQueue    workqueue.RateLimitingInterface
@@ -112,6 +110,8 @@ func (c *Controller) Setup() (err error) {
 	if err != nil {
 		return
 	}
+	// Do not run cmd in initOnly as it will restart the HAProxy
+	// But the config map is not still mounted.
 	err = c.mountIngress(ing, false)
 	return
 }
@@ -165,6 +165,21 @@ func (c *Controller) initTLSCache(ing *api.Ingress) error {
 			err = c.sIndexer.Add(sc)
 			if err != nil {
 				return err
+			}
+		}
+	}
+
+	for _, fr := range ing.Spec.FrontendRules {
+		if fr.Auth != nil {
+			if fr.Auth.TLS != nil {
+				stls, err := c.k8sClient.CoreV1().Secrets(c.options.IngressRef.Namespace).Get(fr.Auth.TLS.SecretName, metav1.GetOptions{})
+				if err != nil {
+					return err
+				}
+				err = c.sIndexer.Add(stls)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}

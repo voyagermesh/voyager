@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -385,13 +386,14 @@ func (c *controller) generateConfig() error {
 				return err
 			}
 			if len(bk.Endpoints) > 0 {
+				fr := getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, rule.TCP.Port.IntValue())
 				def := &haproxy.TCPService{
 					SharedInfo:    si,
 					FrontendName:  fmt.Sprintf("tcp-%s", rule.TCP.Port.String()),
 					Host:          rule.Host,
 					Port:          rule.TCP.Port.String(),
 					ALPNOptions:   parseALPNOptions(rule.TCP.ALPN),
-					FrontendRules: getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, rule.TCP.Port.IntValue()),
+					FrontendRules: fr.Rules,
 					Backend: haproxy.Backend{
 						Name:             getBackendName(c.Ingress, rule.TCP.Backend),
 						BackendRules:     rule.TCP.Backend.BackendRule,
@@ -401,6 +403,16 @@ func (c *controller) generateConfig() error {
 						StickyCookieHash: bk.StickyCookieHash,
 					},
 				}
+
+				htls, err := c.getTLSAuth(fr)
+				if err != nil {
+					return err
+				}
+
+				if htls != nil {
+					def.TLSAuth = htls
+				}
+
 				if ref, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoTLS {
 					if ref.Kind == api.ResourceKindCertificate {
 						crd, err := c.VoyagerClient.Certificates(c.Ingress.Namespace).Get(ref.Name, metav1.GetOptions{})
@@ -418,15 +430,26 @@ func (c *controller) generateConfig() error {
 
 	for key := range httpServices {
 		value := httpServices[key]
-		td.HTTPService = append(td.HTTPService, &haproxy.HTTPService{
+		fr := getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, key.Port)
+		srv := &haproxy.HTTPService{
 			SharedInfo:    si,
 			FrontendName:  fmt.Sprintf("http-%d", key.Port),
 			Port:          key.Port,
-			FrontendRules: getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, key.Port),
+			FrontendRules: fr.Rules,
 			NodePort:      key.NodePort,
 			OffloadSSL:    key.OffloadSSL,
 			Paths:         value,
-		})
+		}
+
+		htls, err := c.getTLSAuth(fr)
+		if err != nil {
+			return err
+		}
+
+		if htls != nil {
+			srv.TLSAuth = htls
+		}
+		td.HTTPService = append(td.HTTPService, srv)
 	}
 
 	td.DNSResolvers = make([]*api.DNSResolver, 0)
@@ -493,13 +516,13 @@ func getAuthUsers(data map[string][]byte) (map[string][]haproxy.AuthUser, error)
 	return ret, nil
 }
 
-func getFrontendRulesForPort(rules []api.FrontendRule, port int) []string {
+func getFrontendRulesForPort(rules []api.FrontendRule, port int) api.FrontendRule {
 	for _, rule := range rules {
 		if rule.Port.IntValue() == port {
-			return rule.Rules
+			return rule
 		}
 	}
-	return []string{}
+	return api.FrontendRule{}
 }
 
 func parseALPNOptions(opt []string) string {
@@ -582,4 +605,35 @@ func (c *controller) getErrorFiles() ([]*haproxy.ErrorFile, error) {
 		}
 	}
 	return errorFiles, nil
+}
+
+func (c *controller) getTLSAuth(fr api.FrontendRule) (*haproxy.TLSAuth, error) {
+	if fr.Auth != nil {
+		if fr.Auth.TLS != nil {
+			tlsAuthSec, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(fr.Auth.TLS.SecretName, metav1.GetOptions{})
+			if err != nil {
+				return nil, err
+			}
+
+			if _, ok := tlsAuthSec.Data["ca.crt"]; !ok {
+				return nil, fmt.Errorf("key ca.crt not found in TLSAuthSecret %s", tlsAuthSec.Name)
+			}
+
+			htls := &haproxy.TLSAuth{
+				CAFile:       fr.Auth.TLS.SecretName + "-ca.crt",
+				VerifyClient: string(fr.Auth.TLS.VerifyClient),
+				Headers:      fr.Auth.TLS.Headers,
+				ErrorPage:    fr.Auth.TLS.ErrorPage,
+			}
+			if u, err := url.Parse(fr.Auth.TLS.ErrorPage); err == nil {
+				htls.ErrorPath = u.Path
+			}
+			if htls.VerifyClient == "" {
+				htls.VerifyClient = string(api.TLSAuthVerifyRequired)
+			}
+
+			return htls, nil
+		}
+	}
+	return nil, nil
 }

@@ -1,5 +1,5 @@
-hash: 066c8ecd093adc40e859fde6fbbc9656f734c3914ce2741d4d79443c0256a770
-updated: 2017-10-10T11:01:30.690888294-07:00
+hash: c1d52141d9591d55b80804b706526951a3afad4d765ecdc713243f95d0591d61
+updated: 2017-10-11T02:19:59.178057822-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -7,7 +7,7 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/go
-  version: b2ff0c0b3293cc848d781d1efb57ffda5fa0226e
+  version: f719fe83ed5dd094e07c4456dc68e1227131d581
   subpackages:
   - context
   - crypto/rand
@@ -25,7 +25,7 @@ imports:
   subpackages:
   - exporter
 - name: github.com/appscode/kloader
-  version: 09afbadb816d4693febc17a452fae60fab399f48
+  version: 6ee71211e6c8d0f20606a58e18abf5cbf799f2a5
   subpackages:
   - cmds
   - controller
@@ -315,11 +315,13 @@ imports:
 - name: github.com/Sirupsen/logrus
   version: 51fe59aca108dc5680109e7b2051cbdcfa5a253c
 - name: github.com/spf13/cobra
-  version: 4d6af280c76ff7d266434f2dba207c4b75dfc076
+  version: 845c9050106f58df1cb4b4ed2e7e8dae7bbd770d
   subpackages:
   - doc
 - name: github.com/spf13/pflag
   version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
+- name: github.com/tamalsaha/go-oneliners
+  version: 4ca214c0460d9077e49e3ef394785f92408f7699
 - name: github.com/timewasted/linode
   version: 37e84520dcf74488f67654f9c775b9752c232dc1
   subpackages:

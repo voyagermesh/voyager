@@ -172,10 +172,11 @@ func (c *configMapMounter) Mount(configMap *apiv1.ConfigMap) {
 	if err != nil {
 		log.Fatalln("Failed to Create atomic writer, Cause", err)
 	}
-	err = writer.Write(payload)
+	changed, err := writer.Write(payload)
 	if err != nil {
 		log.Fatalln("Failed to Mount ConfigMap, Cause", err)
 	}
-
-	incMountCounter()
+	if changed {
+		incMountCounter()
+	}
 }

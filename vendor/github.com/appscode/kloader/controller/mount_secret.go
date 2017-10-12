@@ -170,10 +170,11 @@ func (c *secretMounter) Mount(secret *apiv1.Secret) {
 	if err != nil {
 		log.Fatalln("Failed to Create atomic writer, Cause", err)
 	}
-	err = writer.Write(payload)
+	changed, err := writer.Write(payload)
 	if err != nil {
 		log.Fatalln("Failed to Mount secret, Cause", err)
 	}
-
-	incMountCounter()
+	if changed {
+		incMountCounter()
+	}
 }

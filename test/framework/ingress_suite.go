@@ -2,6 +2,7 @@ package framework
 
 import (
 	"errors"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -271,6 +272,26 @@ func (i *ingressInvocation) DoHTTPs(retryCount int, host, cert string, ing *api_
 	return nil
 }
 
+func (i *ingressInvocation) DoHTTPsWithTransport(retryCount int, host string, tr *http.Transport, ing *api_v1beta1.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+	for _, url := range eps {
+		if strings.HasPrefix(url, "http://") {
+			url = "https://" + url[len("http://"):]
+		}
+
+		cl := testserverclient.NewTestHTTPClient(url).WithHost(host).WithTransport(tr).Method(method).Path(path)
+		resp, err := cl.DoWithRetry(retryCount)
+		if err != nil {
+			return err
+		}
+
+		log.Infoln("HTTP Response received from server", *resp)
+		if !matcher(resp) {
+			return errors.New("Failed to match")
+		}
+	}
+	return nil
+}
+
 func (i *ingressInvocation) DoHTTPTestRedirect(retryCount int, ing *api_v1beta1.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
 		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Path(path).DoTestRedirectWithRetry(retryCount)
@@ -320,6 +341,42 @@ func (i *ingressInvocation) DoHTTPsTestRedirect(retryCount int, host string, ing
 func (i *ingressInvocation) DoHTTPStatus(retryCount int, ing *api_v1beta1.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
 		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Path(path).DoStatusWithRetry(retryCount)
+		if err != nil {
+			return err
+		}
+
+		log.Infoln("HTTP Response received from server", *resp)
+		if !matcher(resp) {
+			return errors.New("Failed to match")
+		}
+	}
+	return nil
+}
+
+func (i *ingressInvocation) DoHTTPsStatus(retryCount int, host string, ing *api_v1beta1.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+	for _, url := range eps {
+		if strings.HasPrefix(url, "http://") {
+			url = "https://" + url[len("http://"):]
+		}
+		resp, err := testserverclient.NewTestHTTPClient(url).WithHost(host).Method(method).Path(path).DoStatusWithRetry(retryCount)
+		if err != nil {
+			return err
+		}
+
+		log.Infoln("HTTP Response received from server", *resp)
+		if !matcher(resp) {
+			return errors.New("Failed to match")
+		}
+	}
+	return nil
+}
+
+func (i *ingressInvocation) DoTestRedirectWithTransport(retryCount int, host string, tr *http.Transport, ing *api_v1beta1.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+	for _, url := range eps {
+		if strings.HasPrefix(url, "http://") {
+			url = "https://" + url[len("http://"):]
+		}
+		resp, err := testserverclient.NewTestHTTPClient(url).WithTransport(tr).WithHost(host).Method(method).Path(path).DoTestRedirectWithRetry(retryCount)
 		if err != nil {
 			return err
 		}
