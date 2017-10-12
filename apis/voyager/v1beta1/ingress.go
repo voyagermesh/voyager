@@ -280,7 +280,6 @@ type AuthOption struct {
 type TLSAuthVerifyOption string
 
 const (
-	TLSAuthVerifyNone     TLSAuthVerifyOption = "none"
 	TLSAuthVerifyOptional TLSAuthVerifyOption = "optional"
 	TLSAuthVerifyRequired TLSAuthVerifyOption = "required"
 )
