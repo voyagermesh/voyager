@@ -9,7 +9,7 @@ HSTS Policy specifies a period of time during which the user agent should only a
 
 voyager can insert HSTS header in http response if configured via ingress annotations.
 
-```
+```yaml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
@@ -35,7 +35,7 @@ spec:
 ```
 
 Applying the annotation in ingress will have the following effects, will add the HSTS Header in the response.
-```
+```console
 $ curl -v -X 'GET' -k 'http://foo.bar.com'
 Strict-Transport-Security: max-age=100; includeSubDomains; preload
 ```
