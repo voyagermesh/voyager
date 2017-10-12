@@ -4,9 +4,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"net/http"
-
 	"io/ioutil"
+	"net/http"
 	"os"
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -35,6 +34,12 @@ var _ = Describe("IngressWithTLSAuth", func() {
 	BeforeEach(func() {
 		crt, key, err := f.CertManager.NewServerCertPair()
 		Expect(err).NotTo(HaveOccurred())
+
+		if len(f.Config.DumpLocation) > 0 {
+			ioutil.WriteFile(f.Config.DumpLocation+"/server.crt", crt, os.ModePerm)
+			ioutil.WriteFile(f.Config.DumpLocation+"/server.key", key, os.ModePerm)
+		}
+
 		tlsSecret = &apiv1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      f.Ingress.UniqueName(),
@@ -139,18 +144,6 @@ var _ = Describe("IngressWithTLSAuth", func() {
 
 			ccrt, ckey, err := f.CertManager.NewClientCertPair()
 			Expect(err).NotTo(HaveOccurred())
-			clientCert, err := tls.X509KeyPair(ccrt, ckey)
-			Expect(err).NotTo(HaveOccurred())
-
-			caCertPool := x509.NewCertPool()
-			caCertPool.AppendCertsFromPEM(f.CertManager.CACert())
-
-			tlsConfig := &tls.Config{
-				Certificates: []tls.Certificate{clientCert},
-				RootCAs:      caCertPool,
-			}
-			tlsConfig.BuildNameToCertificate()
-			tr := &http.Transport{TLSClientConfig: tlsConfig}
 
 			if len(f.Config.DumpLocation) > 0 {
 				ioutil.WriteFile(f.Config.DumpLocation+"/ca.crt", f.CertManager.CACert(), os.ModePerm)
@@ -158,26 +151,45 @@ var _ = Describe("IngressWithTLSAuth", func() {
 				ioutil.WriteFile(f.Config.DumpLocation+"/client.key", ckey, os.ModePerm)
 			}
 
-			//time.Sleep(time.Hour)
+			// time.Sleep(time.Hour)
 
-			err = f.Ingress.DoHTTPsStatus(framework.NoRetry, "http.appscode.test", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTPsStatus(framework.NoRetry, "http.appscode.test", ing, eps, "GET", "/testpath/hello", func(r *testserverclient.Response) bool {
+				return true
+			})
+			Expect(err).To(HaveOccurred())
+
+			// Wrong Cert
+			err = f.Ingress.DoHTTPsWithTransport(framework.MaxRetry, "http.appscode.test", getTransportForCert(f.CertManager.CACert(), tlsSecret.Data[apiv1.TLSCertKey], tlsSecret.Data[apiv1.TLSPrivateKeyKey]), ing, eps, "GET", "/testpath/hello", func(r *testserverclient.Response) bool {
 				fmt.Println(*r)
-				return Expect(r.Status).Should(Equal(301)) &&
+				return Expect(r.Status).Should(Equal(302)) &&
 					Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
 					Expect(r.ResponseHeader.Get("Location")).Should(Equal("https://http.appscode.test/testpath/ok"))
 			})
-			fmt.Println("========================", err)
-			// Expect(err).NotTo(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 
 			// TLS Auth
-			err = f.Ingress.DoHTTPsWithTransport(framework.MaxRetry, "http.appscode.test", tr, ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTPsWithTransport(framework.MaxRetry, "http.appscode.test", getTransportForCert(f.CertManager.CACert(), ccrt, ckey), ing, eps, "GET", "/testpath/hello", func(r *testserverclient.Response) bool {
 				fmt.Println(*r)
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath"))
 			})
 			Expect(err).NotTo(HaveOccurred())
-
 		})
 	})
 })
+
+func getTransportForCert(ca, ccrt, ckey []byte) *http.Transport {
+	clientCert, err := tls.X509KeyPair(ccrt, ckey)
+	Expect(err).NotTo(HaveOccurred())
+
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(ca)
+
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{clientCert},
+		RootCAs:      caCertPool,
+	}
+	tlsConfig.BuildNameToCertificate()
+	return &http.Transport{TLSClientConfig: tlsConfig}
+}

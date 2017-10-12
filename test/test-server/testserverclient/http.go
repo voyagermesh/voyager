@@ -168,13 +168,17 @@ func (t *httpClient) do(parse bool) (*Response, error) {
 		req.Body = newBody(cl)
 	}
 
+	req.Body = nil
+	command, _ := http2curl.GetCurlCommand(req)
+	log.Warningln("Request:", command)
+
 	resp, err := t.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 
 	req.Body = nil
-	command, _ := http2curl.GetCurlCommand(req)
+	command, _ = http2curl.GetCurlCommand(req)
 	log.Warningln("Request:", command)
 
 	responseStruct := &Response{

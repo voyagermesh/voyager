@@ -5,8 +5,7 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil"
-	api "github.com/appscode/voyager/apis/voyager"
-	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	tcs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
@@ -66,40 +65,8 @@ func (op *Operator) Setup() error {
 
 func (op *Operator) ensureCustomResourceDefinitions() error {
 	crds := []*apiextensions.CustomResourceDefinition{
-		{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:   api_v1beta1.ResourceTypeIngress + "." + api_v1beta1.SchemeGroupVersion.Group,
-				Labels: map[string]string{"app": "voyager"},
-			},
-			Spec: apiextensions.CustomResourceDefinitionSpec{
-				Group:   api.GroupName,
-				Version: api_v1beta1.SchemeGroupVersion.Version,
-				Scope:   apiextensions.NamespaceScoped,
-				Names: apiextensions.CustomResourceDefinitionNames{
-					Singular:   api_v1beta1.ResourceNameIngress,
-					Plural:     api_v1beta1.ResourceTypeIngress,
-					Kind:       api_v1beta1.ResourceKindIngress,
-					ShortNames: []string{"ing"},
-				},
-			},
-		},
-		{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:   api_v1beta1.ResourceTypeCertificate + "." + api_v1beta1.SchemeGroupVersion.Group,
-				Labels: map[string]string{"app": "voyager"},
-			},
-			Spec: apiextensions.CustomResourceDefinitionSpec{
-				Group:   api.GroupName,
-				Version: api_v1beta1.SchemeGroupVersion.Version,
-				Scope:   apiextensions.NamespaceScoped,
-				Names: apiextensions.CustomResourceDefinitionNames{
-					Singular:   api_v1beta1.ResourceNameCertificate,
-					Plural:     api_v1beta1.ResourceTypeCertificate,
-					Kind:       api_v1beta1.ResourceKindCertificate,
-					ShortNames: []string{"cert"},
-				},
-			},
-		},
+		api.Ingress{}.CustomResourceDefinition(),
+		api.Certificate{}.CustomResourceDefinition(),
 	}
 	for _, crd := range crds {
 		_, err := op.CRDClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get(crd.Name, metav1.GetOptions{})
@@ -138,7 +105,7 @@ func (op *Operator) Run() {
 	go op.CheckCertificates()
 }
 
-func (op *Operator) listIngresses() ([]api_v1beta1.Ingress, error) {
+func (op *Operator) listIngresses() ([]api.Ingress, error) {
 	ing, err := op.KubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		return nil, err
@@ -148,9 +115,9 @@ func (op *Operator) listIngresses() ([]api_v1beta1.Ingress, error) {
 		return nil, err
 	}
 
-	items := make([]api_v1beta1.Ingress, len(ing.Items))
+	items := make([]api.Ingress, len(ing.Items))
 	for i, item := range ing.Items {
-		e, err := api_v1beta1.NewEngressFromIngress(item)
+		e, err := api.NewEngressFromIngress(item)
 		if err != nil {
 			continue
 		}

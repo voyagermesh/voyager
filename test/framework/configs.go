@@ -2,6 +2,7 @@ package framework
 
 import (
 	"flag"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -10,7 +11,6 @@ import (
 	"github.com/appscode/go/log"
 	logs "github.com/appscode/go/log/golog"
 	"k8s.io/client-go/util/homedir"
-	"os"
 )
 
 func init() {

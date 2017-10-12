@@ -12,3 +12,5 @@ env APPSCODE_ENV=prod ./hack/docker/voyager/setup.sh release
 
 ./hack/docker/haproxy/1.7.9/setup.sh
 ./hack/docker/haproxy/1.7.9/setup.sh release
+
+rm $REPO_ROOT/dist/.tag
