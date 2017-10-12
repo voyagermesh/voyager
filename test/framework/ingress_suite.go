@@ -371,6 +371,24 @@ func (i *ingressInvocation) DoHTTPsStatus(retryCount int, host string, ing *api_
 	return nil
 }
 
+func (i *ingressInvocation) DoTestRedirectWithTransport(retryCount int, host string, tr *http.Transport, ing *api_v1beta1.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+	for _, url := range eps {
+		if strings.HasPrefix(url, "http://") {
+			url = "https://" + url[len("http://"):]
+		}
+		resp, err := testserverclient.NewTestHTTPClient(url).WithTransport(tr).WithHost(host).Method(method).Path(path).DoTestRedirectWithRetry(retryCount)
+		if err != nil {
+			return err
+		}
+
+		log.Infoln("HTTP Response received from server", *resp)
+		if !matcher(resp) {
+			return errors.New("Failed to match")
+		}
+	}
+	return nil
+}
+
 func (i *ingressInvocation) DoHTTPStatusWithHeader(retryCount int, ing *api_v1beta1.Ingress, eps []string, method, path string, h map[string]string, matcher func(resp *testserverclient.Response) bool) error {
 	for _, url := range eps {
 		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Header(h).Path(path).DoStatusWithRetry(retryCount)

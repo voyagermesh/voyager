@@ -5,9 +5,12 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"os"
+	"strings"
 
+	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/testserverclient"
@@ -151,7 +154,31 @@ var _ = Describe("IngressWithTLSAuth", func() {
 				ioutil.WriteFile(f.Config.DumpLocation+"/client.key", ckey, os.ModePerm)
 			}
 
-			// time.Sleep(time.Hour)
+			resolved := false
+			log.Warningln("Domain 'http.appscode.test' must resolve to ips in", eps)
+
+			// Checking for the domain is pointing to the ips found in the endpoints
+			// The IPs and domain must be in /etc/hosts file
+			ips, err := net.LookupHost("http.appscode.test")
+			if err != nil || len(ips) == 0 {
+				Skip("Domain 'http.appscode.test' do not have endpoints")
+			}
+
+		Outer:
+			for _, ep := range eps {
+				vep := strings.TrimLeft(ep[:strings.LastIndex(ep, ":")], "http://")
+				fmt.Println(vep)
+				for _, ip := range ips {
+					if vep == ip {
+						resolved = true
+						break Outer
+					}
+				}
+			}
+
+			if !resolved {
+				Skip("Domain 'http.appscode.test' did not point to endpoints")
+			}
 
 			err = f.Ingress.DoHTTPsStatus(framework.NoRetry, "http.appscode.test", ing, eps, "GET", "/testpath/hello", func(r *testserverclient.Response) bool {
 				return true
@@ -159,7 +186,8 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).To(HaveOccurred())
 
 			// Wrong Cert
-			err = f.Ingress.DoHTTPsWithTransport(framework.MaxRetry, "http.appscode.test", getTransportForCert(f.CertManager.CACert(), tlsSecret.Data[apiv1.TLSCertKey], tlsSecret.Data[apiv1.TLSPrivateKeyKey]), ing, eps, "GET", "/testpath/hello", func(r *testserverclient.Response) bool {
+			tr := getTransportForCert(f.CertManager.CACert(), tlsSecret.Data[apiv1.TLSCertKey], tlsSecret.Data[apiv1.TLSPrivateKeyKey])
+			err = f.Ingress.DoTestRedirectWithTransport(framework.NoRetry, "http.appscode.test", tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *testserverclient.Response) bool {
 				fmt.Println(*r)
 				return Expect(r.Status).Should(Equal(302)) &&
 					Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
@@ -168,11 +196,12 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// TLS Auth
-			err = f.Ingress.DoHTTPsWithTransport(framework.MaxRetry, "http.appscode.test", getTransportForCert(f.CertManager.CACert(), ccrt, ckey), ing, eps, "GET", "/testpath/hello", func(r *testserverclient.Response) bool {
+			tr = getTransportForCert(f.CertManager.CACert(), ccrt, ckey)
+			err = f.Ingress.DoHTTPsWithTransport(framework.MaxRetry, "http.appscode.test", tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *testserverclient.Response) bool {
 				fmt.Println(*r)
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
-					Expect(r.Path).Should(Equal("/testpath"))
+					Expect(r.Path).Should(Equal("/testpath/hello"))
 			})
 			Expect(err).NotTo(HaveOccurred())
 		})
@@ -191,5 +220,7 @@ func getTransportForCert(ca, ccrt, ckey []byte) *http.Transport {
 		RootCAs:      caCertPool,
 	}
 	tlsConfig.BuildNameToCertificate()
-	return &http.Transport{TLSClientConfig: tlsConfig}
+	return &http.Transport{
+		TLSClientConfig: tlsConfig,
+	}
 }
