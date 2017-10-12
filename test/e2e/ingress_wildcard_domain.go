@@ -179,7 +179,7 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 			}
 		})
 
-		FIt("Should response HTTP from WildCard HTTPS", func() {
+		It("Should response HTTP from WildCard HTTPS", func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
