@@ -16,6 +16,7 @@ type TemplateData struct {
 	HTTPService     []*HTTPService
 	TCPService      []*TCPService
 	ErrorFiles      []*ErrorFile
+	UserLists       []UserList
 }
 
 type ErrorFile struct {
@@ -28,7 +29,6 @@ type SharedInfo struct {
 	// Add accept-proxy to bind statements
 	AcceptProxy           bool
 	DefaultBackend        *Backend
-	Auth                  *AuthConfig
 	EnableCORS            bool
 	ProxyBodySize         string
 	EnableHSTS            bool
@@ -56,8 +56,15 @@ type HTTPService struct {
 	NodePort      int32
 	OffloadSSL    bool
 	FrontendRules []string
+	BasicAuth     *BasicAuth
 	TLSAuth       *TLSAuth
 	Paths         []*HTTPPath
+}
+
+func (svc *HTTPService) RemoveBackendAuth() {
+	for i := range svc.Paths {
+		svc.Paths[i].Backend.BasicAuth = nil
+	}
 }
 
 func (svc HTTPService) sortKey() string {
@@ -96,8 +103,8 @@ func (svc TCPService) sortKey() string {
 }
 
 type Backend struct {
-	Name string
-	Auth *AuthConfig
+	Name      string
+	BasicAuth *BasicAuth
 
 	BackendRules []string
 	// Deprecated
@@ -113,6 +120,9 @@ type Backend struct {
 
 func (be *Backend) canonicalize() {
 	sort.Slice(be.Endpoints, func(i, j int) bool { return be.Endpoints[i].IP < be.Endpoints[j].IP })
+	if be.BasicAuth != nil {
+		be.BasicAuth.canonicalize()
+	}
 }
 
 type Endpoint struct {
@@ -129,9 +139,22 @@ type Endpoint struct {
 	TLSOption string
 }
 
-type AuthConfig struct {
-	Realm string
-	Users map[string][]AuthUser
+type UserList struct {
+	Name  string
+	Users []AuthUser
+}
+
+func (ul *UserList) canonicalize() {
+	sort.Slice(ul.Users, func(i, j int) bool { return ul.Users[i].Username < ul.Users[j].Username })
+}
+
+type BasicAuth struct {
+	Realm     string
+	UserLists []string
+}
+
+func (ba *BasicAuth) canonicalize() {
+	sort.Strings(ba.UserLists)
 }
 
 type AuthUser struct {

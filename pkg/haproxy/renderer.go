@@ -30,6 +30,9 @@ func (td *TemplateData) canonicalize() {
 	}
 	for i := range td.HTTPService {
 		svc := td.HTTPService[i]
+		if svc.BasicAuth != nil {
+			svc.BasicAuth.canonicalize()
+		}
 		for j := range svc.Paths {
 			svc.Paths[j].Backend.canonicalize()
 		}
@@ -37,6 +40,11 @@ func (td *TemplateData) canonicalize() {
 	sort.Slice(td.HTTPService, func(i, j int) bool { return td.HTTPService[i].sortKey() < td.HTTPService[j].sortKey() })
 	sort.Slice(td.TCPService, func(i, j int) bool { return td.TCPService[i].sortKey() < td.TCPService[j].sortKey() })
 	sort.Slice(td.DNSResolvers, func(i, j int) bool { return td.DNSResolvers[i].Name < td.DNSResolvers[j].Name })
+
+	for i := range td.UserLists {
+		td.UserLists[i].canonicalize()
+	}
+	sort.Slice(td.UserLists, func(i, j int) bool { return td.UserLists[i].Name < td.UserLists[j].Name })
 }
 
 func (td *TemplateData) isValid() error {
