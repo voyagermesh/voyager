@@ -88,7 +88,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 		}
 	})
 
-	Describe("Create", func() {
+	Describe("Create Required Auth", func() {
 		BeforeEach(func() {
 			if f.Config.CloudProviderName == "minikube" {
 				ing.Annotations[api.LBType] = api.LBTypeHostPort
