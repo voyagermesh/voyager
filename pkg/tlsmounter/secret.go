@@ -197,7 +197,11 @@ func (c *Controller) projectAuthSecret(r *apiv1.Secret, projections map[string]i
 	if !found {
 		return fmt.Errorf("secret %s@%s is missing ca.crt", r.Name, c.options.IngressRef.Namespace)
 	}
-
 	projections["ca/"+r.Name+"-ca.crt"] = ioutilz.FileProjection{Mode: 0755, Data: ca}
+
+	crl, found := r.Data["crl.pem"]
+	if found {
+		projections["ca/"+r.Name+"-crl.pem"] = ioutilz.FileProjection{Mode: 0755, Data: crl}
+	}
 	return nil
 }
