@@ -148,6 +148,7 @@ type Limit struct {
 
 type TLSAuth struct {
 	CAFile       string
+	CRLFile      string
 	VerifyClient string
 	Headers      map[string]string
 	ErrorPage    string
