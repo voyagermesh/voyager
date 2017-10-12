@@ -46,6 +46,9 @@ func (r Ingress) PortMappings(cloudProvider string) (map[int]Target, error) {
 	if !usesHTTPRule && r.Spec.Backend != nil {
 		mappings[80] = Target{PodPort: 80}
 	}
+	if _, ok := mappings[80]; !ok && r.SSLRedirect() {
+		mappings[80] = Target{PodPort: 80}
+	}
 	// ref: https://github.com/appscode/voyager/issues/188
 	if cloudProvider == "aws" && r.LBType() == LBTypeLoadBalancer {
 		if ans, ok := r.ServiceAnnotations(cloudProvider); ok {
@@ -62,7 +65,7 @@ func (r Ingress) PortMappings(cloudProvider string) (map[int]Target, error) {
 				if tp80 && !sp443 {
 					mappings[443] = Target{PodPort: 80}
 				} else {
-					return nil, fmt.Errorf("Failed to open port 443 on service for AWS cert manager for Ingress %s@%s.", r.Name, r.Namespace)
+					return nil, fmt.Errorf("failed to open port 443 on service for AWS cert manager for Ingress %s@%s", r.Name, r.Namespace)
 				}
 			}
 		}
@@ -70,7 +73,7 @@ func (r Ingress) PortMappings(cloudProvider string) (map[int]Target, error) {
 	return mappings, nil
 }
 
-func (r Ingress) PodPorts() []int {
+func (r Ingress) explicitPodPorts() sets.Int {
 	ports := sets.NewInt()
 	usesHTTPRule := false
 	for _, rule := range r.Spec.Rules {
@@ -92,6 +95,14 @@ func (r Ingress) PodPorts() []int {
 		}
 	}
 	if !usesHTTPRule && r.Spec.Backend != nil {
+		ports.Insert(80)
+	}
+	return ports
+}
+
+func (r Ingress) PodPorts() []int {
+	ports := r.explicitPodPorts()
+	if r.SSLRedirect() {
 		ports.Insert(80)
 	}
 	return ports.List()

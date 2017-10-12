@@ -39,7 +39,7 @@ type SharedInfo struct {
 	MaxConnections        int
 	ForceMatchServicePort bool
 	Limit                 *Limit
-	ForceSSLRedirect      bool
+	SSLRedirect           bool
 }
 
 type StatsInfo struct {
