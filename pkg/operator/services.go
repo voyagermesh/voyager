@@ -2,7 +2,6 @@ package operator
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	etx "github.com/appscode/go/context"
@@ -139,70 +138,8 @@ func (op *Operator) updateHAProxyConfig(ctx context.Context, svc *apiv1.Service)
 					logger.Infof("One or more offshoots of %s Ingress %s/%s is missing, trying to create", engress.APISchema(), engress.Namespace, engress.Name)
 					ctrl.Create()
 				}
-				op.ensureEgressAnnotations(engress, svc)
 			}
 		}
 	}
 	return nil
-}
-
-func (op *Operator) ensureEgressAnnotations(r *tapi.Ingress, svc *apiv1.Service) {
-	if svc.Annotations == nil {
-		svc.Annotations = make(map[string]string)
-	}
-	if r.HasBackendService(svc.Name, svc.Namespace) {
-		list := make([]tapi.IngressRef, 0)
-		val, ok := svc.Annotations[tapi.EgressPoints]
-		if ok {
-			err := json.Unmarshal([]byte(val), list)
-			if err == nil {
-				found := false
-				for _, engs := range list {
-					if engs.APISchema == r.APISchema() && engs.Name == r.Name && engs.Namespace == r.Namespace {
-						found = true
-						break
-					}
-				}
-				if !found {
-					list = append(list, tapi.IngressRef{
-						APISchema: r.APISchema(),
-						Name:      r.Name,
-						Namespace: r.Namespace,
-					})
-				}
-			}
-		} else {
-			list = append(list, tapi.IngressRef{
-				APISchema: r.APISchema(),
-				Name:      r.Name,
-				Namespace: r.Namespace,
-			})
-		}
-
-		data, err := json.Marshal(list)
-		if err == nil {
-			svc.Annotations[tapi.EgressPoints] = string(data)
-		}
-		op.KubeClient.CoreV1().Services(svc.Namespace).Update(svc)
-		return
-	}
-	// Lets check if service still have the annotation for this ingress.
-	val, ok := svc.Annotations[tapi.EgressPoints]
-	if ok {
-		list := make([]tapi.IngressRef, 0)
-		err := json.Unmarshal([]byte(val), list)
-		if err == nil {
-			for i, engs := range list {
-				if engs.APISchema == r.APISchema() && engs.Name == r.Name && engs.Namespace == r.Namespace {
-					// remove the annotation key
-					list = append(list[:i], list[i+1:]...)
-				}
-			}
-			data, err := json.Marshal(list)
-			if err == nil {
-				svc.Annotations[tapi.EgressPoints] = string(data)
-			}
-		}
-		op.KubeClient.CoreV1().Services(svc.Namespace).Update(svc)
-	}
 }

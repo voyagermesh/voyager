@@ -86,8 +86,6 @@ const (
 	OriginAPISchema = EngressKey + "/" + "origin-api-schema" // APISchema = {APIGroup}/{APIVersion}
 	OriginName      = EngressKey + "/" + "origin-name"
 
-	EgressPoints = EngressKey + "/" + "egress-points"
-
 	// https://github.com/appscode/voyager/issues/280
 	// Supports all valid timeout option for defaults section of HAProxy
 	// https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.2-timeout%20check
