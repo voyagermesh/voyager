@@ -225,7 +225,7 @@ func (c *controller) generateConfig() error {
 		Limit: &haproxy.Limit{
 			Connection: c.Ingress.LimitConnections(),
 		},
-		ForceSSLRedirect: c.Ingress.ForceSSLRedirect(),
+		SSLRedirect: c.Ingress.ForceSSLRedirect() || c.Ingress.SSLRedirect(),
 	}
 
 	if val := c.Ingress.LimitRPM(); val > 0 {
@@ -428,8 +428,12 @@ func (c *controller) generateConfig() error {
 		}
 	}
 
+	tp80 := false
 	for key := range httpServices {
 		value := httpServices[key]
+		if key.Port == 80 {
+			tp80 = true
+		}
 		fr := getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, key.Port)
 		srv := &haproxy.HTTPService{
 			SharedInfo:    si,
@@ -450,6 +454,13 @@ func (c *controller) generateConfig() error {
 			srv.TLSAuth = htls
 		}
 		td.HTTPService = append(td.HTTPService, srv)
+	}
+	if !tp80 && c.Ingress.SSLRedirect() {
+		td.HTTPService = append(td.HTTPService, &haproxy.HTTPService{
+			SharedInfo:   si,
+			FrontendName: fmt.Sprintf("http-%d", 80),
+			Port:         80,
+		})
 	}
 
 	td.DNSResolvers = make([]*api.DNSResolver, 0)

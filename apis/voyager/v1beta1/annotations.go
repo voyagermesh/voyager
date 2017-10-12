@@ -207,6 +207,7 @@ const (
 
 	// https://github.com/appscode/voyager/issues/552
 	ForceServicePort = EngressKey + "/force-service-port"
+	SSLRedirect      = IngressKey + "/ssl-redirect"
 	ForceSSLRedirect = IngressKey + "/force-ssl-redirect"
 
 	// https://github.com/appscode/voyager/issues/525
@@ -335,6 +336,15 @@ func (r Ingress) WhitelistSourceRange() string {
 func (r Ingress) MaxConnections() int {
 	v, _ := GetInt(r.Annotations, MaxConnections)
 	return v
+}
+
+func (r Ingress) SSLRedirect() bool {
+	v, err := GetBool(r.Annotations, SSLRedirect)
+	if err == nil && !v {
+		return false
+	}
+	// Sets the global value of redirects (301) to HTTPS if the server has a TLS certificate (defined in an Ingress rule) Default is "true".
+	return r.explicitPodPorts().Has(443)
 }
 
 func (r Ingress) ForceSSLRedirect() bool {
