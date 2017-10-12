@@ -30,7 +30,7 @@ func (op *Operator) initNodeWatcher() cache.Controller {
 		if node, ok := obj.(*apiv1.Node); ok {
 			ctx := etx.Background()
 
-			ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
+			ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
 			if err == nil {
 				for _, ing := range ingresses.Items {
 					engress, err := api.NewEngressFromIngress(ing)
@@ -40,7 +40,7 @@ func (op *Operator) initNodeWatcher() cache.Controller {
 					op.updateFirewall(ctx, engress, node)
 				}
 			}
-			engresses, err := op.VoyagerClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
+			engresses, err := op.VoyagerClient.Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
 			if err == nil {
 				for _, engress := range engresses.Items {
 					op.updateFirewall(ctx, &engress, node)

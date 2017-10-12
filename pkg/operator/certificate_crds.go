@@ -22,10 +22,10 @@ import (
 func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return op.VoyagerClient.Certificates(apiv1.NamespaceAll).List(metav1.ListOptions{})
+			return op.VoyagerClient.Certificates(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return op.VoyagerClient.Certificates(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
+			return op.VoyagerClient.Certificates(op.Opt.WatchNamespace()).Watch(metav1.ListOptions{})
 		},
 	}
 	_, informer := cache.NewInformer(lw,
@@ -134,7 +134,7 @@ func (op *Operator) CheckCertificates() {
 	for {
 		select {
 		case <-Time.After(time.Minute * 5):
-			result, err := op.VoyagerClient.Certificates(apiv1.NamespaceAll).List(metav1.ListOptions{})
+			result, err := op.VoyagerClient.Certificates(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
 			if err != nil {
 				log.Error(err)
 				continue

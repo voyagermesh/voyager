@@ -17,10 +17,10 @@ import (
 func (op *Operator) initConfigMapWatcher() cache.Controller {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return op.KubeClient.CoreV1().ConfigMaps(apiv1.NamespaceAll).List(metav1.ListOptions{})
+			return op.KubeClient.CoreV1().ConfigMaps(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return op.KubeClient.CoreV1().ConfigMaps(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
+			return op.KubeClient.CoreV1().ConfigMaps(op.Opt.WatchNamespace()).Watch(metav1.ListOptions{})
 		},
 	}
 	_, informer := cache.NewInformer(lw,
