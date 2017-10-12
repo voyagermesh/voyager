@@ -18,7 +18,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	core "k8s.io/client-go/listers/core/v1"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 )
@@ -106,11 +105,11 @@ func (op *Operator) Run() {
 }
 
 func (op *Operator) listIngresses() ([]api.Ingress, error) {
-	ing, err := op.KubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
+	ing, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
-	eng, err := op.VoyagerClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
+	eng, err := op.VoyagerClient.Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}

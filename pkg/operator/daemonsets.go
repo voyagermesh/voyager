@@ -9,7 +9,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/tools/cache"
 )
@@ -18,10 +17,10 @@ import (
 func (op *Operator) initDaemonSetWatcher() cache.Controller {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return op.KubeClient.ExtensionsV1beta1().DaemonSets(apiv1.NamespaceAll).List(metav1.ListOptions{})
+			return op.KubeClient.ExtensionsV1beta1().DaemonSets(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return op.KubeClient.ExtensionsV1beta1().DaemonSets(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
+			return op.KubeClient.ExtensionsV1beta1().DaemonSets(op.Opt.WatchNamespace()).Watch(metav1.ListOptions{})
 		},
 	}
 	_, informer := cache.NewInformer(lw,

@@ -21,10 +21,10 @@ import (
 func (op *Operator) initIngressCRDWatcher() cache.Controller {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return op.VoyagerClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
+			return op.VoyagerClient.Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return op.VoyagerClient.Ingresses(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
+			return op.VoyagerClient.Ingresses(op.Opt.WatchNamespace()).Watch(metav1.ListOptions{})
 		},
 	}
 	_, informer := cache.NewInformer(lw,

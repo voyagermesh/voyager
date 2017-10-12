@@ -13,7 +13,7 @@ import (
 
 func (op *Operator) ValidateIngress() error {
 	invalidIngresses := []string{}
-	ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
+	ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -39,7 +39,7 @@ func (op *Operator) ValidateIngress() error {
 		}
 	}
 
-	engresses, err := op.VoyagerClient.Ingresses(apiv1.NamespaceAll).List(metav1.ListOptions{})
+	engresses, err := op.VoyagerClient.Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
