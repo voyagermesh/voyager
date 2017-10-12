@@ -269,4 +269,24 @@ type FrontendRule struct {
 	Port intstr.IntOrString `json:"port,omitempty"`
 	// Serialized rules
 	Rules []string `json:"rules,omitempty"`
+
+	Auth *AuthOption `json:"auth,omitempty"`
+}
+
+type AuthOption struct {
+	TLS *TLSAuth `json:"tls,omitempty"`
+}
+
+type TLSAuthVerifyOption string
+
+const (
+	TLSAuthVerifyOptional TLSAuthVerifyOption = "optional"
+	TLSAuthVerifyRequired TLSAuthVerifyOption = "required"
+)
+
+type TLSAuth struct {
+	SecretName   string              `json:"secretName,omitempty"`
+	VerifyClient TLSAuthVerifyOption `json:"verifyClient,omitempty"`
+	Headers      map[string]string   `json:"headers,omitempty"`
+	ErrorPage    string              `json:"errorPage,omitempty"`
 }

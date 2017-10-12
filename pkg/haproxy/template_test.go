@@ -636,3 +636,71 @@ func TestDefaultFrontend(t *testing.T) {
 		}
 	}
 }
+
+func TestTLSAuth(t *testing.T) {
+	si := &SharedInfo{}
+	testParsedConfig := TemplateData{
+		SharedInfo: si,
+		HTTPService: []*HTTPService{
+			{
+				SharedInfo:    si,
+				OffloadSSL:    true,
+				FrontendName:  "one",
+				Port:          80,
+				FrontendRules: []string{},
+				TLSAuth: &TLSAuth{
+					SecretName:   "foo",
+					VerifyClient: "required",
+					Headers: map[string]string{
+						"X-TEST":      "add",
+						"X-TEST-NONE": "none",
+					},
+					ErrorPage: "google.com",
+				},
+				Paths: []*HTTPPath{
+					{
+						Path: "/elijah",
+						Backend: Backend{
+							Name: "elijah",
+							Endpoints: []*Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323"},
+								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+							},
+						},
+					},
+				},
+			},
+			{
+				SharedInfo:    si,
+				FrontendName:  "two",
+				OffloadSSL:    true,
+				Port:          90,
+				FrontendRules: []string{},
+				TLSAuth: &TLSAuth{
+					SecretName: "foo",
+					ErrorPage:  "google.com",
+				},
+				Paths: []*HTTPPath{
+					{
+						Path: "/elijah",
+						Backend: Backend{
+							Name: "elijah",
+							Endpoints: []*Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323"},
+								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
+	if assert.Nil(t, err) {
+		config, err := RenderConfig(testParsedConfig)
+		assert.Nil(t, err)
+		if testing.Verbose() {
+			fmt.Println(err, "\n", config)
+		}
+	}
+}

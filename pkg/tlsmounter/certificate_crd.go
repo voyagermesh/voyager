@@ -1,16 +1,11 @@
 package tlsmounter
 
 import (
-	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	"strings"
 
 	ioutilz "github.com/appscode/go/ioutil"
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/golang/glog"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -19,7 +14,6 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/util/cert"
 	"k8s.io/client-go/util/workqueue"
 )
 
@@ -136,31 +130,14 @@ func (c *Controller) processNextCertificate() bool {
 // information about the deployment to stdout. In case an error happened, it has to simply return the error.
 // The retry logic should not be part of the business logic.
 func (c *Controller) syncCertificate(key string) error {
-	obj, exists, err := c.cIndexer.GetByKey(key)
+	key, err := cache.MetaNamespaceKeyFunc(cache.ExplicitKey(c.options.IngressRef.Namespace + "/" + c.options.IngressRef.Name))
 	if err != nil {
-		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
 	}
-
-	if !exists {
-		// Below we will warm up our cache with a Certificate, so that we will see a delete for one d
-		fmt.Printf("Certificate %s does not exist anymore\n", key)
+	if c.options.UsesEngress() {
+		c.engQueue.Add(key)
 	} else {
-		d := obj.(*api.Certificate)
-		fmt.Printf("Sync/Add/Update for Certificate %s\n", d.GetName())
-
-		err := c.mountCertificate(d)
-		if err != nil {
-			if r, e2 := c.getIngress(); e2 == nil {
-				c.recorder.Event(
-					r.ObjectReference(),
-					apiv1.EventTypeWarning,
-					eventer.EventReasonIngressTLSMountFailed,
-					err.Error(),
-				)
-			}
-			return err
-		}
+		c.ingQueue.Add(key)
 	}
 	return nil
 }
@@ -181,46 +158,6 @@ func (c *Controller) projectCertificate(r *api.Certificate, projections map[stri
 	if err != nil {
 		return err
 	}
-	certs, err := cert.ParseCertsPEM(pemCrt)
-	if err != nil {
-		return err
-	}
-	crt := certs[0]
-
-	pemPath := filepath.Join(c.options.MountPath, r.SecretName()+".pem")
-	if _, err := os.Stat(pemPath); !os.IsNotExist(err) {
-		// path/to/whatever exists
-		pemBytes, err := ioutil.ReadFile(pemPath)
-		if err != nil {
-			return err
-		}
-		crts, err := cert.ParseCertsPEM(pemBytes)
-		if err != nil {
-			return err
-		}
-		if !crts[0].Equal(crt) {
-			projections[r.SecretName()+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
-		}
-	} else {
-		projections[r.SecretName()+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
-	}
-	return nil
-}
-
-func (c *Controller) mountCertificate(crt *api.Certificate) error {
-	projections := map[string]ioutilz.FileProjection{}
-	err := c.projectCertificate(crt, projections)
-	if err != nil {
-		return err
-	}
-	if len(projections) > 0 {
-		c.lock.Lock()
-		defer c.lock.Unlock()
-		err = c.writer.Write(projections)
-		if err != nil {
-			return err
-		}
-		return runCmd(c.options.CmdFile)
-	}
+	projections["tls/"+r.SecretName()+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
 	return nil
 }

@@ -29,6 +29,8 @@ type Framework struct {
 	namespace      string
 	voyagerConfig  config.Options
 	Mutex          sync.Mutex
+
+	CertManager *CertManager
 }
 
 type Invocation struct {
@@ -56,6 +58,9 @@ func New() *Framework {
 	c, err := clientcmd.BuildConfigFromFlags(testConfigs.Master, testConfigs.KubeConfig)
 	Expect(err).NotTo(HaveOccurred())
 
+	cm, err := NewCertManager()
+	Expect(err).NotTo(HaveOccurred())
+
 	return &Framework{
 		KubeConfig:     c,
 		KubeClient:     clientset.NewForConfigOrDie(c),
@@ -71,6 +76,7 @@ func New() *Framework {
 			EnableRBAC:        testConfigs.RBACEnabled,
 			OperatorNamespace: testConfigs.TestNamespace,
 		},
+		CertManager: cm,
 	}
 }
 

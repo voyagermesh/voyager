@@ -24,7 +24,7 @@ var (
 		ResyncPeriod:   5 * time.Minute,
 		MaxNumRequeues: 5,
 	}
-	initOnly = false
+	initOnly bool
 )
 
 func NewCmdTLSMounter() *cobra.Command {

@@ -110,14 +110,6 @@ func (op *Operator) AddEngress(ctx context.Context, engress *tapi.Ingress) {
 	} else {
 		ctrl.Create()
 	}
-
-	for _, meta := range engress.BackendServices() {
-		svc, err := op.KubeClient.CoreV1().Services(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
-		if err != nil {
-			continue
-		}
-		op.ensureEgressAnnotations(engress, svc)
-	}
 }
 
 func (op *Operator) UpdateEngress(ctx context.Context, oldEngress, newEngress *tapi.Ingress) {
@@ -167,24 +159,9 @@ func (op *Operator) UpdateEngress(ctx context.Context, oldEngress, newEngress *t
 	for k, v := range newEngress.BackendServices() {
 		backends[k] = v
 	}
-	for _, meta := range backends {
-		svc, err := op.KubeClient.CoreV1().Services(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
-		if err != nil {
-			continue
-		}
-		op.ensureEgressAnnotations(newEngress, svc)
-	}
 }
 
 func (op *Operator) DeleteEngress(ctx context.Context, engress *tapi.Ingress) {
 	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
 	ctrl.Delete()
-
-	for _, meta := range engress.BackendServices() {
-		svc, err := op.KubeClient.CoreV1().Services(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
-		if err != nil {
-			continue
-		}
-		op.ensureEgressAnnotations(engress, svc)
-	}
 }
