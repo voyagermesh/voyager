@@ -335,7 +335,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			}
 		})
 
-		It("Should response HTTP", func() {
+		FIt("Should response HTTP", func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
@@ -426,6 +426,20 @@ var _ = Describe("IngressWithBasicAuth", func() {
 						Expect(r.Path).Should(Equal("/testpath"))
 				},
 			)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoHTTPStatusWithHeader(
+				framework.NoRetry,
+				ing,
+				f.Ingress.FilterEndpointsForPort(eps, port80),
+				"GET",
+				"/testpath",
+				map[string]string{
+					"Authorization": "Basic Zm9vOmJhci1mcm9tLXNlY3JldC1mcm9udGVuZA==",
+				},
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusUnauthorized))
+				})
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
