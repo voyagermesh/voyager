@@ -18,6 +18,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
+	"time"
 )
 
 var _ = Describe("IngressWithTLSAuth", func() {
@@ -138,7 +139,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			}
 		})
 
-		It("Should response HTTP", func() {
+		FIt("Should response HTTP", func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
@@ -419,6 +420,116 @@ var _ = Describe("IngressWithTLSAuth", func() {
 				return false
 			})
 			Expect(err).To(HaveOccurred())
+
+			// TLS Auth
+			tr = getTransportForCert(f.CertManager.CACert(), ccrt, ckey)
+			err = f.Ingress.DoHTTPsWithTransport(framework.MaxRetry, "http.appscode.test", tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *testserverclient.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+					Expect(r.Method).Should(Equal("GET")) &&
+					Expect(r.Path).Should(Equal("/testpath/hello"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+	Describe("CreateAnnotationAuth", func() {
+		BeforeEach(func() {
+			if f.Config.CloudProviderName == "minikube" {
+				ing.Annotations[api.LBType] = api.LBTypeHostPort
+			}
+
+			ing.Annotations[api.AuthTLSSecret] = caSecret.Name
+			ing.Annotations[api.AuthTLSVerifyClient] = string(api.TLSAuthVerifyRequired)
+			ing.Annotations[api.AuthTLSErrorPage] = "https://http.appscode.test/testpath/ok"
+
+			ing.Spec = api.IngressSpec{
+				TLS: []api.IngressTLS{
+					{
+						Ref: &api.LocalTypedReference{
+							Kind: "Secret",
+							Name: tlsSecret.Name,
+						},
+						Hosts: []string{"http.appscode.test"},
+					},
+				},
+				Rules: []api.IngressRule{
+					{
+						Host: "http.appscode.test",
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
+									{
+										Path: "/testpath",
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: f.Ingress.TestServerName(),
+												ServicePort: intstr.FromInt(80),
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+		})
+
+		It("Should response HTTP", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			ccrt, ckey, err := f.CertManager.NewClientCertPair()
+			Expect(err).NotTo(HaveOccurred())
+
+			if len(f.Config.DumpLocation) > 0 {
+				ioutil.WriteFile(f.Config.DumpLocation+"/ca.crt", f.CertManager.CACert(), os.ModePerm)
+				ioutil.WriteFile(f.Config.DumpLocation+"/client.crt", ccrt, os.ModePerm)
+				ioutil.WriteFile(f.Config.DumpLocation+"/client.key", ckey, os.ModePerm)
+			}
+
+			resolved := false
+			log.Warningln("Domain 'http.appscode.test' must resolve to ips in", eps)
+
+			// Checking for the domain is pointing to the ips found in the endpoints
+			// The IPs and domain must be in /etc/hosts file
+			ips, err := net.LookupHost("http.appscode.test")
+			if err != nil || len(ips) == 0 {
+				Skip("Domain 'http.appscode.test' do not have endpoints")
+			}
+
+		Outer:
+			for _, ep := range eps {
+				vep := strings.TrimLeft(ep[:strings.LastIndex(ep, ":")], "http://")
+				for _, ip := range ips {
+					if vep == ip {
+						resolved = true
+						break Outer
+					}
+				}
+			}
+
+			if !resolved {
+				Skip("Domain 'http.appscode.test' did not point to endpoints")
+			}
+
+			err = f.Ingress.DoHTTPsStatus(framework.NoRetry, "http.appscode.test", ing, eps, "GET", "/testpath/hello", func(r *testserverclient.Response) bool {
+				return true
+			})
+			Expect(err).To(HaveOccurred())
+
+			time.Sleep(time.Hour)
+
+			// Wrong Cert
+			tr := getTransportForCert(f.CertManager.CACert(), tlsSecret.Data[apiv1.TLSCertKey], tlsSecret.Data[apiv1.TLSPrivateKeyKey])
+			err = f.Ingress.DoTestRedirectWithTransport(framework.NoRetry, "http.appscode.test", tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *testserverclient.Response) bool {
+				return Expect(r.Status).Should(Equal(302)) &&
+					Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
+					Expect(r.ResponseHeader.Get("Location")).Should(Equal("https://http.appscode.test/testpath/ok"))
+			})
+			Expect(err).NotTo(HaveOccurred())
 
 			// TLS Auth
 			tr = getTransportForCert(f.CertManager.CACert(), ccrt, ckey)

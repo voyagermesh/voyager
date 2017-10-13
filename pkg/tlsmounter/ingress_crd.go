@@ -9,7 +9,6 @@ import (
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/golang/glog"
-	"github.com/tamalsaha/go-oneliners"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	rt "k8s.io/apimachinery/pkg/runtime"
@@ -204,7 +203,6 @@ func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]iou
 	}
 
 	for _, tls := range ing.Spec.TLS {
-		oneliners.FILE()
 		if strings.EqualFold(tls.Ref.Kind, api.ResourceKindCertificate) {
 			r, err := c.getCertificate(tls.Ref.Name)
 			if err != nil {
@@ -226,16 +224,35 @@ func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]iou
 		}
 	}
 
-	for _, fr := range ing.Spec.FrontendRules {
-		if fr.Auth != nil {
-			if fr.Auth.TLS != nil {
-				r, err := c.getSecret(fr.Auth.TLS.SecretName)
-				if err != nil {
-					return err
-				}
-				err = c.projectAuthSecret(r, projections)
-				if err != nil {
-					return err
+	globalTLS := false
+	if ing.Annotations != nil {
+		if name, ok := ing.Annotations[api.AuthTLSSecret]; ok {
+			r, err := c.getSecret(name)
+			if err != nil {
+				return err
+			}
+			err = c.projectAuthSecret(r, projections)
+			if err != nil {
+				return err
+			}
+
+			globalTLS = true
+		}
+	}
+
+	// Remove extra loads for frontend tls auth if global auth is set?? @tamal
+	if !globalTLS {
+		for _, fr := range ing.Spec.FrontendRules {
+			if fr.Auth != nil {
+				if fr.Auth.TLS != nil {
+					r, err := c.getSecret(fr.Auth.TLS.SecretName)
+					if err != nil {
+						return err
+					}
+					err = c.projectAuthSecret(r, projections)
+					if err != nil {
+						return err
+					}
 				}
 			}
 		}
@@ -254,7 +271,6 @@ func (c *Controller) mountIngress(ing *api.Ingress, reload bool) error {
 	if err != nil {
 		return err
 	}
-	oneliners.FILE("Mount ingress")
 	if changed && reload {
 		return runCmd(c.options.CmdFile)
 	}
