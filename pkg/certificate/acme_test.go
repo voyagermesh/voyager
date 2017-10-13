@@ -55,7 +55,7 @@ func TestClient(t *testing.T) {
 				},
 				ACMEUserSecretName: "foo",
 				Storage: api.CertificateStorage{
-					Secret: &api.SecretStore{},
+					Secret: &apiv1.LocalObjectReference{},
 				},
 			},
 		},

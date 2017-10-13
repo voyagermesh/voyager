@@ -1,7 +1,6 @@
 package ingress
 
 import (
-	"fmt"
 	"testing"
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -9,7 +8,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
-	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
 )
 
 func TestNodePortController_IsExists(t *testing.T) {
@@ -26,7 +25,7 @@ func TestNodePortController_IsExists(t *testing.T) {
 					},
 				},
 				KubeClient: fake.NewSimpleClientset(
-					&extensions.Deployment{
+					&apps.Deployment{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      api.VoyagerPrefix + "foo",
 							Namespace: "bar",
@@ -62,7 +61,7 @@ func TestNodePortController_IsExists(t *testing.T) {
 					},
 				},
 				KubeClient: fake.NewSimpleClientset(
-					&extensions.Deployment{
+					&apps.Deployment{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      api.VoyagerPrefix + "fakefoo",
 							Namespace: "bar",
@@ -88,7 +87,7 @@ func TestNodePortController_IsExists(t *testing.T) {
 	}
 
 	for k, v := range testCases {
-		fmt.Println(k.Ingress.Name, k.Ingress.Annotations)
+		t.Log(k.Ingress.Name, k.Ingress.Annotations)
 		assert.Equal(t, v, k.IsExists())
 	}
 }

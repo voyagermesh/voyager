@@ -44,7 +44,7 @@ func TestEnsureClient(t *testing.T) {
 				Domains:            strings.Split(os.Getenv("TEST_DNS_DOMAINS"), ","),
 				ACMEUserSecretName: "user",
 				ChallengeProvider:  api.ChallengeProvider{DNS: &api.DNSChallengeProvider{Provider: "googlecloud", CredentialSecretName: "fakesecret"}},
-				Storage:            api.CertificateStorage{Secret: &api.SecretStore{}},
+				Storage:            api.CertificateStorage{Secret: &apiv1.LocalObjectReference{}},
 			},
 		}
 
@@ -85,7 +85,7 @@ func TestCreate(t *testing.T) {
 				Domains:            strings.Split(os.Getenv("TEST_DNS_DOMAINS"), ","),
 				ACMEUserSecretName: "user",
 				ChallengeProvider:  api.ChallengeProvider{DNS: &api.DNSChallengeProvider{Provider: "googlecloud", CredentialSecretName: "fakesecret"}},
-				Storage:            api.CertificateStorage{Secret: &api.SecretStore{}},
+				Storage:            api.CertificateStorage{Secret: &apiv1.LocalObjectReference{}},
 			},
 		}
 
