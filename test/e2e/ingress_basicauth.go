@@ -335,7 +335,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			}
 		})
 
-		FIt("Should response HTTP", func() {
+		It("Should response HTTP", func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
