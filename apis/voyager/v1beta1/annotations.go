@@ -178,6 +178,15 @@ const (
 	// name of the auth secret
 	AuthSecret = IngressKey + "/auth-secret"
 
+	// Name of secret for TLS client certification validation.
+	AuthTLSSecret = IngressKey + "/auth-tls-secret"
+
+	// The page that user should be redirected in case of Auth error
+	AuthTLSErrorPage = IngressKey + "/auth-tls-error-page"
+
+	// Enables verification of client certificates.
+	AuthTLSVerifyClient = IngressKey + "/auth-tls-verify-client"
+
 	// Enables CORS headers in response.
 	// Setting this annotations in ingress will add CORS headers to all HTTP
 	// frontend. If we need to add cors headers only on specific frontend we can also
@@ -521,7 +530,7 @@ func (r Ingress) HAProxyOptions() map[string]bool {
 	return ret
 }
 
-func (r Ingress) AuthEnabled() bool {
+func (r Ingress) BasicAuthEnabled() bool {
 	if r.Annotations == nil {
 		return false
 	}
@@ -545,6 +554,22 @@ func (r Ingress) AuthRealm() string {
 
 func (r Ingress) AuthSecretName() string {
 	return GetString(r.Annotations, AuthSecret)
+}
+
+func (r Ingress) AuthTLSSecret() string {
+	return GetString(r.Annotations, AuthTLSSecret)
+}
+
+func (r Ingress) AuthTLSVerifyClient() TLSAuthVerifyOption {
+	str := GetString(r.Annotations, AuthTLSVerifyClient)
+	if str == string(TLSAuthVerifyOptional) {
+		return TLSAuthVerifyOptional
+	}
+	return TLSAuthVerifyRequired
+}
+
+func (r Ingress) AuthTLSErrorPage() string {
+	return GetString(r.Annotations, AuthTLSErrorPage)
 }
 
 func (r Ingress) ErrorFilesConfigMapName() string {
