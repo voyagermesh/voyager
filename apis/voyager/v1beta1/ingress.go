@@ -274,7 +274,13 @@ type FrontendRule struct {
 }
 
 type AuthOption struct {
-	TLS *TLSAuth `json:"tls,omitempty"`
+	Basic *BasicAuth `json:"basic,omitempty"`
+	TLS   *TLSAuth   `json:"tls,omitempty"`
+}
+
+type BasicAuth struct {
+	SecretName string `json:"secretName,omitempty"`
+	Realm      string `json:"realm,omitempty"`
 }
 
 type TLSAuthVerifyOption string

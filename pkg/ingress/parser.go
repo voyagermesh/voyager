@@ -23,7 +23,7 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, name string, port intstr.IntOrString, hostNames []string) (*haproxy.Backend, error) {
+func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, userLists map[string]haproxy.UserList, name string, port intstr.IntOrString, hostNames []string) (*haproxy.Backend, error) {
 	c.logger.Infoln("getting endpoints for ", c.Ingress.Namespace, name, "port", port)
 
 	// the following lines giving support to
@@ -68,17 +68,17 @@ func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, 
 	if !ok {
 		return nil, fmt.Errorf("service port %s unavailable for service %s", port.String(), service.Name)
 	}
-	return c.getEndpoints(service, p, hostNames)
+	return c.getEndpoints(service, p, hostNames, userLists)
 }
 
-func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string) (*haproxy.Backend, error) {
-	ep, err := c.EndpointsLister.Endpoints(s.Namespace).Get(s.Name)
+func (c *controller) getEndpoints(svc *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string, userLists map[string]haproxy.UserList) (*haproxy.Backend, error) {
+	ep, err := c.EndpointsLister.Endpoints(svc.Namespace).Get(svc.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	podList, err := c.KubeClient.CoreV1().Pods(s.Namespace).List(metav1.ListOptions{
-		LabelSelector: labels.SelectorFromSet(s.Spec.Selector).String(),
+	podList, err := c.KubeClient.CoreV1().Pods(svc.Namespace).List(metav1.ListOptions{
+		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector).String(),
 	})
 	if err != nil {
 		return nil, err
@@ -111,12 +111,12 @@ func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePo
 				if len(ss.Ports) == 1 {
 					targetPort = strconv.Itoa(int(epPort.Port))
 				} else {
-					c.logger.Debugf("Target port %s empty for service %s. skipping.", servicePort.String(), s.Name)
+					c.logger.Debugf("Target port %s empty for service %s. skipping.", servicePort.String(), svc.Name)
 					continue
 				}
 			}
 
-			c.logger.Infof("Found target port %s for service %s", targetPort, s.Name)
+			c.logger.Infof("Found target port %s for service %s", targetPort, svc.Name)
 			for _, epAddress := range ss.Addresses {
 				if isForwardable(hostNames, epAddress.Hostname) {
 					ep := &haproxy.Endpoint{
@@ -141,8 +141,8 @@ func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePo
 						}
 					}
 
-					if s.Annotations != nil {
-						ep.TLSOption = s.Annotations[api.BackendTLSOptions]
+					if svc.Annotations != nil {
+						ep.TLSOption = svc.Annotations[api.BackendTLSOptions]
 					}
 
 					eps = append(eps, ep)
@@ -151,9 +151,9 @@ func (c *controller) getEndpoints(s *apiv1.Service, servicePort *apiv1.ServicePo
 		}
 	}
 	return &haproxy.Backend{
-		Auth:             c.getServiceAuth(s),
+		BasicAuth:        c.getServiceAuth(userLists, svc),
 		Endpoints:        eps,
-		Sticky:           c.Ingress.Sticky() || isServiceSticky(s.Annotations),
+		Sticky:           c.Ingress.Sticky() || isServiceSticky(svc.Annotations),
 		StickyCookieName: c.Ingress.StickySessionCookieName(),
 		StickyCookieHash: c.Ingress.StickySessionCookieHashType(),
 	}, nil
@@ -243,15 +243,31 @@ func (c *controller) generateConfig() error {
 		si.AcceptProxy = true
 	}
 
+	userLists := make(map[string]haproxy.UserList)
+	var globalAuth *haproxy.BasicAuth
+	if c.Ingress.AuthEnabled() {
+		globalAuth = &haproxy.BasicAuth{
+			Realm: c.Ingress.AuthRealm(),
+		}
+		secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(c.Ingress.AuthSecretName(), metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		globalAuth.UserLists, err = getAuthUsers(userLists, secret)
+		if err != nil {
+			return err
+		}
+	}
+
 	dnsResolvers := make(map[string]*api.DNSResolver)
 	if c.Ingress.Spec.Backend != nil {
-		bk, err := c.serviceEndpoints(dnsResolvers, c.Ingress.Spec.Backend.ServiceName, c.Ingress.Spec.Backend.ServicePort, c.Ingress.Spec.Backend.HostNames)
+		bk, err := c.serviceEndpoints(dnsResolvers, userLists, c.Ingress.Spec.Backend.ServiceName, c.Ingress.Spec.Backend.ServicePort, c.Ingress.Spec.Backend.HostNames)
 		if err != nil {
 			return err
 		}
 		si.DefaultBackend = &haproxy.Backend{
 			Name:             "default-backend", // TODO: Use constant
-			Auth:             bk.Auth,
+			BasicAuth:        bk.BasicAuth,
 			Endpoints:        bk.Endpoints,
 			BackendRules:     c.Ingress.Spec.Backend.BackendRule,
 			RewriteRules:     c.Ingress.Spec.Backend.RewriteRule,
@@ -260,22 +276,8 @@ func (c *controller) generateConfig() error {
 			StickyCookieName: bk.StickyCookieName,
 			StickyCookieHash: bk.StickyCookieHash,
 		}
-	}
-
-	if c.Ingress.AuthEnabled() {
-		si.Auth = &haproxy.AuthConfig{
-			Realm: c.Ingress.AuthRealm(),
-		}
-		secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(c.Ingress.AuthSecretName(), metav1.GetOptions{})
-		if err != nil {
-			return err
-		}
-		if secret.Data == nil {
-			return fmt.Errorf("secret data missing")
-		}
-		si.Auth.Users, err = getAuthUsers(secret.Data)
-		if err != nil {
-			return err
+		if globalAuth != nil {
+			si.DefaultBackend.BasicAuth = globalAuth
 		}
 	}
 
@@ -300,7 +302,7 @@ func (c *controller) generateConfig() error {
 				stats.Username = string(secret.Data["username"])
 				stats.PassWord = string(secret.Data["password"])
 			} else {
-				return fmt.Errorf("Failed to load stats secret for ingress %s@%s", c.Ingress.Name, c.Ingress.Namespace)
+				return fmt.Errorf("failed to load stats secret for ingress %s@%s", c.Ingress.Name, c.Ingress.Namespace)
 			}
 		}
 		td.Stats = stats
@@ -319,7 +321,7 @@ func (c *controller) generateConfig() error {
 		if rule.HTTP != nil {
 			httpPaths := make([]*haproxy.HTTPPath, 0)
 			for _, path := range rule.HTTP.Paths {
-				bk, err := c.serviceEndpoints(dnsResolvers, path.Backend.ServiceName, path.Backend.ServicePort, path.Backend.HostNames)
+				bk, err := c.serviceEndpoints(dnsResolvers, userLists, path.Backend.ServiceName, path.Backend.ServicePort, path.Backend.HostNames)
 				if err != nil {
 					return err
 				}
@@ -329,7 +331,7 @@ func (c *controller) generateConfig() error {
 						Path: path.Path,
 						Backend: haproxy.Backend{
 							Name:             getBackendName(c.Ingress, path.Backend.IngressBackend),
-							Auth:             bk.Auth,
+							BasicAuth:        bk.BasicAuth,
 							Endpoints:        bk.Endpoints,
 							BackendRules:     path.Backend.BackendRule,
 							RewriteRules:     path.Backend.RewriteRule,
@@ -381,7 +383,7 @@ func (c *controller) generateConfig() error {
 				httpServices[key] = httpPaths
 			}
 		} else if rule.TCP != nil {
-			bk, err := c.serviceEndpoints(dnsResolvers, rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort, rule.TCP.Backend.HostNames)
+			bk, err := c.serviceEndpoints(dnsResolvers, userLists, rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort, rule.TCP.Backend.HostNames)
 			if err != nil {
 				return err
 			}
@@ -403,15 +405,16 @@ func (c *controller) generateConfig() error {
 						StickyCookieHash: bk.StickyCookieHash,
 					},
 				}
+				 if fr.Auth != nil && fr.Auth.TLS != nil {
+					 htls, err := c.getTLSAuth(fr)
+					 if err != nil {
+						 return err
+					 }
 
-				htls, err := c.getTLSAuth(fr)
-				if err != nil {
-					return err
-				}
-
-				if htls != nil {
-					def.TLSAuth = htls
-				}
+					 if htls != nil {
+						 def.TLSAuth = htls
+					 }
+				 }
 
 				if ref, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoTLS {
 					if ref.Kind == api.ResourceKindCertificate {
@@ -445,13 +448,31 @@ func (c *controller) generateConfig() error {
 			Paths:         value,
 		}
 
-		htls, err := c.getTLSAuth(fr)
-		if err != nil {
-			return err
-		}
-
-		if htls != nil {
-			srv.TLSAuth = htls
+		if c.Ingress.AuthEnabled() {
+			srv.BasicAuth = globalAuth
+			srv.RemoveBackendAuth()
+		} else if fr.Auth != nil && fr.Auth.Basic != nil {
+			srv.BasicAuth = &haproxy.BasicAuth{
+				Realm: fr.Auth.Basic.Realm,
+			}
+			secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(fr.Auth.Basic.SecretName, metav1.GetOptions{})
+			if err != nil {
+				return err
+			}
+			srv.BasicAuth.UserLists, err = getAuthUsers(userLists, secret)
+			if err != nil {
+				return err
+			}
+			srv.RemoveBackendAuth()
+		} else if fr.Auth != nil && fr.Auth.TLS != nil {
+			htls, err := c.getTLSAuth(fr)
+			if err != nil {
+				return err
+			}
+			if htls != nil {
+				srv.TLSAuth = htls
+			}
+			srv.RemoveBackendAuth()
 		}
 		td.HTTPService = append(td.HTTPService, srv)
 	}
@@ -463,9 +484,14 @@ func (c *controller) generateConfig() error {
 		})
 	}
 
-	td.DNSResolvers = make([]*api.DNSResolver, 0)
+	td.DNSResolvers = make([]*api.DNSResolver, 0, len(dnsResolvers))
 	for k := range dnsResolvers {
 		td.DNSResolvers = append(td.DNSResolvers, dnsResolvers[k])
+	}
+
+	td.UserLists = make([]haproxy.UserList, 0, len(userLists))
+	for k := range userLists {
+		td.UserLists = append(td.UserLists, userLists[k])
 	}
 
 	if jb, err := json.MarshalIndent(&td, "", "  "); err != nil {
@@ -480,9 +506,17 @@ func (c *controller) generateConfig() error {
 	return nil
 }
 
-func getAuthUsers(data map[string][]byte) (map[string][]haproxy.AuthUser, error) {
-	ret := make(map[string][]haproxy.AuthUser, 0)
-	for name, data := range data {
+func getAuthUsers(userLists map[string]haproxy.UserList, sec *apiv1.Secret) ([]string, error) {
+	listNames := make([]string, 0)
+
+	for name, data := range sec.Data {
+		listName := sec.Name + "-" + name
+		listNames = append(listNames, listName)
+
+		if _, found := userLists[listName]; found {
+			continue
+		}
+
 		users := make([]haproxy.AuthUser, 0)
 		scanner := bufio.NewScanner(bytes.NewReader(data))
 		for scanner.Scan() {
@@ -492,14 +526,14 @@ func getAuthUsers(data map[string][]byte) (map[string][]haproxy.AuthUser, error)
 			}
 			sep := strings.Index(line, ":")
 			if sep == -1 {
-				return nil, fmt.Errorf("Missing ':' on userlist")
+				return nil, fmt.Errorf("missing ':' on userlist")
 			}
 			userName := line[0:sep]
 			if userName == "" {
-				return nil, fmt.Errorf("Missing username on userlist")
+				return nil, fmt.Errorf("missing username on userlist")
 			}
 			if sep == len(line)-1 || line[sep:] == "::" {
-				return nil, fmt.Errorf("Missing '%v' password on userlist", userName)
+				return nil, fmt.Errorf("missing '%v' password on userlist", userName)
 			}
 			user := haproxy.AuthUser{}
 			// if usr::pwd
@@ -522,9 +556,9 @@ func getAuthUsers(data map[string][]byte) (map[string][]haproxy.AuthUser, error)
 			}
 			users = append(users, user)
 		}
-		ret[name] = users
+		userLists[listName] = haproxy.UserList{Name: listName, Users: users}
 	}
-	return ret, nil
+	return listNames, nil
 }
 
 func getFrontendRulesForPort(rules []api.FrontendRule, port int) api.FrontendRule {
@@ -550,37 +584,29 @@ func getEndpointName(ep apiv1.EndpointAddress) string {
 	return "pod-" + ep.IP
 }
 
-func (c *controller) getServiceAuth(s *apiv1.Service) *haproxy.AuthConfig {
-	if c.Ingress.AuthEnabled() { // global auth enabled
-		return nil
-	}
-
+func (c *controller) getServiceAuth(userLists map[string]haproxy.UserList, svc *apiv1.Service) *haproxy.BasicAuth {
 	// Check auth type is basic; other auth mode is not supported
-	authType, ok := s.Annotations[api.AuthType]
+	authType, ok := svc.Annotations[api.AuthType]
 	if !ok || authType != "basic" {
 		return nil
 	}
 
-	authSecret, ok := s.Annotations[api.AuthSecret]
+	authSecret, ok := svc.Annotations[api.AuthSecret]
 	if !ok {
 		return nil
 	}
-
-	authRealm, ok := s.Annotations[api.AuthRealm]
-
 	secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(authSecret, metav1.GetOptions{})
 	if err != nil || secret.Data == nil {
 		return nil
 	}
 
-	users, err := getAuthUsers(secret.Data)
+	userList, err := getAuthUsers(userLists, secret)
 	if err != nil {
 		return nil
 	}
-
-	return &haproxy.AuthConfig{
-		Realm: authRealm,
-		Users: users,
+	return &haproxy.BasicAuth{
+		Realm:     svc.Annotations[api.AuthRealm],
+		UserLists: userList,
 	}
 }
 
@@ -619,35 +645,33 @@ func (c *controller) getErrorFiles() ([]*haproxy.ErrorFile, error) {
 }
 
 func (c *controller) getTLSAuth(fr api.FrontendRule) (*haproxy.TLSAuth, error) {
-	if fr.Auth != nil {
-		if fr.Auth.TLS != nil {
-			tlsAuthSec, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(fr.Auth.TLS.SecretName, metav1.GetOptions{})
-			if err != nil {
-				return nil, err
-			}
-
-			if _, ok := tlsAuthSec.Data["ca.crt"]; !ok {
-				return nil, fmt.Errorf("key ca.crt not found in TLSAuthSecret %s", tlsAuthSec.Name)
-			}
-
-			htls := &haproxy.TLSAuth{
-				CAFile:       fr.Auth.TLS.SecretName + "-ca.crt",
-				VerifyClient: string(fr.Auth.TLS.VerifyClient),
-				Headers:      fr.Auth.TLS.Headers,
-				ErrorPage:    fr.Auth.TLS.ErrorPage,
-			}
-			if _, ok := tlsAuthSec.Data["crl.pem"]; ok {
-				htls.CRLFile = fr.Auth.TLS.SecretName + "-crl.pem"
-			}
-			if u, err := url.Parse(fr.Auth.TLS.ErrorPage); err == nil {
-				htls.ErrorPath = u.Path
-			}
-			if htls.VerifyClient == "" {
-				htls.VerifyClient = string(api.TLSAuthVerifyRequired)
-			}
-
-			return htls, nil
-		}
+	if fr.Auth == nil || fr.Auth.TLS == nil{
+		return nil, nil
 	}
-	return nil, nil
+	tlsAuthSec, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(fr.Auth.TLS.SecretName, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	if _, ok := tlsAuthSec.Data["ca.crt"]; !ok {
+		return nil, fmt.Errorf("key ca.crt not found in TLSAuthSecret %s", tlsAuthSec.Name)
+	}
+
+	htls := &haproxy.TLSAuth{
+		CAFile:       fr.Auth.TLS.SecretName + "-ca.crt",
+		VerifyClient: string(fr.Auth.TLS.VerifyClient),
+		Headers:      fr.Auth.TLS.Headers,
+		ErrorPage:    fr.Auth.TLS.ErrorPage,
+	}
+	if _, ok := tlsAuthSec.Data["crl.pem"]; ok {
+		htls.CRLFile = fr.Auth.TLS.SecretName + "-crl.pem"
+	}
+	if u, err := url.Parse(fr.Auth.TLS.ErrorPage); err == nil {
+		htls.ErrorPath = u.Path
+	}
+	if htls.VerifyClient == "" {
+		htls.VerifyClient = string(api.TLSAuthVerifyRequired)
+	}
+
+	return htls, nil
 }

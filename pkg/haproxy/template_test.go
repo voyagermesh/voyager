@@ -416,7 +416,7 @@ func TestTemplateAuth(t *testing.T) {
 				{Name: "first", IP: "10.244.2.2", Port: "2324"},
 			},
 		},
-		Auth: &AuthConfig{
+		BasicAuth: &BasicAuth{
 			Realm: "Required",
 			Users: map[string][]AuthUser{
 				"auth": {
@@ -535,7 +535,7 @@ func TestTemplateServiceAuth(t *testing.T) {
 				{Name: "first", IP: "10.244.2.1", Port: "2323"},
 				{Name: "first", IP: "10.244.2.2", Port: "2324"},
 			},
-			Auth: &AuthConfig{
+			BasicAuth: &BasicAuth{
 				Realm: "Required",
 				Users: map[string][]AuthUser{
 					"auth": {
@@ -571,7 +571,7 @@ func TestTemplateServiceAuth(t *testing.T) {
 								{Name: "first", IP: "10.244.2.1", Port: "2323"},
 								{Name: "first", IP: "10.244.2.2", Port: "2324"},
 							},
-							Auth: &AuthConfig{
+							BasicAuth: &BasicAuth{
 								Realm: "Required",
 								Users: map[string][]AuthUser{
 									"auth-2": {
