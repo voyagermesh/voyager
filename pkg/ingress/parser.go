@@ -417,7 +417,9 @@ func (c *controller) generateConfig() error {
 						StickyCookieHash: bk.StickyCookieHash,
 					},
 				}
-				if fr.Auth != nil && fr.Auth.TLS != nil {
+				if globalTLS != nil {
+					def.TLSAuth = globalTLS
+				} else if fr.Auth != nil && fr.Auth.TLS != nil {
 					htls, err := c.getTLSAuth(fr.Auth.TLS)
 					if err != nil {
 						return err
