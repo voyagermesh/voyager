@@ -406,7 +406,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			}
 
 			// No Cert but Cert is optional allow
-			err = f.Ingress.DoHTTPs(framework.NoRetry, "http.appscode.test", "", ing, eps, "GET", "/testpath/hello", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTPs(framework.NoRetry, "http.appscode.test", "", ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *testserverclient.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/hello"))

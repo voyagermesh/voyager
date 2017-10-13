@@ -405,15 +405,16 @@ func (c *controller) generateConfig() error {
 						StickyCookieHash: bk.StickyCookieHash,
 					},
 				}
+				 if fr.Auth != nil && fr.Auth.TLS != nil {
+					 htls, err := c.getTLSAuth(fr)
+					 if err != nil {
+						 return err
+					 }
 
-				htls, err := c.getTLSAuth(fr)
-				if err != nil {
-					return err
-				}
-
-				if htls != nil {
-					def.TLSAuth = htls
-				}
+					 if htls != nil {
+						 def.TLSAuth = htls
+					 }
+				 }
 
 				if ref, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoTLS {
 					if ref.Kind == api.ResourceKindCertificate {
@@ -644,6 +645,9 @@ func (c *controller) getErrorFiles() ([]*haproxy.ErrorFile, error) {
 }
 
 func (c *controller) getTLSAuth(fr api.FrontendRule) (*haproxy.TLSAuth, error) {
+	if fr.Auth == nil || fr.Auth.TLS == nil{
+		return nil, nil
+	}
 	tlsAuthSec, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(fr.Auth.TLS.SecretName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err

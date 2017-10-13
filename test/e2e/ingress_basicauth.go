@@ -16,9 +16,9 @@ import (
 
 var _ = Describe("IngressWithBasicAuth", func() {
 	var (
-		f      *framework.Invocation
-		ing    *api.Ingress
-		secret *apiv1.Secret
+		f           *framework.Invocation
+		ing         *api.Ingress
+		secret, sec *apiv1.Secret
 	)
 
 	BeforeEach(func() {
@@ -144,6 +144,434 @@ var _ = Describe("IngressWithBasicAuth", func() {
 				"/testpath",
 				map[string]string{
 					"Authorization": "Basic amFuZTpndWVzdA==", // jane:guest
+				},
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+	Describe("CreateWithFrontendRules", func() {
+		BeforeEach(func() {
+			ing.Spec.FrontendRules = []api.FrontendRule{
+				{
+					Port: intstr.FromInt(80),
+					Auth: &api.AuthOption{
+						Basic: &api.BasicAuth{
+							SecretName: secret.Name,
+							Realm:      "Realm returned",
+						},
+					},
+				},
+			}
+			ing.Spec.Rules = []api.IngressRule{
+				{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
+								{
+									Path: "/testpath",
+									Backend: api.HTTPIngressBackend{
+										IngressBackend: api.IngressBackend{
+											ServiceName: f.Ingress.TestServerName(),
+											ServicePort: intstr.FromInt(80),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+		})
+
+		It("Should response HTTP", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			err = f.Ingress.DoHTTPStatus(framework.NoRetry, ing, eps, "GET", "/testpath", func(r *testserverclient.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusUnauthorized))
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoHTTPWithHeader(
+				framework.MaxRetry,
+				ing,
+				eps,
+				"GET",
+				"/testpath",
+				map[string]string{
+					"Authorization": "Basic Zm9vOmJhcg==", // foo:bar
+				},
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoHTTPWithHeader(
+				framework.MaxRetry,
+				ing,
+				eps,
+				"GET",
+				"/testpath",
+				map[string]string{
+					"Authorization": "Basic YXV0aDItZm9vOmJhcg==", // auth2-foo:bar
+				},
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoHTTPWithHeader(
+				framework.MaxRetry,
+				ing,
+				eps,
+				"GET",
+				"/testpath",
+				map[string]string{
+					"Authorization": "Basic amFuZTpndWVzdA==", // jane:guest
+				},
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+	Describe("CreateWithDifferentFrontendRules", func() {
+		BeforeEach(func() {
+			sec = &apiv1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      f.Ingress.UniqueName(),
+					Namespace: ing.GetNamespace(),
+				},
+				StringData: map[string]string{
+					"auth": `foo::bar-from-secret-frontend`,
+				},
+			}
+			_, err := f.KubeClient.CoreV1().Secrets(sec.Namespace).Create(sec)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		AfterEach(func() {
+			if root.Config.Cleanup {
+				f.KubeClient.CoreV1().Secrets(sec.Namespace).Delete(sec.Name, &metav1.DeleteOptions{})
+			}
+		})
+
+		BeforeEach(func() {
+			ing.Spec.FrontendRules = []api.FrontendRule{
+				{
+					Port: intstr.FromInt(80),
+					Auth: &api.AuthOption{
+						Basic: &api.BasicAuth{
+							SecretName: secret.Name,
+							Realm:      "Realm returned",
+						},
+					},
+				},
+				{
+					Port: intstr.FromInt(9090),
+					Auth: &api.AuthOption{
+						Basic: &api.BasicAuth{
+							SecretName: sec.Name,
+							Realm:      "Realm returned",
+						},
+					},
+				},
+			}
+			ing.Spec.Rules = []api.IngressRule{
+				{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
+								{
+									Path: "/testpath",
+									Backend: api.HTTPIngressBackend{
+										IngressBackend: api.IngressBackend{
+											ServiceName: f.Ingress.TestServerName(),
+											ServicePort: intstr.FromInt(80),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Port: intstr.FromInt(9090),
+							Paths: []api.HTTPIngressPath{
+								{
+									Path: "/testpath",
+									Backend: api.HTTPIngressBackend{
+										IngressBackend: api.IngressBackend{
+											ServiceName: f.Ingress.TestServerName(),
+											ServicePort: intstr.FromInt(80),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+		})
+
+		It("Should response HTTP", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			err = f.Ingress.DoHTTPStatus(framework.NoRetry, ing, eps, "GET", "/testpath", func(r *testserverclient.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusUnauthorized))
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			var port80, port9090 apiv1.ServicePort
+			svc, err := f.Ingress.GetOffShootService(ing)
+			Expect(err).NotTo(HaveOccurred())
+			for _, p := range svc.Spec.Ports {
+				if p.Port == 80 {
+					port80 = p
+				}
+
+				if p.Port == 9090 {
+					port9090 = p
+				}
+			}
+
+			err = f.Ingress.DoHTTPWithHeader(
+				framework.MaxRetry,
+				ing,
+				f.Ingress.FilterEndpointsForPort(eps, port80),
+				"GET",
+				"/testpath",
+				map[string]string{
+					"Authorization": "Basic Zm9vOmJhcg==", // foo:bar
+				},
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoHTTPWithHeader(
+				framework.MaxRetry,
+				ing,
+				f.Ingress.FilterEndpointsForPort(eps, port80),
+				"GET",
+				"/testpath",
+				map[string]string{
+					"Authorization": "Basic YXV0aDItZm9vOmJhcg==", // auth2-foo:bar
+				},
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoHTTPWithHeader(
+				framework.MaxRetry,
+				ing,
+				f.Ingress.FilterEndpointsForPort(eps, port80),
+				"GET",
+				"/testpath",
+				map[string]string{
+					"Authorization": "Basic amFuZTpndWVzdA==", // jane:guest
+				},
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			// Call The Second HTTP Port
+			err = f.Ingress.DoHTTPWithHeader(
+				framework.MaxRetry,
+				ing,
+				f.Ingress.FilterEndpointsForPort(eps, port9090),
+				"GET",
+				"/testpath",
+				map[string]string{
+					"Authorization": "Basic Zm9vOmJhci1mcm9tLXNlY3JldC1mcm9udGVuZA==",
+				},
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+	Describe("CreateAnnotationAndFrontendRules", func() {
+		BeforeEach(func() {
+			ing.Annotations = map[string]string{
+				api.AuthType:   "basic",
+				api.AuthRealm:  "Realm returned",
+				api.AuthSecret: secret.Name,
+			}
+			ing.Spec.FrontendRules = []api.FrontendRule{
+				{
+					Port: intstr.FromInt(80),
+					Auth: &api.AuthOption{
+						Basic: &api.BasicAuth{
+							SecretName: secret.Name,
+							Realm:      "Realm returned",
+						},
+					},
+				},
+			}
+			ing.Spec.Rules = []api.IngressRule{
+				{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
+								{
+									Path: "/testpath",
+									Backend: api.HTTPIngressBackend{
+										IngressBackend: api.IngressBackend{
+											ServiceName: f.Ingress.TestServerName(),
+											ServicePort: intstr.FromInt(80),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Port: intstr.FromInt(9090),
+							Paths: []api.HTTPIngressPath{
+								{
+									Path: "/testpath",
+									Backend: api.HTTPIngressBackend{
+										IngressBackend: api.IngressBackend{
+											ServiceName: f.Ingress.TestServerName(),
+											ServicePort: intstr.FromInt(80),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+		})
+
+		It("Should response HTTP", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			err = f.Ingress.DoHTTPStatus(framework.NoRetry, ing, eps, "GET", "/testpath", func(r *testserverclient.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusUnauthorized))
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			var port80, port9090 apiv1.ServicePort
+			svc, err := f.Ingress.GetOffShootService(ing)
+			Expect(err).NotTo(HaveOccurred())
+			for _, p := range svc.Spec.Ports {
+				if p.Port == 80 {
+					port80 = p
+				}
+
+				if p.Port == 9090 {
+					port9090 = p
+				}
+			}
+
+			err = f.Ingress.DoHTTPWithHeader(
+				framework.MaxRetry,
+				ing,
+				f.Ingress.FilterEndpointsForPort(eps, port80),
+				"GET",
+				"/testpath",
+				map[string]string{
+					"Authorization": "Basic Zm9vOmJhcg==", // foo:bar
+				},
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoHTTPWithHeader(
+				framework.MaxRetry,
+				ing,
+				f.Ingress.FilterEndpointsForPort(eps, port80),
+				"GET",
+				"/testpath",
+				map[string]string{
+					"Authorization": "Basic YXV0aDItZm9vOmJhcg==", // auth2-foo:bar
+				},
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoHTTPWithHeader(
+				framework.MaxRetry,
+				ing,
+				f.Ingress.FilterEndpointsForPort(eps, port80),
+				"GET",
+				"/testpath",
+				map[string]string{
+					"Authorization": "Basic amFuZTpndWVzdA==", // jane:guest
+				},
+				func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			// Call The Second HTTP Port
+			err = f.Ingress.DoHTTPWithHeader(
+				framework.MaxRetry,
+				ing,
+				f.Ingress.FilterEndpointsForPort(eps, port9090),
+				"GET",
+				"/testpath",
+				map[string]string{
+					"Authorization": "Basic Zm9vOmJhcg==", // foo:bar
 				},
 				func(r *testserverclient.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
@@ -471,7 +899,6 @@ var _ = Describe("IngressWithBasicAuth", func() {
 				},
 			)
 			Expect(err).NotTo(HaveOccurred())
-
 		})
 	})
 })
