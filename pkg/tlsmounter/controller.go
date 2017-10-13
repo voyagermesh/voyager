@@ -169,9 +169,18 @@ func (c *Controller) initTLSCache(ing *api.Ingress) error {
 		}
 	}
 
-	for _, fr := range ing.Spec.FrontendRules {
-		if fr.Auth != nil {
-			if fr.Auth.TLS != nil {
+	if name := ing.AuthTLSSecret(); name != "" {
+		stls, err := c.k8sClient.CoreV1().Secrets(c.options.IngressRef.Namespace).Get(name, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		err = c.sIndexer.Add(stls)
+		if err != nil {
+			return err
+		}
+	} else {
+		for _, fr := range ing.Spec.FrontendRules {
+			if fr.Auth != nil && fr.Auth.TLS != nil {
 				stls, err := c.k8sClient.CoreV1().Secrets(c.options.IngressRef.Namespace).Get(fr.Auth.TLS.SecretName, metav1.GetOptions{})
 				if err != nil {
 					return err
