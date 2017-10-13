@@ -224,24 +224,16 @@ func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]iou
 		}
 	}
 
-	globalTLS := false
-	if ing.Annotations != nil {
-		if name, ok := ing.Annotations[api.AuthTLSSecret]; ok {
-			r, err := c.getSecret(name)
-			if err != nil {
-				return err
-			}
-			err = c.projectAuthSecret(r, projections)
-			if err != nil {
-				return err
-			}
-
-			globalTLS = true
+	if name := ing.AuthTLSSecret(); name != "" {
+		r, err := c.getSecret(name)
+		if err != nil {
+			return err
 		}
-	}
-
-	// Remove extra loads for frontend tls auth if global auth is set?? @tamal
-	if !globalTLS {
+		err = c.projectAuthSecret(r, projections)
+		if err != nil {
+			return err
+		}
+	} else {
 		for _, fr := range ing.Spec.FrontendRules {
 			if fr.Auth != nil {
 				if fr.Auth.TLS != nil {
@@ -257,7 +249,6 @@ func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]iou
 			}
 		}
 	}
-
 	return nil
 }
 
