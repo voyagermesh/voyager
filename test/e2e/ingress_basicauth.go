@@ -428,6 +428,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			)
 			Expect(err).NotTo(HaveOccurred())
 
+			// Test passing valid password to the other port fails
 			err = f.Ingress.DoHTTPStatusWithHeader(
 				framework.NoRetry,
 				ing,
