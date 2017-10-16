@@ -36,6 +36,7 @@ func NewCmdCheck() *cobra.Command {
 				if err != nil {
 					return err
 				}
+				ing.Migrate()
 				err = ing.IsValid(opt.CloudProvider)
 				if err != nil {
 					return err

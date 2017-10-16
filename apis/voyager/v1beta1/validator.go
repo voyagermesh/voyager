@@ -32,27 +32,27 @@ func (a address) String() string {
 	return fmt.Sprintf(":%d", a.PodPort)
 }
 
-func (r *Ingress) IsValid(cloudProvider string) error {
+func (r *Ingress) Migrate() {
+	for ti, tls := range r.Spec.TLS {
+		if tls.SecretName != "" {
+			r.Spec.TLS[ti].Ref = &LocalTypedReference{
+				APIVersion: "v1",
+				Kind:       "Secret",
+				Name:       tls.SecretName,
+			}
+			r.Spec.TLS[ti].SecretName = ""
+		}
+	}
+}
+
+func (r Ingress) IsValid(cloudProvider string) error {
 	for ri, rule := range r.Spec.FrontendRules {
 		if _, err := checkRequiredPort(rule.Port); err != nil {
 			return fmt.Errorf("spec.frontendRules[%d].port %s is invalid. Reason: %s", ri, rule.Port, err)
 		}
 	}
 	for ti, tls := range r.Spec.TLS {
-		if tls.SecretName != "" {
-			if tls.Ref != nil &&
-				!(tls.Ref.Name == tls.SecretName &&
-					(tls.Ref.Kind == "" || strings.EqualFold(tls.Ref.Kind, "Secret"))) {
-				return fmt.Errorf("spec.tls[%d] specifies different secret name and secret ref", ti)
-			}
-			if r.Spec.TLS[ti].Ref == nil {
-				r.Spec.TLS[ti].Ref = &LocalTypedReference{
-					APIVersion: "v1",
-					Kind:       "Secret",
-					Name:       tls.SecretName,
-				}
-			}
-		} else if tls.Ref == nil {
+		if tls.Ref == nil {
 			return fmt.Errorf("spec.tls[%d] specifies no secret name and secret ref", ti)
 		} else {
 			if tls.Ref.Kind != "" && !(strings.EqualFold(tls.Ref.Kind, "Secret") || strings.EqualFold(tls.Ref.Kind, "Certificate")) {

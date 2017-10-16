@@ -44,6 +44,7 @@ func (op *Operator) ValidateIngress() error {
 		return err
 	}
 	for _, ing := range engresses.Items {
+		ing.Migrate()
 		if !ing.ShouldHandleIngress(op.Opt.IngressClass) {
 			log.Warningf("Skipping ingress %s@%s, as it is not handled by Voyager.", ing.Name, ing.Namespace)
 			continue

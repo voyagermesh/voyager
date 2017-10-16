@@ -41,7 +41,13 @@ func (c *Controller) initIngressWatcher() {
 	// of the Secret than the version which was responsible for triggering the update.
 	c.ingIndexer, c.ingInformer = cache.NewIndexerInformer(lw, &extension.Ingress{}, c.options.ResyncPeriod, cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
+			if _, ok := obj.(*extension.Ingress); !ok {
+				return
+			}
 			if r, err := api.NewEngressFromIngress(obj); err == nil {
+				if r.Name != c.options.IngressRef.Name {
+					return
+				}
 				if err := r.IsValid(c.options.CloudProvider); err == nil {
 					key, err := cache.MetaNamespaceKeyFunc(obj)
 					if err == nil {
@@ -51,7 +57,13 @@ func (c *Controller) initIngressWatcher() {
 			}
 		},
 		UpdateFunc: func(old interface{}, new interface{}) {
+			if _, ok := new.(*extension.Ingress); !ok {
+				return
+			}
 			if r, err := api.NewEngressFromIngress(new); err == nil {
+				if r.Name != c.options.IngressRef.Name {
+					return
+				}
 				if err := r.IsValid(c.options.CloudProvider); err == nil {
 					key, err := cache.MetaNamespaceKeyFunc(new)
 					if err == nil {
@@ -61,11 +73,19 @@ func (c *Controller) initIngressWatcher() {
 			}
 		},
 		DeleteFunc: func(obj interface{}) {
-			// IndexerInformer uses a delta queue, therefore for deletes we have to use this
-			// key function.
-			key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
-			if err == nil {
-				c.ingQueue.Add(key)
+			if _, ok := obj.(*extension.Ingress); !ok {
+				return
+			}
+			if r, err := api.NewEngressFromIngress(obj); err == nil {
+				if r.Name != c.options.IngressRef.Name {
+					return
+				}
+				// IndexerInformer uses a delta queue, therefore for deletes we have to use this
+				// key function.
+				key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
+				if err == nil {
+					c.ingQueue.Add(key)
+				}
 			}
 		},
 	}, cache.Indexers{})

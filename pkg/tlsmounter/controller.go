@@ -122,6 +122,7 @@ func (c *Controller) initIngressIndexer() (*api.Ingress, error) {
 		if err != nil {
 			return nil, err
 		}
+		obj.Migrate()
 		err = obj.IsValid(c.options.CloudProvider)
 		if err != nil {
 			return nil, err

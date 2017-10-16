@@ -35,6 +35,7 @@ func (op *Operator) initIngressCRDWatcher() cache.Controller {
 				ctx := etx.Background()
 				logger := log.New(ctx)
 				if engress, ok := obj.(*tapi.Ingress); ok {
+					engress.Migrate()
 					logger.Infof("%s %s@%s added", engress.APISchema(), engress.Name, engress.Namespace)
 					if !engress.ShouldHandleIngress(op.Opt.IngressClass) {
 						logger.Infof("%s %s@%s does not match ingress class", engress.APISchema(), engress.Name, engress.Namespace)
@@ -62,11 +63,13 @@ func (op *Operator) initIngressCRDWatcher() cache.Controller {
 					logger.Errorln("Invalid Ingress object")
 					return
 				}
+				oldEngress.Migrate()
 				newEngress, ok := new.(*tapi.Ingress)
 				if !ok {
 					logger.Errorln("Invalid Ingress object")
 					return
 				}
+				newEngress.Migrate()
 				if changed, _ := oldEngress.HasChanged(*newEngress); !changed {
 					return
 				}
@@ -85,6 +88,7 @@ func (op *Operator) initIngressCRDWatcher() cache.Controller {
 			},
 			DeleteFunc: func(obj interface{}) {
 				if engress, ok := obj.(*tapi.Ingress); ok {
+					engress.Migrate()
 					ctx := etx.Background()
 					logger := log.New(ctx)
 					logger.Infof("%s %s@%s deleted", engress.APISchema(), engress.Name, engress.Namespace)

@@ -35,12 +35,13 @@ func (r Ingress) HasChanged(o Ingress) (bool, error) {
 	if r.Name != o.Name ||
 		r.Namespace != o.Namespace ||
 		r.APISchema() != o.APISchema() {
-		return false, errors.New("Not the same Ingress.")
+		return false, errors.New("not the same Ingress")
 	}
 
-	if !cmp.Equal(r, o, cmp.Comparer(func(x, y resource.Quantity) bool {
+	specEqual := cmp.Equal(r.Spec, o.Spec, cmp.Comparer(func(x, y resource.Quantity) bool {
 		return x.Cmp(y) == 0
-	})) {
+	}))
+	if !specEqual {
 		return true, nil
 	}
 

@@ -1,5 +1,5 @@
 hash: c1d52141d9591d55b80804b706526951a3afad4d765ecdc713243f95d0591d61
-updated: 2017-10-11T02:19:59.178057822-07:00
+updated: 2017-10-15T23:47:16.252836023-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -30,7 +30,7 @@ imports:
   - cmds
   - controller
 - name: github.com/appscode/kutil
-  version: edecb186bc1f64f153c2581b18b42440890906f0
+  version: 6aebd7644ed3582fae5b44c9576d0cda9dd92352
   subpackages:
   - core/v1
   - rbac/v1beta1
@@ -157,6 +157,13 @@ imports:
   - proto
 - name: github.com/golang/snappy
   version: 553a641470496b2327abcac10b36396bd98e45c9
+- name: github.com/google/go-cmp
+  version: 7ffe1921f7d789634416694ae7145ebbc1ac82b2
+  subpackages:
+  - cmp
+  - cmp/internal/diff
+  - cmp/internal/function
+  - cmp/internal/value
 - name: github.com/google/go-querystring
   version: 53e6ce116135b80d037921a7fdd5138cf32d7a8a
   subpackages:
@@ -315,13 +322,11 @@ imports:
 - name: github.com/Sirupsen/logrus
   version: 51fe59aca108dc5680109e7b2051cbdcfa5a253c
 - name: github.com/spf13/cobra
-  version: 845c9050106f58df1cb4b4ed2e7e8dae7bbd770d
+  version: 7b2c5ac9fc04fc5efafb60700713d4fa609b777b
   subpackages:
   - doc
 - name: github.com/spf13/pflag
   version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
-- name: github.com/tamalsaha/go-oneliners
-  version: 4ca214c0460d9077e49e3ef394785f92408f7699
 - name: github.com/timewasted/linode
   version: 37e84520dcf74488f67654f9c775b9752c232dc1
   subpackages:
