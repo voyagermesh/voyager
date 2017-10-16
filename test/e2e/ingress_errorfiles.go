@@ -191,10 +191,10 @@ Content-Type: text/html
 			Expect(err).NotTo(HaveOccurred())
 
 			// Should redirect to echo.jsontest.com
-			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET", "/wrongpath",
+			err = f.Ingress.DoHTTPTestRedirect(framework.NoRetry, ing, eps, "GET", "/wrongpath",
 				func(r *testserverclient.Response) bool {
-					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
-						Expect(r.Body).Should(Equal("haproxy-errorloc"))
+					return Expect(r.Status).Should(Equal(302)) &&
+						Expect(r.ResponseHeader.Get("Location")).Should(Equal("http://echo.jsontest.com/status/200/body/haproxy-errorloc"))
 				},
 			)
 			Expect(err).NotTo(HaveOccurred())
