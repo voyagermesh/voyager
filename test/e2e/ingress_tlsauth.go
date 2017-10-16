@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -31,6 +30,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 	BeforeEach(func() {
 		f = root.Invoke()
 		ing = f.Ingress.GetSkeleton()
+		ing.Annotations[api.SSLRedirect] = "false"
 		f.Ingress.SetSkeletonRule(ing)
 	})
 
@@ -519,8 +519,6 @@ var _ = Describe("IngressWithTLSAuth", func() {
 				return true
 			})
 			Expect(err).To(HaveOccurred())
-
-			time.Sleep(time.Hour)
 
 			// Wrong Cert
 			tr := getTransportForCert(f.CertManager.CACert(), tlsSecret.Data[apiv1.TLSCertKey], tlsSecret.Data[apiv1.TLSPrivateKeyKey])
