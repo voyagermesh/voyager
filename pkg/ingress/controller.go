@@ -70,6 +70,8 @@ func NewController(
 		return NewNodePortController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
 	case api.LBTypeLoadBalancer:
 		return NewLoadBalancerController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
+	case api.LBTypeInternal:
+		return NewInternalController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
 	}
 	return nil
 }

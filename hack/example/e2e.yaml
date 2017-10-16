@@ -50,6 +50,7 @@ metadata:
   name: test-ingress
   namespace: default
   annotations:
+    ingress.appscode.com/type: "Internal"
     ingress.appscode.com/stats: "true"
 spec:
   rules:

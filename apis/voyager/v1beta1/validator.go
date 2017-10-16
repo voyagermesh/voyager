@@ -219,7 +219,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 		return fmt.Errorf("ingress %s@%s uses unsupported LBType %s for cloud provider %s", r.Name, r.Namespace, r.LBType(), cloudProvider)
 	}
 
-	if (r.LBType() == LBTypeNodePort || r.LBType() == LBTypeHostPort) && len(r.Spec.LoadBalancerSourceRanges) > 0 {
+	if (r.LBType() == LBTypeNodePort || r.LBType() == LBTypeHostPort || r.LBType() == LBTypeInternal) && len(r.Spec.LoadBalancerSourceRanges) > 0 {
 		return fmt.Errorf("ingress %s@%s of type %s can't use `spec.LoadBalancerSourceRanges`", r.Name, r.Namespace, r.LBType())
 	}
 
@@ -240,6 +240,8 @@ func (r Ingress) SupportsLBType(cloudProvider string) bool {
 	case LBTypeHostPort:
 		// TODO: https://github.com/appscode/voyager/issues/374
 		return cloudProvider != "acs" && cloudProvider != "azure" && cloudProvider != "gce" && cloudProvider != "gke"
+	case LBTypeInternal:
+		return true
 	default:
 		return false
 	}

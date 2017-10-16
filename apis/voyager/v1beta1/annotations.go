@@ -30,6 +30,7 @@ const (
 	LBTypeHostPort     = "HostPort"
 	LBTypeNodePort     = "NodePort"
 	LBTypeLoadBalancer = "LoadBalancer" // default
+	LBTypeInternal     = "Internal"
 	LBType             = EngressKey + "/" + "type"
 
 	// Runs HAProxy on a specific set of a hosts.

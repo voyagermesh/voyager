@@ -77,7 +77,7 @@ func (op *Operator) updateFirewall(ctx context.Context, ing *api.Ingress, node *
 		return
 	}
 	t := ing.LBType()
-	if t == api.LBTypeLoadBalancer {
+	if t == api.LBTypeLoadBalancer || t == api.LBTypeInternal {
 		return
 	} else if t == api.LBTypeHostPort {
 		if selector := labels.SelectorFromSet(ing.NodeSelector()); !selector.Matches(labels.Set(node.Labels)) {
