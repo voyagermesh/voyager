@@ -38,9 +38,10 @@ func (r Ingress) HasChanged(o Ingress) (bool, error) {
 		return false, errors.New("not the same Ingress")
 	}
 
-	specEqual := cmp.Equal(r.Spec, o.Spec, cmp.Comparer(func(x, y resource.Quantity) bool {
+	opts := cmp.Comparer(func(x, y resource.Quantity) bool {
 		return x.Cmp(y) == 0
-	}))
+	})
+	specEqual := cmp.Equal(r.Spec, o.Spec, opts)
 	if !specEqual {
 		return true, nil
 	}

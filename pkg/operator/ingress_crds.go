@@ -10,6 +10,8 @@ import (
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/ingress"
 	"github.com/appscode/voyager/pkg/monitor"
+	"github.com/google/go-cmp/cmp"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -73,7 +75,10 @@ func (op *Operator) initIngressCRDWatcher() cache.Controller {
 				if changed, _ := oldEngress.HasChanged(*newEngress); !changed {
 					return
 				}
-				logger.Infof("%s %s@%s has changed", newEngress.APISchema(), newEngress.Name, newEngress.Namespace)
+				diff := cmp.Diff(oldEngress, newEngress, cmp.Comparer(func(x, y resource.Quantity) bool {
+					return x.Cmp(y) == 0
+				}))
+				logger.Infof("%s %s@%s has changed. Diff: %s", newEngress.APISchema(), newEngress.Name, newEngress.Namespace, diff)
 				if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
 					op.recorder.Eventf(
 						newEngress.ObjectReference(),
