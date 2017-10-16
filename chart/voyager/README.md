@@ -43,7 +43,7 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | Parameter                 | Description                                                   | Default            |
 | --------------------------| ------------------------------------------------------------- | ------------------ |
 | `image`                   | Container image to run                                        | `appscode/voyager` |
-| `imageTag`                | Image tag of container                                        | `4.0.0-rc.15`      |
+| `imageTag`                | Image tag of container                                        | `4.0.0-rc.16`      |
 | `cloudProvider`           | Name of cloud provider                                        | `nil`              |
 | `cloudConfig`             | Path to cloud config                                          | ``                 |
 | `criticalAddon`           | If true, installs voyager operator as critical addon          | `false`            |
