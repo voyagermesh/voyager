@@ -24,6 +24,7 @@ var _ = Describe("IngressTLS", func() {
 	BeforeEach(func() {
 		f = root.Invoke()
 		ing = f.Ingress.GetSkeleton()
+		ing.Annotations[api.SSLRedirect] = "false"
 		f.Ingress.SetSkeletonRule(ing)
 	})
 

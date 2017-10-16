@@ -49,6 +49,7 @@ func (c *Controller) initIngressCRDWatcher() {
 				if r.Name != c.options.IngressRef.Name {
 					return
 				}
+				r.Migrate()
 				if err := r.IsValid(c.options.CloudProvider); err == nil {
 					key, err := cache.MetaNamespaceKeyFunc(obj)
 					if err == nil {
@@ -62,6 +63,7 @@ func (c *Controller) initIngressCRDWatcher() {
 				if r.Name != c.options.IngressRef.Name {
 					return
 				}
+				r.Migrate()
 				if err := r.IsValid(c.options.CloudProvider); err == nil {
 					key, err := cache.MetaNamespaceKeyFunc(new)
 					if err == nil {
@@ -146,6 +148,7 @@ func (c *Controller) syncIngressCRD(key string) error {
 	} else {
 		d := obj.(*api.Ingress)
 		fmt.Printf("Sync/Add/Update for Ingress %s\n", d.GetName())
+		d.Migrate()
 
 		err = c.mountIngress(d, true)
 		if err != nil {
@@ -171,6 +174,7 @@ func (c *Controller) getIngress() (*api.Ingress, error) {
 			return nil, kerr.NewNotFound(api.Resource("ingress"), c.options.IngressRef.Name)
 		}
 		i := obj.(*api.Ingress)
+		i.Migrate()
 		err = i.IsValid(c.options.CloudProvider)
 		if err != nil {
 			return nil, err
@@ -197,11 +201,6 @@ func (c *Controller) getIngress() (*api.Ingress, error) {
 }
 
 func (c *Controller) projectIngress(ing *api.Ingress, projections map[string]ioutilz.FileProjection) error {
-	err := ing.IsValid(c.options.CloudProvider)
-	if err != nil {
-		return err
-	}
-
 	for _, tls := range ing.Spec.TLS {
 		if strings.EqualFold(tls.Ref.Kind, api.ResourceKindCertificate) {
 			r, err := c.getCertificate(tls.Ref.Name)
