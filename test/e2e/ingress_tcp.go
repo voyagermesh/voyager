@@ -66,8 +66,11 @@ var _ = Describe("IngressTCP", func() {
 		BeforeEach(func() {
 			ing.Spec.TLS = []api.IngressTLS{
 				{
-					SecretName: secret.Name,
-					Hosts:      []string{"http.appscode.test"},
+					Ref: &api.LocalTypedReference{
+						Kind: "Secret",
+						Name: secret.Name,
+					},
+					Hosts: []string{"http.appscode.test"},
 				},
 			}
 			ing.Spec.Rules = []api.IngressRule{
@@ -236,13 +239,13 @@ var _ = Describe("IngressTCP", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = f.Ingress.DoTCP(3, ing, eps, func(r *testserverclient.Response) bool {
-				return Expect(r.ServerPort).Should(Equal(":4343"))
+			err = f.Ingress.DoTCP(1, ing, eps, func(r *testserverclient.Response) bool {
+				return false
 			})
 			Expect(err).To(HaveOccurred())
 
 			// Wait for the rates to be reset
-			time.Sleep(time.Minute)
+			time.Sleep(time.Minute * 2)
 
 			err = f.Ingress.DoTCP(framework.MaxRetry, ing, eps, func(r *testserverclient.Response) bool {
 				return Expect(r.ServerPort).Should(Equal(":4343"))

@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"math"
 	"net/http"
 	"strings"
 
@@ -109,8 +110,9 @@ var _ = Describe("IngressWithHostName", func() {
 				})
 				Expect(err).NotTo(HaveOccurred())
 			}
-			Expect(dep1Counter).Should(Equal(90))
-			Expect(dep2Counter).Should(Equal(10))
+
+			ratio := math.Ceil(float64(dep1Counter) / float64(dep2Counter))
+			Expect(ratio).Should(BeNumerically(">=", float64(9.0)))
 		})
 	})
 })

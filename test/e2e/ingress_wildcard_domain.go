@@ -150,6 +150,7 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 			if f.Config.CloudProviderName == "minikube" {
 				ing.Annotations[api.LBType] = api.LBTypeHostPort
 			}
+			ing.Annotations[api.SSLRedirect] = "false"
 			ing.Spec.TLS = []api.IngressTLS{
 				{
 					Ref: &api.LocalTypedReference{
