@@ -434,10 +434,10 @@ func (c *controller) generateConfig() error {
 					if ref.Kind == api.ResourceKindCertificate {
 						crd, err := c.VoyagerClient.Certificates(c.Ingress.Namespace).Get(ref.Name, metav1.GetOptions{})
 						if err == nil {
-							def.SecretName = crd.SecretName() + ".pem"
+							def.CertFile = crd.SecretName() + ".pem"
 						}
 					} else {
-						def.SecretName = ref.Name + ".pem" // Add file extension too
+						def.CertFile = ref.Name + ".pem" // Add file extension too
 					}
 				}
 				td.TCPService = append(td.TCPService, def)

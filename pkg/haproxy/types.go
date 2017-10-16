@@ -91,7 +91,7 @@ type TCPService struct {
 	Host          string
 	Port          string
 	FrontendRules []string
-	SecretName    string
+	CertFile      string
 	PEMName       string
 	Backend       Backend
 	ALPNOptions   string

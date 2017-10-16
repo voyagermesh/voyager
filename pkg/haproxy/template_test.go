@@ -308,7 +308,7 @@ func TestTemplate(t *testing.T) {
 				Host:          "hello.ok.domain",
 				Port:          "4444",
 				FrontendRules: []string{},
-				SecretName:    "this-is-secret",
+				CertFile:      "this-is-secret",
 				PEMName:       "secret-pem",
 				Backend: Backend{
 					Name: "daemon",
