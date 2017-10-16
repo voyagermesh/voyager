@@ -123,7 +123,7 @@ Below is the full list of supported annotation keys, [voyager also support stand
 
 |  Keys  |   Value   |  Default |  Description |
 |--------|-----------|----------|--------------|
-| ingress.appscode.com/type | LoadBalancer, HostPort, NodePort | LoadBalancer | `Required`. Indicates type of service used to expose HAProxy to the internet |
+| ingress.appscode.com/type | LoadBalancer, HostPort, NodePort, Internal | LoadBalancer | `Required`. Indicates type of service used to expose HAProxy to the internet |
 | ingress.appscode.com/replicas | integer | 1 | `Optional`. Indicates number of replicas of HAProxy pods |
 | ingress.appscode.com/load-balancer-ip | string | x | `Optional`. For "gce" and "gke" cloud provider, if this value is set to a valid IPv4 address, it will be assigned to Google cloud network loadbalancer used to expose HAProxy. Usually this is set to a static IP to preserve DNS configuration |
 | ingress.appscode.com/node-selector | map | x | Indicates which hosts are selected to run HAProxy pods. This is a recommended annotation for `HostPort` type ingress. |
