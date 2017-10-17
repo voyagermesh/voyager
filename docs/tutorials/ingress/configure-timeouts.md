@@ -26,7 +26,7 @@ metadata:
     ingress.appscode.com/default-timeout: '{"connect": "5s", "server": "10s"}'
 spec:
   backend:
-    serviceName: test-server
+    serviceName: test-service
     servicePort: '80'
   rules:
   - host: appscode.example.com

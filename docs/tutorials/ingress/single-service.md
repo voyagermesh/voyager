@@ -22,7 +22,7 @@ metadata:
   namespace: default
 spec:
   backend:
-    serviceName: test-server
+    serviceName: test-service
     servicePort: '80'
 ```
 
@@ -41,7 +41,7 @@ metadata:
   namespace: default
 spec:
   backend:
-    serviceName: test-server
+    serviceName: test-service
     servicePort: '80'
   rules:
   - host: appscode.example.com

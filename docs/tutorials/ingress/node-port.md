@@ -35,11 +35,11 @@ spec:
       paths:
       - path: /t1
         backend:
-          serviceName: test-server
+          serviceName: test-service
           servicePort: '80'
       - path: /t2
         backend:
-          serviceName: test-server
+          serviceName: test-service
           servicePort: '80'
   - host: other.example.com
     http:
@@ -47,14 +47,14 @@ spec:
       nodePort: '32666'
       paths:
       - backend:
-          serviceName: test-server
+          serviceName: test-service
           servicePort: '80'
   - host: appscode.example.com
     tcp:
       port: '4343'
       nodePort: '32667'
       backend:
-        serviceName: test-server
+        serviceName: test-service
         servicePort: '80'
 ```
 
