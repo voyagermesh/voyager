@@ -24,6 +24,7 @@ import (
 	core "k8s.io/client-go/listers/core/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
+	"fmt"
 )
 
 type loadBalancerController struct {
@@ -495,6 +496,8 @@ func (c *loadBalancerController) newPods() *apps.Deployment {
 								"--ingress-name=" + c.Ingress.Name,
 								"--cloud-provider=" + c.Opt.CloudProvider,
 								"--v=3",
+								fmt.Sprintf("--qps=%v", c.Opt.QPS),
+								fmt.Sprintf("--burst=%v", c.Opt.Burst),
 								"--boot-cmd=" + "/etc/sv/haproxy/reload",
 								"--configmap=" + c.Ingress.OffshootName(),
 								"--mount-location=" + "/etc/haproxy",

@@ -1,5 +1,5 @@
-hash: c1d52141d9591d55b80804b706526951a3afad4d765ecdc713243f95d0591d61
-updated: 2017-10-15T23:47:16.252836023-07:00
+hash: a10b239fbee95bc12a93299205d8b9c6b67bba5b0b2357b19ffec172a282c94e
+updated: 2017-10-18T01:27:01.776119347-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -25,12 +25,12 @@ imports:
   subpackages:
   - exporter
 - name: github.com/appscode/kloader
-  version: 6ee71211e6c8d0f20606a58e18abf5cbf799f2a5
+  version: 2979f09eab6d90c4e36bbd53785837a636218c99
   subpackages:
   - cmds
   - controller
 - name: github.com/appscode/kutil
-  version: 6aebd7644ed3582fae5b44c9576d0cda9dd92352
+  version: 7de37a49d70fb0d5f611201e3296c56075e3ac9c
   subpackages:
   - core/v1
   - rbac/v1beta1

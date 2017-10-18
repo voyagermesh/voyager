@@ -10,7 +10,7 @@ import:
 - package: github.com/appscode/haproxy_exporter
   version: 0.8.1
 - package: github.com/appscode/kloader
-  version: 4.0.3
+  version: 4.1.0
 - package: github.com/appscode/kutil
   version: release-4.0
 - package: github.com/appscode/pat

@@ -15,6 +15,8 @@ type Options struct {
 	OperatorNamespace           string
 	OperatorService             string
 	RestrictToOperatorNamespace bool
+	QPS                         float32
+	Burst                       int
 	ResyncPeriod                time.Duration
 }
 

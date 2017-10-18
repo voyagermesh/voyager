@@ -31,6 +31,8 @@ type Options struct {
 	IngressRef     apiv1.ObjectReference
 	MountPath      string
 	CmdFile        string
+	QPS            float32
+	Burst          int
 	ResyncPeriod   time.Duration
 	MaxNumRequeues int
 }
