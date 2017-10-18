@@ -145,7 +145,6 @@ Following configurations can be enabled for test via flags in `./hack/make.py te
 
 **e2e** tests are powered by [ginkgo](http://onsi.github.io/ginkgo/). All the [configs and flags](https://github.com/onsi/ginkgo/blob/master/config/config.go#L64) of ginkgo are also available.
 
-<br>
 ## Architecture
 Voyager works by implementing third party resource data watcher for kubernetes. It connects with k8s apiserver
 for specific events as ADD, UPDATE and DELETE. and perform required operations.
