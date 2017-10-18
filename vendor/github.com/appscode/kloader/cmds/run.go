@@ -13,6 +13,7 @@ func NewRunCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run and hold kloader",
+		DisableAutoGenTag: true,
 		Run: func(cmd *cobra.Command, args []string) {
 			if configMap != "" {
 				mounter := controller.NewConfigMapMounter(getRestConfig(), configMap, mountDir, bashFile, resyncPeriod)

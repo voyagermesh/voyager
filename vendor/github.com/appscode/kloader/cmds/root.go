@@ -19,6 +19,7 @@ func NewRootCmd(version string) *cobra.Command {
 	)
 	rootCmd := &cobra.Command{
 		Use: "kloader",
+		DisableAutoGenTag: true,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			cmd.Flags().VisitAll(func(flag *pflag.Flag) {
 				golog.Printf("FLAG: --%s=%q", flag.Name, flag.Value)

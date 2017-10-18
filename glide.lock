@@ -1,5 +1,5 @@
-hash: f3d7903392c82e83761158d5e03793ee3be4cc22dcaac8bcf0a85e9c99c68127
-updated: 2017-10-17T23:57:31.656965811-07:00
+hash: a10b239fbee95bc12a93299205d8b9c6b67bba5b0b2357b19ffec172a282c94e
+updated: 2017-10-18T01:27:01.776119347-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -25,7 +25,7 @@ imports:
   subpackages:
   - exporter
 - name: github.com/appscode/kloader
-  version: 28d9e85abf8e0dc74e2e5979fa380464112e13be
+  version: 2979f09eab6d90c4e36bbd53785837a636218c99
   subpackages:
   - cmds
   - controller
