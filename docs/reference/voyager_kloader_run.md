@@ -15,11 +15,13 @@ voyager kloader run [flags]
 
 ```
   -b, --boot-cmd string          Bash script that will be run on every change of the file
+      --burst int                The maximum burst for throttle (default 1000000)
   -c, --configmap string         Configmap name that needs to be mount
   -h, --help                     help for run
       --kubeconfig string        Path to kubeconfig file with authorization information (the master location is set by the master flag).
       --master string            The address of the Kubernetes API server (overrides any value in kubeconfig)
   -m, --mount-location string    Volume location where the file will be mounted
+      --qps float32              The maximum QPS to the master from this client (default 1e+06)
       --resync-period duration   If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out. (default 5m0s)
   -s, --secret string            Secret name that needs to be mount
 ```

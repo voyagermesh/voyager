@@ -45,5 +45,7 @@ func getRestConfig() *rest.Config {
 	if err != nil {
 		log.Fatalln("Failed to create KubeConfig")
 	}
+	config.Burst = burst
+	config.QPS = qps
 	return config
 }
