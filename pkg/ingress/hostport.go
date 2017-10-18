@@ -2,6 +2,7 @@ package ingress
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strconv"
 
@@ -561,6 +562,8 @@ func (c *hostPortController) newPods() *apps.Deployment {
 								"--ingress-name=" + c.Ingress.Name,
 								"--cloud-provider=" + c.Opt.CloudProvider,
 								"--v=3",
+								fmt.Sprintf("--qps=%v", c.Opt.QPS),
+								fmt.Sprintf("--burst=%v", c.Opt.Burst),
 								"--boot-cmd=" + "/etc/sv/haproxy/reload",
 								"--configmap=" + c.Ingress.OffshootName(),
 								"--mount-location=" + "/etc/haproxy",
