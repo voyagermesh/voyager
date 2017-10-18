@@ -10,7 +10,7 @@ Some of the Voyager development helper scripts rely on a fairly up-to-date GNU t
 work just fine out-of-the-box.
 
 #### Setup GO
-Voyager is written in Google's GO programming language. Currently, Voyager is developed and tested on **go 1.8.3**. If you haven't set up a GO
+Voyager is written in Google's GO programming language. Currently, Voyager is developed and tested on **go 1.9.1**. If you haven't set up a GO
 development environment, please follow [these instructions](https://golang.org/doc/code.html) to install GO.
 
 #### Download Source
@@ -24,6 +24,13 @@ $ cd $(go env GOPATH)/src/github.com/appscode/voyager
 To install various dev tools for Voyager, run the following command:
 ```console
 $ ./hack/builddeps.sh
+```
+
+#### Updating Codes
+voyager usages codecgen to generate codes related to kubernetes. If changes happens to api types, codes needs to be regenerated.
+API types needs to be updated in both `apis/voyager/v1beta1` and `apis/voyager`. Then run the following command to generate codes:
+```console
+$ ./hack/codegen.sh
 ```
 
 #### Build Binary
@@ -119,9 +126,25 @@ kubectl create ns test-<any-name-you-want>
 ./hack/make.py test minikube -namespace test-<any-name-you-want>
 ```
 
+#### Full Spectrum of test configs
+Following configurations can be enabled for test via flags in `./hack/make.py test`.
+
+| Flag Name | Default | Description |
+|-----------|---------|-------------|
+| cloud-provider | | Name of cloud Provider |
+| ingress-class | | | Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager. |
+| namespace | test- <random> | Run tests in this namespaces |
+| haproxy-image| appscode/haproxy:1.7.9-4.0.0-rc.16 | HAProxy image name to run |
+| cleanup | true | Turn off cleanup for dynamically generated pods and configmaps. Helps with manual testing |
+| in-cluster | false | Operator is running inside cluster. Helps with running operator testing. |
+| daemon-host-name | master | Daemon host name to run daemon hosts |
+| lb-ip| Check load balancer IP with Static IP address | LoadBalancer persistent IP |
+| rbac| false | Cluster have RBAC enabled. |
+| cert | false | Run tests regarding certificates |
+| dump | os.TempDir() | Dump all Certificates and CA files for TLS ingress tests |
+
 **e2e** tests are powered by [ginkgo](http://onsi.github.io/ginkgo/). All the [configs and flags](https://github.com/onsi/ginkgo/blob/master/config/config.go#L64) of ginkgo are also available.
 
-<br>
 ## Architecture
 Voyager works by implementing third party resource data watcher for kubernetes. It connects with k8s apiserver
 for specific events as ADD, UPDATE and DELETE. and perform required operations.
