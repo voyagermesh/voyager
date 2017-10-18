@@ -27,7 +27,13 @@ import (
 var (
 	masterURL      string
 	kubeconfigPath string
-	opt            config.Options = config.Options{
+	// ref: https://github.com/kubernetes/ingress-nginx/blob/e4d53786e771cc6bdd55f180674b79f5b692e552/pkg/ingress/controller/launch.go#L252-L259
+	// High enough QPS to fit all expected use cases. QPS=0 is not set here, because client code is overriding it.
+	qps float32 = 1e6
+	// High enough Burst to fit all expected use cases. Burst=0 is not set here, because client code is overriding it.
+	burst int = 1e6
+
+	opt config.Options = config.Options{
 		HAProxyImage:      "appscode/haproxy:1.7.9-4.0.0-rc.16",
 		OperatorNamespace: kutil.Namespace(),
 		OperatorService:   "voyager-operator",
@@ -58,6 +64,9 @@ func NewCmdRun() *cobra.Command {
 
 	cmd.Flags().StringVar(&masterURL, "master", masterURL, "The address of the Kubernetes API server (overrides any value in kubeconfig)")
 	cmd.Flags().StringVar(&kubeconfigPath, "kubeconfig", kubeconfigPath, "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
+	cmd.Flags().Float32Var(&qps, "qps", qps, "The maximum QPS to the master from this client")
+	cmd.Flags().IntVar(&burst, "burst", burst, "The maximum burst for throttle")
+
 	cmd.Flags().StringVarP(&opt.CloudProvider, "cloud-provider", "c", opt.CloudProvider, "Name of cloud provider")
 	cmd.Flags().StringVar(&opt.CloudConfigFile, "cloud-config", opt.CloudConfigFile, "The path to the cloud provider configuration file.  Empty string for no configuration file.")
 	cmd.Flags().StringVar(&opt.HAProxyImage, "haproxy-image", opt.HAProxyImage, "haproxy image name to be run")
@@ -99,6 +108,8 @@ func runOperator() {
 	if err != nil {
 		log.Fatalf("Could not get Kubernetes config: %s", err)
 	}
+	config.Burst = burst
+	config.QPS = qps
 
 	kubeClient = clientset.NewForConfigOrDie(config)
 	crdClient := apiextensionsclient.NewForConfigOrDie(config)

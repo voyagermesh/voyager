@@ -38,6 +38,8 @@ func NewCmdTLSMounter() *cobra.Command {
 	}
 	cmd.Flags().StringVar(&masterURL, "master", masterURL, "The address of the Kubernetes API server (overrides any value in kubeconfig)")
 	cmd.Flags().StringVar(&kubeconfigPath, "kubeconfig", kubeconfigPath, "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
+	cmd.Flags().Float32Var(&qps, "qps", qps, "The maximum QPS to the master from this client")
+	cmd.Flags().IntVar(&burst, "burst", burst, "The maximum burst for throttle")
 
 	cmd.Flags().StringVar(&opts.IngressRef.APIVersion, "ingress-api-version", opts.IngressRef.APIVersion, "API version of ingress resource")
 	cmd.Flags().StringVar(&opts.IngressRef.Name, "ingress-name", opts.IngressRef.Name, "Name of ingress resource")
@@ -65,6 +67,8 @@ func runTLSMounter() {
 	if err := ctrl.Setup(); err != nil {
 		log.Fatalln(err)
 	}
+	config.Burst = burst
+	config.QPS = qps
 
 	if initOnly {
 		os.Exit(0)

@@ -15,6 +15,7 @@ voyager tls-mounter [command] [flags]
 
 ```
   -b, --boot-cmd string              Bash script that will be run on every change of the file
+      --burst int                    The maximum burst for throttle (default 1000000)
   -c, --cloud-provider string        Name of cloud provider
   -h, --help                         help for tls-mounter
       --ingress-api-version string   API version of ingress resource
@@ -23,6 +24,7 @@ voyager tls-mounter [command] [flags]
       --kubeconfig string            Path to kubeconfig file with authorization information (the master location is set by the master flag).
       --master string                The address of the Kubernetes API server (overrides any value in kubeconfig)
       --mount string                 Path where tls certificates are stored for HAProxy (default "/etc/ssl/private/haproxy")
+      --qps float32                  The maximum QPS to the master from this client (default 1e+06)
       --resync-period duration       If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out. (default 5m0s)
 ```
 

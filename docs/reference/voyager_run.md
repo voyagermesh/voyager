@@ -15,6 +15,7 @@ voyager run [flags]
 
 ```
       --address string                        Address to listen on for web interface and telemetry. (default ":56790")
+      --burst int                             The maximum burst for throttle (default 1000000)
       --cloud-config string                   The path to the cloud provider configuration file.  Empty string for no configuration file.
   -c, --cloud-provider string                 Name of cloud provider
       --custom-templates string               Glob pattern of custom HAProxy template files used to override built-in templates
@@ -26,6 +27,7 @@ voyager run [flags]
       --kubeconfig string                     Path to kubeconfig file with authorization information (the master location is set by the master flag).
       --master string                         The address of the Kubernetes API server (overrides any value in kubeconfig)
       --operator-service string               Name of service used to expose voyager operator (default "voyager-operator")
+      --qps float32                           The maximum QPS to the master from this client (default 1e+06)
       --rbac                                  Enable RBAC for operator & offshoot Kubernetes objects
       --restrict-to-operator-namespace        If true, voyager operator will only handle Kubernetes objects in its own namespace.
       --resync-period duration                If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out. (default 5m0s)
