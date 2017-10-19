@@ -734,6 +734,7 @@ func autoConvert_v1beta1_IngressSpec_To_voyager_IngressSpec(in *IngressSpec, out
 	out.Affinity = (*api_v1.Affinity)(unsafe.Pointer(in.Affinity))
 	out.SchedulerName = in.SchedulerName
 	out.Tolerations = *(*[]api_v1.Toleration)(unsafe.Pointer(&in.Tolerations))
+	out.Strategy = in.Strategy
 	return nil
 }
 
@@ -752,6 +753,7 @@ func autoConvert_voyager_IngressSpec_To_v1beta1_IngressSpec(in *voyager.IngressS
 	out.Affinity = (*api_v1.Affinity)(unsafe.Pointer(in.Affinity))
 	out.SchedulerName = in.SchedulerName
 	out.Tolerations = *(*[]api_v1.Toleration)(unsafe.Pointer(&in.Tolerations))
+	out.Strategy = in.Strategy
 	return nil
 }
 
