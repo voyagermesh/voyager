@@ -4,6 +4,7 @@ This example demonstrates how to configure
 [Basic Authentication](https://tools.ietf.org/html/rfc2617) on
 Voyager Ingress controller.
 
+
 ## Using Basic Authentication
 
 Voyager Ingress read user and password from files stored on secrets, one user
@@ -23,7 +24,7 @@ If passwords are provided in plain text, Voyager operator will encrypt them befo
 HAProxy evaluates encrypted passwords with [crypt](http://man7.org/linux/man-pages/man3/crypt.3.html) function. Use `mkpasswd` or
 `makepasswd` to create it. `mkpasswd` can be found on Alpine Linux container.
 
-## Configure
+### Configure
 
 Create a secret to our users:
 
@@ -74,7 +75,7 @@ Cache-Control: no-cache
 Connection: close
 Content-Type: text/html
 Authentication problem. Ignoring this.
-WWW-Authenticate: Basic realm="Realm returned"
+WWW-Authenticate: Basic realm="My Server"
 
 <html><body><h1>401 Unauthorized</h1>
 You need a valid user and password to access this content.
@@ -93,6 +94,161 @@ Content-Type: text/plain; charset=utf-8
 ```
 
 Using `jane:guest` user/passwd should have the same output.
+
+## Using Basic Auth for backend service
+Voyager Ingress can be configured to use Basic Auth per Backend service by applying the annotations to
+kubernetes service.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-svc
+  namespace: default
+  annotations:
+    ingress.kubernetes.io/auth-type: basic
+    ingress.kubernetes.io/auth-realm: My Server
+    ingress.kubernetes.io/auth-secret: mypasswd
+spec:
+  ports:
+  - name: http-1
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: deployment
+```
+
+Create an Ingress with Basic Auth only on path `/auth`
+```yaml
+apiVersion: voyager.appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: hello-basic-auth
+  namespace: default
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /no-auth
+        backend:
+          serviceName: test-server
+          servicePort: 80
+  - http:
+      paths:
+      - path: /auth
+        backend:
+          serviceName: test-svc
+          servicePort: 80
+
+```
+
+Test without user and password:
+
+```console
+$ curl -i ip:port/auth
+HTTP/1.0 401 Unauthorized
+Cache-Control: no-cache
+Connection: close
+Content-Type: text/html
+Authentication problem. Ignoring this.
+WWW-Authenticate: Basic realm="My Server"
+
+<html><body><h1>401 Unauthorized</h1>
+You need a valid user and password to access this content.
+</body></html>
+```
+
+Send a valid user:
+
+```console
+$ curl -i -u 'john:admin' ip:port/auth
+HTTP/1.1 200 OK
+Date: Fri, 08 Sep 2017 09:31:43 GMT
+Content-Length: 0
+Content-Type: text/plain; charset=utf-8
+
+```
+
+No auth enabled Backend
+```console
+$ curl -i ip:port/no-auth
+HTTP/1.1 200 OK
+Date: Fri, 08 Sep 2017 09:31:43 GMT
+Content-Length: 0
+Content-Type: text/plain; charset=utf-8
+
+```
+
+## Using Basic Auth In Frontend
+Basic Auth can also be configured per frontend in voyager ingress via FrontendRules.
+```yaml
+apiVersion: voyager.appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: hello-basic-auth
+  namespace: default
+spec:
+  frontendRules:
+  - port: '8080'
+    auth:
+      basic:
+        secretName: mypasswd
+        realm: My Server
+  rules:
+  - http:
+      port: '80'
+      paths:
+      - path: /no-auth
+        backend:
+          serviceName: test-server
+          servicePort: 80
+  - http:
+      port: '8080'
+      paths:
+      - path: /auth
+        backend:
+          serviceName: test-svc
+          servicePort: 80
+
+```
+
+Test without user and password:
+
+```console
+$ curl -i ip:8080/auth
+HTTP/1.0 401 Unauthorized
+Cache-Control: no-cache
+Connection: close
+Content-Type: text/html
+Authentication problem. Ignoring this.
+WWW-Authenticate: Basic realm="My Server"
+
+<html><body><h1>401 Unauthorized</h1>
+You need a valid user and password to access this content.
+</body></html>
+```
+
+Send a valid user:
+
+```console
+$ curl -i -u 'john:admin' ip:8080/auth
+HTTP/1.1 200 OK
+Date: Fri, 08 Sep 2017 09:31:43 GMT
+Content-Length: 0
+Content-Type: text/plain; charset=utf-8
+
+```
+
+No auth enabled Backend
+```console
+$ curl -i ip:9090/no-auth
+HTTP/1.1 200 OK
+Date: Fri, 08 Sep 2017 09:31:43 GMT
+Content-Length: 0
+Content-Type: text/plain; charset=utf-8
+
+```
 
 ## Acknowledgement
   - This document has been adapted from [kubernetes/ingress](https://github.com/kubernetes/ingress/tree/master/examples/auth/basic/haproxy) project.
