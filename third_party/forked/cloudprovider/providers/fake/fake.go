@@ -23,8 +23,8 @@ import (
 	"sync"
 
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 const ProviderName = "fake"

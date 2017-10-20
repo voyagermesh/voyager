@@ -50,7 +50,7 @@ type PrometheusInterface interface {
 
 type prometheuses struct {
 	restClient rest.Interface
-	client     *dynamic.ResourceClient
+	client     dynamic.ResourceInterface
 	ns         string
 }
 
@@ -118,9 +118,9 @@ func (p *prometheuses) Delete(name string, options *metav1.DeleteOptions) error 
 func (p *prometheuses) List(opts metav1.ListOptions) (runtime.Object, error) {
 	req := p.restClient.Get().
 		Namespace(p.ns).
-		Resource("prometheuses").
+		Resource("prometheuses")
 		// VersionedParams(&options, v1.ParameterCodec)
-		FieldsSelectorParam(nil)
+		// FieldsSelectorParam(nil)
 
 	b, err := req.DoRaw()
 	if err != nil {
@@ -136,7 +136,7 @@ func (p *prometheuses) Watch(opts metav1.ListOptions) (watch.Interface, error) {
 		Namespace(p.ns).
 		Resource("prometheuses").
 		// VersionedParams(&options, v1.ParameterCodec).
-		FieldsSelectorParam(nil).
+		// FieldsSelectorParam(nil).
 		Stream()
 	if err != nil {
 		return nil, err

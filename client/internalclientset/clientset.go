@@ -33,15 +33,12 @@ type Interface interface {
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	*voyagerinternalversion.VoyagerClient
+	voyager *voyagerinternalversion.VoyagerClient
 }
 
 // Voyager retrieves the VoyagerClient
 func (c *Clientset) Voyager() voyagerinternalversion.VoyagerInterface {
-	if c == nil {
-		return nil
-	}
-	return c.VoyagerClient
+	return c.voyager
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -60,7 +57,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	}
 	var cs Clientset
 	var err error
-	cs.VoyagerClient, err = voyagerinternalversion.NewForConfig(&configShallowCopy)
+	cs.voyager, err = voyagerinternalversion.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +74,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 // panics if there is an error in the config.
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
-	cs.VoyagerClient = voyagerinternalversion.NewForConfigOrDie(c)
+	cs.voyager = voyagerinternalversion.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
 	return &cs
@@ -86,7 +83,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
-	cs.VoyagerClient = voyagerinternalversion.New(c)
+	cs.voyager = voyagerinternalversion.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

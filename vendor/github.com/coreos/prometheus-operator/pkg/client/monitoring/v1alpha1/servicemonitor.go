@@ -50,7 +50,7 @@ type ServiceMonitorInterface interface {
 
 type servicemonitors struct {
 	restClient rest.Interface
-	client     *dynamic.ResourceClient
+	client     dynamic.ResourceInterface
 	ns         string
 }
 
@@ -118,9 +118,9 @@ func (s *servicemonitors) Delete(name string, options *metav1.DeleteOptions) err
 func (s *servicemonitors) List(opts metav1.ListOptions) (runtime.Object, error) {
 	req := s.restClient.Get().
 		Namespace(s.ns).
-		Resource("servicemonitors").
+		Resource("servicemonitors")
 		// VersionedParams(&options, v1.ParameterCodec)
-		FieldsSelectorParam(nil)
+		// FieldsSelectorParam(nil)
 
 	b, err := req.DoRaw()
 	if err != nil {
@@ -136,7 +136,7 @@ func (s *servicemonitors) Watch(opts metav1.ListOptions) (watch.Interface, error
 		Namespace(s.ns).
 		Resource("servicemonitors").
 		// VersionedParams(&options, v1.ParameterCodec).
-		FieldsSelectorParam(nil).
+		// FieldsSelectorParam(nil).
 		Stream()
 	if err != nil {
 		return nil, err

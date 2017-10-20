@@ -15,7 +15,6 @@ func Install(groupFactoryRegistry announced.APIGroupFactoryRegistry, registry *r
 		&announced.GroupMetaFactoryArgs{
 			GroupName:                  sapi.GroupName,
 			VersionPreferenceOrder:     []string{v1beta1.SchemeGroupVersion.Version},
-			ImportPrefix:               "github.com/appscode/voyager/apis/voyager",
 			RootScopedKinds:            sets.NewString("CustomResourceDefinition"),
 			AddInternalObjectsToScheme: sapi.AddToScheme,
 		},

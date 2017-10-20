@@ -15,9 +15,10 @@
 package v1alpha1
 
 import (
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/client-go/pkg/api/v1"
 )
 
 // Prometheus defines a Prometheus deployment.
@@ -349,4 +350,27 @@ type NamespaceSelector struct {
 	// TODO(fabxc): this should embed metav1.LabelSelector eventually.
 	// Currently the selector is only used for namespaces which require more complex
 	// implementation to support label selections.
+}
+
+func (obj *Prometheus) DeepCopyObject() runtime.Object {
+	return obj
+}
+
+func (obj *PrometheusList) DeepCopyObject() runtime.Object {
+	return obj
+}
+
+func (obj *Alertmanager) DeepCopyObject() runtime.Object {
+	return obj
+}
+
+func (obj *AlertmanagerList) DeepCopyObject() runtime.Object {
+	return obj
+}
+
+func (obj *ServiceMonitor) DeepCopyObject() runtime.Object {
+	return obj
+}
+func (obj *ServiceMonitorList) DeepCopyObject() runtime.Object {
+	return obj
 }
