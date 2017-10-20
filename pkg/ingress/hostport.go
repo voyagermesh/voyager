@@ -543,6 +543,7 @@ func (c *hostPortController) newPods() *apps.Deployment {
 			Selector: &metav1.LabelSelector{
 				MatchLabels: c.Ingress.OffshootLabels(),
 			},
+			Strategy: c.Ingress.Spec.Strategy,
 			// pod templates.
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{

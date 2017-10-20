@@ -27,6 +27,7 @@ import (
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	api_v1 "k8s.io/client-go/pkg/api/v1"
+	apps_v1beta1 "k8s.io/client-go/pkg/apis/apps/v1beta1"
 )
 
 func init() {
@@ -577,6 +578,11 @@ func DeepCopy_v1beta1_IngressSpec(in interface{}, out interface{}, c *conversion
 					(*out)[i] = *newVal.(*api_v1.Toleration)
 				}
 			}
+		}
+		if newVal, err := c.DeepCopy(&in.Strategy); err != nil {
+			return err
+		} else {
+			out.Strategy = *newVal.(*apps_v1beta1.DeploymentStrategy)
 		}
 		return nil
 	}

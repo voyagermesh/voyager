@@ -4,6 +4,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
+	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
 )
 
 const (
@@ -93,6 +94,10 @@ type IngressSpec struct {
 	// If specified, the pod's tolerations.
 	// +optional
 	Tolerations []apiv1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
+
+	// The deployment strategy to use to replace existing pods with new ones.
+	// +optional
+	Strategy apps.DeploymentStrategy `json:"strategy,omitempty" protobuf:"bytes,4,opt,name=strategy"`
 }
 
 // IngressTLS describes the transport layer security associated with an Ingress.
