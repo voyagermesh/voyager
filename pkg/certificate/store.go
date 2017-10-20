@@ -14,10 +14,10 @@ import (
 	vu "github.com/appscode/voyager/client/typed/voyager/v1beta1/util"
 	vault "github.com/hashicorp/vault/api"
 	"github.com/xenolf/lego/acme"
+	apiv1 "k8s.io/api/core/v1"
 	k8serror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 type CertStore struct {

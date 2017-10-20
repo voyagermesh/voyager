@@ -35,24 +35,18 @@ type Interface interface {
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	*voyagerv1beta1.VoyagerV1beta1Client
+	voyagerV1beta1 *voyagerv1beta1.VoyagerV1beta1Client
 }
 
 // VoyagerV1beta1 retrieves the VoyagerV1beta1Client
 func (c *Clientset) VoyagerV1beta1() voyagerv1beta1.VoyagerV1beta1Interface {
-	if c == nil {
-		return nil
-	}
-	return c.VoyagerV1beta1Client
+	return c.voyagerV1beta1
 }
 
 // Deprecated: Voyager retrieves the default version of VoyagerClient.
 // Please explicitly pick a version.
 func (c *Clientset) Voyager() voyagerv1beta1.VoyagerV1beta1Interface {
-	if c == nil {
-		return nil
-	}
-	return c.VoyagerV1beta1Client
+	return c.voyagerV1beta1
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -71,7 +65,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	}
 	var cs Clientset
 	var err error
-	cs.VoyagerV1beta1Client, err = voyagerv1beta1.NewForConfig(&configShallowCopy)
+	cs.voyagerV1beta1, err = voyagerv1beta1.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +82,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 // panics if there is an error in the config.
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
-	cs.VoyagerV1beta1Client = voyagerv1beta1.NewForConfigOrDie(c)
+	cs.voyagerV1beta1 = voyagerv1beta1.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
 	return &cs
@@ -97,7 +91,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
-	cs.VoyagerV1beta1Client = voyagerv1beta1.New(c)
+	cs.voyagerV1beta1 = voyagerv1beta1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

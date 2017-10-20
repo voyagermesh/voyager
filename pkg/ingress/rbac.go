@@ -4,10 +4,10 @@ import (
 	core_util "github.com/appscode/kutil/core/v1"
 	rbac_util "github.com/appscode/kutil/rbac/v1beta1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	apiv1 "k8s.io/api/core/v1"
+	extensions "k8s.io/api/extensions/v1beta1"
+	rbac "k8s.io/api/rbac/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
-	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
-	rbac "k8s.io/client-go/pkg/apis/rbac/v1beta1"
 )
 
 func (c *controller) ensureServiceAccount() error {

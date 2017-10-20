@@ -1,9 +1,9 @@
 package voyager
 
 import (
+	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 const (
@@ -12,7 +12,7 @@ const (
 	ResourceTypeIngress = "ingresses"
 )
 
-// +genclient=true
+// +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Custom Ingress type for Voyager.

@@ -6,10 +6,10 @@ import (
 
 	"github.com/appscode/go/errors"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	apiv1 "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 const (

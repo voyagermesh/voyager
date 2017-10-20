@@ -2,6 +2,7 @@ package ingress
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strconv"
 	"time"
@@ -18,6 +19,8 @@ import (
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	fakecloudprovider "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
+	apps "k8s.io/api/apps/v1beta1"
+	apiv1 "k8s.io/api/core/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,9 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
 	core "k8s.io/client-go/listers/core/v1"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
-	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
-	"fmt"
 )
 
 type nodePortController struct {

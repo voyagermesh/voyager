@@ -10,15 +10,17 @@ import:
 - package: github.com/appscode/haproxy_exporter
   version: 0.8.1
 - package: github.com/appscode/kloader
-  version: 4.1.0
+  version: 5.0.0
 - package: github.com/appscode/kutil
-  version: release-4.0
+  version: release-5.0
 - package: github.com/appscode/pat
 - package: github.com/aws/aws-sdk-go
   version: v1.7.0
 - package: github.com/benbjohnson/clock
 - package: github.com/coreos/prometheus-operator
-  version: v0.13.0
+  repo: https://github.com/appscode/prometheus-operator.git
+  vcs: git
+  version: client-go-5
 - package: github.com/ghodss/yaml
   version: v1.0.0
 - package: github.com/golang/glog
@@ -52,14 +54,14 @@ import:
 - package: google.golang.org/api
 - package: gopkg.in/gcfg.v1
   version: v1.2.0
+- package: k8s.io/api
+  version: fe29995db37613b9c5b2a647544cf627bfa8d299
 - package: k8s.io/apiextensions-apiserver
-  version: 5fa44608f6b9b2180a2fd1ecb52e651fd0397794
+  version: release-1.8
 - package: k8s.io/apimachinery
-  version: 1fd2e63a9a370677308a42f24fd40c86438afddf
+  version: 019ae5ada31de202164b118aee88ee2d14075c31
 - package: k8s.io/client-go
-  version: v4.0.0
-- package: k8s.io/kubernetes
-  version: ~1.7.0
+  version: v5.0.0
 - package: github.com/google/uuid
   version: master
 testImport:

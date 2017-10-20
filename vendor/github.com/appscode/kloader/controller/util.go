@@ -9,7 +9,7 @@ import (
 	"sync/atomic"
 
 	"github.com/appscode/go/log"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
+	apiv1 "k8s.io/api/core/v1"
 )
 
 var updateReceived, mountPerformed uint64

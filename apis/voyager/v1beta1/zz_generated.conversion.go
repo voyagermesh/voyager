@@ -24,15 +24,15 @@ import (
 	unsafe "unsafe"
 
 	voyager "github.com/appscode/voyager/apis/voyager"
+	core_v1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	types "k8s.io/apimachinery/pkg/types"
-	api_v1 "k8s.io/client-go/pkg/api/v1"
 )
 
 func init() {
-	SchemeBuilder.Register(RegisterConversions)
+	localSchemeBuilder.Register(RegisterConversions)
 }
 
 // RegisterConversions adds conversion functions to the given scheme.
@@ -363,7 +363,7 @@ func Convert_voyager_CertificateStatus_To_v1beta1_CertificateStatus(in *voyager.
 }
 
 func autoConvert_v1beta1_CertificateStorage_To_voyager_CertificateStorage(in *CertificateStorage, out *voyager.CertificateStorage, s conversion.Scope) error {
-	out.Secret = (*api_v1.LocalObjectReference)(unsafe.Pointer(in.Secret))
+	out.Secret = (*core_v1.LocalObjectReference)(unsafe.Pointer(in.Secret))
 	out.Vault = (*voyager.VaultStore)(unsafe.Pointer(in.Vault))
 	return nil
 }
@@ -374,7 +374,7 @@ func Convert_v1beta1_CertificateStorage_To_voyager_CertificateStorage(in *Certif
 }
 
 func autoConvert_voyager_CertificateStorage_To_v1beta1_CertificateStorage(in *voyager.CertificateStorage, out *CertificateStorage, s conversion.Scope) error {
-	out.Secret = (*api_v1.LocalObjectReference)(unsafe.Pointer(in.Secret))
+	out.Secret = (*core_v1.LocalObjectReference)(unsafe.Pointer(in.Secret))
 	out.Vault = (*VaultStore)(unsafe.Pointer(in.Vault))
 	return nil
 }
@@ -534,11 +534,7 @@ func autoConvert_v1beta1_HTTPIngressRuleValue_To_voyager_HTTPIngressRuleValue(in
 	out.Port = in.Port
 	out.NoTLS = in.NoTLS
 	out.NodePort = in.NodePort
-	if in.Paths == nil {
-		out.Paths = make([]voyager.HTTPIngressPath, 0)
-	} else {
-		out.Paths = *(*[]voyager.HTTPIngressPath)(unsafe.Pointer(&in.Paths))
-	}
+	out.Paths = *(*[]voyager.HTTPIngressPath)(unsafe.Pointer(&in.Paths))
 	return nil
 }
 
@@ -551,11 +547,7 @@ func autoConvert_voyager_HTTPIngressRuleValue_To_v1beta1_HTTPIngressRuleValue(in
 	out.Port = in.Port
 	out.NoTLS = in.NoTLS
 	out.NodePort = in.NodePort
-	if in.Paths == nil {
-		out.Paths = make([]HTTPIngressPath, 0)
-	} else {
-		out.Paths = *(*[]HTTPIngressPath)(unsafe.Pointer(&in.Paths))
-	}
+	out.Paths = *(*[]HTTPIngressPath)(unsafe.Pointer(&in.Paths))
 	return nil
 }
 
@@ -624,11 +616,7 @@ func Convert_voyager_IngressBackend_To_v1beta1_IngressBackend(in *voyager.Ingres
 
 func autoConvert_v1beta1_IngressList_To_voyager_IngressList(in *IngressList, out *voyager.IngressList, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
-	if in.Items == nil {
-		out.Items = make([]voyager.Ingress, 0)
-	} else {
-		out.Items = *(*[]voyager.Ingress)(unsafe.Pointer(&in.Items))
-	}
+	out.Items = *(*[]voyager.Ingress)(unsafe.Pointer(&in.Items))
 	return nil
 }
 
@@ -639,11 +627,7 @@ func Convert_v1beta1_IngressList_To_voyager_IngressList(in *IngressList, out *vo
 
 func autoConvert_voyager_IngressList_To_v1beta1_IngressList(in *voyager.IngressList, out *IngressList, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
-	if in.Items == nil {
-		out.Items = make([]Ingress, 0)
-	} else {
-		out.Items = *(*[]Ingress)(unsafe.Pointer(&in.Items))
-	}
+	out.Items = *(*[]Ingress)(unsafe.Pointer(&in.Items))
 	return nil
 }
 
@@ -731,9 +715,9 @@ func autoConvert_v1beta1_IngressSpec_To_voyager_IngressSpec(in *IngressSpec, out
 	out.Rules = *(*[]voyager.IngressRule)(unsafe.Pointer(&in.Rules))
 	out.LoadBalancerSourceRanges = *(*[]string)(unsafe.Pointer(&in.LoadBalancerSourceRanges))
 	out.Resources = in.Resources
-	out.Affinity = (*api_v1.Affinity)(unsafe.Pointer(in.Affinity))
+	out.Affinity = (*core_v1.Affinity)(unsafe.Pointer(in.Affinity))
 	out.SchedulerName = in.SchedulerName
-	out.Tolerations = *(*[]api_v1.Toleration)(unsafe.Pointer(&in.Tolerations))
+	out.Tolerations = *(*[]core_v1.Toleration)(unsafe.Pointer(&in.Tolerations))
 	return nil
 }
 
@@ -749,9 +733,9 @@ func autoConvert_voyager_IngressSpec_To_v1beta1_IngressSpec(in *voyager.IngressS
 	out.Rules = *(*[]IngressRule)(unsafe.Pointer(&in.Rules))
 	out.LoadBalancerSourceRanges = *(*[]string)(unsafe.Pointer(&in.LoadBalancerSourceRanges))
 	out.Resources = in.Resources
-	out.Affinity = (*api_v1.Affinity)(unsafe.Pointer(in.Affinity))
+	out.Affinity = (*core_v1.Affinity)(unsafe.Pointer(in.Affinity))
 	out.SchedulerName = in.SchedulerName
-	out.Tolerations = *(*[]api_v1.Toleration)(unsafe.Pointer(&in.Tolerations))
+	out.Tolerations = *(*[]core_v1.Toleration)(unsafe.Pointer(&in.Tolerations))
 	return nil
 }
 

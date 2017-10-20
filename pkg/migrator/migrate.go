@@ -10,6 +10,7 @@ import (
 	api "github.com/appscode/voyager/apis/voyager"
 	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/hashicorp/go-version"
+	extensions "k8s.io/api/extensions/v1beta1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -17,7 +18,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
-	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
 type migrationState struct {

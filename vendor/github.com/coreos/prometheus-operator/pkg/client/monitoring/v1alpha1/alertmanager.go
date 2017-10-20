@@ -50,7 +50,7 @@ type AlertmanagerInterface interface {
 
 type alertmanagers struct {
 	restClient rest.Interface
-	client     *dynamic.ResourceClient
+	client     dynamic.ResourceInterface
 	ns         string
 }
 
@@ -118,9 +118,9 @@ func (a *alertmanagers) Delete(name string, options *metav1.DeleteOptions) error
 func (a *alertmanagers) List(opts metav1.ListOptions) (runtime.Object, error) {
 	req := a.restClient.Get().
 		Namespace(a.ns).
-		Resource("alertmanagers").
+		Resource("alertmanagers")
 		// VersionedParams(&options, api.ParameterCodec)
-		FieldsSelectorParam(nil)
+		// FieldsSelectorParam(nil)
 
 	b, err := req.DoRaw()
 	if err != nil {
@@ -136,7 +136,7 @@ func (a *alertmanagers) Watch(opts metav1.ListOptions) (watch.Interface, error) 
 		Namespace(a.ns).
 		Resource("alertmanagers").
 		// VersionedParams(&options, api.ParameterCodec).
-		FieldsSelectorParam(nil).
+		// FieldsSelectorParam(nil).
 		Stream()
 	if err != nil {
 		return nil, err

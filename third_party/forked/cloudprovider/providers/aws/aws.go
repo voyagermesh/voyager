@@ -36,9 +36,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/golang/glog"
 	"gopkg.in/gcfg.v1"
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 // ProviderName is the name of this cloud provider.

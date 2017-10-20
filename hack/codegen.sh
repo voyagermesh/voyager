@@ -12,26 +12,11 @@ pushd $REPO_ROOT
 ## Generate ugorji stuff
 rm "$REPO_ROOT"/apis/voyager/v1beta1/*.generated.go
 
-docker run --rm -ti -u $(id -u):$(id -g) \
-    -v "$REPO_ROOT":"$DOCKER_REPO_ROOT" \
-    -w "$DOCKER_REPO_ROOT/apis/voyager/v1beta1" \
-    appscode/gengo:canary codecgen -o types.generated.go types.go
-
-docker run --rm -ti -u $(id -u):$(id -g) \
-    -v "$REPO_ROOT":"$DOCKER_REPO_ROOT" \
-    -w "$DOCKER_REPO_ROOT/apis/voyager/v1beta1" \
-    appscode/gengo:canary codecgen -o certificate.generated.go certificate.go
-
-docker run --rm -ti -u $(id -u):$(id -g) \
-    -v "$REPO_ROOT":"$DOCKER_REPO_ROOT" \
-    -w "$DOCKER_REPO_ROOT/apis/voyager/v1beta1" \
-    appscode/gengo:canary codecgen -o ingress.generated.go ingress.go
-
 # Generate defaults
 docker run --rm -ti -u $(id -u):$(id -g) \
     -v "$REPO_ROOT":"$DOCKER_REPO_ROOT" \
     -w "$DOCKER_REPO_ROOT" \
-    appscode/gengo:canary defaulter-gen \
+    appscode/gengo:release-1.8 defaulter-gen \
     --v 1 --logtostderr \
     --go-header-file "hack/gengo/boilerplate.go.txt" \
     --input-dirs "$PACKAGE_NAME/apis/voyager" \
@@ -44,7 +29,7 @@ docker run --rm -ti -u $(id -u):$(id -g) \
 docker run --rm -ti -u $(id -u):$(id -g) \
     -v "$REPO_ROOT":"$DOCKER_REPO_ROOT" \
     -w "$DOCKER_REPO_ROOT" \
-    appscode/gengo:canary deepcopy-gen \
+    appscode/gengo:release-1.8 deepcopy-gen \
     --v 1 --logtostderr \
     --go-header-file "hack/gengo/boilerplate.go.txt" \
     --input-dirs "$PACKAGE_NAME/apis/voyager" \
@@ -55,7 +40,7 @@ docker run --rm -ti -u $(id -u):$(id -g) \
 docker run --rm -ti -u $(id -u):$(id -g) \
     -v "$REPO_ROOT":"$DOCKER_REPO_ROOT" \
     -w "$DOCKER_REPO_ROOT" \
-    appscode/gengo:canary conversion-gen \
+    appscode/gengo:release-1.8 conversion-gen \
     --v 1 --logtostderr \
     --go-header-file "hack/gengo/boilerplate.go.txt" \
     --input-dirs "$PACKAGE_NAME/apis/voyager" \
@@ -66,7 +51,7 @@ docker run --rm -ti -u $(id -u):$(id -g) \
 docker run --rm -ti -u $(id -u):$(id -g) \
     -v "$REPO_ROOT":"$DOCKER_REPO_ROOT" \
     -w "$DOCKER_REPO_ROOT" \
-    appscode/gengo:canary client-gen \
+    appscode/gengo:release-1.8 client-gen \
    --go-header-file "hack/gengo/boilerplate.go.txt" \
    --input-base "$PACKAGE_NAME/apis/" \
    --input "voyager/" \
@@ -77,7 +62,7 @@ docker run --rm -ti -u $(id -u):$(id -g) \
 docker run --rm -ti -u $(id -u):$(id -g) \
     -v "$REPO_ROOT":"$DOCKER_REPO_ROOT" \
     -w "$DOCKER_REPO_ROOT" \
-    appscode/gengo:canary client-gen \
+    appscode/gengo:release-1.8 client-gen \
    --go-header-file "hack/gengo/boilerplate.go.txt" \
    --input-base "$PACKAGE_NAME/apis/" \
    --input "voyager/v1beta1" \
@@ -88,7 +73,7 @@ docker run --rm -ti -u $(id -u):$(id -g) \
 docker run --rm -ti -u $(id -u):$(id -g) \
     -v "$REPO_ROOT":"$DOCKER_REPO_ROOT" \
     -w "$DOCKER_REPO_ROOT" \
-    appscode/gengo:canary lister-gen \
+    appscode/gengo:release-1.8 lister-gen \
    --go-header-file "hack/gengo/boilerplate.go.txt" \
    --input-dirs="$PACKAGE_NAME/apis/voyager" \
    --input-dirs="$PACKAGE_NAME/apis/voyager/v1beta1" \
@@ -98,7 +83,7 @@ docker run --rm -ti -u $(id -u):$(id -g) \
 docker run --rm -ti -u $(id -u):$(id -g) \
     -v "$REPO_ROOT":"$DOCKER_REPO_ROOT" \
     -w "$DOCKER_REPO_ROOT" \
-    appscode/gengo:canary informer-gen \
+    appscode/gengo:release-1.8 informer-gen \
    --go-header-file "hack/gengo/boilerplate.go.txt" \
    --input-dirs "$PACKAGE_NAME/apis/voyager/v1beta1" \
    --versioned-clientset-package "$PACKAGE_NAME/client" \

@@ -9,8 +9,8 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	"github.com/golang/glog"
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 // EnsureFirewall creates and/or update firewall rules.
