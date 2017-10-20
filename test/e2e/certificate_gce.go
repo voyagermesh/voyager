@@ -99,7 +99,7 @@ var _ = Describe("CertificateWithDNSProvider", func() {
 	Describe("Create", func() {
 		It("Should check secret", func() {
 			Eventually(func() bool {
-				secret, err := f.KubeClient.CoreV1().Secrets(cert.Namespace).Get("cert-"+cert.Name, metav1.GetOptions{})
+				secret, err := f.KubeClient.CoreV1().Secrets(cert.Namespace).Get(cert.SecretName(), metav1.GetOptions{})
 				if err != nil {
 					return false
 				}
