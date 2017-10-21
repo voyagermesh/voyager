@@ -330,6 +330,7 @@ func (c *controller) generateConfig() error {
 	tp80 := false
 
 	type httpKey struct {
+		Address    string
 		Port       int
 		NodePort   int32
 		OffloadSSL bool
@@ -362,7 +363,8 @@ func (c *controller) generateConfig() error {
 				}
 			}
 
-			var key httpKey
+			key := httpKey{Address: rule.HTTP.Address}
+
 			if _, foundTLS := c.Ingress.FindTLSSecret(rule.Host); foundTLS && !rule.HTTP.NoTLS && !c.Ingress.SSLPassthrough() {
 				key.OffloadSSL = true
 				if port := rule.HTTP.Port.IntValue(); port > 0 {
@@ -413,7 +415,8 @@ func (c *controller) generateConfig() error {
 				fr := getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, rule.TCP.Port.IntValue())
 				def := &haproxy.TCPService{
 					SharedInfo:    si,
-					FrontendName:  fmt.Sprintf("tcp-%s", rule.TCP.Port.String()),
+					FrontendName:  fmt.Sprintf("tcp-%s:%s", rule.TCP.Address, rule.TCP.Port.String()),
+					Address:       rule.TCP.Address,
 					Host:          rule.Host,
 					Port:          rule.TCP.Port.String(),
 					ALPNOptions:   parseALPNOptions(rule.TCP.ALPN),
@@ -464,7 +467,8 @@ func (c *controller) generateConfig() error {
 		fr := getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, key.Port)
 		srv := &haproxy.HTTPService{
 			SharedInfo:    si,
-			FrontendName:  fmt.Sprintf("http-%d", key.Port),
+			FrontendName:  fmt.Sprintf("http-%s:%d", key.Address, key.Port),
+			Address:       key.Address,
 			Port:          key.Port,
 			FrontendRules: fr.Rules,
 			NodePort:      key.NodePort,

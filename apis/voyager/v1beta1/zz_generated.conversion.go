@@ -530,6 +530,7 @@ func Convert_voyager_HTTPIngressPath_To_v1beta1_HTTPIngressPath(in *voyager.HTTP
 }
 
 func autoConvert_v1beta1_HTTPIngressRuleValue_To_voyager_HTTPIngressRuleValue(in *HTTPIngressRuleValue, out *voyager.HTTPIngressRuleValue, s conversion.Scope) error {
+	out.Address = in.Address
 	out.Port = in.Port
 	out.NoTLS = in.NoTLS
 	out.NodePort = in.NodePort
@@ -543,6 +544,7 @@ func Convert_v1beta1_HTTPIngressRuleValue_To_voyager_HTTPIngressRuleValue(in *HT
 }
 
 func autoConvert_voyager_HTTPIngressRuleValue_To_v1beta1_HTTPIngressRuleValue(in *voyager.HTTPIngressRuleValue, out *HTTPIngressRuleValue, s conversion.Scope) error {
+	out.Address = in.Address
 	out.Port = in.Port
 	out.NoTLS = in.NoTLS
 	out.NodePort = in.NodePort
@@ -816,6 +818,7 @@ func Convert_voyager_LocalTypedReference_To_v1beta1_LocalTypedReference(in *voya
 }
 
 func autoConvert_v1beta1_TCPIngressRuleValue_To_voyager_TCPIngressRuleValue(in *TCPIngressRuleValue, out *voyager.TCPIngressRuleValue, s conversion.Scope) error {
+	out.Address = in.Address
 	out.Port = in.Port
 	out.NoTLS = in.NoTLS
 	out.NodePort = in.NodePort
@@ -832,6 +835,7 @@ func Convert_v1beta1_TCPIngressRuleValue_To_voyager_TCPIngressRuleValue(in *TCPI
 }
 
 func autoConvert_voyager_TCPIngressRuleValue_To_v1beta1_TCPIngressRuleValue(in *voyager.TCPIngressRuleValue, out *TCPIngressRuleValue, s conversion.Scope) error {
+	out.Address = in.Address
 	out.Port = in.Port
 	out.NoTLS = in.NoTLS
 	out.NodePort = in.NodePort

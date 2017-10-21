@@ -53,6 +53,7 @@ type HTTPService struct {
 	*SharedInfo
 
 	FrontendName  string
+	Address       string
 	Port          int
 	NodePort      int32
 	OffloadSSL    bool
@@ -89,6 +90,7 @@ type TCPService struct {
 	*SharedInfo
 
 	FrontendName  string
+	Address       string
 	Host          string
 	Port          string
 	FrontendRules []string
