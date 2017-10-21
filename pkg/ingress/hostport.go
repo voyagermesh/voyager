@@ -19,14 +19,14 @@ import (
 	fakecloudprovider "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	apps "k8s.io/api/apps/v1beta1"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	clientset "k8s.io/client-go/kubernetes"
-	core "k8s.io/client-go/listers/core/v1"
+	core_listers "k8s.io/client-go/listers/core/v1"
 )
 
 type hostPortController struct {
@@ -42,8 +42,8 @@ func NewHostPortController(
 	crdClient apiextensionsclient.Interface,
 	extClient acs.VoyagerV1beta1Interface,
 	promClient pcm.MonitoringV1alpha1Interface,
-	serviceLister core.ServiceLister,
-	endpointsLister core.EndpointsLister,
+	serviceLister core_listers.ServiceLister,
+	endpointsLister core_listers.EndpointsLister,
 	opt config.Options,
 	ingress *api.Ingress) Controller {
 	c := &hostPortController{
@@ -128,7 +128,7 @@ func (c *hostPortController) Create() error {
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
-			apiv1.EventTypeWarning,
+			core.EventTypeWarning,
 			eventer.EventReasonIngressHAProxyConfigCreateFailed,
 			"Reason: %s",
 			err.Error(),
@@ -139,7 +139,7 @@ func (c *hostPortController) Create() error {
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
-			apiv1.EventTypeWarning,
+			core.EventTypeWarning,
 			eventer.EventReasonIngressConfigMapCreateFailed,
 			"Reason: %s",
 			err.Error(),
@@ -148,7 +148,7 @@ func (c *hostPortController) Create() error {
 	}
 	c.recorder.Eventf(
 		c.Ingress.ObjectReference(),
-		apiv1.EventTypeNormal,
+		core.EventTypeNormal,
 		eventer.EventReasonIngressConfigMapCreateSuccessful,
 		"Successfully created ConfigMap %s",
 		c.Ingress.OffshootName(),
@@ -160,7 +160,7 @@ func (c *hostPortController) Create() error {
 		if err != nil {
 			c.recorder.Event(
 				c.Ingress.ObjectReference(),
-				apiv1.EventTypeWarning,
+				core.EventTypeWarning,
 				eventer.EventReasonIngressRBACFailed,
 				err.Error(),
 			)
@@ -168,7 +168,7 @@ func (c *hostPortController) Create() error {
 		}
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
-			apiv1.EventTypeNormal,
+			core.EventTypeNormal,
 			eventer.EventReasonIngressRBACSuccessful,
 			"Successfully applied RBAC",
 		)
@@ -178,7 +178,7 @@ func (c *hostPortController) Create() error {
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
-			apiv1.EventTypeWarning,
+			core.EventTypeWarning,
 			eventer.EventReasonIngressControllerCreateFailed,
 			"Failed to create HostPortPods, Reason: %s",
 			err.Error(),
@@ -187,7 +187,7 @@ func (c *hostPortController) Create() error {
 	}
 	c.recorder.Eventf(
 		c.Ingress.ObjectReference(),
-		apiv1.EventTypeNormal,
+		core.EventTypeNormal,
 		eventer.EventReasonIngressControllerCreateSuccessful,
 		"Successfully created HostPortPods",
 	)
@@ -196,7 +196,7 @@ func (c *hostPortController) Create() error {
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
-			apiv1.EventTypeWarning,
+			core.EventTypeWarning,
 			eventer.EventReasonIngressServiceCreateFailed,
 			"Failed to create HostPortService, Reason: %s",
 			err.Error(),
@@ -207,7 +207,7 @@ func (c *hostPortController) Create() error {
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
-			apiv1.EventTypeWarning,
+			core.EventTypeWarning,
 			eventer.EventReasonIngressFirewallUpdateFailed,
 			"Failed to ensure firewall, %s",
 			err.Error(),
@@ -216,7 +216,7 @@ func (c *hostPortController) Create() error {
 	}
 	c.recorder.Eventf(
 		c.Ingress.ObjectReference(),
-		apiv1.EventTypeNormal,
+		core.EventTypeNormal,
 		eventer.EventReasonIngressServiceCreateSuccessful,
 		"Successfully created HostPortService",
 	)
@@ -227,7 +227,7 @@ func (c *hostPortController) Create() error {
 		if err != nil {
 			c.recorder.Eventf(
 				c.Ingress.ObjectReference(),
-				apiv1.EventTypeWarning,
+				core.EventTypeWarning,
 				eventer.EventReasonIngressStatsServiceCreateFailed,
 				"Failed to create Stats Service. Reason: %s",
 				err.Error(),
@@ -235,7 +235,7 @@ func (c *hostPortController) Create() error {
 		} else {
 			c.recorder.Eventf(
 				c.Ingress.ObjectReference(),
-				apiv1.EventTypeNormal,
+				core.EventTypeNormal,
 				eventer.EventReasonIngressStatsServiceCreateSuccessful,
 				"Successfully created Stats Service %s",
 				c.Ingress.StatsServiceName(),
@@ -254,14 +254,14 @@ func (c *hostPortController) Create() error {
 		if err != nil {
 			c.recorder.Eventf(
 				c.Ingress.ObjectReference(),
-				apiv1.EventTypeWarning,
+				core.EventTypeWarning,
 				eventer.EventReasonIngressServiceMonitorCreateFailed,
 				err.Error(),
 			)
 		} else {
 			c.recorder.Eventf(
 				c.Ingress.ObjectReference(),
-				apiv1.EventTypeNormal,
+				core.EventTypeNormal,
 				eventer.EventReasonIngressServiceMonitorCreateSuccessful,
 				"Successfully created ServiceMonitor",
 			)
@@ -276,7 +276,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
-			apiv1.EventTypeWarning,
+			core.EventTypeWarning,
 			eventer.EventReasonIngressHAProxyConfigCreateFailed,
 			"Reason: %s",
 			err.Error(),
@@ -295,7 +295,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 		if err != nil {
 			c.recorder.Event(
 				c.Ingress.ObjectReference(),
-				apiv1.EventTypeWarning,
+				core.EventTypeWarning,
 				eventer.EventReasonIngressRBACFailed,
 				err.Error(),
 			)
@@ -303,7 +303,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 		}
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
-			apiv1.EventTypeNormal,
+			core.EventTypeNormal,
 			eventer.EventReasonIngressRBACSuccessful,
 			"Successfully applied RBAC",
 		)
@@ -313,7 +313,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
-			apiv1.EventTypeWarning,
+			core.EventTypeWarning,
 			eventer.EventReasonIngressUpdateFailed,
 			"Failed to update Pods, %s", err.Error(),
 		)
@@ -321,7 +321,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 	}
 	c.recorder.Eventf(
 		c.Ingress.ObjectReference(),
-		apiv1.EventTypeNormal,
+		core.EventTypeNormal,
 		eventer.EventReasonIngressUpdateSuccessful,
 		"Successfully updated Pods",
 	)
@@ -330,7 +330,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
-			apiv1.EventTypeWarning,
+			core.EventTypeWarning,
 			eventer.EventReasonIngressServiceUpdateFailed,
 			"Failed to update LBService, %s",
 			err.Error(),
@@ -342,7 +342,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
-			apiv1.EventTypeWarning,
+			core.EventTypeWarning,
 			eventer.EventReasonIngressFirewallUpdateFailed,
 			"Failed to ensure firewall, %s",
 			err.Error(),
@@ -351,7 +351,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 	}
 	c.recorder.Eventf(
 		c.Ingress.ObjectReference(),
-		apiv1.EventTypeNormal,
+		core.EventTypeNormal,
 		eventer.EventReasonIngressServiceUpdateSuccessful,
 		"Successfully updated HostPort Service",
 	)
@@ -362,7 +362,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 			if err != nil {
 				c.recorder.Eventf(
 					c.Ingress.ObjectReference(),
-					apiv1.EventTypeWarning,
+					core.EventTypeWarning,
 					eventer.EventReasonIngressStatsServiceCreateFailed,
 					"Failed to create HAProxy stats Service. Reason: %s",
 					err.Error(),
@@ -370,7 +370,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 			} else {
 				c.recorder.Eventf(
 					c.Ingress.ObjectReference(),
-					apiv1.EventTypeNormal,
+					core.EventTypeNormal,
 					eventer.EventReasonIngressStatsServiceCreateSuccessful,
 					"Successfully created HAProxy stats Service %s",
 					c.Ingress.StatsServiceName(),
@@ -381,7 +381,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 			if err != nil {
 				c.recorder.Eventf(
 					c.Ingress.ObjectReference(),
-					apiv1.EventTypeWarning,
+					core.EventTypeWarning,
 					eventer.EventReasonIngressStatsServiceDeleteFailed,
 					"Failed to delete HAProxy stats Service. Reason: %s",
 					err.Error(),
@@ -389,7 +389,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 			} else {
 				c.recorder.Eventf(
 					c.Ingress.ObjectReference(),
-					apiv1.EventTypeNormal,
+					core.EventTypeNormal,
 					eventer.EventReasonIngressStatsServiceDeleteSuccessful,
 					"Successfully deleted HAProxy stats Service %s",
 					c.Ingress.StatsServiceName(),
@@ -400,7 +400,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 	return nil
 }
 
-func (c *hostPortController) EnsureFirewall(svc *apiv1.Service) error {
+func (c *hostPortController) EnsureFirewall(svc *core.Service) error {
 	if c.CloudManager != nil {
 		if fw, ok := c.CloudManager.Firewall(); ok {
 			nodes, err := c.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{
@@ -445,7 +445,7 @@ func (c *hostPortController) Delete() {
 
 	if c.CloudManager != nil {
 		if fw, ok := c.CloudManager.Firewall(); ok {
-			err = fw.EnsureFirewallDeleted(&apiv1.Service{
+			err = fw.EnsureFirewallDeleted(&core.Service{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      c.Ingress.OffshootName(),
 					Namespace: c.Ingress.Namespace,
@@ -470,10 +470,10 @@ func (c *hostPortController) Delete() {
 	}
 }
 
-func (c *hostPortController) newService() *apiv1.Service {
+func (c *hostPortController) newService() *core.Service {
 	// Create a Headless service without selectors
 	// We just want kubernetes to assign a stable UID to the service. This is used inside EnsureFirewall()
-	svc := &apiv1.Service{
+	svc := &core.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.Ingress.OffshootName(),
 			Namespace: c.Ingress.Namespace,
@@ -483,10 +483,10 @@ func (c *hostPortController) newService() *apiv1.Service {
 			},
 		},
 
-		Spec: apiv1.ServiceSpec{
-			Type:      apiv1.ServiceTypeClusterIP,
+		Spec: core.ServiceSpec{
+			Type:      core.ServiceTypeClusterIP,
 			ClusterIP: "None",
-			Ports:     []apiv1.ServicePort{},
+			Ports:     []core.ServicePort{},
 		},
 	}
 	svc.ObjectMeta = c.ensureOwnerReference(svc.ObjectMeta)
@@ -494,7 +494,7 @@ func (c *hostPortController) newService() *apiv1.Service {
 	// opening other tcp ports
 	mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
 	for svcPort, target := range mappings {
-		p := apiv1.ServicePort{
+		p := core.ServicePort{
 			Name:       "tcp-" + strconv.Itoa(svcPort),
 			Protocol:   "TCP",
 			Port:       int32(svcPort),
@@ -511,7 +511,7 @@ func (c *hostPortController) newService() *apiv1.Service {
 	return svc
 }
 
-func (c *hostPortController) ensureService(old *api.Ingress) (*apiv1.Service, error) {
+func (c *hostPortController) ensureService(old *api.Ingress) (*core.Service, error) {
 	desired := c.newService()
 	current, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
@@ -544,16 +544,16 @@ func (c *hostPortController) newPods() *apps.Deployment {
 				MatchLabels: c.Ingress.OffshootLabels(),
 			},
 			// pod templates.
-			Template: apiv1.PodTemplateSpec{
+			Template: core.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: c.Ingress.OffshootLabels(),
 				},
-				Spec: apiv1.PodSpec{
+				Spec: core.PodSpec{
 					Affinity:      c.Ingress.Spec.Affinity,
 					SchedulerName: c.Ingress.Spec.SchedulerName,
 					Tolerations:   c.Ingress.Spec.Tolerations,
 					NodeSelector:  c.Ingress.NodeSelector(),
-					Containers: []apiv1.Container{
+					Containers: []core.Container{
 						{
 							Name:  "haproxy",
 							Image: c.Opt.HAProxyImage,
@@ -568,9 +568,9 @@ func (c *hostPortController) newPods() *apps.Deployment {
 								"--configmap=" + c.Ingress.OffshootName(),
 								"--mount-location=" + "/etc/haproxy",
 							},
-							Ports:     []apiv1.ContainerPort{},
+							Ports:     []core.ContainerPort{},
 							Resources: c.Ingress.Spec.Resources,
-							VolumeMounts: []apiv1.VolumeMount{
+							VolumeMounts: []core.VolumeMount{
 								{
 									Name:      TLSCertificateVolumeName,
 									MountPath: "/etc/ssl/private/haproxy",
@@ -579,12 +579,12 @@ func (c *hostPortController) newPods() *apps.Deployment {
 						},
 					},
 					HostNetwork: true,
-					DNSPolicy:   apiv1.DNSClusterFirstWithHostNet,
-					Volumes: []apiv1.Volume{
+					DNSPolicy:   core.DNSClusterFirstWithHostNet,
+					Volumes: []core.Volume{
 						{
 							Name: TLSCertificateVolumeName,
-							VolumeSource: apiv1.VolumeSource{
-								EmptyDir: &apiv1.EmptyDirVolumeSource{},
+							VolumeSource: core.VolumeSource{
+								EmptyDir: &core.EmptyDirVolumeSource{},
 							},
 						},
 					},
@@ -606,7 +606,7 @@ func (c *hostPortController) newPods() *apps.Deployment {
 
 	// adding tcp ports to pod template
 	for _, podPort := range c.Ingress.PodPorts() {
-		p := apiv1.ContainerPort{
+		p := core.ContainerPort{
 			Name:          "tcp-" + strconv.Itoa(podPort),
 			Protocol:      "TCP",
 			ContainerPort: int32(podPort),
@@ -615,7 +615,7 @@ func (c *hostPortController) newPods() *apps.Deployment {
 		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, p)
 	}
 	if c.Ingress.Stats() {
-		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, apiv1.ContainerPort{
+		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, core.ContainerPort{
 			Name:          api.StatsPortName,
 			Protocol:      "TCP",
 			ContainerPort: int32(c.Ingress.StatsPort()),
@@ -629,18 +629,18 @@ func (c *hostPortController) newPods() *apps.Deployment {
 	if len(c.Ingress.ErrorFilesConfigMapName()) > 0 {
 		deployment.Spec.Template.Spec.Containers[0].VolumeMounts = append(
 			deployment.Spec.Template.Spec.Containers[0].VolumeMounts,
-			apiv1.VolumeMount{
+			core.VolumeMount{
 				Name:      ErrorFilesVolumeName,
 				MountPath: ErrorFilesLocation,
 			})
 
 		deployment.Spec.Template.Spec.Volumes = append(
 			deployment.Spec.Template.Spec.Volumes,
-			apiv1.Volume{
+			core.Volume{
 				Name: ErrorFilesVolumeName,
-				VolumeSource: apiv1.VolumeSource{
-					ConfigMap: &apiv1.ConfigMapVolumeSource{
-						LocalObjectReference: apiv1.LocalObjectReference{
+				VolumeSource: core.VolumeSource{
+					ConfigMap: &core.ConfigMapVolumeSource{
+						LocalObjectReference: core.LocalObjectReference{
 							Name: c.Ingress.ErrorFilesConfigMapName(),
 						},
 					},

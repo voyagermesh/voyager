@@ -8,7 +8,7 @@ import (
 	tapi "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/ingress"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -27,12 +27,12 @@ func (op *Operator) initSecretWatcher() cache.Controller {
 		},
 	}
 	_, informer := cache.NewIndexerInformer(lw,
-		&apiv1.Secret{},
+		&core.Secret{},
 		op.Opt.ResyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			UpdateFunc: func(old, new interface{}) {
-				if oldSecret, ok := old.(*apiv1.Secret); ok {
-					if newSecret, ok := new.(*apiv1.Secret); ok {
+				if oldSecret, ok := old.(*core.Secret); ok {
+					if newSecret, ok := new.(*core.Secret); ok {
 						if reflect.DeepEqual(oldSecret.Data, newSecret.Data) {
 							return
 						}
@@ -71,7 +71,7 @@ func (op *Operator) initSecretWatcher() cache.Controller {
 	return informer
 }
 
-func (op *Operator) IngressServiceUsesAuthSecret(ing *tapi.Ingress, secret *apiv1.Secret) bool {
+func (op *Operator) IngressServiceUsesAuthSecret(ing *tapi.Ingress, secret *core.Secret) bool {
 	svcs, err := op.ServiceLister.List(labels.Everything())
 	if err != nil {
 		log.Errorln(err)

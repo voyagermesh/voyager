@@ -6,7 +6,7 @@ import (
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -18,7 +18,7 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 
 		svcResolveDNSWithNS,
 		svcNotResolvesRedirect,
-		svcResolveDNSWithoutNS *apiv1.Service
+		svcResolveDNSWithoutNS *core.Service
 	)
 
 	BeforeEach(func() {
@@ -29,7 +29,7 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 
 	BeforeEach(func() {
 		var err error
-		svcResolveDNSWithNS = &apiv1.Service{
+		svcResolveDNSWithNS = &core.Service{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      f.Ingress.UniqueName(),
 				Namespace: f.Ingress.Namespace(),
@@ -38,8 +38,8 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 					api.DNSResolverNameservers: `["8.8.8.8:53", "8.8.4.4:53"]`,
 				},
 			},
-			Spec: apiv1.ServiceSpec{
-				Type:         apiv1.ServiceTypeExternalName,
+			Spec: core.ServiceSpec{
+				Type:         core.ServiceTypeExternalName,
 				ExternalName: "google.com",
 			},
 		}
@@ -47,13 +47,13 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 		_, err = f.KubeClient.CoreV1().Services(svcResolveDNSWithNS.Namespace).Create(svcResolveDNSWithNS)
 		Expect(err).NotTo(HaveOccurred())
 
-		svcNotResolvesRedirect = &apiv1.Service{
+		svcNotResolvesRedirect = &core.Service{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      f.Ingress.UniqueName(),
 				Namespace: f.Ingress.Namespace(),
 			},
-			Spec: apiv1.ServiceSpec{
-				Type:         apiv1.ServiceTypeExternalName,
+			Spec: core.ServiceSpec{
+				Type:         core.ServiceTypeExternalName,
 				ExternalName: "google.com",
 			},
 		}
@@ -61,13 +61,13 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 		_, err = f.KubeClient.CoreV1().Services(svcNotResolvesRedirect.Namespace).Create(svcNotResolvesRedirect)
 		Expect(err).NotTo(HaveOccurred())
 
-		svcResolveDNSWithoutNS = &apiv1.Service{
+		svcResolveDNSWithoutNS = &core.Service{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      f.Ingress.UniqueName(),
 				Namespace: f.Ingress.Namespace(),
 			},
-			Spec: apiv1.ServiceSpec{
-				Type:         apiv1.ServiceTypeExternalName,
+			Spec: core.ServiceSpec{
+				Type:         core.ServiceTypeExternalName,
 				ExternalName: "google.com",
 			},
 		}

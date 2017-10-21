@@ -9,8 +9,7 @@ import (
 	"github.com/appscode/voyager/test/framework"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"k8s.io/api/core/v1"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -18,8 +17,8 @@ var _ = Describe("CertificateWithDNSProvider", func() {
 	var (
 		f                *framework.Invocation
 		cert             *api.Certificate
-		userSecret       *v1.Secret
-		credentialSecret *v1.Secret
+		userSecret       *core.Secret
+		credentialSecret *core.Secret
 	)
 
 	BeforeEach(func() {
@@ -30,7 +29,7 @@ var _ = Describe("CertificateWithDNSProvider", func() {
 			Skip("Certificate Test is not enabled")
 		}
 
-		userSecret = &v1.Secret{
+		userSecret = &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "user-" + f.Certificate.UniqueName(),
 				Namespace: f.Namespace(),
@@ -51,7 +50,7 @@ var _ = Describe("CertificateWithDNSProvider", func() {
 		fmt.Println("TEST_GCE_PROJECT", os.Getenv("TEST_GCE_PROJECT"))
 		fmt.Println("TEST_DNS_DOMAINS", os.Getenv("TEST_DNS_DOMAINS"))
 
-		credentialSecret = &v1.Secret{
+		credentialSecret = &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "cred-" + f.Certificate.UniqueName(),
 				Namespace: f.Namespace(),
@@ -78,7 +77,7 @@ var _ = Describe("CertificateWithDNSProvider", func() {
 			},
 			ACMEUserSecretName: userSecret.Name,
 			Storage: api.CertificateStorage{
-				Secret: &apiv1.LocalObjectReference{},
+				Secret: &core.LocalObjectReference{},
 			},
 		}
 	})

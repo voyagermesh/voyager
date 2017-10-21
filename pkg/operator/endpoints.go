@@ -5,7 +5,7 @@ import (
 
 	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -24,19 +24,19 @@ func (op *Operator) initEndpointWatcher() cache.Controller {
 		},
 	}
 	indexer, informer := cache.NewIndexerInformer(lw,
-		&apiv1.Endpoints{},
+		&core.Endpoints{},
 		op.Opt.ResyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			UpdateFunc: func(old, new interface{}) {
 				ctx := etx.Background()
 				logger := log.New(ctx)
 
-				oldEndpoints, ok := old.(*apiv1.Endpoints)
+				oldEndpoints, ok := old.(*core.Endpoints)
 				if !ok {
 					logger.Errorln("invalid Endpoints object")
 					return
 				}
-				newEndpoints, ok := new.(*apiv1.Endpoints)
+				newEndpoints, ok := new.(*core.Endpoints)
 				if !ok {
 					logger.Errorln("invalid Endpoints object")
 					return

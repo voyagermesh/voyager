@@ -7,7 +7,7 @@ import (
 	"github.com/appscode/voyager/test/framework"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -78,15 +78,15 @@ var _ = Describe("IngressUpdates", func() {
 
 			crt, key, err := f.CertManager.NewServerCertPair()
 			Expect(err).NotTo(HaveOccurred())
-			secret := &apiv1.Secret{
+			secret := &core.Secret{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      f.Ingress.UniqueName(),
 					Namespace: ing.GetNamespace(),
 				},
-				Type: apiv1.SecretTypeTLS,
+				Type: core.SecretTypeTLS,
 				Data: map[string][]byte{
-					apiv1.TLSCertKey:       crt,
-					apiv1.TLSPrivateKeyKey: key,
+					core.TLSCertKey:       crt,
+					core.TLSPrivateKeyKey: key,
 				},
 			}
 			_, err = f.KubeClient.CoreV1().Secrets(secret.Namespace).Create(secret)

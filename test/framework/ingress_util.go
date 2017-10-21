@@ -16,7 +16,7 @@ import (
 	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/onsi/gomega"
 	apps "k8s.io/api/apps/v1beta1"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -115,7 +115,7 @@ func (i *ingressInvocation) setupTestServers() error {
 }
 
 func (i *ingressInvocation) createTestServerController() error {
-	_, err := i.KubeClient.CoreV1().ReplicationControllers(i.Namespace()).Create(&apiv1.ReplicationController{
+	_, err := i.KubeClient.CoreV1().ReplicationControllers(i.Namespace()).Create(&core.ReplicationController{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      testServerResourceName,
 			Namespace: i.Namespace(),
@@ -123,12 +123,12 @@ func (i *ingressInvocation) createTestServerController() error {
 				"app": "test-server-" + i.app,
 			},
 		},
-		Spec: apiv1.ReplicationControllerSpec{
+		Spec: core.ReplicationControllerSpec{
 			Replicas: types.Int32P(2),
 			Selector: map[string]string{
 				"app": "test-server-" + i.app,
 			},
-			Template: &apiv1.PodTemplateSpec{
+			Template: &core.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						"app": "test-server-" + i.app,
@@ -142,7 +142,7 @@ func (i *ingressInvocation) createTestServerController() error {
 }
 
 func (i *ingressInvocation) createTestServerService() error {
-	_, err := i.KubeClient.CoreV1().Services(i.Namespace()).Create(&apiv1.Service{
+	_, err := i.KubeClient.CoreV1().Services(i.Namespace()).Create(&core.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      testServerResourceName,
 			Namespace: i.Namespace(),
@@ -150,7 +150,7 @@ func (i *ingressInvocation) createTestServerService() error {
 				"app": "test-server-" + i.app,
 			},
 		},
-		Spec: apiv1.ServiceSpec{
+		Spec: core.ServiceSpec{
 			Ports: i.testServerServicePorts(),
 			Selector: map[string]string{
 				"app": "test-server-" + i.app,
@@ -161,7 +161,7 @@ func (i *ingressInvocation) createTestServerService() error {
 		return err
 	}
 
-	_, err = i.KubeClient.CoreV1().Services(i.Namespace()).Create(&apiv1.Service{
+	_, err = i.KubeClient.CoreV1().Services(i.Namespace()).Create(&core.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      testServerHTTPSResourceName,
 			Namespace: i.Namespace(),
@@ -172,8 +172,8 @@ func (i *ingressInvocation) createTestServerService() error {
 				"ingress.appscode.com/backend-tls": "ssl verify none",
 			},
 		},
-		Spec: apiv1.ServiceSpec{
-			Ports: []apiv1.ServicePort{
+		Spec: core.ServiceSpec{
+			Ports: []core.ServicePort{
 				{
 					Name:       "http-1",
 					Port:       443,
@@ -195,23 +195,23 @@ func (i *ingressInvocation) createTestServerService() error {
 	return err
 }
 
-func (i *ingressInvocation) testServerPodSpec() apiv1.PodSpec {
-	return apiv1.PodSpec{
-		Containers: []apiv1.Container{
+func (i *ingressInvocation) testServerPodSpec() core.PodSpec {
+	return core.PodSpec{
+		Containers: []core.Container{
 			{
 				Name:  "server",
 				Image: testServerImage,
-				Env: []apiv1.EnvVar{
+				Env: []core.EnvVar{
 					{
 						Name: "POD_NAME",
-						ValueFrom: &apiv1.EnvVarSource{
-							FieldRef: &apiv1.ObjectFieldSelector{
+						ValueFrom: &core.EnvVarSource{
+							FieldRef: &core.ObjectFieldSelector{
 								FieldPath: "metadata.name",
 							},
 						},
 					},
 				},
-				Ports: []apiv1.ContainerPort{
+				Ports: []core.ContainerPort{
 					{
 						Name:          "http-1",
 						ContainerPort: 8080,
@@ -250,8 +250,8 @@ func (i *ingressInvocation) testServerPodSpec() apiv1.PodSpec {
 	}
 }
 
-func (i *ingressInvocation) testServerServicePorts() []apiv1.ServicePort {
-	return []apiv1.ServicePort{
+func (i *ingressInvocation) testServerServicePorts() []core.ServicePort {
+	return []core.ServicePort{
 		{
 			Name:       "http-1",
 			Port:       80,
@@ -293,7 +293,7 @@ func (i *ingressInvocation) testServerServicePorts() []apiv1.ServicePort {
 
 func (i *ingressInvocation) waitForTestServer() error {
 	var err error
-	var ep *apiv1.Endpoints
+	var ep *core.Endpoints
 	for it := 0; it < MaxRetry; it++ {
 		ep, err = i.KubeClient.CoreV1().Endpoints(i.Namespace()).Get(testServerResourceName, metav1.GetOptions{})
 		if err == nil {
@@ -349,7 +349,7 @@ func getLoadBalancerURLs(provider string, k kubernetes.Interface, ing *api_v1bet
 			return nil, err
 		}
 	} else {
-		var svc *apiv1.Service
+		var svc *core.Service
 		gomega.Eventually(func() error {
 			svc, err = k.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 			if err == nil {
@@ -414,7 +414,7 @@ func getHostPortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.I
 		return nil, err
 	}
 
-	var svc *apiv1.Service
+	var svc *core.Service
 	var ports []int32
 
 	gomega.Eventually(func() error {
@@ -435,7 +435,7 @@ func getHostPortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.I
 
 	for _, node := range nodes.Items {
 		for _, addr := range node.Status.Addresses {
-			if (addr.Type == apiv1.NodeExternalIP) || (provider == "minikube" && addr.Type == apiv1.NodeInternalIP) {
+			if (addr.Type == core.NodeExternalIP) || (provider == "minikube" && addr.Type == core.NodeInternalIP) {
 				for _, port := range ports {
 					var doc bytes.Buffer
 					err = defaultUrlTemplate.Execute(&doc, struct {
@@ -471,7 +471,7 @@ func getNodePortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.I
 		return nil, err
 	}
 
-	var svc *apiv1.Service
+	var svc *core.Service
 	var ports []int32
 	gomega.Eventually(func() error {
 		svc, err = k.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
@@ -491,7 +491,7 @@ func getNodePortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.I
 
 	for _, node := range nodes.Items {
 		for _, addr := range node.Status.Addresses {
-			if (addr.Type == apiv1.NodeExternalIP) || (provider == "minikube" && addr.Type == apiv1.NodeInternalIP) {
+			if (addr.Type == core.NodeExternalIP) || (provider == "minikube" && addr.Type == core.NodeInternalIP) {
 				for _, port := range ports {
 					var doc bytes.Buffer
 					err = defaultUrlTemplate.Execute(&doc, struct {
@@ -602,11 +602,11 @@ func (i *ingressInvocation) CreateResourceWithHostNames() (metav1.ObjectMeta, er
 			"v":   i.UniqueName(),
 		},
 	}
-	_, err := i.KubeClient.CoreV1().Services(i.Namespace()).Create(&apiv1.Service{
+	_, err := i.KubeClient.CoreV1().Services(i.Namespace()).Create(&core.Service{
 		ObjectMeta: meta,
-		Spec: apiv1.ServiceSpec{
+		Spec: core.ServiceSpec{
 			ClusterIP: "None",
-			Ports: []apiv1.ServicePort{
+			Ports: []core.ServicePort{
 				{
 					Name:       "http-1",
 					Port:       80,
@@ -656,26 +656,26 @@ func (i *ingressInvocation) CreateResourceWithHostNames() (metav1.ObjectMeta, er
 		Spec: apps.StatefulSetSpec{
 			Replicas:    types.Int32P(2),
 			ServiceName: meta.Name,
-			Template: apiv1.PodTemplateSpec{
+			Template: core.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: meta.Labels,
 				},
-				Spec: apiv1.PodSpec{
-					Containers: []apiv1.Container{
+				Spec: core.PodSpec{
+					Containers: []core.Container{
 						{
 							Name:  "server",
 							Image: "appscode/test-server:1.1",
-							Env: []apiv1.EnvVar{
+							Env: []core.EnvVar{
 								{
 									Name: "POD_NAME",
-									ValueFrom: &apiv1.EnvVarSource{
-										FieldRef: &apiv1.ObjectFieldSelector{
+									ValueFrom: &core.EnvVarSource{
+										FieldRef: &core.ObjectFieldSelector{
 											FieldPath: "metadata.name",
 										},
 									},
 								},
 							},
-							Ports: []apiv1.ContainerPort{
+							Ports: []core.ContainerPort{
 								{
 									Name:          "http-1",
 									ContainerPort: 8080,
@@ -731,10 +731,10 @@ func (i *ingressInvocation) CreateResourceWithBackendWeight() (metav1.ObjectMeta
 		Name:      i.UniqueName(),
 		Namespace: i.Namespace(),
 	}
-	_, err := i.KubeClient.CoreV1().Services(i.Namespace()).Create(&apiv1.Service{
+	_, err := i.KubeClient.CoreV1().Services(i.Namespace()).Create(&core.Service{
 		ObjectMeta: meta,
-		Spec: apiv1.ServiceSpec{
-			Ports: []apiv1.ServicePort{
+		Spec: core.ServiceSpec{
+			Ports: []core.ServicePort{
 				{
 					Name:       "http-1",
 					Port:       80,
@@ -764,7 +764,7 @@ func (i *ingressInvocation) CreateResourceWithBackendWeight() (metav1.ObjectMeta
 					"app-version": "v1",
 				},
 			},
-			Template: apiv1.PodTemplateSpec{
+			Template: core.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						"app":         "deployment",
@@ -774,22 +774,22 @@ func (i *ingressInvocation) CreateResourceWithBackendWeight() (metav1.ObjectMeta
 						api_v1beta1.BackendWeight: "90",
 					},
 				},
-				Spec: apiv1.PodSpec{
-					Containers: []apiv1.Container{
+				Spec: core.PodSpec{
+					Containers: []core.Container{
 						{
 							Name:  "server",
 							Image: "appscode/test-server:1.1",
-							Env: []apiv1.EnvVar{
+							Env: []core.EnvVar{
 								{
 									Name: "POD_NAME",
-									ValueFrom: &apiv1.EnvVarSource{
-										FieldRef: &apiv1.ObjectFieldSelector{
+									ValueFrom: &core.EnvVarSource{
+										FieldRef: &core.ObjectFieldSelector{
 											FieldPath: "metadata.name",
 										},
 									},
 								},
 							},
-							Ports: []apiv1.ContainerPort{
+							Ports: []core.ContainerPort{
 								{
 									Name:          "http-1",
 									ContainerPort: 8080,
@@ -818,7 +818,7 @@ func (i *ingressInvocation) CreateResourceWithBackendWeight() (metav1.ObjectMeta
 					"app-version": "v2",
 				},
 			},
-			Template: apiv1.PodTemplateSpec{
+			Template: core.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						"app":         "deployment",
@@ -828,22 +828,22 @@ func (i *ingressInvocation) CreateResourceWithBackendWeight() (metav1.ObjectMeta
 						api_v1beta1.BackendWeight: "10",
 					},
 				},
-				Spec: apiv1.PodSpec{
-					Containers: []apiv1.Container{
+				Spec: core.PodSpec{
+					Containers: []core.Container{
 						{
 							Name:  "server",
 							Image: "appscode/test-server:1.1",
-							Env: []apiv1.EnvVar{
+							Env: []core.EnvVar{
 								{
 									Name: "POD_NAME",
-									ValueFrom: &apiv1.EnvVarSource{
-										FieldRef: &apiv1.ObjectFieldSelector{
+									ValueFrom: &core.EnvVarSource{
+										FieldRef: &core.ObjectFieldSelector{
 											FieldPath: "metadata.name",
 										},
 									},
 								},
 							},
-							Ports: []apiv1.ContainerPort{
+							Ports: []core.ContainerPort{
 								{
 									Name:          "http-1",
 									ContainerPort: 8080,
@@ -893,10 +893,10 @@ func (i *ingressInvocation) CreateResourceWithBackendMaxConn(maxconn int) (metav
 		Name:      i.UniqueName(),
 		Namespace: i.Namespace(),
 	}
-	_, err := i.KubeClient.CoreV1().Services(i.Namespace()).Create(&apiv1.Service{
+	_, err := i.KubeClient.CoreV1().Services(i.Namespace()).Create(&core.Service{
 		ObjectMeta: meta,
-		Spec: apiv1.ServiceSpec{
-			Ports: []apiv1.ServicePort{
+		Spec: core.ServiceSpec{
+			Ports: []core.ServicePort{
 				{
 					Name:       "http-1",
 					Port:       80,
@@ -926,7 +926,7 @@ func (i *ingressInvocation) CreateResourceWithBackendMaxConn(maxconn int) (metav
 					"app-version": "v1",
 				},
 			},
-			Template: apiv1.PodTemplateSpec{
+			Template: core.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						"app":         "deployment",
@@ -936,22 +936,22 @@ func (i *ingressInvocation) CreateResourceWithBackendMaxConn(maxconn int) (metav
 						api_v1beta1.MaxConnections: strconv.Itoa(maxconn),
 					},
 				},
-				Spec: apiv1.PodSpec{
-					Containers: []apiv1.Container{
+				Spec: core.PodSpec{
+					Containers: []core.Container{
 						{
 							Name:  "server",
 							Image: "appscode/test-server:2.2",
-							Env: []apiv1.EnvVar{
+							Env: []core.EnvVar{
 								{
 									Name: "POD_NAME",
-									ValueFrom: &apiv1.EnvVarSource{
-										FieldRef: &apiv1.ObjectFieldSelector{
+									ValueFrom: &core.EnvVarSource{
+										FieldRef: &core.ObjectFieldSelector{
 											FieldPath: "metadata.name",
 										},
 									},
 								},
 							},
-							Ports: []apiv1.ContainerPort{
+							Ports: []core.ContainerPort{
 								{
 									Name:          "http-1",
 									ContainerPort: 8080,
@@ -970,7 +970,7 @@ func (i *ingressInvocation) CreateResourceWithBackendMaxConn(maxconn int) (metav
 	return meta, nil
 }
 
-func (i *ingressInvocation) CreateResourceWithServiceAuth(secret *apiv1.Secret) (metav1.ObjectMeta, error) {
+func (i *ingressInvocation) CreateResourceWithServiceAuth(secret *core.Secret) (metav1.ObjectMeta, error) {
 	meta := metav1.ObjectMeta{
 		Name:      i.UniqueName(),
 		Namespace: i.Namespace(),
@@ -980,10 +980,10 @@ func (i *ingressInvocation) CreateResourceWithServiceAuth(secret *apiv1.Secret) 
 			api_v1beta1.AuthSecret: secret.Name,
 		},
 	}
-	_, err := i.KubeClient.CoreV1().Services(i.Namespace()).Create(&apiv1.Service{
+	_, err := i.KubeClient.CoreV1().Services(i.Namespace()).Create(&core.Service{
 		ObjectMeta: meta,
-		Spec: apiv1.ServiceSpec{
-			Ports: []apiv1.ServicePort{
+		Spec: core.ServiceSpec{
+			Ports: []core.ServicePort{
 				{
 					Name:       "http-1",
 					Port:       80,
@@ -1013,29 +1013,29 @@ func (i *ingressInvocation) CreateResourceWithServiceAuth(secret *apiv1.Secret) 
 					"app-version": "v1",
 				},
 			},
-			Template: apiv1.PodTemplateSpec{
+			Template: core.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						"app":         "deployment",
 						"app-version": "v1",
 					},
 				},
-				Spec: apiv1.PodSpec{
-					Containers: []apiv1.Container{
+				Spec: core.PodSpec{
+					Containers: []core.Container{
 						{
 							Name:  "server",
 							Image: "appscode/test-server:2.2",
-							Env: []apiv1.EnvVar{
+							Env: []core.EnvVar{
 								{
 									Name: "POD_NAME",
-									ValueFrom: &apiv1.EnvVarSource{
-										FieldRef: &apiv1.ObjectFieldSelector{
+									ValueFrom: &core.EnvVarSource{
+										FieldRef: &core.ObjectFieldSelector{
 											FieldPath: "metadata.name",
 										},
 									},
 								},
 							},
-							Ports: []apiv1.ContainerPort{
+							Ports: []core.ContainerPort{
 								{
 									Name:          "http-1",
 									ContainerPort: 8080,

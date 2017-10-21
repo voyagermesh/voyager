@@ -1,12 +1,12 @@
 package v1beta1
 
 import (
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 )
 
-func (r Ingress) ObjectReference() *apiv1.ObjectReference {
+func (r Ingress) ObjectReference() *core.ObjectReference {
 	if r.APISchema() == APISchemaIngress {
-		return &apiv1.ObjectReference{
+		return &core.ObjectReference{
 			APIVersion:      APISchemaIngress,
 			Kind:            ResourceKindIngress,
 			Namespace:       r.Namespace,
@@ -15,7 +15,7 @@ func (r Ingress) ObjectReference() *apiv1.ObjectReference {
 			ResourceVersion: r.ResourceVersion,
 		}
 	}
-	return &apiv1.ObjectReference{
+	return &core.ObjectReference{
 		APIVersion:      SchemeGroupVersion.String(),
 		Kind:            ResourceKindIngress,
 		Namespace:       r.Namespace,
@@ -25,8 +25,8 @@ func (r Ingress) ObjectReference() *apiv1.ObjectReference {
 	}
 }
 
-func (c Certificate) ObjectReference() *apiv1.ObjectReference {
-	return &apiv1.ObjectReference{
+func (c Certificate) ObjectReference() *core.ObjectReference {
+	return &core.ObjectReference{
 		APIVersion:      SchemeGroupVersion.String(),
 		Kind:            ResourceKindCertificate,
 		Namespace:       c.Namespace,

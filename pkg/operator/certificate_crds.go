@@ -11,7 +11,7 @@ import (
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/benbjohnson/clock"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -39,7 +39,7 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 					if _, err := op.MigrateCertificate(cert); err != nil {
 						op.recorder.Eventf(
 							cert.ObjectReference(),
-							apiv1.EventTypeWarning,
+							core.EventTypeWarning,
 							eventer.EventReasonCertificateMigration,
 							"Reason: %s",
 							err.Error(),
@@ -50,7 +50,7 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 					if err != nil {
 						op.recorder.Event(
 							cert.ObjectReference(),
-							apiv1.EventTypeWarning,
+							core.EventTypeWarning,
 							eventer.EventReasonCertificateInvalid,
 							err.Error(),
 						)
@@ -59,14 +59,14 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 					if err := ctrl.Process(); err != nil {
 						op.recorder.Event(
 							cert.ObjectReference(),
-							apiv1.EventTypeWarning,
+							core.EventTypeWarning,
 							eventer.EventReasonCertificateInvalid,
 							err.Error(),
 						)
 					} else {
 						op.recorder.Eventf(
 							cert.ObjectReference(),
-							apiv1.EventTypeNormal,
+							core.EventTypeNormal,
 							eventer.EventReasonCertificateIssueSuccessful,
 							"Successfully issued certificate",
 						)
@@ -91,7 +91,7 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 					if _, err := op.MigrateCertificate(newCert); err != nil {
 						op.recorder.Eventf(
 							newCert.ObjectReference(),
-							apiv1.EventTypeWarning,
+							core.EventTypeWarning,
 							eventer.EventReasonCertificateMigration,
 							"Reason: %s",
 							err.Error(),
@@ -102,7 +102,7 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 					if err != nil {
 						op.recorder.Event(
 							newCert.ObjectReference(),
-							apiv1.EventTypeWarning,
+							core.EventTypeWarning,
 							eventer.EventReasonCertificateIssueFailed,
 							err.Error(),
 						)
@@ -111,7 +111,7 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 					if err := ctrl.Process(); err != nil {
 						op.recorder.Event(
 							newCert.ObjectReference(),
-							apiv1.EventTypeWarning,
+							core.EventTypeWarning,
 							eventer.EventReasonCertificateInvalid,
 							err.Error(),
 						)
@@ -149,7 +149,7 @@ func (op *Operator) CheckCertificates() {
 				if err != nil {
 					op.recorder.Event(
 						cert.ObjectReference(),
-						apiv1.EventTypeWarning,
+						core.EventTypeWarning,
 						eventer.EventReasonCertificateInvalid,
 						err.Error(),
 					)
@@ -158,7 +158,7 @@ func (op *Operator) CheckCertificates() {
 				if err := ctrl.Process(); err != nil {
 					op.recorder.Event(
 						cert.ObjectReference(),
-						apiv1.EventTypeWarning,
+						core.EventTypeWarning,
 						eventer.EventReasonCertificateInvalid,
 						err.Error(),
 					)

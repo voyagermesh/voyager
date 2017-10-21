@@ -15,7 +15,7 @@ import (
 	acf "github.com/appscode/voyager/client/fake"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/stretchr/testify/assert"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
@@ -24,7 +24,7 @@ func TestEnsureClient(t *testing.T) {
 	if testing.Verbose() {
 		skipTestIfSecretNotProvided(t)
 
-		fakeSecret := &apiv1.Secret{
+		fakeSecret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "fakesecret",
 				Namespace: "bar",
@@ -44,15 +44,15 @@ func TestEnsureClient(t *testing.T) {
 				Domains:            strings.Split(os.Getenv("TEST_DNS_DOMAINS"), ","),
 				ACMEUserSecretName: "user",
 				ChallengeProvider:  api.ChallengeProvider{DNS: &api.DNSChallengeProvider{Provider: "googlecloud", CredentialSecretName: "fakesecret"}},
-				Storage:            api.CertificateStorage{Secret: &apiv1.LocalObjectReference{}},
+				Storage:            api.CertificateStorage{Secret: &core.LocalObjectReference{}},
 			},
 		}
 
 		fakeController, err := NewController(etx.Background(), fake.NewSimpleClientset(
-			&apiv1.Secret{
+			&core.Secret{
 				ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "bar"},
 			},
-			&apiv1.Secret{
+			&core.Secret{
 				ObjectMeta: metav1.ObjectMeta{Name: "user", Namespace: "bar"},
 				Data: map[string][]byte{
 					api.ACMEUserEmail: []byte(os.Getenv("TEST_ACME_USER_EMAIL")),
@@ -85,11 +85,11 @@ func TestCreate(t *testing.T) {
 				Domains:            strings.Split(os.Getenv("TEST_DNS_DOMAINS"), ","),
 				ACMEUserSecretName: "user",
 				ChallengeProvider:  api.ChallengeProvider{DNS: &api.DNSChallengeProvider{Provider: "googlecloud", CredentialSecretName: "fakesecret"}},
-				Storage:            api.CertificateStorage{Secret: &apiv1.LocalObjectReference{}},
+				Storage:            api.CertificateStorage{Secret: &core.LocalObjectReference{}},
 			},
 		}
 
-		fakeUser := &apiv1.Secret{
+		fakeUser := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{Name: "user", Namespace: "bar"},
 			Data: map[string][]byte{
 				api.ACMEUserEmail: []byte(os.Getenv("TEST_ACME_USER_EMAIL")),
@@ -97,7 +97,7 @@ func TestCreate(t *testing.T) {
 			},
 		}
 
-		fakeSecret := &apiv1.Secret{
+		fakeSecret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "fakesecret",
 				Namespace: "bar",

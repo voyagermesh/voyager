@@ -10,7 +10,7 @@ import (
 	tapi "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/ingress"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -29,19 +29,19 @@ func (op *Operator) initServiceWatcher() cache.Controller {
 		},
 	}
 	indexer, informer := cache.NewIndexerInformer(lw,
-		&apiv1.Service{},
+		&core.Service{},
 		op.Opt.ResyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				ctx := etx.Background()
-				if svc, ok := obj.(*apiv1.Service); ok {
+				if svc, ok := obj.(*core.Service); ok {
 					log.New(ctx).Infof("Service %s@%s added", svc.Name, svc.Namespace)
 					op.updateHAProxyConfig(ctx, svc)
 				}
 			},
 			DeleteFunc: func(obj interface{}) {
 				ctx := etx.Background()
-				if svc, ok := obj.(*apiv1.Service); ok {
+				if svc, ok := obj.(*core.Service); ok {
 					log.New(ctx).Infof("Service %s@%s deleted", svc.Name, svc.Namespace)
 					if restored, err := op.restoreServiceIfRequired(ctx, svc); err == nil && restored {
 						return
@@ -56,7 +56,7 @@ func (op *Operator) initServiceWatcher() cache.Controller {
 	return informer
 }
 
-func (op *Operator) restoreServiceIfRequired(ctx context.Context, svc *apiv1.Service) (bool, error) {
+func (op *Operator) restoreServiceIfRequired(ctx context.Context, svc *core.Service) (bool, error) {
 	if svc.Annotations == nil {
 		return false, nil
 	}
@@ -110,7 +110,7 @@ func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*tapi.Ingress, error) {
 	return nil, fmt.Errorf("unknown ingress type %s", sourceType)
 }
 
-func (op *Operator) updateHAProxyConfig(ctx context.Context, svc *apiv1.Service) error {
+func (op *Operator) updateHAProxyConfig(ctx context.Context, svc *core.Service) error {
 	logger := log.New(ctx)
 
 	items, err := op.listIngresses()

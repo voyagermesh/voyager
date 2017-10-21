@@ -8,7 +8,7 @@ import (
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -17,7 +17,7 @@ var _ = Describe("IngressTCP", func() {
 	var (
 		f      *framework.Invocation
 		ing    *api.Ingress
-		secret *apiv1.Secret
+		secret *core.Secret
 	)
 
 	BeforeEach(func() {
@@ -29,15 +29,15 @@ var _ = Describe("IngressTCP", func() {
 	BeforeEach(func() {
 		crt, key, err := f.CertManager.NewServerCertPair()
 		Expect(err).NotTo(HaveOccurred())
-		secret = &apiv1.Secret{
+		secret = &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      f.Ingress.UniqueName(),
 				Namespace: ing.GetNamespace(),
 			},
-			Type: apiv1.SecretTypeTLS,
+			Type: core.SecretTypeTLS,
 			Data: map[string][]byte{
-				apiv1.TLSCertKey:       crt,
-				apiv1.TLSPrivateKeyKey: key,
+				core.TLSCertKey:       crt,
+				core.TLSPrivateKeyKey: key,
 			},
 		}
 		_, err = f.KubeClient.CoreV1().Secrets(secret.Namespace).Create(secret)
@@ -126,7 +126,7 @@ var _ = Describe("IngressTCP", func() {
 			Expect(svc.Spec.Ports[1].Port).To(Or(Equal(int32(4001)), Equal(int32(4002)), Equal(int32(4003))))
 			Expect(svc.Spec.Ports[2].Port).To(Or(Equal(int32(4001)), Equal(int32(4002)), Equal(int32(4003))))
 
-			var tcpNoSSL, tcpSSL, tcpWithNoSSL apiv1.ServicePort
+			var tcpNoSSL, tcpSSL, tcpWithNoSSL core.ServicePort
 			for _, p := range svc.Spec.Ports {
 				if p.Port == 4001 {
 					tcpNoSSL = p

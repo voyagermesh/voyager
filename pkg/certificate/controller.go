@@ -20,7 +20,7 @@ import (
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/xenolf/lego/acme"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -37,7 +37,7 @@ type Controller struct {
 
 	crd               *api.Certificate
 	ChallengeProvider string
-	UserSecret        *apiv1.Secret
+	UserSecret        *core.Secret
 	DNSCredentials    map[string][]byte
 	curCert           *x509.Certificate
 	acmeUser          *ACMEUser
@@ -133,7 +133,7 @@ func (c *Controller) Process() error {
 		if err == nil {
 			c.recorder.Eventf(
 				c.crd.ObjectReference(),
-				apiv1.EventTypeNormal,
+				core.EventTypeNormal,
 				eventer.EventReasonCertificateIssueSuccessful,
 				"Successfully issued certificate",
 			)
@@ -152,7 +152,7 @@ func (c *Controller) Process() error {
 		if err == nil {
 			c.recorder.Eventf(
 				c.crd.ObjectReference(),
-				apiv1.EventTypeNormal,
+				core.EventTypeNormal,
 				eventer.EventReasonCertificateIssueSuccessful,
 				"Successfully renewed certificate",
 			)
@@ -204,7 +204,7 @@ func (c *Controller) getACMEClient() error {
 		if err := c.acmeClient.AgreeToTOS(); err != nil {
 			return fmt.Errorf("failed to register user %s. Reason: %s", c.acmeUser.Email, err)
 		}
-		c.UserSecret, err = v1u.PatchSecret(c.KubeClient, c.UserSecret, func(in *apiv1.Secret) *apiv1.Secret {
+		c.UserSecret, err = v1u.PatchSecret(c.KubeClient, c.UserSecret, func(in *core.Secret) *core.Secret {
 			if in.Data == nil {
 				in.Data = make(map[string][]byte)
 			}

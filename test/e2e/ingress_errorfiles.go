@@ -8,7 +8,7 @@ import (
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -17,7 +17,7 @@ var _ = Describe("IngressWithErrorFiles", func() {
 	var (
 		f         *framework.Invocation
 		ing       *api.Ingress
-		configMap *apiv1.ConfigMap
+		configMap *core.ConfigMap
 	)
 
 	BeforeEach(func() {
@@ -27,7 +27,7 @@ var _ = Describe("IngressWithErrorFiles", func() {
 	})
 
 	BeforeEach(func() {
-		configMap = &apiv1.ConfigMap{
+		configMap = &core.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      f.Ingress.UniqueName(),
 				Namespace: ing.GetNamespace(),
@@ -160,7 +160,7 @@ Content-Type: text/html
 
 	Describe("Ingress Error Files (errorloc)", func() {
 		BeforeEach(func() {
-			configMap = &apiv1.ConfigMap{
+			configMap = &core.ConfigMap{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      f.Ingress.UniqueName(),
 					Namespace: ing.GetNamespace(),

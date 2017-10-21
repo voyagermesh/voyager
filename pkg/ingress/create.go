@@ -6,7 +6,7 @@ import (
 
 	"github.com/appscode/go/errors"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -23,7 +23,7 @@ const (
 func (c *controller) ensureConfigMap() error {
 	cm, err := c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		cm = &apiv1.ConfigMap{
+		cm = &core.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      c.Ingress.OffshootName(),
 				Namespace: c.Ingress.Namespace,
@@ -80,7 +80,7 @@ func (c *controller) ensureRBAC() error {
 	return nil
 }
 
-func (c *controller) getExporterSidecar() (*apiv1.Container, error) {
+func (c *controller) getExporterSidecar() (*core.Container, error) {
 	if !c.Ingress.Stats() {
 		return nil, nil // Don't add sidecar is stats is not exposed.
 	}
@@ -89,7 +89,7 @@ func (c *controller) getExporterSidecar() (*apiv1.Container, error) {
 		return nil, err
 	}
 	if monSpec != nil && monSpec.Prometheus != nil {
-		return &apiv1.Container{
+		return &core.Container{
 			Name: "exporter",
 			Args: []string{
 				"export",
@@ -97,11 +97,11 @@ func (c *controller) getExporterSidecar() (*apiv1.Container, error) {
 				"--v=3",
 			},
 			Image:           ExporterSidecarTag,
-			ImagePullPolicy: apiv1.PullIfNotPresent,
-			Ports: []apiv1.ContainerPort{
+			ImagePullPolicy: core.PullIfNotPresent,
+			Ports: []core.ContainerPort{
 				{
 					Name:          api.ExporterPortName,
-					Protocol:      apiv1.ProtocolTCP,
+					Protocol:      core.ProtocolTCP,
 					ContainerPort: int32(monSpec.Prometheus.Port),
 				},
 			},
@@ -111,7 +111,7 @@ func (c *controller) getExporterSidecar() (*apiv1.Container, error) {
 }
 
 func (c *controller) ensureStatsService() error {
-	svc := &apiv1.Service{
+	svc := &core.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.Ingress.StatsServiceName(),
 			Namespace: c.Ingress.Namespace,
@@ -121,8 +121,8 @@ func (c *controller) ensureStatsService() error {
 			},
 			Labels: c.Ingress.StatsLabels(),
 		},
-		Spec: apiv1.ServiceSpec{
-			Ports: []apiv1.ServicePort{
+		Spec: core.ServiceSpec{
+			Ports: []core.ServicePort{
 				{
 					Name:       api.StatsPortName,
 					Protocol:   "TCP",
@@ -135,7 +135,7 @@ func (c *controller) ensureStatsService() error {
 	}
 	monSpec, err := c.Ingress.MonitorSpec()
 	if err == nil && monSpec != nil && monSpec.Prometheus != nil {
-		svc.Spec.Ports = append(svc.Spec.Ports, apiv1.ServicePort{
+		svc.Spec.Ports = append(svc.Spec.Ports, core.ServicePort{
 			Name:       api.ExporterPortName,
 			Protocol:   "TCP",
 			Port:       int32(monSpec.Prometheus.Port),

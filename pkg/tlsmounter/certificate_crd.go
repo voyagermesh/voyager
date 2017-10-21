@@ -7,7 +7,7 @@ import (
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/golang/glog"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	rt "k8s.io/apimachinery/pkg/runtime"
@@ -148,7 +148,7 @@ func (c *Controller) getCertificate(name string) (*api.Certificate, error) {
 		return nil, err
 	}
 	if !exists {
-		return nil, kerr.NewNotFound(apiv1.Resource("secret"), name)
+		return nil, kerr.NewNotFound(core.Resource("secret"), name)
 	}
 	return obj.(*api.Certificate), nil
 }

@@ -6,7 +6,7 @@ import (
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/stretchr/testify/assert"
 	apps "k8s.io/api/apps/v1beta1"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
@@ -32,14 +32,14 @@ func TestHostPortController_IsExists(t *testing.T) {
 						},
 					},
 
-					&apiv1.Service{
+					&core.Service{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      api.VoyagerPrefix + "foo",
 							Namespace: "bar",
 						},
 					},
 
-					&apiv1.ConfigMap{
+					&core.ConfigMap{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      api.VoyagerPrefix + "foo",
 							Namespace: "bar",
@@ -68,14 +68,14 @@ func TestHostPortController_IsExists(t *testing.T) {
 						},
 					},
 
-					&apiv1.Service{
+					&core.Service{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      api.VoyagerPrefix + "foo",
 							Namespace: "bar",
 						},
 					},
 
-					&apiv1.ConfigMap{
+					&core.ConfigMap{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      api.VoyagerPrefix + "foo",
 							Namespace: "bar",
@@ -104,14 +104,14 @@ func TestHostPortController_IsExists(t *testing.T) {
 						},
 					},
 
-					&apiv1.Service{
+					&core.Service{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      api.VoyagerPrefix + "fake-foo",
 							Namespace: "bar",
 						},
 					},
 
-					&apiv1.ConfigMap{
+					&core.ConfigMap{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      api.VoyagerPrefix + "foo",
 							Namespace: "bar",
@@ -139,14 +139,14 @@ func TestHostPortController_IsExists(t *testing.T) {
 						},
 					},
 
-					&apiv1.Service{
+					&core.Service{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      api.VoyagerPrefix + "foo",
 							Namespace: "bar",
 						},
 					},
 
-					&apiv1.ConfigMap{
+					&core.ConfigMap{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      api.VoyagerPrefix + "fake-foo",
 							Namespace: "bar",
@@ -175,14 +175,14 @@ func TestHostPortController_IsExists(t *testing.T) {
 						},
 					},
 
-					&apiv1.Service{
+					&core.Service{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      api.VoyagerPrefix + "foo",
 							Namespace: "bar",
 						},
 					},
 
-					&apiv1.ConfigMap{
+					&core.ConfigMap{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      api.VoyagerPrefix + "foo",
 							Namespace: "bar",
