@@ -25,7 +25,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 	core_listers "k8s.io/client-go/listers/core/v1"
 )
 
@@ -38,7 +38,7 @@ var _ Controller = &hostPortController{}
 
 func NewHostPortController(
 	ctx context.Context,
-	kubeClient clientset.Interface,
+	kubeClient kubernetes.Interface,
 	crdClient apiextensionsclient.Interface,
 	extClient acs.VoyagerV1beta1Interface,
 	promClient pcm.MonitoringV1alpha1Interface,

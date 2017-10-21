@@ -24,13 +24,13 @@ import (
 	extensions "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/cert"
 )
 
 type Controller struct {
-	KubeClient    clientset.Interface
+	KubeClient    kubernetes.Interface
 	VoyagerClient acs.VoyagerV1beta1Interface
 	Opt           config.Options
 	recorder      record.EventRecorder
@@ -46,7 +46,7 @@ type Controller struct {
 	logger            *log.Logger
 }
 
-func NewController(ctx context.Context, kubeClient clientset.Interface, extClient acs.VoyagerV1beta1Interface, opt config.Options, tpr *api.Certificate) (*Controller, error) {
+func NewController(ctx context.Context, kubeClient kubernetes.Interface, extClient acs.VoyagerV1beta1Interface, opt config.Options, tpr *api.Certificate) (*Controller, error) {
 	ctrl := &Controller{
 		logger:        log.New(ctx),
 		KubeClient:    kubeClient,

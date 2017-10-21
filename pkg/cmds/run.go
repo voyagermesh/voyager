@@ -20,7 +20,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
-	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -48,7 +48,7 @@ var (
 	haProxyServerMetricFields string        = hpe.ServerMetrics.String()
 	haProxyTimeout            time.Duration = 5 * time.Second
 
-	kubeClient clientset.Interface
+	kubeClient kubernetes.Interface
 	extClient  acs.VoyagerV1beta1Interface
 )
 
@@ -111,7 +111,7 @@ func runOperator() {
 	config.Burst = opts.Burst
 	config.QPS = opts.QPS
 
-	kubeClient = clientset.NewForConfigOrDie(config)
+	kubeClient = kubernetes.NewForConfigOrDie(config)
 	crdClient := apiextensionsclient.NewForConfigOrDie(config)
 	extClient = acs.NewForConfigOrDie(config)
 	promClient, err := pcm.NewForConfig(config)

@@ -9,7 +9,7 @@ import (
 	"github.com/appscode/voyager/pkg/config"
 	. "github.com/onsi/gomega"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
-	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -21,7 +21,7 @@ const (
 
 type Framework struct {
 	KubeConfig     *rest.Config
-	KubeClient     clientset.Interface
+	KubeClient     kubernetes.Interface
 	InternalClient internalversion.VoyagerInterface
 	V1beta1Client  v1beta1client.VoyagerV1beta1Interface
 	CRDClient      apiextensionsclient.Interface
@@ -63,7 +63,7 @@ func New() *Framework {
 
 	return &Framework{
 		KubeConfig:     c,
-		KubeClient:     clientset.NewForConfigOrDie(c),
+		KubeClient:     kubernetes.NewForConfigOrDie(c),
 		InternalClient: internalversion.NewForConfigOrDie(c),
 		V1beta1Client:  v1beta1client.NewForConfigOrDie(c),
 		CRDClient:      apiextensionsclient.NewForConfigOrDie(c),

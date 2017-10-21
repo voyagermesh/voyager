@@ -10,7 +10,7 @@ import (
 	"github.com/appscode/voyager/pkg/tlsmounter"
 	"github.com/spf13/cobra"
 	core "k8s.io/api/core/v1"
-	kubernetes "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
 

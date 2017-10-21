@@ -11,7 +11,7 @@ import (
 	_ "github.com/appscode/voyager/client/typed/voyager/v1beta1/fake"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
-	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -40,7 +40,7 @@ func export() {
 	if err != nil {
 		log.Fatalf("Could not get Kubernetes config: %s", err)
 	}
-	kubeClient = clientset.NewForConfigOrDie(config)
+	kubeClient = kubernetes.NewForConfigOrDie(config)
 	extClient = acs.NewForConfigOrDie(config)
 
 	log.Infoln("Starting Voyager exporter...")

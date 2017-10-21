@@ -18,7 +18,7 @@ import (
 	core "k8s.io/api/core/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 	core_listers "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/record"
 )
@@ -32,7 +32,7 @@ type Controller interface {
 }
 
 type controller struct {
-	KubeClient      clientset.Interface
+	KubeClient      kubernetes.Interface
 	CRDClient       apiextensionsclient.Interface
 	VoyagerClient   acs.VoyagerV1beta1Interface
 	PromClient      pcm.MonitoringV1alpha1Interface
@@ -55,7 +55,7 @@ type controller struct {
 
 func NewController(
 	ctx context.Context,
-	kubeClient clientset.Interface,
+	kubeClient kubernetes.Interface,
 	crdClient apiextensionsclient.Interface,
 	extClient acs.VoyagerV1beta1Interface,
 	promClient pcm.MonitoringV1alpha1Interface,

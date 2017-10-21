@@ -26,7 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
-	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 	core_listers "k8s.io/client-go/listers/core/v1"
 )
 
@@ -39,7 +39,7 @@ var _ Controller = &nodePortController{}
 
 func NewNodePortController(
 	ctx context.Context,
-	kubeClient clientset.Interface,
+	kubeClient kubernetes.Interface,
 	crdClient apiextensionsclient.Interface,
 	extClient acs.VoyagerV1beta1Interface,
 	promClient pcm.MonitoringV1alpha1Interface,

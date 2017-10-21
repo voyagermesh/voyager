@@ -3,7 +3,7 @@ package eventer
 import (
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
-	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/record"
 )
@@ -42,7 +42,7 @@ const (
 	EventReasonIngressTLSMountFailed                 = "TLSMountFailed"
 )
 
-func NewEventRecorder(client clientset.Interface, component string) record.EventRecorder {
+func NewEventRecorder(client kubernetes.Interface, component string) record.EventRecorder {
 	// Event Broadcaster
 	broadcaster := record.NewBroadcaster()
 	broadcaster.StartEventWatcher(

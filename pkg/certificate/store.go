@@ -17,16 +17,16 @@ import (
 	core "k8s.io/api/core/v1"
 	k8serror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 )
 
 type CertStore struct {
-	KubeClient    clientset.Interface
+	KubeClient    kubernetes.Interface
 	VoyagerClient acs.VoyagerV1beta1Interface
 	VaultClient   *vault.Client
 }
 
-func NewCertStore(kubeClient clientset.Interface, voyagerClient acs.VoyagerV1beta1Interface) (*CertStore, error) {
+func NewCertStore(kubeClient kubernetes.Interface, voyagerClient acs.VoyagerV1beta1Interface) (*CertStore, error) {
 	store := &CertStore{
 		KubeClient:    kubeClient,
 		VoyagerClient: voyagerClient,
