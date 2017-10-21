@@ -10,8 +10,7 @@ import (
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"k8s.io/api/core/v1"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -20,7 +19,7 @@ var _ = Describe("CertificateWithHTTPProvider", func() {
 		f          *framework.Invocation
 		ing        *api.Ingress
 		cert       *api.Certificate
-		userSecret *v1.Secret
+		userSecret *core.Secret
 	)
 
 	BeforeEach(func() {
@@ -30,7 +29,7 @@ var _ = Describe("CertificateWithHTTPProvider", func() {
 			Skip("Certificate Test is not enabled")
 		}
 
-		userSecret = &v1.Secret{
+		userSecret = &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      f.Certificate.UniqueName(),
 				Namespace: f.Namespace(),
@@ -65,7 +64,7 @@ var _ = Describe("CertificateWithHTTPProvider", func() {
 			},
 			ACMEUserSecretName: userSecret.Name,
 			Storage: api.CertificateStorage{
-				Secret: &apiv1.LocalObjectReference{},
+				Secret: &core.LocalObjectReference{},
 			},
 		}
 	})

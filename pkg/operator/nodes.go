@@ -8,7 +8,7 @@ import (
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/ingress"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -27,7 +27,7 @@ func (op *Operator) initNodeWatcher() cache.Controller {
 	}
 
 	handler := func(obj interface{}) {
-		if node, ok := obj.(*apiv1.Node); ok {
+		if node, ok := obj.(*core.Node); ok {
 			ctx := etx.Background()
 
 			ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
@@ -50,7 +50,7 @@ func (op *Operator) initNodeWatcher() cache.Controller {
 	}
 
 	indexer, informer := cache.NewInformer(lw,
-		&apiv1.Node{},
+		&core.Node{},
 		op.Opt.ResyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc:    handler,
@@ -60,7 +60,7 @@ func (op *Operator) initNodeWatcher() cache.Controller {
 	// https://github.com/kubernetes/client-go/blob/42a124578af9e61f5c6902fa7b6b2cb6538f17d2/examples/workqueue/main.go#L203
 	if nodes, err := op.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{}); err == nil {
 		for _, node := range nodes.Items {
-			indexer.Add(&apiv1.Node{
+			indexer.Add(&core.Node{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: node.Name,
 				},
@@ -71,7 +71,7 @@ func (op *Operator) initNodeWatcher() cache.Controller {
 	return informer
 }
 
-func (op *Operator) updateFirewall(ctx context.Context, ing *api.Ingress, node *apiv1.Node) {
+func (op *Operator) updateFirewall(ctx context.Context, ing *api.Ingress, node *core.Node) {
 	if !ing.ShouldHandleIngress(op.Opt.IngressClass) {
 		log.New(ctx).Warningf("Skipping ingress %s@%s, as it is not handled by Voyager.", ing.Name, ing.Namespace)
 		return
@@ -91,7 +91,7 @@ func (op *Operator) updateFirewall(ctx context.Context, ing *api.Ingress, node *
 	} else {
 		op.recorder.Eventf(
 			ing,
-			apiv1.EventTypeWarning,
+			core.EventTypeWarning,
 			eventer.EventReasonIngressFirewallUpdateFailed,
 			"Failed to update firewall, Reason: %s",
 			err.Error(),

@@ -15,11 +15,11 @@ import (
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	vault "github.com/hashicorp/vault/api"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
-	core "k8s.io/client-go/listers/core/v1"
+	core_listers "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/record"
 )
 
@@ -28,7 +28,7 @@ type Controller interface {
 	Create() error
 	Update(mode UpdateMode, old *api.Ingress) error
 	Delete()
-	EnsureFirewall(svc *apiv1.Service) error
+	EnsureFirewall(svc *core.Service) error
 }
 
 type controller struct {
@@ -36,8 +36,8 @@ type controller struct {
 	CRDClient       apiextensionsclient.Interface
 	VoyagerClient   acs.VoyagerV1beta1Interface
 	PromClient      pcm.MonitoringV1alpha1Interface
-	ServiceLister   core.ServiceLister
-	EndpointsLister core.EndpointsLister
+	ServiceLister   core_listers.ServiceLister
+	EndpointsLister core_listers.EndpointsLister
 
 	recorder record.EventRecorder
 
@@ -59,8 +59,8 @@ func NewController(
 	crdClient apiextensionsclient.Interface,
 	extClient acs.VoyagerV1beta1Interface,
 	promClient pcm.MonitoringV1alpha1Interface,
-	serviceLister core.ServiceLister,
-	endpointsLister core.EndpointsLister,
+	serviceLister core_listers.ServiceLister,
+	endpointsLister core_listers.EndpointsLister,
 	opt config.Options,
 	ingress *api.Ingress) Controller {
 	switch ingress.LBType() {
@@ -96,21 +96,21 @@ func (c *controller) ensureOwnerReference(in metav1.ObjectMeta) metav1.ObjectMet
 	return in
 }
 
-func (c *controller) ensureEnvVars(vars []apiv1.EnvVar) []apiv1.EnvVar {
+func (c *controller) ensureEnvVars(vars []core.EnvVar) []core.EnvVar {
 	if addr := os.Getenv(vault.EnvVaultAddress); addr != "" {
-		vars = v1u.UpsertEnvVar(vars, apiv1.EnvVar{
+		vars = v1u.UpsertEnvVar(vars, core.EnvVar{
 			Name:  vault.EnvVaultAddress,
 			Value: addr,
 		})
 		if caCert := os.Getenv(vault.EnvVaultCACert); caCert != "" {
-			vars = v1u.UpsertEnvVar(vars, apiv1.EnvVar{
+			vars = v1u.UpsertEnvVar(vars, core.EnvVar{
 				Name:  vault.EnvVaultCACert,
 				Value: caCert,
 			})
 		}
 		if caPath := os.Getenv(vault.EnvVaultCAPath); caPath != "" {
 			caCert, _ := ioutil.ReadFile(caPath)
-			vars = v1u.UpsertEnvVar(vars, apiv1.EnvVar{
+			vars = v1u.UpsertEnvVar(vars, core.EnvVar{
 				Name:  vault.EnvVaultCACert,
 				Value: string(caCert),
 			})

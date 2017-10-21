@@ -11,7 +11,7 @@ import (
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -20,7 +20,7 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 	var (
 		f      *framework.Invocation
 		ing    *api.Ingress
-		secret *apiv1.Secret
+		secret *core.Secret
 	)
 
 	BeforeEach(func() {
@@ -125,16 +125,16 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 			crt, key, err := f.CertManager.NewServerCertPair()
 			Expect(err).NotTo(HaveOccurred())
 
-			secret = &apiv1.Secret{
+			secret = &core.Secret{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      f.Ingress.UniqueName(),
 					Namespace: ing.GetNamespace(),
 				},
 				Data: map[string][]byte{
-					apiv1.TLSCertKey:       crt,
-					apiv1.TLSPrivateKeyKey: key,
+					core.TLSCertKey:       crt,
+					core.TLSPrivateKeyKey: key,
 				},
-				Type: apiv1.SecretTypeTLS,
+				Type: core.SecretTypeTLS,
 			}
 			_, err = f.KubeClient.CoreV1().Secrets(secret.Namespace).Create(secret)
 			Expect(err).NotTo(HaveOccurred())

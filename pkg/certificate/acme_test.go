@@ -8,7 +8,7 @@ import (
 	fakevoyager "github.com/appscode/voyager/client/fake"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/stretchr/testify/assert"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
@@ -17,7 +17,7 @@ func TestClient(t *testing.T) {
 	controller, err := NewController(
 		etx.Background(),
 		fake.NewSimpleClientset(
-			&apiv1.Secret{
+			&core.Secret{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "bar",
@@ -55,7 +55,7 @@ func TestClient(t *testing.T) {
 				},
 				ACMEUserSecretName: "foo",
 				Storage: api.CertificateStorage{
-					Secret: &apiv1.LocalObjectReference{},
+					Secret: &core.LocalObjectReference{},
 				},
 			},
 		},

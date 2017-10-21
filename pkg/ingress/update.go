@@ -6,7 +6,7 @@ import (
 
 	"github.com/appscode/go/errors"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -41,17 +41,17 @@ func (c *controller) updateConfigMap() error {
 
 		_, err := c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Update(cMap)
 		if err != nil {
-			c.recorder.Eventf(c.Ingress.ObjectReference(), apiv1.EventTypeWarning, "ConfigMapUpdateFailed", "HAProxy configuration Update failed, %s", err.Error())
+			c.recorder.Eventf(c.Ingress.ObjectReference(), core.EventTypeWarning, "ConfigMapUpdateFailed", "HAProxy configuration Update failed, %s", err.Error())
 			return errors.FromErr(err).Err()
 		}
 		// Add event only if the ConfigMap Really Updated
-		c.recorder.Eventf(c.Ingress.ObjectReference(), apiv1.EventTypeNormal, "ConfigMapUpdated", "ConfigMap Updated, HAProxy will restart itself now via reloader")
+		c.recorder.Eventf(c.Ingress.ObjectReference(), core.EventTypeNormal, "ConfigMapUpdated", "ConfigMap Updated, HAProxy will restart itself now via reloader")
 		c.logger.Infoln("Config Map Updated, HAProxy will restart itself now via reloader")
 	}
 	return nil
 }
 
-func (c *controller) serviceRequiresUpdate(current, desired *apiv1.Service, old *api.Ingress) (*apiv1.Service, bool) {
+func (c *controller) serviceRequiresUpdate(current, desired *core.Service, old *api.Ingress) (*core.Service, bool) {
 	if current == nil {
 		return nil, false // should never happen
 	}
@@ -59,7 +59,7 @@ func (c *controller) serviceRequiresUpdate(current, desired *apiv1.Service, old 
 	needsUpdate := false
 
 	// ports
-	curPorts := make(map[int32]apiv1.ServicePort)
+	curPorts := make(map[int32]core.ServicePort)
 	for _, p := range current.Spec.Ports {
 		curPorts[p.Port] = p
 	}

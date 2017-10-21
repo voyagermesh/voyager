@@ -7,7 +7,7 @@ import (
 	ioutilz "github.com/appscode/go/ioutil"
 	"github.com/appscode/go/log"
 	"github.com/golang/glog"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	rt "k8s.io/apimachinery/pkg/runtime"
@@ -34,9 +34,9 @@ func (c *Controller) initSecretWatcher() {
 	// whenever the cache is updated, the pod key is added to the workqueue.
 	// Note that when we finally process the item from the workqueue, we might see a newer version
 	// of the Secret than the version which was responsible for triggering the update.
-	c.sIndexer, c.sInformer = cache.NewIndexerInformer(lw, &apiv1.Secret{}, c.options.ResyncPeriod, cache.ResourceEventHandlerFuncs{
+	c.sIndexer, c.sInformer = cache.NewIndexerInformer(lw, &core.Secret{}, c.options.ResyncPeriod, cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
-			if r, ok := obj.(*apiv1.Secret); ok {
+			if r, ok := obj.(*core.Secret); ok {
 				if c.isSecretUsedInIngress(r) {
 					key, err := cache.MetaNamespaceKeyFunc(obj)
 					if err == nil {
@@ -46,7 +46,7 @@ func (c *Controller) initSecretWatcher() {
 			}
 		},
 		UpdateFunc: func(old interface{}, new interface{}) {
-			if r, ok := new.(*apiv1.Secret); ok {
+			if r, ok := new.(*core.Secret); ok {
 				if c.isSecretUsedInIngress(r) {
 					key, err := cache.MetaNamespaceKeyFunc(new)
 					if err == nil {
@@ -66,11 +66,11 @@ func (c *Controller) initSecretWatcher() {
 	}, cache.Indexers{})
 }
 
-func (c *Controller) isSecretUsedInIngress(s *apiv1.Secret) bool {
+func (c *Controller) isSecretUsedInIngress(s *core.Secret) bool {
 	return c.isSecretUsedForTLSTermination(s) || c.isSecretUsedForTLSAuth(s)
 }
 
-func (c *Controller) isSecretUsedForTLSTermination(s *apiv1.Secret) bool {
+func (c *Controller) isSecretUsedForTLSTermination(s *core.Secret) bool {
 	if s.Namespace != c.options.IngressRef.Namespace {
 		return false
 	}
@@ -87,7 +87,7 @@ func (c *Controller) isSecretUsedForTLSTermination(s *apiv1.Secret) bool {
 	return false
 }
 
-func (c *Controller) isSecretUsedForTLSAuth(s *apiv1.Secret) bool {
+func (c *Controller) isSecretUsedForTLSAuth(s *core.Secret) bool {
 	if s.Namespace != c.options.IngressRef.Namespace {
 		return false
 	}
@@ -166,24 +166,24 @@ func (c *Controller) syncSecret(key string) error {
 	return nil
 }
 
-func (c *Controller) getSecret(name string) (*apiv1.Secret, error) {
+func (c *Controller) getSecret(name string) (*core.Secret, error) {
 	obj, exists, err := c.sIndexer.GetByKey(c.options.IngressRef.Namespace + "/" + name)
 	if err != nil {
 		return nil, err
 	}
 	if !exists {
-		return nil, kerr.NewNotFound(apiv1.Resource("secret"), name)
+		return nil, kerr.NewNotFound(core.Resource("secret"), name)
 	}
-	return obj.(*apiv1.Secret), nil
+	return obj.(*core.Secret), nil
 }
 
-func (c *Controller) projectTLSSecret(r *apiv1.Secret, projections map[string]ioutilz.FileProjection) error {
-	pemKey, found := r.Data[apiv1.TLSPrivateKeyKey]
+func (c *Controller) projectTLSSecret(r *core.Secret, projections map[string]ioutilz.FileProjection) error {
+	pemKey, found := r.Data[core.TLSPrivateKeyKey]
 	if !found {
 		return fmt.Errorf("secret %s@%s is missing tls.key", r.Name, c.options.IngressRef.Namespace)
 	}
 
-	pemCrt, found := r.Data[apiv1.TLSCertKey]
+	pemCrt, found := r.Data[core.TLSCertKey]
 	if !found {
 		return fmt.Errorf("secret %s@%s is missing tls.crt", r.Name, c.options.IngressRef.Namespace)
 	}
@@ -192,7 +192,7 @@ func (c *Controller) projectTLSSecret(r *apiv1.Secret, projections map[string]io
 	return nil
 }
 
-func (c *Controller) projectAuthSecret(r *apiv1.Secret, projections map[string]ioutilz.FileProjection) error {
+func (c *Controller) projectAuthSecret(r *core.Secret, projections map[string]ioutilz.FileProjection) error {
 	ca, found := r.Data["ca.crt"]
 	if !found {
 		return fmt.Errorf("secret %s@%s is missing ca.crt", r.Name, c.options.IngressRef.Namespace)

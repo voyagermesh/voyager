@@ -12,7 +12,7 @@ import (
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -128,14 +128,14 @@ var _ = Describe("IngressOperations", func() {
 				ing.Spec.Rules[0].HTTP.NodePort = intstr.FromInt(32345)
 			})
 			It("Should create nodeport service", func() {
-				var svc *v1.Service
+				var svc *core.Service
 				Eventually(func() error {
 					var err error
 					svc, err = f.Ingress.GetOffShootService(ing)
 					return err
 				}, "10m", "5s").Should(BeNil())
 				Expect(svc).ShouldNot(BeNil())
-				Expect(svc.Spec.Type).Should(Equal(v1.ServiceTypeNodePort))
+				Expect(svc.Spec.Type).Should(Equal(core.ServiceTypeNodePort))
 				Expect(svc.Spec.Ports[0].NodePort).Should(Equal(int32(32345)))
 			})
 		})
@@ -220,7 +220,7 @@ var _ = Describe("IngressOperations", func() {
 				ing.Annotations[api.StatsPort] = `8787`
 			})
 			It("Should test stat service", func() {
-				var svc *v1.Service
+				var svc *core.Service
 				Eventually(func() error {
 					var err error
 					svc, err = f.KubeClient.CoreV1().Services(ing.GetNamespace()).Get(ing.StatsServiceName(), metav1.GetOptions{})
@@ -254,7 +254,7 @@ var _ = Describe("IngressOperations", func() {
 				}
 			})
 			It("Should keep LoadBalancerSourceRanges", func() {
-				var svc *v1.Service
+				var svc *core.Service
 				Eventually(func() error {
 					var err error
 					svc, err = f.Ingress.GetOffShootService(ing)

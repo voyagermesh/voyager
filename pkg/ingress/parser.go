@@ -16,7 +16,7 @@ import (
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	"github.com/tredoe/osutil/user/crypt"
 	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -42,7 +42,7 @@ func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, 
 		return nil, err
 	}
 
-	if service.Spec.Type == apiv1.ServiceTypeExternalName {
+	if service.Spec.Type == core.ServiceTypeExternalName {
 		c.logger.Infof("Found ServiceType ExternalName for service %s, Checking DNS resolver options", service.Name)
 		// https://kubernetes.io/docs/concepts/services-networking/service/#services-without-selectors
 		ep := haproxy.Endpoint{
@@ -71,7 +71,7 @@ func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, 
 	return c.getEndpoints(service, p, hostNames, userLists)
 }
 
-func (c *controller) getEndpoints(svc *apiv1.Service, servicePort *apiv1.ServicePort, hostNames []string, userLists map[string]haproxy.UserList) (*haproxy.Backend, error) {
+func (c *controller) getEndpoints(svc *core.Service, servicePort *core.ServicePort, hostNames []string, userLists map[string]haproxy.UserList) (*haproxy.Backend, error) {
 	ep, err := c.EndpointsLister.Endpoints(svc.Namespace).Get(svc.Name)
 	if err != nil {
 		return nil, err
@@ -83,7 +83,7 @@ func (c *controller) getEndpoints(svc *apiv1.Service, servicePort *apiv1.Service
 	if err != nil {
 		return nil, err
 	}
-	pods := map[string]apiv1.Pod{}
+	pods := map[string]core.Pod{}
 	for _, pod := range podList.Items {
 		pods[pod.Name] = pod
 	}
@@ -180,7 +180,7 @@ func isForwardable(hostNames []string, hostName string) bool {
 	return false
 }
 
-func getSpecifiedPort(ports []apiv1.ServicePort, port intstr.IntOrString) (*apiv1.ServicePort, bool) {
+func getSpecifiedPort(ports []core.ServicePort, port intstr.IntOrString) (*core.ServicePort, bool) {
 	for _, p := range ports {
 		if int(p.Port) == port.IntValue() {
 			return &p, true
@@ -203,7 +203,7 @@ func getBackendName(r *api.Ingress, be api.IngressBackend) string {
 func (c *controller) generateConfig() error {
 	var td haproxy.TemplateData
 
-	var nodePortSvc *apiv1.Service
+	var nodePortSvc *core.Service
 	if c.Ingress.LBType() == api.LBTypeNodePort {
 		var err error
 		nodePortSvc, err = c.KubeClient.CoreV1().Services(c.Ingress.GetNamespace()).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
@@ -523,7 +523,7 @@ func (c *controller) generateConfig() error {
 	return nil
 }
 
-func getBasicAuthUsers(userLists map[string]haproxy.UserList, sec *apiv1.Secret) ([]string, error) {
+func getBasicAuthUsers(userLists map[string]haproxy.UserList, sec *core.Secret) ([]string, error) {
 	listNames := make([]string, 0)
 
 	for name, data := range sec.Data {
@@ -594,14 +594,14 @@ func parseALPNOptions(opt []string) string {
 	return "alpn " + strings.Join(opt, ",")
 }
 
-func getEndpointName(ep apiv1.EndpointAddress) string {
+func getEndpointName(ep core.EndpointAddress) string {
 	if ep.TargetRef != nil {
 		return "pod-" + ep.TargetRef.Name
 	}
 	return "pod-" + ep.IP
 }
 
-func (c *controller) getServiceAuth(userLists map[string]haproxy.UserList, svc *apiv1.Service) *haproxy.BasicAuth {
+func (c *controller) getServiceAuth(userLists map[string]haproxy.UserList, svc *core.Service) *haproxy.BasicAuth {
 	// Check auth type is basic; other auth mode is not supported
 	authType, ok := svc.Annotations[api.AuthType]
 	if !ok || authType != "basic" {

@@ -15,7 +15,7 @@ import (
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -24,7 +24,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 	var (
 		f                   *framework.Invocation
 		ing                 *api.Ingress
-		tlsSecret, caSecret *apiv1.Secret
+		tlsSecret, caSecret *core.Secret
 	)
 
 	BeforeEach(func() {
@@ -43,21 +43,21 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			ioutil.WriteFile(f.Config.DumpLocation+"/server.key", key, os.ModePerm)
 		}
 
-		tlsSecret = &apiv1.Secret{
+		tlsSecret = &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      f.Ingress.UniqueName(),
 				Namespace: ing.GetNamespace(),
 			},
 			Data: map[string][]byte{
-				apiv1.TLSCertKey:       crt,
-				apiv1.TLSPrivateKeyKey: key,
+				core.TLSCertKey:       crt,
+				core.TLSPrivateKeyKey: key,
 			},
-			Type: apiv1.SecretTypeTLS,
+			Type: core.SecretTypeTLS,
 		}
 		_, err = f.KubeClient.CoreV1().Secrets(tlsSecret.Namespace).Create(tlsSecret)
 		Expect(err).NotTo(HaveOccurred())
 
-		caSecret = &apiv1.Secret{
+		caSecret = &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      f.Ingress.UniqueName(),
 				Namespace: ing.GetNamespace(),
@@ -185,7 +185,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).To(HaveOccurred())
 
 			// Wrong Cert
-			tr := getTransportForCert(f.CertManager.CACert(), tlsSecret.Data[apiv1.TLSCertKey], tlsSecret.Data[apiv1.TLSPrivateKeyKey])
+			tr := getTransportForCert(f.CertManager.CACert(), tlsSecret.Data[core.TLSCertKey], tlsSecret.Data[core.TLSPrivateKeyKey])
 			err = f.Ingress.DoTestRedirectWithTransport(framework.NoRetry, "http.appscode.test", tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *testserverclient.Response) bool {
 				return Expect(r.Status).Should(Equal(302)) &&
 					Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
@@ -415,7 +415,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// Wrong Cert Reject
-			tr := getTransportForCert(f.CertManager.CACert(), tlsSecret.Data[apiv1.TLSCertKey], tlsSecret.Data[apiv1.TLSPrivateKeyKey])
+			tr := getTransportForCert(f.CertManager.CACert(), tlsSecret.Data[core.TLSCertKey], tlsSecret.Data[core.TLSPrivateKeyKey])
 			err = f.Ingress.DoTestRedirectWithTransport(framework.NoRetry, "http.appscode.test", tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *testserverclient.Response) bool {
 				return false
 			})
@@ -521,7 +521,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).To(HaveOccurred())
 
 			// Wrong Cert
-			tr := getTransportForCert(f.CertManager.CACert(), tlsSecret.Data[apiv1.TLSCertKey], tlsSecret.Data[apiv1.TLSPrivateKeyKey])
+			tr := getTransportForCert(f.CertManager.CACert(), tlsSecret.Data[core.TLSCertKey], tlsSecret.Data[core.TLSPrivateKeyKey])
 			err = f.Ingress.DoTestRedirectWithTransport(framework.NoRetry, "http.appscode.test", tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *testserverclient.Response) bool {
 				return Expect(r.Status).Should(Equal(302)) &&
 					Expect(r.ResponseHeader).Should(HaveKey("Location")) &&

@@ -4,7 +4,7 @@ import (
 	core_util "github.com/appscode/kutil/core/v1"
 	rbac_util "github.com/appscode/kutil/rbac/v1beta1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
 	rbac "k8s.io/api/rbac/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,7 +15,7 @@ func (c *controller) ensureServiceAccount() error {
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	_, err := core_util.CreateOrPatchServiceAccount(c.KubeClient, meta, func(in *apiv1.ServiceAccount) *apiv1.ServiceAccount {
+	_, err := core_util.CreateOrPatchServiceAccount(c.KubeClient, meta, func(in *core.ServiceAccount) *core.ServiceAccount {
 		in.ObjectMeta = c.ensureOwnerReference(in.ObjectMeta)
 
 		if in.Annotations == nil {
@@ -44,13 +44,13 @@ func (c *controller) ensureRoles() error {
 
 		in.Rules = []rbac.PolicyRule{
 			{
-				APIGroups: []string{apiv1.GroupName},
+				APIGroups: []string{core.GroupName},
 				Resources: []string{"configmaps"},
 				Verbs:     []string{"get", "list", "watch"},
 			},
 			// We need to have those permission for secret mounter
 			{
-				APIGroups: []string{apiv1.GroupName},
+				APIGroups: []string{core.GroupName},
 				Resources: []string{"secrets"},
 				Verbs:     []string{"get", "list", "watch"},
 			},

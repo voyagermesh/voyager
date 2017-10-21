@@ -3,7 +3,7 @@ package operator
 import (
 	v1u "github.com/appscode/kutil/core/v1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -46,7 +46,7 @@ func (op *Operator) MigrateCertificate(cert *api.Certificate) (bool, error) {
 	if cert.Spec.Storage.Secret == nil && cert.Spec.Storage.Vault == nil {
 		migrate = true
 		cert.Spec.Storage = api.CertificateStorage{
-			Secret: &apiv1.LocalObjectReference{},
+			Secret: &core.LocalObjectReference{},
 		}
 	}
 
@@ -59,7 +59,7 @@ func (op *Operator) MigrateCertificate(cert *api.Certificate) (bool, error) {
 		_, err := v1u.CreateOrPatchSecret(op.KubeClient, metav1.ObjectMeta{
 			Name:      cert.Spec.ACMEUserSecretName,
 			Namespace: cert.Namespace,
-		}, func(in *apiv1.Secret) *apiv1.Secret {
+		}, func(in *core.Secret) *core.Secret {
 			if in.Data == nil {
 				in.Data = make(map[string][]byte)
 			}

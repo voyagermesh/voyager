@@ -16,7 +16,7 @@ import (
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/golang/glog"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -28,7 +28,7 @@ import (
 
 type Options struct {
 	CloudProvider  string
-	IngressRef     apiv1.ObjectReference
+	IngressRef     core.ObjectReference
 	MountPath      string
 	CmdFile        string
 	QPS            float32

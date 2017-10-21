@@ -1,7 +1,7 @@
 package operator
 
 import (
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -20,11 +20,11 @@ func (op *Operator) initNamespaceWatcher() cache.Controller {
 		},
 	}
 	_, informer := cache.NewInformer(lw,
-		&apiv1.Namespace{},
+		&core.Namespace{},
 		op.Opt.ResyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			DeleteFunc: func(obj interface{}) {
-				if ns, ok := obj.(*apiv1.Namespace); ok {
+				if ns, ok := obj.(*core.Namespace); ok {
 					if resources, err := op.VoyagerClient.Certificates(ns.Name).List(metav1.ListOptions{}); err == nil {
 						for _, resource := range resources.Items {
 							op.VoyagerClient.Certificates(resource.Namespace).Delete(resource.Name, &metav1.DeleteOptions{})

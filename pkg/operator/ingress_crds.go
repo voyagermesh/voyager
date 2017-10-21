@@ -11,7 +11,7 @@ import (
 	"github.com/appscode/voyager/pkg/ingress"
 	"github.com/appscode/voyager/pkg/monitor"
 	"github.com/google/go-cmp/cmp"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -46,7 +46,7 @@ func (op *Operator) initIngressCRDWatcher() cache.Controller {
 					if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
 						op.recorder.Eventf(
 							engress.ObjectReference(),
-							apiv1.EventTypeWarning,
+							core.EventTypeWarning,
 							eventer.EventReasonIngressInvalid,
 							"Reason: %s",
 							err.Error(),
@@ -82,7 +82,7 @@ func (op *Operator) initIngressCRDWatcher() cache.Controller {
 				if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
 					op.recorder.Eventf(
 						newEngress.ObjectReference(),
-						apiv1.EventTypeWarning,
+						core.EventTypeWarning,
 						eventer.EventReasonIngressInvalid,
 						"Reason: %s",
 						err.Error(),

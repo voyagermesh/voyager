@@ -9,7 +9,7 @@ import (
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/golang/glog"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -154,7 +154,7 @@ func (c *Controller) syncIngressCRD(key string) error {
 		if err != nil {
 			c.recorder.Event(
 				d.ObjectReference(),
-				apiv1.EventTypeWarning,
+				core.EventTypeWarning,
 				eventer.EventReasonIngressTLSMountFailed,
 				err.Error(),
 			)

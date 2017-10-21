@@ -6,7 +6,7 @@ import (
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/google/go-cmp/cmp"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -47,7 +47,7 @@ func (op *Operator) initIngresseWatcher() cache.Controller {
 					if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
 						op.recorder.Eventf(
 							engress.ObjectReference(),
-							apiv1.EventTypeWarning,
+							core.EventTypeWarning,
 							eventer.EventReasonIngressInvalid,
 							"Reason: %s",
 							err.Error(),
@@ -91,7 +91,7 @@ func (op *Operator) initIngresseWatcher() cache.Controller {
 				if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
 					op.recorder.Eventf(
 						newEngress.ObjectReference(),
-						apiv1.EventTypeWarning,
+						core.EventTypeWarning,
 						eventer.EventReasonIngressInvalid,
 						"Reason: %s",
 						err.Error(),

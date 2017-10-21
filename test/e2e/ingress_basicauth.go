@@ -9,7 +9,7 @@ import (
 	"github.com/appscode/voyager/test/test-server/testserverclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -18,7 +18,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 	var (
 		f           *framework.Invocation
 		ing         *api.Ingress
-		secret, sec *apiv1.Secret
+		secret, sec *core.Secret
 	)
 
 	BeforeEach(func() {
@@ -28,7 +28,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 	})
 
 	BeforeEach(func() {
-		secret = &apiv1.Secret{
+		secret = &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      f.Ingress.UniqueName(),
 				Namespace: ing.GetNamespace(),
@@ -255,7 +255,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 
 	Describe("CreateWithDifferentFrontendRules", func() {
 		BeforeEach(func() {
-			sec = &apiv1.Secret{
+			sec = &core.Secret{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      f.Ingress.UniqueName(),
 					Namespace: ing.GetNamespace(),
@@ -346,7 +346,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			var port80, port9090 apiv1.ServicePort
+			var port80, port9090 core.ServicePort
 			svc, err := f.Ingress.GetOffShootService(ing)
 			Expect(err).NotTo(HaveOccurred())
 			for _, p := range svc.Spec.Ports {
@@ -514,7 +514,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			var port80, port9090 apiv1.ServicePort
+			var port80, port9090 core.ServicePort
 			svc, err := f.Ingress.GetOffShootService(ing)
 			Expect(err).NotTo(HaveOccurred())
 			for _, p := range svc.Spec.Ports {
@@ -711,7 +711,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 				api.AuthSecret: secret.Name,
 			}
 
-			secret2 := &apiv1.Secret{
+			secret2 := &core.Secret{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      f.Ingress.UniqueName(),
 					Namespace: ing.GetNamespace(),
