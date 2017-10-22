@@ -20,7 +20,7 @@ import (
 	"log/syslog"
 	"os"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 var _ logrus.Formatter = (*syslogger)(nil)
