@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	ExporterSidecarTag       = "appscode/voyager:4.0.0-rc.18"
+	ExporterSidecarTag       = "appscode/voyager:5.0.0-rc.0"
 	TLSCertificateVolumeName = "voyager-certdir"
 	ErrorFilesVolumeName     = "voyager-errorfiles"
 	ErrorFilesLocation       = "/srv/voyager/errorfiles"
