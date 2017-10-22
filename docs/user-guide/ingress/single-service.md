@@ -17,7 +17,7 @@ spec:
 This will create a load balancer forwarding all traffic to `test-server` service, unconditionally. The
 loadbalancer ip can be found inside `Status` Field of the loadbalancer described response. **If there are other
 rules defined in Ingress then the loadbalancer will forward traffic to the `test-server` when no other `rule` is
-matched.
+matched.**
 
 **As Example:**
 

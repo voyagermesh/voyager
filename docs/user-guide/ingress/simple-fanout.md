@@ -35,6 +35,33 @@ The Ingress controller will provision an implementation specific loadbalancer th
 as long as the services (s1, s2) exist. When it has done so, you will see the address of the loadbalancer under
 the Status of Ingress.
 
+In Voyager, **the order of rules and paths is important** as Voyager will use them in the order provided by user, instead of automatically reordering them. So, to add a catch-all service for all other paths, you can add a `/` path to the end.
+```yaml
+apiVersion: voyager.appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: test-ingress
+  namespace: default
+spec:
+  rules:
+  - host: appscode.example.com
+    http:
+      paths:
+      - path: "/foo"
+        backend:
+          serviceName: s1
+          servicePort: '80'
+      - path: "/bar"
+        backend:
+          serviceName: s2
+          servicePort: '80'
+      - path: "/"
+        backend:
+          serviceName: catch-all
+          servicePort: '80'
+```
+
+
 ## Next Reading
 - [Virtual Hosting](named-virtual-hosting.md)
 - [URL and Header Rewriting](header-rewrite.md)
