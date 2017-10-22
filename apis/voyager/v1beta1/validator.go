@@ -10,13 +10,16 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 )
 
+// +k8s:openapi-gen=false
 type indices struct {
 	RuleIndex int
 	PathIndex int
 }
 
+// +k8s:openapi-gen=false
 type Paths map[string]indices
 
+// +k8s:openapi-gen=false
 type address struct {
 	Protocol       string // tcp, http
 	PodPort        int
