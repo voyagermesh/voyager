@@ -51,7 +51,7 @@ metadata:
   namespace: default
   annotations:
     ingress.appscode.com/type: NodePort
-    ingress.appscode.com/force-service-port: "true"
+    ingress.appscode.com/force-service-port: "false"
     ingress.appscode.com/stats: "true"
 spec:
   rules:
