@@ -17,10 +17,12 @@ const (
 	ServiceMonitorScrapeInterval = EngressKey + "/service-monitor-endpoint-scrape-interval" // scrape interval
 )
 
+// +k8s:openapi-gen=false
 type MonitorSpec struct {
 	Prometheus *PrometheusSpec `json:"prometheus,omitempty"`
 }
 
+// +k8s:openapi-gen=false
 type PrometheusSpec struct {
 	// Port number for the exporter side car.
 	Port int `json:"port,omitempty"`
