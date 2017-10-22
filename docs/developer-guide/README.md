@@ -201,5 +201,5 @@ spec:
 
 ```console
 # Create Third Party Resources
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/4.0.0-rc.18/apis/voyager/v1beta1/crds.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.0/apis/voyager/v1beta1/crds.yaml
 ```
