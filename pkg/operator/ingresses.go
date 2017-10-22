@@ -84,9 +84,19 @@ func (op *Operator) initIngresseWatcher() cache.Controller {
 				if changed, _ := oldEngress.HasChanged(*newEngress); !changed {
 					return
 				}
-				diff := cmp.Diff(oldEngress, newEngress, cmp.Comparer(func(x, y resource.Quantity) bool {
-					return x.Cmp(y) == 0
-				}))
+				diff := cmp.Diff(oldEngress, newEngress,
+					cmp.Comparer(func(x, y resource.Quantity) bool {
+						return x.Cmp(y) == 0
+					}),
+					cmp.Comparer(func(x, y *metav1.Time) bool {
+						if x == nil && y == nil {
+							return true
+						} else if x != nil && y != nil {
+							return x.Time.Equal(y.Time)
+						} else {
+							return false
+						}
+					}))
 				logger.Infof("%s %s@%s has changed. Diff: %s", newIngress.GroupVersionKind(), newIngress.Name, newIngress.Namespace, diff)
 				if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
 					op.recorder.Eventf(
