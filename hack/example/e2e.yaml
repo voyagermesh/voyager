@@ -50,13 +50,14 @@ metadata:
   name: test-ingress
   namespace: default
   annotations:
-    ingress.appscode.com/type: "Internal"
+    ingress.appscode.com/type: NodePort
+    ingress.appscode.com/force-service-port: "true"
     ingress.appscode.com/stats: "true"
 spec:
   rules:
-  - host: kiteci-com
-    tcp:
-      port: 6697
-      backend:
-        serviceName: test-server
-        servicePort: 80
+  - http:
+      paths:
+      - path: /
+        backend:
+          serviceName: test-server
+          servicePort: 80
