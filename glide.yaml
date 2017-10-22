@@ -42,6 +42,9 @@ import:
 - package: github.com/prometheus/client_golang
   version: v0.8.0
 - package: github.com/prometheus/common
+  version: 3233b24a36715a2fe36d162260457857a56d672d
+- package: github.com/sirupsen/logrus
+  version: v1.0.3
 - package: github.com/spf13/cobra
 - package: github.com/spf13/pflag
   version: v1.0.0

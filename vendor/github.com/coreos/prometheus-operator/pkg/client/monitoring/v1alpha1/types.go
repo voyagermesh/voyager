@@ -15,6 +15,7 @@
 package v1alpha1
 
 import (
+	"github.com/appscode/mergo"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -353,24 +354,55 @@ type NamespaceSelector struct {
 }
 
 func (obj *Prometheus) DeepCopyObject() runtime.Object {
-	return obj
+	if obj == nil {
+		return nil
+	}
+	out := new(Prometheus)
+	mergo.MergeWithOverwrite(out, obj)
+	return out
 }
 
 func (obj *PrometheusList) DeepCopyObject() runtime.Object {
-	return obj
+	if obj == nil {
+		return nil
+	}
+	out := new(PrometheusList)
+	mergo.MergeWithOverwrite(out, obj)
+	return out
 }
 
 func (obj *Alertmanager) DeepCopyObject() runtime.Object {
-	return obj
+	if obj == nil {
+		return nil
+	}
+	out := new(Alertmanager)
+	mergo.MergeWithOverwrite(out, obj)
+	return out
 }
 
 func (obj *AlertmanagerList) DeepCopyObject() runtime.Object {
-	return obj
+	if obj == nil {
+		return nil
+	}
+	out := new(AlertmanagerList)
+	mergo.MergeWithOverwrite(out, obj)
+	return out
 }
 
 func (obj *ServiceMonitor) DeepCopyObject() runtime.Object {
-	return obj
+	if obj == nil {
+		return nil
+	}
+	out := new(ServiceMonitor)
+	mergo.MergeWithOverwrite(out, obj)
+	return out
 }
+
 func (obj *ServiceMonitorList) DeepCopyObject() runtime.Object {
-	return obj
+	if obj == nil {
+		return nil
+	}
+	out := new(ServiceMonitorList)
+	mergo.MergeWithOverwrite(out, obj)
+	return out
 }
