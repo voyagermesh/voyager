@@ -13,7 +13,7 @@ import (
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
-	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
+	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	vault "github.com/hashicorp/vault/api"
 	core "k8s.io/api/core/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -35,7 +35,7 @@ type controller struct {
 	KubeClient      kubernetes.Interface
 	CRDClient       apiextensionsclient.Interface
 	VoyagerClient   acs.VoyagerV1beta1Interface
-	PromClient      pcm.MonitoringV1alpha1Interface
+	PromClient      pcm.MonitoringV1Interface
 	ServiceLister   core_listers.ServiceLister
 	EndpointsLister core_listers.EndpointsLister
 
@@ -58,7 +58,7 @@ func NewController(
 	kubeClient kubernetes.Interface,
 	crdClient apiextensionsclient.Interface,
 	extClient acs.VoyagerV1beta1Interface,
-	promClient pcm.MonitoringV1alpha1Interface,
+	promClient pcm.MonitoringV1Interface,
 	serviceLister core_listers.ServiceLister,
 	endpointsLister core_listers.EndpointsLister,
 	opt config.Options,

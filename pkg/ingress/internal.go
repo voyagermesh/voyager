@@ -15,7 +15,7 @@ import (
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/monitor"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
-	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
+	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	apps "k8s.io/api/apps/v1beta1"
 	core "k8s.io/api/core/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -37,7 +37,7 @@ func NewInternalController(
 	kubeClient kubernetes.Interface,
 	crdClient apiextensionsclient.Interface,
 	extClient acs.VoyagerV1beta1Interface,
-	promClient pcm.MonitoringV1alpha1Interface,
+	promClient pcm.MonitoringV1Interface,
 	serviceLister core_listers.ServiceLister,
 	endpointsLister core_listers.EndpointsLister,
 	opt config.Options,

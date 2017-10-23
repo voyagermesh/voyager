@@ -7,7 +7,7 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
+	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"

@@ -9,7 +9,7 @@ import (
 	tcs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
-	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
+	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -26,7 +26,7 @@ type Operator struct {
 	KubeClient      kubernetes.Interface
 	CRDClient       apiextensionsclient.Interface
 	VoyagerClient   tcs.VoyagerV1beta1Interface
-	PromClient      pcm.MonitoringV1alpha1Interface
+	PromClient      pcm.MonitoringV1Interface
 	ServiceLister   core.ServiceLister
 	EndpointsLister core.EndpointsLister
 	Opt             config.Options
@@ -39,7 +39,7 @@ func New(
 	kubeClient kubernetes.Interface,
 	crdClient apiextensionsclient.Interface,
 	extClient tcs.VoyagerV1beta1Interface,
-	promClient pcm.MonitoringV1alpha1Interface,
+	promClient pcm.MonitoringV1Interface,
 	opt config.Options,
 ) *Operator {
 	return &Operator{
