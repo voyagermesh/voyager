@@ -157,7 +157,8 @@ func (c *controller) ensureStatsService() error {
 	}
 	s.Labels = svc.Labels
 	s.Annotations = svc.Annotations
-	s.Spec = svc.Spec
+	s.Spec.Ports = svc.Spec.Ports
+	s.Spec.Selector = svc.Spec.Selector
 	c.logger.Infof("Updating Service %s/%s", s.Namespace, s.Name)
 	_, err = c.KubeClient.CoreV1().Services(s.Namespace).Update(s)
 	if err != nil {
