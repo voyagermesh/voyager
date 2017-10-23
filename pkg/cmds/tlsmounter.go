@@ -6,7 +6,7 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil"
-	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/tlsmounter"
 	"github.com/spf13/cobra"
 	core "k8s.io/api/core/v1"
@@ -66,7 +66,7 @@ func runTLSMounter() {
 
 	// creates the clientset
 	k8sClient := kubernetes.NewForConfigOrDie(config)
-	voyagerClient := acs.NewForConfigOrDie(config)
+	voyagerClient := cs.NewForConfigOrDie(config)
 
 	ctrl := tlsmounter.New(k8sClient, voyagerClient, opts)
 	if err := ctrl.Setup(); err != nil {

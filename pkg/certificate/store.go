@@ -10,7 +10,7 @@ import (
 
 	v1u "github.com/appscode/kutil/core/v1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	vu "github.com/appscode/voyager/client/typed/voyager/v1beta1/util"
 	vault "github.com/hashicorp/vault/api"
 	"github.com/xenolf/lego/acme"
@@ -22,11 +22,11 @@ import (
 
 type CertStore struct {
 	KubeClient    kubernetes.Interface
-	VoyagerClient acs.VoyagerV1beta1Interface
+	VoyagerClient cs.VoyagerV1beta1Interface
 	VaultClient   *vault.Client
 }
 
-func NewCertStore(kubeClient kubernetes.Interface, voyagerClient acs.VoyagerV1beta1Interface) (*CertStore, error) {
+func NewCertStore(kubeClient kubernetes.Interface, voyagerClient cs.VoyagerV1beta1Interface) (*CertStore, error) {
 	store := &CertStore{
 		KubeClient:    kubeClient,
 		VoyagerClient: voyagerClient,

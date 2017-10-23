@@ -4,8 +4,7 @@ import (
 	"sync"
 
 	"github.com/appscode/go/crypto/rand"
-	"github.com/appscode/voyager/client/internalclientset/typed/voyager/internalversion"
-	v1beta1client "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	. "github.com/onsi/gomega"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
@@ -20,15 +19,14 @@ const (
 )
 
 type Framework struct {
-	KubeConfig     *rest.Config
-	KubeClient     kubernetes.Interface
-	InternalClient internalversion.VoyagerInterface
-	V1beta1Client  v1beta1client.VoyagerV1beta1Interface
-	CRDClient      kext_cs.ApiextensionsV1beta1Interface
-	Config         E2EConfig
-	namespace      string
-	voyagerConfig  config.Options
-	Mutex          sync.Mutex
+	KubeConfig    *rest.Config
+	KubeClient    kubernetes.Interface
+	VoyagerClient cs.VoyagerV1beta1Interface
+	CRDClient     kext_cs.ApiextensionsV1beta1Interface
+	Config        E2EConfig
+	namespace     string
+	voyagerConfig config.Options
+	Mutex         sync.Mutex
 
 	CertManager *CertManager
 }
@@ -62,13 +60,12 @@ func New() *Framework {
 	Expect(err).NotTo(HaveOccurred())
 
 	return &Framework{
-		KubeConfig:     c,
-		KubeClient:     kubernetes.NewForConfigOrDie(c),
-		InternalClient: internalversion.NewForConfigOrDie(c),
-		V1beta1Client:  v1beta1client.NewForConfigOrDie(c),
-		CRDClient:      kext_cs.NewForConfigOrDie(c),
-		Config:         testConfigs,
-		namespace:      testConfigs.TestNamespace,
+		KubeConfig:    c,
+		KubeClient:    kubernetes.NewForConfigOrDie(c),
+		VoyagerClient: cs.NewForConfigOrDie(c),
+		CRDClient:     kext_cs.NewForConfigOrDie(c),
+		Config:        testConfigs,
+		namespace:     testConfigs.TestNamespace,
 		voyagerConfig: config.Options{
 			CloudProvider:     testConfigs.CloudProviderName,
 			HAProxyImage:      testConfigs.HAProxyImageName,

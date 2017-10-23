@@ -21,12 +21,12 @@ func (f *Framework) EventuallyCRD() GomegaAsyncAssertion {
 		}
 
 		// TPR group registration has 10 sec delay inside Kubernetes api server. So, needs the extra check.
-		_, err = f.V1beta1Client.Ingresses(core.NamespaceDefault).List(metav1.ListOptions{})
+		_, err = f.VoyagerClient.Ingresses(core.NamespaceDefault).List(metav1.ListOptions{})
 		if err != nil {
 			return err
 		}
 
-		_, err = f.V1beta1Client.Certificates(core.NamespaceDefault).List(metav1.ListOptions{})
+		_, err = f.VoyagerClient.Certificates(core.NamespaceDefault).List(metav1.ListOptions{})
 		if err != nil {
 			return err
 		}

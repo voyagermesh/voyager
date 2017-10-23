@@ -12,7 +12,7 @@ import (
 	ioutilz "github.com/appscode/go/ioutil"
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/golang/glog"
@@ -43,7 +43,7 @@ func (opts Options) UsesEngress() bool {
 
 type Controller struct {
 	k8sClient     kubernetes.Interface
-	VoyagerClient acs.VoyagerV1beta1Interface
+	VoyagerClient cs.VoyagerV1beta1Interface
 	options       Options
 	recorder      record.EventRecorder
 
@@ -68,7 +68,7 @@ type Controller struct {
 	cInformer cache.Controller
 }
 
-func New(client kubernetes.Interface, voyagerClient acs.VoyagerV1beta1Interface, opt Options) *Controller {
+func New(client kubernetes.Interface, voyagerClient cs.VoyagerV1beta1Interface, opt Options) *Controller {
 	return &Controller{
 		k8sClient:     client,
 		VoyagerClient: voyagerClient,

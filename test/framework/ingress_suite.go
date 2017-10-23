@@ -47,10 +47,10 @@ func (i *ingressInvocation) Teardown() {
 		}
 		i.KubeClient.CoreV1().ReplicationControllers(i.Namespace()).Delete(testServerResourceName, &metav1.DeleteOptions{})
 
-		list, err := i.V1beta1Client.Ingresses(metav1.NamespaceAll).List(metav1.ListOptions{})
+		list, err := i.VoyagerClient.Ingresses(metav1.NamespaceAll).List(metav1.ListOptions{})
 		if err == nil {
 			for _, ing := range list.Items {
-				i.V1beta1Client.Ingresses(ing.Namespace).Delete(ing.Name, &metav1.DeleteOptions{})
+				i.VoyagerClient.Ingresses(ing.Namespace).Delete(ing.Name, &metav1.DeleteOptions{})
 			}
 		}
 	}
@@ -65,7 +65,7 @@ func (i *ingressInvocation) TestServerHTTPSName() string {
 }
 
 func (i *ingressInvocation) Create(ing *api.Ingress) error {
-	_, err := i.V1beta1Client.Ingresses(i.Namespace()).Create(ing)
+	_, err := i.VoyagerClient.Ingresses(i.Namespace()).Create(ing)
 	if err != nil {
 		return err
 	}
@@ -91,16 +91,16 @@ func (i *ingressInvocation) printInfoForDebug(ing *api.Ingress) {
 }
 
 func (i *ingressInvocation) Get(ing *api.Ingress) (*api.Ingress, error) {
-	return i.V1beta1Client.Ingresses(i.Namespace()).Get(ing.Name, metav1.GetOptions{})
+	return i.VoyagerClient.Ingresses(i.Namespace()).Get(ing.Name, metav1.GetOptions{})
 }
 
 func (i *ingressInvocation) Update(ing *api.Ingress) error {
-	_, err := i.V1beta1Client.Ingresses(i.Namespace()).Update(ing)
+	_, err := i.VoyagerClient.Ingresses(i.Namespace()).Update(ing)
 	return err
 }
 
 func (i *ingressInvocation) Delete(ing *api.Ingress) error {
-	return i.V1beta1Client.Ingresses(i.Namespace()).Delete(ing.Name, &metav1.DeleteOptions{})
+	return i.VoyagerClient.Ingresses(i.Namespace()).Delete(ing.Name, &metav1.DeleteOptions{})
 }
 
 func (i *ingressInvocation) IsExistsEventually(ing *api.Ingress) bool {
