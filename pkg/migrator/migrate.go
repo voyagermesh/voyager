@@ -7,12 +7,12 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil"
-	api "github.com/appscode/voyager/apis/voyager"
-	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
+	"github.com/appscode/voyager/apis/voyager"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/hashicorp/go-version"
 	extensions "k8s.io/api/extensions/v1beta1"
-	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	kext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -26,17 +26,17 @@ type migrationState struct {
 }
 
 type migrator struct {
-	kubeClient       kubernetes.Interface
-	apiExtKubeClient apiextensionsclient.Interface
+	kubeClient kubernetes.Interface
+	crdClient  kext_cs.ApiextensionsV1beta1Interface
 
 	migrationState *migrationState
 }
 
-func NewMigrator(kubeClient kubernetes.Interface, apiExtKubeClient apiextensionsclient.Interface) *migrator {
+func NewMigrator(kubeClient kubernetes.Interface, apiExtKubeClient kext_cs.ApiextensionsV1beta1Interface) *migrator {
 	return &migrator{
-		migrationState:   &migrationState{},
-		kubeClient:       kubeClient,
-		apiExtKubeClient: apiExtKubeClient,
+		migrationState: &migrationState{},
+		kubeClient:     kubeClient,
+		crdClient:      apiExtKubeClient,
 	}
 }
 
@@ -55,7 +55,7 @@ func (m *migrator) isMigrationNeeded() (bool, error) {
 
 	if mv == 7 {
 		_, err := m.kubeClient.ExtensionsV1beta1().ThirdPartyResources().Get(
-			api.ResourceNameIngress+"."+api_v1beta1.SchemeGroupVersion.Group,
+			voyager.ResourceNameIngress+"."+api.SchemeGroupVersion.Group,
 			metav1.GetOptions{},
 		)
 		if err != nil {
@@ -67,7 +67,7 @@ func (m *migrator) isMigrationNeeded() (bool, error) {
 		}
 
 		_, err = m.kubeClient.ExtensionsV1beta1().ThirdPartyResources().Get(
-			api.ResourceNameCertificate+"."+api_v1beta1.SchemeGroupVersion.Group,
+			voyager.ResourceNameCertificate+"."+api.SchemeGroupVersion.Group,
 			metav1.GetOptions{},
 		)
 		if err != nil {
@@ -120,17 +120,17 @@ func (m *migrator) deleteTPRs() error {
 	tprClient := m.kubeClient.ExtensionsV1beta1().ThirdPartyResources()
 
 	deleteTPR := func(resourceName string) error {
-		name := resourceName + "." + api_v1beta1.SchemeGroupVersion.Group
+		name := resourceName + "." + api.SchemeGroupVersion.Group
 		if err := tprClient.Delete(name, &metav1.DeleteOptions{}); err != nil {
 			return fmt.Errorf("failed to remove %s TPR", name)
 		}
 		return nil
 	}
 
-	if err := deleteTPR(api.ResourceNameCertificate); err != nil {
+	if err := deleteTPR(voyager.ResourceNameCertificate); err != nil {
 		return err
 	}
-	if err := deleteTPR(api.ResourceNameIngress); err != nil {
+	if err := deleteTPR(voyager.ResourceNameIngress); err != nil {
 		return err
 	}
 
@@ -138,46 +138,46 @@ func (m *migrator) deleteTPRs() error {
 }
 
 func (m *migrator) createCRDs() error {
-	crds := []*apiextensions.CustomResourceDefinition{
+	crds := []*kext.CustomResourceDefinition{
 		{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:   api.ResourceTypeIngress + "." + api_v1beta1.SchemeGroupVersion.Group,
+				Name:   voyager.ResourceTypeIngress + "." + api.SchemeGroupVersion.Group,
 				Labels: map[string]string{"app": "voyager"},
 			},
-			Spec: apiextensions.CustomResourceDefinitionSpec{
-				Group:   api.GroupName,
-				Version: api_v1beta1.SchemeGroupVersion.Version,
-				Scope:   apiextensions.NamespaceScoped,
-				Names: apiextensions.CustomResourceDefinitionNames{
-					Singular:   api.ResourceNameIngress,
-					Plural:     api.ResourceTypeIngress,
-					Kind:       api.ResourceKindIngress,
+			Spec: kext.CustomResourceDefinitionSpec{
+				Group:   voyager.GroupName,
+				Version: api.SchemeGroupVersion.Version,
+				Scope:   kext.NamespaceScoped,
+				Names: kext.CustomResourceDefinitionNames{
+					Singular:   voyager.ResourceNameIngress,
+					Plural:     voyager.ResourceTypeIngress,
+					Kind:       voyager.ResourceKindIngress,
 					ShortNames: []string{"ing"},
 				},
 			},
 		},
 		{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:   api.ResourceTypeCertificate + "." + api_v1beta1.SchemeGroupVersion.Group,
+				Name:   voyager.ResourceTypeCertificate + "." + api.SchemeGroupVersion.Group,
 				Labels: map[string]string{"app": "voyager"},
 			},
-			Spec: apiextensions.CustomResourceDefinitionSpec{
-				Group:   api.GroupName,
-				Version: api_v1beta1.SchemeGroupVersion.Version,
-				Scope:   apiextensions.NamespaceScoped,
-				Names: apiextensions.CustomResourceDefinitionNames{
-					Singular:   api.ResourceNameCertificate,
-					Plural:     api.ResourceTypeCertificate,
-					Kind:       api.ResourceKindCertificate,
+			Spec: kext.CustomResourceDefinitionSpec{
+				Group:   voyager.GroupName,
+				Version: api.SchemeGroupVersion.Version,
+				Scope:   kext.NamespaceScoped,
+				Names: kext.CustomResourceDefinitionNames{
+					Singular:   voyager.ResourceNameCertificate,
+					Plural:     voyager.ResourceTypeCertificate,
+					Kind:       voyager.ResourceKindCertificate,
 					ShortNames: []string{"cert"},
 				},
 			},
 		},
 	}
 	for _, crd := range crds {
-		_, err := m.apiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get(crd.Name, metav1.GetOptions{})
+		_, err := m.crdClient.CustomResourceDefinitions().Get(crd.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
-			_, err = m.apiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd)
+			_, err = m.crdClient.CustomResourceDefinitions().Create(crd)
 			if err != nil {
 				return err
 			}
@@ -216,38 +216,36 @@ func (m *migrator) rollback() error {
 }
 
 func (m *migrator) deleteCRDs() error {
-	crdClient := m.apiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions()
-
 	deleteCRD := func(resourceType string) error {
-		name := resourceType + "." + api_v1beta1.SchemeGroupVersion.Group
-		err := crdClient.Delete(name, &metav1.DeleteOptions{})
+		name := resourceType + "." + api.SchemeGroupVersion.Group
+		err := m.crdClient.CustomResourceDefinitions().Delete(name, &metav1.DeleteOptions{})
 		if err != nil {
-			return fmt.Errorf(`Failed to delete CRD "%s""`, name)
+			return fmt.Errorf(`failed to delete CRD "%s""`, name)
 		}
 		return nil
 	}
 
-	if err := deleteCRD(api.ResourceTypeIngress); err != nil {
+	if err := deleteCRD(voyager.ResourceTypeIngress); err != nil {
 		return err
 	}
-	if err := deleteCRD(api.ResourceTypeCertificate); err != nil {
+	if err := deleteCRD(voyager.ResourceTypeCertificate); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (m *migrator) createTPRs() error {
-	if err := m.createTPR(api.ResourceNameIngress); err != nil {
+	if err := m.createTPR(voyager.ResourceNameIngress); err != nil {
 		return err
 	}
-	if err := m.createTPR(api.ResourceNameCertificate); err != nil {
+	if err := m.createTPR(voyager.ResourceNameCertificate); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (m *migrator) createTPR(resourceName string) error {
-	name := resourceName + "." + api_v1beta1.SchemeGroupVersion.Group
+	name := resourceName + "." + api.SchemeGroupVersion.Group
 	_, err := m.kubeClient.ExtensionsV1beta1().ThirdPartyResources().Get(name, metav1.GetOptions{})
 	if !kerr.IsNotFound(err) {
 		return err
@@ -266,7 +264,7 @@ func (m *migrator) createTPR(resourceName string) error {
 		},
 		Versions: []extensions.APIVersion{
 			{
-				Name: api_v1beta1.SchemeGroupVersion.Version,
+				Name: api.SchemeGroupVersion.Version,
 			},
 		},
 	}

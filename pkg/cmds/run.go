@@ -11,15 +11,15 @@ import (
 	"github.com/appscode/kutil"
 	"github.com/appscode/pat"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
-	haproxy "github.com/appscode/voyager/pkg/haproxy"
+	"github.com/appscode/voyager/pkg/haproxy"
 	"github.com/appscode/voyager/pkg/migrator"
 	"github.com/appscode/voyager/pkg/operator"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -28,7 +28,7 @@ var (
 	masterURL      string
 	kubeconfigPath string
 
-	opt config.Options = config.Options{
+	opt = config.Options{
 		HAProxyImage:      "appscode/haproxy:1.7.9-5.0.0-rc.0",
 		OperatorNamespace: kutil.Namespace(),
 		OperatorService:   "voyager-operator",
@@ -49,7 +49,7 @@ var (
 	haProxyTimeout            time.Duration = 5 * time.Second
 
 	kubeClient kubernetes.Interface
-	extClient  acs.VoyagerV1beta1Interface
+	extClient  cs.VoyagerV1beta1Interface
 )
 
 func NewCmdRun() *cobra.Command {
@@ -112,8 +112,8 @@ func runOperator() {
 	config.QPS = opts.QPS
 
 	kubeClient = kubernetes.NewForConfigOrDie(config)
-	crdClient := apiextensionsclient.NewForConfigOrDie(config)
-	extClient = acs.NewForConfigOrDie(config)
+	var crdClient kext_cs.ApiextensionsV1beta1Interface = kext_cs.NewForConfigOrDie(config)
+	extClient = cs.NewForConfigOrDie(config)
 	promClient, err := pcm.NewForConfig(config)
 	if err != nil {
 		log.Fatalln(err)

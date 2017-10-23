@@ -9,7 +9,7 @@ import (
 
 func (f *Framework) EventuallyCRD() GomegaAsyncAssertion {
 	return Eventually(func() error {
-		crdClient := f.CRDClient.ApiextensionsV1beta1().CustomResourceDefinitions()
+		crdClient := f.CRDClient.CustomResourceDefinitions()
 		_, err := crdClient.Get(vapi.ResourceTypeIngress+"."+vapi.GroupName, metav1.GetOptions{})
 		if err != nil {
 			return err
