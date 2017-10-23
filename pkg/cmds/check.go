@@ -7,7 +7,7 @@ import (
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/operator"
-	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
+	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"

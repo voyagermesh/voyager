@@ -1,5 +1,5 @@
 hash: 829ff5b20b60cec7459b72439c448c99b73cf849fe04dfd83f79a4f45906bd7c
-updated: 2017-10-22T12:13:16.961901467-07:00
+updated: 2017-10-23T13:58:38.988726555-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -96,7 +96,7 @@ imports:
   repo: https://github.com/appscode/prometheus-operator.git
   vcs: git
   subpackages:
-  - pkg/client/monitoring/v1alpha1
+  - pkg/client/monitoring/v1
 - name: github.com/cpuguy83/go-md2man
   version: 71acacd42f85e5e82f70a55327789582a5200a90
   subpackages:

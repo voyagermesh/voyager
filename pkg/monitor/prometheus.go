@@ -6,9 +6,7 @@ import (
 	"reflect"
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
-	_ "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
-	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
+	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -17,11 +15,11 @@ import (
 
 type PrometheusController struct {
 	kubeClient kubernetes.Interface
-	promClient v1alpha1.MonitoringV1alpha1Interface
+	promClient prom.MonitoringV1Interface
 	crdClient  apiextensionsclient.Interface
 }
 
-func NewPrometheusController(kubeClient kubernetes.Interface, crdClient apiextensionsclient.Interface, promClient v1alpha1.MonitoringV1alpha1Interface) Monitor {
+func NewPrometheusController(kubeClient kubernetes.Interface, crdClient apiextensionsclient.Interface, promClient prom.MonitoringV1Interface) Monitor {
 	return &PrometheusController{
 		kubeClient: kubeClient,
 		crdClient:  crdClient,
@@ -31,21 +29,21 @@ func NewPrometheusController(kubeClient kubernetes.Interface, crdClient apiexten
 
 func (c *PrometheusController) AddMonitor(r *api.Ingress, spec *api.MonitorSpec) error {
 	if !c.SupportsCoreOSOperator() {
-		return errors.New("Cluster does not support CoreOS Prometheus operator")
+		return errors.New("cluster does not support CoreOS Prometheus operator")
 	}
 	return c.ensureServiceMonitor(r, spec, spec)
 }
 
 func (c *PrometheusController) UpdateMonitor(r *api.Ingress, old, new *api.MonitorSpec) error {
 	if !c.SupportsCoreOSOperator() {
-		return errors.New("Cluster does not support CoreOS Prometheus operator")
+		return errors.New("cluster does not support CoreOS Prometheus operator")
 	}
 	return c.ensureServiceMonitor(r, old, new)
 }
 
 func (c *PrometheusController) DeleteMonitor(r *api.Ingress, spec *api.MonitorSpec) error {
 	if !c.SupportsCoreOSOperator() {
-		return errors.New("Cluster does not support CoreOS Prometheus operator")
+		return errors.New("cluster does not support CoreOS Prometheus operator")
 	}
 	if err := c.promClient.ServiceMonitors(spec.Prometheus.Namespace).Delete(getServiceMonitorName(r), nil); !kerr.IsNotFound(err) {
 		return err

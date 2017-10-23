@@ -16,7 +16,7 @@ import (
 	haproxy "github.com/appscode/voyager/pkg/haproxy"
 	"github.com/appscode/voyager/pkg/migrator"
 	"github.com/appscode/voyager/pkg/operator"
-	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
+	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
