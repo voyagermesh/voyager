@@ -11,7 +11,7 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/monitor"
@@ -19,7 +19,7 @@ import (
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	apps "k8s.io/api/apps/v1beta1"
 	core "k8s.io/api/core/v1"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -36,8 +36,8 @@ var _ Controller = &loadBalancerController{}
 func NewLoadBalancerController(
 	ctx context.Context,
 	kubeClient kubernetes.Interface,
-	crdClient apiextensionsclient.Interface,
-	extClient acs.VoyagerV1beta1Interface,
+	crdClient kext_cs.ApiextensionsV1beta1Interface,
+	extClient cs.VoyagerV1beta1Interface,
 	promClient pcm.MonitoringV1Interface,
 	serviceLister core_listers.ServiceLister,
 	endpointsLister core_listers.EndpointsLister,

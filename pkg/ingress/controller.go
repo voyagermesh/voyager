@@ -10,13 +10,13 @@ import (
 	"github.com/appscode/go/types"
 	v1u "github.com/appscode/kutil/core/v1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	vault "github.com/hashicorp/vault/api"
 	core "k8s.io/api/core/v1"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	core_listers "k8s.io/client-go/listers/core/v1"
@@ -33,8 +33,8 @@ type Controller interface {
 
 type controller struct {
 	KubeClient      kubernetes.Interface
-	CRDClient       apiextensionsclient.Interface
-	VoyagerClient   acs.VoyagerV1beta1Interface
+	CRDClient       kext_cs.ApiextensionsV1beta1Interface
+	VoyagerClient   cs.VoyagerV1beta1Interface
 	PromClient      pcm.MonitoringV1Interface
 	ServiceLister   core_listers.ServiceLister
 	EndpointsLister core_listers.EndpointsLister
@@ -56,8 +56,8 @@ type controller struct {
 func NewController(
 	ctx context.Context,
 	kubeClient kubernetes.Interface,
-	crdClient apiextensionsclient.Interface,
-	extClient acs.VoyagerV1beta1Interface,
+	crdClient kext_cs.ApiextensionsV1beta1Interface,
+	extClient cs.VoyagerV1beta1Interface,
 	promClient pcm.MonitoringV1Interface,
 	serviceLister core_listers.ServiceLister,
 	endpointsLister core_listers.EndpointsLister,

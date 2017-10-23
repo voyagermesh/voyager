@@ -5,12 +5,12 @@ import (
 	"io/ioutil"
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/operator"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -64,8 +64,8 @@ func NewCmdCheck() *cobra.Command {
 			}
 
 			kubeClient = kubernetes.NewForConfigOrDie(config)
-			extClient = acs.NewForConfigOrDie(config)
-			crdClient := apiextensionsclient.NewForConfigOrDie(config)
+			extClient = cs.NewForConfigOrDie(config)
+			crdClient := kext_cs.NewForConfigOrDie(config)
 			promClient, err := pcm.NewForConfig(config)
 			if err != nil {
 				return err

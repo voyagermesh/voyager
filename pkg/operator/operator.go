@@ -6,12 +6,12 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	tcs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
-	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	kext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"
@@ -24,8 +24,8 @@ import (
 
 type Operator struct {
 	KubeClient      kubernetes.Interface
-	CRDClient       apiextensionsclient.Interface
-	VoyagerClient   tcs.VoyagerV1beta1Interface
+	CRDClient       kext_cs.ApiextensionsV1beta1Interface
+	VoyagerClient   cs.VoyagerV1beta1Interface
 	PromClient      pcm.MonitoringV1Interface
 	ServiceLister   core.ServiceLister
 	EndpointsLister core.EndpointsLister
@@ -37,8 +37,8 @@ type Operator struct {
 
 func New(
 	kubeClient kubernetes.Interface,
-	crdClient apiextensionsclient.Interface,
-	extClient tcs.VoyagerV1beta1Interface,
+	crdClient kext_cs.ApiextensionsV1beta1Interface,
+	extClient cs.VoyagerV1beta1Interface,
 	promClient pcm.MonitoringV1Interface,
 	opt config.Options,
 ) *Operator {
@@ -63,14 +63,14 @@ func (op *Operator) Setup() error {
 }
 
 func (op *Operator) ensureCustomResourceDefinitions() error {
-	crds := []*apiextensions.CustomResourceDefinition{
+	crds := []*kext.CustomResourceDefinition{
 		api.Ingress{}.CustomResourceDefinition(),
 		api.Certificate{}.CustomResourceDefinition(),
 	}
 	for _, crd := range crds {
-		_, err := op.CRDClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get(crd.Name, metav1.GetOptions{})
+		_, err := op.CRDClient.CustomResourceDefinitions().Get(crd.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
-			_, err = op.CRDClient.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd)
+			_, err = op.CRDClient.CustomResourceDefinitions().Create(crd)
 			if err != nil {
 				return err
 			}

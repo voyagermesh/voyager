@@ -8,7 +8,7 @@ import (
 	v1beta1client "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	. "github.com/onsi/gomega"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -24,7 +24,7 @@ type Framework struct {
 	KubeClient     kubernetes.Interface
 	InternalClient internalversion.VoyagerInterface
 	V1beta1Client  v1beta1client.VoyagerV1beta1Interface
-	CRDClient      apiextensionsclient.Interface
+	CRDClient      kext_cs.ApiextensionsV1beta1Interface
 	Config         E2EConfig
 	namespace      string
 	voyagerConfig  config.Options
@@ -66,7 +66,7 @@ func New() *Framework {
 		KubeClient:     kubernetes.NewForConfigOrDie(c),
 		InternalClient: internalversion.NewForConfigOrDie(c),
 		V1beta1Client:  v1beta1client.NewForConfigOrDie(c),
-		CRDClient:      apiextensionsclient.NewForConfigOrDie(c),
+		CRDClient:      kext_cs.NewForConfigOrDie(c),
 		Config:         testConfigs,
 		namespace:      testConfigs.TestNamespace,
 		voyagerConfig: config.Options{

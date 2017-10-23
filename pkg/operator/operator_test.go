@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	clientset "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/stretchr/testify/assert"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
@@ -20,25 +20,20 @@ func TestEnsureCustomResourceDefinitions(t *testing.T) {
 		t.SkipNow()
 	}
 
-	crdClient, err := apiextensionsclient.NewForConfig(config)
+	crdClient, err := kext_cs.NewForConfig(config)
 	if err != nil {
 		t.SkipNow()
 	}
 
-	_, err = crdClient.Discovery().ServerVersion()
-	if err != nil {
-		t.Skip("No Server found, skipping")
-	}
-
 	op := Operator{CRDClient: crdClient, KubeClient: kubernetes.NewForConfigOrDie(config)}
 	if assert.Nil(t, op.ensureCustomResourceDefinitions()) {
-		rs, err := crdClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get("ingresses.voyager.appscode.com", v1.GetOptions{})
+		rs, err := crdClient.CustomResourceDefinitions().Get("ingresses.voyager.appscode.com", v1.GetOptions{})
 		if assert.Nil(t, err) {
 			assert.Equal(t, rs.Name, "ingresses.voyager.appscode.com")
 		}
 	}
 
-	voyagerClient := clientset.NewForConfigOrDie(config)
+	voyagerClient := cs.NewForConfigOrDie(config)
 	_, err = voyagerClient.Ingresses("default").Create(&api.Ingress{
 		ObjectMeta: v1.ObjectMeta{Name: "test-ingress", Namespace: "default"},
 		Spec: api.IngressSpec{Rules: []api.IngressRule{{IngressRuleValue: api.IngressRuleValue{
@@ -68,6 +63,6 @@ func TestEnsureCustomResourceDefinitions(t *testing.T) {
 		defer voyagerClient.Certificates("default").Delete("test-cert", &v1.DeleteOptions{})
 	}
 
-	crdClient.ApiextensionsV1beta1().CustomResourceDefinitions().Delete("ingresses.voyager.appscode.com", &v1.DeleteOptions{})
-	crdClient.ApiextensionsV1beta1().CustomResourceDefinitions().Delete("certificates.voyager.appscode.com", &v1.DeleteOptions{})
+	crdClient.CustomResourceDefinitions().Delete("ingresses.voyager.appscode.com", &v1.DeleteOptions{})
+	crdClient.CustomResourceDefinitions().Delete("certificates.voyager.appscode.com", &v1.DeleteOptions{})
 }
