@@ -1,0 +1,54 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: test-server
+  namespace: demo
+  labels:
+    app: test-server
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: test-server
+    spec:
+      containers:
+      - image: appscode/test-server:1.0
+        name: server
+        ports:
+        - containerPort: 8080
+          name: http-1
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: test-server
+  name: test-server
+  namespace: demo
+spec:
+  ports:
+  - name: http-1
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: test-server
+---
+apiVersion: voyager.appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: test-ingress
+  namespace: demo
+spec:
+  backend:
+    serviceName: test-server
+    servicePort: 80
+  rules:
+  - host: voyager.demo
+    http:
+      paths:
+      - backend:
+          serviceName: test-server
+          servicePort: 80
