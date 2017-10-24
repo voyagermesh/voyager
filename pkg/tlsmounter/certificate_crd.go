@@ -158,6 +158,8 @@ func (c *Controller) projectCertificate(r *api.Certificate, projections map[stri
 	if err != nil {
 		return err
 	}
-	projections["tls/"+r.SecretName()+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
+	if pemCrt != nil && pemKey != nil {
+		projections["tls/"+r.SecretName()+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
+	}
 	return nil
 }
