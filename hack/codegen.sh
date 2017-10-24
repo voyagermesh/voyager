@@ -9,7 +9,7 @@ DOCKER_REPO_ROOT="/go/src/$PACKAGE_NAME"
 
 pushd $REPO_ROOT
 
-## Generate ugorji stuff
+## Delete ugorji stuff
 rm "$REPO_ROOT"/apis/voyager/v1beta1/*.generated.go
 
 # Generate defaults
