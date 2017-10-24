@@ -82,11 +82,11 @@ func (op *Operator) initIngressCRDWatcher() cache.Controller {
 					cmp.Comparer(func(x, y *metav1.Time) bool {
 						if x == nil && y == nil {
 							return true
-						} else if x != nil && y != nil {
-							return x.Time.Equal(y.Time)
-						} else {
-							return false
 						}
+						if x != nil && y != nil {
+							return x.Time.Equal(y.Time)
+						}
+						return false
 					}))
 				logger.Infof("%s %s@%s has changed. Diff: %s", newEngress.APISchema(), newEngress.Name, newEngress.Namespace, diff)
 				if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
