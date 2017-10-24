@@ -100,8 +100,4 @@ docker run --rm -ti -u $(id -u):$(id -g) \
    --listers-package "$PACKAGE_NAME/listers" \
    --output-package "$PACKAGE_NAME/informers"
 
-#go-to-protobuf \
-#  --proto-import="${KUBE_ROOT}/vendor" \
-#  --proto-import="${KUBE_ROOT}/third_party/protobuf"
-
 popd
