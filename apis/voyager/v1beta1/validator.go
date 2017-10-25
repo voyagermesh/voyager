@@ -196,6 +196,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 		}
 	}
 
+	// If Ingress does not use any HTTP rule but defined a default backend, we need to open port 80
 	if !usesHTTPRule && r.Spec.Backend != nil {
 		addrs[80] = &address{Protocol: "http", PodPort: 80}
 	}

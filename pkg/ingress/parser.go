@@ -322,6 +322,7 @@ func (c *controller) generateConfig() error {
 
 	td.HTTPService = make([]*haproxy.HTTPService, 0)
 	td.TCPService = make([]*haproxy.TCPService, 0)
+	tp80 := false
 
 	type httpKey struct {
 		Port       int
@@ -395,6 +396,10 @@ func (c *controller) generateConfig() error {
 				httpServices[key] = httpPaths
 			}
 		} else if rule.TCP != nil {
+			if rule.TCP.Port.IntValue() == 80 {
+				tp80 = true // Port 80 used in TCP mode
+			}
+
 			bk, err := c.serviceEndpoints(dnsResolvers, userLists, rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort, rule.TCP.Backend.HostNames)
 			if err != nil {
 				return err
@@ -445,12 +450,12 @@ func (c *controller) generateConfig() error {
 		}
 	}
 
-	tp80 := false
 	for key := range httpServices {
 		value := httpServices[key]
 		if key.Port == 80 {
-			tp80 = true
+			tp80 = true // Port 80 used in HTTP mode
 		}
+
 		fr := getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, key.Port)
 		srv := &haproxy.HTTPService{
 			SharedInfo:    si,
@@ -493,12 +498,20 @@ func (c *controller) generateConfig() error {
 		}
 		td.HTTPService = append(td.HTTPService, srv)
 	}
+	// Port 80 is not used explicitly but port 443 is used (HTTP/TCP mode), so auto redirect from 80 -> 443
 	if !tp80 && c.Ingress.SSLRedirect() {
 		td.HTTPService = append(td.HTTPService, &haproxy.HTTPService{
 			SharedInfo:   si,
 			FrontendName: fmt.Sprintf("http-%d", 80),
 			Port:         80,
 		})
+	}
+
+	// Must be checked after `ssl-redirect` annotation is processed
+	if len(td.HTTPService) == 0 && // No HTTP rule used
+		!tp80 && // Port 80 is not used in either HTTP or TCP mode
+		td.DefaultBackend != nil { // Default backend is provided
+		td.DefaultFrontend = true
 	}
 
 	td.DNSResolvers = make([]*api.DNSResolver, 0, len(dnsResolvers))

@@ -13,6 +13,7 @@ type TemplateData struct {
 	OptionsDefaults map[string]bool
 	Stats           *StatsInfo
 	DNSResolvers    []*api.DNSResolver
+	DefaultFrontend bool
 	HTTPService     []*HTTPService
 	TCPService      []*TCPService
 	ErrorFiles      []*ErrorFile
