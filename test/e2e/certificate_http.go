@@ -54,11 +54,9 @@ var _ = Describe("CertificateWithHTTPProvider", func() {
 			ChallengeProvider: api.ChallengeProvider{
 				HTTP: &api.HTTPChallengeProvider{
 					Ingress: api.LocalTypedReference{
-						APIVersion:      ing.APISchema(),
-						Kind:            api.ResourceKindIngress,
-						Name:            ing.Name,
-						UID:             ing.UID,
-						ResourceVersion: ing.ResourceVersion,
+						APIVersion: ing.APISchema(),
+						Kind:       api.ResourceKindIngress,
+						Name:       ing.Name,
 					},
 				},
 			},

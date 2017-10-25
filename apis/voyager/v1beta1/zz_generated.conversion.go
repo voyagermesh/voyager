@@ -28,7 +28,6 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
-	types "k8s.io/apimachinery/pkg/types"
 )
 
 func init() {
@@ -791,9 +790,7 @@ func Convert_voyager_IngressTLS_To_v1beta1_IngressTLS(in *voyager.IngressTLS, ou
 func autoConvert_v1beta1_LocalTypedReference_To_voyager_LocalTypedReference(in *LocalTypedReference, out *voyager.LocalTypedReference, s conversion.Scope) error {
 	out.Kind = in.Kind
 	out.Name = in.Name
-	out.UID = types.UID(in.UID)
 	out.APIVersion = in.APIVersion
-	out.ResourceVersion = in.ResourceVersion
 	return nil
 }
 
@@ -805,9 +802,7 @@ func Convert_v1beta1_LocalTypedReference_To_voyager_LocalTypedReference(in *Loca
 func autoConvert_voyager_LocalTypedReference_To_v1beta1_LocalTypedReference(in *voyager.LocalTypedReference, out *LocalTypedReference, s conversion.Scope) error {
 	out.Kind = in.Kind
 	out.Name = in.Name
-	out.UID = types.UID(in.UID)
 	out.APIVersion = in.APIVersion
-	out.ResourceVersion = in.ResourceVersion
 	return nil
 }
 
