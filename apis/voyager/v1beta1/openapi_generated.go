@@ -1121,23 +1121,9 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
-						"uid": {
-							SchemaProps: spec.SchemaProps{
-								Description: "UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids",
-								Type:        []string{"string"},
-								Format:      "",
-							},
-						},
 						"apiVersion": {
 							SchemaProps: spec.SchemaProps{
 								Description: "API version of the referent.",
-								Type:        []string{"string"},
-								Format:      "",
-							},
-						},
-						"resourceVersion": {
-							SchemaProps: spec.SchemaProps{
-								Description: "Specific resourceVersion to which this reference is made, if any. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#concurrency-control-and-consistency",
 								Type:        []string{"string"},
 								Format:      "",
 							},
