@@ -60,7 +60,7 @@ rules:
 - apiGroups: [""]
   resources:
   - pods
-  verbs: ["list", "watch", "delete"]
+  verbs: ["list", "watch", "delete", "deletecollection"]
 - apiGroups: [""]
   resources:
   - nodes
