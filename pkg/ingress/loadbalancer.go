@@ -426,7 +426,7 @@ func (c *loadBalancerController) newService() *core.Service {
 		}
 	}
 
-	if c.Ingress.LBType() == api.LBTypeLoadBalancer && c.Ingress.KeepSourceIP() {
+	if c.Ingress.KeepSourceIP() {
 		switch c.Opt.CloudProvider {
 		case "gce", "gke", "azure", "acs":
 			// https://github.com/appscode/voyager/issues/276
