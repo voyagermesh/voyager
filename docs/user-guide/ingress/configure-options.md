@@ -18,7 +18,7 @@ metadata:
   name: test-ingress
   namespace: default
   annotations:
-    ingress.appscode.com/default-options: '{"http-keep-alive": "true", "dontlognull": "true", "clitcpka": "false"}'
+    ingress.appscode.com/default-option: '{"http-keep-alive": "true", "dontlognull": "true", "clitcpka": "false"}'
 spec:
   backend:
     serviceName: test-server
