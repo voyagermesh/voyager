@@ -13,7 +13,6 @@ import (
 )
 
 const (
-	ExporterSidecarTag       = "appscode/voyager:5.0.0-rc.2"
 	TLSCertificateVolumeName = "voyager-certdir"
 	ErrorFilesVolumeName     = "voyager-errorfiles"
 	ErrorFilesLocation       = "/srv/voyager/errorfiles"
@@ -96,7 +95,7 @@ func (c *controller) getExporterSidecar() (*core.Container, error) {
 				fmt.Sprintf("--address=:%d", monSpec.Prometheus.Port),
 				"--v=3",
 			},
-			Image:           ExporterSidecarTag,
+			Image:           c.Opt.ExporterSidecarImage,
 			ImagePullPolicy: core.PullIfNotPresent,
 			Ports: []core.ContainerPort{
 				{
