@@ -1,8 +1,27 @@
 ##
 ## Voyager chart configuration
 ##
-image: appscode/voyager
-imageTag: 5.0.0-rc.3
+operator:
+  image: appscode/voyager
+  imageTag: 5.0.0-rc.3
+## Docker image containing HAProxy binary
+haproxy:
+  image: appscode/haproxy
+  imageTag: 1.7.9-5.0.0-rc.3
+## Docker image containing Prometheus exporter
+exporter:
+  image: appscode/voyager
+  imageTag: 5.0.0-rc.3
+## Optionally specify an array of imagePullSecrets.
+## Secrets must be manually created in the namespace.
+## ref: https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod
+##
+# imagePullSecrets:
+#   - name: myRegistryKeySecretName
+## Specify a imagePullPolicy
+## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+##
+imagePullPolicy: IfNotPresent
 ## Use cloud provider here. Read details https://github.com/appscode/voyager/blob/master/docs/user-guide/README.md
 cloudProvider:
 ## The path to the cloud provider configuration file. Empty string for no configuration file.
