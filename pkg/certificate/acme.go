@@ -19,6 +19,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/dnsmadeeasy"
 	"github.com/xenolf/lego/providers/dns/dyn"
 	"github.com/xenolf/lego/providers/dns/gandi"
+	"github.com/xenolf/lego/providers/dns/godaddy"
 	"github.com/xenolf/lego/providers/dns/googlecloud"
 	"github.com/xenolf/lego/providers/dns/linode"
 	"github.com/xenolf/lego/providers/dns/namecheap"
@@ -155,6 +156,15 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 			return nil, fmt.Errorf("dns provider credential missing key %s", "GANDI_API_KEY")
 		}
 		return newDNSProvider(gandi.NewDNSProviderCredentials(apiKey))
+	case "godaddy":
+		var apiKey, apiSecret string
+		if apiKey, found = dnsLoader("GODADDY_API_KEY"); !found {
+			return nil, fmt.Errorf("dns provider credential missing key %s", "GODADDY_API_KEY")
+		}
+		if apiSecret, found = dnsLoader("GODADDY_API_SECRET"); !found {
+			return nil, fmt.Errorf("dns provider credential missing key %s", "GODADDY_API_SECRET")
+		}
+		return newDNSProvider(godaddy.NewDNSProviderCredentials(apiKey, apiSecret))
 	case "googlecloud", "google", "gce", "gke":
 		if (c.Opt.CloudProvider == "gce" || c.Opt.CloudProvider == "gke") && len(c.DNSCredentials) == 0 {
 			// ref: https://cloud.google.com/compute/docs/storing-retrieving-metadata
