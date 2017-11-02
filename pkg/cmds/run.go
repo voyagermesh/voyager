@@ -29,11 +29,12 @@ var (
 	kubeconfigPath string
 
 	opt = config.Options{
-		HAProxyImage:      "appscode/haproxy:1.7.9-5.0.0-rc.2",
-		OperatorNamespace: kutil.Namespace(),
-		OperatorService:   "voyager-operator",
-		EnableRBAC:        false,
-		ResyncPeriod:      5 * time.Minute,
+		HAProxyImage:         "appscode/haproxy:1.7.9-5.0.0-rc.2",
+		ExporterSidecarImage: "appscode/voyager:5.0.0-rc.2",
+		OperatorNamespace:    kutil.Namespace(),
+		OperatorService:      "voyager-operator",
+		EnableRBAC:           false,
+		ResyncPeriod:         5 * time.Minute,
 		// ref: https://github.com/kubernetes/ingress-nginx/blob/e4d53786e771cc6bdd55f180674b79f5b692e552/pkg/ingress/controller/launch.go#L252-L259
 		// High enough QPS to fit all expected use cases. QPS=0 is not set here, because client code is overriding it.
 		QPS: 1e6,
@@ -70,7 +71,8 @@ func NewCmdRun() *cobra.Command {
 
 	cmd.Flags().StringVarP(&opt.CloudProvider, "cloud-provider", "c", opt.CloudProvider, "Name of cloud provider")
 	cmd.Flags().StringVar(&opt.CloudConfigFile, "cloud-config", opt.CloudConfigFile, "The path to the cloud provider configuration file.  Empty string for no configuration file.")
-	cmd.Flags().StringVar(&opt.HAProxyImage, "haproxy-image", opt.HAProxyImage, "haproxy image name to be run")
+	cmd.Flags().StringVar(&opt.HAProxyImage, "haproxy-image", opt.HAProxyImage, "Docker image containing HAProxy binary")
+	cmd.Flags().StringVar(&opt.ExporterSidecarImage, "exporter-sidecar-image", opt.ExporterSidecarImage, "Docker image containing Prometheus exporter")
 	cmd.Flags().StringVar(&opt.IngressClass, "ingress-class", opt.IngressClass, "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
 	cmd.Flags().BoolVar(&opt.EnableRBAC, "rbac", opt.EnableRBAC, "Enable RBAC for operator & offshoot Kubernetes objects")
 	cmd.Flags().StringVar(&customTemplates, "custom-templates", customTemplates, "Glob pattern of custom HAProxy template files used to override built-in templates")

@@ -483,10 +483,11 @@ func (c *loadBalancerController) newPods() *apps.Deployment {
 					Labels: c.Ingress.OffshootLabels(),
 				},
 				Spec: core.PodSpec{
-					Affinity:      c.Ingress.Spec.Affinity,
-					SchedulerName: c.Ingress.Spec.SchedulerName,
-					Tolerations:   c.Ingress.Spec.Tolerations,
-					NodeSelector:  c.Ingress.NodeSelector(),
+					Affinity:         c.Ingress.Spec.Affinity,
+					SchedulerName:    c.Ingress.Spec.SchedulerName,
+					Tolerations:      c.Ingress.Spec.Tolerations,
+					NodeSelector:     c.Ingress.NodeSelector(),
+					ImagePullSecrets: c.Ingress.Spec.ImagePullSecrets,
 					Containers: []core.Container{
 						{
 							Name:  "haproxy",

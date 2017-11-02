@@ -9,7 +9,6 @@ import (
 type Options struct {
 	CloudProvider               string
 	CloudConfigFile             string
-	HAProxyImage                string
 	IngressClass                string
 	EnableRBAC                  bool
 	OperatorNamespace           string
@@ -18,6 +17,8 @@ type Options struct {
 	QPS                         float32
 	Burst                       int
 	ResyncPeriod                time.Duration
+	HAProxyImage                string
+	ExporterSidecarImage        string
 }
 
 func (opt Options) WatchNamespace() string {
