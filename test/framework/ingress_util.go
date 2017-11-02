@@ -590,7 +590,8 @@ func (i *ingressInvocation) SupportsServiceIP() bool {
 		i.Config.CloudProviderName == "gce" ||
 		i.Config.CloudProviderName == "gke" ||
 		i.Config.CloudProviderName == "azure" ||
-		i.Config.CloudProviderName == "acs"
+		i.Config.CloudProviderName == "acs" ||
+		i.Config.CloudProviderName == "openstack"
 }
 
 func (i *ingressInvocation) CreateResourceWithHostNames() (metav1.ObjectMeta, error) {
