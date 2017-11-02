@@ -22,7 +22,12 @@ spec:
       serviceAccountName: {{ if .Values.rbac.create }}{{ template "fullname" . }}{{ else }}"{{ .Values.rbac.serviceAccountName }}"{{ end }}
       containers:
       - name: operator
-        image: {{ .Values.image }}:{{ .Values.imageTag }}
+        image: {{ .Values.operator.image }}:{{ .Values.operator.imageTag }}
+        imagePullPolicy: {{ default "" .Values.imagePullPolicy | quote }}
+        {{- if .Values.imagePullSecrets }}
+        imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 8 }}
+        {{- end }}
         args:
         - run
         - --cloud-provider={{ .Values.cloudProvider }}
@@ -31,6 +36,8 @@ spec:
         - --rbac={{ .Values.rbac.create }}
         - --ingress-class={{ .Values.ingressClass }}
         - --operator-service={{ template "fullname" . }}
+        - --haproxy-image={{ .Values.haproxy.image }}:{{ .Values.haproxy.imageTag }}
+        - --exporter-sidecar-image={{ .Values.exporter.image }}:{{ .Values.exporter.imageTag }}
         ports:
         - containerPort: 56790
           name: ops
