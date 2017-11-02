@@ -436,7 +436,7 @@ func (c *loadBalancerController) newService() *core.Service {
 	}
 
 	switch c.Opt.CloudProvider {
-	case "gce", "gke", "azure", "acs":
+	case "gce", "gke", "azure", "acs", "openstack":
 		if ip := c.Ingress.LoadBalancerIP(); ip != nil {
 			svc.Spec.LoadBalancerIP = ip.String()
 		}

@@ -238,6 +238,7 @@ func (r Ingress) SupportsLBType(cloudProvider string) bool {
 			cloudProvider == "gke" ||
 			cloudProvider == "azure" ||
 			cloudProvider == "acs" ||
+			cloudProvider == "openstack" ||
 			cloudProvider == "minikube"
 	case LBTypeNodePort:
 		return cloudProvider != "acs"
