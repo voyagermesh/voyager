@@ -29,7 +29,7 @@ var (
 	kubeconfigPath string
 
 	opt = config.Options{
-		HAProxyImage:      "appscode/haproxy:1.7.9-5.0.0-rc.1",
+		HAProxyImage:      "appscode/haproxy:1.7.9-5.0.0-rc.2",
 		OperatorNamespace: kutil.Namespace(),
 		OperatorService:   "voyager-operator",
 		EnableRBAC:        false,
