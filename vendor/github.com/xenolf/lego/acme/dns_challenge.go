@@ -242,10 +242,6 @@ func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
 	labelIndexes := dns.Split(fqdn)
 	for _, index := range labelIndexes {
 		domain := fqdn[index:]
-		// Give up if we have reached the TLD
-		if isTLD(domain) {
-			break
-		}
 
 		in, err := dnsQuery(domain, dns.TypeSOA, nameservers, true)
 		if err != nil {
@@ -281,14 +277,6 @@ func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
 	}
 
 	return "", fmt.Errorf("Could not find the start of authority")
-}
-
-func isTLD(domain string) bool {
-	publicsuffix, _ := publicsuffix.PublicSuffix(UnFqdn(domain))
-	if publicsuffix == UnFqdn(domain) {
-		return true
-	}
-	return false
 }
 
 // ClearFqdnCache clears the cache of fqdn to zone mappings. Primarily used in testing.
