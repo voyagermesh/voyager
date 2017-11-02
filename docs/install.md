@@ -19,12 +19,12 @@ $ export CLOUD_CONFIG=<path>            # The path to the cloud provider configu
                                         # Voyager uses this to connect to cloud provider api.
 
 # Install without RBAC roles
-$ curl https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.2/hack/deploy/without-rbac.yaml \
+$ curl https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.3/hack/deploy/without-rbac.yaml \
     | envsubst \
     | kubectl apply -f -
 
 # Install with RBAC roles
-$ curl https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.2/hack/deploy/with-rbac.yaml \
+$ curl https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.3/hack/deploy/with-rbac.yaml \
     | envsubst \
     | kubectl apply -f -
 ```
@@ -100,12 +100,12 @@ $ POD_NAMESPACE=kube-system
 $ POD_NAME=$(kubectl get pods -n $POD_NAMESPACE -l app=voyager -o jsonpath={.items[0].metadata.name})
 $ kubectl exec -it $POD_NAME -n $POD_NAMESPACE voyager version
 
-Version = 5.0.0-rc.2
+Version = 5.0.0-rc.3
 VersionStrategy = tag
 Os = alpine
 Arch = amd64
 CommitHash = ab0b38d8f5d5b4b4508768a594a9d98f2c76abd8
 GitBranch = release-4.0
-GitTag = 5.0.0-rc.2
+GitTag = 5.0.0-rc.3
 CommitTimestamp = 2017-10-08T12:45:26
 ```
