@@ -60,3 +60,7 @@ spec:
       - key: "CriticalAddonsOnly"
         operator: "Exists"
 {{- end -}}
+{{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+{{- end -}}

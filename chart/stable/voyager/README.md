@@ -4,7 +4,7 @@
 ## TL;DR;
 
 ```console
-$ helm install chart/voyager
+$ helm install stable/voyager
 ```
 
 ## Introduction
@@ -19,7 +19,7 @@ This chart bootstraps an [ingress controller](https://github.com/appscode/voyage
 ## Installing the Chart
 To install the chart with the release name `my-release`:
 ```console
-$ helm install --name my-release chart/voyager
+$ helm install --name my-release stable/voyager
 ```
 The command deploys Voyager Controller on the Kubernetes cluster in the default configuration. The [configuration](#configuration) section lists the parameters that can be configured during installation.
 
@@ -56,6 +56,7 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `logLevel`                | Log level for operator                                        | `3`                |
 | `persistence.enabled`     | Enable mounting cloud config                                  | `false`            |
 | `persistence.hostPath`    | Host mount path for cloud config                              | `/etc/kubernetes`  |
+| `nodeSelector`            | Node labels for pod assignment                                | `{}`               |
 | `rbac.create`             | install required rbac service account, roles and rolebindings | `false`            |
 | `rbac.serviceAccountName` | ServiceAccount Voyager will use (ignored if rbac.create=true) | `default`          |
 | `ingressClass`            | Ingress class to watch for. If empty, it handles all ingress  | ``                 |
@@ -64,14 +65,14 @@ The following tables lists the configurable parameters of the Voyager chart and 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
 
 ```console
-$ helm install --name my-release --set image.tag=v0.2.1 chart/voyager
+$ helm install --name my-release --set image.tag=v0.2.1 stable/voyager
 ```
 
 Alternatively, a YAML file that specifies the values for the parameters can be provided while
 installing the chart. For example:
 
 ```console
-$ helm install --name my-release --values values.yaml chart/voyager
+$ helm install --name my-release --values values.yaml stable/voyager
 ```
 
 ## RBAC
@@ -92,5 +93,5 @@ If the output contains "beta", you may install the chart with RBAC enabled (see 
 To enable the creation of RBAC resources (On clusters with RBAC). Do the following:
 
 ```console
-$ helm install --name my-release chart/voyager --set rbac.create=true
+$ helm install --name my-release stable/voyager --set rbac.create=true
 ```
