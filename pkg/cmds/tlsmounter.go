@@ -63,6 +63,8 @@ func runTLSMounter() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	config.Burst = opts.Burst
+	config.QPS = opts.QPS
 
 	// creates the clientset
 	k8sClient := kubernetes.NewForConfigOrDie(config)
@@ -72,9 +74,6 @@ func runTLSMounter() {
 	if err := ctrl.Setup(); err != nil {
 		log.Fatalln(err)
 	}
-	config.Burst = opts.Burst
-	config.QPS = opts.QPS
-
 	if initOnly {
 		os.Exit(0)
 	}
