@@ -1,5 +1,5 @@
 hash: 829ff5b20b60cec7459b72439c448c99b73cf849fe04dfd83f79a4f45906bd7c
-updated: 2017-11-02T12:55:02.339549088-07:00
+updated: 2017-11-05T15:06:00.698551087-08:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -30,7 +30,7 @@ imports:
   - cmds
   - controller
 - name: github.com/appscode/kutil
-  version: f285e7ec40eabb87501872402235d38378ec5a02
+  version: f672d520d10c210f9fadf92d31fc179ad24ef96e
   subpackages:
   - core/v1
   - rbac/v1beta1
@@ -108,7 +108,7 @@ imports:
 - name: github.com/dgrijalva/jwt-go
   version: 01aeca54ebda6e0fbfafd0a524d234159c05ec20
 - name: github.com/dnsimple/dnsimple-go
-  version: f2d9b723cc9547d182e24ac2e527ae25d25fc93f
+  version: e7324cf9287d4b937bcb2a866db0cb09bdec9979
   subpackages:
   - dnsimple
 - name: github.com/docker/distribution
@@ -164,7 +164,7 @@ imports:
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
-  version: 7ffe1921f7d789634416694ae7145ebbc1ac82b2
+  version: 98232909528519e571b2e69fbe546b6ef35f5780
   subpackages:
   - cmp
   - cmp/internal/diff
