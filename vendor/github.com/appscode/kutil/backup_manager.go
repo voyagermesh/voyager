@@ -52,7 +52,7 @@ func (mgr BackupManager) snapshotPrefix(t time.Time) string {
 	return mgr.cluster + "-" + t.UTC().Format(timestampFormat)
 }
 
-func (mgr BackupManager) BackupToDir(backupDir string) error {
+func (mgr BackupManager) BackupToDir(backupDir string) (string, error) {
 	snapshotDir := mgr.snapshotPrefix(time.Now())
 	p := func(relPath string, data []byte) error {
 		absPath := filepath.Join(backupDir, snapshotDir, relPath)
@@ -63,21 +63,22 @@ func (mgr BackupManager) BackupToDir(backupDir string) error {
 		}
 		return ioutil.WriteFile(absPath, data, 0644)
 	}
-	return mgr.Backup(p)
+	return snapshotDir, mgr.Backup(p)
 }
 
-func (mgr BackupManager) BackupToTar(backupDir string) error {
+func (mgr BackupManager) BackupToTar(backupDir string) (string, error) {
 	err := os.MkdirAll(backupDir, 0777)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	t := time.Now()
 	prefix := mgr.snapshotPrefix(t)
 
-	file, err := os.Create(filepath.Join(backupDir, prefix+".tar.gz"))
+	fileName := filepath.Join(backupDir, prefix+".tar.gz")
+	file, err := os.Create(fileName)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer file.Close()
 	// set up the gzip writer
@@ -103,7 +104,7 @@ func (mgr BackupManager) BackupToTar(backupDir string) error {
 		}
 		return nil
 	}
-	return mgr.Backup(p)
+	return fileName, mgr.Backup(p)
 }
 
 func (mgr BackupManager) Backup(process processorFunc) error {
