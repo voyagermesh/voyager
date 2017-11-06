@@ -517,9 +517,10 @@ func (c *nodePortController) newService() *core.Service {
 			},
 		},
 		Spec: core.ServiceSpec{
-			Type:     core.ServiceTypeNodePort,
-			Ports:    []core.ServicePort{},
-			Selector: c.Ingress.OffshootLabels(),
+			Type:        core.ServiceTypeNodePort,
+			Ports:       []core.ServicePort{},
+			Selector:    c.Ingress.OffshootLabels(),
+			ExternalIPs: c.Ingress.Spec.ExternalIPs,
 			// https://github.com/kubernetes/kubernetes/issues/33586
 			// LoadBalancerSourceRanges: lbc.Config.Spec.LoadBalancerSourceRanges,
 		},

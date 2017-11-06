@@ -129,6 +129,10 @@ func (c *controller) serviceRequiresUpdate(current, desired *core.Service, old *
 		current.Spec.ExternalTrafficPolicy = desired.Spec.ExternalTrafficPolicy
 	}
 
+	if !sets.NewString(current.Spec.ExternalIPs...).Equal(sets.NewString(desired.Spec.ExternalIPs...)) {
+		needsUpdate = true
+		current.Spec.ExternalIPs = desired.Spec.ExternalIPs
+	}
 	return current, needsUpdate
 }
 

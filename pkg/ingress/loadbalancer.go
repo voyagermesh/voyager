@@ -405,6 +405,7 @@ func (c *loadBalancerController) newService() *core.Service {
 			Ports:                    []core.ServicePort{},
 			Selector:                 c.Ingress.OffshootLabels(),
 			LoadBalancerSourceRanges: c.Ingress.Spec.LoadBalancerSourceRanges,
+			ExternalIPs:              c.Ingress.Spec.ExternalIPs,
 		},
 	}
 	svc.ObjectMeta = c.ensureOwnerReference(svc.ObjectMeta)
