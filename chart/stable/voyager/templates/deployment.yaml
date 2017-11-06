@@ -23,7 +23,7 @@ spec:
       containers:
       - name: operator
         image: {{ .Values.operator.image }}:{{ .Values.operator.imageTag }}
-        imagePullPolicy: {{ default "" .Values.imagePullPolicy | quote }}
+        imagePullPolicy: {{ .Values.imagePullPolicy  }}
         {{- if .Values.imagePullSecrets }}
         imagePullSecrets:
 {{ toYaml .Values.imagePullSecrets | indent 8 }}
