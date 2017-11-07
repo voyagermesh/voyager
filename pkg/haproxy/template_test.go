@@ -416,22 +416,17 @@ func TestTemplateAuth(t *testing.T) {
 				{Name: "first", IP: "10.244.2.2", Port: "2324"},
 			},
 		},
-		BasicAuth: &BasicAuth{
-			Realm: "Required",
-			Users: map[string][]AuthUser{
-				"auth": {
-					{
-						Username:  "foo",
-						Password:  "#bar",
-						Encrypted: true,
-					},
-					{
-						Username:  "foo2",
-						Password:  "bar2",
-						Encrypted: false,
-					},
-				},
-				"auth2": {
+	}
+	testParsedConfig := TemplateData{
+		SharedInfo: si,
+		TimeoutDefaults: map[string]string{
+			"client": "2s",
+			"fin":    "1d",
+		},
+		UserLists: []UserList{
+			{
+				Name: "auth",
+				Users: []AuthUser{
 					{
 						Username:  "foo",
 						Password:  "#bar",
@@ -444,13 +439,21 @@ func TestTemplateAuth(t *testing.T) {
 					},
 				},
 			},
-		},
-	}
-	testParsedConfig := TemplateData{
-		SharedInfo: si,
-		TimeoutDefaults: map[string]string{
-			"client": "2s",
-			"fin":    "1d",
+			{
+				Name: "auth2",
+				Users: []AuthUser{
+					{
+						Username:  "foo",
+						Password:  "#bar",
+						Encrypted: true,
+					},
+					{
+						Username:  "foo2",
+						Password:  "bar2",
+						Encrypted: false,
+					},
+				},
+			},
 		},
 		HTTPService: []*HTTPService{
 			{
@@ -536,21 +539,8 @@ func TestTemplateServiceAuth(t *testing.T) {
 				{Name: "first", IP: "10.244.2.2", Port: "2324"},
 			},
 			BasicAuth: &BasicAuth{
-				Realm: "Required",
-				Users: map[string][]AuthUser{
-					"auth": {
-						{
-							Username:  "foo",
-							Password:  "#bar",
-							Encrypted: true,
-						},
-						{
-							Username:  "foo2",
-							Password:  "bar2",
-							Encrypted: false,
-						},
-					},
-				},
+				Realm:     "Required",
+				UserLists: []string{"auth"},
 			},
 		},
 	}
@@ -572,21 +562,8 @@ func TestTemplateServiceAuth(t *testing.T) {
 								{Name: "first", IP: "10.244.2.2", Port: "2324"},
 							},
 							BasicAuth: &BasicAuth{
-								Realm: "Required",
-								Users: map[string][]AuthUser{
-									"auth-2": {
-										{
-											Username:  "foo",
-											Password:  "#bar",
-											Encrypted: true,
-										},
-										{
-											Username:  "foo2",
-											Password:  "bar2",
-											Encrypted: false,
-										},
-									},
-								},
+								Realm:     "Required",
+								UserLists: []string{"auth2"},
 							},
 						},
 					},
