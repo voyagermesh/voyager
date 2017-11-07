@@ -83,6 +83,20 @@ const (
 	// Enforces the use of the PROXY protocol over any connection accepted by HAProxy.
 	AcceptProxy = EngressKey + "/" + "accept-proxy"
 
+	// Enforces use of the PROXY protocol over any connection established to this server.
+	SendProxy = EngressKey + "/" + "send-proxy"
+
+	// Enforces use of the PROXYv2 protocol over any connection established to this server.
+	SendProxyV2 = EngressKey + "/" + "send-proxy-v2"
+
+	// Enforces use of the PROXYv2 protocol over any connection established to this server,
+	// sending SSL Certificate information.
+	SendProxyV2SSL = EngressKey + "/" + "send-proxy-v2-ssl"
+
+	// Enforces use of the PROXYv2 protocol over any connection established to this server,
+	// sending SSL Certificate information and, if present, the client's certficate CN.
+	SendProxyV2SSLCN = EngressKey + "/" + "send-proxy-v2-ssl-cn"
+
 	// Annotations applied to resources offshoot from an ingress
 	OriginAPISchema = EngressKey + "/" + "origin-api-schema" // APISchema = {APIGroup}/{APIVersion}
 	OriginName      = EngressKey + "/" + "origin-name"
@@ -469,6 +483,26 @@ func (r Ingress) KeepSourceIP() bool {
 
 func (r Ingress) AcceptProxy() bool {
 	v, _ := GetBool(r.Annotations, AcceptProxy)
+	return v
+}
+
+func (r Ingress) SendProxy() bool {
+	v, _ := GetBool(r.Annotations, SendProxy)
+	return v
+}
+
+func (r Ingress) SendProxyV2() bool {
+	v, _ := GetBool(r.Annotations, SendProxyV2)
+	return v
+}
+
+func (r Ingress) SendProxyV2SSL() bool {
+	v, _ := GetBool(r.Annotations, SendProxyV2SSL)
+	return v
+}
+
+func (r Ingress) SendProxyV2SSLCN() bool {
+	v, _ := GetBool(r.Annotations, SendProxyV2SSLCN)
 	return v
 }
 

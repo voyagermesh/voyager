@@ -40,6 +40,10 @@ type SharedInfo struct {
 	MaxConnections        int
 	ForceMatchServicePort bool
 	Limit                 *Limit
+	SendProxy             bool
+	SendProxyV2           bool
+	SendProxyV2SSL        bool
+	SendProxyV2SSLCN      bool
 	SSLRedirect           bool
 }
 
