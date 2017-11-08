@@ -235,6 +235,11 @@ const (
 	// http://cbonte.github.io/haproxy-dconv/1.8/configuration.html#7.3.3-src_conn_cur
 	// https://www.haproxy.com/blog/use-a-load-balancer-as-a-first-row-of-defense-against-ddos/
 	LimitConnection = IngressKey + "/limit-connection"
+
+	// https://github.com/appscode/voyager/issues/683
+	// https://www.haproxy.com/documentation/aloha/7-0/haproxy/healthchecks/
+	CheckHealth     = EngressKey + "/" + "check"
+	CheckHealthPort = EngressKey + "/" + "check-port"
 )
 
 const (
