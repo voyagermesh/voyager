@@ -60,7 +60,7 @@ Voyager can be installed via [Helm](https://helm.sh/) using the [chart](/chart/s
 $ helm repo update
 $ helm install stable/voyager --name my-release
 ```
-To see the detailed configuration options, visit [here](/chart/voyager/README.md).
+To see the detailed configuration options, visit [here](/chart/stable/voyager/README.md).
 
 
 ## Verify installation
