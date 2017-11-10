@@ -2,11 +2,60 @@ package testserverclient
 
 import (
 	"fmt"
+	"net"
 	"testing"
+
+	"github.com/pires/go-proxyproto"
 )
 
-func TestTCPService(t *testing.T) {
-	resp, err := NewTestTCPClient("35.184.243.145:4545").DoWithRetry(5)
+const (
+	NO_PROTOCOL = "There is no spoon"
+	IP4_ADDR    = "127.0.0.1"
+	IP6_ADDR    = "::1"
+	PORT        = 65533
+)
+
+var (
+	v4addr = net.ParseIP(IP4_ADDR).To4()
+	v6addr = net.ParseIP(IP6_ADDR).To16()
+)
+
+func TestTCPServer(t *testing.T) {
+	resp, err := NewTestTCPClient("127.0.0.1:4545").DoWithRetry(5)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(*resp)
+}
+
+func TestProxyV1Server(t *testing.T) {
+	resp, err := NewTestTCPClient("127.0.0.1:4343").
+		WithProxyHeader(&proxyproto.Header{
+		Version:            1,
+		Command:            proxyproto.PROXY,
+		TransportProtocol:  proxyproto.TCPv4,
+		SourceAddress:      v4addr,
+		DestinationAddress: v4addr,
+		SourcePort:         PORT,
+		DestinationPort:    PORT,
+	}).DoWithRetry(5)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(*resp)
+}
+
+func TestProxyV2Server(t *testing.T) {
+	resp, err := NewTestTCPClient("127.0.0.1:4343").
+		WithProxyHeader(&proxyproto.Header{
+		Version:            2,
+		Command:            proxyproto.PROXY,
+		TransportProtocol:  proxyproto.TCPv4,
+		SourceAddress:      v4addr,
+		DestinationAddress: v4addr,
+		SourcePort:         PORT,
+		DestinationPort:    PORT,
+	}).DoWithRetry(5)
 	if err != nil {
 		fmt.Println(err)
 	}

@@ -13,7 +13,7 @@ import (
 	"syscall"
 	"time"
 
-	pp "github.com/pires/go-proxyproto"
+	"github.com/pires/go-proxyproto"
 )
 
 type Response struct {
@@ -105,7 +105,7 @@ func (h ProxyAwareHandler) ServeTCP(con net.Conn) {
 	if _, err := con.Read(b); err != nil {
 		fmt.Println(err)
 	}
-	header, err := pp.Read(bufio.NewReader(bytes.NewReader(b)))
+	header, err := proxyproto.Read(bufio.NewReader(bytes.NewReader(b)))
 	if err != nil {
 		fmt.Println(err)
 	}
