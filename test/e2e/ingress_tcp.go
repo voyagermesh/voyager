@@ -5,7 +5,7 @@ import (
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
-	"github.com/appscode/voyager/test/test-server/testserverclient"
+	"github.com/appscode/voyager/test/test-server/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	core "k8s.io/api/core/v1"
@@ -141,17 +141,17 @@ var _ = Describe("IngressTCP", func() {
 				}
 			}
 
-			err = f.Ingress.DoTCP(framework.MaxRetry, ing, f.Ingress.FilterEndpointsForPort(eps, tcpNoSSL), func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoTCP(framework.MaxRetry, ing, f.Ingress.FilterEndpointsForPort(eps, tcpNoSSL), func(r *client.Response) bool {
 				return Expect(r.ServerPort).Should(Equal(":4343"))
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = f.Ingress.DoTCP(framework.MaxRetry, ing, f.Ingress.FilterEndpointsForPort(eps, tcpWithNoSSL), func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoTCP(framework.MaxRetry, ing, f.Ingress.FilterEndpointsForPort(eps, tcpWithNoSSL), func(r *client.Response) bool {
 				return Expect(r.ServerPort).Should(Equal(":4545"))
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = f.Ingress.DoTCPWithSSL(framework.MaxRetry, "", ing, f.Ingress.FilterEndpointsForPort(eps, tcpSSL), func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoTCPWithSSL(framework.MaxRetry, "", ing, f.Ingress.FilterEndpointsForPort(eps, tcpSSL), func(r *client.Response) bool {
 				return Expect(r.ServerPort).Should(Equal(":4545"))
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -229,17 +229,17 @@ var _ = Describe("IngressTCP", func() {
 			Expect(len(svc.Spec.Ports)).Should(Equal(1))
 			Expect(svc.Spec.Ports[0].Port).To(Equal(int32(4001)))
 
-			err = f.Ingress.DoTCP(framework.MaxRetry, ing, eps, func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoTCP(framework.MaxRetry, ing, eps, func(r *client.Response) bool {
 				return Expect(r.ServerPort).Should(Equal(":4343"))
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = f.Ingress.DoTCP(framework.MaxRetry, ing, eps, func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoTCP(framework.MaxRetry, ing, eps, func(r *client.Response) bool {
 				return Expect(r.ServerPort).Should(Equal(":4343"))
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = f.Ingress.DoTCP(1, ing, eps, func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoTCP(1, ing, eps, func(r *client.Response) bool {
 				return false
 			})
 			Expect(err).To(HaveOccurred())
@@ -247,7 +247,7 @@ var _ = Describe("IngressTCP", func() {
 			// Wait for the rates to be reset
 			time.Sleep(time.Minute * 2)
 
-			err = f.Ingress.DoTCP(framework.MaxRetry, ing, eps, func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoTCP(framework.MaxRetry, ing, eps, func(r *client.Response) bool {
 				return Expect(r.ServerPort).Should(Equal(":4343"))
 			})
 			Expect(err).NotTo(HaveOccurred())

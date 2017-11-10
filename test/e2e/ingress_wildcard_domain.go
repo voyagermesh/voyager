@@ -8,7 +8,7 @@ import (
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
-	"github.com/appscode/voyager/test/test-server/testserverclient"
+	"github.com/appscode/voyager/test/test-server/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	core "k8s.io/api/core/v1"
@@ -75,7 +75,7 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTP(framework.MaxRetry, "test-1.appscode.test", ing, eps, "GET", "/testpath", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "test-1.appscode.test", ing, eps, "GET", "/testpath", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath")) &&
@@ -83,7 +83,7 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = f.Ingress.DoHTTP(framework.MaxRetry, "test-2.appscode.test", ing, eps, "GET", "/testpath", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "test-2.appscode.test", ing, eps, "GET", "/testpath", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath")) &&
@@ -91,7 +91,7 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = f.Ingress.DoHTTP(framework.MaxRetry, "anything.appscode.test", ing, eps, "GET", "/testpath", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "anything.appscode.test", ing, eps, "GET", "/testpath", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath")) &&
@@ -99,7 +99,7 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = f.Ingress.DoHTTP(framework.MaxRetry, "everything.anything.appscode.test", ing, eps, "GET", "/testpath", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "everything.anything.appscode.test", ing, eps, "GET", "/testpath", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath")) &&
@@ -108,12 +108,12 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// Fail
-			err = f.Ingress.DoHTTPStatus(framework.NoRetry, ing, eps, "GET", "/testpath", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTPStatus(framework.NoRetry, ing, eps, "GET", "/testpath", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusServiceUnavailable))
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = f.Ingress.DoHTTPStatusWithHost(framework.NoRetry, "appscode.com", ing, eps, "GET", "/testpath", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTPStatusWithHost(framework.NoRetry, "appscode.com", ing, eps, "GET", "/testpath", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusServiceUnavailable))
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -212,7 +212,7 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 				Skip("Domain 'http.appscode.test' did not point to endpoints")
 			}
 
-			err = f.Ingress.DoHTTPs(framework.MaxRetry, "http.appscode.test", "", ing, []string{"https://http.appscode.test"}, "GET", "/testpath", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTPs(framework.MaxRetry, "http.appscode.test", "", ing, []string{"https://http.appscode.test"}, "GET", "/testpath", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath")) &&
@@ -221,12 +221,12 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// Fail
-			err = f.Ingress.DoHTTPsStatus(framework.NoRetry, "", ing, eps, "GET", "/testpath", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTPsStatus(framework.NoRetry, "", ing, eps, "GET", "/testpath", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusServiceUnavailable))
 			})
 			Expect(err).To(HaveOccurred())
 
-			err = f.Ingress.DoHTTPsStatus(framework.NoRetry, "appscode.com", ing, eps, "GET", "/testpath", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTPsStatus(framework.NoRetry, "appscode.com", ing, eps, "GET", "/testpath", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusServiceUnavailable))
 			})
 			Expect(err).To(HaveOccurred())

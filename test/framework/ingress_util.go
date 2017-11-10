@@ -244,6 +244,10 @@ func (i *ingressInvocation) testServerPodSpec() core.PodSpec {
 						Name:          "tcp-3",
 						ContainerPort: 5656,
 					},
+					{
+						Name:          "proxy",
+						ContainerPort: 6767,
+					},
 				},
 			},
 		},
@@ -286,6 +290,12 @@ func (i *ingressInvocation) testServerServicePorts() []core.ServicePort {
 			Name:       "tcp-3",
 			Port:       5656,
 			TargetPort: intstr.FromInt(5656),
+			Protocol:   "TCP",
+		},
+		{
+			Name:       "proxy",
+			Port:       6767,
+			TargetPort: intstr.FromInt(6767),
 			Protocol:   "TCP",
 		},
 	}

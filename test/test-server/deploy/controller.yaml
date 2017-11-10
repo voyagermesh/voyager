@@ -34,3 +34,5 @@ spec:
               containerPort: 4545
             - name: tcp-3
               containerPort: 5656
+            - name: proxy
+              containerPort: 6767

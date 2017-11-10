@@ -7,7 +7,7 @@ import (
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
-	"github.com/appscode/voyager/test/test-server/testserverclient"
+	"github.com/appscode/voyager/test/test-server/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -97,7 +97,7 @@ var _ = Describe("IngressWithHostName", func() {
 
 			var dep1Counter, dep2Counter int
 			for i := 1; i <= 100; i++ {
-				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath", func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath", func(r *client.Response) bool {
 					if strings.HasPrefix(r.PodName, "dep-1-"+meta.Name) {
 						dep1Counter++
 					} else if strings.HasPrefix(r.PodName, "dep-2-"+meta.Name) {

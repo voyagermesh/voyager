@@ -1,4 +1,4 @@
-package testserverclient
+package client
 
 import (
 	"encoding/json"

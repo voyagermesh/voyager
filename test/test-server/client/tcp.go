@@ -1,4 +1,4 @@
-package testserverclient
+package client
 
 import (
 	"crypto/tls"
@@ -7,12 +7,15 @@ import (
 	"net"
 	"strings"
 	"time"
+
+	"github.com/pires/go-proxyproto"
 )
 
 type tcpClient struct {
-	url  string
-	ssl  bool
-	cert string
+	url    string
+	ssl    bool
+	cert   string
+	header *proxyproto.Header
 }
 
 func NewTestTCPClient(url string) *tcpClient {
@@ -24,6 +27,11 @@ func NewTestTCPClient(url string) *tcpClient {
 	return &tcpClient{
 		url: url,
 	}
+}
+
+func (t *tcpClient) WithProxyHeader(header *proxyproto.Header) *tcpClient {
+	t.header = header
+	return t
 }
 
 func (t *tcpClient) WithSSL(cert string) *tcpClient {
@@ -63,10 +71,13 @@ func (t *tcpClient) do() (*Response, error) {
 		conn = tls.Client(conn, config)
 	}
 
-	resp := &Response{}
-	err = json.NewDecoder(conn).Decode(resp)
+	if t.header != nil {
+		t.header.WriteTo(conn)
+	}
+	req := &Response{}
+	err = json.NewDecoder(conn).Decode(req)
 	if err != nil {
 		return nil, err
 	}
-	return resp, nil
+	return req, nil
 }

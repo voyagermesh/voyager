@@ -6,7 +6,7 @@ import (
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
-	"github.com/appscode/voyager/test/test-server/testserverclient"
+	"github.com/appscode/voyager/test/test-server/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	core "k8s.io/api/core/v1"
@@ -95,14 +95,14 @@ var _ = Describe("IngressTLS", func() {
 				}
 			}
 
-			err = f.Ingress.DoHTTPsTestRedirect(framework.MaxRetry, "http.appscode.test", ing, f.Ingress.FilterEndpointsForPort(eps, httpPort), "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTPsTestRedirect(framework.MaxRetry, "http.appscode.test", ing, f.Ingress.FilterEndpointsForPort(eps, httpPort), "GET", "/testpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(301)) &&
 					Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
 					Expect(r.ResponseHeader.Get("Location")).Should(Equal("https://http.appscode.test/testpath/ok"))
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = f.Ingress.DoHTTPs(framework.MaxRetry, "http.appscode.test", "", ing, f.Ingress.FilterEndpointsForPort(eps, httpsPort), "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTPs(framework.MaxRetry, "http.appscode.test", "", ing, f.Ingress.FilterEndpointsForPort(eps, httpsPort), "GET", "/testpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok")) &&
@@ -155,7 +155,7 @@ var _ = Describe("IngressTLS", func() {
 			Expect(len(svc.Spec.Ports)).Should(Equal(1))
 			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(443)))
 
-			err = f.Ingress.DoHTTPs(framework.MaxRetry, "http.appscode.test", "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTPs(framework.MaxRetry, "http.appscode.test", "", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok")) &&
@@ -326,7 +326,7 @@ var _ = Describe("IngressTLS", func() {
 			Expect(len(svc.Spec.Ports)).Should(Equal(1))
 			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(443)))
 
-			err = f.Ingress.DoHTTP(framework.MaxRetry, "443-with-out-ssl.test.com", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "443-with-out-ssl.test.com", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok")) &&
@@ -380,7 +380,7 @@ var _ = Describe("IngressTLS", func() {
 			Expect(len(svc.Spec.Ports)).Should(Equal(1))
 			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(443)))
 
-			err = f.Ingress.DoHTTP(framework.MaxRetry, "http.appscode.test", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "http.appscode.test", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok")) &&
@@ -435,7 +435,7 @@ var _ = Describe("IngressTLS", func() {
 			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(443)))
 
 			err = f.Ingress.DoHTTPs(framework.MaxRetry, "http.appscode.test", "", ing, eps, "GET", "/testpath/ok",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath/ok")) &&
@@ -491,7 +491,7 @@ var _ = Describe("IngressTLS", func() {
 			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(443)))
 
 			err = f.Ingress.DoHTTPs(framework.MaxRetry, "http.appscode.test", "", ing, eps, "GET", "/testpath/ok",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath/ok")) &&
@@ -516,7 +516,7 @@ var _ = Describe("IngressTLS", func() {
 			httpsAddr := strings.Replace(eps[0], "http", "https", 1) + "/testpath/ok"
 
 			err = f.Ingress.DoHTTPTestRedirect(framework.NoRetry, ing, eps, "GET", "/testpath/ok",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(301)) &&
 						Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
 						Expect(r.ResponseHeader.Get("Location")).Should(Equal(httpsAddr))
@@ -527,7 +527,7 @@ var _ = Describe("IngressTLS", func() {
 				map[string]string{
 					"X-Forwarded-Proto": "http",
 				},
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(301)) &&
 						Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
 						Expect(r.ResponseHeader.Get("Location")).Should(Equal(httpsAddr))
@@ -539,7 +539,7 @@ var _ = Describe("IngressTLS", func() {
 				map[string]string{
 					"X-Forwarded-Proto": "https",
 				},
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(200)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath/ok"))

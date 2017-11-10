@@ -3,7 +3,7 @@ package e2e
 import (
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
-	"github.com/appscode/voyager/test/test-server/testserverclient"
+	"github.com/appscode/voyager/test/test-server/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	core "k8s.io/api/core/v1"
@@ -214,34 +214,34 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
 			By("Calling /test-no-dns")
-			err = f.Ingress.DoHTTPTestRedirect(framework.MaxRetry, ing, eps, "GET", "/test-no-dns", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTPTestRedirect(framework.MaxRetry, ing, eps, "GET", "/test-no-dns", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(301)) &&
 					Expect(r.ResponseHeader.Get("Location")).Should(Equal("http://google.com:80"))
 			})
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Calling /test-no-backend-redirect")
-			err = f.Ingress.DoHTTPTestRedirect(framework.MaxRetry, ing, eps, "GET", "/test-no-backend-redirect", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTPTestRedirect(framework.MaxRetry, ing, eps, "GET", "/test-no-backend-redirect", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(301)) &&
 					Expect(r.ResponseHeader.Get("Location")).Should(Equal("http://google.com:80"))
 			})
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Calling /test-no-backend-rule-redirect")
-			err = f.Ingress.DoHTTPTestRedirect(framework.MaxRetry, ing, eps, "GET", "/test-no-backend-rule-redirect", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTPTestRedirect(framework.MaxRetry, ing, eps, "GET", "/test-no-backend-rule-redirect", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(302)) &&
 					Expect(r.ResponseHeader.Get("Location")).Should(Equal("https://google.com"))
 			})
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Calling /test-dns")
-			err = f.Ingress.DoHTTPStatus(framework.MaxRetry, ing, eps, "GET", "/test-dns", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTPStatus(framework.MaxRetry, ing, eps, "GET", "/test-dns", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(404))
 			})
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Calling /default")
-			err = f.Ingress.DoHTTPTestRedirect(framework.MaxRetry, ing, eps, "GET", "/default", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTPTestRedirect(framework.MaxRetry, ing, eps, "GET", "/default", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(301)) &&
 					Expect(r.ResponseHeader.Get("Location")).Should(Equal("http://google.com:80"))
 			})
@@ -255,7 +255,7 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
 			By("Calling /redirect-rule")
-			err = f.Ingress.DoHTTPTestRedirect(framework.MaxRetry, ing, eps, "GET", "/redirect-rule", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTPTestRedirect(framework.MaxRetry, ing, eps, "GET", "/redirect-rule", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(301))
 			})
 			Expect(err).NotTo(HaveOccurred())
