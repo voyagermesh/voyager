@@ -1,5 +1,5 @@
-hash: 829ff5b20b60cec7459b72439c448c99b73cf849fe04dfd83f79a4f45906bd7c
-updated: 2017-11-05T15:06:00.698551087-08:00
+hash: 1e5bd97a19cee67f5d8e2b1c488a252ba41ca57841dadbb57549e8f235eba37d
+updated: 2017-11-09T23:36:56.577313174-08:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -7,7 +7,7 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/go
-  version: c01120782e8b487d1c86ab4299241edfe36a3ca2
+  version: 6c0d0eba230ad31f74a18b44beee6f865b01bdec
   subpackages:
   - context
   - crypto/rand
@@ -146,7 +146,7 @@ imports:
   - proto
   - sortkeys
 - name: github.com/golang/glog
-  version: 44145f04b68cf362d9c4df2182967c2275eaefed
+  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
 - name: github.com/golang/groupcache
   version: 02826c3e79038b59d737d3b1c0a1d937f71a4433
   subpackages:
@@ -317,6 +317,8 @@ imports:
   - ovh
 - name: github.com/peterbourgon/diskv
   version: 5f041e8faa004a95c88a202771f4cc3e991971e6
+- name: github.com/pires/go-proxyproto
+  version: 2f38359974ffed92842a86ffcc17001b3f525e34
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/prometheus/client_golang
@@ -353,7 +355,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: f006c2ac4710855cf0f916dd6b77acf6b048dc6e
 - name: github.com/spf13/cobra
-  version: b3426bbac13d7110c4d8fce456ea0012f79f3b8b
+  version: 2da4a54c5ceefcee7ca5dd0eea1e18a3b6366489
   subpackages:
   - doc
 - name: github.com/spf13/pflag
@@ -369,7 +371,7 @@ imports:
   - user/crypt/common
   - user/crypt/sha512_crypt
 - name: github.com/xenolf/lego
-  version: 7bc4ce88b2669cd853c18494db2d358ff1636727
+  version: 2a44f405473b07ef68f2dd77826193582c293fa5
   repo: https://github.com/appscode/lego.git
   vcs: git
   subpackages:
@@ -666,7 +668,7 @@ imports:
   subpackages:
   - pkg/common
 - name: k8s.io/kubernetes
-  version: 0b9efaeb34a2fc51ff8e4d34ad9bc6375459c4a4
+  version: f0efb3cb883751c5ffdbe6d515f3cb4fbe7b7acd
   subpackages:
   - pkg/api
   - pkg/api/helper
