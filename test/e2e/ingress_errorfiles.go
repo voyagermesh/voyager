@@ -5,7 +5,7 @@ import (
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
-	"github.com/appscode/voyager/test/test-server/testserverclient"
+	"github.com/appscode/voyager/test/test-server/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	core "k8s.io/api/core/v1"
@@ -75,7 +75,7 @@ Content-Type: text/html
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
 			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET", "/testpath",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath"))
@@ -84,7 +84,7 @@ Content-Type: text/html
 			Expect(err).NotTo(HaveOccurred())
 
 			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET", "/wrongpath",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusBadRequest)) &&
 						Expect(r.Body).Should(Equal("haproxy-errorfile"))
 				},
@@ -107,7 +107,7 @@ Content-Type: text/html
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
 			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET", "/testpath",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath"))
@@ -116,7 +116,7 @@ Content-Type: text/html
 			Expect(err).NotTo(HaveOccurred())
 
 			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET", "/wrongpath",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusBadRequest)) &&
 						Expect(r.Body).Should(Equal("haproxy-errorfile"))
 				},
@@ -140,7 +140,7 @@ Content-Type: text/html
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
 			err = f.Ingress.DoHTTP(framework.NoRetry, "test.appscode.test:32368", ing, eps, "GET", "/testpath",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath"))
@@ -149,7 +149,7 @@ Content-Type: text/html
 			Expect(err).NotTo(HaveOccurred())
 
 			err = f.Ingress.DoHTTP(framework.NoRetry, "test.appscode.test:32368", ing, eps, "GET", "/wrongpath",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusBadRequest)) &&
 						Expect(r.Body).Should(Equal("haproxy-errorfile"))
 				},
@@ -182,7 +182,7 @@ Content-Type: text/html
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
 			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET", "/testpath",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath"))
@@ -192,7 +192,7 @@ Content-Type: text/html
 
 			// Should redirect to echo.jsontest.com
 			err = f.Ingress.DoHTTPTestRedirect(framework.NoRetry, ing, eps, "GET", "/wrongpath",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(302)) &&
 						Expect(r.ResponseHeader.Get("Location")).Should(Equal("http://echo.jsontest.com/status/200/body/haproxy-errorloc"))
 				},

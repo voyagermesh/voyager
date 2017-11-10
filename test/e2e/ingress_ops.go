@@ -9,7 +9,7 @@ import (
 	internalapi "github.com/appscode/voyager/apis/voyager"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
-	"github.com/appscode/voyager/test/test-server/testserverclient"
+	"github.com/appscode/voyager/test/test-server/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	core "k8s.io/api/core/v1"
@@ -54,7 +54,7 @@ var _ = Describe("IngressOperations", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -315,7 +315,7 @@ var _ = Describe("IngressOperations", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/override/testpath/ok")) &&
@@ -331,7 +331,7 @@ var _ = Describe("IngressOperations", func() {
 					map[string]string{
 						"X-Ingress-Test-Header": internalapi.GroupName + "/v1beta1",
 					},
-					func(r *testserverclient.Response) bool {
+					func(r *client.Response) bool {
 						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 							Expect(r.Method).Should(Equal("GET")) &&
 							Expect(r.Path).Should(Equal("/override/testpath/ok")) &&
@@ -399,14 +399,14 @@ var _ = Describe("IngressOperations", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/old/replace", func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/old/replace", func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/rewrited/from/proxy/old/replace"))
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/old/add/now", func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/old/add/now", func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/old/add/now")) &&
@@ -414,7 +414,7 @@ var _ = Describe("IngressOperations", func() {
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/test-second", func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/test-second", func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/override/rewrited/from/proxy/test-second")) &&
@@ -449,7 +449,7 @@ var _ = Describe("IngressOperations", func() {
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
 			By("Calling new HTTP path")
-			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/newTestPath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/newTestPath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/newTestPath/ok"))
@@ -457,7 +457,7 @@ var _ = Describe("IngressOperations", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Checking old path")
-			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 				return true
 			})
 			Expect(err).To(HaveOccurred())
@@ -516,7 +516,7 @@ var _ = Describe("IngressOperations", func() {
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
 			By("Calling new TCP")
-			err = f.Ingress.DoTCP(framework.MaxRetry, ing, eps, func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoTCP(framework.MaxRetry, ing, eps, func(r *client.Response) bool {
 				return Expect(r.ServerPort).Should(Equal(":4545"))
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -539,7 +539,7 @@ var _ = Describe("IngressOperations", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok")) &&
@@ -563,7 +563,7 @@ var _ = Describe("IngressOperations", func() {
 
 			err = f.Ingress.DoHTTPWithHeader(framework.MaxRetry, ing, eps, "GET", "/testpath/ok", map[string]string{
 				"Origin": "test.e2e",
-			}, func(r *testserverclient.Response) bool {
+			}, func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok")) &&
@@ -586,7 +586,7 @@ var _ = Describe("IngressOperations", func() {
 
 			err = f.Ingress.DoHTTPStatusWithHeader(framework.NoRetry, ing, eps, "GET", "/testpath/ok", map[string]string{
 				"Content-Length": "600",
-			}, func(r *testserverclient.Response) bool {
+			}, func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusBadRequest))
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -665,7 +665,7 @@ var _ = Describe("IngressOperations", func() {
 				// request-1: take 30s to response
 				errChan <- f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 300, "", ing, eps, "GET",
 					"/testpath/ok?delay=30s",
-					func(r *testserverclient.Response) bool {
+					func(r *client.Response) bool {
 						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 							Expect(r.Method).Should(Equal("GET")) &&
 							Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -677,7 +677,7 @@ var _ = Describe("IngressOperations", func() {
 			// request-2: responses instantaneously
 			err = f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 5, "", ing, eps, "GET",
 				"/testpath/ok",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -709,7 +709,7 @@ var _ = Describe("IngressOperations", func() {
 				// request-1: take 30s to response
 				errChan <- f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 300, "", ing, eps, "GET",
 					"/testpath/ok?delay=30s",
-					func(r *testserverclient.Response) bool {
+					func(r *client.Response) bool {
 						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 							Expect(r.Method).Should(Equal("GET")) &&
 							Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -721,7 +721,7 @@ var _ = Describe("IngressOperations", func() {
 			// request-2: responses instantaneously
 			err = f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 5, "", ing, eps, "GET",
 				"/testpath/ok",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -773,7 +773,7 @@ var _ = Describe("IngressOperations", func() {
 				// request-1: take 30s to response
 				errChan <- f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 300, "", ing, eps, "GET",
 					"/testpath/ok?delay=30s",
-					func(r *testserverclient.Response) bool {
+					func(r *client.Response) bool {
 						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 							Expect(r.Method).Should(Equal("GET")) &&
 							Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -785,7 +785,7 @@ var _ = Describe("IngressOperations", func() {
 			// request-2: responses instantaneously
 			err = f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 5, "", ing, eps, "GET",
 				"/testpath/ok",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -839,7 +839,7 @@ var _ = Describe("IngressOperations", func() {
 				// request-1: take 30s to response
 				errChan <- f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 300, "", ing, eps, "GET",
 					"/testpath/ok?delay=30s",
-					func(r *testserverclient.Response) bool {
+					func(r *client.Response) bool {
 						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 							Expect(r.Method).Should(Equal("GET")) &&
 							Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -851,7 +851,7 @@ var _ = Describe("IngressOperations", func() {
 			// request-2: responses instantaneously
 			err = f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 5, "", ing, eps, "GET",
 				"/testpath/ok",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -876,7 +876,7 @@ var _ = Describe("IngressOperations", func() {
 
 			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET",
 				"/testpath/ok",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -886,7 +886,7 @@ var _ = Describe("IngressOperations", func() {
 
 			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET",
 				"/testpath/ok",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -896,7 +896,7 @@ var _ = Describe("IngressOperations", func() {
 
 			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET",
 				"/testpath/ok",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -909,7 +909,7 @@ var _ = Describe("IngressOperations", func() {
 			log.Warningln("Request should response")
 			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET",
 				"/testpath/ok",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -936,7 +936,7 @@ var _ = Describe("IngressOperations", func() {
 				go func() {
 					err := f.Ingress.DoHTTPWithTimeout(framework.NoRetry, 150, "", ing, eps, "GET",
 						"/testpath/ok?delay=60s",
-						func(r *testserverclient.Response) bool {
+						func(r *client.Response) bool {
 							return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 								Expect(r.Method).Should(Equal("GET")) &&
 								Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -950,7 +950,7 @@ var _ = Describe("IngressOperations", func() {
 			time.Sleep(time.Second * 10)
 			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET",
 				"/testpath/ok",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -966,7 +966,7 @@ var _ = Describe("IngressOperations", func() {
 			log.Warningln("Request should response")
 			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET",
 				"/testpath/ok",
-				func(r *testserverclient.Response) bool {
+				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath/ok"))

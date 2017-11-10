@@ -5,7 +5,7 @@ import (
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
-	"github.com/appscode/voyager/test/test-server/testserverclient"
+	"github.com/appscode/voyager/test/test-server/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -53,7 +53,7 @@ var _ = Describe("IngressNodePort", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTP(framework.MaxRetry, "test.appscode.test:32368", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "test.appscode.test:32368", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -76,7 +76,7 @@ var _ = Describe("IngressNodePort", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTP(framework.MaxRetry, "test.appscode.test", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "test.appscode.test", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok"))

@@ -11,7 +11,7 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/test/test-server/testserverclient"
+	"github.com/appscode/voyager/test/test-server/client"
 	. "github.com/onsi/gomega"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -201,9 +201,9 @@ func getFreeNodePort(svc []core.Service, p int32) int32 {
 	return p
 }
 
-func (i *ingressInvocation) DoHTTP(retryCount int, host string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTP(retryCount int, host string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *client.Response) bool) error {
 	for _, url := range eps {
-		resp, err := testserverclient.NewTestHTTPClient(url).WithHost(host).Method(method).Path(path).DoWithRetry(retryCount)
+		resp, err := client.NewTestHTTPClient(url).WithHost(host).Method(method).Path(path).DoWithRetry(retryCount)
 		if err != nil {
 			return err
 		}
@@ -216,9 +216,9 @@ func (i *ingressInvocation) DoHTTP(retryCount int, host string, ing *api.Ingress
 	return nil
 }
 
-func (i *ingressInvocation) DoHTTPWithTimeout(retryCount int, timeout int, host string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTPWithTimeout(retryCount int, timeout int, host string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *client.Response) bool) error {
 	for _, url := range eps {
-		resp, err := testserverclient.NewTestHTTPClientWithTimeout(url, timeout).WithHost(host).Method(method).Path(path).DoWithRetry(retryCount)
+		resp, err := client.NewTestHTTPClientWithTimeout(url, timeout).WithHost(host).Method(method).Path(path).DoWithRetry(retryCount)
 		if err != nil {
 			return err
 		}
@@ -231,9 +231,9 @@ func (i *ingressInvocation) DoHTTPWithTimeout(retryCount int, timeout int, host 
 	return nil
 }
 
-func (i *ingressInvocation) DoHTTPWithHeader(retryCount int, ing *api.Ingress, eps []string, method, path string, h map[string]string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTPWithHeader(retryCount int, ing *api.Ingress, eps []string, method, path string, h map[string]string, matcher func(resp *client.Response) bool) error {
 	for _, url := range eps {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Header(h).Path(path).DoWithRetry(retryCount)
+		resp, err := client.NewTestHTTPClient(url).Method(method).Header(h).Path(path).DoWithRetry(retryCount)
 		if err != nil {
 			return err
 		}
@@ -246,13 +246,13 @@ func (i *ingressInvocation) DoHTTPWithHeader(retryCount int, ing *api.Ingress, e
 	return nil
 }
 
-func (i *ingressInvocation) DoHTTPs(retryCount int, host, cert string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTPs(retryCount int, host, cert string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *client.Response) bool) error {
 	for _, url := range eps {
 		if strings.HasPrefix(url, "http://") {
 			url = "https://" + url[len("http://"):]
 		}
 
-		cl := testserverclient.NewTestHTTPClient(url).WithHost(host).Method(method).Path(path)
+		cl := client.NewTestHTTPClient(url).WithHost(host).Method(method).Path(path)
 		if len(cert) > 0 {
 			cl = cl.WithCert(cert)
 		} else {
@@ -272,13 +272,13 @@ func (i *ingressInvocation) DoHTTPs(retryCount int, host, cert string, ing *api.
 	return nil
 }
 
-func (i *ingressInvocation) DoHTTPsWithTransport(retryCount int, host string, tr *http.Transport, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTPsWithTransport(retryCount int, host string, tr *http.Transport, ing *api.Ingress, eps []string, method, path string, matcher func(resp *client.Response) bool) error {
 	for _, url := range eps {
 		if strings.HasPrefix(url, "http://") {
 			url = "https://" + url[len("http://"):]
 		}
 
-		cl := testserverclient.NewTestHTTPClient(url).WithHost(host).WithTransport(tr).Method(method).Path(path)
+		cl := client.NewTestHTTPClient(url).WithHost(host).WithTransport(tr).Method(method).Path(path)
 		resp, err := cl.DoWithRetry(retryCount)
 		if err != nil {
 			return err
@@ -292,9 +292,9 @@ func (i *ingressInvocation) DoHTTPsWithTransport(retryCount int, host string, tr
 	return nil
 }
 
-func (i *ingressInvocation) DoHTTPTestRedirect(retryCount int, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTPTestRedirect(retryCount int, ing *api.Ingress, eps []string, method, path string, matcher func(resp *client.Response) bool) error {
 	for _, url := range eps {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Path(path).DoTestRedirectWithRetry(retryCount)
+		resp, err := client.NewTestHTTPClient(url).Method(method).Path(path).DoTestRedirectWithRetry(retryCount)
 		if err != nil {
 			return err
 		}
@@ -308,9 +308,9 @@ func (i *ingressInvocation) DoHTTPTestRedirect(retryCount int, ing *api.Ingress,
 }
 
 func (i *ingressInvocation) DoHTTPTestRedirectWithHeader(retryCount int, ing *api.Ingress, eps []string, method, path string,
-	h map[string]string, matcher func(resp *testserverclient.Response) bool) error {
+	h map[string]string, matcher func(resp *client.Response) bool) error {
 	for _, url := range eps {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Header(h).Path(path).DoTestRedirectWithRetry(retryCount)
+		resp, err := client.NewTestHTTPClient(url).Method(method).Header(h).Path(path).DoTestRedirectWithRetry(retryCount)
 		if err != nil {
 			return err
 		}
@@ -323,9 +323,9 @@ func (i *ingressInvocation) DoHTTPTestRedirectWithHeader(retryCount int, ing *ap
 	return nil
 }
 
-func (i *ingressInvocation) DoHTTPsTestRedirect(retryCount int, host string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTPsTestRedirect(retryCount int, host string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *client.Response) bool) error {
 	for _, url := range eps {
-		resp, err := testserverclient.NewTestHTTPClient(url).WithHost(host).Method(method).Path(path).DoTestRedirectWithRetry(retryCount)
+		resp, err := client.NewTestHTTPClient(url).WithHost(host).Method(method).Path(path).DoTestRedirectWithRetry(retryCount)
 		if err != nil {
 			return err
 		}
@@ -338,9 +338,9 @@ func (i *ingressInvocation) DoHTTPsTestRedirect(retryCount int, host string, ing
 	return nil
 }
 
-func (i *ingressInvocation) DoHTTPStatus(retryCount int, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTPStatus(retryCount int, ing *api.Ingress, eps []string, method, path string, matcher func(resp *client.Response) bool) error {
 	for _, url := range eps {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Path(path).DoStatusWithRetry(retryCount)
+		resp, err := client.NewTestHTTPClient(url).Method(method).Path(path).DoStatusWithRetry(retryCount)
 		if err != nil {
 			return err
 		}
@@ -353,9 +353,9 @@ func (i *ingressInvocation) DoHTTPStatus(retryCount int, ing *api.Ingress, eps [
 	return nil
 }
 
-func (i *ingressInvocation) DoHTTPStatusWithHost(retryCount int, host string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTPStatusWithHost(retryCount int, host string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *client.Response) bool) error {
 	for _, url := range eps {
-		resp, err := testserverclient.NewTestHTTPClient(url).WithHost(host).Method(method).Path(path).DoStatusWithRetry(retryCount)
+		resp, err := client.NewTestHTTPClient(url).WithHost(host).Method(method).Path(path).DoStatusWithRetry(retryCount)
 		if err != nil {
 			return err
 		}
@@ -368,12 +368,12 @@ func (i *ingressInvocation) DoHTTPStatusWithHost(retryCount int, host string, in
 	return nil
 }
 
-func (i *ingressInvocation) DoHTTPsStatus(retryCount int, host string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTPsStatus(retryCount int, host string, ing *api.Ingress, eps []string, method, path string, matcher func(resp *client.Response) bool) error {
 	for _, url := range eps {
 		if strings.HasPrefix(url, "http://") {
 			url = "https://" + url[len("http://"):]
 		}
-		resp, err := testserverclient.NewTestHTTPClient(url).WithHost(host).Method(method).Path(path).DoStatusWithRetry(retryCount)
+		resp, err := client.NewTestHTTPClient(url).WithHost(host).Method(method).Path(path).DoStatusWithRetry(retryCount)
 		if err != nil {
 			return err
 		}
@@ -386,12 +386,12 @@ func (i *ingressInvocation) DoHTTPsStatus(retryCount int, host string, ing *api.
 	return nil
 }
 
-func (i *ingressInvocation) DoTestRedirectWithTransport(retryCount int, host string, tr *http.Transport, ing *api.Ingress, eps []string, method, path string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoTestRedirectWithTransport(retryCount int, host string, tr *http.Transport, ing *api.Ingress, eps []string, method, path string, matcher func(resp *client.Response) bool) error {
 	for _, url := range eps {
 		if strings.HasPrefix(url, "http://") {
 			url = "https://" + url[len("http://"):]
 		}
-		resp, err := testserverclient.NewTestHTTPClient(url).WithTransport(tr).WithHost(host).Method(method).Path(path).DoTestRedirectWithRetry(retryCount)
+		resp, err := client.NewTestHTTPClient(url).WithTransport(tr).WithHost(host).Method(method).Path(path).DoTestRedirectWithRetry(retryCount)
 		if err != nil {
 			return err
 		}
@@ -404,9 +404,9 @@ func (i *ingressInvocation) DoTestRedirectWithTransport(retryCount int, host str
 	return nil
 }
 
-func (i *ingressInvocation) DoHTTPStatusWithHeader(retryCount int, ing *api.Ingress, eps []string, method, path string, h map[string]string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoHTTPStatusWithHeader(retryCount int, ing *api.Ingress, eps []string, method, path string, h map[string]string, matcher func(resp *client.Response) bool) error {
 	for _, url := range eps {
-		resp, err := testserverclient.NewTestHTTPClient(url).Method(method).Header(h).Path(path).DoStatusWithRetry(retryCount)
+		resp, err := client.NewTestHTTPClient(url).Method(method).Header(h).Path(path).DoStatusWithRetry(retryCount)
 		if err != nil {
 			return err
 		}
@@ -419,9 +419,9 @@ func (i *ingressInvocation) DoHTTPStatusWithHeader(retryCount int, ing *api.Ingr
 	return nil
 }
 
-func (i *ingressInvocation) DoTCP(retryCount int, ing *api.Ingress, eps []string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoTCP(retryCount int, ing *api.Ingress, eps []string, matcher func(resp *client.Response) bool) error {
 	for _, url := range eps {
-		resp, err := testserverclient.NewTestTCPClient(url).DoWithRetry(retryCount)
+		resp, err := client.NewTestTCPClient(url).DoWithRetry(retryCount)
 		if err != nil {
 			return err
 		}
@@ -434,9 +434,9 @@ func (i *ingressInvocation) DoTCP(retryCount int, ing *api.Ingress, eps []string
 	return nil
 }
 
-func (i *ingressInvocation) DoTCPWithSSL(retryCount int, cert string, ing *api.Ingress, eps []string, matcher func(resp *testserverclient.Response) bool) error {
+func (i *ingressInvocation) DoTCPWithSSL(retryCount int, cert string, ing *api.Ingress, eps []string, matcher func(resp *client.Response) bool) error {
 	for _, url := range eps {
-		resp, err := testserverclient.NewTestTCPClient(url).WithSSL(cert).DoWithRetry(retryCount)
+		resp, err := client.NewTestTCPClient(url).WithSSL(cert).DoWithRetry(retryCount)
 		if err != nil {
 			return err
 		}

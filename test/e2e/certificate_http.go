@@ -7,7 +7,7 @@ import (
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/test/framework"
-	"github.com/appscode/voyager/test/test-server/testserverclient"
+	"github.com/appscode/voyager/test/test-server/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	core "k8s.io/api/core/v1"
@@ -110,7 +110,7 @@ var _ = Describe("CertificateWithHTTPProvider", func() {
 				eps, err := f.Ingress.GetHTTPEndpoints(ing)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(eps)).Should(BeNumerically(">=", 1))
-				err = f.Ingress.DoHTTP(framework.MaxRetry, "http.appscode.test", ing, eps, http.MethodGet, "/.well-known/acme-challenge/", func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoHTTP(framework.MaxRetry, "http.appscode.test", ing, eps, http.MethodGet, "/.well-known/acme-challenge/", func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r).ShouldNot(BeNil()) &&
 						Expect(len(r.Body)).ShouldNot(Equal(0))

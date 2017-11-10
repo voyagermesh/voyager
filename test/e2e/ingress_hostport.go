@@ -7,7 +7,7 @@ import (
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
-	"github.com/appscode/voyager/test/test-server/testserverclient"
+	"github.com/appscode/voyager/test/test-server/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -58,7 +58,7 @@ var _ = Describe("IngressHostPort", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -102,7 +102,7 @@ var _ = Describe("IngressHostPort", func() {
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
 			By("Calling new HTTP path")
-			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/newtestpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/newtestpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/newtestpath/ok"))
@@ -110,7 +110,7 @@ var _ = Describe("IngressHostPort", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Checking old path")
-			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 				return true
 			})
 			Expect(err).To(HaveOccurred())
@@ -168,7 +168,7 @@ var _ = Describe("IngressHostPort", func() {
 				Expect(len(eps)).Should(BeNumerically(">=", 1))
 
 				By("Calling new TCP")
-				err = f.Ingress.DoTCP(framework.MaxRetry, ing, eps, func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoTCP(framework.MaxRetry, ing, eps, func(r *client.Response) bool {
 					return Expect(r.ServerPort).Should(Equal(":4545"))
 				})
 				Expect(err).NotTo(HaveOccurred())
