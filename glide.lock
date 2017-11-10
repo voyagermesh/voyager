@@ -1,5 +1,5 @@
 hash: 1e5bd97a19cee67f5d8e2b1c488a252ba41ca57841dadbb57549e8f235eba37d
-updated: 2017-11-09T23:36:56.577313174-08:00
+updated: 2017-11-10T01:32:24.322704706-08:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -30,7 +30,7 @@ imports:
   - cmds
   - controller
 - name: github.com/appscode/kutil
-  version: f672d520d10c210f9fadf92d31fc179ad24ef96e
+  version: 45e137524b677cd540822364a8c4efedf57db119
   subpackages:
   - core/v1
   - rbac/v1beta1
@@ -184,15 +184,6 @@ imports:
   - OpenAPIv2
   - compiler
   - extensions
-- name: github.com/gophercloud/gophercloud
-  version: 2bf16b94fdd9b01557c4d076e567fe5cbbe5a961
-  subpackages:
-  - openstack
-  - openstack/identity/v2/tenants
-  - openstack/identity/v2/tokens
-  - openstack/identity/v3/tokens
-  - openstack/utils
-  - pagination
 - name: github.com/gregjones/httpcache
   version: 787624de3eb7bd915c329cba748687a3b22666a6
   subpackages:
@@ -637,15 +628,9 @@ imports:
   - kubernetes/typed/storage/v1beta1/fake
   - listers/core/v1
   - pkg/version
-  - plugin/pkg/client/auth
-  - plugin/pkg/client/auth/azure
-  - plugin/pkg/client/auth/gcp
-  - plugin/pkg/client/auth/oidc
-  - plugin/pkg/client/auth/openstack
   - rest
   - rest/watch
   - testing
-  - third_party/forked/golang/template
   - tools/auth
   - tools/cache
   - tools/clientcmd
@@ -661,7 +646,6 @@ imports:
   - util/flowcontrol
   - util/homedir
   - util/integer
-  - util/jsonpath
   - util/workqueue
 - name: k8s.io/kube-openapi
   version: 868f2f29720b192240e18284659231b440f9cda5
