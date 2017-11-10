@@ -14,6 +14,7 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/moul/http2curl"
+	"github.com/pires/go-proxyproto"
 )
 
 type httpClient struct {
@@ -26,17 +27,23 @@ type httpClient struct {
 }
 
 type Response struct {
-	Status          int         `json:"-"`
-	ResponseHeader  http.Header `json:"-"`
-	Type            string      `json:"type,omitempty"`
-	PodName         string      `json:"podName,omitempty"`
-	Host            string      `json:"host,omitempty"`
-	ServerPort      string      `json:"serverPort,omitempty"`
-	Path            string      `json:"path,omitempty"`
-	Method          string      `json:"method,omitempty"`
-	RequestHeaders  http.Header `json:"headers,omitempty"`
-	Body            string      `json:"body,omitempty"`
-	HTTPSServerName string      `json:"-"`
+	Status          int                `json:"-"`
+	ResponseHeader  http.Header        `json:"-"`
+	Type            string             `json:"type,omitempty"`
+	PodName         string             `json:"podName,omitempty"`
+	Host            string             `json:"host,omitempty"`
+	ServerPort      string             `json:"serverPort,omitempty"`
+	Path            string             `json:"path,omitempty"`
+	Method          string             `json:"method,omitempty"`
+	RequestHeaders  http.Header        `json:"headers,omitempty"`
+	Body            string             `json:"body,omitempty"`
+	HTTPSServerName string             `json:"-"`
+	Proxy           *proxyproto.Header `json:"proxy,omitempty"`
+}
+
+func (r Response) String() string {
+	data, _ := json.MarshalIndent(r, "", " ")
+	return string(data)
 }
 
 func NewTestHTTPClient(url string) *httpClient {

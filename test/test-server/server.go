@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -17,14 +16,15 @@ import (
 )
 
 type Response struct {
-	Type       string      `json:"type,omitempty"`
-	Host       string      `json:"host,omitempty"`
-	PodName    string      `json:"podName,omitempty"`
-	ServerPort string      `json:"serverPort,omitempty"`
-	Path       string      `json:"path,omitempty"`
-	Method     string      `json:"method,omitempty"`
-	Headers    http.Header `json:"headers,omitempty"`
-	Body       string      `json:"body,omitempty"`
+	Type       string             `json:"type,omitempty"`
+	Host       string             `json:"host,omitempty"`
+	PodName    string             `json:"podName,omitempty"`
+	ServerPort string             `json:"serverPort,omitempty"`
+	Path       string             `json:"path,omitempty"`
+	Method     string             `json:"method,omitempty"`
+	Headers    http.Header        `json:"headers,omitempty"`
+	Body       string             `json:"body,omitempty"`
+	Proxy      *proxyproto.Header `json:"proxy,omitempty"`
 }
 
 type HTTPHandler struct {
@@ -86,43 +86,33 @@ type TCPHandler struct {
 	port string
 }
 
-func (h TCPHandler) ServeTCP(con net.Conn) {
-	fmt.Println("request on", con.LocalAddr().String())
+func (h TCPHandler) ServeTCP(conn net.Conn) {
+	fmt.Println("request on", conn.LocalAddr().String())
 	resp := &Response{
 		Type:       "tcp",
-		Host:       con.LocalAddr().String(),
+		Host:       conn.LocalAddr().String(),
 		ServerPort: h.port,
 	}
-	json.NewEncoder(con).Encode(resp)
+	json.NewEncoder(conn).Encode(resp)
 }
 
 type ProxyAwareHandler struct {
 	port string
 }
 
-func (h ProxyAwareHandler) ServeTCP(con net.Conn) {
-	b := make([]byte, 4096)
-	if _, err := con.Read(b); err != nil {
-		fmt.Println(err)
-	}
-	header, err := proxyproto.Read(bufio.NewReader(bytes.NewReader(b)))
+func (h ProxyAwareHandler) ServeTCP(conn net.Conn) {
+	header, err := proxyproto.ReadTimeout(bufio.NewReader(conn), time.Second)
 	if err != nil {
 		fmt.Println(err)
 	}
-
-	fmt.Println("request on", con.LocalAddr().String())
+	fmt.Println("request on", conn.LocalAddr().String())
 	resp := &Response{
 		Type:       "tcp",
-		Host:       con.LocalAddr().String(),
+		Host:       conn.LocalAddr().String(),
 		ServerPort: h.port,
+		Proxy:      header,
 	}
-
-	// set proxy-proto header to response body
-	if header != nil {
-		resp.Body = fmt.Sprintf("%+v", *header)
-	}
-
-	json.NewEncoder(con).Encode(resp)
+	json.NewEncoder(conn).Encode(resp)
 }
 
 func runTCP(port string) {
@@ -168,9 +158,11 @@ func main() {
 	go runHTTP(":8989")
 	go runHTTP(":9090")
 
-	go runProxy(":4343")
+	go runTCP(":4343")
 	go runTCP(":4545")
 	go runTCP(":5656")
+
+	go runProxy(":6767")
 
 	go runHTTPS(":6443")
 	go runHTTPS(":3443")

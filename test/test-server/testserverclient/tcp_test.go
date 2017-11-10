@@ -21,7 +21,7 @@ var (
 )
 
 func TestTCPServer(t *testing.T) {
-	resp, err := NewTestTCPClient("127.0.0.1:4545").DoWithRetry(5)
+	resp, err := NewTestTCPClient("127.0.0.1:6767").DoWithRetry(5)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -29,16 +29,16 @@ func TestTCPServer(t *testing.T) {
 }
 
 func TestProxyV1Server(t *testing.T) {
-	resp, err := NewTestTCPClient("127.0.0.1:4343").
+	resp, err := NewTestTCPClient("127.0.0.1:6767").
 		WithProxyHeader(&proxyproto.Header{
-		Version:            1,
-		Command:            proxyproto.PROXY,
-		TransportProtocol:  proxyproto.TCPv4,
-		SourceAddress:      v4addr,
-		DestinationAddress: v4addr,
-		SourcePort:         PORT,
-		DestinationPort:    PORT,
-	}).DoWithRetry(5)
+			Version:            1,
+			Command:            proxyproto.PROXY,
+			TransportProtocol:  proxyproto.TCPv4,
+			SourceAddress:      v4addr,
+			DestinationAddress: v4addr,
+			SourcePort:         PORT,
+			DestinationPort:    PORT,
+		}).DoWithRetry(5)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -46,16 +46,16 @@ func TestProxyV1Server(t *testing.T) {
 }
 
 func TestProxyV2Server(t *testing.T) {
-	resp, err := NewTestTCPClient("127.0.0.1:4343").
+	resp, err := NewTestTCPClient("127.0.0.1:6767").
 		WithProxyHeader(&proxyproto.Header{
-		Version:            2,
-		Command:            proxyproto.PROXY,
-		TransportProtocol:  proxyproto.TCPv4,
-		SourceAddress:      v4addr,
-		DestinationAddress: v4addr,
-		SourcePort:         PORT,
-		DestinationPort:    PORT,
-	}).DoWithRetry(5)
+			Version:            2,
+			Command:            proxyproto.PROXY,
+			TransportProtocol:  proxyproto.TCPv4,
+			SourceAddress:      v4addr,
+			DestinationAddress: v4addr,
+			SourcePort:         PORT,
+			DestinationPort:    PORT,
+		}).DoWithRetry(5)
 	if err != nil {
 		fmt.Println(err)
 	}
