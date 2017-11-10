@@ -6,7 +6,7 @@ import (
 
 	"github.com/appscode/kutil"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/golang/glog"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,11 +15,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
-func EnsureCertificate(c acs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(alert *api.Certificate) *api.Certificate) (*api.Certificate, error) {
+func EnsureCertificate(c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(alert *api.Certificate) *api.Certificate) (*api.Certificate, error) {
 	return CreateOrPatchCertificate(c, meta, transform)
 }
 
-func CreateOrPatchCertificate(c acs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(alert *api.Certificate) *api.Certificate) (*api.Certificate, error) {
+func CreateOrPatchCertificate(c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(alert *api.Certificate) *api.Certificate) (*api.Certificate, error) {
 	cur, err := c.Certificates(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Certificate %s/%s.", meta.Namespace, meta.Name)
@@ -36,13 +36,13 @@ func CreateOrPatchCertificate(c acs.VoyagerV1beta1Interface, meta metav1.ObjectM
 	return PatchCertificate(c, cur, transform)
 }
 
-func PatchCertificate(c acs.VoyagerV1beta1Interface, cur *api.Certificate, transform func(*api.Certificate) *api.Certificate) (*api.Certificate, error) {
+func PatchCertificate(c cs.VoyagerV1beta1Interface, cur *api.Certificate, transform func(*api.Certificate) *api.Certificate) (*api.Certificate, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, err
 	}
 
-	modJson, err := json.Marshal(transform(cur))
+	modJson, err := json.Marshal(transform(cur.DeepCopy()))
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func PatchCertificate(c acs.VoyagerV1beta1Interface, cur *api.Certificate, trans
 	return result, err
 }
 
-func TryPatchCertificate(c acs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(*api.Certificate) *api.Certificate) (result *api.Certificate, err error) {
+func TryPatchCertificate(c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(*api.Certificate) *api.Certificate) (result *api.Certificate, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -80,7 +80,7 @@ func TryPatchCertificate(c acs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, 
 	return
 }
 
-func TryUpdateCertificate(c acs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(*api.Certificate) *api.Certificate) (result *api.Certificate, err error) {
+func TryUpdateCertificate(c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(*api.Certificate) *api.Certificate) (result *api.Certificate, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -88,7 +88,7 @@ func TryUpdateCertificate(c acs.VoyagerV1beta1Interface, meta metav1.ObjectMeta,
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.Certificates(cur.Namespace).Update(transform(cur))
+			result, e2 = c.Certificates(cur.Namespace).Update(transform(cur.DeepCopy()))
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update Certificate %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
