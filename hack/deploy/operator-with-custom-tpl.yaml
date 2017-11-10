@@ -4,7 +4,7 @@ metadata:
   labels:
     app: voyager
   name: voyager-operator
-  namespace: kube-system
+  namespace: $VOYAGER_NAMESPACE
 spec:
   replicas: 1
   template:
@@ -14,14 +14,17 @@ spec:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
+      serviceAccountName: $VOYAGER_SERVICE_ACCOUNT
       containers:
       - name: voyager
         args:
         - run
         - --v=3
-        - --cloud-provider=$CLOUD_PROVIDER
-        - --cloud-config=$CLOUD_CONFIG # ie. /etc/kubernetes/azure.json for azure
-        - --ingress-class=$INGRESS_CLASS
+        - --rbac=$VOYAGER_ENABLE_RBAC
+        - --cloud-provider=$VOYAGER_CLOUD_PROVIDER
+        - --cloud-config=$VOYAGER_CLOUD_CONFIG # ie. /etc/kubernetes/azure.json for azure
+        - --ingress-class=$VOYAGER_INGRESS_CLASS
+        - --custom-templates=/srv/voyager/custom/*.cfg
         image: appscode/voyager:5.0.0-rc.6
         ports:
         - containerPort: 56790
@@ -34,10 +37,16 @@ spec:
           - mountPath: /etc/kubernetes
             name: cloudconfig
             readOnly: true
+          - mountPath: /srv/voyager/custom
+            name: templates
+            readOnly: true
       volumes:
         - hostPath:
             path: /etc/kubernetes
           name: cloudconfig
+        - configMap:
+            name: voyager-templates
+          name: templates
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
@@ -48,7 +57,7 @@ metadata:
   labels:
     app: voyager
   name: voyager-operator
-  namespace: kube-system
+  namespace: $VOYAGER_NAMESPACE
 spec:
   ports:
   - name: ops

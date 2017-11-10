@@ -38,7 +38,7 @@ node("master") {
                         returnStdout: true
                 ).trim()
                 NAMESPACE =  "test-$rand"
-                sh "./hack/make.py test_deploy $CLOUD_PROVIDER"
+                sh "./hack/make.py test_deploy $VOYAGER_CLOUD_PROVIDER"
                 DEPLOYMENT_YAML = readFile('./dist/kube.yaml')
             }
             stage("docker push") {
@@ -55,7 +55,7 @@ node("master") {
             }
             stage("integration test") {
                 sh "kubectl create namespace $NAMESPACE"
-                sh "./hack/make.py test integration -cloud-provider=$CLOUD_PROVIDER -daemon-host-name=$NODE -namespace=$NAMESPACE -max-test=4"
+                sh "./hack/make.py test integration -cloud-provider=$VOYAGER_CLOUD_PROVIDER -daemon-host-name=$NODE -namespace=$NAMESPACE -max-test=4"
             }
         }
         currentBuild.result = 'SUCCESS'

@@ -88,77 +88,13 @@ roleRef:
   name: voyager-operator
 subjects:
 - kind: ServiceAccount
-  name: voyager-operator
-  namespace: kube-system
+  name: $VOYAGER_SERVICE_ACCOUNT
+  namespace: $VOYAGER_NAMESPACE
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: voyager-operator
-  namespace: kube-system
+  name: $VOYAGER_SERVICE_ACCOUNT
+  namespace: $VOYAGER_NAMESPACE
   labels:
-    app: voyager
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  labels:
-    app: voyager
-  name: voyager-operator
-  namespace: kube-system
-spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: voyager
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
-    spec:
-      serviceAccountName: voyager-operator
-      containers:
-      - name: voyager
-        args:
-        - run
-        - --v=3
-        - --rbac
-        - --cloud-provider=$CLOUD_PROVIDER
-        - --cloud-config=$CLOUD_CONFIG # ie. /etc/kubernetes/azure.json for azure
-        - --ingress-class=$INGRESS_CLASS
-        image: appscode/voyager:5.0.0-rc.6
-        ports:
-        - containerPort: 56790
-          name: ops
-          protocol: TCP
-        - containerPort: 56791
-          name: acme
-          protocol: TCP
-        volumeMounts:
-          - mountPath: /etc/kubernetes
-            name: cloudconfig
-            readOnly: true
-      volumes:
-        - hostPath:
-            path: /etc/kubernetes
-          name: cloudconfig
-      tolerations:
-      - key: CriticalAddonsOnly
-        operator: Exists
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: voyager
-  name: voyager-operator
-  namespace: kube-system
-spec:
-  ports:
-  - name: ops
-    port: 56790
-    targetPort: ops
-  - name: acme
-    port: 56791
-    targetPort: acme
-  selector:
     app: voyager

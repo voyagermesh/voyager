@@ -1,0 +1,63 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: voyager
+  name: voyager-operator
+  namespace: $VOYAGER_NAMESPACE
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: voyager
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      serviceAccountName: $VOYAGER_SERVICE_ACCOUNT
+      containers:
+      - name: voyager
+        args:
+        - run
+        - --v=3
+        - --rbac=$VOYAGER_ENABLE_RBAC
+        - --cloud-provider=$VOYAGER_CLOUD_PROVIDER
+        - --cloud-config=$VOYAGER_CLOUD_CONFIG # ie. /etc/kubernetes/azure.json for azure
+        - --ingress-class=$VOYAGER_INGRESS_CLASS
+        image: appscode/voyager:5.0.0-rc.6
+        ports:
+        - containerPort: 56790
+          name: ops
+          protocol: TCP
+        - containerPort: 56791
+          name: acme
+          protocol: TCP
+        volumeMounts:
+          - mountPath: /etc/kubernetes
+            name: cloudconfig
+            readOnly: true
+      volumes:
+        - hostPath:
+            path: /etc/kubernetes
+          name: cloudconfig
+      tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: voyager
+  name: voyager-operator
+  namespace: $VOYAGER_NAMESPACE
+spec:
+  ports:
+  - name: ops
+    port: 56790
+    targetPort: ops
+  - name: acme
+    port: 56791
+    targetPort: acme
+  selector:
+    app: voyager
