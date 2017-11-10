@@ -27,8 +27,15 @@ import (
 var (
 	masterURL      string
 	kubeconfigPath string
+	kubeClient     kubernetes.Interface
+	extClient      cs.VoyagerV1beta1Interface
 
-	opt = config.Options{
+	builtinTemplates          = "/srv/voyager/templates/*.cfg"
+	customTemplates           = ""
+	address                   = fmt.Sprintf(":%d", api.DefaultExporterPortNumber)
+	haProxyServerMetricFields = hpe.ServerMetrics.String()
+	haProxyTimeout            = 5 * time.Second
+	opt                       = config.Options{
 		HAProxyImage:         "appscode/haproxy:1.7.9-5.0.0-rc.3",
 		ExporterSidecarImage: "appscode/voyager:5.0.0-rc.3",
 		OperatorNamespace:    kutil.Namespace(),
@@ -41,16 +48,6 @@ var (
 		// High enough Burst to fit all expected use cases. Burst=0 is not set here, because client code is overriding it.
 		Burst: 1e6,
 	}
-
-	builtinTemplates = "/srv/voyager/templates/*.cfg"
-	customTemplates  = ""
-
-	address                   string        = fmt.Sprintf(":%d", api.DefaultExporterPortNumber)
-	haProxyServerMetricFields string        = hpe.ServerMetrics.String()
-	haProxyTimeout            time.Duration = 5 * time.Second
-
-	kubeClient kubernetes.Interface
-	extClient  cs.VoyagerV1beta1Interface
 )
 
 func NewCmdRun() *cobra.Command {
