@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -10,6 +12,8 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	pp "github.com/pires/go-proxyproto"
 )
 
 type Response struct {
@@ -83,12 +87,27 @@ type TCPServerHandler struct {
 }
 
 func (h TCPServerHandler) ServeTCP(con net.Conn) {
+	b := make([]byte, 4096)
+	if _, err := con.Read(b); err != nil {
+		fmt.Println(err)
+	}
+	header, err := pp.Read(bufio.NewReader(bytes.NewReader(b)))
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	fmt.Println("request on", con.LocalAddr().String())
 	resp := &Response{
 		Type:       "tcp",
 		Host:       con.LocalAddr().String(),
 		ServerPort: h.port,
 	}
+
+	// set proxy-proto header to response body
+	if header != nil {
+		resp.Body = fmt.Sprintf("%+v", *header)
+	}
+
 	json.NewEncoder(con).Encode(resp)
 }
 
