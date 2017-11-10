@@ -27,11 +27,11 @@ type Response struct {
 	Body       string      `json:"body,omitempty"`
 }
 
-type HttpServerHandler struct {
+type HTTPHandler struct {
 	port string
 }
 
-func (h HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if delay, err := time.ParseDuration(r.URL.Query().Get("delay")); err == nil {
 		time.Sleep(delay)
 	}
@@ -49,16 +49,16 @@ func (h HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
-func RunHTTPServerOnPort(port string) {
+func runHTTP(port string) {
 	fmt.Println("http server running")
-	http.ListenAndServe(port, HttpServerHandler{port})
+	http.ListenAndServe(port, HTTPHandler{port})
 }
 
-type HttpsServerHandler struct {
+type HTTPSHandler struct {
 	port string
 }
 
-func (h HttpsServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h HTTPSHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if delay, err := time.ParseDuration(r.URL.Query().Get("delay")); err == nil {
 		time.Sleep(delay)
 	}
@@ -76,17 +76,31 @@ func (h HttpsServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
-func RunHTTPsServerOnPort(port string) {
+func runHTTPS(port string) {
 	fmt.Println("https server running")
 	GenCert("http.appscode.test,ssl.appscode.test")
-	http.ListenAndServeTLS(port, "cert.pem", "key.pem", HttpsServerHandler{port})
+	http.ListenAndServeTLS(port, "cert.pem", "key.pem", HTTPSHandler{port})
 }
 
-type TCPServerHandler struct {
+type TCPHandler struct {
 	port string
 }
 
-func (h TCPServerHandler) ServeTCP(con net.Conn) {
+func (h TCPHandler) ServeTCP(con net.Conn) {
+	fmt.Println("request on", con.LocalAddr().String())
+	resp := &Response{
+		Type:       "tcp",
+		Host:       con.LocalAddr().String(),
+		ServerPort: h.port,
+	}
+	json.NewEncoder(con).Encode(resp)
+}
+
+type ProxyAwareHandler struct {
+	port string
+}
+
+func (h ProxyAwareHandler) ServeTCP(con net.Conn) {
 	b := make([]byte, 4096)
 	if _, err := con.Read(b); err != nil {
 		fmt.Println(err)
@@ -111,7 +125,7 @@ func (h TCPServerHandler) ServeTCP(con net.Conn) {
 	json.NewEncoder(con).Encode(resp)
 }
 
-func RunTCPServerOnPort(port string) {
+func runTCP(port string) {
 	ln, err := net.Listen("tcp", port)
 	if err != nil {
 		fmt.Println(err)
@@ -124,7 +138,25 @@ func RunTCPServerOnPort(port string) {
 			fmt.Println(err)
 			return
 		}
-		h := TCPServerHandler{port}
+		h := TCPHandler{port}
+		go h.ServeTCP(con)
+	}
+}
+
+func runProxy(port string) {
+	ln, err := net.Listen("tcp", port)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println("tcp server listening")
+	for {
+		con, err := ln.Accept()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		h := ProxyAwareHandler{port}
 		go h.ServeTCP(con)
 	}
 }
@@ -132,16 +164,16 @@ func RunTCPServerOnPort(port string) {
 func main() {
 	flag.Parse()
 
-	go RunHTTPServerOnPort(":8080")
-	go RunHTTPServerOnPort(":8989")
-	go RunHTTPServerOnPort(":9090")
+	go runHTTP(":8080")
+	go runHTTP(":8989")
+	go runHTTP(":9090")
 
-	go RunTCPServerOnPort(":4343")
-	go RunTCPServerOnPort(":4545")
-	go RunTCPServerOnPort(":5656")
+	go runProxy(":4343")
+	go runTCP(":4545")
+	go runTCP(":5656")
 
-	go RunHTTPsServerOnPort(":6443")
-	go RunHTTPsServerOnPort(":3443")
+	go runHTTPS(":6443")
+	go runHTTPS(":3443")
 
 	hold()
 }
