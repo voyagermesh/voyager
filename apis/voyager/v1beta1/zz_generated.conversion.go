@@ -718,6 +718,7 @@ func autoConvert_v1beta1_IngressSpec_To_voyager_IngressSpec(in *IngressSpec, out
 	out.SchedulerName = in.SchedulerName
 	out.Tolerations = *(*[]core_v1.Toleration)(unsafe.Pointer(&in.Tolerations))
 	out.ImagePullSecrets = *(*[]core_v1.LocalObjectReference)(unsafe.Pointer(&in.ImagePullSecrets))
+	out.ExternalIPs = *(*[]string)(unsafe.Pointer(&in.ExternalIPs))
 	return nil
 }
 
@@ -737,6 +738,7 @@ func autoConvert_voyager_IngressSpec_To_v1beta1_IngressSpec(in *voyager.IngressS
 	out.SchedulerName = in.SchedulerName
 	out.Tolerations = *(*[]core_v1.Toleration)(unsafe.Pointer(&in.Tolerations))
 	out.ImagePullSecrets = *(*[]core_v1.LocalObjectReference)(unsafe.Pointer(&in.ImagePullSecrets))
+	out.ExternalIPs = *(*[]string)(unsafe.Pointer(&in.ExternalIPs))
 	return nil
 }
 

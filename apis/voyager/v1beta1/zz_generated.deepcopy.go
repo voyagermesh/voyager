@@ -869,6 +869,11 @@ func (in *IngressSpec) DeepCopyInto(out *IngressSpec) {
 		*out = make([]core_v1.LocalObjectReference, len(*in))
 		copy(*out, *in)
 	}
+	if in.ExternalIPs != nil {
+		in, out := &in.ExternalIPs, &out.ExternalIPs
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 

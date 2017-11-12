@@ -486,9 +486,10 @@ func (c *hostPortController) newService() *core.Service {
 		},
 
 		Spec: core.ServiceSpec{
-			Type:      core.ServiceTypeClusterIP,
-			ClusterIP: "None",
-			Ports:     []core.ServicePort{},
+			Type:        core.ServiceTypeClusterIP,
+			ClusterIP:   "None",
+			Ports:       []core.ServicePort{},
+			ExternalIPs: c.Ingress.Spec.ExternalIPs,
 		},
 	}
 	svc.ObjectMeta = c.ensureOwnerReference(svc.ObjectMeta)

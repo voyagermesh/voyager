@@ -391,9 +391,10 @@ func (c *internalController) newService() *core.Service {
 			},
 		},
 		Spec: core.ServiceSpec{
-			Type:     core.ServiceTypeClusterIP,
-			Ports:    []core.ServicePort{},
-			Selector: c.Ingress.OffshootLabels(),
+			Type:        core.ServiceTypeClusterIP,
+			Ports:       []core.ServicePort{},
+			Selector:    c.Ingress.OffshootLabels(),
+			ExternalIPs: c.Ingress.Spec.ExternalIPs,
 		},
 	}
 	svc.ObjectMeta = c.ensureOwnerReference(svc.ObjectMeta)
