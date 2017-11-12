@@ -416,22 +416,17 @@ func TestTemplateAuth(t *testing.T) {
 				{Name: "first", IP: "10.244.2.2", Port: "2324"},
 			},
 		},
-		BasicAuth: &BasicAuth{
-			Realm: "Required",
-			Users: map[string][]AuthUser{
-				"auth": {
-					{
-						Username:  "foo",
-						Password:  "#bar",
-						Encrypted: true,
-					},
-					{
-						Username:  "foo2",
-						Password:  "bar2",
-						Encrypted: false,
-					},
-				},
-				"auth2": {
+	}
+	testParsedConfig := TemplateData{
+		SharedInfo: si,
+		TimeoutDefaults: map[string]string{
+			"client": "2s",
+			"fin":    "1d",
+		},
+		UserLists: []UserList{
+			{
+				Name: "auth",
+				Users: []AuthUser{
 					{
 						Username:  "foo",
 						Password:  "#bar",
@@ -444,13 +439,21 @@ func TestTemplateAuth(t *testing.T) {
 					},
 				},
 			},
-		},
-	}
-	testParsedConfig := TemplateData{
-		SharedInfo: si,
-		TimeoutDefaults: map[string]string{
-			"client": "2s",
-			"fin":    "1d",
+			{
+				Name: "auth2",
+				Users: []AuthUser{
+					{
+						Username:  "foo",
+						Password:  "#bar",
+						Encrypted: true,
+					},
+					{
+						Username:  "foo2",
+						Password:  "bar2",
+						Encrypted: false,
+					},
+				},
+			},
 		},
 		HTTPService: []*HTTPService{
 			{
@@ -536,21 +539,8 @@ func TestTemplateServiceAuth(t *testing.T) {
 				{Name: "first", IP: "10.244.2.2", Port: "2324"},
 			},
 			BasicAuth: &BasicAuth{
-				Realm: "Required",
-				Users: map[string][]AuthUser{
-					"auth": {
-						{
-							Username:  "foo",
-							Password:  "#bar",
-							Encrypted: true,
-						},
-						{
-							Username:  "foo2",
-							Password:  "bar2",
-							Encrypted: false,
-						},
-					},
-				},
+				Realm:     "Required",
+				UserLists: []string{"auth"},
 			},
 		},
 	}
@@ -572,21 +562,8 @@ func TestTemplateServiceAuth(t *testing.T) {
 								{Name: "first", IP: "10.244.2.2", Port: "2324"},
 							},
 							BasicAuth: &BasicAuth{
-								Realm: "Required",
-								Users: map[string][]AuthUser{
-									"auth-2": {
-										{
-											Username:  "foo",
-											Password:  "#bar",
-											Encrypted: true,
-										},
-										{
-											Username:  "foo2",
-											Password:  "bar2",
-											Encrypted: false,
-										},
-									},
-								},
+								Realm:     "Required",
+								UserLists: []string{"auth2"},
 							},
 						},
 					},
@@ -688,6 +665,70 @@ func TestTLSAuth(t *testing.T) {
 								{Name: "first", IP: "10.244.2.2", Port: "2324"},
 							},
 						},
+					},
+				},
+			},
+		},
+	}
+	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
+	if assert.Nil(t, err) {
+		config, err := RenderConfig(testParsedConfig)
+		assert.Nil(t, err)
+		if testing.Verbose() {
+			fmt.Println(err, "\n", config)
+		}
+	}
+}
+
+func TestHealthCheck(t *testing.T) {
+	si := &SharedInfo{
+		DefaultBackend: &Backend{
+			Name: "default",
+			Endpoints: []*Endpoint{
+				{Name: "aaa", IP: "10.244.2.1", Port: "2323"},
+				{Name: "bbb", IP: "10.244.2.1", Port: "2323", CheckHealth: true},
+				{Name: "ccc", IP: "10.244.2.1", Port: "2323", CheckHealth: true, CheckHealthPort: "5050"},
+				{Name: "ddd", IP: "10.244.2.1", Port: "2323", ExternalName: "name", DNSResolver: "one", UseDNSResolver: true, CheckHealth: true, CheckHealthPort: "5050"},
+			},
+		},
+	}
+	testParsedConfig := TemplateData{
+		SharedInfo: si,
+		HTTPService: []*HTTPService{
+			{
+				SharedInfo:    si,
+				FrontendName:  "one",
+				Port:          80,
+				FrontendRules: []string{},
+				Paths: []*HTTPPath{
+					{
+						Path: "/elijah",
+						Backend: Backend{
+							Name: "elijah",
+							Endpoints: []*Endpoint{
+								{Name: "aaa", IP: "10.244.2.1", Port: "2323"},
+								{Name: "bbb", IP: "10.244.2.1", Port: "2323", CheckHealth: true},
+								{Name: "ccc", IP: "10.244.2.1", Port: "2323", CheckHealth: true, CheckHealthPort: "5050"},
+								{Name: "ddd", IP: "10.244.2.1", Port: "2323", ExternalName: "name", DNSResolver: "one", UseDNSResolver: true, CheckHealth: true, CheckHealthPort: "5050"},
+							},
+						},
+					},
+				},
+			},
+		},
+		TCPService: []*TCPService{
+			{
+				SharedInfo:    si,
+				FrontendName:  "stefan",
+				Port:          "333",
+				FrontendRules: []string{},
+				Backend: Backend{
+					Name: "stefan",
+					Endpoints: []*Endpoint{
+						{Name: "aaa", IP: "10.244.2.1", Port: "2323"},
+						{Name: "bbb", IP: "10.244.2.1", Port: "2323", CheckHealth: true},
+						{Name: "ccc", IP: "10.244.2.1", Port: "2323", CheckHealth: true, CheckHealthPort: "5050"},
+						{Name: "ddd", IP: "10.244.2.1", Port: "2323", ExternalName: "name", DNSResolver: "one", UseDNSResolver: true, CheckHealth: true, CheckHealthPort: "5050"},
 					},
 				},
 			},

@@ -127,15 +127,16 @@ func (be *Backend) canonicalize() {
 }
 
 type Endpoint struct {
-	Name           string
-	IP             string
-	Port           string
-	Weight         int
-	MaxConnections int
-	ExternalName   string
-	UseDNSResolver bool
-	DNSResolver    string
-	CheckHealth    bool
+	Name            string
+	IP              string
+	Port            string
+	Weight          int
+	MaxConnections  int
+	ExternalName    string
+	UseDNSResolver  bool
+	DNSResolver     string
+	CheckHealth     bool
+	CheckHealthPort string
 
 	TLSOption string
 }

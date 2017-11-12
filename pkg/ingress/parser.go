@@ -143,6 +143,10 @@ func (c *controller) getEndpoints(svc *core.Service, servicePort *core.ServicePo
 
 					if svc.Annotations != nil {
 						ep.TLSOption = svc.Annotations[api.BackendTLSOptions]
+						if svc.Annotations[api.CheckHealth] == "true" {
+							ep.CheckHealth = true
+							ep.CheckHealthPort = svc.Annotations[api.CheckHealthPort]
+						}
 					}
 
 					eps = append(eps, ep)

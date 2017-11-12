@@ -975,4 +975,241 @@ var _ = Describe("IngressOperations", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
+
+	Describe("With Health Check Enabled", func() {
+		Describe("Without Port Specified (Default Server's Port)", func() {
+			BeforeEach(func() {
+				svcAnnotation := map[string]string{
+					api.CheckHealth: "true",
+				}
+				meta, err := f.Ingress.CreateResourceWithServiceAnnotation(svcAnnotation)
+				Expect(err).NotTo(HaveOccurred())
+
+				ing.Spec.Rules = []api.IngressRule{
+					{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
+									{
+										Path: "/testpath",
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: meta.Name,
+												ServicePort: intstr.FromInt(80),
+												BackendRule: []string{
+													"option httpchk",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				}
+			})
+
+			It("Should Response HTTP", func() {
+				By("Getting HTTP endpoints")
+				eps, err := f.Ingress.GetHTTPEndpoints(ing)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+				err = f.Ingress.DoHTTP(5, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok"))
+				})
+				Expect(err).NotTo(HaveOccurred())
+			})
+		})
+
+		Describe("With Correct Port but no Backend Rule", func() {
+			BeforeEach(func() {
+				svcAnnotation := map[string]string{
+					api.CheckHealth:     "true",
+					api.CheckHealthPort: "8080",
+				}
+				meta, err := f.Ingress.CreateResourceWithServiceAnnotation(svcAnnotation)
+				Expect(err).NotTo(HaveOccurred())
+
+				ing.Spec.Rules = []api.IngressRule{
+					{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
+									{
+										Path: "/testpath",
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: meta.Name,
+												ServicePort: intstr.FromInt(80),
+												BackendRule: []string{},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				}
+			})
+
+			It("Should Response HTTP", func() {
+				By("Getting HTTP endpoints")
+				eps, err := f.Ingress.GetHTTPEndpoints(ing)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+				err = f.Ingress.DoHTTP(5, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok"))
+				})
+				Expect(err).NotTo(HaveOccurred())
+			})
+		})
+
+		Describe("With Correct Port and Backend Rule", func() {
+			BeforeEach(func() {
+				svcAnnotation := map[string]string{
+					api.CheckHealth:     "true",
+					api.CheckHealthPort: "8080",
+				}
+				meta, err := f.Ingress.CreateResourceWithServiceAnnotation(svcAnnotation)
+				Expect(err).NotTo(HaveOccurred())
+
+				ing.Spec.Rules = []api.IngressRule{
+					{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
+									{
+										Path: "/testpath",
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: meta.Name,
+												ServicePort: intstr.FromInt(80),
+												BackendRule: []string{
+													"option httpchk GET /testpath/ok",
+													"http-check expect rstring (testpath/ok)",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				}
+			})
+
+			It("Should Response HTTP", func() {
+				By("Getting HTTP endpoints")
+				eps, err := f.Ingress.GetHTTPEndpoints(ing)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+				err = f.Ingress.DoHTTP(5, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok"))
+				})
+				Expect(err).NotTo(HaveOccurred())
+			})
+		})
+
+		Describe("With Correct Port but Wrong Response Matching", func() {
+			BeforeEach(func() {
+				svcAnnotation := map[string]string{
+					api.CheckHealth:     "true",
+					api.CheckHealthPort: "8080",
+				}
+				meta, err := f.Ingress.CreateResourceWithServiceAnnotation(svcAnnotation)
+				Expect(err).NotTo(HaveOccurred())
+
+				ing.Spec.Rules = []api.IngressRule{
+					{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
+									{
+										Path: "/testpath",
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: meta.Name,
+												ServicePort: intstr.FromInt(80),
+												BackendRule: []string{
+													"option httpchk GET /testpath/ok",
+													"http-check expect rstring (wrongpath)",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				}
+			})
+
+			It("Should Not Response", func() {
+				By("Getting HTTP endpoints")
+				eps, err := f.Ingress.GetHTTPEndpoints(ing)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+				err = f.Ingress.DoHTTPStatus(5, ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusServiceUnavailable))
+				})
+				Expect(err).NotTo(HaveOccurred())
+			})
+		})
+
+		Describe("With Wrong Port", func() {
+			BeforeEach(func() {
+				svcAnnotation := map[string]string{
+					api.CheckHealth:     "true",
+					api.CheckHealthPort: "5050",
+				}
+				meta, err := f.Ingress.CreateResourceWithServiceAnnotation(svcAnnotation)
+				Expect(err).NotTo(HaveOccurred())
+
+				ing.Spec.Rules = []api.IngressRule{
+					{
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
+									{
+										Path: "/testpath",
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: meta.Name,
+												ServicePort: intstr.FromInt(80),
+												BackendRule: []string{
+													"option httpchk",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				}
+			})
+
+			It("Should Not Response", func() {
+				By("Getting HTTP endpoints")
+				eps, err := f.Ingress.GetHTTPEndpoints(ing)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+				err = f.Ingress.DoHTTPStatus(5, ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusServiceUnavailable))
+				})
+				Expect(err).NotTo(HaveOccurred())
+			})
+		})
+	})
 })
