@@ -83,6 +83,10 @@ const (
 	// Enforces the use of the PROXY protocol over any connection accepted by HAProxy.
 	AcceptProxy = EngressKey + "/" + "accept-proxy"
 
+	// Enforces use of the PROXY protocol over any connection established to this server.
+	// Possible values are "v1", "v2", "v2-ssl" and "v2-ssl-cn"
+	SendProxy = EngressKey + "/" + "send-proxy"
+
 	// Annotations applied to resources offshoot from an ingress
 	OriginAPISchema = EngressKey + "/" + "origin-api-schema" // APISchema = {APIGroup}/{APIVersion}
 	OriginName      = EngressKey + "/" + "origin-name"
@@ -248,6 +252,26 @@ const (
 	ACMERegistrationData = "ACME_REGISTRATION_DATA"
 	ACMEServerURL        = "ACME_SERVER_URL"
 )
+
+type ProxyProtocolVersion string
+
+const (
+	proxyProtocolV1      ProxyProtocolVersion = "v1"
+	proxyProtocolV2      ProxyProtocolVersion = "v2"
+	proxyProtocolV2SSL   ProxyProtocolVersion = "v2-ssl"
+	proxyProtocolV2SSLCN ProxyProtocolVersion = "v2-ssl-cn"
+)
+
+func ProxyProtocolCommand(version string) string {
+	switch ProxyProtocolVersion(version) {
+	case proxyProtocolV1:
+		return "send-proxy"
+	case proxyProtocolV2, proxyProtocolV2SSL, proxyProtocolV2SSLCN:
+		return "send-proxy-" + version
+	default:
+		return ""
+	}
+}
 
 func (r Ingress) OffshootName() string {
 	return VoyagerPrefix + r.Name

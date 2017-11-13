@@ -137,8 +137,8 @@ type Endpoint struct {
 	DNSResolver     string
 	CheckHealth     bool
 	CheckHealthPort string
-
-	TLSOption string
+	TLSOption       string
+	SendProxy       string
 }
 
 type UserList struct {

@@ -147,6 +147,7 @@ func (c *controller) getEndpoints(svc *core.Service, servicePort *core.ServicePo
 							ep.CheckHealth = true
 							ep.CheckHealthPort = svc.Annotations[api.CheckHealthPort]
 						}
+						ep.SendProxy = api.ProxyProtocolCommand(svc.Annotations[api.SendProxy])
 					}
 
 					eps = append(eps, ep)
