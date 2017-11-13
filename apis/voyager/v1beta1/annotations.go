@@ -84,18 +84,8 @@ const (
 	AcceptProxy = EngressKey + "/" + "accept-proxy"
 
 	// Enforces use of the PROXY protocol over any connection established to this server.
+	// Possible values are "v1", "v2", "v2-ssl" and "v2-ssl-cn"
 	SendProxy = EngressKey + "/" + "send-proxy"
-
-	// Enforces use of the PROXYv2 protocol over any connection established to this server.
-	SendProxyV2 = EngressKey + "/" + "send-proxy-v2"
-
-	// Enforces use of the PROXYv2 protocol over any connection established to this server,
-	// sending SSL Certificate information.
-	SendProxyV2SSL = EngressKey + "/" + "send-proxy-v2-ssl"
-
-	// Enforces use of the PROXYv2 protocol over any connection established to this server,
-	// sending SSL Certificate information and, if present, the client's certficate CN.
-	SendProxyV2SSLCN = EngressKey + "/" + "send-proxy-v2-ssl-cn"
 
 	// Annotations applied to resources offshoot from an ingress
 	OriginAPISchema = EngressKey + "/" + "origin-api-schema" // APISchema = {APIGroup}/{APIVersion}
@@ -262,6 +252,26 @@ const (
 	ACMERegistrationData = "ACME_REGISTRATION_DATA"
 	ACMEServerURL        = "ACME_SERVER_URL"
 )
+
+type ProxyProtocolVersion string
+
+const (
+	proxyProtocolV1      ProxyProtocolVersion = "v1"
+	proxyProtocolV2      ProxyProtocolVersion = "v2"
+	proxyProtocolV2SSL   ProxyProtocolVersion = "v2-ssl"
+	proxyProtocolV2SSLCN ProxyProtocolVersion = "v2-ssl-cn"
+)
+
+func ProxyProtocolCommand(version string) string {
+	switch ProxyProtocolVersion(version) {
+	case proxyProtocolV1:
+		return "send-proxy"
+	case proxyProtocolV2, proxyProtocolV2SSL, proxyProtocolV2SSLCN:
+		return "send-proxy-" + version
+	default:
+		return ""
+	}
+}
 
 func (r Ingress) OffshootName() string {
 	return VoyagerPrefix + r.Name
@@ -483,26 +493,6 @@ func (r Ingress) KeepSourceIP() bool {
 
 func (r Ingress) AcceptProxy() bool {
 	v, _ := GetBool(r.Annotations, AcceptProxy)
-	return v
-}
-
-func (r Ingress) SendProxy() bool {
-	v, _ := GetBool(r.Annotations, SendProxy)
-	return v
-}
-
-func (r Ingress) SendProxyV2() bool {
-	v, _ := GetBool(r.Annotations, SendProxyV2)
-	return v
-}
-
-func (r Ingress) SendProxyV2SSL() bool {
-	v, _ := GetBool(r.Annotations, SendProxyV2SSL)
-	return v
-}
-
-func (r Ingress) SendProxyV2SSLCN() bool {
-	v, _ := GetBool(r.Annotations, SendProxyV2SSLCN)
 	return v
 }
 

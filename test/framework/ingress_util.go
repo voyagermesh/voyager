@@ -675,7 +675,7 @@ func (i *ingressInvocation) CreateResourceWithHostNames() (metav1.ObjectMeta, er
 					Containers: []core.Container{
 						{
 							Name:  "server",
-							Image: "appscode/test-server:1.1",
+							Image: testServerImage,
 							Env: []core.EnvVar{
 								{
 									Name: "POD_NAME",
@@ -789,7 +789,7 @@ func (i *ingressInvocation) CreateResourceWithBackendWeight() (metav1.ObjectMeta
 					Containers: []core.Container{
 						{
 							Name:  "server",
-							Image: "appscode/test-server:1.1",
+							Image: testServerImage,
 							Env: []core.EnvVar{
 								{
 									Name: "POD_NAME",
@@ -843,7 +843,7 @@ func (i *ingressInvocation) CreateResourceWithBackendWeight() (metav1.ObjectMeta
 					Containers: []core.Container{
 						{
 							Name:  "server",
-							Image: "appscode/test-server:1.1",
+							Image: testServerImage,
 							Env: []core.EnvVar{
 								{
 									Name: "POD_NAME",
@@ -951,7 +951,7 @@ func (i *ingressInvocation) CreateResourceWithBackendMaxConn(maxconn int) (metav
 					Containers: []core.Container{
 						{
 							Name:  "server",
-							Image: "appscode/test-server:2.2",
+							Image: testServerImage,
 							Env: []core.EnvVar{
 								{
 									Name: "POD_NAME",
@@ -1035,7 +1035,7 @@ func (i *ingressInvocation) CreateResourceWithServiceAuth(secret *core.Secret) (
 					Containers: []core.Container{
 						{
 							Name:  "server",
-							Image: "appscode/test-server:2.2",
+							Image: testServerImage,
 							Env: []core.EnvVar{
 								{
 									Name: "POD_NAME",
@@ -1115,7 +1115,7 @@ func (i *ingressInvocation) CreateResourceWithServiceAnnotation(svcAnnotation ma
 					Containers: []core.Container{
 						{
 							Name:  "server",
-							Image: "appscode/test-server:2.2",
+							Image: testServerImage,
 							Env: []core.EnvVar{
 								{
 									Name: "POD_NAME",
@@ -1130,6 +1130,85 @@ func (i *ingressInvocation) CreateResourceWithServiceAnnotation(svcAnnotation ma
 								{
 									Name:          "http-1",
 									ContainerPort: 8080,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+
+	return meta, err
+}
+
+func (i *ingressInvocation) CreateResourceWithSendProxy(version string) (metav1.ObjectMeta, error) {
+	meta := metav1.ObjectMeta{
+		Name:      i.UniqueName(),
+		Namespace: i.Namespace(),
+		Annotations: map[string]string{
+			api_v1beta1.SendProxy: version,
+		},
+	}
+	_, err := i.KubeClient.CoreV1().Services(i.Namespace()).Create(&core.Service{
+		ObjectMeta: meta,
+		Spec: core.ServiceSpec{
+			Ports: []core.ServicePort{
+				{
+					Name:       "proxy",
+					Port:       6767,
+					TargetPort: intstr.FromInt(6767),
+					Protocol:   "TCP",
+				},
+			},
+			Selector: map[string]string{
+				"app": meta.Name,
+			},
+		},
+	})
+	if err != nil {
+		return meta, err
+	}
+
+	_, err = i.KubeClient.ExtensionsV1beta1().Deployments(i.Namespace()).Create(&extensions.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "dep-1-" + meta.Name,
+			Namespace: meta.Namespace,
+		},
+		Spec: extensions.DeploymentSpec{
+			Replicas: types.Int32P(1),
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"app":         meta.Name,
+					"app-version": "v1",
+				},
+			},
+			Template: core.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"app":         meta.Name,
+						"app-version": "v1",
+					},
+				},
+				Spec: core.PodSpec{
+					Containers: []core.Container{
+						{
+							Name:  "server",
+							Image: testServerImage,
+							Env: []core.EnvVar{
+								{
+									Name: "POD_NAME",
+									ValueFrom: &core.EnvVarSource{
+										FieldRef: &core.ObjectFieldSelector{
+											FieldPath: "metadata.name",
+										},
+									},
+								},
+							},
+							Ports: []core.ContainerPort{
+								{
+									Name:          "proxy",
+									ContainerPort: 6767,
 								},
 							},
 						},

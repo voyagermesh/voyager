@@ -147,6 +147,7 @@ func (c *controller) getEndpoints(svc *core.Service, servicePort *core.ServicePo
 							ep.CheckHealth = true
 							ep.CheckHealthPort = svc.Annotations[api.CheckHealthPort]
 						}
+						ep.SendProxy = api.ProxyProtocolCommand(svc.Annotations[api.SendProxy])
 					}
 
 					eps = append(eps, ep)
@@ -246,17 +247,6 @@ func (c *controller) generateConfig() error {
 	if c.Ingress.AcceptProxy() {
 		si.AcceptProxy = true
 	}
-
-	if c.Ingress.SendProxyV2SSLCN() {
-		si.SendProxyV2SSLCN = true
-	} else if c.Ingress.SendProxyV2SSL() {
-		si.SendProxyV2SSL = true
-	} else if c.Ingress.SendProxyV2() {
-		si.SendProxyV2 = true
-	} else if c.Ingress.SendProxy() {
-		si.SendProxy = true
-	}
-	
 
 	userLists := make(map[string]haproxy.UserList)
 	var globalBasic *haproxy.BasicAuth

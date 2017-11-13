@@ -1015,7 +1015,7 @@ var _ = Describe("IngressOperations", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-				err = f.Ingress.DoHTTP(5, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoHTTP(5, "", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -1061,7 +1061,7 @@ var _ = Describe("IngressOperations", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-				err = f.Ingress.DoHTTP(5, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoHTTP(5, "", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -1110,7 +1110,7 @@ var _ = Describe("IngressOperations", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-				err = f.Ingress.DoHTTP(5, "", ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoHTTP(5, "", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -1159,7 +1159,7 @@ var _ = Describe("IngressOperations", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-				err = f.Ingress.DoHTTPStatus(5, ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoHTTPStatus(5, ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusServiceUnavailable))
 				})
 				Expect(err).NotTo(HaveOccurred())
@@ -1205,7 +1205,7 @@ var _ = Describe("IngressOperations", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-				err = f.Ingress.DoHTTPStatus(5, ing, eps, "GET", "/testpath/ok", func(r *testserverclient.Response) bool {
+				err = f.Ingress.DoHTTPStatus(5, ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusServiceUnavailable))
 				})
 				Expect(err).NotTo(HaveOccurred())

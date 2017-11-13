@@ -40,10 +40,6 @@ type SharedInfo struct {
 	MaxConnections        int
 	ForceMatchServicePort bool
 	Limit                 *Limit
-	SendProxy             bool
-	SendProxyV2           bool
-	SendProxyV2SSL        bool
-	SendProxyV2SSLCN      bool
 	SSLRedirect           bool
 }
 
@@ -141,8 +137,8 @@ type Endpoint struct {
 	DNSResolver     string
 	CheckHealth     bool
 	CheckHealthPort string
-
-	TLSOption string
+	TLSOption       string
+	SendProxy       string
 }
 
 type UserList struct {

@@ -253,4 +253,80 @@ var _ = Describe("IngressTCP", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
+
+	Describe("Proxy Protocol", func() {
+		Describe("With version 1", func() {
+			BeforeEach(func() {
+				meta, err := f.Ingress.CreateResourceWithSendProxy("v1")
+				Expect(err).NotTo(HaveOccurred())
+				ing.Spec.Rules = []api.IngressRule{
+					{
+						IngressRuleValue: api.IngressRuleValue{
+							TCP: &api.TCPIngressRuleValue{
+								Port: intstr.FromInt(4001),
+								Backend: api.IngressBackend{
+									ServiceName: meta.Name,
+									ServicePort: intstr.FromInt(6767),
+								},
+							},
+						},
+					},
+				}
+			})
+			It("Should test decoded proxy-protocol header", func() {
+				By("Getting HTTP endpoints")
+				eps, err := f.Ingress.GetHTTPEndpoints(ing)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+				svc, err := f.Ingress.GetOffShootService(ing)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(svc.Spec.Ports)).Should(Equal(1))
+				Expect(svc.Spec.Ports[0].Port).To(Equal(int32(4001)))
+
+				By("Checking tcp response")
+				err = f.Ingress.DoTCP(framework.NoRetry, ing, eps, func(r *client.Response) bool {
+					return r.Proxy.Version == 1
+				})
+				Expect(err).NotTo(HaveOccurred())
+			})
+		})
+
+		Describe("With version 2", func() {
+			BeforeEach(func() {
+				meta, err := f.Ingress.CreateResourceWithSendProxy("v2")
+				Expect(err).NotTo(HaveOccurred())
+				ing.Spec.Rules = []api.IngressRule{
+					{
+						IngressRuleValue: api.IngressRuleValue{
+							TCP: &api.TCPIngressRuleValue{
+								Port: intstr.FromInt(4001),
+								Backend: api.IngressBackend{
+									ServiceName: meta.Name,
+									ServicePort: intstr.FromInt(6767),
+								},
+							},
+						},
+					},
+				}
+			})
+			It("Should test decoded proxy-protocol header", func() {
+				By("Getting HTTP endpoints")
+				eps, err := f.Ingress.GetHTTPEndpoints(ing)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+				svc, err := f.Ingress.GetOffShootService(ing)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(svc.Spec.Ports)).Should(Equal(1))
+				Expect(svc.Spec.Ports[0].Port).To(Equal(int32(4001)))
+
+				By("Checking tcp response")
+				err = f.Ingress.DoTCP(framework.NoRetry, ing, eps, func(r *client.Response) bool {
+					return r.Proxy.Version == 2
+				})
+				Expect(err).NotTo(HaveOccurred())
+			})
+		})
+	})
 })
