@@ -1,5 +1,5 @@
-hash: 1e5bd97a19cee67f5d8e2b1c488a252ba41ca57841dadbb57549e8f235eba37d
-updated: 2017-11-10T01:32:24.322704706-08:00
+hash: f0a3a2db2ee898b4978fcf37c98f8af210307078d9338860390a346f0b96ae45
+updated: 2017-11-12T22:15:28.546355529-08:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -30,7 +30,7 @@ imports:
   - cmds
   - controller
 - name: github.com/appscode/kutil
-  version: 45e137524b677cd540822364a8c4efedf57db119
+  version: 4b4f67973f42bf9a5355c6b4c2d00040833d4143
   subpackages:
   - core/v1
   - rbac/v1beta1
@@ -449,7 +449,7 @@ imports:
   - googleapi
   - googleapi/internal/uritemplates
 - name: google.golang.org/appengine
-  version: 4f7eeb5305a4ba1966344836ba4af9996b7b4e05
+  version: 12d5545dc1cfa6047a286d5e853841b6471f4c19
   subpackages:
   - internal
   - internal/app_identity
@@ -485,7 +485,7 @@ imports:
 - name: gopkg.in/yaml.v2
   version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/api
-  version: fe29995db37613b9c5b2a647544cf627bfa8d299
+  version: 4df58c811fe2e65feb879227b2b245e4dc26e7ad
   subpackages:
   - admissionregistration/v1alpha1
   - apps/v1beta1
@@ -570,7 +570,7 @@ imports:
   - third_party/forked/golang/json
   - third_party/forked/golang/reflect
 - name: k8s.io/client-go
-  version: 35874c597fed17ca62cd197e516d7d5ff9a2958c
+  version: 60bf397d7966ab2285d3ba7701ead2cc376111d4
   subpackages:
   - discovery
   - discovery/fake
@@ -652,7 +652,9 @@ imports:
   subpackages:
   - pkg/common
 - name: k8s.io/kubernetes
-  version: f0efb3cb883751c5ffdbe6d515f3cb4fbe7b7acd
+  version: bd3f06169027dbe485a1791860b3768d54b199dd
+  repo: https://github.com/appscode/kubernetes.git
+  vcs: git
   subpackages:
   - pkg/api
   - pkg/api/helper
