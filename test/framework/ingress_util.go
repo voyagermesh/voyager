@@ -1,14 +1,12 @@
 package framework
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"net/url"
 	"os/exec"
 	"strconv"
 	"strings"
-	"text/template"
 	"time"
 
 	"github.com/appscode/go/log"
@@ -22,10 +20,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
-)
-
-var (
-	defaultUrlTemplate = template.Must(template.New("svc-template").Parse("http://{{.IP}}:{{.Port}}"))
 )
 
 func (i *ingressInvocation) GetSkeleton() *api_v1beta1.Ingress {
@@ -383,23 +377,10 @@ func getLoadBalancerURLs(provider string, k kubernetes.Interface, ing *api_v1bet
 					}
 					for _, port := range ports {
 						for _, ip := range ips {
-							var doc bytes.Buffer
-							err = defaultUrlTemplate.Execute(&doc, struct {
-								IP   string
-								Port int32
-							}{
-								ip,
-								port,
-							})
+							u, err := url.Parse(fmt.Sprintf("http://%s:%d", ip, port))
 							if err != nil {
 								return err
 							}
-
-							u, err := url.Parse(doc.String())
-							if err != nil {
-								return err
-							}
-
 							serverAddr = append(serverAddr, u.String())
 						}
 					}
@@ -447,19 +428,7 @@ func getHostPortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.I
 		for _, addr := range node.Status.Addresses {
 			if (addr.Type == core.NodeExternalIP) || (provider == "minikube" && addr.Type == core.NodeInternalIP) {
 				for _, port := range ports {
-					var doc bytes.Buffer
-					err = defaultUrlTemplate.Execute(&doc, struct {
-						IP   string
-						Port int32
-					}{
-						addr.Address,
-						port,
-					})
-					if err != nil {
-						return nil, err
-					}
-
-					u, err := url.Parse(doc.String())
+					u, err := url.Parse(fmt.Sprintf("http://%s:%d", addr.Address, port))
 					if err != nil {
 						return nil, err
 					}
@@ -503,19 +472,7 @@ func getNodePortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.I
 		for _, addr := range node.Status.Addresses {
 			if (addr.Type == core.NodeExternalIP) || (provider == "minikube" && addr.Type == core.NodeInternalIP) {
 				for _, port := range ports {
-					var doc bytes.Buffer
-					err = defaultUrlTemplate.Execute(&doc, struct {
-						IP   string
-						Port int32
-					}{
-						addr.Address,
-						port,
-					})
-					if err != nil {
-						return nil, err
-					}
-
-					u, err := url.Parse(doc.String())
+					u, err := url.Parse(fmt.Sprintf("http://%s:%d", addr.Address, port))
 					if err != nil {
 						return nil, err
 					}

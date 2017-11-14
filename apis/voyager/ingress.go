@@ -181,6 +181,9 @@ type IngressRuleValue struct {
 // to match against everything after the last '/' and before the first '?'
 // or '#'.
 type HTTPIngressRuleValue struct {
+	// The network address to listen HTTP(s) connections on.
+	Address string `json:"address,omitempty"`
+
 	// port to listen http(s) connections.
 	Port intstr.IntOrString `json:"port,omitempty"`
 
@@ -195,6 +198,9 @@ type HTTPIngressRuleValue struct {
 }
 
 type TCPIngressRuleValue struct {
+	// The network address to listen HTTP(s) connections on.
+	Address string `json:"address,omitempty"`
+
 	// port to listen tcp connections.
 	Port intstr.IntOrString `json:"port,omitempty"`
 

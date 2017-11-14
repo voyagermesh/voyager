@@ -2,6 +2,7 @@ package v1beta1
 
 import (
 	"fmt"
+	"net"
 	"strconv"
 	"strings"
 
@@ -22,6 +23,7 @@ type Paths map[string]indices
 // +k8s:openapi-gen=false
 type address struct {
 	Protocol       string // tcp, http
+	Address        string // IPv4, IPv6
 	PodPort        int
 	NodePort       int
 	FirstRuleIndex int
@@ -32,7 +34,7 @@ func (a address) String() string {
 	for h := range a.Hosts {
 		return fmt.Sprintf("%s:%d", h, a.PodPort)
 	}
-	return fmt.Sprintf(":%d", a.PodPort)
+	return fmt.Sprintf("%s:%d", a.Address, a.PodPort)
 }
 
 func (r *Ingress) Migrate() {
@@ -69,7 +71,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 		}
 	}
 
-	addrs := make(map[int]*address)
+	addrs := make(map[string]*address)
 	nodePorts := make(map[int]int)
 	usesHTTPRule := false
 	for ri, rule := range r.Spec.Rules {
@@ -96,9 +98,17 @@ func (r Ingress) IsValid(cloudProvider string) error {
 					return fmt.Errorf("spec.rule[%d].http.nodePort %s may not be specified when `LBType` is `HostPort`", ri, rule.HTTP.NodePort)
 				}
 			}
+			bindAddress, err := checkOptionalAddress(rule.HTTP.Address)
+			if err != nil {
+				return fmt.Errorf("spec.rule[%d].http.address %s is invalid. Reason: %s", ri, rule.HTTP.Address, err)
+			} else if err = checkExclusiveWildcard(bindAddress, podPort, addrs); err != nil {
+				return fmt.Errorf("spec.rule[%d].http.address %s is invalid. Reason: %s", ri, rule.HTTP.Address, err)
+			}
 
 			var a *address
-			if ea, found := addrs[podPort]; found {
+			var addrKey = fmt.Sprintf("%s:%d", bindAddress, podPort)
+
+			if ea, found := addrs[addrKey]; found {
 				if ea.Protocol == "tcp" {
 					return fmt.Errorf("spec.rule[%d].http is reusing port %d, also used in spec.rule[%d]", ri, ea.PodPort, ea.FirstRuleIndex)
 				}
@@ -111,6 +121,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 			} else {
 				a = &address{
 					Protocol:       "http",
+					Address:        bindAddress,
 					PodPort:        podPort,
 					NodePort:       nodePort,
 					FirstRuleIndex: ri,
@@ -123,7 +134,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 						nodePorts[nodePort] = ri
 					}
 				}
-				addrs[podPort] = a
+				addrs[addrKey] = a
 			}
 
 			for pi, path := range rule.HTTP.Paths {
@@ -152,19 +163,29 @@ func (r Ingress) IsValid(cloudProvider string) error {
 			}
 		} else if rule.TCP != nil && rule.HTTP == nil {
 			var a *address
+
 			if podPort, err := checkRequiredPort(rule.TCP.Port); err != nil {
 				return fmt.Errorf("spec.rule[%d].tcp.port %s is invalid. Reason: %s", ri, rule.TCP.Port, err)
 			} else {
-				if ea, found := addrs[podPort]; found {
+				bindAddress, err := checkOptionalAddress(rule.TCP.Address)
+				if err != nil {
+					return fmt.Errorf("spec.rule[%d].tcp.address %s is invalid. Reason: %s", ri, rule.TCP.Address, err)
+				} else if err = checkExclusiveWildcard(bindAddress, podPort, addrs); err != nil {
+					return fmt.Errorf("spec.rule[%d].tcp.address %s is invalid. Reason: %s", ri, rule.TCP.Address, err)
+				}
+
+				var addrKey = fmt.Sprintf("%s:%d", bindAddress, podPort)
+				if ea, found := addrs[addrKey]; found {
 					return fmt.Errorf("spec.rule[%d].tcp is reusing addr %s, also used in spec.rule[%d]", ri, ea, ea.FirstRuleIndex)
 				}
 				a = &address{
 					Protocol:       "tcp",
+					Address:        bindAddress,
 					PodPort:        podPort,
 					FirstRuleIndex: ri,
 					Hosts:          map[string]Paths{rule.Host: {}},
 				}
-				addrs[podPort] = a
+				addrs[addrKey] = a
 			}
 			if np, err := checkOptionalPort(rule.TCP.NodePort); err != nil {
 				return fmt.Errorf("spec.rule[%d].tcp.nodePort %s is invalid. Reason: %s", ri, rule.TCP.NodePort, err)
@@ -198,18 +219,19 @@ func (r Ingress) IsValid(cloudProvider string) error {
 
 	// If Ingress does not use any HTTP rule but defined a default backend, we need to open port 80
 	if !usesHTTPRule && r.Spec.Backend != nil {
-		addrs[80] = &address{Protocol: "http", PodPort: 80}
+		addrs["*:80"] = &address{Protocol: "http", Address: "*", PodPort: 80}
 	}
 	// ref: https://github.com/appscode/voyager/issues/188
 	if cloudProvider == "aws" && r.LBType() == LBTypeLoadBalancer {
 		if ans, ok := r.ServiceAnnotations(cloudProvider); ok {
 			if v, usesAWSCertManager := ans["service.beta.kubernetes.io/aws-load-balancer-ssl-cert"]; usesAWSCertManager && v != "" {
 				var tp80, sp443 bool
-				for svcPort, target := range addrs {
+				for ip, target := range addrs {
+					svcPort := strings.Split(ip, ":")[1]
 					if target.PodPort == 80 {
 						tp80 = true
 					}
-					if svcPort == 443 {
+					if svcPort == "443" {
 						sp443 = true
 					}
 				}
@@ -277,6 +299,38 @@ func checkOptionalPort(port intstr.IntOrString) (int, error) {
 		return strconv.Atoi(port.StrVal)
 	}
 	return 0, fmt.Errorf("invalid data type %v for port %s", port.Type, port)
+}
+
+func checkOptionalAddress(address string) (string, error) {
+	if address != "" && net.ParseIP(address) == nil {
+		return "", fmt.Errorf("could not parse IPv4 or IPv6 address")
+	} else if address == "" {
+		return "*", nil
+	}
+
+	return address, nil
+}
+
+func checkExclusiveWildcard(address string, port int, defined map[string]*address) error {
+	var wildcard = fmt.Sprintf("*:%d", port)
+
+	if address == "*" {
+		// If a wildcard already exists for the port, we've passed validation for this port before.
+		if _, ok := defined[wildcard]; ok {
+			return nil
+		}
+
+		// Check defined addresses for existing bind against the specified port and a non-wildcard IP.
+		for i := range defined {
+			if defined[i].PodPort == port && defined[i].Address != "*" {
+				return fmt.Errorf("cannot use wildcard address for port %d, bind already exists for address %s", port, defined[i].Address)
+			}
+		}
+	} else if _, ok := defined[wildcard]; ok {
+		return fmt.Errorf("cannot use address %s for port %d, one or more rules use a wildcard bind address", address, port)
+	}
+
+	return nil
 }
 
 func (c Certificate) IsValid(cloudProvider string) error {
