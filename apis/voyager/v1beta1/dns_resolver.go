@@ -3,6 +3,7 @@ package v1beta1
 import (
 	"fmt"
 
+	"github.com/appscode/kutil/meta"
 	core "k8s.io/api/core/v1"
 )
 
@@ -39,34 +40,34 @@ type DNSResolver struct {
 
 func DNSResolverForService(svc core.Service) (useDNSResolver bool, resolver *DNSResolver, err error) {
 	if svc.Spec.Type != core.ServiceTypeExternalName {
-		return false, nil, fmt.Errorf("Service %s@%s is expected to be of type ServiceTypeExternalName, actual type %s", svc.Name, svc.Namespace, svc.Spec.Type)
+		return false, nil, fmt.Errorf("service %s@%s is expected to be of type ServiceTypeExternalName, actual type %s", svc.Name, svc.Namespace, svc.Spec.Type)
 	}
 
 	// getBool returns an error if the value is empty string, or the key is not present
 	// So, we ignored error.
-	useDNSResolver, _ = GetBool(svc.Annotations, UseDNSResolver)
+	useDNSResolver, _ = meta.GetBool(svc.Annotations, UseDNSResolver)
 	if !useDNSResolver {
 		return
 	}
 
 	resolver = &DNSResolver{Name: svc.Spec.ExternalName}
-	resolver.NameServer, err = GetList(svc.Annotations, DNSResolverNameservers)
+	resolver.NameServer, err = meta.GetList(svc.Annotations, DNSResolverNameservers)
 	if err != nil {
 		return
 	}
-	if ch, e2 := GetBool(svc.Annotations, DNSResolverCheckHealth); e2 == nil {
+	if ch, e2 := meta.GetBool(svc.Annotations, DNSResolverCheckHealth); e2 == nil {
 		resolver.CheckHealth = ch
 	} else {
 		resolver.CheckHealth = len(resolver.NameServer) > 0
 	}
-	resolver.Retries, err = GetInt(svc.Annotations, DNSResolverRetries)
+	resolver.Retries, err = meta.GetInt(svc.Annotations, DNSResolverRetries)
 	if err != nil {
 		return
 	}
-	resolver.Hold, err = GetMap(svc.Annotations, DNSResolverHold)
+	resolver.Hold, err = meta.GetMap(svc.Annotations, DNSResolverHold)
 	if err != nil {
 		return
 	}
-	resolver.Timeout, err = GetMap(svc.Annotations, DNSResolverTimeout)
+	resolver.Timeout, err = meta.GetMap(svc.Annotations, DNSResolverTimeout)
 	return
 }

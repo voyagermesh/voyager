@@ -9,11 +9,12 @@ import (
 	"github.com/appscode/go/errors"
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
+	tools "github.com/appscode/kutil/tools/monitoring"
+	"github.com/appscode/kutil/tools/monitoring/agents"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
-	"github.com/appscode/voyager/pkg/monitor"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	"github.com/google/go-cmp/cmp"
@@ -199,13 +200,13 @@ func (c *internalController) Create() error {
 		}
 	}
 
-	monSpec, err := c.Ingress.MonitorSpec()
+	monSpec, err := tools.Parse(c.Ingress.Annotations, api.EngressKey, api.DefaultExporterPortNumber)
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
-	if monSpec != nil && monSpec.Prometheus != nil {
-		ctrl := monitor.NewPrometheusController(c.KubeClient, c.CRDClient, c.PromClient)
-		err := ctrl.AddMonitor(c.Ingress, monSpec)
+	if monSpec != nil {
+		agent := agents.New(monSpec.Agent, c.KubeClient, c.CRDClient, c.PromClient)
+		err := agent.Add(c.Ingress.StatsAccessor(), monSpec)
 		// Error Ignored intentionally
 		if err != nil {
 			c.recorder.Eventf(
@@ -366,13 +367,13 @@ func (c *internalController) Delete() {
 	if err != nil {
 		c.logger.Errorln(err)
 	}
-	monSpec, err := c.Ingress.MonitorSpec()
+	monSpec, err := tools.Parse(c.Ingress.Annotations, api.EngressKey, api.DefaultExporterPortNumber)
 	if err != nil {
 		c.logger.Errorln(err)
 	}
-	if monSpec != nil && monSpec.Prometheus != nil {
-		ctrl := monitor.NewPrometheusController(c.KubeClient, c.CRDClient, c.PromClient)
-		ctrl.DeleteMonitor(c.Ingress, monSpec)
+	if monSpec != nil {
+		agent := agents.New(monSpec.Agent, c.KubeClient, c.CRDClient, c.PromClient)
+		agent.Delete(c.Ingress.StatsAccessor(), monSpec)
 	}
 	if c.Ingress.Stats() {
 		c.ensureStatsServiceDeleted()

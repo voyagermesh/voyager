@@ -144,18 +144,3 @@ func ipnet(spec string) (string, bool) {
 	}
 	return ipnet.String(), true
 }
-
-func mergeAnnotations(obj, old, new map[string]string) map[string]string {
-	if obj == nil {
-		obj = make(map[string]string)
-	}
-
-	for k := range old {
-		delete(obj, k)
-	}
-
-	for k, v := range new {
-		obj[k] = v
-	}
-	return obj
-}

@@ -689,6 +689,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 				SchemaProps: spec.SchemaProps{
 					Description: "HTTPIngressRuleValue is a list of http selectors pointing to backends. In the example: http://<host>/<path>?<searchpart> -> backend where where parts of the url correspond to RFC 3986, this resource will be used to match against everything after the last '/' and before the first '?' or '#'.",
 					Properties: map[string]spec.Schema{
+						"address": {
+							SchemaProps: spec.SchemaProps{
+								Description: "The network address to listen HTTP(s) connections on.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
 						"port": {
 							SchemaProps: spec.SchemaProps{
 								Description: "port to listen http(s) connections.",
@@ -1164,6 +1171,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
 					Properties: map[string]spec.Schema{
+						"address": {
+							SchemaProps: spec.SchemaProps{
+								Description: "The network address to listen TCP connections on.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
 						"port": {
 							SchemaProps: spec.SchemaProps{
 								Description: "port to listen tcp connections.",
@@ -1291,6 +1305,22 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 				},
 			},
 			Dependencies: []string{},
+		},
+		"github.com/appscode/voyager/apis/voyager/v1beta1.statsService": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Properties: map[string]spec.Schema{
+						"ing": {
+							SchemaProps: spec.SchemaProps{
+								Ref: ref("github.com/appscode/voyager/apis/voyager/v1beta1.Ingress"),
+							},
+						},
+					},
+					Required: []string{"ing"},
+				},
+			},
+			Dependencies: []string{
+				"github.com/appscode/voyager/apis/voyager/v1beta1.Ingress"},
 		},
 	}
 }

@@ -5,7 +5,8 @@ import (
 
 	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
-	"github.com/appscode/kutil"
+	"github.com/appscode/kutil/meta"
+	tools "github.com/appscode/kutil/tools/monitoring"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,7 +17,7 @@ import (
 
 // Blocks caller. Intended to be called as a Go routine.
 func (op *Operator) initServiceMonitorWatcher() cache.Controller {
-	if !kutil.IsPreferredAPIResource(op.KubeClient, prom.Group+"/"+prom.Version, prom.ServiceMonitorsKind) {
+	if !meta.IsPreferredAPIResource(op.KubeClient, prom.Group+"/"+prom.Version, prom.ServiceMonitorsKind) {
 		log.Warningf("Skipping watching non-preferred GroupVersion:%s Kind:%s", prom.Group+"/"+prom.Version, prom.ServiceMonitorsKind)
 		return nil
 	}
@@ -55,7 +56,7 @@ func (op *Operator) restoreServiceMonitorIfRequired(ctx context.Context, svcmon 
 	if err != nil {
 		return err
 	}
-	monSpec, err := engress.MonitorSpec()
+	monSpec, err := tools.Parse(engress.Annotations, api.EngressKey, api.DefaultExporterPortNumber)
 	if err != nil {
 		return err
 	}

@@ -2,21 +2,21 @@ package util
 
 import (
 	"errors"
-	"fmt"
-	"reflect"
 
-	"github.com/appscode/kutil"
+	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	"github.com/kubernetes/apimachinery/pkg/conversion"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 func GetGroupVersionKind(v interface{}) schema.GroupVersionKind {
-	return api.SchemeGroupVersion.WithKind(kutil.GetKind(v))
+	return api.SchemeGroupVersion.WithKind(meta.GetKind(v))
 }
 
 func AssignTypeKind(v interface{}) error {
-	if reflect.ValueOf(v).Kind() != reflect.Ptr {
-		return fmt.Errorf("%v must be a pointer", v)
+	_, err := conversion.EnforcePtr(v)
+	if err != nil {
+		return err
 	}
 
 	switch u := v.(type) {
