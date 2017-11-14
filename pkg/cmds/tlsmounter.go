@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/appscode/go/log"
-	"github.com/appscode/kutil"
+	"github.com/appscode/kutil/meta"
 	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/tlsmounter"
 	"github.com/spf13/cobra"
@@ -17,7 +17,7 @@ import (
 var (
 	opts = tlsmounter.Options{
 		IngressRef: core.ObjectReference{
-			Namespace: kutil.Namespace(),
+			Namespace: meta.Namespace(),
 		},
 		MountPath: "/etc/ssl/private/haproxy",
 		CmdFile:   "",

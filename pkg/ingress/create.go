@@ -5,6 +5,8 @@ import (
 	"reflect"
 
 	"github.com/appscode/go/errors"
+	core_util "github.com/appscode/kutil/core/v1"
+	tools "github.com/appscode/kutil/tools/monitoring"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -83,7 +85,7 @@ func (c *controller) getExporterSidecar() (*core.Container, error) {
 	if !c.Ingress.Stats() {
 		return nil, nil // Don't add sidecar is stats is not exposed.
 	}
-	monSpec, err := c.Ingress.MonitorSpec()
+	monSpec, err := tools.Parse(c.Ingress.Annotations, api.EngressKey, api.DefaultExporterPortNumber)
 	if err != nil {
 		return nil, err
 	}
@@ -110,60 +112,40 @@ func (c *controller) getExporterSidecar() (*core.Container, error) {
 }
 
 func (c *controller) ensureStatsService() error {
-	svc := &core.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      c.Ingress.StatsServiceName(),
-			Namespace: c.Ingress.Namespace,
-			Annotations: map[string]string{
-				api.OriginAPISchema: c.Ingress.APISchema(),
-				api.OriginName:      c.Ingress.GetName(),
-			},
-			Labels: c.Ingress.StatsLabels(),
-		},
-		Spec: core.ServiceSpec{
-			Ports: []core.ServicePort{
-				{
-					Name:       api.StatsPortName,
-					Protocol:   "TCP",
-					Port:       int32(c.Ingress.StatsPort()),
-					TargetPort: intstr.FromString(api.StatsPortName),
-				},
-			},
-			Selector: c.Ingress.OffshootLabels(),
-		},
-	}
-	monSpec, err := c.Ingress.MonitorSpec()
-	if err == nil && monSpec != nil && monSpec.Prometheus != nil {
-		svc.Spec.Ports = append(svc.Spec.Ports, core.ServicePort{
-			Name:       api.ExporterPortName,
-			Protocol:   "TCP",
-			Port:       int32(monSpec.Prometheus.Port),
-			TargetPort: intstr.FromString(api.ExporterPortName),
-		})
+	meta := metav1.ObjectMeta{
+		Name:      c.Ingress.StatsServiceName(),
+		Namespace: c.Ingress.Namespace,
 	}
 
-	s, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.StatsServiceName(), metav1.GetOptions{})
-	if kerr.IsNotFound(err) {
-		c.logger.Infof("Creating Service %s/%s", svc.Namespace, svc.Name)
-		_, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Create(svc)
-		if err != nil {
-			return errors.FromErr(err).Err()
+	_, err := core_util.CreateOrPatchService(c.KubeClient, meta, func(in *core.Service) *core.Service {
+		in.Labels = c.Ingress.StatsLabels()
+		if in.Annotations == nil {
+			in.Annotations = map[string]string{}
 		}
-		return err
-	} else if err != nil {
-		c.logger.Errorln(err)
-		return errors.FromErr(err).Err()
-	}
-	s.Labels = svc.Labels
-	s.Annotations = svc.Annotations
-	s.Spec.Ports = svc.Spec.Ports
-	s.Spec.Selector = svc.Spec.Selector
-	c.logger.Infof("Updating Service %s/%s", s.Namespace, s.Name)
-	_, err = c.KubeClient.CoreV1().Services(s.Namespace).Update(s)
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
-	return nil
+		in.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
+		in.Annotations[api.OriginName] = c.Ingress.GetName()
+
+		in.Spec.Selector = c.Ingress.OffshootLabels()
+		in.Spec.Ports = []core.ServicePort{
+			{
+				Name:       api.StatsPortName,
+				Protocol:   core.ProtocolTCP,
+				Port:       int32(c.Ingress.StatsPort()),
+				TargetPort: intstr.FromString(api.StatsPortName),
+			},
+		}
+		monSpec, err := tools.Parse(c.Ingress.Annotations, api.EngressKey, api.DefaultExporterPortNumber)
+		if err == nil && monSpec != nil && monSpec.Prometheus != nil {
+			in.Spec.Ports = append(in.Spec.Ports, core.ServicePort{
+				Name:       api.ExporterPortName,
+				Protocol:   core.ProtocolTCP,
+				Port:       int32(monSpec.Prometheus.Port),
+				TargetPort: intstr.FromString(api.ExporterPortName),
+			})
+		}
+		return in
+	})
+	return err
 }
 
 func (c *controller) ensureOriginAnnotations(annotation map[string]string) (map[string]string, bool) {

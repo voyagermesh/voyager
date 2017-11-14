@@ -8,7 +8,7 @@ import (
 
 	"github.com/appscode/go/log"
 	hpe "github.com/appscode/haproxy_exporter/exporter"
-	"github.com/appscode/kutil"
+	"github.com/appscode/kutil/meta"
 	"github.com/appscode/pat"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
@@ -38,7 +38,7 @@ var (
 	opt                       = config.Options{
 		HAProxyImage:         "appscode/haproxy:1.7.9-5.0.0-rc.3",
 		ExporterSidecarImage: "appscode/voyager:5.0.0-rc.3",
-		OperatorNamespace:    kutil.Namespace(),
+		OperatorNamespace:    meta.Namespace(),
 		OperatorService:      "voyager-operator",
 		EnableRBAC:           false,
 		ResyncPeriod:         5 * time.Minute,

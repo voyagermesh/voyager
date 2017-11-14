@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"github.com/appscode/go/log"
-	"github.com/appscode/kutil"
+	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
@@ -76,7 +76,7 @@ func (op *Operator) ensureCustomResourceDefinitions() error {
 			}
 		}
 	}
-	return kutil.WaitForCRDReady(op.KubeClient.CoreV1().RESTClient(), crds)
+	return apiext_util.WaitForCRDReady(op.KubeClient.CoreV1().RESTClient(), crds)
 }
 
 func (op *Operator) Run() {
