@@ -178,4 +178,57 @@ var _ = Describe("IngressHostPort", func() {
 			}
 		})
 	})
+
+	Describe("Frontend bind address (http)", func() {
+		BeforeEach(func() {
+			ing.Spec.Rules[0].HTTP.Port = intstr.FromInt(2001)
+			ing.Spec.Rules[0].HTTP.Address = "192.168.99.100" // minikube ip
+		})
+
+		It("Should response HTTP", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+					Expect(r.Method).Should(Equal("GET")) &&
+					Expect(r.Path).Should(Equal("/testpath/ok"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+	Describe("Frontend bind address (tcp)", func() {
+		BeforeEach(func() {
+			svcName := ing.Spec.Rules[0].HTTP.Paths[0].Backend.ServiceName
+			ing.Spec.Rules = []api.IngressRule{
+				{
+					IngressRuleValue: api.IngressRuleValue{
+						TCP: &api.TCPIngressRuleValue{
+							Port:    intstr.FromInt(4001),
+							Address: "192.168.99.100", // minikube ip
+							Backend: api.IngressBackend{
+								ServiceName: svcName,
+								ServicePort: intstr.FromInt(4545),
+							},
+						},
+					},
+				},
+			}
+		})
+
+		It("Should response TCP", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			err = f.Ingress.DoTCP(framework.NoRetry, ing, eps, func(r *client.Response) bool {
+				return Expect(r.ServerPort).Should(Equal(":4545"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
 })
