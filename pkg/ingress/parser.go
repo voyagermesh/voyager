@@ -710,13 +710,20 @@ func (c *controller) getTLSAuth(cfg *api.TLSAuth) (*haproxy.TLSAuth, error) {
 	return htls, nil
 }
 
-// TODO @ dipta: should we need to handle default backend ?
-// TODO @ dipta: what about when len(rule.HTTP.Paths) == 0 ?
 func (c *controller) convertRulesForSSLPassthrough() error {
+	usesHTTPRule := false
 	for i, rule := range c.Ingress.Spec.Rules {
 		if rule.HTTP != nil {
-			if rule.TCP != nil || len(rule.HTTP.Paths) != 1 {
-				return fmt.Errorf("can not convert http-rule to tcp-rule")
+			usesHTTPRule = true
+
+			if len(rule.HTTP.Paths) != 1 {
+				return fmt.Errorf("spec.rule[%d].http can't use multiple paths with %s annotation", i, api.SSLPassthrough)
+			}
+			if len(rule.HTTP.Paths[0].Backend.HeaderRule) != 0 {
+				return fmt.Errorf("spec.rule.http.paths[%d].backend.headerRule is not supported with %s annotation", i, api.SSLPassthrough)
+			}
+			if len(rule.HTTP.Paths[0].Backend.RewriteRule) != 0 {
+				return fmt.Errorf("spec.rule.http.paths[%d].backend.rewriteRule is not supported with %s annotation", i, api.SSLPassthrough)
 			}
 
 			if rule.HTTP.Port.IntValue() == 0 {
@@ -726,7 +733,6 @@ func (c *controller) convertRulesForSSLPassthrough() error {
 					rule.HTTP.Port = intstr.FromInt(80)
 				}
 			}
-
 			rule.TCP = &api.TCPIngressRuleValue{
 				Address:  rule.HTTP.Address,
 				Port:     rule.HTTP.Port,
@@ -738,5 +744,29 @@ func (c *controller) convertRulesForSSLPassthrough() error {
 			c.Ingress.Spec.Rules[i] = rule
 		}
 	}
-	return c.Ingress.IsValid(c.Opt.CloudProvider)
+
+	if !usesHTTPRule && c.Ingress.Spec.Backend != nil {
+		if len(c.Ingress.Spec.Backend.HeaderRule) != 0 {
+			return fmt.Errorf("spec.backend.headerRule is not supported with %s annotation", api.SSLPassthrough)
+		}
+		if len(c.Ingress.Spec.Backend.RewriteRule) != 0 {
+			return fmt.Errorf("spec.backend.rewriteRule is not supported with %s annotation", api.SSLPassthrough)
+		}
+		rule := api.IngressRule{
+			IngressRuleValue: api.IngressRuleValue{
+				TCP: &api.TCPIngressRuleValue{
+					Port:    intstr.FromInt(80),
+					Backend: c.Ingress.Spec.Backend.IngressBackend,
+				},
+			},
+		}
+		c.Ingress.Spec.Rules = append(c.Ingress.Spec.Rules, rule)
+		c.Ingress.Spec.Backend = nil
+	}
+
+	err := c.Ingress.IsValid(c.Opt.CloudProvider)
+	if err != nil {
+		return fmt.Errorf("%s annotation can't be used. Reason: %v", api.SSLPassthrough, err)
+	}
+	return err
 }
