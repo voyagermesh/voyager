@@ -25,7 +25,7 @@ func (agent *PrometheusBuiltin) Add(sp api.StatsAccessor, spec *api.AgentSpec) e
 }
 
 func (agent *PrometheusBuiltin) Update(sp api.StatsAccessor, old, new *api.AgentSpec) error {
-	_, err := core_util.TryPatchService(agent.k8sClient, metav1.ObjectMeta{Namespace: sp.Namespace(), Name: sp.ServiceName()}, func(in *core.Service) *core.Service {
+	_, err := core_util.TryPatchService(agent.k8sClient, metav1.ObjectMeta{Namespace: sp.GetNamespace(), Name: sp.ServiceName()}, func(in *core.Service) *core.Service {
 		if in.Annotations == nil {
 			in.Annotations = map[string]string{}
 		}
@@ -38,6 +38,8 @@ func (agent *PrometheusBuiltin) Update(sp api.StatsAccessor, old, new *api.Agent
 		in.Annotations["prometheus.io/path"] = sp.Path()
 		if new.Prometheus.Port > 0 {
 			in.Annotations["prometheus.io/port"] = fmt.Sprintf("%d", new.Prometheus.Port)
+		} else {
+			delete(in.Annotations, "prometheus.io/port")
 		}
 		return in
 	})
@@ -45,7 +47,7 @@ func (agent *PrometheusBuiltin) Update(sp api.StatsAccessor, old, new *api.Agent
 }
 
 func (agent *PrometheusBuiltin) Delete(sp api.StatsAccessor, spec *api.AgentSpec) error {
-	_, err := core_util.TryPatchService(agent.k8sClient, metav1.ObjectMeta{Namespace: sp.Namespace(), Name: sp.ServiceName()}, func(in *core.Service) *core.Service {
+	_, err := core_util.TryPatchService(agent.k8sClient, metav1.ObjectMeta{Namespace: sp.GetNamespace(), Name: sp.ServiceName()}, func(in *core.Service) *core.Service {
 		if in.Annotations != nil {
 			delete(in.Annotations, "prometheus.io/scrape")
 			delete(in.Annotations, "prometheus.io/scheme")

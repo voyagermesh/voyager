@@ -96,15 +96,21 @@ func (agent *PrometheusCoreosOperator) ensureServiceMonitor(sp api.StatsAccessor
 	}
 
 	if update {
+		svc, err := agent.k8sClient.CoreV1().Services(sp.GetNamespace()).Get(sp.ServiceName(), metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
 		actual.Labels = new.Prometheus.Labels
-		actual.Spec.Selector = sp.Selector()
+		actual.Spec.Selector = metav1.LabelSelector{
+			MatchLabels: svc.Labels,
+		}
 		actual.Spec.NamespaceSelector = prom.NamespaceSelector{
-			MatchNames: []string{sp.Namespace()},
+			MatchNames: []string{sp.GetNamespace()},
 		}
 		for i := range actual.Spec.Endpoints {
 			actual.Spec.Endpoints[i].Interval = new.Prometheus.Interval
 		}
-		_, err := agent.promClient.ServiceMonitors(new.Prometheus.Namespace).Update(actual)
+		_, err = agent.promClient.ServiceMonitors(new.Prometheus.Namespace).Update(actual)
 		return err
 	}
 
@@ -112,7 +118,7 @@ func (agent *PrometheusCoreosOperator) ensureServiceMonitor(sp api.StatsAccessor
 }
 
 func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor, spec *api.AgentSpec) error {
-	svc, err := agent.k8sClient.CoreV1().Services(sp.Namespace()).Get(sp.ServiceName(), metav1.GetOptions{})
+	svc, err := agent.k8sClient.CoreV1().Services(sp.GetNamespace()).Get(sp.ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -134,7 +140,7 @@ func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor
 		},
 		Spec: prom.ServiceMonitorSpec{
 			NamespaceSelector: prom.NamespaceSelector{
-				MatchNames: []string{sp.Namespace()},
+				MatchNames: []string{sp.GetNamespace()},
 			},
 			Endpoints: []prom.Endpoint{
 				{
@@ -143,7 +149,9 @@ func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor
 					Path:     sp.Path(),
 				},
 			},
-			Selector: sp.Selector(),
+			Selector: metav1.LabelSelector{
+				MatchLabels: svc.Labels,
+			},
 		},
 	}
 	if _, err := agent.promClient.ServiceMonitors(spec.Prometheus.Namespace).Create(sm); !kerr.IsAlreadyExists(err) {
