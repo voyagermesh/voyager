@@ -3,9 +3,10 @@ package monitoring
 import (
 	"fmt"
 
+	"path"
+
 	"github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/monitoring/api"
-	"path"
 )
 
 const (

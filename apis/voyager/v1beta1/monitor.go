@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/appscode/kutil/tools/monitoring/api"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -21,7 +20,7 @@ type statsService struct {
 	ing Ingress
 }
 
-func (s statsService) Namespace() string {
+func (s statsService) GetNamespace() string {
 	return s.ing.Namespace
 }
 
@@ -31,12 +30,6 @@ func (s statsService) ServiceName() string {
 
 func (s statsService) ServiceMonitorName() string {
 	return VoyagerPrefix + s.ing.Namespace + "-" + s.ing.Name
-}
-
-func (s statsService) Selector() metav1.LabelSelector {
-	return metav1.LabelSelector{
-		MatchLabels: s.ing.StatsLabels(),
-	}
 }
 
 func (s statsService) Path() string {

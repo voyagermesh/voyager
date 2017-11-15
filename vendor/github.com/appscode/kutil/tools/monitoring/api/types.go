@@ -1,9 +1,5 @@
 package api
 
-import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
-
 type AgentType string
 
 const (
@@ -41,10 +37,9 @@ type Agent interface {
 }
 
 type StatsAccessor interface {
-	Namespace() string
+	GetNamespace() string
 	ServiceName() string
 	ServiceMonitorName() string
-	Selector() metav1.LabelSelector
 	Path() string
 	Scheme() string
 }
