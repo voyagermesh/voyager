@@ -717,13 +717,13 @@ func (c *controller) convertRulesForSSLPassthrough() error {
 			usesHTTPRule = true
 
 			if len(rule.HTTP.Paths) != 1 {
-				return fmt.Errorf("spec.rule[%d].http can't use multiple paths with %s annotation", i, api.SSLPassthrough)
+				return fmt.Errorf("spec.rules[%d].http can't use multiple paths with %s annotation", i, api.SSLPassthrough)
 			}
 			if len(rule.HTTP.Paths[0].Backend.HeaderRule) != 0 {
-				return fmt.Errorf("spec.rule.http.paths[%d].backend.headerRule is not supported with %s annotation", i, api.SSLPassthrough)
+				return fmt.Errorf("spec.rules[%d].http.paths[0].backend.headerRule is not supported with %s annotation", i, api.SSLPassthrough)
 			}
 			if len(rule.HTTP.Paths[0].Backend.RewriteRule) != 0 {
-				return fmt.Errorf("spec.rule.http.paths[%d].backend.rewriteRule is not supported with %s annotation", i, api.SSLPassthrough)
+				return fmt.Errorf("spec.rules[%d].http.paths[0].backend.rewriteRule is not supported with %s annotation", i, api.SSLPassthrough)
 			}
 
 			if rule.HTTP.Port.IntValue() == 0 {
