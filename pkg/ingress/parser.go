@@ -23,16 +23,18 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, userLists map[string]haproxy.UserList, name string, port intstr.IntOrString, hostNames []string) (*haproxy.Backend, error) {
-	c.logger.Infoln("getting endpoints for ", c.Ingress.Namespace, name, "port", port)
+func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, userLists map[string]haproxy.UserList, bkSvc string, port intstr.IntOrString, hostNames []string) (*haproxy.Backend, error) {
+	c.logger.Infoln("getting endpoints for ", c.Ingress.Namespace, bkSvc, "port", port)
 
-	// the following lines giving support to
-	// serviceName.namespaceName or serviceName in the same namespace to the
-	// ingress
-	var namespace string = c.Ingress.Namespace
+	name := bkSvc
+	namespace := c.Ingress.Namespace
 	if strings.Contains(name, ".") {
-		namespace = name[strings.Index(name, ".")+1:]
-		name = name[:strings.Index(name, ".")]
+		idx := strings.Index(name, ".")
+		name = name[:idx]
+		namespace = name[idx+1:]
+	}
+	if c.Opt.RestrictToOperatorNamespace && namespace != c.Opt.OperatorNamespace {
+		return nil, fmt.Errorf("can't use service %s as backend, since voyager operator is restricted namespace %s", bkSvc, c.Opt.OperatorNamespace)
 	}
 
 	c.logger.Infoln("looking for services in namespace", namespace, "with name", name)
