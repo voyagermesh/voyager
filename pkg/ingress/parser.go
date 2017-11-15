@@ -206,6 +206,12 @@ func getBackendName(r *api.Ingress, be api.IngressBackend) string {
 }
 
 func (c *controller) generateConfig() error {
+	if c.Ingress.SSLPassthrough() {
+		if err := c.convertRulesForSSLPassthrough(); err != nil {
+			return err
+		}
+	}
+
 	var td haproxy.TemplateData
 
 	var nodePortSvc *core.Service
@@ -365,16 +371,8 @@ func (c *controller) generateConfig() error {
 
 			key := httpKey{Address: rule.HTTP.Address}
 
-			if _, foundTLS := c.Ingress.FindTLSSecret(rule.Host); foundTLS && !rule.HTTP.NoTLS && !c.Ingress.SSLPassthrough() {
+			if _, foundTLS := c.Ingress.FindTLSSecret(rule.Host); foundTLS && !rule.HTTP.NoTLS {
 				key.OffloadSSL = true
-				if port := rule.HTTP.Port.IntValue(); port > 0 {
-					key.Port = port
-				} else {
-					key.Port = 443
-				}
-			} else if foundTLS && c.Ingress.SSLPassthrough() && !rule.HTTP.NoTLS {
-				// If SSL Passthrough is enabled keep 443 open just don't offload ssl
-				key.OffloadSSL = false
 				if port := rule.HTTP.Port.IntValue(); port > 0 {
 					key.Port = port
 				} else {
@@ -710,4 +708,65 @@ func (c *controller) getTLSAuth(cfg *api.TLSAuth) (*haproxy.TLSAuth, error) {
 	}
 
 	return htls, nil
+}
+
+func (c *controller) convertRulesForSSLPassthrough() error {
+	usesHTTPRule := false
+	for i, rule := range c.Ingress.Spec.Rules {
+		if rule.HTTP != nil {
+			usesHTTPRule = true
+
+			if len(rule.HTTP.Paths) != 1 {
+				return fmt.Errorf("spec.rules[%d].http can't use multiple paths with %s annotation", i, api.SSLPassthrough)
+			}
+			if len(rule.HTTP.Paths[0].Backend.HeaderRule) != 0 {
+				return fmt.Errorf("spec.rules[%d].http.paths[0].backend.headerRule is not supported with %s annotation", i, api.SSLPassthrough)
+			}
+			if len(rule.HTTP.Paths[0].Backend.RewriteRule) != 0 {
+				return fmt.Errorf("spec.rules[%d].http.paths[0].backend.rewriteRule is not supported with %s annotation", i, api.SSLPassthrough)
+			}
+
+			if rule.HTTP.Port.IntValue() == 0 {
+				if _, foundTLS := c.Ingress.FindTLSSecret(rule.Host); foundTLS && !rule.HTTP.NoTLS {
+					rule.HTTP.Port = intstr.FromInt(443)
+				} else {
+					rule.HTTP.Port = intstr.FromInt(80)
+				}
+			}
+			rule.TCP = &api.TCPIngressRuleValue{
+				Address:  rule.HTTP.Address,
+				Port:     rule.HTTP.Port,
+				NoTLS:    rule.HTTP.NoTLS,
+				NodePort: rule.HTTP.NodePort,
+				Backend:  rule.HTTP.Paths[0].Backend.IngressBackend,
+			}
+			rule.HTTP = nil // remove http rule after conversion
+			c.Ingress.Spec.Rules[i] = rule
+		}
+	}
+
+	if !usesHTTPRule && c.Ingress.Spec.Backend != nil {
+		if len(c.Ingress.Spec.Backend.HeaderRule) != 0 {
+			return fmt.Errorf("spec.backend.headerRule is not supported with %s annotation", api.SSLPassthrough)
+		}
+		if len(c.Ingress.Spec.Backend.RewriteRule) != 0 {
+			return fmt.Errorf("spec.backend.rewriteRule is not supported with %s annotation", api.SSLPassthrough)
+		}
+		rule := api.IngressRule{
+			IngressRuleValue: api.IngressRuleValue{
+				TCP: &api.TCPIngressRuleValue{
+					Port:    intstr.FromInt(80),
+					Backend: c.Ingress.Spec.Backend.IngressBackend,
+				},
+			},
+		}
+		c.Ingress.Spec.Rules = append(c.Ingress.Spec.Rules, rule)
+		c.Ingress.Spec.Backend = nil
+	}
+
+	err := c.Ingress.IsValid(c.Opt.CloudProvider)
+	if err != nil {
+		return fmt.Errorf("%s annotation can't be used. Reason: %v", api.SSLPassthrough, err)
+	}
+	return err
 }
