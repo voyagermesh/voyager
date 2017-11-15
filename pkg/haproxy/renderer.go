@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/appscode/go/log"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -20,8 +21,14 @@ func RenderConfig(data TemplateData) (string, error) {
 		log.Error(err)
 		return "", err
 	}
-	config := buf.String()
-	return config, nil
+	lines := strings.Split(buf.String(), "\n")
+	result := make([]string, 0, len(lines))
+	for _, line := range lines {
+		if strings.TrimSpace(line) != "" {
+			result = append(result, line)
+		}
+	}
+	return strings.Join(result, "\n"), nil
 }
 
 func (td *TemplateData) canonicalize() {
