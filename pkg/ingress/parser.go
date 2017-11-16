@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -579,13 +578,6 @@ func (c *controller) generateConfig() error {
 					})
 				}
 
-				// sort path prefixes in descending order
-				sort.SliceStable(httpPaths, func(i, j int) bool {
-					components := func(path string) int {
-						return len(strings.Split(strings.Trim(path, "/"), "/"))
-					}
-					return components(httpPaths[i].Path) > components(httpPaths[j].Path)
-				})
 				i80.Hosts[info.Host] = httpPaths
 				httpServices[hostBinder{Address: binder.Address, Port: 80}] = i80
 			}
@@ -657,13 +649,6 @@ func (c *controller) generateConfig() error {
 						}
 					}
 
-					// sort path prefixes in descending order
-					sort.SliceStable(httpPaths, func(i, j int) bool {
-						components := func(path string) int {
-							return len(strings.Split(strings.Trim(path, "/"), "/"))
-						}
-						return components(httpPaths[i].Path) > components(httpPaths[j].Path)
-					})
 					i80.Hosts[tlsHost] = httpPaths
 					httpServices[hostBinder{Address: binder.Address, Port: 80}] = i80
 				}

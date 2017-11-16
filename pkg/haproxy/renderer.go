@@ -40,6 +40,15 @@ func (td *TemplateData) canonicalize() {
 		if svc.BasicAuth != nil {
 			svc.BasicAuth.canonicalize()
 		}
+		sort.SliceStable(svc.Paths, func(i, j int) bool {
+			components := func(path string) int {
+				return len(strings.Split(strings.Trim(path, "/"), "/"))
+			}
+			if svc.Paths[i].Host == svc.Paths[j].Host {
+				return components(svc.Paths[i].Path) > components(svc.Paths[j].Path)
+			}
+			return svc.Paths[i].Host > svc.Paths[j].Host
+		})
 		for j := range svc.Paths {
 			svc.Paths[j].Backend.canonicalize()
 		}
