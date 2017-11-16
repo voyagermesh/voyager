@@ -58,7 +58,6 @@ func TestTemplate(t *testing.T) {
 			},
 		},
 		MaxConnections: 3000,
-		SSLRedirect:    true,
 		Limit:          &Limit{Rate: 5, TimeSecond: 20},
 	}
 	testParsedConfig := TemplateData{
@@ -601,7 +600,6 @@ func TestDefaultFrontend(t *testing.T) {
 					{Name: "second", IP: "10.244.2.2", Port: "2324"},
 				},
 			},
-			SSLRedirect: true,
 		},
 	}
 	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")

@@ -73,7 +73,7 @@ func (r Ingress) PortMappings(cloudProvider string) (map[int]Target, error) {
 	return mappings, nil
 }
 
-func (r Ingress) explicitPodPorts() sets.Int {
+func (r Ingress) PodPorts() []int {
 	ports := sets.NewInt()
 	usesHTTPRule := false
 	for _, rule := range r.Spec.Rules {
@@ -98,12 +98,7 @@ func (r Ingress) explicitPodPorts() sets.Int {
 	if !usesHTTPRule && r.Spec.Backend != nil {
 		ports.Insert(80)
 	}
-	return ports
-}
-
-func (r Ingress) PodPorts() []int {
-	ports := r.explicitPodPorts()
-	if r.SSLRedirect() {
+	if r.SSLRedirect() && ports.Has(443) {
 		ports.Insert(80)
 	}
 	return ports.List()

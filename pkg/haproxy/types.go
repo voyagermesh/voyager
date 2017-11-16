@@ -13,7 +13,6 @@ type TemplateData struct {
 	OptionsDefaults map[string]bool
 	Stats           *StatsInfo
 	DNSResolvers    []*api.DNSResolver
-	DefaultFrontend bool
 	HTTPService     []*HTTPService
 	TCPService      []*TCPService
 	ErrorFiles      []*ErrorFile
@@ -40,7 +39,6 @@ type SharedInfo struct {
 	MaxConnections        int
 	ForceMatchServicePort bool
 	Limit                 *Limit
-	SSLRedirect           bool
 }
 
 type StatsInfo struct {
@@ -77,9 +75,10 @@ func (svc HTTPService) sortKey() string {
 }
 
 type HTTPPath struct {
-	Host    string
-	Path    string
-	Backend Backend
+	Host        string
+	Path        string
+	Backend     Backend
+	SSLRedirect bool
 }
 
 func (svc HTTPPath) sortKey() string {
@@ -99,6 +98,7 @@ type TCPService struct {
 	Backend       Backend
 	ALPNOptions   string
 	TLSAuth       *TLSAuth
+	SSLRedirect   bool
 }
 
 func (svc TCPService) sortKey() string {
