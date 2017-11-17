@@ -47,7 +47,7 @@ func (td *TemplateData) canonicalize() {
 			if svc.Paths[i].Host == svc.Paths[j].Host {
 				return components(svc.Paths[i].Path) > components(svc.Paths[j].Path)
 			}
-			return svc.Paths[i].Host > svc.Paths[j].Host
+			return len(svc.Paths[i].Host) > len(svc.Paths[j].Host)
 		})
 		for j := range svc.Paths {
 			svc.Paths[j].Backend.canonicalize()
