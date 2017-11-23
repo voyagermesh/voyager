@@ -50,7 +50,7 @@ var _ = Describe("CertificateWithHTTPProvider", func() {
 
 		cert = f.Certificate.GetSkeleton()
 		cert.Spec = api.CertificateSpec{
-			Domains: []string{"http.appscode.test", "test.appscode.test"},
+			Domains: []string{framework.TestDomain, "other-" + framework.TestDomain},
 			ChallengeProvider: api.ChallengeProvider{
 				HTTP: &api.HTTPChallengeProvider{
 					Ingress: api.LocalTypedReference{
@@ -110,7 +110,7 @@ var _ = Describe("CertificateWithHTTPProvider", func() {
 				eps, err := f.Ingress.GetHTTPEndpoints(ing)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(eps)).Should(BeNumerically(">=", 1))
-				err = f.Ingress.DoHTTP(framework.MaxRetry, "http.appscode.test", ing, eps, http.MethodGet, "/.well-known/acme-challenge/", func(r *client.Response) bool {
+				err = f.Ingress.DoHTTP(framework.MaxRetry, framework.TestDomain, ing, eps, http.MethodGet, "/.well-known/acme-challenge/", func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r).ShouldNot(BeNil()) &&
 						Expect(len(r.Body)).ShouldNot(Equal(0))
@@ -119,8 +119,8 @@ var _ = Describe("CertificateWithHTTPProvider", func() {
 			} else {
 				req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1:56791"+"/.well-known/acme-challenge/", nil)
 				Expect(err).NotTo(HaveOccurred())
-				req.Header.Add("Host", "http.appscode.test")
-				req.Host = "http.appscode.test"
+				req.Header.Add("Host", framework.TestDomain)
+				req.Host = framework.TestDomain
 
 				resp, err := http.DefaultClient.Do(req)
 				Expect(err).NotTo(HaveOccurred())

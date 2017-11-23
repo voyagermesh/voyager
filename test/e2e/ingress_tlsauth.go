@@ -113,12 +113,12 @@ var _ = Describe("IngressWithTLSAuth", func() {
 							Kind: "Secret",
 							Name: tlsSecret.Name,
 						},
-						Hosts: []string{"http.appscode.test"},
+						Hosts: []string{framework.TestDomain},
 					},
 				},
 				Rules: []api.IngressRule{
 					{
-						Host: "http.appscode.test",
+						Host: framework.TestDomain,
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
 								Paths: []api.HTTPIngressPath{
@@ -159,7 +159,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 
 			// Checking for the domain is pointing to the ips found in the endpoints
 			// The IPs and domain must be in /etc/hosts file
-			ips, err := net.LookupHost("http.appscode.test")
+			ips, err := net.LookupHost(framework.TestDomain)
 			if err != nil || len(ips) == 0 {
 				Skip("Domain 'http.appscode.test' do not have endpoints")
 			}
@@ -179,14 +179,14 @@ var _ = Describe("IngressWithTLSAuth", func() {
 				Skip("Domain 'http.appscode.test' did not point to endpoints")
 			}
 
-			err = f.Ingress.DoHTTPsStatus(framework.NoRetry, "http.appscode.test", ing, eps, "GET", "/testpath/hello", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPsStatus(framework.NoRetry, framework.TestDomain, ing, eps, "GET", "/testpath/hello", func(r *client.Response) bool {
 				return true
 			})
 			Expect(err).To(HaveOccurred())
 
 			// Wrong Cert
 			tr := getTransportForCert(f.CertManager.CACert(), tlsSecret.Data[core.TLSCertKey], tlsSecret.Data[core.TLSPrivateKeyKey])
-			err = f.Ingress.DoTestRedirectWithTransport(framework.NoRetry, "http.appscode.test", tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
+			err = f.Ingress.DoTestRedirectWithTransport(framework.NoRetry, framework.TestDomain, tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(302)) &&
 					Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
 					Expect(r.ResponseHeader.Get("Location")).Should(Equal("https://http.appscode.test/testpath/ok"))
@@ -195,7 +195,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 
 			// TLS Auth
 			tr = getTransportForCert(f.CertManager.CACert(), ccrt, ckey)
-			err = f.Ingress.DoHTTPsWithTransport(framework.MaxRetry, "http.appscode.test", tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPsWithTransport(framework.MaxRetry, framework.TestDomain, tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/hello"))
@@ -233,12 +233,12 @@ var _ = Describe("IngressWithTLSAuth", func() {
 							Kind: "Secret",
 							Name: tlsSecret.Name,
 						},
-						Hosts: []string{"http.appscode.test"},
+						Hosts: []string{framework.TestDomain},
 					},
 				},
 				Rules: []api.IngressRule{
 					{
-						Host: "http.appscode.test",
+						Host: framework.TestDomain,
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
 								Paths: []api.HTTPIngressPath{
@@ -279,7 +279,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 
 			// Checking for the domain is pointing to the ips found in the endpoints
 			// The IPs and domain must be in /etc/hosts file
-			ips, err := net.LookupHost("http.appscode.test")
+			ips, err := net.LookupHost(framework.TestDomain)
 			if err != nil || len(ips) == 0 {
 				Skip("Domain 'http.appscode.test' do not have endpoints")
 			}
@@ -299,14 +299,14 @@ var _ = Describe("IngressWithTLSAuth", func() {
 				Skip("Domain 'http.appscode.test' did not point to endpoints")
 			}
 
-			err = f.Ingress.DoHTTPsStatus(framework.NoRetry, "http.appscode.test", ing, eps, "GET", "/testpath/hello", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPsStatus(framework.NoRetry, framework.TestDomain, ing, eps, "GET", "/testpath/hello", func(r *client.Response) bool {
 				return true
 			})
 			Expect(err).To(HaveOccurred())
 
 			// TLS Auth
 			tr := getTransportForCert(f.CertManager.CACert(), ccrt, ckey)
-			err = f.Ingress.DoHTTPsWithTransport(framework.MaxRetry, "http.appscode.test", tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPsWithTransport(framework.MaxRetry, framework.TestDomain, tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/hello")) &&
@@ -340,12 +340,12 @@ var _ = Describe("IngressWithTLSAuth", func() {
 							Kind: "Secret",
 							Name: tlsSecret.Name,
 						},
-						Hosts: []string{"http.appscode.test"},
+						Hosts: []string{framework.TestDomain},
 					},
 				},
 				Rules: []api.IngressRule{
 					{
-						Host: "http.appscode.test",
+						Host: framework.TestDomain,
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
 								Paths: []api.HTTPIngressPath{
@@ -386,7 +386,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 
 			// Checking for the domain is pointing to the ips found in the endpoints
 			// The IPs and domain must be in /etc/hosts file
-			ips, err := net.LookupHost("http.appscode.test")
+			ips, err := net.LookupHost(framework.TestDomain)
 			if err != nil || len(ips) == 0 {
 				Skip("Domain 'http.appscode.test' do not have endpoints")
 			}
@@ -407,7 +407,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			}
 
 			// No Cert but Cert is optional allow
-			err = f.Ingress.DoHTTPs(framework.NoRetry, "http.appscode.test", "", ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPs(framework.NoRetry, framework.TestDomain, "", ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/hello"))
@@ -416,14 +416,14 @@ var _ = Describe("IngressWithTLSAuth", func() {
 
 			// Wrong Cert Reject
 			tr := getTransportForCert(f.CertManager.CACert(), tlsSecret.Data[core.TLSCertKey], tlsSecret.Data[core.TLSPrivateKeyKey])
-			err = f.Ingress.DoTestRedirectWithTransport(framework.NoRetry, "http.appscode.test", tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
+			err = f.Ingress.DoTestRedirectWithTransport(framework.NoRetry, framework.TestDomain, tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
 				return false
 			})
 			Expect(err).To(HaveOccurred())
 
 			// TLS Auth
 			tr = getTransportForCert(f.CertManager.CACert(), ccrt, ckey)
-			err = f.Ingress.DoHTTPsWithTransport(framework.MaxRetry, "http.appscode.test", tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPsWithTransport(framework.MaxRetry, framework.TestDomain, tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/hello"))
@@ -449,12 +449,12 @@ var _ = Describe("IngressWithTLSAuth", func() {
 							Kind: "Secret",
 							Name: tlsSecret.Name,
 						},
-						Hosts: []string{"http.appscode.test"},
+						Hosts: []string{framework.TestDomain},
 					},
 				},
 				Rules: []api.IngressRule{
 					{
-						Host: "http.appscode.test",
+						Host: framework.TestDomain,
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
 								Paths: []api.HTTPIngressPath{
@@ -495,7 +495,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 
 			// Checking for the domain is pointing to the ips found in the endpoints
 			// The IPs and domain must be in /etc/hosts file
-			ips, err := net.LookupHost("http.appscode.test")
+			ips, err := net.LookupHost(framework.TestDomain)
 			if err != nil || len(ips) == 0 {
 				Skip("Domain 'http.appscode.test' do not have endpoints")
 			}
@@ -515,14 +515,14 @@ var _ = Describe("IngressWithTLSAuth", func() {
 				Skip("Domain 'http.appscode.test' did not point to endpoints")
 			}
 
-			err = f.Ingress.DoHTTPsStatus(framework.NoRetry, "http.appscode.test", ing, eps, "GET", "/testpath/hello", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPsStatus(framework.NoRetry, framework.TestDomain, ing, eps, "GET", "/testpath/hello", func(r *client.Response) bool {
 				return true
 			})
 			Expect(err).To(HaveOccurred())
 
 			// Wrong Cert
 			tr := getTransportForCert(f.CertManager.CACert(), tlsSecret.Data[core.TLSCertKey], tlsSecret.Data[core.TLSPrivateKeyKey])
-			err = f.Ingress.DoTestRedirectWithTransport(framework.NoRetry, "http.appscode.test", tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
+			err = f.Ingress.DoTestRedirectWithTransport(framework.NoRetry, framework.TestDomain, tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(302)) &&
 					Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
 					Expect(r.ResponseHeader.Get("Location")).Should(Equal("https://http.appscode.test/testpath/ok"))
@@ -531,7 +531,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 
 			// TLS Auth
 			tr = getTransportForCert(f.CertManager.CACert(), ccrt, ckey)
-			err = f.Ingress.DoHTTPsWithTransport(framework.MaxRetry, "http.appscode.test", tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPsWithTransport(framework.MaxRetry, framework.TestDomain, tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/hello"))

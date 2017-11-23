@@ -70,7 +70,7 @@ var _ = Describe("IngressTCP", func() {
 						Kind: "Secret",
 						Name: secret.Name,
 					},
-					Hosts: []string{"http.appscode.test"},
+					Hosts: []string{framework.TestDomain},
 				},
 			}
 			ing.Spec.Rules = []api.IngressRule{
@@ -86,7 +86,7 @@ var _ = Describe("IngressTCP", func() {
 					},
 				},
 				{
-					Host: "http.appscode.test",
+					Host: framework.TestDomain,
 					IngressRuleValue: api.IngressRuleValue{
 						TCP: &api.TCPIngressRuleValue{
 							Port: intstr.FromInt(4002),
@@ -98,7 +98,7 @@ var _ = Describe("IngressTCP", func() {
 					},
 				},
 				{
-					Host: "http.appscode.test",
+					Host: framework.TestDomain,
 					IngressRuleValue: api.IngressRuleValue{
 						TCP: &api.TCPIngressRuleValue{
 							Port:  intstr.FromInt(4003),
