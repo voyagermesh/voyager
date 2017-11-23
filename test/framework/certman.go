@@ -39,7 +39,7 @@ func (cm *CertManager) CAKey() []byte {
 func (cm *CertManager) NewServerCertPair() ([]byte, []byte, error) {
 	sans := cert.AltNames{
 		IPs:      []net.IP{net.ParseIP("127.0.0.1"), net.ParseIP("192.168.99.100")},
-		DNSNames: []string{"http.appscode.test"},
+		DNSNames: []string{TestDomain},
 	}
 	cfg := cert.Config{
 		CommonName: "server",

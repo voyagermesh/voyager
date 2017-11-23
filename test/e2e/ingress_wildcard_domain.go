@@ -192,7 +192,7 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 
 			// Checking for the domain is pointing to the ips found in the endpoints
 			// The IPs and domain must be in /etc/hosts file
-			ips, err := net.LookupHost("http.appscode.test")
+			ips, err := net.LookupHost(framework.TestDomain)
 			if err != nil || len(ips) == 0 {
 				Skip("Domain 'http.appscode.test' do not have endpoints")
 			}
@@ -212,11 +212,11 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 				Skip("Domain 'http.appscode.test' did not point to endpoints")
 			}
 
-			err = f.Ingress.DoHTTPs(framework.MaxRetry, "http.appscode.test", "", ing, []string{"https://http.appscode.test"}, "GET", "/testpath", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPs(framework.MaxRetry, framework.TestDomain, "", ing, []string{"https://http.appscode.test"}, "GET", "/testpath", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath")) &&
-					Expect(r.Host).Should(Equal("http.appscode.test"))
+					Expect(r.Host).Should(Equal(framework.TestDomain))
 			})
 			Expect(err).NotTo(HaveOccurred())
 

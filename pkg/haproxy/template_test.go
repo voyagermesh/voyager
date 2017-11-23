@@ -122,7 +122,7 @@ func TestTemplate(t *testing.T) {
 						},
 					},
 					{
-						Host: "test.appscode.test",
+						Host: "http.appscode.test",
 						Path: "/rebeka",
 						Backend: Backend{
 							Name:         "rebecka",

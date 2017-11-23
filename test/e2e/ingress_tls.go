@@ -95,18 +95,18 @@ var _ = Describe("IngressTLS", func() {
 				}
 			}
 
-			err = f.Ingress.DoHTTPsTestRedirect(framework.MaxRetry, "http.appscode.test", ing, f.Ingress.FilterEndpointsForPort(eps, httpPort), "GET", "/testpath/ok", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPsTestRedirect(framework.MaxRetry, framework.TestDomain, ing, f.Ingress.FilterEndpointsForPort(eps, httpPort), "GET", "/testpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(301)) &&
 					Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
 					Expect(r.ResponseHeader.Get("Location")).Should(Equal("https://http.appscode.test/testpath/ok"))
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = f.Ingress.DoHTTPs(framework.MaxRetry, "http.appscode.test", "", ing, f.Ingress.FilterEndpointsForPort(eps, httpsPort), "GET", "/testpath/ok", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPs(framework.MaxRetry, framework.TestDomain, "", ing, f.Ingress.FilterEndpointsForPort(eps, httpsPort), "GET", "/testpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok")) &&
-					Expect(r.Host).Should(Equal("http.appscode.test"))
+					Expect(r.Host).Should(Equal(framework.TestDomain))
 			})
 			Expect(err).NotTo(HaveOccurred())
 		}
@@ -118,12 +118,12 @@ var _ = Describe("IngressTLS", func() {
 				TLS: []api.IngressTLS{
 					{
 						SecretName: secret.Name,
-						Hosts:      []string{"http.appscode.test"},
+						Hosts:      []string{framework.TestDomain},
 					},
 				},
 				Rules: []api.IngressRule{
 					{
-						Host: "http.appscode.test",
+						Host: framework.TestDomain,
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
 								Paths: []api.HTTPIngressPath{
@@ -155,11 +155,11 @@ var _ = Describe("IngressTLS", func() {
 			Expect(len(svc.Spec.Ports)).Should(Equal(1))
 			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(443)))
 
-			err = f.Ingress.DoHTTPs(framework.MaxRetry, "http.appscode.test", "", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPs(framework.MaxRetry, framework.TestDomain, "", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok")) &&
-					Expect(r.Host).Should(Equal("http.appscode.test"))
+					Expect(r.Host).Should(Equal(framework.TestDomain))
 			})
 			Expect(err).NotTo(HaveOccurred())
 		})
@@ -171,12 +171,12 @@ var _ = Describe("IngressTLS", func() {
 				TLS: []api.IngressTLS{
 					{
 						SecretName: secret.Name,
-						Hosts:      []string{"http.appscode.test"},
+						Hosts:      []string{framework.TestDomain},
 					},
 				},
 				Rules: []api.IngressRule{
 					{
-						Host: "http.appscode.test",
+						Host: framework.TestDomain,
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
 								Port:  intstr.FromInt(80),
@@ -199,7 +199,7 @@ var _ = Describe("IngressTLS", func() {
 						},
 					},
 					{
-						Host: "http.appscode.test",
+						Host: framework.TestDomain,
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
 								Port: intstr.FromInt(443),
@@ -230,12 +230,12 @@ var _ = Describe("IngressTLS", func() {
 				TLS: []api.IngressTLS{
 					{
 						SecretName: secret.Name,
-						Hosts:      []string{"http.appscode.test"},
+						Hosts:      []string{framework.TestDomain},
 					},
 				},
 				Rules: []api.IngressRule{
 					{
-						Host: "http.appscode.test",
+						Host: framework.TestDomain,
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
 								NoTLS: true,
@@ -257,7 +257,7 @@ var _ = Describe("IngressTLS", func() {
 						},
 					},
 					{
-						Host: "http.appscode.test",
+						Host: framework.TestDomain,
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
 								Paths: []api.HTTPIngressPath{
@@ -343,12 +343,12 @@ var _ = Describe("IngressTLS", func() {
 				TLS: []api.IngressTLS{
 					{
 						SecretName: secret.Name,
-						Hosts:      []string{"http.appscode.test"},
+						Hosts:      []string{framework.TestDomain},
 					},
 				},
 				Rules: []api.IngressRule{
 					{
-						Host: "http.appscode.test",
+						Host: framework.TestDomain,
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
 								Paths: []api.HTTPIngressPath{
@@ -380,11 +380,11 @@ var _ = Describe("IngressTLS", func() {
 			Expect(len(svc.Spec.Ports)).Should(Equal(1))
 			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(443)))
 
-			err = f.Ingress.DoHTTP(framework.MaxRetry, "http.appscode.test", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, framework.TestDomain, ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok")) &&
-					Expect(r.Host).Should(Equal("http.appscode.test"))
+					Expect(r.Host).Should(Equal(framework.TestDomain))
 			})
 			Expect(err).NotTo(HaveOccurred())
 		})
@@ -397,12 +397,12 @@ var _ = Describe("IngressTLS", func() {
 				TLS: []api.IngressTLS{
 					{
 						SecretName: secret.Name,
-						Hosts:      []string{"http.appscode.test"},
+						Hosts:      []string{framework.TestDomain},
 					},
 				},
 				Rules: []api.IngressRule{
 					{
-						Host: "http.appscode.test",
+						Host: framework.TestDomain,
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
 								Paths: []api.HTTPIngressPath{
@@ -434,7 +434,7 @@ var _ = Describe("IngressTLS", func() {
 			Expect(len(svc.Spec.Ports)).Should(Equal(1))
 			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(443)))
 
-			err = f.Ingress.DoHTTPs(framework.MaxRetry, "http.appscode.test", "", ing, eps, "GET", "/testpath/ok",
+			err = f.Ingress.DoHTTPs(framework.MaxRetry, framework.TestDomain, "", ing, eps, "GET", "/testpath/ok",
 				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
@@ -453,12 +453,12 @@ var _ = Describe("IngressTLS", func() {
 				TLS: []api.IngressTLS{
 					{
 						SecretName: secret.Name,
-						Hosts:      []string{"http.appscode.test"},
+						Hosts:      []string{framework.TestDomain},
 					},
 				},
 				Rules: []api.IngressRule{
 					{
-						Host: "http.appscode.test",
+						Host: framework.TestDomain,
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
 								Paths: []api.HTTPIngressPath{
@@ -490,7 +490,7 @@ var _ = Describe("IngressTLS", func() {
 			Expect(len(svc.Spec.Ports)).Should(Equal(1))
 			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(443)))
 
-			err = f.Ingress.DoHTTPs(framework.MaxRetry, "http.appscode.test", "", ing, eps, "GET", "/testpath/ok",
+			err = f.Ingress.DoHTTPs(framework.MaxRetry, framework.TestDomain, "", ing, eps, "GET", "/testpath/ok",
 				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&

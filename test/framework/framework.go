@@ -14,8 +14,9 @@ import (
 )
 
 const (
-	MaxRetry = 200
-	NoRetry  = 1
+	MaxRetry   = 200
+	NoRetry    = 1
+	TestDomain = "http.appscode.test"
 )
 
 type Framework struct {
