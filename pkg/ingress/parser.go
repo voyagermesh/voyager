@@ -196,6 +196,15 @@ func getSpecifiedPort(ports []core.ServicePort, port intstr.IntOrString) (*core.
 	return nil, false
 }
 
+func getFrontendName(proto, addr string, port int) string {
+	switch addr {
+	case ``, `*`:
+		return fmt.Sprintf("%s-0_0_0_0-%d", proto, port)
+	default:
+		return fmt.Sprintf("%s-%s-%d", proto, strings.Replace(addr, ".", "_", 3), port)
+	}
+}
+
 func getBackendName(r *api.Ingress, be api.IngressBackend) string {
 	var seed string
 	parts := strings.Split(be.ServiceName, ".")
@@ -425,7 +434,7 @@ func (c *controller) generateConfig() error {
 				fr := getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, rule.TCP.Port.IntValue())
 				srv := &haproxy.TCPService{
 					SharedInfo:    si,
-					FrontendName:  fmt.Sprintf("tcp-%s:%s", rule.TCP.Address, rule.TCP.Port.String()),
+					FrontendName:  getFrontendName("tcp", rule.TCP.Address, rule.TCP.Port.IntValue()),
 					Address:       rule.TCP.Address,
 					Host:          rule.Host,
 					Port:          rule.TCP.Port.String(),
@@ -660,13 +669,16 @@ func (c *controller) generateConfig() error {
 		fr := getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, binder.Port)
 		srv := &haproxy.HTTPService{
 			SharedInfo:    si,
-			FrontendName:  fmt.Sprintf("http-%s:%d", binder.Address, binder.Port),
+			FrontendName:  getFrontendName("http", binder.Address, binder.Port),
 			Address:       binder.Address,
 			Port:          binder.Port,
 			FrontendRules: fr.Rules,
 			NodePort:      info.NodePort,
 			OffloadSSL:    info.OffloadSSL,
 			Paths:         make([]*haproxy.HTTPPath, 0),
+		}
+		for _, paths := range info.Hosts {
+			srv.Paths = append(srv.Paths, paths...)
 		}
 		if globalBasic != nil {
 			srv.BasicAuth = globalBasic
