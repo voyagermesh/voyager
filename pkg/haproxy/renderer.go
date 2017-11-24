@@ -40,9 +40,32 @@ func (td *TemplateData) canonicalize() {
 		if svc.BasicAuth != nil {
 			svc.BasicAuth.canonicalize()
 		}
+		sort.Slice(svc.Paths, func(j, k int) bool {
+			host_j := hostName(svc.Paths[j].Host)
+			host_rank_j := hostRank(svc.Paths[j].Host)
+			path_j := strings.ToLower(strings.Trim(svc.Paths[j].Path, "/"))
+			path_comp_j := len(strings.Split(path_j, "/"))
+
+			host_k := hostName(svc.Paths[k].Host)
+			host_rank_k := hostRank(svc.Paths[k].Host)
+			path_k := strings.ToLower(strings.Trim(svc.Paths[k].Path, "/"))
+			path_comp_k := len(strings.Split(path_k, "/"))
+
+			if host_rank_j == host_rank_k {
+				if host_j == host_k {
+					if path_comp_j == path_comp_k {
+						return path_j > path_k
+					}
+					return path_comp_j > path_comp_k
+				}
+				return host_j > host_k
+			}
+			return host_rank_j > host_rank_k
+		})
 		for j := range svc.Paths {
 			svc.Paths[j].Backend.canonicalize()
 		}
+		td.HTTPService[i] = svc
 	}
 	sort.Slice(td.HTTPService, func(i, j int) bool { return td.HTTPService[i].sortKey() < td.HTTPService[j].sortKey() })
 	sort.Slice(td.TCPService, func(i, j int) bool { return td.TCPService[i].sortKey() < td.TCPService[j].sortKey() })
@@ -92,4 +115,21 @@ func (td *TemplateData) isValid() error {
 		}
 	}
 	return nil
+}
+
+func hostName(host string) string {
+	if host == "" || host == `*` {
+		return ""
+	}
+	return strings.ToLower(strings.TrimPrefix(host, "*."))
+}
+
+func hostRank(host string) int {
+	if host == "" || host == `*` {
+		return 0
+	}
+	if strings.HasPrefix(host, "*") {
+		return 1
+	}
+	return 2
 }

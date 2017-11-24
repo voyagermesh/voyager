@@ -382,8 +382,7 @@ func (r Ingress) SSLRedirect() bool {
 	if err == nil && !v {
 		return false
 	}
-	// Sets the global value of redirects (301) to HTTPS if the server has a TLS certificate (defined in an Ingress rule) Default is "true".
-	return r.explicitPodPorts().Has(443)
+	return true
 }
 
 func (r Ingress) ForceSSLRedirect() bool {

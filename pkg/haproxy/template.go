@@ -23,7 +23,7 @@ func HeaderName(v string) string {
 
 func HostName(v string) string {
 	v = strings.TrimSpace(v)
-	if v == "" {
+	if v == "" || v == `*` {
 		return ""
 	}
 	if strings.HasPrefix(v, "*") {

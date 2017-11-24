@@ -177,7 +177,7 @@ var _ = Describe("IngressOperations", func() {
 				toBeUpdated.Annotations[api.ServiceAnnotations] = `{"bar": "foo", "second-service-annotation": "set"}`
 				err = f.Ingress.Update(toBeUpdated)
 				Expect(err).NotTo(HaveOccurred())
-				time.Sleep(time.Second * 20)
+				time.Sleep(time.Second * 10)
 				Eventually(func() bool {
 					svc, err := f.Ingress.GetOffShootService(ing)
 					return Expect(err).NotTo(HaveOccurred()) &&
@@ -194,22 +194,18 @@ var _ = Describe("IngressOperations", func() {
 				toBeUpdated.Annotations[api.PodAnnotations] = `{"bar": "foo", "second-pod-annotation": "set"}`
 				err = f.Ingress.Update(toBeUpdated)
 				Expect(err).NotTo(HaveOccurred())
-				time.Sleep(time.Second * 20)
+				time.Sleep(time.Second * 10)
 				Eventually(func() bool {
-					ret := true
 					pods, err = f.Ingress.KubeClient.CoreV1().Pods(svc.Namespace).List(metav1.ListOptions{
 						LabelSelector: labels.SelectorFromSet(svc.Spec.Selector).String(),
 					})
-					ret = ret && Expect(err).NotTo(HaveOccurred())
-					Expect(len(pods.Items)).Should(BeNumerically(">=", 1))
-					for _, pod := range pods.Items {
-						ret = ret && Expect(pod.Annotations).NotTo(BeNil())
-						ret = ret && Expect(pod.Annotations).Should(HaveKey("bar"))
-						ret = ret && Expect(pod.Annotations["bar"]).Should(Equal("foo"))
-						ret = ret && Expect(pod.Annotations).Should(HaveKey("second-pod-annotation"))
-						ret = ret && Expect(pod.Annotations["second-pod-annotation"]).Should(Equal("set"))
-					}
-					return ret
+					return Expect(err).NotTo(HaveOccurred()) &&
+						Expect(len(pods.Items)).Should(BeNumerically(">=", 1)) &&
+						Expect(pods.Items[0].Annotations).NotTo(BeNil()) &&
+						Expect(pods.Items[0].Annotations).Should(HaveKey("bar")) &&
+						Expect(pods.Items[0].Annotations["bar"]).Should(Equal("foo")) &&
+						Expect(pods.Items[0].Annotations).Should(HaveKey("second-pod-annotation")) &&
+						Expect(pods.Items[0].Annotations["second-pod-annotation"]).Should(Equal("set"))
 				}, "5m", "5s").Should(BeTrue())
 			})
 		})
@@ -480,23 +476,24 @@ var _ = Describe("IngressOperations", func() {
 						},
 					},
 				},
-				{
-					IngressRuleValue: api.IngressRuleValue{
-						TCP: &api.TCPIngressRuleValue{
-							Port: intstr.FromString("4949"),
-							Backend: api.IngressBackend{
-								ServiceName: f.Ingress.TestServerName(),
-								ServicePort: intstr.FromString("4545"),
-							},
-						},
-					},
-				},
+				// Broken in Kube 1.8
+				// ref: https://github.com/kubernetes/kubernetes/issues/47222
+				//{
+				//	IngressRuleValue: api.IngressRuleValue{
+				//		TCP: &api.TCPIngressRuleValue{
+				//			Port: intstr.FromString("4949"),
+				//			Backend: api.IngressBackend{
+				//				ServiceName: f.Ingress.TestServerName(),
+				//				ServicePort: intstr.FromString("4545"),
+				//			},
+				//		},
+				//	},
+				//},
 			}
 			err = f.Ingress.Update(uing)
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Waiting some time for update to be applied")
-			time.Sleep(time.Second * 5)
 			Eventually(func() error {
 				svc, err := f.KubeClient.CoreV1().Services(ing.GetNamespace()).Get(ing.OffshootName(), metav1.GetOptions{})
 				if err != nil {
