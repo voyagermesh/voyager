@@ -93,6 +93,11 @@ $ ./hack/make.py test unit
 ```
 
 #### Run e2e Test
+To run e2e tests in minikube, add the following line to your machine's `/etc/hosts` file:
+```console
+echo "$(minikube ip)   http.appscode.test" >> /etc/hosts
+```
+
 ```
 $ ./hack/make.py test minikube # Run Test against minikube, this requires minikube to be set up and started.
 
@@ -157,47 +162,9 @@ by performing processing on the resources.
 Certificate watcher watch and process certificates third party data and obtain a ACME certificates.
 
 
-### Third Party Resources
-`voyager` depends on two Custom Resource Definition Object `ingress.voyager.appscode.com` and `certificate.voyager.appscode.com`. Those two objects
-can be created using following data.
-
-```yaml
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: certificates.voyager.appscode.com
-  labels:
-    app: voyager
-spec:
-  group: voyager.appscode.com
-  names:
-    kind: Certificate
-    listKind: CertificateList
-    plural: certificates
-    shortNames:
-    - cert
-    singular: certificate
-  scope: Namespaced
-  version: v1beta1
----
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: ingresses.voyager.appscode.com
-  labels:
-    app: voyager
-spec:
-  group: voyager.appscode.com
-  names:
-    kind: Ingress
-    listKind: IngressList
-    plural: ingresses
-    shortNames:
-    - ing
-    singular: ingress
-  scope: Namespaced
-  version: v1beta1
-```
+### CRDs
+`voyager` depends on two Custom Resource Definition object `ingress.voyager.appscode.com` and `certificate.voyager.appscode.com`. Those two objects
+can be created using the following command:
 
 ```console
 # Create Third Party Resources
