@@ -17,6 +17,7 @@ import (
 	"github.com/tredoe/osutil/user/crypt"
 	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
 	core "k8s.io/api/core/v1"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -39,8 +40,9 @@ func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, 
 
 	c.logger.Infoln("looking for services in namespace", namespace, "with name", name)
 	service, err := c.ServiceLister.Services(namespace).Get(name)
-	if err != nil {
-		c.logger.Warningln(err)
+	if kerr.IsNotFound(err) {
+		return nil, kerr.NewNotFound(core.Resource("service"), namespace+"/"+name)
+	} else if err != nil {
 		return nil, err
 	}
 
