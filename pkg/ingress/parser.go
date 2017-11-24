@@ -31,8 +31,8 @@ func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, 
 	namespace := c.Ingress.Namespace
 	if strings.Contains(name, ".") {
 		idx := strings.Index(name, ".")
-		name = name[:idx]
 		namespace = name[idx+1:]
+		name = name[:idx]
 	}
 	if c.Opt.RestrictToOperatorNamespace && namespace != c.Opt.OperatorNamespace {
 		return nil, fmt.Errorf("can't use service %s as backend, since voyager operator is restricted namespace %s", bkSvc, c.Opt.OperatorNamespace)
