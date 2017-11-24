@@ -47,13 +47,13 @@ func (r Ingress) HasChanged(o Ingress) (bool, error) {
 
 	ra := map[string]string{}
 	for k, v := range r.Annotations {
-		if strings.HasPrefix(k, EngressKey+"/") {
+		if strings.HasPrefix(k, EngressKey+"/") || strings.HasPrefix(k, IngressKey+"/") || k == ingressClassAnnotationKey {
 			ra[k] = v
 		}
 	}
 	oa := map[string]string{}
 	for k, v := range o.Annotations {
-		if strings.HasPrefix(k, EngressKey+"/") {
+		if strings.HasPrefix(k, EngressKey+"/") || strings.HasPrefix(k, IngressKey+"/") || k == ingressClassAnnotationKey {
 			oa[k] = v
 		}
 	}
