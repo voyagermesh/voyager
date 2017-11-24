@@ -369,7 +369,7 @@ var _ = Describe("IngressTLS", func() {
 			}
 		})
 
-		It("Should Open 443 with HTTP", func() {
+		It("Should Open 443", func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
@@ -380,7 +380,7 @@ var _ = Describe("IngressTLS", func() {
 			Expect(len(svc.Spec.Ports)).Should(Equal(1))
 			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(443)))
 
-			err = f.Ingress.DoHTTP(framework.MaxRetry, framework.TestDomain, ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPs(framework.MaxRetry, framework.TestDomain, "", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok")) &&

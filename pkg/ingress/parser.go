@@ -217,18 +217,18 @@ func getBackendName(r *api.Ingress, be api.IngressBackend) string {
 }
 
 func (c *controller) generateConfig() error {
+	if c.Ingress.SSLPassthrough() {
+		if err := c.convertRulesForSSLPassthrough(); err != nil {
+			return err
+		}
+	}
+
 	// assign address
 	for _, rule := range c.Ingress.Spec.Rules {
 		if rule.HTTP != nil && rule.HTTP.Address == "" {
 			rule.HTTP.Address = `*`
 		} else if rule.TCP != nil && rule.TCP.Address == "" {
 			rule.TCP.Address = `*`
-		}
-	}
-
-	if c.Ingress.SSLPassthrough() {
-		if err := c.convertRulesForSSLPassthrough(); err != nil {
-			return err
 		}
 	}
 

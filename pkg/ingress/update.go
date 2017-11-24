@@ -63,16 +63,28 @@ func (c *controller) serviceRequiresUpdate(current, desired *core.Service, old *
 	for _, p := range current.Spec.Ports {
 		curPorts[p.Port] = p
 	}
-	for _, dp := range desired.Spec.Ports {
-		if cp, ok := curPorts[dp.Port]; !ok || // svc port not found
-			cp.TargetPort.IntValue() != dp.TargetPort.IntValue() || // pod port mismatch
-			(dp.NodePort != 0 && dp.NodePort != cp.NodePort) { // node port mismatch
-			if dp.NodePort == 0 && cp.NodePort > 0 {
-				dp.NodePort = cp.NodePort // avoid reassigning port
-			}
+	for i, dp := range desired.Spec.Ports {
+		cp, ok := curPorts[dp.Port]
+
+		// svc port not found
+		if !ok {
+			needsUpdate = true
+			continue
+		}
+
+		delete(curPorts, dp.Port)
+
+		// pod port mismatch
+		if cp.TargetPort.IntValue() != dp.TargetPort.IntValue() {
 			needsUpdate = true
 		}
-		delete(curPorts, dp.Port)
+
+		if dp.NodePort == 0 {
+			dp.NodePort = cp.NodePort // avoid reassigning port
+		} else if dp.NodePort != cp.NodePort { // node port mismatch
+			needsUpdate = true
+		}
+		desired.Spec.Ports[i] = dp
 	}
 	if len(curPorts) > 0 {
 		needsUpdate = true
