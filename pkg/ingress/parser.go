@@ -218,6 +218,27 @@ func getBackendName(r *api.Ingress, be api.IngressBackend) string {
 	return rand.WithUniqSuffix(seed)
 }
 
+// ref: https://github.com/jcmoraisjr/haproxy-ingress/pull/57
+// ref: https://github.com/jcmoraisjr/haproxy-ingress/blob/939bd129c86d9b27b12e6d7a50c799d8496ab8f3/rootfs/etc/haproxy/template/haproxy.tmpl#L318
+func (c *controller) rewriteTarget(path string, rewriteRules []string) []string {
+	target := c.Ingress.RewriteTarget()
+	switch target {
+	case "":
+		return rewriteRules
+	case "/":
+		// ^([^\ :]*)\ {{ $location.Path }}/?(.*$) \1\ {{ $rewriteTarget }}\2
+		rule := fmt.Sprintf(`^([^\ :]*)\ %s/?(.*$) \1\ %s\2`, path, target)
+		return append([]string{rule}, rewriteRules...)
+	default:
+		// ^([^\ :]*)\ {{ $location.Path }}(.*$) \1\ {{ $rewriteTarget }}{{ if hasSuffix $location.Path "/" }}/{{ end }}\2
+		if strings.HasSuffix(path, "/") {
+			target = target + "/"
+		}
+		rule := fmt.Sprintf(`^([^\ :]*)\ %s(.*$) \1\ %s\2`, path, target)
+		return append([]string{rule}, rewriteRules...)
+	}
+}
+
 func (c *controller) generateConfig() error {
 	if c.Ingress.SSLPassthrough() {
 		if err := c.convertRulesForSSLPassthrough(); err != nil {
@@ -417,7 +438,7 @@ func (c *controller) generateConfig() error {
 							BasicAuth:        bk.BasicAuth,
 							Endpoints:        bk.Endpoints,
 							BackendRules:     path.Backend.BackendRule,
-							RewriteRules:     path.Backend.RewriteRule,
+							RewriteRules:     c.rewriteTarget(path.Path, path.Backend.RewriteRule),
 							HeaderRules:      path.Backend.HeaderRule,
 							Sticky:           bk.Sticky,
 							StickyCookieName: bk.StickyCookieName,
