@@ -1,12 +1,12 @@
 ---
 title: Voyager Version
 menu:
-  product_voyager_5.0.0-rc.3:
+  product_voyager_5.0.0-rc.4:
     identifier: voyager-version
     name: Voyager Version
     parent: reference
 product_name: voyager
-left_menu: product_voyager_5.0.0-rc.3
+left_menu: product_voyager_5.0.0-rc.4
 section_menu_id: reference
 ---
 ## voyager version

@@ -1,12 +1,12 @@
 ---
 title: Voyager Check
 menu:
-  product_voyager_5.0.0-rc.3:
+  product_voyager_5.0.0-rc.4:
     identifier: voyager-check
     name: Voyager Check
     parent: reference
 product_name: voyager
-left_menu: product_voyager_5.0.0-rc.3
+left_menu: product_voyager_5.0.0-rc.4
 section_menu_id: reference
 ---
 ## voyager check
