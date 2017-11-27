@@ -110,20 +110,16 @@ def build_cmd(name):
             libbuild.go_build(name, libbuild.GOHOSTOS, libbuild.GOHOSTARCH, main='*.go')
 
 
-def build_cmds():
-    gen()
-    for name in libbuild.BIN_MATRIX:
-        build_cmd(name)
-
-
 def build(name=None):
+    gen()
+    fmt()
     if name:
         cfg = libbuild.BIN_MATRIX[name]
         if cfg['type'] == 'go':
-            gen()
             build_cmd(name)
     else:
-        build_cmds()
+        for name in libbuild.BIN_MATRIX:
+            build_cmd(name)
 
 
 def push(name=None):
