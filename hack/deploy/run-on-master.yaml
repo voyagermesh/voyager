@@ -1,3 +1,4 @@
+# kubectl patch deploy voyager-operator -n kube-system --patch "$(cat run-on-master.yaml)"
 spec:
   template:
     spec:
