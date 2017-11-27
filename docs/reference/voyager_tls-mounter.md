@@ -1,3 +1,14 @@
+---
+title: Voyager Tls-Mounter
+menu:
+  product_voyager_5.0.0-rc.3:
+    identifier: voyager-tls-mounter
+    name: Voyager Tls-Mounter
+    parent: reference
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: reference
+---
 ## voyager tls-mounter
 
 Mounts TLS certificates in HAProxy pods
@@ -44,5 +55,5 @@ voyager tls-mounter [command] [flags]
 ```
 
 ### SEE ALSO
-* [voyager](voyager.md)	 - Voyager by Appscode - Secure Ingress Controller for Kubernetes
+* [voyager](/docs/reference/voyager.md)	 - Voyager by Appscode - Secure Ingress Controller for Kubernetes
 

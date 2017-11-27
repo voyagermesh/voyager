@@ -1,3 +1,14 @@
+---
+title: Voyager Check
+menu:
+  product_voyager_5.0.0-rc.3:
+    identifier: voyager-check
+    name: Voyager Check
+    parent: reference
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: reference
+---
 ## voyager check
 
 Check Ingress
@@ -37,5 +48,5 @@ voyager check [flags]
 ```
 
 ### SEE ALSO
-* [voyager](voyager.md)	 - Voyager by Appscode - Secure Ingress Controller for Kubernetes
+* [voyager](/docs/reference/voyager.md)	 - Voyager by Appscode - Secure Ingress Controller for Kubernetes
 
