@@ -78,6 +78,9 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 		// AWS_HOSTED_ZONE_ID is optional
 		// If AWS_HOSTED_ZONE_ID is not set, Lego tries to determine the correct public hosted zone via the FQDN.
 		// ref: https://github.com/xenolf/lego/blob/5a2fd5039fbba3c06b640be91a2c436bc23f74e8/providers/dns/route53/route53.go#L63
+		if zoneID, found := dnsLoader("AWS_HOSTED_ZONE_ID"); found {
+			hostedZoneID = zoneID
+		}
 		return newDNSProvider(route53.NewDNSProviderCredentials(accessKeyId, secretAccessKey, hostedZoneID))
 	case "azure", "acs":
 		var clientId, clientSecret, subscriptionId, tenantId, resourceGroup string
