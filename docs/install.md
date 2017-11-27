@@ -1,7 +1,7 @@
 # Installation Guide
 
 ## Using YAML
-Voyager can be installed via cloud provider specific YAML files included in the [/hack/deploy](https://github.com/appscode/voyager/tree/5.0.0-rc.3/hack) folder. To use in a RBAC enabled cluster, pass the `--rbac` flag.
+Voyager can be installed via cloud provider specific YAML files included in the [/hack/deploy](https://github.com/appscode/voyager/tree/5.0.0-rc.4/hack) folder. To use in a RBAC enabled cluster, pass the `--rbac` flag.
 
 ```console
 # provider=acs
@@ -14,11 +14,11 @@ Voyager can be installed via cloud provider specific YAML files included in the 
 # provider=openstack
 
 # Install without RBAC roles
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.3/hack/deploy/voyager.sh \
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.4/hack/deploy/voyager.sh \
     | bash -s -- "$provider"
 
 # Install with RBAC roles
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.3/hack/deploy/voyager.sh \
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.4/hack/deploy/voyager.sh \
     | bash -s -- "$provider" --rbac
 ```
 
@@ -26,7 +26,7 @@ If you would like to run Voyager operator pod in `master` instances, apply the f
 
 ```console
 $ kubectl patch deploy voyager-operator -n kube-system \
-    --patch "$(curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.3/hack/deploy/run-on-master.yaml)"
+    --patch "$(curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.4/hack/deploy/run-on-master.yaml)"
 ```
 
 
@@ -77,12 +77,12 @@ $ POD_NAMESPACE=kube-system
 $ POD_NAME=$(kubectl get pods -n $POD_NAMESPACE -l app=voyager -o jsonpath={.items[0].metadata.name})
 $ kubectl exec -it $POD_NAME -n $POD_NAMESPACE voyager version
 
-Version = 5.0.0-rc.3
+Version = 5.0.0-rc.4
 VersionStrategy = tag
 Os = alpine
 Arch = amd64
 CommitHash = ab0b38d8f5d5b4b4508768a594a9d98f2c76abd8
 GitBranch = release-4.0
-GitTag = 5.0.0-rc.3
+GitTag = 5.0.0-rc.4
 CommitTimestamp = 2017-10-08T12:45:26
 ```
