@@ -51,9 +51,9 @@ esac
 shift
 
 if [ $# -eq 0 ]; then
-    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.3/hack/deploy/without-rbac.yaml | envsubst | kubectl apply -f -
+    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.4/hack/deploy/without-rbac.yaml | envsubst | kubectl apply -f -
 elif [ $1 == '--rbac' ]; then
-    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.3/hack/deploy/with-rbac.yaml | envsubst | kubectl apply -f -
+    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.4/hack/deploy/with-rbac.yaml | envsubst | kubectl apply -f -
 else
     echo 'Usage: ./hack/deploy/voyager.sh $provider [--rbac]'
 fi

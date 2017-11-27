@@ -3,7 +3,7 @@ Please follow the steps below to uninstall Voyager:
 
 1. Delete the deployment and service used for Voyager operator.
 ```console
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.3/hack/deploy/uninstall.sh | bash
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.4/hack/deploy/uninstall.sh | bash
 
 + kubectl delete deployment -l app=voyager -n kube-system
 deployment "voyager-operator" deleted
