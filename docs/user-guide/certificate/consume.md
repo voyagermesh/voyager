@@ -2,8 +2,8 @@
 menu:
   product_voyager_5.0.1:
     identifier: certificate-consume
-    name: Certificate Consume
-    parent: certificate-1
+    name: Consume
+    parent: certificate
     weight: 25
 left_menu: product_voyager_5.0.1
 ---

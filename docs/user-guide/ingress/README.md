@@ -5,7 +5,7 @@ menu:
     parent: ingress
     weight: 8
 left_menu: product_voyager_5.0.1
-url: /products/voyager/0.5.1/user-guide/ingress/
+url: /products/voyager/5.0.1/user-guide/ingress/
 ---
 
 ### Ingress

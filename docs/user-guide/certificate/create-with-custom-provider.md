@@ -1,12 +1,12 @@
 ---
 title: Create Certificate with Custom Provider
 menu:
-  product_voyager_0.5.1:
+  product_voyager_5.0.1:
     identifier: create-with-custom-provider
     name: Create with Custom Provider
     parent: certificate
     weight: 20
-left_menu: product_voyager_0.5.1
+left_menu: product_voyager_5.0.1
 ---
 
 ## Creating a Certificate

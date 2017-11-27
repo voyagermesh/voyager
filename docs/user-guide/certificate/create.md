@@ -1,12 +1,12 @@
 ---
 title: Create Certificate
 menu:
-  product_voyager_0.5.1:
+  product_voyager_5.0.1:
     identifier: certificate-create
-    name: Create Certificate
+    name: Create
     parent: certificate
     weight: 15
-left_menu: product_voyager_0.5.1
+left_menu: product_voyager_5.0.1
 ---
 
 ## Creating a Certificate
