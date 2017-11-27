@@ -1,3 +1,20 @@
+---
+title: Install | Voyager
+description: Voyager Install
+menu:
+  product_voyager_master:
+    identifier: install-voyager
+    name: Install
+    parent: getting-started
+    weight: 35
+product_name: voyager
+left_menu: product_voyager_master
+section_menu_id: getting-started
+url: /products/voyager/master/getting-started/install/
+aliases:
+  - /products/voyager/master/install/
+---
+
 # Installation Guide
 
 ## Using YAML
