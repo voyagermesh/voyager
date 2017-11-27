@@ -142,8 +142,8 @@ spec:
             path: /etc/kubernetes
           name: cloudconfig
       tolerations:
-      - key: "CriticalAddonsOnly"
-        operator: "Exists"
+      - key: CriticalAddonsOnly
+        operator: Exists
 ---
 apiVersion: v1
 kind: Service

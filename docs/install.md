@@ -1,56 +1,32 @@
 # Installation Guide
 
 ## Using YAML
-Voyager can be installed using YAML files includes in the [/hack/deploy](/hack/deploy) folder.
+Voyager can be installed via cloud provider specific YAML files included in the [/hack/deploy](https://github.com/appscode/voyager/tree/5.0.0-rc.3/hack) folder. To use in a RBAC enabled cluster, pass the `--rbac` flag.
 
 ```console
-$ export CLOUD_PROVIDER=<provider-name> # ie:
-                                        # - gce
-                                        # - gke
-                                        # - aws
-                                        # - azure
-                                        # - acs (aka, Azure Container Service)
-
-$ export CLOUD_CONFIG=<path>            # The path to the cloud provider configuration file.
-                                        # Empty string for no configuration file.
-                                        # Leave it empty for `gce`, `gke`, `aws` and bare metal clusters.
-                                        # For azure/acs, use `/etc/kubernetes/azure.json`.
-                                        # This file was created during the cluster provisioning process.
-                                        # Voyager uses this to connect to cloud provider api.
+# provider=acs
+# provider=aws
+# provider=azure
+# provider=baremetal
+# provider=gce
+# provider=gke
+# provider=minikube
+# provider=openstack
 
 # Install without RBAC roles
-$ curl https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.3/hack/deploy/without-rbac.yaml \
-    | envsubst \
-    | kubectl apply -f -
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.3/hack/deploy/voyager.sh \
+    | bash -s -- "$provider"
 
 # Install with RBAC roles
-$ curl https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.3/hack/deploy/with-rbac.yaml \
-    | envsubst \
-    | kubectl apply -f -
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.3/hack/deploy/voyager.sh \
+    | bash -s -- "$provider" --rbac
 ```
 
-There are cloud provider specific installer scripts available in [/hack/deploy](/hack/deploy) folder. To use in a RBAC enabled cluster, pass the `--rbac` flag.
+If you would like to run Voyager operator pod in `master` instances, apply the following patch:
+
 ```console
-# Deploy in minikube
-$ ./hack/deploy/minikube.sh [--rbac]
-
-# Deploy in Amazon AWS EC2
-$ ./hack/deploy/aws.sh [--rbac]
-
-# Deploy in Google Compute Cloud(GCE)
-$ ./hack/deploy/gce.sh [--rbac]
-
-# Deploy in Google Container Engine(GKE)
-$ ./hack/deploy/gke.sh [--rbac]
-
-# Deploy in Microsoft Azure
-$ ./hack/deploy/azure.sh [--rbac]
-
-# Deploy in Azure Container Service(ACS)
-$ ./hack/deploy/acs.sh [--rbac]
-
-# Deploy in Baremetal providers
-$ ./hack/deploy/baremetal.sh [--rbac]
+$ kubectl patch deploy voyager-operator -n kube-system \
+    --patch "$(curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.3/hack/deploy/run-on-master.yaml)"
 ```
 
 
