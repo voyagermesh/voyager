@@ -1,3 +1,12 @@
+---
+menu:
+  product_voyager_5.0.1:
+    parent: ingress
+    name: Aws-cert-manager
+    weight: 60
+left_menu: product_voyager_5.0.1
+---
+
 Voyager can use AWS certificate manager to terminate SSL connections for `LoadBalancer` type ingress in "aws" provider. To use this feature,
 add the following annotations to Ingress;
 

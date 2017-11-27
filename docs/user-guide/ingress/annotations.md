@@ -1,3 +1,12 @@
+---
+menu:
+  product_voyager_5.0.1:
+    parent: ingress
+    name: Annotations
+    weight: 50
+left_menu: product_voyager_5.0.1
+---
+
 ## Custom Annotations to LoadBalancer Service or Pods
 
 If the LoadBalancer service and Pods needs to be set custom annotations, those can be
