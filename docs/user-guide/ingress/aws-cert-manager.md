@@ -1,9 +1,9 @@
 ---
 menu:
   product_voyager_5.0.1:
+    name: AWS Cert Manager
     parent: ingress
-    name: Aws-cert-manager
-    weight: 60
+    weight: 15
 left_menu: product_voyager_5.0.1
 ---
 

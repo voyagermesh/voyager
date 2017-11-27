@@ -1,3 +1,13 @@
+---
+menu:
+  product_voyager_5.0.1:
+    name: Overview
+    parent: ingress
+    weight: 8
+left_menu: product_voyager_5.0.1
+url: /products/voyager/0.5.1/user-guide/ingress/
+---
+
 ### Ingress
 An Ingress is a collection of rules which allow inbound connections to reach the cluster services.
 It can be configured to give services externally-reachable urls, load balance traffic, terminate SSL,

@@ -1,9 +1,9 @@
 ---
 menu:
   product_voyager_5.0.1:
-    parent: ingress
     name: Annotations
-    weight: 50
+    parent: ingress
+    weight: 10
 left_menu: product_voyager_5.0.1
 ---
 

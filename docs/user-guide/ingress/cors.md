@@ -1,3 +1,13 @@
+---
+menu:
+  product_voyager_5.0.1:
+    name: CORS
+    parent: ingress
+    weight: 45
+left_menu: product_voyager_5.0.1
+---
+
+
 ## Enable CORS
 Applying `ingress.kubenretes.io/enable-cors` annotation in ingress enables CORS for all HTTP Frontend.
 

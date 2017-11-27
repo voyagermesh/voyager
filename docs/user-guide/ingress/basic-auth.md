@@ -1,3 +1,13 @@
+---
+menu:
+  product_voyager_5.0.1:
+    name: Basic Auth
+    parent: ingress
+    weight: 30
+left_menu: product_voyager_5.0.1
+---
+
+
 # Basic Authentication
 
 This example demonstrates how to configure

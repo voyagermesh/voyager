@@ -1,3 +1,13 @@
+---
+menu:
+  product_voyager_5.0.1:
+    name: Configure Timeouts
+    parent: ingress
+    weight: 40
+left_menu: product_voyager_5.0.1
+---
+
+
 Custom timeouts can be configured for HAProxy via annotations. Supports all valid timeout option
 for defaults section of HAProxy. [Read More](https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.2-timeout%20check)
 

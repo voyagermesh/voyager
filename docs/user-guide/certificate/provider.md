@@ -1,3 +1,13 @@
+---
+menu:
+  product_voyager_5.0.1:
+    identifier: certificate-provider
+    name: Certificate Provider
+    parent: certificate
+    weight: 30
+left_menu: product_voyager_5.0.1
+---
+
 # Configuring your challenge provider(s)
 
 ## DNS Providers
