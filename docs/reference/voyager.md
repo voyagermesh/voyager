@@ -1,3 +1,19 @@
+---
+title: Voyager
+menu:
+  product_voyager_5.0.0-rc.3:
+    identifier: voyager
+    name: Voyager
+    parent: reference
+    weight: 0
+
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: reference
+aliases:
+  - products/voyager/5.0.0-rc.3/reference/
+
+---
 ## voyager
 
 Voyager by Appscode - Secure Ingress Controller for Kubernetes
@@ -24,10 +40,10 @@ Voyager by Appscode - Secure Ingress Controller for Kubernetes
 ```
 
 ### SEE ALSO
-* [voyager check](voyager_check.md)	 - Check Ingress
-* [voyager export](voyager_export.md)	 - Export Prometheus metrics for HAProxy
-* [voyager kloader](voyager_kloader.md)	 - Reloads HAProxy when configmap changes
-* [voyager run](voyager_run.md)	 - Run operator
-* [voyager tls-mounter](voyager_tls-mounter.md)	 - Mounts TLS certificates in HAProxy pods
-* [voyager version](voyager_version.md)	 - Prints binary version number.
+* [voyager check](/docs/reference/voyager_check.md)	 - Check Ingress
+* [voyager export](/docs/reference/voyager_export.md)	 - Export Prometheus metrics for HAProxy
+* [voyager kloader](/docs/reference/voyager_kloader.md)	 - Reloads HAProxy when configmap changes
+* [voyager run](/docs/reference/voyager_run.md)	 - Run operator
+* [voyager tls-mounter](/docs/reference/voyager_tls-mounter.md)	 - Mounts TLS certificates in HAProxy pods
+* [voyager version](/docs/reference/voyager_version.md)	 - Prints binary version number.
 
