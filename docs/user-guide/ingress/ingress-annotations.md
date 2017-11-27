@@ -11,17 +11,17 @@ Voyager also supports some particular defines annotation, [which are described h
 
 | Name | Details | Annotation applies to |
 | --- |----| --- |
-| **[TLS](https://github.com/kubernetes/ingress/blob/master/docs/annotations.md#tls-related)** |
+| **[TLS](https://github.com/kubernetes/ingress/blob/5.0.1/docs/annotations.md#tls-related)** |
 | `ssl-passthrough` | Pass TLS connections directly to backend; do not offload.   |  ingress |
 | `hsts` | [Enable HSTS](hsts.md) | ingress |
 | `hsts-max-age` | [Specifies the time (in seconds) the browser should connect to the server using the HTTPS connection.](hsts.md) | ingress|
 | `hsts-preload` | [Enable HSTS preload](hsts.md) | ingress |
 | `hsts-include-subdomains` | [HSTS rule applies to all of the site's sub domains](hsts.md) | ingress |
-| **[Authentication](https://github.com/kubernetes/ingress/blob/master/docs/annotations.md#authentication-related)** |
+| **[Authentication](https://github.com/kubernetes/ingress/blob/5.0.1/docs/annotations.md#authentication-related)** |
 | `auth-type` | [Enable Basic Auth](basic-auth.md) | ingress, service |
 | `auth-secret` | [Basic Auth user secret](basic-auth.md) | ingress, service |
 | `auth-realm` | [Basic Auth realm](basic-auth.md) | ingress, service |
-| **[Miscellaneous](https://github.com/kubernetes/ingress/blob/master/docs/annotations.md#miscellaneous)** |
+| **[Miscellaneous](https://github.com/kubernetes/ingress/blob/5.0.1/docs/annotations.md#miscellaneous)** |
 | `enable-cors` | [Enables CORS headers in HTTP response](cors.md) | ingress |
 | `affinity` | [Sticky session](sticky-session.md). only supported value is cookie | ingress, service |
 | `session-cookie-name` | [Sticky session cookie name to set](sticky-session.md) | ingress, service |
@@ -63,5 +63,5 @@ can be applied on ingress or backends.
 
 
 ## Acknowledgements
- - [kubernetes/ingress](https://github.com/kubernetes/ingress/blob/master/docs/annotations.md)
+ - [kubernetes/ingress](https://github.com/kubernetes/ingress/blob/5.0.1/docs/annotations.md)
  - [Tracking Bugs](https://github.com/appscode/voyager/issues/491)

@@ -72,7 +72,7 @@ type HTTPChallengeProvider struct {
 }
 
 type DNSChallengeProvider struct {
-	// DNS Provider from the list https://github.com/appscode/voyager/blob/master/docs/user-guide/certificate/provider.md
+	// DNS Provider from the list https://github.com/appscode/voyager/blob/5.0.1/docs/user-guide/certificate/provider.md
 	Provider             string `json:"provider,omitempty"`
 	CredentialSecretName string `json:"credentialSecretName,omitempty"`
 }

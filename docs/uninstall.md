@@ -2,17 +2,17 @@
 title: Uninstall | Voyager
 description: Voyager Uninstall
 menu:
-  product_voyager_master:
+  product_voyager_5.0.1:
     identifier: uninstall-voyager
     name: Uninstall
     parent: getting-started
     weight: 50
 product_name: voyager
-left_menu: product_voyager_master
+left_menu: product_voyager_5.0.1
 section_menu_id: getting-started
-url: /products/voyager/master/getting-started/uninstall/
+url: /products/voyager/5.0.1/getting-started/uninstall/
 aliases:
-  - /products/voyager/master/uninstall/
+  - /products/voyager/5.0.1/uninstall/
 ---
 
 # Uninstall Voyager

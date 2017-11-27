@@ -65,4 +65,4 @@ voyager-my-app        Deployment/voyager-my-app        0% / 20%   2         10  
 ```
 
 ## Node Autoscaling
-If you are using [autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) to dynamically add and remove nodes, you might be interested in using `ingress.appscode.com/node-selector` to control which hosts are selected to run HAProxy pods. This is a recommended annotation for HostPort type ingress.
+If you are using [autoscaler](https://github.com/kubernetes/autoscaler/tree/5.0.1/cluster-autoscaler) to dynamically add and remove nodes, you might be interested in using `ingress.appscode.com/node-selector` to control which hosts are selected to run HAProxy pods. This is a recommended annotation for HostPort type ingress.

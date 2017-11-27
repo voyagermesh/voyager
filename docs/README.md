@@ -2,17 +2,17 @@
 title: Overview | Voyager
 description: Overview of Voyager
 menu:
-  product_voyager_master:
+  product_voyager_5.0.1:
     identifier: overview-voyager
     name: Overview
     parent: getting-started
     weight: 20
 product_name: voyager
-left_menu: product_voyager_master
+left_menu: product_voyager_5.0.1
 section_menu_id: getting-started
-url: /products/voyager/master/getting-started/
+url: /products/voyager/5.0.1/getting-started/
 aliases:
-  - /products/voyager/master/
+  - /products/voyager/5.0.1/
 ---
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/appscode/voyager)](https://goreportcard.com/report/github.com/appscode/voyager)
@@ -147,12 +147,12 @@ To disable stats collection, run the operator with the flag** `--analytics=false
 
 ## Acknowledgement
  - docker-library/haproxy https://github.com/docker-library/haproxy
- - kubernetes/contrib https://github.com/kubernetes/contrib/tree/master/service-loadbalancer
+ - kubernetes/contrib https://github.com/kubernetes/contrib/tree/5.0.1/service-loadbalancer
  - kubernetes/ingress https://github.com/kubernetes/ingress
  - xenolf/lego https://github.com/appscode/lego
  - kelseyhightower/kube-cert-manager https://github.com/kelseyhightower/kube-cert-manager
  - PalmStoneGames/kube-cert-manager https://github.com/PalmStoneGames/kube-cert-manager
- - [Kubernetes cloudprovider implementation](https://github.com/kubernetes/kubernetes/tree/master/pkg/cloudprovider)
+ - [Kubernetes cloudprovider implementation](https://github.com/kubernetes/kubernetes/tree/5.0.1/pkg/cloudprovider)
 
 ## Support
 If you have any questions, you can reach out to us.
