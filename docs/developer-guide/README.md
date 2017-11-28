@@ -1,3 +1,18 @@
+---
+title: Overview | Developer Guide
+description: Developer Guide Overview
+menu:
+  product_voyager_5.0.0-rc.3:
+    identifier: developer-guide-readme
+    name: Overview
+    parent: developer-guide
+    weight: 15
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: developer-guide
+url: /products/voyager/5.0.0-rc.3/developer-guide/
+---
+
 ## Development Guide
 This document is intended to be the canonical source of truth for things like supported toolchain versions for building Voyager.
 If you find a requirement that this doc does not capture, please submit an issue on github.

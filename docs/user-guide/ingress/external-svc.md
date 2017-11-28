@@ -1,3 +1,15 @@
+---
+menu:
+  product_voyager_5.0.0-rc.3:
+    name: External SVC
+    parent: ingress
+    weight: 60
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: user-guide
+---
+
+
 Voyager supports `ExternalName` type services via dns resolution or http redirect.
 
 ## DNS Resolution

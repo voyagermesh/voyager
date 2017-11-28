@@ -1,3 +1,15 @@
+---
+menu:
+  product_voyager_5.0.0-rc.3:
+    name: HSTS
+    parent: ingress
+    weight: 75
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: user-guide
+---
+
+
 ## HSTS
 HTTP Strict Transport Security (HSTS) is a web security policy mechanism which helps to protect
 websites against protocol downgrade attacks and cookie hijacking. It allows web servers to

@@ -1,3 +1,15 @@
+---
+menu:
+  product_voyager_5.0.0-rc.3:
+    name: Header Rewrite
+    parent: ingress
+    weight: 70
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: user-guide
+---
+
+
 ### Header and URL Rewriting
 AppsCode Ingress support header and URL modification at the loadbalancer level. To ensure simplicity,
 the header and rewrite rules follow the HAProxy syntax as it is.

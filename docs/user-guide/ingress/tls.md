@@ -1,3 +1,15 @@
+---
+menu:
+  product_voyager_5.0.0-rc.3:
+    name: TLS
+    parent: ingress
+    weight: 135
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: user-guide
+---
+
+
 ## TLS
 You can secure an Ingress by specifying a secret containing TLS pem or by referring a `certificate.voyager.appscode.com` resource.
 `certificate.voyager.appscode.com` can manage an certificate resource and use that certificate to encrypt communication.

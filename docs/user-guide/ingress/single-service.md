@@ -1,3 +1,15 @@
+---
+menu:
+  product_voyager_5.0.0-rc.3:
+    name: Single Service
+    parent: ingress
+    weight: 105
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: user-guide
+---
+
+
 ### Single Service Ingress
 There are existing Kubernetes concepts which allows you to expose a single service. However, you can do so
 through an AppsCode Ingress as well, simply by specifying a default backend with no rules.

@@ -1,3 +1,14 @@
+---
+menu:
+  product_voyager_5.0.0-rc.3:
+    name: Sticky Session
+    parent: ingress
+    weight: 125
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: user-guide
+---
+
 # Sticky Session
 Voyager 3.2.0+ can configure [sticky connections](https://www.haproxy.com/blog/load-balancing-affinity-persistence-sticky-sessions-what-you-need-to-know/) in 2 modes. By applying annotation to an Ingress resource, you can configure all backends in that ingress to use sticky session. Or you can apply annotation to a service and configure
 backends using that service to use sticky session.

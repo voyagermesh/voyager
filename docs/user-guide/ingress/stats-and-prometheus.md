@@ -1,3 +1,16 @@
+---
+menu:
+  product_voyager_5.0.0-rc.3:
+    name: Stats and Prometheus
+    parent: ingress
+    weight: 120
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: user-guide
+---
+
+
+
 ## Exposing HAProxy Stats
 To expose HAProxy stats, please use the following annotations:
 
