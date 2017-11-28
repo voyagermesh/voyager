@@ -3,7 +3,7 @@ title: Create Certificate with Custom Provider
 menu:
   product_voyager_5.0.1:
     identifier: create-with-custom-provider
-    name: Create with Custom Provider
+    name: Custom Provider
     parent: certificate
     weight: 20
 product_name: voyager
