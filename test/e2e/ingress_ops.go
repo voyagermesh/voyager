@@ -304,7 +304,7 @@ var _ = Describe("IngressOperations", func() {
 				}
 			})
 
-			FIt("Rules Should Apply", func() {
+			It("Rules Should Apply", func() {
 				By("Getting HTTP endpoints")
 				eps, err := f.Ingress.GetHTTPEndpoints(ing)
 				Expect(err).NotTo(HaveOccurred())
