@@ -2,17 +2,17 @@
 title: Install | Voyager
 description: Voyager Install
 menu:
-  product_voyager_5.0.0-rc.3:
+  product_voyager_5.0.0-rc.4:
     identifier: install-voyager
     name: Install
     parent: getting-started
     weight: 35
 product_name: voyager
-left_menu: product_voyager_5.0.0-rc.3
+left_menu: product_voyager_5.0.0-rc.4
 section_menu_id: getting-started
-url: /products/voyager/5.0.0-rc.3/getting-started/install/
+url: /products/voyager/5.0.0-rc.4/getting-started/install/
 aliases:
-  - /products/voyager/5.0.0-rc.3/install/
+  - /products/voyager/5.0.0-rc.4/install/
 ---
 
 # Installation Guide

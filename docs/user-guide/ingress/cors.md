@@ -1,11 +1,11 @@
 ---
 menu:
-  product_voyager_5.0.0-rc.3:
+  product_voyager_5.0.0-rc.4:
     name: CORS
     parent: ingress
     weight: 45
 product_name: voyager
-left_menu: product_voyager_5.0.0-rc.3
+left_menu: product_voyager_5.0.0-rc.4
 section_menu_id: user-guide
 ---
 
