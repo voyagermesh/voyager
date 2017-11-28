@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/appscode/go/log"
-	internalapi "github.com/appscode/voyager/apis/voyager"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/client"
@@ -305,18 +304,19 @@ var _ = Describe("IngressOperations", func() {
 				}
 			})
 
-			It("Rules Should Apply", func() {
+			FIt("Rules Should Apply", func() {
 				By("Getting HTTP endpoints")
 				eps, err := f.Ingress.GetHTTPEndpoints(ing)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
-					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
-						Expect(r.Method).Should(Equal("GET")) &&
-						Expect(r.Path).Should(Equal("/override/testpath/ok")) &&
-						Expect(r.RequestHeaders.Get("X-Ingress-Test-Header")).Should(Equal("ingress.appscode.com"))
-				})
+				err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok",
+					func(r *client.Response) bool {
+						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+							Expect(r.Method).Should(Equal("GET")) &&
+							Expect(r.Path).Should(Equal("/override/testpath/ok")) &&
+							Expect(r.RequestHeaders.Get("X-Ingress-Test-Header")).Should(Equal("ingress.appscode.com"))
+					})
 				Expect(err).NotTo(HaveOccurred())
 
 				err = f.Ingress.DoHTTPWithHeader(framework.MaxRetry,
@@ -325,13 +325,13 @@ var _ = Describe("IngressOperations", func() {
 					"GET",
 					"/testpath/ok",
 					map[string]string{
-						"X-Ingress-Test-Header": internalapi.GroupName + "/v1beta1",
+						"X-Ingress-Test-Header": api.SchemeGroupVersion.Group + "/v1beta1",
 					},
 					func(r *client.Response) bool {
 						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 							Expect(r.Method).Should(Equal("GET")) &&
 							Expect(r.Path).Should(Equal("/override/testpath/ok")) &&
-							Expect(r.RequestHeaders.Get("X-Ingress-Test-Header")).Should(Equal(internalapi.GroupName+"/v1beta1"))
+							Expect(r.RequestHeaders.Get("X-Ingress-Test-Header")).Should(Equal("ingress.appscode.com"))
 					},
 				)
 				Expect(err).NotTo(HaveOccurred())
