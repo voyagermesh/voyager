@@ -9,6 +9,19 @@ import (
 	"text/template"
 )
 
+/*
+<aclname>: name of the acl, usually tries to describe it as much as possible.
+
+It must be formed from upper and lower case letters, digits, ‘-‘ (dash), ‘_’ (underscore) , ‘.’ (dot) and ‘:’ (colon).
+It is case sensitive, so my_acl and My_Acl are two different ACLs.
+
+ref: https://www.haproxy.com/documentation/aloha/7-0/haproxy/acls/
+*/
+func ACLName(v string) string {
+	v = strings.Replace(v, "/", "_", -1)
+	return v
+}
+
 func HeaderName(v string) string {
 	v = strings.TrimSpace(v)
 	if v == "" {
@@ -47,6 +60,7 @@ func BackendHash(value string, index int, mode string) string {
 
 var (
 	funcMap = template.FuncMap{
+		"acl_name":     ACLName,
 		"header_name":  HeaderName,
 		"host_name":    HostName,
 		"backend_hash": BackendHash,
