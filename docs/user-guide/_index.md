@@ -6,5 +6,6 @@ menu:
     identifier: user-guide
     name: User Guide
     weight: 30
+    pre: dropdown
 left_menu: product_voyager_5.0.1
 ---
