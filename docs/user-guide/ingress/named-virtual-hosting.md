@@ -1,3 +1,15 @@
+---
+menu:
+  product_voyager_5.0.0-rc.3:
+    name: Named Virtual Hosting
+    parent: ingress
+    weight: 85
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: user-guide
+---
+
+
 ### Name based virtual hosting
 Name-based virtual hosts use multiple host names for the same IP address.
 

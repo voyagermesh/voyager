@@ -1,3 +1,14 @@
+---
+menu:
+  product_voyager_5.0.0-rc.3:
+    name: Simple Fanout
+    parent: ingress
+    weight: 100
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: user-guide
+---
+
 ### Simple Fanout
 As described previously, pods within kubernetes have ips only visible on the cluster network. So, we need
 something at the edge accepting ingress traffic and proxy-ing it to right endpoints. This component

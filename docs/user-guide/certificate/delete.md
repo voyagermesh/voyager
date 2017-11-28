@@ -1,3 +1,15 @@
+---
+menu:
+  product_voyager_5.0.0-rc.3:
+    identifier: certificate-delete
+    name: Certificate Delete
+    parent: certificate
+    weight: 30
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: user-guide
+---
+
 ## Deleting a Certificate
 Deleting a Kubernetes Certificate object will only delete the certificate CRD from kubernetes.
 It will not delete the obtained certificate and user account secret from kubernetes. User have to manually delete

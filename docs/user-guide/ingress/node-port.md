@@ -1,3 +1,15 @@
+---
+menu:
+  product_voyager_5.0.0-rc.3:
+    name: Node Port
+    parent: ingress
+    weight: 90
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: user-guide
+---
+
+
 ## Specify NodePort
 
 If you are using a `NodePort` or `LoadBalancer` type Ingress, a `NodePort` or `LoadBalancer` type Service is used to expose HAProxy pods respectively. If no node port is specified for each HAProxy Service port, Kubernetes will randomly assign one for you.

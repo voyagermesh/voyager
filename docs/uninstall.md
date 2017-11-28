@@ -1,3 +1,20 @@
+---
+title: Uninstall | Voyager
+description: Voyager Uninstall
+menu:
+  product_voyager_5.0.0-rc.3:
+    identifier: uninstall-voyager
+    name: Uninstall
+    parent: getting-started
+    weight: 50
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: getting-started
+url: /products/voyager/5.0.0-rc.3/getting-started/uninstall/
+aliases:
+  - /products/voyager/5.0.0-rc.3/uninstall/
+---
+
 # Uninstall Voyager
 Please follow the steps below to uninstall Voyager:
 

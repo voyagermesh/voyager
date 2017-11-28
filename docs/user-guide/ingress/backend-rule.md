@@ -1,3 +1,14 @@
+---
+menu:
+  product_voyager_5.0.0-rc.3:
+    name: Backend Rule
+    parent: ingress
+    weight: 20
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: user-guide
+---
+
 ### BackendRule
 Voyager supports full spectrum of HAProxy backend rules via `backendRule`. Read [more](https://cbonte.github.io/haproxy-dconv/1.7/configuration.html)
 about HAProxy backend rules.

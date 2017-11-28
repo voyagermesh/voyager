@@ -1,3 +1,16 @@
+---
+menu:
+  product_voyager_5.0.0-rc.3:
+    identifier: certificate-readme
+    name: Overview
+    parent: certificate
+    weight: 10
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: user-guide
+url: /products/voyager/5.0.0-rc.3/user-guide/certificate/
+---
+
 ## Certificates
 Voyager manages certificates objects to create Certificates default from Let's Encrypt.
 

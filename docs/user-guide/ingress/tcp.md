@@ -1,3 +1,15 @@
+---
+menu:
+  product_voyager_5.0.0-rc.3:
+    name: TCP
+    parent: ingress
+    weight: 130
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: user-guide
+---
+
+
 # TCP LoadBalancing
 TCP load balancing is one of the core features of Voyager Ingress. Voyager can handle TCP Load balancing with or without TLS. One Voyager Ingress can also be used to load balance both HTTP and TCP.
 

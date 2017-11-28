@@ -1,3 +1,15 @@
+---
+menu:
+  product_voyager_5.0.0-rc.3:
+    name: Statefulset Pod
+    parent: ingress
+    weight: 115
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: user-guide
+---
+
+
 ### Forward Traffic to StatefulSet
 There is the regular way to forward traffic to StatefulSet. Create a service with the pods label selector as
 selector, and use the service name as Backend ServiceName. By following:

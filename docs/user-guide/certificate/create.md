@@ -1,3 +1,16 @@
+---
+title: Create Certificate
+menu:
+  product_voyager_5.0.0-rc.3:
+    identifier: certificate-create
+    name: Create
+    parent: certificate
+    weight: 15
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: user-guide
+---
+
 ## Creating a Certificate
 Let's Encrypt issued certificates are automatically created for each Kubernetes Certificate object. This
 tutorial will walk you through creating certificate objects based on the googledns.

@@ -1,3 +1,16 @@
+---
+title: Create Certificate with Custom Provider
+menu:
+  product_voyager_5.0.0-rc.3:
+    identifier: create-with-custom-provider
+    name: Custom Provider
+    parent: certificate
+    weight: 20
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: user-guide
+---
+
 ## Creating a Certificate
 Let's Encrypt issued certificates are automatically created for each Kubernetes Certificate object. This
 tutorial will walk you through creating certificate from custom ACME server.

@@ -1,3 +1,15 @@
+---
+menu:
+  product_voyager_5.0.0-rc.3:
+    name: Configure Options
+    parent: ingress
+    weight: 35
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: user-guide
+---
+
+
 Voyager Supports all valid options for defaults section of HAProxy config
 https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.2-option%20abortonclose
 from the list from here

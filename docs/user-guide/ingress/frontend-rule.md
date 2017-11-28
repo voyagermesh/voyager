@@ -1,3 +1,15 @@
+---
+menu:
+  product_voyager_5.0.0-rc.3:
+    name: Frontend Rule
+    parent: ingress
+    weight: 65
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: user-guide
+---
+
+
 ## Frontend Rules
 Frontend rules specify a set of rules that are applied to HAProxy frontend configuration.
 The set of keywords are from here https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.1.

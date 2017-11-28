@@ -1,3 +1,15 @@
+---
+menu:
+  product_voyager_5.0.0-rc.3:
+    name: Ingress Annotations
+    parent: ingress
+    weight: 80
+product_name: voyager
+left_menu: product_voyager_5.0.0-rc.3
+section_menu_id: user-guide
+---
+
+
 ## Ingress Annotations Support
 This file defines the list of supported annotations by voyager that are used in other ingress controllers.
 voyager intent to ensure maximum amount compatibility between different implementations.
