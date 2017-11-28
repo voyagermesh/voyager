@@ -5,6 +5,6 @@ menu:
   product_voyager_5.0.1:
     identifier: developer-guide
     name: Developer Guide
-    weight: 30
+    weight: 40
 left_menu: product_voyager_5.0.1
 ---
