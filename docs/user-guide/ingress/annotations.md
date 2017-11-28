@@ -1,11 +1,11 @@
 ---
 menu:
-  product_voyager_5.0.1:
+  product_voyager_5.0.0-rc.3:
     name: Annotations
     parent: ingress
     weight: 10
 product_name: voyager
-left_menu: product_voyager_5.0.1
+left_menu: product_voyager_5.0.0-rc.3
 section_menu_id: user-guide
 ---
 

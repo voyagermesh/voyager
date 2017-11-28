@@ -1,14 +1,14 @@
 ---
 menu:
-  product_voyager_5.0.1:
+  product_voyager_5.0.0-rc.3:
     identifier: certificate-readme
     name: Overview
     parent: certificate
     weight: 10
 product_name: voyager
-left_menu: product_voyager_5.0.1
+left_menu: product_voyager_5.0.0-rc.3
 section_menu_id: user-guide
-url: /products/voyager/5.0.1/user-guide/certificate/
+url: /products/voyager/5.0.0-rc.3/user-guide/certificate/
 ---
 
 ## Certificates
@@ -85,7 +85,7 @@ type HTTPChallengeProvider struct {
 }
 
 type DNSChallengeProvider struct {
-	// DNS Provider from the list https://github.com/appscode/voyager/blob/5.0.1/docs/user-guide/certificate/provider.md
+	// DNS Provider from the list https://github.com/appscode/voyager/blob/master/docs/user-guide/certificate/provider.md
 	Provider             string `json:"provider,omitempty"`
 	CredentialSecretName string `json:"credentialSecretName,omitempty"`
 }

@@ -1,11 +1,11 @@
 ---
 menu:
-  product_voyager_5.0.1:
+  product_voyager_5.0.0-rc.3:
     name: Replicas And Autoscaling
     parent: ingress
     weight: 95
 product_name: voyager
-left_menu: product_voyager_5.0.1
+left_menu: product_voyager_5.0.0-rc.3
 section_menu_id: user-guide
 ---
 
@@ -75,4 +75,4 @@ voyager-my-app        Deployment/voyager-my-app        0% / 20%   2         10  
 ```
 
 ## Node Autoscaling
-If you are using [autoscaler](https://github.com/kubernetes/autoscaler/tree/5.0.1/cluster-autoscaler) to dynamically add and remove nodes, you might be interested in using `ingress.appscode.com/node-selector` to control which hosts are selected to run HAProxy pods. This is a recommended annotation for HostPort type ingress.
+If you are using [autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) to dynamically add and remove nodes, you might be interested in using `ingress.appscode.com/node-selector` to control which hosts are selected to run HAProxy pods. This is a recommended annotation for HostPort type ingress.

@@ -2,15 +2,15 @@
 title: Overview | Developer Guide
 description: Developer Guide Overview
 menu:
-  product_voyager_5.0.1:
+  product_voyager_5.0.0-rc.3:
     identifier: developer-guide-readme
     name: Overview
     parent: developer-guide
     weight: 15
 product_name: voyager
-left_menu: product_voyager_5.0.1
+left_menu: product_voyager_5.0.0-rc.3
 section_menu_id: developer-guide
-url: /products/voyager/5.0.1/developer-guide/
+url: /products/voyager/5.0.0-rc.3/developer-guide/
 ---
 
 ## Development Guide
@@ -55,7 +55,7 @@ $ voyager version
 ```
 
 #### Dependency management
-Voyager uses [Glide](https://github.com/5.0.1minds/glide) to manage dependencies. Dependencies are already checked in the `vendor` folder.
+Voyager uses [Glide](https://github.com/Masterminds/glide) to manage dependencies. Dependencies are already checked in the `vendor` folder.
 If you want to update/add dependencies, run:
 ```console
 $ glide slow
@@ -163,7 +163,7 @@ Following configurations can be enabled for test via flags in `./hack/make.py te
 | cert | false | Run tests regarding certificates |
 | dump | os.TempDir() | Dump all Certificates and CA files for TLS ingress tests |
 
-**e2e** tests are powered by [ginkgo](http://onsi.github.io/ginkgo/). All the [configs and flags](https://github.com/onsi/ginkgo/blob/5.0.1/config/config.go#L64) of ginkgo are also available.
+**e2e** tests are powered by [ginkgo](http://onsi.github.io/ginkgo/). All the [configs and flags](https://github.com/onsi/ginkgo/blob/master/config/config.go#L64) of ginkgo are also available.
 
 ## Architecture
 Voyager works by implementing third party resource data watcher for kubernetes. It connects with k8s apiserver

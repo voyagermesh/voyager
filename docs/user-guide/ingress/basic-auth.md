@@ -1,11 +1,11 @@
 ---
 menu:
-  product_voyager_5.0.1:
+  product_voyager_5.0.0-rc.3:
     name: Basic Auth
     parent: ingress
     weight: 30
 product_name: voyager
-left_menu: product_voyager_5.0.1
+left_menu: product_voyager_5.0.0-rc.3
 section_menu_id: user-guide
 ---
 
@@ -107,4 +107,4 @@ Content-Type: text/plain; charset=utf-8
 Using `jane:guest` user/passwd should have the same output.
 
 ## Acknowledgement
-  - This document has been adapted from [kubernetes/ingress](https://github.com/kubernetes/ingress/tree/5.0.1/examples/auth/basic/haproxy) project.
+  - This document has been adapted from [kubernetes/ingress](https://github.com/kubernetes/ingress/tree/master/examples/auth/basic/haproxy) project.
