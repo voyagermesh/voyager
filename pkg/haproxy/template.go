@@ -60,7 +60,7 @@ func BackendHash(value string, index int, mode string) string {
 
 var (
 	funcMap = template.FuncMap{
-		"acl_name":  ACLName,
+		"acl_name":     ACLName,
 		"header_name":  HeaderName,
 		"host_name":    HostName,
 		"backend_hash": BackendHash,
