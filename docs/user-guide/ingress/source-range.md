@@ -1,3 +1,15 @@
+---
+menu:
+  product_voyager_5.0.1:
+    name: Source Range
+    parent: ingress
+    weight: 110
+product_name: voyager
+left_menu: product_voyager_5.0.1
+section_menu_id: user-guide
+---
+
+
 ## Loadbalancer Source Range
 When using an Ingress with `ingress.appscode.com/type: LoadBalancer` annotation, you can specify the IP ranges
 that are allowed to access the load balancer by using `spec.loadBalancerSourceRanges`.

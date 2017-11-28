@@ -6,7 +6,9 @@ menu:
     name: Create
     parent: certificate
     weight: 15
+product_name: voyager
 left_menu: product_voyager_5.0.1
+section_menu_id: user-guide
 ---
 
 ## Creating a Certificate

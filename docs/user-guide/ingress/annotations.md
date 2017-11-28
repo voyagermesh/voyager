@@ -4,7 +4,9 @@ menu:
     name: Annotations
     parent: ingress
     weight: 10
+product_name: voyager
 left_menu: product_voyager_5.0.1
+section_menu_id: user-guide
 ---
 
 ## Custom Annotations to LoadBalancer Service or Pods

@@ -1,3 +1,15 @@
+---
+menu:
+  product_voyager_5.0.1:
+    name: Weighted
+    parent: ingress
+    weight: 140
+product_name: voyager
+left_menu: product_voyager_5.0.1
+section_menu_id: user-guide
+---
+
+
 ## Weighted Loadbalancing
 `Voayger` supports weighted loadbalancing on canary deployments.
 

@@ -6,7 +6,9 @@ menu:
     name: Create with Custom Provider
     parent: certificate
     weight: 20
+product_name: voyager
 left_menu: product_voyager_5.0.1
+section_menu_id: user-guide
 ---
 
 ## Creating a Certificate

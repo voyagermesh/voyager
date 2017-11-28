@@ -1,5 +1,5 @@
 ---
-title: Ingress | Voyager
+title: Ingress
 menu:
   product_voyager_5.0.1:
     identifier: ingress
