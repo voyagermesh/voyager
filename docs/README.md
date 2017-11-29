@@ -13,6 +13,7 @@ section_menu_id: getting-started
 url: /products/voyager/5.0.0-rc.4/getting-started/
 aliases:
   - /products/voyager/5.0.0-rc.4/
+  - /products/voyager/5.0.0-rc.4/README/
 ---
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/appscode/voyager)](https://goreportcard.com/report/github.com/appscode/voyager)

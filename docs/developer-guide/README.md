@@ -11,6 +11,8 @@ product_name: voyager
 left_menu: product_voyager_5.0.0-rc.4
 section_menu_id: developer-guide
 url: /products/voyager/5.0.0-rc.4/developer-guide/
+aliases:
+  - /products/voyager/5.0.0-rc.4/developer-guide/README/
 ---
 
 ## Development Guide
