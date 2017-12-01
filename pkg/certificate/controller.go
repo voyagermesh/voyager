@@ -251,7 +251,7 @@ func (c *Controller) renew() error {
 		CertURL:       c.crd.Status.LastIssuedCertificate.CertURL,
 		CertStableURL: c.crd.Status.LastIssuedCertificate.CertStableURL,
 		AccountRef:    c.crd.Status.LastIssuedCertificate.AccountRef,
-		Certificate:   c.curCert.Raw,
+		Certificate:   cert.EncodeCertPEM(c.curCert),
 		PrivateKey:    nil, // issue new private key,
 	}
 	cert, err := c.acmeClient.RenewCertificate(acmeCert, true, false)
