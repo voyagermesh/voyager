@@ -2,13 +2,13 @@
 title: Release | Voyager
 description: Voyager Release
 menu:
-  product_voyager_5.0.0-rc.4:
+  product_voyager_5.0.0-rc.5:
     identifier: release    
     name: Release
     parent: developer-guide
     weight: 15
 product_name: voyager
-left_menu: product_voyager_5.0.0-rc.4
+left_menu: product_voyager_5.0.0-rc.5
 section_menu_id: developer-guide
 ---
 

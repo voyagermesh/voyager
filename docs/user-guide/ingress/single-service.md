@@ -1,11 +1,11 @@
 ---
 menu:
-  product_voyager_5.0.0-rc.4:
+  product_voyager_5.0.0-rc.5:
     name: Single Service
     parent: ingress
     weight: 105
 product_name: voyager
-left_menu: product_voyager_5.0.0-rc.4
+left_menu: product_voyager_5.0.0-rc.5
 section_menu_id: user-guide
 ---
 

@@ -1,17 +1,17 @@
 ---
 title: Voyager
 menu:
-  product_voyager_5.0.0-rc.4:
+  product_voyager_5.0.0-rc.5:
     identifier: voyager
     name: Voyager
     parent: reference
     weight: 0
 
 product_name: voyager
-left_menu: product_voyager_5.0.0-rc.4
+left_menu: product_voyager_5.0.0-rc.5
 section_menu_id: reference
 aliases:
-  - products/voyager/5.0.0-rc.4/reference/
+  - products/voyager/5.0.0-rc.5/reference/
 
 ---
 ## voyager

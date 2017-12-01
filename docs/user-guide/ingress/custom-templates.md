@@ -1,11 +1,11 @@
 ---
 menu:
-  product_voyager_5.0.0-rc.4:
+  product_voyager_5.0.0-rc.5:
     name: Custom Templates
     parent: ingress
     weight: 55
 product_name: voyager
-left_menu: product_voyager_5.0.0-rc.4
+left_menu: product_voyager_5.0.0-rc.5
 section_menu_id: user-guide
 ---
 
@@ -73,7 +73,7 @@ spec:
         - --cloud-config=
         - --ingress-class=
         - --custom-templates=/srv/voyager/custom/*.cfg
-        image: appscode/voyager:5.0.0-rc.4
+        image: appscode/voyager:5.0.0-rc.5
         ports:
         - containerPort: 56790
           name: http

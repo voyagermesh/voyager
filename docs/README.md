@@ -2,18 +2,18 @@
 title: Overview | Voyager
 description: Overview of Voyager
 menu:
-  product_voyager_5.0.0-rc.4:
+  product_voyager_5.0.0-rc.5:
     identifier: overview-voyager
     name: Overview
     parent: getting-started
     weight: 20
 product_name: voyager
-left_menu: product_voyager_5.0.0-rc.4
+left_menu: product_voyager_5.0.0-rc.5
 section_menu_id: getting-started
-url: /products/voyager/5.0.0-rc.4/getting-started/
+url: /products/voyager/5.0.0-rc.5/getting-started/
 aliases:
-  - /products/voyager/5.0.0-rc.4/
-  - /products/voyager/5.0.0-rc.4/README/
+  - /products/voyager/5.0.0-rc.5/
+  - /products/voyager/5.0.0-rc.5/README/
 ---
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/appscode/voyager)](https://goreportcard.com/report/github.com/appscode/voyager)
@@ -98,7 +98,7 @@ Please pick a version of Voyager that matches your Kubernetes installation.
 
 | Voyager Version                                                                        | Docs                                                                    | Kubernetes Version | Prometheus operator Version |
 |----------------------------------------------------------------------------------------|-------------------------------------------------------------------------|--------------------|-----------------------------|
-| [5.0.0-rc.4](https://github.com/appscode/voyager/releases/tag/5.0.0-rc.4) (uses CRD) | [User Guide](https://github.com/appscode/voyager/tree/5.0.0-rc.4/docs) | 1.7.x+             | 0.12.0+                     |
+| [5.0.0-rc.5](https://github.com/appscode/voyager/releases/tag/5.0.0-rc.5) (uses CRD) | [User Guide](https://github.com/appscode/voyager/tree/5.0.0-rc.5/docs) | 1.7.x+             | 0.12.0+                     |
 | [3.2.2](https://github.com/appscode/voyager/releases/tag/3.2.2) (uses TPR)             | [User Guide](https://github.com/appscode/voyager/tree/3.2.2/docs)       | 1.5.x - 1.7.x      | < 0.12.0                    |
 
 
