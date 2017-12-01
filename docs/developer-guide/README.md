@@ -2,17 +2,17 @@
 title: Overview | Developer Guide
 description: Developer Guide Overview
 menu:
-  product_voyager_5.0.0-rc.4:
+  product_voyager_5.0.0-rc.5:
     identifier: developer-guide-readme
     name: Overview
     parent: developer-guide
     weight: 15
 product_name: voyager
-left_menu: product_voyager_5.0.0-rc.4
+left_menu: product_voyager_5.0.0-rc.5
 section_menu_id: developer-guide
-url: /products/voyager/5.0.0-rc.4/developer-guide/
+url: /products/voyager/5.0.0-rc.5/developer-guide/
 aliases:
-  - /products/voyager/5.0.0-rc.4/developer-guide/README/
+  - /products/voyager/5.0.0-rc.5/developer-guide/README/
 ---
 
 ## Development Guide
@@ -185,5 +185,5 @@ can be created using the following command:
 
 ```console
 # Create Third Party Resources
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.4/apis/voyager/v1beta1/crds.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.5/apis/voyager/v1beta1/crds.yaml
 ```

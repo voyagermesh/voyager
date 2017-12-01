@@ -1,13 +1,13 @@
 ---
 title: Create Certificate
 menu:
-  product_voyager_5.0.0-rc.4:
+  product_voyager_5.0.0-rc.5:
     identifier: certificate-create
     name: Create
     parent: certificate
     weight: 15
 product_name: voyager
-left_menu: product_voyager_5.0.0-rc.4
+left_menu: product_voyager_5.0.0-rc.5
 section_menu_id: user-guide
 ---
 
