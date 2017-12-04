@@ -35,37 +35,48 @@ func (td *TemplateData) canonicalize() {
 	if td.DefaultBackend != nil {
 		td.DefaultBackend.canonicalize()
 	}
-	for i := range td.HTTPService {
-		svc := td.HTTPService[i]
+	for x := range td.HTTPService {
+		svc := td.HTTPService[x]
 		if svc.BasicAuth != nil {
 			svc.BasicAuth.canonicalize()
 		}
-		sort.Slice(svc.Paths, func(j, k int) bool {
-			host_j := hostName(svc.Paths[j].Host)
-			host_rank_j := hostRank(svc.Paths[j].Host)
-			path_j := strings.ToLower(strings.Trim(svc.Paths[j].Path, "/"))
-			path_comp_j := len(strings.Split(path_j, "/"))
 
-			host_k := hostName(svc.Paths[k].Host)
-			host_rank_k := hostRank(svc.Paths[k].Host)
-			path_k := strings.ToLower(strings.Trim(svc.Paths[k].Path, "/"))
-			path_comp_k := len(strings.Split(path_k, "/"))
+		sort.Slice(svc.Hosts, func(i, j int) bool {
+			host_i := hostName(svc.Hosts[i].Host)
+			host_rank_i := hostRank(svc.Hosts[i].Host)
 
-			if host_rank_j == host_rank_k {
-				if host_j == host_k {
-					if path_comp_j == path_comp_k {
-						return path_j > path_k
-					}
-					return path_comp_j > path_comp_k
-				}
-				return host_j > host_k
+			host_j := hostName(svc.Hosts[j].Host)
+			host_rank_j := hostRank(svc.Hosts[j].Host)
+
+			if host_rank_i == host_rank_j {
+				return host_i > host_j
 			}
-			return host_rank_j > host_rank_k
+			return host_rank_i > host_rank_j
 		})
-		for j := range svc.Paths {
-			svc.Paths[j].Backend.canonicalize()
+
+		for y := range svc.Hosts {
+			host := svc.Hosts[y]
+			for z := range host.Paths {
+				host.Paths[z].Backend.canonicalize()
+			}
+
+			sort.Slice(host.Paths, func(i, j int) bool {
+				path_i := strings.ToLower(strings.Trim(host.Paths[i].Path, "/"))
+				path_comp_i := len(strings.Split(path_i, "/"))
+
+				path_j := strings.ToLower(strings.Trim(host.Paths[j].Path, "/"))
+				path_comp_j := len(strings.Split(path_j, "/"))
+
+				if path_comp_i == path_comp_j {
+					return path_i > path_j
+				}
+				return path_comp_i > path_comp_j
+			})
+
+			svc.Hosts[y] = host
 		}
-		td.HTTPService[i] = svc
+
+		td.HTTPService[x] = svc
 	}
 	sort.Slice(td.HTTPService, func(i, j int) bool { return td.HTTPService[i].sortKey() < td.HTTPService[j].sortKey() })
 	sort.Slice(td.TCPService, func(i, j int) bool { return td.TCPService[i].sortKey() < td.TCPService[j].sortKey() })
@@ -92,11 +103,13 @@ func (td *TemplateData) isValid() error {
 			frontends.Insert(svc.FrontendName)
 		}
 
-		for _, path := range svc.Paths {
-			if backends.Has(path.Backend.Name) {
-				return fmt.Errorf("HAProxy backend name %s is reused.", path.Backend.Name)
-			} else {
-				frontends.Insert(svc.FrontendName)
+		for _, host := range svc.Hosts {
+			for _, path := range host.Paths {
+				if backends.Has(path.Backend.Name) {
+					return fmt.Errorf("HAProxy backend name %s is reused.", path.Backend.Name)
+				} else {
+					backends.Insert(path.Backend.Name)
+				}
 			}
 		}
 	}
@@ -111,7 +124,7 @@ func (td *TemplateData) isValid() error {
 		if backends.Has(svc.Backend.Name) {
 			return fmt.Errorf("HAProxy backend name %s is reused.", svc.Backend.Name)
 		} else {
-			frontends.Insert(svc.FrontendName)
+			backends.Insert(svc.Backend.Name)
 		}
 	}
 	return nil

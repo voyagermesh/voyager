@@ -9,37 +9,74 @@ import (
 )
 
 func TestPathOrdering(t *testing.T) {
-	paths := []HTTPPath{
-		{Host: "abc.com", Path: "/"},
-		{Host: "abc.com", Path: "/T"},
-		{Host: "", Path: "/t"},
-		{Host: "*.*.abc.com", Path: "/Ta"},
-		{Host: "", Path: "/TA"},
+	hosts := []*HTTPHost{
+		{
+			Host: "*.*.abc.com",
+			Paths: []*HTTPPath{
+				{
+					Path: "/Ta",
+				},
+			},
+		},
+		{
+			Host: "abc.com",
+			Paths: []*HTTPPath{
+				{
+					Path: "/",
+				},
+				{
+					Path: "/T",
+				},
+			},
+		},
+		{
+			Host: "",
+			Paths: []*HTTPPath{
+				{
+					Path: "/t",
+				},
+				{
+					Path: "/TA",
+				},
+			},
+		},
 	}
 
-	sort.Slice(paths, func(j, k int) bool {
-		host_j := hostName(paths[j].Host)
-		host_rank_j := hostRank(paths[j].Host)
-		path_j := strings.ToLower(strings.Trim(paths[j].Path, "/"))
-		path_comp_j := len(strings.Split(path_j, "/"))
+	sort.Slice(hosts, func(i, j int) bool {
+		host_i := hostName(hosts[i].Host)
+		host_rank_i := hostRank(hosts[i].Host)
 
-		host_k := hostName(paths[k].Host)
-		host_rank_k := hostRank(paths[k].Host)
-		path_k := strings.ToLower(strings.Trim(paths[k].Path, "/"))
-		path_comp_k := len(strings.Split(path_k, "/"))
+		host_j := hostName(hosts[j].Host)
+		host_rank_j := hostRank(hosts[j].Host)
 
-		if host_rank_j == host_rank_k {
-			if host_j == host_k {
-				if path_comp_j == path_comp_k {
-					return path_j > path_k
-				}
-				return path_comp_j > path_comp_k
-			}
-			return host_j > host_k
+		if host_rank_i == host_rank_j {
+			return host_i > host_j
 		}
-		return host_rank_j > host_rank_k
+		return host_rank_i > host_rank_j
 	})
 
-	b, _ := json.MarshalIndent(paths, "", "  ")
+	for y := range hosts {
+		host := hosts[y]
+		for z := range host.Paths {
+			host.Paths[z].Backend.canonicalize()
+		}
+
+		sort.Slice(host.Paths, func(i, j int) bool {
+			path_i := strings.ToLower(strings.Trim(host.Paths[i].Path, "/"))
+			path_comp_i := len(strings.Split(path_i, "/"))
+
+			path_j := strings.ToLower(strings.Trim(host.Paths[j].Path, "/"))
+			path_comp_j := len(strings.Split(path_j, "/"))
+
+			if path_comp_i == path_comp_j {
+				return path_i > path_j
+			}
+			return path_comp_i > path_comp_j
+		})
+
+		hosts[y] = host
+	}
+
+	b, _ := json.MarshalIndent(hosts, "", "  ")
 	fmt.Println(string(b))
 }
