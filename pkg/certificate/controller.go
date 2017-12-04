@@ -69,11 +69,11 @@ func NewController(ctx context.Context, kubeClient kubernetes.Interface, extClie
 	if email, ok := ctrl.UserSecret.Data[api.ACMEUserEmail]; !ok {
 		return nil, fmt.Errorf("no acme user email is provided")
 	} else {
-		ctrl.acmeUser.Email = string(email)
+		ctrl.acmeUser.Email = strings.TrimSpace(string(email))
 	}
 
 	if u, found := ctrl.UserSecret.Data[api.ACMEServerURL]; found {
-		ctrl.acmeUser.ServerURL = string(u)
+		ctrl.acmeUser.ServerURL = strings.TrimSpace(string(u))
 	} else {
 		ctrl.acmeUser.ServerURL = LetsEncryptProdURL
 	}
