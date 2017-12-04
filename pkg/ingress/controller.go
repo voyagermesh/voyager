@@ -98,19 +98,19 @@ func (c *controller) ensureOwnerReference(in metav1.ObjectMeta) metav1.ObjectMet
 
 func (c *controller) ensureEnvVars(vars []core.EnvVar) []core.EnvVar {
 	if addr := os.Getenv(vault.EnvVaultAddress); addr != "" {
-		vars = v1u.UpsertEnvVar(vars, core.EnvVar{
+		vars = v1u.UpsertEnvVars(vars, core.EnvVar{
 			Name:  vault.EnvVaultAddress,
 			Value: addr,
 		})
 		if caCert := os.Getenv(vault.EnvVaultCACert); caCert != "" {
-			vars = v1u.UpsertEnvVar(vars, core.EnvVar{
+			vars = v1u.UpsertEnvVars(vars, core.EnvVar{
 				Name:  vault.EnvVaultCACert,
 				Value: caCert,
 			})
 		}
 		if caPath := os.Getenv(vault.EnvVaultCAPath); caPath != "" {
 			caCert, _ := ioutil.ReadFile(caPath)
-			vars = v1u.UpsertEnvVar(vars, core.EnvVar{
+			vars = v1u.UpsertEnvVars(vars, core.EnvVar{
 				Name:  vault.EnvVaultCACert,
 				Value: string(caCert),
 			})

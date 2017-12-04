@@ -22,7 +22,7 @@
 // equality is determined by recursively comparing the primitive kinds on both
 // values, much like reflect.DeepEqual. Unlike reflect.DeepEqual, unexported
 // fields are not compared by default; they result in panics unless suppressed
-// by using an Ignore option (see cmpopts.IgnoreUnexported) or explictly compared
+// by using an Ignore option (see cmpopts.IgnoreUnexported) or explicitly compared
 // using the AllowUnexported option.
 package cmp
 
@@ -304,7 +304,8 @@ func (s *state) tryOptions(vx, vy reflect.Value, t reflect.Type) bool {
 
 	// Evaluate all filters and apply the remaining options.
 	if opt := opts.filter(s, vx, vy, t); opt != nil {
-		return opt.apply(s, vx, vy)
+		opt.apply(s, vx, vy)
+		return true
 	}
 	return false
 }
