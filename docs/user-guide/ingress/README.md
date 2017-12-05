@@ -1,15 +1,15 @@
 ---
 menu:
-  product_voyager_5.0.0-rc.5:
+  product_voyager_5.0.0-rc.6:
     name: Overview
     parent: ingress
     weight: 8
 product_name: voyager
-left_menu: product_voyager_5.0.0-rc.5
+left_menu: product_voyager_5.0.0-rc.6
 section_menu_id: user-guide
-url: /products/voyager/5.0.0-rc.5/user-guide/ingress/
+url: /products/voyager/5.0.0-rc.6/user-guide/ingress/
 aliases:
-  - /products/voyager/5.0.0-rc.5/user-guide/ingress/README/
+  - /products/voyager/5.0.0-rc.6/user-guide/ingress/README/
 ---
 
 ### Ingress
