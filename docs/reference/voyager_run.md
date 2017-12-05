@@ -6,7 +6,7 @@ menu:
     name: Voyager Run
     parent: reference
 product_name: voyager
-left_menu: product_voyager_5.0.0-rc.6
+menu_name: product_voyager_5.0.0-rc.6
 section_menu_id: reference
 ---
 ## voyager run
@@ -14,7 +14,6 @@ section_menu_id: reference
 Run operator
 
 ### Synopsis
-
 
 Run operator
 
@@ -61,5 +60,6 @@ voyager run [flags]
 ```
 
 ### SEE ALSO
+
 * [voyager](/docs/reference/voyager.md)	 - Voyager by Appscode - Secure Ingress Controller for Kubernetes
 
