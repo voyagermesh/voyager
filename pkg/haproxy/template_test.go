@@ -96,39 +96,47 @@ func TestTemplate(t *testing.T) {
 				FrontendName:  "one",
 				Port:          80,
 				FrontendRules: []string{},
-				Paths: []*HTTPPath{
+				Hosts: []*HTTPHost{
 					{
-						Path: "/elijah",
-						Backend: Backend{
-							Name:         "elijah",
-							BackendRules: []string{"first rule", "second rule"},
-							RewriteRules: []string{"first rule", "second rule"},
-							HeaderRules:  []string{"firstName value", "secondName value"},
-							Endpoints: []*Endpoint{
-								{Name: "first", IP: "10.244.2.1", Port: "2323"},
-								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+						Paths: []*HTTPPath{
+							{
+								Path: "/elijah",
+								Backend: Backend{
+									Name:         "elijah",
+									BackendRules: []string{"first rule", "second rule"},
+									RewriteRules: []string{"first rule", "second rule"},
+									HeaderRules:  []string{"firstName value", "secondName value"},
+									Endpoints: []*Endpoint{
+										{Name: "first", IP: "10.244.2.1", Port: "2323"},
+										{Name: "first", IP: "10.244.2.2", Port: "2324"},
+									},
+								},
 							},
-						},
-					},
-					{
-						Path: "/nicklause",
-						Backend: Backend{
-							Name: "nicklause",
-							Endpoints: []*Endpoint{
-								{Name: "first", IP: "10.244.2.1", Port: "2323"},
-								{Name: "first", IP: "10.244.2.2", Port: "2324", CheckHealth: true},
+							{
+								Path: "/nicklause",
+								Backend: Backend{
+									Name: "nicklause",
+									Endpoints: []*Endpoint{
+										{Name: "first", IP: "10.244.2.1", Port: "2323"},
+										{Name: "first", IP: "10.244.2.2", Port: "2324", CheckHealth: true},
+									},
+								},
 							},
 						},
 					},
 					{
 						Host: "http.appscode.test",
-						Path: "/rebeka",
-						Backend: Backend{
-							Name:         "rebecka",
-							RewriteRules: []string{"first rule", "second rule"},
-							Endpoints: []*Endpoint{
-								{Name: "first", IP: "10.244.2.1", Port: "2323"},
-								{Name: "first", IP: "10.244.2.2", Port: "2324", ExternalName: "name", DNSResolver: "one", UseDNSResolver: true, CheckHealth: true, TLSOption: "ssl verify required"},
+						Paths: []*HTTPPath{
+							{
+								Path: "/rebeka",
+								Backend: Backend{
+									Name:         "rebecka",
+									RewriteRules: []string{"first rule", "second rule"},
+									Endpoints: []*Endpoint{
+										{Name: "first", IP: "10.244.2.1", Port: "2323"},
+										{Name: "first", IP: "10.244.2.2", Port: "2324", ExternalName: "name", DNSResolver: "one", UseDNSResolver: true, CheckHealth: true, TLSOption: "ssl verify required"},
+									},
+								},
 							},
 						},
 					},
@@ -140,18 +148,22 @@ func TestTemplate(t *testing.T) {
 				Port:          933,
 				FrontendRules: []string{},
 				OffloadSSL:    true,
-				Paths: []*HTTPPath{
+				Hosts: []*HTTPHost{
 					{
-						Path: "/kool",
-						Backend: Backend{
-							Name:         "kool",
-							Sticky:       true,
-							BackendRules: []string{"first rule", "second rule"},
-							RewriteRules: []string{"first rule", "second rule"},
-							HeaderRules:  []string{"firstName value", "secondName value"},
-							Endpoints: []*Endpoint{
-								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true},
-								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+						Paths: []*HTTPPath{
+							{
+								Path: "/kool",
+								Backend: Backend{
+									Name:         "kool",
+									Sticky:       true,
+									BackendRules: []string{"first rule", "second rule"},
+									RewriteRules: []string{"first rule", "second rule"},
+									HeaderRules:  []string{"firstName value", "secondName value"},
+									Endpoints: []*Endpoint{
+										{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true},
+										{Name: "first", IP: "10.244.2.2", Port: "2324"},
+									},
+								},
 							},
 						},
 					},
@@ -163,18 +175,22 @@ func TestTemplate(t *testing.T) {
 				Port:          9334,
 				FrontendRules: []string{},
 				OffloadSSL:    true,
-				Paths: []*HTTPPath{
+				Hosts: []*HTTPHost{
 					{
-						Path: "/kool",
-						Backend: Backend{
-							Name:         "kool",
-							Sticky:       true,
-							BackendRules: []string{"first rule", "second rule"},
-							RewriteRules: []string{"first rule", "second rule"},
-							HeaderRules:  []string{"firstName value", "secondName value"},
-							Endpoints: []*Endpoint{
-								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify required"},
-								{Name: "first", IP: "10.244.2.2", Port: "2324", TLSOption: "ssl verify none"},
+						Paths: []*HTTPPath{
+							{
+								Path: "/kool",
+								Backend: Backend{
+									Name:         "kool",
+									Sticky:       true,
+									BackendRules: []string{"first rule", "second rule"},
+									RewriteRules: []string{"first rule", "second rule"},
+									HeaderRules:  []string{"firstName value", "secondName value"},
+									Endpoints: []*Endpoint{
+										{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify required"},
+										{Name: "first", IP: "10.244.2.2", Port: "2324", TLSOption: "ssl verify none"},
+									},
+								},
 							},
 						},
 					},
@@ -187,15 +203,19 @@ func TestTemplate(t *testing.T) {
 				NodePort:      32000,
 				FrontendRules: []string{},
 				OffloadSSL:    true,
-				Paths: []*HTTPPath{
+				Hosts: []*HTTPHost{
 					{
 						Host: "ex.appscode.test",
-						Path: "/yara",
-						Backend: Backend{
-							Name:   "yara",
-							Sticky: true,
-							Endpoints: []*Endpoint{
-								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify required"},
+						Paths: []*HTTPPath{
+							{
+								Path: "/yara",
+								Backend: Backend{
+									Name:   "yara",
+									Sticky: true,
+									Endpoints: []*Endpoint{
+										{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify required"},
+									},
+								},
 							},
 						},
 					},
@@ -207,15 +227,19 @@ func TestTemplate(t *testing.T) {
 				Port:          80,
 				FrontendRules: []string{},
 				OffloadSSL:    true,
-				Paths: []*HTTPPath{
+				Hosts: []*HTTPHost{
 					{
 						Host: "ex.appscode.test",
-						Path: "/yara",
-						Backend: Backend{
-							Name:   "yara",
-							Sticky: true,
-							Endpoints: []*Endpoint{
-								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify required"},
+						Paths: []*HTTPPath{
+							{
+								Path: "/yara",
+								Backend: Backend{
+									Name:   "yara",
+									Sticky: true,
+									Endpoints: []*Endpoint{
+										{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify required"},
+									},
+								},
 							},
 						},
 					},
@@ -226,14 +250,18 @@ func TestTemplate(t *testing.T) {
 				FrontendName:  "http-with-frontend-rule",
 				Port:          80,
 				FrontendRules: []string{"rule one", "rule two"},
-				Paths: []*HTTPPath{
+				Hosts: []*HTTPHost{
 					{
 						Host: "ex.appscode.test",
-						Path: "/yara",
-						Backend: Backend{
-							Name: "yara",
-							Endpoints: []*Endpoint{
-								{Name: "first", IP: "10.244.2.1", Port: "2323"},
+						Paths: []*HTTPPath{
+							{
+								Path: "/yara",
+								Backend: Backend{
+									Name: "yara",
+									Endpoints: []*Endpoint{
+										{Name: "first", IP: "10.244.2.1", Port: "2323"},
+									},
+								},
 							},
 						},
 					},
@@ -273,13 +301,17 @@ func TestTemplate(t *testing.T) {
 				SharedInfo:   si,
 				FrontendName: "http-with-backend-maxconn",
 				Port:         80,
-				Paths: []*HTTPPath{
+				Hosts: []*HTTPHost{
 					{
-						Backend: Backend{
-							Name: "backend-maxconn",
-							Endpoints: []*Endpoint{
-								{Name: "first", IP: "10.244.2.1", Port: "2323", MaxConnections: 20, Weight: 2},
-								{Name: "second", IP: "10.244.2.2", Port: "2323", Weight: 5},
+						Paths: []*HTTPPath{
+							{
+								Backend: Backend{
+									Name: "backend-maxconn",
+									Endpoints: []*Endpoint{
+										{Name: "first", IP: "10.244.2.1", Port: "2323", MaxConnections: 20, Weight: 2},
+										{Name: "second", IP: "10.244.2.2", Port: "2323", Weight: 5},
+									},
+								},
 							},
 						},
 					},
@@ -460,24 +492,28 @@ func TestTemplateAuth(t *testing.T) {
 				FrontendName:  "one",
 				Port:          80,
 				FrontendRules: []string{},
-				Paths: []*HTTPPath{
+				Hosts: []*HTTPHost{
 					{
-						Path: "/elijah",
-						Backend: Backend{
-							Name: "elijah",
-							Endpoints: []*Endpoint{
-								{Name: "first", IP: "10.244.2.1", Port: "2323"},
-								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+						Paths: []*HTTPPath{
+							{
+								Path: "/elijah",
+								Backend: Backend{
+									Name: "elijah",
+									Endpoints: []*Endpoint{
+										{Name: "first", IP: "10.244.2.1", Port: "2323"},
+										{Name: "first", IP: "10.244.2.2", Port: "2324"},
+									},
+								},
 							},
-						},
-					},
-					{
-						Path: "/nicklause",
-						Backend: Backend{
-							Name: "nicklause",
-							Endpoints: []*Endpoint{
-								{Name: "first", IP: "10.244.2.1", Port: "2323"},
-								{Name: "first", IP: "10.244.2.2", Port: "2324", CheckHealth: true},
+							{
+								Path: "/nicklause",
+								Backend: Backend{
+									Name: "nicklause",
+									Endpoints: []*Endpoint{
+										{Name: "first", IP: "10.244.2.1", Port: "2323"},
+										{Name: "first", IP: "10.244.2.2", Port: "2324", CheckHealth: true},
+									},
+								},
 							},
 						},
 					},
@@ -488,14 +524,18 @@ func TestTemplateAuth(t *testing.T) {
 				FrontendName:  "two",
 				Port:          933,
 				FrontendRules: []string{},
-				Paths: []*HTTPPath{
+				Hosts: []*HTTPHost{
 					{
-						Path: "/kool",
-						Backend: Backend{
-							Name: "kool",
-							Endpoints: []*Endpoint{
-								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true},
-								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+						Paths: []*HTTPPath{
+							{
+								Path: "/kool",
+								Backend: Backend{
+									Name: "kool",
+									Endpoints: []*Endpoint{
+										{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true},
+										{Name: "first", IP: "10.244.2.2", Port: "2324"},
+									},
+								},
 							},
 						},
 					},
@@ -551,28 +591,32 @@ func TestTemplateServiceAuth(t *testing.T) {
 				FrontendName:  "one",
 				Port:          80,
 				FrontendRules: []string{},
-				Paths: []*HTTPPath{
+				Hosts: []*HTTPHost{
 					{
-						Path: "/elijah",
-						Backend: Backend{
-							Name: "elijah",
-							Endpoints: []*Endpoint{
-								{Name: "first", IP: "10.244.2.1", Port: "2323"},
-								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+						Paths: []*HTTPPath{
+							{
+								Path: "/elijah",
+								Backend: Backend{
+									Name: "elijah",
+									Endpoints: []*Endpoint{
+										{Name: "first", IP: "10.244.2.1", Port: "2323"},
+										{Name: "first", IP: "10.244.2.2", Port: "2324"},
+									},
+									BasicAuth: &BasicAuth{
+										Realm:     "Required",
+										UserLists: []string{"auth2"},
+									},
+								},
 							},
-							BasicAuth: &BasicAuth{
-								Realm:     "Required",
-								UserLists: []string{"auth2"},
-							},
-						},
-					},
-					{
-						Path: "/nicklause",
-						Backend: Backend{
-							Name: "nicklause",
-							Endpoints: []*Endpoint{
-								{Name: "first", IP: "10.244.2.1", Port: "2323"},
-								{Name: "first", IP: "10.244.2.2", Port: "2324", CheckHealth: true},
+							{
+								Path: "/nicklause",
+								Backend: Backend{
+									Name: "nicklause",
+									Endpoints: []*Endpoint{
+										{Name: "first", IP: "10.244.2.1", Port: "2323"},
+										{Name: "first", IP: "10.244.2.2", Port: "2324", CheckHealth: true},
+									},
+								},
 							},
 						},
 					},
@@ -631,14 +675,18 @@ func TestTLSAuth(t *testing.T) {
 					},
 					ErrorPage: "google.com",
 				},
-				Paths: []*HTTPPath{
+				Hosts: []*HTTPHost{
 					{
-						Path: "/elijah",
-						Backend: Backend{
-							Name: "elijah",
-							Endpoints: []*Endpoint{
-								{Name: "first", IP: "10.244.2.1", Port: "2323"},
-								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+						Paths: []*HTTPPath{
+							{
+								Path: "/elijah",
+								Backend: Backend{
+									Name: "elijah",
+									Endpoints: []*Endpoint{
+										{Name: "first", IP: "10.244.2.1", Port: "2323"},
+										{Name: "first", IP: "10.244.2.2", Port: "2324"},
+									},
+								},
 							},
 						},
 					},
@@ -653,14 +701,18 @@ func TestTLSAuth(t *testing.T) {
 				TLSAuth: &TLSAuth{
 					ErrorPage: "google.com",
 				},
-				Paths: []*HTTPPath{
+				Hosts: []*HTTPHost{
 					{
-						Path: "/elijah",
-						Backend: Backend{
-							Name: "elijah",
-							Endpoints: []*Endpoint{
-								{Name: "first", IP: "10.244.2.1", Port: "2323"},
-								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+						Paths: []*HTTPPath{
+							{
+								Path: "/elijah",
+								Backend: Backend{
+									Name: "elijah",
+									Endpoints: []*Endpoint{
+										{Name: "first", IP: "10.244.2.1", Port: "2323"},
+										{Name: "first", IP: "10.244.2.2", Port: "2324"},
+									},
+								},
 							},
 						},
 					},
@@ -698,16 +750,20 @@ func TestHealthCheck(t *testing.T) {
 				FrontendName:  "one",
 				Port:          80,
 				FrontendRules: []string{},
-				Paths: []*HTTPPath{
+				Hosts: []*HTTPHost{
 					{
-						Path: "/elijah",
-						Backend: Backend{
-							Name: "elijah",
-							Endpoints: []*Endpoint{
-								{Name: "aaa", IP: "10.244.2.1", Port: "2323"},
-								{Name: "bbb", IP: "10.244.2.1", Port: "2323", CheckHealth: true},
-								{Name: "ccc", IP: "10.244.2.1", Port: "2323", CheckHealth: true, CheckHealthPort: "5050"},
-								{Name: "ddd", IP: "10.244.2.1", Port: "2323", ExternalName: "name", DNSResolver: "one", UseDNSResolver: true, CheckHealth: true, CheckHealthPort: "5050"},
+						Paths: []*HTTPPath{
+							{
+								Path: "/elijah",
+								Backend: Backend{
+									Name: "elijah",
+									Endpoints: []*Endpoint{
+										{Name: "aaa", IP: "10.244.2.1", Port: "2323"},
+										{Name: "bbb", IP: "10.244.2.1", Port: "2323", CheckHealth: true},
+										{Name: "ccc", IP: "10.244.2.1", Port: "2323", CheckHealth: true, CheckHealthPort: "5050"},
+										{Name: "ddd", IP: "10.244.2.1", Port: "2323", ExternalName: "name", DNSResolver: "one", UseDNSResolver: true, CheckHealth: true, CheckHealthPort: "5050"},
+									},
+								},
 							},
 						},
 					},

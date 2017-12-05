@@ -179,13 +179,9 @@ var _ = Describe("IngressOperations", func() {
 				time.Sleep(time.Second * 10)
 				Eventually(func() bool {
 					svc, err := f.Ingress.GetOffShootService(ing)
-					return Expect(err).NotTo(HaveOccurred()) &&
-						Expect(svc.Annotations).NotTo(BeNil()) &&
-						Expect(svc.Annotations).Should(HaveKey("bar")) &&
-						Expect(svc.Annotations["bar"]).Should(Equal("foo")) &&
-						Expect(svc.Annotations).Should(HaveKey("second-service-annotation")) &&
-						Expect(svc.Annotations["second-service-annotation"]).Should(Equal("set"))
-
+					return err == nil &&
+						svc.Annotations["bar"] == "foo" &&
+						svc.Annotations["second-service-annotation"] == "set"
 				}, "5m", "5s").Should(BeTrue())
 
 				toBeUpdated, err = f.Ingress.Get(ing)
@@ -198,13 +194,10 @@ var _ = Describe("IngressOperations", func() {
 					pods, err = f.Ingress.KubeClient.CoreV1().Pods(svc.Namespace).List(metav1.ListOptions{
 						LabelSelector: labels.SelectorFromSet(svc.Spec.Selector).String(),
 					})
-					return Expect(err).NotTo(HaveOccurred()) &&
-						Expect(len(pods.Items)).Should(BeNumerically(">=", 1)) &&
-						Expect(pods.Items[0].Annotations).NotTo(BeNil()) &&
-						Expect(pods.Items[0].Annotations).Should(HaveKey("bar")) &&
-						Expect(pods.Items[0].Annotations["bar"]).Should(Equal("foo")) &&
-						Expect(pods.Items[0].Annotations).Should(HaveKey("second-pod-annotation")) &&
-						Expect(pods.Items[0].Annotations["second-pod-annotation"]).Should(Equal("set"))
+					return err == nil &&
+						len(pods.Items) >= 1 &&
+						pods.Items[0].Annotations["bar"] == "foo" &&
+						pods.Items[0].Annotations["second-pod-annotation"] == "set"
 				}, "5m", "5s").Should(BeTrue())
 			})
 		})

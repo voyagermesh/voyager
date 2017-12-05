@@ -431,7 +431,6 @@ func (c *controller) generateConfig() error {
 				}
 				if len(bk.Endpoints) > 0 {
 					httpPaths = append(httpPaths, &haproxy.HTTPPath{
-						Host: rule.Host,
 						Path: path.Path,
 						Backend: haproxy.Backend{
 							Name:             getBackendName(c.Ingress, path.Backend.IngressBackend),
@@ -521,7 +520,6 @@ func (c *controller) generateConfig() error {
 			Hosts: map[string][]*haproxy.HTTPPath{
 				"": {
 					{
-						Host: "",
 						Path: "/",
 					},
 				},
@@ -604,7 +602,6 @@ func (c *controller) generateConfig() error {
 				if !redirPathExists {
 					// user has provided no manual config for the matching HTTP path, so we will inject one if
 					httpPaths = append(httpPaths, &haproxy.HTTPPath{
-						Host:        info.Host,
 						Path:        "/",
 						SSLRedirect: true,
 					})
@@ -674,7 +671,6 @@ func (c *controller) generateConfig() error {
 					for _, tlsPath := range tlsPaths {
 						if _, ok := httpPathMap[tlsPath.Path]; !ok {
 							httpPaths = append(httpPaths, &haproxy.HTTPPath{
-								Host:        tlsPath.Host,
 								Path:        tlsPath.Path,
 								SSLRedirect: true,
 							})
@@ -698,10 +694,13 @@ func (c *controller) generateConfig() error {
 			FrontendRules: fr.Rules,
 			NodePort:      info.NodePort,
 			OffloadSSL:    info.OffloadSSL,
-			Paths:         make([]*haproxy.HTTPPath, 0),
+			Hosts:         make([]*haproxy.HTTPHost, 0),
 		}
-		for _, paths := range info.Hosts {
-			srv.Paths = append(srv.Paths, paths...)
+		for host, paths := range info.Hosts {
+			srv.Hosts = append(srv.Hosts, &haproxy.HTTPHost{
+				Host:  host,
+				Paths: append([]*haproxy.HTTPPath(nil), paths...),
+			})
 		}
 		if globalBasic != nil {
 			srv.BasicAuth = globalBasic

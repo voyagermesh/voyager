@@ -58,12 +58,14 @@ type HTTPService struct {
 	FrontendRules []string
 	BasicAuth     *BasicAuth
 	TLSAuth       *TLSAuth
-	Paths         []*HTTPPath
+	Hosts         []*HTTPHost
 }
 
 func (svc *HTTPService) RemoveBackendAuth() {
-	for i := range svc.Paths {
-		svc.Paths[i].Backend.BasicAuth = nil
+	for i := range svc.Hosts {
+		for j := range svc.Hosts[i].Paths {
+			svc.Hosts[i].Paths[j].Backend.BasicAuth = nil
+		}
 	}
 }
 
@@ -74,15 +76,16 @@ func (svc HTTPService) sortKey() string {
 	return fmt.Sprintf("http://%d", svc.Port)
 }
 
+type HTTPHost struct {
+	Host  string
+	Paths []*HTTPPath
+}
+
 type HTTPPath struct {
-	Host        string
+	//Host        string
 	Path        string
 	Backend     Backend
 	SSLRedirect bool
-}
-
-func (svc HTTPPath) sortKey() string {
-	return fmt.Sprintf("%s/%s", svc.Host, svc.Path)
 }
 
 type TCPService struct {
