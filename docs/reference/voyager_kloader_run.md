@@ -1,12 +1,12 @@
 ---
 title: Voyager Kloader Run
 menu:
-  product_voyager_5.0.0-rc.5:
+  product_voyager_5.0.0-rc.6:
     identifier: voyager-kloader-run
     name: Voyager Kloader Run
     parent: reference
 product_name: voyager
-left_menu: product_voyager_5.0.0-rc.5
+left_menu: product_voyager_5.0.0-rc.6
 section_menu_id: reference
 ---
 ## voyager kloader run
