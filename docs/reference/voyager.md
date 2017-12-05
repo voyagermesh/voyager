@@ -8,7 +8,7 @@ menu:
     weight: 0
 
 product_name: voyager
-left_menu: product_voyager_5.0.0-rc.6
+menu_name: product_voyager_5.0.0-rc.6
 section_menu_id: reference
 aliases:
   - products/voyager/5.0.0-rc.6/reference/
@@ -19,7 +19,6 @@ aliases:
 Voyager by Appscode - Secure Ingress Controller for Kubernetes
 
 ### Synopsis
-
 
 Voyager by Appscode - Secure Ingress Controller for Kubernetes
 
@@ -40,6 +39,7 @@ Voyager by Appscode - Secure Ingress Controller for Kubernetes
 ```
 
 ### SEE ALSO
+
 * [voyager check](/docs/reference/voyager_check.md)	 - Check Ingress
 * [voyager export](/docs/reference/voyager_export.md)	 - Export Prometheus metrics for HAProxy
 * [voyager kloader](/docs/reference/voyager_kloader.md)	 - Reloads HAProxy when configmap changes
