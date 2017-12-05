@@ -54,6 +54,11 @@ import:
   vcs: git
   version: master
 - package: golang.org/x/oauth2
+  repo: https://github.com/appscode/oauth2.git
+  vcs: git
+  version: master
+- package: github.com/kelseyhightower/passwd
+  version: master
 - package: google.golang.org/api
 - package: gopkg.in/gcfg.v1
   version: v1.2.0
