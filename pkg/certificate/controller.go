@@ -128,7 +128,11 @@ func (c *Controller) Process() error {
 	if err != nil {
 		return err
 	}
-	if pemCrt == nil {
+	// Scenario:
+	// - s1: Certificate not found
+	// - s2: Certificate found, but user run `kubectl apply` in such a way that status.LastIssuedCertificate is gone.
+	// ref: https://github.com/appscode/voyager/issues/744
+	if pemCrt == nil || c.crd.Status.LastIssuedCertificate == nil {
 		err := c.create()
 		if err == nil {
 			c.recorder.Eventf(
