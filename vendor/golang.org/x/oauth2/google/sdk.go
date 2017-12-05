@@ -10,12 +10,12 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"os/user"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
 
+	"github.com/kelseyhightower/passwd/user"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/internal"
