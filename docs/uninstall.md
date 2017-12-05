@@ -2,17 +2,17 @@
 title: Uninstall | Voyager
 description: Voyager Uninstall
 menu:
-  product_voyager_5.0.0-rc.5:
+  product_voyager_5.0.0-rc.6:
     identifier: uninstall-voyager
     name: Uninstall
     parent: getting-started
     weight: 50
 product_name: voyager
-left_menu: product_voyager_5.0.0-rc.5
+left_menu: product_voyager_5.0.0-rc.6
 section_menu_id: getting-started
-url: /products/voyager/5.0.0-rc.5/getting-started/uninstall/
+url: /products/voyager/5.0.0-rc.6/getting-started/uninstall/
 aliases:
-  - /products/voyager/5.0.0-rc.5/uninstall/
+  - /products/voyager/5.0.0-rc.6/uninstall/
 ---
 
 # Uninstall Voyager
@@ -20,7 +20,7 @@ Please follow the steps below to uninstall Voyager:
 
 1. Delete the deployment and service used for Voyager operator.
 ```console
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.5/hack/deploy/uninstall.sh | bash
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.6/hack/deploy/uninstall.sh | bash
 
 + kubectl delete deployment -l app=voyager -n kube-system
 deployment "voyager-operator" deleted

@@ -1,10 +1,10 @@
 ---
 title: Ingress
 menu:
-  product_voyager_5.0.0-rc.5:
+  product_voyager_5.0.0-rc.6:
     identifier: ingress
     name: Ingress
     parent: user-guide
     weight: 100
-left_menu: product_voyager_5.0.0-rc.5
+left_menu: product_voyager_5.0.0-rc.6
 ---

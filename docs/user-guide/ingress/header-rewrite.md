@@ -1,11 +1,11 @@
 ---
 menu:
-  product_voyager_5.0.0-rc.5:
+  product_voyager_5.0.0-rc.6:
     name: Header Rewrite
     parent: ingress
     weight: 70
 product_name: voyager
-left_menu: product_voyager_5.0.0-rc.5
+left_menu: product_voyager_5.0.0-rc.6
 section_menu_id: user-guide
 ---
 
