@@ -6,7 +6,7 @@ menu:
     name: Voyager Export
     parent: reference
 product_name: voyager
-left_menu: product_voyager_5.0.0-rc.6
+menu_name: product_voyager_5.0.0-rc.6
 section_menu_id: reference
 ---
 ## voyager export
@@ -14,7 +14,6 @@ section_menu_id: reference
 Export Prometheus metrics for HAProxy
 
 ### Synopsis
-
 
 Export Prometheus metrics for HAProxy
 
@@ -49,5 +48,6 @@ voyager export [flags]
 ```
 
 ### SEE ALSO
+
 * [voyager](/docs/reference/voyager.md)	 - Voyager by Appscode - Secure Ingress Controller for Kubernetes
 

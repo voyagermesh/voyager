@@ -6,7 +6,7 @@ menu:
     name: Voyager Version
     parent: reference
 product_name: voyager
-left_menu: product_voyager_5.0.0-rc.6
+menu_name: product_voyager_5.0.0-rc.6
 section_menu_id: reference
 ---
 ## voyager version
@@ -14,7 +14,6 @@ section_menu_id: reference
 Prints binary version number.
 
 ### Synopsis
-
 
 Prints binary version number.
 
@@ -44,5 +43,6 @@ voyager version [flags]
 ```
 
 ### SEE ALSO
+
 * [voyager](/docs/reference/voyager.md)	 - Voyager by Appscode - Secure Ingress Controller for Kubernetes
 

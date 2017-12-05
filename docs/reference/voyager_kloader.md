@@ -6,7 +6,7 @@ menu:
     name: Voyager Kloader
     parent: reference
 product_name: voyager
-left_menu: product_voyager_5.0.0-rc.6
+menu_name: product_voyager_5.0.0-rc.6
 section_menu_id: reference
 ---
 ## voyager kloader
@@ -14,7 +14,6 @@ section_menu_id: reference
 Reloads HAProxy when configmap changes
 
 ### Synopsis
-
 
 Reloads HAProxy when configmap changes
 
@@ -40,6 +39,7 @@ Reloads HAProxy when configmap changes
 ```
 
 ### SEE ALSO
+
 * [voyager](/docs/reference/voyager.md)	 - Voyager by Appscode - Secure Ingress Controller for Kubernetes
 * [voyager kloader check](/docs/reference/voyager_kloader_check.md)	 - Validate kloader configuration
 * [voyager kloader run](/docs/reference/voyager_kloader_run.md)	 - Run and hold kloader
