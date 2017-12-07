@@ -41,6 +41,7 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
   - [Configure Sticky session to Backends](/docs/user-guide/ingress/sticky-session.md)
   - [Apply Frontend Rules](/docs/user-guide/ingress/frontend-rule.md)
   - [Supported Annotations](/docs/user-guide/ingress/ingress-annotations.md)
+  - [Configure TLS Auth Backends](/docs/user-guide/ingress/tls-auth.md)
 
 
 ### Comparison with Kubernetes
