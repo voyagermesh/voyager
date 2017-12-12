@@ -1,0 +1,22 @@
+apiVersion: voyager.appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-w-node-selector
+  namespace: demo
+  annotations:
+    ingress.appscode.com/type: NodePort
+    ingress.appscode.com/force-service-port: 'false'
+    ingress.appscode.com/node-selector: '{"kubernetes.io/hostname": "minikube"}'
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        backend:
+          serviceName: rest
+          servicePort: 80
+      - path: /web
+        backend:
+          serviceName: web
+          servicePort: 80
+  replicas: 2

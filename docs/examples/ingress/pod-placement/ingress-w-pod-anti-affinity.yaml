@@ -1,0 +1,35 @@
+apiVersion: voyager.appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-w-pod-anti-affinity
+  namespace: demo
+  annotations:
+    ingress.appscode.com/type: NodePort
+    ingress.appscode.com/force-service-port: 'false'
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        backend:
+          serviceName: rest
+          servicePort: 80
+      - path: /web
+        backend:
+          serviceName: web
+          servicePort: 80
+  replicas: 2
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: origin
+            operator: In
+            values:
+            - voyager
+          - key: origin-name
+            operator: In
+            values:
+            - voyager-ingress-w-pod-anti-affinity
+        topologyKey: 'kubernetes.io/hostname'
