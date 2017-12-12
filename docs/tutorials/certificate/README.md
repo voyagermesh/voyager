@@ -30,6 +30,6 @@ Voyager comes with a built-in certificate manager that can issue free TLS/SSL ce
 - DNS-01 chanllege providers
   - [Issue Let's Encrypt certificate using AWS Route53](/docs/tutorials/certificate/route53.md)
   - [Issue Let's Encrypt certificate using Google Cloud DNS](/docs/tutorials/certificate/google-cloud.md)
-  - [Let's Encrypt DNS Challenge Providers](/docs/tutorials/certificate/providers.md)
+  - [Supported DNS Challenge Providers](/docs/tutorials/certificate/providers.md)
 - [Deleting Certificate](/docs/tutorials/certificate/delete.md)
 - [Frequently Asked Questions](/docs/tutorials/certificate/faq.md)

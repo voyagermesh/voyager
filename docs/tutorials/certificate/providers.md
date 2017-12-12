@@ -10,7 +10,7 @@ menu_name: product_voyager_5.0.0-rc.6
 section_menu_id: tutorials
 ---
 
-# Let's Encrypt DNS Challenge Providers
+# Supported DNS Challenge Providers
 
 To issue SSL certificate using Let's Encrypt DNS-01 challenge, Voyager operator requires necessary permission to add and remove a TXT record for domain `_acme-challenge.<domain>` to complete the DNS challenge.
 
