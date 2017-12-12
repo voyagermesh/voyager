@@ -12,7 +12,12 @@ section_menu_id: tutorials
 
 # Let's Encrypt DNS Challenge Providers
 
-Voyager uses kubernetes secret within the pod to fetch credentials required for various DNS providers. Making those correctly accessible to Voyager will require specifying the secret name inside an certificate objects. The Secret will need the Key name exactly provided.
+To issue SSL certificate using Let's Encrypt DNS-01 challenge, Voyager operator requires necessary permission to add and remove a TXT record for domain `_acme-challenge.<domain>` to complete the DNS challenge. Please see the list of supported providers and the keys expected in credential provider secret.
+
+## Amazon Route53
+ - `AWS_ACCESS_KEY_ID`: The access key ID <br>
+ - `AWS_SECRET_ACCESS_KEY`: The secret corresponding to the access key <br>
+
 
 ## Cloudflare
 `CLOUDFLARE_EMAIL`: The email of the cloudflare user <br>
@@ -66,9 +71,6 @@ the TSIG variables need only be set if using TSIG authentication.
 `RFC2136_TSIG_KEY`: The key to use for TSIG authentication. <br>
 `RFC2136_TSIG_SECRET`: The secret to use for TSIG authentication. <br>
 
-## Amazon Route53
-`AWS_ACCESS_KEY_ID`: The access key ID <br>
-`AWS_SECRET_ACCESS_KEY`: The secret corresponding to the access key <br>
 
 ## Vultr
 `VULTR_API_KEY`: The API key to use <br>
