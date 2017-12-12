@@ -1,0 +1,152 @@
+# Placement of HAProxy Pods
+
+Voyager has a rich support for how HAProxy pods are placed on cluster nodes. Please check [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/) to understand Kubernetes' support for pod placement.
+
+## Before You Begin
+
+At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [Minikube](https://github.com/kubernetes/minikube).
+
+Now, install Voyager operator in your `minikube` cluster following the steps [here](/docs/install.md).
+
+```console
+minikube start
+# install without RBAC
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.6/hack/deploy/voyager.sh \
+  | bash -s -- minikube
+```
+
+To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
+
+```console
+$ curl -fSsL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.6/docs/examples/ingress/pod-placement/deploy-servers.sh | bash
+
+kubectl create namespace demo
+
+kubectl run nginx --image=nginx --namespace=demo
+kubectl expose deployment nginx --name=web --namespace=demo --port=80 --target-port=80
+
+kubectl run echoserver --image=gcr.io/google_containers/echoserver:1.4 --namespace=demo
+kubectl expose deployment echoserver --name=rest --namespace=demo --port=80 --target-port=8080
+```
+
+### Using Node Selector
+
+[Node selectors](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) can be used assign HAProxy ingress pods to specific nodes. The node selector is passed as a JSON map type value of `ingress.appscode.com/node-selector` annotation key. Below is an example where ingress pods are run on node with name`minikube`.
+
+```console
+kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.6/docs/examples/ingress/pod-placement/ingress-w-node-selector.yaml
+```
+
+```yaml
+apiVersion: voyager.appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-w-node-selector
+  namespace: demo
+  annotations:
+    ingress.appscode.com/type: NodePort
+    ingress.appscode.com/force-service-port: 'false'
+    ingress.appscode.com/node-selector: '{"kubernetes.io/hostname": "minikube"}'
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        backend:
+          serviceName: rest
+          servicePort: 80
+      - path: /web
+        backend:
+          serviceName: web
+          servicePort: 80
+  replicas: 2
+```
+
+### Using Pod Anti-affinity
+
+[Affinity rules](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity) can be used assign HAProxy ingress pods to specific nodes or ensure that 2 separate HAProxy ingress pods are not placed on same node. Affinity rules are set via `spec.affinity` field in Voyager Ingress CRD. Below is an example where ingress pods are spread over run on node with name`minikube`.
+
+```console
+kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.6/docs/examples/ingress/pod-placement/ingress-w-pod-anti-affinity.yaml
+```
+
+```yaml
+apiVersion: voyager.appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-w-pod-anti-affinity
+  namespace: demo
+  annotations:
+    ingress.appscode.com/type: NodePort
+    ingress.appscode.com/force-service-port: 'false'
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        backend:
+          serviceName: rest
+          servicePort: 80
+      - path: /web
+        backend:
+          serviceName: web
+          servicePort: 80
+  replicas: 2
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: origin
+            operator: In
+            values:
+            - voyager
+          - key: origin-name
+            operator: In
+            values:
+            - voyager-ingress-w-pod-anti-affinity
+        topologyKey: 'kubernetes.io/hostname'
+```
+
+### Using Taints and Toleration
+
+Using [taints and toleration](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/), you can run voyager pods on dedicated nodes.
+
+```console
+# taint nodes where only HAProxy ingress pods will run
+kubectl taint nodes minikube IngressOnly=true:NoSchedule
+
+kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.6/docs/examples/ingress/pod-placement/ingress-w-toleration.yaml
+```
+
+```yaml
+apiVersion: voyager.appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-w-toleration
+  namespace: demo
+  annotations:
+    ingress.appscode.com/type: NodePort
+    ingress.appscode.com/force-service-port: 'false'
+    ingress.appscode.com/node-selector: '{"kubernetes.io/hostname": "minikube"}'
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        backend:
+          serviceName: rest
+          servicePort: 80
+      - path: /web
+        backend:
+          serviceName: web
+          servicePort: 80
+  replicas: 2
+  tolerations:
+  - key: IngressOnly
+    operator: Equal
+    value: 'true'
+    effect: NoSchedule
+```
+
+You can use these various option in combination with each other to achieve desired result.
