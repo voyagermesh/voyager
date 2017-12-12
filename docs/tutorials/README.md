@@ -1,21 +1,3 @@
----
-title: Overview | Voyager
-description: Overview of Voyager
-menu:
-  product_voyager_5.0.0-rc.6:
-    identifier: overview-voyager
-    name: Overview
-    parent: getting-started
-    weight: 20
-product_name: voyager
-menu_name: product_voyager_5.0.0-rc.6
-section_menu_id: getting-started
-url: /products/voyager/5.0.0-rc.6/getting-started/
-aliases:
-  - /products/voyager/5.0.0-rc.6/
-  - /products/voyager/5.0.0-rc.6/README/
----
-
 [![Go Report Card](https://goreportcard.com/badge/github.com/appscode/voyager)](https://goreportcard.com/report/github.com/appscode/voyager)
 
 [Website](https://appscode.com) • [Slack](https://slack.appscode.com) • [Twitter](https://twitter.com/AppsCodeHQ)
@@ -58,7 +40,6 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
   - [Configure Basic Auth for HTTP Backends](/docs/tutorials/ingress/basic-auth.md)
   - [Configure Sticky session to Backends](/docs/tutorials/ingress/sticky-session.md)
   - [Apply Frontend Rules](/docs/tutorials/ingress/frontend-rule.md)
-  - [Supported Annotations](/docs/tutorials/ingress/ingress-annotations.md)
 
 ### Comparison with Kubernetes
 | Feauture | [Kube Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) | AppsCode Ingress |
@@ -94,16 +75,11 @@ Voyager can automaticallty provision and refresh SSL certificates issued from Le
 Read more about supported DNS Providers [here](/docs/tutorials/certificate/provider.md)
 
 ## Supported Versions
-Please pick a version of Voyager that matches your Kubernetes installation.
-
-| Voyager Version                                                                        | Docs                                                                    | Kubernetes Version | Prometheus operator Version |
-|----------------------------------------------------------------------------------------|-------------------------------------------------------------------------|--------------------|-----------------------------|
-| [5.0.0-rc.6](https://github.com/appscode/voyager/releases/tag/5.0.0-rc.6) (uses CRD) | [User Guide](https://github.com/appscode/voyager/tree/5.0.0-rc.6/docs) | 1.7.x+             | 0.12.0+                     |
-| [3.2.2](https://github.com/appscode/voyager/releases/tag/3.2.2) (uses TPR)             | [User Guide](https://github.com/appscode/voyager/tree/3.2.2/docs)       | 1.5.x - 1.7.x      | < 0.12.0                    |
+Kubernetes 1.3+
 
 
 ## User Guide
-To deploy voyager in Kubernetes follow this [guide](/docs/install.md). In short this contains those two steps
+To deploy voyager in Kubernetes follow this [guide](/docs/tutorials/README.md). In short this contains those two steps
 
 1. Create `ingress.voyager.appscode.com` and `certificate.voyager.appscode.com` Third Party Resource
 2. Deploy voyager to kubernetes.

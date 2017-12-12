@@ -1,25 +1,37 @@
-package v1beta1
+---
+menu:
+  product_voyager_5.0.0-rc.6:
+    identifier: certificate-readme
+    name: Overview
+    parent: certificate
+    weight: 10
+product_name: voyager
+menu_name: product_voyager_5.0.0-rc.6
+section_menu_id: tutorials
+url: /products/voyager/5.0.0-rc.6/tutorials/certificate/
+aliases:
+  - /products/voyager/5.0.0-rc.6/tutorials/certificate/README/
+---
 
-import (
-	core "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
+## Certificates
+Voyager manages certificates objects to create Certificates default from Let's Encrypt.
 
-const (
-	ResourceKindCertificate = "Certificate"
-	ResourceNameCertificate = "certificate"
-	ResourceTypeCertificate = "certificates"
-)
+### Core features of AppsCode Certificates:
+  - Creates and stores Certificate from Let's Encrypt ot any custom provider supports ACME protocol
+  - Auto renew certificate before expiration
+  - Uses HTTP provider to issue certificate with HTTP request
+  - Domain validation using ACME dns-01 challenges.
+  - Support for multiple DNS providers.
 
-// +genclient
-// +k8s:openapi-gen=true
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+### Object Expansion
+Certificate Object is Defined as follows:
 
+```go
 type Certificate struct {
-	metav1.TypeMeta   `json:",inline,omitempty"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              CertificateSpec   `json:"spec,omitempty"`
-	Status            CertificateStatus `json:"status,omitempty"`
+	unversioned.TypeMeta `json:",inline,omitempty"`
+	api.ObjectMeta       `json:"metadata,omitempty"`
+	Spec                 CertificateSpec   `json:"spec,omitempty"`
+	Status               CertificateStatus `json:"status,omitempty"`
 }
 
 type CertificateSpec struct {
@@ -53,7 +65,7 @@ type CertificateSpec struct {
 
 	// This is the ingress Reference that will be used if provider is http
 	// Deprecated
-	HTTPProviderIngressReference LocalTypedReference `json:"httpProviderIngressReference,omitempty"`
+	HTTPProviderIngressReference apiv1.ObjectReference `json:"httpProviderIngressReference,omitempty"`
 
 	// ProviderCredentialSecretName is used to create the acme client, that will do
 	// needed processing in DNS.
@@ -71,7 +83,7 @@ type ChallengeProvider struct {
 }
 
 type HTTPChallengeProvider struct {
-	Ingress LocalTypedReference `json:"ingress,omitempty"`
+	Ingress apiv1.ObjectReference `json:"ingress,omitempty"`
 }
 
 type DNSChallengeProvider struct {
@@ -81,8 +93,13 @@ type DNSChallengeProvider struct {
 }
 
 type CertificateStorage struct {
-	Secret *core.LocalObjectReference `json:"secret,omitempty"`
-	Vault  *VaultStore                `json:"vault,omitempty"`
+	Secret *SecretStore `json:"secret,omitempty"`
+	Vault  *VaultStore  `json:"vault,omitempty"`
+}
+
+type SecretStore struct {
+	// Secret name to store the certificate, default cert-<certificate-name>
+	Name string `json:"name,omitempty"`
 }
 
 type VaultStore struct {
@@ -142,11 +159,22 @@ type CertificateCondition struct {
 	// +optional
 	LastUpdateTime metav1.Time `json:"lastUpdateTime,omitempty" protobuf:"bytes,4,opt,name=lastUpdateTime"`
 }
+```
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+### Supported Providers
+[This Providers](provider.md) are supported as domain's DNS provider. The `providerCredentialSecretName` Must match the
+format.
 
-type CertificateList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Certificate `json:"items,omitempty"`
-}
+## Usage
+- [Creating a Certificate](create.md)
+- [Creating a Certificate with custom provider](create-with-custom-provider.md)
+- [Deleting a Certificate](delete.md)
+- [Consuming Certificates](consume.md)
+
+## Using Certificate with Ingress
+
+For sakes of simply managing ingress with TLS termination we can create a ingress with some Annotation that can be used
+to create and or manage a certificate resource with Voyager controller. Read More with [Ingress](../ingress/tls.md)
+
+Read the example how to use [HTTP Provider](/docs/tutorials/certificate/create.md#create-certificate-with-http-provider)
+for certificate.
