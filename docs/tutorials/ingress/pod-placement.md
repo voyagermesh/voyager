@@ -1,6 +1,6 @@
 # Placement of HAProxy Pods
 
-Voyager has a rich support for how HAProxy pods are placed on cluster nodes. Please check [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/) to understand Kubernetes' support for pod placement.
+Voyager has rich support for how HAProxy pods are placed on cluster nodes. Please check [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/) to understand Kubernetes' support for pod placement.
 
 ## Before You Begin
 
