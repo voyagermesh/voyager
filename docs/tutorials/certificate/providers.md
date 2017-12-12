@@ -22,7 +22,9 @@ Please see the list of supported providers and the keys expected in credential p
  - Credential secret keys:
    - `AWS_ACCESS_KEY_ID`: The access key id
    - `AWS_SECRET_ACCESS_KEY`: The secret corresponding to the access key
-   - `AWS_HOSTED_ZONE_ID`: `Optional`. If AWS_HOSTED_ZONE_ID is not set, Lego tries to determine the correct public hosted zone via the FQDN.
+   - `AWS_HOSTED_ZONE_ID`: `Optional`. If AWS_HOSTED_ZONE_ID is not set, Voyager tries to determine the correct public hosted zone via the FQDN.
+
+To learn about necessary IAM permissions, please see [here](https://github.com/appscode/voyager/blob/cert-doc/docs/tutorials/certificate/route53.md#configure-iam-permissions).
 
 ### Microsoft Azure
  - Provider: `azure` or `acs`
@@ -34,48 +36,54 @@ Please see the list of supported providers and the keys expected in credential p
    - `AZURE_RESOURCE_GROUP`: Azure resource group where domain is hosted
 
 ### Cloudflare
- - Provider: `azure` or `acs`
+ - Provider: `cloudflare`
  - Credential secret keys:
-   - `CLOUDFLARE_EMAIL`: The email of the cloudflare user
+   - `CLOUDFLARE_EMAIL`: The email of a cloudflare user
    - `CLOUDFLARE_API_KEY`: The API key corresponding to the email
 
 ### Digital Ocean
- - Provider: `azure` or `acs`
+ - Provider: `digitalocean` or `do`
  - Credential secret keys:
-   - `DO_AUTH_TOKEN`: The digital ocean authorization token
+   - `DO_AUTH_TOKEN`: The write scoped api token for a DigitalOcean user
 
 ### DNSimple
- - Provider: `azure` or `acs`
+ - Provider: `dnsimple`
  - Credential secret keys:
-   - `DNSIMPLE_EMAIL`: The email fo the DNSimple user
-   - `DNSIMPLE_API_KEY`: The API key corresponding to the email
+   - `DNSIMPLE_OAUTH_TOKEN`: The oauth token for a DNSimple user
+   - `DNSIMPLE_BASE_URL`: `Optional`. The base url of DNSimple server
 
 ### DNS Made Easy
- - Provider: `azure` or `acs`
+ - Provider: `dnsmadeeasy`
  - Credential secret keys:
-   - `DNSMADEEASY_API_KEY`: The API key for DNS Made Easy
-   - `DNSMADEEASY_API_SECRET`: The api secret corresponding with the API key
-   - `DNSMADEEASY_SANDBOX`: A boolean flag, if set to true or 1, requests will be sent to the sandbox API
+   - `DNSMADEEASY_API_KEY`: The api key for a DNS Made Easy user
+   - `DNSMADEEASY_API_SECRET`: The api secret corresponding with the api key
+   - `DNSMADEEASY_SANDBOX`: `Optional`. A boolean flag, if set to `true` or `1`, requests will be sent to the sandbox API
 
 ### Dyn
- - Provider: `azure` or `acs`
+ - Provider: `dyn`
  - Credential secret keys:
-   - `DYN_CUSTOMER_NAME`: The customer name of the Dyn user
+   - `DYN_CUSTOMER_NAME`: The customer name of a Dyn user
    - `DYN_USER_NAME`: The user name of the Dyn user
    - `DYN_PASSWORD`: The password of the Dyn user
 
 ### Gandi
- - Provider: `azure` or `acs`
+ - Provider: `gandi`
  - Credential secret keys:
-   - `GANDI_API_KEY`: The API key for Gandi
+   - `GANDI_API_KEY`: The API key for a Gandi user
 
-### Google Cloud
- - Provider: `azure` or `acs`
+### GoDaddy
+ - Provider: `godaddy`
+ - Credential secret keys:
+   - `GODADDY_API_KEY`: The API key for a GoDaddy user
+   - `GODADDY_API_SECRET`: The api secret for the api key
+
+### Google Cloud DNS
+ - Provider: `googlecloud` or `google` or `gce` or `gke`
  - Credential secret keys:
    - `GCE_PROJECT`: The name of the Google Cloud project to use
-   - `GCE_SERVICE_ACCOUNT_DATA`: Service account json downloaded from Google Cloud console.
+   - `GOOGLE_SERVICE_ACCOUNT_JSON_KEY`: Service account json downloaded from Google Cloud console. This service account requires scope `https://www.googleapis.com/auth/ndev.clouddns.readwrite` to view and manage your DNS records hosted by Google Cloud DNS.
 
-This service account should have [necessary permissions](https://github.com/appscode/lego/blob/c6958564222a0451a58df1b4ecb5bc5da4e03aff/providers/dns/googlecloud/googlecloud.go#L44) to view and manage your DNS records hosted by Google Cloud DNS. The required scope is `https://www.googleapis.com/auth/ndev.clouddns.readwrite` .
+If you are running your cluster on Google Cloud (GKE or GCE), Voyager can use default service account associated with a VM. Please see [here](/docs/tutorials/certificate/google-cloud.md#configure-service-account-permissions) for detailed instructions.
 
 ### Namecheap
  - Provider: `azure` or `acs`
