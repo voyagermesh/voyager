@@ -178,12 +178,11 @@ type CertificateCondition struct {
 ```
 
 ### Supported Providers
-[This Providers](provider.md) are supported as domain's DNS provider. The `providerCredentialSecretName` Must match the
+[This Providers](providers.md) are supported as domain's DNS provider. The `providerCredentialSecretName` Must match the
 format.
 
 ## Usage
 - [Creating a Certificate](create.md)
-- [Creating a Certificate with custom provider](create-with-custom-provider.md)
 - [Deleting a Certificate](delete.md)
 
 ## Using Certificate with Ingress

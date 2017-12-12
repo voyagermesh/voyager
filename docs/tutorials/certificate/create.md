@@ -16,11 +16,10 @@ Let's Encrypt issued certificates are automatically created for each Kubernetes 
 tutorial will walk you through creating certificate objects based on the googledns.
 
 ### Create Service Account Secret
-Voyager requires Service account secret for your specified dns provider. This Secret spec is briefly described [here](provider.md).
+Voyager requires Service account secret for your specified dns provider. This Secret spec is briefly described [here](providers.md).
 
 ### Create a Kubernetes Certificate Object
-The following example will create a certificate from Lets Encrypt Prod. If you want to create a certificate from
-another ACME server [see this example](create-with-custom-provider.md)
+The following example will create a certificate from Lets Encrypt Prod.
 
 Create the DNS provider secret first.
 ```yaml
@@ -75,7 +74,7 @@ spec:
 ```
 In this example the domains DNS providers are `googlecloud`.
 
-See the Supported Providers List [here](provider.md)
+See the Supported Providers List [here](providers.md)
 
 ```console
 kubectl create -f hack/example/certificate.yaml
