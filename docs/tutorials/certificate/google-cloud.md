@@ -32,15 +32,15 @@ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.6/hack/de
 
 In this tutorial, I am going to use `kiteci.com` domain that was purchased on namecheap.com . Now, go to the [DNconsole.cloud.google.com/net-services/dns/zones) on your Google Cloud console and create a zone for this domain.
 
-![create-zone](/docs/examples/certificate/google-cloud/create-zone.png)
+![create-zone](/docs/images/certificate/google-cloud/create-zone.png)
 
 Once the zone is created, you can see the list of name servers in Google cloud console.
 
-![ns-servers](/docs/examples/certificate/google-cloud/ns-servers.png)
+![ns-servers](/docs/images/certificate/google-cloud/ns-servers.png)
 
 Now, go to the website of your domain registrar and update the list of name servers.
 
-![domain-registrar](/docs/examples/certificate/google-cloud/domain-registrar.png)
+![domain-registrar](/docs/images/certificate/google-cloud/domain-registrar.png)
 
 Give time to propagate the updated DNS records. You can use the following command to confirm that the name server records has been updated.
 
@@ -91,7 +91,7 @@ If you are running cluster on cloud providers other than Google Cloud but want t
 
 Here we will create a new ServiceAccount called `voyager` in [Service Accounts console](https://console.cloud.google.com/iam-admin/serviceaccounts/project) and grant it `DNS Administrator` permission. Then we wil issue a json key for this service account and pass this to voyager using a Kubernetes secret.
 
-![create-svc-account](/docs/examples/certificate/google-cloud/create-svc-account.png)
+![create-svc-account](/docs/images/certificate/google-cloud/create-svc-account.png)
 
 ```console
 mv <your_service_account_key>.json GOOGLE_SERVICE_ACCOUNT_JSON_KEY
@@ -123,7 +123,7 @@ type: Opaque
 ### option 2: Using Compute Engine Default Service Account
 If your domains are hosted in the same Google Cloud project as your GKE cluster, you can use this mechanism. When you create your GKE cluster, enable `Cloud Platform` scope. This will allow voyager operator to update DNS records in this project.
 
-![gke-permissions](/docs/examples/certificate/google-cloud/gke-permissions.png)
+![gke-permissions](/docs/images/certificate/google-cloud/gke-permissions.png)
 
 **NB**:
 - I don't know how to apply these permission for an existing GKE cluster. If you know how to do that, please send me to pr.
@@ -162,7 +162,7 @@ spec:
 
 Now, voyager will perform domain validation by setting a TXT record for each domain by prepending the label `_acme-challenge`to the domain name being validated in this certificate. This TXT record will be removed after validation is complete. Once you successfully complete the challenges for a domain, the resulting authorization is cached for your account to use again later. Cached authorizations last for 30 days from the time of validation. If the certificate you requested has all of the necessary authorizations cached then validation will not happen again until the relevant cached authorizations expire.
 
-![acme-challenge](/docs/examples/certificate/google-cloud/acme-challenge.png)
+![acme-challenge](/docs/images/certificate/google-cloud/acme-challenge.png)
 
 After several minutes, you should see a new secret named `tls-kitecicom`. This contains the `tls.crt` and `tls.key` .
 
@@ -331,7 +331,7 @@ NAME                   TYPE           CLUSTER-IP     EXTERNAL-IP       PORT(S)  
 voyager-test-ingress   LoadBalancer   10.15.243.46   104.155.134.134   443:31886/TCP,80:31703/TCP   1m        origin-api-group=voyager.appscode.com,origin-name=test-ingress,origin=voyager
 ```
 
-![a-record](/docs/examples/certificate/google-cloud/a-record.png)
+![a-record](/docs/images/certificate/google-cloud/a-record.png)
 
 Now wait a bit for DNS to propagate. Run the following command to confirm DNS propagation.
 
