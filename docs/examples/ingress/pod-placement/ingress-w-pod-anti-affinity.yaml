@@ -6,6 +6,7 @@ metadata:
   annotations:
     ingress.appscode.com/type: NodePort
     ingress.appscode.com/force-service-port: 'false'
+    ingress.appscode.com/replicas: '2'
 spec:
   rules:
   - http:
@@ -18,7 +19,6 @@ spec:
         backend:
           serviceName: web
           servicePort: 80
-  replicas: 2
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:

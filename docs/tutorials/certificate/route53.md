@@ -39,15 +39,15 @@ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.6/hack/de
 
 In this tutorial, I am going to use `kiteci.pro` domain that was purchased on namecheap.com . Now, go to your AWS Route53 console and create a hosted zone for this domain.
 
-![create-hosted-zone](/docs/examples/certificate/route53/create-hosted-zone.png)
+![create-hosted-zone](/docs/images/certificate/route53/create-hosted-zone.png)
 
 Once the hosted zone is created, you can see the list of name servers in AWS console.
 
-![ns-servers](/docs/examples/certificate/route53/ns-servers.png)
+![ns-servers](/docs/images/certificate/route53/ns-servers.png)
 
 Now, go to the website of your domain registrar and update the list of name servers.
 
-![domain-registrar](/docs/examples/certificate/route53/domain-registrar.png)
+![domain-registrar](/docs/images/certificate/route53/domain-registrar.png)
 
 Give time to propagate the updated DNS records. You can use the following command to confirm that the name server records has been updated.
 
@@ -118,15 +118,15 @@ Here, we are running voyager operator pod on master node. So, we will grant thes
 
 - Go to your EC2 dashboard and identify the IAM role for your master instance.
 
-![master-iam-role](/docs/examples/certificate/route53/master-iam-role.png)
+![master-iam-role](/docs/images/certificate/route53/master-iam-role.png)
 
 - Go the [IAM roles console](https://console.aws.amazon.com/iam/home#/roles) and select the master IAM role for your cluster.
 
-![master-role](/docs/examples/certificate/route53/master-iam-role-console.png)
+![master-role](/docs/images/certificate/route53/master-iam-role-console.png)
 
 - Now add the custom inline policy show above.
 
-![add-policy](/docs/examples/certificate/route53/add-policy.png)
+![add-policy](/docs/images/certificate/route53/add-policy.png)
 
 
 **NB:** _If you decide to run voyager operator on regular nodes, then you can grant these additional IAM permissions to the node IAM role for your cluster. Please note that this will allow any pods running on the nodes to perform these api calls._
@@ -201,7 +201,7 @@ spec:
 
 Now, voyager will perform domain validation by setting a TXT record for each domain by prepending the label `_acme-challenge`to the domain name being validated in this certificate using IAM role assigned to master instance. This TXT record will be removed after validation is complete. Once you successfully complete the challenges for a domain, the resulting authorization is cached for your account to use again later. Cached authorizations last for 30 days from the time of validation. If the certificate you requested has all of the necessary authorizations cached then validation will not happen again until the relevant cached authorizations expire.
 
-![acme-challenge](/docs/examples/certificate/route53/acme-challenge.png)
+![acme-challenge](/docs/images/certificate/route53/acme-challenge.png)
 
 After several minutes, you should see a new secret named `tls-kitecipro`. This contains the `tls.crt` and `tls.key` .
 
@@ -370,7 +370,7 @@ NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP              
 voyager-test-ingress   LoadBalancer   100.67.213.242   a65b35533d3d211e78b0402cf95c35e1-1933171379.us-east-1.elb.amazonaws.com   443:31708/TCP,80:31905/TCP   36s       origin-api-group=voyager.appscode.com,origin-name=test-ingress,origin=voyager
 ```
 
-![cname-record](/docs/examples/certificate/route53/cname-record.png)
+![cname-record](/docs/images/certificate/route53/cname-record.png)
 
 Now wait a bit for DNs to propagate. Run the following command to confirm DNS propagation.
 
