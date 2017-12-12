@@ -185,7 +185,6 @@ format.
 - [Creating a Certificate](create.md)
 - [Creating a Certificate with custom provider](create-with-custom-provider.md)
 - [Deleting a Certificate](delete.md)
-- [Consuming Certificates](consume.md)
 
 ## Using Certificate with Ingress
 
