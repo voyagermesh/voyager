@@ -17,7 +17,7 @@ aliases:
 
 Voyager comes with a built-in certificate manager that can issue free TLS/SSL certificates from Let's Encrypt. Voyager uses a Custom Resource Definition called `Certificate` to declaratively manage and issue certificates from Let's Encrypt.
 
-Features
+## Features
 - Provision free TLS certificates from Let's Encrypt.
 - Manage certificates declaratively using a Kubernetes Custom Resource Definition (CRD).
 - Domain validation using ACME http-01 and dns-01 challenges.
@@ -26,9 +26,10 @@ Features
 - Use issued certificates with Ingress to secure communications.
 
 ## Next Steps
-- [](/docs/tutorials/certificate/http.md)
-- [](/docs/tutorials/certificate/route53.md)
-- [](/docs/tutorials/certificate/google-cloud.md)
-- [](/docs/tutorials/certificate/providers.md)
-- [](/docs/tutorials/certificate/delete.md)
-- [](/docs/tutorials/certificate/faq.md)
+- [Issue Let's Encrypt certificate using HTTP-01 challenge](/docs/tutorials/certificate/http.md)
+- DNS-01 chanllege providers
+  - [Issue Let's Encrypt certificate using AWS Route53](/docs/tutorials/certificate/route53.md)
+  - [Issue Let's Encrypt certificate using Google Cloud DNS](/docs/tutorials/certificate/google-cloud.md)
+  - [Let's Encrypt DNS Challenge Providers](/docs/tutorials/certificate/providers.md)
+- [Deleting Certificate](/docs/tutorials/certificate/delete.md)
+- [Frequently Asked Questions](/docs/tutorials/certificate/faq.md)

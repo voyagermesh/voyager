@@ -1,4 +1,4 @@
-# voyager-http-cert
+# Issue Let's Encrypt certificate using HTTP-01 challenge
 
 ## Deploy Voyager operator
 
