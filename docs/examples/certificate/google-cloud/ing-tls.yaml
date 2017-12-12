@@ -1,0 +1,26 @@
+apiVersion: voyager.appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: test-ingress
+  namespace: default
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+spec:
+  tls:
+  - hosts:
+    - www.kiteci.com
+    ref:
+      kind: Certificate
+      name: kitecicom
+  rules:
+  - host: www.kiteci.com
+    http:
+      paths:
+      - path: /web
+        backend:
+          serviceName: web
+          servicePort: 80
+      - path: /
+        backend:
+          serviceName: echo
+          servicePort: 80
