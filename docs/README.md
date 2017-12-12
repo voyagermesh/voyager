@@ -91,7 +91,7 @@ Voyager can automaticallty provision and refresh SSL certificates issued from Le
 
 
 ### Supported Domain Providers
-Read more about supported DNS Providers [here](/docs/tutorials/certificate/provider.md)
+Read more about supported DNS Providers [here](/docs/tutorials/certificate/providers.md)
 
 ## Supported Versions
 Please pick a version of Voyager that matches your Kubernetes installation.
