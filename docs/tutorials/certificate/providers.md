@@ -85,14 +85,19 @@ To learn about necessary IAM permissions, please see [here](https://github.com/a
 
 If you are running your cluster on Google Cloud (GKE or GCE), Voyager can use default service account associated with a VM. Please see [here](/docs/tutorials/certificate/google-cloud.md#configure-service-account-permissions) for detailed instructions.
 
-### Namecheap
- - Provider: `azure` or `acs`
+### Linode
+ - Provider: `linode`
  - Credential secret keys:
-   - `NAMECHEAP_API_USER`: The username of the namecheap user
-   - `NAMECHEAP_API_KEY`: The API key corresponding with the namecheap user
+   - `LINODE_API_KEY`: The API key for a linode user.
+
+### Namecheap
+ - Provider: `namecheap`
+ - Credential secret keys:
+   - `NAMECHEAP_API_USER`: The username of a Namecheap user
+   - `NAMECHEAP_API_KEY`: The API key corresponding with the Namecheap user
 
 ### OVH
- - Provider: `azure` or `acs`
+ - Provider: `ovh`
  - Credential secret keys:
    - `OVH_ENDPOINT`: The URL of the API endpoint to use
    - `OVH_APPLICATION_KEY`: The application key
@@ -100,19 +105,16 @@ If you are running your cluster on Google Cloud (GKE or GCE), Voyager can use de
    - `OVH_CONSUMER_KEY`: The consumer key
 
 ### PDNS
- - Provider: `azure` or `acs`
+ - Provider: `pdns`
  - Credential secret keys:
    - `PDNS_API_KEY`: The API key to use
+   - `PDNS_API_URL`: PDNS api server address
 
 ### Vultr
- - Provider: `azure` or `acs`
+ - Provider: `vultr`
  - Credential secret keys:
    - `VULTR_API_KEY`: The API key to use
 
-### Linode
- - Provider: `azure` or `acs`
- - Credential secret keys:
-   - `LINODE_API_KEY`: API Key for linode to use.
 
 ## How to provide DNS provider credential
 
