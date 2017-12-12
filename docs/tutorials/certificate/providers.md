@@ -15,8 +15,10 @@ section_menu_id: tutorials
 To issue SSL certificate using Let's Encrypt DNS-01 challenge, Voyager operator requires necessary permission to add and remove a TXT record for domain `_acme-challenge.<domain>` to complete the DNS challenge. Please see the list of supported providers and the keys expected in credential provider secret.
 
 ## Amazon Route53
- - `AWS_ACCESS_KEY_ID`: The access key ID <br>
- - `AWS_SECRET_ACCESS_KEY`: The secret corresponding to the access key <br>
+ - Provider: `aws` or `route53`
+ - Credential Secret keys:
+   - `AWS_ACCESS_KEY_ID`: The access key ID <br>
+   - `AWS_SECRET_ACCESS_KEY`: The secret corresponding to the access key <br>
 
 
 ## Cloudflare
