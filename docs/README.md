@@ -81,7 +81,7 @@ You can find the generated HAProxy Configuration [here](hack/example/haproxy_gen
 ## Certificate
 Voyager can automaticallty provision and refresh SSL certificates issued from Let's Encrypt using a custom Kubernetes [Certificate](/docs/tutorials/certificate) resource. 
 
-**Feautures**
+**Features**
 - Provision free TLS certificates from Let's Encrypt,
 - Manage issued certificates using a Kubernetes Third Party Resource,
 - Domain validation using ACME dns-01 challenges,
