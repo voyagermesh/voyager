@@ -69,7 +69,7 @@ Annotations:	kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"voy
 API Version:	voyager.appscode.com/v1beta1
 Kind:		Certificate
 Metadata:
-  Cluster Name:				
+  Cluster Name:
   Creation Timestamp:			2017-10-29T22:07:45Z
   Deletion Grace Period Seconds:	<nil>
   Deletion Timestamp:			<nil>
@@ -128,11 +128,11 @@ $ curl -vv http://kiteci.com
 > Host: kiteci.com
 > User-Agent: curl/7.47.0
 > Accept: */*
-> 
+>
 < HTTP/1.1 301 Moved Permanently
 < Content-length: 0
 < Location: https://kiteci.com/
-< 
+<
 * Connection #0 to host kiteci.com left intact
 ```
 
@@ -162,7 +162,7 @@ $ curl -vv https://kiteci.com
 > Host: kiteci.com
 > User-Agent: curl/7.47.0
 > Accept: */*
-> 
+>
 < HTTP/1.1 200 OK
 < Server: nginx/1.13.6
 < Date: Sun, 29 Oct 2017 22:31:59 GMT
@@ -172,7 +172,7 @@ $ curl -vv https://kiteci.com
 < ETag: "59baafbd-264"
 < Accept-Ranges: bytes
 < Strict-Transport-Security: max-age=15768000
-< 
+<
 <!DOCTYPE html>
 <html>
 <head>
