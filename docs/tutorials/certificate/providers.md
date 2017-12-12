@@ -22,6 +22,7 @@ Please see the list of supported providers and the keys expected in credential p
  - Credential secret keys:
    - `AWS_ACCESS_KEY_ID`: The access key id
    - `AWS_SECRET_ACCESS_KEY`: The secret corresponding to the access key
+   - `AWS_HOSTED_ZONE_ID`: `Optional`. If AWS_HOSTED_ZONE_ID is not set, Lego tries to determine the correct public hosted zone via the FQDN.
 
 ### Microsoft Azure
  - Provider: `azure` or `acs`
