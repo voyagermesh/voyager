@@ -2,7 +2,21 @@
 
 ## Deploy Voyager operator
 
-1. First deploy Voyager operator following instructions here: https://github.com/appscode/voyager/blob/master/docs/install.md
+Deploy Voyager operator following instructions [here](/docs/install.md).
+
+```console
+# install without RBAC
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.6/hack/deploy/voyager.sh \
+  | bash -s -- gke
+```
+
+If you are trying this on a RBAC enabled cluster, pass the flag `--rbac` to installer script.
+
+```console
+# install without RBAC
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.6/hack/deploy/voyager.sh \
+  | bash -s -- gke --rbac
+```
 
 ## Create Ingress
 
@@ -92,9 +106,9 @@ Events:
   20m		20m		1	voyager operator			Normal		IssueSuccessful	Successfully issued certificate
 ```
 
-If you look at the Ingress, you should see that `/.well-known/acme-challenge/` path has been added to rules. It should look like https://github.com/tamalsaha/voyager-http-cert/blob/master/ing-with-acme-path.yaml
+If you look at the Ingress, you should see that `/.well-known/acme-challenge/` path has been added to rules. It should look like [this](/docs/examples/certificate/http/ing-with-acme-path.yaml).
 
-If you check the configmap `voyager-test-ingress`, you should see a key `haproxy.cfg` with the value similar to https://github.com/tamalsaha/voyager-http-cert/blob/master/haproxy-with-acme.cfg
+If you check the configmap `voyager-test-ingress`, you should see a key `haproxy.cfg` with the value similar to [this](/docs/examples/certificate/http/haproxy-with-acme.cfg).
 
 ## Update Ingress to use TLS
 
@@ -112,10 +126,9 @@ spec:
       name: kitecicom
 ```
 
-After editing, your Ingress should look similar to https://github.com/tamalsaha/voyager-http-cert/blob/master/ing-tls-acme.yaml
+After editing, your Ingress should look similar to [this](/docs/examples/certificate/http/ing-tls-acme.yaml).
 
-10. Now wait several seconds for HAProxy to reconfigure. If you check the configmap `voyager-test-ingress`, you should see a key `haproxy.cfg` with the value similar to https://github.com/tamalsaha/voyager-http-cert/blob/master/haproxy-ssl.cfg
-
+10. Now wait several seconds for HAProxy to reconfigure. If you check the configmap `voyager-test-ingress`, you should see a key `haproxy.cfg` with the value similar to [this](/docs/examples/certificate/http/haproxy-ssl.cfg).
 
 Now try the following commands:
 
