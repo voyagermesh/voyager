@@ -16,19 +16,16 @@ aliases:
 ---
 
 ## Development Guide
-This document is intended to be the canonical source of truth for things like supported toolchain versions for building Voyager.
-If you find a requirement that this doc does not capture, please submit an issue on github.
+This document is intended to be the canonical source of truth for things like supported toolchain versions for building Voyager. If you find a requirement that this doc does not capture, please submit an issue on github.
 
-This document is intended to be relative to the branch in which it is found. It is guaranteed that requirements will change over time
-for the development branch, but release branches of Voyager should not change.
+This document is intended to be relative to the branch in which it is found. It is guaranteed that requirements will change over time for the development branch, but release branches of Voyager should not change.
 
 ### Build Voyager
 Some of the Voyager development helper scripts rely on a fairly up-to-date GNU tools environment, so most recent Linux distros should
 work just fine out-of-the-box.
 
 #### Setup GO
-Voyager is written in Google's GO programming language. Currently, Voyager is developed and tested on **go 1.9.1**. If you haven't set up a GO
-development environment, please follow [these instructions](https://golang.org/doc/code.html) to install GO.
+Voyager is written in Google's GO programming language. Currently, Voyager is developed and tested on **go 1.9.2**. If you haven't set up a GO development environment, please follow [these instructions](https://golang.org/doc/code.html) to install GO.
 
 #### Download Source
 
@@ -39,13 +36,14 @@ $ cd $(go env GOPATH)/src/github.com/appscode/voyager
 
 #### Install Dev tools
 To install various dev tools for Voyager, run the following command:
+
 ```console
 $ ./hack/builddeps.sh
 ```
 
 #### Updating Codes
-voyager usages codecgen to generate codes related to kubernetes. If changes happens to api types, codes needs to be regenerated.
-API types needs to be updated in both `apis/voyager/v1beta1` and `apis/voyager`. Then run the following command to generate codes:
+voyager usages codecgen to generate codes related to kubernetes. If changes happens to api types, codes needs to be regenerated. API types needs to be updated in both `apis/voyager/v1beta1` and `apis/voyager`. Run the following command to generate codes:
+
 ```console
 $ ./hack/codegen.sh
 ```
@@ -57,8 +55,8 @@ $ voyager version
 ```
 
 #### Dependency management
-Voyager uses [Glide](https://github.com/Masterminds/glide) to manage dependencies. Dependencies are already checked in the `vendor` folder.
-If you want to update/add dependencies, run:
+Voyager uses [Glide](https://github.com/Masterminds/glide) to manage dependencies. Dependencies are already checked in the `vendor` folder. If you want to update/add dependencies, run:
+
 ```console
 $ glide slow
 ```
@@ -86,7 +84,7 @@ $ ./hack/docker/haproxy/<version>/setup.sh push
 
 #### Generate CLI Reference Docs
 ```console
-$ ./hack/gendocs/make.sh 
+$ ./hack/gendocs/make.sh
 ```
 
 ### Run Test
@@ -167,21 +165,8 @@ Following configurations can be enabled for test via flags in `./hack/make.py te
 
 **e2e** tests are powered by [ginkgo](http://onsi.github.io/ginkgo/). All the [configs and flags](https://github.com/onsi/ginkgo/blob/master/config/config.go#L64) of ginkgo are also available.
 
-## Architecture
-Voyager works by implementing third party resource data watcher for kubernetes. It connects with k8s apiserver
-for specific events as ADD, UPDATE and DELETE. and perform required operations.
-
-Ingress watcher generates the configuration for HAProxy and stores it as a ConfigMaps and creates a RC with
-specified HAProxy - that is configured with auto reload while any changes happens to ConfigMap data. This is handled via
-[kloader](https://github.com/appscode/kloader). Voyager keeps the ingress resource and the configuration in sync
-by performing processing on the resources.
-
-Certificate watcher watch and process certificates third party data and obtain a ACME certificates.
-
-
 ### CRDs
-`voyager` depends on two Custom Resource Definition object `ingress.voyager.appscode.com` and `certificate.voyager.appscode.com`. Those two objects
-can be created using the following command:
+`voyager` uses on two Custom Resource Definition object `ingress.voyager.appscode.com` and `certificate.voyager.appscode.com`. Those two objects can be created using the following command:
 
 ```console
 # Create Third Party Resources

@@ -448,7 +448,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 					Properties: map[string]spec.Schema{
 						"provider": {
 							SchemaProps: spec.SchemaProps{
-								Description: "DNS Provider from the list https://github.com/appscode/voyager/blob/master/docs/user-guide/certificate/provider.md",
+								Description: "DNS Provider from the list https://github.com/appscode/voyager/blob/master/docs/tutorials/certificate/providers.md",
 								Type:        []string{"string"},
 								Format:      "",
 							},
