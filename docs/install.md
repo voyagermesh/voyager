@@ -18,7 +18,7 @@ aliases:
 # Installation Guide
 
 ## Using YAML
-Voyager can be installed via cloud provider specific YAML files included in the [/hack/deploy](https://github.com/appscode/voyager/tree/5.0.0-rc.6/hack) folder. To use in a RBAC enabled cluster, pass the `--rbac` flag.
+Voyager can be installed via installer script included in the [/hack/deploy](https://github.com/appscode/voyager/tree/5.0.0-rc.6/hack) folder.
 
 ```console
 # provider=acs
@@ -30,20 +30,41 @@ Voyager can be installed via cloud provider specific YAML files included in the 
 # provider=minikube
 # provider=openstack
 
-# Install without RBAC roles
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.6/hack/deploy/voyager.sh | bash -s -- -h
+voyager.sh - install voyager operator
+
+voyager.sh [options]
+
+options:
+-h, --help                         show brief help
+-n, --namespace=NAMESPACE          specify namespace (default: kube-system)
+-p, --provider=PROVIDER            specify a cloud provider
+    --rbac                         create RBAC roles and bindings
+    --run-on-master                run voyager operator on master
+    --template-cfgmap=CONFIGMAP    name of configmap with custom templates
+
+# install without RBAC roles
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.6/hack/deploy/voyager.sh \
-    | bash -s -- "$provider"
+    | bash -s -- --provider=$provider
 
 # Install with RBAC roles
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.6/hack/deploy/voyager.sh \
-    | bash -s -- "$provider" --rbac
+    | bash -s -- --provider=$provider --rbac
 ```
 
-If you would like to run Voyager operator pod in `master` instances, apply the following patch:
+If you would like to run Voyager operator pod in `master` instances, pass the `--run-on-master` flag:
 
 ```console
-$ kubectl patch deploy voyager-operator -n kube-system \
-    --patch "$(curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.6/hack/deploy/run-on-master.yaml)"
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.6/hack/deploy/voyager.sh \
+    | bash -s -- --provider=$provider --run-on-master [--rbac]
+```
+
+Voyager operator will be installed in a `kube-system` namespace by default. If you would like to run Voyager operator pod in `voyager` namespace, pass the `--namespace=voyager` flag:
+
+```console
+$ kubectl create namespace voyager
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.6/hack/deploy/voyager.sh \
+    | bash -s -- --provider=$provider --namespace=voyager [--run-on-master] [--rbac]
 ```
 
 
