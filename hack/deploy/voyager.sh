@@ -8,6 +8,8 @@ export VOYAGER_NAMESPACE=kube-system
 export VOYAGER_SERVICE_ACCOUNT=default
 export VOYAGER_ENABLE_RBAC=false
 export VOYAGER_RUN_ON_MASTER=0
+export VOYAGER_RESTRICT_TO_NAMESPACE=false
+export VOYAGER_ROLE_TYPE=ClusterRole
 
 show_help() {
     echo "voyager.sh - install voyager operator"
@@ -19,6 +21,7 @@ show_help() {
     echo "-n, --namespace=NAMESPACE          specify namespace (default: kube-system)"
     echo "-p, --provider=PROVIDER            specify a cloud provider"
     echo "    --rbac                         create RBAC roles and bindings"
+    echo "    --restrict-to-namespace        restrict voyager to its own namespace"
     echo "    --run-on-master                run voyager operator on master"
     echo "    --template-cfgmap=CONFIGMAP    name of configmap with custom templates"
 }
@@ -57,13 +60,18 @@ while test $# -gt 0; do
             export VOYAGER_CLOUD_PROVIDER=`echo $1 | sed -e 's/^[^=]*=//g'`
             shift
             ;;
+        --rbac)
+            export VOYAGER_SERVICE_ACCOUNT=voyager-operator
+            export VOYAGER_ENABLE_RBAC=true
+            shift
+            ;;
         --run-on-master)
             export VOYAGER_RUN_ON_MASTER=1
             shift
             ;;
-        --rbac)
-            export VOYAGER_SERVICE_ACCOUNT=voyager-operator
-            export VOYAGER_ENABLE_RBAC=true
+        --restrict-to-namespace)
+            export VOYAGER_RESTRICT_TO_NAMESPACE=true
+            export VOYAGER_ROLE_TYPE=Role
             shift
             ;;
         --template-cfgmap*)
@@ -118,7 +126,7 @@ case "$VOYAGER_CLOUD_PROVIDER" in
 		;;
 esac
 
-env | grep VOYAGER*
+env | sort | grep VOYAGER*
 
 if [ -z "$VOYAGER_TEMPLATE_CONFIGMAP" ]; then
     curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.7/hack/deploy/operator.yaml | envsubst | kubectl apply -f -
