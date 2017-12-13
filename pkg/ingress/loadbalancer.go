@@ -434,7 +434,7 @@ func (c *loadBalancerController) newService() *core.Service {
 		switch c.Opt.CloudProvider {
 		case "gce", "gke", "azure", "acs":
 			// https://github.com/appscode/voyager/issues/276
-			// ref: https://kubernetes.io/docs/tutorials/services/source-ip/#source-ip-for-services-with-typeloadbalancer
+			// ref: https://kubernetes.io/docs/tasks/services/source-ip/#source-ip-for-services-with-typeloadbalancer
 			svc.Spec.ExternalTrafficPolicy = core.ServiceExternalTrafficPolicyTypeLocal
 		}
 	}

@@ -19,10 +19,10 @@ exporter:
 # imagePullSecrets:
 #   - name: myRegistryKeySecretName
 ## Specify a imagePullPolicy
-## ref: http://kubernetes.io/docs/tutorials/images/#pre-pulling-images
+## ref: http://kubernetes.io/docs/tasks/images/#pre-pulling-images
 ##
 imagePullPolicy: IfNotPresent
-## Use cloud provider here. Read details https://github.com/appscode/voyager/blob/master/docs/tutorials/README.md
+## Use cloud provider here. Read details https://github.com/appscode/voyager/blob/master/docs/tasks/README.md
 cloudProvider:
 ## The path to the cloud provider configuration file. Empty string for no configuration file.
 ## ie. for azure use /etc/kubernetes/azure.json
@@ -37,7 +37,7 @@ persistence:
   hostPath: /etc/kubernetes
 
 ## Node labels for pod assignment
-## Ref: https://kubernetes.io/docs/tutorials/node-selection/
+## Ref: https://kubernetes.io/docs/tasks/node-selection/
 ##
 nodeSelector: {}
 

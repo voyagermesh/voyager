@@ -249,7 +249,7 @@ type IngressBackend struct {
 	// This is an handy way to send traffic to Specific
 	// StatefulSet pod.
 	// IE. Setting [web-0] will send traffic to only web-0 host
-	// for this StatefulSet, https://kubernetes.io/docs/tutorials/stateful-application/basic-stateful-set/#creating-a-statefulset
+	// for this StatefulSet, https://kubernetes.io/docs/tasks/stateful-application/basic-stateful-set/#creating-a-statefulset
 	HostNames []string `json:"hostNames,omitempty"`
 
 	// Specifies the name of the referenced service.

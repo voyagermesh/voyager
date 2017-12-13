@@ -63,7 +63,7 @@ const (
 	//
 	//  - gce, gke, azure: Adds annotation service.beta.kubernetes.io/external-traffic: OnlyLocal
 	// to services used to expose HAProxy.
-	// ref: https://kubernetes.io/docs/tutorials/services/source-ip/#source-ip-for-services-with-typeloadbalancer
+	// ref: https://kubernetes.io/docs/tasks/services/source-ip/#source-ip-for-services-with-typeloadbalancer
 	//
 	// - aws: Enforces the use of the PROXY protocol over any connection accepted by any of
 	// the sockets declared on the same line. Versions 1 and 2 of the PROXY protocol
