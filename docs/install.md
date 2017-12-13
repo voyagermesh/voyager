@@ -40,6 +40,7 @@ options:
 -n, --namespace=NAMESPACE          specify namespace (default: kube-system)
 -p, --provider=PROVIDER            specify a cloud provider
     --rbac                         create RBAC roles and bindings
+    --restrict-to-namespace        restrict voyager to its own namespace
     --run-on-master                run voyager operator on master
     --template-cfgmap=CONFIGMAP    name of configmap with custom templates
 
@@ -65,6 +66,14 @@ Voyager operator will be installed in a `kube-system` namespace by default. If y
 $ kubectl create namespace voyager
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.7/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider --namespace=voyager [--run-on-master] [--rbac]
+```
+
+By default, Voyager operator will watch Ingress objects in any namespace. If you would like to restrict Voyager to Ingress and Services in its own namespace, pass the `--restrict-to-namespace` flag:
+
+```console
+$ kubectl create namespace voyager
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.7/hack/deploy/voyager.sh \
+    | bash -s -- --provider=$provider --restrict-to-namespace [--namespace=voyager] [--run-on-master] [--rbac]
 ```
 
 
