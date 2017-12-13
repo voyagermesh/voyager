@@ -17,8 +17,8 @@ To expose HAProxy stats, please use the following annotations:
 ### Stats annotations
 |  Keys  |   Value  |  Default |  Description |
 |--------|-----------|----------|-------------|
-| ingress.appscode.com/stats | string | `"false"` | `Optional`. If set, HAProxy stats will be exposed |
-| ingress.appscode.com/stats-port | integer | 56789 | `Optional`. Port used to expose HAProxy stats |
+| ingress.appscode.com/stats | bool | `"false"` | `Optional`. If set, HAProxy stats will be exposed |
+| ingress.appscode.com/stats-port | integer | `"56789"` | `Optional`. Port used to expose HAProxy stats |
 | ingress.appscode.com/stats-secret-name | string | x | `Optional`. Secret used to provide username & password to secure HAProxy stats endpoint. Secret must contain keys `username` and `password` |
 | ingress.appscode.com/stats-service-name | string | `voyager-<ingress-name>-stats` | ClusterIP type service used to expose HAproxy stats. This allows to avoid exposing stats to internet. |
 
