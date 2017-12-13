@@ -88,8 +88,8 @@ func runOperator() {
 	if opt.HAProxyImage == "" {
 		log.Fatalln("Missing required flag --haproxy-image")
 	}
-	if opt.CloudProvider == "$CLOUD_PROVIDER" {
-		log.Fatalln("Invalid cloud provider `--cloud-provider=$CLOUD_PROVIDER`")
+	if opt.CloudProvider == "$VOYAGER_CLOUD_PROVIDER" {
+		log.Fatalln("Invalid cloud provider `--cloud-provider=$VOYAGER_CLOUD_PROVIDER`")
 	}
 	if opt.CloudConfigFile == "$CLOUD_CONFIG" {
 		log.Fatalln("Invalid cloud config file `--cloud-config=$CLOUD_CONFIG`")

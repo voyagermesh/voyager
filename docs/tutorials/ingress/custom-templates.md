@@ -46,53 +46,13 @@ Now create a ConfigMap using the defaults.cfg as key and the file content as the
 $ kubectl create configmap -n kube-system voyager-templates --from-file=/tmp/defaults.cfg
 ```
 
-Now, update the appropriate installer YAMLs in [`/hack/deploy/with*-rbac.yaml`](/hack/deploy) for your cluster to mount the ConfigMap `voyager-templates` and set `--custom-templates` flag. Below is the updated YAML for a minikube cluster without RBAC.
+Now, the ConfigMap `voyager-templates` has to be mounted in the voyager operator pod and `--custom-templates` flag has to be set. To do this pass the `--template-cfgmap` flag to the Voyager installer script.
 
-```yaml
-cat <<EOF | kubectl apply -f -
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  labels:
-    app: voyager
-  name: voyager-operator
-  namespace: kube-system
-spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: voyager
-    spec:
-      containers:
-      - name: voyager
-        args:
-        - run
-        - --v=3
-        - --cloud-provider=minikube
-        - --cloud-config=
-        - --ingress-class=
-        - --custom-templates=/srv/voyager/custom/*.cfg
-        image: appscode/voyager:5.0.0-rc.6
-        ports:
-        - containerPort: 56790
-          name: http
-          protocol: TCP
-        volumeMounts:
-          - mountPath: /etc/kubernetes
-            name: cloudconfig
-            readOnly: true
-          - mountPath: /srv/voyager/custom
-            name: templates
-            readOnly: true
-      volumes:
-        - hostPath:
-            path: /etc/kubernetes
-          name: cloudconfig
-        - configMap:
-            name: voyager-templates
-          name: templates
-EOF
+```console
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.6/hack/deploy/voyager.sh \
+  | bash -s -- --provider=minikube --template-cfgmap=voyager-templates
 ```
+
+![installer](/docs/images/ingress/configuration/custom-template/installer.png)
 
 This will restart the Voyager operator pods. After start, Voyager pod will update any existing HAProxy configuration to the new templates.
