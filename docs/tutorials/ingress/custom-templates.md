@@ -1,11 +1,11 @@
 ---
 menu:
-  product_voyager_5.0.0-rc.6:
+  product_voyager_5.0.0-rc.7:
     name: Custom Templates
     parent: ingress
     weight: 55
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.6
+menu_name: product_voyager_5.0.0-rc.7
 section_menu_id: tutorials
 ---
 
@@ -49,7 +49,7 @@ $ kubectl create configmap -n kube-system voyager-templates --from-file=/tmp/def
 Now, the ConfigMap `voyager-templates` has to be mounted in the voyager operator pod and `--custom-templates` flag has to be set. To do this pass the `--template-cfgmap` flag to the Voyager installer script.
 
 ```console
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.6/hack/deploy/voyager.sh \
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.7/hack/deploy/voyager.sh \
   | bash -s -- --provider=minikube --template-cfgmap=voyager-templates
 ```
 
