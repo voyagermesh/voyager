@@ -1,5 +1,5 @@
 hash: ef8a952d370b91f78e9cf8b9966f82a607dd1fb22c96a76c0ae1b7490b782d8f
-updated: 2017-12-04T21:34:08.2881382-08:00
+updated: 2017-12-18T16:51:40.492747691-05:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -7,13 +7,15 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/go
-  version: 85b510edd14fe8d6beb2ad365afd3c5b3afc8c49
+  version: cb650d0b1a3c04a86595cf2a31fa704dbf1bc42a
   subpackages:
+  - analytics
   - context
   - crypto/rand
   - errors
   - flags
   - hold
+  - homedir
   - ioutil
   - log
   - log/golog
@@ -30,12 +32,13 @@ imports:
   - cmds
   - controller
 - name: github.com/appscode/kutil
-  version: e0c1936a0ec86173f8278752bef81964b4ffbea5
+  version: 582273a0791d4d99ab1345d9e4867bec460aaf5a
   subpackages:
   - apiextensions/v1beta1
   - core/v1
   - meta
   - rbac/v1beta1
+  - tools/analytics
   - tools/monitoring
   - tools/monitoring/agents
   - tools/monitoring/agents/coreosprometheusoperator
@@ -115,7 +118,7 @@ imports:
 - name: github.com/dgrijalva/jwt-go
   version: 01aeca54ebda6e0fbfafd0a524d234159c05ec20
 - name: github.com/dnsimple/dnsimple-go
-  version: 256aa39d0454e51be9f1461ee24252a66d69365a
+  version: 9641549ef4d560b09b6f44d9f394af0efcb438ee
   subpackages:
   - dnsimple
 - name: github.com/docker/distribution
@@ -171,7 +174,7 @@ imports:
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
-  version: 88141e92e9c23e2170e43f88e712138d8009ca76
+  version: ab3beb0f1673c5cab43e36db4ea73c2613100e69
   subpackages:
   - cmp
   - cmp/internal/diff
@@ -198,7 +201,7 @@ imports:
 - name: github.com/hashicorp/errwrap
   version: 7554cd9344cec97297fa6649b055a8c98c2a1e55
 - name: github.com/hashicorp/go-cleanhttp
-  version: 06c9ea3a335b7443026f8124b22619524420291b
+  version: d5fe4b57a186c716b0e00b8c301cbd9b4182694d
 - name: github.com/hashicorp/go-multierror
   version: b7773ae218740a7be65057fc60b366a49b538a44
 - name: github.com/hashicorp/go-rootcerts
@@ -252,7 +255,7 @@ imports:
   subpackages:
   - user
 - name: github.com/kubernetes/apimachinery
-  version: 18a564baac720819100827c16fdebcadb05b2d0d
+  version: e7ad5e783d5cc59c1aa137f0b13c51baee6ee7c1
   subpackages:
   - pkg/conversion
 - name: github.com/mailru/easyjson
@@ -361,7 +364,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: f006c2ac4710855cf0f916dd6b77acf6b048dc6e
 - name: github.com/spf13/cobra
-  version: de2d9c4eca8f3c1de17d48b096b6504e0296f003
+  version: 7b2c5ac9fc04fc5efafb60700713d4fa609b777b
   subpackages:
   - doc
 - name: github.com/spf13/pflag
@@ -502,7 +505,7 @@ imports:
 - name: gopkg.in/yaml.v2
   version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/api
-  version: 4df58c811fe2e65feb879227b2b245e4dc26e7ad
+  version: 9b9dca205a15b6ce9ef10091f05d60a13fdcf418
   subpackages:
   - admissionregistration/v1alpha1
   - apps/v1beta1
@@ -529,14 +532,14 @@ imports:
   - storage/v1
   - storage/v1beta1
 - name: k8s.io/apiextensions-apiserver
-  version: 5bc0d8f05a92b3a09bcf1a9db442a29c0b7a514d
+  version: 996a70a27a0dcf53642ca52601b9107cb2ad810a
   subpackages:
   - pkg/apis/apiextensions
   - pkg/apis/apiextensions/v1beta1
   - pkg/client/clientset/clientset/scheme
   - pkg/client/clientset/clientset/typed/apiextensions/v1beta1
 - name: k8s.io/apimachinery
-  version: 019ae5ada31de202164b118aee88ee2d14075c31
+  version: 5134afd2c0c91158afac0d8a28bd2177185a3bcc
   subpackages:
   - pkg/api/equality
   - pkg/api/errors
