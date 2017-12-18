@@ -19,16 +19,16 @@ exporter:
 # imagePullSecrets:
 #   - name: myRegistryKeySecretName
 ## Specify a imagePullPolicy
-## ref: http://kubernetes.io/docs/tasks/images/#pre-pulling-images
+## ref: http://kubernetes.io/docs/guides/images/#pre-pulling-images
 ##
 imagePullPolicy: IfNotPresent
-## Use cloud provider here. Read details https://github.com/appscode/voyager/blob/master/docs/tasks/README.md
+## Use cloud provider here.
 cloudProvider:
 ## The path to the cloud provider configuration file. Empty string for no configuration file.
 ## ie. for azure use /etc/kubernetes/azure.json
 cloudConfig: ''
 ## Installs voyager operator as critical addon
-## https://kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/
+## https://kubernetes.io/docs/guides/administer-cluster/guaranteed-scheduling-critical-addon-pods/
 criticalAddon: false
 ## Log level for voyager
 logLevel: 3
@@ -37,7 +37,7 @@ persistence:
   hostPath: /etc/kubernetes
 
 ## Node labels for pod assignment
-## Ref: https://kubernetes.io/docs/tasks/node-selection/
+## Ref: https://kubernetes.io/docs/guides/node-selection/
 ##
 nodeSelector: {}
 
