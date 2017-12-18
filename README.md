@@ -7,11 +7,11 @@ Voyager is a [HAProxy](http://www.haproxy.org/) backed [secure](#certificate) L7
 [AppsCode](https://appscode.com). This can be used with any Kubernetes cloud providers including aws, gce, gke, azure, acs. This can also be used with bare metal Kubernetes clusters.
 
 ## Ingress
-Voyager provides L7 and L4 loadbalancing using a custom Kubernetes [Ingress](/docs/tasks/ingress) resource. This is built on top of the [HAProxy](http://www.haproxy.org/) to support high availability, sticky sessions, name and path-based virtual hosting.
-This also support configurable application ports with all the options available in a standard Kubernetes [Ingress](https://kubernetes.io/docs/tasks/ingress/).
+Voyager provides L7 and L4 loadbalancing using a custom Kubernetes [Ingress](/docs/guides/ingress) resource. This is built on top of the [HAProxy](http://www.haproxy.org/) to support high availability, sticky sessions, name and path-based virtual hosting.
+This also support configurable application ports with all the options available in a standard Kubernetes [Ingress](https://kubernetes.io/docs/guides/ingress/).
 
 ## Certificate
-Voyager can automaticallty provision and refresh SSL certificates issued from Let's Encrypt using a custom Kubernetes [Certificate](/docs/tasks/certificate) resource.
+Voyager can automaticallty provision and refresh SSL certificates issued from Let's Encrypt using a custom Kubernetes [Certificate](/docs/guides/certificate) resource.
 
 ## Supported Versions
 Please pick a version of Voyager that matches your Kubernetes installation.

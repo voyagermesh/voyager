@@ -22,54 +22,54 @@ Voyager is a [HAProxy](http://www.haproxy.org/) backed [secure](#certificate) L7
 
 
 ## Ingress
-Voyager provides L7 and L4 loadbalancing using a custom Kubernetes [Ingress](/docs/tasks/ingress) resource. This is built on top of the [HAProxy](http://www.haproxy.org/) to support high availability, sticky sessions, name and path-based virtual hosting.
-This also support configurable application ports with all the options available in a standard Kubernetes [Ingress](https://kubernetes.io/docs/tasks/ingress/).
+Voyager provides L7 and L4 loadbalancing using a custom Kubernetes [Ingress](/docs/guides/ingress) resource. This is built on top of the [HAProxy](http://www.haproxy.org/) to support high availability, sticky sessions, name and path-based virtual hosting.
+This also support configurable application ports with all the options available in a standard Kubernetes [Ingress](https://kubernetes.io/docs/guides/ingress/).
 
 **Features**
 - HTTP
-  - [Single Service Ingress](/docs/tasks/ingress/http/single-service.md)
-  - [Name and Path based virtual hosting](/docs/tasks/ingress/http/named-virtual-hosting.md)
-  - [Supports Loadbalancer Source Range](/docs/tasks/ingress/http/source-range.md)
-  - [URL and Request Header Re-writing](/docs/tasks/ingress/http/header-rewrite.md)
-  - [Enable CORS](/docs/tasks/ingress/http/cors.md)
-  - [Custom HTTP Port](/docs/tasks/ingress/http/custom-http-port.md)
-  - [Supports redirects/DNS resolution for `ExternalName` type service](/docs/tasks/ingress/http/external-svc.md)
-  - [HSTS](/docs/tasks/ingress/http/hsts.md)
-  - [Simple Fanout](/docs/tasks/ingress/http/simple-fanout.md)
-  - [Route Traffic to StatefulSet Pods Based on Host Name](/docs/tasks/ingress/http/statefulset-pod.md)
-  - [Configure Sticky session to Backends](/docs/tasks/ingress/http/sticky-session.md)
-  - [Weighted Loadbalancing for Canary Deployment](/docs/tasks/ingress/http/weighted.md)
+  - [Single Service Ingress](/docs/guides/ingress/http/single-service.md)
+  - [Name and Path based virtual hosting](/docs/guides/ingress/http/named-virtual-hosting.md)
+  - [Supports Loadbalancer Source Range](/docs/guides/ingress/http/source-range.md)
+  - [URL and Request Header Re-writing](/docs/guides/ingress/http/header-rewrite.md)
+  - [Enable CORS](/docs/guides/ingress/http/cors.md)
+  - [Custom HTTP Port](/docs/guides/ingress/http/custom-http-port.md)
+  - [Supports redirects/DNS resolution for `ExternalName` type service](/docs/guides/ingress/http/external-svc.md)
+  - [HSTS](/docs/guides/ingress/http/hsts.md)
+  - [Simple Fanout](/docs/guides/ingress/http/simple-fanout.md)
+  - [Route Traffic to StatefulSet Pods Based on Host Name](/docs/guides/ingress/http/statefulset-pod.md)
+  - [Configure Sticky session to Backends](/docs/guides/ingress/http/sticky-session.md)
+  - [Weighted Loadbalancing for Canary Deployment](/docs/guides/ingress/http/weighted.md)
 - TLS/SSL
-  - [TLS Termination](/docs/tasks/ingress/tls/tls.md)
-  - [Backend TLS](/docs/tasks/ingress/tls/backend-tls.md)
-  - [Supports AWS certificate manager](/docs/tasks/ingress/tls/aws-cert-manager.md)
+  - [TLS Termination](/docs/guides/ingress/tls/tls.md)
+  - [Backend TLS](/docs/guides/ingress/tls/backend-tls.md)
+  - [Supports AWS certificate manager](/docs/guides/ingress/tls/aws-cert-manager.md)
 - TCP
-  - [TCP LoadBalancing](/docs/tasks/ingress/tcp/tcp.md)
+  - [TCP LoadBalancing](/docs/guides/ingress/tcp/tcp.md)
 - Configuration
-  - [Customize generated HAProxy config via BackendRule](/docs/tasks/ingress/configuration/backend-rule.md) (can be used for [http rewriting](https://www.haproxy.com/doc/aloha/7.0/haproxy/http_rewriting.html), add [health checks](https://www.haproxy.com/doc/aloha/7.0/haproxy/healthchecks.html), etc.)
-  - [Apply Frontend Rules](/docs/tasks/ingress/configuration/frontend-rule.md)
-  - [Supported Annotations](/docs/tasks/ingress/configuration/annotations.md)
-  - [Bind to address](/docs/tasks/ingress/configuration/bind-address.md)
-  - [Specify NodePort](/docs/tasks/ingress/configuration/node-port.md)
-  - [Configure global options](/docs/tasks/ingress/configuration/configure-options.md)
-  - [Configure Custom Timeouts for HAProxy](/docs/tasks/ingress/configuration/configure-timeouts.md)
-  - [Using Custom HAProxy Templates](/docs/tasks/ingress/configuration/custom-templates.md)
+  - [Customize generated HAProxy config via BackendRule](/docs/guides/ingress/configuration/backend-rule.md) (can be used for [http rewriting](https://www.haproxy.com/doc/aloha/7.0/haproxy/http_rewriting.html), add [health checks](https://www.haproxy.com/doc/aloha/7.0/haproxy/healthchecks.html), etc.)
+  - [Apply Frontend Rules](/docs/guides/ingress/configuration/frontend-rule.md)
+  - [Supported Annotations](/docs/guides/ingress/configuration/annotations.md)
+  - [Bind to address](/docs/guides/ingress/configuration/bind-address.md)
+  - [Specify NodePort](/docs/guides/ingress/configuration/node-port.md)
+  - [Configure global options](/docs/guides/ingress/configuration/configure-options.md)
+  - [Configure Custom Timeouts for HAProxy](/docs/guides/ingress/configuration/configure-timeouts.md)
+  - [Using Custom HAProxy Templates](/docs/guides/ingress/configuration/custom-templates.md)
 - External DNS
-  - [Configuring DNS](/docs/tasks/ingress/dns/external-dns.md)
+  - [Configuring DNS](/docs/guides/ingress/dns/external-dns.md)
 - Security
-  - [Configure Basic Auth for HTTP Backends](/docs/tasks/ingress/security/basic-auth.md)
-  - [TLS Authentication](/docs/tasks/ingress/security/tls-auth.md)
-  - [Configuring RBAC](/docs/tasks/ingress/security/rbac.md)
-  - [Running Voyager per Namespace](/docs/tasks/ingress/security/restrict-namespace.md)
+  - [Configure Basic Auth for HTTP Backends](/docs/guides/ingress/security/basic-auth.md)
+  - [TLS Authentication](/docs/guides/ingress/security/tls-auth.md)
+  - [Configuring RBAC](/docs/guides/ingress/security/rbac.md)
+  - [Running Voyager per Namespace](/docs/guides/ingress/security/restrict-namespace.md)
 - Monitoring
-  - [Exposing HAProxy Stats](/docs/tasks/ingress/monitoring/stats-and-prometheus.md)
-- [Replicas and Horizontal Pod Autoscaling](/docs/tasks/ingress/replicas-and-autoscaling.md)
-- [Placement of HAProxy Pods](/docs/tasks/ingress/pod-placement.md)
-- [Debugging Ingress](/docs/tasks/ingress/debugging.md)
+  - [Exposing HAProxy Stats](/docs/guides/ingress/monitoring/stats-and-prometheus.md)
+- [Replicas and Horizontal Pod Autoscaling](/docs/guides/ingress/replicas-and-autoscaling.md)
+- [Placement of HAProxy Pods](/docs/guides/ingress/pod-placement.md)
+- [Debugging Ingress](/docs/guides/ingress/debugging.md)
 
 
 ## Certificate
-Voyager can automaticallty provision and refresh SSL certificates issued from Let's Encrypt using a custom Kubernetes [Certificate](/docs/tasks/certificate) resource.
+Voyager can automaticallty provision and refresh SSL certificates issued from Let's Encrypt using a custom Kubernetes [Certificate](/docs/guides/certificate) resource.
 
 **Features**
 - Provision free TLS certificates from Let's Encrypt,
