@@ -95,3 +95,29 @@ func TryUpdateService(c kubernetes.Interface, meta metav1.ObjectMeta, transform 
 	}
 	return
 }
+
+func MergeServicePorts(cur, desired []core.ServicePort) []core.ServicePort {
+	if len(cur) == 0 {
+		return desired
+	}
+
+	// ports
+	curPorts := make(map[int32]core.ServicePort)
+	for _, p := range cur {
+		curPorts[p.Port] = p
+	}
+	for i, dp := range desired {
+		cp, ok := curPorts[dp.Port]
+
+		// svc port not found
+		if !ok {
+			continue
+		}
+
+		if dp.NodePort == 0 {
+			dp.NodePort = cp.NodePort // avoid reassigning port
+		}
+		desired[i] = dp
+	}
+	return desired
+}

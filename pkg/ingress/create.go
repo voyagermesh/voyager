@@ -126,7 +126,8 @@ func (c *controller) ensureStatsService() error {
 		in.Annotations[api.OriginName] = c.Ingress.GetName()
 
 		in.Spec.Selector = c.Ingress.OffshootLabels()
-		in.Spec.Ports = []core.ServicePort{
+
+		desired := []core.ServicePort{
 			{
 				Name:       api.StatsPortName,
 				Protocol:   core.ProtocolTCP,
@@ -136,13 +137,14 @@ func (c *controller) ensureStatsService() error {
 		}
 		monSpec, err := tools.Parse(c.Ingress.Annotations, api.EngressKey, api.DefaultExporterPortNumber)
 		if err == nil && monSpec != nil && monSpec.Prometheus != nil {
-			in.Spec.Ports = append(in.Spec.Ports, core.ServicePort{
+			desired = append(desired, core.ServicePort{
 				Name:       api.ExporterPortName,
 				Protocol:   core.ProtocolTCP,
 				Port:       int32(monSpec.Prometheus.Port),
 				TargetPort: intstr.FromString(api.ExporterPortName),
 			})
 		}
+		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, desired)
 		return in
 	})
 	return err
