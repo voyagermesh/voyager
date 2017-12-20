@@ -17,7 +17,7 @@ Deploy Voyager operator following instructions [here](/docs/install.md).
 ```console
 # install without RBAC
 curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.7/hack/deploy/voyager.sh \
-  | bash -s -- gke
+  | bash -s -- --provider=gke
 ```
 
 If you are trying this on a RBAC enabled cluster, pass the flag `--rbac` to installer script.
@@ -25,7 +25,7 @@ If you are trying this on a RBAC enabled cluster, pass the flag `--rbac` to inst
 ```console
 # install without RBAC
 curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.7/hack/deploy/voyager.sh \
-  | bash -s -- gke --rbac
+  | bash -s -- --provider=gke --rbac
 ```
 
 ## Setup Google Cloud DNS Zone
