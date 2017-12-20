@@ -127,6 +127,7 @@ case "$VOYAGER_CLOUD_PROVIDER" in
 esac
 
 env | sort | grep VOYAGER*
+echo ""
 
 if [ -z "$VOYAGER_TEMPLATE_CONFIGMAP" ]; then
     curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.7/hack/deploy/operator.yaml | envsubst | kubectl apply -f -

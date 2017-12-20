@@ -20,11 +20,7 @@ Deploy Voyager operator following instructions [here](/docs/install.md).
 ```console
 # install without RBAC
 curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.7/hack/deploy/voyager.sh \
-  | bash -s -- aws
-
-# run on master
-kubectl patch deploy voyager-operator -n kube-system \
-  --patch "$(curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.7/hack/deploy/run-on-master.yaml)"
+  | bash -s -- --provider=aws --run-on-master
 ```
 
 If you are trying this on a RBAC enabled cluster, pass the flag `--rbac` to installer script.
@@ -32,7 +28,7 @@ If you are trying this on a RBAC enabled cluster, pass the flag `--rbac` to inst
 ```console
 # install without RBAC
 curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.7/hack/deploy/voyager.sh \
-  | bash -s -- aws --rbac
+  | bash -s -- --provider=aws --run-on-master --rbac
 ```
 
 ## Setup Route53 Hosted Zone
