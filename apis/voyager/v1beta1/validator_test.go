@@ -11,6 +11,7 @@ import (
 
 func TestIsValid(t *testing.T) {
 	for k, result := range dataTables {
+		k.Migrate()
 		err := k.IsValid("minikube")
 		if !assert.Equal(t, err == nil, result) {
 			fmt.Println("Failed Tests:", k.Name, "Reason\n", err)
@@ -473,6 +474,105 @@ var dataTables = map[*Ingress]bool{
 							},
 						},
 					},
+				},
+			},
+		},
+	}: true,
+	{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "https://github.com/appscode/voyager/pull/768",
+			Namespace: "default",
+			Annotations: map[string]string{
+				"ingress.appscode.com/type": "Internal",
+			},
+		},
+		Spec: IngressSpec{
+			TLS: []IngressTLS{
+				{
+					SecretName: "voyager-cert",
+					Hosts: []string{
+						"*.example.org.dmmy.me",
+					},
+				},
+			},
+			Rules: []IngressRule{
+				{
+					Host: "*.example.org.dmmy.me",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/resources",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "distro-static",
+											ServicePort: intstr.FromString("80"),
+										},
+									},
+								},
+								{
+									Path: "/admin_resources",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "admin-resources",
+											ServicePort: intstr.FromString("80"),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Host: "*.example.org.dmmy.me",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							NoTLS: true,
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/resources",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "distro-static",
+											ServicePort: intstr.FromString("80"),
+										},
+									},
+								},
+								{
+									Path: "/admin_resources",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "admin-resources",
+											ServicePort: intstr.FromString("80"),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Host: "example.org.dmmy.me",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Paths: []HTTPIngressPath{
+								{
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "verify-tls-cert-dmmy-me",
+											ServicePort: intstr.FromString("80"),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			Backend: &HTTPIngressBackend{
+				IngressBackend: IngressBackend{
+					ServiceName: "distro-biz",
+					ServicePort: intstr.FromInt(80),
 				},
 			},
 		},

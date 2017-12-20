@@ -117,7 +117,12 @@ func (r Ingress) IsValid(cloudProvider string) error {
 				} else {
 					nodePorts[nodePort] = ri
 				}
-				if r.Spec.Rules[ea.FirstRuleIndex].HTTP.NoTLS != rule.HTTP.NoTLS {
+
+				_, foundTLS := r.FindTLSSecret(rule.Host)
+				useTLS := foundTLS && !rule.HTTP.NoTLS
+				_, foundTLS1 := r.FindTLSSecret(r.Spec.Rules[ea.FirstRuleIndex].Host)
+				useTLS1 := foundTLS1 && !r.Spec.Rules[ea.FirstRuleIndex].HTTP.NoTLS
+				if useTLS != useTLS1 {
 					return fmt.Errorf("spec.rule[%d].http has conflicting TLS spec with spec.rule[%d].http", ri, ea.FirstRuleIndex)
 				}
 				a = ea // paths will be merged into the original one
