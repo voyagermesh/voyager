@@ -19,7 +19,7 @@ Deploy Voyager operator following instructions [here](/docs/install.md).
 
 ```console
 # install without RBAC
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.7/hack/deploy/voyager.sh \
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.8/hack/deploy/voyager.sh \
   | bash -s -- --provider=aws --run-on-master
 ```
 
@@ -27,7 +27,7 @@ If you are trying this on a RBAC enabled cluster, pass the flag `--rbac` to inst
 
 ```console
 # install without RBAC
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.7/hack/deploy/voyager.sh \
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.8/hack/deploy/voyager.sh \
   | bash -s -- --provider=aws --run-on-master --rbac
 ```
 

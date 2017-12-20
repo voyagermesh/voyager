@@ -3,15 +3,15 @@
 ##
 operator:
   image: appscode/voyager
-  imageTag: 5.0.0-rc.7
+  imageTag: 5.0.0-rc.8
 ## Docker image containing HAProxy binary
 haproxy:
   image: appscode/haproxy
-  imageTag: 1.7.9-5.0.0-rc.7
+  imageTag: 1.7.9-5.0.0-rc.8
 ## Docker image containing Prometheus exporter
 exporter:
   image: appscode/voyager
-  imageTag: 5.0.0-rc.7
+  imageTag: 5.0.0-rc.8
 ## Optionally specify an array of imagePullSecrets.
 ## Secrets must be manually created in the namespace.
 ## ref: https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod

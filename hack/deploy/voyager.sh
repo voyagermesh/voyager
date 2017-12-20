@@ -130,21 +130,21 @@ env | sort | grep VOYAGER*
 echo ""
 
 if [ -z "$VOYAGER_TEMPLATE_CONFIGMAP" ]; then
-    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.7/hack/deploy/operator.yaml | envsubst | kubectl apply -f -
+    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.8/hack/deploy/operator.yaml | envsubst | kubectl apply -f -
 else
 	kubectl get configmap -n $VOYAGER_NAMESPACE $VOYAGER_TEMPLATE_CONFIGMAP >/dev/null 2>&1
 	if [ "$?" -ne 0 ]; then
 		echo "Missing configmap $VOYAGER_NAMESPACE/$VOYAGER_TEMPLATE_CONFIGMAP"
 		exit 1
 	fi
-    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.7/hack/deploy/operator-with-custom-tpl.yaml | envsubst | kubectl apply -f -
+    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.8/hack/deploy/operator-with-custom-tpl.yaml | envsubst | kubectl apply -f -
 fi
 
 if [ "$VOYAGER_ENABLE_RBAC" = true ]; then
-    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.7/hack/deploy/rbac.yaml | envsubst | kubectl apply -f -
+    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.8/hack/deploy/rbac.yaml | envsubst | kubectl apply -f -
 fi
 
 if [ "$VOYAGER_RUN_ON_MASTER" -eq 1 ]; then
     kubectl patch deploy voyager-operator -n $VOYAGER_NAMESPACE \
-      --patch="$(curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.7/hack/deploy/run-on-master.yaml)"
+      --patch="$(curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.8/hack/deploy/run-on-master.yaml)"
 fi
