@@ -84,7 +84,7 @@ type HTTPHost struct {
 type HTTPPath struct {
 	//Host        string
 	Path        string
-	Backend     Backend
+	Backend     *Backend
 	SSLRedirect bool
 }
 
@@ -98,7 +98,7 @@ type TCPService struct {
 	FrontendRules []string
 	CertFile      string
 	PEMName       string
-	Backend       Backend
+	Backend       *Backend
 	ALPNOptions   string
 	TLSAuth       *TLSAuth
 	SSLRedirect   bool

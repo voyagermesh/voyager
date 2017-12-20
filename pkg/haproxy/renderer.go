@@ -2,6 +2,7 @@ package haproxy
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
@@ -15,6 +16,7 @@ func RenderConfig(data TemplateData) (string, error) {
 		return "", err
 	}
 	data.canonicalize()
+
 	var buf bytes.Buffer
 	err := haproxyTemplate.ExecuteTemplate(&buf, "haproxy.cfg", data)
 	if err != nil {
@@ -29,6 +31,11 @@ func RenderConfig(data TemplateData) (string, error) {
 		}
 	}
 	return strings.Join(result, "\n"), nil
+}
+
+func (td TemplateData) String() string {
+	data, _ := json.MarshalIndent(td, "", " ")
+	return string(data)
 }
 
 func (td *TemplateData) canonicalize() {
@@ -57,7 +64,9 @@ func (td *TemplateData) canonicalize() {
 		for y := range svc.Hosts {
 			host := svc.Hosts[y]
 			for z := range host.Paths {
-				host.Paths[z].Backend.canonicalize()
+				if host.Paths[z].Backend != nil {
+					host.Paths[z].Backend.canonicalize()
+				}
 			}
 
 			sort.Slice(host.Paths, func(i, j int) bool {
@@ -105,10 +114,12 @@ func (td *TemplateData) isValid() error {
 
 		for _, host := range svc.Hosts {
 			for _, path := range host.Paths {
-				if backends.Has(path.Backend.Name) {
-					return fmt.Errorf("HAProxy backend name %s is reused.", path.Backend.Name)
-				} else {
-					backends.Insert(path.Backend.Name)
+				if path.Backend != nil {
+					if backends.Has(path.Backend.Name) {
+						return fmt.Errorf("HAProxy backend name %s is reused.", path.Backend.Name)
+					} else {
+						backends.Insert(path.Backend.Name)
+					}
 				}
 			}
 		}
@@ -121,10 +132,12 @@ func (td *TemplateData) isValid() error {
 			frontends.Insert(svc.FrontendName)
 		}
 
-		if backends.Has(svc.Backend.Name) {
-			return fmt.Errorf("HAProxy backend name %s is reused.", svc.Backend.Name)
-		} else {
-			backends.Insert(svc.Backend.Name)
+		if svc.Backend != nil {
+			if backends.Has(svc.Backend.Name) {
+				return fmt.Errorf("HAProxy backend name %s is reused.", svc.Backend.Name)
+			} else {
+				backends.Insert(svc.Backend.Name)
+			}
 		}
 	}
 	return nil
