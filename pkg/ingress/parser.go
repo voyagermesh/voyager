@@ -3,7 +3,6 @@ package ingress
 import (
 	"bufio"
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -432,7 +431,7 @@ func (c *controller) generateConfig() error {
 				if len(bk.Endpoints) > 0 {
 					httpPaths = append(httpPaths, &haproxy.HTTPPath{
 						Path: path.Path,
-						Backend: haproxy.Backend{
+						Backend: &haproxy.Backend{
 							Name:             getBackendName(c.Ingress, path.Backend.IngressBackend),
 							BasicAuth:        bk.BasicAuth,
 							Endpoints:        bk.Endpoints,
@@ -462,7 +461,7 @@ func (c *controller) generateConfig() error {
 					Port:          rule.TCP.Port.String(),
 					ALPNOptions:   parseALPNOptions(rule.TCP.ALPN),
 					FrontendRules: fr.Rules,
-					Backend: haproxy.Backend{
+					Backend: &haproxy.Backend{
 						Name:             getBackendName(c.Ingress, rule.TCP.Backend),
 						BackendRules:     rule.TCP.Backend.BackendRule,
 						Endpoints:        bk.Endpoints,
@@ -748,9 +747,7 @@ func (c *controller) generateConfig() error {
 		td.UserLists = append(td.UserLists, userLists[k])
 	}
 
-	if jb, err := json.MarshalIndent(&td, "", "  "); err != nil {
-		c.logger.Debugf("Rendering haproxy.cfg for Ingress %s@%s using data:", c.Ingress.Name, c.Ingress.Namespace, string(jb))
-	}
+	c.logger.Infof("Rendering haproxy.cfg for Ingress %s/%s using data: %s", c.Ingress.Namespace, c.Ingress.Name, td)
 	if cfg, err := haproxy.RenderConfig(td); err != nil {
 		return err
 	} else {
