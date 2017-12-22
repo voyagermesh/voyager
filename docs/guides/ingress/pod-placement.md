@@ -150,4 +150,33 @@ spec:
     effect: NoSchedule
 ```
 
-You can use these various option in combination with each other to achieve desired result.
+You can use these various option in combination with each other to achieve desired result. Say, you want to run your HAProxy pods on master instances. This can be done using an Ingress like below:
+
+```yaml
+apiVersion: voyager.appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-w-node-selector
+  namespace: demo
+  annotations:
+    ingress.appscode.com/type: NodePort
+    ingress.appscode.com/force-service-port: 'false'
+    ingress.appscode.com/node-selector: '{ "node-role.kubernetes.io/master" : "true" }'
+    ingress.appscode.com/replicas: '2'
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        backend:
+          serviceName: rest
+          servicePort: 80
+      - path: /web
+        backend:
+          serviceName: web
+          servicePort: 80
+  tolerations:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+    operator: Exists
+```
