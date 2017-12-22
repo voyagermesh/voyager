@@ -12,6 +12,7 @@ import (
 	"github.com/appscode/go/types"
 	tools "github.com/appscode/kube-mon"
 	"github.com/appscode/kube-mon/agents"
+	"github.com/appscode/kutil"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
@@ -264,7 +265,7 @@ func (c *nodePortController) Create() error {
 	}
 	if monSpec != nil {
 		agent := agents.New(monSpec.Agent, c.KubeClient, c.CRDClient, c.PromClient)
-		done, err := agent.CreateOrUpdate(c.Ingress.StatsAccessor(), monSpec)
+		vt, err := agent.CreateOrUpdate(c.Ingress.StatsAccessor(), monSpec)
 		// Error Ignored intentionally
 		if err != nil {
 			c.recorder.Eventf(
@@ -273,12 +274,13 @@ func (c *nodePortController) Create() error {
 				eventer.EventReasonIngressServiceMonitorCreateFailed,
 				err.Error(),
 			)
-		} else if done {
+		} else if vt != kutil.VerbUnchanged {
 			c.recorder.Eventf(
 				c.Ingress.ObjectReference(),
 				core.EventTypeNormal,
 				eventer.EventReasonIngressServiceMonitorCreateSuccessful,
-				"Successfully created ServiceMonitor",
+				"Successfully %s ServiceMonitor",
+				vt,
 			)
 		}
 	}
