@@ -5,8 +5,8 @@ import (
 
 	"path"
 
-	"github.com/appscode/kutil/meta"
 	"github.com/appscode/kube-mon/api"
+	"github.com/appscode/kutil/meta"
 )
 
 const (
