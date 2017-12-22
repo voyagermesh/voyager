@@ -5,8 +5,8 @@ import (
 
 	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
+	tools "github.com/appscode/kube-mon"
 	"github.com/appscode/kutil/meta"
-	tools "github.com/appscode/kutil/tools/monitoring"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

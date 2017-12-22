@@ -31,9 +31,8 @@ type PrometheusSpec struct {
 }
 
 type Agent interface {
-	Add(sp StatsAccessor, spec *AgentSpec) error
-	Update(sp StatsAccessor, old, new *AgentSpec) error
-	Delete(sp StatsAccessor, spec *AgentSpec) error
+	CreateOrUpdate(sp StatsAccessor, spec *AgentSpec) (bool, error)
+	Delete(sp StatsAccessor) (bool, error)
 }
 
 type StatsAccessor interface {

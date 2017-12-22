@@ -107,7 +107,7 @@ func (s *CertStore) Save(crd *api.Certificate, cert acme.CertificateResource) er
 			return err
 		}
 	} else {
-		_, err := v1u.CreateOrPatchSecret(s.KubeClient,
+		_, _, err := v1u.CreateOrPatchSecret(s.KubeClient,
 			metav1.ObjectMeta{Namespace: crd.Namespace, Name: crd.SecretName()},
 			func(in *core.Secret) *core.Secret {
 				in.Type = core.SecretTypeTLS
@@ -129,7 +129,7 @@ func (s *CertStore) Save(crd *api.Certificate, cert acme.CertificateResource) er
 	if err != nil {
 		return fmt.Errorf("failed to parse tls.crt for Certificate %s/%s. Reason: %s", crd.Namespace, crd.Name, err)
 	}
-	_, err = vu.PatchCertificate(s.VoyagerClient, crd, func(in *api.Certificate) *api.Certificate {
+	_, _, err = vu.PatchCertificate(s.VoyagerClient, crd, func(in *api.Certificate) *api.Certificate {
 		// Update certificate data to add Details Information
 		t := metav1.Now()
 		in.Status.LastIssuedCertificate = &api.CertificateDetails{

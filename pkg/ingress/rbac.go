@@ -15,7 +15,7 @@ func (c *controller) ensureServiceAccount() error {
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	_, err := core_util.CreateOrPatchServiceAccount(c.KubeClient, meta, func(in *core.ServiceAccount) *core.ServiceAccount {
+	_, _, err := core_util.CreateOrPatchServiceAccount(c.KubeClient, meta, func(in *core.ServiceAccount) *core.ServiceAccount {
 		in.ObjectMeta = c.ensureOwnerReference(in.ObjectMeta)
 
 		if in.Annotations == nil {
@@ -33,7 +33,7 @@ func (c *controller) ensureRoles() error {
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	_, err := rbac_util.CreateOrPatchRole(c.KubeClient, meta, func(in *rbac.Role) *rbac.Role {
+	_, _, err := rbac_util.CreateOrPatchRole(c.KubeClient, meta, func(in *rbac.Role) *rbac.Role {
 		in.ObjectMeta = c.ensureOwnerReference(in.ObjectMeta)
 
 		if in.Annotations == nil {
@@ -80,7 +80,7 @@ func (c *controller) ensureRoleBinding() error {
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	_, err := rbac_util.CreateOrPatchRoleBinding(c.KubeClient, meta, func(in *rbac.RoleBinding) *rbac.RoleBinding {
+	_, _, err := rbac_util.CreateOrPatchRoleBinding(c.KubeClient, meta, func(in *rbac.RoleBinding) *rbac.RoleBinding {
 		in.ObjectMeta = c.ensureOwnerReference(in.ObjectMeta)
 
 		if in.Annotations == nil {

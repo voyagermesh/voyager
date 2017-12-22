@@ -9,8 +9,8 @@ import (
 	"github.com/appscode/go/errors"
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
-	tools "github.com/appscode/kutil/tools/monitoring"
-	"github.com/appscode/kutil/tools/monitoring/agents"
+	tools "github.com/appscode/kube-mon"
+	"github.com/appscode/kube-mon/agents"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
@@ -206,7 +206,7 @@ func (c *internalController) Create() error {
 	}
 	if monSpec != nil {
 		agent := agents.New(monSpec.Agent, c.KubeClient, c.CRDClient, c.PromClient)
-		err := agent.Add(c.Ingress.StatsAccessor(), monSpec)
+		done, err := agent.CreateOrUpdate(c.Ingress.StatsAccessor(), monSpec)
 		// Error Ignored intentionally
 		if err != nil {
 			c.recorder.Eventf(
@@ -215,7 +215,7 @@ func (c *internalController) Create() error {
 				eventer.EventReasonIngressServiceMonitorCreateFailed,
 				err.Error(),
 			)
-		} else {
+		} else if done {
 			c.recorder.Eventf(
 				c.Ingress.ObjectReference(),
 				core.EventTypeNormal,
@@ -373,7 +373,7 @@ func (c *internalController) Delete() {
 	}
 	if monSpec != nil {
 		agent := agents.New(monSpec.Agent, c.KubeClient, c.CRDClient, c.PromClient)
-		agent.Delete(c.Ingress.StatsAccessor(), monSpec)
+		agent.Delete(c.Ingress.StatsAccessor())
 	}
 	if c.Ingress.Stats() {
 		c.ensureStatsServiceDeleted()

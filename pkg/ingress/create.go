@@ -5,8 +5,8 @@ import (
 	"reflect"
 
 	"github.com/appscode/go/errors"
+	tools "github.com/appscode/kube-mon"
 	core_util "github.com/appscode/kutil/core/v1"
-	tools "github.com/appscode/kutil/tools/monitoring"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -117,7 +117,7 @@ func (c *controller) ensureStatsService() error {
 		Namespace: c.Ingress.Namespace,
 	}
 
-	_, err := core_util.CreateOrPatchService(c.KubeClient, meta, func(in *core.Service) *core.Service {
+	_, _, err := core_util.CreateOrPatchService(c.KubeClient, meta, func(in *core.Service) *core.Service {
 		in.Labels = c.Ingress.StatsLabels()
 		if in.Annotations == nil {
 			in.Annotations = map[string]string{}

@@ -1,5 +1,5 @@
-hash: ef8a952d370b91f78e9cf8b9966f82a607dd1fb22c96a76c0ae1b7490b782d8f
-updated: 2017-12-19T08:59:27.878975606-05:00
+hash: 8dadd3281cdc9bcca9139745f77c4c33d47056775f17ce69121b44861af9e9ba
+updated: 2017-12-21T18:45:17.677463741-05:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -7,7 +7,7 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/go
-  version: cb650d0b1a3c04a86595cf2a31fa704dbf1bc42a
+  version: f08cee5a2aa53a1ab6d30e4ae11e381d1b265f81
   subpackages:
   - analytics
   - context
@@ -31,19 +31,21 @@ imports:
   subpackages:
   - cmds
   - controller
+- name: github.com/appscode/kube-mon
+  version: 10b8a840c201d97eb04fe83fb8875761d12feec6
+  subpackages:
+  - agents
+  - agents/coreosprometheusoperator
+  - agents/prometheusbuiltin
+  - api
 - name: github.com/appscode/kutil
-  version: 320e37a0c32de9129b455f52d681871a14391950
+  version: acdec48c1b1f04bb3cf42377fa5cd4eeb9bfafb3
   subpackages:
   - apiextensions/v1beta1
   - core/v1
   - meta
   - rbac/v1beta1
   - tools/analytics
-  - tools/monitoring
-  - tools/monitoring/agents
-  - tools/monitoring/agents/coreosprometheusoperator
-  - tools/monitoring/agents/prometheusbuiltin
-  - tools/monitoring/api
 - name: github.com/appscode/mergo
   version: e3000cb3d28c72b837601cac94debd91032d19fe
 - name: github.com/appscode/pat
@@ -174,7 +176,7 @@ imports:
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
-  version: ab3beb0f1673c5cab43e36db4ea73c2613100e69
+  version: 97a1ff3c48253a51c601f6e4420181273b6ca0ea
   subpackages:
   - cmp
   - cmp/internal/diff
@@ -255,7 +257,7 @@ imports:
   subpackages:
   - user
 - name: github.com/kubernetes/apimachinery
-  version: e7ad5e783d5cc59c1aa137f0b13c51baee6ee7c1
+  version: 20bbfef868144faf29af69ddb2f01646ead5c1a1
   subpackages:
   - pkg/conversion
 - name: github.com/mailru/easyjson
@@ -321,7 +323,7 @@ imports:
 - name: github.com/orcaman/concurrent-map
   version: d4c23bd0e01134806215ffe65ba3fd22ec6721f7
 - name: github.com/ovh/go-ovh
-  version: 4b1fea467323b74c5f462f0947f402b428ca0626
+  version: 02f7e9439689eda7ce4752c7f37e50cb678f2679
   subpackages:
   - ovh
 - name: github.com/peterbourgon/diskv

@@ -208,7 +208,7 @@ func (c *Controller) getACMEClient() error {
 		if err := c.acmeClient.AgreeToTOS(); err != nil {
 			return fmt.Errorf("failed to register user %s. Reason: %s", c.acmeUser.Email, err)
 		}
-		c.UserSecret, err = v1u.PatchSecret(c.KubeClient, c.UserSecret, func(in *core.Secret) *core.Secret {
+		c.UserSecret, _, err = v1u.PatchSecret(c.KubeClient, c.UserSecret, func(in *core.Secret) *core.Secret {
 			if in.Data == nil {
 				in.Data = make(map[string][]byte)
 			}
