@@ -4,8 +4,9 @@ import (
 	"fmt"
 
 	core_util "github.com/appscode/kutil/core/v1"
-	"github.com/appscode/kutil/tools/monitoring/api"
+	"github.com/appscode/kube-mon/api"
 	core "k8s.io/api/core/v1"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -20,12 +21,12 @@ func New(k8sClient kubernetes.Interface) api.Agent {
 	return &PrometheusBuiltin{k8sClient: k8sClient}
 }
 
-func (agent *PrometheusBuiltin) Add(sp api.StatsAccessor, spec *api.AgentSpec) error {
-	return agent.Update(sp, spec, spec)
-}
-
-func (agent *PrometheusBuiltin) Update(sp api.StatsAccessor, old, new *api.AgentSpec) error {
-	_, err := core_util.TryPatchService(agent.k8sClient, metav1.ObjectMeta{Namespace: sp.GetNamespace(), Name: sp.ServiceName()}, func(in *core.Service) *core.Service {
+func (agent *PrometheusBuiltin) CreateOrUpdate(sp api.StatsAccessor, new *api.AgentSpec) (bool, error) {
+	svc, e2 := agent.k8sClient.CoreV1().Services(sp.GetNamespace()).Get(sp.ServiceName(), metav1.GetOptions{})
+	if kerr.IsNotFound(e2) {
+		return false, e2
+	}
+	_, ok, err := core_util.PatchService(agent.k8sClient, svc, func(in *core.Service) *core.Service {
 		if in.Annotations == nil {
 			in.Annotations = map[string]string{}
 		}
@@ -43,11 +44,15 @@ func (agent *PrometheusBuiltin) Update(sp api.StatsAccessor, old, new *api.Agent
 		}
 		return in
 	})
-	return err
+	return ok, err
 }
 
-func (agent *PrometheusBuiltin) Delete(sp api.StatsAccessor, spec *api.AgentSpec) error {
-	_, err := core_util.TryPatchService(agent.k8sClient, metav1.ObjectMeta{Namespace: sp.GetNamespace(), Name: sp.ServiceName()}, func(in *core.Service) *core.Service {
+func (agent *PrometheusBuiltin) Delete(sp api.StatsAccessor) (bool, error) {
+	svc, e2 := agent.k8sClient.CoreV1().Services(sp.GetNamespace()).Get(sp.ServiceName(), metav1.GetOptions{})
+	if kerr.IsNotFound(e2) {
+		return false, e2
+	}
+	_, ok, err := core_util.PatchService(agent.k8sClient, svc, func(in *core.Service) *core.Service {
 		if in.Annotations != nil {
 			delete(in.Annotations, "prometheus.io/scrape")
 			delete(in.Annotations, "prometheus.io/scheme")
@@ -56,5 +61,5 @@ func (agent *PrometheusBuiltin) Delete(sp api.StatsAccessor, spec *api.AgentSpec
 		}
 		return in
 	})
-	return err
+	return ok, err
 }

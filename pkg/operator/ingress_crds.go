@@ -6,8 +6,8 @@ import (
 
 	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
-	tools "github.com/appscode/kutil/tools/monitoring"
-	"github.com/appscode/kutil/tools/monitoring/agents"
+	tools "github.com/appscode/kube-mon"
+	"github.com/appscode/kube-mon/agents"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/ingress"
@@ -153,7 +153,7 @@ func (op *Operator) UpdateEngress(ctx context.Context, oldEngress, newEngress *a
 				if oldMonSpec, oldErr := tools.Parse(oldEngress.Annotations, api.EngressKey, api.DefaultExporterPortNumber); oldErr == nil {
 					if !reflect.DeepEqual(oldMonSpec, newMonSpec) {
 						agent := agents.New(newMonSpec.Agent, op.KubeClient, op.CRDClient, op.PromClient)
-						err := agent.Update(newEngress.StatsAccessor(), oldMonSpec, newMonSpec)
+						_, err := agent.CreateOrUpdate(newEngress.StatsAccessor(), newMonSpec)
 						if err != nil {
 							return
 						}

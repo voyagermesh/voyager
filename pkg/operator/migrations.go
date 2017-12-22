@@ -56,7 +56,7 @@ func (op *Operator) MigrateCertificate(cert *api.Certificate) (bool, error) {
 	}
 
 	if cert.Spec.Email != "" {
-		_, err := v1u.CreateOrPatchSecret(op.KubeClient, metav1.ObjectMeta{
+		_, _, err := v1u.CreateOrPatchSecret(op.KubeClient, metav1.ObjectMeta{
 			Name:      cert.Spec.ACMEUserSecretName,
 			Namespace: cert.Namespace,
 		}, func(in *core.Secret) *core.Secret {
