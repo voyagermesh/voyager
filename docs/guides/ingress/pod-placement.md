@@ -150,7 +150,7 @@ spec:
     effect: NoSchedule
 ```
 
-You can use these various option in combination with each other to achieve desired result. For example, you want to run your HAProxy pods on master instances. This can be done using an Ingress like below:
+You can use these various option in combination with each other to achieve desired result. Say, you want to run your HAProxy pods on master instances. This can be done using an Ingress like below:
 
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
