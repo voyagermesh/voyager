@@ -161,7 +161,7 @@ metadata:
   annotations:
     ingress.appscode.com/type: NodePort
     ingress.appscode.com/force-service-port: 'false'
-    ingress.appscode.com/node-selector: '{ "node-role.kubernetes.io/master" : "true" }'
+    ingress.appscode.com/node-selector: '{ "node-role.kubernetes.io/master" : "" }'
     ingress.appscode.com/replicas: '2'
 spec:
   rules:
