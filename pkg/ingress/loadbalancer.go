@@ -13,18 +13,17 @@ import (
 	tools "github.com/appscode/kube-mon"
 	"github.com/appscode/kube-mon/agents"
 	"github.com/appscode/kutil"
+	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
-	"github.com/google/go-cmp/cmp"
 	apps "k8s.io/api/apps/v1beta1"
 	core "k8s.io/api/core/v1"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
@@ -657,7 +656,7 @@ func (c *loadBalancerController) ensurePods(old *api.Ingress) (*apps.Deployment,
 		needsUpdate = true
 		current.Spec.Template.Spec.ImagePullSecrets = desired.Spec.Template.Spec.ImagePullSecrets
 	}
-	if !cmp.Equal(current.Spec.Template.Spec.Containers, desired.Spec.Template.Spec.Containers, cmp.Comparer(func(x, y resource.Quantity) bool { return x.Cmp(y) == 0 })) {
+	if !meta.Equal(current.Spec.Template.Spec.Containers, desired.Spec.Template.Spec.Containers) {
 		needsUpdate = true
 		current.Spec.Template.Spec.Containers = desired.Spec.Template.Spec.Containers
 	}
