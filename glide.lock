@@ -1,5 +1,5 @@
 hash: 8dadd3281cdc9bcca9139745f77c4c33d47056775f17ce69121b44861af9e9ba
-updated: 2017-12-22T03:16:29.128677103-05:00
+updated: 2017-12-26T16:37:45.643705611-05:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -39,7 +39,7 @@ imports:
   - agents/prometheusbuiltin
   - api
 - name: github.com/appscode/kutil
-  version: 04124fd21c654188d7a11908d8c8af994a4cccef
+  version: 27239d39c245b5237d1035f2873db9c2d895c34b
   subpackages:
   - apiextensions/v1beta1
   - core/v1
@@ -241,7 +241,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/JamesClonk/vultr
-  version: e5dad9a80e61623e1da10706f486596f77469049
+  version: 0e76731ad7f995325a683b1306da7939f323411d
   subpackages:
   - lib
 - name: github.com/jmespath/go-jmespath
@@ -257,7 +257,7 @@ imports:
   subpackages:
   - user
 - name: github.com/kubernetes/apimachinery
-  version: 20bbfef868144faf29af69ddb2f01646ead5c1a1
+  version: bc1325710437b54535daa5d6877ca62df7bd76db
   subpackages:
   - pkg/conversion
 - name: github.com/mailru/easyjson
@@ -471,7 +471,7 @@ imports:
   - googleapi
   - googleapi/internal/uritemplates
 - name: google.golang.org/appengine
-  version: 5bee14b453b4c71be47ec1781b0fa61c2ea182db
+  version: 4f7eeb5305a4ba1966344836ba4af9996b7b4e05
   subpackages:
   - internal
   - internal/app_identity
