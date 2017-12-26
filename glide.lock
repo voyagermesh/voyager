@@ -1,5 +1,5 @@
 hash: 8dadd3281cdc9bcca9139745f77c4c33d47056775f17ce69121b44861af9e9ba
-updated: 2017-12-26T16:37:45.643705611-05:00
+updated: 2017-12-26T18:44:08.520685634-05:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -39,7 +39,7 @@ imports:
   - agents/prometheusbuiltin
   - api
 - name: github.com/appscode/kutil
-  version: 27239d39c245b5237d1035f2873db9c2d895c34b
+  version: 4b27a4da2b262e7fe6e81173aeb8001c007bfca2
   subpackages:
   - apiextensions/v1beta1
   - core/v1

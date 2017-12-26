@@ -3,12 +3,11 @@ package operator
 import (
 	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
+	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
-	"github.com/google/go-cmp/cmp"
 	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -84,19 +83,7 @@ func (op *Operator) initIngresseWatcher() cache.Controller {
 				if changed, _ := oldEngress.HasChanged(*newEngress); !changed {
 					return
 				}
-				diff := cmp.Diff(oldEngress, newEngress,
-					cmp.Comparer(func(x, y resource.Quantity) bool {
-						return x.Cmp(y) == 0
-					}),
-					cmp.Comparer(func(x, y *metav1.Time) bool {
-						if x == nil && y == nil {
-							return true
-						}
-						if x != nil && y != nil {
-							return x.Time.Equal(y.Time)
-						}
-						return false
-					}))
+				diff := meta.Diff(oldEngress, newEngress)
 				logger.Infof("%s %s@%s has changed. Diff: %s", newIngress.GroupVersionKind(), newIngress.Name, newIngress.Namespace, diff)
 				if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
 					op.recorder.Eventf(
