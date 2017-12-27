@@ -1,7 +1,7 @@
 ---
 menu:
   product_voyager_5.0.0-rc.8:
-    name: Replicas And Autoscaling
+    name: Replicas & Autoscaling
     parent: ingress
     weight: 95
 product_name: voyager

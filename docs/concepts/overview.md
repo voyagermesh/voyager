@@ -1,11 +1,11 @@
 ---
-title: Overview | Voyager
+title: Concepts | Voyager
 description: Overview of Voyager
 menu:
   product_voyager_5.0.0-rc.8:
-    identifier: overview-voyager
-    name: Overview
-    parent: getting-started
+    identifier: overview-concepts
+    name: Concepts
+    parent: concepts
     weight: 20
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.8
