@@ -4,7 +4,7 @@ menu:
     identifier: certificate-delete
     name: Delete
     parent: certificate
-    weight: 50
+    weight: 60
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.8
 section_menu_id: guides

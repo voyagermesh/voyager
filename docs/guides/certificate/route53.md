@@ -4,7 +4,7 @@ menu:
     identifier: certificate-route53
     name: Route53
     parent: certificate
-    weight: 40
+    weight: 50
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.8
 section_menu_id: guides

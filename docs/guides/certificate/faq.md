@@ -4,7 +4,7 @@ menu:
     identifier: certificate-faq
     name: FAQ
     parent: certificate
-    weight: 60
+    weight: 70
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.8
 section_menu_id: guides
