@@ -1,11 +1,11 @@
 ---
 menu:
-  product_voyager_5.0.0-rc.6:
+  product_voyager_5.0.0-rc.8:
     name: TLS Auth
     parent: security
     weight: 40
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.6
+menu_name: product_voyager_5.0.0-rc.8
 section_menu_id: guides
 ---
 
