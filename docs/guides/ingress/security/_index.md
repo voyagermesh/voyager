@@ -5,6 +5,6 @@ menu:
     identifier: security
     name: Security
     parent: ingress
-    weight: 50
+    weight: 55
 menu_name: product_voyager_5.0.0-rc.8
 ---

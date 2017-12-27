@@ -5,14 +5,13 @@ menu:
   product_voyager_5.0.0-rc.8:
     identifier: install-voyager
     name: Install
-    parent: getting-started
-    weight: 35
+    parent: setup
+    weight: 10
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.8
-section_menu_id: getting-started
-url: /products/voyager/5.0.0-rc.8/getting-started/install/
+section_menu_id: setup
 aliases:
-  - /products/voyager/5.0.0-rc.8/install/
+  - /products/voyager/5.0.0-rc.8/setup/
 ---
 
 # Installation Guide

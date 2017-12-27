@@ -9,11 +9,10 @@ menu:
     weight: 20
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.8
-section_menu_id: getting-started
-url: /products/voyager/5.0.0-rc.8/getting-started/
+section_menu_id: concepts
+url: /products/voyager/5.0.0-rc.8/concepts/
 aliases:
-  - /products/voyager/5.0.0-rc.8/
-  - /products/voyager/5.0.0-rc.8/README/
+  - /products/voyager/5.0.0-rc.8/overview/
 ---
 
 # Voyager

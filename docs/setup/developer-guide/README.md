@@ -6,13 +6,13 @@ menu:
     identifier: developer-guide-readme
     name: Overview
     parent: developer-guide
-    weight: 15
+    weight: 10
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.8
-section_menu_id: developer-guide
-url: /products/voyager/5.0.0-rc.8/developer-guide/
+section_menu_id: setup
+url: /products/voyager/5.0.0-rc.8/setup/developer-guide/
 aliases:
-  - /products/voyager/5.0.0-rc.8/developer-guide/README/
+  - /products/voyager/5.0.0-rc.8/setup/developer-guide/README/
 ---
 
 ## Development Guide
