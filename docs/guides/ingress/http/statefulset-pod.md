@@ -2,7 +2,7 @@
 menu:
   product_voyager_5.0.0-rc.8:
     name: Statefulset Pod
-    parent: ingress
+    parent: http
     weight: 115
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.8

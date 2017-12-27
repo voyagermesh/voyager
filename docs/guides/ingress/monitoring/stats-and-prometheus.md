@@ -2,8 +2,8 @@
 menu:
   product_voyager_5.0.0-rc.8:
     name: Stats and Prometheus
-    parent: ingress
-    weight: 120
+    parent: monitoring
+    weight: 20
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.8
 section_menu_id: guides
