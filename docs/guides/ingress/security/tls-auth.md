@@ -2,7 +2,7 @@
 menu:
   product_voyager_5.0.0-rc.6:
     name: TLS Auth
-    parent: ingress
+    parent: security
     weight: 40
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.6

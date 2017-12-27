@@ -1,7 +1,7 @@
 ---
 menu:
   product_voyager_5.0.0-rc.8:
-    name: Stats and Prometheus
+    name: Stats & Prometheus
     parent: monitoring
     weight: 20
 product_name: voyager
