@@ -10,6 +10,7 @@ menu:
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.8
 section_menu_id: getting-started
+url: /products/voyager/5.0.0-rc.8/getting-started/roadmap/
 ---
 
 # Versioning Policy
