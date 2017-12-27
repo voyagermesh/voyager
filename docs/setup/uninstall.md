@@ -9,10 +9,7 @@ menu:
     weight: 20
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.8
-section_menu_id: getting-started
-url: /products/voyager/5.0.0-rc.8/getting-started/uninstall/
-aliases:
-  - /products/voyager/5.0.0-rc.8/uninstall/
+section_menu_id: setup
 ---
 
 # Uninstall Voyager

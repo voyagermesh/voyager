@@ -4,7 +4,7 @@ description: Overview of Voyager
 menu:
   product_voyager_5.0.0-rc.8:
     identifier: overview-concepts
-    name: Concepts
+    name: Overview
     parent: concepts
     weight: 20
 product_name: voyager
