@@ -335,8 +335,11 @@ func (r Ingress) EnableCORS() bool {
 }
 
 func (r Ingress) ForceServicePort() bool {
-	v, _ := meta.GetBool(r.Annotations, ForceServicePort)
-	return v
+	if r.LBType() == LBTypeNodePort {
+		v, _ := meta.GetBool(r.Annotations, ForceServicePort)
+		return v
+	}
+	return true
 }
 
 func (r Ingress) EnableHSTS() bool {

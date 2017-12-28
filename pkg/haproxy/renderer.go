@@ -16,7 +16,9 @@ func RenderConfig(data TemplateData) (string, error) {
 	if err := data.isValid(); err != nil {
 		return "", err
 	}
+	data.convertWildcardHostToEmpty()
 	data.canonicalize()
+	data.moveAcmePathToTop()
 
 	var buf bytes.Buffer
 	err := haproxyTemplate.ExecuteTemplate(&buf, "haproxy.cfg", data)
@@ -37,6 +39,18 @@ func RenderConfig(data TemplateData) (string, error) {
 func (td TemplateData) String() string {
 	data, _ := json.MarshalIndent(td, "", " ")
 	return string(data)
+}
+
+func (td *TemplateData) convertWildcardHostToEmpty() {
+	for i, svc := range td.HTTPService {
+		for j, host := range svc.Hosts {
+			if host.Host == `*` {
+				host.Host = ""
+			}
+			svc.Hosts[j] = host // remove the acme path
+		}
+		td.HTTPService[i] = svc
+	}
 }
 
 func (td *TemplateData) canonicalize() {
@@ -96,8 +110,6 @@ func (td *TemplateData) canonicalize() {
 		td.UserLists[i].canonicalize()
 	}
 	sort.Slice(td.UserLists, func(i, j int) bool { return td.UserLists[i].Name < td.UserLists[j].Name })
-
-	td.moveAcmePathToTop()
 }
 
 func (td *TemplateData) moveAcmePathToTop() {
@@ -191,14 +203,14 @@ func (td *TemplateData) isValid() error {
 }
 
 func hostName(host string) string {
-	if host == "" || host == `*` {
+	if host == "" {
 		return ""
 	}
 	return strings.ToLower(strings.TrimPrefix(host, "*."))
 }
 
 func hostRank(host string) int {
-	if host == "" || host == `*` {
+	if host == "" {
 		return 0
 	}
 	if strings.HasPrefix(host, "*") {
