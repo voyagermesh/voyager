@@ -1,5 +1,5 @@
-hash: 8dadd3281cdc9bcca9139745f77c4c33d47056775f17ce69121b44861af9e9ba
-updated: 2017-12-26T18:44:08.520685634-05:00
+hash: b7604f4f74ff696001449ff074868ae0d813f6dfb471da49a76de4a8433367aa
+updated: 2017-12-27T22:16:25.931544461-05:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -39,7 +39,7 @@ imports:
   - agents/prometheusbuiltin
   - api
 - name: github.com/appscode/kutil
-  version: 4b27a4da2b262e7fe6e81173aeb8001c007bfca2
+  version: c393406fbcc65765c04935bfe3a6770a51d61fbb
   subpackages:
   - apiextensions/v1beta1
   - core/v1
@@ -507,7 +507,7 @@ imports:
 - name: gopkg.in/yaml.v2
   version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/api
-  version: 9b9dca205a15b6ce9ef10091f05d60a13fdcf418
+  version: 4df58c811fe2e65feb879227b2b245e4dc26e7ad
   subpackages:
   - admissionregistration/v1alpha1
   - apps/v1beta1
@@ -592,7 +592,7 @@ imports:
   - third_party/forked/golang/json
   - third_party/forked/golang/reflect
 - name: k8s.io/client-go
-  version: 60bf397d7966ab2285d3ba7701ead2cc376111d4
+  version: 7656f45ccb3db63d177f734a9e5f6a116f08ad4f
   subpackages:
   - discovery
   - discovery/fake
