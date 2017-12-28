@@ -4,7 +4,8 @@ menu:
   product_voyager_5.0.0-rc.8:
     identifier: concepts-readme
     name: Readme
-    weight: 30
+    parent: concepts
+    weight: -1
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.8
 section_menu_id: concepts
