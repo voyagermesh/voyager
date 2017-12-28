@@ -491,6 +491,7 @@ func (c *hostPortController) newService() *core.Service {
 			Type:        core.ServiceTypeClusterIP,
 			ClusterIP:   "None",
 			Ports:       []core.ServicePort{},
+			Selector:    c.Ingress.OffshootLabels(),
 			ExternalIPs: c.Ingress.Spec.ExternalIPs,
 		},
 	}
