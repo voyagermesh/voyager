@@ -1,18 +1,15 @@
 ---
 title: Concepts | Voyager
-description: Overview of Voyager
+description: Overview of Concepts
 menu:
   product_voyager_5.0.0-rc.8:
     identifier: overview-concepts
     name: Overview
     parent: concepts
-    weight: 20
+    weight: 35
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.8
 section_menu_id: concepts
-url: /products/voyager/5.0.0-rc.8/concepts/
-aliases:
-  - /products/voyager/5.0.0-rc.8/overview/
 ---
 
 # Voyager

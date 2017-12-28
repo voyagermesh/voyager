@@ -1,11 +1,9 @@
 ---
-title: Overview | Voyager
-description: Overview of Voyager
+title: Readme | Voyager
 menu:
   product_voyager_5.0.0-rc.8:
-    identifier: overview-voyager
-    name: Overview
-    parent: getting-started
+    identifier: getting-started-readme
+    name: Readme
     weight: 20
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.8

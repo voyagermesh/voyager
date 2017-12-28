@@ -1,8 +1,8 @@
 ---
 menu:
   product_voyager_5.0.0-rc.8:
-    name: Overview
-    parent: ingress
+    identifier: ingress-readme
+    name: Readme
     weight: 8
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.8

@@ -1,11 +1,9 @@
 ---
-title: Overview | Developer Guide
-description: Developer Guide Overview
+title: Readme | Developer Guide
 menu:
   product_voyager_5.0.0-rc.8:
     identifier: developer-guide-readme
-    name: Overview
-    parent: developer-guide
+    name: Readme
     weight: 10
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.8

@@ -2,8 +2,7 @@
 menu:
   product_voyager_5.0.0-rc.8:
     identifier: certificate-readme
-    name: Overview
-    parent: certificate
+    name: Readme
     weight: 10
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.8
