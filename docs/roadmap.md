@@ -2,15 +2,15 @@
 title: Roadmap | Voyager
 description: Roadmap of Voyager
 menu:
-  product_voyager_5.0.0-rc.8:
+  product_voyager_5.0.0-rc.9:
     identifier: roadmap-voyager
     name: Roadmap
     parent: getting-started
     weight: 30
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.8
+menu_name: product_voyager_5.0.0-rc.9
 section_menu_id: getting-started
-url: /products/voyager/5.0.0-rc.8/getting-started/roadmap/
+url: /products/voyager/5.0.0-rc.9/getting-started/roadmap/
 ---
 
 # Versioning Policy

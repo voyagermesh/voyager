@@ -2,15 +2,15 @@
 title: Support | Voyager
 description: Support
 menu:
-  product_voyager_5.0.0-rc.8:
+  product_voyager_5.0.0-rc.9:
     identifier: support-voyager
     name: Support
     parent: getting-started
     weight: 45
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.8
+menu_name: product_voyager_5.0.0-rc.9
 section_menu_id: getting-started
-url: /products/voyager/5.0.0-rc.8/getting-started/support/
+url: /products/voyager/5.0.0-rc.9/getting-started/support/
 ---
 
 # Support
