@@ -1,18 +1,13 @@
 ---
 menu:
-  product_voyager_5.0.0-rc.8:
-    identifier: ingress-tls
+  product_voyager_5.0.0-rc.9:
     name: TLS
-    parent: tls
-    weight: 10
+    parent: ingress
+    weight: 135
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.8
+menu_name: product_voyager_5.0.0-rc.9
 section_menu_id: guides
-aliases:
-  - /products/voyager/5.0.0-rc.8/guides/ingress/tls/
 ---
-
-
 > New to Voyager? Please start [here](/docs).
 
 ## TLS

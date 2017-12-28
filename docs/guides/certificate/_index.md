@@ -1,10 +1,10 @@
 ---
 title: Certificate
 menu:
-  product_voyager_5.0.0-rc.8:
+  product_voyager_5.0.0-rc.9:
     identifier: certificate
     name: Certificate
     parent: guides
     weight: 80
-menu_name: product_voyager_5.0.0-rc.8
+menu_name: product_voyager_5.0.0-rc.9
 ---

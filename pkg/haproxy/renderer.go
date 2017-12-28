@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/appscode/go/log"
+	"github.com/appscode/voyager/pkg/certificate/providers"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -95,6 +96,52 @@ func (td *TemplateData) canonicalize() {
 		td.UserLists[i].canonicalize()
 	}
 	sort.Slice(td.UserLists, func(i, j int) bool { return td.UserLists[i].Name < td.UserLists[j].Name })
+
+	td.moveAcmePathToTop()
+}
+
+func (td *TemplateData) moveAcmePathToTop() {
+	for i, svc := range td.HTTPService {
+		if svc.Port != 80 {
+			continue
+		}
+		for j, host := range svc.Hosts {
+			if host.Host != "" {
+				continue
+			}
+
+			var acmeHost *HTTPHost
+			for k, path := range host.Paths {
+				if path.Path != providers.URLPrefix {
+					continue
+				}
+
+				acmeHost = &HTTPHost{
+					Host:  "",
+					Paths: []*HTTPPath{path},
+				}
+				copy(host.Paths[k:], host.Paths[k+1:])
+				host.Paths[len(host.Paths)-1] = nil // or the zero value of T
+				host.Paths = host.Paths[:len(host.Paths)-1]
+				break
+			}
+
+			if acmeHost != nil {
+				if len(host.Paths) == 0 {
+					copy(svc.Hosts[j:], svc.Hosts[j+1:])
+					svc.Hosts[len(svc.Hosts)-1] = nil // or the zero value of T
+					svc.Hosts = svc.Hosts[:len(svc.Hosts)-1]
+				} else {
+					svc.Hosts[j] = host // remove the acme path
+				}
+
+				// inject Host into 0 index
+				svc.Hosts = append([]*HTTPHost{acmeHost}, svc.Hosts...)
+				break
+			}
+		}
+		td.HTTPService[i] = svc
+	}
 }
 
 func (td *TemplateData) isValid() error {
@@ -107,7 +154,7 @@ func (td *TemplateData) isValid() error {
 
 	for _, svc := range td.HTTPService {
 		if frontends.Has(svc.FrontendName) {
-			return fmt.Errorf("HAProxy frontend name %s is reused.", svc.FrontendName)
+			return fmt.Errorf("haproxy frontend name %s is reused", svc.FrontendName)
 		} else {
 			frontends.Insert(svc.FrontendName)
 		}
@@ -116,7 +163,7 @@ func (td *TemplateData) isValid() error {
 			for _, path := range host.Paths {
 				if path.Backend != nil {
 					if backends.Has(path.Backend.Name) {
-						return fmt.Errorf("HAProxy backend name %s is reused.", path.Backend.Name)
+						return fmt.Errorf("haproxy backend name %s is reused", path.Backend.Name)
 					} else {
 						backends.Insert(path.Backend.Name)
 					}
@@ -127,14 +174,14 @@ func (td *TemplateData) isValid() error {
 
 	for _, svc := range td.TCPService {
 		if frontends.Has(svc.FrontendName) {
-			return fmt.Errorf("HAProxy frontend name %s is reused.", svc.FrontendName)
+			return fmt.Errorf("haproxy frontend name %s is reused", svc.FrontendName)
 		} else {
 			frontends.Insert(svc.FrontendName)
 		}
 
 		if svc.Backend != nil {
 			if backends.Has(svc.Backend.Name) {
-				return fmt.Errorf("HAProxy backend name %s is reused.", svc.Backend.Name)
+				return fmt.Errorf("haproxy backend name %s is reused", svc.Backend.Name)
 			} else {
 				backends.Insert(svc.Backend.Name)
 			}

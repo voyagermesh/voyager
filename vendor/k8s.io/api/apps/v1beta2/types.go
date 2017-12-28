@@ -169,9 +169,10 @@ type StatefulSetSpec struct {
 	Replicas *int32 `json:"replicas,omitempty" protobuf:"varint,1,opt,name=replicas"`
 
 	// selector is a label query over pods that should match the replica count.
-	// It must match the pod template's labels.
+	// If empty, defaulted to labels on the pod template.
 	// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
-	Selector *metav1.LabelSelector `json:"selector" protobuf:"bytes,2,opt,name=selector"`
+	// +optional
+	Selector *metav1.LabelSelector `json:"selector,omitempty" protobuf:"bytes,2,opt,name=selector"`
 
 	// template is the object that describes the pod that will be created if
 	// insufficient replicas are detected. Each pod stamped out by the StatefulSet
@@ -293,8 +294,8 @@ type DeploymentSpec struct {
 
 	// Label selector for pods. Existing ReplicaSets whose pods are
 	// selected by this will be the ones affected by this deployment.
-	// It must match the pod template's labels.
-	Selector *metav1.LabelSelector `json:"selector" protobuf:"bytes,2,opt,name=selector"`
+	// +optional
+	Selector *metav1.LabelSelector `json:"selector,omitempty" protobuf:"bytes,2,opt,name=selector"`
 
 	// Template describes the pods that will be created.
 	Template v1.PodTemplateSpec `json:"template" protobuf:"bytes,3,opt,name=template"`
@@ -524,9 +525,10 @@ type RollingUpdateDaemonSet struct {
 type DaemonSetSpec struct {
 	// A label query over pods that are managed by the daemon set.
 	// Must match in order to be controlled.
-	// It must match the pod template's labels.
+	// If empty, defaulted to labels on Pod template.
 	// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
-	Selector *metav1.LabelSelector `json:"selector" protobuf:"bytes,1,opt,name=selector"`
+	// +optional
+	Selector *metav1.LabelSelector `json:"selector,omitempty" protobuf:"bytes,1,opt,name=selector"`
 
 	// An object that describes the pod that will be created.
 	// The DaemonSet will create exactly one copy of this pod on every node
@@ -711,10 +713,11 @@ type ReplicaSetSpec struct {
 	MinReadySeconds int32 `json:"minReadySeconds,omitempty" protobuf:"varint,4,opt,name=minReadySeconds"`
 
 	// Selector is a label query over pods that should match the replica count.
+	// If the selector is empty, it is defaulted to the labels present on the pod template.
 	// Label keys and values that must match in order to be controlled by this replica set.
-	// It must match the pod template's labels.
 	// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
-	Selector *metav1.LabelSelector `json:"selector" protobuf:"bytes,2,opt,name=selector"`
+	// +optional
+	Selector *metav1.LabelSelector `json:"selector,omitempty" protobuf:"bytes,2,opt,name=selector"`
 
 	// Template is the object that describes the pod that will be created if
 	// insufficient replicas are detected.
