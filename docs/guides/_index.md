@@ -1,11 +1,11 @@
 ---
-title: Tutorials
-description: Voyager Tutorials
+title: Guides
+description: Voyager Guides
 menu:
   product_voyager_5.0.0-rc.9:
     identifier: guides
-    name: Tutorials
-    weight: 30
+    name: Guides
+    weight: 40
     pre: dropdown
 menu_name: product_voyager_5.0.0-rc.9
 ---

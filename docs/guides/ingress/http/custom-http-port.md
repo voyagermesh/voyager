@@ -2,7 +2,7 @@
 menu:
   product_voyager_5.0.0-rc.9:
     name: Custom HTTP Port
-    parent: ingress
+    parent: http
     weight: 50
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.9

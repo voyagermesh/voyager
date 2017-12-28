@@ -1,8 +1,9 @@
 ---
+title: Configure Options
 menu:
   product_voyager_5.0.0-rc.9:
     name: Configure Options
-    parent: ingress
+    parent: configuration
     weight: 35
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.9
