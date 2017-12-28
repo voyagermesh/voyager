@@ -315,6 +315,7 @@ func (c *Controller) updateIngress() error {
 		rule := api.IngressRule{
 			IngressRuleValue: api.IngressRuleValue{
 				HTTP: &api.HTTPIngressRuleValue{
+					NoTLS: true,
 					Paths: []api.HTTPIngressPath{
 						{
 							Path: providers.URLPrefix,
