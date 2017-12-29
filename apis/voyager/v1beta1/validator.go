@@ -150,7 +150,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 					a.Hosts[rule.Host] = Paths{}
 				}
 				if ei, found := a.Hosts[rule.Host][path.Path]; found {
-					return fmt.Errorf("spec.rule[%d].http.paths[%d] is reusing path %s for addr %s, also used in spec.rule[%d].http.paths[%d]", ri, pi, path.Path, a, ei.RuleIndex, ei)
+					return fmt.Errorf("spec.rule[%d].http.paths[%d] is reusing path %s for addr %s, also used in spec.rule[%d].http.paths[%d]", ri, pi, path.Path, a, ei.RuleIndex, ei.PathIndex)
 				}
 				a.Hosts[rule.Host][path.Path] = indices{RuleIndex: ri, PathIndex: pi}
 
