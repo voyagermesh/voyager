@@ -76,7 +76,7 @@ var _ = Describe("IngressUpdates", func() {
 			Expect(len(svc.Spec.Ports)).Should(Equal(1))
 			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(80)))
 
-			crt, key, err := f.CertManager.NewServerCertPair()
+			crt, key, err := f.CertStore.NewServerCertPair("server", f.ServerSANs())
 			Expect(err).NotTo(HaveOccurred())
 			secret := &core.Secret{
 				ObjectMeta: metav1.ObjectMeta{

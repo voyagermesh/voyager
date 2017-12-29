@@ -35,7 +35,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 	})
 
 	BeforeEach(func() {
-		crt, key, err := f.CertManager.NewServerCertPair()
+		crt, key, err := f.CertStore.NewServerCertPair("server", f.ServerSANs())
 		Expect(err).NotTo(HaveOccurred())
 
 		if len(f.Config.DumpLocation) > 0 {
@@ -63,7 +63,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 				Namespace: ing.GetNamespace(),
 			},
 			Data: map[string][]byte{
-				"ca.crt": f.CertManager.CACert(),
+				"ca.crt": f.CertStore.CACert(),
 			},
 		}
 		_, err = f.KubeClient.CoreV1().Secrets(caSecret.Namespace).Create(caSecret)
@@ -145,11 +145,11 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			ccrt, ckey, err := f.CertManager.NewClientCertPair()
+			ccrt, ckey, err := f.CertStore.NewClientCertPair("e2e-test", framework.ClientOrgs...)
 			Expect(err).NotTo(HaveOccurred())
 
 			if len(f.Config.DumpLocation) > 0 {
-				ioutil.WriteFile(f.Config.DumpLocation+"/ca.crt", f.CertManager.CACert(), os.ModePerm)
+				ioutil.WriteFile(f.Config.DumpLocation+"/ca.crt", f.CertStore.CACert(), os.ModePerm)
 				ioutil.WriteFile(f.Config.DumpLocation+"/client.crt", ccrt, os.ModePerm)
 				ioutil.WriteFile(f.Config.DumpLocation+"/client.key", ckey, os.ModePerm)
 			}
@@ -185,7 +185,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).To(HaveOccurred())
 
 			// Wrong Cert
-			tr := getTransportForCert(f.CertManager.CACert(), tlsSecret.Data[core.TLSCertKey], tlsSecret.Data[core.TLSPrivateKeyKey])
+			tr := getTransportForCert(f.CertStore.CACert(), tlsSecret.Data[core.TLSCertKey], tlsSecret.Data[core.TLSPrivateKeyKey])
 			err = f.Ingress.DoTestRedirectWithTransport(framework.NoRetry, framework.TestDomain, tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(302)) &&
 					Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
@@ -194,7 +194,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// TLS Auth
-			tr = getTransportForCert(f.CertManager.CACert(), ccrt, ckey)
+			tr = getTransportForCert(f.CertStore.CACert(), ccrt, ckey)
 			err = f.Ingress.DoHTTPsWithTransport(framework.MaxRetry, framework.TestDomain, tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
@@ -265,11 +265,11 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			ccrt, ckey, err := f.CertManager.NewClientCertPair()
+			ccrt, ckey, err := f.CertStore.NewClientCertPair("e2e-test", framework.ClientOrgs...)
 			Expect(err).NotTo(HaveOccurred())
 
 			if len(f.Config.DumpLocation) > 0 {
-				ioutil.WriteFile(f.Config.DumpLocation+"/ca.crt", f.CertManager.CACert(), os.ModePerm)
+				ioutil.WriteFile(f.Config.DumpLocation+"/ca.crt", f.CertStore.CACert(), os.ModePerm)
 				ioutil.WriteFile(f.Config.DumpLocation+"/client.crt", ccrt, os.ModePerm)
 				ioutil.WriteFile(f.Config.DumpLocation+"/client.key", ckey, os.ModePerm)
 			}
@@ -305,7 +305,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).To(HaveOccurred())
 
 			// TLS Auth
-			tr := getTransportForCert(f.CertManager.CACert(), ccrt, ckey)
+			tr := getTransportForCert(f.CertStore.CACert(), ccrt, ckey)
 			err = f.Ingress.DoHTTPsWithTransport(framework.MaxRetry, framework.TestDomain, tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
@@ -372,11 +372,11 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			ccrt, ckey, err := f.CertManager.NewClientCertPair()
+			ccrt, ckey, err := f.CertStore.NewClientCertPair("e2e-test", framework.ClientOrgs...)
 			Expect(err).NotTo(HaveOccurred())
 
 			if len(f.Config.DumpLocation) > 0 {
-				ioutil.WriteFile(f.Config.DumpLocation+"/ca.crt", f.CertManager.CACert(), os.ModePerm)
+				ioutil.WriteFile(f.Config.DumpLocation+"/ca.crt", f.CertStore.CACert(), os.ModePerm)
 				ioutil.WriteFile(f.Config.DumpLocation+"/client.crt", ccrt, os.ModePerm)
 				ioutil.WriteFile(f.Config.DumpLocation+"/client.key", ckey, os.ModePerm)
 			}
@@ -415,14 +415,14 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// Wrong Cert Reject
-			tr := getTransportForCert(f.CertManager.CACert(), tlsSecret.Data[core.TLSCertKey], tlsSecret.Data[core.TLSPrivateKeyKey])
+			tr := getTransportForCert(f.CertStore.CACert(), tlsSecret.Data[core.TLSCertKey], tlsSecret.Data[core.TLSPrivateKeyKey])
 			err = f.Ingress.DoTestRedirectWithTransport(framework.NoRetry, framework.TestDomain, tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
 				return false
 			})
 			Expect(err).To(HaveOccurred())
 
 			// TLS Auth
-			tr = getTransportForCert(f.CertManager.CACert(), ccrt, ckey)
+			tr = getTransportForCert(f.CertStore.CACert(), ccrt, ckey)
 			err = f.Ingress.DoHTTPsWithTransport(framework.MaxRetry, framework.TestDomain, tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
@@ -481,11 +481,11 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			ccrt, ckey, err := f.CertManager.NewClientCertPair()
+			ccrt, ckey, err := f.CertStore.NewClientCertPair("e2e-test", framework.ClientOrgs...)
 			Expect(err).NotTo(HaveOccurred())
 
 			if len(f.Config.DumpLocation) > 0 {
-				ioutil.WriteFile(f.Config.DumpLocation+"/ca.crt", f.CertManager.CACert(), os.ModePerm)
+				ioutil.WriteFile(f.Config.DumpLocation+"/ca.crt", f.CertStore.CACert(), os.ModePerm)
 				ioutil.WriteFile(f.Config.DumpLocation+"/client.crt", ccrt, os.ModePerm)
 				ioutil.WriteFile(f.Config.DumpLocation+"/client.key", ckey, os.ModePerm)
 			}
@@ -521,7 +521,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).To(HaveOccurred())
 
 			// Wrong Cert
-			tr := getTransportForCert(f.CertManager.CACert(), tlsSecret.Data[core.TLSCertKey], tlsSecret.Data[core.TLSPrivateKeyKey])
+			tr := getTransportForCert(f.CertStore.CACert(), tlsSecret.Data[core.TLSCertKey], tlsSecret.Data[core.TLSPrivateKeyKey])
 			err = f.Ingress.DoTestRedirectWithTransport(framework.NoRetry, framework.TestDomain, tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(302)) &&
 					Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
@@ -530,7 +530,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// TLS Auth
-			tr = getTransportForCert(f.CertManager.CACert(), ccrt, ckey)
+			tr = getTransportForCert(f.CertStore.CACert(), ccrt, ckey)
 			err = f.Ingress.DoHTTPsWithTransport(framework.MaxRetry, framework.TestDomain, tr, ing, []string{"https://http.appscode.test"}, "GET", "/testpath/hello", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&

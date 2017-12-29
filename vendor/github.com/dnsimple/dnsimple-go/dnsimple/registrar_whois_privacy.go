@@ -14,8 +14,8 @@ type WhoisPrivacy struct {
 	UpdatedAt string `json:"updated_at,omitempty"`
 }
 
-// whoisPrivacyResponse represents a response from an API method that returns a WhoisPrivacy struct.
-type whoisPrivacyResponse struct {
+// WhoisPrivacyResponse represents a response from an API method that returns a WhoisPrivacy struct.
+type WhoisPrivacyResponse struct {
 	Response
 	Data *WhoisPrivacy `json:"data"`
 }
@@ -23,9 +23,9 @@ type whoisPrivacyResponse struct {
 // GetWhoisPrivacy gets the whois privacy for the domain.
 //
 // See https://developer.dnsimple.com/v2/registrar/whois-privacy/#get
-func (s *RegistrarService) GetWhoisPrivacy(accountID string, domainName string) (*whoisPrivacyResponse, error) {
+func (s *RegistrarService) GetWhoisPrivacy(accountID string, domainName string) (*WhoisPrivacyResponse, error) {
 	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/whois_privacy", accountID, domainName))
-	privacyResponse := &whoisPrivacyResponse{}
+	privacyResponse := &WhoisPrivacyResponse{}
 
 	resp, err := s.client.get(path, privacyResponse)
 	if err != nil {
@@ -39,9 +39,9 @@ func (s *RegistrarService) GetWhoisPrivacy(accountID string, domainName string) 
 // EnableWhoisPrivacy enables the whois privacy for the domain.
 //
 // See https://developer.dnsimple.com/v2/registrar/whois-privacy/#enable
-func (s *RegistrarService) EnableWhoisPrivacy(accountID string, domainName string) (*whoisPrivacyResponse, error) {
+func (s *RegistrarService) EnableWhoisPrivacy(accountID string, domainName string) (*WhoisPrivacyResponse, error) {
 	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/whois_privacy", accountID, domainName))
-	privacyResponse := &whoisPrivacyResponse{}
+	privacyResponse := &WhoisPrivacyResponse{}
 
 	resp, err := s.client.put(path, nil, privacyResponse)
 	if err != nil {
@@ -55,9 +55,9 @@ func (s *RegistrarService) EnableWhoisPrivacy(accountID string, domainName strin
 // DisablePrivacy disables the whois privacy for the domain.
 //
 // See https://developer.dnsimple.com/v2/registrar/whois-privacy/#enable
-func (s *RegistrarService) DisableWhoisPrivacy(accountID string, domainName string) (*whoisPrivacyResponse, error) {
+func (s *RegistrarService) DisableWhoisPrivacy(accountID string, domainName string) (*WhoisPrivacyResponse, error) {
 	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/whois_privacy", accountID, domainName))
-	privacyResponse := &whoisPrivacyResponse{}
+	privacyResponse := &WhoisPrivacyResponse{}
 
 	resp, err := s.client.delete(path, nil, privacyResponse)
 	if err != nil {

@@ -27,7 +27,7 @@ var _ = Describe("IngressTCP", func() {
 	})
 
 	BeforeEach(func() {
-		crt, key, err := f.CertManager.NewServerCertPair()
+		crt, key, err := f.CertStore.NewServerCertPair("server", f.ServerSANs())
 		Expect(err).NotTo(HaveOccurred())
 		secret = &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{

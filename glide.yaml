@@ -47,7 +47,10 @@ import:
   version: 3233b24a36715a2fe36d162260457857a56d672d
 - package: github.com/sirupsen/logrus
   version: v1.0.3
+- package: github.com/spf13/afero
+  version: master
 - package: github.com/spf13/cobra
+  version: master
 - package: github.com/spf13/pflag
   version: v1.0.0
 - package: github.com/tredoe/osutil

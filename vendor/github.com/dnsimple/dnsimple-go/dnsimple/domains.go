@@ -28,26 +28,6 @@ type Domain struct {
 	UpdatedAt    string `json:"updated_at,omitempty"`
 }
 
-func domainPath(accountID string, domainIdentifier string) (path string) {
-	path = fmt.Sprintf("/%v/domains", accountID)
-	if domainIdentifier != "" {
-		path += fmt.Sprintf("/%v", domainIdentifier)
-	}
-	return
-}
-
-// domainResponse represents a response from an API method that returns a Domain struct.
-type domainResponse struct {
-	Response
-	Data *Domain `json:"data"`
-}
-
-// domainsResponse represents a response from an API method that returns a collection of Domain struct.
-type domainsResponse struct {
-	Response
-	Data []Domain `json:"data"`
-}
-
 // DomainListOptions specifies the optional parameters you can provide
 // to customize the DomainsService.ListDomains method.
 type DomainListOptions struct {
@@ -60,12 +40,38 @@ type DomainListOptions struct {
 	ListOptions
 }
 
+// DomainResponse represents a response from an API method that returns a Domain struct.
+type DomainResponse struct {
+	Response
+	Data *Domain `json:"data"`
+}
+
+// DomainsResponse represents a response from an API method that returns a collection of Domain struct.
+type DomainsResponse struct {
+	Response
+	Data []Domain `json:"data"`
+}
+
+// domainRequest represents a generic wrapper for a domain request,
+// when domainWrapper cannot be used because of type constraint on Domain.
+type domainRequest struct {
+	Domain interface{} `json:"domain"`
+}
+
+func domainPath(accountID string, domainIdentifier string) (path string) {
+	path = fmt.Sprintf("/%v/domains", accountID)
+	if domainIdentifier != "" {
+		path += fmt.Sprintf("/%v", domainIdentifier)
+	}
+	return
+}
+
 // ListDomains lists the domains for an account.
 //
 // See https://developer.dnsimple.com/v2/domains/#list
-func (s *DomainsService) ListDomains(accountID string, options *DomainListOptions) (*domainsResponse, error) {
+func (s *DomainsService) ListDomains(accountID string, options *DomainListOptions) (*DomainsResponse, error) {
 	path := versioned(domainPath(accountID, ""))
-	domainsResponse := &domainsResponse{}
+	domainsResponse := &DomainsResponse{}
 
 	path, err := addURLQueryOptions(path, options)
 	if err != nil {
@@ -84,9 +90,9 @@ func (s *DomainsService) ListDomains(accountID string, options *DomainListOption
 // CreateDomain creates a new domain in the account.
 //
 // See https://developer.dnsimple.com/v2/domains/#create
-func (s *DomainsService) CreateDomain(accountID string, domainAttributes Domain) (*domainResponse, error) {
+func (s *DomainsService) CreateDomain(accountID string, domainAttributes Domain) (*DomainResponse, error) {
 	path := versioned(domainPath(accountID, ""))
-	domainResponse := &domainResponse{}
+	domainResponse := &DomainResponse{}
 
 	resp, err := s.client.post(path, domainAttributes, domainResponse)
 	if err != nil {
@@ -100,9 +106,9 @@ func (s *DomainsService) CreateDomain(accountID string, domainAttributes Domain)
 // GetDomain fetches a domain.
 //
 // See https://developer.dnsimple.com/v2/domains/#get
-func (s *DomainsService) GetDomain(accountID string, domainIdentifier string) (*domainResponse, error) {
+func (s *DomainsService) GetDomain(accountID string, domainIdentifier string) (*DomainResponse, error) {
 	path := versioned(domainPath(accountID, domainIdentifier))
-	domainResponse := &domainResponse{}
+	domainResponse := &DomainResponse{}
 
 	resp, err := s.client.get(path, domainResponse)
 	if err != nil {
@@ -116,9 +122,9 @@ func (s *DomainsService) GetDomain(accountID string, domainIdentifier string) (*
 // DeleteDomain PERMANENTLY deletes a domain from the account.
 //
 // See https://developer.dnsimple.com/v2/domains/#delete
-func (s *DomainsService) DeleteDomain(accountID string, domainIdentifier string) (*domainResponse, error) {
+func (s *DomainsService) DeleteDomain(accountID string, domainIdentifier string) (*DomainResponse, error) {
 	path := versioned(domainPath(accountID, domainIdentifier))
-	domainResponse := &domainResponse{}
+	domainResponse := &DomainResponse{}
 
 	resp, err := s.client.delete(path, nil, nil)
 	if err != nil {
@@ -132,9 +138,9 @@ func (s *DomainsService) DeleteDomain(accountID string, domainIdentifier string)
 // ResetDomainToken resets the domain token.
 //
 // See https://developer.dnsimple.com/v2/domains/#reset-token
-func (s *DomainsService) ResetDomainToken(accountID string, domainIdentifier string) (*domainResponse, error) {
+func (s *DomainsService) ResetDomainToken(accountID string, domainIdentifier string) (*DomainResponse, error) {
 	path := versioned(domainPath(accountID, domainIdentifier) + "/token")
-	domainResponse := &domainResponse{}
+	domainResponse := &DomainResponse{}
 
 	resp, err := s.client.post(path, nil, domainResponse)
 	if err != nil {

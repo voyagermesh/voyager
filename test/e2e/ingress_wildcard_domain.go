@@ -122,7 +122,7 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 
 	Describe("CreateWithTLS", func() {
 		BeforeEach(func() {
-			crt, key, err := f.CertManager.NewServerCertPair()
+			crt, key, err := f.CertStore.NewServerCertPair("server", f.ServerSANs())
 			Expect(err).NotTo(HaveOccurred())
 
 			secret = &core.Secret{
