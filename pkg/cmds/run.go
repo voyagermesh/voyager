@@ -36,8 +36,8 @@ var (
 	haProxyServerMetricFields = hpe.ServerMetrics.String()
 	haProxyTimeout            = 5 * time.Second
 	opt                       = config.Options{
-		HAProxyImage:         "appscode/haproxy:1.7.9-5.0.0-rc.9",
-		ExporterSidecarImage: "appscode/voyager:5.0.0-rc.9",
+		HAProxyImage:         "appscode/haproxy:1.7.9-5.0.0-rc.10",
+		ExporterSidecarImage: "appscode/voyager:5.0.0-rc.10",
 		OperatorNamespace:    meta.Namespace(),
 		OperatorService:      "voyager-operator",
 		EnableRBAC:           false,

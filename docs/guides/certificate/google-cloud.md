@@ -1,12 +1,12 @@
 ---
 menu:
-  product_voyager_5.0.0-rc.9:
+  product_voyager_5.0.0-rc.10:
     identifier: certificate-google-cloud
     name: Google Cloud
     parent: certificate
     weight: 30
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.9
+menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
 ---
 
@@ -28,7 +28,7 @@ Deploy Voyager operator following instructions [here](/docs/install.md).
 
 ```console
 # install without RBAC
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.9/hack/deploy/voyager.sh \
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.10/hack/deploy/voyager.sh \
   | bash -s -- --provider=gke
 ```
 
@@ -36,7 +36,7 @@ If you are trying this on a RBAC enabled cluster, pass the flag `--rbac` to inst
 
 ```console
 # install without RBAC
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.9/hack/deploy/voyager.sh \
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.10/hack/deploy/voyager.sh \
   | bash -s -- --provider=gke --rbac
 ```
 

@@ -2,18 +2,18 @@
 title: Overview | Voyager
 description: Overview of Voyager
 menu:
-  product_voyager_5.0.0-rc.9:
+  product_voyager_5.0.0-rc.10:
     identifier: overview-voyager
     name: Overview
     parent: getting-started
     weight: 20
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.9
+menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: getting-started
-url: /products/voyager/5.0.0-rc.9/getting-started/
+url: /products/voyager/5.0.0-rc.10/getting-started/
 aliases:
-  - /products/voyager/5.0.0-rc.9/
-  - /products/voyager/5.0.0-rc.9/README/
+  - /products/voyager/5.0.0-rc.10/
+  - /products/voyager/5.0.0-rc.10/README/
 ---
 
 # Voyager

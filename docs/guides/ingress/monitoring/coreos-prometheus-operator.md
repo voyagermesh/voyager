@@ -1,14 +1,14 @@
 ---
 menu:
-  product_voyager_5.0.0-rc.9:
+  product_voyager_5.0.0-rc.10:
     name: CoreOS Prometheus
     parent: monitoring
     weight: 10
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.9
+menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
 aliases:
-  - /products/voyager/5.0.0-rc.9/guides/ingress/monitoring/ 
+  - /products/voyager/5.0.0-rc.10/guides/ingress/monitoring/ 
 ---
 
 
