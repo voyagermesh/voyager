@@ -2,9 +2,9 @@
 menu:
   product_voyager_5.0.0-rc.9:
     identifier: certificate-provider
-    name: Certificate Provider
+    name: Providers
     parent: certificate
-    weight: 30
+    weight: 40
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.9
 section_menu_id: guides

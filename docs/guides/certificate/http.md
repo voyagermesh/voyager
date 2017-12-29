@@ -1,3 +1,15 @@
+---
+menu:
+  product_voyager_5.0.0-rc.9:
+    identifier: certificate-http
+    name: HTTP
+    parent: certificate
+    weight: 20
+product_name: voyager
+menu_name: product_voyager_5.0.0-rc.9
+section_menu_id: guides
+---
+
 # Issue Let's Encrypt certificate using HTTP-01 challenge
 
 ## Deploy Voyager operator

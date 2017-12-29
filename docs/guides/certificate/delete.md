@@ -1,3 +1,14 @@
+---
+menu:
+  product_voyager_5.0.0-rc.9:
+    identifier: certificate-delete
+    name: Delete
+    parent: certificate
+    weight: 60
+product_name: voyager
+menu_name: product_voyager_5.0.0-rc.9
+section_menu_id: guides
+---
 # Deleting Certificate
 
 Deleting a Kubernetes `Certificate` object will only delete the certificate CRD from Kubernetes.

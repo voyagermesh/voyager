@@ -2,11 +2,12 @@
 menu:
   product_voyager_5.0.0-rc.9:
     name: CORS
-    parent: ingress
+    parent: http
     weight: 45
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.9
 section_menu_id: guides
+  - /products/voyager/5.0.0-rc.9/guides/ingress/http/
 ---
 
 

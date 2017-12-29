@@ -1,8 +1,9 @@
 ---
+title: Backend Rule
 menu:
   product_voyager_5.0.0-rc.9:
     name: Backend Rule
-    parent: ingress
+    parent: configuration
     weight: 20
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.9

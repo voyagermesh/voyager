@@ -1,3 +1,15 @@
+---
+menu:
+  product_voyager_5.0.0-rc.9:
+    identifier: certificate-route53
+    name: Route53
+    parent: certificate
+    weight: 50
+product_name: voyager
+menu_name: product_voyager_5.0.0-rc.9
+section_menu_id: guides
+---
+
 # Issue Let's Encrypt certificate using AWS Route53
 
 This tutorial shows how to issue free SSL certificate from Let's Encrypt via DNS challenge for domains using Route53 DNS service.
