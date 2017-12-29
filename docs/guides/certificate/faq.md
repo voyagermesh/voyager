@@ -1,3 +1,15 @@
+---
+menu:
+  product_voyager_5.0.0-rc.9:
+    identifier: certificate-faq
+    name: FAQ
+    parent: certificate
+    weight: 70
+product_name: voyager
+menu_name: product_voyager_5.0.0-rc.9
+section_menu_id: guides
+---
+
 # FAQ
 
 ## Let's Encrypt FAQs

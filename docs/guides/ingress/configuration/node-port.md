@@ -2,7 +2,7 @@
 menu:
   product_voyager_5.0.0-rc.9:
     name: Node Port
-    parent: ingress
+    parent: configuration
     weight: 90
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.9

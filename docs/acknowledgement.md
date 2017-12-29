@@ -1,3 +1,18 @@
+---
+title: Acknowledgement | Voyager
+description: Acknowledgement
+menu:
+  product_voyager_5.0.0-rc.9:
+    identifier: acknowledgement-voyager
+    name: Acknowledgement
+    parent: getting-started
+    weight: 40
+product_name: voyager
+menu_name: product_voyager_5.0.0-rc.9
+section_menu_id: getting-started
+url: /products/voyager/5.0.0-rc.9/getting-started/acknowledgement/
+---
+
 # Acknowledgement
 
  - docker-library/haproxy https://github.com/docker-library/haproxy

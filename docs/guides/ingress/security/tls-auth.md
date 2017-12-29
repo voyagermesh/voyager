@@ -1,3 +1,14 @@
+---
+menu:
+  product_voyager_5.0.0-rc.9:
+    name: TLS Auth
+    parent: security
+    weight: 40
+product_name: voyager
+menu_name: product_voyager_5.0.0-rc.9
+section_menu_id: guides
+---
+
 # TLS Authentication
 
 This example demonstrates how to configure

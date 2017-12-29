@@ -2,8 +2,8 @@
 menu:
   product_voyager_5.0.0-rc.9:
     name: Backend TLS
-    parent: ingress
-    weight: 25
+    parent: tls
+    weight: 30
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.9
 section_menu_id: guides
