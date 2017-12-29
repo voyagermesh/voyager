@@ -36,7 +36,6 @@ func HeaderName(v string) string {
 }
 
 func HostACLs(host string, port int, nodePort int32, forceSvcPort bool) []string {
-	fmt.Printf("host=%v, port=%v, nodePort=%v, forceSvcPort=%v", host, port, nodePort, forceSvcPort)
 	var conditions []string
 	host = strings.TrimSpace(host)
 
@@ -50,7 +49,6 @@ func HostACLs(host string, port int, nodePort int32, forceSvcPort bool) []string
 			conditions = append(conditions, hostMatcher(fmt.Sprintf("%s:%d", host, port)))
 		}
 	}
-	fmt.Println(">>>>>>>> ", strings.Join(conditions, "|"))
 	return conditions
 }
 
