@@ -204,12 +204,17 @@ func (r Ingress) HasBackendService(name, namespace string) bool {
 	return false
 }
 
-func (c Certificate) ShouldRenew(crt *x509.Certificate) bool {
-	crtDomains := sets.NewString(crt.Subject.CommonName)
-	crtDomains.Insert(crt.DNSNames...)
+func (c Certificate) MatchesDomains(crt *x509.Certificate) bool {
+	crtDomains := sets.NewString()
+	if crt != nil {
+		crtDomains.Insert(crt.Subject.CommonName)
+		crtDomains.Insert(crt.DNSNames...)
+	}
+	return crtDomains.Equal(sets.NewString(c.Spec.Domains...))
+}
 
-	return !crt.NotAfter.After(time.Now().Add(time.Hour*24*7)) ||
-		!crtDomains.Equal(sets.NewString(c.Spec.Domains...))
+func (c Certificate) ShouldRenew(crt *x509.Certificate) bool {
+	return !crt.NotAfter.After(time.Now().Add(time.Hour * 24 * 7))
 }
 
 func (c Certificate) IsRateLimited() bool {

@@ -128,11 +128,22 @@ func (c *Controller) Process() error {
 	if err != nil {
 		return err
 	}
+	if pemCrt != nil {
+		var certs []*x509.Certificate
+		certs, err = cert.ParseCertsPEM(pemCrt)
+		if err != nil {
+			return fmt.Errorf("secret %s@%s contains bad certificate. Reason: %s", c.crd.SecretName(), c.crd.Namespace, err)
+		}
+		c.curCert = certs[0]
+	}
+
 	// Scenario:
 	// - s1: Certificate not found
 	// - s2: Certificate found, but user run `kubectl apply` in such a way that status.LastIssuedCertificate is gone.
 	// ref: https://github.com/appscode/voyager/issues/744
-	if pemCrt == nil || c.crd.Status.LastIssuedCertificate == nil {
+	if pemCrt == nil ||
+		!c.crd.MatchesDomains(c.curCert) ||
+		c.crd.Status.LastIssuedCertificate == nil {
 		err := c.create()
 		if err == nil {
 			c.recorder.Eventf(
@@ -145,12 +156,6 @@ func (c *Controller) Process() error {
 		return err
 	}
 
-	var certs []*x509.Certificate
-	certs, err = cert.ParseCertsPEM(pemCrt)
-	if err != nil {
-		return fmt.Errorf("secret %s@%s contains bad certificate. Reason: %s", c.crd.SecretName(), c.crd.Namespace, err)
-	}
-	c.curCert = certs[0]
 	if c.crd.ShouldRenew(c.curCert) {
 		err := c.renew()
 		if err == nil {

@@ -46,7 +46,7 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 						)
 						return
 					}
-					ctrl, err := certificate.NewController(ctx, op.KubeClient, op.VoyagerClient, op.Opt, cert)
+					ctrl, err := certificate.NewController(ctx, op.KubeClient, op.VoyagerClient, op.Opt, cert.DeepCopy())
 					if err != nil {
 						op.recorder.Event(
 							cert.ObjectReference(),
@@ -98,7 +98,7 @@ func (op *Operator) initCertificateCRDWatcher() cache.Controller {
 						)
 						return
 					}
-					ctrl, err := certificate.NewController(ctx, op.KubeClient, op.VoyagerClient, op.Opt, newCert)
+					ctrl, err := certificate.NewController(ctx, op.KubeClient, op.VoyagerClient, op.Opt, newCert.DeepCopy())
 					if err != nil {
 						op.recorder.Event(
 							newCert.ObjectReference(),
