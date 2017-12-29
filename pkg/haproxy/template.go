@@ -35,11 +35,26 @@ func HeaderName(v string) string {
 	return v[:index]
 }
 
-func HostName(v string) string {
-	v = strings.TrimSpace(v)
-	if v == "" || v == `*` {
-		return ""
+func HostACLs(host string, port int, nodePort int32, forceSvcPort bool) []string {
+	fmt.Printf("host=%v, port=%v, nodePort=%v, forceSvcPort=%v", host, port, nodePort, forceSvcPort)
+	var conditions []string
+	host = strings.TrimSpace(host)
+
+	if !forceSvcPort && nodePort > 0 {
+		conditions = append(conditions, hostMatcher(fmt.Sprintf("%s:%d", host, nodePort)))
+	} else if forceSvcPort && port > 0 {
+		if port != 80 && port != 443 { // non standard http ports
+			conditions = append(conditions, hostMatcher(fmt.Sprintf("%s:%d", host, port)))
+		} else if host != "" { // http or https
+			conditions = append(conditions, hostMatcher(host))
+			conditions = append(conditions, hostMatcher(fmt.Sprintf("%s:%d", host, port)))
+		}
 	}
+	fmt.Println(">>>>>>>> ", strings.Join(conditions, "|"))
+	return conditions
+}
+
+func hostMatcher(v string) string {
 	if strings.HasPrefix(v, "*") {
 		return "hdr_end(host) -i " + v[1:]
 	}
@@ -63,7 +78,7 @@ var (
 	funcMap = template.FuncMap{
 		"acl_name":     ACLName,
 		"header_name":  HeaderName,
-		"host_name":    HostName,
+		"host_acls":    HostACLs,
 		"backend_hash": BackendHash,
 	}
 
