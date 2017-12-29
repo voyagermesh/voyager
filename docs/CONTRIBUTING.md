@@ -2,15 +2,15 @@
 title: Contributing | Voyager
 description: Contributing
 menu:
-  product_voyager_5.0.0-rc.9:
+  product_voyager_5.0.0-rc.10:
     identifier: contributing-voyager
     name: Contributing
     parent: getting-started
     weight: 35
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.9
+menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: getting-started
-url: /products/voyager/5.0.0-rc.9/getting-started/contributing/
+url: /products/voyager/5.0.0-rc.10/getting-started/contributing/
 ---
 # Contribution Guidelines
 Want to hack on Voyager?

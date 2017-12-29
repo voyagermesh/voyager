@@ -1,12 +1,12 @@
 ---
 menu:
-  product_voyager_5.0.0-rc.9:
+  product_voyager_5.0.0-rc.10:
     identifier: certificate-http
     name: HTTP
     parent: certificate
     weight: 20
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.9
+menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
 ---
 
@@ -18,7 +18,7 @@ Deploy Voyager operator following instructions [here](/docs/install.md).
 
 ```console
 # install without RBAC
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.9/hack/deploy/voyager.sh \
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.10/hack/deploy/voyager.sh \
   | bash -s -- --provider=gke
 ```
 
@@ -26,7 +26,7 @@ If you are trying this on a RBAC enabled cluster, pass the flag `--rbac` to inst
 
 ```console
 # install without RBAC
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.9/hack/deploy/voyager.sh \
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.10/hack/deploy/voyager.sh \
   | bash -s -- --provider=gke --rbac
 ```
 
@@ -42,7 +42,7 @@ kubectl expose deployment nginx --name=web --port=80 --target-port=80
 3. Now create Ingress `ing.yaml`
 
 ```console
-kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.9/docs/examples/certificate/http/ing.yaml
+kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.10/docs/examples/certificate/http/ing.yaml
 ```
 
 4. Wait for the LoadBlanacer ip to be assigned. Once the IP is assigned update your DNS provider to set the LoadBlancer IP as the A record for test domain `kiteci.com`
@@ -73,7 +73,7 @@ kubectl create secret generic acme-account --from-literal=ACME_EMAIL=me@example.
 8. Create the Certificate CRD to issue TLS certificate from Let's Encrypt using HTTP challenge.
 
 ```console
-kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.9/docs/examples/certificate/http/crt.yaml
+kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.10/docs/examples/certificate/http/crt.yaml
 ```
 
 8. Now wait a bit and you should see a new secret named `tls-kitecicom`. This contains the `tls.crt` and `tls.key` .
