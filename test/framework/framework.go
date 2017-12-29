@@ -4,9 +4,11 @@ import (
 	"sync"
 
 	"github.com/appscode/go/crypto/rand"
+	"github.com/appscode/kutil/tools/certstore"
 	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	. "github.com/onsi/gomega"
+	"github.com/spf13/afero"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -29,7 +31,7 @@ type Framework struct {
 	voyagerConfig config.Options
 	Mutex         sync.Mutex
 
-	CertManager *CertManager
+	CertStore *certstore.CertStore
 }
 
 type Invocation struct {
@@ -57,7 +59,10 @@ func New() *Framework {
 	c, err := clientcmd.BuildConfigFromFlags(testConfigs.Master, testConfigs.KubeConfig)
 	Expect(err).NotTo(HaveOccurred())
 
-	cm, err := NewCertManager()
+	cm, err := certstore.NewCertStore(afero.NewMemMapFs(), "/pki")
+	Expect(err).NotTo(HaveOccurred())
+
+	err = cm.InitCA()
 	Expect(err).NotTo(HaveOccurred())
 
 	return &Framework{
@@ -74,7 +79,7 @@ func New() *Framework {
 			EnableRBAC:        testConfigs.RBACEnabled,
 			OperatorNamespace: testConfigs.TestNamespace,
 		},
-		CertManager: cm,
+		CertStore: cm,
 	}
 }
 

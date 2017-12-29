@@ -15,6 +15,24 @@ type DomainPush struct {
 	AcceptedAt string `json:"accepted_at,omitempty"`
 }
 
+// DomainPushAttributes represent a domain push payload (see initiate).
+type DomainPushAttributes struct {
+	NewAccountEmail string `json:"new_account_email,omitempty"`
+	ContactID       string `json:"contact_id,omitempty"`
+}
+
+// DomainPushResponse represents a response from an API method that returns a DomainPush struct.
+type DomainPushResponse struct {
+	Response
+	Data *DomainPush `json:"data"`
+}
+
+// DomainPushesResponse represents a response from an API method that returns a collection of DomainPush struct.
+type DomainPushesResponse struct {
+	Response
+	Data []DomainPush `json:"data"`
+}
+
 func domainPushPath(accountID string, pushID int) (path string) {
 	path = fmt.Sprintf("/%v/pushes", accountID)
 	if pushID != 0 {
@@ -23,30 +41,12 @@ func domainPushPath(accountID string, pushID int) (path string) {
 	return
 }
 
-// domainPushResponse represents a response from an API method that returns a DomainPush struct.
-type domainPushResponse struct {
-	Response
-	Data *DomainPush `json:"data"`
-}
-
-// domainPushesResponse represents a response from an API method that returns a collection of DomainPush struct.
-type domainPushesResponse struct {
-	Response
-	Data []DomainPush `json:"data"`
-}
-
-// DomainPushAttributes represent a domain push payload (see initiate).
-type DomainPushAttributes struct {
-	NewAccountEmail string `json:"new_account_email,omitempty"`
-	ContactID       string `json:"contact_id,omitempty"`
-}
-
 // InitiatePush initiate a new domain push.
 //
 // See https://developer.dnsimple.com/v2/domains/pushes/#initiate
-func (s *DomainsService) InitiatePush(accountID string, domainID string, pushAttributes DomainPushAttributes) (*domainPushResponse, error) {
+func (s *DomainsService) InitiatePush(accountID string, domainID string, pushAttributes DomainPushAttributes) (*DomainPushResponse, error) {
 	path := versioned(fmt.Sprintf("/%v/pushes", domainPath(accountID, domainID)))
-	pushResponse := &domainPushResponse{}
+	pushResponse := &DomainPushResponse{}
 
 	resp, err := s.client.post(path, pushAttributes, pushResponse)
 	if err != nil {
@@ -60,9 +60,9 @@ func (s *DomainsService) InitiatePush(accountID string, domainID string, pushAtt
 // ListPushes lists the pushes for an account.
 //
 // See https://developer.dnsimple.com/v2/domains/pushes/#list
-func (s *DomainsService) ListPushes(accountID string, options *ListOptions) (*domainPushesResponse, error) {
+func (s *DomainsService) ListPushes(accountID string, options *ListOptions) (*DomainPushesResponse, error) {
 	path := versioned(domainPushPath(accountID, 0))
-	pushesResponse := &domainPushesResponse{}
+	pushesResponse := &DomainPushesResponse{}
 
 	path, err := addURLQueryOptions(path, options)
 	if err != nil {
@@ -81,9 +81,9 @@ func (s *DomainsService) ListPushes(accountID string, options *ListOptions) (*do
 // AcceptPush accept a push for a domain.
 //
 // See https://developer.dnsimple.com/v2/domains/pushes/#accept
-func (s *DomainsService) AcceptPush(accountID string, pushID int, pushAttributes DomainPushAttributes) (*domainPushResponse, error) {
+func (s *DomainsService) AcceptPush(accountID string, pushID int, pushAttributes DomainPushAttributes) (*DomainPushResponse, error) {
 	path := versioned(domainPushPath(accountID, pushID))
-	pushResponse := &domainPushResponse{}
+	pushResponse := &DomainPushResponse{}
 
 	resp, err := s.client.post(path, pushAttributes, nil)
 	if err != nil {
@@ -97,9 +97,9 @@ func (s *DomainsService) AcceptPush(accountID string, pushID int, pushAttributes
 // RejectPush reject a push for a domain.
 //
 // See https://developer.dnsimple.com/v2/domains/pushes/#reject
-func (s *DomainsService) RejectPush(accountID string, pushID int) (*domainPushResponse, error) {
+func (s *DomainsService) RejectPush(accountID string, pushID int) (*DomainPushResponse, error) {
 	path := versioned(domainPushPath(accountID, pushID))
-	pushResponse := &domainPushResponse{}
+	pushResponse := &DomainPushResponse{}
 
 	resp, err := s.client.delete(path, nil, nil)
 	if err != nil {

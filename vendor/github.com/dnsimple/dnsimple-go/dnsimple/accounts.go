@@ -1,6 +1,7 @@
 package dnsimple
 
-import ()
+import (
+)
 
 type AccountsService struct {
 	client *Client
@@ -15,8 +16,8 @@ type Account struct {
 	UpdatedAt      string `json:"updated_at,omitempty"`
 }
 
-// accountsResponse represents a response from an API method that returns a collection of Account struct.
-type accountsResponse struct {
+// AccountsResponse represents a response from an API method that returns a collection of Account struct.
+type AccountsResponse struct {
 	Response
 	Data []Account `json:"data"`
 }
@@ -24,9 +25,9 @@ type accountsResponse struct {
 // ListAccounts list the accounts for an user.
 //
 // See https://developer.dnsimple.com/v2/accounts/#list
-func (s *AccountsService) ListAccounts(options *ListOptions) (*accountsResponse, error) {
+func (s *AccountsService) ListAccounts(options *ListOptions) (*AccountsResponse, error) {
 	path := versioned("/accounts")
-	accountsResponse := &accountsResponse{}
+	accountsResponse := &AccountsResponse{}
 
 	path, err := addURLQueryOptions(path, options)
 	if err != nil {

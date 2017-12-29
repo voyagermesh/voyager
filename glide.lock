@@ -1,5 +1,5 @@
-hash: b7604f4f74ff696001449ff074868ae0d813f6dfb471da49a76de4a8433367aa
-updated: 2017-12-27T22:16:25.931544461-05:00
+hash: 18c48b7263fec3270fe4d3e8fefd1b1fd0edaebbf94bd91f3967808cc04335ae
+updated: 2017-12-29T08:27:27.173868285-05:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -19,7 +19,9 @@ imports:
   - ioutil
   - log
   - log/golog
+  - net
   - runtime
+  - sets
   - types
   - version
 - name: github.com/appscode/haproxy_exporter
@@ -39,13 +41,14 @@ imports:
   - agents/prometheusbuiltin
   - api
 - name: github.com/appscode/kutil
-  version: c393406fbcc65765c04935bfe3a6770a51d61fbb
+  version: efe12f4815eb2edcfac2b1b81f6b70214f85f54e
   subpackages:
   - apiextensions/v1beta1
   - core/v1
   - meta
   - rbac/v1beta1
   - tools/analytics
+  - tools/certstore
 - name: github.com/appscode/mergo
   version: e3000cb3d28c72b837601cac94debd91032d19fe
 - name: github.com/appscode/pat
@@ -120,7 +123,7 @@ imports:
 - name: github.com/dgrijalva/jwt-go
   version: 01aeca54ebda6e0fbfafd0a524d234159c05ec20
 - name: github.com/dnsimple/dnsimple-go
-  version: 9641549ef4d560b09b6f44d9f394af0efcb438ee
+  version: d1105abc03b313d7b8d9b04364f6bd053b346e59
   subpackages:
   - dnsimple
 - name: github.com/docker/distribution
@@ -365,6 +368,10 @@ imports:
   version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/sirupsen/logrus
   version: f006c2ac4710855cf0f916dd6b77acf6b048dc6e
+- name: github.com/spf13/afero
+  version: 57afd63c68602b63ed976de00dd066ccb3c319db
+  subpackages:
+  - mem
 - name: github.com/spf13/cobra
   version: ccaecb155a2177302cb56cae929251a256d0f646
   subpackages:

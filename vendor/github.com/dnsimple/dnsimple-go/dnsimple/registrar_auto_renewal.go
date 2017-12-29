@@ -7,9 +7,9 @@ import (
 // EnableDomainAutoRenewal enables auto-renewal for the domain.
 //
 // See https://developer.dnsimple.com/v2/registrar/auto-renewal/#enable
-func (s *RegistrarService) EnableDomainAutoRenewal(accountID string, domainName string) (*domainResponse, error) {
+func (s *RegistrarService) EnableDomainAutoRenewal(accountID string, domainName string) (*DomainResponse, error) {
 	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/auto_renewal", accountID, domainName))
-	domainResponse := &domainResponse{}
+	domainResponse := &DomainResponse{}
 
 	resp, err := s.client.put(path, nil, nil)
 	if err != nil {
@@ -23,9 +23,9 @@ func (s *RegistrarService) EnableDomainAutoRenewal(accountID string, domainName 
 // DisableDomainAutoRenewal disables auto-renewal for the domain.
 //
 // See https://developer.dnsimple.com/v2/registrar/auto-renewal/#enable
-func (s *RegistrarService) DisableDomainAutoRenewal(accountID string, domainName string) (*domainResponse, error) {
+func (s *RegistrarService) DisableDomainAutoRenewal(accountID string, domainName string) (*DomainResponse, error) {
 	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/auto_renewal", accountID, domainName))
-	domainResponse := &domainResponse{}
+	domainResponse := &DomainResponse{}
 
 	resp, err := s.client.delete(path, nil, nil)
 	if err != nil {
