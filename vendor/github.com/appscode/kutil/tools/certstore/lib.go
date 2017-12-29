@@ -27,7 +27,7 @@ func NewCertStore(fs afero.Fs, dir string, organization ...string) (*CertStore, 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create dir `%s`. Reason: %v", dir, err)
 	}
-	return &CertStore{dir: dir, organization: append([]string(nil), organization...)}, nil
+	return &CertStore{fs: fs, dir: dir, organization: append([]string(nil), organization...)}, nil
 }
 
 func (cs *CertStore) InitCA() error {
