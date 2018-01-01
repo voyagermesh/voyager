@@ -1,13 +1,15 @@
 package v1beta1
 
 import (
+	"encoding/json"
+	"fmt"
 	"net"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/appscode/kutil/meta"
 	"github.com/appscode/voyager/apis/voyager"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 const (
@@ -159,11 +161,11 @@ const (
 	StickySession = EngressKey + "/" + "sticky-session"
 	// Specify a method to stick clients to origins across requests.
 	// Only supported value is cookie.
-	IngressAffinity = IngressKey + "/affinity"
+	IngressAffinity = EngressKey + "/affinity"
 	// When affinity is set to cookie, the name of the cookie to use.
-	IngressAffinitySessionCookieName = IngressKey + "/session-cookie-name"
+	IngressAffinitySessionCookieName = EngressKey + "/session-cookie-name"
 	// When affinity is set to cookie, the hash algorithm used: md5, sha, index.
-	IngressAffinitySessionCookieHash = IngressKey + "/session-cookie-hash"
+	IngressAffinitySessionCookieHash = EngressKey + "/session-cookie-hash"
 
 	// Basic Auth: Follows ingress controller standard
 	// https://github.com/kubernetes/ingress/tree/master/examples/auth/basic/haproxy
@@ -175,54 +177,54 @@ const (
 	// Secret name, realm and type are configured with annotations in the ingress
 	// Auth can only be applied to HTTP backends.
 	// Only supported type is basic
-	AuthType = IngressKey + "/auth-type"
+	AuthType = EngressKey + "/auth-type"
 
 	// an optional string with authentication realm
-	AuthRealm = IngressKey + "/auth-realm"
+	AuthRealm = EngressKey + "/auth-realm"
 
 	// name of the auth secret
-	AuthSecret = IngressKey + "/auth-secret"
+	AuthSecret = EngressKey + "/auth-secret"
 
 	// Name of secret for TLS client certification validation.
-	AuthTLSSecret = IngressKey + "/auth-tls-secret"
+	AuthTLSSecret = EngressKey + "/auth-tls-secret"
 
 	// The page that user should be redirected in case of Auth error
-	AuthTLSErrorPage = IngressKey + "/auth-tls-error-page"
+	AuthTLSErrorPage = EngressKey + "/auth-tls-error-page"
 
 	// Enables verification of client certificates.
-	AuthTLSVerifyClient = IngressKey + "/auth-tls-verify-client"
+	AuthTLSVerifyClient = EngressKey + "/auth-tls-verify-client"
 
 	// Enables CORS headers in response.
 	// Setting this annotations in ingress will add CORS headers to all HTTP
 	// frontend. If we need to add cors headers only on specific frontend we can also
 	// configure this using FrontendRules for specific frontend.
 	// http://blog.nasrulhazim.com/2017/07/haproxy-setting-up-cors/
-	CORSEnabled = IngressKey + "/enable-cors"
+	CORSEnabled = EngressKey + "/enable-cors"
 
 	// Maximum http request body size. This returns the advertised length of the HTTP request's body in bytes. It
 	// will represent the advertised Content-Length header
 	// http://cbonte.github.io/haproxy-dconv/1.7/configuration.html#7.3.6-req.body_size
 	//
-	ProxyBodySize = IngressKey + "/proxy-body-size"
+	ProxyBodySize = EngressKey + "/proxy-body-size"
 
 	// Pass TLS connections directly to backend; do not offload.
-	SSLPassthrough = IngressKey + "/ssl-passthrough"
+	SSLPassthrough = EngressKey + "/ssl-passthrough"
 
-	EnableHSTS = IngressKey + "/hsts"
+	EnableHSTS = EngressKey + "/hsts"
 	// This specifies the time (in seconds) the browser should connect to the server using the HTTPS connection.
 	// https://blog.stackpath.com/glossary/hsts/
-	HSTSMaxAge  = IngressKey + "/hsts-max-age"
-	HSTSPreload = IngressKey + "/hsts-preload"
+	HSTSMaxAge  = EngressKey + "/hsts-max-age"
+	HSTSPreload = EngressKey + "/hsts-preload"
 	// If specified, this HSTS rule applies to all of the site's subdomains as well.
-	HSTSIncludeSubDomains = IngressKey + "/hsts-include-subdomains"
+	HSTSIncludeSubDomains = EngressKey + "/hsts-include-subdomains"
 
-	WhitelistSourceRange = IngressKey + "/whitelist-source-range"
-	MaxConnections       = IngressKey + "/max-connections"
+	WhitelistSourceRange = EngressKey + "/whitelist-source-range"
+	MaxConnections       = EngressKey + "/max-connections"
 
 	// https://github.com/appscode/voyager/issues/552
 	ForceServicePort = EngressKey + "/force-service-port"
-	SSLRedirect      = IngressKey + "/ssl-redirect"
-	ForceSSLRedirect = IngressKey + "/force-ssl-redirect"
+	SSLRedirect      = EngressKey + "/ssl-redirect"
+	ForceSSLRedirect = EngressKey + "/force-ssl-redirect"
 
 	// https://github.com/appscode/voyager/issues/525
 	ErrorFiles = EngressKey + "/errorfiles"
@@ -232,13 +234,13 @@ const (
 	// https://serverfault.com/a/679172/349346
 	// https://discourse.haproxy.org/t/solved-how-to-configure-basic-ddos-protection-when-behind-aws-elb-x-forwarded-for/932
 	// https://www.haproxy.com/blog/use-a-load-balancer-as-a-first-row-of-defense-against-ddos/
-	LimitRPS = IngressKey + "/limit-rps"
+	LimitRPS = EngressKey + "/limit-rps"
 	// Limit requests per minute per IP address
-	LimitRPM = IngressKey + "/limit-rpm"
+	LimitRPM = EngressKey + "/limit-rpm"
 
 	// http://cbonte.github.io/haproxy-dconv/1.8/configuration.html#7.3.3-src_conn_cur
 	// https://www.haproxy.com/blog/use-a-load-balancer-as-a-first-row-of-defense-against-ddos/
-	LimitConnection = IngressKey + "/limit-connection"
+	LimitConnection = EngressKey + "/limit-connection"
 
 	// https://github.com/appscode/voyager/issues/683
 	// https://www.haproxy.com/documentation/aloha/7-0/haproxy/healthchecks/
@@ -246,7 +248,34 @@ const (
 	CheckHealthPort = EngressKey + "/" + "check-port"
 
 	// https://github.com/kubernetes/ingress-nginx/blob/master/docs/examples/rewrite/README.md
-	RewriteTarget = IngressKey + "/" + "rewrite-target"
+	RewriteTarget = EngressKey + "/" + "rewrite-target"
+)
+
+var IngressKeys = sets.NewString(
+	IngressAffinity,
+	IngressAffinitySessionCookieName,
+	IngressAffinitySessionCookieHash,
+	AuthType,
+	AuthRealm,
+	AuthSecret,
+	AuthTLSSecret,
+	AuthTLSErrorPage,
+	AuthTLSVerifyClient,
+	CORSEnabled,
+	ProxyBodySize,
+	SSLPassthrough,
+	EnableHSTS,
+	HSTSMaxAge,
+	HSTSPreload,
+	HSTSIncludeSubDomains,
+	WhitelistSourceRange,
+	MaxConnections,
+	SSLRedirect,
+	ForceSSLRedirect,
+	LimitRPS,
+	LimitRPM,
+	LimitConnection,
+	RewriteTarget,
 )
 
 const (
@@ -300,7 +329,7 @@ func (r Ingress) StatsLabels() map[string]string {
 }
 
 func (r Ingress) APISchema() string {
-	if v := meta.GetString(r.Annotations, APISchema); v != "" {
+	if v := GetString(r.Annotations, APISchema); v != "" {
 		return v
 	}
 	return APISchemaEngress
@@ -309,16 +338,16 @@ func (r Ingress) APISchema() string {
 func (r Ingress) Sticky() bool {
 	// Specify a method to stick clients to origins across requests.
 	// Like nginx HAProxy only supports the value cookie.
-	if len(meta.GetString(r.Annotations, IngressAffinity)) > 0 {
+	if len(GetString(r.Annotations, IngressAffinity)) > 0 {
 		return true
 	}
-	v, _ := meta.GetBool(r.Annotations, StickySession)
+	v, _ := GetBool(r.Annotations, StickySession)
 	return v
 }
 
 func (r Ingress) StickySessionCookieName() string {
 	// When affinity is set to cookie, the name of the cookie to use.
-	cookieName := meta.GetString(r.Annotations, IngressAffinitySessionCookieName)
+	cookieName := GetString(r.Annotations, IngressAffinitySessionCookieName)
 	if len(cookieName) > 0 {
 		return cookieName
 	}
@@ -326,24 +355,24 @@ func (r Ingress) StickySessionCookieName() string {
 }
 
 func (r Ingress) StickySessionCookieHashType() string {
-	return meta.GetString(r.Annotations, IngressAffinitySessionCookieHash)
+	return GetString(r.Annotations, IngressAffinitySessionCookieHash)
 }
 
 func (r Ingress) EnableCORS() bool {
-	v, _ := meta.GetBool(r.Annotations, CORSEnabled)
+	v, _ := GetBool(r.Annotations, CORSEnabled)
 	return v
 }
 
 func (r Ingress) ForceServicePort() bool {
 	if r.LBType() == LBTypeNodePort {
-		v, _ := meta.GetBool(r.Annotations, ForceServicePort)
+		v, _ := GetBool(r.Annotations, ForceServicePort)
 		return v
 	}
 	return true
 }
 
 func (r Ingress) EnableHSTS() bool {
-	v, err := meta.GetBool(r.Annotations, EnableHSTS)
+	v, err := GetBool(r.Annotations, EnableHSTS)
 	if err != nil {
 		return true // enable hsts by default
 	}
@@ -351,7 +380,7 @@ func (r Ingress) EnableHSTS() bool {
 }
 
 func (r Ingress) HSTSMaxAge() int {
-	v := meta.GetString(r.Annotations, HSTSMaxAge)
+	v := GetString(r.Annotations, HSTSMaxAge)
 	ageInSec, err := strconv.Atoi(v)
 	if err == nil {
 		return ageInSec
@@ -365,26 +394,26 @@ func (r Ingress) HSTSMaxAge() int {
 }
 
 func (r Ingress) HSTSPreload() bool {
-	v, _ := meta.GetBool(r.Annotations, HSTSPreload)
+	v, _ := GetBool(r.Annotations, HSTSPreload)
 	return v
 }
 
 func (r Ingress) HSTSIncludeSubDomains() bool {
-	v, _ := meta.GetBool(r.Annotations, HSTSIncludeSubDomains)
+	v, _ := GetBool(r.Annotations, HSTSIncludeSubDomains)
 	return v
 }
 
 func (r Ingress) WhitelistSourceRange() string {
-	return meta.GetString(r.Annotations, WhitelistSourceRange)
+	return GetString(r.Annotations, WhitelistSourceRange)
 }
 
 func (r Ingress) MaxConnections() int {
-	v, _ := meta.GetInt(r.Annotations, MaxConnections)
+	v, _ := GetInt(r.Annotations, MaxConnections)
 	return v
 }
 
 func (r Ingress) SSLRedirect() bool {
-	v, err := meta.GetBool(r.Annotations, SSLRedirect)
+	v, err := GetBool(r.Annotations, SSLRedirect)
 	if err == nil && !v {
 		return false
 	}
@@ -392,72 +421,72 @@ func (r Ingress) SSLRedirect() bool {
 }
 
 func (r Ingress) ForceSSLRedirect() bool {
-	v, _ := meta.GetBool(r.Annotations, ForceSSLRedirect)
+	v, _ := GetBool(r.Annotations, ForceSSLRedirect)
 	return v
 }
 
 func (r Ingress) ProxyBodySize() string {
-	return meta.GetString(r.Annotations, ProxyBodySize)
+	return GetString(r.Annotations, ProxyBodySize)
 }
 
 func (r Ingress) SSLPassthrough() bool {
-	v, _ := meta.GetBool(r.Annotations, SSLPassthrough)
+	v, _ := GetBool(r.Annotations, SSLPassthrough)
 	return v
 }
 
 func (r Ingress) Stats() bool {
-	v, _ := meta.GetBool(r.Annotations, StatsOn)
+	v, _ := GetBool(r.Annotations, StatsOn)
 	return v
 }
 
 func (r Ingress) StatsSecretName() string {
-	return meta.GetString(r.Annotations, StatsSecret)
+	return GetString(r.Annotations, StatsSecret)
 }
 
 func (r Ingress) StatsPort() int {
-	if v, _ := meta.GetInt(r.Annotations, StatsPort); v > 0 {
+	if v, _ := GetInt(r.Annotations, StatsPort); v > 0 {
 		return v
 	}
 	return DefaultStatsPort
 }
 
 func (r Ingress) StatsServiceName() string {
-	if v := meta.GetString(r.Annotations, StatsServiceName); v != "" {
+	if v := GetString(r.Annotations, StatsServiceName); v != "" {
 		return v
 	}
 	return VoyagerPrefix + r.Name + "-stats"
 }
 
 func (r Ingress) LBType() string {
-	if v := meta.GetString(r.Annotations, LBType); v != "" {
+	if v := GetString(r.Annotations, LBType); v != "" {
 		return v
 	}
 	return LBTypeLoadBalancer
 }
 
 func (r Ingress) Replicas() int32 {
-	if v, _ := meta.GetInt(r.Annotations, Replicas); v > 0 {
+	if v, _ := GetInt(r.Annotations, Replicas); v > 0 {
 		return int32(v)
 	}
 	return 1
 }
 
 func (r Ingress) NodeSelector() map[string]string {
-	if v, _ := meta.GetMap(r.Annotations, NodeSelector); len(v) > 0 {
+	if v, _ := GetMap(r.Annotations, NodeSelector); len(v) > 0 {
 		return v
 	}
-	return ParseDaemonNodeSelector(meta.GetString(r.Annotations, EngressKey+"/"+"daemon.nodeSelector"))
+	return ParseDaemonNodeSelector(GetString(r.Annotations, EngressKey+"/"+"daemon.nodeSelector"))
 }
 
 func (r Ingress) LoadBalancerIP() net.IP {
-	if v := meta.GetString(r.Annotations, LoadBalancerIP); v != "" {
+	if v := GetString(r.Annotations, LoadBalancerIP); v != "" {
 		return net.ParseIP(v)
 	}
 	return nil
 }
 
 func (r Ingress) ServiceAnnotations(provider string) (map[string]string, bool) {
-	ans, err := meta.GetMap(r.Annotations, ServiceAnnotations)
+	ans, err := GetMap(r.Annotations, ServiceAnnotations)
 	if err == nil {
 		filteredMap := make(map[string]string)
 		for k, v := range ans {
@@ -478,7 +507,7 @@ func (r Ingress) ServiceAnnotations(provider string) (map[string]string, bool) {
 }
 
 func (r Ingress) PodsAnnotations() (map[string]string, bool) {
-	ans, err := meta.GetMap(r.Annotations, PodAnnotations)
+	ans, err := GetMap(r.Annotations, PodAnnotations)
 	if err == nil {
 		filteredMap := make(map[string]string)
 		for k, v := range ans {
@@ -492,12 +521,12 @@ func (r Ingress) PodsAnnotations() (map[string]string, bool) {
 }
 
 func (r Ingress) KeepSourceIP() bool {
-	v, _ := meta.GetBool(r.Annotations, KeepSourceIP)
+	v, _ := GetBool(r.Annotations, KeepSourceIP)
 	return v
 }
 
 func (r Ingress) AcceptProxy() bool {
-	v, _ := meta.GetBool(r.Annotations, AcceptProxy)
+	v, _ := GetBool(r.Annotations, AcceptProxy)
 	return v
 }
 
@@ -522,7 +551,7 @@ var timeoutDefaults = map[string]string{
 }
 
 func (r Ingress) Timeouts() map[string]string {
-	ans, _ := meta.GetMap(r.Annotations, DefaultsTimeOut)
+	ans, _ := GetMap(r.Annotations, DefaultsTimeOut)
 	if ans == nil {
 		ans = make(map[string]string)
 	}
@@ -543,14 +572,14 @@ func (r Ingress) Timeouts() map[string]string {
 }
 
 func (r Ingress) HAProxyOptions() map[string]bool {
-	ans, _ := meta.GetMap(r.Annotations, DefaultsOption)
+	ans, _ := GetMap(r.Annotations, DefaultsOption)
 	if ans == nil {
 		ans = make(map[string]string)
 	}
 
 	ret := make(map[string]bool)
 	for k := range ans {
-		val, err := meta.GetBool(ans, k)
+		val, err := GetBool(ans, k)
 		if err != nil {
 			continue
 		}
@@ -571,12 +600,12 @@ func (r Ingress) BasicAuthEnabled() bool {
 	}
 
 	// Check auth type is basic; other auth mode is not supported
-	if val := meta.GetString(r.Annotations, AuthType); val != "basic" {
+	if val := GetString(r.Annotations, AuthType); val != "basic" {
 		return false
 	}
 
 	// Check secret name is not empty
-	if val := meta.GetString(r.Annotations, AuthSecret); len(val) == 0 {
+	if val := GetString(r.Annotations, AuthSecret); len(val) == 0 {
 		return false
 	}
 
@@ -584,23 +613,23 @@ func (r Ingress) BasicAuthEnabled() bool {
 }
 
 func (r Ingress) RewriteTarget() string {
-	return meta.GetString(r.Annotations, RewriteTarget)
+	return GetString(r.Annotations, RewriteTarget)
 }
 
 func (r Ingress) AuthRealm() string {
-	return meta.GetString(r.Annotations, AuthRealm)
+	return GetString(r.Annotations, AuthRealm)
 }
 
 func (r Ingress) AuthSecretName() string {
-	return meta.GetString(r.Annotations, AuthSecret)
+	return GetString(r.Annotations, AuthSecret)
 }
 
 func (r Ingress) AuthTLSSecret() string {
-	return meta.GetString(r.Annotations, AuthTLSSecret)
+	return GetString(r.Annotations, AuthTLSSecret)
 }
 
 func (r Ingress) AuthTLSVerifyClient() TLSAuthVerifyOption {
-	str := meta.GetString(r.Annotations, AuthTLSVerifyClient)
+	str := GetString(r.Annotations, AuthTLSVerifyClient)
 	if str == string(TLSAuthVerifyOptional) {
 		return TLSAuthVerifyOptional
 	}
@@ -608,25 +637,25 @@ func (r Ingress) AuthTLSVerifyClient() TLSAuthVerifyOption {
 }
 
 func (r Ingress) AuthTLSErrorPage() string {
-	return meta.GetString(r.Annotations, AuthTLSErrorPage)
+	return GetString(r.Annotations, AuthTLSErrorPage)
 }
 
 func (r Ingress) ErrorFilesConfigMapName() string {
-	return meta.GetString(r.Annotations, ErrorFiles)
+	return GetString(r.Annotations, ErrorFiles)
 }
 
 func (r Ingress) LimitRPS() int {
-	value, _ := meta.GetInt(r.Annotations, LimitRPS)
+	value, _ := GetInt(r.Annotations, LimitRPS)
 	return value
 }
 
 func (r Ingress) LimitRPM() int {
-	value, _ := meta.GetInt(r.Annotations, LimitRPM)
+	value, _ := GetInt(r.Annotations, LimitRPM)
 	return value
 }
 
 func (r Ingress) LimitConnections() int {
-	value, _ := meta.GetInt(r.Annotations, LimitConnection)
+	value, _ := GetInt(r.Annotations, LimitConnection)
 	return value
 }
 
@@ -647,4 +676,71 @@ func ParseDaemonNodeSelector(labels string) map[string]string {
 		}
 	}
 	return selectorMap
+}
+
+func ToIngressKey(key string) (string, error) {
+	if IngressKeys.Has(key) {
+		return IngressKey + strings.TrimPrefix(key, EngressKey), nil
+	}
+	return "", fmt.Errorf("ingress key %s not found", key)
+}
+
+func GetBool(m map[string]string, key string) (bool, error) {
+	if m != nil {
+		if v, ok := m[key]; ok {
+			return strconv.ParseBool(v)
+		}
+		if key, err := ToIngressKey(key); err == nil {
+			if v, ok := m[key]; ok {
+				return strconv.ParseBool(v)
+			}
+		}
+	}
+	return false, nil
+}
+
+func GetInt(m map[string]string, key string) (int, error) {
+	if m != nil {
+		if v, ok := m[key]; ok {
+			return strconv.Atoi(v)
+		}
+		if key, err := ToIngressKey(key); err == nil {
+			if v, ok := m[key]; ok {
+				return strconv.Atoi(v)
+			}
+		}
+	}
+	return 0, nil
+}
+
+func GetString(m map[string]string, key string) string {
+	if m != nil {
+		if v, ok := m[key]; ok {
+			return v
+		}
+		if key, err := ToIngressKey(key); err == nil {
+			if v, ok := m[key]; ok {
+				return v
+			}
+		}
+	}
+	return ""
+}
+
+func GetMap(m map[string]string, key string) (map[string]string, error) {
+	if m != nil {
+		if s, ok := m[key]; ok {
+			v := make(map[string]string)
+			err := json.Unmarshal([]byte(s), &v)
+			return v, err
+		}
+		if key, err := ToIngressKey(key); err == nil {
+			if s, ok := m[key]; ok {
+				v := make(map[string]string)
+				err := json.Unmarshal([]byte(s), &v)
+				return v, err
+			}
+		}
+	}
+	return map[string]string{}, nil
 }

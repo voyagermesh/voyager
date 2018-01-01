@@ -541,11 +541,7 @@ var _ = Describe("IngressOperations", func() {
 	})
 
 	Describe("With CORS Enabled", func() {
-		BeforeEach(func() {
-			ing.Annotations[api.CORSEnabled] = "true"
-		})
-
-		It("Should Response CORS", func() {
+		shouldResponseCORS := func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
@@ -560,6 +556,20 @@ var _ = Describe("IngressOperations", func() {
 					Expect(r.ResponseHeader.Get("Access-Control-Allow-Origin")).Should(Equal("test.e2e"))
 			})
 			Expect(err).NotTo(HaveOccurred())
+		}
+		Context("Engress key", func() {
+			BeforeEach(func() {
+				ing.Annotations[api.CORSEnabled] = "true"
+			})
+			It("Should Response CORS", shouldResponseCORS)
+		})
+		Context("Ingress key", func() {
+			BeforeEach(func() {
+				key, err := api.ToIngressKey(api.CORSEnabled)
+				Expect(err).NotTo(HaveOccurred())
+				ing.Annotations[key] = "true"
+			})
+			It("Should Response CORS", shouldResponseCORS)
 		})
 	})
 
