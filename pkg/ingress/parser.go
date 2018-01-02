@@ -266,7 +266,13 @@ func (c *controller) generateConfig() error {
 	}
 
 	si := &haproxy.SharedInfo{
-		EnableCORS:            c.Ingress.EnableCORS(),
+		CORSConfig: haproxy.CORSConfig{
+			CORSEnabled:          c.Ingress.EnableCORS(),
+			CORSAllowedOrigin:    c.Ingress.AllowedCORSOrigin(),
+			CORSAllowedMethods:   c.Ingress.AllowedCORSMethods(),
+			CORSAllowedHeaders:   c.Ingress.AllowedCORSHeaders(),
+			CORSAllowCredentials: c.Ingress.AllowCORSCred(),
+		},
 		ProxyBodySize:         c.Ingress.ProxyBodySize(),
 		EnableHSTS:            c.Ingress.EnableHSTS(),
 		HSTSMaxAge:            c.Ingress.HSTSMaxAge(),
