@@ -369,6 +369,7 @@ func (r Ingress) StickySessionCookieHashType() string {
 }
 
 const (
+	// ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/annotations.md#cors-related
 	CORSDefaultAllowedMethods = "GET,PUT,POST,DELETE,PATCH,OPTIONS"
 	CORSDefaultAllowedHeaders = "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
 )
