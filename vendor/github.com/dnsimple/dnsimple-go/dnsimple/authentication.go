@@ -54,7 +54,6 @@ func (c *httpBasicCredentials) basicAuth(username, password string) string {
 }
 
 // OAuth token authentication
-
 type oauthTokenCredentials struct {
 	oauthToken string
 }

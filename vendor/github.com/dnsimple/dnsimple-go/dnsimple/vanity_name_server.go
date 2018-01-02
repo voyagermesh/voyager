@@ -22,22 +22,22 @@ type VanityNameServer struct {
 	UpdatedAt string `json:"updated_at,omitempty"`
 }
 
-// VanityNameServerResponse represents a response for vanity name server enable and disable operations.
-type VanityNameServerResponse struct {
-	Response
-	Data []VanityNameServer `json:"data"`
-}
-
 func vanityNameServerPath(accountID string, domainID string) string {
 	return fmt.Sprintf("/%v/vanity/%v", accountID, domainID)
+}
+
+// vanityNameServerResponse represents a response for vanity name server enable and disable operations.
+type vanityNameServerResponse struct {
+	Response
+	Data []VanityNameServer `json:"data"`
 }
 
 // EnableVanityNameServers Vanity Name Servers for the given domain
 //
 // See https://developer.dnsimple.com/v2/vanity/#enable
-func (s *VanityNameServersService) EnableVanityNameServers(accountID string, domainID string) (*VanityNameServerResponse, error) {
+func (s *VanityNameServersService) EnableVanityNameServers(accountID string, domainID string) (*vanityNameServerResponse, error) {
 	path := versioned(vanityNameServerPath(accountID, domainID))
-	vanityNameServerResponse := &VanityNameServerResponse{}
+	vanityNameServerResponse := &vanityNameServerResponse{}
 
 	resp, err := s.client.put(path, nil, vanityNameServerResponse)
 	if err != nil {
@@ -51,9 +51,9 @@ func (s *VanityNameServersService) EnableVanityNameServers(accountID string, dom
 // DisableVanityNameServers Vanity Name Servers for the given domain
 //
 // See https://developer.dnsimple.com/v2/vanity/#disable
-func (s *VanityNameServersService) DisableVanityNameServers(accountID string, domainID string) (*VanityNameServerResponse, error) {
+func (s *VanityNameServersService) DisableVanityNameServers(accountID string, domainID string) (*vanityNameServerResponse, error) {
 	path := versioned(vanityNameServerPath(accountID, domainID))
-	vanityNameServerResponse := &VanityNameServerResponse{}
+	vanityNameServerResponse := &vanityNameServerResponse{}
 
 	resp, err := s.client.delete(path, nil, nil)
 	if err != nil {

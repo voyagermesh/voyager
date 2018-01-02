@@ -14,20 +14,6 @@ func TestShouldHandleIngress(t *testing.T) {
 	dataTables[&Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Annotations: map[string]string{
-				"kubernetes.io/ingress.class": "voyager",
-			},
-		},
-	}] = map[string]bool{
-		"voyager": true,
-		"":        true,
-		"gce":     true,
-		"gke":     true,
-		"aws":     true,
-	}
-
-	dataTables[&Ingress{
-		ObjectMeta: metav1.ObjectMeta{
-			Annotations: map[string]string{
 				APISchema: APISchemaEngress,
 			},
 		},
@@ -42,6 +28,50 @@ func TestShouldHandleIngress(t *testing.T) {
 	dataTables[&Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Annotations: map[string]string{},
+		},
+	}] = map[string]bool{
+		"voyager": true,
+		"":        true,
+		"gce":     true,
+		"gke":     true,
+		"aws":     true,
+	}
+
+	dataTables[&Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Annotations: map[string]string{
+				APISchema:                 APISchemaIngress,
+				ingressClassAnnotationKey: "voyager",
+			},
+		},
+	}] = map[string]bool{
+		"voyager": true,
+		"":        true,
+		"gce":     true,
+		"gke":     true,
+		"aws":     true,
+	}
+
+	dataTables[&Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Annotations: map[string]string{
+				APISchema:                 APISchemaIngress,
+				ingressClassAnnotationKey: "gce",
+			},
+		},
+	}] = map[string]bool{
+		"voyager": false,
+		"":        false,
+		"gce":     true,
+		"gke":     false,
+		"aws":     false,
+	}
+
+	dataTables[&Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Annotations: map[string]string{
+				APISchema: APISchemaIngress,
+			},
 		},
 	}] = map[string]bool{
 		"voyager": false,

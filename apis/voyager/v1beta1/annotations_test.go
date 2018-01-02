@@ -49,3 +49,12 @@ func TestGetOptions(t *testing.T) {
 	}
 	assert.Equal(t, responseMap, opt)
 }
+
+func TestIngressKey(t *testing.T) {
+	key, err := toIngressKey(CORSEnabled)
+	assert.Equal(t, err, nil)
+	annotation := map[string]string{key: "true"}
+	ret, err := getBool(annotation, CORSEnabled)
+	assert.Equal(t, nil, err)
+	assert.Equal(t, true, ret)
+}

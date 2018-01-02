@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"net"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -31,18 +32,28 @@ func NewCertStore(fs afero.Fs, dir string, organization ...string) (*CertStore, 
 }
 
 func (cs *CertStore) InitCA() error {
-	var err error
-
-	if cs.PairExists("ca") {
-		cs.caCert, cs.caKey, err = cs.Read("ca")
-		if err == nil {
-			return nil
-		}
+	err := cs.LoadCA()
+	if err == nil {
+		return nil
 	}
+	return cs.NewCA()
+}
+
+func (cs *CertStore) LoadCA() error {
+	if cs.PairExists("ca") {
+		var err error
+		cs.caCert, cs.caKey, err = cs.Read("ca")
+		return err
+	}
+	return os.ErrNotExist
+}
+
+func (cs *CertStore) NewCA() error {
+	var err error
 
 	key, err := cert.NewPrivateKey()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to generate private key. Reason: %v", err)
 	}
 	cfg := cert.Config{
 		CommonName:   "ca",
@@ -53,7 +64,7 @@ func (cs *CertStore) InitCA() error {
 	}
 	crt, err := cert.NewSelfSignedCACert(cfg, key)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to generate self-signed certificate. Reason: %v", err)
 	}
 	err = cs.Write("ca", crt, key)
 	if err != nil {
@@ -98,11 +109,11 @@ func (cs *CertStore) NewServerCertPair(cn string, sans cert.AltNames) ([]byte, [
 	}
 	key, err := cert.NewPrivateKey()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("failed to generate private key. Reason: %v", err)
 	}
 	crt, err := cert.NewSignedCert(cfg, key, cs.caCert, cs.caKey)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("failed to generate server certificate. Reason: %v", err)
 	}
 	return cert.EncodeCertPEM(crt), cert.EncodePrivateKeyPEM(key), nil
 }
@@ -115,11 +126,11 @@ func (cs *CertStore) NewClientCertPair(cn string, organization ...string) ([]byt
 	}
 	key, err := cert.NewPrivateKey()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("failed to generate private key. Reason: %v", err)
 	}
 	crt, err := cert.NewSignedCert(cfg, key, cs.caCert, cs.caKey)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("failed to generate server certificate. Reason: %v", err)
 	}
 	return cert.EncodeCertPEM(crt), cert.EncodePrivateKeyPEM(key), nil
 }

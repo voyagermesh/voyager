@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"strings"
+
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
@@ -541,11 +543,7 @@ var _ = Describe("IngressOperations", func() {
 	})
 
 	Describe("With CORS Enabled", func() {
-		BeforeEach(func() {
-			ing.Annotations[api.CORSEnabled] = "true"
-		})
-
-		It("Should Response CORS", func() {
+		shouldResponseCORS := func() {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
@@ -560,6 +558,19 @@ var _ = Describe("IngressOperations", func() {
 					Expect(r.ResponseHeader.Get("Access-Control-Allow-Origin")).Should(Equal("test.e2e"))
 			})
 			Expect(err).NotTo(HaveOccurred())
+		}
+		Context("Engress key", func() {
+			BeforeEach(func() {
+				ing.Annotations[api.CORSEnabled] = "true"
+			})
+			It("Should Response CORS", shouldResponseCORS)
+		})
+		Context("Ingress key", func() {
+			BeforeEach(func() {
+				key := api.IngressKey + strings.TrimPrefix(api.CORSEnabled, api.EngressKey)
+				ing.Annotations[key] = "true"
+			})
+			It("Should Response CORS", shouldResponseCORS)
 		})
 	})
 

@@ -7,14 +7,15 @@ import:
 - package: github.com/Azure/go-autorest
   version: ~8.1.1
 - package: github.com/appscode/go
+  version: master
 - package: github.com/appscode/haproxy_exporter
   version: 0.8.1
 - package: github.com/appscode/kloader
   version: 5.0.0
-- package: github.com/appscode/kutil
-  version: release-5.0
 - package: github.com/appscode/kube-mon
   version: master
+- package: github.com/appscode/kutil
+  version: release-5.0
 - package: github.com/appscode/pat
 - package: github.com/aws/aws-sdk-go
   version: v1.7.0
@@ -25,13 +26,16 @@ import:
   version: client-go-5
 - package: github.com/ghodss/yaml
   version: v1.0.0
+- package: github.com/go-openapi/spec
 - package: github.com/golang/glog
+- package: github.com/google/go-cmp
+  version: master
 - package: github.com/hashicorp/go-version
   repo: https://github.com/appscode/go-version.git
   vcs: git
   version: master
 - package: github.com/hashicorp/vault
-  version: v0.8.3
+  version: v0.9.1
 - package: github.com/jpillora/go-ogle-analytics
 - package: github.com/moul/http2curl
 - package: github.com/onsi/ginkgo
@@ -39,14 +43,11 @@ import:
 - package: github.com/onsi/gomega
   version: v1.2.0
 - package: github.com/orcaman/concurrent-map
-- package: github.com/pkg/errors
-  version: v0.8.0
+- package: github.com/pires/go-proxyproto
 - package: github.com/prometheus/client_golang
   version: v0.8.0
 - package: github.com/prometheus/common
   version: 3233b24a36715a2fe36d162260457857a56d672d
-- package: github.com/sirupsen/logrus
-  version: v1.0.3
 - package: github.com/spf13/afero
   version: master
 - package: github.com/spf13/cobra
@@ -62,27 +63,22 @@ import:
   repo: https://github.com/appscode/oauth2.git
   vcs: git
   version: master
-- package: github.com/kelseyhightower/passwd
-  version: master
 - package: google.golang.org/api
 - package: gopkg.in/gcfg.v1
-  version: v1.2.0
+  version: v1.2.1
 - package: k8s.io/api
+  version: kubernetes-1.8.3
+- package: k8s.io/apiextensions-apiserver
   version: kubernetes-1.8.3
 - package: k8s.io/apimachinery
   version: kubernetes-1.8.3
 - package: k8s.io/client-go
   version: kubernetes-1.8.3
-- package: k8s.io/apiextensions-apiserver
-  version: release-1.8
+- package: k8s.io/kube-openapi
 - package: k8s.io/kubernetes
   repo: https://github.com/appscode/kubernetes.git
   version: v1.8.3
   vcs: git
-- package: github.com/google/uuid
-  version: master
-- package: github.com/pires/go-proxyproto
-  version: master
 testImport:
 - package: github.com/stretchr/testify
-  version: v1.1.4
+  version: v1.2.0
