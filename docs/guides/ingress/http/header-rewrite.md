@@ -42,5 +42,5 @@ The rules specified in `rewriteRule` are used to modify the request url includin
 will add an `/testings` prefix in every request URI before forwarding it to backend.
 
 ## Next Reading
-- [TCP Loadbalancing](tcp.md)
-- [TLS Termination](tls.md)
+- [TCP Loadbalancing](../tcp/tcp.md)
+- [TLS Termination](../tls/tls.md)

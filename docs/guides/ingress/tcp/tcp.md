@@ -62,4 +62,4 @@ For this Ingress, HAProxy will open up 3 separate ports:
 
 
 ## Next Reading
-- [TLS Termination](tls.md)
+- [TLS Termination](../tls/tls.md)

@@ -76,6 +76,6 @@ spec:
 ## Next Reading
 - [Virtual Hosting](named-virtual-hosting.md)
 - [URL and Header Rewriting](header-rewrite.md)
-- [TCP Loadbalancing](tcp.md)
-- [TLS Termination](tls.md)
-- [Configure Custom Timeouts for HAProxy](configure-timeouts.md)
+- [TCP Loadbalancing](../tcp/tcp.md)
+- [TLS Termination](../tls/tls.md)
+- [Configure Custom Timeouts for HAProxy](../configuration/configure-timeouts.md)
