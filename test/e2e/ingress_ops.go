@@ -565,7 +565,7 @@ var _ = Describe("IngressOperations", func() {
 		})
 		Context("Ingress key", func() {
 			BeforeEach(func() {
-				key, err := api.ToIngressKey(api.CORSEnabled)
+				key, err := api.toIngressKey(api.CORSEnabled)
 				Expect(err).NotTo(HaveOccurred())
 				ing.Annotations[key] = "true"
 			})

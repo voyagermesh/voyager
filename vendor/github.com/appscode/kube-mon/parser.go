@@ -18,7 +18,7 @@ const (
 )
 
 func Parse(annotations map[string]string, keyPrefix string, defaultExporterPort int32) (*api.AgentSpec, error) {
-	name := meta.GetString(annotations, path.Join(keyPrefix, monitoringAgent))
+	name, _ := meta.GetString(annotations, path.Join(keyPrefix, monitoringAgent))
 	if name == "" {
 		return nil, nil
 	}
@@ -29,7 +29,7 @@ func Parse(annotations map[string]string, keyPrefix string, defaultExporterPort 
 	case api.AgentCoreOSPrometheus:
 		var prom api.PrometheusSpec
 
-		prom.Namespace = meta.GetString(annotations, path.Join(keyPrefix, serviceMonitorNamespace))
+		prom.Namespace, _ = meta.GetString(annotations, path.Join(keyPrefix, serviceMonitorNamespace))
 		if prom.Namespace == "" {
 			return nil, fmt.Errorf("missing %s annotation", path.Join(keyPrefix, serviceMonitorNamespace))
 		}
@@ -52,7 +52,7 @@ func Parse(annotations map[string]string, keyPrefix string, defaultExporterPort 
 			prom.Port = int32(port)
 		}
 
-		prom.Interval = meta.GetString(annotations, path.Join(keyPrefix, serviceMonitorScrapeInterval))
+		prom.Interval, _ = meta.GetString(annotations, path.Join(keyPrefix, serviceMonitorScrapeInterval))
 
 		return &api.AgentSpec{Agent: agent, Prometheus: &prom}, nil
 	case api.AgentPrometheusBuiltin:

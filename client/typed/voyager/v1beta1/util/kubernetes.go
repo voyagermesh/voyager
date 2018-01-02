@@ -5,7 +5,7 @@ import (
 
 	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/kubernetes/apimachinery/pkg/conversion"
+	"k8s.io/apimachinery/pkg/conversion"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 

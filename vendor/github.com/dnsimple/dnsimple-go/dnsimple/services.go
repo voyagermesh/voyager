@@ -12,16 +12,6 @@ type ServicesService struct {
 	client *Client
 }
 
-// ServiceSetting represents a single group of settings for a DNSimple Service.
-type ServiceSetting struct {
-	Name        string `json:"name,omitempty"`
-	Label       string `json:"label,omitempty"`
-	Append      string `json:"append,omitempty"`
-	Description string `json:"description,omitempty"`
-	Example     string `json:"example,omitempty"`
-	Password    bool   `json:"password,omitempty"`
-}
-
 // Service represents a Service in DNSimple.
 type Service struct {
 	ID               int              `json:"id,omitempty"`
@@ -36,6 +26,16 @@ type Service struct {
 	Settings         []ServiceSetting `json:"settings,omitempty"`
 }
 
+// ServiceSetting represents a single group of settings for a DNSimple Service.
+type ServiceSetting struct {
+	Name        string `json:"name,omitempty"`
+	Label       string `json:"label,omitempty"`
+	Append      string `json:"append,omitempty"`
+	Description string `json:"description,omitempty"`
+	Example     string `json:"example,omitempty"`
+	Password    bool   `json:"password,omitempty"`
+}
+
 func servicePath(serviceID string) (path string) {
 	path = "/services"
 	if serviceID != "" {
@@ -44,14 +44,14 @@ func servicePath(serviceID string) (path string) {
 	return
 }
 
-// ServiceResponse represents a response from an API method that returns a Service struct.
-type ServiceResponse struct {
+// serviceResponse represents a response from an API method that returns a Service struct.
+type serviceResponse struct {
 	Response
 	Data *Service `json:"data"`
 }
 
-// ServicesResponse represents a response from an API method that returns a collection of Service struct.
-type ServicesResponse struct {
+// servicesResponse represents a response from an API method that returns a collection of Service struct.
+type servicesResponse struct {
 	Response
 	Data []Service `json:"data"`
 }
@@ -59,9 +59,9 @@ type ServicesResponse struct {
 // ListServices lists the one-click services available in DNSimple.
 //
 // See https://developer.dnsimple.com/v2/services/#list
-func (s *ServicesService) ListServices(options *ListOptions) (*ServicesResponse, error) {
+func (s *ServicesService) ListServices(options *ListOptions) (*servicesResponse, error) {
 	path := versioned(servicePath(""))
-	servicesResponse := &ServicesResponse{}
+	servicesResponse := &servicesResponse{}
 
 	path, err := addURLQueryOptions(path, options)
 	if err != nil {
@@ -80,9 +80,9 @@ func (s *ServicesService) ListServices(options *ListOptions) (*ServicesResponse,
 // GetService fetches a one-click service.
 //
 // See https://developer.dnsimple.com/v2/services/#get
-func (s *ServicesService) GetService(serviceIdentifier string) (*ServiceResponse, error) {
+func (s *ServicesService) GetService(serviceIdentifier string) (*serviceResponse, error) {
 	path := versioned(servicePath(serviceIdentifier))
-	serviceResponse := &ServiceResponse{}
+	serviceResponse := &serviceResponse{}
 
 	resp, err := s.client.get(path, serviceResponse)
 	if err != nil {
