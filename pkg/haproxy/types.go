@@ -29,7 +29,7 @@ type SharedInfo struct {
 	// Add accept-proxy to bind statements
 	AcceptProxy           bool
 	DefaultBackend        *Backend
-	EnableCORS            bool
+	CORSConfig            CORSConfig
 	ProxyBodySize         string
 	EnableHSTS            bool
 	HSTSMaxAge            int
@@ -39,6 +39,14 @@ type SharedInfo struct {
 	MaxConnections        int
 	ForceMatchServicePort bool
 	Limit                 *Limit
+}
+
+type CORSConfig struct {
+	CORSEnabled          bool
+	CORSAllowedOrigin    string
+	CORSAllowedMethods   string
+	CORSAllowedHeaders   string
+	CORSAllowCredentials bool
 }
 
 type StatsInfo struct {

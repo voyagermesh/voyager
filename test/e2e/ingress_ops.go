@@ -3,9 +3,8 @@ package e2e
 import (
 	"errors"
 	"net/http"
-	"time"
-
 	"strings"
+	"time"
 
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -549,14 +548,16 @@ var _ = Describe("IngressOperations", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTPWithHeader(framework.MaxRetry, ing, eps, "GET", "/testpath/ok", map[string]string{
-				"Origin": "test.e2e",
-			}, func(r *client.Response) bool {
-				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
-					Expect(r.Method).Should(Equal("GET")) &&
-					Expect(r.Path).Should(Equal("/testpath/ok")) &&
-					Expect(r.ResponseHeader.Get("Access-Control-Allow-Origin")).Should(Equal("test.e2e"))
-			})
+			err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET", "/testpath/ok",
+				func(r *client.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath/ok")) &&
+						Expect(r.ResponseHeader.Get("Access-Control-Allow-Origin")).Should(Equal("*")) &&
+						Expect(r.ResponseHeader.Get("Access-Control-Allow-Credentials")).Should(Equal("true")) &&
+						Expect(r.ResponseHeader.Get("Access-Control-Allow-Methods")).Should(Equal(api.CORSDefaultAllowedMethods)) &&
+						Expect(r.ResponseHeader.Get("Access-Control-Allow-Headers")).Should(Equal(api.CORSDefaultAllowedHeaders))
+				})
 			Expect(err).NotTo(HaveOccurred())
 		}
 		Context("Engress key", func() {
@@ -571,6 +572,31 @@ var _ = Describe("IngressOperations", func() {
 				ing.Annotations[key] = "true"
 			})
 			It("Should Response CORS", shouldResponseCORS)
+		})
+		Context("Origin and Method specified", func() {
+			BeforeEach(func() {
+				ing.Annotations[api.CORSEnabled] = "true"
+				ing.Annotations[api.CORSAllowedOrigin] = "test.e2e"
+				ing.Annotations[api.CORSAllowedMethods] = "GET,PUT"
+			})
+			It("Should Response CORS", func() {
+				By("Getting HTTP endpoints")
+				eps, err := f.Ingress.GetHTTPEndpoints(ing)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+				err = f.Ingress.DoHTTP(framework.NoRetry, "", ing, eps, "GET", "/testpath/ok",
+					func(r *client.Response) bool {
+						return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+							Expect(r.Method).Should(Equal("GET")) &&
+							Expect(r.Path).Should(Equal("/testpath/ok")) &&
+							Expect(r.ResponseHeader.Get("Access-Control-Allow-Origin")).Should(Equal("test.e2e")) &&
+							Expect(r.ResponseHeader.Get("Access-Control-Allow-Credentials")).Should(Equal("true")) &&
+							Expect(r.ResponseHeader.Get("Access-Control-Allow-Methods")).Should(Equal("GET,PUT")) &&
+							Expect(r.ResponseHeader.Get("Access-Control-Allow-Headers")).Should(Equal(api.CORSDefaultAllowedHeaders))
+					})
+				Expect(err).NotTo(HaveOccurred())
+			})
 		})
 	})
 

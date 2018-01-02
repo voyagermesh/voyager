@@ -201,7 +201,11 @@ const (
 	// frontend. If we need to add cors headers only on specific frontend we can also
 	// configure this using FrontendRules for specific frontend.
 	// http://blog.nasrulhazim.com/2017/07/haproxy-setting-up-cors/
-	CORSEnabled = EngressKey + "/enable-cors"
+	CORSEnabled          = EngressKey + "/enable-cors"
+	CORSAllowedMethods   = EngressKey + "/cors-allow-methods"
+	CORSAllowedHeaders   = EngressKey + "/cors-allow-headers"
+	CORSAllowedOrigin    = EngressKey + "/cors-allow-origin"
+	CORSAllowCredentials = EngressKey + "/cors-allow-credentials"
 
 	// Maximum http request body size. This returns the advertised length of the HTTP request's body in bytes. It
 	// will represent the advertised Content-Length header
@@ -264,6 +268,10 @@ var IngressKeys = sets.NewString(
 	AuthTLSErrorPage,
 	AuthTLSVerifyClient,
 	CORSEnabled,
+	CORSAllowedMethods,
+	CORSAllowedHeaders,
+	CORSAllowedOrigin,
+	CORSAllowCredentials,
 	ProxyBodySize,
 	SSLPassthrough,
 	EnableHSTS,
@@ -360,9 +368,43 @@ func (r Ingress) StickySessionCookieHashType() string {
 	return v
 }
 
+const (
+	// ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/annotations.md#cors-related
+	CORSDefaultAllowedMethods = "GET,PUT,POST,DELETE,PATCH,OPTIONS"
+	CORSDefaultAllowedHeaders = "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
+)
+
 func (r Ingress) EnableCORS() bool {
 	v, _ := getBool(r.Annotations, CORSEnabled)
 	return v
+}
+
+func (r Ingress) AllowedCORSOrigin() string {
+	if v, err := getString(r.Annotations, CORSAllowedOrigin); err == nil {
+		return v
+	}
+	return "*" // default value
+}
+
+func (r Ingress) AllowedCORSMethods() string {
+	if v, err := getString(r.Annotations, CORSAllowedMethods); err == nil {
+		return v
+	}
+	return CORSDefaultAllowedMethods // default value
+}
+
+func (r Ingress) AllowedCORSHeaders() string {
+	if v, err := meta.GetString(r.Annotations, CORSAllowedHeaders); err == nil {
+		return v
+	}
+	return CORSDefaultAllowedHeaders // default value
+}
+
+func (r Ingress) AllowCORSCred() bool {
+	if v, err := meta.GetBool(r.Annotations, CORSEnabled); err == nil {
+		return v
+	}
+	return true // default value
 }
 
 func (r Ingress) ForceServicePort() bool {
