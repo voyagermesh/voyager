@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"strings"
+
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
@@ -565,8 +567,7 @@ var _ = Describe("IngressOperations", func() {
 		})
 		Context("Ingress key", func() {
 			BeforeEach(func() {
-				key, err := api.toIngressKey(api.CORSEnabled)
-				Expect(err).NotTo(HaveOccurred())
+				key := api.IngressKey + strings.TrimPrefix(api.CORSEnabled, api.EngressKey)
 				ing.Annotations[key] = "true"
 			})
 			It("Should Response CORS", shouldResponseCORS)

@@ -20,7 +20,7 @@ const (
 )
 
 // if ingressClass == "voyager", then only handle ingress that has voyager annotation
-// if ingressClass == "", then handle no annotaion or voyager annotation
+// if ingressClass == "", then handle no annotation or voyager annotation
 func (r Ingress) ShouldHandleIngress(ingressClass string) bool {
 	// https://github.com/appscode/voyager/blob/master/api/conversion_v1beta1.go#L44
 	if r.APISchema() == APISchemaEngress {

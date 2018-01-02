@@ -1,13 +1,13 @@
 package v1beta1
 
 import (
-	"encoding/json"
 	"fmt"
 	"net"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/appscode/kutil/meta"
 	"github.com/appscode/voyager/apis/voyager"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -37,6 +37,8 @@ const (
 
 	// Runs HAProxy on a specific set of a hosts.
 	NodeSelector = EngressKey + "/" + "node-selector"
+	// Deprecated
+	DaemonNodeSelector = EngressKey + "/" + "daemon.nodeSelector"
 
 	// Replicas specify # of HAProxy pods run (default 1)
 	Replicas = EngressKey + "/" + "replicas"
@@ -329,7 +331,7 @@ func (r Ingress) StatsLabels() map[string]string {
 }
 
 func (r Ingress) APISchema() string {
-	if v := GetString(r.Annotations, APISchema); v != "" {
+	if v, _ := getString(r.Annotations, APISchema); v != "" {
 		return v
 	}
 	return APISchemaEngress
@@ -338,155 +340,154 @@ func (r Ingress) APISchema() string {
 func (r Ingress) Sticky() bool {
 	// Specify a method to stick clients to origins across requests.
 	// Like nginx HAProxy only supports the value cookie.
-	if len(GetString(r.Annotations, IngressAffinity)) > 0 {
+	if v, _ := getString(r.Annotations, IngressAffinity); v != "" {
 		return true
 	}
-	v, _ := GetBool(r.Annotations, StickySession)
+	v, _ := getBool(r.Annotations, StickySession)
 	return v
 }
 
 func (r Ingress) StickySessionCookieName() string {
 	// When affinity is set to cookie, the name of the cookie to use.
-	cookieName := GetString(r.Annotations, IngressAffinitySessionCookieName)
-	if len(cookieName) > 0 {
-		return cookieName
+	if v, _ := getString(r.Annotations, IngressAffinitySessionCookieName); v != "" {
+		return v
 	}
 	return "SERVERID"
 }
 
 func (r Ingress) StickySessionCookieHashType() string {
-	return GetString(r.Annotations, IngressAffinitySessionCookieHash)
+	v, _ := getString(r.Annotations, IngressAffinitySessionCookieHash)
+	return v
 }
 
 func (r Ingress) EnableCORS() bool {
-	v, _ := GetBool(r.Annotations, CORSEnabled)
+	v, _ := getBool(r.Annotations, CORSEnabled)
 	return v
 }
 
 func (r Ingress) ForceServicePort() bool {
 	if r.LBType() == LBTypeNodePort {
-		v, _ := GetBool(r.Annotations, ForceServicePort)
+		v, _ := getBool(r.Annotations, ForceServicePort)
 		return v
 	}
 	return true
 }
 
 func (r Ingress) EnableHSTS() bool {
-	v, err := GetBool(r.Annotations, EnableHSTS)
-	if err != nil {
-		return true // enable hsts by default
+	if v, err := getBool(r.Annotations, EnableHSTS); err == nil {
+		return v
 	}
-	return v
+	return true // enable HSTS by default
 }
 
 func (r Ingress) HSTSMaxAge() int {
-	v := GetString(r.Annotations, HSTSMaxAge)
-	ageInSec, err := strconv.Atoi(v)
-	if err == nil {
+	v, _ := getString(r.Annotations, HSTSMaxAge)
+	if ageInSec, err := strconv.Atoi(v); err == nil {
 		return ageInSec
 	}
-	d, err := time.ParseDuration(v)
-	if err == nil {
+	if d, err := time.ParseDuration(v); err == nil {
 		return int(d.Seconds())
 	}
-	// default 6 months
-	return 15768000
+	return 15768000 // default 6 months
 }
 
 func (r Ingress) HSTSPreload() bool {
-	v, _ := GetBool(r.Annotations, HSTSPreload)
+	v, _ := getBool(r.Annotations, HSTSPreload)
 	return v
 }
 
 func (r Ingress) HSTSIncludeSubDomains() bool {
-	v, _ := GetBool(r.Annotations, HSTSIncludeSubDomains)
+	v, _ := getBool(r.Annotations, HSTSIncludeSubDomains)
 	return v
 }
 
 func (r Ingress) WhitelistSourceRange() string {
-	return GetString(r.Annotations, WhitelistSourceRange)
+	v, _ := getString(r.Annotations, WhitelistSourceRange)
+	return v
 }
 
 func (r Ingress) MaxConnections() int {
-	v, _ := GetInt(r.Annotations, MaxConnections)
+	v, _ := getInt(r.Annotations, MaxConnections)
 	return v
 }
 
 func (r Ingress) SSLRedirect() bool {
-	v, err := GetBool(r.Annotations, SSLRedirect)
-	if err == nil && !v {
-		return false
+	if v, err := getBool(r.Annotations, SSLRedirect); err == nil {
+		return v
 	}
-	return true
+	return true // ssl-redirect by default
 }
 
 func (r Ingress) ForceSSLRedirect() bool {
-	v, _ := GetBool(r.Annotations, ForceSSLRedirect)
+	v, _ := getBool(r.Annotations, ForceSSLRedirect)
 	return v
 }
 
 func (r Ingress) ProxyBodySize() string {
-	return GetString(r.Annotations, ProxyBodySize)
+	v, _ := getString(r.Annotations, ProxyBodySize)
+	return v
 }
 
 func (r Ingress) SSLPassthrough() bool {
-	v, _ := GetBool(r.Annotations, SSLPassthrough)
+	v, _ := getBool(r.Annotations, SSLPassthrough)
 	return v
 }
 
 func (r Ingress) Stats() bool {
-	v, _ := GetBool(r.Annotations, StatsOn)
+	v, _ := getBool(r.Annotations, StatsOn)
 	return v
 }
 
 func (r Ingress) StatsSecretName() string {
-	return GetString(r.Annotations, StatsSecret)
+	v, _ := getString(r.Annotations, StatsSecret)
+	return v
 }
 
 func (r Ingress) StatsPort() int {
-	if v, _ := GetInt(r.Annotations, StatsPort); v > 0 {
+	if v, _ := getInt(r.Annotations, StatsPort); v > 0 {
 		return v
 	}
 	return DefaultStatsPort
 }
 
 func (r Ingress) StatsServiceName() string {
-	if v := GetString(r.Annotations, StatsServiceName); v != "" {
+	if v, _ := getString(r.Annotations, StatsServiceName); v != "" {
 		return v
 	}
 	return VoyagerPrefix + r.Name + "-stats"
 }
 
 func (r Ingress) LBType() string {
-	if v := GetString(r.Annotations, LBType); v != "" {
+	if v, _ := getString(r.Annotations, LBType); v != "" {
 		return v
 	}
 	return LBTypeLoadBalancer
 }
 
 func (r Ingress) Replicas() int32 {
-	if v, _ := GetInt(r.Annotations, Replicas); v > 0 {
+	if v, _ := getInt(r.Annotations, Replicas); v > 0 {
 		return int32(v)
 	}
 	return 1
 }
 
 func (r Ingress) NodeSelector() map[string]string {
-	if v, _ := GetMap(r.Annotations, NodeSelector); len(v) > 0 {
+	if v, _ := getMap(r.Annotations, NodeSelector); len(v) > 0 {
 		return v
 	}
-	return ParseDaemonNodeSelector(GetString(r.Annotations, EngressKey+"/"+"daemon.nodeSelector"))
+	v, _ := getString(r.Annotations, DaemonNodeSelector)
+	return ParseDaemonNodeSelector(v)
 }
 
 func (r Ingress) LoadBalancerIP() net.IP {
-	if v := GetString(r.Annotations, LoadBalancerIP); v != "" {
+	if v, _ := getString(r.Annotations, LoadBalancerIP); v != "" {
 		return net.ParseIP(v)
 	}
 	return nil
 }
 
 func (r Ingress) ServiceAnnotations(provider string) (map[string]string, bool) {
-	ans, err := GetMap(r.Annotations, ServiceAnnotations)
+	ans, err := getMap(r.Annotations, ServiceAnnotations)
 	if err == nil {
 		filteredMap := make(map[string]string)
 		for k, v := range ans {
@@ -507,7 +508,7 @@ func (r Ingress) ServiceAnnotations(provider string) (map[string]string, bool) {
 }
 
 func (r Ingress) PodsAnnotations() (map[string]string, bool) {
-	ans, err := GetMap(r.Annotations, PodAnnotations)
+	ans, err := getMap(r.Annotations, PodAnnotations)
 	if err == nil {
 		filteredMap := make(map[string]string)
 		for k, v := range ans {
@@ -521,12 +522,12 @@ func (r Ingress) PodsAnnotations() (map[string]string, bool) {
 }
 
 func (r Ingress) KeepSourceIP() bool {
-	v, _ := GetBool(r.Annotations, KeepSourceIP)
+	v, _ := getBool(r.Annotations, KeepSourceIP)
 	return v
 }
 
 func (r Ingress) AcceptProxy() bool {
-	v, _ := GetBool(r.Annotations, AcceptProxy)
+	v, _ := getBool(r.Annotations, AcceptProxy)
 	return v
 }
 
@@ -551,7 +552,7 @@ var timeoutDefaults = map[string]string{
 }
 
 func (r Ingress) Timeouts() map[string]string {
-	ans, _ := GetMap(r.Annotations, DefaultsTimeOut)
+	ans, _ := getMap(r.Annotations, DefaultsTimeOut)
 	if ans == nil {
 		ans = make(map[string]string)
 	}
@@ -572,14 +573,14 @@ func (r Ingress) Timeouts() map[string]string {
 }
 
 func (r Ingress) HAProxyOptions() map[string]bool {
-	ans, _ := GetMap(r.Annotations, DefaultsOption)
+	ans, _ := getMap(r.Annotations, DefaultsOption)
 	if ans == nil {
 		ans = make(map[string]string)
 	}
 
 	ret := make(map[string]bool)
 	for k := range ans {
-		val, err := GetBool(ans, k)
+		val, err := meta.GetBool(ans, k)
 		if err != nil {
 			continue
 		}
@@ -595,67 +596,65 @@ func (r Ingress) HAProxyOptions() map[string]bool {
 }
 
 func (r Ingress) BasicAuthEnabled() bool {
-	if r.Annotations == nil {
-		return false
-	}
-
 	// Check auth type is basic; other auth mode is not supported
-	if val := GetString(r.Annotations, AuthType); val != "basic" {
-		return false
+	if v, _ := getString(r.Annotations, AuthType); v == "basic" {
+		// Check secret name is not empty
+		if s, _ := getString(r.Annotations, AuthSecret); s != "" {
+			return true
+		}
 	}
-
-	// Check secret name is not empty
-	if val := GetString(r.Annotations, AuthSecret); len(val) == 0 {
-		return false
-	}
-
-	return true
+	return false
 }
 
 func (r Ingress) RewriteTarget() string {
-	return GetString(r.Annotations, RewriteTarget)
+	v, _ := getString(r.Annotations, RewriteTarget)
+	return v
 }
 
 func (r Ingress) AuthRealm() string {
-	return GetString(r.Annotations, AuthRealm)
+	v, _ := getString(r.Annotations, AuthRealm)
+	return v
 }
 
 func (r Ingress) AuthSecretName() string {
-	return GetString(r.Annotations, AuthSecret)
+	v, _ := getString(r.Annotations, AuthSecret)
+	return v
 }
 
 func (r Ingress) AuthTLSSecret() string {
-	return GetString(r.Annotations, AuthTLSSecret)
+	v, _ := getString(r.Annotations, AuthTLSSecret)
+	return v
 }
 
 func (r Ingress) AuthTLSVerifyClient() TLSAuthVerifyOption {
-	str := GetString(r.Annotations, AuthTLSVerifyClient)
-	if str == string(TLSAuthVerifyOptional) {
+	if v, _ := getString(r.Annotations, AuthTLSVerifyClient); v == string(TLSAuthVerifyOptional) {
 		return TLSAuthVerifyOptional
 	}
 	return TLSAuthVerifyRequired
 }
 
 func (r Ingress) AuthTLSErrorPage() string {
-	return GetString(r.Annotations, AuthTLSErrorPage)
+	v, _ := getString(r.Annotations, AuthTLSErrorPage)
+	return v
 }
 
 func (r Ingress) ErrorFilesConfigMapName() string {
-	return GetString(r.Annotations, ErrorFiles)
+	v, _ := getString(r.Annotations, ErrorFiles)
+	return v
 }
 
 func (r Ingress) LimitRPS() int {
-	value, _ := GetInt(r.Annotations, LimitRPS)
+	value, _ := getInt(r.Annotations, LimitRPS)
 	return value
 }
 
 func (r Ingress) LimitRPM() int {
-	value, _ := GetInt(r.Annotations, LimitRPM)
+	value, _ := getInt(r.Annotations, LimitRPM)
 	return value
 }
 
 func (r Ingress) LimitConnections() int {
-	value, _ := GetInt(r.Annotations, LimitConnection)
+	value, _ := getInt(r.Annotations, LimitConnection)
 	return value
 }
 
@@ -678,69 +677,45 @@ func ParseDaemonNodeSelector(labels string) map[string]string {
 	return selectorMap
 }
 
-func ToIngressKey(key string) (string, error) {
+func toIngressKey(key string) (string, error) {
 	if IngressKeys.Has(key) {
 		return IngressKey + strings.TrimPrefix(key, EngressKey), nil
 	}
 	return "", fmt.Errorf("ingress key %s not found", key)
 }
 
-func GetBool(m map[string]string, key string) (bool, error) {
-	if m != nil {
-		if v, ok := m[key]; ok {
-			return strconv.ParseBool(v)
-		}
-		if key, err := ToIngressKey(key); err == nil {
-			if v, ok := m[key]; ok {
-				return strconv.ParseBool(v)
-			}
+func getBool(m map[string]string, key string) (bool, error) {
+	if ikey, err := toIngressKey(key); err == nil {
+		if v, err := meta.GetBool(m, ikey); err == nil {
+			return v, nil
 		}
 	}
-	return false, nil
+	return meta.GetBool(m, key)
 }
 
-func GetInt(m map[string]string, key string) (int, error) {
-	if m != nil {
-		if v, ok := m[key]; ok {
-			return strconv.Atoi(v)
-		}
-		if key, err := ToIngressKey(key); err == nil {
-			if v, ok := m[key]; ok {
-				return strconv.Atoi(v)
-			}
+func getInt(m map[string]string, key string) (int, error) {
+	if ikey, err := toIngressKey(key); err == nil {
+		if v, err := meta.GetInt(m, ikey); err == nil {
+			return v, nil
 		}
 	}
-	return 0, nil
+	return meta.GetInt(m, key)
 }
 
-func GetString(m map[string]string, key string) string {
-	if m != nil {
-		if v, ok := m[key]; ok {
-			return v
-		}
-		if key, err := ToIngressKey(key); err == nil {
-			if v, ok := m[key]; ok {
-				return v
-			}
+func getString(m map[string]string, key string) (string, error) {
+	if ikey, err := toIngressKey(key); err == nil {
+		if v, err := meta.GetString(m, ikey); err == nil {
+			return v, nil
 		}
 	}
-	return ""
+	return meta.GetString(m, key)
 }
 
-func GetMap(m map[string]string, key string) (map[string]string, error) {
-	if m != nil {
-		if s, ok := m[key]; ok {
-			v := make(map[string]string)
-			err := json.Unmarshal([]byte(s), &v)
-			return v, err
-		}
-		if key, err := ToIngressKey(key); err == nil {
-			if s, ok := m[key]; ok {
-				v := make(map[string]string)
-				err := json.Unmarshal([]byte(s), &v)
-				return v, err
-			}
+func getMap(m map[string]string, key string) (map[string]string, error) {
+	if ikey, err := toIngressKey(key); err == nil {
+		if v, err := meta.GetMap(m, ikey); err == nil {
+			return v, nil
 		}
 	}
-	return map[string]string{}, nil
+	return meta.GetMap(m, key)
 }
