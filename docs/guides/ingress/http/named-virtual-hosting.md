@@ -68,5 +68,5 @@ spec:
 
 ## Next Reading
 - [URL and Header Rewriting](header-rewrite.md)
-- [TCP Loadbalancing](tcp.md)
-- [TLS Termination](tls.md)
+- [TCP Loadbalancing](../tcp/tcp.md)
+- [TLS Termination](../tls/tls.md)

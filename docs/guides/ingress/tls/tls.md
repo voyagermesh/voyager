@@ -22,7 +22,7 @@ This tutorial will show you how to secure an Ingress using TLS/SSL certificates.
 
 At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [Minikube](https://github.com/kubernetes/minikube).
 
-Now, install Voyager operator in your `minikube` cluster following the steps [here](/docs/install.md).
+Now, install Voyager operator in your `minikube` cluster following the steps [here](/docs/setup/install.md).
 
 ```console
 minikube start
@@ -66,8 +66,8 @@ data:
 
 To issue a free TLS/SSL certificate from Let's Encrypt, create a `Certificate` object with the list of domains. To learn more, please visit the following links:
 
-- [Using HTTP-01 challenge](/docs/ddd)
-- [Using DNS-01 challenge](/docs/ddd)
+- [Using HTTP-01 challenge](/docs/guides/certificate/http.md)
+- [Using DNS-01 challenge](/docs/guides/certificate/providers.md)
 
 ## Secure HTTP Service
 
@@ -192,4 +192,4 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 kubectl delete ns demo
 ```
 
-If you would like to uninstall Voyager operator, please follow the steps [here](/docs/uninstall.md).
+If you would like to uninstall Voyager operator, please follow the steps [here](/docs/setup/uninstall.md).

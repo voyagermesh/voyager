@@ -23,33 +23,33 @@ This is built on top of the HAProxy, to support high availability, sticky sessio
 hosting. This plugin also support configurable application ports with all the features available in Kubernetes Ingress. [Read More](#what-is-appscode-ingress)
 
 **Features**
-  - [HTTP](/docs/guides/ingress/single-service.md) and [TCP](/docs/guides/ingress/tcp.md) loadbalancing,
-  - [TLS Termination](/docs/guides/ingress/tls.md),
+  - [HTTP](/docs/guides/ingress/http/single-service.md) and [TCP](/docs/guides/ingress/tcp/tcp.md) loadbalancing,
+  - [TLS Termination](/docs/guides/ingress/tls/tls.md),
   - Multi-cloud support,
-  - [Name and Path based virtual hosting](/docs/guides/ingress/named-virtual-hosting.md),
-  - [Cross namespace routing support](/docs/guides/ingress/named-virtual-hosting.md#cross-namespace-traffic-routing),
-  - [URL and Request Header Re-writing](/docs/guides/ingress/header-rewrite.md),
-  - [Wildcard Name based virtual hosting](/docs/guides/ingress/named-virtual-hosting.md),
+  - [Name and Path based virtual hosting](/docs/guides/ingress/http/named-virtual-hosting.md),
+  - [Cross namespace routing support](/docs/guides/ingress/http/named-virtual-hosting.md#cross-namespace-traffic-routing),
+  - [URL and Request Header Re-writing](/docs/guides/ingress/http/header-rewrite.md),
+  - [Wildcard Name based virtual hosting](/docs/guides/ingress/http/named-virtual-hosting.md),
   - Persistent sessions, Loadbalancer stats.
-  - [Route Traffic to StatefulSet Pods Based on Host Name](/docs/guides/ingress/statefulset-pod.md)
-  - [Weighted Loadbalancing for Canary Deployment](/docs/guides/ingress/weighted.md)
-  - [Customize generated HAProxy config via BackendRule](/docs/guides/ingress/backend-rule.md) (can be used for [http rewriting](https://www.haproxy.com/doc/aloha/7.0/haproxy/http_rewriting.html), add [health checks](https://www.haproxy.com/doc/aloha/7.0/haproxy/healthchecks.html), etc.)
-  - [Add Custom Annotation to LoadBalancer Service and Pods](/docs/guides/ingress/annotations.md)
-  - [Supports Loadbalancer Source Range](/docs/guides/ingress/source-range.md)
-  - [Supports redirects/DNS resolution for `ExternalName` type service](/docs/guides/ingress/external-svc.md)
-  - [Expose HAProxy stats for Prometheus](/docs/guides/ingress/stats-and-prometheus.md)
-  - [Supports AWS certificate manager](/docs/guides/ingress/aws-cert-manager.md)
+  - [Route Traffic to StatefulSet Pods Based on Host Name](/docs/guides/ingress/http/statefulset-pod.md)
+  - [Weighted Loadbalancing for Canary Deployment](/docs/guides/ingress/http/weighted.md)
+  - [Customize generated HAProxy config via BackendRule](/docs/guides/ingress/configuration/backend-rule.md) (can be used for [http rewriting](https://www.haproxy.com/doc/aloha/7.0/haproxy/http_rewriting.html), add [health checks](https://www.haproxy.com/doc/aloha/7.0/haproxy/healthchecks.html), etc.)
+  - [Add Custom Annotation to LoadBalancer Service and Pods](/docs/guides/ingress/configuration/annotations.md)
+  - [Supports Loadbalancer Source Range](/docs/guides/ingress/http/source-range.md)
+  - [Supports redirects/DNS resolution for `ExternalName` type service](/docs/guides/ingress/http/external-svc.md)
+  - [Expose HAProxy stats for Prometheus](/docs/guides/ingress/monitoring/stats-and-prometheus.md)
+  - [Supports AWS certificate manager](/docs/guides/ingress/tls/aws-cert-manager.md)
   - [Scale load balancer using HorizontalPodAutoscaling](/docs/guides/ingress/replicas-and-autoscaling.md)
-  - [Configure Custom Timeouts for HAProxy](/docs/guides/ingress/configure-timeouts.md)
-  - [Custom port for HTTP](/docs/guides/ingress/custom-http-port.md)
-  - [Specify NodePort](/docs/guides/ingress/node-port.md)
-  - [Backend TLS](/docs/guides/ingress/backend-tls.md)
-  - [Configure Options](/docs/guides/ingress/configure-options.md)
-  - [Using Custom HAProxy Templates](/docs/guides/ingress/custom-templates.md)
-  - [Configure Basic Auth for HTTP Backends](/docs/guides/ingress/basic-auth.md)
-  - [Configure Sticky session to Backends](/docs/guides/ingress/sticky-session.md)
-  - [Apply Frontend Rules](/docs/guides/ingress/frontend-rule.md)
-  - [Supported Annotations](/docs/guides/ingress/ingress-annotations.md)
+  - [Configure Custom Timeouts for HAProxy](/docs/guides/ingress/configuration/configure-timeouts.md)
+  - [Custom port for HTTP](/docs/guides/ingress/http/custom-http-port.md)
+  - [Specify NodePort](/docs/guides/ingress/configuration/node-port.md)
+  - [Backend TLS](/docs/guides/ingress/tls/backend-tls.md)
+  - [Configure Options](/docs/guides/ingress/configuration/configure-options.md)
+  - [Using Custom HAProxy Templates](/docs/guides/ingress/configuration/custom-templates.md)
+  - [Configure Basic Auth for HTTP Backends](/docs/guides/ingress/security/basic-auth.md)
+  - [Configure Sticky session to Backends](/docs/guides/ingress/http/sticky-session.md)
+  - [Apply Frontend Rules](/docs/guides/ingress/configuration/frontend-rule.md)
+  - [Supported Annotations](/docs/guides/ingress/configuration/annotations.md#ingress-annotations)
 
 ### Comparison with Kubernetes
 | Feauture | Kube Ingress | AppsCode Ingress |
@@ -133,7 +133,7 @@ annotations:
     }
 ```
 
-Below is the full list of supported annotation keys, [voyager also support standard ingress annotations](ingress-annotations.md):
+Below is the full list of supported annotation keys, [voyager also support standard ingress annotations](./configuration/annotations.md#ingress-annotations):
 
 |  Keys  |   Value   |  Default |  Description |
 |--------|-----------|----------|--------------|
@@ -168,19 +168,19 @@ ingress.appscode.com/load-balaner-ip
 The issue is being [tracked here.](https://github.com/appscode/voyager/issues/143)
 
 ## Next Reading
-- [Single Service example](single-service.md)
-- [Simple Fanout](simple-fanout.md)
-- [Virtual Hosting](named-virtual-hosting.md)
-- [URL and Header Rewriting](header-rewrite.md)
-- [TCP Loadbalancing](tcp.md)
-- [TLS Termination](tls.md)
-- [Route Traffic to StatefulSet Pods Based on Host Name](statefulset-pod.md)
-- [Weighted Loadbalancing on Canary Deployment](weighted.md)
-- [Supports full HAProxy Spectrum via BackendRule](backend-rule.md)
-- [Add Custom Annotation to LoadBalancer Service and Pods](annotations.md)
-- [Supports Loadbalancer Source Range](source-range.md)
-- [Supports redirects/DNS resolve for `ServiceTypeExternalName`](external-svc.md)
-- [Expose HAProxy stats and metrics, use prometheus with metrics](stats-and-prometheus.md)
+- [Single Service example](./http/single-service.md)
+- [Simple Fanout](./http/simple-fanout.md)
+- [Virtual Hosting](./http/named-virtual-hosting.md)
+- [URL and Header Rewriting](./http/header-rewrite.md)
+- [TCP Loadbalancing](./tcp/tcp.md)
+- [TLS Termination](./tls/tls.md)
+- [Route Traffic to StatefulSet Pods Based on Host Name](./http/statefulset-pod.md)
+- [Weighted Loadbalancing on Canary Deployment](./http/weighted.md)
+- [Supports full HAProxy Spectrum via BackendRule](./configuration/backend-rule.md)
+- [Add Custom Annotation to LoadBalancer Service and Pods](./configuration/annotations.md)
+- [Supports Loadbalancer Source Range](./http/source-range.md)
+- [Supports redirects/DNS resolve for `ServiceTypeExternalName`](./http/external-svc.md)
+- [Expose HAProxy stats and metrics, use prometheus with metrics](./monitoring/stats-and-prometheus.md)
 
 ## Example
 Check out examples for [complex ingress configurations](../../../hack/example/ingress.yaml).

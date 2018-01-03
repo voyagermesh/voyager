@@ -24,7 +24,7 @@ Please see the list of supported providers and the keys expected in credential p
    - `AWS_SECRET_ACCESS_KEY`: The secret corresponding to the access key
    - `AWS_HOSTED_ZONE_ID`: `Optional`. If AWS_HOSTED_ZONE_ID is not set, Voyager tries to determine the correct public hosted zone via the FQDN.
 
-To learn about necessary IAM permissions, please see [here](https://github.com/appscode/voyager/blob/cert-doc/docs/guides/certificate/route53.md#configure-iam-permissions).
+To learn about necessary IAM permissions, please see [here](/docs/guides/certificate/route53.md#configure-iam-permissions).
 
 ### Microsoft Azure
  - Provider: `azure` or `acs`
