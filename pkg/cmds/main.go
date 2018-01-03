@@ -31,7 +31,8 @@ func NewCmdVoyager(version string) *cobra.Command {
 			})
 			if enableAnalytics && gaTrackingCode != "" {
 				if client, err := ga.NewClient(gaTrackingCode); err == nil {
-					client.ClientID(analytics.ClientID())
+					opt.AnalyticsClientID = analytics.ClientID()
+					client.ClientID(opt.AnalyticsClientID)
 					parts := strings.Split(c.CommandPath(), " ")
 					client.Send(ga.NewEvent(parts[0], strings.Join(parts[1:], "/")).Label(version))
 				}

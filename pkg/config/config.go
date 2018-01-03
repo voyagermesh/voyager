@@ -19,6 +19,7 @@ type Options struct {
 	ResyncPeriod                time.Duration
 	HAProxyImage                string
 	ExporterSidecarImage        string
+	AnalyticsClientID           string
 }
 
 func (opt Options) WatchNamespace() string {
