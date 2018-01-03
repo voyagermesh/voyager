@@ -14,6 +14,7 @@ import (
 	"github.com/appscode/kube-mon/agents"
 	"github.com/appscode/kutil"
 	"github.com/appscode/kutil/meta"
+	"github.com/appscode/kutil/tools/analytics"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
@@ -613,6 +614,12 @@ func (c *nodePortController) newPods() *apps.Deployment {
 								"--boot-cmd=" + "/etc/sv/haproxy/reload",
 								"--configmap=" + c.Ingress.OffshootName(),
 								"--mount-location=" + "/etc/haproxy",
+							},
+							Env: []core.EnvVar{
+								{
+									Name:  analytics.Key,
+									Value: c.Opt.AnalyticsClientID,
+								},
 							},
 							Ports:     []core.ContainerPort{},
 							Resources: c.Ingress.Spec.Resources,

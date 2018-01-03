@@ -7,6 +7,7 @@ import (
 	"github.com/appscode/go/errors"
 	tools "github.com/appscode/kube-mon"
 	core_util "github.com/appscode/kutil/core/v1"
+	"github.com/appscode/kutil/tools/analytics"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -96,6 +97,12 @@ func (c *controller) getExporterSidecar() (*core.Container, error) {
 				"export",
 				fmt.Sprintf("--address=:%d", monSpec.Prometheus.Port),
 				"--v=3",
+			},
+			Env: []core.EnvVar{
+				{
+					Name:  analytics.Key,
+					Value: c.Opt.AnalyticsClientID,
+				},
 			},
 			Image:           c.Opt.ExporterSidecarImage,
 			ImagePullPolicy: core.PullIfNotPresent,
