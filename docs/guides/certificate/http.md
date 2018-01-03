@@ -14,7 +14,7 @@ section_menu_id: guides
 
 ## Deploy Voyager operator
 
-Deploy Voyager operator following instructions [here](/docs/install.md).
+Deploy Voyager operator following instructions [here](/docs/setup/install.md).
 
 ```console
 # install without RBAC

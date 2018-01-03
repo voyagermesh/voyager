@@ -21,7 +21,7 @@ Voyager Ingress controller.
 
 Before diving into the deep learn about TLS Auth with HAproxy.
 - [SSL Client certificate management at application level](https://www.haproxy.com/blog/ssl-client-certificate-management-at-application-level/)
-- [Clinet side ssl certificates](https://raymii.org/s/guides/haproxy_client_side_ssl_certificates.html)
+- [Clinet side ssl certificates](https://raymii.org/s/tutorials/haproxy_client_side_ssl_certificates.html)
 
 ## Using TLS Authentication
 

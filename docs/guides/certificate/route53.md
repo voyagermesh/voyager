@@ -27,7 +27,7 @@ Server Version: v1.7.10
 
 ## Deploy Voyager operator
 
-Deploy Voyager operator following instructions [here](/docs/install.md).
+Deploy Voyager operator following instructions [here](/docs/setup/install.md).
 
 ```console
 # install without RBAC
