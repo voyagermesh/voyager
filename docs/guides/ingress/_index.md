@@ -2,7 +2,7 @@
 title: Ingress
 menu:
   product_voyager_5.0.0-rc.10:
-    identifier: ingress
+    identifier: ingress-guides
     name: Ingress
     parent: guides
     weight: 100

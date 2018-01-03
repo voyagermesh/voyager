@@ -1,19 +1,21 @@
 ---
+title: Header and URL Rewriting | Voayger
 menu:
   product_voyager_5.0.0-rc.10:
-    name: Header Rewrite
-    parent: http
-    weight: 70
+    identifier: rewrite-http
+    name: Rewrite Support
+    parent: http-ingress
+    weight: 25
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
 ---
 
+# Header and URL Rewriting
 
-### Header and URL Rewriting
 AppsCode Ingress support header and URL modification at the loadbalancer level. To ensure simplicity,
-the header and rewrite rules follow the HAProxy syntax as it is.
-To add some rewrite rules in a http rule, the syntax is:
+the header and rewrite rules follow the HAProxy syntax as it is. To add some rewrite rules for a HTTP path, follow the example below:
+
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
@@ -40,7 +42,3 @@ the base URL the load balancer received the requests.
 
 The rules specified in `rewriteRule` are used to modify the request url including the host. Current example
 will add an `/testings` prefix in every request URI before forwarding it to backend.
-
-## Next Reading
-- [TCP Loadbalancing](../tcp/tcp.md)
-- [TLS Termination](../tls/tls.md)

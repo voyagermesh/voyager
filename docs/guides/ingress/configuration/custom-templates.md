@@ -1,14 +1,15 @@
 ---
+title: Using Custom HAProxy Templates | Kubernetes Ingress
 menu:
   product_voyager_5.0.0-rc.10:
+    identifier: custom-tpl-config
     name: Custom Templates
-    parent: configuration
-    weight: 55
+    parent: config-ingress
+    weight: 40
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
 ---
-
 
 # Using Custom HAProxy Templates
 
@@ -42,6 +43,7 @@ defaults
 ```
 
 Now create a ConfigMap using the defaults.cfg as key and the file content as the value.
+
 ```console
 $ kubectl create configmap -n kube-system voyager-templates --from-file=/tmp/defaults.cfg
 ```

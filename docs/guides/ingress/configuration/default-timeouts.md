@@ -1,14 +1,17 @@
 ---
+title: Customize Ingress Timeouts | Kubernetes Ingress
 menu:
   product_voyager_5.0.0-rc.10:
+    identifier: custom-timeouts-config
     name: Configure Timeouts
-    parent: configuration
-    weight: 40
+    parent: config-ingress
+    weight: 35
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
 ---
 
+# Customize Timeouts
 
 Custom timeouts can be configured for HAProxy via annotations. Supports all valid timeout option
 for defaults section of HAProxy. [Read More](https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.2-timeout%20check)

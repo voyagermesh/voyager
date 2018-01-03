@@ -1,10 +1,12 @@
 ---
+title: Issue Let's Encrypt certificate using Google Cloud DNS
+description: Issue Let's Encrypt certificate using Google Cloud DNS in Kubernetes
 menu:
   product_voyager_5.0.0-rc.10:
-    identifier: certificate-google-cloud
+    identifier: googlecloud-dns
     name: Google Cloud
-    parent: certificate
-    weight: 30
+    parent: dns-certificate
+    weight: 15
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
@@ -24,7 +26,7 @@ Server Version: v1.8.4-gke.0
 
 ## Deploy Voyager operator
 
-Deploy Voyager operator following instructions [here](/docs/install.md).
+Deploy Voyager operator following instructions [here](/docs/setup/install.md).
 
 ```console
 # install without RBAC

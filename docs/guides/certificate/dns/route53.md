@@ -1,10 +1,12 @@
 ---
+title: Issue Let's Encrypt certificate using AWS Route53
+description: Issue Let's Encrypt certificate using AWS Route53 in Kubernetes
 menu:
   product_voyager_5.0.0-rc.10:
-    identifier: certificate-route53
-    name: Route53
-    parent: certificate
-    weight: 50
+    identifier: route53-dns
+    name: AWS Route53
+    parent: dns-certificate
+    weight: 10
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides

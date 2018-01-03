@@ -1,16 +1,3 @@
----
-menu:
-  product_voyager_5.0.0-rc.10:
-    name: CoreOS Prometheus
-    parent: monitoring
-    weight: 10
-product_name: voyager
-menu_name: product_voyager_5.0.0-rc.10
-section_menu_id: guides
-aliases:
-  - /products/voyager/5.0.0-rc.10/guides/ingress/monitoring/ 
----
-
 
 ```console
 $ kubectl create -f ./docs/examples/monitoring/demo-0.yaml
@@ -70,15 +57,15 @@ prometheus-operated          None         <none>        9090/TCP              37
 test-server                  10.0.0.28    <none>        80/TCP                9m
 voyager-test-ingress         10.0.0.81    <pending>     80:30446/TCP          9m
 voyager-test-ingress-stats   10.0.0.36    <none>        56789/TCP,56790/TCP   6s
-~/g/s/g/a/v/h/deploy (d2) $ 
+~/g/s/g/a/v/h/deploy (d2) $
 ~/g/s/g/a/v/h/deploy (d2) $ kubectl get servicemonitor -n demo
 NAME                        KIND
 voyager-demo-test-ingress   ServiceMonitor.v1alpha1.monitoring.coreos.com
 ~/g/s/g/a/v/h/deploy (d2) $ kubectl get servicemonitor -n demo
 NAME                        KIND
 voyager-demo-test-ingress   ServiceMonitor.v1alpha1.monitoring.coreos.com
-~/g/s/g/a/v/h/deploy (d2) $ 
-~/g/s/g/a/v/h/deploy (d2) $ 
+~/g/s/g/a/v/h/deploy (d2) $
+~/g/s/g/a/v/h/deploy (d2) $
 ~/g/s/g/a/v/h/deploy (d2) $ kubectl get servicemonitor -n demo -o yaml
 apiVersion: v1
 items:
@@ -151,7 +138,7 @@ spec:
   type: ClusterIP
 status:
   loadBalancer: {}
-~/g/s/g/a/v/h/deploy (d2) $ 
+~/g/s/g/a/v/h/deploy (d2) $
 ```
 
 

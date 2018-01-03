@@ -1,18 +1,20 @@
 ---
+title: Backend TLS Support | Kubernetes Ingress
 menu:
   product_voyager_5.0.0-rc.10:
+    identifier: backend-tls
     name: Backend TLS
-    parent: tls
-    weight: 30
+    parent: tls-ingress
+    weight: 20
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
 ---
 
+# Backend TLS Support
 
 Voyager can connect to a tls enabled backend server with or without ssl verification.
 
-Available Options
    ssl:
     Creates a TLS/SSL socket when connecting to this server in order to cipher/decipher the traffic
 
@@ -39,8 +41,8 @@ Available Options
     If this annotation is not set HAProxy will connect to backend as http,
     This value should not be set if the backend do not support https resolution.
 
-Example
-```
+Example:
+```yaml
 kind: Service
 apiVersion: v1
 metadata:
@@ -57,7 +59,7 @@ spec:
 
 ```
 
-```
+```yaml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:

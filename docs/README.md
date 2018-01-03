@@ -1,22 +1,23 @@
 ---
-title: Overview | Voyager
-description: Overview of Voyager
+title: Weclome | Voyager
+description: Welcome to Voyager
 menu:
   product_voyager_5.0.0-rc.10:
-    identifier: overview-voyager
-    name: Overview
-    parent: getting-started
-    weight: 20
+    identifier: readme-voyager
+    name: Readme
+    parent: welcome
+    weight: -1
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
-section_menu_id: getting-started
-url: /products/voyager/5.0.0-rc.10/getting-started/
+section_menu_id: welcome
+url: /products/voyager/5.0.0-rc.10/welcome/
 aliases:
   - /products/voyager/5.0.0-rc.10/
   - /products/voyager/5.0.0-rc.10/README/
 ---
 
 # Voyager
+
 Voyager is a [HAProxy](http://www.haproxy.org/) backed secure L7 and L4 ingress controller for Kubernetes developed by [AppsCode](https://appscode.com). This can be used with any Kubernetes cloud providers including aws, gce, gke, azure, acs. This can also be used with bare metal Kubernetes clusters.
 
 From here you can learn all about Voyager's architecture and how to deploy and use Voyager.

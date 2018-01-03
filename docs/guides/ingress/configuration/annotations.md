@@ -1,18 +1,18 @@
 ---
-title: Annotations
+title: Supported Annotations | Kubernetes Ingress
 menu:
   product_voyager_5.0.0-rc.10:
+    identifier: annotation-config
     name: Annotations
-    parent: configuration
-    weight: 10
+    parent: config-ingress
+    weight: 20
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
-aliases:
-  - /products/voyager/5.0.0-rc.10/guides/ingress/configuration/
 ---
 
-# Configuration Options
+# Supported Annotations
+
 Voyager operator allows customization of Ingress resource using annotation keys with `ingress.appscode.com/` prefix.
 The ingress annotaiton keys are always string. Annotation values might have the following data types:
 
@@ -26,6 +26,7 @@ The ingress annotaiton keys are always string. Annotation values might have the 
 | enum | string which has a predefined set of valid values | 'E1'; "E2"  |
 
 If you are using YAML to write your Ingress, you can use any valid YAML syntax, including multi-line string. Here is an example:
+
 ```yaml
 annotations:
   ingress.appscode.com/type: LoadBalancer
@@ -69,6 +70,7 @@ Below is the full list of supported annotation keys, [voyager also support stand
 
 **Following annotations for ingress are not modifiable. The configuration is applied only when an Ingress object is created.
 If you need to update these annotations, then first delete the Ingress and then recreate.**
+
 ```
 ingress.appscode.com/type
 ingress.appscode.com/node-selector
@@ -85,6 +87,7 @@ set via two ingress options.
 Json encoded annotations map that will be applied to LoadBalancer service.
 
 ie.
+
 ```
 ingress.appscode.com/annotations-service = {"foo": "bar", "service-annotation": "set"}
 ```
@@ -95,6 +98,7 @@ This will add the `foo:bar` and `service-annotation:set` to the Service annotati
 Json encoded annotations map that will be applied to LoadBalancer pods.
 
 ie.
+
 ```
 ingress.appscode.com/annotations-pod = {"foo": "bar", "pod-annotation": "set"}
 ```
@@ -144,8 +148,8 @@ can be applied on ingress or backends.
 | annotations-service | [Add Custom Annotation to LoadBalancer Service](annotations.md)| ingress |
 | annotations-pod | [Add Custom Annotation to LoadBalancer Pods](annotations.md) | ingress |
 | accept-proxy | Accept proxy protocol | ingress |
-| default-timeout | [Configure Custom Timeouts for HAProxy](configure-timeouts.md) | ingress |
-| default-option | [Configure Options for HAProxy](configure-options.md) | ingress |
+| default-timeout | [Configure Custom Timeouts for HAProxy](default-timeouts.md) | ingress |
+| default-option | [Configure Options for HAProxy](default-options.md) | ingress |
 | backend-tls | [TLS enabled Backend](backend-tls.md) | service, ingress |
 | sticky-session (deprecated) | [Configure Sticky session to Backends](sticky-session.md) | service, ingress |
 | use-dns-resolver | [Supports redirects/DNS resolution for `ExternalName` type service](external-svc.md) | ingress |
@@ -154,15 +158,15 @@ can be applied on ingress or backends.
 | dns-resolver-retries | [Supports redirects/DNS resolution for `ExternalName` type service](external-svc.md) | ingress|
 | dns-resolver-timeout | [Supports redirects/DNS resolution for `ExternalName` type service](external-svc.md) |ingress|
 | dns-resolver-hold | [Supports redirects/DNS resolution for `ExternalName` type service](external-svc.md)|ingress|
-| stats | [Expose HAProxy stats](stats-and-prometheus.md) | ingress |
-| stats-port | [Expose HAProxy stats](stats-and-prometheus.md) | ingress |
-| stats-secret-name | [Expose HAProxy stats](stats-and-prometheus.md) | ingress |
-| stats-service-name | [Expose HAProxy stats](stats-and-prometheus.md) | ingress |
-| monitoring-agent | [Expose HAProxy stats using prometheus](stats-and-prometheus.md#using-prometheus) | ingress |
-| service-monitor-labels |[Expose HAProxy stats using prometheus](stats-and-prometheus.md#using-prometheus) | ingress |
-| service-monitor-namespace|[Expose HAProxy stats using prometheus](stats-and-prometheus.md#using-prometheus) | ingress |
-| service-monitor-endpoint-port|[Expose HAProxy stats using prometheus](stats-and-prometheus.md#using-prometheus) | ingress |
-| service-monitor-endpoint-scrape-interval |[Expose HAProxy stats using prometheus](stats-and-prometheus.md#using-prometheus) | ingress |
+| stats | [Expose HAProxy stats](stats.md) | ingress |
+| stats-port | [Expose HAProxy stats](stats.md) | ingress |
+| stats-secret-name | [Expose HAProxy stats](stats.md) | ingress |
+| stats-service-name | [Expose HAProxy stats](stats.md) | ingress |
+| monitoring-agent | [Expose HAProxy stats using prometheus](stats.md#using-prometheus) | ingress |
+| service-monitor-labels |[Expose HAProxy stats using prometheus](stats.md#using-prometheus) | ingress |
+| service-monitor-namespace|[Expose HAProxy stats using prometheus](stats.md#using-prometheus) | ingress |
+| service-monitor-endpoint-port|[Expose HAProxy stats using prometheus](stats.md#using-prometheus) | ingress |
+| service-monitor-endpoint-scrape-interval |[Expose HAProxy stats using prometheus](stats.md#using-prometheus) | ingress |
 
 
 ## Acknowledgements

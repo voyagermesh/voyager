@@ -1,21 +1,22 @@
 ---
+title: Frontend Ingress Rules| Voyager
 menu:
   product_voyager_5.0.0-rc.10:
+    identifier: frontend-rule-config
     name: Frontend Rule
-    parent: configuration
-    weight: 65
+    parent: config-ingress
+    weight: 15
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
 ---
 
+# Frontend Rules
 
-## Frontend Rules
 Frontend rules specify a set of rules that are applied to HAProxy frontend configuration.
 The set of keywords are from here https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.1.
 Only frontend sections can be applied here. **It is up to user to provide valid sets of rules**.
-This allows acls or other options in frontend sections in HAProxy config.
-Frontend rules will be mapped to `spec.rules` according to HAProxy port.
+This allows acls or other options in frontend sections in HAProxy config. Frontend rules will be mapped to `spec.rules` according to HAProxy port.
 
 
 ```yaml
@@ -99,6 +100,7 @@ spec:
 ### Why does not IP whitelisting work in LoadBalancer type Ingress in AWS?
 
 From [HAProxy official documentation](https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#5.1-accept-proxy):
+
  ```
 The PROXY protocol dictates the layer 3/4 addresses of the incoming connection
 to be used everywhere an address is used, with the only exception of

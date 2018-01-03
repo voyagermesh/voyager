@@ -1,18 +1,18 @@
 ---
+title: TCP LoadBalancing | Kubernetes Ingress
 menu:
   product_voyager_5.0.0-rc.10:
-    name: TCP
-    parent: tcp
+    identifier: overview-tcp
+    name: Overview
+    parent: tcp-ingress
     weight: 10
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
-aliases:
-  - /products/voyager/5.0.0-rc.10/guides/ingress/tcp/ 
 ---
 
-
 # TCP LoadBalancing
+
 TCP load balancing is one of the core features of Voyager Ingress. Voyager can handle TCP Load balancing with or without TLS. One Voyager Ingress can also be used to load balance both HTTP and TCP.
 
 One Simple TCP Rule Would be:
@@ -59,7 +59,3 @@ For this Ingress, HAProxy will open up 3 separate ports:
 
 ### Restrictions
  - For one Ingress, you cannot have multiple `tcp` rules listening to same port, even if they do not have same `host`.
-
-
-## Next Reading
-- [TLS Termination](../tls/tls.md)

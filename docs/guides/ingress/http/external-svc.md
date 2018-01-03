@@ -1,9 +1,11 @@
 ---
+title: Using External Service as Ingress Backend | Kubernetes Ingress
 menu:
   product_voyager_5.0.0-rc.10:
+    identifier: external-svc-backend-http
     name: External SVC
-    parent: http
-    weight: 60
+    parent: http-ingress
+    weight: 40
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
@@ -128,6 +130,7 @@ backend:
 ```
 
 The generated redirect line in HAProxy config:
+
 ```
 http-request redirect location http[s]://{{e.ExternalName}}:{{ e.Port }} code 301
 ```

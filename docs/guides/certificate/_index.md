@@ -2,7 +2,7 @@
 title: Certificate
 menu:
   product_voyager_5.0.0-rc.10:
-    identifier: certificate
+    identifier: certificate-guides
     name: Certificate
     parent: guides
     weight: 80

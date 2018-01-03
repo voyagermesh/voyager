@@ -1,20 +1,21 @@
 ---
+title: TLS | Kubernetes Ingress
 menu:
   product_voyager_5.0.0-rc.10:
-    name: TLS
-    parent: ingress
-    weight: 135
+    identifier: overview-tls
+    name: Overview
+    parent: tls-ingress
+    weight: 10
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
 ---
+
 > New to Voyager? Please start [here](/docs).
 
-## TLS
+# TLS
 You can secure an Ingress by specifying a secret containing TLS pem or by referring a `certificate.voyager.appscode.com` resource.
 `certificate.voyager.appscode.com` can manage an certificate resource and use that certificate to encrypt communication.
-
-# TLS
 
 This tutorial will show you how to secure an Ingress using TLS/SSL certificates.
 
@@ -71,15 +72,16 @@ To issue a free TLS/SSL certificate from Let's Encrypt, create a `Certificate` o
 
 ## Secure HTTP Service
 
-To terminate a HTTP service, 
+To terminate a HTTP service,
 
 Caveats:
 - You can't terminate default backend
 
 For HTTP, If the `spec.TLS` section in an Ingress specifies different hosts, they will be multiplexed
-on the same port according to hostname specified through SNI TLS extension (Voyager supports SNI). 
+on the same port according to hostname specified through SNI TLS extension (Voyager supports SNI).
 
 Referencing this secret in an Ingress will tell the Voyager to secure the channel from client to the loadbalancer using TLS:
+
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
@@ -107,6 +109,7 @@ terminate TLS at load balancer with the secret retried via SNI and forward unenc
 
 Adding a TCP TLS termination at Voyager Ingress is slightly different than HTTP, as TCP mode does not have
 SNI support. A TCP endpoint with TLS termination, will look like this in Voyager Ingress:
+
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress

@@ -1,18 +1,22 @@
 ---
+title: Forward Traffic to StatefulSet Pods | Kubernetes Ingress
 menu:
   product_voyager_5.0.0-rc.10:
+    identifier: statefulset-http
     name: Statefulset Pod
-    parent: http
-    weight: 115
+    parent: http-ingress
+    weight: 50
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
 ---
 
+# Forward Traffic to StatefulSet
 
-### Forward Traffic to StatefulSet
-There is the regular way to forward traffic to StatefulSet. Create a service with the pods label selector as
-selector, and use the service name as Backend ServiceName. By following:
+## Forward Traffic to all Pods of a StatefulSet
+
+There is the usual way of forwarding traffic to a Service matching a StatefulSet. Create a Service with the pods label selector as
+selector, and use the service name as Backend ServiceName.
 
 ```yaml
 apiVersion: apps/v1beta1
@@ -50,6 +54,7 @@ spec:
 ```
 
 Create another service for StatefulSets pods with selector.
+
 ```yaml
 apiVersion: v1
 kind: Service
@@ -67,6 +72,7 @@ spec:
 ```
 
 And Use the service in the ingress Backend service name, as:
+
 ```yaml
 backend:
   serviceName: nginx-service
@@ -76,9 +82,8 @@ backend:
 That will forward traffic to your StatefulSets Pods.
 
 
-#### Forward Traffic to specific Pods of a StatefulSet
-There is a way to send traffic to all or specific pod of a StatefulSet using voyager. You can set
-`hostNames` field in `Backend`, traffic will only forwarded to those pods.
+## Forward Traffic to specific Pods of a StatefulSet
+There is a way to send traffic to all or specific pod of a StatefulSet using voyager. You can set `hostNames` field in `Backend`, traffic will only forwarded to those pods.
 
 For Example the above StatefulSet will create two pod.
 ```

@@ -1,15 +1,19 @@
 ---
+title: Scaling Ingress | Voyager
 menu:
   product_voyager_5.0.0-rc.10:
-    name: Replicas And Autoscaling
-    parent: ingress
-    weight: 95
+    identifier: scaling-ingress
+    name: Scaling Ingress
+    parent: ingress-guides
+    weight: 45
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
 ---
 
-# Replicas
+# Scaling Ingress
+
+## Replicas
 
 For each Ingress resource, Voyager deploys HAProxy in a Deployment prefixed by
 `voyager-` and the name of the Ingress.
