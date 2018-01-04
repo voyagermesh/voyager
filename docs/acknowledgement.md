@@ -5,12 +5,14 @@ menu:
   product_voyager_5.0.0-rc.10:
     identifier: acknowledgement-voyager
     name: Acknowledgement
-    parent: getting-started
-    weight: 40
+    parent: welcome
+    weight: 20
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
-section_menu_id: getting-started
-url: /products/voyager/5.0.0-rc.10/getting-started/acknowledgement/
+section_menu_id: welcome
+url: /products/voyager/5.0.0-rc.10/welcome/acknowledgement/
+aliases:
+  - /products/voyager/5.0.0-rc.10/acknowledgement/
 ---
 
 # Acknowledgement

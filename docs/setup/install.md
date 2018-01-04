@@ -1,24 +1,21 @@
 ---
-title: Install | Voyager
+title: Install Voyager
 description: Voyager Install
 menu:
   product_voyager_5.0.0-rc.10:
     identifier: install-voyager
     name: Install
-    parent: getting-started
-    weight: 35
+    parent: setup
+    weight: 10
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
-section_menu_id: getting-started
-url: /products/voyager/5.0.0-rc.10/getting-started/install/
-aliases:
-  - /products/voyager/5.0.0-rc.10/install/
+section_menu_id: setup
 ---
 
 # Installation Guide
 
 ## Using YAML
-Voyager can be installed via installer script included in the [/hack/deploy](https://github.com/appscode/voyager/tree/5.0.0-rc.10/hack) folder.
+Voyager can be installed via installer script included in the [/hack/deploy](https://github.com/appscode/voyager/tree/5.0.0-rc.10/hack/deploy) folder.
 
 ```console
 # provider=acs
@@ -78,12 +75,12 @@ $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.10/hack
 
 
 ## Using Helm
-Voyager can be installed via [Helm](https://helm.sh/) using the [chart](/chart/stable/voyager) included in this repository or from official charts repository. To install the chart with the release name `my-release`:
+Voyager can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/appscode/voyager/tree/5.0.0-rc.10/chart/stable/voyager) included in this repository or from official charts repository. To install the chart with the release name `my-release`:
 ```console
 $ helm repo update
 $ helm install stable/voyager --name my-release
 ```
-To see the detailed configuration options, visit [here](/chart/stable/voyager/README.md).
+To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/5.0.0-rc.10/chart/stable/voyager).
 
 
 ## Verify installation

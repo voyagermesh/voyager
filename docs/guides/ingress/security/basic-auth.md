@@ -1,8 +1,10 @@
 ---
+title: Basic Authentication | Kubernetes Ingress
 menu:
   product_voyager_5.0.0-rc.10:
+    identifier: basic-auth-security
     name: Basic Auth
-    parent: security
+    parent: security-ingress
     weight: 10
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
@@ -59,6 +61,7 @@ $ rm -fv auth
 ```
 
 Create an Ingress with Basic Auth annotations
+
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
@@ -184,6 +187,7 @@ Content-Type: text/plain; charset=utf-8
 ```
 
 No auth enabled Backend
+
 ```console
 $ curl -i ip:port/no-auth
 HTTP/1.1 200 OK
@@ -195,6 +199,7 @@ Content-Type: text/plain; charset=utf-8
 
 ## Using Basic Auth In Frontend
 Basic Auth can also be configured per frontend in voyager ingress via FrontendRules.
+
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress

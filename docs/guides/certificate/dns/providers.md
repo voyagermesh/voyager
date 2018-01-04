@@ -1,10 +1,12 @@
 ---
+title: Supported DNS Challenge Providers
+description: Supported DNS Challenge Providers
 menu:
   product_voyager_5.0.0-rc.10:
-    identifier: certificate-provider
-    name: Providers
-    parent: certificate
-    weight: 40
+    identifier: providers-dns
+    name: Supported Providers
+    parent: dns-certificate
+    weight: 20
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
@@ -24,7 +26,7 @@ Please see the list of supported providers and the keys expected in credential p
    - `AWS_SECRET_ACCESS_KEY`: The secret corresponding to the access key
    - `AWS_HOSTED_ZONE_ID`: `Optional`. If AWS_HOSTED_ZONE_ID is not set, Voyager tries to determine the correct public hosted zone via the FQDN.
 
-To learn about necessary IAM permissions, please see [here](/docs/guides/certificate/route53.md#configure-iam-permissions).
+To learn about necessary IAM permissions, please see [here](/docs/guides/certificate/dns/route53.md).
 
 ### Microsoft Azure
  - Provider: `azure` or `acs`
@@ -83,7 +85,7 @@ To learn about necessary IAM permissions, please see [here](/docs/guides/certifi
    - `GCE_PROJECT`: The name of the Google Cloud project to use
    - `GOOGLE_SERVICE_ACCOUNT_JSON_KEY`: Service account json downloaded from Google Cloud console. This service account requires scope `https://www.googleapis.com/auth/ndev.clouddns.readwrite` to view and manage your DNS records hosted by Google Cloud DNS.
 
-If you are running your cluster on Google Cloud (GKE or GCE), Voyager can use default service account associated with a VM. Please see [here](/docs/guides/certificate/google-cloud.md#configure-service-account-permissions) for detailed instructions.
+If you are running your cluster on Google Cloud (GKE or GCE), Voyager can use default service account associated with a VM. Please see [here](/docs/guides/certificate/dns/google-cloud.md) for detailed instructions.
 
 ### Linode
  - Provider: `linode`
@@ -167,5 +169,6 @@ spec:
 ```
 
 For detailed guides on how to issue SSL certificates using Voyager, please see below:
-- [Issue Let's Encrypt certificate using AWS Route53](/docs/guides/certificate/route53.md)
-- [Issue Let's Encrypt certificate using Google Cloud DNS](/docs/guides/certificate/google-cloud.md)
+
+- [Issue Let's Encrypt certificate using AWS Route53](/docs/guides/certificate/dns/route53.md)
+- [Issue Let's Encrypt certificate using Google Cloud DNS](/docs/guides/certificate/dns/google-cloud.md)

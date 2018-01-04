@@ -1,17 +1,18 @@
 ---
+title: CORS | Kubernetes Ingress
 menu:
   product_voyager_5.0.0-rc.10:
+    identifier: cors-http
     name: CORS
-    parent: http
-    weight: 45
+    parent: http-ingress
+    weight: 30
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
-  - /products/voyager/5.0.0-rc.10/guides/ingress/http/
 ---
 
+# CORS
 
-## Enable CORS
 Applying `ingress.kubenretes.io/enable-cors` annotation in ingress enables CORS for all HTTP Frontend.
 
 ```yaml
@@ -39,6 +40,7 @@ spec:
 ```
 
 Applying the annotation in ingress will have the following effects, will add the CORS Header in the response.
+
 ```
 $ curl -v -X 'GET' -k -H 'Origin: foo.bar.com' 'http://foo.bar.com'
  HTTP/1.1 200 OK

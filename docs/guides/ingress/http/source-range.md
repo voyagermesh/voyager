@@ -1,16 +1,17 @@
 ---
+title: Loadbalancer Source Range | Kubernetes Ingress
 menu:
   product_voyager_5.0.0-rc.10:
     name: Source Range
-    parent: http
-    weight: 110
+    parent: http-ingress
+    weight: 20
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
 ---
 
+# Loadbalancer Source Range
 
-## Loadbalancer Source Range
 When using an Ingress with `ingress.appscode.com/type: LoadBalancer` annotation, you can specify the IP ranges
 that are allowed to access the load balancer by using `spec.loadBalancerSourceRanges`.
 This field takes a list of IP CIDR ranges, which will be forwarded to Kubernetes, that  will use to
@@ -41,7 +42,8 @@ spec:
 
 In the following example, a load balancer will be created that is only accessible to clients with
 IP addresses from 130.211.204.1 and 130.211.204.2.
-```
+
+```yaml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:

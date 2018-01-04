@@ -1,17 +1,18 @@
 ---
+title: Custom HTTP Port | Kubernetes Ingress
 menu:
   product_voyager_5.0.0-rc.10:
+    identifier: custom-port-http
     name: Custom HTTP Port
-    parent: http
-    weight: 50
+    parent: http-ingress
+    weight: 35
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
 ---
 
+# Custom HTTP Port
 
-
-## Custom HTTP Port
 Voyager 3.2+ supports using any non-standard port (beyond 80 and 443) for L7 traffic. If no port is specified, port 80 or 443 will be used depending on whether TLS is used or not.
 
 ```yaml
