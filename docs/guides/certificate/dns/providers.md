@@ -2,13 +2,13 @@
 title: Supported DNS Challenge Providers
 description: Supported DNS Challenge Providers
 menu:
-  product_voyager_5.0.0-rc.10:
+  product_voyager_5.0.0-rc.11:
     identifier: providers-dns
     name: Supported Providers
     parent: dns-certificate
     weight: 20
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.10
+menu_name: product_voyager_5.0.0-rc.11
 section_menu_id: guides
 ---
 

@@ -1,13 +1,13 @@
 ---
 title: Forward Traffic to StatefulSet Pods | Kubernetes Ingress
 menu:
-  product_voyager_5.0.0-rc.10:
+  product_voyager_5.0.0-rc.11:
     identifier: statefulset-http
     name: Statefulset Pod
     parent: http-ingress
     weight: 50
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.10
+menu_name: product_voyager_5.0.0-rc.11
 section_menu_id: guides
 ---
 
