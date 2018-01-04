@@ -1,16 +1,17 @@
 ---
+title: Specify Ingress NodePort | Kubernetes Ingress
 menu:
   product_voyager_5.0.0-rc.10:
-    name: Node Port
-    parent: configuration
-    weight: 90
+    identifier: nodeport-config
+    name: Specify NodePort
+    parent: config-ingress
+    weight: 25
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
 ---
 
-
-## Specify NodePort
+# Specify NodePort
 
 If you are using a `NodePort` or `LoadBalancer` type Ingress, a `NodePort` or `LoadBalancer` type Service is used to expose HAProxy pods respectively. If no node port is specified for each HAProxy Service port, Kubernetes will randomly assign one for you.
 
@@ -108,23 +109,23 @@ $ kubectl get configmap voyager-test-ingress -o yaml
 
 # Generated HAProxy config snippet
 frontend http-8989
-	bind *:8989 
+	bind *:8989
 	mode http
 	option httplog
 	option forwardfor
-	
+
 	acl host_acl_test-server.default:80-t3bu6y hdr(host) -i one.example.com:32666
 	acl url_acl_test-server.default:80-t3bu6y path_beg /t1
 	use_backend test-server.default:80-t3bu6y if host_acl_test-server.default:80-t3bu6y url_acl_test-server.default:80-t3bu6y
-	
+
 	acl host_acl_test-server.default:80-s46phe hdr(host) -i one.example.com:32666
 	acl url_acl_test-server.default:80-s46phe path_beg /t2
 	use_backend test-server.default:80-s46phe if host_acl_test-server.default:80-s46phe url_acl_test-server.default:80-s46phe
-	
+
 	acl host_acl_test-server.default:80-iv3d2y hdr(host) -i other.example.com:32666
-	
+
 	use_backend test-server.default:80-iv3d2y if host_acl_test-server.default:80-iv3d2y
-	
+
 
 backend test-server.default:80-t3bu6y
 	server pod-172.17.0.5 172.17.0.5:8080

@@ -1,16 +1,18 @@
 ---
-title: Backend Rule
+title: Backend Rules | Kubernetes Ingress
 menu:
   product_voyager_5.0.0-rc.10:
+    identifier: backend-config
     name: Backend Rule
-    parent: configuration
-    weight: 20
+    parent: config-ingress
+    weight: 10
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
 ---
 
-### BackendRule
+# Backend Rules
+
 Voyager supports full spectrum of HAProxy backend rules via `backendRule`. Read [more](https://cbonte.github.io/haproxy-dconv/1.7/configuration.html)
 about HAProxy backend rules.
 

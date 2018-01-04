@@ -1,19 +1,19 @@
 ---
+title: Blue Green Deployments | Kubernetes Ingress
 menu:
   product_voyager_5.0.0-rc.10:
-    name: Weighted
-    parent: http
-    weight: 140
+    identifier: blue-green-http
+    name: Blue Green Deployment
+    parent: http-ingress
+    weight: 60
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
 ---
 
+# Blue Green Deployments
 
-## Weighted Loadbalancing
-`Voayger` supports weighted loadbalancing on canary deployments.
-
-Following example illustrates an weighted loadbalance scenario.
+Voayger supports Blue Green deployments using weighted loadbalancing for backend pods. Following example illustrates a weighted loadbalance scenario.
 
 ```yaml
 apiVersion: extensions/v1beta1
@@ -89,7 +89,6 @@ spec:
         - containerPort: 8080
           name: http-1
           protocol: TCP
-
 ```
 
 Two different workload with the annotation `ingress.appscode.com/backend-weight` and one single service pointing to them
@@ -111,6 +110,7 @@ spec:
 ```
 
 The following ingress will forward 90% traffic to `deployment-1` and 10% to `deployment-2`
+
 ```yml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress

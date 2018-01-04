@@ -1,22 +1,24 @@
 ---
-title: Configure Options
+title: Default HAProxy Options | Kubernetes Ingress
 menu:
   product_voyager_5.0.0-rc.10:
-    name: Configure Options
-    parent: configuration
-    weight: 35
+    identifier: options-config
+    name: HAProxy Options
+    parent: config-ingress
+    weight: 30
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
 ---
 
+# Default HAProxy Options
 
-Voyager Supports all valid options for defaults section of HAProxy config
-https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.2-option%20abortonclose
-from the list from here
-expects a json encoded map
-ie: "ingress.appscode.com/default-option": {"http-keep-alive": "true", "dontlognull": "true", "clitcpka": "false"}
-This will be appended in the defaults section of HAProxy as
+Voyager Supports all valid options for [defaults section of HAProxy config](https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.2-option%20abortonclose). You can provide these options using a json encoded map in Ingress annotaiotns liek below:
+
+`ingress.appscode.com/default-option: '{"http-keep-alive": "true", "dontlognull": "true", "clitcpka": "false"}'`
+
+This will be appended in the defaults section of HAProxy as:
+
 ```
 option http-keep-alive
 option dontlognull
@@ -24,6 +26,7 @@ no option clitcpka
 
 ```
 Ingress Example:
+
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress

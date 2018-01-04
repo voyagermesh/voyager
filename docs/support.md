@@ -5,16 +5,18 @@ menu:
   product_voyager_5.0.0-rc.10:
     identifier: support-voyager
     name: Support
-    parent: getting-started
-    weight: 45
+    parent: welcome
+    weight: 25
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
-section_menu_id: getting-started
-url: /products/voyager/5.0.0-rc.10/getting-started/support/
+section_menu_id: welcome
+url: /products/voyager/5.0.0-rc.10/welcome/support/
+aliases:
+  - /products/voyager/5.0.0-rc.10/support/
 ---
 
 # Support
 
-If you have any questions, you can reach out to us.
-* [Slack](https://slack.appscode.com)
-* [Twitter](https://twitter.com/AppsCodeHQ)
+We use Slack for public discussions. To chit chat with us or the rest of the community, join us in the [AppsCode Slack team](https://appscode.slack.com/messages/C0XQFLGRM/details/) channel `#general`. To sign up, use our [Slack inviter](https://slack.appscode.com/).
+
+If you have found a bug with Voyager or want to request for new features, please [file an issue](https://github.com/appscode/voyager/issues/new).

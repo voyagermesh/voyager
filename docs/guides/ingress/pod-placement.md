@@ -1,4 +1,17 @@
-# Placement of HAProxy Pods
+---
+title: Placement of Ingress Pods | Voyager
+menu:
+  product_voyager_5.0.0-rc.10:
+    identifier: pod-placement-ingress
+    name: Pod Placement
+    parent: ingress-guides
+    weight: 50
+product_name: voyager
+menu_name: product_voyager_5.0.0-rc.10
+section_menu_id: guides
+---
+
+# Placement of Ingress Pods
 
 Voyager has rich support for how HAProxy pods are placed on cluster nodes. Please check [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/) to understand Kubernetes' support for pod placement.
 
@@ -6,7 +19,7 @@ Voyager has rich support for how HAProxy pods are placed on cluster nodes. Pleas
 
 At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [Minikube](https://github.com/kubernetes/minikube).
 
-Now, install Voyager operator in your `minikube` cluster following the steps [here](/docs/install.md).
+Now, install Voyager operator in your `minikube` cluster following the steps [here](/docs/setup/install.md).
 
 ```console
 minikube start

@@ -1,9 +1,11 @@
 ---
+title: TLS Authentication | Kubernetes Ingress
 menu:
   product_voyager_5.0.0-rc.10:
+    identifier: tls-auth-security
     name: TLS Auth
-    parent: security
-    weight: 40
+    parent: security-ingress
+    weight: 15
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
@@ -11,13 +13,10 @@ section_menu_id: guides
 
 # TLS Authentication
 
-This example demonstrates how to configure
-[TLS Authentication](https://tools.ietf.org/html/rfc2617) on
-Voyager Ingress controller.
+This example demonstrates how to configure [TLS Authentication](https://tools.ietf.org/html/rfc2617) on Voyager Ingress controller.
 
 - [Using tls auth in Ingress](#using-tls-authentication)
 - [Using tls auth in Frontend](#using-tls-auth-in-frontend)
-
 
 Before diving into the deep learn about TLS Auth with HAproxy.
 - [SSL Client certificate management at application level](https://www.haproxy.com/blog/ssl-client-certificate-management-at-application-level/)
@@ -34,16 +33,19 @@ Voyager Ingress read ca certificates from files stored on secrets with `ca.crt` 
 ### Configure
 
 Create tls secret for enable ssl termination:
+
 ```console
 $ kubectl create secret tls server --cert=/path/to/cert/file --key=/path/to/key/file
 ```
 
 Create ca cert secret:
+
 ```console
 $ kubectl create secret generic ca --from-file=/path/to/ca.crt
 ```
 
 Create an Ingress with TLS Auth annotations
+
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
@@ -72,6 +74,7 @@ spec:
 ```
 
 Test without certificates:
+
 ```console
 $ curl -i -vvv 'https://auth.example.com'
 * Hostname was NOT found in DNS cache
@@ -97,6 +100,7 @@ curl: (35) error:14094410:SSL routines:SSL3_READ_BYTES:sslv3 alert handshake fai
 ```
 
 Send a valid clinet certificate:
+
 ```console
 $ curl -v -s --key client.key --cert client.crt https://auth.example.com
 HTTP/1.1 200 OK
@@ -107,6 +111,7 @@ Content-Type: text/plain; charset=utf-8
 ```
 
 Send a invalid clinet certificate, that will redirect to error page if provided:
+
 ```console
 $ curl -v -s --key invalidclient.key --cert invalidclient.crt https://auth.example.com
 HTTP/1.1 302
@@ -115,6 +120,7 @@ Location: https://auth.example.com/errors.html
 
 ## Using TLS Auth In Frontend
 Basic Auth can also be configured per frontend in voyager ingress via FrontendRules.
+
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
@@ -158,6 +164,7 @@ spec:
 ```
 
 Request in non tls port:
+
 ```console
 $ curl -v -s https://auth.example.com
 HTTP/1.1 200 OK
@@ -167,8 +174,8 @@ Content-Type: text/plain; charset=utf-8
 
 ```
 
-
 Test without certificates:
+
 ```console
 $ curl -i -vvv 'https://auth.example.com:8080'
 * Hostname was NOT found in DNS cache
@@ -194,6 +201,7 @@ curl: (35) error:14094410:SSL routines:SSL3_READ_BYTES:sslv3 alert handshake fai
 ```
 
 Send a valid clinet certificate:
+
 ```console
 $ curl -v -s --key client.key --cert client.crt https://auth.example.com:8080
 HTTP/1.1 200 OK
@@ -205,11 +213,9 @@ Content-Type: text/plain; charset=utf-8
 backend server will receive Headers `X-SSL` and `X-SSL-Client-CN`.
 
 Send a invalid clinet certificate, that will redirect to error page if provided:
+
 ```console
 $ curl -v -s --key invalidclient.key --cert invalidclient.crt https://auth.example.com:8080
 HTTP/1.1 302
 Location: https://auth.example.com/errors.html
 ```
-
-## Acknowledgement
-  - This document has been adapted from [kubernetes/ingress](https://github.com/kubernetes/ingress/tree/master/examples/auth/basic/haproxy) project.

@@ -1,10 +1,11 @@
 ---
+title: Certificate FAQ | Voyager
 menu:
   product_voyager_5.0.0-rc.10:
-    identifier: certificate-faq
+    identifier: faq-certificate
     name: FAQ
-    parent: certificate
-    weight: 70
+    parent: certificate-guides
+    weight: 25
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
@@ -25,6 +26,7 @@ kubectl describe certificate <name> --namespace <namespace>
 ```
 
 You can also check the logs for voyager operator pod and look for anything suspicious.
+
 ```console
 kubectl logs -f <voyager-pod-name> -n kube-system
 ```
@@ -34,6 +36,7 @@ Please consult the official document on this matter: https://letsencrypt.org/doc
 
 ### How to use Let's Encrypt staging servers?
 If you are just testing Voyager and want to avoid hitting the rate limits in LE productoion environment, you have 2 options:
+
 - Buy a cheap domain for testing. There are lot of $0.99/yr domains available these days.
 - You can tell voyager to use the LE staging servers for issuing the certificate. The issued certificate is not trusted, hence should not be used in production websites. But this works great for testing purposes. To use the staging environment, set the key `ACME_SERVER_URL` in your acme secret in addition to your email address.
 
@@ -67,8 +70,9 @@ type: Opaque
 
 ### How can I distribute the issued ssl certificates?
 There are several options:
-- If you are trying to distribute the same ssl certificate across different namespaces of a cluster, you can use a tool like [kubed](https://github.com/appscode/kubed/blob/master/docs/guides/config-syncer.md).
-- If you want to distribute the issued certificates across different clusters, you can setup Voyager to issue certificates independently on each cluster. Please read the rate limiting restrictions for LE. The other option is to use [Kubernetes cluster federation](https://kubernetes.io/docs/guides/administer-federation/secret/) but it might not be worth the trouble if this is your only usecase for cluster federation.
+
+- If you are trying to distribute the same ssl certificate across different namespaces of a cluster, you can use a tool like [kubed](https://appscode.com/products/kubed).
+- If you want to distribute the issued certificates across different clusters, you can setup Voyager to issue certificates independently on each cluster. Please read the rate limiting restrictions for LE. The other option is to use [kubed](https://appscode.com/products/kubed).
 - Just manually copy paste the `tls-***` secret to your destination cluster or namespace.
 
 

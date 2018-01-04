@@ -1,6 +1,5 @@
 ---
-title: Setup
-description: Voyager Setup
+title: Setup | Voyager
 menu:
   product_voyager_5.0.0-rc.10:
     identifier: setup

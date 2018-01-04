@@ -1,16 +1,18 @@
 ---
+title: Exposing Service | Kubernetes Ingress
 menu:
   product_voyager_5.0.0-rc.10:
+    identifier: single-svc-http
     name: Single Service
-    parent: http
-    weight: 105
+    parent: http-ingress
+    weight: 10
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
 ---
 
+# Exposing Service via Ingress
 
-### Single Service Ingress
 There are existing Kubernetes concepts which allows you to expose a single service. However, you can do so
 through an AppsCode Ingress as well, simply by specifying a default backend with no rules.
 
@@ -62,6 +64,3 @@ This Ingress will forward traffic to `test-service` if request comes from the ho
 Other requests will be forwarded to default backend.
 
 Default Backend also supports `headerRule` and `rewriteRule`.
-
-## Next Reading
-- [Simple Fanout](simple-fanout.md)

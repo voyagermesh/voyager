@@ -1,15 +1,19 @@
 ---
+title: Using AWS Certificate Manager | Kubernetes Ingress
 menu:
   product_voyager_5.0.0-rc.10:
+    identifier: aws-cm-tls
     name: AWS Cert Manager
-    parent: tls
-    weight: 20
+    parent: tls-ingress
+    weight: 15
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
 section_menu_id: guides
 ---
 
-Voyager can use AWS certificate manager to terminate SSL connections for `LoadBalancer` type ingress in "aws" provider. To use this feature,
+# Using AWS Certificate Manager
+
+Voyager can use AWS certificate manager to terminate SSL connections for `LoadBalancer` type ingress in `aws` provider. To use this feature,
 add the following annotations to Ingress;
 
 ```yaml
@@ -25,7 +29,7 @@ Voyager operator will apply these annotation on `LoadBalancer` service used to e
 This service will (logically) listen on port 443, terminate SSL and forward to port 80 on HAProxy pods. Also,
 ELB will listen on port 80 and forward cleartext traffic to port 80.
 
-```
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -49,7 +53,6 @@ identify the protocol (HTTP or HTTPS) that a client used to connect to load bala
 like to redirect cleartext client traffic on port 80 to port 443, please add redirect backend rules
 when `X-Forwarded-Proto` header value is `HTTPS`. Please see the following ingress example and
 [example rules](https://www.exratione.com/2014/10/managing-haproxy-configuration-when-your-server-may-or-may-not-be-behind-an-ssl-terminating-proxy/).
-
 
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1

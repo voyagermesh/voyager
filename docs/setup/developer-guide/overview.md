@@ -9,10 +9,7 @@ menu:
     weight: 15
 product_name: voyager
 menu_name: product_voyager_5.0.0-rc.10
-section_menu_id: developer-guide
-url: /products/voyager/5.0.0-rc.10/developer-guide/
-aliases:
-  - /products/voyager/5.0.0-rc.10/developer-guide/README/
+section_menu_id: setup
 ---
 
 ## Development Guide
