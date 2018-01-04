@@ -28,7 +28,7 @@ is where you can learn about what Voyager does and how it does it.
 - [Setup](/docs/setup/). Setup contains instructions for installing
   the Voyager in various cloud providers.
 
-- [Guides](/docs/guides/). Guides show you how to perform tasks with Voyager. These are organized under [Ingress](/docs/guides/ingress) and [Certificate](/docs/guides/certificate).
+- Guides. Guides show you how to perform tasks with Voyager. These are organized under [Ingress](/docs/guides/ingress) and [Certificate](/docs/guides/certificate).
 
 - [Reference](/docs/reference/). Detailed exhaustive lists of
 command-line options, configuration options, API definitions, and procedures.
