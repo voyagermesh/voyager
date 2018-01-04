@@ -1,12 +1,12 @@
 ---
 title: Voyager Kloader Check
 menu:
-  product_voyager_5.0.0-rc.10:
+  product_voyager_5.0.0-rc.11:
     identifier: voyager-kloader-check
     name: Voyager Kloader Check
     parent: reference
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.10
+menu_name: product_voyager_5.0.0-rc.11
 section_menu_id: reference
 ---
 ## voyager kloader check

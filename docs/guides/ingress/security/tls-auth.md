@@ -1,13 +1,13 @@
 ---
 title: TLS Authentication | Kubernetes Ingress
 menu:
-  product_voyager_5.0.0-rc.10:
+  product_voyager_5.0.0-rc.11:
     identifier: tls-auth-security
     name: TLS Auth
     parent: security-ingress
     weight: 15
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.10
+menu_name: product_voyager_5.0.0-rc.11
 section_menu_id: guides
 ---
 

@@ -1,13 +1,13 @@
 ---
 title: Default HAProxy Options | Kubernetes Ingress
 menu:
-  product_voyager_5.0.0-rc.10:
+  product_voyager_5.0.0-rc.11:
     identifier: options-config
     name: HAProxy Options
     parent: config-ingress
     weight: 30
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.10
+menu_name: product_voyager_5.0.0-rc.11
 section_menu_id: guides
 ---
 

@@ -2,17 +2,17 @@
 title: Roadmap | Voyager
 description: Roadmap of voyager
 menu:
-  product_voyager_5.0.0-rc.10:
+  product_voyager_5.0.0-rc.11:
     identifier: roadmap-voyager
     name: Roadmap
     parent: welcome
     weight: 15
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.10
+menu_name: product_voyager_5.0.0-rc.11
 section_menu_id: welcome
-url: /products/voyager/5.0.0-rc.10/welcome/roadmap/
+url: /products/voyager/5.0.0-rc.11/welcome/roadmap/
 aliases:
-  - /products/voyager/5.0.0-rc.10/roadmap/
+  - /products/voyager/5.0.0-rc.11/roadmap/
 ---
 
 # Versioning Policy
