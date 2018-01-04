@@ -59,7 +59,7 @@ $ glide slow
 ```
 
 #### Build Docker images
-To build and push your custom Docker image, follow the steps below. To release a new version of Voyager, please follow the [release guide](/docs/developer-guide/release.md).
+To build and push your custom Docker image, follow the steps below. To release a new version of Voyager, please follow the [release guide](/docs/setup/developer-guide/release.md).
 
 ```console
 # Build Docker image

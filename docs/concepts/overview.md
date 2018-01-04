@@ -31,13 +31,13 @@ This also support configurable application ports with all the options available 
   - [HSTS](/docs/guides/ingress/http/hsts.md)
   - [Forward Traffic to StatefulSet Pods](/docs/guides/ingress/http/statefulset-pod.md)
   - [Configure Sticky session to Backends](/docs/guides/ingress/http/sticky-session.md)
-  - [Blue Green Deployments using weighted Loadbalancing](/docs/guides/ingress/http/weighted.md)
+  - [Blue Green Deployments using weighted Loadbalancing](/docs/guides/ingress/http/blue-green-deployment.md)
 - TLS/SSL
-  - [TLS Termination](/docs/guides/ingress/tls/tls.md)
+  - [TLS Termination](/docs/guides/ingress/tls/overview.md)
   - [Backend TLS](/docs/guides/ingress/tls/backend-tls.md)
   - [Supports AWS certificate manager](/docs/guides/ingress/tls/aws-cert-manager.md)
 - TCP
-  - [TCP LoadBalancing](/docs/guides/ingress/tcp/tcp.md)
+  - [TCP LoadBalancing](/docs/guides/ingress/tcp/overview.md)
 - Configuration
   - [Customize generated HAProxy config via BackendRule](/docs/guides/ingress/configuration/backend-rule.md) (can be used for [http rewriting](https://www.haproxy.com/doc/aloha/7.0/haproxy/http_rewriting.html), add [health checks](https://www.haproxy.com/doc/aloha/7.0/haproxy/healthchecks.html), etc.)
   - [Apply Frontend Rules](/docs/guides/ingress/configuration/frontend-rule.md)
