@@ -2,13 +2,13 @@
 title: Overview | Developer Guide
 description: Developer Guide Overview
 menu:
-  product_voyager_5.0.0-rc.10:
+  product_voyager_5.0.0-rc.11:
     identifier: developer-guide-readme
     name: Overview
     parent: developer-guide
     weight: 15
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.10
+menu_name: product_voyager_5.0.0-rc.11
 section_menu_id: setup
 ---
 
@@ -167,5 +167,5 @@ Following configurations can be enabled for test via flags in `./hack/make.py te
 
 ```console
 # Create Third Party Resources
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.10/apis/voyager/v1beta1/crds.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/apis/voyager/v1beta1/crds.yaml
 ```
