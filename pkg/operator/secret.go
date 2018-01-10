@@ -66,7 +66,7 @@ func (op *Operator) initSecretWatcher() cache.Controller {
 }
 
 func (op *Operator) IngressServiceUsesAuthSecret(ing *tapi.Ingress, secret *core.Secret) bool {
-	svcs, err := op.ServiceLister.List(labels.Everything())
+	svcs, err := op.svcLister.List(labels.Everything())
 	if err != nil {
 		log.Errorln(err)
 		return false

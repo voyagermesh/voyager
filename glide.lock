@@ -1,5 +1,5 @@
 hash: eac2079579d02a428a46bb2976ea1504d7472ba2284b529c06f3be74d002ae20
-updated: 2018-01-28T08:51:01.30361834-08:00
+updated: 2018-01-28T17:17:08.223741554-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -40,6 +40,7 @@ imports:
   version: 60ced7f055b34d512a84f65ca0a7d412ec3d6ef2
   subpackages:
   - apiextensions/v1beta1
+  - apps/v1beta1
   - core/v1
   - meta
   - rbac/v1beta1
@@ -144,7 +145,7 @@ imports:
 - name: github.com/dgrijalva/jwt-go
   version: 01aeca54ebda6e0fbfafd0a524d234159c05ec20
 - name: github.com/dnsimple/dnsimple-go
-  version: b43ddd3df165b3077b9f29bd1582280579325b56
+  version: e43ab24dc4818cd584429752f69885fbc8a74baa
   subpackages:
   - dnsimple
 - name: github.com/elazarl/go-bindata-assetfs

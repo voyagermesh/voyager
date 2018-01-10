@@ -7,7 +7,7 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/listers/voyager/voyager"
+	voyager "github.com/appscode/voyager/listers/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/ingress"
 	"github.com/golang/glog"
@@ -20,7 +20,6 @@ import (
 	"k8s.io/client-go/util/workqueue"
 )
 
-// Blocks caller. Intended to be called as a Go routine.
 func (op *Operator) initIngressCRDWatcher() {
 	lw := &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (rt.Object, error) {
@@ -117,39 +116,26 @@ func (op *Operator) runEngressWatcher() {
 }
 
 func (op *Operator) processNextEngress() bool {
-	// Wait until there is a new item in the working queue
 	key, quit := op.engQueue.Get()
 	if quit {
 		return false
 	}
-	// Tell the queue that we are done with processing this key. This unblocks the key for other workers
-	// This allows safe parallel processing because two objects with the same key are never processed in
-	// parallel.
 	defer op.engQueue.Done(key)
 
-	// Invoke the method containing the business logic
 	err := op.runEngressInjector(key.(string))
 	if err == nil {
-		// Forget about the #AddRateLimited history of the key on every successful synchronization.
-		// This ensures that future processing of updates for this key is not delayed because of
-		// an outdated error history.
 		op.engQueue.Forget(key)
 		return true
 	}
 	log.Errorf("Failed to process engress %v. Reason: %s", key, err)
 
-	// This controller retries 5 times if something goes wrong. After that, it stops trying.
 	if op.engQueue.NumRequeues(key) < op.Opt.MaxNumRequeues {
 		glog.Infof("Error syncing engress %v: %v", key, err)
-
-		// Re-enqueue the key rate limited. Based on the rate limiter on the
-		// queue and the re-enqueue history, the key will be processed later again.
 		op.engQueue.AddRateLimited(key)
 		return true
 	}
 
 	op.engQueue.Forget(key)
-	// Report to an external entity that, even after several retries, we could not successfully process this key
 	runtime.HandleError(err)
 	glog.Infof("Dropping engress %q out of the queue: %v", key, err)
 	return true
@@ -184,16 +170,11 @@ func (op *Operator) runEngressInjector(key string) error {
 }
 
 func (op *Operator) AddEngress(ctx context.Context, engress *api.Ingress) {
-	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
+	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.EndpointsLister, op.Opt, engress)
 	ctrl.Create()
 }
 
-// we don't need update anymore
-//func (op *Operator) UpdateEngress(ctx context.Context, oldEngress, newEngress *api.Ingress) {
-//	op.AddEngress(ctx, newEngress)
-//}
-
 func (op *Operator) DeleteEngress(ctx context.Context, engress *api.Ingress) {
-	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
+	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.EndpointsLister, op.Opt, engress)
 	ctrl.Delete()
 }

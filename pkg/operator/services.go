@@ -4,86 +4,131 @@ import (
 	"context"
 	"fmt"
 
-	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/errors"
 	"github.com/appscode/go/log"
 	tapi "github.com/appscode/voyager/apis/voyager/v1beta1"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
+	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	rt "k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	core_listers "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/util/workqueue"
 )
 
-// Blocks caller. Intended to be called as a Go routine.
-func (op *Operator) initServiceWatcher() cache.Controller {
+func (op *Operator) initServiceWatcher() {
 	lw := &cache.ListWatch{
-		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return op.KubeClient.CoreV1().Services(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
+		ListFunc: func(options metav1.ListOptions) (rt.Object, error) {
+			return op.KubeClient.CoreV1().Services(op.Opt.WatchNamespace()).List(options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return op.KubeClient.CoreV1().Services(op.Opt.WatchNamespace()).Watch(metav1.ListOptions{})
+			return op.KubeClient.CoreV1().Services(op.Opt.WatchNamespace()).Watch(options)
 		},
 	}
-	indexer, informer := cache.NewIndexerInformer(lw,
-		&core.Service{},
-		op.Opt.ResyncPeriod,
-		cache.ResourceEventHandlerFuncs{
-			AddFunc: func(obj interface{}) {
-				ctx := etx.Background()
-				if svc, ok := obj.(*core.Service); ok {
-					log.New(ctx).Infof("Service %s@%s added", svc.Name, svc.Namespace)
-					op.updateHAProxyConfig(ctx, svc)
-				}
-			},
-			DeleteFunc: func(obj interface{}) {
-				ctx := etx.Background()
-				if svc, ok := obj.(*core.Service); ok {
-					log.New(ctx).Infof("Service %s@%s deleted", svc.Name, svc.Namespace)
-					if restored, err := op.restoreServiceIfRequired(ctx, svc); err == nil && restored {
-						return
-					}
-					op.updateHAProxyConfig(ctx, svc)
-				}
-			},
+
+	// create the workqueue
+	op.svcQueue = workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "service")
+
+	op.svcIndexer, op.svcInformer = cache.NewIndexerInformer(lw, &core.Service{}, op.Opt.ResyncPeriod, cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			key, err := cache.MetaNamespaceKeyFunc(obj)
+			if err == nil {
+				op.svcQueue.Add(key)
+			}
 		},
-		cache.Indexers{},
-	)
-	op.ServiceLister = core_listers.NewServiceLister(indexer)
-	return informer
+		UpdateFunc: func(old interface{}, new interface{}) {
+			key, err := cache.MetaNamespaceKeyFunc(new)
+			if err == nil {
+				op.svcQueue.Add(key)
+			}
+		},
+		DeleteFunc: func(obj interface{}) {
+			key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
+			if err == nil {
+				op.svcQueue.Add(key)
+			}
+		},
+	}, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	op.svcLister = core_listers.NewServiceLister(op.svcIndexer)
 }
 
-func (op *Operator) restoreServiceIfRequired(ctx context.Context, svc *core.Service) (bool, error) {
-	if svc.Annotations == nil {
-		return false, nil
+func (op *Operator) runServiceWatcher() {
+	for op.processNextService() {
+	}
+}
+
+func (op *Operator) processNextService() bool {
+	key, quit := op.svcQueue.Get()
+	if quit {
+		return false
+	}
+	defer op.svcQueue.Done(key)
+
+	err := op.runServiceInjector(key.(string))
+	if err == nil {
+		op.svcQueue.Forget(key)
+		return true
+	}
+	log.Errorf("Failed to process Service %v. Reason: %s", key, err)
+
+	if op.svcQueue.NumRequeues(key) < op.Opt.MaxNumRequeues {
+		glog.Infof("Error syncing service %v: %v", key, err)
+		op.svcQueue.AddRateLimited(key)
+		return true
 	}
 
-	// deleted resource have source reference
-	engress, err := op.findOrigin(svc.ObjectMeta)
+	op.svcQueue.Forget(key)
+	runtime.HandleError(err)
+	glog.Infof("Dropping service %q out of the queue: %v", key, err)
+	return true
+}
+
+func (op *Operator) runServiceInjector(key string) error {
+	obj, exists, err := op.svcIndexer.GetByKey(key)
 	if err != nil {
-		return false, err
+		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		return err
 	}
-
-	if svc.Name == engress.StatsServiceName() && !engress.Stats() {
-		return false, nil
+	if !exists {
+		glog.Warningf("Service %s does not exist anymore\n", key)
+		if ns, name, err := cache.SplitMetaNamespaceKey(key); err != nil {
+			return err
+		} else if err = op.restoreServiceIfRequired(name, ns); err != nil {
+			return err
+		}
+	} else {
+		svc := obj.(*core.Service)
+		glog.Infof("Sync/Add/Update for Service %s\n", svc.GetName())
+		if err = op.restoreServiceIfRequired(svc.Name, svc.Namespace); err != nil {
+			return err
+		}
 	}
+	return nil
+}
 
-	// Ingress Still exists, restore resource
-	log.New(ctx).Infof("Service %s@%s requires restoration", svc.Name, svc.Namespace)
-	svc.Spec.ClusterIP = "" // Remove cluster IP
-	svc.SelfLink = ""
-	svc.ResourceVersion = ""
-	// Old resource and annotations are missing so we need to add the annotations
-	if svc.Annotations == nil {
-		svc.Annotations = make(map[string]string)
+// requeue ingress if add/delete/update of backend-service/offshoot-service
+func (op *Operator) restoreServiceIfRequired(name, ns string) error {
+	items, err := op.listIngresses()
+	if err != nil {
+		return err
 	}
-	svc.Annotations[tapi.OriginAPISchema] = engress.APISchema()
-	svc.Annotations[tapi.OriginName] = engress.Name
-
-	_, err = op.KubeClient.CoreV1().Services(svc.Namespace).Create(svc)
-	return true, err
+	for i := range items {
+		engress := &items[i]
+		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
+			if (engress.Namespace == ns && engress.OffshootName() == name) || engress.HasBackendService(name, ns) {
+				if key, err := cache.MetaNamespaceKeyFunc(engress); err != nil {
+					return err
+				} else {
+					op.engQueue.Add(key)
+					log.Infof("Add/Delete/Update of offshoot/backend service %s@%s, Ingress %s re-queued for update", name, ns, key)
+				}
+			}
+		}
+	}
+	return nil
 }
 
 func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*tapi.Ingress, error) {

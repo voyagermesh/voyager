@@ -48,7 +48,7 @@ func (op *Operator) initEndpointWatcher() cache.Controller {
 
 				// Checking if this endpoint have a service or not. If
 				// this do not have a Service we do not want to update our ingress
-				svc, err := op.ServiceLister.Services(newEndpoints.Namespace).Get(newEndpoints.Name)
+				svc, err := op.svcLister.Services(newEndpoints.Namespace).Get(newEndpoints.Name)
 				if err != nil {
 					logger.Warningf("Skipping Endpoints %s@%s, as it has no matching service", newEndpoints.Name, newEndpoints.Namespace)
 					return

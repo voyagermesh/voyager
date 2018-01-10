@@ -15,6 +15,7 @@ import (
 	"github.com/appscode/kutil"
 	apps_util "github.com/appscode/kutil/apps/v1beta1"
 	core_util "github.com/appscode/kutil/core/v1"
+	meta_util "github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/analytics"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
@@ -247,8 +248,8 @@ func (c *loadBalancerController) Create() error {
 				vt,
 			)
 		}
-	} else { // monitoring disabled, delete old agent
-		if err := c.ensureMonitoringAgentDeleted(mon_api.AgentType("")); err != nil { // ignore error here
+	} else { // monitoring disabled, delete old agent, ignore error here
+		if err := c.ensureMonitoringAgentDeleted(nil); err != nil {
 			log.Errorf("failed to delete old monitoring agent, reason: %s", err)
 		}
 	}
@@ -282,7 +283,7 @@ func (c *loadBalancerController) Delete() {
 		c.logger.Errorln(err)
 	}
 	// delete agent before deleting stat service
-	if err := c.ensureMonitoringAgentDeleted(mon_api.AgentType("")); err != nil {
+	if err := c.ensureMonitoringAgentDeleted(nil); err != nil {
 		c.logger.Errorln(err)
 	}
 	if err := c.ensureStatsServiceDeleted(); err != nil {
@@ -525,40 +526,47 @@ func (c *loadBalancerController) updateStatus() error {
 	return nil
 }
 
-// delete old agent (if old != new) -> create/update new agent -> set new agent annotation
-// order is important
-func (c *loadBalancerController) ensureMonitoringAgent(monSpec *mon_api.AgentSpec) (vt kutil.VerbType, err error) {
-	if err := c.ensureMonitoringAgentDeleted(monSpec.Agent); err != nil { // ignore err here
+func (c *loadBalancerController) ensureMonitoringAgent(monSpec *mon_api.AgentSpec) (kutil.VerbType, error) {
+	agent := agents.New(monSpec.Agent, c.KubeClient, c.CRDClient, c.PromClient)
+
+	// if agent-type changed, delete old agent
+	// do this before applying new agent-type annotation
+	// ignore err here
+	if err := c.ensureMonitoringAgentDeleted(agent); err != nil {
 		log.Errorf("failed to delete old monitoring agent, reason: %s", err)
 	}
-	agent := agents.New(monSpec.Agent, c.KubeClient, c.CRDClient, c.PromClient)
-	if vt, err = agent.CreateOrUpdate(c.Ingress.StatsAccessor(), monSpec); err != nil {
-		return
+
+	// create/update new agent
+	// set agent-type annotation to stat-service
+	vt, err := agent.CreateOrUpdate(c.Ingress.StatsAccessor(), monSpec)
+	if err == nil {
+		err = c.setNewAgentType(agent.GetType())
 	}
-	err = c.setNewAgentType(monSpec.Agent)
-	return
+	return vt, err
 }
 
-func (c *loadBalancerController) ensureMonitoringAgentDeleted(newAgentType mon_api.AgentType) error {
-	if oldAgentType, err := c.getOldAgentType(); err != nil {
+func (c *loadBalancerController) ensureMonitoringAgentDeleted(newAgent mon_api.Agent) error {
+	if oldAgent, err := c.getOldAgent(); err != nil {
 		return err
-	} else if oldAgentType != newAgentType { // delete old agent
-		agent := agents.New(oldAgentType, c.KubeClient, c.CRDClient, c.PromClient)
-		if _, err := agent.Delete(c.Ingress.StatsAccessor()); err != nil {
+	} else if newAgent == nil || oldAgent.GetType() != newAgent.GetType() { // delete old agent
+		if _, err := oldAgent.Delete(c.Ingress.StatsAccessor()); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (c *loadBalancerController) getOldAgentType() (mon_api.AgentType, error) {
+func (c *loadBalancerController) getOldAgent() (mon_api.Agent, error) {
 	// get stat service
 	svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.StatsServiceName(), metav1.GetOptions{})
 	if err != nil {
-		return "", fmt.Errorf("failed to get stat service %s, reason: %s", c.Ingress.StatsServiceName(), err.Error())
+		return nil, fmt.Errorf("failed to get stat service %s, reason: %s", c.Ingress.StatsServiceName(), err.Error())
 	}
-	oldAgentType, _ := meta_util.GetString(svc.Annotations, mon_api.KeyAgent)
-	return mon_api.AgentType(oldAgentType), nil
+	agentType, err := meta_util.GetString(svc.Annotations, mon_api.KeyAgent)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get agent type, reason: %s", err.Error())
+	}
+	return agents.New(mon_api.AgentType(agentType), c.KubeClient, c.CRDClient, c.PromClient), nil
 }
 
 func (c *loadBalancerController) setNewAgentType(agentType mon_api.AgentType) error {
