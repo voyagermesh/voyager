@@ -10,7 +10,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/appscode/go/log"
+	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -53,35 +53,35 @@ func NewAtomicWriter(targetDir string) (*AtomicWriter, error) {
 func (w *AtomicWriter) Write(payload map[string]FileProjection) (bool, error) {
 	cleanPayload, err := validatePayload(payload)
 	if err != nil {
-		log.Errorf("invalid payload: %v", err)
+		glog.Errorf("invalid payload: %v", err)
 		return false, err
 	}
 
 	pathsToRemove, err := w.pathsToRemove(cleanPayload)
 	if err != nil {
-		log.Errorf("error determining user-visible files to remove: %v", err)
+		glog.Errorf("error determining user-visible files to remove: %v", err)
 		return false, err
 	}
 
 	if should, err := w.shouldWritePayload(cleanPayload); err != nil {
-		log.Errorf("error determining whether payload should be written to disk: %v", err)
+		glog.Errorf("error determining whether payload should be written to disk: %v", err)
 		return false, err
 	} else if !should && len(pathsToRemove) == 0 {
-		log.V(4).Infof("no update required for target directory %v", w.targetDir)
+		glog.V(4).Infof("no update required for target directory %v", w.targetDir)
 		return false, nil
 	} else {
-		log.V(4).Infof("write required for target directory %v", w.targetDir)
+		glog.V(4).Infof("write required for target directory %v", w.targetDir)
 	}
 
 	if err = w.writePayloadToDir(cleanPayload, w.targetDir); err != nil {
-		log.Errorf("error writing payload to ts data directory %s: %v", w.targetDir, err)
+		glog.Errorf("error writing payload to ts data directory %s: %v", w.targetDir, err)
 		return false, err
 	} else {
-		log.V(4).Infof("performed write of new data to ts data directory: %s", w.targetDir)
+		glog.V(4).Infof("performed write of new data to ts data directory: %s", w.targetDir)
 	}
 
 	if err = w.removeUserVisiblePaths(pathsToRemove); err != nil {
-		log.Errorf("error removing old visible symlinks: %v", err)
+		glog.Errorf("error removing old visible symlinks: %v", err)
 		return false, err
 	}
 
@@ -188,13 +188,13 @@ func (w *AtomicWriter) writePayloadToDir(payload map[string]FileProjection, dir 
 		baseDir, _ := filepath.Split(fullPath)
 		err := os.MkdirAll(baseDir, os.ModePerm)
 		if err != nil {
-			log.Errorf("unable to create directory %s: %v", baseDir, err)
+			glog.Errorf("unable to create directory %s: %v", baseDir, err)
 			return err
 		}
 
 		err = ioutil.WriteFile(fullPath, content, mode)
 		if err != nil {
-			log.Errorf("unable to write file %s with mode %v: %v", fullPath, mode, err)
+			glog.Errorf("unable to write file %s with mode %v: %v", fullPath, mode, err)
 			return err
 		}
 		// Chmod is needed because ioutil.WriteFile() ends up calling
@@ -203,7 +203,7 @@ func (w *AtomicWriter) writePayloadToDir(payload map[string]FileProjection, dir 
 		// in the file no matter what the umask is.
 		err = os.Chmod(fullPath, mode)
 		if err != nil {
-			log.Errorf("unable to write file %s with mode %v: %v", fullPath, mode, err)
+			glog.Errorf("unable to write file %s with mode %v: %v", fullPath, mode, err)
 		}
 	}
 	return nil
@@ -236,7 +236,7 @@ func (w *AtomicWriter) pathsToRemove(payload map[string]FileProjection) (sets.St
 	} else if err != nil {
 		return nil, err
 	}
-	log.V(5).Infof("%s: current paths:   %+v", w.targetDir, paths.List())
+	glog.V(5).Infof("%s: current paths:   %+v", w.targetDir, paths.List())
 
 	newPaths := sets.NewString()
 	for file := range payload {
@@ -248,10 +248,10 @@ func (w *AtomicWriter) pathsToRemove(payload map[string]FileProjection) (sets.St
 			subPath = strings.TrimSuffix(subPath, "/")
 		}
 	}
-	log.V(5).Infof("%s: new paths:       %+v", w.targetDir, newPaths.List())
+	glog.V(5).Infof("%s: new paths:       %+v", w.targetDir, newPaths.List())
 
 	result := paths.Difference(newPaths)
-	log.V(5).Infof("%s: paths to remove: %+v", w.targetDir, result)
+	glog.V(5).Infof("%s: paths to remove: %+v", w.targetDir, result)
 	return result, nil
 }
 
@@ -261,7 +261,7 @@ func (w *AtomicWriter) removeUserVisiblePaths(paths sets.String) error {
 	orderedPaths := paths.List()
 	for ii := len(orderedPaths) - 1; ii >= 0; ii-- {
 		if err := os.Remove(path.Join(w.targetDir, orderedPaths[ii])); err != nil {
-			log.Errorf("error pruning old user-visible path %s: %v", orderedPaths[ii], err)
+			glog.Errorf("error pruning old user-visible path %s: %v", orderedPaths[ii], err)
 			return err
 		}
 	}

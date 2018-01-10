@@ -4,12 +4,12 @@ import (
 	"fmt"
 
 	"github.com/appscode/kube-mon/api"
+	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"github.com/appscode/kutil"
 )
 
 // PrometheusBuiltin applies `prometheus.io` annotations on stats service so that Prometheus can scrape this stats service.
@@ -20,6 +20,10 @@ type PrometheusBuiltin struct {
 
 func New(k8sClient kubernetes.Interface) api.Agent {
 	return &PrometheusBuiltin{k8sClient: k8sClient}
+}
+
+func (agent *PrometheusBuiltin) GetType() api.AgentType {
+	return api.AgentPrometheusBuiltin
 }
 
 func (agent *PrometheusBuiltin) CreateOrUpdate(sp api.StatsAccessor, new *api.AgentSpec) (kutil.VerbType, error) {
