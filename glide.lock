@@ -1,5 +1,5 @@
 hash: 2b38b6d704b4391dc518a1458889b1cc48c253a8ac8f09fc06cbb524121c1f59
-updated: 2018-01-02T23:26:18.737613319-08:00
+updated: 2018-01-09T22:14:02.539467636-08:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -7,7 +7,7 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/go
-  version: f08cee5a2aa53a1ab6d30e4ae11e381d1b265f81
+  version: 5986240e1838a8a6147d77417b8321af0e07496d
   subpackages:
   - analytics
   - context
@@ -34,14 +34,14 @@ imports:
   - cmds
   - controller
 - name: github.com/appscode/kube-mon
-  version: 7f7ea00b96f4fe39dbcc4fbe405768eae032ba2f
+  version: bb1241cf66767ebcca781fef3bdd2c2769e11658
   subpackages:
   - agents
   - agents/coreosprometheusoperator
   - agents/prometheusbuiltin
   - api
 - name: github.com/appscode/kutil
-  version: 4a8306c9183a0dbebfc98327238735a1fb015e6a
+  version: 1246ec828f2f5024b54a1fe84ad4afaf3de0ed37
   subpackages:
   - apiextensions/v1beta1
   - core/v1
@@ -123,7 +123,7 @@ imports:
 - name: github.com/dgrijalva/jwt-go
   version: 01aeca54ebda6e0fbfafd0a524d234159c05ec20
 - name: github.com/dnsimple/dnsimple-go
-  version: 9641549ef4d560b09b6f44d9f394af0efcb438ee
+  version: af81b84b6e07a129c4067322cc13002b3ca6a9e9
   subpackages:
   - dnsimple
 - name: github.com/docker/distribution
@@ -179,7 +179,7 @@ imports:
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
-  version: 97a1ff3c48253a51c601f6e4420181273b6ca0ea
+  version: 97aa668b73e764ccdd786bc3ccd2edffe621150e
   subpackages:
   - cmp
   - cmp/internal/diff
@@ -212,7 +212,7 @@ imports:
 - name: github.com/hashicorp/go-rootcerts
   version: 6bb64b370b90e7ef1fa532be9e591a81c3493e00
 - name: github.com/hashicorp/go-version
-  version: ac737305c16432f4c660c6fc68cdcda4b5a0b5ae
+  version: 1b1de86cf2ec13494b6814b48157884efaf71c54
   repo: https://github.com/appscode/go-version.git
   vcs: git
 - name: github.com/hashicorp/golang-lru
@@ -474,7 +474,7 @@ imports:
   - googleapi
   - googleapi/internal/uritemplates
 - name: google.golang.org/appengine
-  version: 5bee14b453b4c71be47ec1781b0fa61c2ea182db
+  version: 4f7eeb5305a4ba1966344836ba4af9996b7b4e05
   subpackages:
   - internal
   - internal/app_identity
