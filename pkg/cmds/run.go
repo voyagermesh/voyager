@@ -43,6 +43,7 @@ var (
 		OperatorService:   "voyager-operator",
 		EnableRBAC:        false,
 		ResyncPeriod:      5 * time.Minute,
+		MaxNumRequeues:       5,
 		// ref: https://github.com/kubernetes/ingress-nginx/blob/e4d53786e771cc6bdd55f180674b79f5b692e552/pkg/ingress/controller/launch.go#L252-L259
 		// High enough QPS to fit all expected use cases. QPS=0 is not set here, because client code is overriding it.
 		QPS: 1e6,
@@ -156,7 +157,10 @@ func runOperator() {
 	w.PurgeOffshootsWithDeprecatedLabels()
 	// https://github.com/appscode/voyager/issues/446
 	w.PurgeOffshootsDaemonSet()
-	go w.Run()
+
+	stop := make(chan struct{})
+	defer close(stop)
+	go w.Run(1, stop)
 
 	m := pat.New()
 	m.Get("/metrics", promhttp.Handler())

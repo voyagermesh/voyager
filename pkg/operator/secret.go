@@ -6,7 +6,6 @@ import (
 	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
 	tapi "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/ingress"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -50,14 +49,9 @@ func (op *Operator) initSecretWatcher() cache.Controller {
 							engress := &items[i]
 							if engress.ShouldHandleIngress(op.Opt.IngressClass) || op.IngressServiceUsesAuthSecret(engress, newSecret) {
 								if engress.UsesAuthSecret(newSecret.Namespace, newSecret.Name) {
-									ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
-									if ctrl.IsExists() {
-										cfgErr := ctrl.Update(0, nil)
-										if cfgErr != nil {
-											logger.Infof("Failed to update offshoots of %s Ingress %s/%s. Reason: %s", engress.APISchema(), engress.Namespace, engress.Name, cfgErr)
-										}
-									} else {
-										ctrl.Create()
+									if key, err := cache.MetaNamespaceKeyFunc(engress); err == nil {
+										op.engQueue.Add(key)
+										logger.Infof("Add/Delete/Update of secret %s@%s, Ingress %s re-queued for update", newSecret.Name, newSecret.Namespace, key)
 									}
 								}
 							}

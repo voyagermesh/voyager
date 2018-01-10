@@ -44,7 +44,7 @@ func (c *controller) ensureServiceDeleted() error {
 }
 
 func (c *controller) ensureStatsServiceDeleted() error {
-	c.logger.Infof("Deleting Deployment %s/%s", c.Ingress.Namespace, c.Ingress.StatsServiceName())
+	c.logger.Infof("Deleting Stats Service %s/%s", c.Ingress.Namespace, c.Ingress.StatsServiceName())
 	err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Delete(
 		c.Ingress.StatsServiceName(),
 		&metav1.DeleteOptions{},

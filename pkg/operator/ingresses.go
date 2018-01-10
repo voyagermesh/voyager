@@ -95,7 +95,7 @@ func (op *Operator) initIngresseWatcher() cache.Controller {
 					)
 					return
 				}
-				op.UpdateEngress(ctx, oldEngress, newEngress)
+				op.AddEngress(ctx, newEngress)
 			},
 			DeleteFunc: func(obj interface{}) {
 				if ingress, ok := obj.(*extensions.Ingress); ok {

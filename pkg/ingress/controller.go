@@ -24,9 +24,9 @@ import (
 )
 
 type Controller interface {
-	IsExists() bool
+	//IsExists() bool
 	Create() error
-	Update(mode UpdateMode, old *api.Ingress) error
+	//Update(mode UpdateMode, old *api.Ingress) error
 	Delete()
 	EnsureFirewall(svc *core.Service) error
 }

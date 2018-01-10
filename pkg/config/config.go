@@ -19,6 +19,7 @@ type Options struct {
 	QPS                         float32
 	Burst                       int
 	ResyncPeriod                time.Duration
+	MaxNumRequeues              int
 	DockerRegistry              string
 	HAProxyImageTag             string
 	ExporterImageTag            string

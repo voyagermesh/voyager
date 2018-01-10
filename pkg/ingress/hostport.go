@@ -139,7 +139,7 @@ func (c *hostPortController) Create() error {
 		)
 		return errors.FromErr(err).Err()
 	}
-	err = c.ensureConfigMap()
+	_, _, err = c.ensureConfigMap()
 	if err != nil {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
@@ -226,7 +226,7 @@ func (c *hostPortController) Create() error {
 	)
 
 	if c.Ingress.Stats() {
-		err := c.ensureStatsService()
+		_, _, err := c.ensureStatsService()
 		// Error ignored intentionally
 		if err != nil {
 			c.recorder.Eventf(
@@ -363,7 +363,7 @@ func (c *hostPortController) Update(mode UpdateMode, old *api.Ingress) error {
 
 	if mode&UpdateStats > 0 {
 		if c.Ingress.Stats() {
-			err := c.ensureStatsService()
+			_, _, err := c.ensureStatsService()
 			if err != nil {
 				c.recorder.Eventf(
 					c.Ingress.ObjectReference(),

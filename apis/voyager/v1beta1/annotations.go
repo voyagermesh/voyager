@@ -493,9 +493,9 @@ func (r Ingress) StatsPort() int {
 }
 
 func (r Ingress) StatsServiceName() string {
-	if v, _ := getString(r.Annotations, StatsServiceName); v != "" {
-		return v
-	}
+	//if v, _ := getString(r.Annotations, StatsServiceName); v != "" {
+	//	return v
+	//}
 	return VoyagerPrefix + r.Name + "-stats"
 }
 

@@ -62,7 +62,9 @@ var _ = BeforeSuite(func() {
 		err = hpdata.LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
 		Expect(err).NotTo(HaveOccurred())
 
-		go op.Run()
+		//stop := make(chan struct{})
+		//defer close(stop)
+		go op.Run(1, nil)
 	}
 	root.EventuallyCRD().Should(Succeed())
 

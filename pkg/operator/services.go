@@ -8,7 +8,6 @@ import (
 	"github.com/appscode/go/errors"
 	"github.com/appscode/go/log"
 	tapi "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/ingress"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -121,22 +120,9 @@ func (op *Operator) updateHAProxyConfig(ctx context.Context, svc *core.Service) 
 		engress := &items[i]
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
 			if engress.HasBackendService(svc.Name, svc.Namespace) {
-				ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
-				if ctrl.IsExists() {
-					// Loadbalancer resource for this ingress is found in its place,
-					// so no need to create the resources. First trying to update
-					// the configMap only for the rules.
-					// In case of any failure in soft update we will make hard update
-					// to the resource. If hard update encounters errors then we will
-					// recreate the resource from scratch.
-					logger.Infof("Offshoots of %s Ingress %s/%s exist, trying to update", engress.APISchema(), engress.Namespace, engress.Name)
-					cfgErr := ctrl.Update(0, nil)
-					if cfgErr != nil {
-						logger.Infof("Failed to update offshoots of %s Ingress %s/%s. Reason: %s", engress.APISchema(), engress.Namespace, engress.Name, cfgErr)
-					}
-				} else {
-					logger.Infof("One or more offshoots of %s Ingress %s/%s is missing, trying to create", engress.APISchema(), engress.Namespace, engress.Name)
-					ctrl.Create()
+				if key, err := cache.MetaNamespaceKeyFunc(engress); err == nil {
+					op.engQueue.Add(key)
+					logger.Infof("Add/Delete/Update of backend service %s@%s, Ingress %s re-queued for update", svc.Name, svc.Namespace, key)
 				}
 			}
 		}
