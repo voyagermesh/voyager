@@ -1,7 +1,6 @@
 package operator
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/appscode/go/errors"
@@ -94,37 +93,55 @@ func (op *Operator) runServiceInjector(key string) error {
 	}
 	if !exists {
 		glog.Warningf("Service %s does not exist anymore\n", key)
-		if ns, name, err := cache.SplitMetaNamespaceKey(key); err != nil {
+		ns, name, err := cache.SplitMetaNamespaceKey(key)
+		if err != nil {
 			return err
-		} else if err = op.restoreServiceIfRequired(name, ns); err != nil {
-			return err
+		}
+		if isOffshoot, err := op.restoreServiceIfRequired(name, ns); isOffshoot {
+			return err // assume offshoot service can't be backend service
+		} else {
+			return op.updateHAProxyConfig(name, ns)
 		}
 	} else {
 		svc := obj.(*core.Service)
 		glog.Infof("Sync/Add/Update for Service %s\n", svc.GetName())
-		if err = op.restoreServiceIfRequired(svc.Name, svc.Namespace); err != nil {
-			return err
-		}
+		return op.updateHAProxyConfig(svc.Name, svc.Namespace)
 	}
 	return nil
 }
 
-// requeue ingress if add/delete/update of backend-service/offshoot-service
-func (op *Operator) restoreServiceIfRequired(name, ns string) error {
+// requeue ingress if offshoot-service deleted
+// return true if service is offshoot for any ingress
+func (op *Operator) restoreServiceIfRequired(name, ns string) (bool, error) {
+	items, err := op.listIngresses()
+	if err == nil {
+		for i := range items {
+			engress := &items[i]
+			if engress.ShouldHandleIngress(op.Opt.IngressClass) && engress.Namespace == ns && engress.OffshootName() == name {
+				key, err := cache.MetaNamespaceKeyFunc(engress)
+				if err == nil {
+					op.engQueue.Add(key)
+					log.Infof("Add/Delete/Update of offshoot service %s@%s, Ingress %s re-queued for update", name, ns, key)
+				}
+				return true, err
+			}
+		}
+	}
+	return false, err
+}
+
+// requeue ingress if add/delete/update of backend-service
+func (op *Operator) updateHAProxyConfig(name, ns string) error {
 	items, err := op.listIngresses()
 	if err != nil {
 		return err
 	}
 	for i := range items {
 		engress := &items[i]
-		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
-			if (engress.Namespace == ns && engress.OffshootName() == name) || engress.HasBackendService(name, ns) {
-				if key, err := cache.MetaNamespaceKeyFunc(engress); err != nil {
-					return err
-				} else {
-					op.engQueue.Add(key)
-					log.Infof("Add/Delete/Update of offshoot/backend service %s@%s, Ingress %s re-queued for update", name, ns, key)
-				}
+		if engress.ShouldHandleIngress(op.Opt.IngressClass) && engress.HasBackendService(name, ns) {
+			if key, err := cache.MetaNamespaceKeyFunc(engress); err == nil {
+				op.engQueue.Add(key)
+				log.Infof("Add/Delete/Update of backend service %s@%s, Ingress %s re-queued for update", name, ns, key)
 			}
 		}
 	}
@@ -152,25 +169,4 @@ func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*tapi.Ingress, error) {
 		return op.VoyagerClient.Ingresses(meta.Namespace).Get(sourceName, metav1.GetOptions{})
 	}
 	return nil, fmt.Errorf("unknown ingress type %s", sourceType)
-}
-
-func (op *Operator) updateHAProxyConfig(ctx context.Context, svc *core.Service) error {
-	logger := log.New(ctx)
-
-	items, err := op.listIngresses()
-	if err != nil {
-		return err
-	}
-	for i := range items {
-		engress := &items[i]
-		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
-			if engress.HasBackendService(svc.Name, svc.Namespace) {
-				if key, err := cache.MetaNamespaceKeyFunc(engress); err == nil {
-					op.engQueue.Add(key)
-					logger.Infof("Add/Delete/Update of backend service %s@%s, Ingress %s re-queued for update", svc.Name, svc.Namespace, key)
-				}
-			}
-		}
-	}
-	return nil
 }

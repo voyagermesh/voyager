@@ -18,7 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-var _ = FDescribe("IngressOperations", func() {
+var _ = Describe("IngressOperations", func() {
 	var (
 		f   *framework.Invocation
 		ing *api.Ingress
@@ -73,7 +73,7 @@ var _ = FDescribe("IngressOperations", func() {
 		}
 	)
 
-	FDescribe("Create", func() {
+	Describe("Create", func() {
 		It("Should create Loadbalancer entry", func() {
 			By("Checking StatusIP for provider" + f.Config.CloudProviderName)
 			if f.Config.CloudProviderName == "minikube" {

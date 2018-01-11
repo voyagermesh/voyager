@@ -53,7 +53,7 @@ func (op *Operator) initEndpointWatcher() cache.Controller {
 					logger.Warningf("Skipping Endpoints %s@%s, as it has no matching service", newEndpoints.Name, newEndpoints.Namespace)
 					return
 				}
-				err = op.updateHAProxyConfig(ctx, svc)
+				err = op.updateHAProxyConfig(svc.Name, svc.Namespace)
 				if err != nil {
 					log.Errorln(err)
 				}

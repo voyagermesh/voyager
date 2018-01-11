@@ -27,18 +27,6 @@ func (op *Operator) initDeploymentWatcher() {
 	op.dpQueue = workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "deployment")
 
 	op.dpIndexer, op.dpInformer = cache.NewIndexerInformer(lw, &apps.Deployment{}, op.Opt.ResyncPeriod, cache.ResourceEventHandlerFuncs{
-		AddFunc: func(obj interface{}) {
-			key, err := cache.MetaNamespaceKeyFunc(obj)
-			if err == nil {
-				op.dpQueue.Add(key)
-			}
-		},
-		UpdateFunc: func(old interface{}, new interface{}) {
-			key, err := cache.MetaNamespaceKeyFunc(new)
-			if err == nil {
-				op.dpQueue.Add(key)
-			}
-		},
 		DeleteFunc: func(obj interface{}) {
 			key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
 			if err == nil {
@@ -81,7 +69,7 @@ func (op *Operator) processNextDeployment() bool {
 }
 
 func (op *Operator) runDeploymentInjector(key string) error {
-	obj, exists, err := op.dpIndexer.GetByKey(key)
+	_, exists, err := op.dpIndexer.GetByKey(key)
 	if err != nil {
 		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
@@ -90,20 +78,14 @@ func (op *Operator) runDeploymentInjector(key string) error {
 		glog.Warningf("Deployment %s does not exist anymore\n", key)
 		if ns, name, err := cache.SplitMetaNamespaceKey(key); err != nil {
 			return err
-		} else if err = op.restoreDeploymentIfRequired(name, ns); err != nil {
-			return err
-		}
-	} else {
-		dp := obj.(*apps.Deployment)
-		glog.Infof("Sync/Add/Update for Deployment %s\n", dp.GetName())
-		if err = op.restoreDeploymentIfRequired(dp.Name, dp.Namespace); err != nil {
-			return err
+		} else {
+			return op.restoreDeploymentIfRequired(name, ns)
 		}
 	}
 	return nil
 }
 
-// requeue ingress if user deletes/updates haproxy-deployment
+// requeue ingress if user deletes haproxy-deployment
 func (op *Operator) restoreDeploymentIfRequired(name, ns string) error {
 	items, err := op.listIngresses()
 	if err != nil {
@@ -116,7 +98,7 @@ func (op *Operator) restoreDeploymentIfRequired(name, ns string) error {
 				return err
 			} else {
 				op.engQueue.Add(key)
-				log.Infof("Add/Delete/Update of deployment %s@%s, Ingress %s re-queued for update", name, ns, key)
+				log.Infof("Add/Delete/Update of haproxy deployment %s@%s, Ingress %s re-queued for update", name, ns, key)
 				break
 			}
 		}
