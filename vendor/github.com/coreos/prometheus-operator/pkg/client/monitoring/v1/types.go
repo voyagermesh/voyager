@@ -15,7 +15,6 @@
 package v1
 
 import (
-	"github.com/appscode/mergo"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -72,6 +71,8 @@ type PrometheusSpec struct {
 	Replicas *int32 `json:"replicas,omitempty"`
 	// Time duration Prometheus shall retain data for.
 	Retention string `json:"retention,omitempty"`
+	// Log level for Prometheus be configured in.
+	LogLevel string `json:"logLevel,omitempty"`
 	// Interval between consecutive scrapes.
 	ScrapeInterval string `json:"scrapeInterval,omitempty"`
 	// Interval between consecutive evaluations.
@@ -113,6 +114,14 @@ type PrometheusSpec struct {
 	Affinity *v1.Affinity `json:"affinity,omitempty"`
 	// If specified, the pod's tolerations.
 	Tolerations []v1.Toleration `json:"tolerations,omitempty"`
+	// If specified, the remote_write spec. This is an experimental feature, it may change in any upcoming release in a breaking way.
+	RemoteWrite []RemoteWriteSpec `json:"remoteWrite,omitempty"`
+	// If specified, the remote_read spec. This is an experimental feature, it may change in any upcoming release in a breaking way.
+	RemoteRead []RemoteReadSpec `json:"remoteRead,omitempty"`
+	// SecurityContext holds pod-level security attributes and common container settings.
+	// This defaults to non root user with uid 1000 and gid 2000 for Prometheus >v2.0 and
+	// default PodSecurityContext for other versions.
+	SecurityContext *v1.PodSecurityContext
 }
 
 // Most recent observed status of the Prometheus cluster. Read-only. Not
@@ -148,6 +157,9 @@ type StorageSpec struct {
 	// info: https://kubernetes.io/docs/user-guide/persistent-volumes/#storageclasses
 	// DEPRECATED
 	Class string `json:"class"`
+	// EmptyDirVolumeSource to be used by the Prometheus StatefulSets. If specified, used in place of any volumeClaimTemplate. More
+	// info: https://kubernetes.io/docs/concepts/storage/volumes/#emptydir
+	EmptyDir *v1.EmptyDirVolumeSource `json:"emptyDir,omitempty"`
 	// A label query over volumes to consider for binding.
 	// DEPRECATED
 	Selector *metav1.LabelSelector `json:"selector"`
@@ -157,6 +169,66 @@ type StorageSpec struct {
 	Resources v1.ResourceRequirements `json:"resources"`
 	// A PVC spec to be used by the Prometheus StatefulSets.
 	VolumeClaimTemplate v1.PersistentVolumeClaim `json:"volumeClaimTemplate,omitempty"`
+}
+
+// RemoteWriteSpec defines the remote_write configuration for prometheus.
+type RemoteWriteSpec struct {
+	//The URL of the endpoint to send samples to.
+	URL string `json:"url"`
+	//Timeout for requests to the remote write endpoint.
+	RemoteTimeout string `json:"remoteTimeout,omitempty"`
+	//The list of remote write relabel configurations.
+	WriteRelabelConfigs []RelabelConfig `json:"writeRelabelConfigs,omitempty"`
+	//BasicAuth for the URL.
+	BasicAuth *BasicAuth `json:"basicAuth,omitempty"`
+	// File to read bearer token for remote write.
+	BearerToken string `json:"bearerToken,omitempty"`
+	// File to read bearer token for remote write.
+	BearerTokenFile string `json:"bearerTokenFile,omitempty"`
+	// TLS Config to use for remote write.
+	TLSConfig *TLSConfig `json:"tlsConfig,omitempty"`
+	//Optional ProxyURL
+	ProxyURL string `json:"proxy_url,omitempty"`
+}
+
+// RemoteReadSpec defines the remote_read configuration for prometheus.
+type RemoteReadSpec struct {
+	//The URL of the endpoint to send samples to.
+	URL string `json:"url"`
+	//Timeout for requests to the remote write endpoint.
+	RemoteTimeout string `json:"remoteTimeout,omitempty"`
+	//BasicAuth for the URL.
+	BasicAuth *BasicAuth `json:"basicAuth,omitempty"`
+	// bearer token for remote write.
+	BearerToken string `json:"bearerToken,omitempty"`
+	// File to read bearer token for remote write.
+	BearerTokenFile string `json:"bearerTokenFile,omitempty"`
+	// TLS Config to use for remote write.
+	TLSConfig *TLSConfig `json:"tlsConfig,omitempty"`
+	//Optional ProxyURL
+	ProxyURL string `json:"proxy_url,omitempty"`
+}
+
+// RelabelConfig allows dynamic rewriting of the label set.
+type RelabelConfig struct {
+	//The source labels select values from existing labels. Their content is concatenated
+	//using the configured separator and matched against the configured regular expression
+	//for the replace, keep, and drop actions.
+	SourceLabels []string `json:"sourceLabels"`
+	//Separator placed between concatenated source label values. default is ';'.
+	Separator string `json:"separator,omitempty"`
+	//Label to which the resulting value is written in a replace action.
+	//It is mandatory for replace actions. Regex capture groups are available.
+	TargetLabel string `json:"targetLabel,omitempty"`
+	//Regular expression against which the extracted value is matched. defailt is '(.*)'
+	Regex string `json:"regex,omitempty"`
+	// Modulus to take of the hash of the source label values.
+	Modulus uint64 `json:"modulus,omitempty"`
+	//Replacement value against which a regex replace is performed if the
+	//regular expression matches. Regex capture groups are available. Default is '$1'
+	Replacement string `json:"replacement"`
+	// Action to perform based on regex matching. Default is 'replace'
+	Action string `json:"action,omitempty"`
 }
 
 // AlertmanagerEndpoints defines a selection of a single Endpoints object
@@ -222,6 +294,8 @@ type Endpoint struct {
 	// BasicAuth allow an endpoint to authenticate over basic authentication
 	// More info: https://prometheus.io/docs/operating/configuration/#endpoints
 	BasicAuth *BasicAuth `json:"basicAuth,omitempty"`
+	// MetricRelabelConfigs to apply to samples before ingestion.
+	MetricRelabelConfigs []*RelabelConfig `json:"metricRelabelings,omitempty"`
 }
 
 // BasicAuth allow an endpoint to authenticate over basic authentication
@@ -362,56 +436,26 @@ type NamespaceSelector struct {
 	// implementation to support label selections.
 }
 
-func (obj *Prometheus) DeepCopyObject() runtime.Object {
-	if obj == nil {
-		return nil
-	}
-	out := new(Prometheus)
-	mergo.MergeWithOverwrite(out, obj)
-	return out
+func (l *Alertmanager) DeepCopyObject() runtime.Object {
+	return l.DeepCopy()
 }
 
-func (obj *PrometheusList) DeepCopyObject() runtime.Object {
-	if obj == nil {
-		return nil
-	}
-	out := new(PrometheusList)
-	mergo.MergeWithOverwrite(out, obj)
-	return out
+func (l *AlertmanagerList) DeepCopyObject() runtime.Object {
+	return l.DeepCopy()
 }
 
-func (obj *Alertmanager) DeepCopyObject() runtime.Object {
-	if obj == nil {
-		return nil
-	}
-	out := new(Alertmanager)
-	mergo.MergeWithOverwrite(out, obj)
-	return out
+func (l *Prometheus) DeepCopyObject() runtime.Object {
+	return l.DeepCopy()
 }
 
-func (obj *AlertmanagerList) DeepCopyObject() runtime.Object {
-	if obj == nil {
-		return nil
-	}
-	out := new(AlertmanagerList)
-	mergo.MergeWithOverwrite(out, obj)
-	return out
+func (l *PrometheusList) DeepCopyObject() runtime.Object {
+	return l.DeepCopy()
 }
 
-func (obj *ServiceMonitor) DeepCopyObject() runtime.Object {
-	if obj == nil {
-		return nil
-	}
-	out := new(ServiceMonitor)
-	mergo.MergeWithOverwrite(out, obj)
-	return out
+func (l *ServiceMonitor) DeepCopyObject() runtime.Object {
+	return l.DeepCopy()
 }
 
-func (obj *ServiceMonitorList) DeepCopyObject() runtime.Object {
-	if obj == nil {
-		return nil
-	}
-	out := new(ServiceMonitorList)
-	mergo.MergeWithOverwrite(out, obj)
-	return out
+func (l *ServiceMonitorList) DeepCopyObject() runtime.Object {
+	return l.DeepCopy()
 }

@@ -16,7 +16,7 @@ type LogWriter struct{}
 
 // Write implements the io.Writer interface.
 func (writer LogWriter) Write(data []byte) (n int, err error) {
-	glog.Infoln(string(data))
+	glog.Info(string(data))
 	return len(data), nil
 }
 
