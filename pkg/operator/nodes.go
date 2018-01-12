@@ -85,7 +85,7 @@ func (op *Operator) updateFirewall(ctx context.Context, ing *api.Ingress, node *
 		}
 	}
 
-	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.EndpointsLister, op.Opt, ing)
+	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Opt, ing)
 	if svc, err := op.svcLister.Services(ing.Namespace).Get(ing.OffshootName()); err == nil {
 		ctrl.EnsureFirewall(svc)
 	} else {

@@ -170,11 +170,11 @@ func (op *Operator) runEngressInjector(key string) error {
 }
 
 func (op *Operator) AddEngress(ctx context.Context, engress *api.Ingress) {
-	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.EndpointsLister, op.Opt, engress)
+	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Opt, engress)
 	ctrl.Create()
 }
 
 func (op *Operator) DeleteEngress(ctx context.Context, engress *api.Ingress) {
-	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.EndpointsLister, op.Opt, engress)
+	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Opt, engress)
 	ctrl.Delete()
 }

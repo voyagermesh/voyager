@@ -20,7 +20,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	apps_listers "k8s.io/client-go/listers/apps/v1beta1"
-	core "k8s.io/client-go/listers/core/v1"
 	core_listers "k8s.io/client-go/listers/core/v1"
 	ext_listers "k8s.io/client-go/listers/extensions/v1beta1"
 	"k8s.io/client-go/tools/cache"
@@ -29,12 +28,11 @@ import (
 )
 
 type Operator struct {
-	KubeClient      kubernetes.Interface
-	CRDClient       kext_cs.ApiextensionsV1beta1Interface
-	VoyagerClient   cs.VoyagerV1beta1Interface
-	PromClient      pcm.MonitoringV1Interface
-	EndpointsLister core.EndpointsLister
-	Opt             config.Options
+	KubeClient    kubernetes.Interface
+	CRDClient     kext_cs.ApiextensionsV1beta1Interface
+	VoyagerClient cs.VoyagerV1beta1Interface
+	PromClient    pcm.MonitoringV1Interface
+	Opt           config.Options
 
 	recorder record.EventRecorder
 	sync.Mutex
@@ -138,6 +136,7 @@ func (op *Operator) Setup() error {
 	op.initDeploymentWatcher()
 	op.initServiceWatcher()
 	op.initConfigMapWatcher()
+	op.initEndpointWatcher()
 
 	return nil
 }
@@ -162,7 +161,7 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 		op.initDaemonSetWatcher(),
 		// op.initDeploymentWatcher(),
 		// op.initServiceWatcher(),
-		op.initEndpointWatcher(),
+		//op.initEndpointWatcher(),
 		op.initIngresseWatcher(),
 		// op.initIngressCRDWatcher(),
 		op.initCertificateCRDWatcher(),
@@ -180,6 +179,7 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 	defer op.dpQueue.ShutDown()
 	defer op.svcQueue.ShutDown()
 	defer op.cfgQueue.ShutDown()
+	defer op.epQueue.ShutDown()
 
 	log.Infoln("Starting Voyager controller")
 
@@ -187,6 +187,7 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 	go op.dpInformer.Run(stopCh)
 	go op.svcInformer.Run(stopCh)
 	go op.cfgInformer.Run(stopCh)
+	go op.epInformer.Run(stopCh)
 
 	if !cache.WaitForCacheSync(stopCh, op.engInformer.HasSynced) {
 		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
@@ -204,12 +205,17 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
 		return
 	}
+	if !cache.WaitForCacheSync(stopCh, op.epInformer.HasSynced) {
+		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
+		return
+	}
 
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(op.runEngressWatcher, time.Second, stopCh)
 		go wait.Until(op.runDeploymentWatcher, time.Second, stopCh)
 		go wait.Until(op.runServiceWatcher, time.Second, stopCh)
 		go wait.Until(op.runConfigMapWatcher, time.Second, stopCh)
+		go wait.Until(op.runEndpointWatcher, time.Second, stopCh)
 	}
 
 	<-stopCh
