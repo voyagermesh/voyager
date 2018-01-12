@@ -32,9 +32,10 @@ func (c *controller) ensureConfigMap() (*core.ConfigMap, kutil.VerbType, error) 
 		}
 		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
 		obj.Annotations[api.OriginName] = c.Ingress.GetName()
-		obj.Data = map[string]string{
-			"haproxy.cfg": c.HAProxyConfig,
+		if obj.Data == nil {
+			obj.Data = make(map[string]string)
 		}
+		obj.Data["haproxy.cfg"] = c.HAProxyConfig
 		return obj
 	})
 }
