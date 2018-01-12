@@ -138,6 +138,7 @@ func (op *Operator) Setup() error {
 	op.initServiceWatcher()
 	op.initConfigMapWatcher()
 	op.initEndpointWatcher()
+	op.initSecretWatcher()
 
 	return nil
 }
@@ -166,7 +167,7 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 		// op.initIngressWatcher(),
 		// op.initIngressCRDWatcher(),
 		op.initCertificateCRDWatcher(),
-		op.initSecretWatcher(),
+		// op.initSecretWatcher(),
 	}
 	if informer := op.initServiceMonitorWatcher(); informer != nil {
 		informers = append(informers, informer)
@@ -182,6 +183,7 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 	defer op.svcQueue.ShutDown()
 	defer op.cfgQueue.ShutDown()
 	defer op.epQueue.ShutDown()
+	defer op.secretQueue.ShutDown()
 
 	log.Infoln("Starting Voyager controller")
 
@@ -191,6 +193,7 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 	go op.svcInformer.Run(stopCh)
 	go op.cfgInformer.Run(stopCh)
 	go op.epInformer.Run(stopCh)
+	go op.secretInformer.Run(stopCh)
 
 	if !cache.WaitForCacheSync(stopCh, op.engInformer.HasSynced) {
 		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
@@ -216,6 +219,10 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
 		return
 	}
+	if !cache.WaitForCacheSync(stopCh, op.secretInformer.HasSynced) {
+		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
+		return
+	}
 
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(op.runEngressWatcher, time.Second, stopCh)
@@ -224,6 +231,7 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 		go wait.Until(op.runServiceWatcher, time.Second, stopCh)
 		go wait.Until(op.runConfigMapWatcher, time.Second, stopCh)
 		go wait.Until(op.runEndpointWatcher, time.Second, stopCh)
+		go wait.Until(op.runSecretWatcher, time.Second, stopCh)
 	}
 
 	<-stopCh
