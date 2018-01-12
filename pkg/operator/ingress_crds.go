@@ -41,10 +41,7 @@ func (op *Operator) initIngressCRDWatcher() {
 				return
 			}
 			engress.Migrate()
-			if !engress.ShouldHandleIngress(op.Opt.IngressClass) {
-				log.Infof("%s %s@%s does not match ingress class", engress.APISchema(), engress.Name, engress.Namespace)
-				return
-			}
+
 			if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
 				op.recorder.Eventf(
 					engress.ObjectReference(),
@@ -55,6 +52,7 @@ func (op *Operator) initIngressCRDWatcher() {
 				)
 				return
 			}
+
 			if key, err := cache.MetaNamespaceKeyFunc(obj); err == nil {
 				op.engQueue.Add(key)
 			}
@@ -66,6 +64,7 @@ func (op *Operator) initIngressCRDWatcher() {
 				return
 			}
 			oldEngress.Migrate()
+
 			newEngress, ok := new.(*api.Ingress)
 			if !ok {
 				log.Errorln("Invalid Ingress object")
@@ -89,20 +88,14 @@ func (op *Operator) initIngressCRDWatcher() {
 				)
 				return
 			}
+
 			if key, err := cache.MetaNamespaceKeyFunc(new); err == nil {
 				op.engQueue.Add(key)
 			}
 		},
 		DeleteFunc: func(obj interface{}) {
-			if engress, ok := obj.(*api.Ingress); ok {
-				engress.Migrate()
-				if !engress.ShouldHandleIngress(op.Opt.IngressClass) {
-					log.Infof("%s %s@%s does not match ingress class", engress.APISchema(), engress.Name, engress.Namespace)
-					return
-				}
-				if key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj); err == nil {
-					op.engQueue.Add(key)
-				}
+			if key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj); err == nil {
+				op.engQueue.Add(key)
 			}
 		},
 	}, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
@@ -164,14 +157,20 @@ func (op *Operator) runEngressInjector(key string) error {
 		glog.Infof("Sync/Add/Update for engress %s\n", key)
 		engress := obj.(*api.Ingress)
 		engress.Migrate()
-		op.AddEngress(etx.Background(), engress)
+
+		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
+			return op.AddEngress(etx.Background(), engress)
+		} else {
+			log.Infof("%s %s@%s does not match ingress class", engress.APISchema(), engress.Name, engress.Namespace)
+			op.DeleteEngress(etx.Background(), engress)
+		}
 	}
 	return nil
 }
 
-func (op *Operator) AddEngress(ctx context.Context, engress *api.Ingress) {
+func (op *Operator) AddEngress(ctx context.Context, engress *api.Ingress) error {
 	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Opt, engress)
-	ctrl.Create()
+	return ctrl.Create()
 }
 
 func (op *Operator) DeleteEngress(ctx context.Context, engress *api.Ingress) {
