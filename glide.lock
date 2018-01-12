@@ -1,5 +1,5 @@
-hash: 2b38b6d704b4391dc518a1458889b1cc48c253a8ac8f09fc06cbb524121c1f59
-updated: 2018-01-09T22:14:02.539467636-08:00
+hash: 2eafa6fa560aa6707e620fcf51999ee6cb1203da0828de23730d655748a36875
+updated: 2018-01-12T09:27:04.980761977-08:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -7,7 +7,7 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/go
-  version: 5986240e1838a8a6147d77417b8321af0e07496d
+  version: 702364e848d80e8f4d6af7045aef800f36b3db80
   subpackages:
   - analytics
   - context
@@ -107,9 +107,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/coreos/prometheus-operator
-  version: cbdd1b519796673cd02d53b0e21999acbcbfe6e4
-  repo: https://github.com/appscode/prometheus-operator.git
-  vcs: git
+  version: 0b87bfa150cf57bdc7b081d9b48ef48a9350b47b
   subpackages:
   - pkg/client/monitoring/v1
 - name: github.com/cpuguy83/go-md2man
@@ -330,7 +328,7 @@ imports:
 - name: github.com/pires/go-proxyproto
   version: 2f38359974ffed92842a86ffcc17001b3f525e34
 - name: github.com/pkg/errors
-  version: a22138067af1c4942683050411a841ade67fe1eb
+  version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/prometheus/client_golang
   version: c5b7fccd204277076155f10851dad72b76a49317
   subpackages:

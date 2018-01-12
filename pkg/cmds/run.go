@@ -1,6 +1,7 @@
 package cmds
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
@@ -48,7 +49,16 @@ var (
 		// High enough Burst to fit all expected use cases. Burst=0 is not set here, because client code is overriding it.
 		Burst: 1e6,
 	}
+
+	PrometheusCrdGroup = pcm.Group
+	PrometheusCrdKinds = pcm.DefaultCrdKinds
 )
+
+func init() {
+	flagset := flag.CommandLine
+	flagset.StringVar(&PrometheusCrdGroup, "prometheus-crd-apigroup", PrometheusCrdGroup, "prometheus CRD  API group name")
+	flagset.Var(&PrometheusCrdKinds, "prometheus-crd-kinds", " - EXPERIMENTAL (could be removed in future releases) - customize CRD kind names")
+}
 
 func NewCmdRun() *cobra.Command {
 	cmd := &cobra.Command{
@@ -113,7 +123,7 @@ func runOperator() {
 	kubeClient = kubernetes.NewForConfigOrDie(config)
 	var crdClient kext_cs.ApiextensionsV1beta1Interface = kext_cs.NewForConfigOrDie(config)
 	extClient = cs.NewForConfigOrDie(config)
-	promClient, err := pcm.NewForConfig(config)
+	promClient, err := pcm.NewForConfig(&PrometheusCrdKinds, PrometheusCrdGroup, config)
 	if err != nil {
 		log.Fatalln(err)
 	}

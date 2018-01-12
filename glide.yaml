@@ -21,9 +21,7 @@ import:
   version: v1.7.0
 - package: github.com/benbjohnson/clock
 - package: github.com/coreos/prometheus-operator
-  repo: https://github.com/appscode/prometheus-operator.git
-  vcs: git
-  version: client-go-5
+  version: v0.16.0
 - package: github.com/ghodss/yaml
   version: v1.0.0
 - package: github.com/go-openapi/spec
