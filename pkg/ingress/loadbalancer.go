@@ -303,10 +303,17 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 		obj.ObjectMeta = c.ensureOwnerReference(obj.ObjectMeta)
 
 		obj.Spec.Type = core.ServiceTypeLoadBalancer
-		obj.Spec.Ports = []core.ServicePort{}
 		obj.Spec.Selector = c.Ingress.OffshootLabels()
 		obj.Spec.LoadBalancerSourceRanges = c.Ingress.Spec.LoadBalancerSourceRanges
 		obj.Spec.ExternalIPs = c.Ingress.Spec.ExternalIPs
+
+		// store current ports
+		curPorts := make(map[int32]core.ServicePort)
+		for _, p := range obj.Spec.Ports {
+			curPorts[p.Port] = p
+		}
+
+		obj.Spec.Ports = []core.ServicePort{}
 
 		// opening other tcp ports
 		mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
@@ -317,6 +324,9 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 				Port:       int32(svcPort),
 				TargetPort: intstr.FromInt(target.PodPort),
 				NodePort:   int32(target.NodePort),
+			}
+			if cp, ok := curPorts[p.Port]; ok && p.NodePort == 0 {
+				p.NodePort = cp.NodePort // avoid reassigning port
 			}
 			obj.Spec.Ports = append(obj.Spec.Ports, p)
 		}
