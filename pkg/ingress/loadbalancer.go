@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"time"
-	meta_util "github.com/appscode/kutil/meta"
+
 	"github.com/appscode/go/errors"
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
