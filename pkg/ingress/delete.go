@@ -3,6 +3,7 @@ package ingress
 import (
 	"github.com/appscode/go/errors"
 	"github.com/appscode/go/types"
+	mon_api "github.com/appscode/kube-mon/api"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -66,6 +67,17 @@ func (c *controller) ensureRBACDeleted() error {
 
 	if err := c.ensureServiceAccountDeleted(); err != nil && !kerr.IsNotFound(err) {
 		return errors.FromErr(err).Err()
+	}
+	return nil
+}
+
+func (c *controller) ensureMonitoringAgentDeleted(newAgent mon_api.Agent) error {
+	if oldAgent, err := c.getOldAgent(); err != nil {
+		return err
+	} else if newAgent == nil || oldAgent.GetType() != newAgent.GetType() { // delete old agent
+		if _, err := oldAgent.Delete(c.Ingress.StatsAccessor()); err != nil {
+			return err
+		}
 	}
 	return nil
 }
