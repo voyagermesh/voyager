@@ -1,6 +1,10 @@
 package api
 
-import "github.com/appscode/kutil"
+import (
+	"strings"
+
+	"github.com/appscode/kutil"
+)
 
 type AgentType string
 
@@ -8,9 +12,14 @@ const (
 	KeyAgent   = "monitoring.appscode.com/agent"
 	KeyService = "monitoring.appscode.com/service"
 
-	AgentPrometheusBuiltin AgentType = "prometheus-builtin"
-	AgentCoreOSPrometheus  AgentType = "coreos-prometheus-operator"
+	VendorPrometheus                 = "prometheus.io"
+	AgentPrometheusBuiltin AgentType = VendorPrometheus + "/builtin"
+	AgentCoreOSPrometheus  AgentType = VendorPrometheus + "/coreos-operator"
 )
+
+func (at AgentType) Vendor() string {
+	return strings.SplitN(string(at), "/", 2)[0]
+}
 
 type AgentSpec struct {
 	// Valid values: coreos-prometheus-operator
