@@ -357,11 +357,18 @@ func (c *nodePortController) ensureService() (*core.Service, kutil.VerbType, err
 		obj.ObjectMeta = c.ensureOwnerReference(obj.ObjectMeta)
 
 		obj.Spec.Type = core.ServiceTypeNodePort
-		obj.Spec.Ports = []core.ServicePort{}
 		obj.Spec.Selector = c.Ingress.OffshootLabels()
 		obj.Spec.ExternalIPs = c.Ingress.Spec.ExternalIPs
 		// https://github.com/kubernetes/kubernetes/issues/33586
 		// obj.Spec.LoadBalancerSourceRanges: lbc.Config.Spec.LoadBalancerSourceRanges,
+
+		// store current node-port assignment
+		curNodePorts := make(map[int32]int32)
+		for _, p := range obj.Spec.Ports {
+			curNodePorts[p.Port] = p.NodePort
+		}
+
+		obj.Spec.Ports = []core.ServicePort{}
 
 		// opening other tcp ports
 		mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
@@ -372,6 +379,9 @@ func (c *nodePortController) ensureService() (*core.Service, kutil.VerbType, err
 				Port:       int32(svcPort),
 				TargetPort: intstr.FromInt(target.PodPort),
 				NodePort:   int32(target.NodePort),
+			}
+			if v, ok := curNodePorts[p.Port]; ok && p.NodePort == 0 {
+				p.NodePort = v // avoid reassigning node-port
 			}
 			obj.Spec.Ports = append(obj.Spec.Ports, p)
 		}

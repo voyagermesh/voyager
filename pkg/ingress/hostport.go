@@ -343,9 +343,16 @@ func (c *hostPortController) ensureService() (*core.Service, kutil.VerbType, err
 
 		obj.Spec.Type = core.ServiceTypeClusterIP
 		obj.Spec.ClusterIP = "None"
-		obj.Spec.Ports = []core.ServicePort{}
 		obj.Spec.Selector = c.Ingress.OffshootLabels()
 		obj.Spec.ExternalIPs = c.Ingress.Spec.ExternalIPs
+
+		// store current node-port assignment
+		curNodePorts := make(map[int32]int32)
+		for _, p := range obj.Spec.Ports {
+			curNodePorts[p.Port] = p.NodePort
+		}
+
+		obj.Spec.Ports = []core.ServicePort{}
 
 		// opening other tcp ports
 		mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
@@ -355,6 +362,9 @@ func (c *hostPortController) ensureService() (*core.Service, kutil.VerbType, err
 				Protocol:   "TCP",
 				Port:       int32(svcPort),
 				TargetPort: intstr.FromInt(target.PodPort),
+			}
+			if v, ok := curNodePorts[p.Port]; ok && p.NodePort == 0 {
+				p.NodePort = v // avoid reassigning node-port
 			}
 			obj.Spec.Ports = append(obj.Spec.Ports, p)
 		}

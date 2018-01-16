@@ -512,6 +512,7 @@ var _ = Describe("IngressOperations", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
+			By("Checking TestServers PortAssignments")
 			err = f.Ingress.CheckTestServersPortAssignments(ing)
 			Expect(err).Should(BeNil())
 		})
