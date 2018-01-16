@@ -24,11 +24,13 @@ voyager check [flags]
 ### Options
 
 ```
-  -c, --cloud-provider string   Name of cloud provider
-      --from-file string        YAML formatted file containing ingress
-  -h, --help                    help for check
-      --ingress-class string    Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.
-      --kube-context string     Name of Kubeconfig context
+  -c, --cloud-provider string            Name of cloud provider
+      --from-file string                 YAML formatted file containing ingress
+  -h, --help                             help for check
+      --ingress-class string             Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.
+      --kube-context string              Name of Kubeconfig context
+      --prometheus-crd-apigroup string   prometheus CRD  API group name (default "monitoring.coreos.com")
+      --prometheus-crd-kinds CrdKinds     - EXPERIMENTAL (could be removed in future releases) - customize CRD kind names
 ```
 
 ### Options inherited from parent commands
@@ -41,8 +43,6 @@ voyager check [flags]
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files
-      --prometheus-crd-apigroup string   prometheus CRD  API group name (default "monitoring.coreos.com")
-      --prometheus-crd-kinds CrdKinds     - EXPERIMENTAL (could be removed in future releases) - customize CRD kind names
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
