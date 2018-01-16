@@ -30,6 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	core_listers "k8s.io/client-go/listers/core/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 type nodePortController struct {
@@ -349,18 +350,32 @@ func (c *nodePortController) ensureService() (*core.Service, kutil.VerbType, err
 		Namespace: c.Ingress.Namespace,
 	}
 	return core_util.CreateOrPatchService(c.KubeClient, meta, func(obj *core.Service) *core.Service {
+		obj.ObjectMeta = c.ensureOwnerReference(obj.ObjectMeta)
+		obj.Spec.Type = core.ServiceTypeNodePort
+		obj.Spec.Selector = c.Ingress.OffshootLabels()
+
+		// Annotations
 		if obj.Annotations == nil {
 			obj.Annotations = make(map[string]string)
 		}
 		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
 		obj.Annotations[api.OriginName] = c.Ingress.GetName()
-		obj.ObjectMeta = c.ensureOwnerReference(obj.ObjectMeta)
 
-		obj.Spec.Type = core.ServiceTypeNodePort
-		obj.Spec.Selector = c.Ingress.OffshootLabels()
-		obj.Spec.ExternalIPs = c.Ingress.Spec.ExternalIPs
+		// TODO @ Dipta: how to remove old service annotations
+		if ans, ok := c.Ingress.ServiceAnnotations(c.Opt.CloudProvider); ok {
+			for k, v := range ans {
+				obj.Annotations[k] = v
+			}
+		}
+
+		// LoadBalancerSourceRanges
 		// https://github.com/kubernetes/kubernetes/issues/33586
-		// obj.Spec.LoadBalancerSourceRanges: lbc.Config.Spec.LoadBalancerSourceRanges,
+		// obj.Spec.LoadBalancerSourceRanges: lbc.Config.Spec.LoadBalancerSourceRanges
+
+		// ExternalIPs
+		if !sets.NewString(obj.Spec.ExternalIPs...).Equal(sets.NewString(c.Ingress.Spec.ExternalIPs...)) {
+			obj.Spec.ExternalIPs = c.Ingress.Spec.ExternalIPs
+		}
 
 		// store current node-port assignment
 		curNodePorts := make(map[int32]int32)
@@ -386,12 +401,7 @@ func (c *nodePortController) ensureService() (*core.Service, kutil.VerbType, err
 			obj.Spec.Ports = append(obj.Spec.Ports, p)
 		}
 
-		if ans, ok := c.Ingress.ServiceAnnotations(c.Opt.CloudProvider); ok {
-			for k, v := range ans {
-				obj.Annotations[k] = v
-			}
-		}
-
+		// ExternalTrafficPolicy
 		if c.Ingress.KeepSourceIP() {
 			// https://github.com/appscode/voyager/issues/276
 			// ref: https://kubernetes.io/docs/tasks/services/source-ip/#source-ip-for-services-with-typeloadbalancer

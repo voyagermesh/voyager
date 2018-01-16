@@ -25,6 +25,7 @@ import (
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	core_listers "k8s.io/client-go/listers/core/v1"
 )
@@ -295,17 +296,45 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 		Namespace: c.Ingress.Namespace,
 	}
 	return core_util.CreateOrPatchService(c.KubeClient, meta, func(obj *core.Service) *core.Service {
+		obj.ObjectMeta = c.ensureOwnerReference(obj.ObjectMeta)
+		obj.Spec.Type = core.ServiceTypeLoadBalancer
+		obj.Spec.Selector = c.Ingress.OffshootLabels()
+
+		// Annotations
 		if obj.Annotations == nil {
 			obj.Annotations = make(map[string]string)
 		}
 		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
 		obj.Annotations[api.OriginName] = c.Ingress.GetName()
-		obj.ObjectMeta = c.ensureOwnerReference(obj.ObjectMeta)
 
-		obj.Spec.Type = core.ServiceTypeLoadBalancer
-		obj.Spec.Selector = c.Ingress.OffshootLabels()
-		obj.Spec.LoadBalancerSourceRanges = c.Ingress.Spec.LoadBalancerSourceRanges
-		obj.Spec.ExternalIPs = c.Ingress.Spec.ExternalIPs
+		// TODO @ Dipta: how to remove old service annotations
+		if ans, ok := c.Ingress.ServiceAnnotations(c.Opt.CloudProvider); ok {
+			for k, v := range ans {
+				obj.Annotations[k] = v
+			}
+		}
+
+		// LoadBalancer ranges
+		curRanges := sets.NewString()
+		for _, ips := range obj.Spec.LoadBalancerSourceRanges {
+			if k, ok := ipnet(ips); ok {
+				curRanges.Insert(k)
+			}
+		}
+		desiredRanges := sets.NewString()
+		for _, ips := range c.Ingress.Spec.LoadBalancerSourceRanges {
+			if k, ok := ipnet(ips); ok {
+				desiredRanges.Insert(k)
+			}
+		}
+		if !curRanges.Equal(desiredRanges) {
+			obj.Spec.LoadBalancerSourceRanges = c.Ingress.Spec.LoadBalancerSourceRanges
+		}
+
+		// ExternalIPs
+		if !sets.NewString(obj.Spec.ExternalIPs...).Equal(sets.NewString(c.Ingress.Spec.ExternalIPs...)) {
+			obj.Spec.ExternalIPs = c.Ingress.Spec.ExternalIPs
+		}
 
 		// store current node-port assignment
 		curNodePorts := make(map[int32]int32)
@@ -331,12 +360,7 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 			obj.Spec.Ports = append(obj.Spec.Ports, p)
 		}
 
-		if ans, ok := c.Ingress.ServiceAnnotations(c.Opt.CloudProvider); ok {
-			for k, v := range ans {
-				obj.Annotations[k] = v
-			}
-		}
-
+		// ExternalTrafficPolicy
 		if c.Ingress.KeepSourceIP() {
 			switch c.Opt.CloudProvider {
 			case "gce", "gke", "azure", "acs":
@@ -346,6 +370,7 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 			}
 		}
 
+		// LoadBalancerIP
 		switch c.Opt.CloudProvider {
 		case "gce", "gke", "azure", "acs", "openstack":
 			if ip := c.Ingress.LoadBalancerIP(); ip != nil {
