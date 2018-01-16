@@ -50,14 +50,15 @@ var (
 		Burst: 1e6,
 	}
 
-	PrometheusCrdGroup = pcm.Group
-	PrometheusCrdKinds = pcm.DefaultCrdKinds
+	prometheusCrdGroup = pcm.Group
+	prometheusCrdKinds = pcm.DefaultCrdKinds
 )
 
-func init() {
-	flagset := flag.CommandLine
-	flagset.StringVar(&PrometheusCrdGroup, "prometheus-crd-apigroup", PrometheusCrdGroup, "prometheus CRD  API group name")
-	flagset.Var(&PrometheusCrdKinds, "prometheus-crd-kinds", " - EXPERIMENTAL (could be removed in future releases) - customize CRD kind names")
+func getPrometheusFlags() *flag.FlagSet {
+	fs := flag.NewFlagSet("prometheus", flag.ExitOnError)
+	fs.StringVar(&prometheusCrdGroup, "prometheus-crd-apigroup", prometheusCrdGroup, "prometheus CRD  API group name")
+	fs.Var(&prometheusCrdKinds, "prometheus-crd-kinds", " - EXPERIMENTAL (could be removed in future releases) - customize CRD kind names")
+	return fs
 }
 
 func NewCmdRun() *cobra.Command {
@@ -91,6 +92,8 @@ func NewCmdRun() *cobra.Command {
 	cmd.Flags().StringVar(&haProxyServerMetricFields, "haproxy.server-metric-fields", haProxyServerMetricFields, "Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1")
 	cmd.Flags().DurationVar(&haProxyTimeout, "haproxy.timeout", haProxyTimeout, "Timeout for trying to get stats from HAProxy.")
 
+	cmd.Flags().AddGoFlagSet(getPrometheusFlags())
+
 	return cmd
 }
 
@@ -123,7 +126,7 @@ func runOperator() {
 	kubeClient = kubernetes.NewForConfigOrDie(config)
 	var crdClient kext_cs.ApiextensionsV1beta1Interface = kext_cs.NewForConfigOrDie(config)
 	extClient = cs.NewForConfigOrDie(config)
-	promClient, err := pcm.NewForConfig(&PrometheusCrdKinds, PrometheusCrdGroup, config)
+	promClient, err := pcm.NewForConfig(&prometheusCrdKinds, prometheusCrdGroup, config)
 	if err != nil {
 		log.Fatalln(err)
 	}

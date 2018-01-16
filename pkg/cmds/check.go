@@ -66,7 +66,7 @@ func NewCmdCheck() *cobra.Command {
 			kubeClient = kubernetes.NewForConfigOrDie(config)
 			extClient = cs.NewForConfigOrDie(config)
 			crdClient := kext_cs.NewForConfigOrDie(config)
-			promClient, err := pcm.NewForConfig(&PrometheusCrdKinds, PrometheusCrdGroup, config)
+			promClient, err := pcm.NewForConfig(&prometheusCrdKinds, prometheusCrdGroup, config)
 			if err != nil {
 				return err
 			}
@@ -85,6 +85,7 @@ func NewCmdCheck() *cobra.Command {
 	cmd.Flags().StringVar(&fromFile, "from-file", fromFile, "YAML formatted file containing ingress")
 	cmd.Flags().StringVarP(&opt.CloudProvider, "cloud-provider", "c", opt.CloudProvider, "Name of cloud provider")
 	cmd.Flags().StringVar(&opt.IngressClass, "ingress-class", opt.IngressClass, "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
+	cmd.Flags().AddGoFlagSet(getPrometheusFlags())
 
 	return cmd
 }

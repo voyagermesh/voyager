@@ -38,6 +38,8 @@ voyager run [flags]
       --kubeconfig string                     Path to kubeconfig file with authorization information (the master location is set by the master flag).
       --master string                         The address of the Kubernetes API server (overrides any value in kubeconfig)
       --operator-service string               Name of service used to expose voyager operator (default "voyager-operator")
+      --prometheus-crd-apigroup string        prometheus CRD  API group name (default "monitoring.coreos.com")
+      --prometheus-crd-kinds CrdKinds          - EXPERIMENTAL (could be removed in future releases) - customize CRD kind names
       --qps float32                           The maximum QPS to the master from this client (default 1e+06)
       --rbac                                  Enable RBAC for operator & offshoot Kubernetes objects
       --restrict-to-operator-namespace        If true, voyager operator will only handle Kubernetes objects in its own namespace.
@@ -54,8 +56,6 @@ voyager run [flags]
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files
-      --prometheus-crd-apigroup string   prometheus CRD  API group name (default "monitoring.coreos.com")
-      --prometheus-crd-kinds CrdKinds     - EXPERIMENTAL (could be removed in future releases) - customize CRD kind names
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
