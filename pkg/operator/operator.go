@@ -49,12 +49,6 @@ type Operator struct {
 	cfgInformer cache.Controller
 	cfgLister   core_listers.ConfigMapLister
 
-	// Daemonset
-	dsQueue    workqueue.RateLimitingInterface
-	dsIndexer  cache.Indexer
-	dsInformer cache.Controller
-	dsLister   ext_listers.DaemonSetLister
-
 	// Deployment
 	dpQueue    workqueue.RateLimitingInterface
 	dpIndexer  cache.Indexer
@@ -154,7 +148,6 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 	informers := []cache.Controller{
 		// op.initNodeWatcher(),
 		// op.initConfigMapWatcher(),
-		op.initDaemonSetWatcher(),
 		// op.initDeploymentWatcher(),
 		// op.initServiceWatcher(),
 		// op.initEndpointWatcher(),
