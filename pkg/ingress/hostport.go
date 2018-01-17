@@ -27,9 +27,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	core_listers "k8s.io/client-go/listers/core/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 type hostPortController struct {
@@ -341,13 +341,10 @@ func (c *hostPortController) ensureService() (*core.Service, kutil.VerbType, err
 		obj.Spec.ClusterIP = "None"
 
 		// Annotations
-		if obj.Annotations == nil {
-			obj.Annotations = make(map[string]string)
+		obj.Annotations = map[string]string{
+			api.OriginAPISchema: c.Ingress.APISchema(),
+			api.OriginName:      c.Ingress.GetName(),
 		}
-		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
-		obj.Annotations[api.OriginName] = c.Ingress.GetName()
-
-		// TODO @ Dipta: how to remove old service annotations
 		if ans, ok := c.Ingress.ServiceAnnotations(c.Opt.CloudProvider); ok {
 			for k, v := range ans {
 				obj.Annotations[k] = v
@@ -392,14 +389,14 @@ func (c *hostPortController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 		Namespace: c.Ingress.Namespace,
 	}
 	return apps_util.CreateOrPatchDeployment(c.KubeClient, meta, func(obj *apps.Deployment) *apps.Deployment {
-		if obj.Annotations == nil {
-			obj.Annotations = make(map[string]string)
+		// Annotations
+		obj.Annotations = map[string]string{
+			api.OriginAPISchema: c.Ingress.APISchema(),
+			api.OriginName:      c.Ingress.GetName(),
 		}
-		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
-		obj.Annotations[api.OriginName] = c.Ingress.GetName()
+
 		obj.Labels = c.Ingress.OffshootLabels()
 		obj.ObjectMeta = c.ensureOwnerReference(obj.ObjectMeta)
-
 		obj.Spec.Replicas = types.Int32P(c.Ingress.Replicas())
 		obj.Spec.Selector = &metav1.LabelSelector{
 			MatchLabels: c.Ingress.OffshootLabels(),

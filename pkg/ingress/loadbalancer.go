@@ -62,36 +62,6 @@ func NewLoadBalancerController(
 	}
 }
 
-//func (c *loadBalancerController) IsExists() bool {
-//	_, err := c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-//	if kerr.IsNotFound(err) {
-//		return false
-//	}
-//	_, err = c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-//	if kerr.IsNotFound(err) {
-//		return false
-//	}
-//	_, err = c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-//	if kerr.IsNotFound(err) {
-//		return false
-//	}
-//	if c.Opt.EnableRBAC {
-//		_, err = c.KubeClient.CoreV1().ServiceAccounts(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-//		if kerr.IsNotFound(err) {
-//			return false
-//		}
-//		_, err = c.KubeClient.RbacV1beta1().Roles(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-//		if kerr.IsNotFound(err) {
-//			return false
-//		}
-//		_, err = c.KubeClient.RbacV1beta1().RoleBindings(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-//		if kerr.IsNotFound(err) {
-//			return false
-//		}
-//	}
-//	return true
-//}
-
 func (c *loadBalancerController) Create() error {
 	if err := c.generateConfig(); err != nil {
 		c.recorder.Eventf(
@@ -255,11 +225,6 @@ func (c *loadBalancerController) Create() error {
 	return nil
 }
 
-//// we don't need update anymore
-//func (c *loadBalancerController) Update(mode UpdateMode, old *api.Ingress) error {
-//	return c.Create()
-//}
-
 func (c *loadBalancerController) EnsureFirewall(svc *core.Service) error {
 	return nil
 }
@@ -301,13 +266,11 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 		obj.Spec.Selector = c.Ingress.OffshootLabels()
 
 		// Annotations
-		if obj.Annotations == nil {
-			obj.Annotations = make(map[string]string)
+		// TODO @ Dipta: Should we preserve any old annotations ?
+		obj.Annotations = map[string]string{
+			api.OriginAPISchema: c.Ingress.APISchema(),
+			api.OriginName:      c.Ingress.GetName(),
 		}
-		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
-		obj.Annotations[api.OriginName] = c.Ingress.GetName()
-
-		// TODO @ Dipta: how to remove old service annotations
 		if ans, ok := c.Ingress.ServiceAnnotations(c.Opt.CloudProvider); ok {
 			for k, v := range ans {
 				obj.Annotations[k] = v
@@ -388,14 +351,15 @@ func (c *loadBalancerController) ensurePods() (*apps.Deployment, kutil.VerbType,
 		Namespace: c.Ingress.Namespace,
 	}
 	return apps_util.CreateOrPatchDeployment(c.KubeClient, meta, func(obj *apps.Deployment) *apps.Deployment {
-		if obj.Annotations == nil {
-			obj.Annotations = make(map[string]string)
+		// Annotations
+		// TODO @ Dipta: Should we preserve any old annotations ?
+		obj.Annotations = map[string]string{
+			api.OriginAPISchema: c.Ingress.APISchema(),
+			api.OriginName:      c.Ingress.GetName(),
 		}
-		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
-		obj.Annotations[api.OriginName] = c.Ingress.GetName()
+
 		obj.Labels = c.Ingress.OffshootLabels()
 		obj.ObjectMeta = c.ensureOwnerReference(obj.ObjectMeta)
-
 		obj.Spec.Replicas = types.Int32P(c.Ingress.Replicas())
 		obj.Spec.Selector = &metav1.LabelSelector{
 			MatchLabels: c.Ingress.OffshootLabels(),
