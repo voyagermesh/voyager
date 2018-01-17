@@ -1,100 +1,76 @@
 package operator
 
 import (
-	"context"
-
-	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/eventer"
-	"github.com/appscode/voyager/pkg/ingress"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
+	core_listers "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
 )
 
-func (op *Operator) initNodeWatcher() cache.Controller {
+func (op *Operator) initNodeWatcher() {
 	lw := &cache.ListWatch{
-		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return op.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
+		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+			return op.KubeClient.CoreV1().Nodes().List(options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return op.KubeClient.CoreV1().Nodes().Watch(metav1.ListOptions{})
+			return op.KubeClient.CoreV1().Nodes().Watch(options)
 		},
 	}
 
 	handler := func(obj interface{}) {
 		if node, ok := obj.(*core.Node); ok {
-			ctx := etx.Background()
-
-			ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
+			items, err := op.listIngresses()
 			if err == nil {
-				for _, ing := range ingresses.Items {
-					engress, err := api.NewEngressFromIngress(ing)
-					if err != nil {
-						return
-					}
-					op.updateFirewall(ctx, engress, node)
-				}
-			}
-			engresses, err := op.VoyagerClient.Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
-			if err == nil {
-				for _, engress := range engresses.Items {
-					op.updateFirewall(ctx, &engress, node)
+				for _, ing := range items {
+					op.updateFirewall(&ing, node)
 				}
 			}
 		}
 	}
 
-	indexer, informer := cache.NewInformer(lw,
-		&core.Node{},
-		op.Opt.ResyncPeriod,
-		cache.ResourceEventHandlerFuncs{
-			AddFunc:    handler,
-			DeleteFunc: handler,
-		},
-	)
-	// https://github.com/kubernetes/client-go/blob/42a124578af9e61f5c6902fa7b6b2cb6538f17d2/examples/workqueue/main.go#L203
+	op.nodeIndexer, op.nodeInformer = cache.NewIndexerInformer(lw, &core.Node{}, op.Opt.ResyncPeriod, cache.ResourceEventHandlerFuncs{
+		AddFunc: handler,
+		// UpdateFunc: func(old interface{}, new interface{}) {},
+		DeleteFunc: handler,
+	}, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+
+	op.nodeLister = core_listers.NewNodeLister(op.nodeIndexer)
+
+	// Warm up the cache for initial synchronization
 	if nodes, err := op.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{}); err == nil {
 		for _, node := range nodes.Items {
-			indexer.Add(&core.Node{
+			op.nodeIndexer.Add(&core.Node{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: node.Name,
 				},
 			})
 		}
 	}
-
-	return informer
 }
 
-func (op *Operator) updateFirewall(ctx context.Context, ing *api.Ingress, node *core.Node) {
+func (op *Operator) updateFirewall(ing *api.Ingress, node *core.Node) {
 	if !ing.ShouldHandleIngress(op.Opt.IngressClass) {
-		log.New(ctx).Warningf("Skipping ingress %s@%s, as it is not handled by Voyager.", ing.Name, ing.Namespace)
 		return
 	}
-	t := ing.LBType()
-	if t == api.LBTypeLoadBalancer || t == api.LBTypeInternal {
+
+	switch ing.LBType() {
+	case api.LBTypeLoadBalancer, api.LBTypeInternal:
 		return
-	} else if t == api.LBTypeHostPort {
+	case api.LBTypeHostPort:
 		if selector := labels.SelectorFromSet(ing.NodeSelector()); !selector.Matches(labels.Set(node.Labels)) {
 			return
 		}
 	}
 
-	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Opt, ing)
-	if svc, err := op.svcLister.Services(ing.Namespace).Get(ing.OffshootName()); err == nil {
-		ctrl.EnsureFirewall(svc)
+	if key, err := cache.MetaNamespaceKeyFunc(ing); err == nil {
+		op.engQueue.Add(key)
+		log.Infof("Add/Delete/Update of Node %s, Ingress %s re-queued for update", node.Name, key)
 	} else {
-		op.recorder.Eventf(
-			ing,
-			core.EventTypeWarning,
-			eventer.EventReasonIngressFirewallUpdateFailed,
-			"Failed to update firewall, Reason: %s",
-			err.Error(),
-		)
+		log.Infof("Add/Delete/Update of Node %s, failed to re-queue Ingress %s, reason", node.Name, ing.Name, err.Error())
 	}
 }

@@ -420,7 +420,7 @@ func (c *nodePortController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 			api.OriginAPISchema: c.Ingress.APISchema(),
 			api.OriginName:      c.Ingress.GetName(),
 		}
-		
+
 		obj.Labels = c.Ingress.OffshootLabels()
 		obj.ObjectMeta = c.ensureOwnerReference(obj.ObjectMeta)
 		obj.Spec.Replicas = types.Int32P(c.Ingress.Replicas())

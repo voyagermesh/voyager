@@ -86,7 +86,7 @@ type Operator struct {
 	nsLister   core_listers.NamespaceLister
 
 	// Node
-	nodeQueue    workqueue.RateLimitingInterface
+	// nodeQueue    workqueue.RateLimitingInterface
 	nodeIndexer  cache.Indexer
 	nodeInformer cache.Controller
 	nodeLister   core_listers.NodeLister
@@ -101,7 +101,7 @@ type Operator struct {
 	monQueue    workqueue.RateLimitingInterface
 	monIndexer  cache.Indexer
 	monInformer cache.Controller
-	// monLister   prom.ServiceMonitorLister // TODO: lister ?
+	// monLister   prom.ServiceMonitorLister
 
 	// Service
 	svcQueue    workqueue.RateLimitingInterface
@@ -139,6 +139,7 @@ func (op *Operator) Setup() error {
 	op.initConfigMapWatcher()
 	op.initEndpointWatcher()
 	op.initSecretWatcher()
+	op.initNodeWatcher()
 
 	return nil
 }
@@ -158,7 +159,7 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 
 	informers := []cache.Controller{
 		op.initNamespaceWatcher(),
-		op.initNodeWatcher(),
+		// op.initNodeWatcher(),
 		// op.initConfigMapWatcher(),
 		op.initDaemonSetWatcher(),
 		// op.initDeploymentWatcher(),
@@ -194,6 +195,7 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 	go op.cfgInformer.Run(stopCh)
 	go op.epInformer.Run(stopCh)
 	go op.secretInformer.Run(stopCh)
+	go op.nodeInformer.Run(stopCh)
 
 	if !cache.WaitForCacheSync(stopCh, op.engInformer.HasSynced) {
 		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
@@ -220,6 +222,10 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 		return
 	}
 	if !cache.WaitForCacheSync(stopCh, op.secretInformer.HasSynced) {
+		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
+		return
+	}
+	if !cache.WaitForCacheSync(stopCh, op.nodeInformer.HasSynced) {
 		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
 		return
 	}
