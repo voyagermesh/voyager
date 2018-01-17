@@ -128,6 +128,7 @@ func (op *Operator) Setup() error {
 	op.initEndpointWatcher()
 	op.initSecretWatcher()
 	op.initNodeWatcher()
+	op.initServiceMonitorWatcher()
 
 	return nil
 }
@@ -156,9 +157,6 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 		op.initCertificateCRDWatcher(),
 		// op.initSecretWatcher(),
 	}
-	if informer := op.initServiceMonitorWatcher(); informer != nil {
-		informers = append(informers, informer)
-	}
 	for i := range informers {
 		go informers[i].Run(wait.NeverStop)
 	}
@@ -172,6 +170,12 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 	defer op.epQueue.ShutDown()
 	defer op.secretQueue.ShutDown()
 
+	defer func() {
+		if op.monInformer != nil {
+			op.monQueue.ShutDown()
+		}
+	}()
+
 	log.Infoln("Starting Voyager controller")
 
 	go op.engInformer.Run(stopCh)
@@ -182,6 +186,10 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 	go op.epInformer.Run(stopCh)
 	go op.secretInformer.Run(stopCh)
 	go op.nodeInformer.Run(stopCh)
+
+	if op.monInformer != nil {
+		op.monInformer.Run(stopCh)
+	}
 
 	if !cache.WaitForCacheSync(stopCh, op.engInformer.HasSynced) {
 		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
@@ -215,6 +223,12 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
 		return
 	}
+	if op.monInformer != nil {
+		if !cache.WaitForCacheSync(stopCh, op.monInformer.HasSynced) {
+			runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
+			return
+		}
+	}
 
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(op.runEngressWatcher, time.Second, stopCh)
@@ -224,6 +238,10 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 		go wait.Until(op.runConfigMapWatcher, time.Second, stopCh)
 		go wait.Until(op.runEndpointWatcher, time.Second, stopCh)
 		go wait.Until(op.runSecretWatcher, time.Second, stopCh)
+
+		if op.monInformer != nil {
+			go wait.Until(op.runServiceMonitorWatcher, time.Second, stopCh)
+		}
 	}
 
 	<-stopCh
