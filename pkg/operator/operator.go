@@ -79,12 +79,6 @@ type Operator struct {
 	ingInformer cache.Controller
 	ingLister   ext_listers.IngressLister
 
-	// Namespace
-	nsQueue    workqueue.RateLimitingInterface
-	nsIndexer  cache.Indexer
-	nsInformer cache.Controller
-	nsLister   core_listers.NamespaceLister
-
 	// Node
 	// nodeQueue    workqueue.RateLimitingInterface
 	nodeIndexer  cache.Indexer
@@ -158,7 +152,6 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 	defer runtime.HandleCrash()
 
 	informers := []cache.Controller{
-		op.initNamespaceWatcher(),
 		// op.initNodeWatcher(),
 		// op.initConfigMapWatcher(),
 		op.initDaemonSetWatcher(),
