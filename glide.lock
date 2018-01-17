@@ -135,7 +135,7 @@ imports:
   subpackages:
   - pkg/client/monitoring/v1
 - name: github.com/cpuguy83/go-md2man
-  version: 71acacd42f85e5e82f70a55327789582a5200a90
+  version: 8d868be6e9bf9d5350910bab97a050e49887600f
   subpackages:
   - md2man
 - name: github.com/davecgh/go-spew
@@ -365,7 +365,7 @@ imports:
 - name: github.com/pires/go-proxyproto
   version: 2f38359974ffed92842a86ffcc17001b3f525e34
 - name: github.com/pkg/errors
-  version: 645ef00459ed84a119197bfb8d8205042c6df63d
+  version: a22138067af1c4942683050411a841ade67fe1eb
 - name: github.com/prometheus/client_golang
   version: c5b7fccd204277076155f10851dad72b76a49317
   subpackages:
