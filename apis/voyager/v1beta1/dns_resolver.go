@@ -3,6 +3,7 @@ package v1beta1
 import (
 	"fmt"
 
+	"github.com/appscode/kutil"
 	"github.com/appscode/kutil/meta"
 	core "k8s.io/api/core/v1"
 )
@@ -52,7 +53,7 @@ func DNSResolverForService(svc core.Service) (useDNSResolver bool, resolver *DNS
 
 	resolver = &DNSResolver{Name: svc.Spec.ExternalName}
 	resolver.NameServer, err = meta.GetList(svc.Annotations, DNSResolverNameservers)
-	if err != nil {
+	if err != nil && err != kutil.ErrNotFound {
 		return
 	}
 	if ch, e2 := meta.GetBool(svc.Annotations, DNSResolverCheckHealth); e2 == nil {
@@ -61,13 +62,16 @@ func DNSResolverForService(svc core.Service) (useDNSResolver bool, resolver *DNS
 		resolver.CheckHealth = len(resolver.NameServer) > 0
 	}
 	resolver.Retries, err = meta.GetInt(svc.Annotations, DNSResolverRetries)
-	if err != nil {
+	if err != nil && err != kutil.ErrNotFound {
 		return
 	}
 	resolver.Hold, err = meta.GetMap(svc.Annotations, DNSResolverHold)
-	if err != nil {
+	if err != nil && err != kutil.ErrNotFound {
 		return
 	}
 	resolver.Timeout, err = meta.GetMap(svc.Annotations, DNSResolverTimeout)
+	if err == kutil.ErrNotFound {
+		err = nil
+	}
 	return
 }
