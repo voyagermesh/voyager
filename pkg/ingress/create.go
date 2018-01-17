@@ -13,6 +13,7 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"github.com/appscode/voyager/pkg/config"
 )
 
 const (
@@ -93,11 +94,11 @@ func (c *controller) getExporterSidecar() (*core.Container, error) {
 	if monSpec != nil && monSpec.Prometheus != nil {
 		return &core.Container{
 			Name: "exporter",
-			Args: []string{
+			Args: append([]string{
 				"export",
 				fmt.Sprintf("--address=:%d", monSpec.Prometheus.Port),
-				"--v=3",
-			},
+				fmt.Sprintf("--analytics=%v", config.EnableAnalytics),
+			}, config.LoggerOptions.ToFlags()...),
 			Env: []core.EnvVar{
 				{
 					Name:  analytics.Key,
