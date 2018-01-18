@@ -135,6 +135,7 @@ func (op *Operator) Setup() error {
 	op.initSecretWatcher()
 	op.initNodeWatcher()
 	op.initServiceMonitorWatcher()
+	op.initNamespaceWatcher()
 
 	return nil
 }
@@ -153,7 +154,7 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 	defer runtime.HandleCrash()
 
 	informers := []cache.Controller{
-		op.initNamespaceWatcher(),
+		// op.initNamespaceWatcher(),
 		// op.initNodeWatcher(),
 		// op.initConfigMapWatcher(),
 		// op.initDeploymentWatcher(),
@@ -176,6 +177,7 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 	defer op.cfgQueue.ShutDown()
 	defer op.epQueue.ShutDown()
 	defer op.secretQueue.ShutDown()
+	defer op.nsQueue.ShutDown()
 
 	defer func() {
 		if op.monInformer != nil {
@@ -193,6 +195,7 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 	go op.epInformer.Run(stopCh)
 	go op.secretInformer.Run(stopCh)
 	go op.nodeInformer.Run(stopCh)
+	go op.nsInformer.Run(stopCh)
 
 	if op.monInformer != nil {
 		op.monInformer.Run(stopCh)
@@ -230,6 +233,10 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
 		return
 	}
+	if !cache.WaitForCacheSync(stopCh, op.nsInformer.HasSynced) {
+		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
+		return
+	}
 	if op.monInformer != nil {
 		if !cache.WaitForCacheSync(stopCh, op.monInformer.HasSynced) {
 			runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
@@ -245,6 +252,7 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 		go wait.Until(op.runConfigMapWatcher, time.Second, stopCh)
 		go wait.Until(op.runEndpointWatcher, time.Second, stopCh)
 		go wait.Until(op.runSecretWatcher, time.Second, stopCh)
+		go wait.Until(op.runNamespaceWatcher, time.Second, stopCh)
 
 		if op.monInformer != nil {
 			go wait.Until(op.runServiceMonitorWatcher, time.Second, stopCh)
