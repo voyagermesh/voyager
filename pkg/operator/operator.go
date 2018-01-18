@@ -38,10 +38,10 @@ type Operator struct {
 	sync.Mutex
 
 	// Certificate CRD
-	crtQueue    workqueue.RateLimitingInterface
-	crtIndexer  cache.Indexer
-	crtInformer cache.Controller
-	crtLister   voyager.CertificateLister
+	certQueue    workqueue.RateLimitingInterface
+	certIndexer  cache.Indexer
+	certInformer cache.Controller
+	certLister   voyager.CertificateLister
 
 	// ConfigMap
 	cfgQueue    workqueue.RateLimitingInterface
@@ -136,6 +136,7 @@ func (op *Operator) Setup() error {
 	op.initNodeWatcher()
 	op.initServiceMonitorWatcher()
 	op.initNamespaceWatcher()
+	op.initCertificateCRDWatcher()
 
 	return nil
 }
@@ -153,21 +154,6 @@ func (op *Operator) ensureCustomResourceDefinitions() error {
 func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 	defer runtime.HandleCrash()
 
-	informers := []cache.Controller{
-		// op.initNamespaceWatcher(),
-		// op.initNodeWatcher(),
-		// op.initConfigMapWatcher(),
-		// op.initDeploymentWatcher(),
-		// op.initServiceWatcher(),
-		// op.initEndpointWatcher(),
-		// op.initIngressWatcher(),
-		// op.initIngressCRDWatcher(),
-		op.initCertificateCRDWatcher(),
-		// op.initSecretWatcher(),
-	}
-	for i := range informers {
-		go informers[i].Run(wait.NeverStop)
-	}
 	go op.CheckCertificates()
 
 	defer op.engQueue.ShutDown()
@@ -178,6 +164,7 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 	defer op.epQueue.ShutDown()
 	defer op.secretQueue.ShutDown()
 	defer op.nsQueue.ShutDown()
+	defer op.certQueue.ShutDown()
 
 	defer func() {
 		if op.monInformer != nil {
@@ -196,6 +183,7 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 	go op.secretInformer.Run(stopCh)
 	go op.nodeInformer.Run(stopCh)
 	go op.nsInformer.Run(stopCh)
+	go op.certInformer.Run(stopCh)
 
 	if op.monInformer != nil {
 		op.monInformer.Run(stopCh)
@@ -237,6 +225,10 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
 		return
 	}
+	if !cache.WaitForCacheSync(stopCh, op.certInformer.HasSynced) {
+		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
+		return
+	}
 	if op.monInformer != nil {
 		if !cache.WaitForCacheSync(stopCh, op.monInformer.HasSynced) {
 			runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
@@ -253,6 +245,7 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 		go wait.Until(op.runEndpointWatcher, time.Second, stopCh)
 		go wait.Until(op.runSecretWatcher, time.Second, stopCh)
 		go wait.Until(op.runNamespaceWatcher, time.Second, stopCh)
+		go wait.Until(op.runCertificateWatcher, time.Second, stopCh)
 
 		if op.monInformer != nil {
 			go wait.Until(op.runServiceMonitorWatcher, time.Second, stopCh)
