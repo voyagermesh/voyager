@@ -55,7 +55,8 @@ const (
 	// ServiceAnnotations is user provided annotations map that will be
 	// applied to the service of that LoadBalancer.
 	// ex: "ingress.appscode.com/annotations-service": {"key": "val"}
-	ServiceAnnotations = EngressKey + "/" + "annotations-service"
+	ServiceAnnotations               = EngressKey + "/" + "annotations-service"
+	LastAppliedServiceAnnotationKeys = EngressKey + "/" + "last-applied-service-annotation-keys"
 
 	// PodAnnotations is user provided annotations map that will be
 	// applied to the Pods (Deployment/ DaemonSet) of that LoadBalancer.

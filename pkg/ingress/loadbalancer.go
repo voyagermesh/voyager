@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/appscode/go/errors"
@@ -13,6 +14,7 @@ import (
 	"github.com/appscode/kutil"
 	apps_util "github.com/appscode/kutil/apps/v1beta1"
 	core_util "github.com/appscode/kutil/core/v1"
+	meta_util "github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/analytics"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
@@ -272,11 +274,21 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
 		obj.Annotations[api.OriginName] = c.Ingress.GetName()
 
+		// delete last applied ServiceAnnotations
+		// add new ServiceAnnotations
+		// store new ServiceAnnotations keys
+		lastAppliedKeys, _ := meta_util.GetString(obj.Annotations, api.LastAppliedServiceAnnotationKeys)
+		for _, key := range strings.Split(lastAppliedKeys, ",") {
+			delete(obj.Annotations, key)
+		}
+		newKeys := make([]string, 0)
 		if ans, ok := c.Ingress.ServiceAnnotations(c.Opt.CloudProvider); ok {
 			for k, v := range ans {
 				obj.Annotations[k] = v
+				newKeys = append(newKeys, k)
 			}
 		}
+		obj.Annotations[api.LastAppliedServiceAnnotationKeys] = strings.Join(newKeys, ",")
 
 		// LoadBalancer ranges
 		curRanges := sets.NewString()
