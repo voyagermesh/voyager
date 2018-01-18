@@ -341,10 +341,12 @@ func (c *hostPortController) ensureService() (*core.Service, kutil.VerbType, err
 		obj.Spec.ClusterIP = "None"
 
 		// Annotations
-		obj.Annotations = map[string]string{
-			api.OriginAPISchema: c.Ingress.APISchema(),
-			api.OriginName:      c.Ingress.GetName(),
+		if obj.Annotations == nil {
+			obj.Annotations = make(map[string]string)
 		}
+		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
+		obj.Annotations[api.OriginName] = c.Ingress.GetName()
+
 		if ans, ok := c.Ingress.ServiceAnnotations(c.Opt.CloudProvider); ok {
 			for k, v := range ans {
 				obj.Annotations[k] = v
@@ -390,10 +392,11 @@ func (c *hostPortController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 	}
 	return apps_util.CreateOrPatchDeployment(c.KubeClient, meta, func(obj *apps.Deployment) *apps.Deployment {
 		// Annotations
-		obj.Annotations = map[string]string{
-			api.OriginAPISchema: c.Ingress.APISchema(),
-			api.OriginName:      c.Ingress.GetName(),
+		if obj.Annotations == nil {
+			obj.Annotations = make(map[string]string)
 		}
+		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
+		obj.Annotations[api.OriginName] = c.Ingress.GetName()
 
 		obj.Labels = c.Ingress.OffshootLabels()
 		obj.ObjectMeta = c.ensureOwnerReference(obj.ObjectMeta)

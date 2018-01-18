@@ -31,10 +31,11 @@ func (c *controller) ensureConfigMap() (*core.ConfigMap, kutil.VerbType, error) 
 		Namespace: c.Ingress.Namespace,
 	}
 	return core_util.CreateOrPatchConfigMap(c.KubeClient, meta, func(obj *core.ConfigMap) *core.ConfigMap {
-		obj.Annotations = map[string]string{
-			api.OriginAPISchema: c.Ingress.APISchema(),
-			api.OriginName:      c.Ingress.GetName(),
+		if obj.Annotations == nil {
+			obj.Annotations = make(map[string]string)
 		}
+		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
+		obj.Annotations[api.OriginName] = c.Ingress.GetName()
 		obj.Data = map[string]string{
 			"haproxy.cfg": c.HAProxyConfig,
 		}
