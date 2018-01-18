@@ -17,43 +17,19 @@ Voyager is a [HAProxy](http://www.haproxy.org/) backed [secure](#certificate) L7
 
 
 ## Ingress
-Voyager provides L7 and L4 loadbalancing using a custom Kubernetes [Ingress](/docs/guides/ingress) resource. This is built on top of the [HAProxy](http://www.haproxy.org/) to support high availability, sticky sessions, name and path-based virtual hosting.
-This also support configurable application ports with all the options available in a standard Kubernetes [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/).
+Voyager provides L7 and L4 loadbalancing using Kubernetes standard [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) resource. This is built on top of the [HAProxy](http://www.haproxy.org/) to support high availability, sticky sessions, name and path-based virtual hosting among other features. The following diagram shows how voyager operator works. Voyager also provides a custom [Ingress](/docs/guides/ingress) resource under `voyager.appscode.com` api group that extends the functionality of standard Ingress in a Kubernetes native way.
 
-- HTTP
-  - [Exposing Service via Ingress](/docs/guides/ingress/http/single-service.md)
-  - [Virtual Hosting](/docs/guides/ingress/http/virtual-hosting.md)
-  - [Supports Loadbalancer Source Range](/docs/guides/ingress/http/source-range.md)
-  - [URL and Request Header Re-writing](/docs/guides/ingress/http/rewrite-rules.md)
-  - [Enable CORS](/docs/guides/ingress/http/cors.md)
-  - [Custom HTTP Port](/docs/guides/ingress/http/custom-http-port.md)
-  - [Using External Service as Ingress Backend](/docs/guides/ingress/http/external-svc.md)
-  - [HSTS](/docs/guides/ingress/http/hsts.md)
-  - [Forward Traffic to StatefulSet Pods](/docs/guides/ingress/http/statefulset-pod.md)
-  - [Configure Sticky session to Backends](/docs/guides/ingress/http/sticky-session.md)
-  - [Blue Green Deployments using weighted Loadbalancing](/docs/guides/ingress/http/blue-green-deployment.md)
-- TLS/SSL
-  - [TLS Termination](/docs/guides/ingress/tls/overview.md)
-  - [Backend TLS](/docs/guides/ingress/tls/backend-tls.md)
-  - [Supports AWS certificate manager](/docs/guides/ingress/tls/aws-cert-manager.md)
-- TCP
-  - [TCP LoadBalancing](/docs/guides/ingress/tcp/overview.md)
-- Configuration
-  - [Customize generated HAProxy config via BackendRule](/docs/guides/ingress/configuration/backend-rule.md) (can be used for [http rewriting](https://www.haproxy.com/doc/aloha/7.0/haproxy/http_rewriting.html), add [health checks](https://www.haproxy.com/doc/aloha/7.0/haproxy/healthchecks.html), etc.)
-  - [Apply Frontend Rules](/docs/guides/ingress/configuration/frontend-rule.md)
-  - [Supported Annotations](/docs/guides/ingress/configuration/annotations.md)
-  - [Specify NodePort](/docs/guides/ingress/configuration/node-port.md)
-  - [Configure global options](/docs/guides/ingress/configuration/default-options.md)
-  - [Configure Custom Timeouts for HAProxy](/docs/guides/ingress/configuration/default-timeouts.md)
-  - [Using Custom HAProxy Templates](/docs/guides/ingress/configuration/custom-templates.md)
-- Security
-  - [Configure Basic Auth for HTTP Backends](/docs/guides/ingress/security/basic-auth.md)
-  - [TLS Authentication](/docs/guides/ingress/security/tls-auth.md)
-- Monitoring
-  - [Exposing HAProxy Stats](/docs/guides/ingress/monitoring/stats.md)
-- [Scaling Ingress](/docs/guides/ingress/scaling.md)
-- [Placement of Ingress Pods](/docs/guides/ingress/pod-placement.md)
+![voyager-ingress](/docs/images/ingress/voyager-ingress.png)
 
+The above diagram shows how the Voyager operator works. When Voyager is [installed](/docs/setup/install.md) in a Kubernetes cluster, a pod named `voyager-operator-***` starts running in `kube-system` namespace by default. This operator pod watches for Kubernetes Ingress resources and Voyager's own Ingress CRD. When an Ingress object is created, Voyager operator creates 3 Kubernetes resources in the same namespace of the Ingress:
+
+- a Configmap named `voyager-${ingress-name}`: This contains the auo generated HAProxy configuration under `haproxy.cfg` key.
+
+- a Deployment named `voyager-${ingress-name}`: This runs HAProxy pods that mounts the above configmap. Each pod has one container for HAProxy. This container also includes some additional binary to reload HAProxy when the respective configmap updates. This also includes logic for mounting and updating SSL secrets referenced in the corresponding Ingress resource. HAProxy pods can also contain a side-car container for exporting Prometheus ready metrics, if [enabled](/docs/guides/ingress/monitoring/stats.md).
+
+- a Service named  `voyager-${ingress-name}`: This Kubernetes Service exposes the above HAProxy pods to the internet. The type of Service can be configured by user via `ingress.appscode.com/type` annotation on the Ingress.
+
+- a Service named  `voyager-${ingress-name}-stats`: This Kubernetes Service is used to expose Prometheus ready metrics for HAProxy pods. This service is always of type `ClusterIP` and only created if stats are [enabled](/docs/guides/ingress/monitoring/stats.md).
 
 ## Certificate
 

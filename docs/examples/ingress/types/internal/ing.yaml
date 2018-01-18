@@ -1,0 +1,23 @@
+apiVersion: voyager.appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: test-ingress
+  namespace: default
+  annotations:
+    ingress.appscode.com/type: Internal
+spec:
+  rules:
+  - host: 'web.example.com'
+    http:
+      paths:
+      - backend:
+          serviceName: web
+          servicePort: 80
+        path: /
+  - host: '*.example.com'
+    http:
+      paths:
+      - backend:
+          serviceName: rest
+          servicePort: 80
+        path: /
