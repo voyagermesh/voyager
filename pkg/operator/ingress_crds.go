@@ -155,7 +155,7 @@ func (op *Operator) runEngressInjector(key string) error {
 		op.DeleteEngress(etx.Background(), engress)
 	} else {
 		glog.Infof("Sync/Add/Update for engress %s\n", key)
-		engress := obj.(*api.Ingress)
+		engress := obj.(*api.Ingress).DeepCopy()
 		engress.Migrate()
 
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {

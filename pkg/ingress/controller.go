@@ -65,13 +65,13 @@ func NewController(
 	ingress *api.Ingress) Controller {
 	switch ingress.LBType() {
 	case api.LBTypeHostPort:
-		return NewHostPortController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress.DeepCopy())
+		return NewHostPortController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
 	case api.LBTypeNodePort:
-		return NewNodePortController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress.DeepCopy())
+		return NewNodePortController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
 	case api.LBTypeLoadBalancer:
-		return NewLoadBalancerController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress.DeepCopy())
+		return NewLoadBalancerController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
 	case api.LBTypeInternal:
-		return NewInternalController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress.DeepCopy())
+		return NewInternalController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
 	}
 	return nil
 }
