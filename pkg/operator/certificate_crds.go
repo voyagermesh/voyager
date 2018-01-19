@@ -15,6 +15,7 @@ import (
 	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	rt "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -184,18 +185,18 @@ func (op *Operator) CheckCertificates() {
 	for {
 		select {
 		case <-Time.After(time.Minute * 5):
-			result, err := op.VoyagerClient.Certificates(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
+			result, err := op.certLister.List(labels.Everything())
 			if err != nil {
 				log.Error(err)
 				continue
 			}
-			for i := range result.Items {
-				cert := result.Items[i]
+			for i := range result {
+				cert := result[i]
 				if cert.IsRateLimited() {
 					log.Infoln("skipping certificate %s@%s, since rate limited", cert.Name, cert.Namespace)
 					continue
 				}
-				ctrl, err := certificate.NewController(ctx, op.KubeClient, op.VoyagerClient, op.Opt, &cert)
+				ctrl, err := certificate.NewController(ctx, op.KubeClient, op.VoyagerClient, op.Opt, cert)
 				if err != nil {
 					op.recorder.Event(
 						cert.ObjectReference(),

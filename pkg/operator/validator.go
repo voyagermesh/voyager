@@ -8,16 +8,16 @@ import (
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	core "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 func (op *Operator) ValidateIngress() error {
 	invalidIngresses := []string{}
-	ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
+	ingresses, err := op.ingLister.List(labels.Everything())
 	if err != nil {
 		return err
 	}
-	for _, ing := range ingresses.Items {
+	for _, ing := range ingresses {
 		engress, err := api.NewEngressFromIngress(ing)
 		if err != nil {
 			return err
@@ -39,11 +39,11 @@ func (op *Operator) ValidateIngress() error {
 		}
 	}
 
-	engresses, err := op.VoyagerClient.Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
+	engresses, err := op.engLister.List(labels.Everything())
 	if err != nil {
 		return err
 	}
-	for _, ing := range engresses.Items {
+	for _, ing := range engresses {
 		ing.Migrate()
 		if !ing.ShouldHandleIngress(op.Opt.IngressClass) {
 			log.Warningf("Skipping ingress %s@%s, as it is not handled by Voyager.", ing.Name, ing.Namespace)

@@ -36,7 +36,7 @@ var _ = Describe("Restore ingress offshoots", func() {
 		}
 	})
 
-	FIt("Should restore configmap", func() {
+	It("Should restore configmap", func() {
 		By("Deleting offshoot configmap")
 		err := f.KubeClient.CoreV1().ConfigMaps(ing.Namespace).Delete(ing.OffshootName(), nil)
 		Expect(err).NotTo(HaveOccurred())

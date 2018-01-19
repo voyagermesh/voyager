@@ -8,9 +8,9 @@ import (
 )
 
 func (op *Operator) PurgeOffshootsWithDeprecatedLabels() error {
-	ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
+	ingresses, err := op.ingLister.List(labels.Everything())
 	if err == nil {
-		for _, ing := range ingresses.Items {
+		for _, ing := range ingresses {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
 				op.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).DeleteCollection(
 					&metav1.DeleteOptions{},
@@ -34,9 +34,9 @@ func (op *Operator) PurgeOffshootsWithDeprecatedLabels() error {
 		return err
 	}
 
-	engresses, err := op.VoyagerClient.Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
+	engresses, err := op.engLister.List(labels.Everything())
 	if err == nil {
-		for _, ing := range engresses.Items {
+		for _, ing := range engresses {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
 				op.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).DeleteCollection(
 					&metav1.DeleteOptions{},
@@ -83,9 +83,9 @@ func deprecatedLabelsFor(name string) map[string]string {
 }
 
 func (op *Operator) PurgeOffshootsDaemonSet() error {
-	ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
+	ingresses, err := op.ingLister.List(labels.Everything())
 	if err == nil {
-		for _, ing := range ingresses.Items {
+		for _, ing := range ingresses {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
 				name := api.VoyagerPrefix + ing.Name
 				log.Infoln("Deleting DaemonSet %s@%s", name, ing.Namespace)
@@ -95,16 +95,16 @@ func (op *Operator) PurgeOffshootsDaemonSet() error {
 		return err
 	}
 
-	engresses, err := op.VoyagerClient.Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
+	engresses, err := op.engLister.List(labels.Everything())
 	if err == nil {
-		for _, ing := range engresses.Items {
+		for _, ing := range engresses {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
 				name := api.VoyagerPrefix + ing.Name
 				if ds, err := op.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).Get(name, metav1.GetOptions{}); err == nil {
 					if ds.Spec.Template.Spec.Affinity != nil && ing.Spec.Affinity == nil {
 						log.Infof("Updating Ingress %s@%s to add `spec.affinity`", ing.Name, ing.Namespace)
 						ing.Spec.Affinity = ds.Spec.Template.Spec.Affinity
-						_, err = op.VoyagerClient.Ingresses(ing.Namespace).Update(&ing)
+						_, err = op.VoyagerClient.Ingresses(ing.Namespace).Update(ing)
 						if err != nil {
 							return err
 						}
