@@ -55,6 +55,7 @@ func (op *Operator) initEndpointWatcher() {
 			}
 		},
 	}, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+
 	op.epLister = core_listers.NewEndpointsLister(op.epIndexer)
 }
 

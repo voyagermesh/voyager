@@ -9,13 +9,13 @@ import (
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
-	voyager "github.com/appscode/voyager/listers/voyager/v1beta1"
+	api_listers "github.com/appscode/voyager/listers/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	kext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
@@ -41,7 +41,7 @@ type Operator struct {
 	certQueue    workqueue.RateLimitingInterface
 	certIndexer  cache.Indexer
 	certInformer cache.Controller
-	certLister   voyager.CertificateLister
+	certLister   api_listers.CertificateLister
 
 	// ConfigMap
 	cfgQueue    workqueue.RateLimitingInterface
@@ -65,7 +65,7 @@ type Operator struct {
 	engQueue    workqueue.RateLimitingInterface
 	engIndexer  cache.Indexer
 	engInformer cache.Controller
-	engLister   voyager.IngressLister
+	engLister   api_listers.IngressLister
 
 	// Ingress
 	ingQueue    workqueue.RateLimitingInterface
@@ -85,7 +85,7 @@ type Operator struct {
 	nodeInformer cache.Controller
 	nodeLister   core_listers.NodeLister
 
-	// Node
+	// Secret
 	secretQueue    workqueue.RateLimitingInterface
 	secretIndexer  cache.Indexer
 	secretInformer cache.Controller
@@ -257,23 +257,22 @@ func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
 }
 
 func (op *Operator) listIngresses() ([]api.Ingress, error) {
-	ing, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
+	ingList, err := op.ingLister.List(labels.Everything())
 	if err != nil {
 		return nil, err
 	}
-	eng, err := op.VoyagerClient.Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
+	engList, err := op.engLister.List(labels.Everything())
 	if err != nil {
 		return nil, err
 	}
-
-	items := make([]api.Ingress, len(ing.Items))
-	for i, item := range ing.Items {
-		e, err := api.NewEngressFromIngress(item)
-		if err != nil {
-			continue
+	items := make([]api.Ingress, len(engList))
+	for i, item := range engList {
+		items[i] = *item
+	}
+	for _, item := range ingList {
+		if e, err := api.NewEngressFromIngress(item); err == nil {
+			items = append(items, *e)
 		}
-		items[i] = *e
 	}
-	items = append(items, eng.Items...)
 	return items, nil
 }

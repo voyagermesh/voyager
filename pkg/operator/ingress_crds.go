@@ -7,7 +7,7 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	voyager "github.com/appscode/voyager/listers/voyager/v1beta1"
+	api_listers "github.com/appscode/voyager/listers/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/ingress"
 	"github.com/golang/glog"
@@ -100,7 +100,7 @@ func (op *Operator) initIngressCRDWatcher() {
 		},
 	}, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 
-	op.engLister = voyager.NewIngressLister(op.engIndexer)
+	op.engLister = api_listers.NewIngressLister(op.engIndexer)
 }
 
 func (op *Operator) runEngressWatcher() {

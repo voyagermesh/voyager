@@ -51,6 +51,7 @@ func (op *Operator) initServiceWatcher() {
 			}
 		},
 	}, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+
 	op.svcLister = core_listers.NewServiceLister(op.svcIndexer)
 }
 

@@ -34,6 +34,7 @@ func (op *Operator) initDeploymentWatcher() {
 			}
 		},
 	}, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+
 	op.dpLister = apps_listers.NewDeploymentLister(op.dpIndexer)
 }
 

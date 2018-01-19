@@ -34,6 +34,7 @@ func (op *Operator) initConfigMapWatcher() {
 			}
 		},
 	}, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+
 	op.cfgLister = core_listers.NewConfigMapLister(op.cfgIndexer)
 }
 

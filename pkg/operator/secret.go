@@ -48,6 +48,7 @@ func (op *Operator) initSecretWatcher() {
 			}
 		},
 	}, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+
 	op.secretLister = core_listers.NewSecretLister(op.secretIndexer)
 }
 

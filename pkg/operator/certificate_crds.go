@@ -8,7 +8,7 @@ import (
 	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/listers/voyager/voyager"
+	api_listers "github.com/appscode/voyager/listers/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/benbjohnson/clock"
@@ -91,7 +91,7 @@ func (op *Operator) initCertificateCRDWatcher() {
 		},
 	}, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 
-	op.certLister = voyager.NewCertificateLister(op.certIndexer)
+	op.certLister = api_listers.NewCertificateLister(op.certIndexer)
 }
 
 func (op *Operator) runCertificateWatcher() {
