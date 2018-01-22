@@ -1,6 +1,8 @@
 package api
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"sort"
 
@@ -117,8 +119,9 @@ func (svc TCPService) sortKey() string {
 }
 
 type Backend struct {
-	Name      string
-	BasicAuth *BasicAuth
+	Name          string
+	NameGenerated bool
+	BasicAuth     *BasicAuth
 
 	BackendRules []string
 	// Deprecated
@@ -132,7 +135,11 @@ type Backend struct {
 	StickyCookieHash string
 }
 
-func (be *Backend) canonicalize() {
+func (be *Backend) canonicalize(hasDuplicate bool, host, port, path string) {
+	if be.NameGenerated && hasDuplicate { // assign unique backend name
+		hashed := md5.Sum([]byte(host + "-" + port + "-" + path))
+		be.Name = be.Name + "-" + hex.EncodeToString(hashed[:])
+	}
 	sort.Slice(be.Endpoints, func(i, j int) bool { return be.Endpoints[i].IP < be.Endpoints[j].IP })
 	if be.BasicAuth != nil {
 		be.BasicAuth.canonicalize()

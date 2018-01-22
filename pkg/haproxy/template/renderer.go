@@ -9,10 +9,10 @@ import (
 )
 
 func RenderConfig(data hpi.TemplateData) (string, error) {
+	data.Canonicalize()
 	if err := data.IsValid(); err != nil {
 		return "", err
 	}
-	data.Canonicalize()
 
 	var buf bytes.Buffer
 	err := haproxyTemplate.ExecuteTemplate(&buf, "haproxy.cfg", data)
