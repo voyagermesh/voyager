@@ -9,9 +9,11 @@ metadata:
     heritage: "{{ .Release.Service }}"
 spec:
   ports:
+  # Port used to expose Prometheus metrics for the operator
   - name: ops
     port: 56790
     targetPort: ops
+  # Port used to respond to Let's Encrypt HTTP challenges
   - name: acme
     port: 56791
     targetPort: acme
