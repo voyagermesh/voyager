@@ -3,6 +3,7 @@ package config
 import (
 	"time"
 
+	"github.com/appscode/go/log/golog"
 	core "k8s.io/api/core/v1"
 )
 
@@ -28,3 +29,8 @@ func (opt Options) WatchNamespace() string {
 	}
 	return core.NamespaceAll
 }
+
+var (
+	EnableAnalytics = true
+	LoggerOptions   golog.Options
+)
