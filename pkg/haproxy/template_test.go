@@ -101,7 +101,7 @@ func TestTemplate(t *testing.T) {
 						Paths: []*HTTPPath{
 							{
 								Path: "/elijah",
-								Backend: Backend{
+								Backend: &Backend{
 									Name:         "elijah",
 									BackendRules: []string{"first rule", "second rule"},
 									RewriteRules: []string{"first rule", "second rule"},
@@ -114,7 +114,7 @@ func TestTemplate(t *testing.T) {
 							},
 							{
 								Path: "/nicklause",
-								Backend: Backend{
+								Backend: &Backend{
 									Name: "nicklause",
 									Endpoints: []*Endpoint{
 										{Name: "first", IP: "10.244.2.1", Port: "2323"},
@@ -129,7 +129,7 @@ func TestTemplate(t *testing.T) {
 						Paths: []*HTTPPath{
 							{
 								Path: "/rebeka",
-								Backend: Backend{
+								Backend: &Backend{
 									Name:         "rebecka",
 									RewriteRules: []string{"first rule", "second rule"},
 									Endpoints: []*Endpoint{
@@ -153,7 +153,7 @@ func TestTemplate(t *testing.T) {
 						Paths: []*HTTPPath{
 							{
 								Path: "/kool",
-								Backend: Backend{
+								Backend: &Backend{
 									Name:         "kool",
 									Sticky:       true,
 									BackendRules: []string{"first rule", "second rule"},
@@ -180,7 +180,7 @@ func TestTemplate(t *testing.T) {
 						Paths: []*HTTPPath{
 							{
 								Path: "/kool",
-								Backend: Backend{
+								Backend: &Backend{
 									Name:         "kool",
 									Sticky:       true,
 									BackendRules: []string{"first rule", "second rule"},
@@ -209,7 +209,7 @@ func TestTemplate(t *testing.T) {
 						Paths: []*HTTPPath{
 							{
 								Path: "/yara",
-								Backend: Backend{
+								Backend: &Backend{
 									Name:   "yara",
 									Sticky: true,
 									Endpoints: []*Endpoint{
@@ -233,7 +233,7 @@ func TestTemplate(t *testing.T) {
 						Paths: []*HTTPPath{
 							{
 								Path: "/yara",
-								Backend: Backend{
+								Backend: &Backend{
 									Name:   "yara",
 									Sticky: true,
 									Endpoints: []*Endpoint{
@@ -256,7 +256,7 @@ func TestTemplate(t *testing.T) {
 						Paths: []*HTTPPath{
 							{
 								Path: "/yara",
-								Backend: Backend{
+								Backend: &Backend{
 									Name: "yara",
 									Endpoints: []*Endpoint{
 										{Name: "first", IP: "10.244.2.1", Port: "2323"},
@@ -305,7 +305,7 @@ func TestTemplate(t *testing.T) {
 					{
 						Paths: []*HTTPPath{
 							{
-								Backend: Backend{
+								Backend: &Backend{
 									Name: "backend-maxconn",
 									Endpoints: []*Endpoint{
 										{Name: "first", IP: "10.244.2.1", Port: "2323", MaxConnections: 20, Weight: 2},
@@ -324,7 +324,7 @@ func TestTemplate(t *testing.T) {
 				FrontendName:  "stefan",
 				Port:          "333",
 				FrontendRules: []string{},
-				Backend: Backend{
+				Backend: &Backend{
 					Name:         "stefan",
 					BackendRules: []string{"first rule", "second rule"},
 					Endpoints: []*Endpoint{
@@ -341,7 +341,7 @@ func TestTemplate(t *testing.T) {
 				FrontendRules: []string{},
 				CertFile:      "this-is-secret",
 				PEMName:       "secret-pem",
-				Backend: Backend{
+				Backend: &Backend{
 					Name: "daemon",
 					Endpoints: []*Endpoint{
 						{Name: "first", IP: "10.244.2.1", Port: "2323"},
@@ -356,7 +356,7 @@ func TestTemplate(t *testing.T) {
 				Host:          "hello.ok.domain",
 				Port:          "4444",
 				FrontendRules: []string{},
-				Backend: Backend{
+				Backend: &Backend{
 					Name: "katherin",
 					Endpoints: []*Endpoint{
 						{Name: "first", IP: "10.244.2.1", Port: "2323"},
@@ -371,7 +371,7 @@ func TestTemplate(t *testing.T) {
 				Host:          "hello.ok.domain",
 				Port:          "4444",
 				FrontendRules: []string{},
-				Backend: Backend{
+				Backend: &Backend{
 					Name: "kate-becket",
 					Endpoints: []*Endpoint{
 						{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true},
@@ -386,7 +386,7 @@ func TestTemplate(t *testing.T) {
 				Host:          "hello.ok.domain",
 				Port:          "4445",
 				FrontendRules: []string{},
-				Backend: Backend{
+				Backend: &Backend{
 					Name: "kate-becket",
 					Endpoints: []*Endpoint{
 						{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify none"},
@@ -399,7 +399,7 @@ func TestTemplate(t *testing.T) {
 				FrontendName: "with-sticky-options",
 				Host:         "hello.ok.domain",
 				Port:         "4449",
-				Backend: Backend{
+				Backend: &Backend{
 					Name:   "kate-becket",
 					Sticky: true,
 					Endpoints: []*Endpoint{
@@ -413,7 +413,7 @@ func TestTemplate(t *testing.T) {
 				FrontendName:  "with-frontend-rules",
 				Port:          "4445",
 				FrontendRules: []string{"rule one", "rule two"},
-				Backend: Backend{
+				Backend: &Backend{
 					Name: "kate-becket",
 					Endpoints: []*Endpoint{
 						{Name: "first", IP: "10.244.2.1", Port: "2323"},
@@ -497,7 +497,7 @@ func TestTemplateAuth(t *testing.T) {
 						Paths: []*HTTPPath{
 							{
 								Path: "/elijah",
-								Backend: Backend{
+								Backend: &Backend{
 									Name: "elijah",
 									Endpoints: []*Endpoint{
 										{Name: "first", IP: "10.244.2.1", Port: "2323"},
@@ -507,7 +507,7 @@ func TestTemplateAuth(t *testing.T) {
 							},
 							{
 								Path: "/nicklause",
-								Backend: Backend{
+								Backend: &Backend{
 									Name: "nicklause",
 									Endpoints: []*Endpoint{
 										{Name: "first", IP: "10.244.2.1", Port: "2323"},
@@ -529,7 +529,7 @@ func TestTemplateAuth(t *testing.T) {
 						Paths: []*HTTPPath{
 							{
 								Path: "/kool",
-								Backend: Backend{
+								Backend: &Backend{
 									Name: "kool",
 									Endpoints: []*Endpoint{
 										{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true},
@@ -548,7 +548,7 @@ func TestTemplateAuth(t *testing.T) {
 				FrontendName:  "stefan",
 				Port:          "333",
 				FrontendRules: []string{},
-				Backend: Backend{
+				Backend: &Backend{
 					Name:         "stefan",
 					BackendRules: []string{"first rule", "second rule"},
 					Endpoints: []*Endpoint{
@@ -596,7 +596,7 @@ func TestTemplateServiceAuth(t *testing.T) {
 						Paths: []*HTTPPath{
 							{
 								Path: "/elijah",
-								Backend: Backend{
+								Backend: &Backend{
 									Name: "elijah",
 									Endpoints: []*Endpoint{
 										{Name: "first", IP: "10.244.2.1", Port: "2323"},
@@ -610,7 +610,7 @@ func TestTemplateServiceAuth(t *testing.T) {
 							},
 							{
 								Path: "/nicklause",
-								Backend: Backend{
+								Backend: &Backend{
 									Name: "nicklause",
 									Endpoints: []*Endpoint{
 										{Name: "first", IP: "10.244.2.1", Port: "2323"},
@@ -680,7 +680,7 @@ func TestTLSAuth(t *testing.T) {
 						Paths: []*HTTPPath{
 							{
 								Path: "/elijah",
-								Backend: Backend{
+								Backend: &Backend{
 									Name: "elijah",
 									Endpoints: []*Endpoint{
 										{Name: "first", IP: "10.244.2.1", Port: "2323"},
@@ -706,7 +706,7 @@ func TestTLSAuth(t *testing.T) {
 						Paths: []*HTTPPath{
 							{
 								Path: "/elijah",
-								Backend: Backend{
+								Backend: &Backend{
 									Name: "elijah",
 									Endpoints: []*Endpoint{
 										{Name: "first", IP: "10.244.2.1", Port: "2323"},
@@ -755,7 +755,7 @@ func TestHealthCheck(t *testing.T) {
 						Paths: []*HTTPPath{
 							{
 								Path: "/elijah",
-								Backend: Backend{
+								Backend: &Backend{
 									Name: "elijah",
 									Endpoints: []*Endpoint{
 										{Name: "aaa", IP: "10.244.2.1", Port: "2323"},
@@ -776,7 +776,7 @@ func TestHealthCheck(t *testing.T) {
 				FrontendName:  "stefan",
 				Port:          "333",
 				FrontendRules: []string{},
-				Backend: Backend{
+				Backend: &Backend{
 					Name: "stefan",
 					Endpoints: []*Endpoint{
 						{Name: "aaa", IP: "10.244.2.1", Port: "2323"},
