@@ -26,7 +26,7 @@ func TestEnsureCustomResourceDefinitions(t *testing.T) {
 	}
 
 	op := Operator{CRDClient: crdClient, KubeClient: kubernetes.NewForConfigOrDie(config)}
-	if assert.Nil(t, op.ensureCustomResourceDefinitions()) {
+	if assert.Nil(t, op.Setup()) {
 		rs, err := crdClient.CustomResourceDefinitions().Get("ingresses.voyager.appscode.com", v1.GetOptions{})
 		if assert.Nil(t, err) {
 			assert.Equal(t, rs.Name, "ingresses.voyager.appscode.com")
