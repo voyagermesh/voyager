@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/appscode/go/log/golog"
@@ -18,8 +19,17 @@ type Options struct {
 	QPS                         float32
 	Burst                       int
 	ResyncPeriod                time.Duration
-	HAProxyImage                string
-	ExporterSidecarImage        string
+	DockerRegistry              string
+	HAProxyImageTag             string
+	ExporterImageTag            string
+}
+
+func (opt Options) HAProxyImage() string {
+	return fmt.Sprintf("%s/haproxy:%s", opt.DockerRegistry, opt.HAProxyImageTag)
+}
+
+func (opt Options) ExporterImage() string {
+	return fmt.Sprintf("%s/voyager:%s", opt.DockerRegistry, opt.ExporterImageTag)
 }
 
 func (opt Options) WatchNamespace() string {

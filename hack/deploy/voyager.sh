@@ -10,6 +10,8 @@ export VOYAGER_ENABLE_RBAC=false
 export VOYAGER_RUN_ON_MASTER=0
 export VOYAGER_RESTRICT_TO_NAMESPACE=false
 export VOYAGER_ROLE_TYPE=ClusterRole
+export VOYAGER_DOCKER_REGISTRY=appscode
+export VOYAGER_IMAGE_PULL_SECRET=
 
 show_help() {
     echo "voyager.sh - install voyager operator"
@@ -21,6 +23,8 @@ show_help() {
     echo "-n, --namespace=NAMESPACE          specify namespace (default: kube-system)"
     echo "-p, --provider=PROVIDER            specify a cloud provider"
     echo "    --rbac                         create RBAC roles and bindings"
+    echo "    --docker-registry              docker registry used to pull voyager images (default: appscode)"
+    echo "    --image-pull-secret            name of secret used to pull voyager operator images"
     echo "    --restrict-to-namespace        restrict voyager to its own namespace"
     echo "    --run-on-master                run voyager operator on master"
     echo "    --template-cfgmap=CONFIGMAP    name of configmap with custom templates"
@@ -58,6 +62,15 @@ while test $# -gt 0; do
             ;;
         --provider*)
             export VOYAGER_CLOUD_PROVIDER=`echo $1 | sed -e 's/^[^=]*=//g'`
+            shift
+            ;;
+        --docker-registry*)
+            export VOYAGER_DOCKER_REGISTRY=`echo $1 | sed -e 's/^[^=]*=//g'`
+            shift
+            ;;
+        --image-pull-secret*)
+            secret=`echo $1 | sed -e 's/^[^=]*=//g'`
+            export VOYAGER_IMAGE_PULL_SECRET="name: '$secret'"
             shift
             ;;
         --rbac)

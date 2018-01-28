@@ -15,6 +15,7 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       serviceAccountName: $VOYAGER_SERVICE_ACCOUNT
+      imagePullSecrets: [$VOYAGER_IMAGE_PULL_SECRET]
       containers:
       - name: voyager
         args:
@@ -25,7 +26,8 @@ spec:
         - --cloud-config=$VOYAGER_CLOUD_CONFIG # ie. /etc/kubernetes/azure.json for azure
         - --ingress-class=$VOYAGER_INGRESS_CLASS
         - --restrict-to-operator-namespace=$VOYAGER_RESTRICT_TO_NAMESPACE
-        image: appscode/voyager:5.0.0-rc.11
+        - --docker-registry=$VOYAGER_DOCKER_REGISTRY
+        image: $VOYAGER_DOCKER_REGISTRY/voyager:5.0.0-rc.11
         ports:
         - containerPort: 56790
           name: ops
