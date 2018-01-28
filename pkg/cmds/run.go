@@ -37,8 +37,8 @@ var (
 	haProxyTimeout            = 5 * time.Second
 	opt                       = config.Options{
 		DockerRegistry:    "appscode",
-		HAProxyImageTag:   "1.7.9-5.0.0-rc.11",
-		ExporterImageTag:  "5.0.0-rc.11",
+		HAProxyImageTag:   "1.7.9-6.0.0-alpha.0",
+		ExporterImageTag:  "6.0.0-alpha.0",
 		OperatorNamespace: meta.Namespace(),
 		OperatorService:   "voyager-operator",
 		EnableRBAC:        false,

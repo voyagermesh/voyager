@@ -1,12 +1,12 @@
 ---
 title: Voyager Run
 menu:
-  product_voyager_5.0.0-rc.11:
+  product_voyager_6.0.0-alpha.0:
     identifier: voyager-run
     name: Voyager Run
     parent: reference
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.11
+menu_name: product_voyager_6.0.0-alpha.0
 section_menu_id: reference
 ---
 ## voyager run
@@ -30,8 +30,8 @@ voyager run [flags]
   -c, --cloud-provider string                 Name of cloud provider
       --custom-templates string               Glob pattern of custom HAProxy template files used to override built-in templates
       --docker-registry string                Docker image registry for HAProxy and Prometheus exporter (default "appscode")
-      --exporter-image-tag string             Tag of Docker image containing Prometheus exporter (default "5.0.0-rc.11")
-      --haproxy-image-tag string              Tag of Docker image containing HAProxy binary (default "1.7.9-5.0.0-rc.11")
+      --exporter-image-tag string             Tag of Docker image containing Prometheus exporter (default "6.0.0-alpha.0")
+      --haproxy-image-tag string              Tag of Docker image containing HAProxy binary (default "1.7.9-6.0.0-alpha.0")
       --haproxy.server-metric-fields string   Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1 (default "2,3,4,5,6,7,8,9,13,14,15,16,17,18,21,24,33,35,38,39,40,41,42,43,44")
       --haproxy.timeout duration              Timeout for trying to get stats from HAProxy. (default 5s)
   -h, --help                                  help for run

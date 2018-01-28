@@ -6,9 +6,9 @@ dockerRegistry: appscode
 ## Tags for Docker images
 imageTags:
   ## Docker image tag containing Voyager
-  voyager: 5.0.0-rc.11
+  voyager: 6.0.0-alpha.0
   ## Docker image tag containing HAProxy binary
-  haproxy: 1.7.9-5.0.0-rc.11
+  haproxy: 1.7.9-6.0.0-alpha.0
 ## Optionally specify an array of imagePullSecrets.
 ## Secrets must be manually created in the namespace.
 ## ref: https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod

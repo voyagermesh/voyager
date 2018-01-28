@@ -18,7 +18,7 @@ func init() {
 	flag.StringVar(&testConfigs.KubeConfig, "kubeconfig", "", "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
 	flag.StringVar(&testConfigs.CloudProviderName, "cloud-provider", "", "Name of cloud provider")
 	flag.StringVar(&testConfigs.DockerRegistry, "docker-registry", "appscode", "Docker image registry for HAProxy and Prometheus exporter")
-	flag.StringVar(&testConfigs.HAProxyImageTag, "haproxy-image-tag", "1.7.9-5.0.0-rc.11", "Tag of Docker image containing HAProxy binary")
+	flag.StringVar(&testConfigs.HAProxyImageTag, "haproxy-image-tag", "1.7.9-6.0.0-alpha.0", "Tag of Docker image containing HAProxy binary")
 	flag.StringVar(&testConfigs.IngressClass, "ingress-class", "", "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
 	flag.BoolVar(&testConfigs.Cleanup, "cleanup", true, "")
 	flag.BoolVar(&testConfigs.InCluster, "in-cluster", false, "")

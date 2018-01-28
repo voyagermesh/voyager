@@ -188,9 +188,9 @@ if [ "$VOYAGER_ENABLE_ADMISSION_WEBHOOK" = true ]; then
     export KUBE_CA=$($ONESSL get kube-ca | $ONESSL base64)
     rm -rf $ONESSL ca.crt ca.key server.crt server.key
 
-    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/admission/operator.yaml | envsubst | kubectl apply -f -
+    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-alpha.0/hack/deploy/admission/operator.yaml | envsubst | kubectl apply -f -
 else
-    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/operator.yaml | envsubst | kubectl apply -f -
+    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-alpha.0/hack/deploy/operator.yaml | envsubst | kubectl apply -f -
 fi
 
 if [ -n "$VOYAGER_TEMPLATE_CONFIGMAP" ]; then
@@ -200,20 +200,20 @@ if [ -n "$VOYAGER_TEMPLATE_CONFIGMAP" ]; then
 		exit 1
 	fi
     kubectl patch deploy voyager-operator -n $VOYAGER_NAMESPACE \
-      --patch="$(curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/use-custom-tpl.yaml | envsubst)"
+      --patch="$(curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-alpha.0/hack/deploy/use-custom-tpl.yaml | envsubst)"
 fi
 
 if [ "$VOYAGER_ENABLE_RBAC" = true ]; then
     kubectl create serviceaccount $VOYAGER_SERVICE_ACCOUNT --namespace $VOYAGER_NAMESPACE
     kubectl label serviceaccount $VOYAGER_SERVICE_ACCOUNT app=voyager --namespace $VOYAGER_NAMESPACE
-    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/rbac-list.yaml | envsubst | kubectl auth reconcile -f -
+    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-alpha.0/hack/deploy/rbac-list.yaml | envsubst | kubectl auth reconcile -f -
 
     if [ "$VOYAGER_ENABLE_ADMISSION_WEBHOOK" = true ]; then
-        curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/admission/rbac-list.yaml | envsubst | kubectl auth reconcile -f -
+        curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-alpha.0/hack/deploy/admission/rbac-list.yaml | envsubst | kubectl auth reconcile -f -
     fi
 fi
 
 if [ "$VOYAGER_RUN_ON_MASTER" -eq 1 ]; then
     kubectl patch deploy voyager-operator -n $VOYAGER_NAMESPACE \
-      --patch="$(curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/run-on-master.yaml)"
+      --patch="$(curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-alpha.0/hack/deploy/run-on-master.yaml)"
 fi

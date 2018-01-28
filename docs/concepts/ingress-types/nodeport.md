@@ -1,13 +1,13 @@
 ---
 title: NodePort Ingress | Voyager
 menu:
-  product_voyager_5.0.0-rc.11:
+  product_voyager_6.0.0-alpha.0:
     identifier: nodeport-ingress
     name: NodePort
     parent: ingress-types-concepts
     weight: 15
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.11
+menu_name: product_voyager_6.0.0-alpha.0
 section_menu_id: concepts
 ---
 
@@ -20,14 +20,14 @@ In `NodePort` type Ingress, HAProxy pods are exposed via a NodePort type Kuberne
 - First, deploy voyager operator.
 
 ```console
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/voyager.sh \
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-alpha.0/hack/deploy/voyager.sh \
     | bash -s -- --provider=minikube
 ```
 
 - Now, deploy test servers using [this script](/docs/examples/ingress/types/nodeport/deploy-servers.sh) script.
 
 ```console
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/docs/examples/ingress/types/nodeport/deploy-servers.sh | bash
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-alpha.0/docs/examples/ingress/types/nodeport/deploy-servers.sh | bash
 
 deployment "nginx" created
 service "web" exposed
@@ -35,7 +35,7 @@ deployment "echoserver" created
 service "rest" exposed
 ```
 
-- Now, create an Ingress object running `kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/docs/examples/ingress/types/nodeport/ing.yaml`. Please note the annotaiton on ingress:
+- Now, create an Ingress object running `kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/6.0.0-alpha.0/docs/examples/ingress/types/nodeport/ing.yaml`. Please note the annotaiton on ingress:
 
 ```yaml
   annotations:

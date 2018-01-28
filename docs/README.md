@@ -2,18 +2,18 @@
 title: Weclome | Voyager
 description: Welcome to Voyager
 menu:
-  product_voyager_5.0.0-rc.11:
+  product_voyager_6.0.0-alpha.0:
     identifier: readme-voyager
     name: Readme
     parent: welcome
     weight: -1
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.11
+menu_name: product_voyager_6.0.0-alpha.0
 section_menu_id: welcome
-url: /products/voyager/5.0.0-rc.11/welcome/
+url: /products/voyager/6.0.0-alpha.0/welcome/
 aliases:
-  - /products/voyager/5.0.0-rc.11/
-  - /products/voyager/5.0.0-rc.11/README/
+  - /products/voyager/6.0.0-alpha.0/
+  - /products/voyager/6.0.0-alpha.0/README/
 ---
 
 # Voyager

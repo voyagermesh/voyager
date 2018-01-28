@@ -43,8 +43,8 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | Parameter                 | Description                                                   | Default             |
 | --------------------------| ------------------------------------------------------------- | --------------------|
 | `dockerRegistry`          | Docker registry used to pull Voyager related images           | `appscode`          |
-| `imageTags.voyager`       | Tag of Voyager operator image                                 | `5.0.0-rc.11`       |
-| `imageTags.haproxy`       | Tag of HAProxy container image                                | `1.7.9-5.0.0-rc.11` |
+| `imageTags.voyager`       | Tag of Voyager operator image                                 | `6.0.0-alpha.0`       |
+| `imageTags.haproxy`       | Tag of HAProxy container image                                | `1.7.9-6.0.0-alpha.0` |
 | `imagePullSecrets`        | Specify image pull secrets                                    | `nil` (does not add image pull secrets to deployed pods) |
 | `imagePullPolicy`         | Image pull policy                                             | `IfNotPresent`      |
 | `cloudProvider`           | Name of cloud provider                                        | `nil`               |

@@ -1,12 +1,12 @@
 ---
 title: Loadbalancer Source Range | Kubernetes Ingress
 menu:
-  product_voyager_5.0.0-rc.11:
+  product_voyager_6.0.0-alpha.0:
     name: Source Range
     parent: http-ingress
     weight: 20
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.11
+menu_name: product_voyager_6.0.0-alpha.0
 section_menu_id: guides
 ---
 

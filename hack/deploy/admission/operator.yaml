@@ -30,7 +30,7 @@ spec:
         - --ingress-class=$VOYAGER_INGRESS_CLASS
         - --restrict-to-operator-namespace=$VOYAGER_RESTRICT_TO_NAMESPACE
         - --docker-registry=$VOYAGER_DOCKER_REGISTRY
-        image: $VOYAGER_DOCKER_REGISTRY/voyager:5.0.0-rc.11
+        image: $VOYAGER_DOCKER_REGISTRY/voyager:6.0.0-alpha.0
         ports:
         - containerPort: 56790
           name: ops
