@@ -37,6 +37,8 @@ options:
 -n, --namespace=NAMESPACE          specify namespace (default: kube-system)
 -p, --provider=PROVIDER            specify a cloud provider
     --rbac                         create RBAC roles and bindings
+    --docker-registry              docker registry used to pull voyager images (default: appscode)
+    --image-pull-secret            name of secret used to pull voyager operator images
     --restrict-to-namespace        restrict voyager to its own namespace
     --run-on-master                run voyager operator on master
     --template-cfgmap=CONFIGMAP    name of configmap with custom templates
@@ -71,6 +73,19 @@ By default, Voyager operator will watch Ingress objects in any namespace. If you
 $ kubectl create namespace voyager
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider --restrict-to-namespace [--namespace=voyager] [--run-on-master] [--rbac]
+```
+
+If you are using a private Docker registry, you need to pull the following 2 docker images:
+
+ - [appscode/voyager](https://hub.docker.com/r/appscode/voyager)
+ - [appscode/haproxy](https://hub.docker.com/r/appscode/haproxy)
+
+To pass the address of your private registry and optionally a image pull secret use flags `--docker-registry` and `--image-pull-secret` respectively.
+
+```console
+$ kubectl create namespace voyager
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/voyager.sh \
+    | bash -s -- --docker-registry=MY_REGISTRY [--image-pull-secret=SECRET_NAME] [--rbac]
 ```
 
 
