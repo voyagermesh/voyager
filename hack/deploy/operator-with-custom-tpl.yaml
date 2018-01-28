@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
   labels:
@@ -7,6 +7,9 @@ metadata:
   namespace: $VOYAGER_NAMESPACE
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: voyager
   template:
     metadata:
       labels:
@@ -37,19 +40,19 @@ spec:
           name: acme
           protocol: TCP
         volumeMounts:
-          - mountPath: /etc/kubernetes
-            name: cloudconfig
-            readOnly: true
-          - mountPath: /srv/voyager/custom
-            name: templates
-            readOnly: true
-      volumes:
-        - hostPath:
-            path: /etc/kubernetes
+        - mountPath: /etc/kubernetes
           name: cloudconfig
-        - configMap:
-            name: voyager-templates
+          readOnly: true
+        - mountPath: /srv/voyager/custom
           name: templates
+          readOnly: true
+      volumes:
+      - hostPath:
+          path: /etc/kubernetes
+        name: cloudconfig
+      - configMap:
+          name: voyager-templates
+        name: templates
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists

@@ -1,0 +1,24 @@
+# kubectl patch deploy voyager-operator -n kube-system --patch "$(cat use-custom-tpl.yaml)"
+spec:
+  template:
+    spec:
+      containers:
+      - args:
+        - run
+        - --v=3
+        - --rbac=$VOYAGER_ENABLE_RBAC
+        - --cloud-provider=$VOYAGER_CLOUD_PROVIDER
+        - --cloud-config=$VOYAGER_CLOUD_CONFIG
+        - --ingress-class=$VOYAGER_INGRESS_CLASS
+        - --restrict-to-operator-namespace=$VOYAGER_RESTRICT_TO_NAMESPACE
+        - --docker-registry=$VOYAGER_DOCKER_REGISTRY
+        - --custom-templates=/srv/voyager/custom/*.cfg
+        name: voyager
+        volumeMounts:
+        - mountPath: /srv/voyager/custom
+          name: templates
+          readOnly: true
+      volumes:
+      - configMap:
+          name: voyager-templates
+        name: templates

@@ -1,0 +1,162 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: voyager
+  name: voyager-operator
+  namespace: $VOYAGER_NAMESPACE
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voyager
+  template:
+    metadata:
+      labels:
+        app: voyager
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      serviceAccountName: $VOYAGER_SERVICE_ACCOUNT
+      imagePullSecrets: [$VOYAGER_IMAGE_PULL_SECRET]
+      containers:
+      - name: voyager
+        args:
+        - run
+        - --v=3
+        - --rbac=$VOYAGER_ENABLE_RBAC
+        - --cloud-provider=$VOYAGER_CLOUD_PROVIDER
+        - --cloud-config=$VOYAGER_CLOUD_CONFIG # ie. /etc/kubernetes/azure.json for azure
+        - --ingress-class=$VOYAGER_INGRESS_CLASS
+        - --restrict-to-operator-namespace=$VOYAGER_RESTRICT_TO_NAMESPACE
+        - --docker-registry=$VOYAGER_DOCKER_REGISTRY
+        image: $VOYAGER_DOCKER_REGISTRY/voyager:5.0.0-rc.11
+        ports:
+        - containerPort: 56790
+          name: ops
+          protocol: TCP
+        - containerPort: 56791
+          name: acme
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /etc/kubernetes
+          name: cloudconfig
+          readOnly: true
+      - name: webhook
+        args:
+        - admission-webhook
+        - --secure-port=8443
+        - --audit-log-path=-
+        - --tls-cert-file=/var/serving-cert/tls.crt
+        - --tls-private-key-file=/var/serving-cert/tls.key
+        - --v=3
+        image: $VOYAGER_DOCKER_REGISTRY/voyager:0.7.0-alpha.0
+        ports:
+        - containerPort: 8443
+        volumeMounts:
+        - mountPath: /var/serving-cert
+          name: serving-cert
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8443
+            scheme: HTTPS
+      volumes:
+      - hostPath:
+          path: /etc/kubernetes
+        name: cloudconfig
+      - name: serving-cert
+        secret:
+          defaultMode: 420
+          secretName: voyager-admission-webhook-cert
+      tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
+---
+# kube lacks the service serving cert signer, so provide a manual secret for it
+apiVersion: v1
+kind: Secret
+metadata:
+  name: voyager-admission-webhook-cert
+  namespace: $VOYAGER_NAMESPACE
+  labels:
+    app: voyager
+type: kubernetes.io/tls
+data:
+  tls.crt: $TLS_SERVING_CERT
+  tls.key: $TLS_SERVING_KEY
+---
+# to be able to expose TSB inside the cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: voyager-operator
+  namespace: $VOYAGER_NAMESPACE
+  labels:
+    app: voyager
+spec:
+  ports:
+  - name: admission
+    port: 443
+    targetPort: 8443
+  - name: ops
+    port: 56790
+    targetPort: ops
+  - name: acme
+    port: 56791
+    targetPort: acme
+  selector:
+    app: voyager
+---
+# register as aggregated apiserver
+apiVersion: apiregistration.k8s.io/v1beta1
+kind: APIService
+metadata:
+  name: v1beta1.admission.voyager.appscode.com
+  labels:
+    app: voyager
+spec:
+  caBundle: $SERVICE_SERVING_CERT_CA
+  group: admission.voyager.appscode.com
+  groupPriorityMinimum: 1000
+  versionPriority: 15
+  service:
+    name: voyager-operator
+    namespace: $VOYAGER_NAMESPACE
+  version: v1beta1
+---
+# register to intercept voyager CRD creates / updates
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: admission.voyager.appscode.com
+  labels:
+    app: voyager
+webhooks:
+- name: admission.voyager.appscode.com
+  clientConfig:
+    service:
+      namespace: default
+      name: kubernetes
+      path: /apis/admission.voyager.appscode.com/v1beta1/reviews
+    caBundle: $KUBE_CA
+  rules:
+  - operations:
+    - CREATE
+    - UPDATE
+    apiGroups:
+    - voyager.appscode.com
+    apiVersions:
+    - "*"
+    resources:
+    - "*"
+  - operations:
+    - CREATE
+    - UPDATE
+    apiGroups:
+    - extensions
+    apiVersions:
+    - v1beta1
+    resources:
+    - ingresses
+  failurePolicy: Fail

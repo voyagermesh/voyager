@@ -41,6 +41,7 @@ options:
     --image-pull-secret            name of secret used to pull voyager operator images
     --restrict-to-namespace        restrict voyager to its own namespace
     --run-on-master                run voyager operator on master
+    --enable-admission-webhook     configure admission webhook for Voyager CRDs
     --template-cfgmap=CONFIGMAP    name of configmap with custom templates
 
 # install without RBAC roles
@@ -86,6 +87,13 @@ To pass the address of your private registry and optionally a image pull secret 
 $ kubectl create namespace voyager
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/voyager.sh \
     | bash -s -- --docker-registry=MY_REGISTRY [--image-pull-secret=SECRET_NAME] [--rbac]
+```
+
+Voyager implements a [validating admission webhook](https://kubernetes.io/docs/admin/admission-controllers/#validatingadmissionwebhook-alpha-in-18-beta-in-19) to validate Voyager CRDs. To enable this feature, pass the `--enable-admission-webhook` flag. _Please note that, this works with Kubernetes 1.9 or following versions_.
+
+```console
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/voyager.sh \
+    | bash -s -- --enable-admission-webhook [--rbac]
 ```
 
 
