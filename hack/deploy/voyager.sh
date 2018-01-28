@@ -141,7 +141,9 @@ else
 fi
 
 if [ "$VOYAGER_ENABLE_RBAC" = true ]; then
-    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/rbac.yaml | envsubst | kubectl apply -f -
+    kubectl create serviceaccount $VOYAGER_SERVICE_ACCOUNT --namespace $VOYAGER_NAMESPACE
+    kubectl label serviceaccount $VOYAGER_SERVICE_ACCOUNT app=voyager --namespace $VOYAGER_NAMESPACE
+    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/rbac-list.yaml | envsubst | kubectl auth reconcile -f -
 fi
 
 if [ "$VOYAGER_RUN_ON_MASTER" -eq 1 ]; then
