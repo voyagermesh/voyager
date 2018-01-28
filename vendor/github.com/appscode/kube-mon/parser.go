@@ -27,7 +27,7 @@ func Parse(annotations map[string]string, keyPrefix string, defaultExporterPort 
 	var err error
 
 	switch agent {
-	case api.AgentCoreOSPrometheus:
+	case api.AgentCoreOSPrometheus, api.DeprecatedAgentCoreOSPrometheus:
 		var prom api.PrometheusSpec
 
 		prom.Namespace, _ = meta.GetString(annotations, path.Join(keyPrefix, serviceMonitorNamespace))

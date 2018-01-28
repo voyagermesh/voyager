@@ -16,13 +16,15 @@ import (
 
 // PrometheusCoreosOperator creates `ServiceMonitor` so that CoreOS Prometheus operator can generate necessary config for Prometheus.
 type PrometheusCoreosOperator struct {
+	at api.AgentType
 	k8sClient  kubernetes.Interface
 	promClient prom.MonitoringV1Interface
 	extClient  ecs.ApiextensionsV1beta1Interface
 }
 
-func New(k8sClient kubernetes.Interface, extClient ecs.ApiextensionsV1beta1Interface, promClient prom.MonitoringV1Interface) api.Agent {
+func New(at api.AgentType, k8sClient kubernetes.Interface, extClient ecs.ApiextensionsV1beta1Interface, promClient prom.MonitoringV1Interface) api.Agent {
 	return &PrometheusCoreosOperator{
+		at:at,
 		k8sClient:  k8sClient,
 		extClient:  extClient,
 		promClient: promClient,
@@ -30,7 +32,7 @@ func New(k8sClient kubernetes.Interface, extClient ecs.ApiextensionsV1beta1Inter
 }
 
 func (agent *PrometheusCoreosOperator) GetType() api.AgentType {
-	return api.AgentCoreOSPrometheus
+	return agent.at
 }
 
 func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new *api.AgentSpec) (kutil.VerbType, error) {

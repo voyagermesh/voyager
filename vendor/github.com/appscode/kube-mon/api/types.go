@@ -12,12 +12,17 @@ const (
 	KeyAgent   = "monitoring.appscode.com/agent"
 	KeyService = "monitoring.appscode.com/service"
 
-	VendorPrometheus                 = "prometheus.io"
-	AgentPrometheusBuiltin AgentType = VendorPrometheus + "/builtin"
-	AgentCoreOSPrometheus  AgentType = VendorPrometheus + "/coreos-operator"
+	VendorPrometheus                          = "prometheus.io"
+	AgentPrometheusBuiltin          AgentType = VendorPrometheus + "/builtin"
+	AgentCoreOSPrometheus           AgentType = VendorPrometheus + "/coreos-operator"
+	// Deprecated
+	DeprecatedAgentCoreOSPrometheus AgentType = "coreos-prometheus-operator"
 )
 
 func (at AgentType) Vendor() string {
+	if at == DeprecatedAgentCoreOSPrometheus {
+		return VendorPrometheus
+	}
 	return strings.SplitN(string(at), "/", 2)[0]
 }
 
