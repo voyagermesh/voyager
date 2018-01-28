@@ -6,6 +6,7 @@ import (
 	"path"
 
 	"github.com/appscode/kube-mon/api"
+	"github.com/appscode/kutil"
 	"github.com/appscode/kutil/meta"
 )
 
@@ -35,7 +36,7 @@ func Parse(annotations map[string]string, keyPrefix string, defaultExporterPort 
 		}
 
 		prom.Labels, err = meta.GetMap(annotations, path.Join(keyPrefix, serviceMonitorLabels))
-		if err != nil {
+		if err != nil && err != kutil.ErrNotFound {
 			return nil, err
 		}
 		if len(prom.Labels) <= 0 {
@@ -43,7 +44,7 @@ func Parse(annotations map[string]string, keyPrefix string, defaultExporterPort 
 		}
 
 		port, err := meta.GetInt(annotations, path.Join(keyPrefix, serviceMonitorPort))
-		if err != nil {
+		if err != nil && err != kutil.ErrNotFound {
 			return nil, err
 		}
 		if port == 0 {
@@ -59,7 +60,7 @@ func Parse(annotations map[string]string, keyPrefix string, defaultExporterPort 
 		var prom api.PrometheusSpec
 
 		port, err := meta.GetInt(annotations, path.Join(keyPrefix, serviceMonitorPort))
-		if err != nil {
+		if err != nil && err != kutil.ErrNotFound {
 			return nil, err
 		}
 		if port == 0 {
