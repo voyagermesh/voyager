@@ -6,10 +6,17 @@
 
 **Merged pull requests:**
 
+- Update client-go to 6.0.0 [\#825](https://github.com/appscode/voyager/pull/825) ([tamalsaha](https://github.com/tamalsaha))
+- Update copyright year to 2018 [\#824](https://github.com/appscode/voyager/pull/824) ([tamalsaha](https://github.com/tamalsaha))
+- Merge tls-mounter & kloader into haproxy-controller [\#823](https://github.com/appscode/voyager/pull/823) ([tamalsaha](https://github.com/tamalsaha))
+- Fix unit tests [\#820](https://github.com/appscode/voyager/pull/820) ([jeffersongirao](https://github.com/jeffersongirao))
+- Ignored not-found error for DNS resolver annotations  [\#812](https://github.com/appscode/voyager/pull/812) ([diptadas](https://github.com/diptadas))
 - Add prometheus flags to command that uses it [\#810](https://github.com/appscode/voyager/pull/810) ([tamalsaha](https://github.com/tamalsaha))
+- Improve concepts docs [\#809](https://github.com/appscode/voyager/pull/809) ([tamalsaha](https://github.com/tamalsaha))
 - Revendor coreos prometheus operator 0.16.0 [\#808](https://github.com/appscode/voyager/pull/808) ([tamalsaha](https://github.com/tamalsaha))
 - Revendor log wrapper [\#804](https://github.com/appscode/voyager/pull/804) ([tamalsaha](https://github.com/tamalsaha))
 - Fix links in chart [\#802](https://github.com/appscode/voyager/pull/802) ([tamalsaha](https://github.com/tamalsaha))
+- Add changelog [\#801](https://github.com/appscode/voyager/pull/801) ([tamalsaha](https://github.com/tamalsaha))
 
 ## [5.0.0-rc.11](https://github.com/appscode/voyager/tree/5.0.0-rc.11) (2018-01-04)
 [Full Changelog](https://github.com/appscode/voyager/compare/5.0.0-rc.10...5.0.0-rc.11)
