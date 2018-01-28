@@ -3,6 +3,7 @@ package config
 import (
 	"time"
 
+	"github.com/appscode/go/log/golog"
 	core "k8s.io/api/core/v1"
 )
 
@@ -19,7 +20,6 @@ type Options struct {
 	ResyncPeriod                time.Duration
 	HAProxyImage                string
 	ExporterSidecarImage        string
-	AnalyticsClientID           string
 }
 
 func (opt Options) WatchNamespace() string {
@@ -28,3 +28,9 @@ func (opt Options) WatchNamespace() string {
 	}
 	return core.NamespaceAll
 }
+
+var (
+	AnalyticsClientID string
+	EnableAnalytics   = true
+	LoggerOptions     golog.Options
+)

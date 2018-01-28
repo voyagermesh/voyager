@@ -14,7 +14,7 @@ import (
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
-	"github.com/appscode/voyager/pkg/haproxy"
+	"github.com/appscode/voyager/pkg/haproxy/template"
 	"github.com/appscode/voyager/pkg/migrator"
 	"github.com/appscode/voyager/pkg/operator"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
@@ -111,7 +111,7 @@ func runOperator() {
 		log.Fatalln("Invalid ingress class `--ingress-class=$INGRESS_CLASS`")
 	}
 
-	err := haproxy.LoadTemplates(builtinTemplates, customTemplates)
+	err := template.LoadTemplates(builtinTemplates, customTemplates)
 	if err != nil {
 		log.Fatalln(err)
 	}

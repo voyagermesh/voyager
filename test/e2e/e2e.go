@@ -6,7 +6,7 @@ import (
 
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/voyager/pkg/config"
-	"github.com/appscode/voyager/pkg/haproxy"
+	hpdata "github.com/appscode/voyager/pkg/haproxy/template"
 	"github.com/appscode/voyager/pkg/operator"
 	"github.com/appscode/voyager/test/framework"
 	. "github.com/onsi/ginkgo"
@@ -51,12 +51,14 @@ var _ = BeforeSuite(func() {
 	err := root.EnsureNamespace()
 	Expect(err).NotTo(HaveOccurred())
 
+	config.LoggerOptions.Verbosity = "5"
+
 	if !root.Config.InCluster {
 		By("Running Controller in Local mode")
 		err := op.Setup()
 		Expect(err).NotTo(HaveOccurred())
 
-		err = haproxy.LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
+		err = hpdata.LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
 		Expect(err).NotTo(HaveOccurred())
 
 		go op.Run()

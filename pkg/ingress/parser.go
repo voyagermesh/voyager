@@ -11,7 +11,8 @@ import (
 	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/go/errors"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/haproxy"
+	hpi "github.com/appscode/voyager/pkg/haproxy/api"
+	"github.com/appscode/voyager/pkg/haproxy/template"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	"github.com/tredoe/osutil/user/crypt"
 	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
@@ -23,7 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, userLists map[string]haproxy.UserList, bkSvc string, port intstr.IntOrString, hostNames []string) (*haproxy.Backend, error) {
+func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, userLists map[string]hpi.UserList, bkSvc string, port intstr.IntOrString, hostNames []string) (*hpi.Backend, error) {
 	c.logger.Infoln("getting endpoints for ", c.Ingress.Namespace, bkSvc, "port", port)
 
 	name := bkSvc
@@ -48,7 +49,7 @@ func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, 
 	if service.Spec.Type == core.ServiceTypeExternalName {
 		c.logger.Infof("Found ServiceType ExternalName for service %s, Checking DNS resolver options", service.Name)
 		// https://kubernetes.io/docs/concepts/services-networking/service/#services-without-selectors
-		ep := haproxy.Endpoint{
+		ep := hpi.Endpoint{
 			Name:         "external",
 			Port:         port.String(),
 			ExternalName: service.Spec.ExternalName,
@@ -65,7 +66,7 @@ func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, 
 			ep.DNSResolver = resolver.Name
 			ep.CheckHealth = resolver.CheckHealth
 		}
-		return &haproxy.Backend{Endpoints: []*haproxy.Endpoint{&ep}}, nil
+		return &hpi.Backend{Endpoints: []*hpi.Endpoint{&ep}}, nil
 	}
 	p, ok := getSpecifiedPort(service.Spec.Ports, port)
 	if !ok {
@@ -74,7 +75,7 @@ func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, 
 	return c.getEndpoints(service, p, hostNames, userLists)
 }
 
-func (c *controller) getEndpoints(svc *core.Service, servicePort *core.ServicePort, hostNames []string, userLists map[string]haproxy.UserList) (*haproxy.Backend, error) {
+func (c *controller) getEndpoints(svc *core.Service, servicePort *core.ServicePort, hostNames []string, userLists map[string]hpi.UserList) (*hpi.Backend, error) {
 	ep, err := c.EndpointsLister.Endpoints(svc.Namespace).Get(svc.Name)
 	if err != nil {
 		return nil, err
@@ -91,7 +92,7 @@ func (c *controller) getEndpoints(svc *core.Service, servicePort *core.ServicePo
 		pods[pod.Name] = pod
 	}
 
-	eps := make([]*haproxy.Endpoint, 0)
+	eps := make([]*hpi.Endpoint, 0)
 	// The intent here is to create a union of all subsets that match a targetPort.
 	// We know the endpoint already matches the service, so all pod ips that have
 	// the target port are capable of service traffic for it.
@@ -122,7 +123,7 @@ func (c *controller) getEndpoints(svc *core.Service, servicePort *core.ServicePo
 			c.logger.Infof("Found target port %s for service %s", targetPort, svc.Name)
 			for _, epAddress := range ss.Addresses {
 				if isForwardable(hostNames, epAddress.Hostname) {
-					ep := &haproxy.Endpoint{
+					ep := &hpi.Endpoint{
 						Name: getEndpointName(epAddress),
 						IP:   epAddress.IP,
 						Port: targetPort,
@@ -158,7 +159,7 @@ func (c *controller) getEndpoints(svc *core.Service, servicePort *core.ServicePo
 			}
 		}
 	}
-	return &haproxy.Backend{
+	return &hpi.Backend{
 		BasicAuth:        c.getServiceAuth(userLists, svc),
 		Endpoints:        eps,
 		Sticky:           c.Ingress.Sticky() || isServiceSticky(svc.Annotations),
@@ -254,7 +255,7 @@ func (c *controller) generateConfig() error {
 		}
 	}
 
-	var td haproxy.TemplateData
+	var td hpi.TemplateData
 
 	var nodePortSvc *core.Service
 	if c.Ingress.LBType() == api.LBTypeNodePort {
@@ -265,8 +266,8 @@ func (c *controller) generateConfig() error {
 		}
 	}
 
-	si := &haproxy.SharedInfo{
-		CORSConfig: haproxy.CORSConfig{
+	si := &hpi.SharedInfo{
+		CORSConfig: hpi.CORSConfig{
 			CORSEnabled:          c.Ingress.EnableCORS(),
 			CORSAllowedOrigin:    c.Ingress.AllowedCORSOrigin(),
 			CORSAllowedMethods:   c.Ingress.AllowedCORSMethods(),
@@ -281,7 +282,7 @@ func (c *controller) generateConfig() error {
 		WhitelistSourceRange:  c.Ingress.WhitelistSourceRange(),
 		MaxConnections:        c.Ingress.MaxConnections(),
 		ForceMatchServicePort: c.Ingress.ForceServicePort(),
-		Limit: &haproxy.Limit{
+		Limit: &hpi.Limit{
 			Connection: c.Ingress.LimitConnections(),
 		},
 	}
@@ -301,10 +302,10 @@ func (c *controller) generateConfig() error {
 		si.AcceptProxy = true
 	}
 
-	userLists := make(map[string]haproxy.UserList)
-	var globalBasic *haproxy.BasicAuth
+	userLists := make(map[string]hpi.UserList)
+	var globalBasic *hpi.BasicAuth
 	if c.Ingress.BasicAuthEnabled() {
-		globalBasic = &haproxy.BasicAuth{
+		globalBasic = &hpi.BasicAuth{
 			Realm: c.Ingress.AuthRealm(),
 		}
 		secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(c.Ingress.AuthSecretName(), metav1.GetOptions{})
@@ -316,7 +317,7 @@ func (c *controller) generateConfig() error {
 			return err
 		}
 	}
-	var globalTLS *haproxy.TLSAuth
+	var globalTLS *hpi.TLSAuth
 	if c.Ingress.AuthTLSSecret() != "" {
 		var err error
 		globalTLS, err = c.getTLSAuth(&api.TLSAuth{
@@ -335,7 +336,7 @@ func (c *controller) generateConfig() error {
 		if err != nil {
 			return err
 		}
-		si.DefaultBackend = &haproxy.Backend{
+		si.DefaultBackend = &hpi.Backend{
 			Name:             "default-backend", // TODO: Use constant
 			BasicAuth:        bk.BasicAuth,
 			Endpoints:        bk.Endpoints,
@@ -364,7 +365,7 @@ func (c *controller) generateConfig() error {
 	td.OptionsDefaults = c.Ingress.HAProxyOptions()
 
 	if c.Ingress.Stats() {
-		stats := &haproxy.StatsInfo{}
+		stats := &hpi.StatsInfo{}
 		stats.Port = c.Ingress.StatsPort()
 		if name := c.Ingress.StatsSecretName(); len(name) > 0 {
 			secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.ObjectMeta.Namespace).Get(name, metav1.GetOptions{})
@@ -378,8 +379,8 @@ func (c *controller) generateConfig() error {
 		td.Stats = stats
 	}
 
-	td.HTTPService = make([]*haproxy.HTTPService, 0)
-	td.TCPService = make([]*haproxy.TCPService, 0)
+	td.HTTPService = make([]*hpi.HTTPService, 0)
+	td.TCPService = make([]*hpi.TCPService, 0)
 
 	type hostBinder struct {
 		Address string
@@ -388,10 +389,10 @@ func (c *controller) generateConfig() error {
 	type httpInfo struct {
 		NodePort   int32
 		OffloadSSL bool
-		Hosts      map[string][]*haproxy.HTTPPath
+		Hosts      map[string][]*hpi.HTTPPath
 	}
 	httpServices := make(map[hostBinder]*httpInfo)
-	tcpServices := make(map[hostBinder]*haproxy.TCPService)
+	tcpServices := make(map[hostBinder]*hpi.TCPService)
 	for _, rule := range c.Ingress.Spec.Rules {
 		if rule.HTTP != nil {
 			binder := hostBinder{Address: rule.HTTP.Address}
@@ -413,7 +414,7 @@ func (c *controller) generateConfig() error {
 				}
 			}
 
-			info := &httpInfo{Hosts: make(map[string][]*haproxy.HTTPPath)}
+			info := &httpInfo{Hosts: make(map[string][]*hpi.HTTPPath)}
 			if v, ok := httpServices[binder]; ok {
 				info = v
 			} else {
@@ -435,9 +436,9 @@ func (c *controller) generateConfig() error {
 					return err
 				}
 				if len(bk.Endpoints) > 0 {
-					httpPaths = append(httpPaths, &haproxy.HTTPPath{
+					httpPaths = append(httpPaths, &hpi.HTTPPath{
 						Path: path.Path,
-						Backend: &haproxy.Backend{
+						Backend: &hpi.Backend{
 							Name:             getBackendName(c.Ingress, path.Backend.IngressBackend),
 							BasicAuth:        bk.BasicAuth,
 							Endpoints:        bk.Endpoints,
@@ -459,7 +460,7 @@ func (c *controller) generateConfig() error {
 			}
 			if len(bk.Endpoints) > 0 {
 				fr := getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, rule.TCP.Port.IntValue())
-				srv := &haproxy.TCPService{
+				srv := &hpi.TCPService{
 					SharedInfo:    si,
 					FrontendName:  getFrontendName("tcp", rule.TCP.Address, rule.TCP.Port.IntValue()),
 					Address:       rule.TCP.Address,
@@ -467,7 +468,7 @@ func (c *controller) generateConfig() error {
 					Port:          rule.TCP.Port.String(),
 					ALPNOptions:   parseALPNOptions(rule.TCP.ALPN),
 					FrontendRules: fr.Rules,
-					Backend: &haproxy.Backend{
+					Backend: &hpi.Backend{
 						Name:             getBackendName(c.Ingress, rule.TCP.Backend),
 						BackendRules:     rule.TCP.Backend.BackendRule,
 						Endpoints:        bk.Endpoints,
@@ -522,7 +523,7 @@ func (c *controller) generateConfig() error {
 		!tp80 && // Port 80 is not used in either HTTP or TCP mode
 		td.DefaultBackend != nil { // Default backend is provided
 		httpServices[hostBinder{Address: `*`, Port: 80}] = &httpInfo{
-			Hosts: map[string][]*haproxy.HTTPPath{
+			Hosts: map[string][]*hpi.HTTPPath{
 				"": {
 					{
 						Path: "/",
@@ -588,13 +589,13 @@ func (c *controller) generateConfig() error {
 				i80, i80Found := httpServices[hostBinder{Address: binder.Address, Port: 80}]
 				if !i80Found {
 					i80 = &httpInfo{
-						Hosts: map[string][]*haproxy.HTTPPath{
-							info.Host: make([]*haproxy.HTTPPath, 0),
+						Hosts: map[string][]*hpi.HTTPPath{
+							info.Host: make([]*hpi.HTTPPath, 0),
 						},
 					}
 				} else {
 					if _, ok := i80.Hosts[info.Host]; !ok {
-						i80.Hosts[info.Host] = make([]*haproxy.HTTPPath, 0)
+						i80.Hosts[info.Host] = make([]*hpi.HTTPPath, 0)
 					}
 				}
 				httpPaths := i80.Hosts[info.Host]
@@ -606,7 +607,7 @@ func (c *controller) generateConfig() error {
 				}
 				if !redirPathExists {
 					// user has provided no manual config for the matching HTTP path, so we will inject one if
-					httpPaths = append(httpPaths, &haproxy.HTTPPath{
+					httpPaths = append(httpPaths, &hpi.HTTPPath{
 						Path:        "/",
 						SSLRedirect: true,
 					})
@@ -657,25 +658,25 @@ func (c *controller) generateConfig() error {
 					i80, i80Found := httpServices[hostBinder{Address: binder.Address, Port: 80}]
 					if !i80Found {
 						i80 = &httpInfo{
-							Hosts: map[string][]*haproxy.HTTPPath{
-								tlsHost: make([]*haproxy.HTTPPath, 0),
+							Hosts: map[string][]*hpi.HTTPPath{
+								tlsHost: make([]*hpi.HTTPPath, 0),
 							},
 						}
 					} else {
 						if _, ok := i80.Hosts[tlsHost]; !ok {
-							i80.Hosts[tlsHost] = make([]*haproxy.HTTPPath, 0)
+							i80.Hosts[tlsHost] = make([]*hpi.HTTPPath, 0)
 						}
 					}
 
 					httpPaths := i80.Hosts[tlsHost]
-					httpPathMap := make(map[string]*haproxy.HTTPPath)
+					httpPathMap := make(map[string]*hpi.HTTPPath)
 					for _, p := range httpPaths {
 						httpPathMap[p.Path] = p
 					}
 
 					for _, tlsPath := range tlsPaths {
 						if _, ok := httpPathMap[tlsPath.Path]; !ok {
-							httpPaths = append(httpPaths, &haproxy.HTTPPath{
+							httpPaths = append(httpPaths, &hpi.HTTPPath{
 								Path:        tlsPath.Path,
 								SSLRedirect: true,
 							})
@@ -691,7 +692,7 @@ func (c *controller) generateConfig() error {
 
 	for binder, info := range httpServices {
 		fr := getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, binder.Port)
-		srv := &haproxy.HTTPService{
+		srv := &hpi.HTTPService{
 			SharedInfo:    si,
 			FrontendName:  getFrontendName("http", binder.Address, binder.Port),
 			Address:       binder.Address,
@@ -699,12 +700,12 @@ func (c *controller) generateConfig() error {
 			FrontendRules: fr.Rules,
 			NodePort:      info.NodePort,
 			OffloadSSL:    info.OffloadSSL,
-			Hosts:         make([]*haproxy.HTTPHost, 0),
+			Hosts:         make([]*hpi.HTTPHost, 0),
 		}
 		for host, paths := range info.Hosts {
-			srv.Hosts = append(srv.Hosts, &haproxy.HTTPHost{
+			srv.Hosts = append(srv.Hosts, &hpi.HTTPHost{
 				Host:  host,
-				Paths: append([]*haproxy.HTTPPath(nil), paths...),
+				Paths: append([]*hpi.HTTPPath(nil), paths...),
 			})
 		}
 		if globalBasic != nil {
@@ -714,7 +715,7 @@ func (c *controller) generateConfig() error {
 			srv.TLSAuth = globalTLS
 			srv.RemoveBackendAuth()
 		} else if fr.Auth != nil && fr.Auth.Basic != nil {
-			srv.BasicAuth = &haproxy.BasicAuth{
+			srv.BasicAuth = &hpi.BasicAuth{
 				Realm: fr.Auth.Basic.Realm,
 			}
 			secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(fr.Auth.Basic.SecretName, metav1.GetOptions{})
@@ -748,13 +749,13 @@ func (c *controller) generateConfig() error {
 		td.DNSResolvers = append(td.DNSResolvers, dnsResolvers[k])
 	}
 
-	td.UserLists = make([]haproxy.UserList, 0, len(userLists))
+	td.UserLists = make([]hpi.UserList, 0, len(userLists))
 	for k := range userLists {
 		td.UserLists = append(td.UserLists, userLists[k])
 	}
 
 	c.logger.Infof("Rendering haproxy.cfg for Ingress %s/%s using data: %s", c.Ingress.Namespace, c.Ingress.Name, td)
-	if cfg, err := haproxy.RenderConfig(td); err != nil {
+	if cfg, err := template.RenderConfig(td); err != nil {
 		return err
 	} else {
 		c.HAProxyConfig = cfg
@@ -763,7 +764,7 @@ func (c *controller) generateConfig() error {
 	return nil
 }
 
-func getBasicAuthUsers(userLists map[string]haproxy.UserList, sec *core.Secret) ([]string, error) {
+func getBasicAuthUsers(userLists map[string]hpi.UserList, sec *core.Secret) ([]string, error) {
 	listNames := make([]string, 0)
 
 	for name, data := range sec.Data {
@@ -774,7 +775,7 @@ func getBasicAuthUsers(userLists map[string]haproxy.UserList, sec *core.Secret) 
 			continue
 		}
 
-		users := make([]haproxy.AuthUser, 0)
+		users := make([]hpi.AuthUser, 0)
 		scanner := bufio.NewScanner(bytes.NewReader(data))
 		for scanner.Scan() {
 			line := strings.TrimSpace(scanner.Text())
@@ -792,20 +793,20 @@ func getBasicAuthUsers(userLists map[string]haproxy.UserList, sec *core.Secret) 
 			if sep == len(line)-1 || line[sep:] == "::" {
 				return nil, fmt.Errorf("missing '%v' password on userlist", userName)
 			}
-			user := haproxy.AuthUser{}
+			user := hpi.AuthUser{}
 			// if usr::pwd
 			if string(line[sep+1]) == ":" {
 				pass, err := crypt.NewFromHash(sha512_crypt.MagicPrefix).Generate([]byte(line[sep+2:]), nil)
 				if err != nil {
 					return nil, err
 				}
-				user = haproxy.AuthUser{
+				user = hpi.AuthUser{
 					Username:  userName,
 					Password:  pass,
 					Encrypted: true,
 				}
 			} else {
-				user = haproxy.AuthUser{
+				user = hpi.AuthUser{
 					Username:  userName,
 					Password:  line[sep+1:],
 					Encrypted: true,
@@ -813,7 +814,7 @@ func getBasicAuthUsers(userLists map[string]haproxy.UserList, sec *core.Secret) 
 			}
 			users = append(users, user)
 		}
-		userLists[listName] = haproxy.UserList{Name: listName, Users: users}
+		userLists[listName] = hpi.UserList{Name: listName, Users: users}
 	}
 	return listNames, nil
 }
@@ -841,7 +842,7 @@ func getEndpointName(ep core.EndpointAddress) string {
 	return "pod-" + ep.IP
 }
 
-func (c *controller) getServiceAuth(userLists map[string]haproxy.UserList, svc *core.Service) *haproxy.BasicAuth {
+func (c *controller) getServiceAuth(userLists map[string]hpi.UserList, svc *core.Service) *hpi.BasicAuth {
 	// Check auth type is basic; other auth mode is not supported
 	authType, ok := svc.Annotations[api.AuthType]
 	if !ok || authType != "basic" {
@@ -861,13 +862,13 @@ func (c *controller) getServiceAuth(userLists map[string]haproxy.UserList, svc *
 	if err != nil {
 		return nil
 	}
-	return &haproxy.BasicAuth{
+	return &hpi.BasicAuth{
 		Realm:     svc.Annotations[api.AuthRealm],
 		UserLists: userList,
 	}
 }
 
-func (c *controller) getErrorFiles() ([]*haproxy.ErrorFile, error) {
+func (c *controller) getErrorFiles() ([]*hpi.ErrorFile, error) {
 	configMap, err := c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Get(c.Ingress.ErrorFilesConfigMapName(), metav1.GetOptions{})
 	if err != nil {
 		return nil, err
@@ -875,10 +876,10 @@ func (c *controller) getErrorFiles() ([]*haproxy.ErrorFile, error) {
 
 	commands := sets.NewString("errorfile", "errorloc", "errorloc302", "errorloc303")
 	codes := []string{"200", "400", "403", "405", "408", "429", "500", "502", "503", "504"}
-	errorFiles := make([]*haproxy.ErrorFile, 0, len(codes))
+	errorFiles := make([]*hpi.ErrorFile, 0, len(codes))
 	for _, statusCode := range codes {
 		if _, found := configMap.Data[statusCode+".http"]; found {
-			errorFiles = append(errorFiles, &haproxy.ErrorFile{
+			errorFiles = append(errorFiles, &hpi.ErrorFile{
 				StatusCode: statusCode,
 				Command:    ErrorFilesCommand,
 				Value:      fmt.Sprintf("%s/%s.http", ErrorFilesLocation, statusCode),
@@ -891,7 +892,7 @@ func (c *controller) getErrorFiles() ([]*haproxy.ErrorFile, error) {
 			if !commands.Has(parts[0]) {
 				return nil, fmt.Errorf("found unknown errofile command %s", parts[0])
 			}
-			errorFiles = append(errorFiles, &haproxy.ErrorFile{
+			errorFiles = append(errorFiles, &hpi.ErrorFile{
 				StatusCode: statusCode,
 				Command:    parts[0],
 				Value:      parts[1],
@@ -901,7 +902,7 @@ func (c *controller) getErrorFiles() ([]*haproxy.ErrorFile, error) {
 	return errorFiles, nil
 }
 
-func (c *controller) getTLSAuth(cfg *api.TLSAuth) (*haproxy.TLSAuth, error) {
+func (c *controller) getTLSAuth(cfg *api.TLSAuth) (*hpi.TLSAuth, error) {
 	tlsAuthSec, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(cfg.SecretName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
@@ -911,7 +912,7 @@ func (c *controller) getTLSAuth(cfg *api.TLSAuth) (*haproxy.TLSAuth, error) {
 		return nil, fmt.Errorf("key ca.crt not found in TLSAuthSecret %s", tlsAuthSec.Name)
 	}
 
-	htls := &haproxy.TLSAuth{
+	htls := &hpi.TLSAuth{
 		CAFile:       cfg.SecretName + "-ca.crt",
 		VerifyClient: string(cfg.VerifyClient),
 		Headers:      cfg.Headers,
