@@ -15,7 +15,6 @@ import (
 	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/haproxy/template"
-	"github.com/appscode/voyager/pkg/migrator"
 	"github.com/appscode/voyager/pkg/operator"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -136,10 +135,6 @@ func runOperator() {
 	w := operator.New(kubeClient, crdClient, extClient, promClient, opt)
 	err = w.Setup()
 	if err != nil {
-		log.Fatalln(err)
-	}
-
-	if err = migrator.NewMigrator(kubeClient, crdClient).RunMigration(); err != nil {
 		log.Fatalln(err)
 	}
 
