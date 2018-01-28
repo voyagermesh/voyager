@@ -86,14 +86,14 @@ To pass the address of your private registry and optionally a image pull secret 
 ```console
 $ kubectl create namespace voyager
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/voyager.sh \
-    | bash -s -- --docker-registry=MY_REGISTRY [--image-pull-secret=SECRET_NAME] [--rbac]
+    | bash -s -- --provider=$provider --docker-registry=MY_REGISTRY [--image-pull-secret=SECRET_NAME] [--rbac]
 ```
 
 Voyager implements a [validating admission webhook](https://kubernetes.io/docs/admin/admission-controllers/#validatingadmissionwebhook-alpha-in-18-beta-in-19) to validate Voyager CRDs. To enable this feature, pass the `--enable-admission-webhook` flag. _Please note that, this works with Kubernetes 1.9 or following versions_.
 
 ```console
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/voyager.sh \
-    | bash -s -- --enable-admission-webhook [--rbac]
+    | bash -s -- --provider=$provider --enable-admission-webhook [--rbac]
 ```
 
 
