@@ -41,9 +41,10 @@ var _ = BeforeSuite(func() {
 		root.VoyagerClient,
 		nil,
 		config.Options{
-			CloudProvider: root.Config.CloudProviderName,
-			HAProxyImage:  root.Config.HAProxyImageName,
-			IngressClass:  root.Config.IngressClass,
+			CloudProvider:   root.Config.CloudProviderName,
+			DockerRegistry:  root.Config.DockerRegistry,
+			HAProxyImageTag: root.Config.HAProxyImageTag,
+			IngressClass:    root.Config.IngressClass,
 		},
 	)
 

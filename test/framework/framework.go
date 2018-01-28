@@ -74,7 +74,8 @@ func New() *Framework {
 		namespace:     testConfigs.TestNamespace,
 		voyagerConfig: config.Options{
 			CloudProvider:     testConfigs.CloudProviderName,
-			HAProxyImage:      testConfigs.HAProxyImageName,
+			DockerRegistry:    "",
+			HAProxyImageTag:   testConfigs.HAProxyImageTag,
 			IngressClass:      testConfigs.IngressClass,
 			EnableRBAC:        testConfigs.RBACEnabled,
 			OperatorNamespace: testConfigs.TestNamespace,

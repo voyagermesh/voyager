@@ -603,7 +603,7 @@ func (c *nodePortController) newPods() *apps.Deployment {
 					Containers: []core.Container{
 						{
 							Name:  "haproxy",
-							Image: c.Opt.HAProxyImage,
+							Image: c.Opt.HAProxyImage(),
 							Args: append([]string{
 								fmt.Sprintf("--analytics=%v", config.EnableAnalytics),
 								fmt.Sprintf("--burst=%v", c.Opt.Burst),
