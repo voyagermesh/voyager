@@ -1,17 +1,17 @@
 ---
 title: Concepts | Voyager
 menu:
-  product_voyager_5.0.0-rc.11:
+  product_voyager_6.0.0-alpha.0:
     identifier: concepts-readme
     name: Readme
     parent: concepts
     weight: -1
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.11
+menu_name: product_voyager_6.0.0-alpha.0
 section_menu_id: concepts
-url: /products/voyager/5.0.0-rc.11/concepts/
+url: /products/voyager/6.0.0-alpha.0/concepts/
 aliases:
-  - /products/voyager/5.0.0-rc.11/concepts/README/
+  - /products/voyager/6.0.0-alpha.0/concepts/README/
 ---
 # Concepts
 

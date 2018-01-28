@@ -2,17 +2,17 @@
 title: Table of Contents | Setup
 description: Table of Contents | Setup
 menu:
-  product_voyager_5.0.0-rc.11:
+  product_voyager_6.0.0-alpha.0:
     identifier: setup-readme
     name: Readme
     parent: setup
     weight: -1
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.11
+menu_name: product_voyager_6.0.0-alpha.0
 section_menu_id: setup
-url: /products/voyager/5.0.0-rc.11/setup/
+url: /products/voyager/6.0.0-alpha.0/setup/
 aliases:
-  - /products/voyager/5.0.0-rc.11/setup/README/
+  - /products/voyager/6.0.0-alpha.0/setup/README/
 ---
 # Setup
 

@@ -2,7 +2,7 @@
 
 ## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
 
-[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0-rc.11...HEAD)
+[Full Changelog](https://github.com/appscode/voyager/compare/6.0.0-alpha.0...HEAD)
 
 **Merged pull requests:**
 
@@ -18,8 +18,8 @@
 - Fix links in chart [\#802](https://github.com/appscode/voyager/pull/802) ([tamalsaha](https://github.com/tamalsaha))
 - Add changelog [\#801](https://github.com/appscode/voyager/pull/801) ([tamalsaha](https://github.com/tamalsaha))
 
-## [5.0.0-rc.11](https://github.com/appscode/voyager/tree/5.0.0-rc.11) (2018-01-04)
-[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0-rc.10...5.0.0-rc.11)
+## [6.0.0-alpha.0](https://github.com/appscode/voyager/tree/6.0.0-alpha.0) (2018-01-04)
+[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0-rc.10...6.0.0-alpha.0)
 
 **Fixed bugs:**
 
@@ -35,7 +35,7 @@
 
 **Merged pull requests:**
 
-- Prepare docs for 5.0.0-rc.11 [\#799](https://github.com/appscode/voyager/pull/799) ([tamalsaha](https://github.com/tamalsaha))
+- Prepare docs for 6.0.0-alpha.0 [\#799](https://github.com/appscode/voyager/pull/799) ([tamalsaha](https://github.com/tamalsaha))
 - Reorganize docs for hosting on product site [\#798](https://github.com/appscode/voyager/pull/798) ([tamalsaha](https://github.com/tamalsaha))
 - Detect client id from ENV [\#795](https://github.com/appscode/voyager/pull/795) ([tamalsaha](https://github.com/tamalsaha))
 - Update dead links [\#794](https://github.com/appscode/voyager/pull/794) ([petedreizehn](https://github.com/petedreizehn))

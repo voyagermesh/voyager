@@ -1,13 +1,13 @@
 ---
 title: TCP LoadBalancing | Kubernetes Ingress
 menu:
-  product_voyager_5.0.0-rc.11:
+  product_voyager_6.0.0-alpha.0:
     identifier: overview-tcp
     name: Overview
     parent: tcp-ingress
     weight: 10
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.11
+menu_name: product_voyager_6.0.0-alpha.0
 section_menu_id: guides
 ---
 

@@ -1,10 +1,10 @@
 ---
 title: HTTP
 menu:
-  product_voyager_5.0.0-rc.11:
+  product_voyager_6.0.0-alpha.0:
     identifier: http-ingress
     name: HTTP
     parent: ingress-guides
     weight: 10
-menu_name: product_voyager_5.0.0-rc.11
+menu_name: product_voyager_6.0.0-alpha.0
 ---
