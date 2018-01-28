@@ -1,5 +1,5 @@
 hash: eac2079579d02a428a46bb2976ea1504d7472ba2284b529c06f3be74d002ae20
-updated: 2018-01-28T07:43:58.13580171-08:00
+updated: 2018-01-28T08:51:01.30361834-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -30,7 +30,7 @@ imports:
   subpackages:
   - exporter
 - name: github.com/appscode/kube-mon
-  version: 81a498f54c6393864701ea3edc6442d1bc92aa54
+  version: 6c843f8c6418d421ec6e7d62d7840b114e043334
   subpackages:
   - agents
   - agents/coreosprometheusoperator
@@ -144,7 +144,7 @@ imports:
 - name: github.com/dgrijalva/jwt-go
   version: 01aeca54ebda6e0fbfafd0a524d234159c05ec20
 - name: github.com/dnsimple/dnsimple-go
-  version: 4618db489ff90331782dd0a6cf3aa0de68415355
+  version: b43ddd3df165b3077b9f29bd1582280579325b56
   subpackages:
   - dnsimple
 - name: github.com/elazarl/go-bindata-assetfs
