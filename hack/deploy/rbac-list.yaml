@@ -92,11 +92,3 @@ subjects:
 - kind: ServiceAccount
   name: $VOYAGER_SERVICE_ACCOUNT
   namespace: $VOYAGER_NAMESPACE
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: $VOYAGER_SERVICE_ACCOUNT
-  namespace: $VOYAGER_NAMESPACE
-  labels:
-    app: voyager
