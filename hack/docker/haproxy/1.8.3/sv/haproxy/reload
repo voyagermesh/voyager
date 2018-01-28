@@ -1,0 +1,6 @@
+#!/bin/bash
+set -eou pipefail
+
+source /etc/envvars
+
+haproxy -W -db -f /etc/haproxy/haproxy.cfg -p /var/run/haproxy.pid -sf $(cat /var/run/haproxy.pid)
