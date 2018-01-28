@@ -566,21 +566,20 @@ func (c *hostPortController) newPods() *apps.Deployment {
 						{
 							Name:  "haproxy",
 							Image: c.Opt.HAProxyImage,
-							Args: []string{
-								"--ingress-api-version=" + c.Ingress.APISchema(),
-								"--ingress-name=" + c.Ingress.Name,
-								"--cloud-provider=" + c.Opt.CloudProvider,
-								"--v=3",
-								fmt.Sprintf("--qps=%v", c.Opt.QPS),
+							Args: append([]string{
+								fmt.Sprintf("--analytics=%v", config.EnableAnalytics),
 								fmt.Sprintf("--burst=%v", c.Opt.Burst),
-								"--boot-cmd=" + "/etc/sv/haproxy/reload",
-								"--configmap=" + c.Ingress.OffshootName(),
-								"--mount-location=" + "/etc/haproxy",
-							},
+								fmt.Sprintf("--cloud-provider=%s", c.Opt.CloudProvider),
+								fmt.Sprintf("--ingress-api-version=%s", c.Ingress.APISchema()),
+								fmt.Sprintf("--ingress-name=%s", c.Ingress.Name),
+								fmt.Sprintf("--qps=%v", c.Opt.QPS),
+								fmt.Sprintf("--resync-period=%v", c.Opt.ResyncPeriod),
+								"--reload-cmd=/etc/sv/haproxy/reload",
+							}, config.LoggerOptions.ToFlags()...),
 							Env: []core.EnvVar{
 								{
 									Name:  analytics.Key,
-									Value: c.Opt.AnalyticsClientID,
+									Value: config.AnalyticsClientID,
 								},
 							},
 							Ports:     []core.ContainerPort{},

@@ -1,25 +1,17 @@
 #!/bin/bash
 
-export TLS_MOUNTER_ARGS="$1 $2 $3 $4 $5"
-# http://wiki.bash-hackers.org/scripting/posparams#shifting
-shift 3
-export KLOADER_ARGS="$@"
+export HAPROXY_CONTROLLER_ARGS="$@"
 export > /etc/envvars
 
 [[ $DEBUG == true ]] && set -x
 
 # create haproxy.cfg dir
 mkdir /etc/haproxy
+touch /var/run/haproxy.pid
 
-echo "Mounting TLS certificates ..."
+echo "Syncing HAProxy controller ..."
 mkdir -p /etc/ssl/private/haproxy
-cmd="voyager tls-mounter --init-only $TLS_MOUNTER_ARGS"
-echo $cmd
-$cmd
-rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
-
-echo "Checking HAProxy configuration ..."
-cmd="voyager kloader check $KLOADER_ARGS"
+cmd="voyager haproxy-controller --init-only $HAPROXY_CONTROLLER_ARGS"
 echo $cmd
 $cmd
 rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
