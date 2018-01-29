@@ -375,7 +375,7 @@ func (c *controller) generateConfig() error {
 				stats.Username = string(secret.Data["username"])
 				stats.PassWord = string(secret.Data["password"])
 			} else {
-				return fmt.Errorf("failed to load stats secret for ingress %s@%s", c.Ingress.Name, c.Ingress.Namespace)
+				return fmt.Errorf("failed to load stats secret for ingress %s/%s", c.Ingress.Namespace, c.Ingress.Name)
 			}
 		}
 		td.Stats = stats

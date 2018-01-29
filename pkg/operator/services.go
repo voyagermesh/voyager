@@ -122,7 +122,7 @@ func (op *Operator) restoreServiceIfRequired(name, ns string) (bool, error) {
 				key, err := cache.MetaNamespaceKeyFunc(engress)
 				if err == nil {
 					op.engQueue.Add(key)
-					log.Infof("Add/Delete/Update of offshoot service %s@%s, Ingress %s re-queued for update", name, ns, key)
+					log.Infof("Add/Delete/Update of offshoot service %s/%s, Ingress %s re-queued for update", ns, name, key)
 				}
 				return true, err
 			}
@@ -142,7 +142,7 @@ func (op *Operator) updateHAProxyConfig(name, ns string) error {
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) && engress.HasBackendService(name, ns) {
 			if key, err := cache.MetaNamespaceKeyFunc(engress); err == nil {
 				op.engQueue.Add(key)
-				log.Infof("Add/Delete/Update of backend service %s@%s, Ingress %s re-queued for update", name, ns, key)
+				log.Infof("Add/Delete/Update of backend service %s/%s, Ingress %s re-queued for update", ns, name, key)
 			}
 		}
 	}

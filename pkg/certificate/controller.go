@@ -117,7 +117,7 @@ func NewController(ctx context.Context, kubeClient kubernetes.Interface, extClie
 		return nil, err
 	}
 	if ctrl.store.VaultClient == nil && ctrl.crd.Spec.Storage.Vault != nil {
-		return nil, fmt.Errorf("certificate %s@%s uses vault but vault address is missing", tpr.Name, tpr.Namespace)
+		return nil, fmt.Errorf("certificate %s/%s uses vault but vault address is missing", tpr.Namespace, tpr.Name)
 	}
 
 	return ctrl, nil
@@ -132,7 +132,7 @@ func (c *Controller) Process() error {
 		var certs []*x509.Certificate
 		certs, err = cert.ParseCertsPEM(pemCrt)
 		if err != nil {
-			return fmt.Errorf("secret %s@%s contains bad certificate. Reason: %s", c.crd.SecretName(), c.crd.Namespace, err)
+			return fmt.Errorf("secret %s/%s contains bad certificate. Reason: %s", c.crd.Namespace, c.crd.SecretName(), err)
 		}
 		c.curCert = certs[0]
 	}

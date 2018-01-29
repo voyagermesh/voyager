@@ -99,7 +99,7 @@ func (op *Operator) restoreDeploymentIfRequired(name, ns string) error {
 				return err
 			} else {
 				op.engQueue.Add(key)
-				log.Infof("Add/Delete/Update of haproxy deployment %s@%s, Ingress %s re-queued for update", name, ns, key)
+				log.Infof("Add/Delete/Update of haproxy deployment %s/%s, Ingress %s re-queued for update", ns, name, key)
 				break
 			}
 		}

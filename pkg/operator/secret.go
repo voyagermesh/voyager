@@ -106,7 +106,7 @@ func (op *Operator) runSecretInjector(key string) error {
 						return err
 					} else {
 						op.engQueue.Add(key)
-						log.Infof("Add/Delete/Update of secret %s@%s, Ingress %s re-queued for update", secret.Name, secret.Namespace, key)
+						log.Infof("Add/Delete/Update of secret %s/%s, Ingress %s re-queued for update", secret.Namespace, secret.Name, key)
 					}
 				}
 			}

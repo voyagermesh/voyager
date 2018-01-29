@@ -35,7 +35,7 @@ func (op *Operator) initIngressWatcher() {
 		AddFunc: func(obj interface{}) {
 			engress, err := api.NewEngressFromIngress(obj.(*extensions.Ingress))
 			if err != nil {
-				log.Errorf("Failed to convert Ingress %s@%s into Ingress. Reason %v", engress.Name, engress.Namespace, err)
+				log.Errorf("Failed to convert Ingress %s/%s into Ingress. Reason %v", engress.Namespace, engress.Name, err)
 				return
 			}
 			if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
@@ -55,12 +55,12 @@ func (op *Operator) initIngressWatcher() {
 		UpdateFunc: func(old, new interface{}) {
 			oldEngress, err := api.NewEngressFromIngress(old.(*extensions.Ingress))
 			if err != nil {
-				log.Errorf("Failed to convert Ingress %s@%s into Engress. Reason %v", oldEngress.Name, oldEngress.Namespace, err)
+				log.Errorf("Failed to convert Ingress %s/%s into Engress. Reason %v", oldEngress.Namespace, oldEngress.Name, err)
 				return
 			}
 			newEngress, err := api.NewEngressFromIngress(new.(*extensions.Ingress))
 			if err != nil {
-				log.Errorf("Failed to convert Ingress %s@%s into Engress. Reason %v", newEngress.Name, newEngress.Namespace, err)
+				log.Errorf("Failed to convert Ingress %s/%s into Engress. Reason %v", newEngress.Namespace, newEngress.Name, err)
 				return
 			}
 
@@ -68,7 +68,7 @@ func (op *Operator) initIngressWatcher() {
 				return
 			}
 			diff := meta.Diff(oldEngress, newEngress)
-			log.Infof("%s %s@%s has changed. Diff: %s", newEngress.GroupVersionKind(), newEngress.Name, newEngress.Namespace, diff)
+			log.Infof("%s %s/%s has changed. Diff: %s", newEngress.GroupVersionKind(), newEngress.Namespace, newEngress.Name, diff)
 
 			if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
 				op.recorder.Eventf(
@@ -149,14 +149,14 @@ func (op *Operator) runIngressInjector(key string) error {
 		glog.Infof("Sync/Add/Update for ingress %s\n", key)
 		engress, err := api.NewEngressFromIngress(obj.(*extensions.Ingress))
 		if err != nil {
-			log.Errorf("Failed to convert Ingress %s@%s into Ingress. Reason %v", engress.Name, engress.Namespace, err)
+			log.Errorf("Failed to convert Ingress %s/%s into Ingress. Reason %v", engress.Namespace, engress.Name, err)
 			return nil
 		}
 
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
 			return op.AddEngress(etx.Background(), engress)
 		} else { // delete previously created
-			log.Infof("%s %s@%s does not match ingress class", engress.APISchema(), engress.Name, engress.Namespace)
+			log.Infof("%s %s/%s does not match ingress class", engress.APISchema(), engress.Namespace, engress.Name)
 			op.DeleteEngress(etx.Background(), engress)
 		}
 	}

@@ -88,7 +88,7 @@ func (op *Operator) PurgeOffshootsDaemonSet() error {
 		for _, ing := range ingresses {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
 				name := api.VoyagerPrefix + ing.Name
-				log.Infoln("Deleting DaemonSet %s@%s", name, ing.Namespace)
+				log.Infoln("Deleting DaemonSet %s/%s", ing.Namespace, name)
 				op.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).Delete(name, &metav1.DeleteOptions{})
 			}
 		}
@@ -102,14 +102,14 @@ func (op *Operator) PurgeOffshootsDaemonSet() error {
 				name := api.VoyagerPrefix + ing.Name
 				if ds, err := op.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).Get(name, metav1.GetOptions{}); err == nil {
 					if ds.Spec.Template.Spec.Affinity != nil && ing.Spec.Affinity == nil {
-						log.Infof("Updating Ingress %s@%s to add `spec.affinity`", ing.Name, ing.Namespace)
+						log.Infof("Updating Ingress %s/%s to add `spec.affinity`", ing.Namespace, ing.Name)
 						ing.Spec.Affinity = ds.Spec.Template.Spec.Affinity
 						_, err = op.VoyagerClient.Ingresses(ing.Namespace).Update(ing)
 						if err != nil {
 							return err
 						}
 					}
-					log.Infoln("Deleting DaemonSet %s@%s", name, ing.Namespace)
+					log.Infoln("Deleting DaemonSet %s/%s", ing.Namespace, name)
 					op.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).Delete(name, &metav1.DeleteOptions{})
 				}
 			}

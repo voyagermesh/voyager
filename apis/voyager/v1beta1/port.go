@@ -67,7 +67,7 @@ func (r Ingress) PortMappings(cloudProvider string) (map[int]Target, error) {
 				if tp80 && !sp443 {
 					mappings[443] = Target{PodPort: 80}
 				} else {
-					return nil, fmt.Errorf("failed to open port 443 on service for AWS cert manager for Ingress %s@%s", r.Name, r.Namespace)
+					return nil, fmt.Errorf("failed to open port 443 on service for AWS cert manager for Ingress %s/%s", r.Namespace, r.Name)
 				}
 			}
 		}

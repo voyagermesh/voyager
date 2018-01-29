@@ -76,7 +76,7 @@ func (op *Operator) initIngressCRDWatcher() {
 				return
 			}
 			diff := meta.Diff(oldEngress, newEngress)
-			log.Infof("%s %s@%s has changed. Diff: %s", newEngress.APISchema(), newEngress.Name, newEngress.Namespace, diff)
+			log.Infof("%s %s/%s has changed. Diff: %s", newEngress.APISchema(), newEngress.Namespace, newEngress.Name, diff)
 
 			if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
 				op.recorder.Eventf(
@@ -161,7 +161,7 @@ func (op *Operator) runEngressInjector(key string) error {
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
 			return op.AddEngress(etx.Background(), engress)
 		} else {
-			log.Infof("%s %s@%s does not match ingress class", engress.APISchema(), engress.Name, engress.Namespace)
+			log.Infof("%s %s/%s does not match ingress class", engress.APISchema(), engress.Namespace, engress.Name)
 			op.DeleteEngress(etx.Background(), engress)
 		}
 	}

@@ -103,7 +103,7 @@ func (op *Operator) runEndpointInjector(key string) error {
 		// this do not have a Service we do not want to update our ingress
 		svc, err := op.svcLister.Services(ep.Namespace).Get(ep.Name)
 		if err != nil {
-			log.Warningf("Skipping Endpoints %s@%s, as it has no matching service", ep.Name, ep.Namespace)
+			log.Warningf("Skipping Endpoints %s/%s, as it has no matching service", ep.Namespace, ep.Name)
 			return nil
 		}
 		return op.updateHAProxyConfig(svc.Name, svc.Namespace)

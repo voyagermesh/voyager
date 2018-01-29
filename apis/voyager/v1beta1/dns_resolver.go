@@ -41,7 +41,7 @@ type DNSResolver struct {
 
 func DNSResolverForService(svc core.Service) (useDNSResolver bool, resolver *DNSResolver, err error) {
 	if svc.Spec.Type != core.ServiceTypeExternalName {
-		return false, nil, fmt.Errorf("service %s@%s is expected to be of type ServiceTypeExternalName, actual type %s", svc.Name, svc.Namespace, svc.Spec.Type)
+		return false, nil, fmt.Errorf("service %s/%s is expected to be of type ServiceTypeExternalName, actual type %s", svc.Namespace, svc.Name, svc.Spec.Type)
 	}
 
 	// getBool returns an error if the value is empty string, or the key is not present

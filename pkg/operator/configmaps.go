@@ -99,7 +99,7 @@ func (op *Operator) restoreConfigMapIfRequired(name, ns string) error {
 				return err
 			} else {
 				op.engQueue.Add(key)
-				log.Infof("Add/Delete/Update of haproxy configmap %s@%s, Ingress %s re-queued for update", name, ns, key)
+				log.Infof("Add/Delete/Update of haproxy configmap %s/%s, Ingress %s re-queued for update", ns, name, key)
 				break
 			}
 		}

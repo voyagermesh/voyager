@@ -180,12 +180,12 @@ func (c *Controller) getSecret(name string) (*core.Secret, error) {
 func (c *Controller) projectTLSSecret(r *core.Secret, projections map[string]ioutilz.FileProjection) error {
 	pemKey, found := r.Data[core.TLSPrivateKeyKey]
 	if !found {
-		return fmt.Errorf("secret %s@%s is missing tls.key", r.Name, c.options.IngressRef.Namespace)
+		return fmt.Errorf("secret %s/%s is missing tls.key", c.options.IngressRef.Namespace, r.Name)
 	}
 
 	pemCrt, found := r.Data[core.TLSCertKey]
 	if !found {
-		return fmt.Errorf("secret %s@%s is missing tls.crt", r.Name, c.options.IngressRef.Namespace)
+		return fmt.Errorf("secret %s/%s is missing tls.crt", c.options.IngressRef.Namespace, r.Name)
 	}
 
 	projections["tls/"+r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
@@ -195,7 +195,7 @@ func (c *Controller) projectTLSSecret(r *core.Secret, projections map[string]iou
 func (c *Controller) projectAuthSecret(r *core.Secret, projections map[string]ioutilz.FileProjection) error {
 	ca, found := r.Data["ca.crt"]
 	if !found {
-		return fmt.Errorf("secret %s@%s is missing ca.crt", r.Name, c.options.IngressRef.Namespace)
+		return fmt.Errorf("secret %s/%s is missing ca.crt", c.options.IngressRef.Namespace, r.Name)
 	}
 	projections["ca/"+r.Name+"-ca.crt"] = ioutilz.FileProjection{Mode: 0755, Data: ca}
 

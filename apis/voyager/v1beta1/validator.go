@@ -244,17 +244,17 @@ func (r Ingress) IsValid(cloudProvider string) error {
 					}
 				}
 				if !tp80 || sp443 {
-					return fmt.Errorf("failed to open port 443 on service for AWS cert manager for Ingress %s@%s", r.Name, r.Namespace)
+					return fmt.Errorf("failed to open port 443 on service for AWS cert manager for Ingress %s/%s", r.Namespace, r.Name)
 				}
 			}
 		}
 	}
 	if !r.SupportsLBType(cloudProvider) {
-		return fmt.Errorf("ingress %s@%s uses unsupported LBType %s for cloud provider %s", r.Name, r.Namespace, r.LBType(), cloudProvider)
+		return fmt.Errorf("ingress %s/%s uses unsupported LBType %s for cloud provider %s", r.Namespace, r.Name, r.LBType(), cloudProvider)
 	}
 
 	if (r.LBType() == LBTypeNodePort || r.LBType() == LBTypeHostPort || r.LBType() == LBTypeInternal) && len(r.Spec.LoadBalancerSourceRanges) > 0 {
-		return fmt.Errorf("ingress %s@%s of type %s can't use `spec.LoadBalancerSourceRanges`", r.Name, r.Namespace, r.LBType())
+		return fmt.Errorf("ingress %s/%s of type %s can't use `spec.LoadBalancerSourceRanges`", r.Namespace, r.Name, r.LBType())
 	}
 
 	return nil

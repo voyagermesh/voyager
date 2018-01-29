@@ -23,10 +23,10 @@ func (op *Operator) ValidateIngress() error {
 			return err
 		}
 		if !engress.ShouldHandleIngress(op.Opt.IngressClass) {
-			log.Warningf("Skipping ingress %s@%s, as it is not handled by Voyager.", ing.Name, ing.Namespace)
+			log.Warningf("Skipping ingress %s/%s, as it is not handled by Voyager.", ing.Namespace, ing.Name)
 			continue
 		}
-		log.Warningf("Checking ingress %s@%s", ing.Name, ing.Namespace)
+		log.Warningf("Checking ingress %s/%s", ing.Namespace, ing.Name)
 		if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
 			op.recorder.Eventf(
 				engress.ObjectReference(),
@@ -46,10 +46,10 @@ func (op *Operator) ValidateIngress() error {
 	for _, ing := range engresses {
 		ing.Migrate()
 		if !ing.ShouldHandleIngress(op.Opt.IngressClass) {
-			log.Warningf("Skipping ingress %s@%s, as it is not handled by Voyager.", ing.Name, ing.Namespace)
+			log.Warningf("Skipping ingress %s/%s, as it is not handled by Voyager.", ing.Namespace, ing.Name)
 			continue
 		}
-		log.Warningf("Checking ingress %s@%s", ing.Name, ing.Namespace)
+		log.Warningf("Checking ingress %s/%s", ing.Namespace, ing.Name)
 		if err := ing.IsValid(op.Opt.CloudProvider); err != nil {
 			op.recorder.Eventf(
 				ing.ObjectReference(),
