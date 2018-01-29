@@ -130,7 +130,7 @@ func (c *nodePortController) IsExists() bool {
 	return true
 }
 
-func (c *nodePortController) Create() error {
+func (c *nodePortController) Reconcile() error {
 	// Service is created first so that NodePorts can be used in the haproxy.conf
 	if svc, vt, err := c.ensureService(); err != nil {
 		c.recorder.Eventf(

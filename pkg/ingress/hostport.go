@@ -129,7 +129,7 @@ func (c *hostPortController) IsExists() bool {
 	return true
 }
 
-func (c *hostPortController) Create() error {
+func (c *hostPortController) Reconcile() error {
 	if err := c.generateConfig(); err != nil {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),

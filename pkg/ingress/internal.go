@@ -94,7 +94,7 @@ func (c *internalController) IsExists() bool {
 	return true
 }
 
-func (c *internalController) Create() error {
+func (c *internalController) Reconcile() error {
 	if err := c.generateConfig(); err != nil {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),

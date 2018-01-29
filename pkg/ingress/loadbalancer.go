@@ -96,7 +96,7 @@ func (c *loadBalancerController) IsExists() bool {
 	return true
 }
 
-func (c *loadBalancerController) Create() error {
+func (c *loadBalancerController) Reconcile() error {
 	if err := c.generateConfig(); err != nil {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),

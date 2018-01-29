@@ -25,7 +25,7 @@ import (
 
 type Controller interface {
 	IsExists() bool
-	Create() error
+	Reconcile() error
 	Delete()
 	EnsureFirewall(svc *core.Service) error
 }
