@@ -446,9 +446,21 @@ func (c *internalController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 			})
 		}
 
-		if ans, ok := c.Ingress.PodsAnnotations(); ok {
-			obj.Spec.Template.Annotations = ans
+		// delete last applied PodAnnotations
+		// add new PodAnnotations
+		// store new PodAnnotations keys
+		lastAppliedKeys, _ := meta_util.GetString(obj.Spec.Template.Annotations, api.LastAppliedAnnotationKeys)
+		for _, key := range strings.Split(lastAppliedKeys, ",") {
+			delete(obj.Spec.Template.Annotations, key)
 		}
+		newKeys := make([]string, 0)
+		if ans, ok := c.Ingress.PodsAnnotations(); ok {
+			for k, v := range ans {
+				obj.Spec.Template.Annotations[k] = v
+				newKeys = append(newKeys, k)
+			}
+		}
+		obj.Spec.Template.Annotations[api.LastAppliedAnnotationKeys] = strings.Join(newKeys, ",")
 
 		if len(c.Ingress.ErrorFilesConfigMapName()) > 0 {
 			obj.Spec.Template.Spec.Containers[0].VolumeMounts = append(
