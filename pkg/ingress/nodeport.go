@@ -397,7 +397,7 @@ func (c *nodePortController) ensureService() (*core.Service, kutil.VerbType, err
 		// delete last applied ServiceAnnotations
 		// add new ServiceAnnotations
 		// store new ServiceAnnotations keys
-		lastAppliedKeys, _ := meta_util.GetString(obj.Annotations, api.LastAppliedServiceAnnotationKeys)
+		lastAppliedKeys, _ := meta_util.GetString(obj.Annotations, api.LastAppliedAnnotationKeys)
 		for _, key := range strings.Split(lastAppliedKeys, ",") {
 			delete(obj.Annotations, key)
 		}
@@ -408,7 +408,7 @@ func (c *nodePortController) ensureService() (*core.Service, kutil.VerbType, err
 				newKeys = append(newKeys, k)
 			}
 		}
-		obj.Annotations[api.LastAppliedServiceAnnotationKeys] = strings.Join(newKeys, ",")
+		obj.Annotations[api.LastAppliedAnnotationKeys] = strings.Join(newKeys, ",")
 
 		// LoadBalancerSourceRanges
 		// https://github.com/kubernetes/kubernetes/issues/33586
