@@ -244,6 +244,10 @@ type HTTPIngressPath struct {
 
 // IngressBackend describes all endpoints for a given service and port.
 type IngressBackend struct {
+	// User can specify backend name for using it with custom acl
+	// Otherwise it will be generated
+	Name string `json:"name,omitempty"`
+
 	// Host names to forward traffic to. If empty traffic will be
 	// forwarded to all subsets instance.
 	// If set only matched hosts will get the traffic.

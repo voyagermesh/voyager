@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/appscode/voyager/pkg/certificate/providers"
@@ -34,8 +35,9 @@ func (td *TemplateData) convertWildcardHostToEmpty() {
 }
 
 func (td *TemplateData) sort() {
+	backends := td.countBackendNames()
 	if td.DefaultBackend != nil {
-		td.DefaultBackend.canonicalize()
+		td.DefaultBackend.canonicalize(backends[td.DefaultBackend.Name] > 1, "", "", "")
 	}
 	for x := range td.HTTPService {
 		svc := td.HTTPService[x]
@@ -60,7 +62,12 @@ func (td *TemplateData) sort() {
 			host := svc.Hosts[y]
 			for z := range host.Paths {
 				if host.Paths[z].Backend != nil {
-					host.Paths[z].Backend.canonicalize()
+					host.Paths[z].Backend.canonicalize(
+						backends[host.Paths[z].Backend.Name] > 1,
+						host.Host,
+						strconv.Itoa(svc.Port),
+						host.Paths[z].Path,
+					)
 				}
 			}
 
@@ -82,6 +89,11 @@ func (td *TemplateData) sort() {
 
 		td.HTTPService[x] = svc
 	}
+
+	for _, svc := range td.TCPService {
+		svc.Backend.canonicalize(backends[svc.Backend.Name] > 1, svc.Host, svc.Port, "")
+	}
+
 	sort.Slice(td.HTTPService, func(i, j int) bool { return td.HTTPService[i].sortKey() < td.HTTPService[j].sortKey() })
 	sort.Slice(td.TCPService, func(i, j int) bool { return td.TCPService[i].sortKey() < td.TCPService[j].sortKey() })
 	sort.Slice(td.DNSResolvers, func(i, j int) bool { return td.DNSResolvers[i].Name < td.DNSResolvers[j].Name })
@@ -90,6 +102,28 @@ func (td *TemplateData) sort() {
 		td.UserLists[i].canonicalize()
 	}
 	sort.Slice(td.UserLists, func(i, j int) bool { return td.UserLists[i].Name < td.UserLists[j].Name })
+}
+
+func (td *TemplateData) countBackendNames() map[string]int {
+	backends := make(map[string]int)
+	if td.DefaultBackend != nil {
+		backends[td.DefaultBackend.Name]++
+	}
+	for _, svc := range td.HTTPService {
+		for _, host := range svc.Hosts {
+			for _, path := range host.Paths {
+				if path.Backend != nil {
+					backends[path.Backend.Name]++
+				}
+			}
+		}
+	}
+	for _, svc := range td.TCPService {
+		if svc.Backend != nil {
+			backends[svc.Backend.Name]++
+		}
+	}
+	return backends
 }
 
 func (td *TemplateData) moveAcmePathToTop() {

@@ -590,6 +590,7 @@ func Convert_voyager_Ingress_To_v1beta1_Ingress(in *voyager.Ingress, out *Ingres
 }
 
 func autoConvert_v1beta1_IngressBackend_To_voyager_IngressBackend(in *IngressBackend, out *voyager.IngressBackend, s conversion.Scope) error {
+	out.Name = in.Name
 	out.HostNames = *(*[]string)(unsafe.Pointer(&in.HostNames))
 	out.ServiceName = in.ServiceName
 	out.ServicePort = in.ServicePort
@@ -603,6 +604,7 @@ func Convert_v1beta1_IngressBackend_To_voyager_IngressBackend(in *IngressBackend
 }
 
 func autoConvert_voyager_IngressBackend_To_v1beta1_IngressBackend(in *voyager.IngressBackend, out *IngressBackend, s conversion.Scope) error {
+	out.Name = in.Name
 	out.HostNames = *(*[]string)(unsafe.Pointer(&in.HostNames))
 	out.ServiceName = in.ServiceName
 	out.ServicePort = in.ServicePort
