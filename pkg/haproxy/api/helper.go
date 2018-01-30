@@ -243,44 +243,35 @@ func hostRank(host string) int {
 	return 2
 }
 
-func TimeOutConfigs(m map[string]string) []TimeoutConfig {
-	ans := make([]TimeoutConfig, 0)
-	if m == nil {
-		return ans
-	}
-	for k, v := range m {
-		ans = append(ans, TimeoutConfig{
+func TimeOutConfigs(in map[string]string) []TimeoutConfig {
+	var out []TimeoutConfig
+	for k, v := range in {
+		out = append(out, TimeoutConfig{
 			Phase:    k,
 			Duration: v,
 		})
 	}
-	return ans
+	return out
 }
 
-func OptionConfigs(m map[string]bool) []OptionConfig {
-	ans := make([]OptionConfig, 0)
-	if m == nil {
-		return ans
-	}
-	for k, v := range m {
-		ans = append(ans, OptionConfig{
+func OptionConfigs(in map[string]bool) []OptionConfig {
+	var out []OptionConfig
+	for k, v := range in {
+		out = append(out, OptionConfig{
 			Option:  k,
 			Enabled: v,
 		})
 	}
-	return ans
+	return out
 }
 
-func TLSHeaders(m map[string]string) []TLSHeader {
-	ans := make([]TLSHeader, 0)
-	if m == nil {
-		return ans
-	}
-	for k, v := range m {
-		ans = append(ans, TLSHeader{
+func TLSHeaders(in map[string]string) []TLSHeader {
+	var out []TLSHeader
+	for k, v := range in {
+		out = append(out, TLSHeader{
 			Header: k,
 			Value:  v,
 		})
 	}
-	return ans
+	return out
 }
