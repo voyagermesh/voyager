@@ -4,11 +4,30 @@
 
 [Full Changelog](https://github.com/appscode/voyager/compare/6.0.0-alpha.0...HEAD)
 
+**Closed issues:**
+
+- Allow users to specify backend names [\#819](https://github.com/appscode/voyager/issues/819)
+- Canonicalize TemplateData [\#348](https://github.com/appscode/voyager/issues/348)
+
 **Merged pull requests:**
 
+-  Removed maps from template data [\#831](https://github.com/appscode/voyager/pull/831) ([diptadas](https://github.com/diptadas))
+- Use deterministic-suffix instead of random-suffix in backend name [\#815](https://github.com/appscode/voyager/pull/815) ([diptadas](https://github.com/diptadas))
+
+## [6.0.0-alpha.0](https://github.com/appscode/voyager/tree/6.0.0-alpha.0) (2018-01-28)
+[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0-rc.11...6.0.0-alpha.0)
+
+**Merged pull requests:**
+
+- Prepare docs for 6.0.0-alpha.0 [\#830](https://github.com/appscode/voyager/pull/830) ([tamalsaha](https://github.com/tamalsaha))
+- Support private docker registry in installer [\#829](https://github.com/appscode/voyager/pull/829) ([tamalsaha](https://github.com/tamalsaha))
+- Add ValidatingAdmissionWebhook for Voyager CRDs [\#828](https://github.com/appscode/voyager/pull/828) ([tamalsaha](https://github.com/tamalsaha))
+- Use kubectl auth reconcile in installer script [\#827](https://github.com/appscode/voyager/pull/827) ([tamalsaha](https://github.com/tamalsaha))
+- Update changelog [\#826](https://github.com/appscode/voyager/pull/826) ([tamalsaha](https://github.com/tamalsaha))
 - Update client-go to 6.0.0 [\#825](https://github.com/appscode/voyager/pull/825) ([tamalsaha](https://github.com/tamalsaha))
 - Update copyright year to 2018 [\#824](https://github.com/appscode/voyager/pull/824) ([tamalsaha](https://github.com/tamalsaha))
 - Merge tls-mounter & kloader into haproxy-controller [\#823](https://github.com/appscode/voyager/pull/823) ([tamalsaha](https://github.com/tamalsaha))
+- Updating kube-mon so service-monitor-endpoint-port is optional [\#822](https://github.com/appscode/voyager/pull/822) ([jeffersongirao](https://github.com/jeffersongirao))
 - Fix unit tests [\#820](https://github.com/appscode/voyager/pull/820) ([jeffersongirao](https://github.com/jeffersongirao))
 - Ignored not-found error for DNS resolver annotations  [\#812](https://github.com/appscode/voyager/pull/812) ([diptadas](https://github.com/diptadas))
 - Add prometheus flags to command that uses it [\#810](https://github.com/appscode/voyager/pull/810) ([tamalsaha](https://github.com/tamalsaha))
@@ -18,8 +37,8 @@
 - Fix links in chart [\#802](https://github.com/appscode/voyager/pull/802) ([tamalsaha](https://github.com/tamalsaha))
 - Add changelog [\#801](https://github.com/appscode/voyager/pull/801) ([tamalsaha](https://github.com/tamalsaha))
 
-## [6.0.0-alpha.0](https://github.com/appscode/voyager/tree/6.0.0-alpha.0) (2018-01-04)
-[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0-rc.10...6.0.0-alpha.0)
+## [5.0.0-rc.11](https://github.com/appscode/voyager/tree/5.0.0-rc.11) (2018-01-04)
+[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0-rc.10...5.0.0-rc.11)
 
 **Fixed bugs:**
 
@@ -35,7 +54,7 @@
 
 **Merged pull requests:**
 
-- Prepare docs for 6.0.0-alpha.0 [\#799](https://github.com/appscode/voyager/pull/799) ([tamalsaha](https://github.com/tamalsaha))
+- Prepare docs for 5.0.0-rc.11 [\#799](https://github.com/appscode/voyager/pull/799) ([tamalsaha](https://github.com/tamalsaha))
 - Reorganize docs for hosting on product site [\#798](https://github.com/appscode/voyager/pull/798) ([tamalsaha](https://github.com/tamalsaha))
 - Detect client id from ENV [\#795](https://github.com/appscode/voyager/pull/795) ([tamalsaha](https://github.com/tamalsaha))
 - Update dead links [\#794](https://github.com/appscode/voyager/pull/794) ([petedreizehn](https://github.com/petedreizehn))
