@@ -98,7 +98,7 @@ func (op *Operator) reconcileService(key string) error {
 		if err != nil {
 			return err
 		}
-		if isOffshoot, err := op.restoreServiceIfRequired(name, ns); isOffshoot {
+		if isOffshoot, err := op.restoreIngressService(name, ns); isOffshoot {
 			return err // assume offshoot service can't be backend service
 		} else {
 			return op.updateHAProxyConfig(name, ns)
@@ -113,7 +113,7 @@ func (op *Operator) reconcileService(key string) error {
 
 // requeue ingress if offshoot-service deleted
 // return true if service is offshoot for any ingress
-func (op *Operator) restoreServiceIfRequired(name, ns string) (bool, error) {
+func (op *Operator) restoreIngressService(name, ns string) (bool, error) {
 	items, err := op.listIngresses()
 	if err == nil {
 		for i := range items {

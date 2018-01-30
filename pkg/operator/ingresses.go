@@ -6,6 +6,7 @@ import (
 	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
+	"github.com/appscode/voyager/pkg/ingress"
 	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
@@ -144,7 +145,8 @@ func (op *Operator) reconcileIngress(key string) error {
 				Namespace: namespace,
 			},
 		}
-		op.DeleteEngress(etx.Background(), engress)
+		ctrl := ingress.NewController(etx.Background(), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Opt, engress)
+		ctrl.Delete()
 	} else {
 		glog.Infof("Sync/Add/Update for ingress %s\n", key)
 		engress, err := api.NewEngressFromIngress(obj.(*extensions.Ingress))
@@ -153,11 +155,12 @@ func (op *Operator) reconcileIngress(key string) error {
 			return nil
 		}
 
+		ctrl := ingress.NewController(etx.Background(), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Opt, engress)
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
-			return op.AddEngress(etx.Background(), engress)
+			return ctrl.Reconcile()
 		} else { // delete previously created
 			log.Infof("%s %s/%s does not match ingress class", engress.APISchema(), engress.Namespace, engress.Name)
-			op.DeleteEngress(etx.Background(), engress)
+			ctrl.Delete()
 		}
 	}
 	return nil

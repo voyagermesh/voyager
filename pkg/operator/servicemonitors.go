@@ -82,14 +82,14 @@ func (op *Operator) reconcileServiceMonitor(key string) error {
 		if ns, name, err := cache.SplitMetaNamespaceKey(key); err != nil {
 			return err
 		} else {
-			return op.restoreServiceMonitorIfRequired(name, ns)
+			return op.restoreServiceMonitor(name, ns)
 		}
 	}
 	return nil
 }
 
 // requeue ingress if user deletes service-monitor
-func (op *Operator) restoreServiceMonitorIfRequired(name, ns string) error {
+func (op *Operator) restoreServiceMonitor(name, ns string) error {
 	items, err := op.listIngresses()
 	if err != nil {
 		return err

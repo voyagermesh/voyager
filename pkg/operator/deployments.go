@@ -80,14 +80,14 @@ func (op *Operator) reconcileDeployment(key string) error {
 		if ns, name, err := cache.SplitMetaNamespaceKey(key); err != nil {
 			return err
 		} else {
-			return op.restoreDeploymentIfRequired(name, ns)
+			return op.restoreDeployment(name, ns)
 		}
 	}
 	return nil
 }
 
 // requeue ingress if user deletes haproxy-deployment
-func (op *Operator) restoreDeploymentIfRequired(name, ns string) error {
+func (op *Operator) restoreDeployment(name, ns string) error {
 	items, err := op.listIngresses()
 	if err != nil {
 		return err

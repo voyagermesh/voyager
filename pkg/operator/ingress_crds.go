@@ -1,8 +1,6 @@
 package operator
 
 import (
-	"context"
-
 	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil/meta"
@@ -152,28 +150,20 @@ func (op *Operator) reconcileEngress(key string) error {
 				Namespace: namespace,
 			},
 		}
-		op.DeleteEngress(etx.Background(), engress)
+		ctrl := ingress.NewController(etx.Background(), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Opt, engress)
+		ctrl.Delete()
 	} else {
 		glog.Infof("Sync/Add/Update for engress %s\n", key)
 		engress := obj.(*api.Ingress).DeepCopy()
 		engress.Migrate()
 
+		ctrl := ingress.NewController(etx.Background(), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Opt, engress)
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
-			return op.AddEngress(etx.Background(), engress)
+			return ctrl.Reconcile()
 		} else {
 			log.Infof("%s %s/%s does not match ingress class", engress.APISchema(), engress.Namespace, engress.Name)
-			op.DeleteEngress(etx.Background(), engress)
+			ctrl.Delete()
 		}
 	}
 	return nil
-}
-
-func (op *Operator) AddEngress(ctx context.Context, engress *api.Ingress) error {
-	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Opt, engress)
-	return ctrl.Reconcile()
-}
-
-func (op *Operator) DeleteEngress(ctx context.Context, engress *api.Ingress) {
-	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Opt, engress)
-	ctrl.Delete()
 }

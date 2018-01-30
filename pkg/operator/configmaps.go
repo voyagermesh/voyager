@@ -80,14 +80,14 @@ func (op *Operator) reconcileConfigMap(key string) error {
 		if ns, name, err := cache.SplitMetaNamespaceKey(key); err != nil {
 			return err
 		} else {
-			return op.restoreConfigMapIfRequired(name, ns)
+			return op.restoreConfigMap(name, ns)
 		}
 	}
 	return nil
 }
 
 // requeue ingress if user deletes haproxy-configmap
-func (op *Operator) restoreConfigMapIfRequired(name, ns string) error {
+func (op *Operator) restoreConfigMap(name, ns string) error {
 	items, err := op.listIngresses()
 	if err != nil {
 		return err
