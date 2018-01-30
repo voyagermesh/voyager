@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -306,6 +307,12 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 		}
 		obj.Annotations[api.LastAppliedAnnotationKeys] = strings.Join(newKeys, ",")
 
+		// Remove old annotations from 3.2.x release.
+		// ref: https://github.com/appscode/voyager/issues/527
+		// https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/
+		delete(obj.Annotations, "service.beta.kubernetes.io/external-traffic")
+		delete(obj.Annotations, "service.beta.kubernetes.io/healthcheck-nodeport")
+
 		// LoadBalancer ranges
 		curRanges := sets.NewString()
 		for _, ips := range obj.Spec.LoadBalancerSourceRanges {
@@ -324,8 +331,9 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 		}
 
 		// ExternalIPs
-		if !sets.NewString(obj.Spec.ExternalIPs...).Equal(sets.NewString(c.Ingress.Spec.ExternalIPs...)) {
-			obj.Spec.ExternalIPs = c.Ingress.Spec.ExternalIPs
+		obj.Spec.ExternalIPs = c.Ingress.Spec.ExternalIPs
+		if len(obj.Spec.ExternalIPs) > 0 {
+			sort.Strings(obj.Spec.ExternalIPs)
 		}
 
 		// opening other tcp ports

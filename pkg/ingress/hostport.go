@@ -3,6 +3,7 @@ package ingress
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -30,7 +31,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	core_listers "k8s.io/client-go/listers/core/v1"
 )
@@ -381,8 +381,9 @@ func (c *hostPortController) ensureService() (*core.Service, kutil.VerbType, err
 		obj.Annotations[api.LastAppliedAnnotationKeys] = strings.Join(newKeys, ",")
 
 		// ExternalIPs
-		if !sets.NewString(obj.Spec.ExternalIPs...).Equal(sets.NewString(c.Ingress.Spec.ExternalIPs...)) {
-			obj.Spec.ExternalIPs = c.Ingress.Spec.ExternalIPs
+		obj.Spec.ExternalIPs = c.Ingress.Spec.ExternalIPs
+		if len(obj.Spec.ExternalIPs) > 0 {
+			sort.Strings(obj.Spec.ExternalIPs)
 		}
 
 		// opening other tcp ports
