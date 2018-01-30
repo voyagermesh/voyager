@@ -5,7 +5,7 @@ import (
 
 	"github.com/appscode/go/errors"
 	"github.com/appscode/go/log"
-	tapi "github.com/appscode/voyager/apis/voyager/v1beta1"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
@@ -117,9 +117,12 @@ func (op *Operator) restoreIngressService(name, ns string) (bool, error) {
 	items, err := op.listIngresses()
 	if err == nil {
 		for i := range items {
-			engress := &items[i]
-			if engress.ShouldHandleIngress(op.Opt.IngressClass) && engress.Namespace == ns && engress.OffshootName() == name {
-				key, err := cache.MetaNamespaceKeyFunc(engress)
+			ing := &items[i]
+			if ing.DeletionTimestamp == nil &&
+				ing.ShouldHandleIngress(op.Opt.IngressClass) &&
+				ing.Namespace == ns &&
+				ing.OffshootName() == name {
+				key, err := cache.MetaNamespaceKeyFunc(ing)
 				if err == nil {
 					op.engQueue.Add(key)
 					log.Infof("Add/Delete/Update of offshoot service %s/%s, Ingress %s re-queued for update", ns, name, key)
@@ -138,9 +141,11 @@ func (op *Operator) updateHAProxyConfig(name, ns string) error {
 		return err
 	}
 	for i := range items {
-		engress := &items[i]
-		if engress.ShouldHandleIngress(op.Opt.IngressClass) && engress.HasBackendService(name, ns) {
-			if key, err := cache.MetaNamespaceKeyFunc(engress); err == nil {
+		ing := &items[i]
+		if ing.DeletionTimestamp == nil &&
+			ing.ShouldHandleIngress(op.Opt.IngressClass) &&
+			ing.HasBackendService(name, ns) {
+			if key, err := cache.MetaNamespaceKeyFunc(ing); err == nil {
 				op.engQueue.Add(key)
 				log.Infof("Add/Delete/Update of backend service %s/%s, Ingress %s re-queued for update", ns, name, key)
 			}
@@ -149,24 +154,24 @@ func (op *Operator) updateHAProxyConfig(name, ns string) error {
 	return nil
 }
 
-func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*tapi.Ingress, error) {
+func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*api.Ingress, error) {
 	if meta.Annotations == nil {
 		return nil, nil
 	}
 
-	sourceName, sourceNameFound := meta.Annotations[tapi.OriginName]
-	sourceType, sourceTypeFound := meta.Annotations[tapi.OriginAPISchema]
+	sourceName, sourceNameFound := meta.Annotations[api.OriginName]
+	sourceType, sourceTypeFound := meta.Annotations[api.OriginAPISchema]
 	if !sourceNameFound && !sourceTypeFound {
 		return nil, errors.New("no Types or Name found").Err()
 	}
 
-	if sourceType == tapi.APISchemaIngress {
+	if sourceType == api.APISchemaIngress {
 		ingress, err := op.KubeClient.ExtensionsV1beta1().Ingresses(meta.Namespace).Get(sourceName, metav1.GetOptions{})
 		if err != nil {
 			return nil, err
 		}
-		return tapi.NewEngressFromIngress(ingress)
-	} else if sourceType == tapi.APISchemaEngress {
+		return api.NewEngressFromIngress(ingress)
+	} else if sourceType == api.APISchemaEngress {
 		return op.VoyagerClient.Ingresses(meta.Namespace).Get(sourceName, metav1.GetOptions{})
 	}
 	return nil, fmt.Errorf("unknown ingress type %s", sourceType)

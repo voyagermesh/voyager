@@ -93,9 +93,12 @@ func (op *Operator) restoreConfigMap(name, ns string) error {
 		return err
 	}
 	for i := range items {
-		engress := &items[i]
-		if engress.ShouldHandleIngress(op.Opt.IngressClass) && engress.Namespace == ns && engress.OffshootName() == name {
-			if key, err := cache.MetaNamespaceKeyFunc(engress); err != nil {
+		ing := &items[i]
+		if ing.DeletionTimestamp == nil &&
+			ing.ShouldHandleIngress(op.Opt.IngressClass) &&
+			ing.Namespace == ns &&
+			ing.OffshootName() == name {
+			if key, err := cache.MetaNamespaceKeyFunc(ing); err != nil {
 				return err
 			} else {
 				op.engQueue.Add(key)

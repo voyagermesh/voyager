@@ -99,10 +99,11 @@ func (op *Operator) reconcileSecret(key string) error {
 			return err
 		}
 		for i := range items {
-			engress := &items[i]
-			if engress.ShouldHandleIngress(op.Opt.IngressClass) || op.IngressServiceUsesAuthSecret(engress, secret) {
-				if engress.UsesAuthSecret(secret.Namespace, secret.Name) {
-					if key, err := cache.MetaNamespaceKeyFunc(engress); err != nil {
+			ing := &items[i]
+			if ing.DeletionTimestamp == nil &&
+				(ing.ShouldHandleIngress(op.Opt.IngressClass) || op.IngressServiceUsesAuthSecret(ing, secret)) {
+				if ing.UsesAuthSecret(secret.Namespace, secret.Name) {
+					if key, err := cache.MetaNamespaceKeyFunc(ing); err != nil {
 						return err
 					} else {
 						op.engQueue.Add(key)
