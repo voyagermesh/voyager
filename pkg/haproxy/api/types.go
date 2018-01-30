@@ -12,7 +12,7 @@ import (
 type TemplateData struct {
 	*SharedInfo
 	TimeoutDefaults []TimeoutConfig
-	OptionsDefaults []ConnectionMode
+	OptionsDefaults []OptionConfig
 	Stats           *StatsInfo
 	DNSResolvers    []*api.DNSResolver
 	HTTPService     []*HTTPService
@@ -26,8 +26,8 @@ type TimeoutConfig struct {
 	Duration string
 }
 
-type ConnectionMode struct {
-	Mode    string
+type OptionConfig struct {
+	Option  string
 	Enabled bool
 }
 

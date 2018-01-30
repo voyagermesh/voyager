@@ -62,7 +62,7 @@ func TestTemplate(t *testing.T) {
 			{"client", "2s"},
 			{"fin", "1d"},
 		},
-		OptionsDefaults: []hpi.ConnectionMode{
+		OptionsDefaults: []hpi.OptionConfig{
 			{"full-value", true},
 			{"full-value-two", true},
 			{"with-no", false},

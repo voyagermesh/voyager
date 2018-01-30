@@ -364,7 +364,7 @@ func (c *controller) generateConfig() error {
 
 	td.SharedInfo = si
 	td.TimeoutDefaults = hpi.TimeOutConfigs(c.Ingress.Timeouts())
-	td.OptionsDefaults = hpi.ConnectionModes(c.Ingress.HAProxyOptions())
+	td.OptionsDefaults = hpi.OptionConfigs(c.Ingress.HAProxyOptions())
 
 	if c.Ingress.Stats() {
 		stats := &hpi.StatsInfo{}

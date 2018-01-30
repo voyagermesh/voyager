@@ -86,8 +86,9 @@ func (td *TemplateData) sort() {
 
 			svc.Hosts[y] = host
 		}
-
-		sort.Slice(svc.TLSAuth.Headers, func(i, j int) bool { return svc.TLSAuth.Headers[i].Header < svc.TLSAuth.Headers[j].Header })
+		if svc.TLSAuth != nil {
+			sort.Slice(svc.TLSAuth.Headers, func(i, j int) bool { return svc.TLSAuth.Headers[i].Header < svc.TLSAuth.Headers[j].Header })
+		}
 		td.HTTPService[x] = svc
 	}
 
@@ -95,7 +96,9 @@ func (td *TemplateData) sort() {
 		if svc.Backend != nil {
 			svc.Backend.canonicalize(backends[svc.Backend.Name] > 1, svc.Host, svc.Port, "")
 		}
-		sort.Slice(svc.TLSAuth.Headers, func(i, j int) bool { return svc.TLSAuth.Headers[i].Header < svc.TLSAuth.Headers[j].Header })
+		if svc.TLSAuth != nil {
+			sort.Slice(svc.TLSAuth.Headers, func(i, j int) bool { return svc.TLSAuth.Headers[i].Header < svc.TLSAuth.Headers[j].Header })
+		}
 	}
 
 	sort.Slice(td.HTTPService, func(i, j int) bool { return td.HTTPService[i].sortKey() < td.HTTPService[j].sortKey() })
@@ -108,7 +111,7 @@ func (td *TemplateData) sort() {
 	sort.Slice(td.UserLists, func(i, j int) bool { return td.UserLists[i].Name < td.UserLists[j].Name })
 
 	sort.Slice(td.TimeoutDefaults, func(i, j int) bool { return td.TimeoutDefaults[i].Phase < td.TimeoutDefaults[j].Phase })
-	sort.Slice(td.OptionsDefaults, func(i, j int) bool { return td.OptionsDefaults[i].Mode < td.OptionsDefaults[j].Mode })
+	sort.Slice(td.OptionsDefaults, func(i, j int) bool { return td.OptionsDefaults[i].Option < td.OptionsDefaults[j].Option })
 }
 
 func (td *TemplateData) countBackendNames() map[string]int {
@@ -254,14 +257,14 @@ func TimeOutConfigs(m map[string]string) []TimeoutConfig {
 	return ans
 }
 
-func ConnectionModes(m map[string]bool) []ConnectionMode {
-	ans := make([]ConnectionMode, 0)
+func OptionConfigs(m map[string]bool) []OptionConfig {
+	ans := make([]OptionConfig, 0)
 	if m == nil {
 		return ans
 	}
 	for k, v := range m {
-		ans = append(ans, ConnectionMode{
-			Mode:    k,
+		ans = append(ans, OptionConfig{
+			Option:  k,
 			Enabled: v,
 		})
 	}

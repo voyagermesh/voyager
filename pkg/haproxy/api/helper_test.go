@@ -153,7 +153,7 @@ func TestTimeOutConfigs(t *testing.T) {
 func TestConnectionModes(t *testing.T) {
 	td := TemplateData{
 		SharedInfo: &SharedInfo{},
-		OptionsDefaults: []ConnectionMode{
+		OptionsDefaults: []OptionConfig{
 			{"p2", false},
 			{"p3", false},
 			{"p1", false},
