@@ -419,16 +419,9 @@ func (c *nodePortController) ensureService() (*core.Service, kutil.VerbType, err
 			obj.Spec.ExternalIPs = c.Ingress.Spec.ExternalIPs
 		}
 
-		// store current node-port assignment
-		curNodePorts := make(map[int32]int32)
-		for _, p := range obj.Spec.Ports {
-			curNodePorts[p.Port] = p.NodePort
-		}
-
-		obj.Spec.Ports = []core.ServicePort{}
-
 		// opening other tcp ports
 		mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
+		desiredPorts := make([]core.ServicePort, 0)
 		for svcPort, target := range mappings {
 			p := core.ServicePort{
 				Name:       "tcp-" + strconv.Itoa(svcPort),
@@ -437,11 +430,9 @@ func (c *nodePortController) ensureService() (*core.Service, kutil.VerbType, err
 				TargetPort: intstr.FromInt(target.PodPort),
 				NodePort:   int32(target.NodePort),
 			}
-			if v, ok := curNodePorts[p.Port]; ok && p.NodePort == 0 {
-				p.NodePort = v // avoid reassigning node-port
-			}
-			obj.Spec.Ports = append(obj.Spec.Ports, p)
+			desiredPorts = append(desiredPorts, p)
 		}
+		obj.Spec.Ports = core_util.MergeServicePorts(obj.Spec.Ports, desiredPorts)
 
 		// ExternalTrafficPolicy
 		if c.Ingress.KeepSourceIP() {
@@ -553,6 +544,9 @@ func (c *nodePortController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 		// delete last applied PodAnnotations
 		// add new PodAnnotations
 		// store new PodAnnotations keys
+		if obj.Spec.Template.Annotations == nil {
+			obj.Spec.Template.Annotations = make(map[string]string)
+		}
 		lastAppliedKeys, _ := meta_util.GetString(obj.Spec.Template.Annotations, api.LastAppliedAnnotationKeys)
 		for _, key := range strings.Split(lastAppliedKeys, ",") {
 			delete(obj.Spec.Template.Annotations, key)
