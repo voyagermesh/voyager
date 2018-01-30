@@ -194,23 +194,7 @@ func (c *nodePortController) Reconcile() error {
 
 	// If RBAC is enabled we need to ensure service account
 	if c.Opt.EnableRBAC {
-		err := c.ensureRBAC()
-		if err != nil {
-			c.recorder.Event(
-				c.Ingress.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonIngressRBACFailed,
-				err.Error(),
-			)
-			return errors.FromErr(err).Err()
-		} else {
-			c.recorder.Eventf(
-				c.Ingress.ObjectReference(),
-				core.EventTypeNormal,
-				eventer.EventReasonIngressRBACSuccessful,
-				"Successfully applied RBAC",
-			)
-		}
+		c.reconcileRBAC()
 	}
 
 	if _, vt, err := c.ensurePods(); err != nil {

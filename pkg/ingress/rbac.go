@@ -1,21 +1,86 @@
 package ingress
 
 import (
+	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
 	rbac_util "github.com/appscode/kutil/rbac/v1beta1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	"github.com/appscode/voyager/pkg/eventer"
 	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
 	rbac "k8s.io/api/rbac/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (c *controller) ensureServiceAccount() error {
+func (c *controller) reconcileRBAC() error {
+	if vt, err := c.reconcileServiceAccount(); err != nil {
+		c.recorder.Eventf(
+			c.Ingress.ObjectReference(),
+			core.EventTypeWarning,
+			eventer.EventReasonIngressRBACFailed,
+			"Reason: %s",
+			err.Error(),
+		)
+		return err
+	} else if vt != kutil.VerbUnchanged {
+		c.recorder.Eventf(
+			c.Ingress.ObjectReference(),
+			core.EventTypeNormal,
+			eventer.EventReasonIngressRBACSuccessful,
+			"Successfully %s service account %s",
+			vt,
+			c.Ingress.OffshootName(),
+		)
+	}
+
+	if vt, err := c.reconcileRoles(); err != nil {
+		c.recorder.Eventf(
+			c.Ingress.ObjectReference(),
+			core.EventTypeWarning,
+			eventer.EventReasonIngressRBACFailed,
+			"Reason: %s",
+			err.Error(),
+		)
+		return err
+	} else if vt != kutil.VerbUnchanged {
+		c.recorder.Eventf(
+			c.Ingress.ObjectReference(),
+			core.EventTypeNormal,
+			eventer.EventReasonIngressRBACSuccessful,
+			"Successfully %s role %s",
+			vt,
+			c.Ingress.OffshootName(),
+		)
+	}
+
+	if vt, err := c.reconcileRoleBinding(); err != nil {
+		c.recorder.Eventf(
+			c.Ingress.ObjectReference(),
+			core.EventTypeWarning,
+			eventer.EventReasonIngressRBACFailed,
+			"Reason: %s",
+			err.Error(),
+		)
+		return err
+	} else if vt != kutil.VerbUnchanged {
+		c.recorder.Eventf(
+			c.Ingress.ObjectReference(),
+			core.EventTypeNormal,
+			eventer.EventReasonIngressRBACSuccessful,
+			"Successfully %s role binding %s",
+			vt,
+			c.Ingress.OffshootName(),
+		)
+	}
+	return nil
+}
+
+func (c *controller) reconcileServiceAccount() (kutil.VerbType, error) {
 	meta := metav1.ObjectMeta{
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	_, _, err := core_util.CreateOrPatchServiceAccount(c.KubeClient, meta, func(in *core.ServiceAccount) *core.ServiceAccount {
+	_, vt, err := core_util.CreateOrPatchServiceAccount(c.KubeClient, meta, func(in *core.ServiceAccount) *core.ServiceAccount {
 		in.ObjectMeta = c.ensureOwnerReference(in.ObjectMeta)
 
 		if in.Annotations == nil {
@@ -25,15 +90,15 @@ func (c *controller) ensureServiceAccount() error {
 		in.Annotations[api.OriginName] = c.Ingress.GetName()
 		return in
 	})
-	return err
+	return vt, err
 }
 
-func (c *controller) ensureRoles() error {
+func (c *controller) reconcileRoles() (kutil.VerbType, error) {
 	meta := metav1.ObjectMeta{
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	_, _, err := rbac_util.CreateOrPatchRole(c.KubeClient, meta, func(in *rbac.Role) *rbac.Role {
+	_, vt, err := rbac_util.CreateOrPatchRole(c.KubeClient, meta, func(in *rbac.Role) *rbac.Role {
 		in.ObjectMeta = c.ensureOwnerReference(in.ObjectMeta)
 
 		if in.Annotations == nil {
@@ -67,15 +132,15 @@ func (c *controller) ensureRoles() error {
 		}
 		return in
 	})
-	return err
+	return vt, err
 }
 
-func (c *controller) ensureRoleBinding() error {
+func (c *controller) reconcileRoleBinding() (kutil.VerbType, error) {
 	meta := metav1.ObjectMeta{
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	_, _, err := rbac_util.CreateOrPatchRoleBinding(c.KubeClient, meta, func(in *rbac.RoleBinding) *rbac.RoleBinding {
+	_, vt, err := rbac_util.CreateOrPatchRoleBinding(c.KubeClient, meta, func(in *rbac.RoleBinding) *rbac.RoleBinding {
 		in.ObjectMeta = c.ensureOwnerReference(in.ObjectMeta)
 
 		if in.Annotations == nil {
@@ -98,7 +163,7 @@ func (c *controller) ensureRoleBinding() error {
 		}
 		return in
 	})
-	return err
+	return vt, err
 }
 
 func (c *controller) ensureRoleBindingDeleted() error {

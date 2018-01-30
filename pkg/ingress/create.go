@@ -39,19 +39,6 @@ func (c *controller) ensureConfigMap() (*core.ConfigMap, kutil.VerbType, error) 
 	})
 }
 
-func (c *controller) ensureRBAC() error {
-	if err := c.ensureServiceAccount(); err != nil {
-		return err
-	}
-	if err := c.ensureRoles(); err != nil {
-		return err
-	}
-	if err := c.ensureRoleBinding(); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (c *controller) getExporterSidecar() (*core.Container, error) {
 	if !c.Ingress.Stats() {
 		return nil, nil // Don't add sidecar is stats is not exposed.
