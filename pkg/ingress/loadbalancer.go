@@ -393,18 +393,6 @@ func (c *loadBalancerController) ensurePods() (*apps.Deployment, kutil.VerbType,
 			MatchLabels: c.Ingress.OffshootLabels(),
 		}
 
-		// pod template
-		obj.Spec.Template.ObjectMeta.Labels = c.Ingress.OffshootLabels()
-		obj.Spec.Template.Spec.Affinity = c.Ingress.Spec.Affinity
-		obj.Spec.Template.Spec.SchedulerName = c.Ingress.Spec.SchedulerName
-		obj.Spec.Template.Spec.Tolerations = c.Ingress.Spec.Tolerations
-		obj.Spec.Template.Spec.NodeSelector = c.Ingress.NodeSelector()
-		obj.Spec.Template.Spec.ImagePullSecrets = c.Ingress.Spec.ImagePullSecrets
-
-		if c.Opt.EnableRBAC {
-			obj.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
-		}
-
 		// pod annotations
 		// delete last-applied-annotations, add new-annotations, store new-annotations keys
 		if obj.Spec.Template.Annotations == nil {
@@ -422,6 +410,17 @@ func (c *loadBalancerController) ensurePods() (*apps.Deployment, kutil.VerbType,
 			}
 		}
 		obj.Spec.Template.Annotations[api.LastAppliedAnnotationKeys] = strings.Join(newKeys, ",")
+
+		// pod spec
+		obj.Spec.Template.ObjectMeta.Labels = c.Ingress.OffshootLabels()
+		obj.Spec.Template.Spec.Affinity = c.Ingress.Spec.Affinity
+		obj.Spec.Template.Spec.SchedulerName = c.Ingress.Spec.SchedulerName
+		obj.Spec.Template.Spec.Tolerations = c.Ingress.Spec.Tolerations
+		obj.Spec.Template.Spec.NodeSelector = c.Ingress.NodeSelector()
+		obj.Spec.Template.Spec.ImagePullSecrets = c.Ingress.Spec.ImagePullSecrets
+		if c.Opt.EnableRBAC {
+			obj.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
+		}
 
 		// volume spec
 		obj.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
