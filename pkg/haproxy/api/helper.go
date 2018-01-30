@@ -86,12 +86,19 @@ func (td *TemplateData) sort() {
 
 			svc.Hosts[y] = host
 		}
-
+		if svc.TLSAuth != nil {
+			sort.Slice(svc.TLSAuth.Headers, func(i, j int) bool { return svc.TLSAuth.Headers[i].Header < svc.TLSAuth.Headers[j].Header })
+		}
 		td.HTTPService[x] = svc
 	}
 
 	for _, svc := range td.TCPService {
-		svc.Backend.canonicalize(backends[svc.Backend.Name] > 1, svc.Host, svc.Port, "")
+		if svc.Backend != nil {
+			svc.Backend.canonicalize(backends[svc.Backend.Name] > 1, svc.Host, svc.Port, "")
+		}
+		if svc.TLSAuth != nil {
+			sort.Slice(svc.TLSAuth.Headers, func(i, j int) bool { return svc.TLSAuth.Headers[i].Header < svc.TLSAuth.Headers[j].Header })
+		}
 	}
 
 	sort.Slice(td.HTTPService, func(i, j int) bool { return td.HTTPService[i].sortKey() < td.HTTPService[j].sortKey() })
@@ -102,6 +109,9 @@ func (td *TemplateData) sort() {
 		td.UserLists[i].canonicalize()
 	}
 	sort.Slice(td.UserLists, func(i, j int) bool { return td.UserLists[i].Name < td.UserLists[j].Name })
+
+	sort.Slice(td.TimeoutDefaults, func(i, j int) bool { return td.TimeoutDefaults[i].Phase < td.TimeoutDefaults[j].Phase })
+	sort.Slice(td.OptionsDefaults, func(i, j int) bool { return td.OptionsDefaults[i].Option < td.OptionsDefaults[j].Option })
 }
 
 func (td *TemplateData) countBackendNames() map[string]int {
@@ -231,4 +241,37 @@ func hostRank(host string) int {
 		return 1
 	}
 	return 2
+}
+
+func TimeOutConfigs(in map[string]string) []TimeoutConfig {
+	var out []TimeoutConfig
+	for k, v := range in {
+		out = append(out, TimeoutConfig{
+			Phase:    k,
+			Duration: v,
+		})
+	}
+	return out
+}
+
+func OptionConfigs(in map[string]bool) []OptionConfig {
+	var out []OptionConfig
+	for k, v := range in {
+		out = append(out, OptionConfig{
+			Option:  k,
+			Enabled: v,
+		})
+	}
+	return out
+}
+
+func TLSHeaders(in map[string]string) []TLSHeader {
+	var out []TLSHeader
+	for k, v := range in {
+		out = append(out, TLSHeader{
+			Header: k,
+			Value:  v,
+		})
+	}
+	return out
 }

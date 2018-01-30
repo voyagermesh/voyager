@@ -58,15 +58,15 @@ func TestTemplate(t *testing.T) {
 				Value:      "goolge.com",
 			},
 		},
-		TimeoutDefaults: map[string]string{
-			"client": "2s",
-			"fin":    "1d",
+		TimeoutDefaults: []hpi.TimeoutConfig{
+			{"client", "2s"},
+			{"fin", "1d"},
 		},
-		OptionsDefaults: map[string]bool{
-			"full-value":     true,
-			"full-value-two": true,
-			"with-no":        false,
-			"with-no-two":    false,
+		OptionsDefaults: []hpi.OptionConfig{
+			{"full-value", true},
+			{"full-value-two", true},
+			{"with-no", false},
+			{"with-no-two", false},
 		},
 		Stats: &hpi.StatsInfo{Port: 1234},
 		DNSResolvers: []*api.DNSResolver{
@@ -434,9 +434,9 @@ func TestTemplateAuth(t *testing.T) {
 	}
 	testParsedConfig := hpi.TemplateData{
 		SharedInfo: si,
-		TimeoutDefaults: map[string]string{
-			"client": "2s",
-			"fin":    "1d",
+		TimeoutDefaults: []hpi.TimeoutConfig{
+			{"client", "2s"},
+			{"fin", "1d"},
 		},
 		UserLists: []hpi.UserList{
 			{
@@ -653,9 +653,9 @@ func TestTLSAuth(t *testing.T) {
 				FrontendRules: []string{},
 				TLSAuth: &hpi.TLSAuth{
 					VerifyClient: "required",
-					Headers: map[string]string{
-						"X-TEST":      "add",
-						"X-TEST-NONE": "none",
+					Headers: []hpi.TLSHeader{
+						{"X-TEST", "add"},
+						{"X-TEST-NONE", "none"},
 					},
 					ErrorPage: "google.com",
 				},
