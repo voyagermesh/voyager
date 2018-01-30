@@ -64,7 +64,7 @@ func (op *Operator) processNextSecret() bool {
 	}
 	defer op.secretQueue.Done(key)
 
-	err := op.runSecretInjector(key.(string))
+	err := op.reconcileSecret(key.(string))
 	if err == nil {
 		op.secretQueue.Forget(key)
 		return true
@@ -83,7 +83,7 @@ func (op *Operator) processNextSecret() bool {
 	return true
 }
 
-func (op *Operator) runSecretInjector(key string) error {
+func (op *Operator) reconcileSecret(key string) error {
 	obj, exists, err := op.secretIndexer.GetByKey(key)
 	if err != nil {
 		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)

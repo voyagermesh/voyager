@@ -67,7 +67,7 @@ func (op *Operator) processNextService() bool {
 	}
 	defer op.svcQueue.Done(key)
 
-	err := op.runServiceInjector(key.(string))
+	err := op.reconcileService(key.(string))
 	if err == nil {
 		op.svcQueue.Forget(key)
 		return true
@@ -86,7 +86,7 @@ func (op *Operator) processNextService() bool {
 	return true
 }
 
-func (op *Operator) runServiceInjector(key string) error {
+func (op *Operator) reconcileService(key string) error {
 	obj, exists, err := op.svcIndexer.GetByKey(key)
 	if err != nil {
 		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)

@@ -12,7 +12,7 @@ import (
 )
 
 func (op *Operator) ValidateIngress() error {
-	invalidIngresses := []string{}
+	var invalidIngresses []string
 	ingresses, err := op.ingLister.List(labels.Everything())
 	if err != nil {
 		return err
@@ -63,7 +63,7 @@ func (op *Operator) ValidateIngress() error {
 	}
 
 	if len(invalidIngresses) > 0 {
-		return fmt.Errorf("One or more Ingress objects are invalid: %s", strings.Join(invalidIngresses, ", "))
+		return fmt.Errorf("one or more Ingress objects are invalid: %s", strings.Join(invalidIngresses, ", "))
 	}
 	return nil
 }

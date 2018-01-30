@@ -71,7 +71,7 @@ func (op *Operator) processNextEndpoint() bool {
 	}
 	defer op.epQueue.Done(key)
 
-	err := op.runEndpointInjector(key.(string))
+	err := op.reconcileEndpoint(key.(string))
 	if err == nil {
 		op.epQueue.Forget(key)
 		return true
@@ -90,7 +90,7 @@ func (op *Operator) processNextEndpoint() bool {
 	return true
 }
 
-func (op *Operator) runEndpointInjector(key string) error {
+func (op *Operator) reconcileEndpoint(key string) error {
 	obj, exists, err := op.epIndexer.GetByKey(key)
 	if err != nil {
 		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)

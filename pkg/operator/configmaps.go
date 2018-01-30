@@ -50,7 +50,7 @@ func (op *Operator) processNextConfigMap() bool {
 	}
 	defer op.cfgQueue.Done(key)
 
-	err := op.runConfigMapInjector(key.(string))
+	err := op.reconcileConfigMap(key.(string))
 	if err == nil {
 		op.cfgQueue.Forget(key)
 		return true
@@ -69,7 +69,7 @@ func (op *Operator) processNextConfigMap() bool {
 	return true
 }
 
-func (op *Operator) runConfigMapInjector(key string) error {
+func (op *Operator) reconcileConfigMap(key string) error {
 	_, exists, err := op.cfgIndexer.GetByKey(key)
 	if err != nil {
 		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)

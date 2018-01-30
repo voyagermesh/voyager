@@ -49,7 +49,7 @@ func (op *Operator) processNextNamespace() bool {
 	}
 	defer op.nsQueue.Done(key)
 
-	err := op.runNamespaceInjector(key.(string))
+	err := op.reconcileNamespace(key.(string))
 	if err == nil {
 		op.nsQueue.Forget(key)
 		return true
@@ -68,7 +68,7 @@ func (op *Operator) processNextNamespace() bool {
 	return true
 }
 
-func (op *Operator) runNamespaceInjector(key string) error {
+func (op *Operator) reconcileNamespace(key string) error {
 	_, exists, err := op.nsIndexer.GetByKey(key)
 	if err != nil {
 		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)

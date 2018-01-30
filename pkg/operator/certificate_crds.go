@@ -107,7 +107,7 @@ func (op *Operator) processNextCertificate() bool {
 	}
 	defer op.certQueue.Done(key)
 
-	err := op.runCertificateInjector(key.(string))
+	err := op.reconcileCertificate(key.(string))
 	if err == nil {
 		op.certQueue.Forget(key)
 		return true
@@ -126,7 +126,7 @@ func (op *Operator) processNextCertificate() bool {
 	return true
 }
 
-func (op *Operator) runCertificateInjector(key string) error {
+func (op *Operator) reconcileCertificate(key string) error {
 	obj, exists, err := op.certIndexer.GetByKey(key)
 	if err != nil {
 		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)

@@ -115,7 +115,7 @@ func (op *Operator) processNextEngress() bool {
 	}
 	defer op.engQueue.Done(key)
 
-	err := op.runEngressInjector(key.(string))
+	err := op.reconcileEngress(key.(string))
 	if err == nil {
 		op.engQueue.Forget(key)
 		return true
@@ -134,7 +134,7 @@ func (op *Operator) processNextEngress() bool {
 	return true
 }
 
-func (op *Operator) runEngressInjector(key string) error {
+func (op *Operator) reconcileEngress(key string) error {
 	obj, exists, err := op.engIndexer.GetByKey(key)
 	if err != nil {
 		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)

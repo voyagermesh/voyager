@@ -50,7 +50,7 @@ func (op *Operator) processNextDeployment() bool {
 	}
 	defer op.dpQueue.Done(key)
 
-	err := op.runDeploymentInjector(key.(string))
+	err := op.reconcileDeployment(key.(string))
 	if err == nil {
 		op.dpQueue.Forget(key)
 		return true
@@ -69,7 +69,7 @@ func (op *Operator) processNextDeployment() bool {
 	return true
 }
 
-func (op *Operator) runDeploymentInjector(key string) error {
+func (op *Operator) reconcileDeployment(key string) error {
 	_, exists, err := op.dpIndexer.GetByKey(key)
 	if err != nil {
 		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)

@@ -52,7 +52,7 @@ func (op *Operator) processNextServiceMonitor() bool {
 	}
 	defer op.monQueue.Done(key)
 
-	err := op.runServiceMonitorInjector(key.(string))
+	err := op.reconcileServiceMonitor(key.(string))
 	if err == nil {
 		op.monQueue.Forget(key)
 		return true
@@ -71,7 +71,7 @@ func (op *Operator) processNextServiceMonitor() bool {
 	return true
 }
 
-func (op *Operator) runServiceMonitorInjector(key string) error {
+func (op *Operator) reconcileServiceMonitor(key string) error {
 	_, exists, err := op.monIndexer.GetByKey(key)
 	if err != nil {
 		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
