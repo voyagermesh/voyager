@@ -98,7 +98,7 @@ func (op *Operator) reconcileEndpoint(key string) error {
 	}
 	if exists {
 		glog.Infof("Sync/Add/Update for Endpoints %s\n", key)
-		ep := obj.(*core.Endpoints)
+		ep := obj.(*core.Endpoints).DeepCopy()
 		// Checking if this endpoint have a service or not. If
 		// this do not have a Service we do not want to update our ingress
 		svc, err := op.svcLister.Services(ep.Namespace).Get(ep.Name)

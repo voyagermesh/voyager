@@ -104,7 +104,7 @@ func (op *Operator) reconcileService(key string) error {
 			return op.updateHAProxyConfig(name, ns)
 		}
 	} else {
-		svc := obj.(*core.Service)
+		svc := obj.(*core.Service).DeepCopy()
 		glog.Infof("Sync/Add/Update for Service %s\n", svc.GetName())
 		return op.updateHAProxyConfig(svc.Name, svc.Namespace)
 	}

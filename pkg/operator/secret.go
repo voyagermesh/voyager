@@ -91,7 +91,7 @@ func (op *Operator) reconcileSecret(key string) error {
 	}
 	if exists {
 		glog.Infof("Sync/Add/Update for Secret %s\n", key)
-		secret := obj.(*core.Secret)
+		secret := obj.(*core.Secret).DeepCopy()
 		// Secret DataChanged. We need to list all Ingress and check which of
 		// those ingress uses this secret as basic auth secret.
 		items, err := op.listIngresses()
