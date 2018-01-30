@@ -82,3 +82,83 @@ func TestPathOrdering(t *testing.T) {
 	b, _ := json.MarshalIndent(hosts, "", "  ")
 	fmt.Println(string(b))
 }
+
+func TestTLSHeaders(t *testing.T) {
+	td := TemplateData{
+		SharedInfo: &SharedInfo{},
+		HTTPService: []*HTTPService{
+			{
+				TLSAuth: &TLSAuth{
+					Headers: []TLSHeader{
+						{"h2", ""},
+						{"h3", ""},
+						{"h1", ""},
+					},
+				},
+			},
+			{
+				TLSAuth: &TLSAuth{
+					Headers: []TLSHeader{
+						{"h5", ""},
+						{"h6", ""},
+						{"h4", ""},
+					},
+				},
+			},
+		},
+		TCPService: []*TCPService{
+			{
+				TLSAuth: &TLSAuth{
+					Headers: []TLSHeader{
+						{"h2", ""},
+						{"h3", ""},
+						{"h1", ""},
+					},
+				},
+			},
+			{
+				TLSAuth: &TLSAuth{
+					Headers: []TLSHeader{
+						{"h5", ""},
+						{"h6", ""},
+						{"h4", ""},
+					},
+				},
+			},
+		},
+	}
+
+	td.sort()
+	for _, svc := range td.HTTPService {
+		fmt.Println(svc.TLSAuth.Headers)
+	}
+	for _, svc := range td.TCPService {
+		fmt.Println(svc.TLSAuth.Headers)
+	}
+}
+
+func TestTimeOutConfigs(t *testing.T) {
+	td := TemplateData{
+		SharedInfo: &SharedInfo{},
+		TimeoutDefaults: []TimeoutConfig{
+			{"p2", ""},
+			{"p3", ""},
+			{"p1", ""},
+		},
+	}
+	td.sort()
+	fmt.Println(td.TimeoutDefaults)
+}
+
+func TestConnectionModes(t *testing.T) {
+	td := TemplateData{
+		SharedInfo: &SharedInfo{},
+		OptionsDefaults: []ConnectionMode{
+			{"p2", false},
+			{"p3", false},
+			{"p1", false},
+		},
+	}
+	td.sort()
+	fmt.Println(td.OptionsDefaults)
+}

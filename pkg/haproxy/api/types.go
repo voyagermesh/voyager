@@ -11,14 +11,24 @@ import (
 
 type TemplateData struct {
 	*SharedInfo
-	TimeoutDefaults map[string]string
-	OptionsDefaults map[string]bool
+	TimeoutDefaults []TimeoutConfig
+	OptionsDefaults []ConnectionMode
 	Stats           *StatsInfo
 	DNSResolvers    []*api.DNSResolver
 	HTTPService     []*HTTPService
 	TCPService      []*TCPService
 	ErrorFiles      []*ErrorFile
 	UserLists       []UserList
+}
+
+type TimeoutConfig struct {
+	Phase    string
+	Duration string
+}
+
+type ConnectionMode struct {
+	Mode    string
+	Enabled bool
 }
 
 type ErrorFile struct {
@@ -191,11 +201,16 @@ type Limit struct {
 	Rate       int
 }
 
+type TLSHeader struct {
+	Header string
+	Value  string
+}
+
 type TLSAuth struct {
 	CAFile       string
 	CRLFile      string
 	VerifyClient string
-	Headers      map[string]string
+	Headers      []TLSHeader
 	ErrorPage    string
 	ErrorPath    string
 }

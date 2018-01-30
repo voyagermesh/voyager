@@ -87,11 +87,15 @@ func (td *TemplateData) sort() {
 			svc.Hosts[y] = host
 		}
 
+		sort.Slice(svc.TLSAuth.Headers, func(i, j int) bool { return svc.TLSAuth.Headers[i].Header < svc.TLSAuth.Headers[j].Header })
 		td.HTTPService[x] = svc
 	}
 
 	for _, svc := range td.TCPService {
-		svc.Backend.canonicalize(backends[svc.Backend.Name] > 1, svc.Host, svc.Port, "")
+		if svc.Backend != nil {
+			svc.Backend.canonicalize(backends[svc.Backend.Name] > 1, svc.Host, svc.Port, "")
+		}
+		sort.Slice(svc.TLSAuth.Headers, func(i, j int) bool { return svc.TLSAuth.Headers[i].Header < svc.TLSAuth.Headers[j].Header })
 	}
 
 	sort.Slice(td.HTTPService, func(i, j int) bool { return td.HTTPService[i].sortKey() < td.HTTPService[j].sortKey() })
@@ -102,6 +106,9 @@ func (td *TemplateData) sort() {
 		td.UserLists[i].canonicalize()
 	}
 	sort.Slice(td.UserLists, func(i, j int) bool { return td.UserLists[i].Name < td.UserLists[j].Name })
+
+	sort.Slice(td.TimeoutDefaults, func(i, j int) bool { return td.TimeoutDefaults[i].Phase < td.TimeoutDefaults[j].Phase })
+	sort.Slice(td.OptionsDefaults, func(i, j int) bool { return td.OptionsDefaults[i].Mode < td.OptionsDefaults[j].Mode })
 }
 
 func (td *TemplateData) countBackendNames() map[string]int {
@@ -231,4 +238,46 @@ func hostRank(host string) int {
 		return 1
 	}
 	return 2
+}
+
+func TimeOutConfigs(m map[string]string) []TimeoutConfig {
+	ans := make([]TimeoutConfig, 0)
+	if m == nil {
+		return ans
+	}
+	for k, v := range m {
+		ans = append(ans, TimeoutConfig{
+			Phase:    k,
+			Duration: v,
+		})
+	}
+	return ans
+}
+
+func ConnectionModes(m map[string]bool) []ConnectionMode {
+	ans := make([]ConnectionMode, 0)
+	if m == nil {
+		return ans
+	}
+	for k, v := range m {
+		ans = append(ans, ConnectionMode{
+			Mode:    k,
+			Enabled: v,
+		})
+	}
+	return ans
+}
+
+func TLSHeaders(m map[string]string) []TLSHeader {
+	ans := make([]TLSHeader, 0)
+	if m == nil {
+		return ans
+	}
+	for k, v := range m {
+		ans = append(ans, TLSHeader{
+			Header: k,
+			Value:  v,
+		})
+	}
+	return ans
 }

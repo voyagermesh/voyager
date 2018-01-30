@@ -363,8 +363,8 @@ func (c *controller) generateConfig() error {
 	}
 
 	td.SharedInfo = si
-	td.TimeoutDefaults = c.Ingress.Timeouts()
-	td.OptionsDefaults = c.Ingress.HAProxyOptions()
+	td.TimeoutDefaults = hpi.TimeOutConfigs(c.Ingress.Timeouts())
+	td.OptionsDefaults = hpi.ConnectionModes(c.Ingress.HAProxyOptions())
 
 	if c.Ingress.Stats() {
 		stats := &hpi.StatsInfo{}
@@ -929,7 +929,7 @@ func (c *controller) getTLSAuth(cfg *api.TLSAuth) (*hpi.TLSAuth, error) {
 	htls := &hpi.TLSAuth{
 		CAFile:       cfg.SecretName + "-ca.crt",
 		VerifyClient: string(cfg.VerifyClient),
-		Headers:      cfg.Headers,
+		Headers:      hpi.TLSHeaders(cfg.Headers),
 		ErrorPage:    cfg.ErrorPage,
 	}
 	if _, ok := tlsAuthSec.Data["crl.pem"]; ok {
