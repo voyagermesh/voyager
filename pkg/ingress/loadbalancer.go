@@ -101,9 +101,9 @@ func (c *loadBalancerController) Reconcile() error {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
 			core.EventTypeWarning,
-			eventer.EventReasonIngressHAProxyConfigCreateFailed,
-			"Reason: %s",
-			err.Error(),
+			eventer.EventReasonIngressHAProxyConfigReconcileFailed,
+			"Reason: %v",
+			err,
 		)
 		return errors.FromErr(err).Err()
 	}
@@ -112,17 +112,17 @@ func (c *loadBalancerController) Reconcile() error {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
 			core.EventTypeWarning,
-			eventer.EventReasonIngressConfigMapCreateFailed,
-			"Failed to ensure ConfigMap %s, Reason: %s",
+			eventer.EventReasonIngressConfigMapReconcileFailed,
+			"Failed to reconcile ConfigMap %s, Reason: %v",
 			c.Ingress.OffshootName(),
-			err.Error(),
+			err,
 		)
 		return errors.FromErr(err).Err()
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
 			core.EventTypeNormal,
-			eventer.EventReasonIngressConfigMapCreateSuccessful,
+			eventer.EventReasonIngressConfigMapReconcileSuccessful,
 			"Successfully %s ConfigMap %s",
 			vt,
 			c.Ingress.OffshootName(),
@@ -138,18 +138,20 @@ func (c *loadBalancerController) Reconcile() error {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
 			core.EventTypeWarning,
-			eventer.EventReasonIngressControllerCreateFailed,
-			"Failed to ensure LoadBalancer Pods, Reason: %s",
-			err.Error(),
+			eventer.EventReasonIngressDeploymentReconcileFailed,
+			"Failed to reconcile HAProxy Deployment %s, Reason: %s",
+			c.Ingress.OffshootName(),
+			err,
 		)
 		return errors.FromErr(err).Err()
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
 			core.EventTypeNormal,
-			eventer.EventReasonIngressControllerCreateSuccessful,
-			"Successfully %s LoadBalancer Pods",
+			eventer.EventReasonIngressDeploymentReconcileSuccessful,
+			"Successfully %s HAProxy Deployment %s",
 			vt,
+			c.Ingress.OffshootName(),
 		)
 	}
 
@@ -157,18 +159,20 @@ func (c *loadBalancerController) Reconcile() error {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
 			core.EventTypeWarning,
-			eventer.EventReasonIngressServiceCreateFailed,
-			"Failed to ensure LoadBalancer Service, Reason: %s",
-			err.Error(),
+			eventer.EventReasonIngressServiceReconcileFailed,
+			"Failed to reconcile LoadBalancer Service %s, Reason: %v",
+			c.Ingress.OffshootName(),
+			err,
 		)
 		return errors.FromErr(err).Err()
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
 			core.EventTypeNormal,
-			eventer.EventReasonIngressServiceCreateSuccessful,
-			"Successfully %s LoadBalancer Service",
+			eventer.EventReasonIngressServiceReconcileSuccessful,
+			"Successfully %s LoadBalancer Service %s",
 			vt,
+			c.Ingress.OffshootName(),
 		)
 	}
 
@@ -179,35 +183,30 @@ func (c *loadBalancerController) Reconcile() error {
 			c.recorder.Eventf(
 				c.Ingress.ObjectReference(),
 				core.EventTypeWarning,
-				eventer.EventReasonIngressStatsServiceCreateFailed,
-				"Failed to ensure StatsService. Reason: %s",
-				err.Error(),
+				eventer.EventReasonIngressStatsServiceReconcileFailed,
+				"Failed to ensure stats Service %s. Reason: %v",
+				c.Ingress.StatsServiceName(),
+				err,
 			)
 		} else if vt != kutil.VerbUnchanged {
 			c.recorder.Eventf(
 				c.Ingress.ObjectReference(),
 				core.EventTypeNormal,
-				eventer.EventReasonIngressStatsServiceCreateSuccessful,
-				"Successfully %s StatsService %s",
-				c.Ingress.StatsServiceName(),
+				eventer.EventReasonIngressStatsServiceReconcileSuccessful,
+				"Successfully %s stats Service %s",
 				vt,
+				c.Ingress.StatsServiceName(),
 			)
 		}
 	} else {
 		if err := c.ensureStatsServiceDeleted(); err != nil { // Error ignored intentionally
-			c.recorder.Eventf(
-				c.Ingress.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonIngressStatsServiceDeleteFailed,
-				"Failed to delete HAProxy stats Service. Reason: %s",
-				err.Error(),
-			)
+			log.Warningf("failed to delete stats Service %s, reason: %s", c.Ingress.StatsServiceName(), err)
 		} else {
 			c.recorder.Eventf(
 				c.Ingress.ObjectReference(),
 				core.EventTypeNormal,
 				eventer.EventReasonIngressStatsServiceDeleteSuccessful,
-				"Successfully deleted HAProxy stats Service %s",
+				"Successfully deleted stats Service %s",
 				c.Ingress.StatsServiceName(),
 			)
 		}
@@ -222,15 +221,16 @@ func (c *loadBalancerController) Reconcile() error {
 			c.recorder.Eventf(
 				c.Ingress.ObjectReference(),
 				core.EventTypeWarning,
-				eventer.EventReasonIngressServiceMonitorCreateFailed,
-				err.Error(),
+				eventer.EventReasonIngressMonitorAgentReconcileFailed,
+				"Failed to reconcile monitoring agent. Reason: %v",
+				err,
 			)
 		} else if vt != kutil.VerbUnchanged {
 			c.recorder.Eventf(
 				c.Ingress.ObjectReference(),
 				core.EventTypeNormal,
-				eventer.EventReasonIngressServiceMonitorCreateSuccessful,
-				"Successfully %s ServiceMonitor",
+				eventer.EventReasonIngressMonitorAgentReconcileSuccessful,
+				"Successfully %s monitoring agent",
 				vt,
 			)
 		}
