@@ -332,7 +332,7 @@ func (c *internalController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 		Namespace: c.Ingress.Namespace,
 	}
 	return apps_util.CreateOrPatchDeployment(c.KubeClient, meta, func(obj *apps.Deployment) *apps.Deployment {
-		// Annotations
+		// deployment annotations
 		if obj.Annotations == nil {
 			obj.Annotations = make(map[string]string)
 		}
@@ -346,85 +346,8 @@ func (c *internalController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 			MatchLabels: c.Ingress.OffshootLabels(),
 		}
 
-		// pod template
-		obj.Spec.Template.ObjectMeta.Labels = c.Ingress.OffshootLabels()
-		obj.Spec.Template.Spec.Affinity = c.Ingress.Spec.Affinity
-		obj.Spec.Template.Spec.SchedulerName = c.Ingress.Spec.SchedulerName
-		obj.Spec.Template.Spec.Tolerations = c.Ingress.Spec.Tolerations
-		obj.Spec.Template.Spec.NodeSelector = c.Ingress.NodeSelector()
-		obj.Spec.Template.Spec.ImagePullSecrets = c.Ingress.Spec.ImagePullSecrets
-
-		obj.Spec.Template.Spec.Containers = core_util.UpsertContainer(
-			obj.Spec.Template.Spec.Containers,
-			core.Container{
-				Name:  "haproxy",
-				Image: c.Opt.HAProxyImage(),
-				Args: append([]string{
-					fmt.Sprintf("--analytics=%v", config.EnableAnalytics),
-					fmt.Sprintf("--burst=%v", c.Opt.Burst),
-					fmt.Sprintf("--cloud-provider=%s", c.Opt.CloudProvider),
-					fmt.Sprintf("--ingress-api-version=%s", c.Ingress.APISchema()),
-					fmt.Sprintf("--ingress-name=%s", c.Ingress.Name),
-					fmt.Sprintf("--qps=%v", c.Opt.QPS),
-					fmt.Sprintf("--resync-period=%v", c.Opt.ResyncPeriod),
-					"--reload-cmd=/etc/sv/haproxy/reload",
-				}, config.LoggerOptions.ToFlags()...),
-				Env: []core.EnvVar{
-					{
-						Name:  analytics.Key,
-						Value: config.AnalyticsClientID,
-					},
-				},
-				Ports:     []core.ContainerPort{},
-				Resources: c.Ingress.Spec.Resources,
-				VolumeMounts: []core.VolumeMount{
-					{
-						Name:      TLSCertificateVolumeName,
-						MountPath: "/etc/ssl/private/haproxy",
-					},
-				},
-			},
-		)
-
-		obj.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
-			obj.Spec.Template.Spec.Volumes,
-			core.Volume{
-				Name: TLSCertificateVolumeName,
-				VolumeSource: core.VolumeSource{
-					EmptyDir: &core.EmptyDirVolumeSource{},
-				},
-			},
-		)
-
-		obj.Spec.Template.Spec.Containers[0].Env = c.ensureEnvVars(obj.Spec.Template.Spec.Containers[0].Env)
-		if c.Opt.EnableRBAC {
-			obj.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
-		}
-		if exporter, _ := c.getExporterSidecar(); exporter != nil {
-			obj.Spec.Template.Spec.Containers = append(obj.Spec.Template.Spec.Containers, *exporter)
-		}
-
-		// adding tcp ports to pod template
-		for _, podPort := range c.Ingress.PodPorts() {
-			p := core.ContainerPort{
-				Name:          "tcp-" + strconv.Itoa(podPort),
-				Protocol:      "TCP",
-				ContainerPort: int32(podPort),
-			}
-			obj.Spec.Template.Spec.Containers[0].Ports = append(obj.Spec.Template.Spec.Containers[0].Ports, p)
-		}
-
-		if c.Ingress.Stats() {
-			obj.Spec.Template.Spec.Containers[0].Ports = append(obj.Spec.Template.Spec.Containers[0].Ports, core.ContainerPort{
-				Name:          api.StatsPortName,
-				Protocol:      "TCP",
-				ContainerPort: int32(c.Ingress.StatsPort()),
-			})
-		}
-
-		// delete last applied PodAnnotations
-		// add new PodAnnotations
-		// store new PodAnnotations keys
+		// pod annotations
+		// delete last-applied-annotations, add new-annotations, store new-annotations keys
 		if obj.Spec.Template.Annotations == nil {
 			obj.Spec.Template.Annotations = make(map[string]string)
 		}
@@ -441,14 +364,29 @@ func (c *internalController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 		}
 		obj.Spec.Template.Annotations[api.LastAppliedAnnotationKeys] = strings.Join(newKeys, ",")
 
+		// pod spec
+		obj.Spec.Template.ObjectMeta.Labels = c.Ingress.OffshootLabels()
+		obj.Spec.Template.Spec.Affinity = c.Ingress.Spec.Affinity
+		obj.Spec.Template.Spec.SchedulerName = c.Ingress.Spec.SchedulerName
+		obj.Spec.Template.Spec.Tolerations = c.Ingress.Spec.Tolerations
+		obj.Spec.Template.Spec.NodeSelector = c.Ingress.NodeSelector()
+		obj.Spec.Template.Spec.ImagePullSecrets = c.Ingress.Spec.ImagePullSecrets
+		if c.Opt.EnableRBAC {
+			obj.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
+		}
+
+		// volume spec
+		obj.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
+			obj.Spec.Template.Spec.Volumes,
+			core.Volume{
+				Name: TLSCertificateVolumeName,
+				VolumeSource: core.VolumeSource{
+					EmptyDir: &core.EmptyDirVolumeSource{},
+				},
+			},
+		)
 		if len(c.Ingress.ErrorFilesConfigMapName()) > 0 {
-			obj.Spec.Template.Spec.Containers[0].VolumeMounts = append(
-				obj.Spec.Template.Spec.Containers[0].VolumeMounts,
-				core.VolumeMount{
-					Name:      ErrorFilesVolumeName,
-					MountPath: ErrorFilesLocation,
-				})
-			obj.Spec.Template.Spec.Volumes = append(
+			obj.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
 				obj.Spec.Template.Spec.Volumes,
 				core.Volume{
 					Name: ErrorFilesVolumeName,
@@ -459,7 +397,68 @@ func (c *internalController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 							},
 						},
 					},
-				})
+				},
+			)
+		}
+
+		// container spec
+		haproxyContainer := core.Container{
+			Name:  "haproxy",
+			Image: c.Opt.HAProxyImage(),
+			Args: append([]string{
+				fmt.Sprintf("--analytics=%v", config.EnableAnalytics),
+				fmt.Sprintf("--burst=%v", c.Opt.Burst),
+				fmt.Sprintf("--cloud-provider=%s", c.Opt.CloudProvider),
+				fmt.Sprintf("--ingress-api-version=%s", c.Ingress.APISchema()),
+				fmt.Sprintf("--ingress-name=%s", c.Ingress.Name),
+				fmt.Sprintf("--qps=%v", c.Opt.QPS),
+				fmt.Sprintf("--resync-period=%v", c.Opt.ResyncPeriod),
+				"--reload-cmd=/etc/sv/haproxy/reload",
+			}, config.LoggerOptions.ToFlags()...),
+			Env: c.ensureEnvVars([]core.EnvVar{
+				{
+					Name:  analytics.Key,
+					Value: config.AnalyticsClientID,
+				},
+			}),
+			Ports:     []core.ContainerPort{},
+			Resources: c.Ingress.Spec.Resources,
+			VolumeMounts: []core.VolumeMount{
+				{
+					Name:      TLSCertificateVolumeName,
+					MountPath: "/etc/ssl/private/haproxy",
+				},
+			},
+		}
+		if len(c.Ingress.ErrorFilesConfigMapName()) > 0 {
+			haproxyContainer.VolumeMounts = append(
+				haproxyContainer.VolumeMounts,
+				core.VolumeMount{
+					Name:      ErrorFilesVolumeName,
+					MountPath: ErrorFilesLocation,
+				},
+			)
+		}
+		for _, podPort := range c.Ingress.PodPorts() {
+			p := core.ContainerPort{
+				Name:          "tcp-" + strconv.Itoa(podPort),
+				Protocol:      "TCP",
+				ContainerPort: int32(podPort),
+			}
+			haproxyContainer.Ports = append(haproxyContainer.Ports, p)
+		}
+		if c.Ingress.Stats() {
+			haproxyContainer.Ports = append(haproxyContainer.Ports, core.ContainerPort{
+				Name:          api.StatsPortName,
+				Protocol:      "TCP",
+				ContainerPort: int32(c.Ingress.StatsPort()),
+			})
+		}
+
+		// upsert haproxy and exporter containers
+		obj.Spec.Template.Spec.Containers = core_util.UpsertContainer(obj.Spec.Template.Spec.Containers, haproxyContainer)
+		if exporter, _ := c.getExporterSidecar(); exporter != nil {
+			obj.Spec.Template.Spec.Containers = core_util.UpsertContainer(obj.Spec.Template.Spec.Containers, *exporter)
 		}
 
 		return obj
