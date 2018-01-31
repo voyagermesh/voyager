@@ -3,8 +3,10 @@ package operator
 import (
 	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
+	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	"github.com/appscode/voyager/client/typed/voyager/v1beta1/util"
 	api_listers "github.com/appscode/voyager/listers/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/ingress"
@@ -91,11 +93,6 @@ func (op *Operator) initIngressCRDWatcher() {
 				op.engQueue.Add(key)
 			}
 		},
-		DeleteFunc: func(obj interface{}) {
-			if key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj); err == nil {
-				op.engQueue.Add(key)
-			}
-		},
 	}, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 
 	op.engLister = api_listers.NewIngressLister(op.engIndexer)
@@ -140,24 +137,30 @@ func (op *Operator) reconcileEngress(key string) error {
 	}
 	if !exists {
 		glog.Warningf("Engress %s does not exist anymore\n", key)
-		namespace, name, err := cache.SplitMetaNamespaceKey(key)
-		if err != nil {
-			return err
+		return nil
+	}
+
+	engress := obj.(*api.Ingress).DeepCopy()
+	engress.Migrate()
+	ctrl := ingress.NewController(etx.Background(), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Opt, engress)
+
+	if engress.DeletionTimestamp != nil {
+		if core_util.HasFinalizer(engress.ObjectMeta, api.VoyagerFinalizer) {
+			glog.Infof("Delete for engress %s\n", key)
+			ctrl.Delete()
+			util.PatchIngress(op.VoyagerClient, engress, func(obj *api.Ingress) *api.Ingress {
+				core_util.RemoveFinalizer(obj.ObjectMeta, api.VoyagerFinalizer)
+				return obj
+			})
 		}
-		engress := &api.Ingress{ // fake engress object
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      name,
-				Namespace: namespace,
-			},
-		}
-		ctrl := ingress.NewController(etx.Background(), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Opt, engress)
-		ctrl.Delete()
 	} else {
 		glog.Infof("Sync/Add/Update for engress %s\n", key)
-		engress := obj.(*api.Ingress).DeepCopy()
-		engress.Migrate()
-
-		ctrl := ingress.NewController(etx.Background(), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Opt, engress)
+		if !core_util.HasFinalizer(engress.ObjectMeta, api.VoyagerFinalizer) {
+			util.PatchIngress(op.VoyagerClient, engress, func(obj *api.Ingress) *api.Ingress {
+				core_util.AddFinalizer(obj.ObjectMeta, api.VoyagerFinalizer)
+				return obj
+			})
+		}
 		if engress.ShouldHandleIngress(op.Opt.IngressClass) {
 			return ctrl.Reconcile()
 		} else {
