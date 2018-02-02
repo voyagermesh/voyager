@@ -5,7 +5,7 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/kube-mon/agents"
-	mon_api "github.com/appscode/kube-mon/api"
+	mona "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
 	meta_util "github.com/appscode/kutil/meta"
@@ -13,7 +13,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (c *controller) ensureMonitoringAgent(monSpec *mon_api.AgentSpec) (kutil.VerbType, error) {
+func (c *controller) ensureMonitoringAgent(monSpec *mona.AgentSpec) (kutil.VerbType, error) {
 	agent := agents.New(monSpec.Agent, c.KubeClient, c.CRDClient, c.PromClient)
 
 	// if agent-type changed, delete old agent
@@ -32,7 +32,7 @@ func (c *controller) ensureMonitoringAgent(monSpec *mon_api.AgentSpec) (kutil.Ve
 	return vt, err
 }
 
-func (c *controller) ensureMonitoringAgentDeleted(newAgent mon_api.Agent) error {
+func (c *controller) ensureMonitoringAgentDeleted(newAgent mona.Agent) error {
 	if oldAgent, err := c.getOldAgent(); err != nil {
 		return err
 	} else if newAgent == nil || oldAgent.GetType() != newAgent.GetType() { // delete old agent
@@ -43,27 +43,27 @@ func (c *controller) ensureMonitoringAgentDeleted(newAgent mon_api.Agent) error 
 	return nil
 }
 
-func (c *controller) getOldAgent() (mon_api.Agent, error) {
+func (c *controller) getOldAgent() (mona.Agent, error) {
 	// get stat service
 	svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.StatsServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get stat service %s, reason: %s", c.Ingress.StatsServiceName(), err.Error())
 	}
-	agentType, err := meta_util.GetString(svc.Annotations, mon_api.KeyAgent)
+	agentType, err := meta_util.GetString(svc.Annotations, mona.KeyAgent)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get agent type, reason: %s", err.Error())
 	}
-	return agents.New(mon_api.AgentType(agentType), c.KubeClient, c.CRDClient, c.PromClient), nil
+	return agents.New(mona.AgentType(agentType), c.KubeClient, c.CRDClient, c.PromClient), nil
 }
 
-func (c *controller) setNewAgentType(agentType mon_api.AgentType) error {
+func (c *controller) setNewAgentType(agentType mona.AgentType) error {
 	svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.StatsServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to get stat service %s, reason: %s", c.Ingress.StatsServiceName(), err.Error())
 	}
 	_, _, err = core_util.PatchService(c.KubeClient, svc, func(in *core.Service) *core.Service {
 		in.Annotations = core_util.UpsertMap(in.Annotations, map[string]string{
-			mon_api.KeyAgent: string(agentType),
+			mona.KeyAgent: string(agentType),
 		})
 		return in
 	})

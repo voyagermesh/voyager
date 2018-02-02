@@ -1,5 +1,5 @@
 hash: eac2079579d02a428a46bb2976ea1504d7472ba2284b529c06f3be74d002ae20
-updated: 2018-01-28T17:36:11.128173578-08:00
+updated: 2018-02-02T01:27:50.115949119-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -9,7 +9,7 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/go
-  version: 99dbf420807d9459b63d1d0bf702537bb7aa976f
+  version: 437df2b94ce2ea60464ff580c10462fbeb3e8f52
   subpackages:
   - analytics
   - context
@@ -30,18 +30,21 @@ imports:
   subpackages:
   - exporter
 - name: github.com/appscode/kube-mon
-  version: 6c843f8c6418d421ec6e7d62d7840b114e043334
+  version: 15a002ed77ecf95b7b291d24334ccea138048176
   subpackages:
   - agents
   - agents/coreosprometheusoperator
   - agents/prometheusbuiltin
   - api
+  - prometheus/v1
 - name: github.com/appscode/kutil
-  version: 60ced7f055b34d512a84f65ca0a7d412ec3d6ef2
+  version: b90152fd507d9e2f25e7eeb62bb93d93cbff3455
   subpackages:
   - apiextensions/v1beta1
   - apps/v1beta1
   - core/v1
+  - discovery
+  - extensions/v1beta1
   - meta
   - rbac/v1beta1
   - tools/analytics
@@ -347,7 +350,7 @@ imports:
   - matchers/support/goraph/util
   - types
 - name: github.com/openshift/generic-admission-server
-  version: fee7efcb54503879f889c25d091d0e5758757c85
+  version: 6cbd9584810e7be9ec4263c5d010a48be6231e60
   subpackages:
   - pkg/apiserver
   - pkg/cmd/server
@@ -355,7 +358,7 @@ imports:
 - name: github.com/orcaman/concurrent-map
   version: d4c23bd0e01134806215ffe65ba3fd22ec6721f7
 - name: github.com/ovh/go-ovh
-  version: 02f7e9439689eda7ce4752c7f37e50cb678f2679
+  version: bac16d14a6423e2992939d91083b234d93a46c34
   subpackages:
   - ovh
 - name: github.com/pborman/uuid
@@ -393,8 +396,12 @@ imports:
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: github.com/russross/blackfriday
   version: 300106c228d52c8941d4b3de6054a6062a86dda3
+- name: github.com/sergi/go-diff
+  version: 97b2266dfe4bd4ea1b81a463322f04f8b724801e
+  subpackages:
+  - diffmatchpatch
 - name: github.com/sethgrid/pester
-  version: 760f8913c0483b776294e1bee43f1d687527127b
+  version: 1808e6f72af9682aaae9189a91c6bb9b416297ca
 - name: github.com/shurcooL/sanitized_anchor_name
   version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/sirupsen/logrus
@@ -404,7 +411,7 @@ imports:
   subpackages:
   - mem
 - name: github.com/spf13/cobra
-  version: f91529fc609202eededff4de2dc0ba2f662240a3
+  version: 3a7eb146bae5ebf9be598570234cde56c82d16cc
   subpackages:
   - doc
 - name: github.com/spf13/pflag
@@ -444,6 +451,12 @@ imports:
   - providers/dns/pdns
   - providers/dns/route53
   - providers/dns/vultr
+- name: github.com/yudai/gojsondiff
+  version: 7b1b7adf999dab73a6eb02669c3d82dbb27a3dd6
+  subpackages:
+  - formatter
+- name: github.com/yudai/golcs
+  version: d1c525dea8ce39ea9a783d33cf08932305373f2c
 - name: golang.org/x/crypto
   version: 81e90905daefcd6fd217b62423c0908922eadb30
   subpackages:

@@ -2,7 +2,8 @@ package operator
 
 import (
 	"github.com/appscode/go/log"
-	"github.com/appscode/kutil/meta"
+	prom_util "github.com/appscode/kube-mon/prometheus/v1"
+	"github.com/appscode/kutil/discovery"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,8 +15,8 @@ import (
 )
 
 func (op *Operator) initServiceMonitorWatcher() {
-	if !meta.IsPreferredAPIResource(op.KubeClient, prom.Group+"/"+prom.Version, prom.ServiceMonitorsKind) {
-		log.Warningf("Skipping watching non-preferred GroupVersion:%s Kind:%s", prom.Group+"/"+prom.Version, prom.ServiceMonitorsKind)
+	if !discovery.IsPreferredAPIResource(op.KubeClient.Discovery(), prom_util.SchemeGroupVersion.String(), prom.ServiceMonitorsKind) {
+		log.Warningf("Skipping watching non-preferred GroupVersion:%s Kind:%s", prom_util.SchemeGroupVersion.String(), prom.ServiceMonitorsKind)
 		return
 	}
 
