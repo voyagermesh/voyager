@@ -1,5 +1,5 @@
 hash: eac2079579d02a428a46bb2976ea1504d7472ba2284b529c06f3be74d002ae20
-updated: 2018-02-02T01:27:50.115949119-08:00
+updated: 2018-02-03T02:27:50.61123846-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -38,7 +38,7 @@ imports:
   - api
   - prometheus/v1
 - name: github.com/appscode/kutil
-  version: b90152fd507d9e2f25e7eeb62bb93d93cbff3455
+  version: d50ab5fc6b34c4faa51cc1788c2bf64267ff45b6
   subpackages:
   - apiextensions/v1beta1
   - apps/v1beta1
@@ -49,6 +49,7 @@ imports:
   - rbac/v1beta1
   - tools/analytics
   - tools/certstore
+  - tools/queue
 - name: github.com/appscode/mergo
   version: e3000cb3d28c72b837601cac94debd91032d19fe
 - name: github.com/appscode/pat
@@ -203,7 +204,7 @@ imports:
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
-  version: 97aa668b73e764ccdd786bc3ccd2edffe621150e
+  version: 3af367b6b30c263d47e8895973edcca9a49cf029
   subpackages:
   - cmp
   - cmp/internal/diff

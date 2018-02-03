@@ -1,75 +1,21 @@
 package operator
 
 import (
-	"github.com/appscode/go/log"
+	"github.com/appscode/kutil/tools/queue"
 	"github.com/golang/glog"
-	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	rt "k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/runtime"
-	"k8s.io/apimachinery/pkg/watch"
-	core_listers "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/util/workqueue"
 )
 
 func (op *Operator) initNamespaceWatcher() {
-	lw := &cache.ListWatch{
-		ListFunc: func(options metav1.ListOptions) (rt.Object, error) {
-			return op.KubeClient.CoreV1().Namespaces().List(options)
-		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return op.KubeClient.CoreV1().Namespaces().Watch(options)
-		},
-	}
-
-	// create the workqueue
-	op.nsQueue = workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "namespace")
-
-	op.nsIndexer, op.nsInformer = cache.NewIndexerInformer(lw, &core.Namespace{}, op.Opt.ResyncPeriod, cache.ResourceEventHandlerFuncs{
-		DeleteFunc: func(obj interface{}) {
-			if key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj); err == nil {
-				op.nsQueue.Add(key)
-			}
-		},
-	}, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-
-	op.nsLister = core_listers.NewNamespaceLister(op.nsIndexer)
-}
-
-func (op *Operator) runNamespaceWatcher() {
-	for op.processNextNamespace() {
-	}
-}
-
-func (op *Operator) processNextNamespace() bool {
-	key, quit := op.nsQueue.Get()
-	if quit {
-		return false
-	}
-	defer op.nsQueue.Done(key)
-
-	err := op.reconcileNamespace(key.(string))
-	if err == nil {
-		op.nsQueue.Forget(key)
-		return true
-	}
-	log.Errorf("Failed to process Namespace %v. Reason: %s", key, err)
-
-	if op.nsQueue.NumRequeues(key) < op.Opt.MaxNumRequeues {
-		glog.Infof("Error syncing namespace %v: %v", key, err)
-		op.nsQueue.AddRateLimited(key)
-		return true
-	}
-
-	op.nsQueue.Forget(key)
-	runtime.HandleError(err)
-	glog.Infof("Dropping namespace %q out of the queue: %v", key, err)
-	return true
+	op.nsInformer = op.kubeInformerFactory.Core().V1().Namespaces().Informer()
+	op.nsQueue = queue.New("Namespace", op.options.MaxNumRequeues, op.options.NumThreads, op.reconcileNamespace)
+	op.nsInformer.AddEventHandler(queue.NewDeleteHandler(op.nsQueue.GetQueue()))
+	op.nsLister = op.kubeInformerFactory.Core().V1().Namespaces().Lister()
 }
 
 func (op *Operator) reconcileNamespace(key string) error {
-	_, exists, err := op.nsIndexer.GetByKey(key)
+	_, exists, err := op.nsInformer.GetIndexer().GetByKey(key)
 	if err != nil {
 		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
@@ -86,14 +32,14 @@ func (op *Operator) reconcileNamespace(key string) error {
 }
 
 func (op *Operator) deleteCRDs(ns string) {
-	if resources, err := op.VoyagerClient.Certificates(ns).List(metav1.ListOptions{}); err == nil {
+	if resources, err := op.VoyagerClient.VoyagerV1beta1().Certificates(ns).List(metav1.ListOptions{}); err == nil {
 		for _, resource := range resources.Items {
-			op.VoyagerClient.Certificates(resource.Namespace).Delete(resource.Name, &metav1.DeleteOptions{})
+			op.VoyagerClient.VoyagerV1beta1().Certificates(resource.Namespace).Delete(resource.Name, &metav1.DeleteOptions{})
 		}
 	}
-	if resources, err := op.VoyagerClient.Ingresses(ns).List(metav1.ListOptions{}); err == nil {
+	if resources, err := op.VoyagerClient.VoyagerV1beta1().Ingresses(ns).List(metav1.ListOptions{}); err == nil {
 		for _, resource := range resources.Items {
-			op.VoyagerClient.Ingresses(resource.Namespace).Delete(resource.Name, &metav1.DeleteOptions{})
+			op.VoyagerClient.VoyagerV1beta1().Ingresses(resource.Namespace).Delete(resource.Name, &metav1.DeleteOptions{})
 		}
 	}
 }

@@ -6,7 +6,7 @@ import (
 )
 
 func (i *certificateInvocation) Create(cert *api_v1beta1.Certificate) error {
-	_, err := i.VoyagerClient.Certificates(i.Namespace()).Create(cert)
+	_, err := i.VoyagerClient.VoyagerV1beta1().Certificates(i.Namespace()).Create(cert)
 	if err != nil {
 		return err
 	}
@@ -14,16 +14,16 @@ func (i *certificateInvocation) Create(cert *api_v1beta1.Certificate) error {
 }
 
 func (i *certificateInvocation) Get(cert *api_v1beta1.Certificate) (*api_v1beta1.Certificate, error) {
-	return i.VoyagerClient.Certificates(i.Namespace()).Get(cert.Name, metav1.GetOptions{})
+	return i.VoyagerClient.VoyagerV1beta1().Certificates(i.Namespace()).Get(cert.Name, metav1.GetOptions{})
 }
 
 func (i *certificateInvocation) Update(cert *api_v1beta1.Certificate) error {
-	_, err := i.VoyagerClient.Certificates(i.Namespace()).Update(cert)
+	_, err := i.VoyagerClient.VoyagerV1beta1().Certificates(i.Namespace()).Update(cert)
 	return err
 }
 
 func (i *certificateInvocation) Delete(cert *api_v1beta1.Certificate) error {
-	return i.VoyagerClient.Certificates(i.Namespace()).Delete(cert.Name, &metav1.DeleteOptions{})
+	return i.VoyagerClient.VoyagerV1beta1().Certificates(i.Namespace()).Delete(cert.Name, &metav1.DeleteOptions{})
 }
 
 func (i *certificateInvocation) GetSkeleton() *api_v1beta1.Certificate {

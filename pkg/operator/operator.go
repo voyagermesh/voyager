@@ -3,121 +3,115 @@ package operator
 import (
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/appscode/go/log"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
+	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client"
+	voyagerinformers "github.com/appscode/voyager/informers/externalversions"
 	api_listers "github.com/appscode/voyager/listers/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
-	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
+	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	kext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/runtime"
-	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	apps_listers "k8s.io/client-go/listers/apps/v1beta1"
 	core_listers "k8s.io/client-go/listers/core/v1"
 	ext_listers "k8s.io/client-go/listers/extensions/v1beta1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
-	"k8s.io/client-go/util/workqueue"
 )
 
 type Operator struct {
 	KubeClient    kubernetes.Interface
 	CRDClient     kext_cs.ApiextensionsV1beta1Interface
-	VoyagerClient cs.VoyagerV1beta1Interface
-	PromClient    pcm.MonitoringV1Interface
-	Opt           config.Options
+	VoyagerClient cs.Interface
+	PromClient    prom.MonitoringV1Interface
+	options       config.Options
+
+	kubeInformerFactory    informers.SharedInformerFactory
+	voyagerInformerFactory voyagerinformers.SharedInformerFactory
 
 	recorder record.EventRecorder
 	sync.Mutex
 
 	// Certificate CRD
-	certQueue    workqueue.RateLimitingInterface
-	certIndexer  cache.Indexer
-	certInformer cache.Controller
-	certLister   api_listers.CertificateLister
+	crtQueue    *queue.Worker
+	crtInformer cache.SharedIndexInformer
+	crtLister   api_listers.CertificateLister
 
 	// ConfigMap
-	cfgQueue    workqueue.RateLimitingInterface
-	cfgIndexer  cache.Indexer
-	cfgInformer cache.Controller
+	cfgQueue    *queue.Worker
+	cfgInformer cache.SharedIndexInformer
 	cfgLister   core_listers.ConfigMapLister
 
 	// Deployment
-	dpQueue    workqueue.RateLimitingInterface
-	dpIndexer  cache.Indexer
-	dpInformer cache.Controller
+	dpQueue    *queue.Worker
+	dpInformer cache.SharedIndexInformer
 	dpLister   apps_listers.DeploymentLister
 
 	// Endpoint
-	epQueue    workqueue.RateLimitingInterface
-	epIndexer  cache.Indexer
-	epInformer cache.Controller
+	epQueue    *queue.Worker
+	epInformer cache.SharedIndexInformer
 	epLister   core_listers.EndpointsLister
 
 	// Ingress CRD
-	engQueue    workqueue.RateLimitingInterface
-	engIndexer  cache.Indexer
-	engInformer cache.Controller
+	engQueue    *queue.Worker
+	engInformer cache.SharedIndexInformer
 	engLister   api_listers.IngressLister
 
 	// Ingress
-	ingQueue    workqueue.RateLimitingInterface
-	ingIndexer  cache.Indexer
-	ingInformer cache.Controller
+	ingQueue    *queue.Worker
+	ingInformer cache.SharedIndexInformer
 	ingLister   ext_listers.IngressLister
 
 	// Namespace
-	nsQueue    workqueue.RateLimitingInterface
-	nsIndexer  cache.Indexer
-	nsInformer cache.Controller
+	nsQueue    *queue.Worker
+	nsInformer cache.SharedIndexInformer
 	nsLister   core_listers.NamespaceLister
 
 	// Node
-	// nodeQueue    workqueue.RateLimitingInterface
-	nodeIndexer  cache.Indexer
-	nodeInformer cache.Controller
+	// nodeQueue    *queue.Worker
+	nodeInformer cache.SharedIndexInformer
 	nodeLister   core_listers.NodeLister
 
 	// Secret
-	secretQueue    workqueue.RateLimitingInterface
-	secretIndexer  cache.Indexer
-	secretInformer cache.Controller
+	secretQueue    *queue.Worker
+	secretInformer cache.SharedIndexInformer
 	secretLister   core_listers.SecretLister
 
 	// Service Monitor
-	monQueue    workqueue.RateLimitingInterface
-	monIndexer  cache.Indexer
-	monInformer cache.Controller
+	smonQueue    *queue.Worker
+	smonInformer cache.SharedIndexInformer
 	// monLister   prom.ServiceMonitorLister
 
 	// Service
-	svcQueue    workqueue.RateLimitingInterface
-	svcIndexer  cache.Indexer
-	svcInformer cache.Controller
+	svcQueue    *queue.Worker
+	svcInformer cache.SharedIndexInformer
 	svcLister   core_listers.ServiceLister
 }
 
 func New(
 	kubeClient kubernetes.Interface,
 	crdClient kext_cs.ApiextensionsV1beta1Interface,
-	extClient cs.VoyagerV1beta1Interface,
-	promClient pcm.MonitoringV1Interface,
+	voyagerClient cs.Interface,
+	promClient prom.MonitoringV1Interface,
 	opt config.Options,
 ) *Operator {
 	return &Operator{
-		KubeClient:    kubeClient,
-		CRDClient:     crdClient,
-		VoyagerClient: extClient,
-		PromClient:    promClient,
-		Opt:           opt,
-		recorder:      eventer.NewEventRecorder(kubeClient, "voyager operator"),
+		KubeClient:             kubeClient,
+		kubeInformerFactory:    informers.NewFilteredSharedInformerFactory(kubeClient, opt.ResyncPeriod, opt.WatchNamespace(), nil),
+		CRDClient:              crdClient,
+		VoyagerClient:          voyagerClient,
+		voyagerInformerFactory: voyagerinformers.NewFilteredSharedInformerFactory(voyagerClient, opt.ResyncPeriod, opt.WatchNamespace(), nil),
+		PromClient:             promClient,
+		options:                opt,
+		recorder:               eventer.NewEventRecorder(kubeClient, "voyager operator"),
 	}
 }
 
@@ -151,105 +145,49 @@ func (op *Operator) ensureCustomResourceDefinitions() error {
 	return apiext_util.RegisterCRDs(op.CRDClient, crds)
 }
 
-func (op *Operator) Run(threadiness int, stopCh chan struct{}) {
+func (op *Operator) Run(stopCh chan struct{}) {
 	defer runtime.HandleCrash()
 
 	go op.CheckCertificates()
 
-	defer op.engQueue.ShutDown()
-	defer op.ingQueue.ShutDown()
-	defer op.dpQueue.ShutDown()
-	defer op.svcQueue.ShutDown()
-	defer op.cfgQueue.ShutDown()
-	defer op.epQueue.ShutDown()
-	defer op.secretQueue.ShutDown()
-	defer op.nsQueue.ShutDown()
-	defer op.certQueue.ShutDown()
-
-	defer func() {
-		if op.monInformer != nil {
-			op.monQueue.ShutDown()
-		}
-	}()
-
 	log.Infoln("Starting Voyager controller")
-
-	go op.engInformer.Run(stopCh)
-	go op.ingInformer.Run(stopCh)
-	go op.dpInformer.Run(stopCh)
-	go op.svcInformer.Run(stopCh)
-	go op.cfgInformer.Run(stopCh)
-	go op.epInformer.Run(stopCh)
-	go op.secretInformer.Run(stopCh)
-	go op.nodeInformer.Run(stopCh)
-	go op.nsInformer.Run(stopCh)
-	go op.certInformer.Run(stopCh)
-
-	if op.monInformer != nil {
-		op.monInformer.Run(stopCh)
+	op.kubeInformerFactory.Start(stopCh)
+	op.voyagerInformerFactory.Start(stopCh)
+	if op.smonInformer != nil {
+		op.smonInformer.Run(stopCh)
 	}
 
-	if !cache.WaitForCacheSync(stopCh, op.engInformer.HasSynced) {
-		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
-		return
+	// Wait for all involved caches to be synced, before processing items from the queue is started
+	for _, v := range op.kubeInformerFactory.WaitForCacheSync(stopCh) {
+		if !v {
+			runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
+			return
+		}
 	}
-	if !cache.WaitForCacheSync(stopCh, op.ingInformer.HasSynced) {
-		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
-		return
+	for _, v := range op.voyagerInformerFactory.WaitForCacheSync(stopCh) {
+		if !v {
+			runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
+			return
+		}
 	}
-	if !cache.WaitForCacheSync(stopCh, op.dpInformer.HasSynced) {
-		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
-		return
-	}
-	if !cache.WaitForCacheSync(stopCh, op.svcInformer.HasSynced) {
-		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
-		return
-	}
-	if !cache.WaitForCacheSync(stopCh, op.cfgInformer.HasSynced) {
-		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
-		return
-	}
-	if !cache.WaitForCacheSync(stopCh, op.epInformer.HasSynced) {
-		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
-		return
-	}
-	if !cache.WaitForCacheSync(stopCh, op.secretInformer.HasSynced) {
-		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
-		return
-	}
-	if !cache.WaitForCacheSync(stopCh, op.nodeInformer.HasSynced) {
-		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
-		return
-	}
-	if !cache.WaitForCacheSync(stopCh, op.nsInformer.HasSynced) {
-		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
-		return
-	}
-	if !cache.WaitForCacheSync(stopCh, op.certInformer.HasSynced) {
-		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
-		return
-	}
-	if op.monInformer != nil {
-		if !cache.WaitForCacheSync(stopCh, op.monInformer.HasSynced) {
+	if op.smonInformer != nil {
+		if !cache.WaitForCacheSync(stopCh, op.smonInformer.HasSynced) {
 			runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
 			return
 		}
 	}
 
-	for i := 0; i < threadiness; i++ {
-		go wait.Until(op.runEngressWatcher, time.Second, stopCh)
-		go wait.Until(op.runIngressWatcher, time.Second, stopCh)
-		go wait.Until(op.runDeploymentWatcher, time.Second, stopCh)
-		go wait.Until(op.runServiceWatcher, time.Second, stopCh)
-		go wait.Until(op.runConfigMapWatcher, time.Second, stopCh)
-		go wait.Until(op.runEndpointWatcher, time.Second, stopCh)
-		go wait.Until(op.runSecretWatcher, time.Second, stopCh)
-		go wait.Until(op.runNamespaceWatcher, time.Second, stopCh)
-		go wait.Until(op.runCertificateWatcher, time.Second, stopCh)
-
-		if op.monInformer != nil {
-			go wait.Until(op.runServiceMonitorWatcher, time.Second, stopCh)
-		}
+	op.engQueue.Run(stopCh)
+	op.ingQueue.Run(stopCh)
+	op.dpQueue.Run(stopCh)
+	op.svcQueue.Run(stopCh)
+	op.cfgQueue.Run(stopCh)
+	op.epQueue.Run(stopCh)
+	op.secretQueue.Run(stopCh)
+	op.nsQueue.Run(stopCh)
+	op.crtQueue.Run(stopCh)
+	if op.smonInformer != nil {
+		op.smonQueue.Run(stopCh)
 	}
 
 	<-stopCh

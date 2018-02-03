@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client"
 	"github.com/stretchr/testify/assert"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,7 +34,7 @@ func TestEnsureCustomResourceDefinitions(t *testing.T) {
 	}
 
 	voyagerClient := cs.NewForConfigOrDie(config)
-	_, err = voyagerClient.Ingresses("default").Create(&api.Ingress{
+	_, err = voyagerClient.VoyagerV1beta1().Ingresses("default").Create(&api.Ingress{
 		ObjectMeta: v1.ObjectMeta{Name: "test-ingress", Namespace: "default"},
 		Spec: api.IngressSpec{Rules: []api.IngressRule{{IngressRuleValue: api.IngressRuleValue{
 			HTTP: &api.HTTPIngressRuleValue{
@@ -45,22 +45,22 @@ func TestEnsureCustomResourceDefinitions(t *testing.T) {
 		}}}},
 	})
 	if assert.Nil(t, err) {
-		v, err := voyagerClient.Ingresses("default").Get("test-ingress", v1.GetOptions{})
+		v, err := voyagerClient.VoyagerV1beta1().Ingresses("default").Get("test-ingress", v1.GetOptions{})
 		assert.Nil(t, err)
 		assert.Equal(t, v.Name, "test-ingress")
 
-		defer voyagerClient.Ingresses("default").Delete("test-ingress", &v1.DeleteOptions{})
+		defer voyagerClient.VoyagerV1beta1().Ingresses("default").Delete("test-ingress", &v1.DeleteOptions{})
 	}
 
-	_, err = voyagerClient.Certificates("default").Create(&api.Certificate{
+	_, err = voyagerClient.VoyagerV1beta1().Certificates("default").Create(&api.Certificate{
 		ObjectMeta: v1.ObjectMeta{Name: "test-cert", Namespace: "default"},
 	})
 	if assert.Nil(t, err) {
-		v, err := voyagerClient.Certificates("default").Get("test-cert", v1.GetOptions{})
+		v, err := voyagerClient.VoyagerV1beta1().Certificates("default").Get("test-cert", v1.GetOptions{})
 		assert.Nil(t, err)
 		assert.Equal(t, v.Name, "test-cert")
 
-		defer voyagerClient.Certificates("default").Delete("test-cert", &v1.DeleteOptions{})
+		defer voyagerClient.VoyagerV1beta1().Certificates("default").Delete("test-cert", &v1.DeleteOptions{})
 	}
 
 	crdClient.CustomResourceDefinitions().Delete("ingresses.voyager.appscode.com", &v1.DeleteOptions{})

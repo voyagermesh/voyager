@@ -7,7 +7,7 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/pat"
-	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client"
 	_ "github.com/appscode/voyager/client/typed/voyager/v1beta1/fake"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"

@@ -7,43 +7,28 @@ import (
 
 	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
+	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	api_listers "github.com/appscode/voyager/listers/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/benbjohnson/clock"
 	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	rt "k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/runtime"
-	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/util/workqueue"
 )
 
 func (op *Operator) initCertificateCRDWatcher() {
-	lw := &cache.ListWatch{
-		ListFunc: func(options metav1.ListOptions) (rt.Object, error) {
-			return op.VoyagerClient.Certificates(op.Opt.WatchNamespace()).List(options)
-		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return op.VoyagerClient.Certificates(op.Opt.WatchNamespace()).Watch(options)
-		},
-	}
-
-	// create the workqueue
-	op.certQueue = workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "Certificate")
-
-	op.certIndexer, op.certInformer = cache.NewIndexerInformer(lw, &api.Certificate{}, op.Opt.ResyncPeriod, cache.ResourceEventHandlerFuncs{
+	op.crtInformer = op.voyagerInformerFactory.Voyager().V1beta1().Certificates().Informer()
+	op.crtQueue = queue.New("Certificate", op.options.MaxNumRequeues, op.options.NumThreads, op.reconcileCertificate)
+	op.crtInformer.AddEventHandler(&cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			cert, ok := obj.(*api.Certificate)
 			if !ok {
 				log.Errorln("Invalid Certificate object")
 				return
 			}
-			if err := cert.IsValid(op.Opt.CloudProvider); err != nil {
+			if err := cert.IsValid(op.options.CloudProvider); err != nil {
 				op.recorder.Eventf(
 					cert.ObjectReference(),
 					core.EventTypeWarning,
@@ -53,17 +38,15 @@ func (op *Operator) initCertificateCRDWatcher() {
 				)
 				return
 			}
-			if key, err := cache.MetaNamespaceKeyFunc(obj); err == nil {
-				op.certQueue.Add(key)
-			}
+			queue.Enqueue(op.crtQueue.GetQueue(), obj)
 		},
-		UpdateFunc: func(old, new interface{}) {
-			oldCert, ok := old.(*api.Certificate)
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			oldCert, ok := oldObj.(*api.Certificate)
 			if !ok {
 				log.Errorln("Invalid Certificate object")
 				return
 			}
-			newCert, ok := new.(*api.Certificate)
+			newCert, ok := newObj.(*api.Certificate)
 			if !ok {
 				log.Errorln("Invalid Certificate object")
 				return
@@ -71,7 +54,7 @@ func (op *Operator) initCertificateCRDWatcher() {
 			if reflect.DeepEqual(oldCert.Spec, newCert.Spec) {
 				return
 			}
-			if err := newCert.IsValid(op.Opt.CloudProvider); err != nil {
+			if err := newCert.IsValid(op.options.CloudProvider); err != nil {
 				op.recorder.Eventf(
 					newCert.ObjectReference(),
 					core.EventTypeWarning,
@@ -81,53 +64,17 @@ func (op *Operator) initCertificateCRDWatcher() {
 				)
 				return
 			}
-			if key, err := cache.MetaNamespaceKeyFunc(new); err == nil {
-				op.certQueue.Add(key)
-			}
+			queue.Enqueue(op.crtQueue.GetQueue(), newObj)
 		},
 		DeleteFunc: func(obj interface{}) {
-			if key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj); err == nil {
-				op.certQueue.Add(key)
-			}
+			queue.Enqueue(op.crtQueue.GetQueue(), obj)
 		},
-	}, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-
-	op.certLister = api_listers.NewCertificateLister(op.certIndexer)
-}
-
-func (op *Operator) runCertificateWatcher() {
-	for op.processNextCertificate() {
-	}
-}
-
-func (op *Operator) processNextCertificate() bool {
-	key, quit := op.certQueue.Get()
-	if quit {
-		return false
-	}
-	defer op.certQueue.Done(key)
-
-	err := op.reconcileCertificate(key.(string))
-	if err == nil {
-		op.certQueue.Forget(key)
-		return true
-	}
-	log.Errorf("Failed to process Certificate %v. Reason: %s", key, err)
-
-	if op.certQueue.NumRequeues(key) < op.Opt.MaxNumRequeues {
-		glog.Infof("Error syncing Certificate %v: %v", key, err)
-		op.certQueue.AddRateLimited(key)
-		return true
-	}
-
-	op.certQueue.Forget(key)
-	runtime.HandleError(err)
-	glog.Infof("Dropping Certificate %q out of the queue: %v", key, err)
-	return true
+	})
+	op.crtLister = op.voyagerInformerFactory.Voyager().V1beta1().Certificates().Lister()
 }
 
 func (op *Operator) reconcileCertificate(key string) error {
-	obj, exists, err := op.certIndexer.GetByKey(key)
+	obj, exists, err := op.crtInformer.GetIndexer().GetByKey(key)
 	if err != nil {
 		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
@@ -149,7 +96,7 @@ func (op *Operator) reconcileCertificate(key string) error {
 			return err
 		}
 
-		ctrl, err := certificate.NewController(context.Background(), op.KubeClient, op.VoyagerClient, op.Opt, cert)
+		ctrl, err := certificate.NewController(context.Background(), op.KubeClient, op.VoyagerClient, op.options, cert)
 		if err != nil {
 			op.recorder.Event(
 				cert.ObjectReference(),
@@ -185,7 +132,7 @@ func (op *Operator) CheckCertificates() {
 	for {
 		select {
 		case <-Time.After(time.Minute * 5):
-			result, err := op.certLister.List(labels.Everything())
+			result, err := op.crtLister.List(labels.Everything())
 			if err != nil {
 				log.Error(err)
 				continue
@@ -196,7 +143,7 @@ func (op *Operator) CheckCertificates() {
 					log.Infoln("skipping certificate %s/%s, since rate limited", cert.Namespace, cert.Name)
 					continue
 				}
-				ctrl, err := certificate.NewController(ctx, op.KubeClient, op.VoyagerClient, op.Opt, cert)
+				ctrl, err := certificate.NewController(ctx, op.KubeClient, op.VoyagerClient, op.options, cert)
 				if err != nil {
 					op.recorder.Event(
 						cert.ObjectReference(),

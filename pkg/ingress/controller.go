@@ -10,7 +10,7 @@ import (
 	"github.com/appscode/go/types"
 	v1u "github.com/appscode/kutil/core/v1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client"
 	"github.com/appscode/voyager/pkg/config"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
@@ -33,7 +33,7 @@ type Controller interface {
 type controller struct {
 	KubeClient      kubernetes.Interface
 	CRDClient       kext_cs.ApiextensionsV1beta1Interface
-	VoyagerClient   cs.VoyagerV1beta1Interface
+	VoyagerClient   cs.Interface
 	PromClient      pcm.MonitoringV1Interface
 	ServiceLister   core_listers.ServiceLister
 	EndpointsLister core_listers.EndpointsLister
@@ -56,7 +56,7 @@ func NewController(
 	ctx context.Context,
 	kubeClient kubernetes.Interface,
 	crdClient kext_cs.ApiextensionsV1beta1Interface,
-	extClient cs.VoyagerV1beta1Interface,
+	extClient cs.Interface,
 	promClient pcm.MonitoringV1Interface,
 	serviceLister core_listers.ServiceLister,
 	endpointsLister core_listers.EndpointsLister,

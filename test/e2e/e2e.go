@@ -45,6 +45,7 @@ var _ = BeforeSuite(func() {
 			DockerRegistry:  root.Config.DockerRegistry,
 			HAProxyImageTag: root.Config.HAProxyImageTag,
 			IngressClass:    root.Config.IngressClass,
+			NumThreads:      1,
 		},
 	)
 
@@ -64,7 +65,7 @@ var _ = BeforeSuite(func() {
 
 		//stop := make(chan struct{})
 		//defer close(stop)
-		go op.Run(1, nil)
+		go op.Run(nil)
 	}
 	root.EventuallyCRD().Should(Succeed())
 

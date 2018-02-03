@@ -5,89 +5,24 @@ import (
 
 	"github.com/appscode/go/errors"
 	"github.com/appscode/go/log"
+	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	rt "k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/runtime"
-	"k8s.io/apimachinery/pkg/watch"
-	core_listers "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/util/workqueue"
 )
 
 func (op *Operator) initServiceWatcher() {
-	lw := &cache.ListWatch{
-		ListFunc: func(options metav1.ListOptions) (rt.Object, error) {
-			return op.KubeClient.CoreV1().Services(op.Opt.WatchNamespace()).List(options)
-		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return op.KubeClient.CoreV1().Services(op.Opt.WatchNamespace()).Watch(options)
-		},
-	}
-
-	// create the workqueue
-	op.svcQueue = workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "service")
-
-	op.svcIndexer, op.svcInformer = cache.NewIndexerInformer(lw, &core.Service{}, op.Opt.ResyncPeriod, cache.ResourceEventHandlerFuncs{
-		AddFunc: func(obj interface{}) {
-			key, err := cache.MetaNamespaceKeyFunc(obj)
-			if err == nil {
-				op.svcQueue.Add(key)
-			}
-		},
-		UpdateFunc: func(old interface{}, new interface{}) {
-			key, err := cache.MetaNamespaceKeyFunc(new)
-			if err == nil {
-				op.svcQueue.Add(key)
-			}
-		},
-		DeleteFunc: func(obj interface{}) {
-			key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
-			if err == nil {
-				op.svcQueue.Add(key)
-			}
-		},
-	}, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-
-	op.svcLister = core_listers.NewServiceLister(op.svcIndexer)
-}
-
-func (op *Operator) runServiceWatcher() {
-	for op.processNextService() {
-	}
-}
-
-func (op *Operator) processNextService() bool {
-	key, quit := op.svcQueue.Get()
-	if quit {
-		return false
-	}
-	defer op.svcQueue.Done(key)
-
-	err := op.reconcileService(key.(string))
-	if err == nil {
-		op.svcQueue.Forget(key)
-		return true
-	}
-	log.Errorf("Failed to process Service %v. Reason: %s", key, err)
-
-	if op.svcQueue.NumRequeues(key) < op.Opt.MaxNumRequeues {
-		glog.Infof("Error syncing service %v: %v", key, err)
-		op.svcQueue.AddRateLimited(key)
-		return true
-	}
-
-	op.svcQueue.Forget(key)
-	runtime.HandleError(err)
-	glog.Infof("Dropping service %q out of the queue: %v", key, err)
-	return true
+	op.svcInformer = op.kubeInformerFactory.Core().V1().Services().Informer()
+	op.svcQueue = queue.New("Service", op.options.MaxNumRequeues, op.options.NumThreads, op.reconcileService)
+	op.svcInformer.AddEventHandler(queue.DefaultEventHandler(op.svcQueue.GetQueue()))
+	op.svcLister = op.kubeInformerFactory.Core().V1().Services().Lister()
 }
 
 func (op *Operator) reconcileService(key string) error {
-	obj, exists, err := op.svcIndexer.GetByKey(key)
+	obj, exists, err := op.svcInformer.GetIndexer().GetByKey(key)
 	if err != nil {
 		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
@@ -119,12 +54,12 @@ func (op *Operator) restoreIngressService(name, ns string) (bool, error) {
 		for i := range items {
 			ing := &items[i]
 			if ing.DeletionTimestamp == nil &&
-				ing.ShouldHandleIngress(op.Opt.IngressClass) &&
+				ing.ShouldHandleIngress(op.options.IngressClass) &&
 				ing.Namespace == ns &&
 				ing.OffshootName() == name {
 				key, err := cache.MetaNamespaceKeyFunc(ing)
 				if err == nil {
-					op.engQueue.Add(key)
+					op.engQueue.GetQueue().Add(key)
 					log.Infof("Add/Delete/Update of offshoot service %s/%s, Ingress %s re-queued for update", ns, name, key)
 				}
 				return true, err
@@ -143,10 +78,10 @@ func (op *Operator) updateHAProxyConfig(name, ns string) error {
 	for i := range items {
 		ing := &items[i]
 		if ing.DeletionTimestamp == nil &&
-			ing.ShouldHandleIngress(op.Opt.IngressClass) &&
+			ing.ShouldHandleIngress(op.options.IngressClass) &&
 			ing.HasBackendService(name, ns) {
 			if key, err := cache.MetaNamespaceKeyFunc(ing); err == nil {
-				op.engQueue.Add(key)
+				op.engQueue.GetQueue().Add(key)
 				log.Infof("Add/Delete/Update of backend service %s/%s, Ingress %s re-queued for update", ns, name, key)
 			}
 		}
@@ -172,7 +107,7 @@ func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*api.Ingress, error) {
 		}
 		return api.NewEngressFromIngress(ingress)
 	} else if sourceType == api.APISchemaEngress {
-		return op.VoyagerClient.Ingresses(meta.Namespace).Get(sourceName, metav1.GetOptions{})
+		return op.VoyagerClient.VoyagerV1beta1().Ingresses(meta.Namespace).Get(sourceName, metav1.GetOptions{})
 	}
 	return nil, fmt.Errorf("unknown ingress type %s", sourceType)
 }

@@ -19,7 +19,7 @@ import (
 	meta_util "github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/analytics"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
@@ -45,7 +45,7 @@ func NewLoadBalancerController(
 	ctx context.Context,
 	kubeClient kubernetes.Interface,
 	crdClient kext_cs.ApiextensionsV1beta1Interface,
-	extClient cs.VoyagerV1beta1Interface,
+	extClient cs.Interface,
 	promClient pcm.MonitoringV1Interface,
 	serviceLister core_listers.ServiceLister,
 	endpointsLister core_listers.EndpointsLister,
@@ -548,12 +548,12 @@ func (c *loadBalancerController) updateStatus() error {
 				return errors.FromErr(err).Err()
 			}
 		} else {
-			ing, err := c.VoyagerClient.Ingresses(c.Ingress.Namespace).Get(c.Ingress.Name, metav1.GetOptions{})
+			ing, err := c.VoyagerClient.VoyagerV1beta1().Ingresses(c.Ingress.Namespace).Get(c.Ingress.Name, metav1.GetOptions{})
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}
 			ing.Status.LoadBalancer.Ingress = statuses
-			_, err = c.VoyagerClient.Ingresses(c.Ingress.Namespace).Update(ing)
+			_, err = c.VoyagerClient.VoyagerV1beta1().Ingresses(c.Ingress.Namespace).Update(ing)
 			if err != nil {
 				return errors.FromErr(err).Err()
 			}

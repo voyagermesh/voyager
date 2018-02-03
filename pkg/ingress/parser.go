@@ -506,7 +506,7 @@ func (c *controller) generateConfig() error {
 
 				if ref, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoTLS {
 					if ref.Kind == api.ResourceKindCertificate {
-						crd, err := c.VoyagerClient.Certificates(c.Ingress.Namespace).Get(ref.Name, metav1.GetOptions{})
+						crd, err := c.VoyagerClient.VoyagerV1beta1().Certificates(c.Ingress.Namespace).Get(ref.Name, metav1.GetOptions{})
 						if err == nil {
 							srv.CertFile = crd.SecretName() + ".pem"
 						}

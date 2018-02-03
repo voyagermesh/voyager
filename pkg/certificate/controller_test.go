@@ -60,7 +60,7 @@ func TestEnsureClient(t *testing.T) {
 				},
 			},
 			fakeSecret,
-		), acf.NewSimpleClientset().VoyagerV1beta1(), config.Options{ResyncPeriod: time.Second * 5}, cert)
+		), acf.NewSimpleClientset(), config.Options{ResyncPeriod: time.Second * 5}, cert)
 		assert.Nil(t, err)
 
 		err = fakeController.getACMEClient()
@@ -108,7 +108,7 @@ func TestCreate(t *testing.T) {
 			},
 		}
 
-		fakeController, err := NewController(etx.Background(), fake.NewSimpleClientset(fakeUser, fakeSecret), acf.NewSimpleClientset().VoyagerV1beta1(), config.Options{ResyncPeriod: time.Second * 5}, cert)
+		fakeController, err := NewController(etx.Background(), fake.NewSimpleClientset(fakeUser, fakeSecret), acf.NewSimpleClientset(), config.Options{ResyncPeriod: time.Second * 5}, cert)
 		if assert.Nil(t, err) {
 			err = fakeController.Process()
 			assert.Nil(t, err)
@@ -132,7 +132,7 @@ func TestCreate(t *testing.T) {
 			}
 			assert.Equal(t, len(secret.Data), 2)
 
-			cert, err = fakeController.VoyagerClient.Certificates("bar").Get("foo", metav1.GetOptions{})
+			cert, err = fakeController.VoyagerClient.VoyagerV1beta1().Certificates("bar").Get("foo", metav1.GetOptions{})
 			if err != nil {
 				t.Fatal(err)
 			}

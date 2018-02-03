@@ -17,7 +17,7 @@ import (
 	meta_util "github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/analytics"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
@@ -42,7 +42,7 @@ func NewInternalController(
 	ctx context.Context,
 	kubeClient kubernetes.Interface,
 	crdClient kext_cs.ApiextensionsV1beta1Interface,
-	extClient cs.VoyagerV1beta1Interface,
+	extClient cs.Interface,
 	promClient pcm.MonitoringV1Interface,
 	serviceLister core_listers.ServiceLister,
 	endpointsLister core_listers.EndpointsLister,

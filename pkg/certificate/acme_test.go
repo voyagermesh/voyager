@@ -35,7 +35,7 @@ func TestClient(t *testing.T) {
 					Namespace: "bar",
 				},
 			},
-		).VoyagerV1beta1(),
+		),
 		config.Options{},
 		&api.Certificate{
 			ObjectMeta: v1.ObjectMeta{

@@ -113,7 +113,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 				reg = r2.(*prometheus.Registry)
 			} else {
 				log.Infof("Configuring exporter for appscode ingress %s in namespace %s", name, namespace)
-				engress, err := extClient.Ingresses(namespace).Get(name, metav1.GetOptions{})
+				engress, err := extClient.VoyagerV1beta1().Ingresses(namespace).Get(name, metav1.GetOptions{})
 				if kerr.IsNotFound(err) {
 					http.NotFound(w, r)
 					return

@@ -9,19 +9,20 @@ import (
 	"time"
 
 	ioutilz "github.com/appscode/go/ioutil"
+	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client"
+	voyagerinformers "github.com/appscode/voyager/informers/externalversions"
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"
-	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
-	"k8s.io/client-go/util/workqueue"
 )
 
 type Options struct {
@@ -34,6 +35,7 @@ type Options struct {
 	Burst          int
 	ResyncPeriod   time.Duration
 	MaxNumRequeues int
+	NumThreads     int
 }
 
 func (opts Options) UsesEngress() bool {
@@ -41,43 +43,42 @@ func (opts Options) UsesEngress() bool {
 }
 
 type Controller struct {
-	k8sClient     kubernetes.Interface
-	VoyagerClient cs.VoyagerV1beta1Interface
-	options       Options
-	recorder      record.EventRecorder
+	k8sClient              kubernetes.Interface
+	VoyagerClient          cs.Interface
+	options                Options
+	kubeInformerFactory    informers.SharedInformerFactory
+	voyagerInformerFactory voyagerinformers.SharedInformerFactory
+	recorder               record.EventRecorder
 
 	store *certificate.CertStore
 
 	cfgWriter  *ioutilz.AtomicWriter
 	certWriter *ioutilz.AtomicWriter
 
-	cmQueue    workqueue.RateLimitingInterface
-	cmIndexer  cache.Indexer
-	cmInformer cache.Controller
+	cfgQueue    *queue.Worker
+	cfgInformer cache.SharedIndexInformer
 
-	sQueue    workqueue.RateLimitingInterface
-	sIndexer  cache.Indexer
-	sInformer cache.Controller
+	secretQueue    *queue.Worker
+	secretInformer cache.SharedIndexInformer
 
-	ingQueue    workqueue.RateLimitingInterface
-	ingIndexer  cache.Indexer
-	ingInformer cache.Controller
+	ingQueue    *queue.Worker
+	ingInformer cache.SharedIndexInformer
 
-	engQueue    workqueue.RateLimitingInterface
-	engIndexer  cache.Indexer
-	engInformer cache.Controller
+	engQueue    *queue.Worker
+	engInformer cache.SharedIndexInformer
 
-	crtQueue    workqueue.RateLimitingInterface
-	crtIndexer  cache.Indexer
-	crtInformer cache.Controller
+	crtQueue    *queue.Worker
+	crtInformer cache.SharedIndexInformer
 }
 
-func New(client kubernetes.Interface, voyagerClient cs.VoyagerV1beta1Interface, opt Options) *Controller {
+func New(client kubernetes.Interface, voyagerClient cs.Interface, opt Options) *Controller {
 	return &Controller{
-		k8sClient:     client,
-		VoyagerClient: voyagerClient,
-		options:       opt,
-		recorder:      eventer.NewEventRecorder(client, "haproxy-controller"),
+		k8sClient:              client,
+		kubeInformerFactory:    informers.NewFilteredSharedInformerFactory(client, opt.ResyncPeriod, opt.IngressRef.Namespace, nil),
+		VoyagerClient:          voyagerClient,
+		voyagerInformerFactory: voyagerinformers.NewFilteredSharedInformerFactory(voyagerClient, opt.ResyncPeriod, opt.IngressRef.Namespace, nil),
+		options:                opt,
+		recorder:               eventer.NewEventRecorder(client, "haproxy-controller"),
 	}
 }
 
@@ -133,7 +134,7 @@ func (c *Controller) Setup() (err error) {
 
 func (c *Controller) initIngressIndexer() (*api.Ingress, error) {
 	if c.options.UsesEngress() {
-		obj, err := c.VoyagerClient.Ingresses(c.options.IngressRef.Namespace).Get(c.options.IngressRef.Name, metav1.GetOptions{})
+		obj, err := c.VoyagerClient.VoyagerV1beta1().Ingresses(c.options.IngressRef.Namespace).Get(c.options.IngressRef.Name, metav1.GetOptions{})
 		if err != nil {
 			return nil, err
 		}
@@ -142,7 +143,7 @@ func (c *Controller) initIngressIndexer() (*api.Ingress, error) {
 		if err != nil {
 			return nil, err
 		}
-		c.engIndexer.Add(obj)
+		c.engInformer.GetIndexer().Add(obj)
 		return obj, nil
 	}
 
@@ -158,7 +159,7 @@ func (c *Controller) initIngressIndexer() (*api.Ingress, error) {
 	if err != nil {
 		return nil, err
 	}
-	c.ingIndexer.Add(obj)
+	c.ingInformer.GetIndexer().Add(obj)
 	return ingress, nil
 }
 
@@ -167,17 +168,17 @@ func (c *Controller) initConfigCache(ing *api.Ingress) error {
 	if err != nil {
 		return err
 	}
-	return c.cmIndexer.Add(cm)
+	return c.cfgInformer.GetIndexer().Add(cm)
 }
 
 func (c *Controller) initTLSCache(ing *api.Ingress) error {
 	for _, tls := range ing.Spec.TLS {
 		if strings.EqualFold(tls.Ref.Kind, api.ResourceKindCertificate) {
-			crd, err := c.VoyagerClient.Certificates(c.options.IngressRef.Namespace).Get(tls.Ref.Name, metav1.GetOptions{})
+			crd, err := c.VoyagerClient.VoyagerV1beta1().Certificates(c.options.IngressRef.Namespace).Get(tls.Ref.Name, metav1.GetOptions{})
 			if err != nil {
 				return err
 			}
-			err = c.crtIndexer.Add(crd)
+			err = c.crtInformer.GetIndexer().Add(crd)
 			if err != nil {
 				return err
 			}
@@ -186,7 +187,7 @@ func (c *Controller) initTLSCache(ing *api.Ingress) error {
 			if err != nil {
 				return err
 			}
-			err = c.sIndexer.Add(sc)
+			err = c.secretInformer.GetIndexer().Add(sc)
 			if err != nil {
 				return err
 			}
@@ -198,7 +199,7 @@ func (c *Controller) initTLSCache(ing *api.Ingress) error {
 		if err != nil {
 			return err
 		}
-		err = c.sIndexer.Add(stls)
+		err = c.secretInformer.GetIndexer().Add(stls)
 		if err != nil {
 			return err
 		}
@@ -209,7 +210,7 @@ func (c *Controller) initTLSCache(ing *api.Ingress) error {
 				if err != nil {
 					return err
 				}
-				err = c.sIndexer.Add(stls)
+				err = c.secretInformer.GetIndexer().Add(stls)
 				if err != nil {
 					return err
 				}
@@ -237,64 +238,35 @@ func runCmd(path string) error {
 	return nil
 }
 
-func (c *Controller) Run(threadiness int, stopCh chan struct{}) {
+func (c *Controller) Run(stopCh chan struct{}) {
 	defer runtime.HandleCrash()
 
-	// Let the workers stop when we are done
-	defer c.cmQueue.ShutDown()
-	defer c.sQueue.ShutDown()
-	if c.options.UsesEngress() {
-		defer c.engQueue.ShutDown()
-	} else {
-		defer c.ingQueue.ShutDown()
-	}
-	defer c.crtQueue.ShutDown()
 	glog.Info("Starting haproxy-controller")
-
-	go c.cmInformer.Run(stopCh)
-	go c.sInformer.Run(stopCh)
-	if c.options.UsesEngress() {
-		go c.engInformer.Run(stopCh)
-	} else {
-		go c.ingInformer.Run(stopCh)
-	}
-	go c.crtInformer.Run(stopCh)
+	c.kubeInformerFactory.Start(stopCh)
+	c.voyagerInformerFactory.Start(stopCh)
 
 	// Wait for all involved caches to be synced, before processing items from the queue is started
-	if !cache.WaitForCacheSync(stopCh, c.cmInformer.HasSynced) {
-		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
-		return
-	}
-	if !cache.WaitForCacheSync(stopCh, c.sInformer.HasSynced) {
-		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
-		return
-	}
-	if c.options.UsesEngress() {
-		if !cache.WaitForCacheSync(stopCh, c.engInformer.HasSynced) {
-			runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
-			return
-		}
-	} else {
-		if !cache.WaitForCacheSync(stopCh, c.ingInformer.HasSynced) {
+	for _, v := range c.kubeInformerFactory.WaitForCacheSync(stopCh) {
+		if !v {
 			runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
 			return
 		}
 	}
-	if !cache.WaitForCacheSync(stopCh, c.crtInformer.HasSynced) {
-		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
-		return
+	for _, v := range c.voyagerInformerFactory.WaitForCacheSync(stopCh) {
+		if !v {
+			runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
+			return
+		}
 	}
 
-	for i := 0; i < threadiness; i++ {
-		go wait.Until(c.runConfigMapWatcher, time.Second, stopCh)
-		go wait.Until(c.runSecretWatcher, time.Second, stopCh)
-		if c.options.UsesEngress() {
-			go wait.Until(c.runIngressCRDWatcher, time.Second, stopCh)
-		} else {
-			go wait.Until(c.runIngressWatcher, time.Second, stopCh)
-		}
-		go wait.Until(c.runCertificateWatcher, time.Second, stopCh)
+	c.cfgQueue.Run(stopCh)
+	c.secretQueue.Run(stopCh)
+	if c.options.UsesEngress() {
+		c.engQueue.Run(stopCh)
+	} else {
+		c.ingQueue.Run(stopCh)
 	}
+	c.crtQueue.Run(stopCh)
 
 	<-stopCh
 	glog.Info("Stopping haproxy-controller")

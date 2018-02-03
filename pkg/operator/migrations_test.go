@@ -24,7 +24,7 @@ func TestCertificateMigrations(t *testing.T) {
 	}
 }
 
-var testInput []api.Certificate = []api.Certificate{
+var testInput = []api.Certificate{
 	{
 		Spec: api.CertificateSpec{
 			Provider:                     "http",

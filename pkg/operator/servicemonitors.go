@@ -4,14 +4,10 @@ import (
 	"github.com/appscode/go/log"
 	prom_util "github.com/appscode/kube-mon/prometheus/v1"
 	"github.com/appscode/kutil/discovery"
+	"github.com/appscode/kutil/tools/queue"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	"github.com/golang/glog"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	rt "k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/runtime"
-	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/util/workqueue"
 )
 
 func (op *Operator) initServiceMonitorWatcher() {
@@ -20,60 +16,19 @@ func (op *Operator) initServiceMonitorWatcher() {
 		return
 	}
 
-	lw := &cache.ListWatch{
-		ListFunc: func(options metav1.ListOptions) (rt.Object, error) {
-			return op.PromClient.ServiceMonitors(op.Opt.WatchNamespace()).List(options)
+	op.smonInformer = cache.NewSharedIndexInformer(
+		&cache.ListWatch{
+			ListFunc:  op.PromClient.ServiceMonitors(op.options.WatchNamespace()).List,
+			WatchFunc: op.PromClient.ServiceMonitors(op.options.WatchNamespace()).Watch,
 		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return op.PromClient.ServiceMonitors(op.Opt.WatchNamespace()).Watch(metav1.ListOptions{})
-		},
-	}
-
-	// create the workqueue
-	op.monQueue = workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "service-monitor")
-
-	op.monIndexer, op.monInformer = cache.NewIndexerInformer(lw, &prom.ServiceMonitor{}, op.Opt.ResyncPeriod, cache.ResourceEventHandlerFuncs{
-		DeleteFunc: func(obj interface{}) {
-			if key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj); err == nil {
-				op.monQueue.Add(key)
-			}
-		},
-	}, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-}
-
-func (op *Operator) runServiceMonitorWatcher() {
-	for op.processNextServiceMonitor() {
-	}
-}
-
-func (op *Operator) processNextServiceMonitor() bool {
-	key, quit := op.monQueue.Get()
-	if quit {
-		return false
-	}
-	defer op.monQueue.Done(key)
-
-	err := op.reconcileServiceMonitor(key.(string))
-	if err == nil {
-		op.monQueue.Forget(key)
-		return true
-	}
-	log.Errorf("Failed to process ServiceMonitor %v. Reason: %s", key, err)
-
-	if op.monQueue.NumRequeues(key) < op.Opt.MaxNumRequeues {
-		glog.Infof("Error syncing service-monitor %v: %v", key, err)
-		op.monQueue.AddRateLimited(key)
-		return true
-	}
-
-	op.monQueue.Forget(key)
-	runtime.HandleError(err)
-	glog.Infof("Dropping service-monitor %q out of the queue: %v", key, err)
-	return true
+		&prom.ServiceMonitor{}, op.options.ResyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+	)
+	op.smonQueue = queue.New("ServiceMonitor", op.options.MaxNumRequeues, op.options.NumThreads, op.reconcileServiceMonitor)
+	op.smonInformer.AddEventHandler(queue.NewDeleteHandler(op.smonQueue.GetQueue()))
 }
 
 func (op *Operator) reconcileServiceMonitor(key string) error {
-	_, exists, err := op.monIndexer.GetByKey(key)
+	_, exists, err := op.smonInformer.GetIndexer().GetByKey(key)
 	if err != nil {
 		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
@@ -98,13 +53,13 @@ func (op *Operator) restoreServiceMonitor(name, ns string) error {
 	for i := range items {
 		ing := &items[i]
 		if ing.DeletionTimestamp == nil &&
-			ing.ShouldHandleIngress(op.Opt.IngressClass) &&
+			ing.ShouldHandleIngress(op.options.IngressClass) &&
 			ing.Namespace == ns &&
 			ing.StatsServiceName() == name {
 			if key, err := cache.MetaNamespaceKeyFunc(ing); err != nil {
 				return err
 			} else {
-				op.engQueue.Add(key)
+				op.engQueue.GetQueue().Add(key)
 				log.Infof("Add/Delete/Update of service-monitor %s/%s, Ingress %s re-queued for update", ns, name, key)
 				break
 			}
