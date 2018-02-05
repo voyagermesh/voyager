@@ -6,7 +6,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const VoyagerFinalizer = "finalizer.voyager.appscode.com"
+const VoyagerFinalizer = "voyager.appscode.com"
 
 func (r Ingress) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
 	return &apiextensions.CustomResourceDefinition{
