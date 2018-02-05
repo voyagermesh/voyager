@@ -768,7 +768,7 @@ func (c *controller) generateConfig() error {
 		td.UserLists = append(td.UserLists, userLists[k])
 	}
 
-	c.logger.Infof("Rendering haproxy.cfg for Ingress %s/%s using data: %s", c.Ingress.Namespace, c.Ingress.Name, td)
+	c.logger.Debugf("Rendering haproxy.cfg for Ingress %s/%s using data: %s", c.Ingress.Namespace, c.Ingress.Name, td)
 	if cfg, err := template.RenderConfig(td); err != nil {
 		return err
 	} else {
