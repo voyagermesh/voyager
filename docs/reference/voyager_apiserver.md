@@ -1,24 +1,24 @@
 ---
-title: Voyager Admission-Webhook
+title: Voyager Apiserver
 menu:
   product_voyager_6.0.0-alpha.0:
-    identifier: voyager-admission-webhook
-    name: Voyager Admission-Webhook
+    identifier: voyager-apiserver
+    name: Voyager Apiserver
     parent: reference
 product_name: voyager
 menu_name: product_voyager_6.0.0-alpha.0
 section_menu_id: reference
 ---
-## voyager admission-webhook
+## voyager apiserver
 
-Launch Voyager admission webhook server
+Launch Voyager API server
 
 ### Synopsis
 
-Launch Voyager admission webhook server
+Launch Voyager API server
 
 ```
-voyager admission-webhook [flags]
+voyager apiserver [flags]
 ```
 
 ### Options
@@ -44,7 +44,7 @@ voyager admission-webhook [flags]
   -c, --cloud-provider string                                   Name of cloud provider
       --contention-profiling                                    Enable lock contention profiling, if profiling is enabled
       --enable-swagger-ui                                       Enables swagger ui on the apiserver at /swagger-ui
-  -h, --help                                                    help for admission-webhook
+  -h, --help                                                    help for apiserver
       --kubeconfig string                                       kubeconfig file pointing at the 'core' kubernetes server.
       --profiling                                               Enable profiling via web interface host:port/debug/pprof/ (default true)
       --requestheader-allowed-names stringSlice                 List of client certificate common names to allow to provide usernames in headers specified by --requestheader-username-headers. If empty, any client certificate validated by the authorities in --requestheader-client-ca-file is allowed.

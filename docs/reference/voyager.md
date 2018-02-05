@@ -40,7 +40,7 @@ Voyager by Appscode - Secure Ingress Controller for Kubernetes
 
 ### SEE ALSO
 
-* [voyager admission-webhook](/docs/reference/voyager_admission-webhook.md)	 - Launch Voyager admission webhook server
+* [voyager apiserver](/docs/reference/voyager_apiserver.md)	 - Launch Voyager API server
 * [voyager check](/docs/reference/voyager_check.md)	 - Check Ingress
 * [voyager export](/docs/reference/voyager_export.md)	 - Export Prometheus metrics for HAProxy
 * [voyager haproxy-controller](/docs/reference/voyager_haproxy-controller.md)	 - Synchronizes HAProxy config
