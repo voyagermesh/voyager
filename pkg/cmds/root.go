@@ -56,7 +56,7 @@ func NewCmdVoyager(version string) *cobra.Command {
 	rootCmd.AddCommand(v.NewCmdVersion())
 
 	stopCh := genericapiserver.SetupSignalHandler()
-	cmd := NewCommandStartAdmissionServer(os.Stdout, os.Stderr, stopCh)
+	cmd := NewCommandStartAPIServer(os.Stdout, os.Stderr, stopCh)
 	rootCmd.AddCommand(cmd)
 
 	return rootCmd

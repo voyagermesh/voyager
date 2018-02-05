@@ -15,7 +15,7 @@ import (
 
 const defaultEtcdPathPrefix = "/registry/voyager.appscode.com"
 
-type AdmissionServerOptions struct {
+type APIServerOptions struct {
 	RecommendedOptions *genericoptions.RecommendedOptions
 
 	AdmissionHooks []apiserver.AdmissionHook
@@ -26,8 +26,8 @@ type AdmissionServerOptions struct {
 	CloudProvider string
 }
 
-func NewAdmissionServerOptions(out, errOut io.Writer, admissionHooks ...apiserver.AdmissionHook) *AdmissionServerOptions {
-	o := &AdmissionServerOptions{
+func NewAPIServerOptions(out, errOut io.Writer, admissionHooks ...apiserver.AdmissionHook) *APIServerOptions {
+	o := &APIServerOptions{
 		// TODO we will nil out the etcd storage options.  This requires a later level of k8s.io/apiserver
 		RecommendedOptions: genericoptions.NewRecommendedOptions(defaultEtcdPathPrefix, apiserver.Codecs.LegacyCodec(admissionv1beta1.SchemeGroupVersion)),
 
@@ -42,8 +42,8 @@ func NewAdmissionServerOptions(out, errOut io.Writer, admissionHooks ...apiserve
 }
 
 // NewCommandStartMaster provides a CLI handler for 'start master' command
-func NewCommandStartAdmissionServer(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Command {
-	o := NewAdmissionServerOptions(out, errOut)
+func NewCommandStartAPIServer(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Command {
+	o := NewAPIServerOptions(out, errOut)
 
 	cmd := &cobra.Command{
 		Use:   "apiserver",
@@ -74,15 +74,15 @@ func NewCommandStartAdmissionServer(out, errOut io.Writer, stopCh <-chan struct{
 	return cmd
 }
 
-func (o AdmissionServerOptions) Validate(args []string) error {
+func (o APIServerOptions) Validate(args []string) error {
 	return nil
 }
 
-func (o *AdmissionServerOptions) Complete() error {
+func (o *APIServerOptions) Complete() error {
 	return nil
 }
 
-func (o AdmissionServerOptions) Config() (*apiserver.Config, error) {
+func (o APIServerOptions) Config() (*apiserver.Config, error) {
 	// TODO have a "real" external address
 	if err := o.RecommendedOptions.SecureServing.MaybeDefaultWithSelfSignedCerts("localhost", nil, []net.IP{net.ParseIP("127.0.0.1")}); err != nil {
 		return nil, fmt.Errorf("error creating self-signed certificates: %v", err)
@@ -102,7 +102,7 @@ func (o AdmissionServerOptions) Config() (*apiserver.Config, error) {
 	return config, nil
 }
 
-func (o AdmissionServerOptions) RunServer(stopCh <-chan struct{}) error {
+func (o APIServerOptions) RunServer(stopCh <-chan struct{}) error {
 	config, err := o.Config()
 	if err != nil {
 		return err
