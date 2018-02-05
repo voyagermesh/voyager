@@ -10,10 +10,8 @@ import (
 	v "github.com/appscode/go/version"
 	"github.com/appscode/kutil/tools/analytics"
 	"github.com/appscode/voyager/client/scheme"
-	"github.com/appscode/voyager/pkg/admission/plugin"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/jpillora/go-ogle-analytics"
-	"github.com/openshift/generic-admission-server/pkg/cmd/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	genericapiserver "k8s.io/apiserver/pkg/server"
@@ -58,12 +56,7 @@ func NewCmdVoyager(version string) *cobra.Command {
 	rootCmd.AddCommand(v.NewCmdVersion())
 
 	stopCh := genericapiserver.SetupSignalHandler()
-	hook := &plugin.AdmissionHook{}
-	cmd := server.NewCommandStartAdmissionServer(os.Stdout, os.Stderr, stopCh, hook)
-	cmd.Use = "admission-webhook"
-	cmd.Long = "Launch Voyager admission webhook server"
-	cmd.Short = cmd.Long
-	cmd.Flags().StringVarP(&hook.CloudProvider, "cloud-provider", "c", hook.CloudProvider, "Name of cloud provider")
+	cmd := NewCommandStartAdmissionServer(os.Stdout, os.Stderr, stopCh)
 	rootCmd.AddCommand(cmd)
 
 	return rootCmd

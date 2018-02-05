@@ -2,7 +2,7 @@
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding
 metadata:
-  name: voyager-admission-webhook-extension-server-authentication-reader
+  name: voyager-apiserver-extension-server-authentication-reader
   namespace: kube-system
 roleRef:
   kind: Role
@@ -17,7 +17,7 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
-  name: voyager-admission-webhook-auth-delegator
+  name: voyager-apiserver-auth-delegator
   labels:
     app: voyager
 roleRef:
@@ -33,7 +33,7 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
-  name: appscode:voyager:admission-webhook-requester
+  name: appscode:voyager:apiserver-requester
   labels:
     app: voyager
 rules:

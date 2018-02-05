@@ -1,5 +1,5 @@
-hash: eac2079579d02a428a46bb2976ea1504d7472ba2284b529c06f3be74d002ae20
-updated: 2018-02-05T05:07:09.087176882-08:00
+hash: 15ba6097c25f0164ff264426bc52019dd03f78d1c7ca3412a7f5862b26c451d0
+updated: 2018-02-05T12:59:14.208116611-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -352,12 +352,6 @@ imports:
   - matchers/support/goraph/node
   - matchers/support/goraph/util
   - types
-- name: github.com/openshift/generic-admission-server
-  version: 6cbd9584810e7be9ec4263c5d010a48be6231e60
-  subpackages:
-  - pkg/apiserver
-  - pkg/cmd/server
-  - pkg/registry/admissionreview
 - name: github.com/orcaman/concurrent-map
   version: d4c23bd0e01134806215ffe65ba3fd22ec6721f7
 - name: github.com/ovh/go-ovh
@@ -414,7 +408,7 @@ imports:
   subpackages:
   - mem
 - name: github.com/spf13/cobra
-  version: eb589833591a36b5720108a621baab8dee9b2ac5
+  version: c2bbfaa12d512a2ebaa34009ce3cab65e153bbc1
   subpackages:
   - doc
 - name: github.com/spf13/pflag
