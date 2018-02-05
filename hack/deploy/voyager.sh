@@ -28,7 +28,7 @@ show_help() {
     echo "    --image-pull-secret            name of secret used to pull voyager operator images"
     echo "    --restrict-to-namespace        restrict voyager to its own namespace"
     echo "    --run-on-master                run voyager operator on master"
-    echo "    --enable-admission-webhook     configure admission webhook for voyager CRDs"
+    echo "    --enable-apiserver     configure admission webhook for voyager CRDs"
     echo "    --template-cfgmap=CONFIGMAP    name of configmap with custom templates"
 }
 
@@ -75,7 +75,7 @@ while test $# -gt 0; do
             export VOYAGER_IMAGE_PULL_SECRET="name: '$secret'"
             shift
             ;;
-        --enable-admission-webhook)
+        --enable-apiserver)
             export VOYAGER_ENABLE_ADMISSION_WEBHOOK=true
             shift
             ;;

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	"github.com/appscode/voyager/pkg/apiserver"
 	admission "k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -16,16 +17,18 @@ type AdmissionHook struct {
 	CloudProvider string
 }
 
-func (a *AdmissionHook) ValidatingResource() (plural schema.GroupVersionResource, singular string) {
+var _ apiserver.AdmissionHook = &AdmissionHook{}
+
+func (a *AdmissionHook) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
 			Group:    "admission.voyager.appscode.com",
 			Version:  "v1beta1",
-			Resource: "reviews",
+			Resource: "admissionreviews",
 		},
-		"review"
+		"admissionreview"
 }
 
-func (a *AdmissionHook) Validate(req *admission.AdmissionRequest) *admission.AdmissionResponse {
+func (a *AdmissionHook) Admit(req *admission.AdmissionRequest) *admission.AdmissionResponse {
 	status := &admission.AdmissionResponse{}
 	supportedKinds := sets.NewString(api.ResourceKindCertificate, api.ResourceKindIngress)
 
@@ -93,6 +96,6 @@ func (a *AdmissionHook) Validate(req *admission.AdmissionRequest) *admission.Adm
 	return status
 }
 
-func (a *AdmissionHook) Initialize(kubeClientConfig *rest.Config, stopCh <-chan struct{}) error {
+func (a *AdmissionHook) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
 	return nil
 }
