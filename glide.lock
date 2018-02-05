@@ -1,5 +1,5 @@
 hash: eac2079579d02a428a46bb2976ea1504d7472ba2284b529c06f3be74d002ae20
-updated: 2018-02-03T02:27:50.61123846-08:00
+updated: 2018-02-05T05:07:09.087176882-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -9,7 +9,7 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/go
-  version: 437df2b94ce2ea60464ff580c10462fbeb3e8f52
+  version: fe2dd84a755c383d0516595f4537c2298be9fce5
   subpackages:
   - analytics
   - context
@@ -38,7 +38,7 @@ imports:
   - api
   - prometheus/v1
 - name: github.com/appscode/kutil
-  version: d50ab5fc6b34c4faa51cc1788c2bf64267ff45b6
+  version: 3037bd8a4c122f37b93108e0ef1f7b874079b93a
   subpackages:
   - apiextensions/v1beta1
   - apps/v1beta1
@@ -166,6 +166,8 @@ imports:
   version: 751773369052141c013c6e827a71e8f35c07879c
 - name: github.com/fatih/structs
   version: ebf56d35bba727c68ac77f56f2fcf90b181851aa
+- name: github.com/fsnotify/fsnotify
+  version: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/go-ini/ini
@@ -200,7 +202,7 @@ imports:
   - ptypes/struct
   - ptypes/timestamp
 - name: github.com/golang/snappy
-  version: 553a641470496b2327abcac10b36396bd98e45c9
+  version: cef980a12b316c5b7e5bb3a8e168eb43ae999a88
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
@@ -412,7 +414,7 @@ imports:
   subpackages:
   - mem
 - name: github.com/spf13/cobra
-  version: 3a7eb146bae5ebf9be598570234cde56c82d16cc
+  version: eb589833591a36b5720108a621baab8dee9b2ac5
   subpackages:
   - doc
 - name: github.com/spf13/pflag
