@@ -2,23 +2,19 @@
 
 ## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
 
-[Full Changelog](https://github.com/appscode/voyager/compare/6.0.0-alpha.0...HEAD)
+[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0-rc.11...HEAD)
 
 **Closed issues:**
 
+- Multi backends for one domain [\#833](https://github.com/appscode/voyager/issues/833)
 - Allow users to specify backend names [\#819](https://github.com/appscode/voyager/issues/819)
+- Update Voyager to use workqueue [\#535](https://github.com/appscode/voyager/issues/535)
 - Canonicalize TemplateData [\#348](https://github.com/appscode/voyager/issues/348)
 
 **Merged pull requests:**
 
+- Log TemplateData in debug mode [\#834](https://github.com/appscode/voyager/pull/834) ([tamalsaha](https://github.com/tamalsaha))
 -  Removed maps from template data [\#831](https://github.com/appscode/voyager/pull/831) ([diptadas](https://github.com/diptadas))
-- Use deterministic-suffix instead of random-suffix in backend name [\#815](https://github.com/appscode/voyager/pull/815) ([diptadas](https://github.com/diptadas))
-
-## [6.0.0-alpha.0](https://github.com/appscode/voyager/tree/6.0.0-alpha.0) (2018-01-28)
-[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0-rc.11...6.0.0-alpha.0)
-
-**Merged pull requests:**
-
 - Prepare docs for 6.0.0-alpha.0 [\#830](https://github.com/appscode/voyager/pull/830) ([tamalsaha](https://github.com/tamalsaha))
 - Support private docker registry in installer [\#829](https://github.com/appscode/voyager/pull/829) ([tamalsaha](https://github.com/tamalsaha))
 - Add ValidatingAdmissionWebhook for Voyager CRDs [\#828](https://github.com/appscode/voyager/pull/828) ([tamalsaha](https://github.com/tamalsaha))
@@ -29,11 +25,13 @@
 - Merge tls-mounter & kloader into haproxy-controller [\#823](https://github.com/appscode/voyager/pull/823) ([tamalsaha](https://github.com/tamalsaha))
 - Updating kube-mon so service-monitor-endpoint-port is optional [\#822](https://github.com/appscode/voyager/pull/822) ([jeffersongirao](https://github.com/jeffersongirao))
 - Fix unit tests [\#820](https://github.com/appscode/voyager/pull/820) ([jeffersongirao](https://github.com/jeffersongirao))
+- Use deterministic-suffix instead of random-suffix in backend name [\#815](https://github.com/appscode/voyager/pull/815) ([diptadas](https://github.com/diptadas))
 - Ignored not-found error for DNS resolver annotations  [\#812](https://github.com/appscode/voyager/pull/812) ([diptadas](https://github.com/diptadas))
 - Add prometheus flags to command that uses it [\#810](https://github.com/appscode/voyager/pull/810) ([tamalsaha](https://github.com/tamalsaha))
 - Improve concepts docs [\#809](https://github.com/appscode/voyager/pull/809) ([tamalsaha](https://github.com/tamalsaha))
 - Revendor coreos prometheus operator 0.16.0 [\#808](https://github.com/appscode/voyager/pull/808) ([tamalsaha](https://github.com/tamalsaha))
 - Revendor log wrapper [\#804](https://github.com/appscode/voyager/pull/804) ([tamalsaha](https://github.com/tamalsaha))
+- Implement work-queue in operator [\#803](https://github.com/appscode/voyager/pull/803) ([diptadas](https://github.com/diptadas))
 - Fix links in chart [\#802](https://github.com/appscode/voyager/pull/802) ([tamalsaha](https://github.com/tamalsaha))
 - Add changelog [\#801](https://github.com/appscode/voyager/pull/801) ([tamalsaha](https://github.com/tamalsaha))
 
@@ -1111,6 +1109,7 @@
 - Add ingress hostname to Ingress [\#132](https://github.com/appscode/voyager/issues/132)
 - Deleting LB deployment does not get recreated [\#123](https://github.com/appscode/voyager/issues/123)
 - Ensure HAproxy running when endpoints changes. [\#120](https://github.com/appscode/voyager/issues/120)
+- Updating Ingress annotations are not picked up by controller [\#115](https://github.com/appscode/voyager/issues/115)
 - Fix Ingress Status Update Properly. [\#134](https://github.com/appscode/voyager/pull/134) ([sadlil](https://github.com/sadlil))
 - Expose monitoring port in chart and deploy yamls [\#156](https://github.com/appscode/voyager/pull/156) ([tamalsaha](https://github.com/tamalsaha))
 - Add LoadBalancerSourceRange to ingress Spec [\#148](https://github.com/appscode/voyager/pull/148) ([sadlil](https://github.com/sadlil))
