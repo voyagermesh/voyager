@@ -6,7 +6,7 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil/meta"
-	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client"
 	hpc "github.com/appscode/voyager/pkg/haproxy/controller"
 	"github.com/spf13/cobra"
 	core "k8s.io/api/core/v1"
@@ -29,6 +29,7 @@ var (
 		Burst:          1e6,
 		ResyncPeriod:   5 * time.Minute,
 		MaxNumRequeues: 5,
+		NumThreads:     1,
 	}
 	initOnly bool
 )
@@ -82,7 +83,7 @@ func runTLSMounter() {
 	// Now let's start the controller
 	stop := make(chan struct{})
 	defer close(stop)
-	go ctrl.Run(1, stop)
+	go ctrl.Run(stop)
 
 	// Wait forever
 	select {}

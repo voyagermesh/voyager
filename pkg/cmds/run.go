@@ -12,7 +12,7 @@ import (
 	"github.com/appscode/kutil/meta"
 	"github.com/appscode/pat"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/haproxy/template"
 	"github.com/appscode/voyager/pkg/operator"
@@ -28,7 +28,7 @@ var (
 	masterURL      string
 	kubeconfigPath string
 	kubeClient     kubernetes.Interface
-	extClient      cs.VoyagerV1beta1Interface
+	extClient      cs.Interface
 
 	builtinTemplates          = "/srv/voyager/templates/*.cfg"
 	customTemplates           = ""
@@ -43,6 +43,8 @@ var (
 		OperatorService:   "voyager-operator",
 		EnableRBAC:        false,
 		ResyncPeriod:      5 * time.Minute,
+		MaxNumRequeues:    5,
+		NumThreads:        2,
 		// ref: https://github.com/kubernetes/ingress-nginx/blob/e4d53786e771cc6bdd55f180674b79f5b692e552/pkg/ingress/controller/launch.go#L252-L259
 		// High enough QPS to fit all expected use cases. QPS=0 is not set here, because client code is overriding it.
 		QPS: 1e6,
@@ -156,7 +158,10 @@ func runOperator() {
 	w.PurgeOffshootsWithDeprecatedLabels()
 	// https://github.com/appscode/voyager/issues/446
 	w.PurgeOffshootsDaemonSet()
-	go w.Run()
+
+	stop := make(chan struct{})
+	defer close(stop)
+	go w.Run(stop)
 
 	m := pat.New()
 	m.Get("/metrics", promhttp.Handler())

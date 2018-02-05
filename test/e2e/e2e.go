@@ -45,6 +45,7 @@ var _ = BeforeSuite(func() {
 			DockerRegistry:  root.Config.DockerRegistry,
 			HAProxyImageTag: root.Config.HAProxyImageTag,
 			IngressClass:    root.Config.IngressClass,
+			NumThreads:      1,
 		},
 	)
 
@@ -62,7 +63,9 @@ var _ = BeforeSuite(func() {
 		err = hpdata.LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
 		Expect(err).NotTo(HaveOccurred())
 
-		go op.Run()
+		//stop := make(chan struct{})
+		//defer close(stop)
+		go op.Run(nil)
 	}
 	root.EventuallyCRD().Should(Succeed())
 

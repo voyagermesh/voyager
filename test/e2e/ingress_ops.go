@@ -80,7 +80,7 @@ var _ = Describe("IngressOperations", func() {
 				Skip("Minikube do not support this")
 			}
 			// Check Status for ingress
-			baseIngress, err := f.VoyagerClient.Ingresses(ing.Namespace).Get(ing.Name, metav1.GetOptions{})
+			baseIngress, err := f.VoyagerClient.VoyagerV1beta1().Ingresses(ing.Namespace).Get(ing.Name, metav1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			svc, err := f.Ingress.GetOffShootService(ing)
@@ -512,6 +512,7 @@ var _ = Describe("IngressOperations", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
+			By("Checking TestServers PortAssignments")
 			err = f.Ingress.CheckTestServersPortAssignments(ing)
 			Expect(err).Should(BeNil())
 		})

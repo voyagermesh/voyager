@@ -10,7 +10,7 @@ import (
 
 	v1u "github.com/appscode/kutil/core/v1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client"
 	vu "github.com/appscode/voyager/client/typed/voyager/v1beta1/util"
 	vault "github.com/hashicorp/vault/api"
 	"github.com/xenolf/lego/acme"
@@ -22,11 +22,11 @@ import (
 
 type CertStore struct {
 	KubeClient    kubernetes.Interface
-	VoyagerClient cs.VoyagerV1beta1Interface
+	VoyagerClient cs.Interface
 	VaultClient   *vault.Client
 }
 
-func NewCertStore(kubeClient kubernetes.Interface, voyagerClient cs.VoyagerV1beta1Interface) (*CertStore, error) {
+func NewCertStore(kubeClient kubernetes.Interface, voyagerClient cs.Interface) (*CertStore, error) {
 	store := &CertStore{
 		KubeClient:    kubeClient,
 		VoyagerClient: voyagerClient,
@@ -129,7 +129,7 @@ func (s *CertStore) Save(crd *api.Certificate, cert acme.CertificateResource) er
 	if err != nil {
 		return fmt.Errorf("failed to parse tls.crt for Certificate %s/%s. Reason: %s", crd.Namespace, crd.Name, err)
 	}
-	_, _, err = vu.PatchCertificate(s.VoyagerClient, crd, func(in *api.Certificate) *api.Certificate {
+	_, _, err = vu.PatchCertificate(s.VoyagerClient.VoyagerV1beta1(), crd, func(in *api.Certificate) *api.Certificate {
 		// Update certificate data to add Details Information
 		t := metav1.Now()
 		in.Status.LastIssuedCertificate = &api.CertificateDetails{

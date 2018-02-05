@@ -4,66 +4,35 @@ import (
 	"strings"
 
 	ioutilz "github.com/appscode/go/ioutil"
-	"github.com/appscode/go/log"
+	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	rt "k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/runtime"
-	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/util/workqueue"
 )
 
 func (c *Controller) initCertificateCRDWatcher() {
-	lw := &cache.ListWatch{
-		ListFunc: func(opts metav1.ListOptions) (rt.Object, error) {
-			return c.VoyagerClient.Certificates(c.options.IngressRef.Namespace).List(metav1.ListOptions{})
-		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.VoyagerClient.Certificates(c.options.IngressRef.Namespace).Watch(metav1.ListOptions{})
-		},
-	}
-
-	// create the workqueue
-	c.crtQueue = workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "certificate-crd")
-
-	// Bind the workqueue to a cache with the help of an informer. This way we make sure that
-	// whenever the cache is updated, the pod key is added to the workqueue.
-	// Note that when we finally process the item from the workqueue, we might see a newer version
-	// of the Secret than the version which was responsible for triggering the update.
-	c.crtIndexer, c.crtInformer = cache.NewIndexerInformer(lw, &api.Certificate{}, c.options.ResyncPeriod, cache.ResourceEventHandlerFuncs{
+	c.crtInformer = c.voyagerInformerFactory.Voyager().V1beta1().Certificates().Informer()
+	c.crtQueue = queue.New("Certificate", c.options.MaxNumRequeues, c.options.NumThreads, c.syncCertificate)
+	c.crtInformer.AddEventHandler(&cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			if r, ok := obj.(*api.Certificate); ok {
 				if c.isCertificateUsedInIngress(r) {
-					key, err := cache.MetaNamespaceKeyFunc(obj)
-					if err == nil {
-						c.crtQueue.Add(key)
-					}
+					queue.Enqueue(c.crtQueue.GetQueue(), obj)
 				}
 			}
 		},
-		UpdateFunc: func(old interface{}, new interface{}) {
-			if r, ok := new.(*api.Certificate); ok {
+		UpdateFunc: func(oldObj interface{}, newObj interface{}) {
+			if r, ok := newObj.(*api.Certificate); ok {
 				if c.isCertificateUsedInIngress(r) {
-					key, err := cache.MetaNamespaceKeyFunc(new)
-					if err == nil {
-						c.crtQueue.Add(key)
-					}
+					queue.Enqueue(c.crtQueue.GetQueue(), newObj)
 				}
 			}
 		},
 		DeleteFunc: func(obj interface{}) {
-			// IndexerInformer uses a delta queue, therefore for deletes we have to use this
-			// key function.
-			key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
-			if err == nil {
-				c.crtQueue.Add(key)
-			}
+			queue.Enqueue(c.crtQueue.GetQueue(), obj)
 		},
-	}, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	})
 }
 
 func (c *Controller) isCertificateUsedInIngress(s *api.Certificate) bool {
@@ -82,50 +51,6 @@ func (c *Controller) isCertificateUsedInIngress(s *api.Certificate) bool {
 	return false
 }
 
-func (c *Controller) runCertificateWatcher() {
-	for c.processNextCertificate() {
-	}
-}
-
-func (c *Controller) processNextCertificate() bool {
-	// Wait until there is a new item in the working queue
-	key, quit := c.crtQueue.Get()
-	if quit {
-		return false
-	}
-	// Tell the queue that we are done with processing this key. This unblocks the key for other workers
-	// This allows safe parallel processing because two deployments with the same key are never processed in
-	// parallel.
-	defer c.crtQueue.Done(key)
-
-	// Invoke the method containing the business logic
-	err := c.syncCertificate(key.(string))
-	if err == nil {
-		// Forget about the #AddRateLimited history of the key on every successful synchronization.
-		// This ensures that future processing of updates for this key is not delayed because of
-		// an outdated error history.
-		c.crtQueue.Forget(key)
-		return true
-	}
-	log.Errorln("Failed to process Certificate %v. Reason: %s", key, err)
-
-	// This controller retries 5 times if something goes wrong. After that, it stops trying.
-	if c.crtQueue.NumRequeues(key) < c.options.MaxNumRequeues {
-		glog.Infof("Error syncing deployment %v: %v", key, err)
-
-		// Re-enqueue the key rate limited. Based on the rate limiter on the
-		// queue and the re-enqueue history, the key will be processed later again.
-		c.crtQueue.AddRateLimited(key)
-		return true
-	}
-
-	c.crtQueue.Forget(key)
-	// Report to an external entity that, even after several retries, we could not successfully process this key
-	runtime.HandleError(err)
-	glog.Infof("Dropping deployment %q out of the queue: %v", key, err)
-	return true
-}
-
 // syncToStdout is the business logic of the controller. In this controller it simply prints
 // information about the deployment to stdout. In case an error happened, it has to simply return the error.
 // The retry logic should not be part of the business logic.
@@ -135,15 +60,15 @@ func (c *Controller) syncCertificate(key string) error {
 		return err
 	}
 	if c.options.UsesEngress() {
-		c.engQueue.Add(key)
+		c.engQueue.GetQueue().Add(key)
 	} else {
-		c.ingQueue.Add(key)
+		c.ingQueue.GetQueue().Add(key)
 	}
 	return nil
 }
 
 func (c *Controller) getCertificate(name string) (*api.Certificate, error) {
-	obj, exists, err := c.crtIndexer.GetByKey(c.options.IngressRef.Namespace + "/" + name)
+	obj, exists, err := c.crtInformer.GetIndexer().GetByKey(c.options.IngressRef.Namespace + "/" + name)
 	if err != nil {
 		return nil, err
 	}

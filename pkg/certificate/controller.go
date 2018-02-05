@@ -14,7 +14,7 @@ import (
 	"github.com/appscode/go/log"
 	v1u "github.com/appscode/kutil/core/v1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	acs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client"
 	vu "github.com/appscode/voyager/client/typed/voyager/v1beta1/util"
 	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/appscode/voyager/pkg/config"
@@ -31,7 +31,7 @@ import (
 
 type Controller struct {
 	KubeClient    kubernetes.Interface
-	VoyagerClient acs.VoyagerV1beta1Interface
+	VoyagerClient cs.Interface
 	Opt           config.Options
 	recorder      record.EventRecorder
 
@@ -46,7 +46,7 @@ type Controller struct {
 	logger            *log.Logger
 }
 
-func NewController(ctx context.Context, kubeClient kubernetes.Interface, extClient acs.VoyagerV1beta1Interface, opt config.Options, tpr *api.Certificate) (*Controller, error) {
+func NewController(ctx context.Context, kubeClient kubernetes.Interface, extClient cs.Interface, opt config.Options, tpr *api.Certificate) (*Controller, error) {
 	ctrl := &Controller{
 		logger:        log.New(ctx),
 		KubeClient:    kubeClient,
@@ -83,7 +83,7 @@ func NewController(ctx context.Context, kubeClient kubernetes.Interface, extClie
 		switch ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.APIVersion {
 		case api.SchemeGroupVersion.String():
 			var err error
-			_, err = ctrl.VoyagerClient.Ingresses(ctrl.crd.Namespace).
+			_, err = ctrl.VoyagerClient.VoyagerV1beta1().Ingresses(ctrl.crd.Namespace).
 				Get(ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 			if err != nil {
 				return nil, err
@@ -117,7 +117,7 @@ func NewController(ctx context.Context, kubeClient kubernetes.Interface, extClie
 		return nil, err
 	}
 	if ctrl.store.VaultClient == nil && ctrl.crd.Spec.Storage.Vault != nil {
-		return nil, fmt.Errorf("certificate %s@%s uses vault but vault address is missing", tpr.Name, tpr.Namespace)
+		return nil, fmt.Errorf("certificate %s/%s uses vault but vault address is missing", tpr.Namespace, tpr.Name)
 	}
 
 	return ctrl, nil
@@ -132,7 +132,7 @@ func (c *Controller) Process() error {
 		var certs []*x509.Certificate
 		certs, err = cert.ParseCertsPEM(pemCrt)
 		if err != nil {
-			return fmt.Errorf("secret %s@%s contains bad certificate. Reason: %s", c.crd.SecretName(), c.crd.Namespace, err)
+			return fmt.Errorf("secret %s/%s contains bad certificate. Reason: %s", c.crd.Namespace, c.crd.SecretName(), err)
 		}
 		c.curCert = certs[0]
 	}
@@ -271,7 +271,7 @@ func (c *Controller) renew() error {
 }
 
 func (c *Controller) processError(err error) error {
-	vu.PatchCertificate(c.VoyagerClient, c.crd, func(in *api.Certificate) *api.Certificate {
+	vu.PatchCertificate(c.VoyagerClient.VoyagerV1beta1(), c.crd, func(in *api.Certificate) *api.Certificate {
 		// Update certificate data to add Details Information
 		t := metav1.Now()
 		found := false
@@ -301,7 +301,8 @@ func (c *Controller) processError(err error) error {
 func (c *Controller) updateIngress() error {
 	switch c.crd.Spec.ChallengeProvider.HTTP.Ingress.APIVersion {
 	case api.SchemeGroupVersion.String():
-		i, err := c.VoyagerClient.Ingresses(c.crd.Namespace).
+		i, err := c.VoyagerClient.VoyagerV1beta1().
+			Ingresses(c.crd.Namespace).
 			Get(c.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.FromErr(err).Err()
@@ -337,7 +338,7 @@ func (c *Controller) updateIngress() error {
 		}
 		i.Spec.Rules = append([]api.IngressRule{rule}, i.Spec.Rules...)
 
-		_, err = c.VoyagerClient.Ingresses(c.crd.Namespace).Update(i)
+		_, err = c.VoyagerClient.VoyagerV1beta1().Ingresses(c.crd.Namespace).Update(i)
 		if err != nil {
 			return errors.FromErr(err).Err()
 		}

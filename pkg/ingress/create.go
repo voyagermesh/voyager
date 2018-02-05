@@ -2,16 +2,14 @@ package ingress
 
 import (
 	"fmt"
-	"reflect"
 
-	"github.com/appscode/go/errors"
 	tools "github.com/appscode/kube-mon"
+	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/appscode/kutil/tools/analytics"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	core "k8s.io/api/core/v1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -23,64 +21,22 @@ const (
 	ErrorFilesCommand        = "errorfile"
 )
 
-func (c *controller) ensureConfigMap() error {
-	cm, err := c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-	if kerr.IsNotFound(err) {
-		cm = &core.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      c.Ingress.OffshootName(),
-				Namespace: c.Ingress.Namespace,
-				Annotations: map[string]string{
-					api.OriginAPISchema: c.Ingress.APISchema(),
-					api.OriginName:      c.Ingress.GetName(),
-				},
-			},
-			Data: map[string]string{
-				"haproxy.cfg": c.HAProxyConfig,
-			},
+func (c *controller) ensureConfigMap() (*core.ConfigMap, kutil.VerbType, error) {
+	meta := metav1.ObjectMeta{
+		Name:      c.Ingress.OffshootName(),
+		Namespace: c.Ingress.Namespace,
+	}
+	return core_util.CreateOrPatchConfigMap(c.KubeClient, meta, func(obj *core.ConfigMap) *core.ConfigMap {
+		if obj.Annotations == nil {
+			obj.Annotations = make(map[string]string)
 		}
-		c.logger.Infof("Creating ConfigMap %s/%s", cm.Namespace, cm.Name)
-		_, err = c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Create(cm)
-		return err
-	} else if err != nil {
-		return errors.FromErr(err).Err()
-	}
-
-	needsUpdate := false
-	if val, ok := c.ensureOriginAnnotations(cm.Annotations); ok {
-		needsUpdate = true
-		cm.Annotations = val
-	}
-
-	cmData := map[string]string{
-		"haproxy.cfg": c.HAProxyConfig,
-	}
-	if !reflect.DeepEqual(cm.Data, cmData) {
-		needsUpdate = true
-		cm.Data = cmData
-	}
-
-	if needsUpdate {
-		c.logger.Infof("Updating ConfigMap %s/%s", cm.Namespace, cm.Name)
-		_, err = c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Update(cm)
-		if err != nil {
-			return errors.FromErr(err).Err()
+		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
+		obj.Annotations[api.OriginName] = c.Ingress.GetName()
+		obj.Data = map[string]string{
+			"haproxy.cfg": c.HAProxyConfig,
 		}
-	}
-	return nil
-}
-
-func (c *controller) ensureRBAC() error {
-	if err := c.ensureServiceAccount(); err != nil {
-		return err
-	}
-	if err := c.ensureRoles(); err != nil {
-		return err
-	}
-	if err := c.ensureRoleBinding(); err != nil {
-		return err
-	}
-	return nil
+		return obj
+	})
 }
 
 func (c *controller) getExporterSidecar() (*core.Container, error) {
@@ -119,13 +75,13 @@ func (c *controller) getExporterSidecar() (*core.Container, error) {
 	return nil, nil
 }
 
-func (c *controller) ensureStatsService() error {
+func (c *controller) ensureStatsService() (*core.Service, kutil.VerbType, error) {
 	meta := metav1.ObjectMeta{
 		Name:      c.Ingress.StatsServiceName(),
 		Namespace: c.Ingress.Namespace,
 	}
 
-	_, _, err := core_util.CreateOrPatchService(c.KubeClient, meta, func(in *core.Service) *core.Service {
+	return core_util.CreateOrPatchService(c.KubeClient, meta, func(in *core.Service) *core.Service {
 		in.Labels = c.Ingress.StatsLabels()
 		if in.Annotations == nil {
 			in.Annotations = map[string]string{}
@@ -155,7 +111,6 @@ func (c *controller) ensureStatsService() error {
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, desired)
 		return in
 	})
-	return err
 }
 
 func (c *controller) ensureOriginAnnotations(annotation map[string]string) (map[string]string, bool) {

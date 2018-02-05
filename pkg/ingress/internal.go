@@ -3,19 +3,21 @@ package ingress
 import (
 	"context"
 	"fmt"
-	"reflect"
+	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/appscode/go/errors"
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
 	tools "github.com/appscode/kube-mon"
-	"github.com/appscode/kube-mon/agents"
 	"github.com/appscode/kutil"
-	"github.com/appscode/kutil/meta"
+	apps_util "github.com/appscode/kutil/apps/v1beta1"
+	core_util "github.com/appscode/kutil/core/v1"
+	meta_util "github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/analytics"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
@@ -40,7 +42,7 @@ func NewInternalController(
 	ctx context.Context,
 	kubeClient kubernetes.Interface,
 	crdClient kext_cs.ApiextensionsV1beta1Interface,
-	extClient cs.VoyagerV1beta1Interface,
+	extClient cs.Interface,
 	promClient pcm.MonitoringV1Interface,
 	serviceLister core_listers.ServiceLister,
 	endpointsLister core_listers.EndpointsLister,
@@ -92,110 +94,115 @@ func (c *internalController) IsExists() bool {
 	return true
 }
 
-func (c *internalController) Create() error {
-	err := c.generateConfig()
-	if err != nil {
+func (c *internalController) Reconcile() error {
+	if err := c.generateConfig(); err != nil {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
 			core.EventTypeWarning,
-			eventer.EventReasonIngressHAProxyConfigCreateFailed,
-			"Reason: %s",
-			err.Error(),
+			eventer.EventReasonIngressHAProxyConfigReconcileFailed,
+			"Reason: %v",
+			err,
 		)
 		return errors.FromErr(err).Err()
 	}
-	err = c.ensureConfigMap()
-	if err != nil {
-		c.recorder.Eventf(
-			c.Ingress.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonIngressConfigMapCreateFailed,
-			"Reason: %s",
-			err.Error(),
-		)
-		return errors.FromErr(err).Err()
-	}
-	c.recorder.Eventf(
-		c.Ingress.ObjectReference(),
-		core.EventTypeNormal,
-		eventer.EventReasonIngressConfigMapCreateSuccessful,
-		"Successfully created ConfigMap %s",
-		c.Ingress.OffshootName(),
-	)
 
-	// If RBAC is enabled we need to ensure service account
-	if c.Opt.EnableRBAC {
-		err := c.ensureRBAC()
-		if err != nil {
-			c.recorder.Event(
-				c.Ingress.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonIngressRBACFailed,
-				err.Error(),
-			)
-			return errors.FromErr(err).Err()
-		}
+	if _, vt, err := c.ensureConfigMap(); err != nil {
+		c.recorder.Eventf(
+			c.Ingress.ObjectReference(),
+			core.EventTypeWarning,
+			eventer.EventReasonIngressConfigMapReconcileFailed,
+			"Failed to reconcile ConfigMap %s, Reason: %v",
+			c.Ingress.OffshootName(),
+			err,
+		)
+		return errors.FromErr(err).Err()
+	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
 			core.EventTypeNormal,
-			eventer.EventReasonIngressRBACSuccessful,
-			"Successfully applied RBAC",
+			eventer.EventReasonIngressConfigMapReconcileSuccessful,
+			"Successfully %s ConfigMap %s",
+			vt,
+			c.Ingress.OffshootName(),
 		)
 	}
 
-	_, err = c.ensurePods(nil)
-	if err != nil {
-		c.recorder.Eventf(
-			c.Ingress.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonIngressControllerCreateFailed,
-			"Failed to create NodePortPods, Reason: %s",
-			err.Error(),
-		)
-		return errors.FromErr(err).Err()
+	// If RBAC is enabled we need to ensure service account
+	if c.Opt.EnableRBAC {
+		c.reconcileRBAC()
 	}
-	c.recorder.Eventf(
-		c.Ingress.ObjectReference(),
-		core.EventTypeNormal,
-		eventer.EventReasonIngressControllerCreateSuccessful,
-		"Successfully created NodePortPods",
-	)
 
-	_, err = c.ensureService(nil)
-	if err != nil {
+	if _, vt, err := c.ensurePods(); err != nil {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
 			core.EventTypeWarning,
-			eventer.EventReasonIngressServiceCreateFailed,
-			"Failed to create Service, Reason: %s",
-			err.Error(),
+			eventer.EventReasonIngressDeploymentReconcileFailed,
+			"Failed to reconcile HAProxy Deployment %s, Reason: %v",
+			c.Ingress.OffshootName(),
+			err,
 		)
 		return errors.FromErr(err).Err()
+	} else if vt != kutil.VerbUnchanged {
+		c.recorder.Eventf(
+			c.Ingress.ObjectReference(),
+			core.EventTypeNormal,
+			eventer.EventReasonIngressDeploymentReconcileSuccessful,
+			"Successfully %s HAProxy Deployment %s",
+			vt,
+			c.Ingress.OffshootName(),
+		)
 	}
-	c.recorder.Eventf(
-		c.Ingress.ObjectReference(),
-		core.EventTypeNormal,
-		eventer.EventReasonIngressServiceCreateSuccessful,
-		"Successfully created Service",
-	)
+
+	if _, vt, err := c.ensureService(); err != nil {
+		c.recorder.Eventf(
+			c.Ingress.ObjectReference(),
+			core.EventTypeWarning,
+			eventer.EventReasonIngressServiceReconcileFailed,
+			"Failed to ensure ClusterIP Service %s. Reason: %v",
+			c.Ingress.OffshootName(),
+			err,
+		)
+		return errors.FromErr(err).Err()
+	} else if vt != kutil.VerbUnchanged {
+		c.recorder.Eventf(
+			c.Ingress.ObjectReference(),
+			core.EventTypeNormal,
+			eventer.EventReasonIngressServiceReconcileSuccessful,
+			"Successfully %s ClusterIP Service %s",
+			vt,
+			c.Ingress.OffshootName(),
+		)
+	}
 
 	if c.Ingress.Stats() {
-		err := c.ensureStatsService()
-		// Error ignored intentionally
-		if err != nil {
+		if _, vt, err := c.ensureStatsService(); err != nil { // Error ignored intentionally
 			c.recorder.Eventf(
 				c.Ingress.ObjectReference(),
 				core.EventTypeWarning,
-				eventer.EventReasonIngressStatsServiceCreateFailed,
-				"Failed to create Stats Service. Reason: %s",
-				err.Error(),
+				eventer.EventReasonIngressStatsServiceReconcileFailed,
+				"Failed to ensure stats Service %s. Reason: %v",
+				c.Ingress.StatsServiceName(),
+				err,
 			)
+		} else if vt != kutil.VerbUnchanged {
+			c.recorder.Eventf(
+				c.Ingress.ObjectReference(),
+				core.EventTypeNormal,
+				eventer.EventReasonIngressStatsServiceReconcileSuccessful,
+				"Successfully %s stats Service %s",
+				vt,
+				c.Ingress.StatsServiceName(),
+			)
+		}
+	} else {
+		if err := c.ensureStatsServiceDeleted(); err != nil { // Error ignored intentionally
+			log.Warningf("failed to delete stats Service %s, reason: %s", c.Ingress.StatsServiceName(), err)
 		} else {
 			c.recorder.Eventf(
 				c.Ingress.ObjectReference(),
 				core.EventTypeNormal,
-				eventer.EventReasonIngressStatsServiceCreateSuccessful,
-				"Successfully created Stats Service %s",
+				eventer.EventReasonIngressStatsServiceDeleteSuccessful,
+				"Successfully deleted stats Service %s",
 				c.Ingress.StatsServiceName(),
 			)
 		}
@@ -205,145 +212,30 @@ func (c *internalController) Create() error {
 	if err != nil {
 		return errors.FromErr(err).Err()
 	}
-	if monSpec != nil {
-		agent := agents.New(monSpec.Agent, c.KubeClient, c.CRDClient, c.PromClient)
-		vt, err := agent.CreateOrUpdate(c.Ingress.StatsAccessor(), monSpec)
-		// Error Ignored intentionally
-		if err != nil {
+	if monSpec != nil && c.Ingress.Stats() {
+		if vt, err := c.ensureMonitoringAgent(monSpec); err != nil {
 			c.recorder.Eventf(
 				c.Ingress.ObjectReference(),
 				core.EventTypeWarning,
-				eventer.EventReasonIngressServiceMonitorCreateFailed,
-				err.Error(),
+				eventer.EventReasonIngressMonitorAgentReconcileFailed,
+				"Failed to reconcile monitoring agent. Reason: %v",
+				err,
 			)
 		} else if vt != kutil.VerbUnchanged {
 			c.recorder.Eventf(
 				c.Ingress.ObjectReference(),
 				core.EventTypeNormal,
-				eventer.EventReasonIngressServiceMonitorCreateSuccessful,
-				"Successfully %s ServiceMonitor",
+				eventer.EventReasonIngressMonitorAgentReconcileSuccessful,
+				"Successfully %s monitoring agent",
 				vt,
 			)
 		}
-	}
-
-	return nil
-}
-
-func (c *internalController) Update(mode UpdateMode, old *api.Ingress) error {
-	err := c.generateConfig()
-	if err != nil {
-		c.recorder.Eventf(
-			c.Ingress.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonIngressHAProxyConfigCreateFailed,
-			"Reason: %s",
-			err.Error(),
-		)
-		return errors.FromErr(err).Err()
-	}
-	// Update HAProxy config
-	err = c.updateConfigMap()
-	if err != nil {
-		return errors.FromErr(err).Err()
-	}
-
-	// If RBAC is enabled we need to ensure service account
-	if c.Opt.EnableRBAC {
-		err := c.ensureRBAC()
-		if err != nil {
-			c.recorder.Event(
-				c.Ingress.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonIngressRBACFailed,
-				err.Error(),
-			)
-			return errors.FromErr(err).Err()
-		}
-		c.recorder.Eventf(
-			c.Ingress.ObjectReference(),
-			core.EventTypeNormal,
-			eventer.EventReasonIngressRBACSuccessful,
-			"Successfully applied RBAC",
-		)
-	}
-
-	_, err = c.ensurePods(old)
-	if err != nil {
-		c.recorder.Eventf(
-			c.Ingress.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonIngressUpdateFailed,
-			"Failed to update Pods, %s", err.Error(),
-		)
-		return errors.FromErr(err).Err()
-	}
-	c.recorder.Eventf(
-		c.Ingress.ObjectReference(),
-		core.EventTypeNormal,
-		eventer.EventReasonIngressUpdateSuccessful,
-		"Successfully updated Pods",
-	)
-
-	_, err = c.ensureService(old)
-	if err != nil {
-		c.recorder.Eventf(
-			c.Ingress.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonIngressServiceUpdateFailed,
-			"Failed to update LBService, %s",
-			err.Error(),
-		)
-		return errors.FromErr(err).Err()
-	}
-	c.recorder.Eventf(
-		c.Ingress.ObjectReference(),
-		core.EventTypeNormal,
-		eventer.EventReasonIngressServiceUpdateSuccessful,
-		"Successfully updated LBService",
-	)
-
-	if mode&UpdateStats > 0 {
-		if c.Ingress.Stats() {
-			err := c.ensureStatsService()
-			if err != nil {
-				c.recorder.Eventf(
-					c.Ingress.ObjectReference(),
-					core.EventTypeWarning,
-					eventer.EventReasonIngressStatsServiceCreateFailed,
-					"Failed to create HAProxy stats Service. Reason: %s",
-					err.Error(),
-				)
-			} else {
-				c.recorder.Eventf(
-					c.Ingress.ObjectReference(),
-					core.EventTypeNormal,
-					eventer.EventReasonIngressStatsServiceCreateSuccessful,
-					"Successfully created HAProxy stats Service %s",
-					c.Ingress.StatsServiceName(),
-				)
-			}
-		} else {
-			err := c.ensureStatsServiceDeleted()
-			if err != nil {
-				c.recorder.Eventf(
-					c.Ingress.ObjectReference(),
-					core.EventTypeWarning,
-					eventer.EventReasonIngressStatsServiceDeleteFailed,
-					"Failed to delete HAProxy stats Service. Reason: %s",
-					err.Error(),
-				)
-			} else {
-				c.recorder.Eventf(
-					c.Ingress.ObjectReference(),
-					core.EventTypeNormal,
-					eventer.EventReasonIngressStatsServiceDeleteSuccessful,
-					"Successfully deleted HAProxy stats Service %s",
-					c.Ingress.StatsServiceName(),
-				)
-			}
+	} else { // monitoring disabled, delete old agent, ignore error here
+		if err := c.ensureMonitoringAgentDeleted(nil); err != nil {
+			log.Errorf("failed to delete old monitoring agent, reason: %s", err)
 		}
 	}
+
 	return nil
 }
 
@@ -351,13 +243,12 @@ func (c *internalController) EnsureFirewall(svc *core.Service) error {
 	return nil
 }
 
+// make sure all delete calls require only ingress name and namespace
 func (c *internalController) Delete() {
-	err := c.deletePods()
-	if err != nil {
+	if err := c.deletePods(); err != nil {
 		c.logger.Errorln(err)
 	}
-	err = c.deleteConfigMap()
-	if err != nil {
+	if err := c.deleteConfigMap(); err != nil {
 		c.logger.Errorln(err)
 	}
 	if c.Opt.EnableRBAC {
@@ -365,294 +256,213 @@ func (c *internalController) Delete() {
 			c.logger.Errorln(err)
 		}
 	}
-	err = c.ensureServiceDeleted()
-	if err != nil {
+	if err := c.ensureServiceDeleted(); err != nil {
 		c.logger.Errorln(err)
 	}
-	monSpec, err := tools.Parse(c.Ingress.Annotations, api.EngressKey, api.DefaultExporterPortNumber)
-	if err != nil {
+	// delete agent before deleting stat service
+	if err := c.ensureMonitoringAgentDeleted(nil); err != nil {
 		c.logger.Errorln(err)
 	}
-	if monSpec != nil {
-		agent := agents.New(monSpec.Agent, c.KubeClient, c.CRDClient, c.PromClient)
-		agent.Delete(c.Ingress.StatsAccessor())
-	}
-	if c.Ingress.Stats() {
-		c.ensureStatsServiceDeleted()
+	if err := c.ensureStatsServiceDeleted(); err != nil {
+		c.logger.Errorln(err)
 	}
 	return
 }
 
-func (c *internalController) newService() *core.Service {
-	svc := &core.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      c.Ingress.OffshootName(),
-			Namespace: c.Ingress.Namespace,
-			Annotations: map[string]string{
-				api.OriginAPISchema: c.Ingress.APISchema(),
-				api.OriginName:      c.Ingress.GetName(),
-			},
-		},
-		Spec: core.ServiceSpec{
-			Type:        core.ServiceTypeClusterIP,
-			Ports:       []core.ServicePort{},
-			Selector:    c.Ingress.OffshootLabels(),
-			ExternalIPs: c.Ingress.Spec.ExternalIPs,
-		},
+func (c *internalController) ensureService() (*core.Service, kutil.VerbType, error) {
+	meta := metav1.ObjectMeta{
+		Name:      c.Ingress.OffshootName(),
+		Namespace: c.Ingress.Namespace,
 	}
-	svc.ObjectMeta = c.ensureOwnerReference(svc.ObjectMeta)
+	return core_util.CreateOrPatchService(c.KubeClient, meta, func(obj *core.Service) *core.Service {
+		obj.ObjectMeta = c.ensureOwnerReference(obj.ObjectMeta)
+		obj.Spec.Type = core.ServiceTypeClusterIP
+		obj.Spec.Selector = c.Ingress.OffshootLabels()
 
-	// opening other tcp ports
-	mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
-	for svcPort, target := range mappings {
-		p := core.ServicePort{
-			Name:       "tcp-" + strconv.Itoa(svcPort),
-			Protocol:   "TCP",
-			Port:       int32(svcPort),
-			TargetPort: intstr.FromInt(target.PodPort),
-			NodePort:   int32(target.NodePort),
+		if obj.Annotations == nil {
+			obj.Annotations = make(map[string]string)
 		}
-		svc.Spec.Ports = append(svc.Spec.Ports, p)
-	}
+		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
+		obj.Annotations[api.OriginName] = c.Ingress.GetName()
 
-	if ans, ok := c.Ingress.ServiceAnnotations(c.Opt.CloudProvider); ok {
-		for k, v := range ans {
-			svc.Annotations[k] = v
+		// delete last applied ServiceAnnotations
+		// add new ServiceAnnotations
+		// store new ServiceAnnotations keys
+		lastAppliedKeys, _ := meta_util.GetString(obj.Annotations, api.LastAppliedAnnotationKeys)
+		for _, key := range strings.Split(lastAppliedKeys, ",") {
+			delete(obj.Annotations, key)
 		}
-	}
+		newKeys := make([]string, 0)
+		if ans, ok := c.Ingress.ServiceAnnotations(c.Opt.CloudProvider); ok {
+			for k, v := range ans {
+				obj.Annotations[k] = v
+				newKeys = append(newKeys, k)
+			}
+		}
+		obj.Annotations[api.LastAppliedAnnotationKeys] = strings.Join(newKeys, ",")
 
-	return svc
+		// ExternalIPs
+		obj.Spec.ExternalIPs = c.Ingress.Spec.ExternalIPs
+		if len(obj.Spec.ExternalIPs) > 0 {
+			sort.Strings(obj.Spec.ExternalIPs)
+		}
+
+		// opening other tcp ports
+		mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
+		desiredPorts := make([]core.ServicePort, 0)
+		for svcPort, target := range mappings {
+			p := core.ServicePort{
+				Name:       "tcp-" + strconv.Itoa(svcPort),
+				Protocol:   "TCP",
+				Port:       int32(svcPort),
+				TargetPort: intstr.FromInt(target.PodPort),
+				NodePort:   int32(target.NodePort),
+			}
+			desiredPorts = append(desiredPorts, p)
+		}
+		obj.Spec.Ports = core_util.MergeServicePorts(obj.Spec.Ports, desiredPorts)
+
+		return obj
+	})
 }
 
-func (c *internalController) ensureService(old *api.Ingress) (*core.Service, error) {
-	desired := c.newService()
-	current, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
-	if kerr.IsNotFound(err) {
-		c.logger.Infof("Creating Service %s/%s", desired.Namespace, desired.Name)
-		return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Create(desired)
-	} else if err != nil {
-		return nil, err
+func (c *internalController) ensurePods() (*apps.Deployment, kutil.VerbType, error) {
+	meta := metav1.ObjectMeta{
+		Name:      c.Ingress.OffshootName(),
+		Namespace: c.Ingress.Namespace,
 	}
-	if svc, needsUpdate := c.serviceRequiresUpdate(current, desired, old); needsUpdate {
-		c.logger.Infof("Updating Service %s/%s", desired.Namespace, desired.Name)
-		return c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Update(svc)
-	}
-	return current, nil
-}
-
-func (c *internalController) newPods() *apps.Deployment {
-	deployment := &apps.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      c.Ingress.OffshootName(),
-			Namespace: c.Ingress.Namespace,
-			Labels:    c.Ingress.OffshootLabels(),
-			Annotations: map[string]string{
-				api.OriginAPISchema: c.Ingress.APISchema(),
-				api.OriginName:      c.Ingress.GetName(),
-			},
-		},
-
-		Spec: apps.DeploymentSpec{
-			Replicas: types.Int32P(c.Ingress.Replicas()),
-			Selector: &metav1.LabelSelector{
-				MatchLabels: c.Ingress.OffshootLabels(),
-			},
-			// pod templates.
-			Template: core.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: c.Ingress.OffshootLabels(),
-				},
-				Spec: core.PodSpec{
-					Affinity:         c.Ingress.Spec.Affinity,
-					SchedulerName:    c.Ingress.Spec.SchedulerName,
-					Tolerations:      c.Ingress.Spec.Tolerations,
-					NodeSelector:     c.Ingress.NodeSelector(),
-					ImagePullSecrets: c.Ingress.Spec.ImagePullSecrets,
-					Containers: []core.Container{
-						{
-							Name:  "haproxy",
-							Image: c.Opt.HAProxyImage(),
-							Args: append([]string{
-								fmt.Sprintf("--analytics=%v", config.EnableAnalytics),
-								fmt.Sprintf("--burst=%v", c.Opt.Burst),
-								fmt.Sprintf("--cloud-provider=%s", c.Opt.CloudProvider),
-								fmt.Sprintf("--ingress-api-version=%s", c.Ingress.APISchema()),
-								fmt.Sprintf("--ingress-name=%s", c.Ingress.Name),
-								fmt.Sprintf("--qps=%v", c.Opt.QPS),
-								fmt.Sprintf("--resync-period=%v", c.Opt.ResyncPeriod),
-								"--reload-cmd=/etc/sv/haproxy/reload",
-							}, config.LoggerOptions.ToFlags()...),
-							Env: []core.EnvVar{
-								{
-									Name:  analytics.Key,
-									Value: config.AnalyticsClientID,
-								},
-							},
-							Ports:     []core.ContainerPort{},
-							Resources: c.Ingress.Spec.Resources,
-							VolumeMounts: []core.VolumeMount{
-								{
-									Name:      TLSCertificateVolumeName,
-									MountPath: "/etc/ssl/private/haproxy",
-								},
-							},
-						},
-					},
-					Volumes: []core.Volume{
-						{
-							Name: TLSCertificateVolumeName,
-							VolumeSource: core.VolumeSource{
-								EmptyDir: &core.EmptyDirVolumeSource{},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-	deployment.ObjectMeta = c.ensureOwnerReference(deployment.ObjectMeta)
-	deployment.Spec.Template.Spec.Containers[0].Env = c.ensureEnvVars(deployment.Spec.Template.Spec.Containers[0].Env)
-
-	if c.Opt.EnableRBAC {
-		deployment.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
-	}
-
-	exporter, _ := c.getExporterSidecar()
-	if exporter != nil {
-		deployment.Spec.Template.Spec.Containers = append(deployment.Spec.Template.Spec.Containers, *exporter)
-	}
-
-	// adding tcp ports to pod template
-	for _, podPort := range c.Ingress.PodPorts() {
-		p := core.ContainerPort{
-			Name:          "tcp-" + strconv.Itoa(podPort),
-			Protocol:      "TCP",
-			ContainerPort: int32(podPort),
+	return apps_util.CreateOrPatchDeployment(c.KubeClient, meta, func(obj *apps.Deployment) *apps.Deployment {
+		// deployment annotations
+		if obj.Annotations == nil {
+			obj.Annotations = make(map[string]string)
 		}
-		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, p)
-	}
+		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
+		obj.Annotations[api.OriginName] = c.Ingress.GetName()
 
-	if c.Ingress.Stats() {
-		deployment.Spec.Template.Spec.Containers[0].Ports = append(deployment.Spec.Template.Spec.Containers[0].Ports, core.ContainerPort{
-			Name:          api.StatsPortName,
-			Protocol:      "TCP",
-			ContainerPort: int32(c.Ingress.StatsPort()),
-		})
-	}
+		obj.Labels = c.Ingress.OffshootLabels()
+		obj.ObjectMeta = c.ensureOwnerReference(obj.ObjectMeta)
+		obj.Spec.Replicas = types.Int32P(c.Ingress.Replicas())
+		obj.Spec.Selector = &metav1.LabelSelector{
+			MatchLabels: c.Ingress.OffshootLabels(),
+		}
 
-	if ans, ok := c.Ingress.PodsAnnotations(); ok {
-		deployment.Spec.Template.Annotations = ans
-	}
+		// pod annotations
+		// delete last-applied-annotations, add new-annotations, store new-annotations keys
+		if obj.Spec.Template.Annotations == nil {
+			obj.Spec.Template.Annotations = make(map[string]string)
+		}
+		lastAppliedKeys, _ := meta_util.GetString(obj.Spec.Template.Annotations, api.LastAppliedAnnotationKeys)
+		for _, key := range strings.Split(lastAppliedKeys, ",") {
+			delete(obj.Spec.Template.Annotations, key)
+		}
+		newKeys := make([]string, 0)
+		if ans, ok := c.Ingress.PodsAnnotations(); ok {
+			for k, v := range ans {
+				obj.Spec.Template.Annotations[k] = v
+				newKeys = append(newKeys, k)
+			}
+		}
+		obj.Spec.Template.Annotations[api.LastAppliedAnnotationKeys] = strings.Join(newKeys, ",")
 
-	if len(c.Ingress.ErrorFilesConfigMapName()) > 0 {
-		deployment.Spec.Template.Spec.Containers[0].VolumeMounts = append(
-			deployment.Spec.Template.Spec.Containers[0].VolumeMounts,
-			core.VolumeMount{
-				Name:      ErrorFilesVolumeName,
-				MountPath: ErrorFilesLocation,
-			})
+		// pod spec
+		obj.Spec.Template.ObjectMeta.Labels = c.Ingress.OffshootLabels()
+		obj.Spec.Template.Spec.Affinity = c.Ingress.Spec.Affinity
+		obj.Spec.Template.Spec.SchedulerName = c.Ingress.Spec.SchedulerName
+		obj.Spec.Template.Spec.Tolerations = c.Ingress.Spec.Tolerations
+		obj.Spec.Template.Spec.NodeSelector = c.Ingress.NodeSelector()
+		obj.Spec.Template.Spec.ImagePullSecrets = c.Ingress.Spec.ImagePullSecrets
+		if c.Opt.EnableRBAC {
+			obj.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
+		}
 
-		deployment.Spec.Template.Spec.Volumes = append(
-			deployment.Spec.Template.Spec.Volumes,
+		// volume spec
+		obj.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
+			obj.Spec.Template.Spec.Volumes,
 			core.Volume{
-				Name: ErrorFilesVolumeName,
+				Name: TLSCertificateVolumeName,
 				VolumeSource: core.VolumeSource{
-					ConfigMap: &core.ConfigMapVolumeSource{
-						LocalObjectReference: core.LocalObjectReference{
-							Name: c.Ingress.ErrorFilesConfigMapName(),
+					EmptyDir: &core.EmptyDirVolumeSource{},
+				},
+			},
+		)
+		if len(c.Ingress.ErrorFilesConfigMapName()) > 0 {
+			obj.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
+				obj.Spec.Template.Spec.Volumes,
+				core.Volume{
+					Name: ErrorFilesVolumeName,
+					VolumeSource: core.VolumeSource{
+						ConfigMap: &core.ConfigMapVolumeSource{
+							LocalObjectReference: core.LocalObjectReference{
+								Name: c.Ingress.ErrorFilesConfigMapName(),
+							},
 						},
 					},
 				},
+			)
+		}
+
+		// container spec
+		haproxyContainer := core.Container{
+			Name:  "haproxy",
+			Image: c.Opt.HAProxyImage(),
+			Args: append([]string{
+				fmt.Sprintf("--analytics=%v", config.EnableAnalytics),
+				fmt.Sprintf("--burst=%v", c.Opt.Burst),
+				fmt.Sprintf("--cloud-provider=%s", c.Opt.CloudProvider),
+				fmt.Sprintf("--ingress-api-version=%s", c.Ingress.APISchema()),
+				fmt.Sprintf("--ingress-name=%s", c.Ingress.Name),
+				fmt.Sprintf("--qps=%v", c.Opt.QPS),
+				fmt.Sprintf("--resync-period=%v", c.Opt.ResyncPeriod),
+				"--reload-cmd=/etc/sv/haproxy/reload",
+			}, config.LoggerOptions.ToFlags()...),
+			Env: c.ensureEnvVars([]core.EnvVar{
+				{
+					Name:  analytics.Key,
+					Value: config.AnalyticsClientID,
+				},
+			}),
+			Ports:     []core.ContainerPort{},
+			Resources: c.Ingress.Spec.Resources,
+			VolumeMounts: []core.VolumeMount{
+				{
+					Name:      TLSCertificateVolumeName,
+					MountPath: "/etc/ssl/private/haproxy",
+				},
+			},
+		}
+		if len(c.Ingress.ErrorFilesConfigMapName()) > 0 {
+			haproxyContainer.VolumeMounts = append(
+				haproxyContainer.VolumeMounts,
+				core.VolumeMount{
+					Name:      ErrorFilesVolumeName,
+					MountPath: ErrorFilesLocation,
+				},
+			)
+		}
+		for _, podPort := range c.Ingress.PodPorts() {
+			p := core.ContainerPort{
+				Name:          "tcp-" + strconv.Itoa(podPort),
+				Protocol:      "TCP",
+				ContainerPort: int32(podPort),
+			}
+			haproxyContainer.Ports = append(haproxyContainer.Ports, p)
+		}
+		if c.Ingress.Stats() {
+			haproxyContainer.Ports = append(haproxyContainer.Ports, core.ContainerPort{
+				Name:          api.StatsPortName,
+				Protocol:      "TCP",
+				ContainerPort: int32(c.Ingress.StatsPort()),
 			})
-	}
-	return deployment
-}
-
-func (c *internalController) ensurePods(old *api.Ingress) (*apps.Deployment, error) {
-	desired := c.newPods()
-	current, err := c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Get(desired.Name, metav1.GetOptions{})
-	if kerr.IsNotFound(err) {
-		c.logger.Infof("Creating Deployment %s/%s", desired.Namespace, desired.Name)
-		return c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Create(desired)
-	} else if err != nil {
-		return nil, err
-	}
-
-	needsUpdate := false
-
-	// annotations
-	if current.Annotations == nil {
-		current.Annotations = make(map[string]string)
-	}
-	oldAnn := map[string]string{}
-	if old != nil {
-		if a, ok := old.PodsAnnotations(); ok {
-			oldAnn = a
 		}
-	}
-	for k, v := range desired.Annotations {
-		if cv, found := current.Annotations[k]; !found || cv != v {
-			current.Annotations[k] = v
-			needsUpdate = true
-		}
-		delete(oldAnn, k)
-	}
-	for k := range oldAnn {
-		if _, ok := current.Annotations[k]; ok {
-			delete(current.Annotations, k)
-			needsUpdate = true
-		}
-	}
 
-	if !reflect.DeepEqual(current.Spec.Selector, desired.Spec.Selector) {
-		needsUpdate = true
-		current.Spec.Selector = desired.Spec.Selector
-	}
-	if !reflect.DeepEqual(current.Spec.Template.ObjectMeta, desired.Spec.Template.ObjectMeta) {
-		needsUpdate = true
-		current.Spec.Template.ObjectMeta = desired.Spec.Template.ObjectMeta
-	}
-	if !reflect.DeepEqual(current.Spec.Template.Annotations, desired.Spec.Template.Annotations) {
-		needsUpdate = true
-		current.Spec.Template.Annotations = desired.Spec.Template.Annotations
-	}
-	if !reflect.DeepEqual(current.Spec.Template.Spec.Affinity, desired.Spec.Template.Spec.Affinity) {
-		needsUpdate = true
-		current.Spec.Template.Spec.Affinity = desired.Spec.Template.Spec.Affinity
-	}
-	if current.Spec.Template.Spec.SchedulerName != desired.Spec.Template.Spec.SchedulerName {
-		needsUpdate = true
-		current.Spec.Template.Spec.SchedulerName = desired.Spec.Template.Spec.SchedulerName
-	}
-	if !reflect.DeepEqual(current.Spec.Template.Spec.Tolerations, desired.Spec.Template.Spec.Tolerations) {
-		needsUpdate = true
-		current.Spec.Template.Spec.Tolerations = desired.Spec.Template.Spec.Tolerations
-	}
-	if !reflect.DeepEqual(current.Spec.Template.Spec.NodeSelector, desired.Spec.Template.Spec.NodeSelector) {
-		needsUpdate = true
-		current.Spec.Template.Spec.NodeSelector = desired.Spec.Template.Spec.NodeSelector
-	}
-	if !reflect.DeepEqual(current.Spec.Template.Spec.ImagePullSecrets, desired.Spec.Template.Spec.ImagePullSecrets) {
-		needsUpdate = true
-		current.Spec.Template.Spec.ImagePullSecrets = desired.Spec.Template.Spec.ImagePullSecrets
-	}
-	if !meta.Equal(current.Spec.Template.Spec.Containers, desired.Spec.Template.Spec.Containers) {
-		needsUpdate = true
-		current.Spec.Template.Spec.Containers = desired.Spec.Template.Spec.Containers
-	}
-	if !reflect.DeepEqual(current.Spec.Template.Spec.Volumes, desired.Spec.Template.Spec.Volumes) {
-		needsUpdate = true
-		current.Spec.Template.Spec.Volumes = desired.Spec.Template.Spec.Volumes
-	}
-	if current.Spec.Template.Spec.ServiceAccountName != desired.Spec.Template.Spec.ServiceAccountName {
-		needsUpdate = true
-		current.Spec.Template.Spec.ServiceAccountName = desired.Spec.Template.Spec.ServiceAccountName
-	}
-	if needsUpdate {
-		c.logger.Infof("Updating Deployment %s/%s", desired.Namespace, desired.Name)
-		return c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Update(current)
-	}
-	return current, nil
+		// upsert haproxy and exporter containers
+		obj.Spec.Template.Spec.Containers = core_util.UpsertContainer(obj.Spec.Template.Spec.Containers, haproxyContainer)
+		if exporter, _ := c.getExporterSidecar(); exporter != nil {
+			obj.Spec.Template.Spec.Containers = core_util.UpsertContainer(obj.Spec.Template.Spec.Containers, *exporter)
+		}
+
+		return obj
+	})
 }
 
 func (c *internalController) deletePods() error {

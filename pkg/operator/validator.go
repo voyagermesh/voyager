@@ -12,8 +12,8 @@ import (
 )
 
 func (op *Operator) ValidateIngress() error {
-	invalidIngresses := []string{}
-	ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
+	var invalidIngresses []string
+	ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.options.WatchNamespace()).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -22,12 +22,12 @@ func (op *Operator) ValidateIngress() error {
 		if err != nil {
 			return err
 		}
-		if !engress.ShouldHandleIngress(op.Opt.IngressClass) {
-			log.Warningf("Skipping ingress %s@%s, as it is not handled by Voyager.", ing.Name, ing.Namespace)
+		if !engress.ShouldHandleIngress(op.options.IngressClass) {
+			log.Warningf("Skipping ingress %s/%s, as it is not handled by Voyager.", ing.Namespace, ing.Name)
 			continue
 		}
-		log.Warningf("Checking ingress %s@%s", ing.Name, ing.Namespace)
-		if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
+		log.Warningf("Checking ingress %s/%s", ing.Namespace, ing.Name)
+		if err := engress.IsValid(op.options.CloudProvider); err != nil {
 			op.recorder.Eventf(
 				engress.ObjectReference(),
 				core.EventTypeWarning,
@@ -39,18 +39,18 @@ func (op *Operator) ValidateIngress() error {
 		}
 	}
 
-	engresses, err := op.VoyagerClient.Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
+	engresses, err := op.VoyagerClient.VoyagerV1beta1().Ingresses(op.options.WatchNamespace()).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
 	for _, ing := range engresses.Items {
 		ing.Migrate()
-		if !ing.ShouldHandleIngress(op.Opt.IngressClass) {
-			log.Warningf("Skipping ingress %s@%s, as it is not handled by Voyager.", ing.Name, ing.Namespace)
+		if !ing.ShouldHandleIngress(op.options.IngressClass) {
+			log.Warningf("Skipping ingress %s/%s, as it is not handled by Voyager.", ing.Namespace, ing.Name)
 			continue
 		}
-		log.Warningf("Checking ingress %s@%s", ing.Name, ing.Namespace)
-		if err := ing.IsValid(op.Opt.CloudProvider); err != nil {
+		log.Warningf("Checking ingress %s/%s", ing.Namespace, ing.Name)
+		if err := ing.IsValid(op.options.CloudProvider); err != nil {
 			op.recorder.Eventf(
 				ing.ObjectReference(),
 				core.EventTypeWarning,
@@ -63,7 +63,7 @@ func (op *Operator) ValidateIngress() error {
 	}
 
 	if len(invalidIngresses) > 0 {
-		return fmt.Errorf("One or more Ingress objects are invalid: %s", strings.Join(invalidIngresses, ", "))
+		return fmt.Errorf("one or more Ingress objects are invalid: %s", strings.Join(invalidIngresses, ", "))
 	}
 	return nil
 }

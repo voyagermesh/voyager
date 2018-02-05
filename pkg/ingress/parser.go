@@ -375,7 +375,7 @@ func (c *controller) generateConfig() error {
 				stats.Username = string(secret.Data["username"])
 				stats.PassWord = string(secret.Data["password"])
 			} else {
-				return fmt.Errorf("failed to load stats secret for ingress %s@%s", c.Ingress.Name, c.Ingress.Namespace)
+				return fmt.Errorf("failed to load stats secret for ingress %s/%s", c.Ingress.Namespace, c.Ingress.Name)
 			}
 		}
 		td.Stats = stats
@@ -506,7 +506,7 @@ func (c *controller) generateConfig() error {
 
 				if ref, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoTLS {
 					if ref.Kind == api.ResourceKindCertificate {
-						crd, err := c.VoyagerClient.Certificates(c.Ingress.Namespace).Get(ref.Name, metav1.GetOptions{})
+						crd, err := c.VoyagerClient.VoyagerV1beta1().Certificates(c.Ingress.Namespace).Get(ref.Name, metav1.GetOptions{})
 						if err == nil {
 							srv.CertFile = crd.SecretName() + ".pem"
 						}

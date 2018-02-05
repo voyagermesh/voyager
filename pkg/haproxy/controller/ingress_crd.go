@@ -3,47 +3,38 @@ package controller
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	ioutilz "github.com/appscode/go/ioutil"
-	"github.com/appscode/go/log"
+	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client"
+	voyager_informers "github.com/appscode/voyager/informers/externalversions/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	rt "k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/runtime"
-	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/util/workqueue"
 )
 
 func (c *Controller) initIngressCRDWatcher() {
-	lw := &cache.ListWatch{
-		ListFunc: func(opts metav1.ListOptions) (rt.Object, error) {
-			return c.VoyagerClient.Ingresses(c.options.IngressRef.Namespace).List(metav1.ListOptions{
-			// https://github.com/kubernetes/kubernetes/issues/51046
-			//FieldSelector: fields.OneTermEqualSelector("metadata.name", c.options.IngressRef.Name).String(),
-			})
-		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.VoyagerClient.Ingresses(c.options.IngressRef.Namespace).Watch(metav1.ListOptions{
-			// https://github.com/kubernetes/kubernetes/issues/51046
-			//FieldSelector: fields.OneTermEqualSelector("metadata.name", c.options.IngressRef.Name).String(),
-			})
-		},
-	}
-
-	// create the workqueue
-	c.engQueue = workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "ingress-crd")
-
-	// Bind the workqueue to a cache with the help of an informer. This way we make sure that
-	// whenever the cache is updated, the pod key is added to the workqueue.
-	// Note that when we finally process the item from the workqueue, we might see a newer version
-	// of the Secret than the version which was responsible for triggering the update.
-	c.engIndexer, c.engInformer = cache.NewIndexerInformer(lw, &api.Ingress{}, c.options.ResyncPeriod, cache.ResourceEventHandlerFuncs{
+	c.engInformer = c.voyagerInformerFactory.InformerFor(&api.Ingress{}, func(client cs.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+		return voyager_informers.NewFilteredIngressInformer(
+			client,
+			c.options.IngressRef.Namespace,
+			resyncPeriod,
+			cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+			func(options *metav1.ListOptions) {
+				// https://github.com/kubernetes/kubernetes/issues/51046
+				options.FieldSelector = fields.OneTermEqualSelector("metadata.name", c.options.IngressRef.Name).String()
+			},
+		)
+	})
+	c.engQueue = queue.New("IngressCRD", c.options.MaxNumRequeues, c.options.NumThreads, c.syncIngressCRD)
+	c.engInformer.AddEventHandler(&cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			if r, ok := obj.(*api.Ingress); ok {
 				if r.Name != c.options.IngressRef.Name {
@@ -51,24 +42,18 @@ func (c *Controller) initIngressCRDWatcher() {
 				}
 				r.Migrate()
 				if err := r.IsValid(c.options.CloudProvider); err == nil {
-					key, err := cache.MetaNamespaceKeyFunc(obj)
-					if err == nil {
-						c.engQueue.Add(key)
-					}
+					queue.Enqueue(c.engQueue.GetQueue(), obj)
 				}
 			}
 		},
-		UpdateFunc: func(old interface{}, new interface{}) {
-			if r, ok := new.(*api.Ingress); ok {
+		UpdateFunc: func(oldObj interface{}, newObj interface{}) {
+			if r, ok := newObj.(*api.Ingress); ok {
 				if r.Name != c.options.IngressRef.Name {
 					return
 				}
 				r.Migrate()
 				if err := r.IsValid(c.options.CloudProvider); err == nil {
-					key, err := cache.MetaNamespaceKeyFunc(new)
-					if err == nil {
-						c.engQueue.Add(key)
-					}
+					queue.Enqueue(c.engQueue.GetQueue(), newObj)
 				}
 			}
 		},
@@ -77,66 +62,17 @@ func (c *Controller) initIngressCRDWatcher() {
 				if r.Name != c.options.IngressRef.Name {
 					return
 				}
-				// IndexerInformer uses a delta queue, therefore for deletes we have to use this
-				// key function.
-				key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
-				if err == nil {
-					c.engQueue.Add(key)
-				}
+				queue.Enqueue(c.engQueue.GetQueue(), obj)
 			}
 		},
-	}, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-}
-
-func (c *Controller) runIngressCRDWatcher() {
-	for c.processNextIngressCRD() {
-	}
-}
-
-func (c *Controller) processNextIngressCRD() bool {
-	// Wait until there is a new item in the working queue
-	key, quit := c.engQueue.Get()
-	if quit {
-		return false
-	}
-	// Tell the queue that we are done with processing this key. This unblocks the key for other workers
-	// This allows safe parallel processing because two deployments with the same key are never processed in
-	// parallel.
-	defer c.engQueue.Done(key)
-
-	// Invoke the method containing the business logic
-	err := c.syncIngressCRD(key.(string))
-	if err == nil {
-		// Forget about the #AddRateLimited history of the key on every successful synchronization.
-		// This ensures that future processing of updates for this key is not delayed because of
-		// an outdated error history.
-		c.engQueue.Forget(key)
-		return true
-	}
-	log.Errorln("Failed to process Ingress %v. Reason: %s", key, err)
-
-	// This controller retries 5 times if something goes wrong. After that, it stops trying.
-	if c.engQueue.NumRequeues(key) < c.options.MaxNumRequeues {
-		glog.Infof("Error syncing deployment %v: %v", key, err)
-
-		// Re-enqueue the key rate limited. Based on the rate limiter on the
-		// queue and the re-enqueue history, the key will be processed later again.
-		c.engQueue.AddRateLimited(key)
-		return true
-	}
-
-	c.engQueue.Forget(key)
-	// Report to an external entity that, even after several retries, we could not successfully process this key
-	runtime.HandleError(err)
-	glog.Infof("Dropping deployment %q out of the queue: %v", key, err)
-	return true
+	})
 }
 
 // syncToStdout is the business logic of the controller. In this controller it simply prints
 // information about the deployment to stdout. In case an error happened, it has to simply return the error.
 // The retry logic should not be part of the business logic.
 func (c *Controller) syncIngressCRD(key string) error {
-	obj, exists, err := c.engIndexer.GetByKey(key)
+	obj, exists, err := c.engInformer.GetIndexer().GetByKey(key)
 	if err != nil {
 		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
@@ -166,7 +102,7 @@ func (c *Controller) syncIngressCRD(key string) error {
 
 func (c *Controller) getIngress() (*api.Ingress, error) {
 	if c.options.UsesEngress() {
-		obj, exists, err := c.engIndexer.GetByKey(c.options.IngressRef.Namespace + "/" + c.options.IngressRef.Name)
+		obj, exists, err := c.engInformer.GetIndexer().GetByKey(c.options.IngressRef.Namespace + "/" + c.options.IngressRef.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -182,7 +118,7 @@ func (c *Controller) getIngress() (*api.Ingress, error) {
 		return i, nil
 	}
 
-	obj, exists, err := c.ingIndexer.GetByKey(c.options.IngressRef.Namespace + "/" + c.options.IngressRef.Name)
+	obj, exists, err := c.ingInformer.GetIndexer().GetByKey(c.options.IngressRef.Namespace + "/" + c.options.IngressRef.Name)
 	if err != nil {
 		return nil, err
 	}

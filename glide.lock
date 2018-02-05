@@ -1,5 +1,5 @@
 hash: eac2079579d02a428a46bb2976ea1504d7472ba2284b529c06f3be74d002ae20
-updated: 2018-01-28T08:51:01.30361834-08:00
+updated: 2018-02-05T05:07:09.087176882-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -9,7 +9,7 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/go
-  version: 99dbf420807d9459b63d1d0bf702537bb7aa976f
+  version: fe2dd84a755c383d0516595f4537c2298be9fce5
   subpackages:
   - analytics
   - context
@@ -30,21 +30,26 @@ imports:
   subpackages:
   - exporter
 - name: github.com/appscode/kube-mon
-  version: 6c843f8c6418d421ec6e7d62d7840b114e043334
+  version: 15a002ed77ecf95b7b291d24334ccea138048176
   subpackages:
   - agents
   - agents/coreosprometheusoperator
   - agents/prometheusbuiltin
   - api
+  - prometheus/v1
 - name: github.com/appscode/kutil
-  version: 60ced7f055b34d512a84f65ca0a7d412ec3d6ef2
+  version: 3037bd8a4c122f37b93108e0ef1f7b874079b93a
   subpackages:
   - apiextensions/v1beta1
+  - apps/v1beta1
   - core/v1
+  - discovery
+  - extensions/v1beta1
   - meta
   - rbac/v1beta1
   - tools/analytics
   - tools/certstore
+  - tools/queue
 - name: github.com/appscode/mergo
   version: e3000cb3d28c72b837601cac94debd91032d19fe
 - name: github.com/appscode/pat
@@ -144,7 +149,7 @@ imports:
 - name: github.com/dgrijalva/jwt-go
   version: 01aeca54ebda6e0fbfafd0a524d234159c05ec20
 - name: github.com/dnsimple/dnsimple-go
-  version: b43ddd3df165b3077b9f29bd1582280579325b56
+  version: e43ab24dc4818cd584429752f69885fbc8a74baa
   subpackages:
   - dnsimple
 - name: github.com/elazarl/go-bindata-assetfs
@@ -161,6 +166,8 @@ imports:
   version: 751773369052141c013c6e827a71e8f35c07879c
 - name: github.com/fatih/structs
   version: ebf56d35bba727c68ac77f56f2fcf90b181851aa
+- name: github.com/fsnotify/fsnotify
+  version: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/go-ini/ini
@@ -195,11 +202,11 @@ imports:
   - ptypes/struct
   - ptypes/timestamp
 - name: github.com/golang/snappy
-  version: 553a641470496b2327abcac10b36396bd98e45c9
+  version: cef980a12b316c5b7e5bb3a8e168eb43ae999a88
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
-  version: 97aa668b73e764ccdd786bc3ccd2edffe621150e
+  version: 3af367b6b30c263d47e8895973edcca9a49cf029
   subpackages:
   - cmp
   - cmp/internal/diff
@@ -346,7 +353,7 @@ imports:
   - matchers/support/goraph/util
   - types
 - name: github.com/openshift/generic-admission-server
-  version: fee7efcb54503879f889c25d091d0e5758757c85
+  version: 6cbd9584810e7be9ec4263c5d010a48be6231e60
   subpackages:
   - pkg/apiserver
   - pkg/cmd/server
@@ -354,7 +361,7 @@ imports:
 - name: github.com/orcaman/concurrent-map
   version: d4c23bd0e01134806215ffe65ba3fd22ec6721f7
 - name: github.com/ovh/go-ovh
-  version: 02f7e9439689eda7ce4752c7f37e50cb678f2679
+  version: bac16d14a6423e2992939d91083b234d93a46c34
   subpackages:
   - ovh
 - name: github.com/pborman/uuid
@@ -392,8 +399,12 @@ imports:
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: github.com/russross/blackfriday
   version: 300106c228d52c8941d4b3de6054a6062a86dda3
+- name: github.com/sergi/go-diff
+  version: 97b2266dfe4bd4ea1b81a463322f04f8b724801e
+  subpackages:
+  - diffmatchpatch
 - name: github.com/sethgrid/pester
-  version: 760f8913c0483b776294e1bee43f1d687527127b
+  version: 1808e6f72af9682aaae9189a91c6bb9b416297ca
 - name: github.com/shurcooL/sanitized_anchor_name
   version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/sirupsen/logrus
@@ -403,7 +414,7 @@ imports:
   subpackages:
   - mem
 - name: github.com/spf13/cobra
-  version: f91529fc609202eededff4de2dc0ba2f662240a3
+  version: eb589833591a36b5720108a621baab8dee9b2ac5
   subpackages:
   - doc
 - name: github.com/spf13/pflag
@@ -443,6 +454,12 @@ imports:
   - providers/dns/pdns
   - providers/dns/route53
   - providers/dns/vultr
+- name: github.com/yudai/gojsondiff
+  version: 7b1b7adf999dab73a6eb02669c3d82dbb27a3dd6
+  subpackages:
+  - formatter
+- name: github.com/yudai/golcs
+  version: d1c525dea8ce39ea9a783d33cf08932305373f2c
 - name: golang.org/x/crypto
   version: 81e90905daefcd6fd217b62423c0908922eadb30
   subpackages:

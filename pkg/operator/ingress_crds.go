@@ -1,174 +1,119 @@
 package operator
 
 import (
-	"context"
-	"reflect"
-
 	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
-	tools "github.com/appscode/kube-mon"
-	"github.com/appscode/kube-mon/agents"
+	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/appscode/kutil/meta"
+	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	"github.com/appscode/voyager/client/typed/voyager/v1beta1/util"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/ingress"
+	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/cache"
 )
 
-// Blocks caller. Intended to be called as a Go routine.
-func (op *Operator) initIngressCRDWatcher() cache.Controller {
-	lw := &cache.ListWatch{
-		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return op.VoyagerClient.Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
-		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return op.VoyagerClient.Ingresses(op.Opt.WatchNamespace()).Watch(metav1.ListOptions{})
-		},
-	}
-	_, informer := cache.NewInformer(lw,
-		&api.Ingress{},
-		op.Opt.ResyncPeriod,
-		cache.ResourceEventHandlerFuncs{
-			AddFunc: func(obj interface{}) {
-				ctx := etx.Background()
-				logger := log.New(ctx)
-				if engress, ok := obj.(*api.Ingress); ok {
-					engress.Migrate()
-					logger.Infof("%s %s@%s added", engress.APISchema(), engress.Name, engress.Namespace)
-					if !engress.ShouldHandleIngress(op.Opt.IngressClass) {
-						logger.Infof("%s %s@%s does not match ingress class", engress.APISchema(), engress.Name, engress.Namespace)
-						return
-					}
-					if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
-						op.recorder.Eventf(
-							engress.ObjectReference(),
-							core.EventTypeWarning,
-							eventer.EventReasonIngressInvalid,
-							"Reason: %s",
-							err.Error(),
-						)
-						return
-					}
+func (op *Operator) initIngressCRDWatcher() {
+	op.engInformer = op.voyagerInformerFactory.Voyager().V1beta1().Ingresses().Informer()
+	op.engQueue = queue.New("IngressCRD", op.options.MaxNumRequeues, op.options.NumThreads, op.reconcileEngress)
+	op.engInformer.AddEventHandler(&cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			engress, ok := obj.(*api.Ingress)
+			if !ok {
+				log.Errorln("Invalid Ingress object")
+				return
+			}
+			engress.Migrate()
 
-					op.AddEngress(ctx, engress)
-				}
-			},
-			UpdateFunc: func(old, new interface{}) {
-				ctx := etx.Background()
-				logger := log.New(ctx)
-				oldEngress, ok := old.(*api.Ingress)
-				if !ok {
-					logger.Errorln("Invalid Ingress object")
-					return
-				}
-				oldEngress.Migrate()
-				newEngress, ok := new.(*api.Ingress)
-				if !ok {
-					logger.Errorln("Invalid Ingress object")
-					return
-				}
-				newEngress.Migrate()
-				if changed, _ := oldEngress.HasChanged(*newEngress); !changed {
-					return
-				}
-				diff := meta.Diff(oldEngress, newEngress)
-				logger.Infof("%s %s@%s has changed. Diff: %s", newEngress.APISchema(), newEngress.Name, newEngress.Namespace, diff)
-				if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
-					op.recorder.Eventf(
-						newEngress.ObjectReference(),
-						core.EventTypeWarning,
-						eventer.EventReasonIngressInvalid,
-						"Reason: %s",
-						err.Error(),
-					)
-					return
-				}
-				op.UpdateEngress(ctx, oldEngress, newEngress)
-			},
-			DeleteFunc: func(obj interface{}) {
-				if engress, ok := obj.(*api.Ingress); ok {
-					engress.Migrate()
-					ctx := etx.Background()
-					logger := log.New(ctx)
-					logger.Infof("%s %s@%s deleted", engress.APISchema(), engress.Name, engress.Namespace)
-					if !engress.ShouldHandleIngress(op.Opt.IngressClass) {
-						logger.Infof("%s %s@%s does not match ingress class", engress.APISchema(), engress.Name, engress.Namespace)
-						return
-					}
-					op.DeleteEngress(ctx, engress)
-				}
-			},
+			if err := engress.IsValid(op.options.CloudProvider); err != nil {
+				op.recorder.Eventf(
+					engress.ObjectReference(),
+					core.EventTypeWarning,
+					eventer.EventReasonIngressInvalid,
+					"Reason: %s",
+					err.Error(),
+				)
+				return
+			}
+			queue.Enqueue(op.engQueue.GetQueue(), obj)
 		},
-	)
-	return informer
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			old, ok := oldObj.(*api.Ingress)
+			if !ok {
+				log.Errorln("Invalid Ingress object")
+				return
+			}
+			old.Migrate()
+
+			nu, ok := newObj.(*api.Ingress)
+			if !ok {
+				log.Errorln("Invalid Ingress object")
+				return
+			}
+			nu.Migrate()
+
+			if changed, _ := old.HasChanged(*nu); !changed {
+				return
+			}
+			diff := meta.Diff(old, nu)
+			log.Infof("%s %s/%s has changed. Diff: %s", nu.APISchema(), nu.Namespace, nu.Name, diff)
+
+			if err := nu.IsValid(op.options.CloudProvider); err != nil {
+				op.recorder.Eventf(
+					nu.ObjectReference(),
+					core.EventTypeWarning,
+					eventer.EventReasonIngressInvalid,
+					"Reason: %s",
+					err.Error(),
+				)
+				return
+			}
+			queue.Enqueue(op.engQueue.GetQueue(), newObj)
+		},
+	})
+	op.engLister = op.voyagerInformerFactory.Voyager().V1beta1().Ingresses().Lister()
 }
 
-func (op *Operator) AddEngress(ctx context.Context, engress *api.Ingress) {
-	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
-	if ctrl.IsExists() {
-		if err := ctrl.Update(ingress.UpdateStats, nil); err != nil {
-			log.Errorln(err)
+func (op *Operator) reconcileEngress(key string) error {
+	obj, exists, err := op.engInformer.GetIndexer().GetByKey(key)
+	if err != nil {
+		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		return err
+	}
+	if !exists {
+		glog.Warningf("Engress %s does not exist anymore\n", key)
+		return nil
+	}
+
+	engress := obj.(*api.Ingress).DeepCopy()
+	engress.Migrate()
+	ctrl := ingress.NewController(etx.Background(), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.options, engress)
+
+	if engress.DeletionTimestamp != nil {
+		if core_util.HasFinalizer(engress.ObjectMeta, api.VoyagerFinalizer) {
+			glog.Infof("Delete for engress %s\n", key)
+			ctrl.Delete()
+			util.PatchIngress(op.VoyagerClient.VoyagerV1beta1(), engress, func(obj *api.Ingress) *api.Ingress {
+				core_util.RemoveFinalizer(obj.ObjectMeta, api.VoyagerFinalizer)
+				return obj
+			})
 		}
-		return
 	} else {
-		ctrl.Create()
-	}
-}
-
-func (op *Operator) UpdateEngress(ctx context.Context, oldEngress, newEngress *api.Ingress) {
-	oldHandled := oldEngress.ShouldHandleIngress(op.Opt.IngressClass)
-	newHandled := newEngress.ShouldHandleIngress(op.Opt.IngressClass)
-	if !oldHandled && !newHandled {
-		return
-	}
-
-	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, newEngress)
-	if oldHandled && !newHandled {
-		ctrl.Delete()
-	} else {
-		if ctrl.IsExists() {
-			var updateMode ingress.UpdateMode
-			if oldEngress.IsStatsChanged(*newEngress) {
-				updateMode |= ingress.UpdateStats
-			}
-			// Check for changes in ingress.appscode.com/monitoring-agent
-			if newMonSpec, newErr := tools.Parse(newEngress.Annotations, api.EngressKey, api.DefaultExporterPortNumber); newErr == nil {
-				if oldMonSpec, oldErr := tools.Parse(oldEngress.Annotations, api.EngressKey, api.DefaultExporterPortNumber); oldErr == nil {
-					if !reflect.DeepEqual(oldMonSpec, newMonSpec) {
-						agent := agents.New(newMonSpec.Agent, op.KubeClient, op.CRDClient, op.PromClient)
-						_, err := agent.CreateOrUpdate(newEngress.StatsAccessor(), newMonSpec)
-						if err != nil {
-							return
-						}
-					}
-					if (oldMonSpec == nil && newMonSpec != nil) ||
-						(oldMonSpec != nil && newMonSpec == nil) {
-						updateMode |= ingress.UpdateStats
-					}
-				}
-			}
-
-			// For ingress update update HAProxy once
-			ctrl.Update(updateMode, oldEngress)
+		glog.Infof("Sync/Add/Update for engress %s\n", key)
+		if !core_util.HasFinalizer(engress.ObjectMeta, api.VoyagerFinalizer) {
+			util.PatchIngress(op.VoyagerClient.VoyagerV1beta1(), engress, func(obj *api.Ingress) *api.Ingress {
+				core_util.AddFinalizer(obj.ObjectMeta, api.VoyagerFinalizer)
+				return obj
+			})
+		}
+		if engress.ShouldHandleIngress(op.options.IngressClass) {
+			return ctrl.Reconcile()
 		} else {
-			ctrl.Create()
+			log.Infof("%s %s/%s does not match ingress class", engress.APISchema(), engress.Namespace, engress.Name)
+			ctrl.Delete()
 		}
 	}
-
-	backends := map[string]metav1.ObjectMeta{}
-	for k, v := range oldEngress.BackendServices() {
-		backends[k] = v
-	}
-	for k, v := range newEngress.BackendServices() {
-		backends[k] = v
-	}
-}
-
-func (op *Operator) DeleteEngress(ctx context.Context, engress *api.Ingress) {
-	ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
-	ctrl.Delete()
+	return nil
 }

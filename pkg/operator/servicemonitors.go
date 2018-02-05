@@ -1,80 +1,69 @@
 package operator
 
 import (
-	"context"
-
-	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
-	tools "github.com/appscode/kube-mon"
-	"github.com/appscode/kutil/meta"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	prom_util "github.com/appscode/kube-mon/prometheus/v1"
+	"github.com/appscode/kutil/discovery"
+	"github.com/appscode/kutil/tools/queue"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/watch"
+	"github.com/golang/glog"
 	"k8s.io/client-go/tools/cache"
 )
 
-// Blocks caller. Intended to be called as a Go routine.
-func (op *Operator) initServiceMonitorWatcher() cache.Controller {
-	if !meta.IsPreferredAPIResource(op.KubeClient, prom.Group+"/"+prom.Version, prom.ServiceMonitorsKind) {
-		log.Warningf("Skipping watching non-preferred GroupVersion:%s Kind:%s", prom.Group+"/"+prom.Version, prom.ServiceMonitorsKind)
-		return nil
+func (op *Operator) initServiceMonitorWatcher() {
+	if !discovery.IsPreferredAPIResource(op.KubeClient.Discovery(), prom_util.SchemeGroupVersion.String(), prom.ServiceMonitorsKind) {
+		log.Warningf("Skipping watching non-preferred GroupVersion:%s Kind:%s", prom_util.SchemeGroupVersion.String(), prom.ServiceMonitorsKind)
+		return
 	}
 
-	lw := &cache.ListWatch{
-		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return op.PromClient.ServiceMonitors(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
+	op.smonInformer = cache.NewSharedIndexInformer(
+		&cache.ListWatch{
+			ListFunc:  op.PromClient.ServiceMonitors(op.options.WatchNamespace()).List,
+			WatchFunc: op.PromClient.ServiceMonitors(op.options.WatchNamespace()).Watch,
 		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return op.PromClient.ServiceMonitors(op.Opt.WatchNamespace()).Watch(metav1.ListOptions{})
-		},
-	}
-	_, informer := cache.NewInformer(lw,
-		&prom.ServiceMonitor{},
-		op.Opt.ResyncPeriod,
-		cache.ResourceEventHandlerFuncs{
-			DeleteFunc: func(obj interface{}) {
-				ctx := etx.Background()
-				if svcmon, ok := obj.(*prom.ServiceMonitor); ok {
-					log.New(ctx).Infof("ServiceMonitor %s@%s deleted", svcmon.Name, svcmon.Namespace)
-					op.restoreServiceMonitorIfRequired(ctx, svcmon)
-				}
-			},
-		},
+		&prom.ServiceMonitor{}, op.options.ResyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
 	)
-	return informer
+	op.smonQueue = queue.New("ServiceMonitor", op.options.MaxNumRequeues, op.options.NumThreads, op.reconcileServiceMonitor)
+	op.smonInformer.AddEventHandler(queue.NewDeleteHandler(op.smonQueue.GetQueue()))
 }
 
-func (op *Operator) restoreServiceMonitorIfRequired(ctx context.Context, svcmon *prom.ServiceMonitor) error {
-	if svcmon.Annotations == nil {
-		return nil
+func (op *Operator) reconcileServiceMonitor(key string) error {
+	_, exists, err := op.smonInformer.GetIndexer().GetByKey(key)
+	if err != nil {
+		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		return err
 	}
+	if !exists {
+		glog.Warningf("ServiceMonitor %s does not exist anymore\n", key)
+		if ns, name, err := cache.SplitMetaNamespaceKey(key); err != nil {
+			return err
+		} else {
+			return op.restoreServiceMonitor(name, ns)
+		}
+	}
+	return nil
+}
 
-	// deleted resource have source reference
-	engress, err := op.findOrigin(svcmon.ObjectMeta)
+// requeue ingress if user deletes service-monitor
+func (op *Operator) restoreServiceMonitor(name, ns string) error {
+	items, err := op.listIngresses()
 	if err != nil {
 		return err
 	}
-	monSpec, err := tools.Parse(engress.Annotations, api.EngressKey, api.DefaultExporterPortNumber)
-	if err != nil {
-		return err
+	for i := range items {
+		ing := &items[i]
+		if ing.DeletionTimestamp == nil &&
+			ing.ShouldHandleIngress(op.options.IngressClass) &&
+			ing.Namespace == ns &&
+			ing.StatsServiceName() == name {
+			if key, err := cache.MetaNamespaceKeyFunc(ing); err != nil {
+				return err
+			} else {
+				op.engQueue.GetQueue().Add(key)
+				log.Infof("Add/Delete/Update of service-monitor %s/%s, Ingress %s re-queued for update", ns, name, key)
+				break
+			}
+		}
 	}
-	if monSpec == nil && monSpec.Prometheus == nil {
-		return nil
-	}
-
-	// Ingress Still exists, restore resource
-	log.New(ctx).Infof("ServiceMonitor %s@%s requires restoration", svcmon.Name, svcmon.Namespace)
-	svcmon.SelfLink = ""
-	svcmon.ResourceVersion = ""
-	// Old resource and annotations are missing so we need to add the annotations
-	if svcmon.Annotations == nil {
-		svcmon.Annotations = make(map[string]string)
-	}
-	svcmon.Annotations[api.OriginAPISchema] = engress.APISchema()
-	svcmon.Annotations[api.OriginName] = engress.Name
-
-	_, err = op.PromClient.ServiceMonitors(svcmon.Namespace).Create(svcmon)
-	return err
+	return nil
 }

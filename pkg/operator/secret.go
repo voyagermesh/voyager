@@ -3,76 +3,62 @@ package operator
 import (
 	"reflect"
 
-	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
+	"github.com/appscode/kutil/tools/queue"
 	tapi "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/ingress"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
+	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/cache"
 )
 
-// Blocks caller. Intended to be called as a Go routine.
-func (op *Operator) initSecretWatcher() cache.Controller {
-	lw := &cache.ListWatch{
-		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return op.KubeClient.CoreV1().Secrets(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
-		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return op.KubeClient.CoreV1().Secrets(op.Opt.WatchNamespace()).Watch(metav1.ListOptions{})
-		},
-	}
-	_, informer := cache.NewIndexerInformer(lw,
-		&core.Secret{},
-		op.Opt.ResyncPeriod,
-		cache.ResourceEventHandlerFuncs{
-			UpdateFunc: func(old, new interface{}) {
-				if oldSecret, ok := old.(*core.Secret); ok {
-					if newSecret, ok := new.(*core.Secret); ok {
-						if reflect.DeepEqual(oldSecret.Data, newSecret.Data) {
-							return
-						}
-						ctx := etx.Background()
-						logger := log.New(ctx)
-						// Secret DataChanged. We need to list all Ingress and check which of
-						// those ingress uses this secret as basic auth secret.
-						items, err := op.listIngresses()
-						if err != nil {
-							log.Errorln(err)
-							return
-						}
+func (op *Operator) initSecretWatcher() {
+	op.secretInformer = op.kubeInformerFactory.Core().V1().Secrets().Informer()
+	op.secretQueue = queue.New("Secret", op.options.MaxNumRequeues, op.options.NumThreads, op.reconcileSecret)
+	op.secretInformer.AddEventHandler(queue.NewEventHandler(op.secretQueue.GetQueue(), func(old interface{}, new interface{}) bool {
+		oldSecret := old.(*core.Secret)
+		newSecret := new.(*core.Secret)
+		return !reflect.DeepEqual(oldSecret.Data, newSecret.Data)
+	}))
+	op.secretLister = op.kubeInformerFactory.Core().V1().Secrets().Lister()
+}
 
-						for i := range items {
-							engress := &items[i]
-							if engress.ShouldHandleIngress(op.Opt.IngressClass) || op.IngressServiceUsesAuthSecret(engress, newSecret) {
-								if engress.UsesAuthSecret(newSecret.Namespace, newSecret.Name) {
-									ctrl := ingress.NewController(ctx, op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.ServiceLister, op.EndpointsLister, op.Opt, engress)
-									if ctrl.IsExists() {
-										cfgErr := ctrl.Update(0, nil)
-										if cfgErr != nil {
-											logger.Infof("Failed to update offshoots of %s Ingress %s/%s. Reason: %s", engress.APISchema(), engress.Namespace, engress.Name, cfgErr)
-										}
-									} else {
-										ctrl.Create()
-									}
-								}
-							}
-						}
+func (op *Operator) reconcileSecret(key string) error {
+	obj, exists, err := op.secretInformer.GetIndexer().GetByKey(key)
+	if err != nil {
+		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		return err
+	}
+	if exists {
+		glog.Infof("Sync/Add/Update for Secret %s\n", key)
+		secret := obj.(*core.Secret).DeepCopy()
+		// Secret DataChanged. We need to list all Ingress and check which of
+		// those ingress uses this secret as basic auth secret.
+		items, err := op.listIngresses()
+		if err != nil {
+			return err
+		}
+		for i := range items {
+			ing := &items[i]
+			if ing.DeletionTimestamp == nil &&
+				(ing.ShouldHandleIngress(op.options.IngressClass) || op.IngressServiceUsesAuthSecret(ing, secret)) {
+				if ing.UsesAuthSecret(secret.Namespace, secret.Name) {
+					if key, err := cache.MetaNamespaceKeyFunc(ing); err != nil {
+						return err
+					} else {
+						op.engQueue.GetQueue().Add(key)
+						log.Infof("Add/Delete/Update of secret %s/%s, Ingress %s re-queued for update", secret.Namespace, secret.Name, key)
 					}
 				}
-			},
-		},
-		cache.Indexers{},
-	)
-	return informer
+			}
+		}
+	}
+	return nil
 }
 
 func (op *Operator) IngressServiceUsesAuthSecret(ing *tapi.Ingress, secret *core.Secret) bool {
-	svcs, err := op.ServiceLister.List(labels.Everything())
+	svcs, err := op.svcLister.List(labels.Everything())
 	if err != nil {
 		log.Errorln(err)
 		return false

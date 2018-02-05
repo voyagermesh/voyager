@@ -5,7 +5,7 @@ import (
 
 	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/kutil/tools/certstore"
-	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
+	cs "github.com/appscode/voyager/client"
 	"github.com/appscode/voyager/pkg/config"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/afero"
@@ -24,7 +24,7 @@ const (
 type Framework struct {
 	KubeConfig    *rest.Config
 	KubeClient    kubernetes.Interface
-	VoyagerClient cs.VoyagerV1beta1Interface
+	VoyagerClient cs.Interface
 	CRDClient     kext_cs.ApiextensionsV1beta1Interface
 	Config        E2EConfig
 	namespace     string

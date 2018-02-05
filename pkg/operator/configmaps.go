@@ -1,66 +1,56 @@
 package operator
 
 import (
-	"context"
-
-	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	core "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/watch"
+	"github.com/appscode/kutil/tools/queue"
+	"github.com/golang/glog"
 	"k8s.io/client-go/tools/cache"
 )
 
-// Blocks caller. Intended to be called as a Go routine.
-func (op *Operator) initConfigMapWatcher() cache.Controller {
-	lw := &cache.ListWatch{
-		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return op.KubeClient.CoreV1().ConfigMaps(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
-		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return op.KubeClient.CoreV1().ConfigMaps(op.Opt.WatchNamespace()).Watch(metav1.ListOptions{})
-		},
-	}
-	_, informer := cache.NewInformer(lw,
-		&core.ConfigMap{},
-		op.Opt.ResyncPeriod,
-		cache.ResourceEventHandlerFuncs{
-			DeleteFunc: func(obj interface{}) {
-				if cfgmap, ok := obj.(*core.ConfigMap); ok {
-					ctx := etx.Background()
-					log.New(ctx).Infof("ConfigMap %s@%s deleted", cfgmap.Name, cfgmap.Namespace)
-					op.restoreConfigMapIfRequired(ctx, cfgmap)
-				}
-			},
-		},
-	)
-	return informer
+func (op *Operator) initConfigMapWatcher() {
+	op.cfgInformer = op.kubeInformerFactory.Core().V1().ConfigMaps().Informer()
+	op.cfgQueue = queue.New("ConfigMap", op.options.MaxNumRequeues, op.options.NumThreads, op.reconcileConfigMap)
+	op.cfgInformer.AddEventHandler(queue.NewDeleteHandler(op.cfgQueue.GetQueue()))
+	op.cfgLister = op.kubeInformerFactory.Core().V1().ConfigMaps().Lister()
 }
 
-func (op *Operator) restoreConfigMapIfRequired(ctx context.Context, cfgmap *core.ConfigMap) error {
-	if cfgmap.Annotations == nil {
-		return nil
+func (op *Operator) reconcileConfigMap(key string) error {
+	_, exists, err := op.cfgInformer.GetIndexer().GetByKey(key)
+	if err != nil {
+		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		return err
 	}
+	if !exists {
+		glog.Warningf("ConfigMap %s does not exist anymore\n", key)
+		if ns, name, err := cache.SplitMetaNamespaceKey(key); err != nil {
+			return err
+		} else {
+			return op.restoreConfigMap(name, ns)
+		}
+	}
+	return nil
+}
 
-	// deleted resource have source reference
-	engress, err := op.findOrigin(cfgmap.ObjectMeta)
+// requeue ingress if user deletes haproxy-configmap
+func (op *Operator) restoreConfigMap(name, ns string) error {
+	items, err := op.listIngresses()
 	if err != nil {
 		return err
 	}
-
-	// Ingress Still exists, restore resource
-	log.New(ctx).Infof("ConfigMap %s@%s requires restoration", cfgmap.Name, cfgmap.Namespace)
-	cfgmap.SelfLink = ""
-	cfgmap.ResourceVersion = ""
-	// Old resource and annotations are missing so we need to add the annotations
-	if cfgmap.Annotations == nil {
-		cfgmap.Annotations = make(map[string]string)
+	for i := range items {
+		ing := &items[i]
+		if ing.DeletionTimestamp == nil &&
+			ing.ShouldHandleIngress(op.options.IngressClass) &&
+			ing.Namespace == ns &&
+			ing.OffshootName() == name {
+			if key, err := cache.MetaNamespaceKeyFunc(ing); err != nil {
+				return err
+			} else {
+				op.engQueue.GetQueue().Add(key)
+				log.Infof("Add/Delete/Update of haproxy configmap %s/%s, Ingress %s re-queued for update", ns, name, key)
+				break
+			}
+		}
 	}
-	cfgmap.Annotations[api.OriginAPISchema] = engress.APISchema()
-	cfgmap.Annotations[api.OriginName] = engress.Name
-
-	_, err = op.KubeClient.CoreV1().ConfigMaps(cfgmap.Namespace).Create(cfgmap)
-	return err
+	return nil
 }

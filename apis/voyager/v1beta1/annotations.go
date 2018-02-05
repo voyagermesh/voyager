@@ -55,7 +55,8 @@ const (
 	// ServiceAnnotations is user provided annotations map that will be
 	// applied to the service of that LoadBalancer.
 	// ex: "ingress.appscode.com/annotations-service": {"key": "val"}
-	ServiceAnnotations = EngressKey + "/" + "annotations-service"
+	ServiceAnnotations        = EngressKey + "/" + "annotations-service"
+	LastAppliedAnnotationKeys = EngressKey + "/" + "last-applied-annotation-keys"
 
 	// PodAnnotations is user provided annotations map that will be
 	// applied to the Pods (Deployment/ DaemonSet) of that LoadBalancer.
@@ -493,9 +494,9 @@ func (r Ingress) StatsPort() int {
 }
 
 func (r Ingress) StatsServiceName() string {
-	if v, _ := getString(r.Annotations, StatsServiceName); v != "" {
-		return v
-	}
+	//if v, _ := getString(r.Annotations, StatsServiceName); v != "" {
+	//	return v
+	//}
 	return VoyagerPrefix + r.Name + "-stats"
 }
 

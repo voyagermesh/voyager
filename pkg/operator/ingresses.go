@@ -3,119 +3,117 @@ package operator
 import (
 	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
+	core_util "github.com/appscode/kutil/core/v1"
+	ext_util "github.com/appscode/kutil/extensions/v1beta1"
 	"github.com/appscode/kutil/meta"
+	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
+	"github.com/appscode/voyager/pkg/ingress"
+	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/cache"
 )
 
-// Blocks caller. Intended to be called as a Go routine.
-func (op *Operator) initIngresseWatcher() cache.Controller {
-	lw := &cache.ListWatch{
-		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return op.KubeClient.ExtensionsV1beta1().Ingresses(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
+func (op *Operator) initIngressWatcher() {
+	op.ingInformer = op.kubeInformerFactory.Extensions().V1beta1().Ingresses().Informer()
+	op.ingQueue = queue.New("Ingress", op.options.MaxNumRequeues, op.options.NumThreads, op.reconcileIngress)
+	op.ingInformer.AddEventHandler(&cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			engress, err := api.NewEngressFromIngress(obj.(*extensions.Ingress))
+			if err != nil {
+				log.Errorf("Failed to convert Ingress %s/%s into Ingress. Reason %v", engress.Namespace, engress.Name, err)
+				return
+			}
+			if err := engress.IsValid(op.options.CloudProvider); err != nil {
+				op.recorder.Eventf(
+					engress.ObjectReference(),
+					core.EventTypeWarning,
+					eventer.EventReasonIngressInvalid,
+					"Reason: %s",
+					err.Error(),
+				)
+				return
+			}
+			queue.Enqueue(op.ingQueue.GetQueue(), obj)
 		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return op.KubeClient.ExtensionsV1beta1().Ingresses(op.Opt.WatchNamespace()).Watch(metav1.ListOptions{})
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			old, err := api.NewEngressFromIngress(oldObj.(*extensions.Ingress))
+			if err != nil {
+				log.Errorf("Failed to convert Ingress %s/%s into Engress. Reason %v", old.Namespace, old.Name, err)
+				return
+			}
+			nu, err := api.NewEngressFromIngress(newObj.(*extensions.Ingress))
+			if err != nil {
+				log.Errorf("Failed to convert Ingress %s/%s into Engress. Reason %v", nu.Namespace, nu.Name, err)
+				return
+			}
+
+			if changed, _ := old.HasChanged(*nu); !changed {
+				return
+			}
+			diff := meta.Diff(old, nu)
+			log.Infof("%s %s/%s has changed. Diff: %s", nu.GroupVersionKind(), nu.Namespace, nu.Name, diff)
+
+			if err := nu.IsValid(op.options.CloudProvider); err != nil {
+				op.recorder.Eventf(
+					nu.ObjectReference(),
+					core.EventTypeWarning,
+					eventer.EventReasonIngressInvalid,
+					"Reason: %s",
+					err.Error(),
+				)
+				return
+			}
+			queue.Enqueue(op.ingQueue.GetQueue(), newObj)
 		},
+	})
+	op.ingLister = op.kubeInformerFactory.Extensions().V1beta1().Ingresses().Lister()
+}
+
+func (op *Operator) reconcileIngress(key string) error {
+	obj, exists, err := op.ingInformer.GetIndexer().GetByKey(key)
+	if err != nil {
+		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		return err
 	}
-	_, informer := cache.NewInformer(lw,
-		&extensions.Ingress{},
-		op.Opt.ResyncPeriod,
-		cache.ResourceEventHandlerFuncs{
-			AddFunc: func(obj interface{}) {
-				if ingress, ok := obj.(*extensions.Ingress); ok {
-					ctx := etx.Background()
-					logger := log.New(ctx)
-					logger.Infof("%s %s@%s added", ingress.GroupVersionKind(), ingress.Name, ingress.Namespace)
+	if !exists {
+		glog.Warningf("Ingress %s does not exist anymore\n", key)
+		return nil
+	}
 
-					engress, err := api.NewEngressFromIngress(ingress)
-					if err != nil {
-						logger.Errorf("Failed to convert Ingress %s@%s into Engress. Reason %v", ingress.Name, ingress.Namespace, err)
-						return
-					}
-					if !engress.ShouldHandleIngress(op.Opt.IngressClass) {
-						logger.Infof("%s %s@%s does not match ingress class", ingress.GroupVersionKind(), ingress.Name, ingress.Namespace)
-						return
-					}
-					if err := engress.IsValid(op.Opt.CloudProvider); err != nil {
-						op.recorder.Eventf(
-							engress.ObjectReference(),
-							core.EventTypeWarning,
-							eventer.EventReasonIngressInvalid,
-							"Reason: %s",
-							err.Error(),
-						)
-						return
-					}
-					op.AddEngress(ctx, engress)
-				}
-			},
-			UpdateFunc: func(old, new interface{}) {
-				ctx := etx.Background()
-				logger := log.New(ctx)
-				oldIngress, ok := old.(*extensions.Ingress)
-				if !ok {
-					logger.Errorln("Invalid Ingress object")
-					return
-				}
-				newIngress, ok := new.(*extensions.Ingress)
-				if !ok {
-					logger.Errorln("Invalid Ingress object")
-					return
-				}
+	ing := obj.(*extensions.Ingress).DeepCopy()
+	engress, err := api.NewEngressFromIngress(ing)
+	if err != nil {
+		log.Errorf("Failed to convert Ingress %s/%s into Ingress. Reason %v", engress.Namespace, engress.Name, err)
+		return nil
+	}
+	ctrl := ingress.NewController(etx.Background(), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.options, engress)
 
-				oldEngress, err := api.NewEngressFromIngress(oldIngress)
-				if err != nil {
-					logger.Errorf("Failed to convert Ingress %s@%s into Engress. Reason %v", oldIngress.Name, oldIngress.Namespace, err)
-					return
-				}
-				newEngress, err := api.NewEngressFromIngress(newIngress)
-				if err != nil {
-					logger.Errorf("Failed to convert Ingress %s@%s into Engress. Reason %v", newIngress.Name, newIngress.Namespace, err)
-					return
-				}
-				if changed, _ := oldEngress.HasChanged(*newEngress); !changed {
-					return
-				}
-				diff := meta.Diff(oldEngress, newEngress)
-				logger.Infof("%s %s@%s has changed. Diff: %s", newIngress.GroupVersionKind(), newIngress.Name, newIngress.Namespace, diff)
-				if err := newEngress.IsValid(op.Opt.CloudProvider); err != nil {
-					op.recorder.Eventf(
-						newEngress.ObjectReference(),
-						core.EventTypeWarning,
-						eventer.EventReasonIngressInvalid,
-						"Reason: %s",
-						err.Error(),
-					)
-					return
-				}
-				op.UpdateEngress(ctx, oldEngress, newEngress)
-			},
-			DeleteFunc: func(obj interface{}) {
-				if ingress, ok := obj.(*extensions.Ingress); ok {
-					ctx := etx.Background()
-					logger := log.New(ctx)
-					logger.Infof("%s %s@%s deleted", ingress.GroupVersionKind(), ingress.Name, ingress.Namespace)
-
-					engress, err := api.NewEngressFromIngress(ingress)
-					if err != nil {
-						logger.Errorf("Failed to convert Ingress %s@%s into Engress. Reason %v", ingress.Name, ingress.Namespace, err)
-						return
-					}
-					if !engress.ShouldHandleIngress(op.Opt.IngressClass) {
-						logger.Infof("%s %s@%s does not match ingress class", ingress.GroupVersionKind(), ingress.Name, ingress.Namespace)
-						return
-					}
-					op.DeleteEngress(ctx, engress)
-				}
-			},
-		},
-	)
-	return informer
+	if ing.DeletionTimestamp != nil {
+		if core_util.HasFinalizer(ing.ObjectMeta, api.VoyagerFinalizer) {
+			glog.Infof("Delete for engress %s\n", key)
+			ctrl.Delete()
+			ext_util.PatchIngress(op.KubeClient, ing, func(obj *extensions.Ingress) *extensions.Ingress {
+				core_util.RemoveFinalizer(obj.ObjectMeta, api.VoyagerFinalizer)
+				return obj
+			})
+		}
+	} else {
+		glog.Infof("Sync/Add/Update for ingress %s\n", key)
+		if !core_util.HasFinalizer(ing.ObjectMeta, api.VoyagerFinalizer) {
+			ext_util.PatchIngress(op.KubeClient, ing, func(obj *extensions.Ingress) *extensions.Ingress {
+				core_util.AddFinalizer(obj.ObjectMeta, api.VoyagerFinalizer)
+				return obj
+			})
+		}
+		if engress.ShouldHandleIngress(op.options.IngressClass) {
+			return ctrl.Reconcile()
+		} else {
+			log.Infof("%s %s/%s does not match ingress class", engress.APISchema(), engress.Namespace, engress.Name)
+			ctrl.Delete()
+		}
+	}
+	return nil
 }

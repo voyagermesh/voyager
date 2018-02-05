@@ -1,71 +1,56 @@
 package operator
 
 import (
-	"context"
-
-	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
-	"github.com/appscode/go/types"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	extensions "k8s.io/api/extensions/v1beta1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/watch"
+	"github.com/appscode/kutil/tools/queue"
+	"github.com/golang/glog"
 	"k8s.io/client-go/tools/cache"
 )
 
-// Blocks caller. Intended to be called as a Go routine.
-func (op *Operator) initDeploymentWatcher() cache.Controller {
-	lw := &cache.ListWatch{
-		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return op.KubeClient.ExtensionsV1beta1().Deployments(op.Opt.WatchNamespace()).List(metav1.ListOptions{})
-		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return op.KubeClient.ExtensionsV1beta1().Deployments(op.Opt.WatchNamespace()).Watch(metav1.ListOptions{})
-		},
-	}
-	_, informer := cache.NewInformer(lw,
-		&extensions.Deployment{},
-		op.Opt.ResyncPeriod,
-		cache.ResourceEventHandlerFuncs{
-			DeleteFunc: func(obj interface{}) {
-				if deployment, ok := obj.(*extensions.Deployment); ok {
-					ctx := etx.Background()
-					log.New(ctx).Infof("Deployment %s@%s deleted", deployment.Name, deployment.Namespace)
-					op.restoreDeploymentIfRequired(ctx, deployment)
-				}
-			},
-		},
-	)
-	return informer
+func (op *Operator) initDeploymentWatcher() {
+	op.dpInformer = op.kubeInformerFactory.Apps().V1beta1().Deployments().Informer()
+	op.dpQueue = queue.New("Deployment", op.options.MaxNumRequeues, op.options.NumThreads, op.reconcileDeployment)
+	op.dpInformer.AddEventHandler(queue.NewDeleteHandler(op.dpQueue.GetQueue()))
+	op.dpLister = op.kubeInformerFactory.Apps().V1beta1().Deployments().Lister()
 }
 
-func (op *Operator) restoreDeploymentIfRequired(ctx context.Context, deployment *extensions.Deployment) error {
-	if deployment.Annotations == nil {
-		return nil
+func (op *Operator) reconcileDeployment(key string) error {
+	_, exists, err := op.dpInformer.GetIndexer().GetByKey(key)
+	if err != nil {
+		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		return err
 	}
+	if !exists {
+		glog.Warningf("Deployment %s does not exist anymore\n", key)
+		if ns, name, err := cache.SplitMetaNamespaceKey(key); err != nil {
+			return err
+		} else {
+			return op.restoreDeployment(name, ns)
+		}
+	}
+	return nil
+}
 
-	// deleted resource have source reference
-	engress, err := op.findOrigin(deployment.ObjectMeta)
+// requeue ingress if user deletes haproxy-deployment
+func (op *Operator) restoreDeployment(name, ns string) error {
+	items, err := op.listIngresses()
 	if err != nil {
 		return err
 	}
-
-	// Ingress Still exists, restore resource
-	log.New(ctx).Infof("Deployment %s@%s requires restoration", deployment.Name, deployment.Namespace)
-	deployment.Spec.Paused = false
-	if types.Int32(deployment.Spec.Replicas) < 1 {
-		deployment.Spec.Replicas = types.Int32P(engress.Replicas())
+	for i := range items {
+		ing := &items[i]
+		if ing.DeletionTimestamp == nil &&
+			ing.ShouldHandleIngress(op.options.IngressClass) &&
+			ing.Namespace == ns &&
+			ing.OffshootName() == name {
+			if key, err := cache.MetaNamespaceKeyFunc(ing); err != nil {
+				return err
+			} else {
+				op.engQueue.GetQueue().Add(key)
+				log.Infof("Add/Delete/Update of haproxy deployment %s/%s, Ingress %s re-queued for update", ns, name, key)
+				break
+			}
+		}
 	}
-	deployment.SelfLink = ""
-	deployment.ResourceVersion = ""
-	// Old resource and annotations are missing so we need to add the annotations
-	if deployment.Annotations == nil {
-		deployment.Annotations = make(map[string]string)
-	}
-	deployment.Annotations[api.OriginAPISchema] = engress.APISchema()
-	deployment.Annotations[api.OriginName] = engress.Name
-
-	_, err = op.KubeClient.ExtensionsV1beta1().Deployments(deployment.Namespace).Create(deployment)
-	return err
+	return nil
 }
