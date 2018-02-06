@@ -84,7 +84,9 @@ type HTTPService struct {
 func (svc *HTTPService) RemoveBackendAuth() {
 	for i := range svc.Hosts {
 		for j := range svc.Hosts[i].Paths {
-			svc.Hosts[i].Paths[j].Backend.BasicAuth = nil
+			if svc.Hosts[i].Paths[j].Backend != nil {
+				svc.Hosts[i].Paths[j].Backend.BasicAuth = nil
+			}
 		}
 	}
 }
