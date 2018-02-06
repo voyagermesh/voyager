@@ -146,7 +146,7 @@ func runOperator() {
 	// https://github.com/appscode/voyager/issues/346
 	err = w.ValidateIngress()
 	if err != nil {
-		log.Fatalln(err)
+		log.Errorln(err)
 	}
 
 	// https://github.com/appscode/voyager/pull/506
