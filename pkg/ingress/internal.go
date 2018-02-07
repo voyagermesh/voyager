@@ -346,7 +346,7 @@ func (c *internalController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 		}
 
 		// assign number of replicas for initial creation only
-		if *obj.Spec.Replicas == 0 {
+		if obj.Spec.Replicas == nil {
 			obj.Spec.Replicas = types.Int32P(c.Ingress.Replicas())
 		}
 
