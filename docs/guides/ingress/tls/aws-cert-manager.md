@@ -68,7 +68,7 @@ spec:
       - backend:
           serviceName: test-service
           servicePort: '80'
-          backendRule:
+          backendRules:
             - 'acl is_proxy_https hdr(X-Forwarded-Proto) https'
             - 'redirect scheme https code 301 if ! is_proxy_https'
 ```
