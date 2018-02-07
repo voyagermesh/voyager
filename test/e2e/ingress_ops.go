@@ -345,7 +345,7 @@ var _ = Describe("IngressOperations", func() {
 											IngressBackend: api.IngressBackend{
 												ServiceName: f.Ingress.TestServerName(),
 												ServicePort: intstr.FromInt(80),
-												BackendRule: []string{
+												BackendRules: []string{
 													"acl add_url capture.req.uri -m beg /old/add/now",
 													`http-response set-header X-Added-From-Proxy added-from-proxy if add_url`,
 
@@ -361,7 +361,7 @@ var _ = Describe("IngressOperations", func() {
 											IngressBackend: api.IngressBackend{
 												ServiceName: f.Ingress.TestServerName(),
 												ServicePort: intstr.FromInt(80),
-												BackendRule: []string{
+												BackendRules: []string{
 													"acl add_url capture.req.uri -m beg /test-second",
 													`http-response set-header X-Added-From-Proxy added-from-proxy if add_url`,
 
@@ -1024,7 +1024,7 @@ var _ = Describe("IngressOperations", func() {
 											IngressBackend: api.IngressBackend{
 												ServiceName: meta.Name,
 												ServicePort: intstr.FromInt(80),
-												BackendRule: []string{
+												BackendRules: []string{
 													"option httpchk",
 												},
 											},
@@ -1070,9 +1070,9 @@ var _ = Describe("IngressOperations", func() {
 										Path: "/testpath",
 										Backend: api.HTTPIngressBackend{
 											IngressBackend: api.IngressBackend{
-												ServiceName: meta.Name,
-												ServicePort: intstr.FromInt(80),
-												BackendRule: []string{},
+												ServiceName:  meta.Name,
+												ServicePort:  intstr.FromInt(80),
+												BackendRules: []string{},
 											},
 										},
 									},
@@ -1118,7 +1118,7 @@ var _ = Describe("IngressOperations", func() {
 											IngressBackend: api.IngressBackend{
 												ServiceName: meta.Name,
 												ServicePort: intstr.FromInt(80),
-												BackendRule: []string{
+												BackendRules: []string{
 													"option httpchk GET /testpath/ok",
 													"http-check expect rstring (testpath/ok)",
 												},
@@ -1167,7 +1167,7 @@ var _ = Describe("IngressOperations", func() {
 											IngressBackend: api.IngressBackend{
 												ServiceName: meta.Name,
 												ServicePort: intstr.FromInt(80),
-												BackendRule: []string{
+												BackendRules: []string{
 													"option httpchk GET /testpath/ok",
 													"http-check expect rstring (wrongpath)",
 												},
@@ -1214,7 +1214,7 @@ var _ = Describe("IngressOperations", func() {
 											IngressBackend: api.IngressBackend{
 												ServiceName: meta.Name,
 												ServicePort: intstr.FromInt(80),
-												BackendRule: []string{
+												BackendRules: []string{
 													"option httpchk",
 												},
 											},

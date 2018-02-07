@@ -619,7 +619,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Ref:         ref("k8s.io/apimachinery/pkg/util/intstr.IntOrString"),
 							},
 						},
-						"backendRule": {
+						"backendRules": {
 							SchemaProps: spec.SchemaProps{
 								Description: "Serialized HAProxy rules to apply on server backend including request, response or header rewrite. acls also can be used. https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#1",
 								Type:        []string{"array"},
@@ -824,7 +824,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Ref:         ref("k8s.io/apimachinery/pkg/util/intstr.IntOrString"),
 							},
 						},
-						"backendRule": {
+						"backendRules": {
 							SchemaProps: spec.SchemaProps{
 								Description: "Serialized HAProxy rules to apply on server backend including request, response or header rewrite. acls also can be used. https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#1",
 								Type:        []string{"array"},

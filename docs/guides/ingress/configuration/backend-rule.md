@@ -31,7 +31,7 @@ spec:
         backend:
           serviceName: test-service
           servicePort: '80'
-          backendRule:
+          backendRules:
           - 'acl add_url capture.req.uri -m beg /test-second'
           - 'http-response set-header X-Added-From-Proxy added-from-proxy if add_url'
 ```

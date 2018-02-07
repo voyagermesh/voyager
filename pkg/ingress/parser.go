@@ -336,7 +336,7 @@ func (c *controller) generateConfig() error {
 		si.DefaultBackend = &hpi.Backend{
 			BasicAuth:        bk.BasicAuth,
 			Endpoints:        bk.Endpoints,
-			BackendRules:     c.Ingress.Spec.Backend.BackendRule,
+			BackendRules:     c.Ingress.Spec.Backend.BackendRules,
 			RewriteRules:     c.Ingress.Spec.Backend.RewriteRule,
 			HeaderRules:      c.Ingress.Spec.Backend.HeaderRule,
 			Sticky:           bk.Sticky,
@@ -443,7 +443,7 @@ func (c *controller) generateConfig() error {
 						Backend: &hpi.Backend{
 							BasicAuth:        bk.BasicAuth,
 							Endpoints:        bk.Endpoints,
-							BackendRules:     path.Backend.BackendRule,
+							BackendRules:     path.Backend.BackendRules,
 							RewriteRules:     c.rewriteTarget(path.Path, path.Backend.RewriteRule),
 							HeaderRules:      path.Backend.HeaderRule,
 							Sticky:           bk.Sticky,
@@ -477,7 +477,7 @@ func (c *controller) generateConfig() error {
 					ALPNOptions:   parseALPNOptions(rule.TCP.ALPN),
 					FrontendRules: fr.Rules,
 					Backend: &hpi.Backend{
-						BackendRules:     rule.TCP.Backend.BackendRule,
+						BackendRules:     rule.TCP.Backend.BackendRules,
 						Endpoints:        bk.Endpoints,
 						Sticky:           bk.Sticky,
 						StickyCookieName: bk.StickyCookieName,

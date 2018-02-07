@@ -594,7 +594,7 @@ func autoConvert_v1beta1_IngressBackend_To_voyager_IngressBackend(in *IngressBac
 	out.HostNames = *(*[]string)(unsafe.Pointer(&in.HostNames))
 	out.ServiceName = in.ServiceName
 	out.ServicePort = in.ServicePort
-	out.BackendRule = *(*[]string)(unsafe.Pointer(&in.BackendRule))
+	out.BackendRules = *(*[]string)(unsafe.Pointer(&in.BackendRules))
 	return nil
 }
 
@@ -608,7 +608,7 @@ func autoConvert_voyager_IngressBackend_To_v1beta1_IngressBackend(in *voyager.In
 	out.HostNames = *(*[]string)(unsafe.Pointer(&in.HostNames))
 	out.ServiceName = in.ServiceName
 	out.ServicePort = in.ServicePort
-	out.BackendRule = *(*[]string)(unsafe.Pointer(&in.BackendRule))
+	out.BackendRules = *(*[]string)(unsafe.Pointer(&in.BackendRules))
 	return nil
 }
 

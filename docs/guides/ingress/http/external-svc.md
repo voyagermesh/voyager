@@ -140,7 +140,7 @@ If Backendrules are configured, Voyager will not auto generate any redirect rule
 
 ```
 backend:
-  backendRule:
+  backendRules:
   - http-request redirect location https://google.com code 302
   serviceName: external-svc-non-dns
   servicePort: "80"

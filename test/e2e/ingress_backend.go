@@ -32,7 +32,7 @@ var _ = Describe("Frontend rule using specified backend", func() {
 									IngressBackend: api.IngressBackend{
 										ServiceName: f.Ingress.TestServerName(),
 										ServicePort: intstr.FromInt(80),
-										BackendRule: []string{
+										BackendRules: []string{
 											"http-response set-header X-Ingress-Test-Header backend-0",
 										},
 									},
@@ -45,7 +45,7 @@ var _ = Describe("Frontend rule using specified backend", func() {
 										Name:        "backend-1",
 										ServiceName: f.Ingress.TestServerName(),
 										ServicePort: intstr.FromInt(80),
-										BackendRule: []string{
+										BackendRules: []string{
 											"http-response set-header X-Ingress-Test-Header backend-1",
 										},
 									},
@@ -59,7 +59,7 @@ var _ = Describe("Frontend rule using specified backend", func() {
 										Name:        f.Ingress.TestServerName() + "." + f.Namespace() + ":80",
 										ServiceName: f.Ingress.TestServerName(),
 										ServicePort: intstr.FromInt(80),
-										BackendRule: []string{
+										BackendRules: []string{
 											"http-response set-header X-Ingress-Test-Header backend-2",
 										},
 									},

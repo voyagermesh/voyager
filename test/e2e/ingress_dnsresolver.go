@@ -139,7 +139,7 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 											IngressBackend: api.IngressBackend{
 												ServiceName: svcNotResolvesRedirect.Name,
 												ServicePort: intstr.FromString("80"),
-												BackendRule: []string{
+												BackendRules: []string{
 													"http-request redirect location https://google.com code 302",
 												},
 											},
@@ -157,7 +157,7 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 										Path: "/redirect-rule",
 										Backend: api.HTTPIngressBackend{
 											IngressBackend: api.IngressBackend{
-												BackendRule: []string{
+												BackendRules: []string{
 													"http-request redirect location https://github.com/appscode/discuss/issues code 301",
 												},
 												ServiceName: svcNotResolvesRedirect.Name,
