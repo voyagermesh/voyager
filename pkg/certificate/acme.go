@@ -117,7 +117,7 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 		return newDNSProvider(digitalocean.NewDNSProviderCredentials(apiAuthToken))
 	case "dnsimple":
 		var accessToken, baseUrl string
-		if accessToken, found = dnsLoader("DNSIMPLE_OAUTH_TOKEN"); found {
+		if accessToken, found = dnsLoader("DNSIMPLE_OAUTH_TOKEN"); !found {
 			return nil, fmt.Errorf("dns provider credential missing key %s", "DNSIMPLE_OAUTH_TOKEN")
 		}
 		baseUrl, _ = dnsLoader("DNSIMPLE_BASE_URL")
