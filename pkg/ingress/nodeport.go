@@ -445,9 +445,13 @@ func (c *nodePortController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 
 		obj.Labels = c.Ingress.OffshootLabels()
 		obj.ObjectMeta = c.ensureOwnerReference(obj.ObjectMeta)
-		obj.Spec.Replicas = types.Int32P(c.Ingress.Replicas())
 		obj.Spec.Selector = &metav1.LabelSelector{
 			MatchLabels: c.Ingress.OffshootLabels(),
+		}
+
+		// assign number of replicas for initial creation only
+		if *obj.Spec.Replicas == 0 {
+			obj.Spec.Replicas = types.Int32P(c.Ingress.Replicas())
 		}
 
 		// pod annotations
