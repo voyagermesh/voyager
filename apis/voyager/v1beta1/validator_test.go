@@ -21,6 +21,42 @@ func TestIsValid(t *testing.T) {
 
 var dataTables = map[*Ingress]bool{
 	{
+		ObjectMeta: metav1.ObjectMeta{Name: "Empty backend service name"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false,
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "Invalid backend service name"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: ".default",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false,
+	{
 		ObjectMeta: metav1.ObjectMeta{Name: "spec.rule[0] can specify either HTTP or TCP"},
 		Spec: IngressSpec{
 			Rules: []IngressRule{

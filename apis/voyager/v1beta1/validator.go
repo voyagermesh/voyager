@@ -154,8 +154,8 @@ func (r Ingress) IsValid(cloudProvider string) error {
 				}
 				a.Hosts[rule.Host][path.Path] = indices{RuleIndex: ri, PathIndex: pi}
 
-				if path.Backend.ServiceName == "" {
-					return fmt.Errorf("spec.rule[%d].http.paths[%d] is missing serviceName for addr %s and path %s", ri, pi, a, path.Path)
+				if !checkBackendServiceName(path.Backend.ServiceName) {
+					return fmt.Errorf("spec.rule[%d].http.paths[%d] has invalid serviceName for addr %s and path %s", ri, pi, a, path.Path)
 				}
 				if errs := validation.IsDNS1123Subdomain(path.Backend.ServiceName); len(errs) > 0 {
 					return fmt.Errorf("spec.rule[%d].http.paths[%d] is using invalid serviceName for addr %s. Reason: %s", ri, pi, a, strings.Join(errs, ","))
@@ -209,8 +209,8 @@ func (r Ingress) IsValid(cloudProvider string) error {
 				}
 			}
 
-			if rule.TCP.Backend.ServiceName == "" {
-				return fmt.Errorf("spec.rule[%d].tcp is missing serviceName for addr %s", ri, a)
+			if !checkBackendServiceName(rule.TCP.Backend.ServiceName) {
+				return fmt.Errorf("spec.rule[%d].tcp has invalid serviceName for addr %s", ri, a)
 			}
 			if errs := validation.IsDNS1123Subdomain(rule.TCP.Backend.ServiceName); len(errs) > 0 {
 				return fmt.Errorf("spec.rule[%d].tcp is using invalid serviceName for addr %s. Reason: %s", ri, a, strings.Join(errs, ","))
@@ -227,6 +227,9 @@ func (r Ingress) IsValid(cloudProvider string) error {
 
 	// If Ingress does not use any HTTP rule but defined a default backend, we need to open port 80
 	if !usesHTTPRule && r.Spec.Backend != nil {
+		if !checkBackendServiceName(r.Spec.Backend.ServiceName) {
+			return fmt.Errorf("invalid serviceName for default backend")
+		}
 		addrs["*:80"] = &address{Protocol: "http", Address: "*", PodPort: 80}
 	}
 	// ref: https://github.com/appscode/voyager/issues/188
@@ -279,6 +282,15 @@ func (r Ingress) SupportsLBType(cloudProvider string) bool {
 		return true
 	default:
 		return false
+	}
+}
+
+func checkBackendServiceName(name string) bool {
+	if strings.Contains(name, ".") {
+		idx := strings.Index(name, ".")
+		return name[:idx] != "" && name[idx+1:] != ""
+	} else {
+		return name != ""
 	}
 }
 
