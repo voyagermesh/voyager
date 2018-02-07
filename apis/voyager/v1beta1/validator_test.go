@@ -357,7 +357,7 @@ var dataTables = map[*Ingress]bool{
 										IngressBackend: IngressBackend{
 											ServiceName: "foo",
 											ServicePort: intstr.FromString("80"),
-											BackendRule: []string{
+											BackendRules: []string{
 												"http-request redirect location https://google.com code 302",
 											},
 										},
@@ -375,7 +375,7 @@ var dataTables = map[*Ingress]bool{
 									Path: "/redirect-rule",
 									Backend: HTTPIngressBackend{
 										IngressBackend: IngressBackend{
-											BackendRule: []string{
+											BackendRules: []string{
 												"http-request redirect location https://github.com/appscode/discuss/issues code 301",
 											},
 											ServiceName: "foo",

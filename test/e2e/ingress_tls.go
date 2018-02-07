@@ -186,7 +186,7 @@ var _ = Describe("IngressTLS", func() {
 										Path: "/testpath",
 										Backend: api.HTTPIngressBackend{
 											IngressBackend: api.IngressBackend{
-												BackendRule: []string{
+												BackendRules: []string{
 													"redirect scheme https code 301 if !{ ssl_fc }",
 												},
 												ServiceName: f.Ingress.TestServerName(),
@@ -244,7 +244,7 @@ var _ = Describe("IngressTLS", func() {
 										Path: "/testpath",
 										Backend: api.HTTPIngressBackend{
 											IngressBackend: api.IngressBackend{
-												BackendRule: []string{
+												BackendRules: []string{
 													"redirect scheme https code 301 if !{ ssl_fc }",
 												},
 												ServiceName: f.Ingress.TestServerName(),

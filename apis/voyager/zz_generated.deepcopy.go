@@ -503,8 +503,8 @@ func (in *IngressBackend) DeepCopyInto(out *IngressBackend) {
 		copy(*out, *in)
 	}
 	out.ServicePort = in.ServicePort
-	if in.BackendRule != nil {
-		in, out := &in.BackendRule, &out.BackendRule
+	if in.BackendRules != nil {
+		in, out := &in.BackendRules, &out.BackendRules
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}

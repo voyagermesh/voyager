@@ -266,7 +266,7 @@ type IngressBackend struct {
 	// Serialized HAProxy rules to apply on server backend including
 	// request, response or header rewrite. acls also can be used.
 	// https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#1
-	BackendRule []string `json:"backendRule,omitempty"`
+	BackendRules []string `json:"backendRules,omitempty"`
 }
 
 type HTTPIngressBackend struct {
