@@ -96,6 +96,13 @@ $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-alpha.0/ha
     | bash -s -- --provider=$provider --enable-apiserver [--rbac]
 ```
 
+__N.B.__
+- If you are installing Voyager on a GKE cluster, you will need cluster admin permissions to install Voyager operator. Run the following command to grant admin permision to the cluster.
+
+```console
+kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=google-email-for-gce-project
+```
+
 
 ## Using Helm
 Voyager can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/appscode/voyager/tree/6.0.0-alpha.0/chart/stable/voyager) included in this repository or from official charts repository. To install the chart with the release name `my-release`:
