@@ -49,7 +49,7 @@ func (c *controller) getOldAgent() (mona.Agent, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get stat service %s, reason: %s", c.Ingress.StatsServiceName(), err.Error())
 	}
-	agentType, err := meta_util.GetString(svc.Annotations, mona.KeyAgent)
+	agentType, err := meta_util.GetStringValue(svc.Annotations, mona.KeyAgent)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get agent type, reason: %s", err.Error())
 	}

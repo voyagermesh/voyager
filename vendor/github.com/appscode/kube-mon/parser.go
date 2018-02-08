@@ -19,23 +19,22 @@ const (
 )
 
 func Parse(annotations map[string]string, keyPrefix string, defaultExporterPort int32) (*api.AgentSpec, error) {
-	name, _ := meta.GetString(annotations, path.Join(keyPrefix, monitoringAgent))
-	if name == "" {
+	name, err := meta.GetStringValue(annotations, path.Join(keyPrefix, monitoringAgent))
+	if err != nil && err == kutil.ErrNotFound {
 		return nil, nil
 	}
 	agent := api.AgentType(name)
-	var err error
 
 	switch agent {
 	case api.AgentCoreOSPrometheus, api.DeprecatedAgentCoreOSPrometheus:
 		var prom api.PrometheusSpec
 
-		prom.Namespace, _ = meta.GetString(annotations, path.Join(keyPrefix, serviceMonitorNamespace))
+		prom.Namespace, _ = meta.GetStringValue(annotations, path.Join(keyPrefix, serviceMonitorNamespace))
 		if prom.Namespace == "" {
 			return nil, fmt.Errorf("missing %s annotation", path.Join(keyPrefix, serviceMonitorNamespace))
 		}
 
-		prom.Labels, err = meta.GetMap(annotations, path.Join(keyPrefix, serviceMonitorLabels))
+		prom.Labels, err = meta.GetMapValue(annotations, path.Join(keyPrefix, serviceMonitorLabels))
 		if err != nil && err != kutil.ErrNotFound {
 			return nil, err
 		}
@@ -43,7 +42,7 @@ func Parse(annotations map[string]string, keyPrefix string, defaultExporterPort 
 			return nil, fmt.Errorf("missing %s annotation", path.Join(keyPrefix, serviceMonitorLabels))
 		}
 
-		port, err := meta.GetInt(annotations, path.Join(keyPrefix, serviceMonitorPort))
+		port, err := meta.GetIntValue(annotations, path.Join(keyPrefix, serviceMonitorPort))
 		if err != nil && err != kutil.ErrNotFound {
 			return nil, err
 		}
@@ -53,13 +52,13 @@ func Parse(annotations map[string]string, keyPrefix string, defaultExporterPort 
 			prom.Port = int32(port)
 		}
 
-		prom.Interval, _ = meta.GetString(annotations, path.Join(keyPrefix, serviceMonitorScrapeInterval))
+		prom.Interval, _ = meta.GetStringValue(annotations, path.Join(keyPrefix, serviceMonitorScrapeInterval))
 
 		return &api.AgentSpec{Agent: agent, Prometheus: &prom}, nil
 	case api.AgentPrometheusBuiltin:
 		var prom api.PrometheusSpec
 
-		port, err := meta.GetInt(annotations, path.Join(keyPrefix, serviceMonitorPort))
+		port, err := meta.GetIntValue(annotations, path.Join(keyPrefix, serviceMonitorPort))
 		if err != nil && err != kutil.ErrNotFound {
 			return nil, err
 		}
