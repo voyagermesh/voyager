@@ -19,7 +19,11 @@ func GetBool(m map[string]string, key string) (interface{}, error) {
 	if m == nil {
 		return false, kutil.ErrNotFound
 	}
-	return strconv.ParseBool(m[key])
+	v, ok := m[key]
+	if !ok {
+		return false, kutil.ErrNotFound
+	}
+	return strconv.ParseBool(v)
 }
 
 func GetBoolValue(m map[string]string, key string) (bool, error) {
@@ -55,7 +59,7 @@ func GetString(m map[string]string, key string) (interface{}, error) {
 }
 
 func GetStringValue(m map[string]string, key string) (string, error) {
-	v, err := GetInt(m, key)
+	v, err := GetString(m, key)
 	return v.(string), err
 }
 
