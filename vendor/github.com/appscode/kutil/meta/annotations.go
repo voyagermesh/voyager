@@ -110,3 +110,11 @@ func GetMapValue(m map[string]string, key string) (map[string]string, error) {
 	v, err := GetMap(m, key)
 	return v.(map[string]string), err
 }
+
+type GetFunc func(map[string]string) (interface{}, error)
+
+func ParseFor(key string, fn ParserFunc) GetFunc {
+	return func(m map[string]string) (interface{}, error) {
+		return fn(m, key)
+	}
+}

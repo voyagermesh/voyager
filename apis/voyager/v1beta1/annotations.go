@@ -256,56 +256,58 @@ const (
 	RewriteTarget = EngressKey + "/" + "rewrite-target"
 )
 
-var parser = map[string]meta.ParserFunc{
-	APISchema:                        meta.GetString,
-	IngressAffinity:                  meta.GetString,
-	IngressAffinitySessionCookieName: meta.GetString,
-	IngressAffinitySessionCookieHash: meta.GetString,
-	CORSAllowedOrigin:                meta.GetString,
-	CORSAllowedMethods:               meta.GetString,
-	CORSAllowedHeaders:               meta.GetString,
-	HSTSMaxAge:                       meta.GetString,
-	WhitelistSourceRange:             meta.GetString,
-	ProxyBodySize:                    meta.GetString,
-	StatsSecret:                      meta.GetString,
-	StatsServiceName:                 meta.GetString,
-	LBType:                           meta.GetString,
-	DaemonNodeSelector:               meta.GetString,
-	LoadBalancerIP:                   meta.GetString,
-	AuthType:                         meta.GetString,
-	AuthSecret:                       meta.GetString,
-	RewriteTarget:                    meta.GetString,
-	AuthRealm:                        meta.GetString,
-	AuthTLSSecret:                    meta.GetString,
-	AuthTLSVerifyClient:              meta.GetString,
-	AuthTLSErrorPage:                 meta.GetString,
-	ErrorFiles:                       meta.GetString,
+var (
+	get = map[string]meta.GetFunc{}
+)
 
-	StickySession:         meta.GetBool,
-	CORSEnabled:           meta.GetBool,
-	ForceServicePort:      meta.GetBool,
-	EnableHSTS:            meta.GetBool,
-	HSTSPreload:           meta.GetBool,
-	HSTSIncludeSubDomains: meta.GetBool,
-	SSLRedirect:           meta.GetBool,
-	ForceSSLRedirect:      meta.GetBool,
-	SSLPassthrough:        meta.GetBool,
-	StatsOn:               meta.GetBool,
-	KeepSourceIP:          meta.GetBool,
-	AcceptProxy:           meta.GetBool,
-
-	MaxConnections:  meta.GetInt,
-	StatsPort:       meta.GetInt,
-	Replicas:        meta.GetInt,
-	LimitRPS:        meta.GetInt,
-	LimitRPM:        meta.GetInt,
-	LimitConnection: meta.GetInt,
-
-	NodeSelector:       meta.GetMap,
-	ServiceAnnotations: meta.GetMap,
-	PodAnnotations:     meta.GetMap,
-	DefaultsTimeOut:    meta.GetMap,
-	DefaultsOption:     meta.GetMap,
+func registerParser(key string, fn meta.ParserFunc) { get[key] = meta.ParseFor(key, fn) }
+func init() {
+	registerParser(APISchema, meta.GetString)
+	registerParser(IngressAffinity, meta.GetString)
+	registerParser(IngressAffinitySessionCookieName, meta.GetString)
+	registerParser(IngressAffinitySessionCookieHash, meta.GetString)
+	registerParser(CORSAllowedOrigin, meta.GetString)
+	registerParser(CORSAllowedMethods, meta.GetString)
+	registerParser(CORSAllowedHeaders, meta.GetString)
+	registerParser(HSTSMaxAge, meta.GetString)
+	registerParser(WhitelistSourceRange, meta.GetString)
+	registerParser(ProxyBodySize, meta.GetString)
+	registerParser(StatsSecret, meta.GetString)
+	registerParser(StatsServiceName, meta.GetString)
+	registerParser(LBType, meta.GetString)
+	registerParser(DaemonNodeSelector, meta.GetString)
+	registerParser(LoadBalancerIP, meta.GetString)
+	registerParser(AuthType, meta.GetString)
+	registerParser(AuthSecret, meta.GetString)
+	registerParser(RewriteTarget, meta.GetString)
+	registerParser(AuthRealm, meta.GetString)
+	registerParser(AuthTLSSecret, meta.GetString)
+	registerParser(AuthTLSVerifyClient, meta.GetString)
+	registerParser(AuthTLSErrorPage, meta.GetString)
+	registerParser(ErrorFiles, meta.GetString)
+	registerParser(StickySession, meta.GetBool)
+	registerParser(CORSEnabled, meta.GetBool)
+	registerParser(ForceServicePort, meta.GetBool)
+	registerParser(EnableHSTS, meta.GetBool)
+	registerParser(HSTSPreload, meta.GetBool)
+	registerParser(HSTSIncludeSubDomains, meta.GetBool)
+	registerParser(SSLRedirect, meta.GetBool)
+	registerParser(ForceSSLRedirect, meta.GetBool)
+	registerParser(SSLPassthrough, meta.GetBool)
+	registerParser(StatsOn, meta.GetBool)
+	registerParser(KeepSourceIP, meta.GetBool)
+	registerParser(AcceptProxy, meta.GetBool)
+	registerParser(MaxConnections, meta.GetInt)
+	registerParser(StatsPort, meta.GetInt)
+	registerParser(Replicas, meta.GetInt)
+	registerParser(LimitRPS, meta.GetInt)
+	registerParser(LimitRPM, meta.GetInt)
+	registerParser(LimitConnection, meta.GetInt)
+	registerParser(NodeSelector, meta.GetMap)
+	registerParser(ServiceAnnotations, meta.GetMap)
+	registerParser(PodAnnotations, meta.GetMap)
+	registerParser(DefaultsTimeOut, meta.GetMap)
+	registerParser(DefaultsOption, meta.GetMap)
 }
 
 const (
@@ -359,7 +361,7 @@ func (r Ingress) StatsLabels() map[string]string {
 }
 
 func (r Ingress) APISchema() string {
-	if v, _ := parser[APISchema](r.Annotations, APISchema); v != "" {
+	if v, _ := get[APISchema](r.Annotations); v != "" {
 		return v.(string)
 	}
 	return APISchemaEngress
@@ -368,23 +370,23 @@ func (r Ingress) APISchema() string {
 func (r Ingress) Sticky() bool {
 	// Specify a method to stick clients to origins across requests.
 	// Like nginx HAProxy only supports the value cookie.
-	if v, _ := parser[IngressAffinity](r.Annotations, IngressAffinity); v != "" {
+	if v, _ := get[IngressAffinity](r.Annotations); v != "" {
 		return true
 	}
-	v, _ := parser[StickySession](r.Annotations, StickySession)
+	v, _ := get[StickySession](r.Annotations)
 	return v.(bool)
 }
 
 func (r Ingress) StickySessionCookieName() string {
 	// When affinity is set to cookie, the name of the cookie to use.
-	if v, _ := parser[IngressAffinitySessionCookieName](r.Annotations, IngressAffinitySessionCookieName); v != "" {
+	if v, _ := get[IngressAffinitySessionCookieName](r.Annotations); v != "" {
 		return v.(string)
 	}
 	return "SERVERID"
 }
 
 func (r Ingress) StickySessionCookieHashType() string {
-	v, _ := parser[IngressAffinitySessionCookieHash](r.Annotations, IngressAffinitySessionCookieHash)
+	v, _ := get[IngressAffinitySessionCookieHash](r.Annotations)
 	return v.(string)
 }
 
@@ -395,33 +397,33 @@ const (
 )
 
 func (r Ingress) EnableCORS() bool {
-	v, _ := parser[CORSEnabled](r.Annotations, CORSEnabled)
+	v, _ := get[CORSEnabled](r.Annotations)
 	return v.(bool)
 }
 
 func (r Ingress) AllowedCORSOrigin() string {
-	if v, err := parser[CORSAllowedOrigin](r.Annotations, CORSAllowedOrigin); err == nil {
+	if v, err := get[CORSAllowedOrigin](r.Annotations); err == nil {
 		return v.(string)
 	}
 	return "*" // default value
 }
 
 func (r Ingress) AllowedCORSMethods() string {
-	if v, err := parser[CORSAllowedMethods](r.Annotations, CORSAllowedMethods); err == nil {
+	if v, err := get[CORSAllowedMethods](r.Annotations); err == nil {
 		return v.(string)
 	}
 	return CORSDefaultAllowedMethods // default value
 }
 
 func (r Ingress) AllowedCORSHeaders() string {
-	if v, err := parser[CORSAllowedHeaders](r.Annotations, CORSAllowedHeaders); err == nil {
+	if v, err := get[CORSAllowedHeaders](r.Annotations); err == nil {
 		return v.(string)
 	}
 	return CORSDefaultAllowedHeaders // default value
 }
 
 func (r Ingress) AllowCORSCred() bool {
-	if v, err := parser[CORSEnabled](r.Annotations, CORSEnabled); err == nil {
+	if v, err := get[CORSEnabled](r.Annotations); err == nil {
 		return v.(bool)
 	}
 	return true // default value
@@ -429,21 +431,21 @@ func (r Ingress) AllowCORSCred() bool {
 
 func (r Ingress) ForceServicePort() bool {
 	if r.LBType() == LBTypeNodePort {
-		v, _ := parser[ForceServicePort](r.Annotations, ForceServicePort)
+		v, _ := get[ForceServicePort](r.Annotations)
 		return v.(bool)
 	}
 	return true
 }
 
 func (r Ingress) EnableHSTS() bool {
-	if v, err := parser[EnableHSTS](r.Annotations, EnableHSTS); err == nil {
+	if v, err := get[EnableHSTS](r.Annotations); err == nil {
 		return v.(bool)
 	}
 	return true // enable HSTS by default
 }
 
 func (r Ingress) HSTSMaxAge() int {
-	v, _ := parser[HSTSMaxAge](r.Annotations, HSTSMaxAge)
+	v, _ := get[HSTSMaxAge](r.Annotations)
 	if ageInSec, err := strconv.Atoi(v.(string)); err == nil {
 		return ageInSec
 	}
@@ -454,59 +456,59 @@ func (r Ingress) HSTSMaxAge() int {
 }
 
 func (r Ingress) HSTSPreload() bool {
-	v, _ := parser[HSTSPreload](r.Annotations, HSTSPreload)
+	v, _ := get[HSTSPreload](r.Annotations)
 	return v.(bool)
 }
 
 func (r Ingress) HSTSIncludeSubDomains() bool {
-	v, _ := parser[HSTSIncludeSubDomains](r.Annotations, HSTSIncludeSubDomains)
+	v, _ := get[HSTSIncludeSubDomains](r.Annotations)
 	return v.(bool)
 }
 
 func (r Ingress) WhitelistSourceRange() string {
-	v, _ := parser[WhitelistSourceRange](r.Annotations, WhitelistSourceRange)
+	v, _ := get[WhitelistSourceRange](r.Annotations)
 	return v.(string)
 }
 
 func (r Ingress) MaxConnections() int {
-	v, _ := parser[MaxConnections](r.Annotations, MaxConnections)
+	v, _ := get[MaxConnections](r.Annotations)
 	return v.(int)
 }
 
 func (r Ingress) SSLRedirect() bool {
-	if v, err := parser[SSLRedirect](r.Annotations, SSLRedirect); err == nil {
+	if v, err := get[SSLRedirect](r.Annotations); err == nil {
 		return v.(bool)
 	}
 	return true // ssl-redirect by default
 }
 
 func (r Ingress) ForceSSLRedirect() bool {
-	v, _ := parser[ForceSSLRedirect](r.Annotations, ForceSSLRedirect)
+	v, _ := get[ForceSSLRedirect](r.Annotations)
 	return v.(bool)
 }
 
 func (r Ingress) ProxyBodySize() string {
-	v, _ := parser[ProxyBodySize](r.Annotations, ProxyBodySize)
+	v, _ := get[ProxyBodySize](r.Annotations)
 	return v.(string)
 }
 
 func (r Ingress) SSLPassthrough() bool {
-	v, _ := parser[SSLPassthrough](r.Annotations, SSLPassthrough)
+	v, _ := get[SSLPassthrough](r.Annotations)
 	return v.(bool)
 }
 
 func (r Ingress) Stats() bool {
-	v, _ := parser[StatsOn](r.Annotations, StatsOn)
+	v, _ := get[StatsOn](r.Annotations)
 	return v.(bool)
 }
 
 func (r Ingress) StatsSecretName() string {
-	v, _ := parser[StatsSecret](r.Annotations, StatsSecret)
+	v, _ := get[StatsSecret](r.Annotations)
 	return v.(string)
 }
 
 func (r Ingress) StatsPort() int {
-	if v, _ := parser[StatsPort](r.Annotations, StatsPort); v.(int) > 0 {
+	if v, _ := get[StatsPort](r.Annotations); v.(int) > 0 {
 		return v.(int)
 	}
 	return DefaultStatsPort
@@ -520,36 +522,36 @@ func (r Ingress) StatsServiceName() string {
 }
 
 func (r Ingress) LBType() string {
-	if v, _ := parser[LBType](r.Annotations, LBType); v != "" {
+	if v, _ := get[LBType](r.Annotations); v != "" {
 		return v.(string)
 	}
 	return LBTypeLoadBalancer
 }
 
 func (r Ingress) Replicas() int32 {
-	if v, _ := parser[Replicas](r.Annotations, Replicas); v.(int) > 0 {
+	if v, _ := get[Replicas](r.Annotations); v.(int) > 0 {
 		return int32(v.(int))
 	}
 	return 1
 }
 
 func (r Ingress) NodeSelector() map[string]string {
-	if v, _ := parser[NodeSelector](r.Annotations, NodeSelector); len(v.(map[string]string)) > 0 {
+	if v, _ := get[NodeSelector](r.Annotations); len(v.(map[string]string)) > 0 {
 		return v.(map[string]string)
 	}
-	v, _ := parser[DaemonNodeSelector](r.Annotations, DaemonNodeSelector)
+	v, _ := get[DaemonNodeSelector](r.Annotations)
 	return ParseDaemonNodeSelector(v.(string))
 }
 
 func (r Ingress) LoadBalancerIP() net.IP {
-	if v, _ := parser[LoadBalancerIP](r.Annotations, LoadBalancerIP); v != "" {
+	if v, _ := get[LoadBalancerIP](r.Annotations); v != "" {
 		return net.ParseIP(v.(string))
 	}
 	return nil
 }
 
 func (r Ingress) ServiceAnnotations(provider string) (map[string]string, bool) {
-	ans, err := parser[ServiceAnnotations](r.Annotations, ServiceAnnotations)
+	ans, err := get[ServiceAnnotations](r.Annotations)
 	if err == nil {
 		filteredMap := make(map[string]string)
 		for k, v := range ans.(map[string]string) {
@@ -570,7 +572,7 @@ func (r Ingress) ServiceAnnotations(provider string) (map[string]string, bool) {
 }
 
 func (r Ingress) PodsAnnotations() (map[string]string, bool) {
-	ans, err := parser[PodAnnotations](r.Annotations, PodAnnotations)
+	ans, err := get[PodAnnotations](r.Annotations)
 	if err == nil {
 		filteredMap := make(map[string]string)
 		for k, v := range ans.(map[string]string) {
@@ -584,12 +586,12 @@ func (r Ingress) PodsAnnotations() (map[string]string, bool) {
 }
 
 func (r Ingress) KeepSourceIP() bool {
-	v, _ := parser[KeepSourceIP](r.Annotations, KeepSourceIP)
+	v, _ := get[KeepSourceIP](r.Annotations)
 	return v.(bool)
 }
 
 func (r Ingress) AcceptProxy() bool {
-	v, _ := parser[AcceptProxy](r.Annotations, AcceptProxy)
+	v, _ := get[AcceptProxy](r.Annotations)
 	return v.(bool)
 }
 
@@ -620,7 +622,7 @@ func (r Ingress) Timeouts() map[string]string {
 	// is not recommended. Such a usage is accepted and works but reports a warning
 	// during startup because it may results in accumulation of expired sessions in
 	// the system if the system's timeouts are not configured either.
-	v, _ := parser[DefaultsTimeOut](r.Annotations, DefaultsTimeOut)
+	v, _ := get[DefaultsTimeOut](r.Annotations)
 	ans := v.(map[string]string)
 	for k, v := range timeoutDefaults {
 		if _, ok := ans[k]; !ok {
@@ -631,7 +633,7 @@ func (r Ingress) Timeouts() map[string]string {
 }
 
 func (r Ingress) HAProxyOptions() map[string]bool {
-	v, _ := parser[DefaultsOption](r.Annotations, DefaultsOption)
+	v, _ := get[DefaultsOption](r.Annotations)
 	ans := v.(map[string]string)
 
 	ret := make(map[string]bool)
@@ -649,9 +651,9 @@ func (r Ingress) HAProxyOptions() map[string]bool {
 
 func (r Ingress) BasicAuthEnabled() bool {
 	// Check auth type is basic; other auth mode is not supported
-	if v, _ := parser[AuthType](r.Annotations, AuthType); v == "basic" {
+	if v, _ := get[AuthType](r.Annotations); v == "basic" {
 		// Check secret name is not empty
-		if s, _ := parser[AuthSecret](r.Annotations, AuthSecret); s != "" {
+		if s, _ := get[AuthSecret](r.Annotations); s != "" {
 			return true
 		}
 	}
@@ -659,54 +661,54 @@ func (r Ingress) BasicAuthEnabled() bool {
 }
 
 func (r Ingress) RewriteTarget() string {
-	v, _ := parser[RewriteTarget](r.Annotations, RewriteTarget)
+	v, _ := get[RewriteTarget](r.Annotations)
 	return v.(string)
 }
 
 func (r Ingress) AuthRealm() string {
-	v, _ := parser[AuthRealm](r.Annotations, AuthRealm)
+	v, _ := get[AuthRealm](r.Annotations)
 	return v.(string)
 }
 
 func (r Ingress) AuthSecretName() string {
-	v, _ := parser[AuthSecret](r.Annotations, AuthSecret)
+	v, _ := get[AuthSecret](r.Annotations)
 	return v.(string)
 }
 
 func (r Ingress) AuthTLSSecret() string {
-	v, _ := parser[AuthTLSSecret](r.Annotations, AuthTLSSecret)
+	v, _ := get[AuthTLSSecret](r.Annotations)
 	return v.(string)
 }
 
 func (r Ingress) AuthTLSVerifyClient() TLSAuthVerifyOption {
-	if v, _ := parser[AuthTLSVerifyClient](r.Annotations, AuthTLSVerifyClient); v == string(TLSAuthVerifyOptional) {
+	if v, _ := get[AuthTLSVerifyClient](r.Annotations); v == string(TLSAuthVerifyOptional) {
 		return TLSAuthVerifyOptional
 	}
 	return TLSAuthVerifyRequired
 }
 
 func (r Ingress) AuthTLSErrorPage() string {
-	v, _ := parser[AuthTLSErrorPage](r.Annotations, AuthTLSErrorPage)
+	v, _ := get[AuthTLSErrorPage](r.Annotations)
 	return v.(string)
 }
 
 func (r Ingress) ErrorFilesConfigMapName() string {
-	v, _ := parser[ErrorFiles](r.Annotations, ErrorFiles)
+	v, _ := get[ErrorFiles](r.Annotations)
 	return v.(string)
 }
 
 func (r Ingress) LimitRPS() int {
-	value, _ := parser[LimitRPS](r.Annotations, LimitRPS)
+	value, _ := get[LimitRPS](r.Annotations)
 	return value.(int)
 }
 
 func (r Ingress) LimitRPM() int {
-	value, _ := parser[LimitRPM](r.Annotations, LimitRPM)
+	value, _ := get[LimitRPM](r.Annotations)
 	return value.(int)
 }
 
 func (r Ingress) LimitConnections() int {
-	value, _ := parser[LimitConnection](r.Annotations, LimitConnection)
+	value, _ := get[LimitConnection](r.Annotations)
 	return value.(int)
 }
 

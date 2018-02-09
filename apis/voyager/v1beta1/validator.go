@@ -52,8 +52,8 @@ func (r *Ingress) Migrate() {
 }
 
 func (r Ingress) IsValid(cloudProvider string) error {
-	for key, fn := range parser {
-		if _, err := fn(r.Annotations, key); err != nil && err != kutil.ErrNotFound {
+	for key, fn := range get {
+		if _, err := fn(r.Annotations); err != nil && err != kutil.ErrNotFound {
 			return fmt.Errorf("can not parse annotaion %s. Reason: %s", key, err)
 		}
 	}
