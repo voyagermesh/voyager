@@ -6,6 +6,7 @@ import (
 	"github.com/appscode/kutil"
 	"github.com/appscode/kutil/meta"
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 const (
@@ -28,6 +29,11 @@ const (
 	DNSResolverRetries     = EngressKey + "/" + "dns-resolver-retries"      // int
 	DNSResolverTimeout     = EngressKey + "/" + "dns-resolver-timeout"      // {"event":"time","event":"time"}
 	DNSResolverHold        = EngressKey + "/" + "dns-resolver-hold"         // {"status":"period","status":"period"}
+)
+
+var (
+	DNSResolverHoldKeys    = sets.NewString("nx", "other", "refused", "timeout", "valid", "obsolete")
+	DNSResolverTimeoutKeys = sets.NewString("resolve", "retry")
 )
 
 type DNSResolver struct {
@@ -65,13 +71,24 @@ func DNSResolverForService(svc core.Service) (useDNSResolver bool, resolver *DNS
 	if err != nil && err != kutil.ErrNotFound {
 		return
 	}
+
 	resolver.Hold, err = meta.GetMapValue(svc.Annotations, DNSResolverHold)
 	if err != nil && err != kutil.ErrNotFound {
 		return
 	}
-	resolver.Timeout, err = meta.GetMapValue(svc.Annotations, DNSResolverTimeout)
-	if err == kutil.ErrNotFound {
-		err = nil
+	if err = checkMapKeys(resolver.Hold, DNSResolverHoldKeys); err != nil {
+		err = fmt.Errorf("invalid value for annotaion %s. Reason: %s", DNSResolverHold, err)
+		return
 	}
+
+	resolver.Timeout, err = meta.GetMapValue(svc.Annotations, DNSResolverTimeout)
+	if err != nil && err != kutil.ErrNotFound {
+		return
+	}
+	if err = checkMapKeys(resolver.Timeout, DNSResolverTimeoutKeys); err != nil {
+		err = fmt.Errorf("invalid value for annotaion %s. Reason: %s", DNSResolverTimeout, err)
+		return
+	}
+
 	return
 }

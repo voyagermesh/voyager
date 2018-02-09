@@ -57,6 +57,12 @@ func (r Ingress) IsValid(cloudProvider string) error {
 			return fmt.Errorf("can not parse annotaion %s. Reason: %s", key, err)
 		}
 	}
+
+	timeouts, _ := get[DefaultsTimeOut](r.Annotations)
+	if err := checkMapKeys(timeouts.(map[string]string), sets.StringKeySet(timeoutDefaults)); err != nil {
+		return fmt.Errorf("invalid value for annotaion %s. Reason: %s", DefaultsTimeOut, err)
+	}
+
 	for ri, rule := range r.Spec.FrontendRules {
 		if _, err := checkRequiredPort(rule.Port); err != nil {
 			return fmt.Errorf("spec.frontendRules[%d].port %s is invalid. Reason: %s", ri, rule.Port, err)
@@ -400,5 +406,13 @@ func (c Certificate) IsValid(cloudProvider string) error {
 		return fmt.Errorf("invalid storage specification, used both storage")
 	}
 
+	return nil
+}
+
+func checkMapKeys(m map[string]string, keys sets.String) error {
+	diff := sets.StringKeySet(m).Difference(keys)
+	if diff.Len() != 0 {
+		return fmt.Errorf("invalid keys: %v", diff.List())
+	}
 	return nil
 }
