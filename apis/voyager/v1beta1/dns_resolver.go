@@ -31,6 +31,11 @@ const (
 	DNSResolverHold        = EngressKey + "/" + "dns-resolver-hold"         // {"status":"period","status":"period"}
 )
 
+var (
+	DNSResolverHoldKeys    = sets.NewString("nx", "other", "refused", "timeout", "valid", "obsolete")
+	DNSResolverTimeoutKeys = sets.NewString("resolve", "retry")
+)
+
 type DNSResolver struct {
 	Name        string
 	NameServer  []string          `json:"nameserver"`
@@ -71,8 +76,7 @@ func DNSResolverForService(svc core.Service) (useDNSResolver bool, resolver *DNS
 	if err != nil && err != kutil.ErrNotFound {
 		return
 	}
-	if err = checkMapKeys(resolver.Hold,
-		sets.NewString("nx", "other", "refused", "timeout", "valid", "obsolete")); err != nil {
+	if err = checkMapKeys(resolver.Hold, DNSResolverHoldKeys); err != nil {
 		err = fmt.Errorf("invalid value for annotaion %s. Reason: %s", DNSResolverHold, err)
 		return
 	}
@@ -81,7 +85,7 @@ func DNSResolverForService(svc core.Service) (useDNSResolver bool, resolver *DNS
 	if err != nil && err != kutil.ErrNotFound {
 		return
 	}
-	if err = checkMapKeys(resolver.Timeout, sets.NewString("resolve", "retry")); err != nil {
+	if err = checkMapKeys(resolver.Timeout, DNSResolverTimeoutKeys); err != nil {
 		err = fmt.Errorf("invalid value for annotaion %s. Reason: %s", DNSResolverTimeout, err)
 		return
 	}
