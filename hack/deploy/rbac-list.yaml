@@ -92,3 +92,34 @@ subjects:
 - kind: ServiceAccount
   name: $VOYAGER_SERVICE_ACCOUNT
   namespace: $VOYAGER_NAMESPACE
+---
+# to read the config for terminating authentication
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: voyager-apiserver-extension-server-authentication-reader
+  namespace: kube-system
+roleRef:
+  kind: Role
+  apiGroup: rbac.authorization.k8s.io
+  name: extension-apiserver-authentication-reader
+subjects:
+- kind: ServiceAccount
+  name: $VOYAGER_SERVICE_ACCOUNT
+  namespace: $VOYAGER_NAMESPACE
+---
+# to delegate authentication and authorization
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: voyager-apiserver-auth-delegator
+  labels:
+    app: voyager
+roleRef:
+  kind: ClusterRole
+  apiGroup: rbac.authorization.k8s.io
+  name: system:auth-delegator
+subjects:
+- kind: ServiceAccount
+  name: $VOYAGER_SERVICE_ACCOUNT
+  namespace: $VOYAGER_NAMESPACE
