@@ -1,5 +1,39 @@
 #!/bin/bash
 
+echo "checking kubeconfig context"
+kubectl config current-context || { echo "Set a context (kubectl use-context <context>) out of the following:"; echo; kubectl config get-contexts; exit 1; }
+echo ""
+
+# ref: https://stackoverflow.com/a/27776822/244009
+case "$(uname -s)" in
+    Darwin)
+        curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.1.0/onessl-darwin-amd64
+        chmod +x onessl
+        export ONESSL=./onessl
+        ;;
+
+    Linux)
+        curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.1.0/onessl-linux-amd64
+        chmod +x onessl
+        export ONESSL=./onessl
+        ;;
+
+    CYGWIN*|MINGW32*|MSYS*)
+        curl -fsSL -o onessl.exe https://github.com/kubepack/onessl/releases/download/0.1.0/onessl-windows-amd64.exe
+        chmod +x onessl.exe
+        export ONESSL=./onessl.exe
+        ;;
+    *)
+        echo 'other OS'
+        ;;
+esac
+
+# http://redsymbol.net/articles/bash-exit-traps/
+function cleanup {
+    rm -rf $ONESSL ca.crt ca.key server.crt server.key
+}
+trap cleanup EXIT
+
 # ref: https://stackoverflow.com/a/7069755/244009
 # ref: https://jonalmeida.com/posts/2013/05/26/different-ways-to-implement-flags-in-bash/
 # ref: http://tldp.org/LDP/abs/html/comparison-ops.html
@@ -10,10 +44,15 @@ export VOYAGER_ENABLE_RBAC=false
 export VOYAGER_RUN_ON_MASTER=0
 export VOYAGER_RESTRICT_TO_NAMESPACE=false
 export VOYAGER_ROLE_TYPE=ClusterRole
-export VOYAGER_ENABLE_ADMISSION_WEBHOOK=false
 export VOYAGER_DOCKER_REGISTRY=appscode
 export VOYAGER_IMAGE_PULL_SECRET=
 export VOYAGER_UNINSTALL=0
+
+KUBE_APISERVER_VERSION=$(kubectl version -o=json | $ONESSL jsonpath '{.serverVersion.gitVersion}')
+$ONESSL semver --check='>=1.9.0' $KUBE_APISERVER_VERSION
+if [ -eq "$?" 0 ]; then
+    export VOYAGER_ENABLE_ADMISSION_WEBHOOK=true
+fi
 
 show_help() {
     echo "voyager.sh - install voyager operator"
@@ -171,33 +210,6 @@ esac
 env | sort | grep VOYAGER*
 echo ""
 
-echo "checking kubeconfig context"
-kubectl config current-context || { echo "Set a context (kubectl use-context <context>) out of the following:"; echo; kubectl config get-contexts; exit 1; }
-echo ""
-
-# ref: https://stackoverflow.com/a/27776822/244009
-case "$(uname -s)" in
-    Darwin)
-        curl -fsSL -o onessl https://github.com/appscode/onessl/releases/download/0.1.0/onessl-darwin-amd64
-        chmod +x onessl
-        export ONESSL=./onessl
-        ;;
-
-    Linux)
-        curl -fsSL -o onessl https://github.com/appscode/onessl/releases/download/0.1.0/onessl-linux-amd64
-        chmod +x onessl
-        export ONESSL=./onessl
-        ;;
-
-    CYGWIN*|MINGW32*|MSYS*)
-        curl -fsSL -o onessl.exe https://github.com/appscode/onessl/releases/download/0.1.0/onessl-windows-amd64.exe
-        chmod +x onessl.exe
-        export ONESSL=./onessl.exe
-        ;;
-    *)
-        echo 'other OS'
-        ;;
-esac
 
 # create necessary TLS certificates:
 # - a local CA key and cert
@@ -208,7 +220,6 @@ export SERVICE_SERVING_CERT_CA=$(cat ca.crt | $ONESSL base64)
 export TLS_SERVING_CERT=$(cat server.crt | $ONESSL base64)
 export TLS_SERVING_KEY=$(cat server.key | $ONESSL base64)
 export KUBE_CA=$($ONESSL get kube-ca | $ONESSL base64)
-rm -rf $ONESSL ca.crt ca.key server.crt server.key
 
 curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-alpha.0/hack/deploy/operator.yaml | envsubst | kubectl apply -f -
 
