@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/appscode/kutil"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
@@ -51,6 +52,11 @@ func (r *Ingress) Migrate() {
 }
 
 func (r Ingress) IsValid(cloudProvider string) error {
+	for key, fn := range get {
+		if _, err := fn(r.Annotations); err != nil && err != kutil.ErrNotFound {
+			return fmt.Errorf("can not parse annotaion %s. Reason: %s", key, err)
+		}
+	}
 	for ri, rule := range r.Spec.FrontendRules {
 		if _, err := checkRequiredPort(rule.Port); err != nil {
 			return fmt.Errorf("spec.frontendRules[%d].port %s is invalid. Reason: %s", ri, rule.Port, err)

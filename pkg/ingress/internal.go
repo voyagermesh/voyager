@@ -288,7 +288,7 @@ func (c *internalController) ensureService() (*core.Service, kutil.VerbType, err
 		// delete last applied ServiceAnnotations
 		// add new ServiceAnnotations
 		// store new ServiceAnnotations keys
-		lastAppliedKeys, _ := meta_util.GetString(obj.Annotations, api.LastAppliedAnnotationKeys)
+		lastAppliedKeys, _ := meta_util.GetStringValue(obj.Annotations, api.LastAppliedAnnotationKeys)
 		for _, key := range strings.Split(lastAppliedKeys, ",") {
 			delete(obj.Annotations, key)
 		}
@@ -355,7 +355,7 @@ func (c *internalController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 		if obj.Spec.Template.Annotations == nil {
 			obj.Spec.Template.Annotations = make(map[string]string)
 		}
-		lastAppliedKeys, _ := meta_util.GetString(obj.Spec.Template.Annotations, api.LastAppliedAnnotationKeys)
+		lastAppliedKeys, _ := meta_util.GetStringValue(obj.Spec.Template.Annotations, api.LastAppliedAnnotationKeys)
 		for _, key := range strings.Split(lastAppliedKeys, ",") {
 			delete(obj.Spec.Template.Annotations, key)
 		}

@@ -46,30 +46,30 @@ func DNSResolverForService(svc core.Service) (useDNSResolver bool, resolver *DNS
 
 	// getBool returns an error if the value is empty string, or the key is not present
 	// So, we ignored error.
-	useDNSResolver, _ = meta.GetBool(svc.Annotations, UseDNSResolver)
+	useDNSResolver, _ = meta.GetBoolValue(svc.Annotations, UseDNSResolver)
 	if !useDNSResolver {
 		return
 	}
 
 	resolver = &DNSResolver{Name: svc.Spec.ExternalName}
-	resolver.NameServer, err = meta.GetList(svc.Annotations, DNSResolverNameservers)
+	resolver.NameServer, err = meta.GetListValue(svc.Annotations, DNSResolverNameservers)
 	if err != nil && err != kutil.ErrNotFound {
 		return
 	}
-	if ch, e2 := meta.GetBool(svc.Annotations, DNSResolverCheckHealth); e2 == nil {
+	if ch, e2 := meta.GetBoolValue(svc.Annotations, DNSResolverCheckHealth); e2 == nil {
 		resolver.CheckHealth = ch
 	} else {
 		resolver.CheckHealth = len(resolver.NameServer) > 0
 	}
-	resolver.Retries, err = meta.GetInt(svc.Annotations, DNSResolverRetries)
+	resolver.Retries, err = meta.GetIntValue(svc.Annotations, DNSResolverRetries)
 	if err != nil && err != kutil.ErrNotFound {
 		return
 	}
-	resolver.Hold, err = meta.GetMap(svc.Annotations, DNSResolverHold)
+	resolver.Hold, err = meta.GetMapValue(svc.Annotations, DNSResolverHold)
 	if err != nil && err != kutil.ErrNotFound {
 		return
 	}
-	resolver.Timeout, err = meta.GetMap(svc.Annotations, DNSResolverTimeout)
+	resolver.Timeout, err = meta.GetMapValue(svc.Annotations, DNSResolverTimeout)
 	if err == kutil.ErrNotFound {
 		err = nil
 	}
