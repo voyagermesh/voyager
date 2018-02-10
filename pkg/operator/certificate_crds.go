@@ -95,13 +95,7 @@ func (op *Operator) reconcileCertificate(key string) error {
 			)
 			return err
 		}
-
-		cfg := certificate.Config{
-			CloudProvider:     op.CloudProvider,
-			OperatorNamespace: op.OperatorNamespace,
-			OperatorService:   op.OperatorService,
-		}
-		ctrl, err := certificate.NewController(context.Background(), op.KubeClient, op.VoyagerClient, cfg, cert)
+		ctrl, err := certificate.NewController(context.Background(), op.KubeClient, op.VoyagerClient, op.Config, cert)
 		if err != nil {
 			op.recorder.Event(
 				cert.ObjectReference(),
@@ -148,12 +142,7 @@ func (op *Operator) CheckCertificates() {
 					log.Infoln("skipping certificate %s/%s, since rate limited", cert.Namespace, cert.Name)
 					continue
 				}
-				cfg := certificate.Config{
-					CloudProvider:     op.CloudProvider,
-					OperatorNamespace: op.OperatorNamespace,
-					OperatorService:   op.OperatorService,
-				}
-				ctrl, err := certificate.NewController(ctx, op.KubeClient, op.VoyagerClient, cfg, cert)
+				ctrl, err := certificate.NewController(ctx, op.KubeClient, op.VoyagerClient, op.Config, cert)
 				if err != nil {
 					op.recorder.Event(
 						cert.ObjectReference(),

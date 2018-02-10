@@ -17,6 +17,7 @@ import (
 	cs "github.com/appscode/voyager/client"
 	vu "github.com/appscode/voyager/client/typed/voyager/v1beta1/util"
 	"github.com/appscode/voyager/pkg/certificate/providers"
+	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/xenolf/lego/acme"
 	core "k8s.io/api/core/v1"
@@ -28,16 +29,10 @@ import (
 	"k8s.io/client-go/util/cert"
 )
 
-type Config struct {
-	CloudProvider     string
-	OperatorNamespace string
-	OperatorService   string
-}
-
 type Controller struct {
 	KubeClient    kubernetes.Interface
 	VoyagerClient cs.Interface
-	config        Config
+	cfg           config.Config
 	recorder      record.EventRecorder
 
 	crd               *api.Certificate
@@ -51,16 +46,16 @@ type Controller struct {
 	logger            *log.Logger
 }
 
-func NewController(ctx context.Context, kubeClient kubernetes.Interface, extClient cs.Interface, config Config, tpr *api.Certificate) (*Controller, error) {
+func NewController(ctx context.Context, kubeClient kubernetes.Interface, extClient cs.Interface, cfg config.Config, tpr *api.Certificate) (*Controller, error) {
 	ctrl := &Controller{
 		logger:        log.New(ctx),
 		KubeClient:    kubeClient,
 		VoyagerClient: extClient,
-		config:        config,
+		cfg:           cfg,
 		crd:           tpr,
 		recorder:      eventer.NewEventRecorder(kubeClient, "voyager-operator"),
 	}
-	err := ctrl.crd.IsValid(ctrl.config.CloudProvider)
+	err := ctrl.crd.IsValid(ctrl.cfg.CloudProvider)
 	if err != nil {
 		return nil, err
 	}
@@ -332,7 +327,7 @@ func (c *Controller) updateIngress() error {
 							Path: providers.URLPrefix,
 							Backend: api.HTTPIngressBackend{
 								IngressBackend: api.IngressBackend{
-									ServiceName: c.config.OperatorService + "." + c.config.OperatorNamespace,
+									ServiceName: c.cfg.OperatorService + "." + c.cfg.OperatorNamespace,
 									ServicePort: intstr.FromInt(providers.ACMEResponderPort),
 								},
 							},
@@ -373,7 +368,7 @@ func (c *Controller) updateIngress() error {
 						{
 							Path: providers.URLPrefix,
 							Backend: extensions.IngressBackend{
-								ServiceName: c.config.OperatorService + "." + c.config.OperatorNamespace,
+								ServiceName: c.cfg.OperatorService + "." + c.cfg.OperatorNamespace,
 								ServicePort: intstr.FromInt(providers.ACMEResponderPort),
 							},
 						},
