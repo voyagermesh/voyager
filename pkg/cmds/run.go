@@ -14,11 +14,11 @@ func NewCmdRun(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:               "run",
-		Short:             "Launch Kubernetes Cluster Daemon",
-		Long:              "Launch Kubernetes Cluster Daemon",
+		Short:             "Launch Voyager Ingress Controller",
+		Long:              "Launch Voyager Ingress Controller",
 		DisableAutoGenTag: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			log.Infoln("Starting kubed...")
+			log.Infoln("Starting voyager...")
 
 			if err := o.Complete(); err != nil {
 				return err

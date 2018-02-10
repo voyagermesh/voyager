@@ -11,11 +11,11 @@ section_menu_id: reference
 ---
 ## voyager run
 
-Launch Kubernetes Cluster Daemon
+Launch Voyager Ingress Controller
 
 ### Synopsis
 
-Launch Kubernetes Cluster Daemon
+Launch Voyager Ingress Controller
 
 ```
 voyager run [flags]
