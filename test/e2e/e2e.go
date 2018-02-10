@@ -4,10 +4,23 @@ import (
 	"testing"
 	"time"
 
+	"testing"
+	"time"
+
+	"github.com/appscode/go/runtime"
+	"github.com/appscode/voyager/pkg/config"
+	hpdata "github.com/appscode/voyager/pkg/haproxy/template"
+	"github.com/appscode/voyager/pkg/operator"
 	"github.com/appscode/voyager/test/framework"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
+	"github.com/appscode/voyager/test/framework"
+	. "github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/reporters"
+	. "github.com/onsi/gomega"
+	"github.com/appscode/voyager/pkg/config"
+	"github.com/appscode/go/runtime"
 )
 
 const (
@@ -31,7 +44,6 @@ func RunE2ETestSuit(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
-	/*
 		op := operator.New(
 			root.KubeClient,
 			root.CRDClient,
@@ -67,7 +79,6 @@ var _ = BeforeSuite(func() {
 		root.EventuallyCRD().Should(Succeed())
 
 		Eventually(invocation.Ingress.Setup).Should(BeNil())
-	*/
 })
 
 var _ = AfterSuite(func() {

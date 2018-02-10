@@ -32,6 +32,7 @@ func NewVoyagerOptions(out, errOut io.Writer) *VoyagerOptions {
 		StdErr:             errOut,
 	}
 	o.RecommendedOptions.Etcd = nil
+	o.RecommendedOptions.SecureServing.BindPort = 8443
 
 	return o
 }
