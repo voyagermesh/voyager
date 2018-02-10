@@ -35,6 +35,7 @@ type Options struct {
 	Burst          int
 	MaxNumRequeues int
 	NumThreads     int
+	ResyncPeriod   time.Duration
 }
 
 func (opts Options) UsesEngress() bool {
@@ -73,9 +74,9 @@ type Controller struct {
 func New(client kubernetes.Interface, voyagerClient cs.Interface, opt Options) *Controller {
 	return &Controller{
 		k8sClient:              client,
-		kubeInformerFactory:    informers.NewFilteredSharedInformerFactory(client, 10*time.Minute, opt.IngressRef.Namespace, nil),
+		kubeInformerFactory:    informers.NewFilteredSharedInformerFactory(client, opt.ResyncPeriod, opt.IngressRef.Namespace, nil),
 		VoyagerClient:          voyagerClient,
-		voyagerInformerFactory: voyagerinformers.NewFilteredSharedInformerFactory(voyagerClient, 10*time.Minute, opt.IngressRef.Namespace, nil),
+		voyagerInformerFactory: voyagerinformers.NewFilteredSharedInformerFactory(voyagerClient, opt.ResyncPeriod, opt.IngressRef.Namespace, nil),
 		options:                opt,
 		recorder:               eventer.NewEventRecorder(client, "haproxy-controller"),
 	}

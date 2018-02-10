@@ -1,8 +1,6 @@
 package operator
 
 import (
-	"time"
-
 	cs "github.com/appscode/voyager/client"
 	voyagerinformers "github.com/appscode/voyager/informers/externalversions"
 	hookapi "github.com/appscode/voyager/pkg/admission/api"
@@ -36,10 +34,10 @@ func (c *OperatorConfig) New() (*Operator, error) {
 	op := &Operator{
 		Config:                 c.Config,
 		KubeClient:             c.KubeClient,
-		kubeInformerFactory:    informers.NewFilteredSharedInformerFactory(c.KubeClient, 10*time.Minute, c.WatchNamespace, nil),
+		kubeInformerFactory:    informers.NewFilteredSharedInformerFactory(c.KubeClient, c.ResyncPeriod, c.WatchNamespace, nil),
 		CRDClient:              c.CRDClient,
 		VoyagerClient:          c.VoyagerClient,
-		voyagerInformerFactory: voyagerinformers.NewFilteredSharedInformerFactory(c.VoyagerClient, 10*time.Minute, c.WatchNamespace, nil),
+		voyagerInformerFactory: voyagerinformers.NewFilteredSharedInformerFactory(c.VoyagerClient, c.ResyncPeriod, c.WatchNamespace, nil),
 		PromClient:             c.PromClient,
 		recorder:               eventer.NewEventRecorder(c.KubeClient, "voyager operator"),
 	}

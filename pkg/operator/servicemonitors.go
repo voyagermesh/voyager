@@ -1,8 +1,6 @@
 package operator
 
 import (
-	"time"
-
 	"github.com/appscode/go/log"
 	prom_util "github.com/appscode/kube-mon/prometheus/v1"
 	"github.com/appscode/kutil/discovery"
@@ -23,7 +21,7 @@ func (op *Operator) initServiceMonitorWatcher() {
 			ListFunc:  op.PromClient.ServiceMonitors(op.WatchNamespace).List,
 			WatchFunc: op.PromClient.ServiceMonitors(op.WatchNamespace).Watch,
 		},
-		&prom.ServiceMonitor{}, 10*time.Minute, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+		&prom.ServiceMonitor{}, op.ResyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
 	)
 	op.smonQueue = queue.New("ServiceMonitor", op.MaxNumRequeues, op.NumThreads, op.reconcileServiceMonitor)
 	op.smonInformer.AddEventHandler(queue.NewDeleteHandler(op.smonQueue.GetQueue()))

@@ -69,7 +69,7 @@ func NewOperatorOptions() *OperatorOptions {
 		OperatorNamespace: meta.Namespace(),
 		OperatorService:   "voyager-operator",
 		EnableRBAC:        false,
-		ResyncPeriod:      5 * time.Minute,
+		ResyncPeriod:      10 * time.Minute,
 		MaxNumRequeues:    5,
 		NumThreads:        2,
 		// ref: https://github.com/kubernetes/ingress-nginx/blob/e4d53786e771cc6bdd55f180674b79f5b692e552/pkg/ingress/controller/launch.go#L252-L259
@@ -138,6 +138,7 @@ func (s *OperatorOptions) ApplyTo(config *operator.OperatorConfig) error {
 	config.OpsAddress = s.OpsAddress
 	config.QPS = s.QPS
 	config.RestrictToOperatorNamespace = s.RestrictToOperatorNamespace
+	config.ResyncPeriod = s.ResyncPeriod
 	config.WatchNamespace = s.WatchNamespace()
 
 	config.ClientConfig.QPS = s.QPS

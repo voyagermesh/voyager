@@ -1,6 +1,8 @@
 package config
 
 import (
+	"time"
+
 	"github.com/appscode/go/log/golog"
 )
 
@@ -25,5 +27,6 @@ type Config struct {
 	OpsAddress                  string
 	QPS                         float32
 	RestrictToOperatorNamespace bool
+	ResyncPeriod                time.Duration
 	WatchNamespace              string
 }

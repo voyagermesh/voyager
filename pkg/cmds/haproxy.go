@@ -2,6 +2,7 @@ package cmds
 
 import (
 	"os"
+	"time"
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil/meta"
@@ -28,6 +29,7 @@ var (
 		Burst:          1e6,
 		MaxNumRequeues: 5,
 		NumThreads:     1,
+		ResyncPeriod:   10 * time.Minute,
 	}
 	initOnly bool
 )
@@ -75,6 +77,7 @@ func NewCmdHAProxyController() *cobra.Command {
 	cmd.Flags().StringVar(&kubeconfigPath, "kubeconfig", kubeconfigPath, "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
 	cmd.Flags().Float32Var(&opt.QPS, "qps", opt.QPS, "The maximum QPS to the master from this client")
 	cmd.Flags().IntVar(&opt.Burst, "burst", opt.Burst, "The maximum burst for throttle")
+	cmd.Flags().DurationVar(&opt.ResyncPeriod, "resync-period", opt.ResyncPeriod, "If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out.")
 
 	cmd.Flags().StringVar(&opt.IngressRef.APIVersion, "ingress-api-version", opt.IngressRef.APIVersion, "API version of ingress resource")
 	cmd.Flags().StringVar(&opt.IngressRef.Name, "ingress-name", opt.IngressRef.Name, "Name of ingress resource")
