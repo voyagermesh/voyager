@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/client"
@@ -25,7 +26,7 @@ var _ = Describe("IngressHostPort", func() {
 		ing = f.Ingress.GetSkeleton()
 		f.Ingress.SetDaemonSkeletonRule(ing)
 
-		if !f.Config.InCluster && f.Config.CloudProviderName != "minikube" {
+		if !meta.PossiblyInCluster() && options.CloudProvider != "minikube" {
 			Skip("Test is Running from outside of cluster skipping test")
 		}
 	})
@@ -42,7 +43,7 @@ var _ = Describe("IngressHostPort", func() {
 	})
 
 	AfterEach(func() {
-		if root.Config.Cleanup {
+		if options.Cleanup {
 			f.Ingress.Delete(ing)
 		}
 	})
@@ -162,7 +163,7 @@ var _ = Describe("IngressHostPort", func() {
 				return errors.New("TCP port not found")
 			}, "5m", "20s").Should(BeNil())
 
-			if f.Config.CloudProviderName != "minikube" {
+			if options.CloudProvider != "minikube" {
 				eps, err := f.Ingress.GetHTTPEndpoints(ing)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(eps)).Should(BeNumerically(">=", 1))

@@ -4,10 +4,10 @@ import (
 	"testing"
 	"time"
 
-	"testing"
-	"time"
-
 	"github.com/appscode/go/runtime"
+	"github.com/appscode/kutil/meta"
+	"github.com/appscode/kutil/tools/clientcmd"
+	"github.com/appscode/voyager/client/scheme"
 	"github.com/appscode/voyager/pkg/config"
 	hpdata "github.com/appscode/voyager/pkg/haproxy/template"
 	"github.com/appscode/voyager/pkg/operator"
@@ -15,12 +15,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
-	"github.com/appscode/voyager/test/framework"
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/reporters"
-	. "github.com/onsi/gomega"
-	"github.com/appscode/voyager/pkg/config"
-	"github.com/appscode/go/runtime"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 )
 
 const (
@@ -35,54 +30,45 @@ var (
 func RunE2ETestSuit(t *testing.T) {
 	RegisterFailHandler(Fail)
 	SetDefaultEventuallyTimeout(TestTimeout)
-
-	root = framework.New()
-	invocation = root.Invoke()
-
 	junitReporter := reporters.NewJUnitReporter("report.xml")
 	RunSpecsWithDefaultAndCustomReporters(t, "Voyager E2E Suite", []Reporter{junitReporter})
 }
 
 var _ = BeforeSuite(func() {
-		op := operator.New(
-			root.KubeClient,
-			root.CRDClient,
-			root.VoyagerClient,
-			nil,
-			config.OperatorOptions{
-				CloudProvider:   root.Config.CloudProviderName,
-				DockerRegistry:  root.Config.DockerRegistry,
-				HAProxyImageTag: root.Config.HAProxyImageTag,
-				IngressClass:    root.Config.IngressClass,
-				NumThreads:      1,
-			},
-		)
+	scheme.AddToScheme(clientsetscheme.Scheme)
+	config.LoggerOptions.Verbosity = "5"
 
-		By("Ensuring Test Namespace " + root.Config.TestNamespace)
-		err := root.EnsureNamespace()
+	options.validate()
+
+	clientConfig, err := clientcmd.BuildConfigFromContext(options.KubeConfig, options.KubeContext)
+	Expect(err).NotTo(HaveOccurred())
+
+	operatorConfig := operator.NewOperatorConfig(clientConfig)
+	err = options.ApplyTo(operatorConfig)
+	Expect(err).NotTo(HaveOccurred())
+
+	root = framework.New(operatorConfig, options.TestNamespace, options.Cleanup)
+
+	By("Ensuring Test Namespace " + options.TestNamespace)
+	err = root.EnsureNamespace()
+	Expect(err).NotTo(HaveOccurred())
+
+	invocation = root.Invoke()
+
+	if !meta.PossiblyInCluster() {
+		err = hpdata.LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
 		Expect(err).NotTo(HaveOccurred())
 
-		config.LoggerOptions.Verbosity = "5"
+		//stop := make(chan struct{})
+		//defer close(stop)
+		go root.Operator.RunInformers(nil)
+	}
 
-		if !root.Config.InCluster {
-			By("Running Controller in Local mode")
-			err := op.Setup()
-			Expect(err).NotTo(HaveOccurred())
-
-			err = hpdata.LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
-			Expect(err).NotTo(HaveOccurred())
-
-			//stop := make(chan struct{})
-			//defer close(stop)
-			go op.Run(nil)
-		}
-		root.EventuallyCRD().Should(Succeed())
-
-		Eventually(invocation.Ingress.Setup).Should(BeNil())
+	Eventually(invocation.Ingress.Setup).Should(BeNil())
 })
 
 var _ = AfterSuite(func() {
-	if root.Config.Cleanup {
+	if options.Cleanup {
 		root.DeleteNamespace()
 		invocation.Ingress.Teardown()
 	}

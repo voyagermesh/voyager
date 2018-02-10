@@ -36,7 +36,7 @@ var _ = Describe("IngressUpdates", func() {
 	})
 
 	AfterEach(func() {
-		if root.Config.Cleanup {
+		if options.Cleanup {
 			f.Ingress.Delete(ing)
 		}
 	})

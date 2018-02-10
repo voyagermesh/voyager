@@ -38,9 +38,9 @@ var _ = Describe("IngressWithTLSAuth", func() {
 		crt, key, err := f.CertStore.NewServerCertPair("server", f.ServerSANs())
 		Expect(err).NotTo(HaveOccurred())
 
-		if len(f.Config.DumpLocation) > 0 {
-			ioutil.WriteFile(f.Config.DumpLocation+"/server.crt", crt, os.ModePerm)
-			ioutil.WriteFile(f.Config.DumpLocation+"/server.key", key, os.ModePerm)
+		if len(options.DumpLocation) > 0 {
+			ioutil.WriteFile(options.DumpLocation+"/server.crt", crt, os.ModePerm)
+			ioutil.WriteFile(options.DumpLocation+"/server.key", key, os.ModePerm)
 		}
 
 		tlsSecret = &core.Secret{
@@ -82,7 +82,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 	})
 
 	AfterEach(func() {
-		if root.Config.Cleanup {
+		if options.Cleanup {
 			f.Ingress.Delete(ing)
 			f.KubeClient.CoreV1().Secrets(tlsSecret.Namespace).Delete(tlsSecret.Name, &metav1.DeleteOptions{})
 			f.KubeClient.CoreV1().Secrets(caSecret.Namespace).Delete(caSecret.Name, &metav1.DeleteOptions{})
@@ -91,7 +91,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 
 	Describe("Create Required Auth", func() {
 		BeforeEach(func() {
-			if f.Config.CloudProviderName == "minikube" {
+			if options.CloudProvider == "minikube" {
 				ing.Annotations[api.LBType] = api.LBTypeHostPort
 			}
 			ing.Spec = api.IngressSpec{
@@ -148,10 +148,10 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			ccrt, ckey, err := f.CertStore.NewClientCertPair("e2e-test", framework.ClientOrgs...)
 			Expect(err).NotTo(HaveOccurred())
 
-			if len(f.Config.DumpLocation) > 0 {
-				ioutil.WriteFile(f.Config.DumpLocation+"/ca.crt", f.CertStore.CACert(), os.ModePerm)
-				ioutil.WriteFile(f.Config.DumpLocation+"/client.crt", ccrt, os.ModePerm)
-				ioutil.WriteFile(f.Config.DumpLocation+"/client.key", ckey, os.ModePerm)
+			if len(options.DumpLocation) > 0 {
+				ioutil.WriteFile(options.DumpLocation+"/ca.crt", f.CertStore.CACert(), os.ModePerm)
+				ioutil.WriteFile(options.DumpLocation+"/client.crt", ccrt, os.ModePerm)
+				ioutil.WriteFile(options.DumpLocation+"/client.key", ckey, os.ModePerm)
 			}
 
 			resolved := false
@@ -206,7 +206,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 
 	Describe("Create With Header", func() {
 		BeforeEach(func() {
-			if f.Config.CloudProviderName == "minikube" {
+			if options.CloudProvider == "minikube" {
 				ing.Annotations[api.LBType] = api.LBTypeHostPort
 			}
 			ing.Spec = api.IngressSpec{
@@ -268,10 +268,10 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			ccrt, ckey, err := f.CertStore.NewClientCertPair("e2e-test", framework.ClientOrgs...)
 			Expect(err).NotTo(HaveOccurred())
 
-			if len(f.Config.DumpLocation) > 0 {
-				ioutil.WriteFile(f.Config.DumpLocation+"/ca.crt", f.CertStore.CACert(), os.ModePerm)
-				ioutil.WriteFile(f.Config.DumpLocation+"/client.crt", ccrt, os.ModePerm)
-				ioutil.WriteFile(f.Config.DumpLocation+"/client.key", ckey, os.ModePerm)
+			if len(options.DumpLocation) > 0 {
+				ioutil.WriteFile(options.DumpLocation+"/ca.crt", f.CertStore.CACert(), os.ModePerm)
+				ioutil.WriteFile(options.DumpLocation+"/client.crt", ccrt, os.ModePerm)
+				ioutil.WriteFile(options.DumpLocation+"/client.key", ckey, os.ModePerm)
 			}
 
 			resolved := false
@@ -319,7 +319,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 
 	Describe("Create Optional Auth", func() {
 		BeforeEach(func() {
-			if f.Config.CloudProviderName == "minikube" {
+			if options.CloudProvider == "minikube" {
 				ing.Annotations[api.LBType] = api.LBTypeHostPort
 			}
 			ing.Spec = api.IngressSpec{
@@ -375,10 +375,10 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			ccrt, ckey, err := f.CertStore.NewClientCertPair("e2e-test", framework.ClientOrgs...)
 			Expect(err).NotTo(HaveOccurred())
 
-			if len(f.Config.DumpLocation) > 0 {
-				ioutil.WriteFile(f.Config.DumpLocation+"/ca.crt", f.CertStore.CACert(), os.ModePerm)
-				ioutil.WriteFile(f.Config.DumpLocation+"/client.crt", ccrt, os.ModePerm)
-				ioutil.WriteFile(f.Config.DumpLocation+"/client.key", ckey, os.ModePerm)
+			if len(options.DumpLocation) > 0 {
+				ioutil.WriteFile(options.DumpLocation+"/ca.crt", f.CertStore.CACert(), os.ModePerm)
+				ioutil.WriteFile(options.DumpLocation+"/client.crt", ccrt, os.ModePerm)
+				ioutil.WriteFile(options.DumpLocation+"/client.key", ckey, os.ModePerm)
 			}
 
 			resolved := false
@@ -434,7 +434,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 
 	Describe("CreateAnnotationAuth", func() {
 		BeforeEach(func() {
-			if f.Config.CloudProviderName == "minikube" {
+			if options.CloudProvider == "minikube" {
 				ing.Annotations[api.LBType] = api.LBTypeHostPort
 			}
 
@@ -484,10 +484,10 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			ccrt, ckey, err := f.CertStore.NewClientCertPair("e2e-test", framework.ClientOrgs...)
 			Expect(err).NotTo(HaveOccurred())
 
-			if len(f.Config.DumpLocation) > 0 {
-				ioutil.WriteFile(f.Config.DumpLocation+"/ca.crt", f.CertStore.CACert(), os.ModePerm)
-				ioutil.WriteFile(f.Config.DumpLocation+"/client.crt", ccrt, os.ModePerm)
-				ioutil.WriteFile(f.Config.DumpLocation+"/client.key", ckey, os.ModePerm)
+			if len(options.DumpLocation) > 0 {
+				ioutil.WriteFile(options.DumpLocation+"/ca.crt", f.CertStore.CACert(), os.ModePerm)
+				ioutil.WriteFile(options.DumpLocation+"/client.crt", ccrt, os.ModePerm)
+				ioutil.WriteFile(options.DumpLocation+"/client.key", ckey, os.ModePerm)
 			}
 
 			resolved := false

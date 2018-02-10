@@ -31,7 +31,7 @@ var _ = Describe("Restore ingress offshoots", func() {
 	})
 
 	AfterEach(func() {
-		if root.Config.Cleanup {
+		if options.Cleanup {
 			f.Ingress.Delete(ing)
 		}
 	})

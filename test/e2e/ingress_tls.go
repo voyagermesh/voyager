@@ -29,7 +29,7 @@ var _ = Describe("IngressTLS", func() {
 	})
 
 	BeforeEach(func() {
-		// if f.Ingress.Config.CloudProviderName == "minikube" && !strings.HasPrefix(config.GinkgoConfig.FocusString, "IngressTLS") {
+		// if options.CloudProvider == "minikube" && !strings.HasPrefix(config.GinkgoConfig.FocusString, "IngressTLS") {
 		// 	 Skip("run in minikube only when single specs running")
 		// }
 	})
@@ -65,7 +65,7 @@ var _ = Describe("IngressTLS", func() {
 	})
 
 	AfterEach(func() {
-		if root.Config.Cleanup {
+		if options.Cleanup {
 			f.Ingress.Delete(ing)
 			f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{})
 		}

@@ -6,13 +6,11 @@ import (
 	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/kutil/tools/certstore"
 	cs "github.com/appscode/voyager/client"
-	"github.com/appscode/voyager/pkg/config"
+	"github.com/appscode/voyager/pkg/operator"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/afero"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 const (
@@ -22,16 +20,16 @@ const (
 )
 
 type Framework struct {
-	KubeConfig    *rest.Config
 	KubeClient    kubernetes.Interface
 	VoyagerClient cs.Interface
 	CRDClient     kext_cs.ApiextensionsV1beta1Interface
-	Config        E2EConfig
-	namespace     string
-	voyagerConfig config.Config
-	Mutex         sync.Mutex
 
-	CertStore *certstore.CertStore
+	Operator      *operator.Operator
+	CertStore     *certstore.CertStore
+	TestNamespace string
+	Cleanup       bool
+
+	Lock sync.Mutex
 }
 
 type Invocation struct {
@@ -53,10 +51,8 @@ type certificateInvocation struct {
 	*rootInvocation
 }
 
-func New() *Framework {
-	testConfigs.validate()
-
-	c, err := clientcmd.BuildConfigFromFlags(testConfigs.Master, testConfigs.KubeConfig)
+func New(cfg *operator.OperatorConfig, testNamespace string, cleanup bool) *Framework {
+	op, err := cfg.New()
 	Expect(err).NotTo(HaveOccurred())
 
 	cm, err := certstore.NewCertStore(afero.NewMemMapFs(), "/pki")
@@ -66,21 +62,13 @@ func New() *Framework {
 	Expect(err).NotTo(HaveOccurred())
 
 	return &Framework{
-		KubeConfig:    c,
-		KubeClient:    kubernetes.NewForConfigOrDie(c),
-		VoyagerClient: cs.NewForConfigOrDie(c),
-		CRDClient:     kext_cs.NewForConfigOrDie(c),
-		Config:        testConfigs,
-		namespace:     testConfigs.TestNamespace,
-		voyagerConfig: config.Config{
-			CloudProvider: testConfigs.CloudProviderName,
-			// DockerRegistry:    "",
-			// HAProxyImageTag:   testConfigs.HAProxyImageTag,
-			IngressClass:      testConfigs.IngressClass,
-			EnableRBAC:        testConfigs.RBACEnabled,
-			OperatorNamespace: testConfigs.TestNamespace,
-		},
-		CertStore: cm,
+		KubeClient:    cfg.KubeClient,
+		VoyagerClient: cfg.VoyagerClient,
+		CRDClient:     cfg.CRDClient,
+		Operator:      op,
+		CertStore:     cm,
+		TestNamespace: testNamespace,
+		Cleanup:       cleanup,
 	}
 }
 

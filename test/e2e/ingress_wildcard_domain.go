@@ -41,7 +41,7 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 	})
 
 	AfterEach(func() {
-		if root.Config.Cleanup {
+		if options.Cleanup {
 			f.Ingress.Delete(ing)
 		}
 	})
@@ -141,13 +141,13 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 		})
 
 		AfterEach(func() {
-			if root.Config.Cleanup {
+			if options.Cleanup {
 				f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{})
 			}
 		})
 
 		BeforeEach(func() {
-			if f.Config.CloudProviderName == "minikube" {
+			if options.CloudProvider == "minikube" {
 				ing.Annotations[api.LBType] = api.LBTypeHostPort
 			}
 			ing.Annotations[api.SSLRedirect] = "false"

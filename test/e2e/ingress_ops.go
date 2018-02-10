@@ -42,7 +42,7 @@ var _ = Describe("IngressOperations", func() {
 	})
 
 	AfterEach(func() {
-		if root.Config.Cleanup {
+		if options.Cleanup {
 			f.Ingress.Delete(ing)
 		}
 	})
@@ -75,8 +75,8 @@ var _ = Describe("IngressOperations", func() {
 
 	Describe("Create", func() {
 		It("Should create Loadbalancer entry", func() {
-			By("Checking StatusIP for provider" + f.Config.CloudProviderName)
-			if f.Config.CloudProviderName == "minikube" {
+			By("Checking StatusIP for provider" + options.CloudProvider)
+			if options.CloudProvider == "minikube" {
 				Skip("Minikube do not support this")
 			}
 			// Check Status for ingress
@@ -93,10 +93,10 @@ var _ = Describe("IngressOperations", func() {
 
 		Describe("With persistent IP", func() {
 			BeforeEach(func() {
-				ing.Annotations[api.LoadBalancerIP] = f.Config.LBPersistIP
+				ing.Annotations[api.LoadBalancerIP] = options.LBPersistIP
 			})
 			It("Should persist service IP", func() {
-				if len(f.Config.LBPersistIP) == 0 {
+				if len(options.LBPersistIP) == 0 {
 					Skip("Persistent IP is not provided")
 				}
 				if !f.Ingress.SupportsServiceIP() {
@@ -110,7 +110,7 @@ var _ = Describe("IngressOperations", func() {
 
 				Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
 				By("Wait for resource to be deleted", shouldDeleteResource)
-				ing.Annotations[api.LoadBalancerIP] = f.Config.LBPersistIP
+				ing.Annotations[api.LoadBalancerIP] = options.LBPersistIP
 				Expect(f.Ingress.Create(ing)).NotTo(HaveOccurred())
 
 				By("Checking HTTP Response", shouldResponseHTTP)
