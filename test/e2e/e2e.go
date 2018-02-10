@@ -35,6 +35,7 @@ func RunE2ETestSuit(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
+	/*
 	op := operator.New(
 		root.KubeClient,
 		root.CRDClient,
@@ -70,6 +71,7 @@ var _ = BeforeSuite(func() {
 	root.EventuallyCRD().Should(Succeed())
 
 	Eventually(invocation.Ingress.Setup).Should(BeNil())
+	*/
 })
 
 var _ = AfterSuite(func() {
