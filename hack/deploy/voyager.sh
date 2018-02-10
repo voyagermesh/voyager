@@ -221,7 +221,7 @@ export TLS_SERVING_CERT=$(cat server.crt | $ONESSL base64)
 export TLS_SERVING_KEY=$(cat server.key | $ONESSL base64)
 export KUBE_CA=$($ONESSL get kube-ca | $ONESSL base64)
 
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-alpha.0/hack/deploy/operator.yaml | envsubst | kubectl apply -f -
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-alpha.0/hack/deploy/operator.yaml | $ONESSL envsubst | kubectl apply -f -
 
 if [ -n "$VOYAGER_TEMPLATE_CONFIGMAP" ]; then
 	kubectl get configmap -n $VOYAGER_NAMESPACE $VOYAGER_TEMPLATE_CONFIGMAP >/dev/null 2>&1
@@ -230,13 +230,13 @@ if [ -n "$VOYAGER_TEMPLATE_CONFIGMAP" ]; then
 		exit 1
 	fi
     kubectl patch deploy voyager-operator -n $VOYAGER_NAMESPACE \
-      --patch="$(curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-alpha.0/hack/deploy/use-custom-tpl.yaml | envsubst)"
+      --patch="$(curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-alpha.0/hack/deploy/use-custom-tpl.yaml | $ONESSL envsubst)"
 fi
 
 if [ "$VOYAGER_ENABLE_RBAC" = true ]; then
     kubectl create serviceaccount $VOYAGER_SERVICE_ACCOUNT --namespace $VOYAGER_NAMESPACE
     kubectl label serviceaccount $VOYAGER_SERVICE_ACCOUNT app=voyager --namespace $VOYAGER_NAMESPACE
-    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-alpha.0/hack/deploy/rbac-list.yaml | envsubst | kubectl auth reconcile -f -
+    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-alpha.0/hack/deploy/rbac-list.yaml | $ONESSL envsubst | kubectl auth reconcile -f -
 fi
 
 if [ "$VOYAGER_RUN_ON_MASTER" -eq 1 ]; then
@@ -245,5 +245,5 @@ if [ "$VOYAGER_RUN_ON_MASTER" -eq 1 ]; then
 fi
 
 if [ "$VOYAGER_ENABLE_ADMISSION_WEBHOOK" = true ]; then
-    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-alpha.0/hack/deploy/admission.yaml | envsubst | kubectl apply -f -
+    curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-alpha.0/hack/deploy/admission.yaml | $ONESSL envsubst | kubectl apply -f -
 fi
