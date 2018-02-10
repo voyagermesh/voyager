@@ -41,3 +41,17 @@ Voyager can automagically provision and refresh SSL certificates issued from Let
 - Support for multiple DNS providers,
 - Auto Renew Certificates,
 - Use issued Certificates with Ingress to Secure Communications.
+
+
+## FAQ
+
+**How do I run Voyager with other Ingress controllers in the same cluster?**
+
+Yes, Voyager can be used to manager Ingress objects alongside with other ingress controller. Voyager comes with its own CRD called `Ingress` under api version `voyager.appscode.com/v1beta1` . This CRD is not recongnized by other ingress controllers that works with the Kubernetes official Ingress object under `extensions/v1beta1` api version.
+
+By default, Voyager will also manage Kubernetes Ingress objects under `extensions/v1beta1` api version. Voyager can be configured to only handle default Kubernetes Ingress objects with ingress.class `voyager` . To do that, pass the flag `--ingress-class=voyager` in operator pod. After that 
+
+```yaml
+  annotations:
+    kubernetes.io/ingress.class=voyager
+```
