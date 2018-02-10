@@ -139,3 +139,23 @@ x-forwarded-for=10.8.0.1
 BODY:
 * Connection #0 to host 35.226.114.148 left intact
 ```
+
+## FAQ
+
+**How do I ensure that IP assigned my Ingress does not change?**
+
+You can allocate a static IP to a LoadBalancer Ingress managed by Voyager. Say for example, you are using GKE. When you create an Ingress object, Voyager will create a Kubernetes Service of type LoadBalancer. This service will will automatically get a regional IP. If you want to keep that IP, you can mark that IP as static in Google cloud console
+and the apply the annotation to your Ingress.
+
+```yaml
+  annotations:
+    ingress.appscode.com/type: LoadBalancer
+ `  ingress.appscode.com/load-balancer-ip: 'a.b.c.d'`
+```
+
+
+**How do I use a Global Static IP (anycast IP) with an Ingress in GKE?**
+
+You can't use Global Static IP with a LoabBalancer Ingress managed by GKE. Voyager creates a `LoadBalancer` Service to expose HAProxy pods. Under the hood, Kubernetes creates a `Network LoadBalancer` to expose that Kubernetes service. Network LoadBalancers can only use regional static IPs.
+
+If you want to use Global static IP with Google Cloud, these pods need to be exposed via  a HTTP LoadBalancer. Voyager does not support this today. This is not a priority for us but if you want to contribute, we can talk more. To use HTTP LoadBalancers today, you can use the `gce` ingress controller: https://github.com/kubernetes/ingress-gce . You may already know that HTTP LoadBalancer can only open port 80, 8080 and 443 and serve HTTP traffic. Please consult the official docs for more details: https://cloud.google.com/compute/docs/load-balancing/
