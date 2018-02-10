@@ -55,3 +55,28 @@ By default, Voyager will also manage Kubernetes Ingress objects under `extension
   annotations:
     kubernetes.io/ingress.class=voyager
 ```
+
+**Why does Voyager creates separate HAProxy pods for each Ingress?**
+
+Various Ingress controller behave differently regarding whether separate Ingress object will result in separate LoadBalancer.
+
+- nginx: Nginx controller seem to combine Ingress objects into one and expose via same Nginx instance.
+- gce: A separate GCE L7 is created for each Ingress object.
+- Voyager: A separate HAProxy deployment is created for each Ingress.
+
+There is not a clear indication what is the intended behavior from https://kubernetes.io/docs/concepts/services-networking/ingress/ . Reasons why we think one LB (GCE L7 / nginx / haproxy) per Ingress is a better choice:
+
+1. This gives users choice/control whether they want to serve all service using the same IP or use separate IP. In voyager, to serve using same LB, users need to put them in the same Ingress.
+
+2. I think ux is clearer with this mode. If user don't have access to other namespaces, they may not know what else is going on.
+
+3. Voyager supports TCP. If 2 separate backend wants to use the same port, they need separate LB IP. Also, since all TCP services served via same LB is in the same YAML, it makes it easy to see what other ports are in use.
+
+4. In Voyager, the order of paths for same host is important. We maintain this order in generated HAProxy config. If the Ingresses are auto merged, user loses this control. This might be ok, since paths are matched as the url prefix. But will not work, if other options are used.
+
+5. Users can spread services across LB pods. If used with HPA, users can only scale up HAProxy deployments that they want.
+
+6. We do soft reload HAProxy. This gives better isolation.
+
+
+
