@@ -28,7 +28,7 @@ type Framework struct {
 	CRDClient     kext_cs.ApiextensionsV1beta1Interface
 	Config        E2EConfig
 	namespace     string
-	voyagerConfig config.Options
+	voyagerConfig config.OperatorOptions
 	Mutex         sync.Mutex
 
 	CertStore *certstore.CertStore
@@ -72,7 +72,7 @@ func New() *Framework {
 		CRDClient:     kext_cs.NewForConfigOrDie(c),
 		Config:        testConfigs,
 		namespace:     testConfigs.TestNamespace,
-		voyagerConfig: config.Options{
+		voyagerConfig: config.OperatorOptions{
 			CloudProvider:     testConfigs.CloudProviderName,
 			DockerRegistry:    "",
 			HAProxyImageTag:   testConfigs.HAProxyImageTag,
@@ -84,7 +84,7 @@ func New() *Framework {
 	}
 }
 
-func (f *Framework) VoyagerConfig() config.Options {
+func (f *Framework) VoyagerConfig() config.OperatorOptions {
 	return f.voyagerConfig
 }
 

@@ -33,8 +33,8 @@ func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, 
 		namespace = name[idx+1:]
 		name = name[:idx]
 	}
-	if c.Opt.RestrictToOperatorNamespace && namespace != c.Opt.OperatorNamespace {
-		return nil, fmt.Errorf("can't use service %s as backend, since voyager operator is restricted namespace %s", bkSvc, c.Opt.OperatorNamespace)
+	if c.cfg.RestrictToOperatorNamespace && namespace != c.cfg.OperatorNamespace {
+		return nil, fmt.Errorf("can't use service %s as backend, since voyager operator is restricted namespace %s", bkSvc, c.cfg.OperatorNamespace)
 	}
 
 	c.logger.Infoln("looking for services in namespace", namespace, "with name", name)
@@ -292,7 +292,7 @@ func (c *controller) generateConfig() error {
 		si.Limit.Rate = val
 	}
 
-	if c.Opt.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
+	if c.cfg.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
 		si.AcceptProxy = c.Ingress.KeepSourceIP()
 	}
 	if c.Ingress.AcceptProxy() {
@@ -999,7 +999,7 @@ func (c *controller) convertRulesForSSLPassthrough() error {
 		c.Ingress.Spec.Backend = nil
 	}
 
-	err := c.Ingress.IsValid(c.Opt.CloudProvider)
+	err := c.Ingress.IsValid(c.cfg.CloudProvider)
 	if err != nil {
 		return fmt.Errorf("%s annotation can't be used. Reason: %v", api.SSLPassthrough, err)
 	}

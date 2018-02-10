@@ -15,7 +15,7 @@ import (
 
 func (op *Operator) initSecretWatcher() {
 	op.secretInformer = op.kubeInformerFactory.Core().V1().Secrets().Informer()
-	op.secretQueue = queue.New("Secret", op.options.MaxNumRequeues, op.options.NumThreads, op.reconcileSecret)
+	op.secretQueue = queue.New("Secret", op.MaxNumRequeues, op.NumThreads, op.reconcileSecret)
 	op.secretInformer.AddEventHandler(queue.NewEventHandler(op.secretQueue.GetQueue(), func(old interface{}, new interface{}) bool {
 		oldSecret := old.(*core.Secret)
 		newSecret := new.(*core.Secret)
@@ -42,7 +42,7 @@ func (op *Operator) reconcileSecret(key string) error {
 		for i := range items {
 			ing := &items[i]
 			if ing.DeletionTimestamp == nil &&
-				(ing.ShouldHandleIngress(op.options.IngressClass) || op.IngressServiceUsesAuthSecret(ing, secret)) {
+				(ing.ShouldHandleIngress(op.IngressClass) || op.IngressServiceUsesAuthSecret(ing, secret)) {
 				if ing.UsesAuthSecret(secret.Namespace, secret.Name) {
 					if key, err := cache.MetaNamespaceKeyFunc(ing); err != nil {
 						return err

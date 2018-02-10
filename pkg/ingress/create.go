@@ -61,7 +61,7 @@ func (c *controller) getExporterSidecar() (*core.Container, error) {
 					Value: config.AnalyticsClientID,
 				},
 			},
-			Image:           c.Opt.ExporterImage(),
+			Image:           c.cfg.ExporterImage(),
 			ImagePullPolicy: core.PullIfNotPresent,
 			Ports: []core.ContainerPort{
 				{

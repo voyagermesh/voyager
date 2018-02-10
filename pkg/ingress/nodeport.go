@@ -51,7 +51,7 @@ func NewNodePortController(
 	promClient pcm.MonitoringV1Interface,
 	serviceLister core_listers.ServiceLister,
 	endpointsLister core_listers.EndpointsLister,
-	opt config.Options,
+	cfg Config,
 	ingress *api.Ingress) Controller {
 	c := &nodePortController{
 		controller: &controller{
@@ -62,40 +62,40 @@ func NewNodePortController(
 			PromClient:      promClient,
 			ServiceLister:   serviceLister,
 			EndpointsLister: endpointsLister,
-			Opt:             opt,
+			cfg:             cfg,
 			Ingress:         ingress,
 			recorder:        eventer.NewEventRecorder(kubeClient, "voyager operator"),
 		},
 	}
-	c.logger.Infoln("Initializing cloud manager for provider", opt.CloudProvider)
-	if opt.CloudProvider == "aws" || opt.CloudProvider == "gce" || opt.CloudProvider == "azure" {
-		cloudInterface, err := cloudprovider.InitCloudProvider(opt.CloudProvider, opt.CloudConfigFile)
+	c.logger.Infoln("Initializing cloud manager for provider", cfg.CloudProvider)
+	if cfg.CloudProvider == "aws" || cfg.CloudProvider == "gce" || cfg.CloudProvider == "azure" {
+		cloudInterface, err := cloudprovider.InitCloudProvider(cfg.CloudProvider, cfg.CloudConfigFile)
 		if err != nil {
-			c.logger.Errorln("Failed to initialize cloud provider:"+opt.CloudProvider, err)
+			c.logger.Errorln("Failed to initialize cloud provider:"+cfg.CloudProvider, err)
 		} else {
-			c.logger.Infoln("Initialized cloud provider: "+opt.CloudProvider, cloudInterface)
+			c.logger.Infoln("Initialized cloud provider: "+cfg.CloudProvider, cloudInterface)
 			c.CloudManager = cloudInterface
 		}
-	} else if opt.CloudProvider == "gke" {
-		cloudInterface, err := cloudprovider.InitCloudProvider("gce", opt.CloudConfigFile)
+	} else if cfg.CloudProvider == "gke" {
+		cloudInterface, err := cloudprovider.InitCloudProvider("gce", cfg.CloudConfigFile)
 		if err != nil {
-			c.logger.Errorln("Failed to initialize cloud provider:"+opt.CloudProvider, err)
+			c.logger.Errorln("Failed to initialize cloud provider:"+cfg.CloudProvider, err)
 		} else {
-			c.logger.Infoln("Initialized cloud provider: "+opt.CloudProvider, cloudInterface)
+			c.logger.Infoln("Initialized cloud provider: "+cfg.CloudProvider, cloudInterface)
 			c.CloudManager = cloudInterface
 		}
-	} else if opt.CloudProvider == "acs" {
-		cloudInterface, err := cloudprovider.InitCloudProvider("azure", opt.CloudConfigFile)
+	} else if cfg.CloudProvider == "acs" {
+		cloudInterface, err := cloudprovider.InitCloudProvider("azure", cfg.CloudConfigFile)
 		if err != nil {
-			c.logger.Errorln("Failed to initialize cloud provider:"+opt.CloudProvider, err)
+			c.logger.Errorln("Failed to initialize cloud provider:"+cfg.CloudProvider, err)
 		} else {
-			c.logger.Infoln("Initialized cloud provider: "+opt.CloudProvider, cloudInterface)
+			c.logger.Infoln("Initialized cloud provider: "+cfg.CloudProvider, cloudInterface)
 			c.CloudManager = cloudInterface
 		}
-	} else if opt.CloudProvider == "minikube" {
+	} else if cfg.CloudProvider == "minikube" {
 		c.CloudManager = &fakecloudprovider.FakeCloud{}
 	} else {
-		c.logger.Infoln("No cloud manager found for provider", opt.CloudProvider)
+		c.logger.Infoln("No cloud manager found for provider", cfg.CloudProvider)
 	}
 	return c
 }
@@ -113,7 +113,7 @@ func (c *nodePortController) IsExists() bool {
 	if kerr.IsNotFound(err) {
 		return false
 	}
-	if c.Opt.EnableRBAC {
+	if c.cfg.EnableRBAC {
 		_, err = c.KubeClient.CoreV1().ServiceAccounts(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
 			return false
@@ -195,7 +195,7 @@ func (c *nodePortController) Reconcile() error {
 	}
 
 	// If RBAC is enabled we need to ensure service account
-	if c.Opt.EnableRBAC {
+	if c.cfg.EnableRBAC {
 		c.reconcileRBAC()
 	}
 
@@ -313,7 +313,7 @@ func (c *nodePortController) Delete() {
 	if err := c.deleteConfigMap(); err != nil {
 		c.logger.Errorln(err)
 	}
-	if c.Opt.EnableRBAC {
+	if c.cfg.EnableRBAC {
 		if err := c.ensureRBACDeleted(); err != nil {
 			c.logger.Errorln(err)
 		}
@@ -386,7 +386,7 @@ func (c *nodePortController) ensureService() (*core.Service, kutil.VerbType, err
 			delete(obj.Annotations, key)
 		}
 		newKeys := make([]string, 0)
-		if ans, ok := c.Ingress.ServiceAnnotations(c.Opt.CloudProvider); ok {
+		if ans, ok := c.Ingress.ServiceAnnotations(c.cfg.CloudProvider); ok {
 			for k, v := range ans {
 				obj.Annotations[k] = v
 				newKeys = append(newKeys, k)
@@ -405,7 +405,7 @@ func (c *nodePortController) ensureService() (*core.Service, kutil.VerbType, err
 		}
 
 		// opening other tcp ports
-		mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
+		mappings, _ := c.Ingress.PortMappings(c.cfg.CloudProvider)
 		desiredPorts := make([]core.ServicePort, 0)
 		for svcPort, target := range mappings {
 			p := core.ServicePort{
@@ -479,7 +479,7 @@ func (c *nodePortController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 		obj.Spec.Template.Spec.Tolerations = c.Ingress.Spec.Tolerations
 		obj.Spec.Template.Spec.NodeSelector = c.Ingress.NodeSelector()
 		obj.Spec.Template.Spec.ImagePullSecrets = c.Ingress.Spec.ImagePullSecrets
-		if c.Opt.EnableRBAC {
+		if c.cfg.EnableRBAC {
 			obj.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
 		}
 
@@ -512,15 +512,14 @@ func (c *nodePortController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 		// container spec
 		haproxyContainer := core.Container{
 			Name:  "haproxy",
-			Image: c.Opt.HAProxyImage(),
+			Image: c.cfg.HAProxyImage(),
 			Args: append([]string{
 				fmt.Sprintf("--analytics=%v", config.EnableAnalytics),
-				fmt.Sprintf("--burst=%v", c.Opt.Burst),
-				fmt.Sprintf("--cloud-provider=%s", c.Opt.CloudProvider),
+				fmt.Sprintf("--burst=%v", c.cfg.Burst),
+				fmt.Sprintf("--cloud-provider=%s", c.cfg.CloudProvider),
 				fmt.Sprintf("--ingress-api-version=%s", c.Ingress.APISchema()),
 				fmt.Sprintf("--ingress-name=%s", c.Ingress.Name),
-				fmt.Sprintf("--qps=%v", c.Opt.QPS),
-				fmt.Sprintf("--resync-period=%v", c.Opt.ResyncPeriod),
+				fmt.Sprintf("--qps=%v", c.cfg.QPS),
 				"--reload-cmd=/etc/sv/haproxy/reload",
 			}, config.LoggerOptions.ToFlags()...),
 			Env: c.ensureEnvVars([]core.EnvVar{

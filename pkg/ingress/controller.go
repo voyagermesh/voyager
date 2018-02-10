@@ -2,6 +2,7 @@ package ingress
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"sync"
@@ -11,7 +12,6 @@ import (
 	v1u "github.com/appscode/kutil/core/v1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client"
-	"github.com/appscode/voyager/pkg/config"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	vault "github.com/hashicorp/vault/api"
@@ -30,6 +30,28 @@ type Controller interface {
 	EnsureFirewall(svc *core.Service) error
 }
 
+type Config struct {
+	CloudProvider               string
+	OperatorNamespace           string
+	OperatorService             string
+	EnableRBAC                  bool
+	DockerRegistry              string
+	HAProxyImageTag             string
+	ExporterImageTag            string
+	QPS                         float32
+	Burst                       int
+	RestrictToOperatorNamespace bool
+	CloudConfigFile             string
+}
+
+func (cfg Config) HAProxyImage() string {
+	return fmt.Sprintf("%s/haproxy:%s", cfg.DockerRegistry, cfg.HAProxyImageTag)
+}
+
+func (cfg Config) ExporterImage() string {
+	return fmt.Sprintf("%s/voyager:%s", cfg.DockerRegistry, cfg.ExporterImageTag)
+}
+
 type controller struct {
 	KubeClient      kubernetes.Interface
 	CRDClient       kext_cs.ApiextensionsV1beta1Interface
@@ -40,7 +62,7 @@ type controller struct {
 
 	recorder record.EventRecorder
 
-	Opt config.Options
+	cfg Config
 
 	// Engress object that created or updated.
 	Ingress *api.Ingress
@@ -60,7 +82,7 @@ func NewController(
 	promClient pcm.MonitoringV1Interface,
 	serviceLister core_listers.ServiceLister,
 	endpointsLister core_listers.EndpointsLister,
-	opt config.Options,
+	opt Config,
 	ingress *api.Ingress) Controller {
 	switch ingress.LBType() {
 	case api.LBTypeHostPort:

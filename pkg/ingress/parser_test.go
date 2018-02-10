@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,7 +29,7 @@ func TestALPNOptions(t *testing.T) {
 func TestConvertRulesForSSLPassthrough(t *testing.T) {
 	c := &controller{
 		Ingress: &api.Ingress{},
-		Opt: config.Options{
+		cfg: Config{
 			CloudProvider: "minikube",
 		},
 	}

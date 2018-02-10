@@ -65,7 +65,7 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 		client.ExcludeChallenges([]acme.Challenge{acme.DNS01, acme.TLSSNI01})
 		return client, nil
 	case "aws", "route53":
-		if c.Opt.CloudProvider == "aws" && len(c.DNSCredentials) == 0 {
+		if c.config.CloudProvider == "aws" && len(c.DNSCredentials) == 0 {
 			return newDNSProvider(route53.NewDNSProvider())
 		}
 		var accessKeyId, secretAccessKey, hostedZoneID string
@@ -167,7 +167,7 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 		}
 		return newDNSProvider(godaddy.NewDNSProviderCredentials(apiKey, apiSecret))
 	case "googlecloud", "google", "gce", "gke":
-		if (c.Opt.CloudProvider == "gce" || c.Opt.CloudProvider == "gke") && len(c.DNSCredentials) == 0 {
+		if (c.config.CloudProvider == "gce" || c.config.CloudProvider == "gke") && len(c.DNSCredentials) == 0 {
 			// ref: https://cloud.google.com/compute/docs/storing-retrieving-metadata
 			// curl "http://metadata.google.internal/computeMetadata/v1/project/project-id" -H "Metadata-Flavor: Google"
 			req, err := http.NewRequest(http.MethodGet, "http://metadata.google.internal/computeMetadata/v1/project/project-id", nil)

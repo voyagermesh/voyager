@@ -8,7 +8,7 @@ import (
 	core "k8s.io/api/core/v1"
 )
 
-type Options struct {
+type OperatorOptions struct {
 	CloudProvider               string
 	CloudConfigFile             string
 	IngressClass                string
@@ -26,17 +26,17 @@ type Options struct {
 	ExporterImageTag            string
 }
 
-func (opt Options) HAProxyImage() string {
-	return fmt.Sprintf("%s/haproxy:%s", opt.DockerRegistry, opt.HAProxyImageTag)
+func (options OperatorOptions) HAProxyImage() string {
+	return fmt.Sprintf("%s/haproxy:%s", options.DockerRegistry, options.HAProxyImageTag)
 }
 
-func (opt Options) ExporterImage() string {
-	return fmt.Sprintf("%s/voyager:%s", opt.DockerRegistry, opt.ExporterImageTag)
+func (options OperatorOptions) ExporterImage() string {
+	return fmt.Sprintf("%s/voyager:%s", options.DockerRegistry, options.ExporterImageTag)
 }
 
-func (opt Options) WatchNamespace() string {
-	if opt.RestrictToOperatorNamespace {
-		return opt.OperatorNamespace
+func (options OperatorOptions) WatchNamespace() string {
+	if options.RestrictToOperatorNamespace {
+		return options.OperatorNamespace
 	}
 	return core.NamespaceAll
 }

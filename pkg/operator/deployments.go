@@ -9,7 +9,7 @@ import (
 
 func (op *Operator) initDeploymentWatcher() {
 	op.dpInformer = op.kubeInformerFactory.Apps().V1beta1().Deployments().Informer()
-	op.dpQueue = queue.New("Deployment", op.options.MaxNumRequeues, op.options.NumThreads, op.reconcileDeployment)
+	op.dpQueue = queue.New("Deployment", op.MaxNumRequeues, op.NumThreads, op.reconcileDeployment)
 	op.dpInformer.AddEventHandler(queue.NewDeleteHandler(op.dpQueue.GetQueue()))
 	op.dpLister = op.kubeInformerFactory.Apps().V1beta1().Deployments().Lister()
 }
@@ -40,7 +40,7 @@ func (op *Operator) restoreDeployment(name, ns string) error {
 	for i := range items {
 		ing := &items[i]
 		if ing.DeletionTimestamp == nil &&
-			ing.ShouldHandleIngress(op.options.IngressClass) &&
+			ing.ShouldHandleIngress(op.IngressClass) &&
 			ing.Namespace == ns &&
 			ing.OffshootName() == name {
 			if key, err := cache.MetaNamespaceKeyFunc(ing); err != nil {

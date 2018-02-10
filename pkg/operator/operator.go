@@ -2,18 +2,19 @@ package operator
 
 import (
 	"fmt"
+	"net/http"
 	"sync"
 
 	"github.com/appscode/go/log"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	"github.com/appscode/kutil/tools/queue"
+	"github.com/appscode/pat"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client"
 	voyagerinformers "github.com/appscode/voyager/informers/externalversions"
 	api_listers "github.com/appscode/voyager/listers/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/config"
-	"github.com/appscode/voyager/pkg/eventer"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	kext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -28,11 +29,29 @@ import (
 )
 
 type Operator struct {
+	MaxNumRequeues int
+	NumThreads     int
+	IngressClass   string
+	WatchNamespace string
+	OpsAddress     string
+
+	CloudProvider               string
+	OperatorNamespace           string
+	OperatorService             string
+	EnableRBAC                  bool
+	DockerRegistry              string
+	HAProxyImageTag             string
+	ExporterImageTag            string
+	QPS                         float32
+	Burst                       int
+	RestrictToOperatorNamespace bool
+	CloudConfigFile             string
+
 	KubeClient    kubernetes.Interface
 	CRDClient     kext_cs.ApiextensionsV1beta1Interface
 	VoyagerClient cs.Interface
 	PromClient    prom.MonitoringV1Interface
-	options       config.Options
+	// options       config.OperatorOptions
 
 	kubeInformerFactory    informers.SharedInformerFactory
 	voyagerInformerFactory voyagerinformers.SharedInformerFactory
@@ -96,45 +115,6 @@ type Operator struct {
 	svcLister   core_listers.ServiceLister
 }
 
-func New(
-	kubeClient kubernetes.Interface,
-	crdClient kext_cs.ApiextensionsV1beta1Interface,
-	voyagerClient cs.Interface,
-	promClient prom.MonitoringV1Interface,
-	opt config.Options,
-) *Operator {
-	return &Operator{
-		KubeClient:             kubeClient,
-		kubeInformerFactory:    informers.NewFilteredSharedInformerFactory(kubeClient, opt.ResyncPeriod, opt.WatchNamespace(), nil),
-		CRDClient:              crdClient,
-		VoyagerClient:          voyagerClient,
-		voyagerInformerFactory: voyagerinformers.NewFilteredSharedInformerFactory(voyagerClient, opt.ResyncPeriod, opt.WatchNamespace(), nil),
-		PromClient:             promClient,
-		options:                opt,
-		recorder:               eventer.NewEventRecorder(kubeClient, "voyager operator"),
-	}
-}
-
-func (op *Operator) Setup() error {
-	if err := op.ensureCustomResourceDefinitions(); err != nil {
-		return err
-	}
-
-	op.initIngressCRDWatcher()
-	op.initIngressWatcher()
-	op.initDeploymentWatcher()
-	op.initServiceWatcher()
-	op.initConfigMapWatcher()
-	op.initEndpointWatcher()
-	op.initSecretWatcher()
-	op.initNodeWatcher()
-	op.initServiceMonitorWatcher()
-	op.initNamespaceWatcher()
-	op.initCertificateCRDWatcher()
-
-	return nil
-}
-
 func (op *Operator) ensureCustomResourceDefinitions() error {
 	log.Infoln("Ensuring CRD registration")
 
@@ -145,7 +125,7 @@ func (op *Operator) ensureCustomResourceDefinitions() error {
 	return apiext_util.RegisterCRDs(op.CRDClient, crds)
 }
 
-func (op *Operator) Run(stopCh chan struct{}) {
+func (op *Operator) RunInformers(stopCh <-chan struct{}) {
 	defer runtime.HandleCrash()
 
 	go op.CheckCertificates()
@@ -192,6 +172,34 @@ func (op *Operator) Run(stopCh chan struct{}) {
 
 	<-stopCh
 	log.Infoln("Stopping Stash controller")
+}
+
+func (w *Operator) Run(stopCh <-chan struct{}) {
+	// https://github.com/appscode/voyager/issues/346
+	err := w.ValidateIngress()
+	if err != nil {
+		log.Errorln(err)
+	}
+
+	// https://github.com/appscode/voyager/pull/506
+	err = w.MigrateCertificates()
+	if err != nil {
+		log.Fatalln("Failed certificate migrations:", err)
+	}
+	// https://github.com/appscode/voyager/issues/229
+	w.PurgeOffshootsWithDeprecatedLabels()
+	// https://github.com/appscode/voyager/issues/446
+	w.PurgeOffshootsDaemonSet()
+
+	stop := make(chan struct{})
+	defer close(stop)
+	go w.RunInformers(stop)
+
+	m := pat.New()
+	m.Get("/metrics", promhttp.Handler())
+	http.Handle("/", m)
+	log.Infoln("Listening on", w.OpsAddress)
+	log.Fatal(http.ListenAndServe(w.OpsAddress, nil))
 }
 
 func (op *Operator) listIngresses() ([]api.Ingress, error) {

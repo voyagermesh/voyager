@@ -1,6 +1,8 @@
 package operator
 
 import (
+	"time"
+
 	"github.com/appscode/go/log"
 	prom_util "github.com/appscode/kube-mon/prometheus/v1"
 	"github.com/appscode/kutil/discovery"
@@ -18,12 +20,12 @@ func (op *Operator) initServiceMonitorWatcher() {
 
 	op.smonInformer = cache.NewSharedIndexInformer(
 		&cache.ListWatch{
-			ListFunc:  op.PromClient.ServiceMonitors(op.options.WatchNamespace()).List,
-			WatchFunc: op.PromClient.ServiceMonitors(op.options.WatchNamespace()).Watch,
+			ListFunc:  op.PromClient.ServiceMonitors(op.WatchNamespace).List,
+			WatchFunc: op.PromClient.ServiceMonitors(op.WatchNamespace).Watch,
 		},
-		&prom.ServiceMonitor{}, op.options.ResyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+		&prom.ServiceMonitor{}, 10*time.Minute, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
 	)
-	op.smonQueue = queue.New("ServiceMonitor", op.options.MaxNumRequeues, op.options.NumThreads, op.reconcileServiceMonitor)
+	op.smonQueue = queue.New("ServiceMonitor", op.MaxNumRequeues, op.NumThreads, op.reconcileServiceMonitor)
 	op.smonInformer.AddEventHandler(queue.NewDeleteHandler(op.smonQueue.GetQueue()))
 }
 
@@ -53,7 +55,7 @@ func (op *Operator) restoreServiceMonitor(name, ns string) error {
 	for i := range items {
 		ing := &items[i]
 		if ing.DeletionTimestamp == nil &&
-			ing.ShouldHandleIngress(op.options.IngressClass) &&
+			ing.ShouldHandleIngress(op.IngressClass) &&
 			ing.Namespace == ns &&
 			ing.StatsServiceName() == name {
 			if key, err := cache.MetaNamespaceKeyFunc(ing); err != nil {

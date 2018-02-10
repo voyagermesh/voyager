@@ -40,7 +40,7 @@ var _ = BeforeSuite(func() {
 		root.CRDClient,
 		root.VoyagerClient,
 		nil,
-		config.Options{
+		config.OperatorOptions{
 			CloudProvider:   root.Config.CloudProviderName,
 			DockerRegistry:  root.Config.DockerRegistry,
 			HAProxyImageTag: root.Config.HAProxyImageTag,

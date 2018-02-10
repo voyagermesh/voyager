@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/apiserver"
+	hookapi "github.com/appscode/voyager/pkg/admission/api"
 	admission "k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -13,13 +13,13 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-type AdmissionHook struct {
+type AdmissionHookImpl struct {
 	CloudProvider string
 }
 
-var _ apiserver.AdmissionHook = &AdmissionHook{}
+var _ hookapi.AdmissionHook = &AdmissionHookImpl{}
 
-func (a *AdmissionHook) Resource() (plural schema.GroupVersionResource, singular string) {
+func (a *AdmissionHookImpl) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
 			Group:    "admission.voyager.appscode.com",
 			Version:  "v1beta1",
@@ -28,7 +28,7 @@ func (a *AdmissionHook) Resource() (plural schema.GroupVersionResource, singular
 		"admissionreview"
 }
 
-func (a *AdmissionHook) Admit(req *admission.AdmissionRequest) *admission.AdmissionResponse {
+func (a *AdmissionHookImpl) Admit(req *admission.AdmissionRequest) *admission.AdmissionResponse {
 	status := &admission.AdmissionResponse{}
 	supportedKinds := sets.NewString(api.ResourceKindCertificate, api.ResourceKindIngress)
 
@@ -96,6 +96,6 @@ func (a *AdmissionHook) Admit(req *admission.AdmissionRequest) *admission.Admiss
 	return status
 }
 
-func (a *AdmissionHook) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
+func (a *AdmissionHookImpl) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
 	return nil
 }
