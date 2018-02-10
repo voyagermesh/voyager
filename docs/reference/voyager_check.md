@@ -24,13 +24,9 @@ voyager check [flags]
 ### Options
 
 ```
-  -c, --cloud-provider string            Name of cloud provider
-      --from-file string                 YAML formatted file containing ingress
-  -h, --help                             help for check
-      --ingress-class string             Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.
-      --kube-context string              Name of Kubeconfig context
-      --prometheus-crd-apigroup string   prometheus CRD  API group name (default "monitoring.coreos.com")
-      --prometheus-crd-kinds CrdKinds     - EXPERIMENTAL (could be removed in future releases) - customize CRD kind names
+  -c, --cloud-provider string   Name of cloud provider
+      --from-file string        YAML formatted file containing ingress
+  -h, --help                    help for check
 ```
 
 ### Options inherited from parent commands
