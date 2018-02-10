@@ -49,7 +49,7 @@ func NewLoadBalancerController(
 	promClient pcm.MonitoringV1Interface,
 	serviceLister core_listers.ServiceLister,
 	endpointsLister core_listers.EndpointsLister,
-	cfg Config,
+	cfg config.Config,
 	ingress *api.Ingress) Controller {
 	return &loadBalancerController{
 		controller: &controller{
@@ -455,7 +455,7 @@ func (c *loadBalancerController) ensurePods() (*apps.Deployment, kutil.VerbType,
 		// container spec
 		haproxyContainer := core.Container{
 			Name:  "haproxy",
-			Image: c.cfg.HAProxyImage(),
+			Image: c.cfg.HAProxyImage,
 			Args: append([]string{
 				fmt.Sprintf("--analytics=%v", config.EnableAnalytics),
 				fmt.Sprintf("--burst=%v", c.cfg.Burst),

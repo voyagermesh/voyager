@@ -46,7 +46,7 @@ func NewInternalController(
 	promClient pcm.MonitoringV1Interface,
 	serviceLister core_listers.ServiceLister,
 	endpointsLister core_listers.EndpointsLister,
-	cfg Config,
+	cfg config.Config,
 	ingress *api.Ingress) Controller {
 	return &internalController{
 		controller: &controller{
@@ -408,7 +408,7 @@ func (c *internalController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 		// container spec
 		haproxyContainer := core.Container{
 			Name:  "haproxy",
-			Image: c.cfg.HAProxyImage(),
+			Image: c.cfg.HAProxyImage,
 			Args: append([]string{
 				fmt.Sprintf("--analytics=%v", config.EnableAnalytics),
 				fmt.Sprintf("--burst=%v", c.cfg.Burst),

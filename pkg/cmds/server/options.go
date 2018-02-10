@@ -15,6 +15,7 @@ import (
 	"github.com/appscode/voyager/pkg/operator"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	"github.com/spf13/pflag"
+	core "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -40,9 +41,24 @@ type OperatorOptions struct {
 
 	builtinTemplates          string
 	customTemplates           string
-	opsAddress                string
+	OpsAddress                string
 	haProxyServerMetricFields string
 	haProxyTimeout            time.Duration
+}
+
+func (s OperatorOptions) HAProxyImage() string {
+	return fmt.Sprintf("%s/haproxy:%s", s.DockerRegistry, s.HAProxyImageTag)
+}
+
+func (s OperatorOptions) ExporterImage() string {
+	return fmt.Sprintf("%s/voyager:%s", s.DockerRegistry, s.ExporterImageTag)
+}
+
+func (s OperatorOptions) WatchNamespace() string {
+	if s.RestrictToOperatorNamespace {
+		return s.OperatorNamespace
+	}
+	return core.NamespaceAll
 }
 
 func NewOperatorOptions() *OperatorOptions {
@@ -66,7 +82,7 @@ func NewOperatorOptions() *OperatorOptions {
 
 		builtinTemplates:          "/srv/voyager/templates/*.cfg",
 		customTemplates:           "",
-		opsAddress:                fmt.Sprintf(":%d", api.DefaultExporterPortNumber),
+		OpsAddress:                fmt.Sprintf(":%d", api.DefaultExporterPortNumber),
 		haProxyServerMetricFields: hpe.ServerMetrics.String(),
 		haProxyTimeout:            5 * time.Second,
 	}
@@ -90,7 +106,7 @@ func (s *OperatorOptions) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&s.OperatorService, "operator-service", s.OperatorService, "Name of service used to expose voyager operator")
 	fs.BoolVar(&s.RestrictToOperatorNamespace, "restrict-to-operator-namespace", s.RestrictToOperatorNamespace, "If true, voyager operator will only handle Kubernetes objects in its own namespace.")
 
-	fs.StringVar(&s.opsAddress, "address", s.opsAddress, "Address to listen on for web interface and telemetry.")
+	fs.StringVar(&s.OpsAddress, "address", s.OpsAddress, "Address to listen on for web interface and telemetry.")
 	fs.StringVar(&s.haProxyServerMetricFields, "haproxy.server-metric-fields", s.haProxyServerMetricFields, "Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1")
 	fs.DurationVar(&s.haProxyTimeout, "haproxy.timeout", s.haProxyTimeout, "Timeout for trying to get stats from HAProxy.")
 
@@ -107,6 +123,22 @@ func (s *OperatorOptions) ApplyTo(config *operator.OperatorConfig) error {
 	if err != nil {
 		return err
 	}
+
+	config.Burst = s.Burst
+	config.CloudConfigFile = s.CloudConfigFile
+	config.CloudProvider = s.CloudProvider
+	config.EnableRBAC = s.EnableRBAC
+	config.ExporterImage = s.ExporterImage()
+	config.HAProxyImage = s.HAProxyImage()
+	config.IngressClass = s.IngressClass
+	config.MaxNumRequeues = s.MaxNumRequeues
+	config.NumThreads = s.NumThreads
+	config.OperatorNamespace = s.OperatorNamespace
+	config.OperatorService = s.OperatorService
+	config.OpsAddress = s.OpsAddress
+	config.QPS = s.QPS
+	config.RestrictToOperatorNamespace = s.RestrictToOperatorNamespace
+	config.WatchNamespace = s.WatchNamespace()
 
 	config.ClientConfig.QPS = s.QPS
 	config.ClientConfig.Burst = s.Burst
@@ -125,23 +157,23 @@ func (s *OperatorOptions) ApplyTo(config *operator.OperatorConfig) error {
 		CloudProvider: s.CloudProvider,
 	}}
 
-	config.OpsAddress = s.opsAddress
+	config.OpsAddress = s.OpsAddress
 
 	return nil
 }
 
-func (opt *OperatorOptions) Validate() []error {
+func (s *OperatorOptions) Validate() []error {
 	var errors []error
-	if opt.HAProxyImageTag == "" {
+	if s.HAProxyImageTag == "" {
 		errors = append(errors, fmt.Errorf("missing required flag --haproxy-image-tag"))
 	}
-	if opt.CloudProvider == "$VOYAGER_CLOUD_PROVIDER" {
+	if s.CloudProvider == "$VOYAGER_CLOUD_PROVIDER" {
 		errors = append(errors, fmt.Errorf("invalid cloud provider `--cloud-provider=$VOYAGER_CLOUD_PROVIDER`"))
 	}
-	if opt.CloudConfigFile == "$CLOUD_CONFIG" {
+	if s.CloudConfigFile == "$CLOUD_CONFIG" {
 		errors = append(errors, fmt.Errorf("invalid cloud config file `--cloud-config=$CLOUD_CONFIG`"))
 	}
-	if opt.IngressClass == "$INGRESS_CLASS" {
+	if s.IngressClass == "$INGRESS_CLASS" {
 		errors = append(errors, fmt.Errorf("invalid ingress class `--ingress-class=$INGRESS_CLASS`"))
 	}
 	return errors

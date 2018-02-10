@@ -16,17 +16,13 @@ import (
 )
 
 type OperatorConfig struct {
-	ClientConfig *rest.Config
+	config.Config
 
-	OpsAddress     string
-	WatchNamespace string
-
-	KubeClient    kubernetes.Interface
-	CRDClient     kext_cs.ApiextensionsV1beta1Interface
-	VoyagerClient cs.Interface
-	PromClient    prom.MonitoringV1Interface
-	options       config.OperatorOptions
-
+	ClientConfig   *rest.Config
+	KubeClient     kubernetes.Interface
+	CRDClient      kext_cs.ApiextensionsV1beta1Interface
+	VoyagerClient  cs.Interface
+	PromClient     prom.MonitoringV1Interface
 	AdmissionHooks []hookapi.AdmissionHook
 }
 
@@ -38,6 +34,7 @@ func NewOperatorConfig(clientConfig *rest.Config) *OperatorConfig {
 
 func (c *OperatorConfig) New() (*Operator, error) {
 	op := &Operator{
+		Config:                 c.Config,
 		KubeClient:             c.KubeClient,
 		kubeInformerFactory:    informers.NewFilteredSharedInformerFactory(c.KubeClient, 10*time.Minute, c.WatchNamespace, nil),
 		CRDClient:              c.CRDClient,

@@ -3,7 +3,6 @@ package operator
 import (
 	"fmt"
 	"net/http"
-	"sync"
 
 	"github.com/appscode/go/log"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
@@ -13,6 +12,7 @@ import (
 	cs "github.com/appscode/voyager/client"
 	voyagerinformers "github.com/appscode/voyager/informers/externalversions"
 	api_listers "github.com/appscode/voyager/listers/voyager/v1beta1"
+	"github.com/appscode/voyager/pkg/config"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	kext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -29,35 +29,17 @@ import (
 )
 
 type Operator struct {
-	MaxNumRequeues int
-	NumThreads     int
-	IngressClass   string
-	WatchNamespace string
-	OpsAddress     string
-
-	CloudProvider               string
-	OperatorNamespace           string
-	OperatorService             string
-	EnableRBAC                  bool
-	DockerRegistry              string
-	HAProxyImageTag             string
-	ExporterImageTag            string
-	QPS                         float32
-	Burst                       int
-	RestrictToOperatorNamespace bool
-	CloudConfigFile             string
+	config.Config
 
 	KubeClient    kubernetes.Interface
 	CRDClient     kext_cs.ApiextensionsV1beta1Interface
 	VoyagerClient cs.Interface
 	PromClient    prom.MonitoringV1Interface
-	// options       config.OperatorOptions
 
 	kubeInformerFactory    informers.SharedInformerFactory
 	voyagerInformerFactory voyagerinformers.SharedInformerFactory
 
 	recorder record.EventRecorder
-	sync.Mutex
 
 	// Certificate CRD
 	crtQueue    *queue.Worker

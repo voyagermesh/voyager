@@ -90,20 +90,7 @@ func (op *Operator) reconcileIngress(key string) error {
 		return nil
 	}
 
-	cfg := ingress.Config{
-		CloudProvider:     op.CloudProvider,
-		OperatorNamespace: op.OperatorNamespace,
-		OperatorService:   op.OperatorService,
-		EnableRBAC:        op.EnableRBAC,
-		DockerRegistry:    op.DockerRegistry,
-		HAProxyImageTag:   op.HAProxyImageTag,
-		ExporterImageTag:  op.ExporterImageTag,
-		QPS:               op.QPS,
-		Burst:             op.Burst,
-		RestrictToOperatorNamespace: op.RestrictToOperatorNamespace,
-		CloudConfigFile:             op.CloudConfigFile,
-	}
-	ctrl := ingress.NewController(etx.Background(), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, cfg, engress)
+	ctrl := ingress.NewController(etx.Background(), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Config, engress)
 
 	if ing.DeletionTimestamp != nil {
 		if core_util.HasFinalizer(ing.ObjectMeta, api.VoyagerFinalizer) {

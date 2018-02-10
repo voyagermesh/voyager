@@ -89,20 +89,7 @@ func (op *Operator) reconcileEngress(key string) error {
 
 	engress := obj.(*api.Ingress).DeepCopy()
 	engress.Migrate()
-	cfg := ingress.Config{
-		CloudProvider:     op.CloudProvider,
-		OperatorNamespace: op.OperatorNamespace,
-		OperatorService:   op.OperatorService,
-		EnableRBAC:        op.EnableRBAC,
-		DockerRegistry:    op.DockerRegistry,
-		HAProxyImageTag:   op.HAProxyImageTag,
-		ExporterImageTag:  op.ExporterImageTag,
-		QPS:               op.QPS,
-		Burst:             op.Burst,
-		RestrictToOperatorNamespace: op.RestrictToOperatorNamespace,
-		CloudConfigFile:             op.CloudConfigFile,
-	}
-	ctrl := ingress.NewController(etx.Background(), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, cfg, engress)
+	ctrl := ingress.NewController(etx.Background(), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Config, engress)
 
 	if engress.DeletionTimestamp != nil {
 		if core_util.HasFinalizer(engress.ObjectMeta, api.VoyagerFinalizer) {
