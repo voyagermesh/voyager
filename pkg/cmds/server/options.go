@@ -11,6 +11,7 @@ import (
 	cs "github.com/appscode/voyager/client"
 	hookapi "github.com/appscode/voyager/pkg/admission/api"
 	"github.com/appscode/voyager/pkg/admission/plugin"
+	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/haproxy/template"
 	"github.com/appscode/voyager/pkg/operator"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
@@ -27,7 +28,7 @@ type OperatorOptions struct {
 	OperatorNamespace           string
 	OperatorService             string
 	RestrictToOperatorNamespace bool
-	QPS                         float32
+	QPS                         float64
 	Burst                       int
 	ResyncPeriod                time.Duration
 	MaxNumRequeues              int
@@ -39,7 +40,6 @@ type OperatorOptions struct {
 	PrometheusCrdGroup string
 	PrometheusCrdKinds prom.CrdKinds
 
-	builtinTemplates          string
 	customTemplates           string
 	OpsAddress                string
 	haProxyServerMetricFields string
@@ -80,7 +80,6 @@ func NewOperatorOptions() *OperatorOptions {
 		PrometheusCrdGroup: prom.Group,
 		PrometheusCrdKinds: prom.DefaultCrdKinds,
 
-		builtinTemplates:          "/srv/voyager/templates/*.cfg",
 		customTemplates:           "",
 		OpsAddress:                fmt.Sprintf(":%d", api.DefaultExporterPortNumber),
 		haProxyServerMetricFields: hpe.ServerMetrics.String(),
@@ -88,12 +87,12 @@ func NewOperatorOptions() *OperatorOptions {
 	}
 }
 
-func (s *OperatorOptions) AddFlags(fs *pflag.FlagSet) {
-	fs.Float32Var(&s.QPS, "qps", s.QPS, "The maximum QPS to the master from this client")
+func (s *OperatorOptions) AddGoFlags(fs *flag.FlagSet) {
+	fs.Float64Var(&s.QPS, "qps", s.QPS, "The maximum QPS to the master from this client")
 	fs.IntVar(&s.Burst, "burst", s.Burst, "The maximum burst for throttle")
 	fs.DurationVar(&s.ResyncPeriod, "resync-period", s.ResyncPeriod, "If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out.")
 
-	fs.StringVarP(&s.CloudProvider, "cloud-provider", "c", s.CloudProvider, "Name of cloud provider")
+	fs.StringVar(&s.CloudProvider, "cloud-provider", s.CloudProvider, "Name of cloud provider")
 	fs.StringVar(&s.CloudConfigFile, "cloud-config", s.CloudConfigFile, "The path to the cloud provider configuration file.  Empty string for no configuration file.")
 	fs.StringVar(&s.IngressClass, "ingress-class", s.IngressClass, "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
 	fs.BoolVar(&s.EnableRBAC, "rbac", s.EnableRBAC, "Enable RBAC for operator & offshoot Kubernetes objects")
@@ -110,55 +109,59 @@ func (s *OperatorOptions) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&s.haProxyServerMetricFields, "haproxy.server-metric-fields", s.haProxyServerMetricFields, "Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1")
 	fs.DurationVar(&s.haProxyTimeout, "haproxy.timeout", s.haProxyTimeout, "Timeout for trying to get stats from HAProxy.")
 
+	fs.StringVar(&s.PrometheusCrdGroup, "prometheus-crd-apigroup", s.PrometheusCrdGroup, "prometheus CRD  API group name")
+	fs.Var(&s.PrometheusCrdKinds, "prometheus-crd-kinds", " - EXPERIMENTAL (could be removed in future releases) - customize CRD kind names")
+}
+
+func (s *OperatorOptions) AddFlags(fs *pflag.FlagSet) {
 	pfs := flag.NewFlagSet("prometheus", flag.ExitOnError)
-	pfs.StringVar(&s.PrometheusCrdGroup, "prometheus-crd-apigroup", s.PrometheusCrdGroup, "prometheus CRD  API group name")
-	pfs.Var(&s.PrometheusCrdKinds, "prometheus-crd-kinds", " - EXPERIMENTAL (could be removed in future releases) - customize CRD kind names")
+	s.AddGoFlags(pfs)
 	fs.AddGoFlagSet(pfs)
 }
 
-func (s *OperatorOptions) ApplyTo(config *operator.OperatorConfig) error {
+func (s *OperatorOptions) ApplyTo(cfg *operator.OperatorConfig) error {
 	var err error
 
-	err = template.LoadTemplates(s.builtinTemplates, s.customTemplates)
+	err = template.LoadTemplates(config.BuiltinTemplates, s.customTemplates)
 	if err != nil {
 		return err
 	}
 
-	config.Burst = s.Burst
-	config.CloudConfigFile = s.CloudConfigFile
-	config.CloudProvider = s.CloudProvider
-	config.EnableRBAC = s.EnableRBAC
-	config.ExporterImage = s.ExporterImage()
-	config.HAProxyImage = s.HAProxyImage()
-	config.IngressClass = s.IngressClass
-	config.MaxNumRequeues = s.MaxNumRequeues
-	config.NumThreads = s.NumThreads
-	config.OperatorNamespace = s.OperatorNamespace
-	config.OperatorService = s.OperatorService
-	config.OpsAddress = s.OpsAddress
-	config.QPS = s.QPS
-	config.RestrictToOperatorNamespace = s.RestrictToOperatorNamespace
-	config.ResyncPeriod = s.ResyncPeriod
-	config.WatchNamespace = s.WatchNamespace()
+	cfg.Burst = s.Burst
+	cfg.CloudConfigFile = s.CloudConfigFile
+	cfg.CloudProvider = s.CloudProvider
+	cfg.EnableRBAC = s.EnableRBAC
+	cfg.ExporterImage = s.ExporterImage()
+	cfg.HAProxyImage = s.HAProxyImage()
+	cfg.IngressClass = s.IngressClass
+	cfg.MaxNumRequeues = s.MaxNumRequeues
+	cfg.NumThreads = s.NumThreads
+	cfg.OperatorNamespace = s.OperatorNamespace
+	cfg.OperatorService = s.OperatorService
+	cfg.OpsAddress = s.OpsAddress
+	cfg.QPS = float32(s.QPS)
+	cfg.RestrictToOperatorNamespace = s.RestrictToOperatorNamespace
+	cfg.ResyncPeriod = s.ResyncPeriod
+	cfg.WatchNamespace = s.WatchNamespace()
 
-	config.ClientConfig.QPS = s.QPS
-	config.ClientConfig.Burst = s.Burst
+	cfg.ClientConfig.QPS = float32(s.QPS)
+	cfg.ClientConfig.Burst = s.Burst
 
-	if config.KubeClient, err = kubernetes.NewForConfig(config.ClientConfig); err != nil {
+	if cfg.KubeClient, err = kubernetes.NewForConfig(cfg.ClientConfig); err != nil {
 		return err
 	}
-	if config.VoyagerClient, err = cs.NewForConfig(config.ClientConfig); err != nil {
+	if cfg.VoyagerClient, err = cs.NewForConfig(cfg.ClientConfig); err != nil {
 		return err
 	}
-	if config.PromClient, err = prom.NewForConfig(&s.PrometheusCrdKinds, s.PrometheusCrdGroup, config.ClientConfig); err != nil {
+	if cfg.PromClient, err = prom.NewForConfig(&s.PrometheusCrdKinds, s.PrometheusCrdGroup, cfg.ClientConfig); err != nil {
 		return err
 	}
 
-	config.AdmissionHooks = []hookapi.AdmissionHook{&plugin.CRDValidator{
+	cfg.AdmissionHooks = []hookapi.AdmissionHook{&plugin.CRDValidator{
 		CloudProvider: s.CloudProvider,
 	}}
 
-	config.OpsAddress = s.OpsAddress
+	cfg.OpsAddress = s.OpsAddress
 
 	return nil
 }

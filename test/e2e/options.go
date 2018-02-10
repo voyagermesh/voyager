@@ -11,7 +11,6 @@ import (
 	"github.com/appscode/go/log"
 	logs "github.com/appscode/go/log/golog"
 	"github.com/appscode/voyager/pkg/cmds/server"
-	"github.com/spf13/pflag"
 	"k8s.io/client-go/util/homedir"
 )
 
@@ -39,19 +38,15 @@ var (
 )
 
 func init() {
-	fs := pflag.CommandLine
-	fs.AddGoFlagSet(flag.CommandLine)
-	options.AddFlags(fs)
-	fs.StringVar(&options.KubeConfig, "kubeconfig", "", "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
-	fs.StringVar(&options.KubeContext, "kube-context", "", "Name of kube context")
-	fs.StringVar(&options.TestNamespace, "namespace", "test-"+rand.Characters(5), "Run tests in this namespaces")
-	fs.BoolVar(&options.Cleanup, "cleanup", options.Cleanup, "")
-	fs.BoolVar(&options.TestCertificate, "cert", options.TestCertificate, "")
-	fs.StringVar(&options.DumpLocation, "dump", os.TempDir(), "")
-	fs.StringVar(&options.LBPersistIP, "lb-ip", options.LBPersistIP, "LoadBalancer persistent IP")
+	options.AddGoFlags(flag.CommandLine)
+	flag.StringVar(&options.KubeConfig, "kubeconfig", "", "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
+	flag.StringVar(&options.KubeContext, "kube-context", "", "Name of kube context")
+	flag.StringVar(&options.TestNamespace, "namespace", "test-"+rand.Characters(5), "Run tests in this namespaces")
+	flag.BoolVar(&options.Cleanup, "cleanup", options.Cleanup, "")
+	flag.BoolVar(&options.TestCertificate, "cert", options.TestCertificate, "")
+	flag.StringVar(&options.DumpLocation, "dump", os.TempDir(), "")
+	flag.StringVar(&options.LBPersistIP, "lb-ip", options.LBPersistIP, "LoadBalancer persistent IP")
 	enableLogging()
-
-	pflag.Parse()
 }
 
 func enableLogging() {

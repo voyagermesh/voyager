@@ -10,6 +10,7 @@ var (
 	AnalyticsClientID string
 	EnableAnalytics   = true
 	LoggerOptions     golog.Options
+	BuiltinTemplates  = "/srv/voyager/templates/*.cfg"
 )
 
 type Config struct {

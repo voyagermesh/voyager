@@ -9,7 +9,6 @@ import (
 	"github.com/appscode/kutil/tools/clientcmd"
 	"github.com/appscode/voyager/client/scheme"
 	"github.com/appscode/voyager/pkg/config"
-	hpdata "github.com/appscode/voyager/pkg/haproxy/template"
 	"github.com/appscode/voyager/pkg/operator"
 	"github.com/appscode/voyager/test/framework"
 	. "github.com/onsi/ginkgo"
@@ -44,6 +43,10 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 
 	operatorConfig := operator.NewOperatorConfig(clientConfig)
+	if !meta.PossiblyInCluster() {
+		config.BuiltinTemplates = runtime.GOPath() + "/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg"
+	}
+
 	err = options.ApplyTo(operatorConfig)
 	Expect(err).NotTo(HaveOccurred())
 
@@ -56,11 +59,6 @@ var _ = BeforeSuite(func() {
 	invocation = root.Invoke()
 
 	if !meta.PossiblyInCluster() {
-		err = hpdata.LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
-		Expect(err).NotTo(HaveOccurred())
-
-		//stop := make(chan struct{})
-		//defer close(stop)
 		go root.Operator.RunInformers(nil)
 	}
 
@@ -68,8 +66,13 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
-	if options.Cleanup {
-		root.DeleteNamespace()
+	if !options.Cleanup {
+		return
+	}
+	if invocation != nil {
 		invocation.Ingress.Teardown()
+	}
+	if root != nil {
+		root.DeleteNamespace()
 	}
 })

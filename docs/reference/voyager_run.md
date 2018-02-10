@@ -44,7 +44,7 @@ voyager run [flags]
       --cert-dir string                                         The directory where the TLS certs are located. If --tls-cert-file and --tls-private-key-file are provided, this flag will be ignored. (default "apiserver.local.config/certificates")
       --client-ca-file string                                   If set, any request presenting a client certificate signed by one of the authorities in the client-ca-file is authenticated with an identity corresponding to the CommonName of the client certificate.
       --cloud-config string                                     The path to the cloud provider configuration file.  Empty string for no configuration file.
-  -c, --cloud-provider string                                   Name of cloud provider
+      --cloud-provider string                                   Name of cloud provider
       --contention-profiling                                    Enable lock contention profiling, if profiling is enabled
       --custom-templates string                                 Glob pattern of custom HAProxy template files used to override built-in templates
       --docker-registry string                                  Docker image registry for HAProxy and Prometheus exporter (default "appscode")
@@ -60,7 +60,7 @@ voyager run [flags]
       --profiling                                               Enable profiling via web interface host:port/debug/pprof/ (default true)
       --prometheus-crd-apigroup string                          prometheus CRD  API group name (default "monitoring.coreos.com")
       --prometheus-crd-kinds CrdKinds                            - EXPERIMENTAL (could be removed in future releases) - customize CRD kind names
-      --qps float32                                             The maximum QPS to the master from this client (default 1e+06)
+      --qps float                                               The maximum QPS to the master from this client (default 1e+06)
       --rbac                                                    Enable RBAC for operator & offshoot Kubernetes objects
       --requestheader-allowed-names stringSlice                 List of client certificate common names to allow to provide usernames in headers specified by --requestheader-username-headers. If empty, any client certificate validated by the authorities in --requestheader-client-ca-file is allowed.
       --requestheader-client-ca-file string                     Root certificate bundle to use to verify client certificates on incoming requests before trusting usernames in headers specified by --requestheader-username-headers
