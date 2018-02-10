@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/test/framework"
@@ -25,7 +26,7 @@ var _ = Describe("CertificateWithHTTPProvider", func() {
 	BeforeEach(func() {
 		f = root.Invoke()
 
-		if !f.Config.TestCertificate {
+		if !options.TestCertificate {
 			Skip("Certificate Test is not enabled")
 		}
 
@@ -83,7 +84,7 @@ var _ = Describe("CertificateWithHTTPProvider", func() {
 	})
 
 	AfterEach(func() {
-		if root.Config.Cleanup {
+		if options.Cleanup {
 			f.Ingress.Delete(ing)
 			f.KubeClient.CoreV1().Secrets(userSecret.Namespace).Delete(userSecret.Name, &metav1.DeleteOptions{})
 		}
@@ -106,7 +107,7 @@ var _ = Describe("CertificateWithHTTPProvider", func() {
 				return false
 			}, "20m", "10s").Should(BeTrue())
 
-			if f.Config.InCluster {
+			if meta.PossiblyInCluster() {
 				eps, err := f.Ingress.GetHTTPEndpoints(ing)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(eps)).Should(BeNumerically(">=", 1))

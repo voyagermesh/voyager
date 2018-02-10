@@ -57,7 +57,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 	})
 
 	AfterEach(func() {
-		if root.Config.Cleanup {
+		if options.Cleanup {
 			f.Ingress.Delete(ing)
 			f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{})
 		}
@@ -269,7 +269,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 		})
 
 		AfterEach(func() {
-			if root.Config.Cleanup {
+			if options.Cleanup {
 				f.KubeClient.CoreV1().Secrets(sec.Namespace).Delete(sec.Name, &metav1.DeleteOptions{})
 			}
 		})

@@ -34,7 +34,7 @@ import:
 - package: github.com/onsi/ginkgo
   version: v1.4.0
 - package: github.com/onsi/gomega
-  version: v1.2.0
+  version: v1.3.0
 - package: github.com/orcaman/concurrent-map
 - package: github.com/pires/go-proxyproto
 - package: github.com/prometheus/client_golang

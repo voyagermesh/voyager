@@ -49,15 +49,13 @@ func NewCmdVoyager(version string) *cobra.Command {
 	flag.CommandLine.Parse([]string{})
 	rootCmd.PersistentFlags().BoolVar(&config.EnableAnalytics, "analytics", config.EnableAnalytics, "Send analytical events to Google Analytics")
 
-	rootCmd.AddCommand(NewCmdRun())
-	rootCmd.AddCommand(NewCmdExport(version))
+	rootCmd.AddCommand(NewCmdExport())
 	rootCmd.AddCommand(NewCmdHAProxyController())
 	rootCmd.AddCommand(NewCmdCheck())
 	rootCmd.AddCommand(v.NewCmdVersion())
 
 	stopCh := genericapiserver.SetupSignalHandler()
-	cmd := NewCommandStartAPIServer(os.Stdout, os.Stderr, stopCh)
-	rootCmd.AddCommand(cmd)
+	rootCmd.AddCommand(NewCmdRun(os.Stdout, os.Stderr, stopCh))
 
 	return rootCmd
 }

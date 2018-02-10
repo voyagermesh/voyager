@@ -35,7 +35,7 @@ voyager haproxy-controller [command] [flags]
       --master string                The address of the Kubernetes API server (overrides any value in kubeconfig)
       --qps float32                  The maximum QPS to the master from this client (default 1e+06)
   -b, --reload-cmd string            Bash script that will be run to reload HAProxy
-      --resync-period duration       If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out. (default 5m0s)
+      --resync-period duration       If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out. (default 10m0s)
 ```
 
 ### Options inherited from parent commands

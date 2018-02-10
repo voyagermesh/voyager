@@ -16,7 +16,7 @@ import (
 
 func (op *Operator) initServiceWatcher() {
 	op.svcInformer = op.kubeInformerFactory.Core().V1().Services().Informer()
-	op.svcQueue = queue.New("Service", op.options.MaxNumRequeues, op.options.NumThreads, op.reconcileService)
+	op.svcQueue = queue.New("Service", op.MaxNumRequeues, op.NumThreads, op.reconcileService)
 	op.svcInformer.AddEventHandler(queue.DefaultEventHandler(op.svcQueue.GetQueue()))
 	op.svcLister = op.kubeInformerFactory.Core().V1().Services().Lister()
 }
@@ -54,7 +54,7 @@ func (op *Operator) restoreIngressService(name, ns string) (bool, error) {
 		for i := range items {
 			ing := &items[i]
 			if ing.DeletionTimestamp == nil &&
-				ing.ShouldHandleIngress(op.options.IngressClass) &&
+				ing.ShouldHandleIngress(op.IngressClass) &&
 				ing.Namespace == ns &&
 				ing.OffshootName() == name {
 				key, err := cache.MetaNamespaceKeyFunc(ing)
@@ -78,7 +78,7 @@ func (op *Operator) updateHAProxyConfig(name, ns string) error {
 	for i := range items {
 		ing := &items[i]
 		if ing.DeletionTimestamp == nil &&
-			ing.ShouldHandleIngress(op.options.IngressClass) &&
+			ing.ShouldHandleIngress(op.IngressClass) &&
 			ing.HasBackendService(name, ns) {
 			if key, err := cache.MetaNamespaceKeyFunc(ing); err == nil {
 				op.engQueue.GetQueue().Add(key)

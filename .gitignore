@@ -28,3 +28,4 @@ hack/configs/.env
 **/dist
 .vscode/
 test/e2e/report.xml
+apiserver.local.config/

@@ -20,7 +20,7 @@ import (
 
 func (op *Operator) initCertificateCRDWatcher() {
 	op.crtInformer = op.voyagerInformerFactory.Voyager().V1beta1().Certificates().Informer()
-	op.crtQueue = queue.New("Certificate", op.options.MaxNumRequeues, op.options.NumThreads, op.reconcileCertificate)
+	op.crtQueue = queue.New("Certificate", op.MaxNumRequeues, op.NumThreads, op.reconcileCertificate)
 	op.crtInformer.AddEventHandler(&cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			cert, ok := obj.(*api.Certificate)
@@ -28,7 +28,7 @@ func (op *Operator) initCertificateCRDWatcher() {
 				log.Errorln("Invalid Certificate object")
 				return
 			}
-			if err := cert.IsValid(op.options.CloudProvider); err != nil {
+			if err := cert.IsValid(op.CloudProvider); err != nil {
 				op.recorder.Eventf(
 					cert.ObjectReference(),
 					core.EventTypeWarning,
@@ -54,7 +54,7 @@ func (op *Operator) initCertificateCRDWatcher() {
 			if reflect.DeepEqual(oldCert.Spec, newCert.Spec) {
 				return
 			}
-			if err := newCert.IsValid(op.options.CloudProvider); err != nil {
+			if err := newCert.IsValid(op.CloudProvider); err != nil {
 				op.recorder.Eventf(
 					newCert.ObjectReference(),
 					core.EventTypeWarning,
@@ -95,8 +95,7 @@ func (op *Operator) reconcileCertificate(key string) error {
 			)
 			return err
 		}
-
-		ctrl, err := certificate.NewController(context.Background(), op.KubeClient, op.VoyagerClient, op.options, cert)
+		ctrl, err := certificate.NewController(context.Background(), op.KubeClient, op.VoyagerClient, op.Config, cert)
 		if err != nil {
 			op.recorder.Event(
 				cert.ObjectReference(),
@@ -143,7 +142,7 @@ func (op *Operator) CheckCertificates() {
 					log.Infoln("skipping certificate %s/%s, since rate limited", cert.Namespace, cert.Name)
 					continue
 				}
-				ctrl, err := certificate.NewController(ctx, op.KubeClient, op.VoyagerClient, op.options, cert)
+				ctrl, err := certificate.NewController(ctx, op.KubeClient, op.VoyagerClient, op.Config, cert)
 				if err != nil {
 					op.recorder.Event(
 						cert.ObjectReference(),

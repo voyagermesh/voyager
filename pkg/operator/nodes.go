@@ -42,7 +42,7 @@ func (op *Operator) initNodeWatcher() {
 }
 
 func (op *Operator) updateFirewall(ing *api.Ingress, node *core.Node) {
-	if !ing.ShouldHandleIngress(op.options.IngressClass) {
+	if !ing.ShouldHandleIngress(op.IngressClass) {
 		return
 	}
 

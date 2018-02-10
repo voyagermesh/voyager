@@ -9,7 +9,7 @@ import (
 
 func (op *Operator) initConfigMapWatcher() {
 	op.cfgInformer = op.kubeInformerFactory.Core().V1().ConfigMaps().Informer()
-	op.cfgQueue = queue.New("ConfigMap", op.options.MaxNumRequeues, op.options.NumThreads, op.reconcileConfigMap)
+	op.cfgQueue = queue.New("ConfigMap", op.MaxNumRequeues, op.NumThreads, op.reconcileConfigMap)
 	op.cfgInformer.AddEventHandler(queue.NewDeleteHandler(op.cfgQueue.GetQueue()))
 	op.cfgLister = op.kubeInformerFactory.Core().V1().ConfigMaps().Lister()
 }
@@ -40,7 +40,7 @@ func (op *Operator) restoreConfigMap(name, ns string) error {
 	for i := range items {
 		ing := &items[i]
 		if ing.DeletionTimestamp == nil &&
-			ing.ShouldHandleIngress(op.options.IngressClass) &&
+			ing.ShouldHandleIngress(op.IngressClass) &&
 			ing.Namespace == ns &&
 			ing.OffshootName() == name {
 			if key, err := cache.MetaNamespaceKeyFunc(ing); err != nil {

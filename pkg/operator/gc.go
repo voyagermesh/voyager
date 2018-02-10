@@ -8,7 +8,7 @@ import (
 )
 
 func (op *Operator) PurgeOffshootsWithDeprecatedLabels() error {
-	ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.options.WatchNamespace()).List(metav1.ListOptions{})
+	ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.WatchNamespace).List(metav1.ListOptions{})
 	if err == nil {
 		for _, ing := range ingresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
@@ -34,7 +34,7 @@ func (op *Operator) PurgeOffshootsWithDeprecatedLabels() error {
 		return err
 	}
 
-	engresses, err := op.VoyagerClient.VoyagerV1beta1().Ingresses(op.options.WatchNamespace()).List(metav1.ListOptions{})
+	engresses, err := op.VoyagerClient.VoyagerV1beta1().Ingresses(op.WatchNamespace).List(metav1.ListOptions{})
 	if err == nil {
 		for _, ing := range engresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
@@ -83,7 +83,7 @@ func deprecatedLabelsFor(name string) map[string]string {
 }
 
 func (op *Operator) PurgeOffshootsDaemonSet() error {
-	ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.options.WatchNamespace()).List(metav1.ListOptions{})
+	ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.WatchNamespace).List(metav1.ListOptions{})
 	if err == nil {
 		for _, ing := range ingresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
@@ -95,7 +95,7 @@ func (op *Operator) PurgeOffshootsDaemonSet() error {
 		return err
 	}
 
-	engresses, err := op.VoyagerClient.VoyagerV1beta1().Ingresses(op.options.WatchNamespace()).List(metav1.ListOptions{})
+	engresses, err := op.VoyagerClient.VoyagerV1beta1().Ingresses(op.WatchNamespace).List(metav1.ListOptions{})
 	if err == nil {
 		for _, ing := range engresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {

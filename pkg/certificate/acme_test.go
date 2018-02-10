@@ -6,7 +6,6 @@ import (
 	etx "github.com/appscode/go/context"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	fakevoyager "github.com/appscode/voyager/client/fake"
-	"github.com/appscode/voyager/pkg/config"
 	"github.com/stretchr/testify/assert"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,7 +35,7 @@ func TestClient(t *testing.T) {
 				},
 			},
 		),
-		config.Options{},
+		Config{},
 		&api.Certificate{
 			ObjectMeta: v1.ObjectMeta{
 				Name:      "foo",

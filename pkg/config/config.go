@@ -1,48 +1,33 @@
 package config
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/appscode/go/log/golog"
-	core "k8s.io/api/core/v1"
 )
-
-type Options struct {
-	CloudProvider               string
-	CloudConfigFile             string
-	IngressClass                string
-	EnableRBAC                  bool
-	OperatorNamespace           string
-	OperatorService             string
-	RestrictToOperatorNamespace bool
-	QPS                         float32
-	Burst                       int
-	ResyncPeriod                time.Duration
-	MaxNumRequeues              int
-	NumThreads                  int
-	DockerRegistry              string
-	HAProxyImageTag             string
-	ExporterImageTag            string
-}
-
-func (opt Options) HAProxyImage() string {
-	return fmt.Sprintf("%s/haproxy:%s", opt.DockerRegistry, opt.HAProxyImageTag)
-}
-
-func (opt Options) ExporterImage() string {
-	return fmt.Sprintf("%s/voyager:%s", opt.DockerRegistry, opt.ExporterImageTag)
-}
-
-func (opt Options) WatchNamespace() string {
-	if opt.RestrictToOperatorNamespace {
-		return opt.OperatorNamespace
-	}
-	return core.NamespaceAll
-}
 
 var (
 	AnalyticsClientID string
 	EnableAnalytics   = true
 	LoggerOptions     golog.Options
+	BuiltinTemplates  = "/srv/voyager/templates/*.cfg"
 )
+
+type Config struct {
+	Burst                       int
+	CloudConfigFile             string
+	CloudProvider               string
+	EnableRBAC                  bool
+	HAProxyImage                string
+	ExporterImage               string
+	IngressClass                string
+	MaxNumRequeues              int
+	NumThreads                  int
+	OperatorNamespace           string
+	OperatorService             string
+	OpsAddress                  string
+	QPS                         float32
+	RestrictToOperatorNamespace bool
+	ResyncPeriod                time.Duration
+	WatchNamespace              string
+}

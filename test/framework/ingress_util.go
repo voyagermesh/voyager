@@ -314,12 +314,8 @@ func (i *ingressInvocation) waitForTestServer() error {
 }
 
 func (i *ingressInvocation) DaemonNodeSelector() string {
-	if i.Config.CloudProviderName == "minikube" {
+	if i.Operator.CloudProvider == "minikube" {
 		return `{"kubernetes.io/hostname": "minikube"}`
-	} else {
-		if len(i.Config.DaemonHostName) > 0 {
-			return fmt.Sprintf(`{"kubernetes.io/hostname": "%s"}`, i.Config.DaemonHostName)
-		}
 	}
 	log.Warningln("No node selector provided for daemon ingress")
 	return "{}"
@@ -485,10 +481,10 @@ func getNodePortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.I
 }
 
 func (i *ingressInvocation) CheckTestServersPortAssignments(ing *api_v1beta1.Ingress) error {
-	i.Mutex.Lock()
-	defer i.Mutex.Unlock()
+	i.Lock.Lock()
+	defer i.Lock.Unlock()
 
-	rc, err := i.KubeClient.CoreV1().ReplicationControllers(i.Config.TestNamespace).Get(i.TestServerName(), metav1.GetOptions{})
+	rc, err := i.KubeClient.CoreV1().ReplicationControllers(i.TestNamespace).Get(i.TestServerName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -526,7 +522,7 @@ func (i *ingressInvocation) CheckTestServersPortAssignments(ing *api_v1beta1.Ing
 		}
 	}
 
-	rc, err = i.KubeClient.CoreV1().ReplicationControllers(i.Config.TestNamespace).Get(i.TestServerName(), metav1.GetOptions{})
+	rc, err = i.KubeClient.CoreV1().ReplicationControllers(i.TestNamespace).Get(i.TestServerName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -553,12 +549,12 @@ func (i *ingressInvocation) CheckTestServersPortAssignments(ing *api_v1beta1.Ing
 }
 
 func (i *ingressInvocation) SupportsServiceIP() bool {
-	return i.Config.CloudProviderName == "aws" ||
-		i.Config.CloudProviderName == "gce" ||
-		i.Config.CloudProviderName == "gke" ||
-		i.Config.CloudProviderName == "azure" ||
-		i.Config.CloudProviderName == "acs" ||
-		i.Config.CloudProviderName == "openstack"
+	return i.Operator.CloudProvider == "aws" ||
+		i.Operator.CloudProvider == "gce" ||
+		i.Operator.CloudProvider == "gke" ||
+		i.Operator.CloudProvider == "azure" ||
+		i.Operator.CloudProvider == "acs" ||
+		i.Operator.CloudProvider == "openstack"
 }
 
 func (i *ingressInvocation) CreateResourceWithHostNames() (metav1.ObjectMeta, error) {

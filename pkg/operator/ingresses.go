@@ -18,7 +18,7 @@ import (
 
 func (op *Operator) initIngressWatcher() {
 	op.ingInformer = op.kubeInformerFactory.Extensions().V1beta1().Ingresses().Informer()
-	op.ingQueue = queue.New("Ingress", op.options.MaxNumRequeues, op.options.NumThreads, op.reconcileIngress)
+	op.ingQueue = queue.New("Ingress", op.MaxNumRequeues, op.NumThreads, op.reconcileIngress)
 	op.ingInformer.AddEventHandler(&cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			engress, err := api.NewEngressFromIngress(obj.(*extensions.Ingress))
@@ -26,7 +26,7 @@ func (op *Operator) initIngressWatcher() {
 				log.Errorf("Failed to convert Ingress %s/%s into Ingress. Reason %v", engress.Namespace, engress.Name, err)
 				return
 			}
-			if err := engress.IsValid(op.options.CloudProvider); err != nil {
+			if err := engress.IsValid(op.CloudProvider); err != nil {
 				op.recorder.Eventf(
 					engress.ObjectReference(),
 					core.EventTypeWarning,
@@ -56,7 +56,7 @@ func (op *Operator) initIngressWatcher() {
 			diff := meta.Diff(old, nu)
 			log.Infof("%s %s/%s has changed. Diff: %s", nu.GroupVersionKind(), nu.Namespace, nu.Name, diff)
 
-			if err := nu.IsValid(op.options.CloudProvider); err != nil {
+			if err := nu.IsValid(op.CloudProvider); err != nil {
 				op.recorder.Eventf(
 					nu.ObjectReference(),
 					core.EventTypeWarning,
@@ -89,7 +89,8 @@ func (op *Operator) reconcileIngress(key string) error {
 		log.Errorf("Failed to convert Ingress %s/%s into Ingress. Reason %v", engress.Namespace, engress.Name, err)
 		return nil
 	}
-	ctrl := ingress.NewController(etx.Background(), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.options, engress)
+
+	ctrl := ingress.NewController(etx.Background(), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Config, engress)
 
 	if ing.DeletionTimestamp != nil {
 		if core_util.HasFinalizer(ing.ObjectMeta, api.VoyagerFinalizer) {
@@ -108,7 +109,7 @@ func (op *Operator) reconcileIngress(key string) error {
 				return obj
 			})
 		}
-		if engress.ShouldHandleIngress(op.options.IngressClass) {
+		if engress.ShouldHandleIngress(op.IngressClass) {
 			return ctrl.Reconcile()
 		} else {
 			log.Infof("%s %s/%s does not match ingress class", engress.APISchema(), engress.Namespace, engress.Name)

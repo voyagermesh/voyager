@@ -5,13 +5,16 @@ import (
 	"time"
 
 	"github.com/appscode/go/runtime"
+	"github.com/appscode/kutil/meta"
+	"github.com/appscode/kutil/tools/clientcmd"
+	"github.com/appscode/voyager/client/scheme"
 	"github.com/appscode/voyager/pkg/config"
-	hpdata "github.com/appscode/voyager/pkg/haproxy/template"
 	"github.com/appscode/voyager/pkg/operator"
 	"github.com/appscode/voyager/test/framework"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 )
 
 const (
@@ -26,55 +29,50 @@ var (
 func RunE2ETestSuit(t *testing.T) {
 	RegisterFailHandler(Fail)
 	SetDefaultEventuallyTimeout(TestTimeout)
-
-	root = framework.New()
-	invocation = root.Invoke()
-
 	junitReporter := reporters.NewJUnitReporter("report.xml")
 	RunSpecsWithDefaultAndCustomReporters(t, "Voyager E2E Suite", []Reporter{junitReporter})
 }
 
 var _ = BeforeSuite(func() {
-	op := operator.New(
-		root.KubeClient,
-		root.CRDClient,
-		root.VoyagerClient,
-		nil,
-		config.Options{
-			CloudProvider:   root.Config.CloudProviderName,
-			DockerRegistry:  root.Config.DockerRegistry,
-			HAProxyImageTag: root.Config.HAProxyImageTag,
-			IngressClass:    root.Config.IngressClass,
-			NumThreads:      1,
-		},
-	)
-
-	By("Ensuring Test Namespace " + root.Config.TestNamespace)
-	err := root.EnsureNamespace()
-	Expect(err).NotTo(HaveOccurred())
-
+	scheme.AddToScheme(clientsetscheme.Scheme)
 	config.LoggerOptions.Verbosity = "5"
 
-	if !root.Config.InCluster {
-		By("Running Controller in Local mode")
-		err := op.Setup()
-		Expect(err).NotTo(HaveOccurred())
+	options.validate()
 
-		err = hpdata.LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
-		Expect(err).NotTo(HaveOccurred())
+	clientConfig, err := clientcmd.BuildConfigFromContext(options.KubeConfig, options.KubeContext)
+	Expect(err).NotTo(HaveOccurred())
 
-		//stop := make(chan struct{})
-		//defer close(stop)
-		go op.Run(nil)
+	operatorConfig := operator.NewOperatorConfig(clientConfig)
+	if !meta.PossiblyInCluster() {
+		config.BuiltinTemplates = runtime.GOPath() + "/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg"
 	}
-	root.EventuallyCRD().Should(Succeed())
+
+	err = options.ApplyTo(operatorConfig)
+	Expect(err).NotTo(HaveOccurred())
+
+	root = framework.New(operatorConfig, options.TestNamespace, options.Cleanup)
+
+	By("Ensuring Test Namespace " + options.TestNamespace)
+	err = root.EnsureNamespace()
+	Expect(err).NotTo(HaveOccurred())
+
+	invocation = root.Invoke()
+
+	if !meta.PossiblyInCluster() {
+		go root.Operator.RunInformers(nil)
+	}
 
 	Eventually(invocation.Ingress.Setup).Should(BeNil())
 })
 
 var _ = AfterSuite(func() {
-	if root.Config.Cleanup {
-		root.DeleteNamespace()
+	if !options.Cleanup {
+		return
+	}
+	if invocation != nil {
 		invocation.Ingress.Teardown()
+	}
+	if root != nil {
+		root.DeleteNamespace()
 	}
 })

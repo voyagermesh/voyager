@@ -17,7 +17,7 @@ import (
 
 func (op *Operator) initIngressCRDWatcher() {
 	op.engInformer = op.voyagerInformerFactory.Voyager().V1beta1().Ingresses().Informer()
-	op.engQueue = queue.New("IngressCRD", op.options.MaxNumRequeues, op.options.NumThreads, op.reconcileEngress)
+	op.engQueue = queue.New("IngressCRD", op.MaxNumRequeues, op.NumThreads, op.reconcileEngress)
 	op.engInformer.AddEventHandler(&cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			engress, ok := obj.(*api.Ingress)
@@ -27,7 +27,7 @@ func (op *Operator) initIngressCRDWatcher() {
 			}
 			engress.Migrate()
 
-			if err := engress.IsValid(op.options.CloudProvider); err != nil {
+			if err := engress.IsValid(op.CloudProvider); err != nil {
 				op.recorder.Eventf(
 					engress.ObjectReference(),
 					core.EventTypeWarning,
@@ -60,7 +60,7 @@ func (op *Operator) initIngressCRDWatcher() {
 			diff := meta.Diff(old, nu)
 			log.Infof("%s %s/%s has changed. Diff: %s", nu.APISchema(), nu.Namespace, nu.Name, diff)
 
-			if err := nu.IsValid(op.options.CloudProvider); err != nil {
+			if err := nu.IsValid(op.CloudProvider); err != nil {
 				op.recorder.Eventf(
 					nu.ObjectReference(),
 					core.EventTypeWarning,
@@ -89,7 +89,7 @@ func (op *Operator) reconcileEngress(key string) error {
 
 	engress := obj.(*api.Ingress).DeepCopy()
 	engress.Migrate()
-	ctrl := ingress.NewController(etx.Background(), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.options, engress)
+	ctrl := ingress.NewController(etx.Background(), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Config, engress)
 
 	if engress.DeletionTimestamp != nil {
 		if core_util.HasFinalizer(engress.ObjectMeta, api.VoyagerFinalizer) {
@@ -108,7 +108,7 @@ func (op *Operator) reconcileEngress(key string) error {
 				return obj
 			})
 		}
-		if engress.ShouldHandleIngress(op.options.IngressClass) {
+		if engress.ShouldHandleIngress(op.IngressClass) {
 			return ctrl.Reconcile()
 		} else {
 			log.Infof("%s %s/%s does not match ingress class", engress.APISchema(), engress.Namespace, engress.Name)

@@ -33,9 +33,9 @@ type Options struct {
 	CmdFile        string
 	QPS            float32
 	Burst          int
-	ResyncPeriod   time.Duration
 	MaxNumRequeues int
 	NumThreads     int
+	ResyncPeriod   time.Duration
 }
 
 func (opts Options) UsesEngress() bool {

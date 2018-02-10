@@ -13,7 +13,6 @@ import (
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	acf "github.com/appscode/voyager/client/fake"
-	"github.com/appscode/voyager/pkg/config"
 	"github.com/stretchr/testify/assert"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -60,7 +59,7 @@ func TestEnsureClient(t *testing.T) {
 				},
 			},
 			fakeSecret,
-		), acf.NewSimpleClientset(), config.Options{ResyncPeriod: time.Second * 5}, cert)
+		), acf.NewSimpleClientset(), Config{}, cert)
 		assert.Nil(t, err)
 
 		err = fakeController.getACMEClient()
@@ -108,7 +107,12 @@ func TestCreate(t *testing.T) {
 			},
 		}
 
-		fakeController, err := NewController(etx.Background(), fake.NewSimpleClientset(fakeUser, fakeSecret), acf.NewSimpleClientset(), config.Options{ResyncPeriod: time.Second * 5}, cert)
+		fakeController, err := NewController(
+			etx.Background(),
+			fake.NewSimpleClientset(fakeUser, fakeSecret),
+			acf.NewSimpleClientset(),
+			Config{},
+			cert)
 		if assert.Nil(t, err) {
 			err = fakeController.Process()
 			assert.Nil(t, err)

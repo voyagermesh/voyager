@@ -96,7 +96,7 @@ var _ = Describe("Frontend rule using specified backend", func() {
 	})
 
 	AfterEach(func() {
-		if root.Config.Cleanup {
+		if options.Cleanup {
 			f.Ingress.Delete(ing)
 		}
 	})

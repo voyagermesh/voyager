@@ -5,87 +5,46 @@ import (
 	"io/ioutil"
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client"
-	"github.com/appscode/voyager/pkg/operator"
-	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
-	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 func NewCmdCheck() *cobra.Command {
 	var (
-		ktx      string
-		fromFile string
+		fromFile      string
+		cloudProvider string
 	)
-
 	cmd := &cobra.Command{
 		Use:   "check",
 		Short: "Check Ingress",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if fromFile != "" {
-				ingBytes, err := ioutil.ReadFile(fromFile)
-				if err != nil {
-					return err
-				}
-
-				var ing api.Ingress
-				err = yaml.Unmarshal(ingBytes, &ing)
-				if err != nil {
-					return err
-				}
-				ing.Migrate()
-				err = ing.IsValid(opt.CloudProvider)
-				if err != nil {
-					return err
-				}
-				fmt.Println("No validation error was found.")
-
-				bi, err := yaml.Marshal(ing)
-				if err != nil {
-					return err
-				}
-				fmt.Println(string(bi))
-				return nil
-			}
-
-			// Detect Config from local kubeconfig
-			rules := clientcmd.NewDefaultClientConfigLoadingRules()
-			rules.DefaultClientConfig = &clientcmd.DefaultClientConfig
-			overrides := &clientcmd.ConfigOverrides{
-				CurrentContext:  ktx,
-				ClusterDefaults: clientcmd.ClusterDefaults,
-			}
-			config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, overrides).ClientConfig()
+			ingBytes, err := ioutil.ReadFile(fromFile)
 			if err != nil {
 				return err
 			}
 
-			kubeClient = kubernetes.NewForConfigOrDie(config)
-			extClient = cs.NewForConfigOrDie(config)
-			crdClient := kext_cs.NewForConfigOrDie(config)
-			promClient, err := pcm.NewForConfig(&prometheusCrdKinds, prometheusCrdGroup, config)
+			var ing api.Ingress
+			err = yaml.Unmarshal(ingBytes, &ing)
 			if err != nil {
 				return err
 			}
-
-			w := operator.New(kubeClient, crdClient, extClient, promClient, opt)
-			// https://github.com/appscode/voyager/issues/346
-			err = w.ValidateIngress()
+			ing.Migrate()
+			err = ing.IsValid(cloudProvider)
 			if err != nil {
 				return err
 			}
 			fmt.Println("No validation error was found.")
+
+			bi, err := yaml.Marshal(ing)
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(bi))
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&ktx, "kube-context", ktx, "Name of Kubeconfig context")
-	cmd.Flags().StringVar(&fromFile, "from-file", fromFile, "YAML formatted file containing ingress")
-	cmd.Flags().StringVarP(&opt.CloudProvider, "cloud-provider", "c", opt.CloudProvider, "Name of cloud provider")
-	cmd.Flags().StringVar(&opt.IngressClass, "ingress-class", opt.IngressClass, "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
-	cmd.Flags().AddGoFlagSet(getPrometheusFlags())
 
+	cmd.Flags().StringVar(&fromFile, "from-file", fromFile, "YAML formatted file containing ingress")
+	cmd.Flags().StringVarP(&cloudProvider, "cloud-provider", "c", cloudProvider, "Name of cloud provider")
 	return cmd
 }

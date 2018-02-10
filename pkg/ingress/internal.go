@@ -46,7 +46,7 @@ func NewInternalController(
 	promClient pcm.MonitoringV1Interface,
 	serviceLister core_listers.ServiceLister,
 	endpointsLister core_listers.EndpointsLister,
-	opt config.Options,
+	cfg config.Config,
 	ingress *api.Ingress) Controller {
 	return &internalController{
 		controller: &controller{
@@ -57,7 +57,7 @@ func NewInternalController(
 			PromClient:      promClient,
 			ServiceLister:   serviceLister,
 			EndpointsLister: endpointsLister,
-			Opt:             opt,
+			cfg:             cfg,
 			Ingress:         ingress,
 			recorder:        eventer.NewEventRecorder(kubeClient, "voyager operator"),
 		},
@@ -77,7 +77,7 @@ func (c *internalController) IsExists() bool {
 	if kerr.IsNotFound(err) {
 		return false
 	}
-	if c.Opt.EnableRBAC {
+	if c.cfg.EnableRBAC {
 		_, err = c.KubeClient.CoreV1().ServiceAccounts(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
 			return false
@@ -128,7 +128,7 @@ func (c *internalController) Reconcile() error {
 	}
 
 	// If RBAC is enabled we need to ensure service account
-	if c.Opt.EnableRBAC {
+	if c.cfg.EnableRBAC {
 		c.reconcileRBAC()
 	}
 
@@ -251,7 +251,7 @@ func (c *internalController) Delete() {
 	if err := c.deleteConfigMap(); err != nil {
 		c.logger.Errorln(err)
 	}
-	if c.Opt.EnableRBAC {
+	if c.cfg.EnableRBAC {
 		if err := c.ensureRBACDeleted(); err != nil {
 			c.logger.Errorln(err)
 		}
@@ -293,7 +293,7 @@ func (c *internalController) ensureService() (*core.Service, kutil.VerbType, err
 			delete(obj.Annotations, key)
 		}
 		newKeys := make([]string, 0)
-		if ans, ok := c.Ingress.ServiceAnnotations(c.Opt.CloudProvider); ok {
+		if ans, ok := c.Ingress.ServiceAnnotations(c.cfg.CloudProvider); ok {
 			for k, v := range ans {
 				obj.Annotations[k] = v
 				newKeys = append(newKeys, k)
@@ -308,7 +308,7 @@ func (c *internalController) ensureService() (*core.Service, kutil.VerbType, err
 		}
 
 		// opening other tcp ports
-		mappings, _ := c.Ingress.PortMappings(c.Opt.CloudProvider)
+		mappings, _ := c.Ingress.PortMappings(c.cfg.CloudProvider)
 		desiredPorts := make([]core.ServicePort, 0)
 		for svcPort, target := range mappings {
 			p := core.ServicePort{
@@ -375,7 +375,7 @@ func (c *internalController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 		obj.Spec.Template.Spec.Tolerations = c.Ingress.Spec.Tolerations
 		obj.Spec.Template.Spec.NodeSelector = c.Ingress.NodeSelector()
 		obj.Spec.Template.Spec.ImagePullSecrets = c.Ingress.Spec.ImagePullSecrets
-		if c.Opt.EnableRBAC {
+		if c.cfg.EnableRBAC {
 			obj.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
 		}
 
@@ -408,15 +408,14 @@ func (c *internalController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 		// container spec
 		haproxyContainer := core.Container{
 			Name:  "haproxy",
-			Image: c.Opt.HAProxyImage(),
+			Image: c.cfg.HAProxyImage,
 			Args: append([]string{
 				fmt.Sprintf("--analytics=%v", config.EnableAnalytics),
-				fmt.Sprintf("--burst=%v", c.Opt.Burst),
-				fmt.Sprintf("--cloud-provider=%s", c.Opt.CloudProvider),
+				fmt.Sprintf("--burst=%v", c.cfg.Burst),
+				fmt.Sprintf("--cloud-provider=%s", c.cfg.CloudProvider),
 				fmt.Sprintf("--ingress-api-version=%s", c.Ingress.APISchema()),
 				fmt.Sprintf("--ingress-name=%s", c.Ingress.Name),
-				fmt.Sprintf("--qps=%v", c.Opt.QPS),
-				fmt.Sprintf("--resync-period=%v", c.Opt.ResyncPeriod),
+				fmt.Sprintf("--qps=%v", c.cfg.QPS),
 				"--reload-cmd=/etc/sv/haproxy/reload",
 			}, config.LoggerOptions.ToFlags()...),
 			Env: c.ensureEnvVars([]core.EnvVar{

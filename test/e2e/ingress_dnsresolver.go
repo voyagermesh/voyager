@@ -88,7 +88,7 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 	})
 
 	AfterEach(func() {
-		if root.Config.Cleanup {
+		if options.Cleanup {
 			f.Ingress.Delete(ing)
 			f.KubeClient.CoreV1().Services(svcResolveDNSWithNS.Namespace).Delete(svcResolveDNSWithNS.Name, &metav1.DeleteOptions{})
 			f.KubeClient.CoreV1().Services(svcResolveDNSWithNS.Namespace).Delete(svcResolveDNSWithNS.Name, &metav1.DeleteOptions{})

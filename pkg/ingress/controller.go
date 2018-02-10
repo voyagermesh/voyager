@@ -40,7 +40,7 @@ type controller struct {
 
 	recorder record.EventRecorder
 
-	Opt config.Options
+	cfg config.Config
 
 	// Engress object that created or updated.
 	Ingress *api.Ingress
@@ -60,17 +60,17 @@ func NewController(
 	promClient pcm.MonitoringV1Interface,
 	serviceLister core_listers.ServiceLister,
 	endpointsLister core_listers.EndpointsLister,
-	opt config.Options,
+	cfg config.Config,
 	ingress *api.Ingress) Controller {
 	switch ingress.LBType() {
 	case api.LBTypeHostPort:
-		return NewHostPortController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
+		return NewHostPortController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
 	case api.LBTypeNodePort:
-		return NewNodePortController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
+		return NewNodePortController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
 	case api.LBTypeLoadBalancer:
-		return NewLoadBalancerController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
+		return NewLoadBalancerController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
 	case api.LBTypeInternal:
-		return NewInternalController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, opt, ingress)
+		return NewInternalController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
 	}
 	return nil
 }

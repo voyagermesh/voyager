@@ -11,7 +11,7 @@ import (
 
 func (op *Operator) initEndpointWatcher() {
 	op.epInformer = op.kubeInformerFactory.Core().V1().Endpoints().Informer()
-	op.epQueue = queue.New("Endpoint", op.options.MaxNumRequeues, op.options.NumThreads, op.reconcileEndpoint)
+	op.epQueue = queue.New("Endpoint", op.MaxNumRequeues, op.NumThreads, op.reconcileEndpoint)
 	op.epInformer.AddEventHandler(queue.NewEventHandler(op.epQueue.GetQueue(), func(old interface{}, new interface{}) bool {
 		oldEndpoints, ok := old.(*core.Endpoints)
 		if !ok {

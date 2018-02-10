@@ -9,7 +9,7 @@ import (
 
 func (op *Operator) initNamespaceWatcher() {
 	op.nsInformer = op.kubeInformerFactory.Core().V1().Namespaces().Informer()
-	op.nsQueue = queue.New("Namespace", op.options.MaxNumRequeues, op.options.NumThreads, op.reconcileNamespace)
+	op.nsQueue = queue.New("Namespace", op.MaxNumRequeues, op.NumThreads, op.reconcileNamespace)
 	op.nsInformer.AddEventHandler(queue.NewDeleteHandler(op.nsQueue.GetQueue()))
 	op.nsLister = op.kubeInformerFactory.Core().V1().Namespaces().Lister()
 }

@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/client"
@@ -33,18 +34,18 @@ var _ = Describe("IngressWithRBACEnabled", func() {
 	})
 
 	AfterEach(func() {
-		if root.Config.Cleanup {
+		if options.Cleanup {
 			f.Ingress.Delete(ing)
 		}
 	})
 
 	Describe("With RBAC", func() {
 		BeforeEach(func() {
-			if !f.Config.RBACEnabled {
+			if !options.EnableRBAC {
 				Skip("RBAC is Not enabled")
 			}
 
-			if !f.Config.InCluster {
+			if !meta.PossiblyInCluster() {
 				Skip("RBAC can only be work in 'in-cluster' mode")
 			}
 		})

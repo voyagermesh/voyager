@@ -13,6 +13,10 @@ spec:
         - --restrict-to-operator-namespace=$VOYAGER_RESTRICT_TO_NAMESPACE
         - --docker-registry=$VOYAGER_DOCKER_REGISTRY
         - --custom-templates=/srv/voyager/custom/*.cfg
+        - --secure-port=8443
+        - --audit-log-path=-
+        - --tls-cert-file=/var/serving-cert/tls.crt
+        - --tls-private-key-file=/var/serving-cert/tls.key
         name: voyager
         volumeMounts:
         - mountPath: /srv/voyager/custom
