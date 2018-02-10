@@ -17,6 +17,7 @@ import (
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	"github.com/spf13/pflag"
 	core "k8s.io/api/core/v1"
+	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -151,6 +152,9 @@ func (s *OperatorOptions) ApplyTo(cfg *operator.OperatorConfig) error {
 		return err
 	}
 	if cfg.VoyagerClient, err = cs.NewForConfig(cfg.ClientConfig); err != nil {
+		return err
+	}
+	if cfg.CRDClient, err = kext_cs.NewForConfig(cfg.ClientConfig); err != nil {
 		return err
 	}
 	if cfg.PromClient, err = prom.NewForConfig(&s.PrometheusCrdKinds, s.PrometheusCrdGroup, cfg.ClientConfig); err != nil {
