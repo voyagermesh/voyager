@@ -13,7 +13,6 @@ func NewCmdCheck() *cobra.Command {
 	var (
 		fromFile      string
 		cloudProvider string
-		ingressClass  string
 	)
 	cmd := &cobra.Command{
 		Use:   "check",
@@ -44,9 +43,8 @@ func NewCmdCheck() *cobra.Command {
 			return nil
 		},
 	}
+
 	cmd.Flags().StringVar(&fromFile, "from-file", fromFile, "YAML formatted file containing ingress")
 	cmd.Flags().StringVarP(&cloudProvider, "cloud-provider", "c", cloudProvider, "Name of cloud provider")
-	cmd.Flags().StringVar(&ingressClass, "ingress-class", ingressClass, "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
-
 	return cmd
 }

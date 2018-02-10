@@ -13,13 +13,13 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-type AdmissionHookImpl struct {
+type CRDValidator struct {
 	CloudProvider string
 }
 
-var _ hookapi.AdmissionHook = &AdmissionHookImpl{}
+var _ hookapi.AdmissionHook = &CRDValidator{}
 
-func (a *AdmissionHookImpl) Resource() (plural schema.GroupVersionResource, singular string) {
+func (a *CRDValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
 			Group:    "admission.voyager.appscode.com",
 			Version:  "v1beta1",
@@ -28,7 +28,7 @@ func (a *AdmissionHookImpl) Resource() (plural schema.GroupVersionResource, sing
 		"admissionreview"
 }
 
-func (a *AdmissionHookImpl) Admit(req *admission.AdmissionRequest) *admission.AdmissionResponse {
+func (a *CRDValidator) Admit(req *admission.AdmissionRequest) *admission.AdmissionResponse {
 	status := &admission.AdmissionResponse{}
 	supportedKinds := sets.NewString(api.ResourceKindCertificate, api.ResourceKindIngress)
 
@@ -96,6 +96,6 @@ func (a *AdmissionHookImpl) Admit(req *admission.AdmissionRequest) *admission.Ad
 	return status
 }
 
-func (a *AdmissionHookImpl) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
+func (a *CRDValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
 	return nil
 }

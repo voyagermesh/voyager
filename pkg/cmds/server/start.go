@@ -21,8 +21,6 @@ type VoyagerOptions struct {
 
 	StdOut io.Writer
 	StdErr io.Writer
-
-	CloudProvider string
 }
 
 func NewVoyagerOptions(out, errOut io.Writer) *VoyagerOptions {
@@ -84,11 +82,6 @@ func (o VoyagerOptions) Run(stopCh <-chan struct{}) error {
 	if err != nil {
 		return err
 	}
-
-	s.GenericAPIServer.AddPostStartHook("start-kubed-server-informers", func(context genericapiserver.PostStartHookContext) error {
-		config.GenericConfig.SharedInformerFactory.Start(context.StopCh)
-		return nil
-	})
 
 	return s.Run(stopCh)
 }

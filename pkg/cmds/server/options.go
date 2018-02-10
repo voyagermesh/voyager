@@ -121,7 +121,7 @@ func (s *OperatorOptions) ApplyTo(config *operator.OperatorConfig) error {
 		return err
 	}
 
-	config.AdmissionHooks = []hookapi.AdmissionHook{&plugin.AdmissionHookImpl{
+	config.AdmissionHooks = []hookapi.AdmissionHook{&plugin.CRDValidator{
 		CloudProvider: s.CloudProvider,
 	}}
 

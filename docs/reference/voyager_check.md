@@ -27,7 +27,6 @@ voyager check [flags]
   -c, --cloud-provider string   Name of cloud provider
       --from-file string        YAML formatted file containing ingress
   -h, --help                    help for check
-      --ingress-class string    Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.
 ```
 
 ### Options inherited from parent commands
