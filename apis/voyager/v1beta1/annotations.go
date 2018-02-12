@@ -11,7 +11,6 @@ import (
 )
 
 const (
-	IngressKey = "ingress.kubernetes.io"
 	EngressKey = "ingress.appscode.com"
 
 	APISchema        = EngressKey + "/" + "api-schema" // APISchema = {APIGroup}/{APIVersion}

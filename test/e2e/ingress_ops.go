@@ -3,7 +3,6 @@ package e2e
 import (
 	"errors"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/appscode/go/log"
@@ -564,13 +563,6 @@ var _ = Describe("IngressOperations", func() {
 		Context("Engress key", func() {
 			BeforeEach(func() {
 				ing.Annotations[api.CORSEnabled] = "true"
-			})
-			It("Should Response CORS", shouldResponseCORS)
-		})
-		Context("Ingress key", func() {
-			BeforeEach(func() {
-				key := api.IngressKey + strings.TrimPrefix(api.CORSEnabled, api.EngressKey)
-				ing.Annotations[key] = "true"
 			})
 			It("Should Response CORS", shouldResponseCORS)
 		})
