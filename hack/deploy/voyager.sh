@@ -50,7 +50,7 @@ export VOYAGER_UNINSTALL=0
 
 KUBE_APISERVER_VERSION=$(kubectl version -o=json | $ONESSL jsonpath '{.serverVersion.gitVersion}')
 $ONESSL semver --check='>=1.9.0' $KUBE_APISERVER_VERSION
-if [ -eq "$?" 0 ]; then
+if [ $? -eq 0 ]; then
     export VOYAGER_ENABLE_ADMISSION_WEBHOOK=true
 fi
 
