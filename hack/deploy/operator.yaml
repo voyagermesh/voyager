@@ -72,8 +72,8 @@ metadata:
     app: voyager
 type: kubernetes.io/tls
 data:
-  tls.crt: $TLS_SERVING_CERT
-  tls.key: $TLS_SERVING_KEY
+  tls.crt: ${TLS_SERVING_CERT}
+  tls.key: ${TLS_SERVING_KEY}
 ---
 # to be able to expose TSB inside the cluster
 apiVersion: v1
@@ -105,7 +105,7 @@ metadata:
   labels:
     app: voyager
 spec:
-  caBundle: $SERVICE_SERVING_CERT_CA
+  caBundle: ${SERVICE_SERVING_CERT_CA}
   group: admission.voyager.appscode.com
   groupPriorityMinimum: 1000
   versionPriority: 15
