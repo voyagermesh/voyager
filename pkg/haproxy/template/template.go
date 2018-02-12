@@ -19,6 +19,7 @@ ref: https://www.haproxy.com/documentation/aloha/7-0/haproxy/acls/
 */
 func ACLName(v string) string {
 	v = strings.TrimPrefix(v, "/")
+	v = strings.TrimSuffix(v, "/")
 	v = strings.Replace(v, "/", "-", -1)
 	v = strings.Replace(v, "*", ".", -1)
 	return v
