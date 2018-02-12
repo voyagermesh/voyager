@@ -10,6 +10,7 @@ import (
 
 	"github.com/appscode/go/errors"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	"github.com/appscode/voyager/pkg/eventer"
 	hpi "github.com/appscode/voyager/pkg/haproxy/api"
 	"github.com/appscode/voyager/pkg/haproxy/template"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
@@ -329,12 +330,22 @@ func (c *controller) generateConfig() error {
 
 	dnsResolvers := make(map[string]*api.DNSResolver)
 	if c.Ingress.Spec.Backend != nil {
-		// if backend-service not found, ignore error and do nothing
 		bk, err := c.serviceEndpoints(dnsResolvers, userLists, c.Ingress.Spec.Backend.ServiceName, c.Ingress.Spec.Backend.ServicePort, c.Ingress.Spec.Backend.HostNames)
-		if err != nil && !kerr.IsNotFound(err) {
-			return err
-		}
-		if err == nil && len(bk.Endpoints) > 0 {
+		if err != nil {
+			c.recorder.Eventf(
+				c.Ingress.ObjectReference(),
+				core.EventTypeWarning,
+				eventer.EventReasonBackendInvalid,
+				"spec.backend skipped, reason: %s", err,
+			)
+		} else if len(bk.Endpoints) == 0 {
+			c.recorder.Eventf(
+				c.Ingress.ObjectReference(),
+				core.EventTypeWarning,
+				eventer.EventReasonBackendInvalid,
+				"spec.backend skipped, reason: %s", "endpoint not found",
+			)
+		} else {
 			si.DefaultBackend = &hpi.Backend{
 				BasicAuth:        bk.BasicAuth,
 				Endpoints:        bk.Endpoints,
@@ -398,7 +409,7 @@ func (c *controller) generateConfig() error {
 	}
 	httpServices := make(map[hostBinder]*httpInfo)
 	tcpServices := make(map[hostBinder]*hpi.TCPService)
-	for _, rule := range c.Ingress.Spec.Rules {
+	for ri, rule := range c.Ingress.Spec.Rules {
 		if rule.HTTP != nil {
 			binder := hostBinder{Address: rule.HTTP.Address}
 			offloadSSL := false
@@ -435,13 +446,23 @@ func (c *controller) generateConfig() error {
 				}
 			}
 			httpPaths := info.Hosts[rule.Host]
-			for _, path := range rule.HTTP.Paths {
-				// if backend-service not found, ignore error and do nothing
+			for pi, path := range rule.HTTP.Paths {
 				bk, err := c.serviceEndpoints(dnsResolvers, userLists, path.Backend.ServiceName, path.Backend.ServicePort, path.Backend.HostNames)
-				if err != nil && !kerr.IsNotFound(err) {
-					return err
-				}
-				if err == nil && len(bk.Endpoints) > 0 {
+				if err != nil {
+					c.recorder.Eventf(
+						c.Ingress.ObjectReference(),
+						core.EventTypeWarning,
+						eventer.EventReasonBackendInvalid,
+						"spec.rules[%d].http.paths[%d] skipped, reason: %s", ri, pi, err,
+					)
+				} else if len(bk.Endpoints) == 0 {
+					c.recorder.Eventf(
+						c.Ingress.ObjectReference(),
+						core.EventTypeWarning,
+						eventer.EventReasonBackendInvalid,
+						"spec.rules[%d].http.paths[%d] skipped, reason: %s", ri, pi, "endpoint not found",
+					)
+				} else {
 					httpPath := &hpi.HTTPPath{
 						Path: path.Path,
 						Backend: &hpi.Backend{
@@ -466,12 +487,22 @@ func (c *controller) generateConfig() error {
 			}
 			info.Hosts[rule.Host] = httpPaths
 		} else if rule.TCP != nil {
-			// if backend-service not found, ignore error and do nothing
 			bk, err := c.serviceEndpoints(dnsResolvers, userLists, rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort, rule.TCP.Backend.HostNames)
-			if err != nil && !kerr.IsNotFound(err) {
-				return err
-			}
-			if err == nil && len(bk.Endpoints) > 0 {
+			if err != nil {
+				c.recorder.Eventf(
+					c.Ingress.ObjectReference(),
+					core.EventTypeWarning,
+					eventer.EventReasonBackendInvalid,
+					"spec.rules[%d].tcp skipped, reason: %s", ri, err,
+				)
+			} else if len(bk.Endpoints) == 0 {
+				c.recorder.Eventf(
+					c.Ingress.ObjectReference(),
+					core.EventTypeWarning,
+					eventer.EventReasonBackendInvalid,
+					"spec.rules[%d].tcp skipped, reason: %s", ri, "endpoint not found",
+				)
+			} else {
 				fr := getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, rule.TCP.Port.IntValue())
 				srv := &hpi.TCPService{
 					SharedInfo:    si,

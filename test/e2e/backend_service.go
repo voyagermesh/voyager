@@ -86,7 +86,7 @@ var _ = Describe("Frontend rule using specified backend", func() {
 		})
 	})
 
-	FContext("missing default backend", func() {
+	Context("missing default backend", func() {
 		BeforeEach(func() {
 			f = root.Invoke()
 			ing.Spec.Backend = &api.HTTPIngressBackend{
