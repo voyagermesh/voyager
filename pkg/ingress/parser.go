@@ -329,28 +329,31 @@ func (c *controller) generateConfig() error {
 
 	dnsResolvers := make(map[string]*api.DNSResolver)
 	if c.Ingress.Spec.Backend != nil {
+		// if backend-service not found, ignore error and do nothing
 		bk, err := c.serviceEndpoints(dnsResolvers, userLists, c.Ingress.Spec.Backend.ServiceName, c.Ingress.Spec.Backend.ServicePort, c.Ingress.Spec.Backend.HostNames)
-		if err != nil {
+		if err != nil && !kerr.IsNotFound(err) {
 			return err
 		}
-		si.DefaultBackend = &hpi.Backend{
-			BasicAuth:        bk.BasicAuth,
-			Endpoints:        bk.Endpoints,
-			BackendRules:     c.Ingress.Spec.Backend.BackendRules,
-			RewriteRules:     c.Ingress.Spec.Backend.RewriteRule,
-			HeaderRules:      c.Ingress.Spec.Backend.HeaderRule,
-			Sticky:           bk.Sticky,
-			StickyCookieName: bk.StickyCookieName,
-			StickyCookieHash: bk.StickyCookieHash,
-		}
-		if c.Ingress.Spec.Backend.Name != "" {
-			si.DefaultBackend.Name = c.Ingress.Spec.Backend.Name
-		} else {
-			si.DefaultBackend.Name = "default-backend" // TODO: Use constant
-			si.DefaultBackend.NameGenerated = true
-		}
-		if globalBasic != nil {
-			si.DefaultBackend.BasicAuth = globalBasic
+		if err == nil && len(bk.Endpoints) > 0 {
+			si.DefaultBackend = &hpi.Backend{
+				BasicAuth:        bk.BasicAuth,
+				Endpoints:        bk.Endpoints,
+				BackendRules:     c.Ingress.Spec.Backend.BackendRules,
+				RewriteRules:     c.Ingress.Spec.Backend.RewriteRule,
+				HeaderRules:      c.Ingress.Spec.Backend.HeaderRule,
+				Sticky:           bk.Sticky,
+				StickyCookieName: bk.StickyCookieName,
+				StickyCookieHash: bk.StickyCookieHash,
+			}
+			if c.Ingress.Spec.Backend.Name != "" {
+				si.DefaultBackend.Name = c.Ingress.Spec.Backend.Name
+			} else {
+				si.DefaultBackend.Name = "default-backend" // TODO: Use constant
+				si.DefaultBackend.NameGenerated = true
+			}
+			if globalBasic != nil {
+				si.DefaultBackend.BasicAuth = globalBasic
+			}
 		}
 	}
 
@@ -433,11 +436,12 @@ func (c *controller) generateConfig() error {
 			}
 			httpPaths := info.Hosts[rule.Host]
 			for _, path := range rule.HTTP.Paths {
+				// if backend-service not found, ignore error and do nothing
 				bk, err := c.serviceEndpoints(dnsResolvers, userLists, path.Backend.ServiceName, path.Backend.ServicePort, path.Backend.HostNames)
-				if err != nil {
+				if err != nil && !kerr.IsNotFound(err) {
 					return err
 				}
-				if len(bk.Endpoints) > 0 {
+				if err == nil && len(bk.Endpoints) > 0 {
 					httpPath := &hpi.HTTPPath{
 						Path: path.Path,
 						Backend: &hpi.Backend{
@@ -462,11 +466,12 @@ func (c *controller) generateConfig() error {
 			}
 			info.Hosts[rule.Host] = httpPaths
 		} else if rule.TCP != nil {
+			// if backend-service not found, ignore error and do nothing
 			bk, err := c.serviceEndpoints(dnsResolvers, userLists, rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort, rule.TCP.Backend.HostNames)
-			if err != nil {
+			if err != nil && !kerr.IsNotFound(err) {
 				return err
 			}
-			if len(bk.Endpoints) > 0 {
+			if err == nil && len(bk.Endpoints) > 0 {
 				fr := getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, rule.TCP.Port.IntValue())
 				srv := &hpi.TCPService{
 					SharedInfo:    si,
