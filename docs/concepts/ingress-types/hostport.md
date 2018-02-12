@@ -143,3 +143,35 @@ $ netstat -tuln | grep 80
 tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN
 tcp        0      0 127.0.0.1:2380          0.0.0.0:*               LISTEN
 ```
+
+## FAQ
+
+## Does Voyager configure firewalls for HostPort Ingress?
+
+Voyager operator will configure firewall rules for HostPort Ingress for the following cloud providers: AWS, GCE/GKE .
+
+## What IAM permissions are reuired for Voyager operator to configure firewalls for HostPort Ingress in AWS?
+
+ - Master: For aws clusters provisioned via [Kops](https://github.com/kubernetes/kops/blob/master/docs/iam_roles.md), no additional permission should be needed. Master instances already has `ec2:*` iam permissions.
+
+- Nodes: `Describe*` permissions are applied by default. Additional `write` permissions need to be applied are:
+```
+{
+  "Effect": "Allow",
+  "Action": [
+	"ec2:AuthorizeSecurityGroupIngress",
+	"ec2:CreateRoute",
+	"ec2:CreateSecurityGroup",
+	"ec2:CreateTags",
+	"ec2:DeleteRoute",
+	"ec2:DeleteSecurityGroup",
+	"ec2:ModifyInstanceAttribute",
+	"ec2:RevokeSecurityGroupIngress",
+	"ec2:DescribeInstances",
+	"ec2:DescribeRouteTables",
+	"ec2:DescribeSecurityGroups",
+	"ec2:DescribeSubnets"
+  ],
+  "Resource": "*"
+}
+```
