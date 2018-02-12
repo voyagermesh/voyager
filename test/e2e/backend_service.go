@@ -11,7 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-var _ = FDescribe("Frontend rule using specified backend", func() {
+var _ = Describe("Frontend rule using specified backend", func() {
 	var (
 		f   *framework.Invocation
 		ing *api.Ingress
