@@ -8,6 +8,7 @@ import (
 	"github.com/appscode/voyager/pkg/cmds"
 	_ "k8s.io/api/core/v1"
 	_ "k8s.io/client-go/kubernetes/fake"
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
 func main() {

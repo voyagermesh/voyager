@@ -51,6 +51,17 @@ $ ./hack/make.py
 $ voyager version
 ```
 
+#### Run Binary Locally
+```console
+$ voyager run \
+  --cloud-provider=minikube \
+  --secure-port=8443 \
+  --kubeconfig="$HOME/.kube/config" \
+  --authorization-kubeconfig="$HOME/.kube/config" \
+  --authentication-kubeconfig="$HOME/.kube/config" \
+  --authentication-skip-lookup
+```
+
 #### Dependency management
 Voyager uses [Glide](https://github.com/Masterminds/glide) to manage dependencies. Dependencies are already checked in the `vendor` folder. If you want to update/add dependencies, run:
 

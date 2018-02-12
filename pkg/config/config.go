@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"github.com/appscode/go/log/golog"
+	"github.com/appscode/go/runtime"
+	"github.com/appscode/kutil/meta"
 )
 
 var (
@@ -12,6 +14,14 @@ var (
 	LoggerOptions     golog.Options
 	BuiltinTemplates  = "/srv/voyager/templates/*.cfg"
 )
+
+func init() {
+	if meta.PossiblyInCluster() {
+		BuiltinTemplates = "/srv/voyager/templates/*.cfg"
+	} else {
+		BuiltinTemplates = runtime.GOPath() + "/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg"
+	}
+}
 
 type Config struct {
 	Burst                       int
