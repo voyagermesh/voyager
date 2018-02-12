@@ -517,7 +517,7 @@ var _ = Describe("IngressTLS", func() {
 
 			err = f.Ingress.DoHTTPTestRedirect(framework.NoRetry, ing, eps, "GET", "/testpath/ok",
 				func(r *client.Response) bool {
-					return Expect(r.Status).Should(Equal(301)) &&
+					return Expect(r.Status).Should(Equal(308)) &&
 						Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
 						Expect(r.ResponseHeader.Get("Location")).Should(Equal(httpsAddr))
 				})
@@ -528,7 +528,7 @@ var _ = Describe("IngressTLS", func() {
 					"X-Forwarded-Proto": "http",
 				},
 				func(r *client.Response) bool {
-					return Expect(r.Status).Should(Equal(301)) &&
+					return Expect(r.Status).Should(Equal(308)) &&
 						Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
 						Expect(r.ResponseHeader.Get("Location")).Should(Equal(httpsAddr))
 				})
