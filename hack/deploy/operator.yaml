@@ -4,7 +4,7 @@ metadata:
   labels:
     app: voyager
   name: voyager-operator
-  namespace: $VOYAGER_NAMESPACE
+  namespace: ${VOYAGER_NAMESPACE}
 spec:
   replicas: 1
   selector:
@@ -17,24 +17,24 @@ spec:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
-      serviceAccountName: $VOYAGER_SERVICE_ACCOUNT
-      imagePullSecrets: [$VOYAGER_IMAGE_PULL_SECRET]
+      serviceAccountName: ${VOYAGER_SERVICE_ACCOUNT}
+      imagePullSecrets: [${VOYAGER_IMAGE_PULL_SECRET}]
       containers:
       - name: voyager
         args:
         - run
         - --v=3
-        - --rbac=$VOYAGER_ENABLE_RBAC
+        - --rbac=${VOYAGER_ENABLE_RBAC}
         - --cloud-provider=$VOYAGER_CLOUD_PROVIDER
         - --cloud-config=$VOYAGER_CLOUD_CONFIG # ie. /etc/kubernetes/azure.json for azure
         - --ingress-class=$VOYAGER_INGRESS_CLASS
-        - --restrict-to-operator-namespace=$VOYAGER_RESTRICT_TO_NAMESPACE
-        - --docker-registry=$VOYAGER_DOCKER_REGISTRY
+        - --restrict-to-operator-namespace=${VOYAGER_RESTRICT_TO_NAMESPACE}
+        - --docker-registry=${VOYAGER_DOCKER_REGISTRY}
         - --secure-port=8443
         - --audit-log-path=-
         - --tls-cert-file=/var/serving-cert/tls.crt
         - --tls-private-key-file=/var/serving-cert/tls.key
-        image: $VOYAGER_DOCKER_REGISTRY/voyager:6.0.0-alpha.0
+        image: ${VOYAGER_DOCKER_REGISTRY}/voyager:6.0.0-alpha.0
         ports:
         - containerPort: 8443
         - containerPort: 56790
@@ -67,7 +67,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: voyager-apiserver-cert
-  namespace: $VOYAGER_NAMESPACE
+  namespace: ${VOYAGER_NAMESPACE}
   labels:
     app: voyager
 type: kubernetes.io/tls
@@ -80,7 +80,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: voyager-operator
-  namespace: $VOYAGER_NAMESPACE
+  namespace: ${VOYAGER_NAMESPACE}
   labels:
     app: voyager
 spec:
@@ -111,5 +111,5 @@ spec:
   versionPriority: 15
   service:
     name: voyager-operator
-    namespace: $VOYAGER_NAMESPACE
+    namespace: ${VOYAGER_NAMESPACE}
   version: v1beta1
