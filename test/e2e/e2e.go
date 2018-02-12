@@ -4,7 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/appscode/go/runtime"
 	"github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/clientcmd"
 	"github.com/appscode/voyager/client/scheme"
@@ -43,9 +42,6 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 
 	operatorConfig := operator.NewOperatorConfig(clientConfig)
-	if !meta.PossiblyInCluster() {
-		config.BuiltinTemplates = runtime.GOPath() + "/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg"
-	}
 
 	err = options.ApplyTo(operatorConfig)
 	Expect(err).NotTo(HaveOccurred())

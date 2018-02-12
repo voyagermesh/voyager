@@ -1,5 +1,5 @@
 hash: fc5def6f46bccb37bac967fb7b9e40b3adaf4df718732c430602ff1720ac7e8a
-updated: 2018-02-10T10:50:19.503991749-08:00
+updated: 2018-02-11T19:43:56.244570941-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -9,7 +9,7 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/go
-  version: fe2dd84a755c383d0516595f4537c2298be9fce5
+  version: 1be9b0441d73831aaa93df76e42a751caa5dba88
   subpackages:
   - analytics
   - context
@@ -414,11 +414,11 @@ imports:
 - name: github.com/sirupsen/logrus
   version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
 - name: github.com/spf13/afero
-  version: bb8f1927f2a9d3ab41c9340aa034f6b803f4359c
+  version: bbf41cb36dffe15dff5bf7e18c447801e7ffe163
   subpackages:
   - mem
 - name: github.com/spf13/cobra
-  version: fd32f09af19efc9b1279c54e0d8ed23f66232a15
+  version: be77323fc05148ef091e83b3866c0d47c8e74a8b
   subpackages:
   - doc
 - name: github.com/spf13/pflag
