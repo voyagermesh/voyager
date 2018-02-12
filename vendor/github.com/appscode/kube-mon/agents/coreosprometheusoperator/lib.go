@@ -16,7 +16,7 @@ import (
 
 // PrometheusCoreosOperator creates `ServiceMonitor` so that CoreOS Prometheus operator can generate necessary config for Prometheus.
 type PrometheusCoreosOperator struct {
-	at api.AgentType
+	at         api.AgentType
 	k8sClient  kubernetes.Interface
 	promClient prom.MonitoringV1Interface
 	extClient  ecs.ApiextensionsV1beta1Interface
@@ -24,7 +24,7 @@ type PrometheusCoreosOperator struct {
 
 func New(at api.AgentType, k8sClient kubernetes.Interface, extClient ecs.ApiextensionsV1beta1Interface, promClient prom.MonitoringV1Interface) api.Agent {
 	return &PrometheusCoreosOperator{
-		at:at,
+		at:         at,
 		k8sClient:  k8sClient,
 		extClient:  extClient,
 		promClient: promClient,
