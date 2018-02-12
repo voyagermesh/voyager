@@ -2,7 +2,7 @@ apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ${VOYAGER_ROLE_TYPE}
 metadata:
   name: voyager-operator
-  namespace: $VOYAGER_NAMESPACE
+  namespace: ${VOYAGER_NAMESPACE}
   labels:
     app: voyager
 rules:
@@ -81,7 +81,7 @@ apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ${VOYAGER_ROLE_TYPE}Binding
 metadata:
   name: voyager-operator
-  namespace: $VOYAGER_NAMESPACE
+  namespace: ${VOYAGER_NAMESPACE}
   labels:
     app: voyager
 roleRef:
@@ -90,8 +90,8 @@ roleRef:
   name: voyager-operator
 subjects:
 - kind: ServiceAccount
-  name: $VOYAGER_SERVICE_ACCOUNT
-  namespace: $VOYAGER_NAMESPACE
+  name: ${VOYAGER_SERVICE_ACCOUNT}
+  namespace: ${VOYAGER_NAMESPACE}
 ---
 # to read the config for terminating authentication
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -105,8 +105,8 @@ roleRef:
   name: extension-apiserver-authentication-reader
 subjects:
 - kind: ServiceAccount
-  name: $VOYAGER_SERVICE_ACCOUNT
-  namespace: $VOYAGER_NAMESPACE
+  name: ${VOYAGER_SERVICE_ACCOUNT}
+  namespace: ${VOYAGER_NAMESPACE}
 ---
 # to delegate authentication and authorization
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -121,5 +121,5 @@ roleRef:
   name: system:auth-delegator
 subjects:
 - kind: ServiceAccount
-  name: $VOYAGER_SERVICE_ACCOUNT
-  namespace: $VOYAGER_NAMESPACE
+  name: ${VOYAGER_SERVICE_ACCOUNT}
+  namespace: ${VOYAGER_NAMESPACE}
