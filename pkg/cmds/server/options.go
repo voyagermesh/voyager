@@ -115,7 +115,7 @@ func (s *OperatorOptions) AddGoFlags(fs *flag.FlagSet) {
 }
 
 func (s *OperatorOptions) AddFlags(fs *pflag.FlagSet) {
-	pfs := flag.NewFlagSet("prometheus", flag.ExitOnError)
+	pfs := flag.NewFlagSet("voyager", flag.ExitOnError)
 	s.AddGoFlags(pfs)
 	fs.AddGoFlagSet(pfs)
 }
