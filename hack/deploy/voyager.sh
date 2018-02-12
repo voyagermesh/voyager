@@ -155,6 +155,7 @@ if [ "$VOYAGER_UNINSTALL" -eq 1 ]; then
     kubectl delete secret -l app=voyager --namespace $VOYAGER_NAMESPACE
     kubectl delete apiservice -l app=voyager --namespace $VOYAGER_NAMESPACE
     kubectl delete validatingwebhookconfiguration -l app=voyager --namespace $VOYAGER_NAMESPACE
+    kubectl delete mutatingwebhookconfiguration -l app=voyager --namespace $VOYAGER_NAMESPACE
     # Delete RBAC objects, if --rbac flag was used.
     kubectl delete serviceaccount -l app=voyager --namespace $VOYAGER_NAMESPACE
     kubectl delete clusterrolebindings -l app=voyager --namespace $VOYAGER_NAMESPACE

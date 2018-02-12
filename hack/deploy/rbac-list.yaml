@@ -99,6 +99,8 @@ kind: RoleBinding
 metadata:
   name: voyager-apiserver-extension-server-authentication-reader
   namespace: kube-system
+  labels:
+    app: voyager
 roleRef:
   kind: Role
   apiGroup: rbac.authorization.k8s.io
