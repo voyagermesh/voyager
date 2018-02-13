@@ -14,7 +14,7 @@ This chart bootstraps an [ingress controller](https://github.com/appscode/voyage
 
 ## Prerequisites
 
-- Kubernetes 1.7+
+- Kubernetes 1.8+
 
 ## Installing the Chart
 To install the chart with the release name `my-release`:
