@@ -59,7 +59,7 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `ingressClass`                     | Ingress class to watch for. If empty, it handles all ingress  | ``                    |
 | `apiserver.groupPriorityMinimum`   | The minimum priority the group should have.                   | 10000                 |
 | `apiserver.versionPriority`        | The ordering of this API inside of the group.                 | 15                    |
-| `apiserver.enableAdmissionWebhook` | Configure apiserver as ValidationWebhook for Voyager CRDs     | false                 |
+| `apiserver.enableAdmissionWebhook` | Configure apiserver as adission webhooks for Voyager CRDs     | false                 |
 | `apiserver.ca`                     | CA certificate used by main Kubernetes api server             | ``                    |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
