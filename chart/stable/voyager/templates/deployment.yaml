@@ -9,6 +9,10 @@ metadata:
     release: "{{ .Release.Name }}"
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: "{{ template "voyager.name" . }}"
+      release: "{{ .Release.Name }}"
   template:
     metadata:
       labels:
@@ -25,7 +29,7 @@ spec:
 {{ toYaml .Values.imagePullSecrets | indent 6 }}
       {{- end }}
       containers:
-      - name: operator
+      - name: voyager
         image: {{ .Values.dockerRegistry }}/voyager:{{ .Values.imageTags.voyager }}
         imagePullPolicy: {{ .Values.imagePullPolicy  }}
         args:
@@ -39,27 +43,41 @@ spec:
         - --docker-registry={{ .Values.dockerRegistry }}
         - --haproxy-image-tag={{ .Values.dockerRegistry }}/haproxy:{{ .Values.imageTags.haproxy }}
         - --exporter-image-tag={{ .Values.dockerRegistry }}/voyager:{{ .Values.imageTags.voyager }}
+        - --secure-port=8443
+        - --audit-log-path=-
+        - --tls-cert-file=/var/serving-cert/tls.crt
+        - --tls-private-key-file=/var/serving-cert/tls.key
         ports:
+        - containerPort: 8443
         - containerPort: 56790
-          name: ops
-          protocol: TCP
         - containerPort: 56791
-          name: acme
-          protocol: TCP
-{{- if .Values.persistence.enabled }}
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8443
+            scheme: HTTPS
         volumeMounts:
+        - mountPath: /var/serving-cert
+          name: serving-cert
+{{- if .Values.persistence.enabled }}
         - mountPath: {{ dir .Values.cloudConfig | quote }}
           name: cloudconfig
           readOnly: true
+{{- end }}
       volumes:
+      - name: serving-cert
+        secret:
+          defaultMode: 420
+          secretName: {{ template "voyager.fullname" . }}-apiserver-cert
+{{- if .Values.persistence.enabled }}
       - hostPath:
           path: {{ .Values.persistence.hostPath | quote }}
         name: cloudconfig
 {{- end -}}
 {{- if and .Values.criticalAddon (eq .Release.Namespace "kube-system") }}
       tolerations:
-      - key: "CriticalAddonsOnly"
-        operator: "Exists"
+      - key: CriticalAddonsOnly
+        operator: Exists
 {{- end -}}
 {{- if .Values.nodeSelector }}
       nodeSelector:
