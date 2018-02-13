@@ -106,6 +106,7 @@ kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-ad
 
 ## Using Helm
 Voyager can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/appscode/voyager/tree/6.0.0-alpha.0/chart/stable/voyager) included in this repository or from official charts repository. To install the chart with the release name `my-release`:
+
 ```console
 # Mac OSX amd64:
 curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.1.0/onessl-darwin-amd64 \
@@ -133,11 +134,13 @@ $ helm install stable/voyager --name my-release \
   --set apiserver.ca="$(onessl get kube-ca)" \
   --set apiserver.enableAdmissionWebhook=true
 ```
+
 To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/6.0.0-alpha.0/chart/stable/voyager).
 
 
 ## Verify installation
 To check if Voyager operator pods have started, run the following command:
+
 ```console
 $ kubectl get pods --all-namespaces -l app=voyager --watch
 ```
@@ -145,6 +148,7 @@ $ kubectl get pods --all-namespaces -l app=voyager --watch
 Once the operator pods are running, you can cancel the above command by typing `Ctrl+C`.
 
 Now, to confirm CRD groups have been registered by the operator, run the following command:
+
 ```console
 $ kubectl get crd -l app=voyager
 ```
@@ -153,6 +157,7 @@ Now, you are ready to create your first ingress using Voyager.
 
 ## Using kubectl
 Since Voyager uses its own TPR/CRD, you need to use full resource kind to find it with kubectl.
+
 ```console
 # List all voyager ingress
 $ kubectl get ingress.voyager.appscode.com --all-namespaces
@@ -169,6 +174,7 @@ $ kubectl describe ingress.voyager.appscode.com -n <namespace> <ingress-name>
 
 ## Detect Voyager version
 To detect Voyager version, exec into the operator pod and run `voyager version` command.
+
 ```console
 $ POD_NAMESPACE=kube-system
 $ POD_NAME=$(kubectl get pods -n $POD_NAMESPACE -l app=voyager -o jsonpath={.items[0].metadata.name})
