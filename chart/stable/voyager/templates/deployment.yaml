@@ -41,8 +41,8 @@ spec:
         - --ingress-class={{ .Values.ingressClass }}
         - --operator-service={{ template "voyager.fullname" . }}
         - --docker-registry={{ .Values.dockerRegistry }}
-        - --haproxy-image-tag={{ .Values.dockerRegistry }}/haproxy:{{ .Values.imageTags.haproxy }}
-        - --exporter-image-tag={{ .Values.dockerRegistry }}/voyager:{{ .Values.imageTags.voyager }}
+        - --haproxy-image-tag={{ .Values.imageTags.haproxy }}
+        - --exporter-image-tag={{ .Values.imageTags.voyager }}
         - --secure-port=8443
         - --audit-log-path=-
         - --tls-cert-file=/var/serving-cert/tls.crt

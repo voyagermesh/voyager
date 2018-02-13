@@ -1,6 +1,6 @@
 {{- $ca := genCA "svc-cat-ca" 3650 }}
 {{- $name := default .Chart.Name .Values.nameOverride -}}
-{{- $cn := printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- $cn := printf "%s-%s" $name .Release.Name | trunc 63 -}}
 {{- $altName1 := printf "%s.%s" $cn .Release.Namespace }}
 {{- $altName2 := printf "%s.%s.svc" $cn .Release.Namespace }}
 {{- $cert := genSignedCert $cn nil (list $altName1 $altName2) 3650 $ca }}
