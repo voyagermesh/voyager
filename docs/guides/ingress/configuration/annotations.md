@@ -74,7 +74,7 @@ If you need to update these annotations, then first delete the Ingress and then 
 ```
 ingress.appscode.com/type
 ingress.appscode.com/node-selector
-ingress.appscode.com/load-balaner-ip
+ingress.appscode.com/load-balancer-ip
 ```
 The issue is being [tracked here.](https://github.com/appscode/voyager/issues/143)
 
