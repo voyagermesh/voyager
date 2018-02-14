@@ -519,7 +519,7 @@ var _ = Describe("IngressOperations", func() {
 
 	Describe("With sticky session", func() {
 		BeforeEach(func() {
-			ing.Annotations[api.IngressAffinity] = "true"
+			ing.Annotations[api.IngressAffinity] = "cookie"
 			ing.Annotations[api.IngressAffinitySessionCookieName] = "TEST-COOKIE_NAME"
 			ing.Annotations[api.IngressAffinitySessionCookieHash] = "md5"
 		})
