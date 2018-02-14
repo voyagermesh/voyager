@@ -1,12 +1,12 @@
 ---
 title: Voyager Export
 menu:
-  product_voyager_6.0.0-alpha.0:
+  product_voyager_6.0.0-rc.0:
     identifier: voyager-export
     name: Voyager Export
     parent: reference
 product_name: voyager
-menu_name: product_voyager_6.0.0-alpha.0
+menu_name: product_voyager_6.0.0-rc.0
 section_menu_id: reference
 ---
 ## voyager export
