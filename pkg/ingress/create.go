@@ -27,6 +27,7 @@ func (c *controller) ensureConfigMap() (*core.ConfigMap, kutil.VerbType, error) 
 		Namespace: c.Ingress.Namespace,
 	}
 	return core_util.CreateOrPatchConfigMap(c.KubeClient, meta, func(obj *core.ConfigMap) *core.ConfigMap {
+		obj.ObjectMeta = c.ensureOwnerReference(obj.ObjectMeta)
 		if obj.Annotations == nil {
 			obj.Annotations = make(map[string]string)
 		}
