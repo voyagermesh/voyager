@@ -2,20 +2,81 @@
 
 ## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
 
-[Full Changelog](https://github.com/appscode/voyager/compare/6.0.0-rc.0...HEAD)
+[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0-rc.11...HEAD)
+
+**Fixed bugs:**
+
+- Document GKE cluster RBAC setup [\#564](https://github.com/appscode/voyager/issues/564)
 
 **Closed issues:**
 
+- LoadBalancer vs NodePort with manualy setup LB \(haproxy.cfg difference\) [\#867](https://github.com/appscode/voyager/issues/867)
+- Ignore Rule if backend service is missing [\#848](https://github.com/appscode/voyager/issues/848)
+- Failed to list ServiceMonitor [\#847](https://github.com/appscode/voyager/issues/847)
+- Uninstall deletes object only from kube-system namespace [\#846](https://github.com/appscode/voyager/issues/846)
 - Multi backends for one domain [\#833](https://github.com/appscode/voyager/issues/833)
+- TCP Ingress Health Check Annotations not Working [\#832](https://github.com/appscode/voyager/issues/832)
+- DNS-01 Challenge provider missing key in credential [\#821](https://github.com/appscode/voyager/issues/821)
 - Allow users to specify backend names [\#819](https://github.com/appscode/voyager/issues/819)
+- Should we make acl names part of the "api"? [\#818](https://github.com/appscode/voyager/issues/818)
+- ACL generation: Support cookie matching [\#817](https://github.com/appscode/voyager/issues/817)
+- Default http-\>https redirect turns DELETE \(and possibly other HTTP verbs\) into GET [\#816](https://github.com/appscode/voyager/issues/816)
+- Panic in runtime.go when using TLS [\#814](https://github.com/appscode/voyager/issues/814)
+- ACL generation: Support multiple path matching per rule [\#813](https://github.com/appscode/voyager/issues/813)
+- ACL in haproxy not created correctly when an ingress has a single host rule [\#807](https://github.com/appscode/voyager/issues/807)
+- Constant "Back-off restarting failed container" for a non existing bad ingress. [\#797](https://github.com/appscode/voyager/issues/797)
+- When a pod linked to a service is deleted, Voyager Operator crashes and does not update ConfigMap [\#790](https://github.com/appscode/voyager/issues/790)
+- Pod reboot loop with "One or more Ingress objects are invalid" [\#779](https://github.com/appscode/voyager/issues/779)
+- Using Voyager and Let's Encrypt in multiple Kubernetes clusters in different regions [\#687](https://github.com/appscode/voyager/issues/687)
+- Self-referential Ingress and Certificate must be done in order [\#661](https://github.com/appscode/voyager/issues/661)
+- GRPC example [\#604](https://github.com/appscode/voyager/issues/604)
+- Websocket example [\#603](https://github.com/appscode/voyager/issues/603)
+- Support direct scrapping via Prometheus [\#593](https://github.com/appscode/voyager/issues/593)
+- Use field selectors in TLS mounters [\#558](https://github.com/appscode/voyager/issues/558)
 - Update Voyager to use workqueue [\#535](https://github.com/appscode/voyager/issues/535)
+- Test 3.2.0 to 5.0.0 migration is smooth [\#527](https://github.com/appscode/voyager/issues/527)
+- Change BackendRule to BackendRules [\#468](https://github.com/appscode/voyager/issues/468)
+- Use Kutil based PATCH to apply changes [\#457](https://github.com/appscode/voyager/issues/457)
+- Use Secret to store HAProxy.conf [\#447](https://github.com/appscode/voyager/issues/447)
+- voyager check should check annotations and dump the parsed annotations [\#367](https://github.com/appscode/voyager/issues/367)
+- Document IAM permission needed for HostPort mode [\#358](https://github.com/appscode/voyager/issues/358)
 - Canonicalize TemplateData [\#348](https://github.com/appscode/voyager/issues/348)
 
 **Merged pull requests:**
 
+- annotations.md typo fix [\#874](https://github.com/appscode/voyager/pull/874) ([mu5h3r](https://github.com/mu5h3r))
+- Use service port by default for LB type nodeport [\#870](https://github.com/appscode/voyager/pull/870) ([diptadas](https://github.com/diptadas))
+- Fixed configmap cleanup when ingress deleted [\#869](https://github.com/appscode/voyager/pull/869) ([diptadas](https://github.com/diptadas))
+- Removed deprecated sticky annotation [\#868](https://github.com/appscode/voyager/pull/868) ([diptadas](https://github.com/diptadas))
+- Pass client config to webhook [\#865](https://github.com/appscode/voyager/pull/865) ([tamalsaha](https://github.com/tamalsaha))
+- Fixed e2e tests [\#863](https://github.com/appscode/voyager/pull/863) ([diptadas](https://github.com/diptadas))
+- Update charts to support api registration [\#862](https://github.com/appscode/voyager/pull/862) ([tamalsaha](https://github.com/tamalsaha))
+- Use ${} form for onessl envsubst [\#861](https://github.com/appscode/voyager/pull/861) ([tamalsaha](https://github.com/tamalsaha))
+- Ignore error for missing backend services [\#860](https://github.com/appscode/voyager/pull/860) ([diptadas](https://github.com/diptadas))
+- Make operator run locally [\#859](https://github.com/appscode/voyager/pull/859) ([tamalsaha](https://github.com/tamalsaha))
+- Update comment regarding RBAC [\#858](https://github.com/appscode/voyager/pull/858) ([bcyrill](https://github.com/bcyrill))
+- Don't append duplicate group versions [\#857](https://github.com/appscode/voyager/pull/857) ([tamalsaha](https://github.com/tamalsaha))
+- Merge admission webhook and operator into one binary [\#856](https://github.com/appscode/voyager/pull/856) ([tamalsaha](https://github.com/tamalsaha))
+- Install admission webhook for Kubernetes \>=1.9.0 [\#855](https://github.com/appscode/voyager/pull/855) ([tamalsaha](https://github.com/tamalsaha))
+- Merge uninstall script into the voyager.sh script [\#854](https://github.com/appscode/voyager/pull/854) ([tamalsaha](https://github.com/tamalsaha))
+- Fixed panic during annotation parsing [\#853](https://github.com/appscode/voyager/pull/853) ([diptadas](https://github.com/diptadas))
+- Checked timeout and dns-resolver maps [\#852](https://github.com/appscode/voyager/pull/852) ([diptadas](https://github.com/diptadas))
+- Add missing RBAC for ServiceMonitor [\#851](https://github.com/appscode/voyager/pull/851) ([tamalsaha](https://github.com/tamalsaha))
+- Document GKE permission options [\#850](https://github.com/appscode/voyager/pull/850) ([tamalsaha](https://github.com/tamalsaha))
+- Ignore --run-on-master flags for GKE [\#849](https://github.com/appscode/voyager/pull/849) ([tamalsaha](https://github.com/tamalsaha))
+- Change BackendRule to BackendRules [\#845](https://github.com/appscode/voyager/pull/845) ([tamalsaha](https://github.com/tamalsaha))
+- Type check for annotations in validator  [\#844](https://github.com/appscode/voyager/pull/844) ([diptadas](https://github.com/diptadas))
+- Revise host and path acl names to make them part of "api" [\#843](https://github.com/appscode/voyager/pull/843) ([tamalsaha](https://github.com/tamalsaha))
+- Preserve original HTTP verb on redirect [\#842](https://github.com/appscode/voyager/pull/842) ([tamalsaha](https://github.com/tamalsaha))
+- Only assign deployment replicas initially [\#841](https://github.com/appscode/voyager/pull/841) ([diptadas](https://github.com/diptadas))
+- Fix DNS-01 Challenge provider missing key in credential [\#840](https://github.com/appscode/voyager/pull/840) ([tamalsaha](https://github.com/tamalsaha))
+- Checked for invalid backend service name in validator [\#839](https://github.com/appscode/voyager/pull/839) ([diptadas](https://github.com/diptadas))
+- Removed panic in operator for bad-ingress [\#837](https://github.com/appscode/voyager/pull/837) ([diptadas](https://github.com/diptadas))
+- Checked nil backend before assigning [\#836](https://github.com/appscode/voyager/pull/836) ([diptadas](https://github.com/diptadas))
+- Copy generic-admission-server code into pkg [\#835](https://github.com/appscode/voyager/pull/835) ([tamalsaha](https://github.com/tamalsaha))
 - Log TemplateData in debug mode [\#834](https://github.com/appscode/voyager/pull/834) ([tamalsaha](https://github.com/tamalsaha))
 -  Removed maps from template data [\#831](https://github.com/appscode/voyager/pull/831) ([diptadas](https://github.com/diptadas))
-- Prepare docs for 6.0.0-rc.0 [\#830](https://github.com/appscode/voyager/pull/830) ([tamalsaha](https://github.com/tamalsaha))
+- Prepare docs for 6.0.0-alpha.0 [\#830](https://github.com/appscode/voyager/pull/830) ([tamalsaha](https://github.com/tamalsaha))
 - Support private docker registry in installer [\#829](https://github.com/appscode/voyager/pull/829) ([tamalsaha](https://github.com/tamalsaha))
 - Add ValidatingAdmissionWebhook for Voyager CRDs [\#828](https://github.com/appscode/voyager/pull/828) ([tamalsaha](https://github.com/tamalsaha))
 - Use kubectl auth reconcile in installer script [\#827](https://github.com/appscode/voyager/pull/827) ([tamalsaha](https://github.com/tamalsaha))
@@ -35,8 +96,8 @@
 - Fix links in chart [\#802](https://github.com/appscode/voyager/pull/802) ([tamalsaha](https://github.com/tamalsaha))
 - Add changelog [\#801](https://github.com/appscode/voyager/pull/801) ([tamalsaha](https://github.com/tamalsaha))
 
-## [6.0.0-rc.0](https://github.com/appscode/voyager/tree/6.0.0-rc.0) (2018-01-04)
-[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0-rc.10...6.0.0-rc.0)
+## [5.0.0-rc.11](https://github.com/appscode/voyager/tree/5.0.0-rc.11) (2018-01-04)
+[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0-rc.10...5.0.0-rc.11)
 
 **Fixed bugs:**
 
@@ -52,7 +113,7 @@
 
 **Merged pull requests:**
 
-- Prepare docs for 6.0.0-rc.0 [\#799](https://github.com/appscode/voyager/pull/799) ([tamalsaha](https://github.com/tamalsaha))
+- Prepare docs for 5.0.0-rc.11 [\#799](https://github.com/appscode/voyager/pull/799) ([tamalsaha](https://github.com/tamalsaha))
 - Reorganize docs for hosting on product site [\#798](https://github.com/appscode/voyager/pull/798) ([tamalsaha](https://github.com/tamalsaha))
 - Detect client id from ENV [\#795](https://github.com/appscode/voyager/pull/795) ([tamalsaha](https://github.com/tamalsaha))
 - Update dead links [\#794](https://github.com/appscode/voyager/pull/794) ([petedreizehn](https://github.com/petedreizehn))
