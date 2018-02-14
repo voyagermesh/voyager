@@ -221,7 +221,7 @@ const (
 	MaxConnections       = EngressKey + "/max-connections"
 
 	// https://github.com/appscode/voyager/issues/552
-	ForceServicePort = EngressKey + "/force-service-port"
+	UseNodePort      = EngressKey + "/use-node-port"
 	SSLRedirect      = EngressKey + "/ssl-redirect"
 	ForceSSLRedirect = EngressKey + "/force-ssl-redirect"
 
@@ -280,7 +280,7 @@ func init() {
 	registerParser(AuthTLSErrorPage, meta.GetString)
 	registerParser(ErrorFiles, meta.GetString)
 	registerParser(CORSEnabled, meta.GetBool)
-	registerParser(ForceServicePort, meta.GetBool)
+	registerParser(UseNodePort, meta.GetBool)
 	registerParser(EnableHSTS, meta.GetBool)
 	registerParser(HSTSPreload, meta.GetBool)
 	registerParser(HSTSIncludeSubDomains, meta.GetBool)
@@ -419,12 +419,12 @@ func (r Ingress) AllowCORSCred() bool {
 	return true // default value
 }
 
-func (r Ingress) ForceServicePort() bool {
+func (r Ingress) UseNodePort() bool {
 	if r.LBType() == LBTypeNodePort {
-		v, _ := get[ForceServicePort](r.Annotations)
+		v, _ := get[UseNodePort](r.Annotations)
 		return v.(bool)
 	}
-	return true
+	return false
 }
 
 func (r Ingress) EnableHSTS() bool {

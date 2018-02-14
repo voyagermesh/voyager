@@ -53,7 +53,7 @@ var _ = Describe("IngressNodePort", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTP(framework.MaxRetry, framework.TestDomain+":32368", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, framework.TestDomain, ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok"))
@@ -62,10 +62,10 @@ var _ = Describe("IngressNodePort", func() {
 		})
 	})
 
-	Describe("Create With Force Service Port set", func() {
+	Describe("Create With Force Node Port set", func() {
 		BeforeEach(func() {
 			ing.Annotations[api.LBType] = api.LBTypeNodePort
-			ing.Annotations[api.ForceServicePort] = "true"
+			ing.Annotations[api.UseNodePort] = "true"
 			ing.Spec.Rules[0].Host = framework.TestDomain
 			ing.Spec.Rules[0].HTTP.NodePort = intstr.FromInt(32369)
 		})
@@ -76,7 +76,7 @@ var _ = Describe("IngressNodePort", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTP(framework.MaxRetry, framework.TestDomain, ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTP(framework.MaxRetry, framework.TestDomain+":32369", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 					Expect(r.Method).Should(Equal("GET")) &&
 					Expect(r.Path).Should(Equal("/testpath/ok"))
