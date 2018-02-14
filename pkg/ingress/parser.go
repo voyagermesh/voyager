@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/appscode/go/errors"
+	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	hpi "github.com/appscode/voyager/pkg/haproxy/api"
@@ -169,11 +170,8 @@ func (c *controller) getEndpoints(svc *core.Service, servicePort *core.ServicePo
 }
 
 func isServiceSticky(annotations map[string]string) bool {
-	var sticky bool
-	if annotations != nil {
-		sticky, _ = strconv.ParseBool(annotations[api.StickySession])
-	}
-	return sticky
+	v, _ := meta.GetStringValue(annotations, api.IngressAffinity)
+	return v == "cookie"
 }
 
 func isForwardable(hostNames []string, hostName string) bool {
