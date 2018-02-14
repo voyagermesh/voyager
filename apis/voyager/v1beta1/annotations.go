@@ -150,21 +150,16 @@ const (
 	// This value should not be set if the backend do not support https resolution.
 	BackendTLSOptions = EngressKey + "/backend-tls"
 
-	// StickyIngress configures HAProxy to use sticky connection
-	// to the backend servers.
-	// Annotations could  be applied to either Ingress or backend Service (since 3.2+).
-	// ie: ingress.appscode.com/sticky-session: "true"
+	// Specify a method to stick clients to origins across requests.
+	// Only supported value is "cookie".
+	// Annotations could  be applied to either Ingress or backend Service
 	// If applied to Ingress, all the backend connections would be sticky
 	// If applied to Service and Ingress do not have this annotation only
 	// connection to that backend service will be sticky.
-	// Deprecated
-	StickySession = EngressKey + "/" + "sticky-session"
-	// Specify a method to stick clients to origins across requests.
-	// Only supported value is cookie.
 	IngressAffinity = EngressKey + "/affinity"
-	// When affinity is set to cookie, the name of the cookie to use.
+	// When affinity is set to "cookie", the name of the cookie to use.
 	IngressAffinitySessionCookieName = EngressKey + "/session-cookie-name"
-	// When affinity is set to cookie, the hash algorithm used: md5, sha, index.
+	// When affinity is set to "cookie", the hash algorithm used: md5, sha, index.
 	IngressAffinitySessionCookieHash = EngressKey + "/session-cookie-hash"
 
 	// Basic Auth: Follows ingress controller standard
@@ -284,7 +279,6 @@ func init() {
 	registerParser(AuthTLSVerifyClient, meta.GetString)
 	registerParser(AuthTLSErrorPage, meta.GetString)
 	registerParser(ErrorFiles, meta.GetString)
-	registerParser(StickySession, meta.GetBool)
 	registerParser(CORSEnabled, meta.GetBool)
 	registerParser(ForceServicePort, meta.GetBool)
 	registerParser(EnableHSTS, meta.GetBool)
@@ -369,11 +363,8 @@ func (r Ingress) APISchema() string {
 func (r Ingress) Sticky() bool {
 	// Specify a method to stick clients to origins across requests.
 	// Like nginx HAProxy only supports the value cookie.
-	if v, _ := get[IngressAffinity](r.Annotations); v != "" {
-		return true
-	}
-	v, _ := get[StickySession](r.Annotations)
-	return v.(bool)
+	v, _ := get[IngressAffinity](r.Annotations)
+	return v == "cookie"
 }
 
 func (r Ingress) StickySessionCookieName() string {
