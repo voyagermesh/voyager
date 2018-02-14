@@ -1,8 +1,7 @@
 # Change Log
 
-## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
-
-[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0-rc.11...HEAD)
+## [6.0.0-rc.0](https://github.com/appscode/voyager/tree/6.0.0-rc.0) (2018-02-14)
+[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0-rc.11...6.0.0-rc.0)
 
 **Fixed bugs:**
 
