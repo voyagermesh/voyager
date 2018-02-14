@@ -24,7 +24,7 @@ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-alpha.0/hack
     | bash -s -- --provider=minikube
 ```
 
-- Now, deploy and expose a test servers.
+- Then, deploy and expose a test server.
 
 ```console
 $ kubectl run test-server --image=gcr.io/google_containers/echoserver:1.8
@@ -69,7 +69,7 @@ svc/test-server            LoadBalancer   10.105.13.31     <pending>     80:3039
 svc/voyager-test-ingress   NodePort       10.107.182.219   <none>        80:30800/TCP   39m
 ```
 
-```
+```console
 $ minikube service --url voyager-test-ingress
 http://192.168.99.100:30800
 ```
@@ -181,7 +181,7 @@ spec:
           servicePort: '80'
 ```
 
-```
+```console
 $ curl -v -H 'Host: voyager.appscode.test:30800' 192.168.99.100:30800/foo
 *   Trying 192.168.99.100...
 * Connected to 192.168.99.100 (192.168.99.100) port 30800 (#0)
