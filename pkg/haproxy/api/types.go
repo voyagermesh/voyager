@@ -49,7 +49,7 @@ type SharedInfo struct {
 	HSTSIncludeSubDomains bool
 	WhitelistSourceRange  string
 	MaxConnections        int
-	ForceMatchServicePort bool
+	UseNodePort           bool
 	Limit                 *Limit
 }
 

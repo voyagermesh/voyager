@@ -62,10 +62,10 @@ var _ = Describe("IngressNodePort", func() {
 		})
 	})
 
-	Describe("Create With Force Service Port set", func() {
+	Describe("Create With Force Node Port set", func() {
 		BeforeEach(func() {
 			ing.Annotations[api.LBType] = api.LBTypeNodePort
-			ing.Annotations[api.ForceServicePort] = "true"
+			ing.Annotations[api.UseNodePort] = "true"
 			ing.Spec.Rules[0].Host = framework.TestDomain
 			ing.Spec.Rules[0].HTTP.NodePort = intstr.FromInt(32369)
 		})

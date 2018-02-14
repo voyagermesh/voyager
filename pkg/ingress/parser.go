@@ -277,7 +277,7 @@ func (c *controller) generateConfig() error {
 		HSTSIncludeSubDomains: c.Ingress.HSTSIncludeSubDomains(),
 		WhitelistSourceRange:  c.Ingress.WhitelistSourceRange(),
 		MaxConnections:        c.Ingress.MaxConnections(),
-		ForceMatchServicePort: c.Ingress.ForceServicePort(),
+		UseNodePort:           c.Ingress.UseNodePort(),
 		Limit: &hpi.Limit{
 			Connection: c.Ingress.LimitConnections(),
 		},

@@ -37,13 +37,13 @@ func HeaderName(v string) string {
 	return v[:index]
 }
 
-func HostACLs(host string, port int, nodePort int32, forceSvcPort bool) []string {
+func HostACLs(host string, port int, nodePort int32, useNodePort bool) []string {
 	var conditions []string
 	host = strings.TrimSpace(host)
 
-	if !forceSvcPort && nodePort > 0 {
+	if useNodePort && nodePort > 0 {
 		conditions = append(conditions, hostMatcher(fmt.Sprintf("%s:%d", host, nodePort)))
-	} else if forceSvcPort && port > 0 {
+	} else if port > 0 {
 		if port != 80 && port != 443 { // non standard http ports
 			conditions = append(conditions, hostMatcher(fmt.Sprintf("%s:%d", host, port)))
 		} else if host != "" { // http or https
