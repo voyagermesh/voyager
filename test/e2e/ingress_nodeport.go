@@ -11,7 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-var _ = FDescribe("IngressNodePort", func() {
+var _ = Describe("IngressNodePort", func() {
 	var (
 		f   *framework.Invocation
 		ing *api.Ingress
