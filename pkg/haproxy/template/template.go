@@ -43,7 +43,7 @@ func HostACLs(host string, port int, nodePort int32, useNodePort bool) []string 
 
 	if useNodePort && nodePort > 0 {
 		conditions = append(conditions, hostMatcher(fmt.Sprintf("%s:%d", host, nodePort)))
-	} else if port > 0 {
+	} else if !useNodePort && port > 0 {
 		if port != 80 && port != 443 { // non standard http ports
 			conditions = append(conditions, hostMatcher(fmt.Sprintf("%s:%d", host, port)))
 		} else if host != "" { // http or https
