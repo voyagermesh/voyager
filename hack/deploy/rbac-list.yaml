@@ -1,4 +1,4 @@
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ${VOYAGER_ROLE_TYPE}
 metadata:
   name: voyager-operator
@@ -77,7 +77,7 @@ rules:
   - roles
   verbs: ["get", "create", "delete", "patch"]
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ${VOYAGER_ROLE_TYPE}Binding
 metadata:
   name: voyager-operator
@@ -94,7 +94,7 @@ subjects:
   namespace: ${VOYAGER_NAMESPACE}
 ---
 # to read the config for terminating authentication
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: voyager-apiserver-extension-server-authentication-reader
@@ -111,7 +111,7 @@ subjects:
   namespace: ${VOYAGER_NAMESPACE}
 ---
 # to delegate authentication and authorization
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: voyager-apiserver-auth-delegator

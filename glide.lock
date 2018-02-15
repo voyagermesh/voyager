@@ -1,5 +1,5 @@
 hash: fc5def6f46bccb37bac967fb7b9e40b3adaf4df718732c430602ff1720ac7e8a
-updated: 2018-02-11T19:43:56.244570941-08:00
+updated: 2018-02-15T04:56:17.675207627-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -9,12 +9,11 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/go
-  version: 1be9b0441d73831aaa93df76e42a751caa5dba88
+  version: 6adb909e2aa54fff1642dbe6cbe518fa0c64d987
   subpackages:
   - analytics
   - context
   - crypto/rand
-  - errors
   - flags
   - homedir
   - ioutil
@@ -46,7 +45,7 @@ imports:
   - discovery
   - extensions/v1beta1
   - meta
-  - rbac/v1beta1
+  - rbac/v1
   - tools/analytics
   - tools/certstore
   - tools/clientcmd
@@ -163,8 +162,6 @@ imports:
   version: dcef7f55730566d41eae5db10e7d6981829720f6
 - name: github.com/evanphx/json-patch
   version: 944e07253867aacae43c04b2e6a239005443f33a
-- name: github.com/facebookgo/stack
-  version: 751773369052141c013c6e827a71e8f35c07879c
 - name: github.com/fatih/structs
   version: ebf56d35bba727c68ac77f56f2fcf90b181851aa
 - name: github.com/fsnotify/fsnotify
@@ -408,7 +405,7 @@ imports:
   subpackages:
   - diffmatchpatch
 - name: github.com/sethgrid/pester
-  version: 1808e6f72af9682aaae9189a91c6bb9b416297ca
+  version: b18953f5db2922a73aaf89652abf7b5ee95cb516
 - name: github.com/shurcooL/sanitized_anchor_name
   version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/sirupsen/logrus

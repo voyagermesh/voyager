@@ -1,11 +1,9 @@
 package operator
 
 import (
-	"context"
 	"reflect"
 	"time"
 
-	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -95,7 +93,7 @@ func (op *Operator) reconcileCertificate(key string) error {
 			)
 			return err
 		}
-		ctrl, err := certificate.NewController(context.Background(), op.KubeClient, op.VoyagerClient, op.Config, cert)
+		ctrl, err := certificate.NewController(op.KubeClient, op.VoyagerClient, op.Config, cert)
 		if err != nil {
 			op.recorder.Event(
 				cert.ObjectReference(),
@@ -127,7 +125,6 @@ func (op *Operator) reconcileCertificate(key string) error {
 
 func (op *Operator) CheckCertificates() {
 	Time := clock.New()
-	ctx := etx.Background()
 	for {
 		select {
 		case <-Time.After(time.Minute * 5):
@@ -142,7 +139,7 @@ func (op *Operator) CheckCertificates() {
 					log.Infoln("skipping certificate %s/%s, since rate limited", cert.Namespace, cert.Name)
 					continue
 				}
-				ctrl, err := certificate.NewController(ctx, op.KubeClient, op.VoyagerClient, op.Config, cert)
+				ctrl, err := certificate.NewController(op.KubeClient, op.VoyagerClient, op.Config, cert)
 				if err != nil {
 					op.recorder.Event(
 						cert.ObjectReference(),
