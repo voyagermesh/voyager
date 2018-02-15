@@ -1,7 +1,6 @@
 package certificate
 
 import (
-	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -42,12 +41,10 @@ type Controller struct {
 	acmeUser          *ACMEUser
 	acmeClient        *acme.Client
 	store             *CertStore
-	logger            *log.Logger
 }
 
-func NewController(ctx context.Context, kubeClient kubernetes.Interface, extClient cs.Interface, cfg config.Config, tpr *api.Certificate) (*Controller, error) {
+func NewController(kubeClient kubernetes.Interface, extClient cs.Interface, cfg config.Config, tpr *api.Certificate) (*Controller, error) {
 	ctrl := &Controller{
-		logger:        log.New(ctx),
 		KubeClient:    kubeClient,
 		VoyagerClient: extClient,
 		cfg:           cfg,
@@ -190,7 +187,7 @@ func (c *Controller) getACMEClient() error {
 	registered := c.acmeUser.Registration != nil && c.acmeUser.Key != nil
 
 	if c.acmeUser.Key == nil {
-		c.logger.Infoln("No ACME user found, registering a new ACME user")
+		log.Infoln("No ACME user found, registering a new ACME user")
 		userKey, err := rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
 			return errors.Errorf("failed to generate key for Acme User")

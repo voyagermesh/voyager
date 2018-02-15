@@ -1,7 +1,9 @@
 package operator
 
 import (
-	etx "github.com/appscode/go/context"
+	"context"
+
+	. "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
 	core_util "github.com/appscode/kutil/core/v1"
 	ext_util "github.com/appscode/kutil/extensions/v1beta1"
@@ -90,7 +92,7 @@ func (op *Operator) reconcileIngress(key string) error {
 		return nil
 	}
 
-	ctrl := ingress.NewController(etx.Background(), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Config, engress)
+	ctrl := ingress.NewController(NewID(context.Background()), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Config, engress)
 
 	if ing.DeletionTimestamp != nil {
 		if core_util.HasFinalizer(ing.ObjectMeta, api.VoyagerFinalizer) {

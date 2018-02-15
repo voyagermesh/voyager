@@ -1,7 +1,9 @@
 package operator
 
 import (
-	etx "github.com/appscode/go/context"
+	"context"
+
+	. "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
 	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/appscode/kutil/meta"
@@ -89,7 +91,7 @@ func (op *Operator) reconcileEngress(key string) error {
 
 	engress := obj.(*api.Ingress).DeepCopy()
 	engress.Migrate()
-	ctrl := ingress.NewController(etx.Background(), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Config, engress)
+	ctrl := ingress.NewController(NewID(context.Background()), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Config, engress)
 
 	if engress.DeletionTimestamp != nil {
 		if core_util.HasFinalizer(engress.ObjectMeta, api.VoyagerFinalizer) {
