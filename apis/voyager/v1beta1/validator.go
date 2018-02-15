@@ -125,10 +125,12 @@ func (r Ingress) IsValid(cloudProvider string) error {
 				if ea.Protocol == "tcp" {
 					return errors.Errorf("spec.rule[%d].http is reusing port %d, also used in spec.rule[%d]", ri, ea.PodPort, ea.FirstRuleIndex)
 				}
-				if nodePort != ea.NodePort {
-					return errors.Errorf("spec.rule[%d].http.nodePort %d does not match with nodePort %d", ri, ea.NodePort, ea.NodePort)
-				} else {
-					nodePorts[nodePort] = ri
+				if nodePort > 0 {
+					if ea.NodePort > 0 && nodePort != ea.NodePort {
+						return errors.Errorf("spec.rule[%d].http.nodePort %d does not match with nodePort %d", ri, nodePort, ea.NodePort)
+					} else {
+						nodePorts[nodePort] = ri
+					}
 				}
 
 				_, foundTLS := r.FindTLSSecret(rule.Host)
