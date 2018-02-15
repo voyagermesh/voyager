@@ -613,4 +613,54 @@ var dataTables = map[*Ingress]bool{
 			},
 		},
 	}: true,
+	{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "acme-http-challenge-path",
+			Namespace: "default",
+			Annotations: map[string]string{
+				"ingress.appscode.com/type": LBTypeLoadBalancer,
+			},
+		},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							NoTLS: true,
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/.well-known/acme-challenge/",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "voyager-operator.kube-system",
+											ServicePort: intstr.FromInt(56791),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							NoTLS:    true,
+							NodePort: intstr.FromInt(32666),
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "web",
+											ServicePort: intstr.FromInt(80),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}: true,
 }
