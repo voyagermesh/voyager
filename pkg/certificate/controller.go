@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/appscode/go/errors"
 	"github.com/appscode/go/log"
 	v1u "github.com/appscode/kutil/core/v1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -19,6 +18,7 @@ import (
 	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
+	"github.com/pkg/errors"
 	"github.com/xenolf/lego/acme"
 	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
@@ -305,7 +305,7 @@ func (c *Controller) updateIngress() error {
 			Ingresses(c.crd.Namespace).
 			Get(c.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 		if err != nil {
-			return errors.FromErr(err).Err()
+			return errors.WithStack(err)
 		}
 		for _, rules := range i.Spec.Rules {
 			if rules.HTTP != nil {
@@ -340,14 +340,14 @@ func (c *Controller) updateIngress() error {
 
 		_, err = c.VoyagerClient.VoyagerV1beta1().Ingresses(c.crd.Namespace).Update(i)
 		if err != nil {
-			return errors.FromErr(err).Err()
+			return errors.WithStack(err)
 		}
 		time.Sleep(time.Second * 5)
 	case "extensions/v1beta1":
 		i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.crd.Namespace).
 			Get(c.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 		if err != nil {
-			return errors.FromErr(err).Err()
+			return errors.WithStack(err)
 		}
 
 		for _, rules := range i.Spec.Rules {
@@ -380,11 +380,11 @@ func (c *Controller) updateIngress() error {
 
 		_, err = c.KubeClient.ExtensionsV1beta1().Ingresses(c.crd.Namespace).Update(i)
 		if err != nil {
-			return errors.FromErr(err).Err()
+			return errors.WithStack(err)
 		}
 		time.Sleep(time.Second * 5)
 	default:
-		return errors.New("HTTP Certificate resolver do not have any ingress reference or invalid ingress reference").Err()
+		return errors.New("HTTP Certificate resolver do not have any ingress reference or invalid ingress reference")
 	}
 	return nil
 }

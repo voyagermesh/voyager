@@ -1,7 +1,6 @@
 package framework
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
 	"os/exec"
@@ -13,6 +12,7 @@ import (
 	"github.com/appscode/go/types"
 	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/onsi/gomega"
+	"github.com/pkg/errors"
 	apps "k8s.io/api/apps/v1beta1"
 	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
