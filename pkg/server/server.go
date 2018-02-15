@@ -7,6 +7,7 @@ import (
 	hookapi "github.com/appscode/voyager/pkg/admission/api"
 	"github.com/appscode/voyager/pkg/operator"
 	"github.com/appscode/voyager/pkg/registry/admissionreview"
+	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apimachinery"
@@ -107,7 +108,7 @@ func (c completedConfig) New() (*VoyagerServer, error) {
 		}
 		interfacesFor := func(version schema.GroupVersion) (*meta.VersionInterfaces, error) {
 			if version != admission.SchemeGroupVersion {
-				return nil, fmt.Errorf("unexpected version %v", version)
+				return nil, errors.Errorf("unexpected version %v", version)
 			}
 			return versionInterfaces, nil
 		}

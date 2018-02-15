@@ -15,6 +15,7 @@ import (
 	"github.com/appscode/voyager/pkg/haproxy/template"
 	"github.com/appscode/voyager/pkg/operator"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
+	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
 	core "k8s.io/api/core/v1"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
@@ -171,18 +172,18 @@ func (s *OperatorOptions) ApplyTo(cfg *operator.OperatorConfig) error {
 }
 
 func (s *OperatorOptions) Validate() []error {
-	var errors []error
+	var errs []error
 	if s.HAProxyImageTag == "" {
-		errors = append(errors, fmt.Errorf("missing required flag --haproxy-image-tag"))
+		errs = append(errs, errors.Errorf("missing required flag --haproxy-image-tag"))
 	}
 	if s.CloudProvider == "$VOYAGER_CLOUD_PROVIDER" {
-		errors = append(errors, fmt.Errorf("invalid cloud provider `--cloud-provider=$VOYAGER_CLOUD_PROVIDER`"))
+		errs = append(errs, errors.Errorf("invalid cloud provider `--cloud-provider=$VOYAGER_CLOUD_PROVIDER`"))
 	}
 	if s.CloudConfigFile == "$CLOUD_CONFIG" {
-		errors = append(errors, fmt.Errorf("invalid cloud config file `--cloud-config=$CLOUD_CONFIG`"))
+		errs = append(errs, errors.Errorf("invalid cloud config file `--cloud-config=$CLOUD_CONFIG`"))
 	}
 	if s.IngressClass == "$INGRESS_CLASS" {
-		errors = append(errors, fmt.Errorf("invalid ingress class `--ingress-class=$INGRESS_CLASS`"))
+		errs = append(errs, errors.Errorf("invalid ingress class `--ingress-class=$INGRESS_CLASS`"))
 	}
-	return errors
+	return errs
 }

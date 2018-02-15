@@ -29,6 +29,7 @@ import (
 	"cloud.google.com/go/compute/metadata"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v1"
@@ -99,7 +100,7 @@ func getProjectAndZone() (string, string, error) {
 	}
 	parts := strings.Split(result, "/")
 	if len(parts) != 4 {
-		return "", "", fmt.Errorf("unexpected response: %s", result)
+		return "", "", errors.Errorf("unexpected response: %s", result)
 	}
 	zone := parts[3]
 	projectID, err := metadata.ProjectID()
@@ -116,7 +117,7 @@ func getNetworkNameViaMetadata() (string, error) {
 	}
 	parts := strings.Split(result, "/")
 	if len(parts) != 4 {
-		return "", fmt.Errorf("unexpected response: %s", result)
+		return "", errors.Errorf("unexpected response: %s", result)
 	}
 	return parts[3], nil
 }
@@ -129,7 +130,7 @@ func getNetworkNameViaAPICall(svc *compute.Service, projectID string) (string, e
 	}
 
 	if networkList == nil || len(networkList.Items) <= 0 {
-		return "", fmt.Errorf("GCE Network List call returned no networks for project %q.", projectID)
+		return "", errors.Errorf("GCE Network List call returned no networks for project %q.", projectID)
 	}
 
 	return networkList.Items[0].Name, nil
@@ -145,7 +146,7 @@ func getZonesForRegion(svc *compute.Service, projectID, region string) ([]string
 
 	res, err := listCall.Do()
 	if err != nil {
-		return nil, fmt.Errorf("unexpected response listing zones: %v", err)
+		return nil, errors.Errorf("unexpected response listing zones: %v", err)
 	}
 	zones := []string{}
 	for _, zone := range res.Items {
@@ -298,7 +299,7 @@ func (gce *GCECloud) Firewall() (cloudprovider.Firewall, bool) {
 
 func (gce *GCECloud) waitForOp(op *compute.Operation, getOperation func(operationName string) (*compute.Operation, error)) error {
 	if op == nil {
-		return fmt.Errorf("operation must not be nil")
+		return errors.Errorf("operation must not be nil")
 	}
 
 	if opIsDone(op) {
@@ -408,7 +409,7 @@ func (gce *GCECloud) EnsureFirewall(apiService *apiv1.Service, hostnames []strin
 	if apiService.Spec.Type == apiv1.ServiceTypeNodePort {
 		for _, p := range apiService.Spec.Ports {
 			if p.NodePort == 0 {
-				return fmt.Errorf("service %s/%s port %d has no associated NodePort", apiService.Namespace, apiService.Name, p.Port)
+				return errors.Errorf("service %s/%s port %d has no associated NodePort", apiService.Namespace, apiService.Name, p.Port)
 			}
 			ports = append(ports, apiv1.ServicePort{
 				Name:     p.Name,
@@ -471,7 +472,7 @@ func (gce *GCECloud) firewallNeedsUpdate(name, serviceName, region, ipAddress st
 		if isHTTPErrorCode(err, http.StatusNotFound) {
 			return false, true, nil
 		}
-		return false, false, fmt.Errorf("error getting load balancer's target pool: %v", err)
+		return false, false, errors.Errorf("error getting load balancer's target pool: %v", err)
 	}
 	if fw.Description != makeFirewallDescription(serviceName, ipAddress) {
 		return true, true, nil
@@ -582,7 +583,7 @@ func (gce *GCECloud) firewallObject(fwName, region, desc string, sourceRanges ne
 	if len(hostTags) == 0 {
 		var err error
 		if hostTags, err = gce.computeHostTags(hosts); err != nil {
-			return nil, fmt.Errorf("No node tags supplied and also failed to parse the given lists of hosts for tags. Abort creating firewall rule. Reason: %v.", err)
+			return nil, errors.Errorf("No node tags supplied and also failed to parse the given lists of hosts for tags. Abort creating firewall rule. Reason: %v.", err)
 		}
 	}
 
@@ -671,7 +672,7 @@ func (gce *GCECloud) computeHostTags(hosts []*gceInstance) ([]string, error) {
 				if len(longest_tag) > 0 {
 					tags.Insert(longest_tag)
 				} else {
-					return nil, fmt.Errorf("Could not find any tag that is a prefix of instance name for instance %s", instance.Name)
+					return nil, errors.Errorf("Could not find any tag that is a prefix of instance name for instance %s", instance.Name)
 				}
 			}
 		}
@@ -680,7 +681,7 @@ func (gce *GCECloud) computeHostTags(hosts []*gceInstance) ([]string, error) {
 		}
 	}
 	if len(tags) == 0 {
-		return nil, fmt.Errorf("No instances found")
+		return nil, errors.Errorf("No instances found")
 	}
 	return tags.List(), nil
 }
@@ -738,7 +739,7 @@ func gceNetworkURL(project, network string) string {
 func GetGCERegion(zone string) (string, error) {
 	ix := strings.LastIndex(zone, "-")
 	if ix == -1 {
-		return "", fmt.Errorf("unexpected zone: %s", zone)
+		return "", errors.Errorf("unexpected zone: %s", zone)
 	}
 	return zone[:ix], nil
 }

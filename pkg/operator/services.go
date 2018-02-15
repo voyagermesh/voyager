@@ -1,8 +1,6 @@
 package operator
 
 import (
-	"fmt"
-
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -109,5 +107,5 @@ func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*api.Ingress, error) {
 	} else if sourceType == api.APISchemaEngress {
 		return op.VoyagerClient.VoyagerV1beta1().Ingresses(meta.Namespace).Get(sourceName, metav1.GetOptions{})
 	}
-	return nil, fmt.Errorf("unknown ingress type %s", sourceType)
+	return nil, errors.Errorf("unknown ingress type %s", sourceType)
 }

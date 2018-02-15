@@ -1,8 +1,7 @@
 package v1beta1
 
 import (
-	"fmt"
-
+	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -67,7 +66,7 @@ func (r Ingress) PortMappings(cloudProvider string) (map[int]Target, error) {
 				if tp80 && !sp443 {
 					mappings[443] = Target{PodPort: 80}
 				} else {
-					return nil, fmt.Errorf("failed to open port 443 on service for AWS cert manager for Ingress %s/%s", r.Namespace, r.Name)
+					return nil, errors.Errorf("failed to open port 443 on service for AWS cert manager for Ingress %s/%s", r.Namespace, r.Name)
 				}
 			}
 		}

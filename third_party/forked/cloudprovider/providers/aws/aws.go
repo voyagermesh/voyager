@@ -312,7 +312,7 @@ func (s *awsSdkEC2) DescribeInstances(request *ec2.DescribeInstancesInput) ([]*e
 	for {
 		response, err := s.ec2.DescribeInstances(request)
 		if err != nil {
-			return nil, fmt.Errorf("error listing AWS instances: %v", err)
+			return nil, errors.Errorf("error listing AWS instances: %v", err)
 		}
 
 		for _, reservation := range response.Reservations {
@@ -334,7 +334,7 @@ func (s *awsSdkEC2) DescribeSecurityGroups(request *ec2.DescribeSecurityGroupsIn
 	// Security groups are not paged
 	response, err := s.ec2.DescribeSecurityGroups(request)
 	if err != nil {
-		return nil, fmt.Errorf("error listing AWS security groups: %v", err)
+		return nil, errors.Errorf("error listing AWS security groups: %v", err)
 	}
 	return response.SecurityGroups, nil
 }
@@ -356,7 +356,7 @@ func (s *awsSdkEC2) DescribeVolumes(request *ec2.DescribeVolumesInput) ([]*ec2.V
 		response, err := s.ec2.DescribeVolumes(request)
 
 		if err != nil {
-			return nil, fmt.Errorf("error listing AWS volumes: %v", err)
+			return nil, errors.Errorf("error listing AWS volumes: %v", err)
 		}
 
 		results = append(results, response.Volumes...)
@@ -383,7 +383,7 @@ func (s *awsSdkEC2) DescribeSubnets(request *ec2.DescribeSubnetsInput) ([]*ec2.S
 	// Subnets are not paged
 	response, err := s.ec2.DescribeSubnets(request)
 	if err != nil {
-		return nil, fmt.Errorf("error listing AWS subnets: %v", err)
+		return nil, errors.Errorf("error listing AWS subnets: %v", err)
 	}
 	return response.Subnets, nil
 }
@@ -412,7 +412,7 @@ func (s *awsSdkEC2) DescribeRouteTables(request *ec2.DescribeRouteTablesInput) (
 	// Not paged
 	response, err := s.ec2.DescribeRouteTables(request)
 	if err != nil {
-		return nil, fmt.Errorf("error listing AWS route tables: %v", err)
+		return nil, errors.Errorf("error listing AWS route tables: %v", err)
 	}
 	return response.RouteTables, nil
 }
@@ -465,7 +465,7 @@ func readAWSCloudConfig(config io.Reader, metadata EC2Metadata) (*CloudConfig, e
 			}
 		}
 		if cfg.Global.Zone == "" {
-			return nil, fmt.Errorf("no zone specified in configuration file")
+			return nil, errors.Errorf("no zone specified in configuration file")
 		}
 	}
 
@@ -480,7 +480,7 @@ func getAvailabilityZone(metadata EC2Metadata) (string, error) {
 // Returns an error if the az is known invalid (empty)
 func azToRegion(az string) (string, error) {
 	if len(az) < 1 {
-		return "", fmt.Errorf("invalid (empty) AZ")
+		return "", errors.Errorf("invalid (empty) AZ")
 	}
 	region := az[:len(az)-1]
 	return region, nil
@@ -501,17 +501,17 @@ func newAWSCloud(config io.Reader, awsServices Services) (*Cloud, error) {
 
 	metadata, err := awsServices.Metadata()
 	if err != nil {
-		return nil, fmt.Errorf("error creating AWS metadata client: %v", err)
+		return nil, errors.Errorf("error creating AWS metadata client: %v", err)
 	}
 
 	cfg, err := readAWSCloudConfig(config, metadata)
 	if err != nil {
-		return nil, fmt.Errorf("unable to read AWS cloud provider config file: %v", err)
+		return nil, errors.Errorf("unable to read AWS cloud provider config file: %v", err)
 	}
 
 	zone := cfg.Global.Zone
 	if len(zone) <= 1 {
-		return nil, fmt.Errorf("invalid AWS zone in config file: %s", zone)
+		return nil, errors.Errorf("invalid AWS zone in config file: %s", zone)
 	}
 	regionName, err := azToRegion(zone)
 	if err != nil {
@@ -521,7 +521,7 @@ func newAWSCloud(config io.Reader, awsServices Services) (*Cloud, error) {
 	if !cfg.Global.DisableStrictZoneCheck {
 		valid := isRegionValid(regionName)
 		if !valid {
-			return nil, fmt.Errorf("not a valid AWS zone (unknown region): %s", zone)
+			return nil, errors.Errorf("not a valid AWS zone (unknown region): %s", zone)
 		}
 	} else {
 		glog.Warningf("Strict AWS zone checking is disabled.  Proceeding with zone: %s", zone)
@@ -529,12 +529,12 @@ func newAWSCloud(config io.Reader, awsServices Services) (*Cloud, error) {
 
 	ec2, err := awsServices.Compute(regionName)
 	if err != nil {
-		return nil, fmt.Errorf("error creating AWS EC2 client: %v", err)
+		return nil, errors.Errorf("error creating AWS EC2 client: %v", err)
 	}
 
 	elb, err := awsServices.LoadBalancing(regionName)
 	if err != nil {
-		return nil, fmt.Errorf("error creating AWS ELB client: %v", err)
+		return nil, errors.Errorf("error creating AWS ELB client: %v", err)
 	}
 
 	awsCloud := &Cloud{
@@ -662,10 +662,10 @@ func (i *awsInstance) describeInstance() (*ec2.Instance, error) {
 		return nil, err
 	}
 	if len(instances) == 0 {
-		return nil, fmt.Errorf("no instances found for instance: %s", i.awsID)
+		return nil, errors.Errorf("no instances found for instance: %s", i.awsID)
 	}
 	if len(instances) > 1 {
-		return nil, fmt.Errorf("multiple instances found for instance: %s", i.awsID)
+		return nil, errors.Errorf("multiple instances found for instance: %s", i.awsID)
 	}
 	return instances[0], nil
 }
@@ -678,7 +678,7 @@ func (c *Cloud) buildSelfAWSInstance() (*awsInstance, error) {
 	}
 	instanceID, err := c.metadata.GetMetadata("instance-id")
 	if err != nil {
-		return nil, fmt.Errorf("error fetching instance-id from ec2 metadata service: %v", err)
+		return nil, errors.Errorf("error fetching instance-id from ec2 metadata service: %v", err)
 	}
 
 	// We want to fetch the hostname via the EC2 metadata service
@@ -691,7 +691,7 @@ func (c *Cloud) buildSelfAWSInstance() (*awsInstance, error) {
 	// have two code paths.
 	instance, err := c.getInstanceByID(instanceID)
 	if err != nil {
-		return nil, fmt.Errorf("error finding instance %s: %v", instanceID, err)
+		return nil, errors.Errorf("error finding instance %s: %v", instanceID, err)
 	}
 	return newAWSInstance(c.ec2, instance), nil
 }
@@ -714,7 +714,7 @@ func (c *Cloud) findSecurityGroup(securityGroupID string) (*ec2.SecurityGroup, e
 	}
 	if len(groups) != 1 {
 		// This should not be possible - ids should be unique
-		return nil, fmt.Errorf("multiple security groups found with same id %q", securityGroupID)
+		return nil, errors.Errorf("multiple security groups found with same id %q", securityGroupID)
 	}
 	group := groups[0]
 	return group, nil
@@ -807,7 +807,7 @@ func (c *Cloud) setSecurityGroupIngress(securityGroupID string, permissions IPPe
 	}
 
 	if group == nil {
-		return false, fmt.Errorf("security group not found: %s", securityGroupID)
+		return false, errors.Errorf("security group not found: %s", securityGroupID)
 	}
 
 	glog.V(2).Infof("Existing security group ingress: %s %v", securityGroupID, group.IpPermissions)
@@ -848,7 +848,7 @@ func (c *Cloud) setSecurityGroupIngress(securityGroupID string, permissions IPPe
 		request.IpPermissions = add.List()
 		_, err = c.ec2.AuthorizeSecurityGroupIngress(request)
 		if err != nil {
-			return false, fmt.Errorf("error authorizing security group ingress: %v", err)
+			return false, errors.Errorf("error authorizing security group ingress: %v", err)
 		}
 	}
 	if remove.Len() != 0 {
@@ -859,7 +859,7 @@ func (c *Cloud) setSecurityGroupIngress(securityGroupID string, permissions IPPe
 		request.IpPermissions = remove.List()
 		_, err = c.ec2.RevokeSecurityGroupIngress(request)
 		if err != nil {
-			return false, fmt.Errorf("error revoking security group ingress: %v", err)
+			return false, errors.Errorf("error revoking security group ingress: %v", err)
 		}
 	}
 
@@ -877,7 +877,7 @@ func (c *Cloud) addSecurityGroupIngress(securityGroupID string, addPermissions [
 	}
 
 	if group == nil {
-		return false, fmt.Errorf("security group not found: %s", securityGroupID)
+		return false, errors.Errorf("security group not found: %s", securityGroupID)
 	}
 
 	glog.V(2).Infof("Existing security group ingress: %s %v", securityGroupID, group.IpPermissions)
@@ -916,7 +916,7 @@ func (c *Cloud) addSecurityGroupIngress(securityGroupID string, addPermissions [
 	_, err = c.ec2.AuthorizeSecurityGroupIngress(request)
 	if err != nil {
 		glog.Warning("Error authorizing security group ingress", err)
-		return false, fmt.Errorf("error authorizing security group ingress: %v", err)
+		return false, errors.Errorf("error authorizing security group ingress: %v", err)
 	}
 
 	return true, nil
@@ -999,12 +999,12 @@ func (c *Cloud) ensureVoyagerTags(resourceID string, tags []*ec2.Tag) error {
 			glog.Warningf("Resource %q was missing expected cluster tag %q.  Will add (with value %q)", resourceID, k, expected)
 			addTags[k] = expected
 		} else {
-			return fmt.Errorf("resource %q has tag belonging to another cluster: %q=%q (expected %q)", resourceID, k, actual, expected)
+			return errors.Errorf("resource %q has tag belonging to another cluster: %q=%q (expected %q)", resourceID, k, actual, expected)
 		}
 	}
 
 	if err := c.createTags(resourceID, addTags); err != nil {
-		return fmt.Errorf("error adding missing tags to resource %q: %v", resourceID, err)
+		return errors.Errorf("error adding missing tags to resource %q: %v", resourceID, err)
 	}
 
 	return nil
@@ -1077,7 +1077,7 @@ func (c *Cloud) ensureSecurityGroup(name string, description string) (string, er
 		}
 	}
 	if groupID == "" {
-		return "", fmt.Errorf("created security group, but id was not returned: %s", name)
+		return "", errors.Errorf("created security group, but id was not returned: %s", name)
 	}
 
 	err := c.ensureVoyagerTags(groupID, nil)
@@ -1086,7 +1086,7 @@ func (c *Cloud) ensureSecurityGroup(name string, description string) (string, er
 		// will add the missing tags.  We could delete the security
 		// group here, but that doesn't feel like the right thing, as
 		// the caller is likely to retry the create
-		return "", fmt.Errorf("error tagging security group: %v", err)
+		return "", errors.Errorf("error tagging security group: %v", err)
 	}
 	return groupID, nil
 }
@@ -1155,7 +1155,7 @@ func (c *Cloud) EnsureFirewall(apiService *apiv1.Service, hostnames []string) er
 
 	if apiService.Spec.SessionAffinity != apiv1.ServiceAffinityNone {
 		// ELB supports sticky sessions, but only when configured for HTTP/HTTPS
-		return fmt.Errorf("unsupported service affinity: %v", apiService.Spec.SessionAffinity)
+		return errors.Errorf("unsupported service affinity: %v", apiService.Spec.SessionAffinity)
 	}
 
 	if len(apiService.Spec.Ports) == 0 {
@@ -1327,11 +1327,11 @@ func (c *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 				}
 			}
 			if !ignore {
-				return fmt.Errorf("error while describing load balancer security group (%s): %v", sgName, err)
+				return errors.Errorf("error while describing load balancer security group (%s): %v", sgName, err)
 			}
 		}
 		if len(securityGroups) > 1 {
-			return fmt.Errorf("Multiple securitygroup found when EnsureFirewallDeleted for service %v", sgName)
+			return errors.Errorf("Multiple securitygroup found when EnsureFirewallDeleted for service %v", sgName)
 		}
 		for _, securityGroup := range securityGroups {
 			securityGroupID = *securityGroup.GroupId
@@ -1362,12 +1362,12 @@ func (c *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 				}
 			}
 			if !ignore {
-				return fmt.Errorf("error while deleting ingress security group (%s): %v", securityGroupID, err)
+				return errors.Errorf("error while deleting ingress security group (%s): %v", securityGroupID, err)
 			}
 
 			attempt++
 			if attempt >= 10 {
-				return fmt.Errorf("error while deleting ingress security group (%s). Please file a bug report with voyager operator logs here: https://github.com/appscode/voyager/issues/new", securityGroupID)
+				return errors.Errorf("error while deleting ingress security group (%s). Please file a bug report with voyager operator logs here: https://github.com/appscode/voyager/issues/new", securityGroupID)
 			}
 			time.Sleep(3 * time.Second)
 			continue
@@ -1387,7 +1387,7 @@ func (c *Cloud) getInstanceByID(instanceID string) (*ec2.Instance, error) {
 		return nil, cloudprovider.InstanceNotFound
 	}
 	if len(instances) > 1 {
-		return nil, fmt.Errorf("multiple instances found for instance: %s", instanceID)
+		return nil, errors.Errorf("multiple instances found for instance: %s", instanceID)
 	}
 
 	return instances[instanceID], nil

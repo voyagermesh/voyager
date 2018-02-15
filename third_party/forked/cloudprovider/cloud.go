@@ -17,7 +17,6 @@ limitations under the License.
 package cloudprovider
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -63,7 +62,7 @@ func GetLoadBalancerSourceRanges(service *apiv1.Service) (netsets.IPNet, error) 
 		ipnets, err = netsets.ParseIPNets(specs...)
 
 		if err != nil {
-			return nil, fmt.Errorf("service.Spec.LoadBalancerSourceRanges: %v is not valid. Expecting a list of IP ranges. For example, 10.0.0.0/24. Error msg: %v", specs, err)
+			return nil, errors.Errorf("service.Spec.LoadBalancerSourceRanges: %v is not valid. Expecting a list of IP ranges. For example, 10.0.0.0/24. Error msg: %v", specs, err)
 		}
 	} else {
 		val := service.Annotations[annotationLoadBalancerSourceRangesKey]
@@ -74,7 +73,7 @@ func GetLoadBalancerSourceRanges(service *apiv1.Service) (netsets.IPNet, error) 
 		specs := strings.Split(val, ",")
 		ipnets, err = netsets.ParseIPNets(specs...)
 		if err != nil {
-			return nil, fmt.Errorf("%s: %s is not valid. Expecting a comma-separated list of source IP ranges. For example, 10.0.0.0/24,192.168.2.0/24", annotationLoadBalancerSourceRangesKey, val)
+			return nil, errors.Errorf("%s: %s is not valid. Expecting a comma-separated list of source IP ranges. For example, 10.0.0.0/24,192.168.2.0/24", annotationLoadBalancerSourceRangesKey, val)
 		}
 	}
 	return ipnets, nil

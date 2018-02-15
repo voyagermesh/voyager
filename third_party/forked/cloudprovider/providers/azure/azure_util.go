@@ -22,6 +22,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/arm/network"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
+	"github.com/pkg/errors"
 	apiv1 "k8s.io/api/core/v1"
 )
 
@@ -37,7 +38,7 @@ func getProtocolsFromKubernetesProtocol(protocol apiv1.Protocol) (network.Transp
 	case apiv1.ProtocolTCP:
 		return network.TransportProtocolTCP, network.SecurityRuleProtocolTCP, network.ProbeProtocolTCP, nil
 	default:
-		return "", "", "", fmt.Errorf("Only TCP is supported for Azure LoadBalancers")
+		return "", "", "", errors.Errorf("Only TCP is supported for Azure LoadBalancers")
 	}
 }
 
@@ -74,5 +75,5 @@ outer:
 		return smallest, nil
 	}
 
-	return -1, fmt.Errorf("SecurityGroup priorities are exhausted")
+	return -1, errors.Errorf("SecurityGroup priorities are exhausted")
 }

@@ -17,12 +17,12 @@ limitations under the License.
 package cloudprovider
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"sync"
 
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 // Factory is a function that returns a cloudprovider.Interface.
@@ -112,10 +112,10 @@ func InitCloudProvider(name string, configFilePath string) (Interface, error) {
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("could not init cloud provider %q: %v", name, err)
+		return nil, errors.Errorf("could not init cloud provider %q: %v", name, err)
 	}
 	if cloud == nil {
-		return nil, fmt.Errorf("unknown cloud provider %q", name)
+		return nil, errors.Errorf("unknown cloud provider %q", name)
 	}
 
 	return cloud, nil

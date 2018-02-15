@@ -2,12 +2,12 @@ package util
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/appscode/kutil"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/typed/voyager/v1beta1"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -72,7 +72,7 @@ func TryUpdateCertificate(c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, 
 	})
 
 	if err != nil {
-		err = fmt.Errorf("failed to update Certificate %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
+		err = errors.Errorf("failed to update Certificate %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
 }

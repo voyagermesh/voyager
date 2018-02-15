@@ -1,11 +1,10 @@
 package controller
 
 import (
-	"fmt"
-
 	ioutilz "github.com/appscode/go/ioutil"
 	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/cache"
@@ -69,7 +68,7 @@ func (c *Controller) getConfigMap(name string) (*core.ConfigMap, error) {
 func (c *Controller) projectHAProxyConfig(r *core.ConfigMap, projections map[string]ioutilz.FileProjection) error {
 	cfg, found := r.Data["haproxy.cfg"]
 	if !found {
-		return fmt.Errorf("configmap %s/%s is missing haproxy.cfg", c.options.IngressRef.Namespace, r.Name)
+		return errors.Errorf("configmap %s/%s is missing haproxy.cfg", c.options.IngressRef.Namespace, r.Name)
 	}
 	projections["haproxy.cfg"] = ioutilz.FileProjection{Mode: 0755, Data: []byte(cfg)}
 	return nil

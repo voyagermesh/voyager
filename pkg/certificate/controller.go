@@ -6,7 +6,6 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/json"
-	"fmt"
 	"strings"
 	"time"
 
@@ -67,7 +66,7 @@ func NewController(ctx context.Context, kubeClient kubernetes.Interface, extClie
 	ctrl.acmeUser = &ACMEUser{}
 
 	if email, ok := ctrl.UserSecret.Data[api.ACMEUserEmail]; !ok {
-		return nil, fmt.Errorf("no acme user email is provided")
+		return nil, errors.Errorf("no acme user email is provided")
 	} else {
 		ctrl.acmeUser.Email = strings.TrimSpace(string(email))
 	}
@@ -117,7 +116,7 @@ func NewController(ctx context.Context, kubeClient kubernetes.Interface, extClie
 		return nil, err
 	}
 	if ctrl.store.VaultClient == nil && ctrl.crd.Spec.Storage.Vault != nil {
-		return nil, fmt.Errorf("certificate %s/%s uses vault but vault address is missing", tpr.Namespace, tpr.Name)
+		return nil, errors.Errorf("certificate %s/%s uses vault but vault address is missing", tpr.Namespace, tpr.Name)
 	}
 
 	return ctrl, nil
@@ -132,7 +131,7 @@ func (c *Controller) Process() error {
 		var certs []*x509.Certificate
 		certs, err = cert.ParseCertsPEM(pemCrt)
 		if err != nil {
-			return fmt.Errorf("secret %s/%s contains bad certificate. Reason: %s", c.crd.Namespace, c.crd.SecretName(), err)
+			return errors.Errorf("secret %s/%s contains bad certificate. Reason: %s", c.crd.Namespace, c.crd.SecretName(), err)
 		}
 		c.curCert = certs[0]
 	}
@@ -194,7 +193,7 @@ func (c *Controller) getACMEClient() error {
 		c.logger.Infoln("No ACME user found, registering a new ACME user")
 		userKey, err := rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
-			return fmt.Errorf("failed to generate key for Acme User")
+			return errors.Errorf("failed to generate key for Acme User")
 		}
 		c.acmeUser.Key = userKey
 	}
@@ -207,11 +206,11 @@ func (c *Controller) getACMEClient() error {
 	if !registered {
 		registration, err := c.acmeClient.Register()
 		if err != nil {
-			return fmt.Errorf("failed to register user %s. Reason: %s", c.acmeUser.Email, err)
+			return errors.Errorf("failed to register user %s. Reason: %s", c.acmeUser.Email, err)
 		}
 		c.acmeUser.Registration = registration
 		if err := c.acmeClient.AgreeToTOS(); err != nil {
-			return fmt.Errorf("failed to register user %s. Reason: %s", c.acmeUser.Email, err)
+			return errors.Errorf("failed to register user %s. Reason: %s", c.acmeUser.Email, err)
 		}
 		c.UserSecret, _, err = v1u.PatchSecret(c.KubeClient, c.UserSecret, func(in *core.Secret) *core.Secret {
 			if in.Data == nil {
@@ -242,7 +241,7 @@ func (c *Controller) create() error {
 		for k, v := range errs {
 			causes = append(causes, k+": "+v.Error())
 		}
-		return c.processError(fmt.Errorf("failed to create certificate. Reason: %s", strings.Join(causes, ", ")))
+		return c.processError(errors.Errorf("failed to create certificate. Reason: %s", strings.Join(causes, ", ")))
 	}
 	return c.store.Save(c.crd, cert)
 }

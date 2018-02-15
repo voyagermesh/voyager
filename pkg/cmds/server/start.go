@@ -1,12 +1,12 @@
 package server
 
 import (
-	"fmt"
 	"io"
 	"net"
 
 	"github.com/appscode/voyager/pkg/operator"
 	"github.com/appscode/voyager/pkg/server"
+	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	genericapiserver "k8s.io/apiserver/pkg/server"
@@ -52,7 +52,7 @@ func (o *VoyagerOptions) Complete() error {
 func (o VoyagerOptions) Config() (*server.VoyagerConfig, error) {
 	// TODO have a "real" external address
 	if err := o.RecommendedOptions.SecureServing.MaybeDefaultWithSelfSignedCerts("localhost", nil, []net.IP{net.ParseIP("127.0.0.1")}); err != nil {
-		return nil, fmt.Errorf("error creating self-signed certificates: %v", err)
+		return nil, errors.Errorf("error creating self-signed certificates: %v", err)
 	}
 
 	serverConfig := genericapiserver.NewRecommendedConfig(server.Codecs)

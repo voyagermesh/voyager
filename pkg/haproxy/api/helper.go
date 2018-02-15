@@ -2,12 +2,12 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/appscode/voyager/pkg/certificate/providers"
+	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -190,7 +190,7 @@ func (td *TemplateData) IsValid() error {
 
 	for _, svc := range td.HTTPService {
 		if frontends.Has(svc.FrontendName) {
-			return fmt.Errorf("haproxy frontend name %s is reused", svc.FrontendName)
+			return errors.Errorf("haproxy frontend name %s is reused", svc.FrontendName)
 		} else {
 			frontends.Insert(svc.FrontendName)
 		}
@@ -199,7 +199,7 @@ func (td *TemplateData) IsValid() error {
 			for _, path := range host.Paths {
 				if path.Backend != nil {
 					if backends.Has(path.Backend.Name) {
-						return fmt.Errorf("haproxy backend name %s is reused", path.Backend.Name)
+						return errors.Errorf("haproxy backend name %s is reused", path.Backend.Name)
 					} else {
 						backends.Insert(path.Backend.Name)
 					}
@@ -210,14 +210,14 @@ func (td *TemplateData) IsValid() error {
 
 	for _, svc := range td.TCPService {
 		if frontends.Has(svc.FrontendName) {
-			return fmt.Errorf("haproxy frontend name %s is reused", svc.FrontendName)
+			return errors.Errorf("haproxy frontend name %s is reused", svc.FrontendName)
 		} else {
 			frontends.Insert(svc.FrontendName)
 		}
 
 		if svc.Backend != nil {
 			if backends.Has(svc.Backend.Name) {
-				return fmt.Errorf("haproxy backend name %s is reused", svc.Backend.Name)
+				return errors.Errorf("haproxy backend name %s is reused", svc.Backend.Name)
 			} else {
 				backends.Insert(svc.Backend.Name)
 			}

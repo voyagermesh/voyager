@@ -232,7 +232,7 @@ func runCmd(path string) error {
 	output, err := exec.Command("sh", "-c", path).CombinedOutput()
 	msg := fmt.Sprintf("%v", string(output))
 	if err != nil {
-		return fmt.Errorf("error restarting %v: %v", msg, err)
+		return errors.Errorf("error restarting %v: %v", msg, err)
 	}
 	incReloadCounter()
 	return nil
@@ -248,13 +248,13 @@ func (c *Controller) Run(stopCh chan struct{}) {
 	// Wait for all involved caches to be synced, before processing items from the queue is started
 	for _, v := range c.kubeInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
+			runtime.HandleError(errors.Errorf("timed out waiting for caches to sync"))
 			return
 		}
 	}
 	for _, v := range c.voyagerInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
+			runtime.HandleError(errors.Errorf("timed out waiting for caches to sync"))
 			return
 		}
 	}

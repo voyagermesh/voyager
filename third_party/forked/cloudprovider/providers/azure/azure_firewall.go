@@ -9,6 +9,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -40,7 +41,7 @@ func (az *Cloud) EnsureFirewall(service *apiv1.Service, hostnames []string) erro
 		return realErr
 	}
 	if !exists {
-		return fmt.Errorf("Failed to detect internal ip for host %v", hostname)
+		return errors.Errorf("Failed to detect internal ip for host %v", hostname)
 	}
 	internlIP := *(*nic.IPConfigurations)[0].PrivateIPAddress
 

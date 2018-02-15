@@ -3,7 +3,6 @@ package certificate
 import (
 	"crypto/x509"
 	"encoding/pem"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -13,6 +12,7 @@ import (
 	cs "github.com/appscode/voyager/client"
 	vu "github.com/appscode/voyager/client/typed/voyager/v1beta1/util"
 	vault "github.com/hashicorp/vault/api"
+	"github.com/pkg/errors"
 	"github.com/xenolf/lego/acme"
 	core "k8s.io/api/core/v1"
 	k8serror "k8s.io/apimachinery/pkg/api/errors"
@@ -61,13 +61,13 @@ func (s *CertStore) Get(crd *api.Certificate) (pemCrt, pemKey []byte, err error)
 		}
 
 		if data, found := secret.Data[core.TLSCertKey]; !found {
-			err = fmt.Errorf("secret %s/%s is missing tls.crt", crd.Namespace, crd.SecretName())
+			err = errors.Errorf("secret %s/%s is missing tls.crt", crd.Namespace, crd.SecretName())
 			return
 		} else {
 			pemCrt = []byte(data.(string))
 		}
 		if data, found := secret.Data[core.TLSPrivateKeyKey]; !found {
-			err = fmt.Errorf("secret %s/%s is missing tls.key", crd.Namespace, crd.SecretName())
+			err = errors.Errorf("secret %s/%s is missing tls.key", crd.Namespace, crd.SecretName())
 			return
 		} else {
 			pemKey = []byte(data.(string))
@@ -80,13 +80,13 @@ func (s *CertStore) Get(crd *api.Certificate) (pemCrt, pemKey []byte, err error)
 		}
 		if err == nil {
 			if data, found := secret.Data[core.TLSCertKey]; !found {
-				err = fmt.Errorf("secret %s/%s is missing tls.crt", crd.Namespace, crd.SecretName())
+				err = errors.Errorf("secret %s/%s is missing tls.crt", crd.Namespace, crd.SecretName())
 				return
 			} else {
 				pemCrt = data
 			}
 			if data, found := secret.Data[core.TLSPrivateKeyKey]; !found {
-				err = fmt.Errorf("secret %s/%s is missing tls.key", crd.Namespace, crd.SecretName())
+				err = errors.Errorf("secret %s/%s is missing tls.key", crd.Namespace, crd.SecretName())
 				return
 			} else {
 				pemKey = data
@@ -127,7 +127,7 @@ func (s *CertStore) Save(crd *api.Certificate, cert acme.CertificateResource) er
 	pemBlock, _ := pem.Decode(cert.Certificate)
 	crt, err := x509.ParseCertificate(pemBlock.Bytes)
 	if err != nil {
-		return fmt.Errorf("failed to parse tls.crt for Certificate %s/%s. Reason: %s", crd.Namespace, crd.Name, err)
+		return errors.Errorf("failed to parse tls.crt for Certificate %s/%s. Reason: %s", crd.Namespace, crd.Name, err)
 	}
 	_, _, err = vu.PatchCertificate(s.VoyagerClient.VoyagerV1beta1(), crd, func(in *api.Certificate) *api.Certificate {
 		// Update certificate data to add Details Information

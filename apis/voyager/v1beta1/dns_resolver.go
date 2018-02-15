@@ -1,10 +1,9 @@
 package v1beta1
 
 import (
-	"fmt"
-
 	"github.com/appscode/kutil"
 	"github.com/appscode/kutil/meta"
+	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -47,7 +46,7 @@ type DNSResolver struct {
 
 func DNSResolverForService(svc core.Service) (useDNSResolver bool, resolver *DNSResolver, err error) {
 	if svc.Spec.Type != core.ServiceTypeExternalName {
-		return false, nil, fmt.Errorf("service %s/%s is expected to be of type ServiceTypeExternalName, actual type %s", svc.Namespace, svc.Name, svc.Spec.Type)
+		return false, nil, errors.Errorf("service %s/%s is expected to be of type ServiceTypeExternalName, actual type %s", svc.Namespace, svc.Name, svc.Spec.Type)
 	}
 
 	// getBool returns an error if the value is empty string, or the key is not present
@@ -77,7 +76,7 @@ func DNSResolverForService(svc core.Service) (useDNSResolver bool, resolver *DNS
 		return
 	}
 	if err = checkMapKeys(resolver.Hold, DNSResolverHoldKeys); err != nil {
-		err = fmt.Errorf("invalid value for annotaion %s. Reason: %s", DNSResolverHold, err)
+		err = errors.Errorf("invalid value for annotaion %s. Reason: %s", DNSResolverHold, err)
 		return
 	}
 
@@ -86,7 +85,7 @@ func DNSResolverForService(svc core.Service) (useDNSResolver bool, resolver *DNS
 		return
 	}
 	if err = checkMapKeys(resolver.Timeout, DNSResolverTimeoutKeys); err != nil {
-		err = fmt.Errorf("invalid value for annotaion %s. Reason: %s", DNSResolverTimeout, err)
+		err = errors.Errorf("invalid value for annotaion %s. Reason: %s", DNSResolverTimeout, err)
 		return
 	}
 

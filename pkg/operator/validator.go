@@ -1,12 +1,12 @@
 package operator
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
+	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -63,7 +63,7 @@ func (op *Operator) ValidateIngress() error {
 	}
 
 	if len(invalidIngresses) > 0 {
-		return fmt.Errorf("one or more Ingress objects are invalid: %s", strings.Join(invalidIngresses, ", "))
+		return errors.Errorf("one or more Ingress objects are invalid: %s", strings.Join(invalidIngresses, ", "))
 	}
 	return nil
 }

@@ -36,7 +36,7 @@ func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, 
 		name = name[:idx]
 	}
 	if c.cfg.RestrictToOperatorNamespace && namespace != c.cfg.OperatorNamespace {
-		return nil, fmt.Errorf("can't use service %s as backend, since voyager operator is restricted namespace %s", bkSvc, c.cfg.OperatorNamespace)
+		return nil, errors.Errorf("can't use service %s as backend, since voyager operator is restricted namespace %s", bkSvc, c.cfg.OperatorNamespace)
 	}
 
 	c.logger.Infoln("looking for services in namespace", namespace, "with name", name)
@@ -71,7 +71,7 @@ func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, 
 	}
 	p, ok := getSpecifiedPort(service.Spec.Ports, port)
 	if !ok {
-		return nil, fmt.Errorf("service port %s unavailable for service %s", port.String(), service.Name)
+		return nil, errors.Errorf("service port %s unavailable for service %s", port.String(), service.Name)
 	}
 	return c.getEndpoints(service, p, hostNames, userLists)
 }
@@ -387,7 +387,7 @@ func (c *controller) generateConfig() error {
 				stats.Username = string(secret.Data["username"])
 				stats.PassWord = string(secret.Data["password"])
 			} else {
-				return fmt.Errorf("failed to load stats secret for ingress %s/%s", c.Ingress.Namespace, c.Ingress.Name)
+				return errors.Errorf("failed to load stats secret for ingress %s/%s", c.Ingress.Namespace, c.Ingress.Name)
 			}
 		}
 		td.Stats = stats
@@ -832,14 +832,14 @@ func getBasicAuthUsers(userLists map[string]hpi.UserList, sec *core.Secret) ([]s
 			}
 			sep := strings.Index(line, ":")
 			if sep == -1 {
-				return nil, fmt.Errorf("missing ':' on userlist")
+				return nil, errors.Errorf("missing ':' on userlist")
 			}
 			userName := line[0:sep]
 			if userName == "" {
-				return nil, fmt.Errorf("missing username on userlist")
+				return nil, errors.Errorf("missing username on userlist")
 			}
 			if sep == len(line)-1 || line[sep:] == "::" {
-				return nil, fmt.Errorf("missing '%v' password on userlist", userName)
+				return nil, errors.Errorf("missing '%v' password on userlist", userName)
 			}
 			user := hpi.AuthUser{}
 			// if usr::pwd
@@ -938,7 +938,7 @@ func (c *controller) getErrorFiles() ([]*hpi.ErrorFile, error) {
 				return nil, err
 			}
 			if !commands.Has(parts[0]) {
-				return nil, fmt.Errorf("found unknown errofile command %s", parts[0])
+				return nil, errors.Errorf("found unknown errofile command %s", parts[0])
 			}
 			errorFiles = append(errorFiles, &hpi.ErrorFile{
 				StatusCode: statusCode,
@@ -957,7 +957,7 @@ func (c *controller) getTLSAuth(cfg *api.TLSAuth) (*hpi.TLSAuth, error) {
 	}
 
 	if _, ok := tlsAuthSec.Data["ca.crt"]; !ok {
-		return nil, fmt.Errorf("key ca.crt not found in TLSAuthSecret %s", tlsAuthSec.Name)
+		return nil, errors.Errorf("key ca.crt not found in TLSAuthSecret %s", tlsAuthSec.Name)
 	}
 
 	htls := &hpi.TLSAuth{
@@ -986,13 +986,13 @@ func (c *controller) convertRulesForSSLPassthrough() error {
 			usesHTTPRule = true
 
 			if len(rule.HTTP.Paths) != 1 {
-				return fmt.Errorf("spec.rules[%d].http can't use multiple paths with %s annotation", i, api.SSLPassthrough)
+				return errors.Errorf("spec.rules[%d].http can't use multiple paths with %s annotation", i, api.SSLPassthrough)
 			}
 			if len(rule.HTTP.Paths[0].Backend.HeaderRule) != 0 {
-				return fmt.Errorf("spec.rules[%d].http.paths[0].backend.headerRule is not supported with %s annotation", i, api.SSLPassthrough)
+				return errors.Errorf("spec.rules[%d].http.paths[0].backend.headerRule is not supported with %s annotation", i, api.SSLPassthrough)
 			}
 			if len(rule.HTTP.Paths[0].Backend.RewriteRule) != 0 {
-				return fmt.Errorf("spec.rules[%d].http.paths[0].backend.rewriteRule is not supported with %s annotation", i, api.SSLPassthrough)
+				return errors.Errorf("spec.rules[%d].http.paths[0].backend.rewriteRule is not supported with %s annotation", i, api.SSLPassthrough)
 			}
 
 			if rule.HTTP.Port.IntValue() == 0 {
@@ -1016,10 +1016,10 @@ func (c *controller) convertRulesForSSLPassthrough() error {
 
 	if !usesHTTPRule && c.Ingress.Spec.Backend != nil {
 		if len(c.Ingress.Spec.Backend.HeaderRule) != 0 {
-			return fmt.Errorf("spec.backend.headerRule is not supported with %s annotation", api.SSLPassthrough)
+			return errors.Errorf("spec.backend.headerRule is not supported with %s annotation", api.SSLPassthrough)
 		}
 		if len(c.Ingress.Spec.Backend.RewriteRule) != 0 {
-			return fmt.Errorf("spec.backend.rewriteRule is not supported with %s annotation", api.SSLPassthrough)
+			return errors.Errorf("spec.backend.rewriteRule is not supported with %s annotation", api.SSLPassthrough)
 		}
 		rule := api.IngressRule{
 			IngressRuleValue: api.IngressRuleValue{
@@ -1035,7 +1035,7 @@ func (c *controller) convertRulesForSSLPassthrough() error {
 
 	err := c.Ingress.IsValid(c.cfg.CloudProvider)
 	if err != nil {
-		return fmt.Errorf("%s annotation can't be used. Reason: %v", api.SSLPassthrough, err)
+		return errors.Errorf("%s annotation can't be used. Reason: %v", api.SSLPassthrough, err)
 	}
 	return err
 }

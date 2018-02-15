@@ -2,7 +2,6 @@ package certificate
 
 import (
 	"crypto"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -70,10 +69,10 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 		}
 		var accessKeyId, secretAccessKey, hostedZoneID string
 		if accessKeyId, found = dnsLoader("AWS_ACCESS_KEY_ID"); !found {
-			return nil, fmt.Errorf("dns provider credential lacks required key %s", "AWS_ACCESS_KEY_ID")
+			return nil, errors.Errorf("dns provider credential lacks required key %s", "AWS_ACCESS_KEY_ID")
 		}
 		if secretAccessKey, found = dnsLoader("AWS_SECRET_ACCESS_KEY"); !found {
-			return nil, fmt.Errorf("dns provider credential lacks required key %s", "AWS_SECRET_ACCESS_KEY")
+			return nil, errors.Errorf("dns provider credential lacks required key %s", "AWS_SECRET_ACCESS_KEY")
 		}
 		// AWS_HOSTED_ZONE_ID is optional
 		// If AWS_HOSTED_ZONE_ID is not set, Lego tries to determine the correct public hosted zone via the FQDN.
@@ -85,50 +84,50 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 	case "azure", "acs":
 		var clientId, clientSecret, subscriptionId, tenantId, resourceGroup string
 		if clientId, found = dnsLoader("AZURE_CLIENT_ID"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "AZURE_CLIENT_ID")
+			return nil, errors.Errorf("dns provider credential missing key %s", "AZURE_CLIENT_ID")
 		}
 		if clientSecret, found = dnsLoader("AZURE_CLIENT_SECRET"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "AZURE_CLIENT_SECRET")
+			return nil, errors.Errorf("dns provider credential missing key %s", "AZURE_CLIENT_SECRET")
 		}
 		if subscriptionId, found = dnsLoader("AZURE_SUBSCRIPTION_ID"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "AZURE_SUBSCRIPTION_ID")
+			return nil, errors.Errorf("dns provider credential missing key %s", "AZURE_SUBSCRIPTION_ID")
 		}
 		if tenantId, found = dnsLoader("AZURE_TENANT_ID"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "AZURE_TENANT_ID")
+			return nil, errors.Errorf("dns provider credential missing key %s", "AZURE_TENANT_ID")
 		}
 		if resourceGroup, found = dnsLoader("AZURE_RESOURCE_GROUP"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "AZURE_RESOURCE_GROUP")
+			return nil, errors.Errorf("dns provider credential missing key %s", "AZURE_RESOURCE_GROUP")
 		}
 		return newDNSProvider(azure.NewDNSProviderCredentials(clientId, clientSecret, subscriptionId, tenantId, resourceGroup))
 	case "cloudflare":
 		var email, key string
 		if email, found = dnsLoader("CLOUDFLARE_EMAIL"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "CLOUDFLARE_EMAIL")
+			return nil, errors.Errorf("dns provider credential missing key %s", "CLOUDFLARE_EMAIL")
 		}
 		if key, found = dnsLoader("CLOUDFLARE_API_KEY"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "CLOUDFLARE_API_KEY")
+			return nil, errors.Errorf("dns provider credential missing key %s", "CLOUDFLARE_API_KEY")
 		}
 		return newDNSProvider(cloudflare.NewDNSProviderCredentials(email, key))
 	case "digitalocean", "do":
 		var apiAuthToken string
 		if apiAuthToken, found = dnsLoader("DO_AUTH_TOKEN"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "DO_AUTH_TOKEN")
+			return nil, errors.Errorf("dns provider credential missing key %s", "DO_AUTH_TOKEN")
 		}
 		return newDNSProvider(digitalocean.NewDNSProviderCredentials(apiAuthToken))
 	case "dnsimple":
 		var accessToken, baseUrl string
 		if accessToken, found = dnsLoader("DNSIMPLE_OAUTH_TOKEN"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "DNSIMPLE_OAUTH_TOKEN")
+			return nil, errors.Errorf("dns provider credential missing key %s", "DNSIMPLE_OAUTH_TOKEN")
 		}
 		baseUrl, _ = dnsLoader("DNSIMPLE_BASE_URL")
 		return newDNSProvider(dnsimple.NewDNSProviderCredentials(accessToken, baseUrl))
 	case "dnsmadeeasy":
 		var dnsmadeeasyAPIKey, dnsmadeeasyAPISecret string
 		if dnsmadeeasyAPIKey, found = dnsLoader("DNSMADEEASY_API_KEY"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "DNSMADEEASY_API_KEY")
+			return nil, errors.Errorf("dns provider credential missing key %s", "DNSMADEEASY_API_KEY")
 		}
 		if dnsmadeeasyAPISecret, found = dnsLoader("DNSMADEEASY_API_SECRET"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "DNSMADEEASY_API_SECRET")
+			return nil, errors.Errorf("dns provider credential missing key %s", "DNSMADEEASY_API_SECRET")
 		}
 		var baseURL string
 		dnsmadeeasySandbox, _ := dnsLoader("DNSMADEEASY_SANDBOX")
@@ -142,28 +141,28 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 	case "dyn":
 		var customerName, userName, password string
 		if customerName, found = dnsLoader("DYN_CUSTOMER_NAME"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "DYN_CUSTOMER_NAME")
+			return nil, errors.Errorf("dns provider credential missing key %s", "DYN_CUSTOMER_NAME")
 		}
 		if userName, found = dnsLoader("DYN_USER_NAME"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "DYN_USER_NAME")
+			return nil, errors.Errorf("dns provider credential missing key %s", "DYN_USER_NAME")
 		}
 		if password, found = dnsLoader("DYN_PASSWORD"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "DYN_PASSWORD")
+			return nil, errors.Errorf("dns provider credential missing key %s", "DYN_PASSWORD")
 		}
 		return newDNSProvider(dyn.NewDNSProviderCredentials(customerName, userName, password))
 	case "gandi":
 		var apiKey string
 		if apiKey, found = dnsLoader("GANDI_API_KEY"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "GANDI_API_KEY")
+			return nil, errors.Errorf("dns provider credential missing key %s", "GANDI_API_KEY")
 		}
 		return newDNSProvider(gandi.NewDNSProviderCredentials(apiKey))
 	case "godaddy":
 		var apiKey, apiSecret string
 		if apiKey, found = dnsLoader("GODADDY_API_KEY"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "GODADDY_API_KEY")
+			return nil, errors.Errorf("dns provider credential missing key %s", "GODADDY_API_KEY")
 		}
 		if apiSecret, found = dnsLoader("GODADDY_API_SECRET"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "GODADDY_API_SECRET")
+			return nil, errors.Errorf("dns provider credential missing key %s", "GODADDY_API_SECRET")
 		}
 		return newDNSProvider(godaddy.NewDNSProviderCredentials(apiKey, apiSecret))
 	case "googlecloud", "google", "gce", "gke":
@@ -188,13 +187,13 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 		}
 		var project, jsonKey string
 		if project, found = dnsLoader("GCE_PROJECT"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "GCE_PROJECT")
+			return nil, errors.Errorf("dns provider credential missing key %s", "GCE_PROJECT")
 		}
 		if sa, found := dnsLoader("GOOGLE_SERVICE_ACCOUNT_JSON_KEY"); found {
 			jsonKey = sa
 		} else {
 			if jsonKey, found = dnsLoader("GCE_SERVICE_ACCOUNT_DATA"); !found { // deprecated key
-				return nil, fmt.Errorf("dns provider credential missing key %s", "GOOGLE_SERVICE_ACCOUNT_JSON_KEY")
+				return nil, errors.Errorf("dns provider credential missing key %s", "GOOGLE_SERVICE_ACCOUNT_JSON_KEY")
 			}
 		}
 		if len(jsonKey) <= 0 {
@@ -204,40 +203,40 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 	case "linode":
 		var apiKey string
 		if apiKey, found = dnsLoader("LINODE_API_KEY"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "LINODE_API_KEY")
+			return nil, errors.Errorf("dns provider credential missing key %s", "LINODE_API_KEY")
 		}
 		return newDNSProvider(linode.NewDNSProviderCredentials(apiKey))
 	case "namecheap":
 		var apiUser, apiKey string
 		if apiUser, found = dnsLoader("NAMECHEAP_API_USER"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "NAMECHEAP_API_USER")
+			return nil, errors.Errorf("dns provider credential missing key %s", "NAMECHEAP_API_USER")
 		}
 		if apiKey, found = dnsLoader("NAMECHEAP_API_KEY"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "NAMECHEAP_API_KEY")
+			return nil, errors.Errorf("dns provider credential missing key %s", "NAMECHEAP_API_KEY")
 		}
 		return newDNSProvider(namecheap.NewDNSProviderCredentials(apiUser, apiKey))
 	case "ovh":
 		var apiEndpoint, applicationKey, applicationSecret, consumerKey string
 		if apiEndpoint, found = dnsLoader("OVH_ENDPOINT"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "OVH_ENDPOINT")
+			return nil, errors.Errorf("dns provider credential missing key %s", "OVH_ENDPOINT")
 		}
 		if applicationKey, found = dnsLoader("OVH_APPLICATION_KEY"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "OVH_APPLICATION_KEY")
+			return nil, errors.Errorf("dns provider credential missing key %s", "OVH_APPLICATION_KEY")
 		}
 		if applicationSecret, found = dnsLoader("OVH_APPLICATION_SECRET"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "OVH_APPLICATION_SECRET")
+			return nil, errors.Errorf("dns provider credential missing key %s", "OVH_APPLICATION_SECRET")
 		}
 		if consumerKey, found = dnsLoader("OVH_CONSUMER_KEY"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "OVH_CONSUMER_KEY")
+			return nil, errors.Errorf("dns provider credential missing key %s", "OVH_CONSUMER_KEY")
 		}
 		return newDNSProvider(ovh.NewDNSProviderCredentials(apiEndpoint, applicationKey, applicationSecret, consumerKey))
 	case "pdns":
 		var key, apiURL string
 		if key, found = dnsLoader("PDNS_API_KEY"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "PDNS_API_KEY")
+			return nil, errors.Errorf("dns provider credential missing key %s", "PDNS_API_KEY")
 		}
 		if apiURL, found = dnsLoader("PDNS_API_URL"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "PDNS_API_URL")
+			return nil, errors.Errorf("dns provider credential missing key %s", "PDNS_API_URL")
 		}
 		hostUrl, err := url.Parse(apiURL)
 		if err != nil {
@@ -247,7 +246,7 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 	case "vultr":
 		var apiKey string
 		if apiKey, found = dnsLoader("VULTR_API_KEY"); !found {
-			return nil, fmt.Errorf("dns provider credential missing key %s", "VULTR_API_KEY")
+			return nil, errors.Errorf("dns provider credential missing key %s", "VULTR_API_KEY")
 		}
 		return newDNSProvider(vultr.NewDNSProviderCredentials(apiKey))
 	default:
