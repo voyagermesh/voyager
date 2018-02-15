@@ -17,10 +17,10 @@ limitations under the License.
 package cloudprovider
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
+	"github.com/pkg/errors"
 	apiv1 "k8s.io/api/core/v1"
 	netsets "k8s.io/kubernetes/pkg/util/net/sets"
 )

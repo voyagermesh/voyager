@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/appscode/go/errors"
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
 	tools "github.com/appscode/kube-mon"
@@ -24,6 +23,7 @@ import (
 	"github.com/appscode/voyager/pkg/eventer"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
+	"github.com/pkg/errors"
 	apps "k8s.io/api/apps/v1beta1"
 	core "k8s.io/api/core/v1"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
@@ -106,7 +106,7 @@ func (c *loadBalancerController) Reconcile() error {
 			"Reason: %v",
 			err,
 		)
-		return errors.FromErr(err).Err()
+		return errors.WithStack(err)
 	}
 
 	if _, vt, err := c.ensureConfigMap(); err != nil {
@@ -118,7 +118,7 @@ func (c *loadBalancerController) Reconcile() error {
 			c.Ingress.OffshootName(),
 			err,
 		)
-		return errors.FromErr(err).Err()
+		return errors.WithStack(err)
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
@@ -144,7 +144,7 @@ func (c *loadBalancerController) Reconcile() error {
 			c.Ingress.OffshootName(),
 			err,
 		)
-		return errors.FromErr(err).Err()
+		return errors.WithStack(err)
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
@@ -165,7 +165,7 @@ func (c *loadBalancerController) Reconcile() error {
 			c.Ingress.OffshootName(),
 			err,
 		)
-		return errors.FromErr(err).Err()
+		return errors.WithStack(err)
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
@@ -215,7 +215,7 @@ func (c *loadBalancerController) Reconcile() error {
 
 	monSpec, err := tools.Parse(c.Ingress.Annotations, api.EngressKey, api.DefaultExporterPortNumber)
 	if err != nil {
-		return errors.FromErr(err).Err()
+		return errors.WithStack(err)
 	}
 	if monSpec != nil && c.Ingress.Stats() {
 		if vt, err := c.ensureMonitoringAgent(monSpec); err != nil {
@@ -543,22 +543,22 @@ func (c *loadBalancerController) updateStatus() error {
 		if c.Ingress.APISchema() == api.APISchemaIngress {
 			ing, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.Ingress.Namespace).Get(c.Ingress.Name, metav1.GetOptions{})
 			if err != nil {
-				return errors.FromErr(err).Err()
+				return errors.WithStack(err)
 			}
 			ing.Status.LoadBalancer.Ingress = statuses
 			_, err = c.KubeClient.ExtensionsV1beta1().Ingresses(c.Ingress.Namespace).Update(ing)
 			if err != nil {
-				return errors.FromErr(err).Err()
+				return errors.WithStack(err)
 			}
 		} else {
 			ing, err := c.VoyagerClient.VoyagerV1beta1().Ingresses(c.Ingress.Namespace).Get(c.Ingress.Name, metav1.GetOptions{})
 			if err != nil {
-				return errors.FromErr(err).Err()
+				return errors.WithStack(err)
 			}
 			ing.Status.LoadBalancer.Ingress = statuses
 			_, err = c.VoyagerClient.VoyagerV1beta1().Ingresses(c.Ingress.Namespace).Update(ing)
 			if err != nil {
-				return errors.FromErr(err).Err()
+				return errors.WithStack(err)
 			}
 		}
 	}

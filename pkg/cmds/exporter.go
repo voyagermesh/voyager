@@ -1,7 +1,6 @@
 package cmds
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
@@ -10,6 +9,7 @@ import (
 	"github.com/appscode/go/log"
 	hpe "github.com/appscode/haproxy_exporter/exporter"
 	"github.com/appscode/pat"
+	"github.com/pkg/errors"
 	// api "github.com/appscode/voyager/apis/voyager"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"

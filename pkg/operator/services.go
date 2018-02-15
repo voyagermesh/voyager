@@ -3,12 +3,12 @@ package operator
 import (
 	"fmt"
 
-	"github.com/appscode/go/errors"
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
@@ -97,7 +97,7 @@ func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*api.Ingress, error) {
 	sourceName, sourceNameFound := meta.Annotations[api.OriginName]
 	sourceType, sourceTypeFound := meta.Annotations[api.OriginAPISchema]
 	if !sourceNameFound && !sourceTypeFound {
-		return nil, errors.New("no Types or Name found").Err()
+		return nil, errors.New("no Types or Name found")
 	}
 
 	if sourceType == api.APISchemaIngress {

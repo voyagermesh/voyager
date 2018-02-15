@@ -2,7 +2,6 @@ package controller
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -16,6 +15,7 @@ import (
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"

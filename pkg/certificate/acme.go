@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/appscode/go/errors"
 	"github.com/appscode/voyager/pkg/certificate/providers"
+	"github.com/pkg/errors"
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/providers/dns/azure"
 	"github.com/xenolf/lego/providers/dns/cloudflare"
@@ -198,7 +198,7 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 			}
 		}
 		if len(jsonKey) <= 0 {
-			return nil, errors.New("GCE_SERVICE_ACCOUNT_DATA is missing").Err()
+			return nil, errors.New("GCE_SERVICE_ACCOUNT_DATA is missing")
 		}
 		return newDNSProvider(googlecloud.NewDNSProviderCredentials(string(project), []byte(jsonKey)))
 	case "linode":
@@ -251,7 +251,7 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 		}
 		return newDNSProvider(vultr.NewDNSProviderCredentials(apiKey))
 	default:
-		return nil, errors.New("Unknown provider specified").Err()
+		return nil, errors.New("Unknown provider specified")
 	}
 }
 

@@ -8,13 +8,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/appscode/go/errors"
 	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	hpi "github.com/appscode/voyager/pkg/haproxy/api"
 	"github.com/appscode/voyager/pkg/haproxy/template"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
+	"github.com/pkg/errors"
 	"github.com/tredoe/osutil/user/crypt"
 	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
 	core "k8s.io/api/core/v1"
@@ -60,7 +60,7 @@ func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, 
 		var err error
 		ep.UseDNSResolver, resolver, err = api.DNSResolverForService(*service)
 		if err != nil {
-			return nil, errors.FromErr(err).Err()
+			return nil, errors.WithStack(err)
 		}
 		if ep.UseDNSResolver && resolver != nil {
 			dnsResolvers[resolver.Name] = resolver
