@@ -287,7 +287,7 @@ func (c *hostPortController) EnsureFirewall(svc *core.Service) error {
 	if c.CloudManager != nil {
 		if fw, ok := c.CloudManager.Firewall(); ok {
 			nodes, err := c.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{
-				LabelSelector: labels.SelectorFromSet(c.Ingress.NodeSelector()).String(),
+				LabelSelector: labels.SelectorFromSet(c.Ingress.Spec.NodeSelector).String(),
 			})
 			if err != nil {
 				return err
@@ -451,7 +451,7 @@ func (c *hostPortController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 		obj.Spec.Template.Spec.Affinity = c.Ingress.Spec.Affinity
 		obj.Spec.Template.Spec.SchedulerName = c.Ingress.Spec.SchedulerName
 		obj.Spec.Template.Spec.Tolerations = c.Ingress.Spec.Tolerations
-		obj.Spec.Template.Spec.NodeSelector = c.Ingress.NodeSelector()
+		obj.Spec.Template.Spec.NodeSelector = c.Ingress.Spec.NodeSelector
 		obj.Spec.Template.Spec.ImagePullSecrets = c.Ingress.Spec.ImagePullSecrets
 		obj.Spec.Template.Spec.HostNetwork = true
 		obj.Spec.Template.Spec.DNSPolicy = core.DNSClusterFirstWithHostNet

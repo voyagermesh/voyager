@@ -718,6 +718,7 @@ func autoConvert_v1beta1_IngressSpec_To_voyager_IngressSpec(in *IngressSpec, out
 	out.Rules = *(*[]voyager.IngressRule)(unsafe.Pointer(&in.Rules))
 	out.LoadBalancerSourceRanges = *(*[]string)(unsafe.Pointer(&in.LoadBalancerSourceRanges))
 	out.Resources = in.Resources
+	out.NodeSelector = *(*map[string]string)(unsafe.Pointer(&in.NodeSelector))
 	out.Affinity = (*core_v1.Affinity)(unsafe.Pointer(in.Affinity))
 	out.SchedulerName = in.SchedulerName
 	out.Tolerations = *(*[]core_v1.Toleration)(unsafe.Pointer(&in.Tolerations))
@@ -738,6 +739,7 @@ func autoConvert_voyager_IngressSpec_To_v1beta1_IngressSpec(in *voyager.IngressS
 	out.Rules = *(*[]IngressRule)(unsafe.Pointer(&in.Rules))
 	out.LoadBalancerSourceRanges = *(*[]string)(unsafe.Pointer(&in.LoadBalancerSourceRanges))
 	out.Resources = in.Resources
+	out.NodeSelector = *(*map[string]string)(unsafe.Pointer(&in.NodeSelector))
 	out.Affinity = (*core_v1.Affinity)(unsafe.Pointer(in.Affinity))
 	out.SchedulerName = in.SchedulerName
 	out.Tolerations = *(*[]core_v1.Toleration)(unsafe.Pointer(&in.Tolerations))
