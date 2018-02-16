@@ -46,7 +46,7 @@ service "rest" exposed
 
 ### Using Node Selector
 
-[Node selectors](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) can be used assign HAProxy ingress pods to specific nodes. The node selector is passed as a JSON map type value of `ingress.appscode.com/node-selector` annotation key. Below is an example where ingress pods are run on node with name`minikube`.
+[Node selectors](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) can be used assign HAProxy ingress pods to specific nodes. Below is an example where ingress pods are run on node with name`minikube`.
 
 ```console
 kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.0/docs/examples/ingress/pod-placement/ingress-w-node-selector.yaml
@@ -60,10 +60,11 @@ metadata:
   namespace: demo
   annotations:
     ingress.appscode.com/type: NodePort
-    ingress.appscode.com/force-service-port: 'false'
-    ingress.appscode.com/node-selector: '{"kubernetes.io/hostname": "minikube"}'
+    ingress.appscode.com/use-node-port: 'true'
     ingress.appscode.com/replicas: '2'
 spec:
+  nodeSelector:
+    kubernetes.io/hostname: minikube
   rules:
   - http:
       paths:
@@ -93,7 +94,7 @@ metadata:
   namespace: demo
   annotations:
     ingress.appscode.com/type: NodePort
-    ingress.appscode.com/force-service-port: 'false'
+    ingress.appscode.com/use-node-port: 'true'
     ingress.appscode.com/replicas: '2'
 spec:
   rules:
@@ -142,7 +143,7 @@ metadata:
   namespace: demo
   annotations:
     ingress.appscode.com/type: NodePort
-    ingress.appscode.com/force-service-port: 'false'
+    ingress.appscode.com/use-node-port: 'true'
     ingress.appscode.com/replicas: '2'
 spec:
   rules:
@@ -173,10 +174,11 @@ metadata:
   namespace: demo
   annotations:
     ingress.appscode.com/type: NodePort
-    ingress.appscode.com/force-service-port: 'false'
-    ingress.appscode.com/node-selector: '{ "node-role.kubernetes.io/master" : "" }'
+    ingress.appscode.com/use-node-port: 'true'
     ingress.appscode.com/replicas: '2'
 spec:
+  nodeSelector:
+    node-role.kubernetes.io/master: ""
   rules:
   - http:
       paths:
