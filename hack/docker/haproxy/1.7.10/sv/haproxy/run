@@ -1,0 +1,16 @@
+#!/bin/bash
+source /etc/envvars
+
+# A script to help with haproxy reloads. Needs sudo for :80. Running it for the
+# first time starts haproxy, each subsequent invocation will perform a
+# soft-reload.
+# -f config file
+# -p pid file
+# -D run as daemon
+# -s soft reload, wait for pids to finish handling requests
+# -f send pids a resume signal if reload of new config fails
+
+socat /tmp/haproxy - <<< "show servers state" > /var/state/haproxy/global
+
+# haproxy-systemd-wrapper performs a soft reload
+exec "$(which haproxy-systemd-wrapper)" -f /etc/haproxy/haproxy.cfg -p /var/run/haproxy.pid
