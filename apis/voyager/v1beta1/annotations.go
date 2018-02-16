@@ -32,11 +32,6 @@ const (
 	LBTypeInternal     = "Internal"
 	LBType             = EngressKey + "/" + "type"
 
-	// Runs HAProxy on a specific set of a hosts.
-	NodeSelector = EngressKey + "/" + "node-selector"
-	// Deprecated
-	DaemonNodeSelector = EngressKey + "/" + "daemon.nodeSelector"
-
 	// Replicas specify # of HAProxy pods run (default 1)
 	Replicas = EngressKey + "/" + "replicas"
 
@@ -269,7 +264,6 @@ func init() {
 	registerParser(StatsSecret, meta.GetString)
 	registerParser(StatsServiceName, meta.GetString)
 	registerParser(LBType, meta.GetString)
-	registerParser(DaemonNodeSelector, meta.GetString)
 	registerParser(LoadBalancerIP, meta.GetString)
 	registerParser(AuthType, meta.GetString)
 	registerParser(AuthSecret, meta.GetString)
@@ -296,7 +290,6 @@ func init() {
 	registerParser(LimitRPS, meta.GetInt)
 	registerParser(LimitRPM, meta.GetInt)
 	registerParser(LimitConnection, meta.GetInt)
-	registerParser(NodeSelector, meta.GetMap)
 	registerParser(ServiceAnnotations, meta.GetMap)
 	registerParser(PodAnnotations, meta.GetMap)
 	registerParser(DefaultsTimeOut, meta.GetMap)
@@ -525,14 +518,6 @@ func (r Ingress) Replicas() int32 {
 	return 1
 }
 
-func (r Ingress) NodeSelector() map[string]string {
-	if v, _ := get[NodeSelector](r.Annotations); len(v.(map[string]string)) > 0 {
-		return v.(map[string]string)
-	}
-	v, _ := get[DaemonNodeSelector](r.Annotations)
-	return ParseDaemonNodeSelector(v.(string))
-}
-
 func (r Ingress) LoadBalancerIP() net.IP {
 	if v, _ := get[LoadBalancerIP](r.Annotations); v != "" {
 		return net.ParseIP(v.(string))
@@ -700,23 +685,4 @@ func (r Ingress) LimitRPM() int {
 func (r Ingress) LimitConnections() int {
 	value, _ := get[LimitConnection](r.Annotations)
 	return value.(int)
-}
-
-// ref: https://github.com/kubernetes/kubernetes/blob/078238a461a0872a8eacb887fbb3d0085714604c/staging/src/k8s.io/apiserver/pkg/apis/example/v1/types.go#L134
-// Deprecated, for newer ones use '{"k1":"v1", "k2", "v2"}' form
-// This expects the form k1=v1,k2=v2
-func ParseDaemonNodeSelector(labels string) map[string]string {
-	selectorMap := make(map[string]string)
-	for _, label := range strings.Split(labels, ",") {
-		label = strings.TrimSpace(label)
-		if len(label) > 0 && strings.Contains(label, "=") {
-			data := strings.SplitN(label, "=", 2)
-			if len(data) >= 2 {
-				if len(data[0]) > 0 && len(data[1]) > 0 {
-					selectorMap[data[0]] = data[1]
-				}
-			}
-		}
-	}
-	return selectorMap
 }

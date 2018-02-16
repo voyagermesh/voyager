@@ -420,7 +420,7 @@ func (c *loadBalancerController) ensurePods() (*apps.Deployment, kutil.VerbType,
 		obj.Spec.Template.Spec.Affinity = c.Ingress.Spec.Affinity
 		obj.Spec.Template.Spec.SchedulerName = c.Ingress.Spec.SchedulerName
 		obj.Spec.Template.Spec.Tolerations = c.Ingress.Spec.Tolerations
-		obj.Spec.Template.Spec.NodeSelector = c.Ingress.NodeSelector()
+		obj.Spec.Template.Spec.NodeSelector = c.Ingress.Spec.NodeSelector
 		obj.Spec.Template.Spec.ImagePullSecrets = c.Ingress.Spec.ImagePullSecrets
 		if c.cfg.EnableRBAC {
 			obj.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()

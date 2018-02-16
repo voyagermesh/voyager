@@ -73,9 +73,9 @@ func (i *ingressInvocation) SetSkeletonFrontendRule(ing *api_v1beta1.Ingress) {
 
 func (i *ingressInvocation) SetDaemonSkeletonRule(ing *api_v1beta1.Ingress) {
 	ing.Annotations = map[string]string{
-		api_v1beta1.LBType:       api_v1beta1.LBTypeHostPort,
-		api_v1beta1.NodeSelector: i.DaemonNodeSelector(),
+		api_v1beta1.LBType: api_v1beta1.LBTypeHostPort,
 	}
+	ing.Spec.NodeSelector = i.NodeSelector()
 	ing.Spec.Rules = []api_v1beta1.IngressRule{
 		{
 			IngressRuleValue: api_v1beta1.IngressRuleValue{
@@ -313,12 +313,12 @@ func (i *ingressInvocation) waitForTestServer() error {
 	return err
 }
 
-func (i *ingressInvocation) DaemonNodeSelector() string {
+func (i *ingressInvocation) NodeSelector() map[string]string {
 	if i.Operator.CloudProvider == "minikube" {
-		return `{"kubernetes.io/hostname": "minikube"}`
+		return map[string]string{"kubernetes.io/hostname": "minikube"}
 	}
 	log.Warningln("No node selector provided for daemon ingress")
-	return "{}"
+	return map[string]string{}
 }
 
 func getLoadBalancerURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.Ingress) ([]string, error) {
@@ -395,7 +395,7 @@ func getLoadBalancerURLs(provider string, k kubernetes.Interface, ing *api_v1bet
 func getHostPortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.Ingress) ([]string, error) {
 	serverAddr := make([]string, 0)
 	nodes, err := k.CoreV1().Nodes().List(metav1.ListOptions{
-		LabelSelector: labels.SelectorFromSet(ing.NodeSelector()).String(),
+		LabelSelector: labels.SelectorFromSet(ing.Spec.NodeSelector).String(),
 	})
 	if err != nil {
 		return nil, err
@@ -440,7 +440,7 @@ func getNodePortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.I
 	serverAddr := make([]string, 0)
 
 	nodes, err := k.CoreV1().Nodes().List(metav1.ListOptions{
-		LabelSelector: labels.SelectorFromSet(ing.NodeSelector()).String(),
+		LabelSelector: labels.SelectorFromSet(ing.Spec.NodeSelector).String(),
 	})
 	if err != nil {
 		return nil, err

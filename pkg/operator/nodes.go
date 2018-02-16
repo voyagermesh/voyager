@@ -50,7 +50,7 @@ func (op *Operator) updateFirewall(ing *api.Ingress, node *core.Node) {
 	case api.LBTypeLoadBalancer, api.LBTypeInternal:
 		return
 	case api.LBTypeHostPort:
-		if selector := labels.SelectorFromSet(ing.NodeSelector()); !selector.Matches(labels.Set(node.Labels)) {
+		if selector := labels.SelectorFromSet(ing.Spec.NodeSelector); !selector.Matches(labels.Set(node.Labels)) {
 			return
 		}
 	}
