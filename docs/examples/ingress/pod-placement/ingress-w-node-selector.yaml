@@ -5,10 +5,11 @@ metadata:
   namespace: demo
   annotations:
     ingress.appscode.com/type: NodePort
-    ingress.appscode.com/force-service-port: 'false'
-    ingress.appscode.com/node-selector: '{"kubernetes.io/hostname": "minikube"}'
+    ingress.appscode.com/use-node-port: 'true'
     ingress.appscode.com/replicas: '2'
 spec:
+  nodeSelector:
+    kubernetes.io/hostname: minikube
   rules:
   - http:
       paths:
