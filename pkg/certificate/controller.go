@@ -11,8 +11,8 @@ import (
 	"github.com/appscode/go/log"
 	v1u "github.com/appscode/kutil/core/v1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client"
-	vu "github.com/appscode/voyager/client/typed/voyager/v1beta1/util"
+	cs "github.com/appscode/voyager/client/clientset/versioned"
+	"github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1/util"
 	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
@@ -267,7 +267,7 @@ func (c *Controller) renew() error {
 }
 
 func (c *Controller) processError(err error) error {
-	vu.PatchCertificate(c.VoyagerClient.VoyagerV1beta1(), c.crd, func(in *api.Certificate) *api.Certificate {
+	util.PatchCertificate(c.VoyagerClient.VoyagerV1beta1(), c.crd, func(in *api.Certificate) *api.Certificate {
 		// Update certificate data to add Details Information
 		t := metav1.Now()
 		found := false

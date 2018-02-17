@@ -6,7 +6,7 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil/meta"
-	cs "github.com/appscode/voyager/client"
+	cs "github.com/appscode/voyager/client/clientset/versioned"
 	hpc "github.com/appscode/voyager/pkg/haproxy/controller"
 	"github.com/spf13/cobra"
 	core "k8s.io/api/core/v1"

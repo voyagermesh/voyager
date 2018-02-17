@@ -8,7 +8,7 @@ import (
 	hpe "github.com/appscode/haproxy_exporter/exporter"
 	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client"
+	cs "github.com/appscode/voyager/client/clientset/versioned"
 	hookapi "github.com/appscode/voyager/pkg/admission/api"
 	"github.com/appscode/voyager/pkg/admission/plugin"
 	"github.com/appscode/voyager/pkg/config"

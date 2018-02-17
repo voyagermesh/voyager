@@ -9,7 +9,7 @@ import (
 	"github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/client/typed/voyager/v1beta1/util"
+	"github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1/util"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/ingress"
 	"github.com/golang/glog"
