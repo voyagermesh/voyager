@@ -7,10 +7,10 @@ import (
 	"os"
 	"path"
 
-	v1u "github.com/appscode/kutil/core/v1"
+	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client"
-	vu "github.com/appscode/voyager/client/typed/voyager/v1beta1/util"
+	cs "github.com/appscode/voyager/client/clientset/versioned"
+	"github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1/util"
 	vault "github.com/hashicorp/vault/api"
 	"github.com/pkg/errors"
 	"github.com/xenolf/lego/acme"
@@ -107,7 +107,7 @@ func (s *CertStore) Save(crd *api.Certificate, cert acme.CertificateResource) er
 			return err
 		}
 	} else {
-		_, _, err := v1u.CreateOrPatchSecret(s.KubeClient,
+		_, _, err := core_util.CreateOrPatchSecret(s.KubeClient,
 			metav1.ObjectMeta{Namespace: crd.Namespace, Name: crd.SecretName()},
 			func(in *core.Secret) *core.Secret {
 				in.Type = core.SecretTypeTLS
@@ -129,7 +129,7 @@ func (s *CertStore) Save(crd *api.Certificate, cert acme.CertificateResource) er
 	if err != nil {
 		return errors.Errorf("failed to parse tls.crt for Certificate %s/%s. Reason: %s", crd.Namespace, crd.Name, err)
 	}
-	_, _, err = vu.PatchCertificate(s.VoyagerClient.VoyagerV1beta1(), crd, func(in *api.Certificate) *api.Certificate {
+	_, _, err = util.PatchCertificate(s.VoyagerClient.VoyagerV1beta1(), crd, func(in *api.Certificate) *api.Certificate {
 		// Update certificate data to add Details Information
 		t := metav1.Now()
 		in.Status.LastIssuedCertificate = &api.CertificateDetails{

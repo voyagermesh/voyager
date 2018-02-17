@@ -1,8 +1,8 @@
 package operator
 
 import (
-	cs "github.com/appscode/voyager/client"
-	voyagerinformers "github.com/appscode/voyager/informers/externalversions"
+	cs "github.com/appscode/voyager/client/clientset/versioned"
+	voyagerinformers "github.com/appscode/voyager/client/informers/externalversions"
 	hookapi "github.com/appscode/voyager/pkg/admission/api"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"

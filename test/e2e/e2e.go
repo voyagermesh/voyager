@@ -6,7 +6,7 @@ import (
 
 	"github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/clientcmd"
-	"github.com/appscode/voyager/client/scheme"
+	"github.com/appscode/voyager/client/clientset/versioned/scheme"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/operator"
 	"github.com/appscode/voyager/test/framework"
