@@ -35,7 +35,6 @@ type CertificatesGetter interface {
 type CertificateInterface interface {
 	Create(*v1beta1.Certificate) (*v1beta1.Certificate, error)
 	Update(*v1beta1.Certificate) (*v1beta1.Certificate, error)
-	UpdateStatus(*v1beta1.Certificate) (*v1beta1.Certificate, error)
 	Delete(name string, options *v1.DeleteOptions) error
 	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
 	Get(name string, options v1.GetOptions) (*v1beta1.Certificate, error)
@@ -113,22 +112,6 @@ func (c *certificates) Update(certificate *v1beta1.Certificate) (result *v1beta1
 		Namespace(c.ns).
 		Resource("certificates").
 		Name(certificate.Name).
-		Body(certificate).
-		Do().
-		Into(result)
-	return
-}
-
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-
-func (c *certificates) UpdateStatus(certificate *v1beta1.Certificate) (result *v1beta1.Certificate, err error) {
-	result = &v1beta1.Certificate{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("certificates").
-		Name(certificate.Name).
-		SubResource("status").
 		Body(certificate).
 		Do().
 		Into(result)

@@ -98,18 +98,6 @@ func (c *FakeCertificates) Update(certificate *v1beta1.Certificate) (result *v1b
 	return obj.(*v1beta1.Certificate), err
 }
 
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeCertificates) UpdateStatus(certificate *v1beta1.Certificate) (*v1beta1.Certificate, error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(certificatesResource, "status", c.ns, certificate), &v1beta1.Certificate{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1beta1.Certificate), err
-}
-
 // Delete takes name of the certificate and deletes it. Returns an error if one occurs.
 func (c *FakeCertificates) Delete(name string, options *v1.DeleteOptions) error {
 	_, err := c.Fake.

@@ -35,7 +35,6 @@ type IngressesGetter interface {
 type IngressInterface interface {
 	Create(*v1beta1.Ingress) (*v1beta1.Ingress, error)
 	Update(*v1beta1.Ingress) (*v1beta1.Ingress, error)
-	UpdateStatus(*v1beta1.Ingress) (*v1beta1.Ingress, error)
 	Delete(name string, options *v1.DeleteOptions) error
 	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
 	Get(name string, options v1.GetOptions) (*v1beta1.Ingress, error)
@@ -113,22 +112,6 @@ func (c *ingresses) Update(ingress *v1beta1.Ingress) (result *v1beta1.Ingress, e
 		Namespace(c.ns).
 		Resource("ingresses").
 		Name(ingress.Name).
-		Body(ingress).
-		Do().
-		Into(result)
-	return
-}
-
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-
-func (c *ingresses) UpdateStatus(ingress *v1beta1.Ingress) (result *v1beta1.Ingress, err error) {
-	result = &v1beta1.Ingress{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("ingresses").
-		Name(ingress.Name).
-		SubResource("status").
 		Body(ingress).
 		Do().
 		Into(result)
