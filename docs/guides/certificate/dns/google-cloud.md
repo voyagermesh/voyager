@@ -315,7 +315,7 @@ metadata:
   name: test-ingress
   namespace: default
   annotations:
-    ingress.kubernetes.io/rewrite-target: /
+    ingress.appscode.com/rewrite-target: /
 spec:
   tls:
   - hosts:

@@ -5,7 +5,7 @@ metadata:
   namespace: default
   annotations:
     ingress.appscode.com/type: NodePort
-    ingress.appscode.com/force-service-port: "true"
+    ingress.appscode.com/use-node-port: 'false'
 spec:
   rules:
   - host: 'web.example.com'

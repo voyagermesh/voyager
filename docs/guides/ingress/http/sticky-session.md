@@ -16,10 +16,11 @@ section_menu_id: guides
 Voyager 3.2.0+ can configure [sticky connections](https://www.haproxy.com/blog/load-balancing-affinity-persistence-sticky-sessions-what-you-need-to-know/) in 2 modes. By applying annotation to an Ingress resource, you can configure all backends in that ingress to use sticky session. Or you can apply annotation to a service and configure
 backends using that service to use sticky session.
 
-`ingress.appscode.com/sticky-session` annotations is deprecated in voyager 4.0.0+. Use `ingress.kubernetes.io/affinity` instead.
+`ingress.appscode.com/sticky-session` annotations is deprecated in voyager 4.0.0+ and removed in 6.0.0+. Use `ingress.appscode.com/affinity` instead.
 
-### Sticky Ingress
-Applying annotation `ingress.kubernetes.io/affinity` to Ingress will configure all backends to support sticky session.
+## Sticky Ingress
+
+Applying annotation `ingress.appscode.com/affinity` to Ingress will configure all backends to support sticky session.
 
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
@@ -28,7 +29,7 @@ metadata:
   name: test-ingress
   namespace: default
   annotation:
-    ingress.kubernetes.io/affinity: 'cookie'
+    ingress.appscode.com/affinity: 'cookie'
 spec:
   rules:
   - host: foo.bar.com
@@ -50,11 +51,12 @@ spec:
         serviceName: tcp-service
         servicePort: '50077'
 ```
+
 For the above ingress, all three backend connections will be sticky.
 
+## Sticky Service
 
-### Sticky Service
-Applying annotation `ingress.kubernetes.io/affinity` to a service will configures any backend
+Applying annotation `ingress.appscode.com/affinity` to a service will configures any backend
 that uses that service to use sticky connection. As an example, the following Ingress will only
 configure sticky connections for backends that use `s1` Service.
 
@@ -65,7 +67,7 @@ metadata:
   name: s1
   namespace: default
   annotations:
-    ingress.kubernetes.io/affinity: 'cookie'
+    ingress.appscode.com/affinity: 'cookie'
 spec:
   selector:
     app: app
@@ -115,6 +117,5 @@ spec:
 
 ## Other Annotations
 
-`ingress.kubernetes.io/session-cookie-name`: When affinity is set to cookie, the name of the cookie to use.
-
-`ingress.kubernetes.io/session-cookie-hash`: When affinity is set to cookie, the hash algorithm used: md5, sha, index.
+- `ingress.appscode.com/session-cookie-name`: When affinity is set to `cookie`, the name of the cookie to use.
+- `ingress.appscode.com/session-cookie-hash`: When affinity is set to `cookie`, the hash algorithm used: md5, sha, index.
