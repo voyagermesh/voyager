@@ -49,14 +49,9 @@ Below is the full list of supported annotations:
 | [ingress.appscode.com/stats](/docs/guides/ingress/monitoring/stats.md) | bool | `false` |
 | [ingress.appscode.com/stats-port](/docs/guides/ingress/monitoring/stats.md) | int | `56789` |
 | [ingress.appscode.com/stats-secret-name](/docs/guides/ingress/monitoring/stats.md) | string | |
-
-## TODO: DNS Resolver Annotations
-
-|  Keys  |   Value   |  Default |
-|--------|-----------|----------|
-| [ingress.appscode.com/use-dns-resolver]() | bool | `false` |
-| [ingress.appscode.com/dns-resolver-nameservers]() | string | |
-| [ingress.appscode.com/dns-resolver-check-health]() | bool | `true` |
-| [ingress.appscode.com/dns-resolver-retries]() | int | `0` |
-| [ingress.appscode.com/dns-resolver-timeout]() | map | |
-| [ingress.appscode.com/dns-resolver-hold]() | map | |
+| [ingress.appscode.com/use-dns-resolver](/docs/guides/ingress/http/external-svc.md#using-external-domain) | bool | `false` |
+| [ingress.appscode.com/dns-resolver-nameservers](/docs/guides/ingress/http/external-svc.md#using-external-domain) | string | |
+| [ingress.appscode.com/dns-resolver-check-health](/docs/guides/ingress/http/external-svc.md#using-external-domain) | bool | `true` |
+| [ingress.appscode.com/dns-resolver-retries](/docs/guides/ingress/http/external-svc.md#using-external-domain) | int | `0` |
+| [ingress.appscode.com/dns-resolver-timeout](/docs/guides/ingress/http/external-svc.md#using-external-domain) | map | |
+| [ingress.appscode.com/dns-resolver-hold](/docs/guides/ingress/http/external-svc.md#using-external-domain) | map | |
