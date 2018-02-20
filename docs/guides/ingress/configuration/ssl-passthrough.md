@@ -1,33 +1,13 @@
----
-title: Default HAProxy Options | Kubernetes Ingress
-menu:
-  product_voyager_6.0.0-rc.0:
-    identifier: options-config
-    name: HAProxy Options
-    parent: config-ingress
-    weight: 30
-product_name: voyager
-menu_name: product_voyager_6.0.0-rc.0
-section_menu_id: guides
----
+# SSL Passthrough
 
-# Default HAProxy Options
+The annotation `ingress.appscode.com/ssl-passthrough` allows to configure TLS termination in the backend and not in haproxy. When set to `true`, passes TLS connections directly to backend.
 
-Voyager Supports all valid options for [defaults section of HAProxy config](https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.2-option%20abortonclose). You can provide these options using a json encoded map in Ingress annotations like below:
+If `ssl-passthrough` is used the mode has to be TCP. For more details see  [here](https://www.haproxy.com/documentation/haproxy/deployment-guides/tls-infrastructure/). When `ssl-pasthrough` is enabled, voyager automatically converts your http rules to tcp rules. Please note that following things are not supported while using `ssl-pasthrough`:
 
-`ingress.appscode.com/default-option: '{"http-keep-alive": "true", "dontlognull": "true", "clitcpka": "false"}'`
+- Multiple paths for http rules.
+- `headerRule` and `rewriteRule` for backends.
 
-This will be appended in the defaults section of HAProxy as:
-
-```ini
-option http-keep-alive
-option dontlognull
-no option clitcpka
-```
-
-If you don't set the annotation `{"http-server-close": "true", "dontlognull": "true"}` will be considered as default value
-
-Ingress Example:
+## Ingress Example
 
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
@@ -36,8 +16,14 @@ metadata:
   name: test-ingress
   namespace: default
   annotations:
-    ingress.appscode.com/default-option: '{"http-keep-alive": "true", "dontlognull": "true", "clitcpka": "false"}'
+    ingress.appscode.com/ssl-passthrough: "true"
 spec:
+  tls:
+  - ref:
+      kind: Secret
+      name: tls-secret
+    hosts:
+    - voyager.appscode.test
   rules:
   - host: voyager.appscode.test
     http:
@@ -67,9 +53,8 @@ defaults
 	log global
 	# https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.2-option%20abortonclose
 	# https://github.com/appscode/voyager/pull/403
-	no option clitcpka
 	option dontlognull
-	option http-keep-alive
+	option http-server-close
 	# Timeout values
 	timeout client 50s
 	timeout client-fin 50s
@@ -81,15 +66,20 @@ defaults
 	# mode is overwritten in case of tcp services
 	mode http
 frontend http-0_0_0_0-80
-	bind *:80
+	bind *:80 
 	mode http
 	option httplog
 	option forwardfor
 	acl is_proxy_https hdr(X-Forwarded-Proto) https
 	acl acl_voyager.appscode.test hdr(host) -i voyager.appscode.test
 	acl acl_voyager.appscode.test hdr(host) -i voyager.appscode.test:80
-	acl acl_voyager.appscode.test:foo path_beg /foo
-	use_backend test-server.default:80 if acl_voyager.appscode.test acl_voyager.appscode.test:foo
+	acl acl_voyager.appscode.test: path_beg /
+	redirect scheme https code 308 if ! is_proxy_https acl_voyager.appscode.test acl_voyager.appscode.test:
+frontend tcp-0_0_0_0-443
+	bind *:443  ssl no-sslv3 no-tlsv10 no-tls-tickets crt /etc/ssl/private/haproxy/tls/tls-secret.pem   
+	mode tcp
+	default_backend test-server.default:80
 backend test-server.default:80
-	server pod-test-server-68ddc845cd-x7dtv 172.17.0.4:8080
+	mode tcp
+	server pod-test-server-68ddc845cd-x5c78 172.17.0.2:8080
 ```
