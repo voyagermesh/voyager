@@ -56,7 +56,7 @@ var _ = BeforeSuite(func() {
 
 	if !meta.PossiblyInCluster() {
 		go root.Operator.RunInformers(nil)
-		select {} // run operator locally without running tests
+		// select {} // run operator locally without running tests
 	}
 
 	Eventually(invocation.Ingress.Setup).Should(BeNil())
