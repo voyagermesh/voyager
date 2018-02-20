@@ -26,9 +26,9 @@ Voyager Ingress read user and password from files stored on secrets, one user
 and password per line. Secret name, realm and type are configured with annotations
 in the ingress resource:
 
-* `ingress.kubernetes.io/auth-type`: the only supported type is `basic`
-* `ingress.kubernetes.io/auth-realm`: an optional string with authentication realm
-* `ingress.kubernetes.io/auth-secret`: name of the secret
+* `ingress.appscode.com/auth-type`: the only supported type is `basic`
+* `ingress.appscode.com/auth-realm`: an optional string with authentication realm
+* `ingress.appscode.com/auth-secret`: name of the secret
 
 Each line of the `auth` file should have:
 
@@ -67,9 +67,9 @@ apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
   annotations:
-    ingress.kubernetes.io/auth-type: basic
-    ingress.kubernetes.io/auth-realm: My Server
-    ingress.kubernetes.io/auth-secret: mypasswd
+    ingress.appscode.com/auth-type: basic
+    ingress.appscode.com/auth-realm: My Server
+    ingress.appscode.com/auth-secret: mypasswd
   name: hello-basic-auth
   namespace: default
 spec:
@@ -112,6 +112,7 @@ Content-Type: text/plain; charset=utf-8
 Using `jane:guest` user/passwd should have the same output.
 
 ## Using Basic Auth for backend service
+
 Voyager Ingress can be configured to use Basic Auth per Backend service by applying the annotations to
 kubernetes service.
 
@@ -122,9 +123,9 @@ metadata:
   name: test-svc
   namespace: default
   annotations:
-    ingress.kubernetes.io/auth-type: basic
-    ingress.kubernetes.io/auth-realm: My Server
-    ingress.kubernetes.io/auth-secret: mypasswd
+    ingress.appscode.com/auth-type: basic
+    ingress.appscode.com/auth-realm: My Server
+    ingress.appscode.com/auth-secret: mypasswd
 spec:
   ports:
   - name: http-1
@@ -136,6 +137,7 @@ spec:
 ```
 
 Create an Ingress with Basic Auth only on path `/auth`
+
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
@@ -198,6 +200,7 @@ Content-Type: text/plain; charset=utf-8
 ```
 
 ## Using Basic Auth In Frontend
+
 Basic Auth can also be configured per frontend in voyager ingress via FrontendRules.
 
 ```yaml

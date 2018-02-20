@@ -29,3 +29,4 @@ hack/configs/.env
 .vscode/
 test/e2e/report.xml
 apiserver.local.config/
+.markdownlint.json

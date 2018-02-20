@@ -58,11 +58,11 @@ const (
 	// Preserves source IP for LoadBalancer type ingresses. The actual configuration
 	// generated depends on the underlying cloud provider.
 	//
-	//  - gce, gke, azure: Adds annotation service.beta.kubernetes.io/external-traffic: OnlyLocal
-	// to services used to expose HAProxy.
-	// ref: https://kubernetes.io/docs/tasks/services/source-ip/#source-ip-for-services-with-typeloadbalancer
+	// - gce, gke, azure: Sets "ExternalTrafficPolicy" to "Local" for HAProxy services.
+	// Ref: https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
 	//
-	// - aws: Enforces the use of the PROXY protocol over any connection accepted by any of
+	// - aws: Enables accept-proxy.
+	// Enforces the use of the PROXY protocol over any connection accepted by any of
 	// the sockets declared on the same line. Versions 1 and 2 of the PROXY protocol
 	// are supported and correctly detected. The PROXY protocol dictates the layer
 	// 3/4 addresses of the incoming connection to be used everywhere an address is
@@ -74,7 +74,7 @@ const (
 	// X-Forwarded-For mechanism which is not always reliable and not even always
 	// usable. See also "tcp-request connection expect-proxy" for a finer-grained
 	// setting of which client is allowed to use the protocol.
-	// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
+	// Ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
 	KeepSourceIP = EngressKey + "/" + "keep-source-ip"
 
 	// Enforces the use of the PROXY protocol over any connection accepted by HAProxy.
@@ -117,31 +117,29 @@ const (
 	//
 	DefaultsOption = EngressKey + "/" + "default-option"
 
-	// Available Options
-	//   ssl:
-	//    Creates a TLS/SSL socket when connecting to this server in order to cipher/decipher the traffic
+	// Available Options:
 	//
-	//    if verify not set the following error may occurred
-	//    [/etc/haproxy/haproxy.cfg:49] verify is enabled by default but no CA file specified.
-	//    If you're running on a LAN where you're certain to trust the server's certificate,
-	//    please set an explicit 'verify none' statement on the 'server' line, or use
-	//    'ssl-server-verify none' in the global section to disable server-side verifications by default.
+	// ssl: https://cbonte.github.io/haproxy-dconv/1.8/configuration.html#5.2-ssl
+	// 		Creates a TLS/SSL socket when connecting to this server in order to cipher/decipher the traffic.
+	//   	If verify not set the following error may occurred:
+	//    		[/etc/haproxy/haproxy.cfg:49] verify is enabled by default but no CA file specified.
+	//    		If you're running on a LAN where you're certain to trust the server's certificate,
+	//    		please set an explicit 'verify none' statement on the 'server' line, or use
+	//    		'ssl-server-verify none' in the global section to disable server-side verifications by default.
 	//
-	//   verify [none|required]:
-	//    Sets HAProxy‘s behavior regarding the certificated presented by the server:
-	//   none :
-	//    doesn’t verify the certificate of the server
+	// verify [none|required]: https://cbonte.github.io/haproxy-dconv/1.8/configuration.html#5.2-verify
+	//   	Sets HAProxy‘s behavior regarding the certificated presented by the server:
+	//     		- none : Doesn’t verify the certificate of the server
+	//     		- required (default value) : TLS handshake is aborted if the validation of the certificate presented by the server returns an error.
 	//
-	//   required (default value) :
-	//    TLS handshake is aborted if the validation of the certificate presented by the server returns an error.
+	// verfyhost <hostname>: https://cbonte.github.io/haproxy-dconv/1.8/configuration.html#5.2-verifyhost
+	//    	Sets a <hostname> to look for in the Subject and SubjectAlternateNames fields provided in the
+	//    	certificate sent by the server. If <hostname> can’t be found, then the TLS handshake is aborted.
+	//    	This only applies when verify required is configured.
 	//
-	//   veryfyhost <hostname>:
-	//    Sets a <hostname> to look for in the Subject and SubjectAlternateNames fields provided in the
-	//    certificate sent by the server. If <hostname> can’t be found, then the TLS handshake is aborted.
-	// ie.
-	// ingress.appscode.com/backend-tls: "ssl verify none"
+	// Example: ingress.appscode.com/backend-tls: "ssl verify none"
 	//
-	// If this annotation is not set HAProxy will connect to backend as http,
+	// If this annotation is not set HAProxy will connect to backend as http.
 	// This value should not be set if the backend do not support https resolution.
 	BackendTLSOptions = EngressKey + "/backend-tls"
 
