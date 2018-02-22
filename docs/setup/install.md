@@ -155,6 +155,18 @@ $ kubectl get crd -l app=voyager
 
 Now, you are ready to create your first ingress using Voyager.
 
+
+## Configuring RBAC
+Voyager creates two CRDs: `Ingress` and `Certificate`. Voyager installer will create 2 user facing cluster roles:
+
+| ClusterRole           | Aggregates To | Desription                            |
+|-----------------------|---------------|---------------------------------------|
+| appscode:voyager:edit | admin, edit   | Allows edit access to Voyager CRDs, intended to be granted within a namespace using a RoleBinding. |
+| appscode:voyager:view | view          | Allows read-only access to Voyager CRDs, intended to be granted within a namespace using a RoleBinding. |
+
+These user facing roles supports [ClusterRole Aggregation](https://kubernetes.io/docs/admin/authorization/rbac/#aggregated-clusterroles) feature in Kubernetes 1.9 or later clusters.
+
+
 ## Using kubectl
 Since Voyager uses its own TPR/CRD, you need to use full resource kind to find it with kubectl.
 
@@ -171,6 +183,7 @@ $ kubectl get ingress.voyager.appscode.com -n <namespace> <ingress-name> -o yaml
 # Describe Ingress. Very useful to debug problems.
 $ kubectl describe ingress.voyager.appscode.com -n <namespace> <ingress-name>
 ```
+
 
 ## Detect Voyager version
 To detect Voyager version, exec into the operator pod and run `voyager version` command.
