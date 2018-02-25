@@ -1,21 +1,20 @@
 apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
-  name: test-ingress
+  name: stats-ing
   namespace: demo
   annotations:
+    ingress.appscode.com/type: 'NodePort'
     ingress.appscode.com/stats: 'true'
-    ingress.appscode.com/monitoring-agent: 'coreos-prometheus-operator'
+    ingress.appscode.com/monitoring-agent: 'prometheus.io/coreos-operator'
     ingress.appscode.com/service-monitor-labels: '{"app": "voyager"}'
     ingress.appscode.com/service-monitor-namespace: 'demo'
 spec:
-  backend:
-    serviceName: test-server
-    servicePort: 80
   rules:
-  - host: voyager.demo
+  - host: voyager.appscode.test
     http:
       paths:
-      - backend:
-          serviceName: test-server
+      - path: /
+        backend:
+          serviceName: web
           servicePort: 80

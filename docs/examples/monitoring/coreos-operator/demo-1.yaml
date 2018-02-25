@@ -3,16 +3,15 @@ kind: Prometheus
 metadata:
   name: prometheus
   namespace: demo
-  labels:
-    prometheus: prometheus
 spec:
-  replicas: 1
   serviceMonitorSelector:
     matchLabels:
       app: voyager
+  version: v1.7.0
   resources:
     requests:
       memory: 400Mi
+
 ---
 apiVersion: v1
 kind: Service

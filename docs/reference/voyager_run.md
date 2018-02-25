@@ -24,7 +24,6 @@ voyager run [flags]
 ### Options
 
 ```
-      --address string                                          Address to listen on for web interface and telemetry. (default ":56790")
       --audit-log-format string                                 Format of saved audits. "legacy" indicates 1-line text format for each event. "json" indicates structured json format. Requires the 'AdvancedAuditing' feature gate. Known formats are legacy,json. (default "json")
       --audit-log-maxage int                                    The maximum number of days to retain old audit log files based on the timestamp encoded in their filename.
       --audit-log-maxbackup int                                 The maximum number of old audit log files to retain.
@@ -57,6 +56,7 @@ voyager run [flags]
       --ingress-class string                                    Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.
       --kubeconfig string                                       kubeconfig file pointing at the 'core' kubernetes server.
       --operator-service string                                 Name of service used to expose voyager operator (default "voyager-operator")
+      --ops-address string                                      Address to listen on for web interface and telemetry. (default ":56790")
       --profiling                                               Enable profiling via web interface host:port/debug/pprof/ (default true)
       --prometheus-crd-apigroup string                          prometheus CRD  API group name (default "monitoring.coreos.com")
       --prometheus-crd-kinds CrdKinds                            - EXPERIMENTAL (could be removed in future releases) - customize CRD kind names
