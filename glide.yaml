@@ -8,8 +8,9 @@ import:
   version: ~8.1.1
 - package: github.com/appscode/go
   version: master
-- package: github.com/appscode/haproxy_exporter
-  version: 0.8.1
+- package: github.com/prometheus/haproxy_exporter
+  repo: https://github.com/appscode/haproxy_exporter.git
+  version: master
 - package: github.com/appscode/pat
 - package: github.com/aws/aws-sdk-go
   version: v1.12.7

@@ -1,5 +1,5 @@
-hash: fc5def6f46bccb37bac967fb7b9e40b3adaf4df718732c430602ff1720ac7e8a
-updated: 2018-02-15T04:56:17.675207627-08:00
+hash: 52dc2bd8700082777010dc673be15f2b6ceb102a0a05cd4d60b2679da0fee84f
+updated: 2018-02-24T18:51:42.753382884-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -9,7 +9,7 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/go
-  version: 6adb909e2aa54fff1642dbe6cbe518fa0c64d987
+  version: 83e7fc1967ed737eedfc87da60c42e9fc4dc684c
   subpackages:
   - analytics
   - context
@@ -24,10 +24,6 @@ imports:
   - sets
   - types
   - version
-- name: github.com/appscode/haproxy_exporter
-  version: 125b45c2c942943eea605d165ff5f7533db41797
-  subpackages:
-  - exporter
 - name: github.com/appscode/kube-mon
   version: 69036cc40b44a7ba97be91d530f421e3adaba407
   subpackages:
@@ -37,7 +33,7 @@ imports:
   - api
   - prometheus/v1
 - name: github.com/appscode/kutil
-  version: 579ddb8cc946c9e5f09d59863a3c5fe27cdc56f5
+  version: 20ffc2be6a1d88387bc6f6babe7bfe312c58b509
   subpackages:
   - apiextensions/v1beta1
   - apps/v1beta1
@@ -149,7 +145,7 @@ imports:
 - name: github.com/dgrijalva/jwt-go
   version: 01aeca54ebda6e0fbfafd0a524d234159c05ec20
 - name: github.com/dnsimple/dnsimple-go
-  version: e43ab24dc4818cd584429752f69885fbc8a74baa
+  version: 67fc221205115459ce8a04043c7ca567072c92ec
   subpackages:
   - dnsimple
 - name: github.com/elazarl/go-bindata-assetfs
@@ -390,6 +386,11 @@ imports:
   - log
   - model
   - version
+- name: github.com/prometheus/haproxy_exporter
+  version: 152616400767357d9741204ef65e7c7e5194c351
+  repo: https://github.com/appscode/haproxy_exporter.git
+  subpackages:
+  - collector
 - name: github.com/prometheus/procfs
   version: 65c1f6f8f0fc1e2185eb9863a3bc751496404259
   subpackages:
@@ -409,13 +410,13 @@ imports:
 - name: github.com/shurcooL/sanitized_anchor_name
   version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/sirupsen/logrus
-  version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
+  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
 - name: github.com/spf13/afero
   version: bbf41cb36dffe15dff5bf7e18c447801e7ffe163
   subpackages:
   - mem
 - name: github.com/spf13/cobra
-  version: be77323fc05148ef091e83b3866c0d47c8e74a8b
+  version: a1e4933ab784095895e33dbe9f001ba10cfe2060
   subpackages:
   - doc
 - name: github.com/spf13/pflag

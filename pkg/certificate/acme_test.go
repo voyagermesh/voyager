@@ -5,7 +5,7 @@ import (
 
 	etx "github.com/appscode/go/context"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	fakevoyager "github.com/appscode/voyager/client/fake"
+	fakevoyager "github.com/appscode/voyager/client/clientset/versioned/fake"
 	"github.com/stretchr/testify/assert"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
