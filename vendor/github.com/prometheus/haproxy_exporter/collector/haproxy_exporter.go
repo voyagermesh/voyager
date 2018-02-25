@@ -201,7 +201,18 @@ func NewExporter(uri string, sslVerify bool, serverMetricFields string, extraLab
 		60: e.newBackendMetric("http_response_time_average_seconds", "Avg. HTTP response time for last 1024 successful connections.", nil),
 		61: e.newBackendMetric("http_total_time_average_seconds", "Avg. HTTP total time for last 1024 successful connections.", nil),
 	}
-	e.serverMetrics, err = e.filterServerMetrics(serverMetricFields)
+
+	selected, err := e.filterServerMetrics(serverMetricFields)
+	if err != nil {
+		return nil, err
+	}
+	e.serverMetrics = map[int]*prometheus.GaugeVec{}
+	for field, opts := range ServerMetrics {
+		if _, ok := selected[field]; ok {
+			e.serverMetrics[field] = e.newServerMetric(opts)
+		}
+	}
+
 	return e, err
 }
 
@@ -466,8 +477,8 @@ func (e *Exporter) exportCsvFields(metrics map[int]*prometheus.GaugeVec, csvRow 
 
 // FilterServerMetrics returns the set of server metrics specified by the comma
 // separated filter.
-func (e *Exporter) filterServerMetrics(filter string) (map[int]*prometheus.GaugeVec, error) {
-	metrics := map[int]*prometheus.GaugeVec{}
+func (e *Exporter) filterServerMetrics(filter string) (map[int]prometheus.GaugeOpts, error) {
+	metrics := map[int]prometheus.GaugeOpts{}
 	if len(filter) == 0 {
 		return metrics, nil
 	}
@@ -483,7 +494,7 @@ func (e *Exporter) filterServerMetrics(filter string) (map[int]*prometheus.Gauge
 
 	for field, opts := range ServerMetrics {
 		if _, ok := selected[field]; ok {
-			metrics[field] = e.newServerMetric(opts)
+			metrics[field] = opts
 		}
 	}
 	return metrics, nil

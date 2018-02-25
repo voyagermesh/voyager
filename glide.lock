@@ -1,5 +1,5 @@
 hash: 52dc2bd8700082777010dc673be15f2b6ceb102a0a05cd4d60b2679da0fee84f
-updated: 2018-02-24T18:51:42.753382884-08:00
+updated: 2018-02-24T20:58:15.990740667-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -387,7 +387,7 @@ imports:
   - model
   - version
 - name: github.com/prometheus/haproxy_exporter
-  version: 152616400767357d9741204ef65e7c7e5194c351
+  version: 2f632c755d6ccd7c4e67de76162d2e21dbf274ed
   repo: https://github.com/appscode/haproxy_exporter.git
   subpackages:
   - collector
