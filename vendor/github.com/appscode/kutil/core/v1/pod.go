@@ -2,11 +2,10 @@ package v1
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
 
 	"github.com/appscode/kutil"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -73,7 +72,7 @@ func TryUpdatePod(c kubernetes.Interface, meta metav1.ObjectMeta, transform func
 	})
 
 	if err != nil {
-		err = fmt.Errorf("failed to update Pod %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
+		err = errors.Errorf("failed to update Pod %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
 }
@@ -155,6 +154,17 @@ func WaitUntilPodDeletedBySelector(kubeClient kubernetes.Interface, namespace st
 		podList, err := kubeClient.CoreV1().Pods(namespace).List(metav1.ListOptions{
 			LabelSelector: r.String(),
 		})
+		if err != nil {
+			return false, nil
+		}
+		return len(podList.Items) == 0, nil
+	})
+}
+
+// WaitUntillPodTerminatedByLabel waits until all pods with the label are terminated. Timeout is 5 minutes.
+func WaitUntillPodTerminatedByLabel(kubeClient kubernetes.Interface, namespace string, label string) error {
+	return wait.PollImmediate(kutil.RetryInterval, kutil.PodTerminationTimeout, func() (bool, error) {
+		podList, err := kubeClient.CoreV1().Pods(namespace).List(metav1.ListOptions{LabelSelector: label})
 		if err != nil {
 			return false, nil
 		}

@@ -1,14 +1,16 @@
 package kutil
 
 import (
-	"errors"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 const (
-	RetryInterval    = 50 * time.Millisecond
-	RetryTimeout     = 2 * time.Second
-	ReadinessTimeout = 10 * time.Minute
+	RetryInterval         = 50 * time.Millisecond
+	RetryTimeout          = 2 * time.Second
+	ReadinessTimeout      = 10 * time.Minute
+	PodTerminationTimeout = 5 * time.Minute
 )
 
 type VerbType string

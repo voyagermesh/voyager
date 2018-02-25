@@ -7,17 +7,16 @@ import (
 	"time"
 
 	"github.com/appscode/go/log"
-	hpe "github.com/appscode/haproxy_exporter/exporter"
 	"github.com/appscode/pat"
-	"github.com/pkg/errors"
-	// api "github.com/appscode/voyager/apis/voyager"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	"github.com/orcaman/concurrent-map"
+	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/version"
+	"github.com/prometheus/haproxy_exporter/collector"
 	"github.com/spf13/cobra"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -39,7 +38,7 @@ var (
 	extClient  cs.Interface
 
 	address                   = fmt.Sprintf(":%d", api.DefaultExporterPortNumber)
-	haProxyServerMetricFields = hpe.ServerMetrics.String()
+	haProxyServerMetricFields = collector.ServerMetrics.String()
 	haProxyTimeout            = 5 * time.Second
 )
 
@@ -104,7 +103,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				exporter, err := hpe.NewExporter(scrapeURL, name, haProxyServerMetricFields, haProxyTimeout)
+				exporter, err := collector.NewExporter(scrapeURL, false, haProxyServerMetricFields, prometheus.Labels{"ingress": name}, haProxyTimeout)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -139,7 +138,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				exporter, err := hpe.NewExporter(scrapeURL, name, haProxyServerMetricFields, haProxyTimeout)
+				exporter, err := collector.NewExporter(scrapeURL, false, haProxyServerMetricFields, prometheus.Labels{"ingress": name}, haProxyTimeout)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return

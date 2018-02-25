@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	hpe "github.com/appscode/haproxy_exporter/exporter"
 	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
@@ -16,6 +15,7 @@ import (
 	"github.com/appscode/voyager/pkg/operator"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	"github.com/pkg/errors"
+	"github.com/prometheus/haproxy_exporter/collector"
 	"github.com/spf13/pflag"
 	core "k8s.io/api/core/v1"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
@@ -84,7 +84,7 @@ func NewOperatorOptions() *OperatorOptions {
 
 		customTemplates:           "",
 		OpsAddress:                fmt.Sprintf(":%d", api.DefaultExporterPortNumber),
-		haProxyServerMetricFields: hpe.ServerMetrics.String(),
+		haProxyServerMetricFields: collector.ServerMetrics.String(),
 		haProxyTimeout:            5 * time.Second,
 	}
 }

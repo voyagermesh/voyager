@@ -12,7 +12,7 @@ import (
 	etx "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	acf "github.com/appscode/voyager/client/fake"
+	acf "github.com/appscode/voyager/client/clientset/versioned/fake"
 	"github.com/stretchr/testify/assert"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
