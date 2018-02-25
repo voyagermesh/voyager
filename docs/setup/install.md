@@ -15,6 +15,7 @@ section_menu_id: setup
 # Installation Guide
 
 ## Using YAML
+
 Voyager can be installed via installer script included in the [/hack/deploy](https://github.com/appscode/voyager/tree/6.0.0-rc.0/hack/deploy) folder.
 
 ```console
@@ -96,15 +97,8 @@ $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.0/hack/
     | bash -s -- --provider=$provider --enable-admission-webhook [--rbac]
 ```
 
-__N.B.__
-- If you are installing Voyager on a GKE cluster, you will need cluster admin permissions to install Voyager operator. Run the following command to grant admin permision to the cluster.
-
-```console
-kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=google-email-for-gce-project
-```
-
-
 ## Using Helm
+
 Voyager can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/appscode/voyager/tree/6.0.0-rc.0/chart/stable/voyager) included in this repository or from official charts repository. To install the chart with the release name `my-release`:
 
 ```console
@@ -136,6 +130,22 @@ $ helm install stable/voyager --name my-release \
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/6.0.0-rc.0/chart/stable/voyager).
+
+### Installing in GKE Cluster
+
+If you are installing Voyager on a GKE cluster, you will need cluster admin permissions to install Voyager operator. Run the following command to grant admin permision to the cluster.
+
+```console
+kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=google-email-for-gce-project
+```
+
+### Installing in Minikube
+
+Voyager can be used in minikube using `--provider=minikube`. In Minikube, a `LoadBalancer` type ingress will only assigned a NodePort.
+
+### Installing in Baremetal Cluster
+
+Voyager works great in baremetal cluster. To install, set `--provider=baremetal`. In baremetal cluster, `LoadBalancer` type ingress in not supported. You can use [NodePort](/docs/concepts/ingress-types/nodeport.md), [HostPort](/docs/concepts/ingress-types/hostport.md) or [Internal](/docs/concepts/ingress-types/internal.md) ingress objects.
 
 
 ## Verify installation
