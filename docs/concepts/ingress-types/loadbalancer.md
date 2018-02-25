@@ -159,3 +159,33 @@ and the apply the annotation to your Ingress.
 You can't use Global Static IP with a LoabBalancer Ingress managed by GKE. Voyager creates a `LoadBalancer` Service to expose HAProxy pods. Under the hood, Kubernetes creates a `Network LoadBalancer` to expose that Kubernetes service. Network LoadBalancers can only use regional static IPs.
 
 If you want to use Global static IP with Google Cloud, these pods need to be exposed via  a HTTP LoadBalancer. Voyager does not support this today. This is not a priority for us but if you want to contribute, we can talk more. To use HTTP LoadBalancers today, you can use the `gce` ingress controller: https://github.com/kubernetes/ingress-gce . You may already know that HTTP LoadBalancer can only open port 80, 8080 and 443 and serve HTTP traffic. Please consult the official docs for more details: https://cloud.google.com/compute/docs/load-balancing/
+
+**How to use LoadBalancer type ingress in Minikube cluster?**
+
+Minikube clusters do not support service type `LoadBalancer`. So, you can try the following work arounds:
+
+- You can set the `Host` header is your http request to match the expected domain and port. This will ensure HAProxy matches the rules properly.
+
+```console
+$ curl -vv <minikube-ip>:<node-port> -H "Host: app.example.com"
+```
+
+- This work around is available thanks to [@david92rl](https://github.com/david92rl). You can use a service type ClusterIP with an ip fixed (like 10.0.0.150), then create a route to it from host machine.
+
+**_Minikube on Mac with virtualbox/vmware providers_**
+
+```console
+sudo route -n delete ${K8S_NETWORK} > /dev/null 2>&1
+sudo route -n add ${K8S_NETWORK} $(minikube ip)
+interface=$(ifconfig 'bridge0' | grep member | awk '{print $2}' | xargs | awk '{print $1}')
+sudo ifconfig bridge0 -hostfilter ${interface}
+```
+
+**_Minikube on Linux_**
+
+```console
+sudo ip route del ${K8S_NETWORK}
+sudo ip route add ${K8S_NETWORK} via $(minikube ip)
+```
+
+*K8S_NETWORK* usually is `10.0.0.0/24` but it's worth to double check always.
