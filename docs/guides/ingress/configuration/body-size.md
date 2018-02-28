@@ -1,3 +1,16 @@
+---
+title: Configure Ingress Body Size
+menu:
+  product_voyager_6.0.0-rc.1:
+    identifier: body-size-configuration
+    name: Body Size
+    parent: config-ingress
+    weight: 10
+product_name: voyager
+menu_name: product_voyager_6.0.0-rc.1
+section_menu_id: guides
+---
+
 # Maximum Body Size
 
 You can configure maximum allowed request body size in bytes using `ingress.appscode.com/proxy-body-size` annotation. It will applied globally for all frontends. If request body size exceeds the specified size then it will through error with code `400`.

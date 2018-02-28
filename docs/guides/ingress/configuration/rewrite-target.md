@@ -1,3 +1,16 @@
+---
+title: Configure Ingress Rewrite Target
+menu:
+  product_voyager_6.0.0-rc.1:
+    identifier: rewrite-target-configuration
+    name: Rewrite Target
+    parent: config-ingress
+    weight: 10
+product_name: voyager
+menu_name: product_voyager_6.0.0-rc.1
+section_menu_id: guides
+---
+
 # Rewrite Target
 
 In some scenarios the exposed URL in the backend service differs from the specified path in the Ingress rule. This will cause any request to return 404. In such scenarios you can set the path expected by the service using `ingress.appscode.com/rewrite-target` annotation. This will be applied globally for all paths.

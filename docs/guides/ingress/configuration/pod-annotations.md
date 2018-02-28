@@ -1,3 +1,16 @@
+---
+title: Configure Ingress Pod Annotations
+menu:
+  product_voyager_6.0.0-rc.1:
+    identifier: pod-annotations-configuration
+    name: Pod Annotations
+    parent: config-ingress
+    weight: 10
+product_name: voyager
+menu_name: product_voyager_6.0.0-rc.1
+section_menu_id: guides
+---
+
 # Pod Annotations
 
 You can specify annotations applied to HAProxy pods through ingress annotation `ingress.appscode.com/annotations-pod`. You have to provide it as a json formatted string to string map.

@@ -1,3 +1,16 @@
+---
+title: Configure Ingress Error Files
+menu:
+  product_voyager_6.0.0-rc.1:
+    identifier: error-files-configuration
+    name: Error Files
+    parent: config-ingress
+    weight: 10
+product_name: voyager
+menu_name: product_voyager_6.0.0-rc.1
+section_menu_id: guides
+---
+
 # Error Files
 
 Using voayger you can configure haproxy to return a file-content or, execute a command instead of returning generated errors. To achieve this you need to create a `configmap` specifying the file-content or, command for different status codes. Then you have to specify the `configmap` name using `ingress.appscode.com/errorfiles` annotation. Then contents of the configmap will be mounted in the haproxy pod in path `/srv/voyager/errorfiles`.
