@@ -1,3 +1,16 @@
+---
+title: Configure Ingress Ssl Passthrough
+menu:
+  product_voyager_6.0.0-rc.1:
+    identifier: ssl-passthrough-configuration
+    name: Ssl Passthrough
+    parent: config-ingress
+    weight: 10
+product_name: voyager
+menu_name: product_voyager_6.0.0-rc.1
+section_menu_id: guides
+---
+
 # SSL Passthrough
 
 The annotation `ingress.appscode.com/ssl-passthrough` allows to configure TLS termination in the backend and not in haproxy. When set to `true`, passes TLS connections directly to backend.

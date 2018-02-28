@@ -1,13 +1,13 @@
 ---
 title: Blue Green Deployments | Kubernetes Ingress
 menu:
-  product_voyager_6.0.0-rc.0:
+  product_voyager_6.0.0-rc.1:
     identifier: blue-green-http
     name: Blue Green Deployment
     parent: http-ingress
     weight: 60
 product_name: voyager
-menu_name: product_voyager_6.0.0-rc.0
+menu_name: product_voyager_6.0.0-rc.1
 section_menu_id: guides
 ---
 

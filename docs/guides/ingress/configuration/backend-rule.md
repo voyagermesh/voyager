@@ -1,13 +1,13 @@
 ---
 title: Backend Rules | Kubernetes Ingress
 menu:
-  product_voyager_6.0.0-rc.0:
+  product_voyager_6.0.0-rc.1:
     identifier: backend-config
     name: Backend Rule
     parent: config-ingress
-    weight: 10
+    weight: 100
 product_name: voyager
-menu_name: product_voyager_6.0.0-rc.0
+menu_name: product_voyager_6.0.0-rc.1
 section_menu_id: guides
 ---
 

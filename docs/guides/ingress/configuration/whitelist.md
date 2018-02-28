@@ -1,3 +1,16 @@
+---
+title: Configure Ingress Whitelist
+menu:
+  product_voyager_6.0.0-rc.1:
+    identifier: whitelist-configuration
+    name: Whitelist
+    parent: config-ingress
+    weight: 10
+product_name: voyager
+menu_name: product_voyager_6.0.0-rc.1
+section_menu_id: guides
+---
+
 # Whitelist Source Range
 
 You can specify the allowed client IP source ranges through the `ingress.appscode.com/whitelist-source-range` annotation. The value is a space separated list of CIDRs, e.g. `192.168.20.0/24 192.168.10.3`. This rule will be applied globally for all frontends. To apply for a specific frontend, you need to manually add `src acl` using [frontend-rules](frontend-rule.md).

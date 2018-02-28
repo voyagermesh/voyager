@@ -1,7 +1,70 @@
+---
+title: Docs CHANGELOG
+menu:
+  product_voyager_6.0.0-rc.1:
+    identifier: changelog-docs
+    name: Docs CHANGELOG
+    parent: docs-voyager
+    weight: 1
+product_name: voyager
+menu_name: product_voyager_6.0.0-rc.1
+section_menu_id: guides
+---
+
 # Change Log
 
-## [6.0.0-rc.0](https://github.com/appscode/voyager/tree/6.0.0-rc.0) (2018-02-14)
-[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0-rc.11...6.0.0-rc.0)
+## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
+
+[Full Changelog](https://github.com/appscode/voyager/compare/6.0.0-rc.1...HEAD)
+
+**Implemented enhancements:**
+
+- Source IP affinity [\#759](https://github.com/appscode/voyager/issues/759)
+
+**Fixed bugs:**
+
+- basic auth remove on upgrade to 5.0.0-rc11 [\#873](https://github.com/appscode/voyager/issues/873)
+- whitelist did not work [\#866](https://github.com/appscode/voyager/issues/866)
+- Update voyager docs [\#50](https://github.com/appscode/voyager/issues/50)
+
+**Closed issues:**
+
+- Update Prometheus integration [\#893](https://github.com/appscode/voyager/issues/893)
+- Disabling HSTS - doesn't work [\#881](https://github.com/appscode/voyager/issues/881)
+- Upgrade from 5.0.0-rc.11 to 6.0.0-rc.1 [\#876](https://github.com/appscode/voyager/issues/876)
+- AWS ELB Proxy IP forwarded for occurs errors  [\#749](https://github.com/appscode/voyager/issues/749)
+- How to use voyager instead of kubernetes nginx ingress controller [\#742](https://github.com/appscode/voyager/issues/742)
+- RBAC for voyager [\#732](https://github.com/appscode/voyager/issues/732)
+- Document default mode does not work for minikube [\#545](https://github.com/appscode/voyager/issues/545)
+- Document how to use Host IP as external IP in minikube for LoadBalancer type Service [\#511](https://github.com/appscode/voyager/issues/511)
+- Document RBAC setup on installer page. [\#508](https://github.com/appscode/voyager/issues/508)
+- Document external-dns configuration [\#355](https://github.com/appscode/voyager/issues/355)
+- Document why each ingress creates a new HAProxy in voyager [\#331](https://github.com/appscode/voyager/issues/331)
+
+**Merged pull requests:**
+
+- Fix service name in chart [\#903](https://github.com/appscode/voyager/pull/903) ([tamalsaha](https://github.com/tamalsaha))
+- Update links to latest release [\#901](https://github.com/appscode/voyager/pull/901) ([tamalsaha](https://github.com/tamalsaha))
+- Support --enable-admission-webhook=false [\#900](https://github.com/appscode/voyager/pull/900) ([tamalsaha](https://github.com/tamalsaha))
+- Support multiple webhooks of same apiversion [\#899](https://github.com/appscode/voyager/pull/899) ([tamalsaha](https://github.com/tamalsaha))
+- Sync chart to stable charts repo [\#898](https://github.com/appscode/voyager/pull/898) ([tamalsaha](https://github.com/tamalsaha))
+- Document Prometheus integration [\#896](https://github.com/appscode/voyager/pull/896) ([tamalsaha](https://github.com/tamalsaha))
+- Improve docs [\#895](https://github.com/appscode/voyager/pull/895) ([tamalsaha](https://github.com/tamalsaha))
+- Update haproxy exporter [\#894](https://github.com/appscode/voyager/pull/894) ([tamalsaha](https://github.com/tamalsaha))
+- Document user facing RBAC roles [\#892](https://github.com/appscode/voyager/pull/892) ([tamalsaha](https://github.com/tamalsaha))
+- Skip generating UpdateStatus method [\#887](https://github.com/appscode/voyager/pull/887) ([tamalsaha](https://github.com/tamalsaha))
+- Delete internal types [\#886](https://github.com/appscode/voyager/pull/886) ([tamalsaha](https://github.com/tamalsaha))
+- Use official code generator scripts [\#885](https://github.com/appscode/voyager/pull/885) ([tamalsaha](https://github.com/tamalsaha))
+- Use HAProxy 1.7.10 [\#884](https://github.com/appscode/voyager/pull/884) ([tamalsaha](https://github.com/tamalsaha))
+- Move node selector to Ingress spec [\#883](https://github.com/appscode/voyager/pull/883) ([tamalsaha](https://github.com/tamalsaha))
+- Only check NodePort if provided [\#880](https://github.com/appscode/voyager/pull/880) ([tamalsaha](https://github.com/tamalsaha))
+- Create user facing aggregate roles [\#879](https://github.com/appscode/voyager/pull/879) ([tamalsaha](https://github.com/tamalsaha))
+- Use rbac/v1 api [\#878](https://github.com/appscode/voyager/pull/878) ([tamalsaha](https://github.com/tamalsaha))
+- Use github.com/pkg/errors [\#877](https://github.com/appscode/voyager/pull/877) ([tamalsaha](https://github.com/tamalsaha))
+- Update docs for supported annotations [\#871](https://github.com/appscode/voyager/pull/871) ([diptadas](https://github.com/diptadas))
+
+## [6.0.0-rc.1](https://github.com/appscode/voyager/tree/6.0.0-rc.1) (2018-02-14)
+[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0-rc.11...6.0.0-rc.1)
 
 **Fixed bugs:**
 
@@ -43,6 +106,7 @@
 
 **Merged pull requests:**
 
+- Remove bad acl from haproxy template [\#875](https://github.com/appscode/voyager/pull/875) ([tamalsaha](https://github.com/tamalsaha))
 - annotations.md typo fix [\#874](https://github.com/appscode/voyager/pull/874) ([mu5h3r](https://github.com/mu5h3r))
 - Use service port by default for LB type nodeport [\#870](https://github.com/appscode/voyager/pull/870) ([diptadas](https://github.com/diptadas))
 - Fixed configmap cleanup when ingress deleted [\#869](https://github.com/appscode/voyager/pull/869) ([diptadas](https://github.com/diptadas))

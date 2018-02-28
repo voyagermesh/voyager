@@ -1,3 +1,16 @@
+---
+title: Configure Ingress Loadbalancer IP
+menu:
+  product_voyager_6.0.0-rc.1:
+    identifier: loadbalancer-ip-configuration
+    name: Loadbalancer IP
+    parent: config-ingress
+    weight: 10
+product_name: voyager
+menu_name: product_voyager_6.0.0-rc.1
+section_menu_id: guides
+---
+
 # LoadBalancer IP
 
 For `LoadBalancer` type ingresses, you can specify `LoadBalancerIP` of HAProxy services using `ingress.appscode.com/load-balancer-ip` annotation.
