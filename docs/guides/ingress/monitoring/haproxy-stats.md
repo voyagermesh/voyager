@@ -64,7 +64,7 @@ kubectl expose deployment nginx --name=web --port=80 --target-port=80 -n demo
 Now create Ingress `ing.yaml`
 
 ```console
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.0/docs/examples/monitoring/stats-ing.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.0/docs/examples/monitoring/stats-ing.yaml
 ingress "stats-ing" created
 
 $ kubectl get pods,svc -n demo

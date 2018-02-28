@@ -49,7 +49,7 @@ kubectl expose deployment nginx --name=web --port=80 --target-port=80 -n demo
 Now create Ingress `ing.yaml`
 
 ```console
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.0/docs/examples/monitoring/builtin-prometheus/ing.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.0/docs/examples/monitoring/builtin-prometheus/ing.yaml
 ingress "stats-ing" created
 ```
 
@@ -201,7 +201,7 @@ data:
 ```
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.0/docs/examples/monitoring/builtin-prometheus/demo-1.yaml
+$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.0/docs/examples/monitoring/builtin-prometheus/demo-1.yaml
 configmap "prometheus-server-conf" created
 ```
 
@@ -250,7 +250,7 @@ spec:
 If RBAC *is* enabled, Run the following command to deploy prometheus in kubernetes:
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.0/docs/examples/monitoring/builtin-prometheus/rbac/demo-2.yaml
+$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.0/docs/examples/monitoring/builtin-prometheus/rbac/demo-2.yaml
 clusterrole "prometheus-server" created
 serviceaccount "prometheus-server" created
 clusterrolebinding "prometheus-server" created
@@ -278,7 +278,7 @@ prometheus-server   1         1m
 If RBAC *is not* enabled, run the following command to prepare your cluster for this tutorial:
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.0/docs/examples/monitoring/builtin-prometheus/demo-2.yaml
+$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.0/docs/examples/monitoring/builtin-prometheus/demo-2.yaml
 deployment "prometheus-server" created
 service "prometheus-service" created
 
