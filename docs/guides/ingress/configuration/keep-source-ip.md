@@ -1,3 +1,16 @@
+---
+title: Configure Ingress Keep Source IP
+menu:
+  product_voyager_6.0.0-rc.1:
+    identifier: keep-source-ip-configuration
+    name: Keep Source IP
+    parent: config-ingress
+    weight: 10
+product_name: voyager
+menu_name: product_voyager_6.0.0-rc.1
+section_menu_id: guides
+---
+
 # Keep Source IP
 
 You can preserve client source IP by setting annotation `ingress.appscode.com/keep-source-ip` to `true`.

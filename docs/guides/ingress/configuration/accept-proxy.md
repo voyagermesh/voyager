@@ -1,3 +1,16 @@
+---
+title: Configure Ingress Accept Proxy
+menu:
+  product_voyager_6.0.0-rc.1:
+    identifier: accept-proxy-configuration
+    name: Accept Proxy
+    parent: config-ingress
+    weight: 10
+product_name: voyager
+menu_name: product_voyager_6.0.0-rc.1
+section_menu_id: guides
+---
+
 # Accept Proxy
 
 If set to `true`, enforces the use of the PROXY protocol over any connection accepted by HAProxy.

@@ -1,3 +1,16 @@
+---
+title: Configure External DNS for Kubernetes Ingress
+menu:
+  product_voyager_6.0.0-rc.1:
+    identifier: external-dns-dns
+    name: External DNS
+    parent: dns-ingress
+    weight: 10
+product_name: voyager
+menu_name: product_voyager_6.0.0-rc.1
+section_menu_id: guides
+---
+
 # Configuring external DNS servers
 
 [external-dns](https://github.com/kubernetes-incubator/external-dns) project can be used to configure external DNS servers for Voyager managed ingresses.

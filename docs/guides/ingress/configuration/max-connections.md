@@ -1,3 +1,16 @@
+---
+title: Configure Ingress Max Connections
+menu:
+  product_voyager_6.0.0-rc.1:
+    identifier: max-connections-configuration
+    name: Max Connections
+    parent: config-ingress
+    weight: 10
+product_name: voyager
+menu_name: product_voyager_6.0.0-rc.1
+section_menu_id: guides
+---
+
 # Maximum Connections
 
 You can specify the maximum number of concurrent connections through the `ingress.appscode.com/max-connections` annotation. When applied to ingress, this rule will be applied globally for all backends. To apply for a specific backend, you need to apply the annotation to associated pod.

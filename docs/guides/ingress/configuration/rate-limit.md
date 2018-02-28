@@ -1,3 +1,16 @@
+---
+title: Configure Ingress Rate Limit
+menu:
+  product_voyager_6.0.0-rc.1:
+    identifier: rate-limit-configuration
+    name: Rate Limit
+    parent: config-ingress
+    weight: 10
+product_name: voyager
+menu_name: product_voyager_6.0.0-rc.1
+section_menu_id: guides
+---
+
 # Rate limiting
 
 You can define a limit on the connections that can be opened by a single client IP address through annotations. This can be used to mitigate DDoS Attacks.

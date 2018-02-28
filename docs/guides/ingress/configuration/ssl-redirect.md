@@ -1,3 +1,16 @@
+---
+title: Configure Ingress Ssl Redirect
+menu:
+  product_voyager_6.0.0-rc.1:
+    identifier: ssl-redirect-configuration
+    name: Ssl Redirect
+    parent: config-ingress
+    weight: 10
+product_name: voyager
+menu_name: product_voyager_6.0.0-rc.1
+section_menu_id: guides
+---
+
 # SSL Redirect
 
 By default voyager redirects (301) to HTTPS if TLS is enabled for that ingress. If you want to disable that behavior globally, you can use `ingress.appscode.com/ssl-redirect: "false"` annotation.

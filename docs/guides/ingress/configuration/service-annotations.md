@@ -1,3 +1,16 @@
+---
+title: Configure Ingress Service Annotations
+menu:
+  product_voyager_6.0.0-rc.1:
+    identifier: service-annotations-configuration
+    name: Service Annotations
+    parent: config-ingress
+    weight: 10
+product_name: voyager
+menu_name: product_voyager_6.0.0-rc.1
+section_menu_id: guides
+---
+
 # Service Annotations
 
 You can specify annotations applied to HAProxy services through ingress annotation `ingress.appscode.com/annotations-service`. You have to provide it as a json formatted string to string map.
