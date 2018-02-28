@@ -1,14 +1,18 @@
 ---
-title: Docs CHANGELOG
+title: Changelog | Voyager
+description: Changelog
 menu:
   product_voyager_6.0.0-rc.1:
-    identifier: changelog-docs
-    name: Docs CHANGELOG
-    parent: docs-voyager
-    weight: 1
+    identifier: changelog-voyager
+    name: Changelog
+    parent: welcome
+    weight: 10
 product_name: voyager
 menu_name: product_voyager_6.0.0-rc.1
-section_menu_id: guides
+section_menu_id: welcome
+url: /products/voyager/6.0.0-rc.1/welcome/changelog/
+aliases:
+  - /products/voyager/6.0.0-rc.1/CHANGELOG/
 ---
 
 # Change Log
