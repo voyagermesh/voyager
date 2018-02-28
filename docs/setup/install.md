@@ -90,7 +90,7 @@ $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.0/hack/
     | bash -s -- --provider=$provider --docker-registry=MY_REGISTRY [--image-pull-secret=SECRET_NAME] [--rbac]
 ```
 
-Voyager implements a [validating admission webhook](https://kubernetes.io/docs/admin/admission-controllers/#validatingadmissionwebhook-alpha-in-18-beta-in-19) to validate Voyager CRDs. To enable this feature, pass the `--enable-admission-webhook` flag. _Please note that, this works with Kubernetes 1.9.0 or later releases_.
+Voyager implements a [validating admission webhook](https://kubernetes.io/docs/admin/admission-controllers/#validatingadmissionwebhook-alpha-in-18-beta-in-19) to validate Voyager CRDs. This is enabled by default for Kubernetes 1.9.0 or later releases. To disable this feature, pass the `--enable-admission-webhook=false` flag.
 
 ```console
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.0/hack/deploy/voyager.sh \
