@@ -17,9 +17,8 @@ aliases:
 
 # Change Log
 
-## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
-
-[Full Changelog](https://github.com/appscode/voyager/compare/6.0.0-rc.1...HEAD)
+## [6.0.0-rc.1](https://github.com/appscode/voyager/tree/6.0.0-rc.1) (2018-02-28)
+[Full Changelog](https://github.com/appscode/voyager/compare/6.0.0-rc.0...6.0.0-rc.1)
 
 **Implemented enhancements:**
 
@@ -35,7 +34,7 @@ aliases:
 
 - Update Prometheus integration [\#893](https://github.com/appscode/voyager/issues/893)
 - Disabling HSTS - doesn't work [\#881](https://github.com/appscode/voyager/issues/881)
-- Upgrade from 5.0.0-rc.11 to 6.0.0-rc.1 [\#876](https://github.com/appscode/voyager/issues/876)
+- Upgrade from 5.0.0-rc.11 to 6.0.0-rc.0 [\#876](https://github.com/appscode/voyager/issues/876)
 - AWS ELB Proxy IP forwarded for occurs errors  [\#749](https://github.com/appscode/voyager/issues/749)
 - How to use voyager instead of kubernetes nginx ingress controller [\#742](https://github.com/appscode/voyager/issues/742)
 - RBAC for voyager [\#732](https://github.com/appscode/voyager/issues/732)
@@ -47,6 +46,7 @@ aliases:
 
 **Merged pull requests:**
 
+- Prepare docs for 6.0.0-rc.1 [\#904](https://github.com/appscode/voyager/pull/904) ([tamalsaha](https://github.com/tamalsaha))
 - Fix service name in chart [\#903](https://github.com/appscode/voyager/pull/903) ([tamalsaha](https://github.com/tamalsaha))
 - Update links to latest release [\#901](https://github.com/appscode/voyager/pull/901) ([tamalsaha](https://github.com/tamalsaha))
 - Support --enable-admission-webhook=false [\#900](https://github.com/appscode/voyager/pull/900) ([tamalsaha](https://github.com/tamalsaha))
@@ -67,8 +67,8 @@ aliases:
 - Use github.com/pkg/errors [\#877](https://github.com/appscode/voyager/pull/877) ([tamalsaha](https://github.com/tamalsaha))
 - Update docs for supported annotations [\#871](https://github.com/appscode/voyager/pull/871) ([diptadas](https://github.com/diptadas))
 
-## [6.0.0-rc.1](https://github.com/appscode/voyager/tree/6.0.0-rc.1) (2018-02-14)
-[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0-rc.11...6.0.0-rc.1)
+## [6.0.0-rc.0](https://github.com/appscode/voyager/tree/6.0.0-rc.0) (2018-02-14)
+[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0-rc.11...6.0.0-rc.0)
 
 **Fixed bugs:**
 
