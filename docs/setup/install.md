@@ -125,8 +125,7 @@ $ helm install stable/voyager --name my-release --set cloudProvider=$provider
 $ helm repo update
 $ helm install stable/voyager --name my-release \
   --set cloudProvider=$provider \
-  --set apiserver.ca="$(onessl get kube-ca)" \
-  --set apiserver.enableAdmissionWebhook=true
+  --set apiserver.ca="$(onessl get kube-ca)"
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/6.0.0-rc.0/chart/stable/voyager).

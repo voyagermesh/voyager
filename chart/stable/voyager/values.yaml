@@ -59,6 +59,6 @@ apiserver:
   # for more information on proper values of this field
   versionPriority: 15
   # enableAdmissionWebhook is used to configure apiserver as ValidationWebhook for Voyager CRDs
-  enableAdmissionWebhook: false
+  enableAdmissionWebhook: true
   # CA certificate used by main Kubernetes api server
   ca:
