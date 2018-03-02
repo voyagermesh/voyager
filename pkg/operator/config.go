@@ -1,9 +1,9 @@
 package operator
 
 import (
+	hookapi "github.com/appscode/kutil/admission/api"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	voyagerinformers "github.com/appscode/voyager/client/informers/externalversions"
-	hookapi "github.com/appscode/voyager/pkg/admission/api"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"

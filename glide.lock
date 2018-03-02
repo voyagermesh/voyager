@@ -1,5 +1,5 @@
 hash: 52dc2bd8700082777010dc673be15f2b6ceb102a0a05cd4d60b2679da0fee84f
-updated: 2018-02-24T20:58:15.990740667-08:00
+updated: 2018-03-02T02:40:50.526030201-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -9,7 +9,7 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/go
-  version: 83e7fc1967ed737eedfc87da60c42e9fc4dc684c
+  version: c312c0a1fe0d4988480073287b8633fc5a244647
   subpackages:
   - analytics
   - context
@@ -33,8 +33,9 @@ imports:
   - api
   - prometheus/v1
 - name: github.com/appscode/kutil
-  version: 20ffc2be6a1d88387bc6f6babe7bfe312c58b509
+  version: a40b31e357afdbd506fe4a21b58f87953b84785e
   subpackages:
+  - admission/api
   - apiextensions/v1beta1
   - apps/v1beta1
   - core/v1
@@ -42,6 +43,7 @@ imports:
   - extensions/v1beta1
   - meta
   - rbac/v1
+  - registry/admissionreview/v1beta1
   - tools/analytics
   - tools/certstore
   - tools/clientcmd
@@ -200,7 +202,7 @@ imports:
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
-  version: 3af367b6b30c263d47e8895973edcca9a49cf029
+  version: 0c93777250bd58222171888d1651979319d8b381
   subpackages:
   - cmp
   - cmp/internal/diff
@@ -368,7 +370,7 @@ imports:
 - name: github.com/pires/go-proxyproto
   version: 2f38359974ffed92842a86ffcc17001b3f525e34
 - name: github.com/pkg/errors
-  version: 645ef00459ed84a119197bfb8d8205042c6df63d
+  version: 30136e27e2ac8d167177e8a583aa4c3fea5be833
 - name: github.com/prometheus/client_golang
   version: c5b7fccd204277076155f10851dad72b76a49317
   subpackages:
@@ -387,7 +389,7 @@ imports:
   - model
   - version
 - name: github.com/prometheus/haproxy_exporter
-  version: 2f632c755d6ccd7c4e67de76162d2e21dbf274ed
+  version: 91c6ff36313fe48390d89eaf9baa0736544e4931
   repo: https://github.com/appscode/haproxy_exporter.git
   subpackages:
   - collector
@@ -406,7 +408,7 @@ imports:
   subpackages:
   - diffmatchpatch
 - name: github.com/sethgrid/pester
-  version: b18953f5db2922a73aaf89652abf7b5ee95cb516
+  version: ed9870dad3170c0b25ab9b11830cc57c3a7798fb
 - name: github.com/shurcooL/sanitized_anchor_name
   version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/sirupsen/logrus
@@ -416,7 +418,7 @@ imports:
   subpackages:
   - mem
 - name: github.com/spf13/cobra
-  version: a1e4933ab784095895e33dbe9f001ba10cfe2060
+  version: c6c44e6fdcc30161c7f4480754da7230d01c06e3
   subpackages:
   - doc
 - name: github.com/spf13/pflag
@@ -763,7 +765,6 @@ imports:
   - pkg/util/feature
   - pkg/util/flag
   - pkg/util/flushwriter
-  - pkg/util/logs
   - pkg/util/trace
   - pkg/util/webhook
   - pkg/util/wsstream
