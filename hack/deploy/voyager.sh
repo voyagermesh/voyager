@@ -4,29 +4,35 @@ echo "checking kubeconfig context"
 kubectl config current-context || { echo "Set a context (kubectl use-context <context>) out of the following:"; echo; kubectl config get-contexts; exit 1; }
 echo ""
 
-# ref: https://stackoverflow.com/a/27776822/244009
-case "$(uname -s)" in
-    Darwin)
-        curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.1.0/onessl-darwin-amd64
-        chmod +x onessl
-        export ONESSL=./onessl
-        ;;
+# https://stackoverflow.com/a/677212/244009
+if ! [ -x "$(command -v onessl >/dev/null 2>&1)" ]; then
+    echo "using onessl found in the machine"
+    export ONESSL=onessl
+else
+    # ref: https://stackoverflow.com/a/27776822/244009
+    case "$(uname -s)" in
+        Darwin)
+            curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.1.0/onessl-darwin-amd64
+            chmod +x onessl
+            export ONESSL=./onessl
+            ;;
 
-    Linux)
-        curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.1.0/onessl-linux-amd64
-        chmod +x onessl
-        export ONESSL=./onessl
-        ;;
+        Linux)
+            curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.1.0/onessl-linux-amd64
+            chmod +x onessl
+            export ONESSL=./onessl
+            ;;
 
-    CYGWIN*|MINGW32*|MSYS*)
-        curl -fsSL -o onessl.exe https://github.com/kubepack/onessl/releases/download/0.1.0/onessl-windows-amd64.exe
-        chmod +x onessl.exe
-        export ONESSL=./onessl.exe
-        ;;
-    *)
-        echo 'other OS'
-        ;;
-esac
+        CYGWIN*|MINGW32*|MSYS*)
+            curl -fsSL -o onessl.exe https://github.com/kubepack/onessl/releases/download/0.1.0/onessl-windows-amd64.exe
+            chmod +x onessl.exe
+            export ONESSL=./onessl.exe
+            ;;
+        *)
+            echo 'other OS'
+            ;;
+    esac
+fi
 
 # http://redsymbol.net/articles/bash-exit-traps/
 function cleanup {
@@ -171,6 +177,10 @@ if [ "$VOYAGER_UNINSTALL" -eq 1 ]; then
     exit 0
 fi
 
+echo "checking whether extended apiserver feature is enabled"
+$ONESSL has-keys configmap --namespace=kube-system --keys=requestheader-client-ca-file extension-apiserver-authentication || { echo "Set --requestheader-client-ca-file flag on Kubernetes apiserver"; exit 1; }
+echo ""
+
 case "$VOYAGER_CLOUD_PROVIDER" in
 	acs)
 		export VOYAGER_CLOUD_CONFIG=/etc/kubernetes/azure.json
@@ -257,3 +267,13 @@ fi
 if [ "$VOYAGER_ENABLE_ADMISSION_WEBHOOK" = true ]; then
     curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.1/hack/deploy/admission.yaml | $ONESSL envsubst | kubectl apply -f -
 fi
+
+echo "waiting until voyager operator deployment is ready"
+$ONESSL wait-until-ready deployment voyager-operator --namespace $VOYAGER_NAMESPACE || { echo "Voyager operator deployment failed to be ready"; exit 1; }
+
+echo "waiting until voyager apiservice is available"
+$ONESSL wait-until-ready apiservice v1beta1.admission.voyager.appscode.com || { echo "Voyager apiservice failed to be ready"; exit 1; }
+
+echo "waiting until voyager crds are ready"
+$ONESSL wait-until-ready crd certificates.voyager.appscode.com || { echo "Certificate CRD failed to be ready"; exit 1; }
+$ONESSL wait-until-ready crd ingresses.voyager.appscode.com || { echo "Ingress CRD failed to be ready"; exit 1; }
