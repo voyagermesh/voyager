@@ -5,7 +5,7 @@ kubectl config current-context || { echo "Set a context (kubectl use-context <co
 echo ""
 
 # https://stackoverflow.com/a/677212/244009
-if ! [ -x "$(command -v onessl >/dev/null 2>&1)" ]; then
+if [ -x "$(command -v onessl >/dev/null 2>&1)" ]; then
     echo "using onessl found in the machine"
     export ONESSL=onessl
 else
