@@ -68,7 +68,7 @@ show_help() {
     echo "-h, --help                         show brief help"
     echo "-n, --namespace=NAMESPACE          specify namespace (default: kube-system)"
     echo "-p, --provider=PROVIDER            specify a cloud provider"
-    echo "    --rbac                         create RBAC roles and bindings"
+    echo "    --rbac                         create RBAC roles and bindings (default: true)"
     echo "    --docker-registry              docker registry used to pull voyager images (default: appscode)"
     echo "    --image-pull-secret            name of secret used to pull voyager operator images"
     echo "    --restrict-to-namespace        restrict voyager to its own namespace"
