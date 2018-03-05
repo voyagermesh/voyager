@@ -1,13 +1,13 @@
 ---
 title: LoadBalancer Ingress | Voyager
 menu:
-  product_voyager_6.0.0-rc.1:
+  product_voyager_6.0.0-rc.2:
     identifier: loadbalancer-ingress
     name: LoadBalancer
     parent: ingress-types-concepts
     weight: 10
 product_name: voyager
-menu_name: product_voyager_6.0.0-rc.1
+menu_name: product_voyager_6.0.0-rc.2
 section_menu_id: concepts
 ---
 
@@ -20,14 +20,14 @@ In `LoadBalancer` type Ingress, HAProxy pods are exposed via a LoadBalancer type
 - First, deploy voyager operator.
 
 ```console
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.1/hack/deploy/voyager.sh \
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.2/hack/deploy/voyager.sh \
     | bash -s -- --provider=gke
 ```
 
 - Now, deploy test servers using [this script](/docs/examples/ingress/types/loadbalancer/deploy-servers.sh) script.
 
 ```console
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.1/docs/examples/ingress/types/loadbalancer/deploy-servers.sh | bash
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.2/docs/examples/ingress/types/loadbalancer/deploy-servers.sh | bash
 
 deployment "nginx" created
 service "web" exposed
@@ -35,7 +35,7 @@ deployment "echoserver" created
 service "rest" exposed
 ```
 
-- Now, create an Ingress object running `kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.1/docs/examples/ingress/types/loadbalancer/ing.yaml`. Please note the annotaiton on ingress:
+- Now, create an Ingress object running `kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.2/docs/examples/ingress/types/loadbalancer/ing.yaml`. Please note the annotaiton on ingress:
 
 ```yaml
   annotations:

@@ -1,13 +1,13 @@
 ---
 title: Sticky Session | Kubernetes Ingress
 menu:
-  product_voyager_6.0.0-rc.1:
+  product_voyager_6.0.0-rc.2:
     identifier: sticky-http
     name: Sticky Session
     parent: http-ingress
     weight: 55
 product_name: voyager
-menu_name: product_voyager_6.0.0-rc.1
+menu_name: product_voyager_6.0.0-rc.2
 section_menu_id: guides
 ---
 
