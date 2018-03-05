@@ -6,7 +6,6 @@ echo ""
 
 # https://stackoverflow.com/a/677212/244009
 if [ -x "$(command -v onessl >/dev/null 2>&1)" ]; then
-    echo "using onessl found in the machine"
     export ONESSL=onessl
 else
     # ref: https://stackoverflow.com/a/27776822/244009
@@ -45,8 +44,8 @@ trap cleanup EXIT
 # ref: http://tldp.org/LDP/abs/html/comparison-ops.html
 
 export VOYAGER_NAMESPACE=kube-system
-export VOYAGER_SERVICE_ACCOUNT=default
-export VOYAGER_ENABLE_RBAC=false
+export VOYAGER_SERVICE_ACCOUNT=voyager-operator
+export VOYAGER_ENABLE_RBAC=true
 export VOYAGER_RUN_ON_MASTER=0
 export VOYAGER_RESTRICT_TO_NAMESPACE=false
 export VOYAGER_ROLE_TYPE=ClusterRole
@@ -131,9 +130,12 @@ while test $# -gt 0; do
             fi
             shift
             ;;
-        --rbac)
-            export VOYAGER_SERVICE_ACCOUNT=voyager-operator
-            export VOYAGER_ENABLE_RBAC=true
+        --rbac*)
+            val=`echo $1 | sed -e 's/^[^=]*=//g'`
+            if [ "$val" = "false" ]; then
+                export VOYAGER_SERVICE_ACCOUNT=default
+                export VOYAGER_ENABLE_RBAC=false
+            fi
             shift
             ;;
         --run-on-master)
@@ -277,3 +279,6 @@ $ONESSL wait-until-ready apiservice v1beta1.admission.voyager.appscode.com || { 
 echo "waiting until voyager crds are ready"
 $ONESSL wait-until-ready crd certificates.voyager.appscode.com || { echo "Certificate CRD failed to be ready"; exit 1; }
 $ONESSL wait-until-ready crd ingresses.voyager.appscode.com || { echo "Ingress CRD failed to be ready"; exit 1; }
+
+echo
+echo "Successfully installed Voyager!"
