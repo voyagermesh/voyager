@@ -54,8 +54,9 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `persistence.enabled`              | Enable mounting cloud config                                  | `false`               |
 | `persistence.hostPath`             | Host mount path for cloud config                              | `/etc/kubernetes`     |
 | `nodeSelector`                     | Node labels for pod assignment                                | `{}`                  |
-| `rbac.create`                      | install required rbac service account, roles and rolebindings | `false`               |
-| `rbac.serviceAccountName`          | ServiceAccount Voyager will use (ignored if rbac.create=true) | `default`             |
+| `rbac.create`                      | If `true`, create and use RBAC resources                      | `true`                |
+| `serviceAccount.create`            | If `true`, create a new service account                       | `true`                |
+| `serviceAccount.name`              | Service account to be used. If not set and `serviceAccount.create` is `true`, a name is generated using the fullname template | `` |
 | `ingressClass`                     | Ingress class to watch for. If empty, it handles all ingress  | ``                    |
 | `apiserver.groupPriorityMinimum`   | The minimum priority the group should have.                   | 10000                 |
 | `apiserver.versionPriority`        | The ordering of this API inside of the group.                 | 15                    |
