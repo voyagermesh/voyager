@@ -32,7 +32,7 @@ func (c *Controller) initIngressWatcher() {
 	c.ingQueue = queue.New("Ingress", c.options.MaxNumRequeues, c.options.NumThreads, c.syncIngress)
 	c.ingInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
-			if _, ok := obj.(*extension.Ingress); !ok {
+			if r, ok := obj.(*extension.Ingress); !ok || r.Name != c.options.IngressRef.Name {
 				return
 			}
 			if r, err := api.NewEngressFromIngress(obj); err == nil {
@@ -45,7 +45,7 @@ func (c *Controller) initIngressWatcher() {
 			}
 		},
 		UpdateFunc: func(oldObj interface{}, newObj interface{}) {
-			if _, ok := newObj.(*extension.Ingress); !ok {
+			if r, ok := newObj.(*extension.Ingress); !ok || r.Name != c.options.IngressRef.Name {
 				return
 			}
 			if r, err := api.NewEngressFromIngress(newObj); err == nil {
@@ -58,7 +58,7 @@ func (c *Controller) initIngressWatcher() {
 			}
 		},
 		DeleteFunc: func(obj interface{}) {
-			if _, ok := obj.(*extension.Ingress); !ok {
+			if r, ok := obj.(*extension.Ingress); !ok || r.Name != c.options.IngressRef.Name {
 				return
 			}
 			if r, err := api.NewEngressFromIngress(obj); err == nil {

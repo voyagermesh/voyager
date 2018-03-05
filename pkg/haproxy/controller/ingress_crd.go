@@ -15,22 +15,17 @@ import (
 	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/tools/cache"
 )
 
 func (c *Controller) initIngressCRDWatcher() {
+	// https://github.com/kubernetes/kubernetes/issues/51046
 	c.engInformer = c.voyagerInformerFactory.InformerFor(&api.Ingress{}, func(client cs.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-		return voyager_informers.NewFilteredIngressInformer(
+		return voyager_informers.NewIngressInformer(
 			client,
 			c.options.IngressRef.Namespace,
 			resyncPeriod,
 			cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
-			func(options *metav1.ListOptions) {
-				// https://github.com/kubernetes/kubernetes/issues/51046
-				options.FieldSelector = fields.OneTermEqualSelector("metadata.name", c.options.IngressRef.Name).String()
-			},
 		)
 	})
 	c.engQueue = queue.New("IngressCRD", c.options.MaxNumRequeues, c.options.NumThreads, c.syncIngressCRD)
