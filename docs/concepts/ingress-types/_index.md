@@ -1,12 +1,12 @@
 ---
 title: Types of Ingress | Voyager
 menu:
-  product_voyager_6.0.0-rc.1:
+  product_voyager_6.0.0-rc.2:
     identifier: ingress-types-concepts
     name: Types of Ingress
     parent: concepts
     weight: 15
 product_name: voyager
-menu_name: product_voyager_6.0.0-rc.1
+menu_name: product_voyager_6.0.0-rc.2
 section_menu_id: concepts
 ---

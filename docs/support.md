@@ -2,17 +2,17 @@
 title: Support | Voyager
 description: Support
 menu:
-  product_voyager_6.0.0-rc.1:
+  product_voyager_6.0.0-rc.2:
     identifier: support-voyager
     name: Support
     parent: welcome
     weight: 25
 product_name: voyager
-menu_name: product_voyager_6.0.0-rc.1
+menu_name: product_voyager_6.0.0-rc.2
 section_menu_id: welcome
-url: /products/voyager/6.0.0-rc.1/welcome/support/
+url: /products/voyager/6.0.0-rc.2/welcome/support/
 aliases:
-  - /products/voyager/6.0.0-rc.1/support/
+  - /products/voyager/6.0.0-rc.2/support/
 ---
 
 # Support
