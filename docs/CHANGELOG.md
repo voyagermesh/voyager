@@ -1,11 +1,17 @@
 # Change Log
 
-## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
+## [6.0.0-rc.2](https://github.com/appscode/voyager/tree/6.0.0-rc.2) (2018-03-05)
+[Full Changelog](https://github.com/appscode/voyager/compare/6.0.0-rc.1...6.0.0-rc.2)
 
-[Full Changelog](https://github.com/appscode/voyager/compare/6.0.0-rc.1...HEAD)
+**Fixed bugs:**
+
+- Voyager 6.0.0 on GKE 1.8.5:  Failed to list \*v1beta1.Ingress: unstructured cannot convert field labels [\#889](https://github.com/appscode/voyager/issues/889)
 
 **Merged pull requests:**
 
+- Enable RBAC by default in installer [\#913](https://github.com/appscode/voyager/pull/913) ([tamalsaha](https://github.com/tamalsaha))
+- Fix installer [\#912](https://github.com/appscode/voyager/pull/912) ([tamalsaha](https://github.com/tamalsaha))
+- Prepare docs for 6.0.0-rc.2 [\#911](https://github.com/appscode/voyager/pull/911) ([tamalsaha](https://github.com/tamalsaha))
 - Stop using field selector in haproxy controller [\#910](https://github.com/appscode/voyager/pull/910) ([tamalsaha](https://github.com/tamalsaha))
 - Update chart to match RBAC best practices for charts [\#909](https://github.com/appscode/voyager/pull/909) ([tamalsaha](https://github.com/tamalsaha))
 - Add checks to installer script [\#908](https://github.com/appscode/voyager/pull/908) ([tamalsaha](https://github.com/tamalsaha))
