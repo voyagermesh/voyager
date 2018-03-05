@@ -1,13 +1,13 @@
 ---
 title: CORS | Kubernetes Ingress
 menu:
-  product_voyager_6.0.0-rc.1:
+  product_voyager_6.0.0-rc.2:
     identifier: cors-http
     name: CORS
     parent: http-ingress
     weight: 30
 product_name: voyager
-menu_name: product_voyager_6.0.0-rc.1
+menu_name: product_voyager_6.0.0-rc.2
 section_menu_id: guides
 ---
 

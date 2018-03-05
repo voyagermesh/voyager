@@ -1,21 +1,16 @@
----
-title: Changelog | Voyager
-description: Changelog
-menu:
-  product_voyager_6.0.0-rc.1:
-    identifier: changelog-voyager
-    name: Changelog
-    parent: welcome
-    weight: 10
-product_name: voyager
-menu_name: product_voyager_6.0.0-rc.1
-section_menu_id: welcome
-url: /products/voyager/6.0.0-rc.1/welcome/changelog/
-aliases:
-  - /products/voyager/6.0.0-rc.1/CHANGELOG/
----
-
 # Change Log
+
+## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
+
+[Full Changelog](https://github.com/appscode/voyager/compare/6.0.0-rc.1...HEAD)
+
+**Merged pull requests:**
+
+- Stop using field selector in haproxy controller [\#910](https://github.com/appscode/voyager/pull/910) ([tamalsaha](https://github.com/tamalsaha))
+- Update chart to match RBAC best practices for charts [\#909](https://github.com/appscode/voyager/pull/909) ([tamalsaha](https://github.com/tamalsaha))
+- Add checks to installer script [\#908](https://github.com/appscode/voyager/pull/908) ([tamalsaha](https://github.com/tamalsaha))
+- Cleanup admission webhook [\#907](https://github.com/appscode/voyager/pull/907) ([tamalsaha](https://github.com/tamalsaha))
+- Update changelog for 6.0.0-rc.1 [\#905](https://github.com/appscode/voyager/pull/905) ([tamalsaha](https://github.com/tamalsaha))
 
 ## [6.0.0-rc.1](https://github.com/appscode/voyager/tree/6.0.0-rc.1) (2018-02-28)
 [Full Changelog](https://github.com/appscode/voyager/compare/6.0.0-rc.0...6.0.0-rc.1)
