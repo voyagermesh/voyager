@@ -11,7 +11,7 @@ menu_name: product_voyager_6.0.0-rc.2
 section_menu_id: concepts
 ---
 
-# HostdePort
+# HostPort
 
 In `HostPort` type Ingress, HAProxy pods are run via a Kubernetes deployment named `voyager-${ingress-name}` with `hostNetwork: true`. A headless Service is also created for the HAProxy pods. To enable this, apply the `ingress.appscode.com/type: HostPort` annotation on a Ingress object.
 
