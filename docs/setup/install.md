@@ -28,6 +28,15 @@ Voyager can be installed via installer script included in the [/hack/deploy](htt
 # provider=minikube
 # provider=openstack
 
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.2/hack/deploy/voyager.sh \
+    | bash -s -- --provider=$provider
+```
+
+#### Customizing Installer
+
+You can see the full list of flags available to installer using `-h` flag.
+
+```console
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.2/hack/deploy/voyager.sh | bash -s -- -h
 voyager.sh - install voyager operator
 
@@ -44,9 +53,6 @@ options:
     --run-on-master                run voyager operator on master
     --enable-admission-webhook     configure admission webhook for Voyager CRDs
     --template-cfgmap=CONFIGMAP    name of configmap with custom templates
-
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.2/hack/deploy/voyager.sh \
-    | bash -s -- --provider=$provider
 ```
 
 If you would like to run Voyager operator pod in `master` instances, pass the `--run-on-master` flag:
