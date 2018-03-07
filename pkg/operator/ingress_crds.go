@@ -98,7 +98,7 @@ func (op *Operator) reconcileEngress(key string) error {
 			glog.Infof("Delete for engress %s\n", key)
 			ctrl.Delete()
 			util.PatchIngress(op.VoyagerClient.VoyagerV1beta1(), engress, func(obj *api.Ingress) *api.Ingress {
-				core_util.RemoveFinalizer(obj.ObjectMeta, api.VoyagerFinalizer)
+				obj.ObjectMeta = core_util.RemoveFinalizer(obj.ObjectMeta, api.VoyagerFinalizer)
 				return obj
 			})
 		}
@@ -106,7 +106,7 @@ func (op *Operator) reconcileEngress(key string) error {
 		glog.Infof("Sync/Add/Update for engress %s\n", key)
 		if !core_util.HasFinalizer(engress.ObjectMeta, api.VoyagerFinalizer) {
 			util.PatchIngress(op.VoyagerClient.VoyagerV1beta1(), engress, func(obj *api.Ingress) *api.Ingress {
-				core_util.AddFinalizer(obj.ObjectMeta, api.VoyagerFinalizer)
+				obj.ObjectMeta = core_util.AddFinalizer(obj.ObjectMeta, api.VoyagerFinalizer)
 				return obj
 			})
 		}
