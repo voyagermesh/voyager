@@ -5,7 +5,7 @@ metadata:
   namespace: default
 spec:
   backend:
-    headerRule:
+    headerRules:
     - X-Forwarded-Host %[req.hdr(Host)]
     - X-Forwarded-Port %[dst_port]
     - X-Forwarded-Proto https
@@ -16,7 +16,7 @@ spec:
     http:
       paths:
       - backend:
-          rewriteRule:
+          rewriteRules:
           - ^([^\ :]*)\ /(.*)$ \1\ /maven/\2
           serviceName: artifact-server
           servicePort: "80"
@@ -24,7 +24,7 @@ spec:
     http:
       paths:
       - backend:
-          rewriteRule:
+          rewriteRules:
           - ^([^\ :]*)\ /(.*)$ \1\ /composer/\2
           serviceName: artifact-server
           servicePort: "80"
@@ -32,7 +32,7 @@ spec:
     http:
       paths:
       - backend:
-          rewriteRule:
+          rewriteRules:
           - ^([^\ :]*)\ /(.*)$ \1\ /npm/\2
           serviceName: artifact-server
           servicePort: "80"
@@ -40,7 +40,7 @@ spec:
     http:
       paths:
       - backend:
-          rewriteRule:
+          rewriteRules:
           - ^([^\ :]*)\ /(.*)$ \1\ /docker/\2
           serviceName: artifact-server
           servicePort: "80"
@@ -62,9 +62,9 @@ spec:
     http:
       paths:
       - backend:
-          headerRule:
+          headerRules:
           - X-Client-IP %[src]
-          rewriteRule:
+          rewriteRules:
           - ^([^\ ]*)\ /client-ip/(.*)     \1\ /\2
           serviceName: client-ip
           servicePort: "60010"
@@ -80,7 +80,7 @@ spec:
     http:
       paths:
       - backend:
-          rewriteRule:
+          rewriteRules:
           - ^([^\ :]*)\ /(.*)$ \1\ /_org/api/\2
           serviceName: example-apis
           servicePort: "9866"
@@ -89,7 +89,7 @@ spec:
     http:
       paths:
       - backend:
-          rewriteRule:
+          rewriteRules:
           - ^([^\ :]*)\ /(.*)$ \1\ /_org/api/\2
           serviceName: apiserver
           servicePort: "9877"
@@ -132,7 +132,7 @@ spec:
     http:
       paths:
       - backend:
-          headerRule:
+          headerRules:
           - Cache-Control public
           serviceName: ui-server
           servicePort: "80"

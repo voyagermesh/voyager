@@ -180,7 +180,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 				}
 				for hi, hdr := range path.Backend.HeaderRules {
 					if len(strings.Fields(hdr)) == 1 {
-						return errors.Errorf("spec.rule[%d].http.paths[%d].backend.headerRule[%d] is invalid for addr %s and path %s", ri, pi, hi, a, path.Path)
+						return errors.Errorf("spec.rule[%d].http.paths[%d].backend.headerRules[%d] is invalid for addr %s and path %s", ri, pi, hi, a, path.Path)
 					}
 				}
 			}
