@@ -11,9 +11,9 @@ curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s htt
  chmod +x ./kubectl
 mv ./kubectl /usr/local/bin/kubectl
 
-curl -LO https://cdn.rawgit.com/Mirantis/kubeadm-dind-cluster/master/fixed/dind-cluster-v1.9.sh
-chmod +x dind-cluster-v1.9.sh
-./dind-cluster-v1.9.sh up
+curl -LO https://cdn.rawgit.com/Mirantis/kubeadm-dind-cluster/master/fixed/dind-cluster-v1.8.sh
+chmod +x dind-cluster-v1.8.sh
+./dind-cluster-v1.8.sh up
 
 
 kubectl get nodes
