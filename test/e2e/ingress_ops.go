@@ -282,10 +282,10 @@ var _ = Describe("IngressOperations", func() {
 												ServiceName: f.Ingress.TestServerName(),
 												ServicePort: intstr.FromInt(80),
 											},
-											HeaderRule: []string{
+											HeaderRules: []string{
 												"X-Ingress-Test-Header ingress.appscode.com",
 											},
-											RewriteRule: []string{
+											RewriteRules: []string{
 												`^([^\ :]*)\ /(.*)$ \1\ /override/\2`,
 											},
 										},
@@ -368,10 +368,10 @@ var _ = Describe("IngressOperations", func() {
 													`reqrep ^([^\ :]*)\ /(.*)$ \1\ /rewrited/from/proxy/\2 if rep_url`,
 												},
 											},
-											HeaderRule: []string{
+											HeaderRules: []string{
 												"X-Ingress-Test-Header ingress.appscode.com",
 											},
-											RewriteRule: []string{
+											RewriteRules: []string{
 												`^([^\ :]*)\ /(.*)$ \1\ /override/\2`,
 											},
 										},
