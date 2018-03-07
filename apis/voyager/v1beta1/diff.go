@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -36,6 +37,10 @@ func (r Ingress) HasChanged(o Ingress) (bool, error) {
 		r.Namespace != o.Namespace ||
 		r.APISchema() != o.APISchema() {
 		return false, errors.New("not the same Ingress")
+	}
+
+	if o.DeletionTimestamp != nil && core_util.HasFinalizer(o.ObjectMeta, VoyagerFinalizer) {
+		return true, nil
 	}
 
 	specEqual := cmp.Equal(r.Spec, o.Spec, cmp.Comparer(func(x, y resource.Quantity) bool {
