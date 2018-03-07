@@ -2,8 +2,9 @@
 
 set -x -e
 
-source voyager/hack/concourse/my_docker.sh
-start_docker
+#source /docker-lib.sh
+#start_docker
+docker daemon &
 
 docker run hello-world
 
