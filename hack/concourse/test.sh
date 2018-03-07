@@ -5,6 +5,8 @@ set -x -e
 source /docker-lib.sh
 start_docker
 
+docker run hello-world
+
 apk --no-cache add curl bash
 
 curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
