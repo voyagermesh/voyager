@@ -633,7 +633,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								},
 							},
 						},
-						"rewriteRule": {
+						"rewriteRules": {
 							SchemaProps: spec.SchemaProps{
 								Description: "Path rewrite rules with haproxy formatted regex.\n\nDeprecated: Use backendRule, will be removed.",
 								Type:        []string{"array"},
@@ -647,7 +647,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								},
 							},
 						},
-						"headerRule": {
+						"headerRules": {
 							SchemaProps: spec.SchemaProps{
 								Description: "Header rules to modifies the header.\n\nDeprecated: Use backendRule, will be removed.",
 								Type:        []string{"array"},

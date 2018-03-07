@@ -18,7 +18,7 @@ The annotation `ingress.appscode.com/ssl-passthrough` allows to configure TLS te
 If `ssl-passthrough` is used the mode has to be TCP. For more details see  [here](https://www.haproxy.com/documentation/haproxy/deployment-guides/tls-infrastructure/). When `ssl-pasthrough` is enabled, voyager automatically converts your http rules to tcp rules. Please note that following things are not supported while using `ssl-pasthrough`:
 
 - Multiple paths for http rules.
-- `headerRule` and `rewriteRule` for backends.
+- `headerRules` and `rewriteRules` for backends.
 
 ## Ingress Example
 

@@ -435,13 +435,13 @@ func (in *HTTPChallengeProvider) DeepCopy() *HTTPChallengeProvider {
 func (in *HTTPIngressBackend) DeepCopyInto(out *HTTPIngressBackend) {
 	*out = *in
 	in.IngressBackend.DeepCopyInto(&out.IngressBackend)
-	if in.RewriteRule != nil {
-		in, out := &in.RewriteRule, &out.RewriteRule
+	if in.RewriteRules != nil {
+		in, out := &in.RewriteRules, &out.RewriteRules
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
-	if in.HeaderRule != nil {
-		in, out := &in.HeaderRule, &out.HeaderRule
+	if in.HeaderRules != nil {
+		in, out := &in.HeaderRules, &out.HeaderRules
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
