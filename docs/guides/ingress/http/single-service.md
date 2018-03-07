@@ -63,4 +63,4 @@ request header, and/or none of the paths match url of request.
 This Ingress will forward traffic to `test-service` if request comes from the host `appscode.example.com` only.
 Other requests will be forwarded to default backend.
 
-Default Backend also supports `headerRule` and `rewriteRule`.
+Default Backend also supports `headerRules` and `rewriteRules`.
