@@ -2,11 +2,10 @@
 
 set -x -e
 
-docker run hello-world
-
 source /docker-lib.sh
 start_docker
 
+docker run hello-world
 
 apk --no-cache add curl bash
 
