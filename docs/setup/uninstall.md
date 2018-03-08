@@ -11,12 +11,9 @@ product_name: voyager
 menu_name: product_voyager_6.0.0-rc.2
 section_menu_id: setup
 ---
-
 # Uninstall Voyager
 
-Please follow the steps below to uninstall Voyager:
-
-- Delete the deployment and service used for Voyager operator.
+To uninstall Voyager operator, run the following command:
 
 ```console
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.2/hack/deploy/voyager.sh \
@@ -34,28 +31,4 @@ No resources found
 No resources found
 ```
 
-- Now, wait several seconds for Voyager to stop running. To confirm that Voyager operator pod(s) have stopped running, run:
-
-```console
-$ kubectl get pods --all-namespaces -l app=voyager
-```
-
-- To keep a copy of your existing Voyager objects, run:
-
-```console
-$ kubectl get ingress.voyager.appscode.com --all-namespaces -o yaml > ingress.yaml
-$ kubectl get certificate.voyager.appscode.com --all-namespaces -o yaml > certificate.yaml
-```
-
-- To delete existing Voyager objects from all namespaces, run the following command in each namespace one by one.
-
-```console
-$ kubectl delete ingress.voyager.appscode.com --all --cascade=false
-$ kubectl delete certificate.voyager.appscode.com --all --cascade=false
-```
-
-- Delete the old CRD-registration.
-
-```console
-kubectl delete crd -l app=voyager
-```
+The above command will leave the Voyager crd objects as-is. If you wish to **nuke** all Voyager crd objects, also pass the `--purge` flag. This will keep a copy of Voyager crd objects in your current directory.
