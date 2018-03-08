@@ -1,4 +1,7 @@
 #!/bin/bash
+set -eou pipefail
+
+crds=(certificates ingresses)
 
 echo "checking kubeconfig context"
 kubectl config current-context || { echo "Set a context (kubectl use-context <context>) out of the following:"; echo; kubectl config get-contexts; exit 1; }
@@ -52,6 +55,8 @@ export VOYAGER_ROLE_TYPE=ClusterRole
 export VOYAGER_DOCKER_REGISTRY=appscode
 export VOYAGER_IMAGE_PULL_SECRET=
 export VOYAGER_UNINSTALL=0
+export VOYAGER_PURGE=0
+export VOYAGER_TEMPLATE_CONFIGMAP=
 
 KUBE_APISERVER_VERSION=$(kubectl version -o=json | $ONESSL jsonpath '{.serverVersion.gitVersion}')
 $ONESSL semver --check='>=1.9.0' $KUBE_APISERVER_VERSION
@@ -76,6 +81,7 @@ show_help() {
     echo "    --enable-admission-webhook     configure admission webhook for voyager CRDs"
     echo "    --template-cfgmap=CONFIGMAP    name of configmap with custom templates"
     echo "    --uninstall                    uninstall voyager"
+    echo "    --purge                        purges Voyager crd objects and crds"
 }
 
 while test $# -gt 0; do
@@ -155,6 +161,10 @@ while test $# -gt 0; do
             export VOYAGER_UNINSTALL=1
             shift
             ;;
+        --purge)
+            export VOYAGER_PURGE=1
+            shift
+            ;;
         *)
             show_help
             exit 1
@@ -176,6 +186,43 @@ if [ "$VOYAGER_UNINSTALL" -eq 1 ]; then
     kubectl delete rolebindings -l app=voyager --namespace $VOYAGER_NAMESPACE
     kubectl delete role -l app=voyager --namespace $VOYAGER_NAMESPACE
 
+    echo "waiting for voyager operator pod to stop running"
+    for (( ; ; )); do
+       pods=($(kubectl get pods --all-namespaces -l app=voyager -o jsonpath='{range .items[*]}{.metadata.name} {end}'))
+       total=${#pods[*]}
+        if [ $total -eq 0 ] ; then
+            break
+        fi
+       sleep 2
+    done
+
+    # https://github.com/kubernetes/kubernetes/issues/60538
+    if [ "$VOYAGER_PURGE" -eq 1 ]; then
+        for crd in "${crds[@]}"; do
+            pairs=($(kubectl get ${crd}.voyager.appscode.com --all-namespaces -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.namespace} {end}' || true))
+            total=${#pairs[*]}
+
+            # save objects
+            if [ $total -gt 0 ]; then
+                echo "dumping ${crd} objects into ${crd}.yaml"
+                kubectl get ${crd}.voyager.appscode.com --all-namespaces -o yaml > ${crd}.yaml
+            fi
+
+            for (( i=0; i<$total; i+=2 )); do
+                # remove finalizers
+                kubectl patch ${crd}.voyager.appscode.com ${pairs[$i]} -n ${pairs[$i + 1]}  -p '{"metadata":{"finalizers":[]}}' --type=merge
+                # delete crd object
+                echo "deleting ${crd} ${pairs[$i + 1]}/${pairs[$i]}"
+                kubectl delete ${crd}.voyager.appscode.com ${pairs[$i]} -n ${pairs[$i + 1]}
+            done
+
+            # delete crd
+            kubectl delete crd ${crd}.voyager.appscode.com || true
+        done
+    fi
+
+    echo
+    echo "Successfully uninstalled Voyager!"
     exit 0
 fi
 
@@ -270,6 +317,7 @@ if [ "$VOYAGER_ENABLE_ADMISSION_WEBHOOK" = true ]; then
     curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.2/hack/deploy/admission.yaml | $ONESSL envsubst | kubectl apply -f -
 fi
 
+echo
 echo "waiting until voyager operator deployment is ready"
 $ONESSL wait-until-ready deployment voyager-operator --namespace $VOYAGER_NAMESPACE || { echo "Voyager operator deployment failed to be ready"; exit 1; }
 
@@ -277,8 +325,9 @@ echo "waiting until voyager apiservice is available"
 $ONESSL wait-until-ready apiservice v1beta1.admission.voyager.appscode.com || { echo "Voyager apiservice failed to be ready"; exit 1; }
 
 echo "waiting until voyager crds are ready"
-$ONESSL wait-until-ready crd certificates.voyager.appscode.com || { echo "Certificate CRD failed to be ready"; exit 1; }
-$ONESSL wait-until-ready crd ingresses.voyager.appscode.com || { echo "Ingress CRD failed to be ready"; exit 1; }
+for crd in "${crds[@]}"; do
+    $ONESSL wait-until-ready crd ${crd}.voyager.appscode.com || { echo "$crd crd failed to be ready"; exit 1; }
+done
 
 echo
 echo "Successfully installed Voyager!"
