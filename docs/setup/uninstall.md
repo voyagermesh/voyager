@@ -11,6 +11,8 @@ product_name: voyager
 menu_name: product_voyager_6.0.0-rc.2
 section_menu_id: setup
 ---
+> New to Voyager? Please start [here](/docs/concepts/overview.md).
+
 # Uninstall Voyager
 
 To uninstall Voyager operator, run the following command:

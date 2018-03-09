@@ -10,8 +10,7 @@ product_name: voyager
 menu_name: product_voyager_6.0.0-rc.2
 section_menu_id: guides
 ---
-
-> New to Voyager? Please start [here](/docs).
+> New to Voyager? Please start [here](/docs/concepts/overview.md).
 
 # TLS
 You can secure an Ingress by specifying a secret containing TLS pem or by referring a `certificate.voyager.appscode.com` resource.

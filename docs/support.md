@@ -14,6 +14,7 @@ url: /products/voyager/6.0.0-rc.2/welcome/support/
 aliases:
   - /products/voyager/6.0.0-rc.2/support/
 ---
+> New to Voyager? Please start [here](/docs/concepts/overview.md).
 
 # Support
 

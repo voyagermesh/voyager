@@ -12,6 +12,7 @@ section_menu_id: guides
 aliases:
   - /products/voyager/6.0.0-rc.2/guides/ingress/security/
 ---
+> New to Voyager? Please start [here](/docs/concepts/overview.md).
 
 # Basic Authentication
 
