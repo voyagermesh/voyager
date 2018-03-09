@@ -2,21 +2,11 @@
 
 set -x -e
 
-#source /docker-lib.sh
-#start_docker
-docker daemon &
+apk update
+apk add python py-pip
+pip install git+https://github.com/ellisonbg/antipackage.git#egg=antipackage
+pip install pyyaml
 
-docker run hello-world
-
-apk --no-cache add curl bash
-
-curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
- chmod +x ./kubectl
-mv ./kubectl /usr/local/bin/kubectl
-
-curl -LO https://cdn.rawgit.com/Mirantis/kubeadm-dind-cluster/master/fixed/dind-cluster-v1.8.sh
-chmod +x dind-cluster-v1.8.sh
-./dind-cluster-v1.8.sh up
-
-
-kubectl get nodes
+mv kubeconfig/kubeconfig-0.0.1/* /
+ls /
+./src/github.com/appscode/voyager/hack/make.py test minikube --kubeconfig=/kubeconfig
