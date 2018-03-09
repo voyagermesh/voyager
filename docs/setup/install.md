@@ -37,6 +37,11 @@ $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.2/hack/
 
 After successful installation, you should have a `voyager-operator-***` pod running in the `kube-system` namespace.
 
+```console
+$ kubectl get pods -n kube-system | grep voyager-operator
+voyager-operator-846d47f489-jrb58       1/1       Running   0          48s
+```
+
 #### Customizing Installer
 
 The installer script and associated yaml files can be found in the [/hack/deploy](https://github.com/appscode/voyager/tree/6.0.0-rc.2/hack/deploy) folder. To see the full list of flags available to installer, use the `-h` flag.
