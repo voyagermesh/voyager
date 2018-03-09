@@ -5,4 +5,5 @@ set -x -e
 mv kubeconfig/kubeconfig-0.0.1/* /
 cd src/github.com/appscode/voyager/hack
 ls
+pwd
 ./make.py test minikube --kubeconfig=/kubeconfig
