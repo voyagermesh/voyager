@@ -87,7 +87,7 @@ By default, Voyager operator will watch Ingress objects in any namespace. If you
 ```console
 $ kubectl create namespace voyager
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.2/hack/deploy/voyager.sh \
-    | bash -s -- --provider=$provider --restrict-to-namespace [--namespace=voyager] [--run-on-master] [--rbac]
+    | bash -s -- --provider=$provider --namespace=voyager --restrict-to-namespace [--run-on-master] [--rbac]
 ```
 
 If you are using a private Docker registry, you need to pull the following 2 docker images:
