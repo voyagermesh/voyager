@@ -11,6 +11,8 @@ product_name: voyager
 menu_name: product_voyager_6.0.0-rc.2
 section_menu_id: setup
 ---
+> New to Voyager? Please start [here](/docs/concepts/overview.md).
+
 # Installation Guide
 
 Voyager operator can be installed via a script or as a Helm chart.
