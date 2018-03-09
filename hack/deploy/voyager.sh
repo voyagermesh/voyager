@@ -209,11 +209,13 @@ if [ "$VOYAGER_UNINSTALL" -eq 1 ]; then
             fi
 
             for (( i=0; i<$total; i+=2 )); do
+                name=${pairs[$i]}
+                namespace=${pairs[$i + 1]}
                 # remove finalizers
-                kubectl patch ${crd}.voyager.appscode.com ${pairs[$i]} -n ${pairs[$i + 1]}  -p '{"metadata":{"finalizers":[]}}' --type=merge
+                kubectl patch ${crd}.voyager.appscode.com $name -n $namespace -p '{"metadata":{"finalizers":[]}}' --type=merge
                 # delete crd object
-                echo "deleting ${crd} ${pairs[$i + 1]}/${pairs[$i]}"
-                kubectl delete ${crd}.voyager.appscode.com ${pairs[$i]} -n ${pairs[$i + 1]}
+                echo "deleting ${crd} $namespace/$name"
+                kubectl delete ${crd}.voyager.appscode.com $name -n $namespace
             done
 
             # delete crd
