@@ -23,7 +23,7 @@ Voyager provides L7 and L4 loadbalancing using Kubernetes standard [Ingress](htt
 
 The above diagram shows how the Voyager operator works. When Voyager is [installed](/docs/setup/install.md) in a Kubernetes cluster, a pod named `voyager-operator-***` starts running in `kube-system` namespace by default. This operator pod watches for Kubernetes Ingress resources and Voyager's own Ingress CRD. When an Ingress object is created, Voyager operator creates 3 Kubernetes resources in the same namespace of the Ingress:
 
-- a Configmap named `voyager-${ingress-name}`: This contains the auo generated HAProxy configuration under `haproxy.cfg` key.
+- a Configmap named `voyager-${ingress-name}`: This contains the auto generated HAProxy configuration under `haproxy.cfg` key.
 
 - a Deployment named `voyager-${ingress-name}`: This runs HAProxy pods that mounts the above configmap. Each pod has one container for HAProxy. This container also includes some additional binary to reload HAProxy when the respective configmap updates. This also includes logic for mounting and updating SSL secrets referenced in the corresponding Ingress resource. HAProxy pods can also contain a side-car container for exporting Prometheus ready metrics, if [enabled](/docs/guides/ingress/monitoring/stats.md).
 
