@@ -1,5 +1,5 @@
 ---
-title: Weclome | Voyager
+title: Welcome | Voyager
 description: Welcome to Voyager
 menu:
   product_voyager_6.0.0-rc.2:
