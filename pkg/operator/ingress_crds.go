@@ -22,11 +22,7 @@ func (op *Operator) initIngressCRDWatcher() {
 	op.engQueue = queue.New("IngressCRD", op.MaxNumRequeues, op.NumThreads, op.reconcileEngress)
 	op.engInformer.AddEventHandler(&cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
-			engress, ok := obj.(*api.Ingress)
-			if !ok {
-				log.Errorln("Invalid Ingress object")
-				return
-			}
+			engress := obj.(*api.Ingress).DeepCopy()
 			engress.Migrate()
 
 			if err := engress.IsValid(op.CloudProvider); err != nil {
@@ -42,18 +38,10 @@ func (op *Operator) initIngressCRDWatcher() {
 			queue.Enqueue(op.engQueue.GetQueue(), obj)
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
-			old, ok := oldObj.(*api.Ingress)
-			if !ok {
-				log.Errorln("Invalid Ingress object")
-				return
-			}
+			old := oldObj.(*api.Ingress).DeepCopy()
 			old.Migrate()
 
-			nu, ok := newObj.(*api.Ingress)
-			if !ok {
-				log.Errorln("Invalid Ingress object")
-				return
-			}
+			nu := newObj.(*api.Ingress).DeepCopy()
 			nu.Migrate()
 
 			if changed, _ := old.HasChanged(*nu); !changed {
