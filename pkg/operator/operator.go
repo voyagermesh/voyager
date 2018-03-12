@@ -13,7 +13,6 @@ import (
 	api_listers "github.com/appscode/voyager/client/listers/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	kext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
@@ -120,21 +119,21 @@ func (op *Operator) RunInformers(stopCh <-chan struct{}) {
 	}
 
 	// Wait for all involved caches to be synced, before processing items from the queue is started
-	for _, v := range op.kubeInformerFactory.WaitForCacheSync(stopCh) {
+	for t, v := range op.kubeInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			runtime.HandleError(errors.Errorf("timed out waiting for caches to sync"))
+			log.Errorf("%v timed out waiting for caches to sync\n", t)
 			return
 		}
 	}
-	for _, v := range op.voyagerInformerFactory.WaitForCacheSync(stopCh) {
+	for t, v := range op.voyagerInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			runtime.HandleError(errors.Errorf("timed out waiting for caches to sync"))
+			log.Errorf("%v timed out waiting for caches to sync\n", t)
 			return
 		}
 	}
 	if op.smonInformer != nil {
 		if !cache.WaitForCacheSync(stopCh, op.smonInformer.HasSynced) {
-			runtime.HandleError(errors.Errorf("timed out waiting for caches to sync"))
+			log.Errorln("timed out waiting for caches to sync")
 			return
 		}
 	}
@@ -173,9 +172,7 @@ func (w *Operator) Run(stopCh <-chan struct{}) {
 	// https://github.com/appscode/voyager/issues/446
 	w.PurgeOffshootsDaemonSet()
 
-	stop := make(chan struct{})
-	defer close(stop)
-	go w.RunInformers(stop)
+	go w.RunInformers(stopCh)
 
 	m := pat.New()
 	m.Get("/metrics", promhttp.Handler())
