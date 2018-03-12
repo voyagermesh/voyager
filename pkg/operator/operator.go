@@ -121,19 +121,19 @@ func (op *Operator) RunInformers(stopCh <-chan struct{}) {
 	// Wait for all involved caches to be synced, before processing items from the queue is started
 	for t, v := range op.kubeInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			log.Errorf("%v timed out waiting for caches to sync\n", t)
+			log.Fatalf("%v timed out waiting for caches to sync\n", t)
 			return
 		}
 	}
 	for t, v := range op.voyagerInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			log.Errorf("%v timed out waiting for caches to sync\n", t)
+			log.Fatalf("%v timed out waiting for caches to sync\n", t)
 			return
 		}
 	}
 	if op.smonInformer != nil {
 		if !cache.WaitForCacheSync(stopCh, op.smonInformer.HasSynced) {
-			log.Errorln("timed out waiting for caches to sync")
+			log.Fatalln("timed out waiting for caches to sync")
 			return
 		}
 	}
