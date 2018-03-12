@@ -115,7 +115,7 @@ func (op *Operator) RunInformers(stopCh <-chan struct{}) {
 	op.kubeInformerFactory.Start(stopCh)
 	op.voyagerInformerFactory.Start(stopCh)
 	if op.smonInformer != nil {
-		op.smonInformer.Run(stopCh)
+		go op.smonInformer.Run(stopCh)
 	}
 
 	// Wait for all involved caches to be synced, before processing items from the queue is started
@@ -133,7 +133,7 @@ func (op *Operator) RunInformers(stopCh <-chan struct{}) {
 	}
 	if op.smonInformer != nil {
 		if !cache.WaitForCacheSync(stopCh, op.smonInformer.HasSynced) {
-			log.Fatalln("timed out waiting for caches to sync")
+			log.Fatalln("service monitor informer timed out waiting for caches to sync")
 			return
 		}
 	}
