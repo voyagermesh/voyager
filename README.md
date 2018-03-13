@@ -1,4 +1,5 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/appscode/voyager)](https://goreportcard.com/report/github.com/appscode/voyager)
+![Docker Pulls](https://img.shields.io/docker/pulls/appscode/voyager.svg)
 
 # Voyager
 Voyager is a [HAProxy](http://www.haproxy.org/) backed [secure](#certificate) L7 and L4 [ingress](#ingress) controller for Kubernetes developed by
