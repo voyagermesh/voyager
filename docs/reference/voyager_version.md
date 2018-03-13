@@ -1,12 +1,12 @@
 ---
 title: Voyager Version
 menu:
-  product_voyager_6.0.0-rc.2:
+  product_voyager_6.0.0:
     identifier: voyager-version
     name: Voyager Version
     parent: reference
 product_name: voyager
-menu_name: product_voyager_6.0.0-rc.2
+menu_name: product_voyager_6.0.0
 section_menu_id: reference
 ---
 ## voyager version
@@ -24,7 +24,8 @@ voyager version [flags]
 ### Options
 
 ```
-  -h, --help   help for version
+  -h, --help    help for version
+      --short   Print just the version number.
 ```
 
 ### Options inherited from parent commands
