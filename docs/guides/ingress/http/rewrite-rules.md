@@ -10,6 +10,7 @@ product_name: voyager
 menu_name: product_voyager_6.0.0-rc.2
 section_menu_id: guides
 ---
+> New to Voyager? Please start [here](/docs/concepts/overview.md).
 
 # Header and URL Rewriting
 
@@ -30,15 +31,15 @@ spec:
       - backend:
           serviceName: test-service
           servicePort: '80'
-          headerRule:
+          headerRules:
           - X-Forwarded-Host %[base]
-          rewriteRule:
+          rewriteRules:
           - "^([^\\ :]*)\\ /(.*)$ \\1\\ /testings/\\2"
 ```
-The rules specified in `headerRule` will be applicable to the request header before going to the backend.
+The rules specified in `headerRules` will be applicable to the request header before going to the backend.
 those rules will be added in the request header if the header is already not present in the request header.
 In the example `X-Forwarded-Host` header is added to the request if it is not already there, `%[base]` indicates
 the base URL the load balancer received the requests.
 
-The rules specified in `rewriteRule` are used to modify the request url including the host. Current example
+The rules specified in `rewriteRules` are used to modify the request url including the host. Current example
 will add an `/testings` prefix in every request URI before forwarding it to backend.

@@ -21,4 +21,14 @@ docker run --rm -ti -u $(id -u):$(id -g) \
   voyager:v1beta1 \
   --go-header-file "$DOCKER_REPO_ROOT/hack/gengo/boilerplate.go.txt"
 
+# Generate openapi
+docker run --rm -ti -u $(id -u):$(id -g) \
+    -v "$REPO_ROOT":"$DOCKER_REPO_ROOT" \
+    -w "$DOCKER_REPO_ROOT" \
+    appscode/gengo:release-1.9 openapi-gen \
+    --v 1 --logtostderr \
+    --go-header-file "hack/gengo/boilerplate.go.txt" \
+    --input-dirs "$PACKAGE_NAME/apis/voyager/v1beta1" \
+    --output-package "$PACKAGE_NAME/apis/voyager/v1beta1"
+
 popd

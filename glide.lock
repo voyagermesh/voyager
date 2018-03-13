@@ -1,5 +1,5 @@
 hash: 52dc2bd8700082777010dc673be15f2b6ceb102a0a05cd4d60b2679da0fee84f
-updated: 2018-03-02T02:40:50.526030201-08:00
+updated: 2018-03-12T11:25:14.43015579-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -9,7 +9,7 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/go
-  version: c312c0a1fe0d4988480073287b8633fc5a244647
+  version: f8f2e1c7d2d10789cdd0540468b487d14421dbf9
   subpackages:
   - analytics
   - context
@@ -24,8 +24,10 @@ imports:
   - sets
   - types
   - version
+- name: github.com/appscode/jsonpatch
+  version: ee757872f6aca6d412d0d80543725bd4cf48f793
 - name: github.com/appscode/kube-mon
-  version: 69036cc40b44a7ba97be91d530f421e3adaba407
+  version: a670a5ff28df12938aa324b9f13683caeb216f8f
   subpackages:
   - agents
   - agents/coreosprometheusoperator
@@ -33,7 +35,7 @@ imports:
   - api
   - prometheus/v1
 - name: github.com/appscode/kutil
-  version: a40b31e357afdbd506fe4a21b58f87953b84785e
+  version: e3a21009a5f4536b54e15941bb8cd081a856d9fb
   subpackages:
   - admission/api
   - apiextensions/v1beta1
@@ -150,6 +152,11 @@ imports:
   version: 67fc221205115459ce8a04043c7ca567072c92ec
   subpackages:
   - dnsimple
+- name: github.com/docker/distribution
+  version: edc3ab29cdff8694dd6feb85cfeb4b5f1b38ed9c
+  subpackages:
+  - digestset
+  - reference
 - name: github.com/elazarl/go-bindata-assetfs
   version: 3dcc96556217539f50599357fb481ac0dc7439b9
 - name: github.com/emicklei/go-restful
@@ -357,6 +364,8 @@ imports:
   - matchers/support/goraph/node
   - matchers/support/goraph/util
   - types
+- name: github.com/opencontainers/go-digest
+  version: a6d0ee40d4207ea02364bd3b9e8e77b9159ba1eb
 - name: github.com/orcaman/concurrent-map
   version: d4c23bd0e01134806215ffe65ba3fd22ec6721f7
 - name: github.com/ovh/go-ovh
@@ -370,7 +379,7 @@ imports:
 - name: github.com/pires/go-proxyproto
   version: 2f38359974ffed92842a86ffcc17001b3f525e34
 - name: github.com/pkg/errors
-  version: 30136e27e2ac8d167177e8a583aa4c3fea5be833
+  version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/prometheus/client_golang
   version: c5b7fccd204277076155f10851dad72b76a49317
   subpackages:
@@ -627,6 +636,7 @@ imports:
   - pkg/apis/apiextensions/v1beta1
   - pkg/client/clientset/clientset/scheme
   - pkg/client/clientset/clientset/typed/apiextensions/v1beta1
+  - pkg/features
 - name: k8s.io/apimachinery
   version: 180eddb345a5be3a157cea1c624700ad5bd27b8f
   subpackages:
@@ -940,7 +950,29 @@ imports:
 - name: k8s.io/kubernetes
   version: 925c127ec6b946659ad0fd596fa959be43f0cc05
   subpackages:
+  - pkg/api/legacyscheme
+  - pkg/apis/apps
+  - pkg/apis/apps/install
+  - pkg/apis/apps/v1
+  - pkg/apis/apps/v1beta1
+  - pkg/apis/apps/v1beta2
+  - pkg/apis/autoscaling
+  - pkg/apis/batch
+  - pkg/apis/batch/install
+  - pkg/apis/batch/v1
+  - pkg/apis/batch/v1beta1
+  - pkg/apis/batch/v2alpha1
+  - pkg/apis/core
+  - pkg/apis/core/install
+  - pkg/apis/core/v1
+  - pkg/apis/extensions
+  - pkg/apis/extensions/install
+  - pkg/apis/extensions/v1beta1
+  - pkg/apis/networking
+  - pkg/features
   - pkg/util/net/sets
+  - pkg/util/parsers
+  - pkg/util/pointer
 testImports:
 - name: github.com/pmezard/go-difflib
   version: d8ed2627bdf02c080bf22230dbb337003b7aba2d

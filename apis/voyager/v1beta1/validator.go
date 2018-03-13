@@ -178,9 +178,9 @@ func (r Ingress) IsValid(cloudProvider string) error {
 				if _, err := checkRequiredPort(path.Backend.ServicePort); err != nil {
 					return errors.Errorf("spec.rule[%d].http.paths[%d] is using invalid servicePort %s for addr %s and path %s. Reason: %s", ri, pi, path.Backend.ServicePort, a, path.Path, err)
 				}
-				for hi, hdr := range path.Backend.HeaderRule {
+				for hi, hdr := range path.Backend.HeaderRules {
 					if len(strings.Fields(hdr)) == 1 {
-						return errors.Errorf("spec.rule[%d].http.paths[%d].backend.headerRule[%d] is invalid for addr %s and path %s", ri, pi, hi, a, path.Path)
+						return errors.Errorf("spec.rule[%d].http.paths[%d].backend.headerRules[%d] is invalid for addr %s and path %s", ri, pi, hi, a, path.Path)
 					}
 				}
 			}

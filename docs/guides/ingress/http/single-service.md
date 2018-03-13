@@ -10,6 +10,7 @@ product_name: voyager
 menu_name: product_voyager_6.0.0-rc.2
 section_menu_id: guides
 ---
+> New to Voyager? Please start [here](/docs/concepts/overview.md).
 
 # Exposing Service via Ingress
 
@@ -63,4 +64,4 @@ request header, and/or none of the paths match url of request.
 This Ingress will forward traffic to `test-service` if request comes from the host `appscode.example.com` only.
 Other requests will be forwarded to default backend.
 
-Default Backend also supports `headerRule` and `rewriteRule`.
+Default Backend also supports `headerRules` and `rewriteRules`.

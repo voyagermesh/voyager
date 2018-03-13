@@ -11,12 +11,15 @@ product_name: voyager
 menu_name: product_voyager_6.0.0-rc.2
 section_menu_id: setup
 ---
+> New to Voyager? Please start [here](/docs/concepts/overview.md).
 
 # Installation Guide
 
-## Using YAML
+Voyager operator can be installed via a script or as a Helm chart.
 
-Voyager can be installed via installer script included in the [/hack/deploy](https://github.com/appscode/voyager/tree/6.0.0-rc.2/hack/deploy) folder.
+## Using Script
+
+To install Voyager in your Kubernetes cluster, pick the appropriate cluster provider and run the following command:
 
 ```console
 # provider=acs
@@ -32,9 +35,16 @@ $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.2/hack/
     | bash -s -- --provider=$provider
 ```
 
+After successful installation, you should have a `voyager-operator-***` pod running in the `kube-system` namespace.
+
+```console
+$ kubectl get pods -n kube-system | grep voyager-operator
+voyager-operator-846d47f489-jrb58       1/1       Running   0          48s
+```
+
 #### Customizing Installer
 
-You can see the full list of flags available to installer using `-h` flag.
+The installer script and associated yaml files can be found in the [/hack/deploy](https://github.com/appscode/voyager/tree/6.0.0-rc.2/hack/deploy) folder. To see the full list of flags available to installer, use the `-h` flag.
 
 ```console
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.2/hack/deploy/voyager.sh | bash -s -- -h
@@ -51,8 +61,10 @@ options:
     --image-pull-secret            name of secret used to pull voyager operator images
     --restrict-to-namespace        restrict voyager to its own namespace
     --run-on-master                run voyager operator on master
-    --enable-admission-webhook     configure admission webhook for Voyager CRDs
+    --enable-admission-webhook     configure admission webhook for voyager CRDs
     --template-cfgmap=CONFIGMAP    name of configmap with custom templates
+    --uninstall                    uninstall voyager
+    --purge                        purges Voyager crd objects and crds
 ```
 
 If you would like to run Voyager operator pod in `master` instances, pass the `--run-on-master` flag:
@@ -75,7 +87,7 @@ By default, Voyager operator will watch Ingress objects in any namespace. If you
 ```console
 $ kubectl create namespace voyager
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.2/hack/deploy/voyager.sh \
-    | bash -s -- --provider=$provider --restrict-to-namespace [--namespace=voyager] [--run-on-master] [--rbac]
+    | bash -s -- --provider=$provider --namespace=voyager --restrict-to-namespace [--run-on-master] [--rbac]
 ```
 
 If you are using a private Docker registry, you need to pull the following 2 docker images:
@@ -97,6 +109,8 @@ Voyager implements a [validating admission webhook](https://kubernetes.io/docs/a
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0-rc.2/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider --enable-admission-webhook [--rbac]
 ```
+
+To use custom templates to render HAProxy configuration, visit [here](/docs/guides/ingress/configuration/custom-templates.md).
 
 ## Using Helm
 
@@ -137,7 +151,11 @@ To see the detailed configuration options, visit [here](https://github.com/appsc
 If you are installing Voyager on a GKE cluster, you will need cluster admin permissions to install Voyager operator. Run the following command to grant admin permision to the cluster.
 
 ```console
-kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=google-email-for-gce-project
+# get current google identity
+$ gcloud info | grep Account
+Account: [user@example.org]
+
+$ kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=user@example.org
 ```
 
 ### Installing in Minikube

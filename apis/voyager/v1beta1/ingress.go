@@ -281,12 +281,12 @@ type HTTPIngressBackend struct {
 	// Path rewrite rules with haproxy formatted regex.
 	//
 	// Deprecated: Use backendRule, will be removed.
-	RewriteRule []string `json:"rewriteRule,omitempty"`
+	RewriteRules []string `json:"rewriteRules,omitempty"`
 
 	// Header rules to modifies the header.
 	//
 	// Deprecated: Use backendRule, will be removed.
-	HeaderRule []string `json:"headerRule,omitempty"`
+	HeaderRules []string `json:"headerRules,omitempty"`
 }
 
 type IngressRef struct {

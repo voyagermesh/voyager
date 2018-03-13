@@ -348,8 +348,8 @@ func (c *controller) generateConfig() error {
 				BasicAuth:        bk.BasicAuth,
 				Endpoints:        bk.Endpoints,
 				BackendRules:     c.Ingress.Spec.Backend.BackendRules,
-				RewriteRules:     c.Ingress.Spec.Backend.RewriteRule,
-				HeaderRules:      c.Ingress.Spec.Backend.HeaderRule,
+				RewriteRules:     c.Ingress.Spec.Backend.RewriteRules,
+				HeaderRules:      c.Ingress.Spec.Backend.HeaderRules,
 				Sticky:           bk.Sticky,
 				StickyCookieName: bk.StickyCookieName,
 				StickyCookieHash: bk.StickyCookieHash,
@@ -467,8 +467,8 @@ func (c *controller) generateConfig() error {
 							BasicAuth:        bk.BasicAuth,
 							Endpoints:        bk.Endpoints,
 							BackendRules:     path.Backend.BackendRules,
-							RewriteRules:     c.rewriteTarget(path.Path, path.Backend.RewriteRule),
-							HeaderRules:      path.Backend.HeaderRule,
+							RewriteRules:     c.rewriteTarget(path.Path, path.Backend.RewriteRules),
+							HeaderRules:      path.Backend.HeaderRules,
 							Sticky:           bk.Sticky,
 							StickyCookieName: bk.StickyCookieName,
 							StickyCookieHash: bk.StickyCookieHash,
@@ -988,11 +988,11 @@ func (c *controller) convertRulesForSSLPassthrough() error {
 			if len(rule.HTTP.Paths) != 1 {
 				return errors.Errorf("spec.rules[%d].http can't use multiple paths with %s annotation", i, api.SSLPassthrough)
 			}
-			if len(rule.HTTP.Paths[0].Backend.HeaderRule) != 0 {
-				return errors.Errorf("spec.rules[%d].http.paths[0].backend.headerRule is not supported with %s annotation", i, api.SSLPassthrough)
+			if len(rule.HTTP.Paths[0].Backend.HeaderRules) != 0 {
+				return errors.Errorf("spec.rules[%d].http.paths[0].backend.headerRules is not supported with %s annotation", i, api.SSLPassthrough)
 			}
-			if len(rule.HTTP.Paths[0].Backend.RewriteRule) != 0 {
-				return errors.Errorf("spec.rules[%d].http.paths[0].backend.rewriteRule is not supported with %s annotation", i, api.SSLPassthrough)
+			if len(rule.HTTP.Paths[0].Backend.RewriteRules) != 0 {
+				return errors.Errorf("spec.rules[%d].http.paths[0].backend.rewriteRules is not supported with %s annotation", i, api.SSLPassthrough)
 			}
 
 			if rule.HTTP.Port.IntValue() == 0 {
@@ -1015,11 +1015,11 @@ func (c *controller) convertRulesForSSLPassthrough() error {
 	}
 
 	if !usesHTTPRule && c.Ingress.Spec.Backend != nil {
-		if len(c.Ingress.Spec.Backend.HeaderRule) != 0 {
-			return errors.Errorf("spec.backend.headerRule is not supported with %s annotation", api.SSLPassthrough)
+		if len(c.Ingress.Spec.Backend.HeaderRules) != 0 {
+			return errors.Errorf("spec.backend.headerRules is not supported with %s annotation", api.SSLPassthrough)
 		}
-		if len(c.Ingress.Spec.Backend.RewriteRule) != 0 {
-			return errors.Errorf("spec.backend.rewriteRule is not supported with %s annotation", api.SSLPassthrough)
+		if len(c.Ingress.Spec.Backend.RewriteRules) != 0 {
+			return errors.Errorf("spec.backend.rewriteRules is not supported with %s annotation", api.SSLPassthrough)
 		}
 		rule := api.IngressRule{
 			IngressRuleValue: api.IngressRuleValue{
