@@ -1,13 +1,13 @@
 ---
 title: Frontend Ingress Rules| Voyager
 menu:
-  product_voyager_6.0.0-rc.2:
+  product_voyager_6.0.0:
     identifier: frontend-rule-config
     name: Frontend Rule
     parent: config-ingress
     weight: 105
 product_name: voyager
-menu_name: product_voyager_6.0.0-rc.2
+menu_name: product_voyager_6.0.0
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).

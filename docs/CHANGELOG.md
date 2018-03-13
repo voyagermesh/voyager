@@ -1,7 +1,41 @@
 # Change Log
 
-## [6.0.0-rc.2](https://github.com/appscode/voyager/tree/6.0.0-rc.2) (2018-03-05)
-[Full Changelog](https://github.com/appscode/voyager/compare/6.0.0-rc.1...6.0.0-rc.2)
+## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
+
+[Full Changelog](https://github.com/appscode/voyager/compare/6.0.0...HEAD)
+
+**Fixed bugs:**
+
+- TCP Ingress: invalid memory address or nil pointer dereference [\#906](https://github.com/appscode/voyager/issues/906)
+- Run service monitor informer in its own go routine. [\#929](https://github.com/appscode/voyager/pull/929) ([tamalsaha](https://github.com/tamalsaha))
+- Various fixes and improved logging [\#928](https://github.com/appscode/voyager/pull/928) ([tamalsaha](https://github.com/tamalsaha))
+- Use user provided cookie name for default backend [\#920](https://github.com/appscode/voyager/pull/920) ([tamalsaha](https://github.com/tamalsaha))
+- Fixed ingress finalizer [\#917](https://github.com/appscode/voyager/pull/917) ([diptadas](https://github.com/diptadas))
+- Detect change when deletion timestamp is set for Ingress [\#916](https://github.com/appscode/voyager/pull/916) ([tamalsaha](https://github.com/tamalsaha))
+
+**Closed issues:**
+
+- Support LB type in Openstack [\#930](https://github.com/appscode/voyager/issues/930)
+- Deployment model of voyager a bit overcomplex? [\#924](https://github.com/appscode/voyager/issues/924)
+- HTTP to HTTPS redirect [\#923](https://github.com/appscode/voyager/issues/923)
+- OpenStack support [\#669](https://github.com/appscode/voyager/issues/669)
+- Expose HAProxy config template var w/ Voyager deployment.spec.replicas [\#517](https://github.com/appscode/voyager/issues/517)
+- Improve AWS support [\#163](https://github.com/appscode/voyager/issues/163)
+- Use alpine as the base image for haproxy [\#108](https://github.com/appscode/voyager/issues/108)
+- Truly Seamless Reloads with HAProxy [\#89](https://github.com/appscode/voyager/issues/89)
+
+**Merged pull requests:**
+
+- Document how to create internal LB in openstack [\#931](https://github.com/appscode/voyager/pull/931) ([tamalsaha](https://github.com/tamalsaha))
+- Fix typo in README [\#927](https://github.com/appscode/voyager/pull/927) ([shaneog](https://github.com/shaneog))
+- Update overview.md [\#926](https://github.com/appscode/voyager/pull/926) ([bewiwi](https://github.com/bewiwi))
+- Add "New to Voyager" header [\#922](https://github.com/appscode/voyager/pull/922) ([tamalsaha](https://github.com/tamalsaha))
+- Add --purge flag [\#921](https://github.com/appscode/voyager/pull/921) ([tamalsaha](https://github.com/tamalsaha))
+- Make headerRule, rewriteRule plural [\#919](https://github.com/appscode/voyager/pull/919) ([tamalsaha](https://github.com/tamalsaha))
+- Make it clear that installer is a single command [\#915](https://github.com/appscode/voyager/pull/915) ([tamalsaha](https://github.com/tamalsaha))
+
+## [6.0.0](https://github.com/appscode/voyager/tree/6.0.0) (2018-03-05)
+[Full Changelog](https://github.com/appscode/voyager/compare/6.0.0-rc.1...6.0.0)
 
 **Fixed bugs:**
 
@@ -9,9 +43,10 @@
 
 **Merged pull requests:**
 
+- Update docs that --rbac is default on [\#914](https://github.com/appscode/voyager/pull/914) ([tamalsaha](https://github.com/tamalsaha))
 - Enable RBAC by default in installer [\#913](https://github.com/appscode/voyager/pull/913) ([tamalsaha](https://github.com/tamalsaha))
 - Fix installer [\#912](https://github.com/appscode/voyager/pull/912) ([tamalsaha](https://github.com/tamalsaha))
-- Prepare docs for 6.0.0-rc.2 [\#911](https://github.com/appscode/voyager/pull/911) ([tamalsaha](https://github.com/tamalsaha))
+- Prepare docs for 6.0.0 [\#911](https://github.com/appscode/voyager/pull/911) ([tamalsaha](https://github.com/tamalsaha))
 - Stop using field selector in haproxy controller [\#910](https://github.com/appscode/voyager/pull/910) ([tamalsaha](https://github.com/tamalsaha))
 - Update chart to match RBAC best practices for charts [\#909](https://github.com/appscode/voyager/pull/909) ([tamalsaha](https://github.com/tamalsaha))
 - Add checks to installer script [\#908](https://github.com/appscode/voyager/pull/908) ([tamalsaha](https://github.com/tamalsaha))
