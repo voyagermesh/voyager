@@ -45,6 +45,7 @@ To disable stats collection, run the operator with the flag** `--analytics=false
  - kelseyhightower/kube-cert-manager https://github.com/kelseyhightower/kube-cert-manager
  - PalmStoneGames/kube-cert-manager https://github.com/PalmStoneGames/kube-cert-manager
  - [Kubernetes cloudprovider implementation](https://github.com/kubernetes/kubernetes/tree/master/pkg/cloudprovider)
+ - openshift/generic-admission-server https://github.com/openshift/generic-admission-server
 
 ## Support
 
