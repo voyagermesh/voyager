@@ -160,6 +160,21 @@ You can't use Global Static IP with a LoabBalancer Ingress managed by GKE. Voyag
 
 If you want to use Global static IP with Google Cloud, these pods need to be exposed via  a HTTP LoadBalancer. Voyager does not support this today. This is not a priority for us but if you want to contribute, we can talk more. To use HTTP LoadBalancers today, you can use the `gce` ingress controller: https://github.com/kubernetes/ingress-gce . You may already know that HTTP LoadBalancer can only open port 80, 8080 and 443 and serve HTTP traffic. Please consult the official docs for more details: https://cloud.google.com/compute/docs/load-balancing/
 
+
+**How to use LoadBalancer type ingress in Openstack?**
+
+If you need to create an internal LB in Openstack, you can do so using `ingress.appscode.com/annotations-service` annotation on the Ingress object.
+
+```yaml
+  annotations:
+    ingress.appscode.com/type: LoadBalancer
+    ingress.appscode.com/annotations-service: |
+      {
+        "service.beta.kubernetes.io/openstack-internal-load-balancer": "true"
+      }
+```
+
+
 **How to use LoadBalancer type ingress in Minikube cluster?**
 
 Minikube clusters do not support service type `LoadBalancer`. So, you can try the following work arounds:
