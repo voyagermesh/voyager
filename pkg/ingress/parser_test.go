@@ -8,6 +8,7 @@ import (
 	"k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"github.com/appscode/voyager/pkg/config"
 )
 
 func TestALPNOptions(t *testing.T) {
@@ -29,7 +30,7 @@ func TestALPNOptions(t *testing.T) {
 func TestConvertRulesForSSLPassthrough(t *testing.T) {
 	c := &controller{
 		Ingress: &api.Ingress{},
-		cfg: Config{
+		cfg: config.Config{
 			CloudProvider: "minikube",
 		},
 	}

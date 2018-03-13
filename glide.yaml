@@ -77,4 +77,4 @@ import:
   version: release-6.0
 testImport:
 - package: github.com/stretchr/testify
-  version: v1.2.0
+  version: v1.2.1

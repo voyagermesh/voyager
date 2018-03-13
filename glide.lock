@@ -1,5 +1,5 @@
-hash: 52dc2bd8700082777010dc673be15f2b6ceb102a0a05cd4d60b2679da0fee84f
-updated: 2018-03-12T11:25:14.43015579-07:00
+hash: 4cb7ed4779a9dc4d96a4535a7e765a493b599f146f09c2d1baf96a1305ce326a
+updated: 2018-03-13T14:17:04.40606949-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -35,7 +35,7 @@ imports:
   - api
   - prometheus/v1
 - name: github.com/appscode/kutil
-  version: e3a21009a5f4536b54e15941bb8cd081a856d9fb
+  version: 12b13fb456a4d1ac4a0a3d160b4251557e8723c2
   subpackages:
   - admission/api
   - apiextensions/v1beta1
@@ -981,7 +981,7 @@ testImports:
 - name: github.com/stretchr/objx
   version: 1a9d0bb9f541897e62256577b352fdbc1fb4fd94
 - name: github.com/stretchr/testify
-  version: b91bfb9ebec76498946beb6af7c0230c7cc7ba6c
+  version: 12b6f73e6084dad08a7c6e575284b177ecafbc71
   subpackages:
   - assert
   - mock
