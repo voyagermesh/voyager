@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/appscode/voyager.svg?branch=master)](https://travis-ci.org/appscode/voyager)
+[![codecov](https://codecov.io/gh/appscode/voyager/branch/master/graph/badge.svg)](https://codecov.io/gh/appscode/voyager)
 [![Go Report Card](https://goreportcard.com/badge/github.com/appscode/voyager)](https://goreportcard.com/report/github.com/appscode/voyager)
 ![Docker Pulls](https://img.shields.io/docker/pulls/appscode/voyager.svg)
 
