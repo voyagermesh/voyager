@@ -30,3 +30,4 @@ hack/configs/.env
 test/e2e/report.xml
 apiserver.local.config/
 .markdownlint.json
+coverage.txt
