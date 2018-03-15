@@ -79,6 +79,8 @@ Caveats:
 For HTTP, If the `spec.TLS` section in an Ingress specifies different hosts, they will be multiplexed
 on the same port according to hostname specified through SNI TLS extension (Voyager supports SNI).
 
+For handling wildcard domains use **"\*"** as hostname ( [Example](https://github.com/tamalsaha/voyager-wildcard/blob/master/mrasero/ing-https.yaml) )
+
 Referencing this secret in an Ingress will tell the Voyager to secure the channel from client to the loadbalancer using TLS:
 
 ```yaml
