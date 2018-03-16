@@ -82,6 +82,13 @@ func New(client kubernetes.Interface, voyagerClient cs.Interface, opt Options) *
 	}
 }
 
+func (c *Controller) getIngressWorker() *queue.Worker {
+	if c.options.UsesEngress() {
+		return c.engQueue
+	}
+	return c.ingQueue
+}
+
 func (c *Controller) Setup() (err error) {
 	if c.options.IngressRef.APIVersion == "" {
 		err = errors.New("ingress api version not found")
@@ -261,11 +268,7 @@ func (c *Controller) Run(stopCh chan struct{}) {
 
 	c.cfgQueue.Run(stopCh)
 	c.secretQueue.Run(stopCh)
-	if c.options.UsesEngress() {
-		c.engQueue.Run(stopCh)
-	} else {
-		c.ingQueue.Run(stopCh)
-	}
+	c.getIngressWorker().Run(stopCh)
 	c.crtQueue.Run(stopCh)
 
 	<-stopCh
