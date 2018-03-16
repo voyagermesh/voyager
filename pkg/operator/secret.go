@@ -47,7 +47,7 @@ func (op *Operator) reconcileSecret(key string) error {
 					if key, err := cache.MetaNamespaceKeyFunc(ing); err != nil {
 						return err
 					} else {
-						op.engQueue.GetQueue().Add(key)
+						op.getIngressQueue(ing.APISchema()).Add(key)
 						log.Infof("Add/Delete/Update of secret %s/%s, Ingress %s re-queued for update", secret.Namespace, secret.Name, key)
 					}
 				}

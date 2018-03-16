@@ -5,9 +5,11 @@ import (
 	prom_util "github.com/appscode/kube-mon/prometheus/v1"
 	"github.com/appscode/kutil/discovery"
 	"github.com/appscode/kutil/tools/queue"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	"github.com/golang/glog"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/util/workqueue"
 )
 
 func (op *Operator) initServiceMonitorWatcher() {
@@ -59,11 +61,18 @@ func (op *Operator) restoreServiceMonitor(name, ns string) error {
 			if key, err := cache.MetaNamespaceKeyFunc(ing); err != nil {
 				return err
 			} else {
-				op.engQueue.GetQueue().Add(key)
+				op.getIngressQueue(ing.APISchema()).Add(key)
 				log.Infof("Add/Delete/Update of service-monitor %s/%s, Ingress %s re-queued for update", ns, name, key)
 				break
 			}
 		}
 	}
 	return nil
+}
+
+func (op *Operator) getIngressQueue(apiVersion string) workqueue.RateLimitingInterface {
+	if apiVersion == api.APISchemaIngress {
+		return op.ingQueue.GetQueue()
+	}
+	return op.engQueue.GetQueue()
 }

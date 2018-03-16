@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	"github.com/appscode/voyager/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"github.com/appscode/voyager/pkg/config"
 )
 
 func TestALPNOptions(t *testing.T) {

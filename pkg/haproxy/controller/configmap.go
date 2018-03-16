@@ -46,11 +46,7 @@ func (c *Controller) syncConfigMap(key string) error {
 	if err != nil {
 		return err
 	}
-	if c.options.UsesEngress() {
-		c.engQueue.GetQueue().Add(key)
-	} else {
-		c.ingQueue.GetQueue().Add(key)
-	}
+	c.getIngressWorker().GetQueue().Add(key)
 	return nil
 }
 

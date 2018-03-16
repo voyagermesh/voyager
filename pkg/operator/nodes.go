@@ -56,7 +56,7 @@ func (op *Operator) updateFirewall(ing *api.Ingress, node *core.Node) {
 	}
 
 	if key, err := cache.MetaNamespaceKeyFunc(ing); err == nil {
-		op.engQueue.GetQueue().Add(key)
+		op.getIngressQueue(ing.APISchema()).Add(key)
 		log.Infof("Add/Delete/Update of Node %s, Ingress %s re-queued for update", node.Name, key)
 	} else {
 		log.Infof("Add/Delete/Update of Node %s, failed to re-queue Ingress %s, reason", node.Name, ing.Name, err.Error())
