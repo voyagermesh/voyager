@@ -1,0 +1,93 @@
+resource_types:
+- name: pull-request
+  type: docker-image
+  source:
+    repository: tahsin/git-pull-resource
+    tag: 1.0.0
+
+resources:
+- name: voyager
+  type: git
+  source:
+    uri: https://github.com/appscode/voyager
+    branch: concourse-tests
+
+- name: pull-request
+  type: pull-request
+  source:
+    owner: appscode
+    repo: voyager
+    label: ok-to-test
+    org: appscode
+    access_token: ((access_token))
+
+- name: kubeconfig
+  type: s3
+  source:
+    bucket: kubeconfig-concourse
+    access_key_id: ((s3-access-key))
+    secret_access_key: ((s3-secret))
+    regexp: kubeconfig-(.*).zip
+
+jobs:
+- name: unit-test-voyager
+  plan:
+  - get: voyager
+    trigger: true
+  - task: run-unit-test
+    file: voyager/hack/concourse/task_unit_test.yml
+
+- name: unit-test-pr
+  plan:
+  - get: pull-request
+    version: every
+    trigger: true
+  - put: pull-request
+    params:
+      path: pull-request
+      status: pending
+  - task: run-unit-test
+    file: pull-request/hack/concourse/task_unit_test_pr.yml
+    on_success:
+      put: pull-request
+      params:
+        path: pull-request
+        status: success
+    on_failure:
+      put: pull-request
+      params:
+        path: pull-request
+        status: failure
+
+- name: e2e-test-voyager
+  plan:
+  - get: voyager
+    trigger: true
+    passed: [unit-test-voyager]
+  - get: kubeconfig
+    params:
+      unpack: true
+  - task: run-e2e-test
+    file: voyager/hack/concourse/task_e2e_test.yml
+
+- name: e2e-test-pr
+  plan:
+  - get: pull-request
+    trigger: true
+    version: every
+    passed: [unit-test-pr]
+  - get: kubeconfig
+    params:
+      unpack: true
+  - task: run-e2e-test
+    file: pull-request/hack/concourse/task_e2e_test_pr.yml
+    on_success:
+      put: pull-request
+      params:
+        path: pull-request
+        status: success
+    on_failure:
+      put: pull-request
+      params:
+        path: pull-request
+        status: failure
