@@ -18,8 +18,10 @@ import (
 	"k8s.io/kubernetes/pkg/api/legacyscheme"
 )
 
-type Getter interface {
-	Get(namespace, name string) (runtime.Object, error)
+type GetFunc func(namespace, name string) (runtime.Object, error)
+
+type GetterFactory interface {
+	New(config *rest.Config) (GetFunc, error)
 }
 
 type GenericWebhook struct {
@@ -27,7 +29,8 @@ type GenericWebhook struct {
 	singular string
 
 	target  schema.GroupVersionKind
-	getter  Getter
+	factory GetterFactory
+	get     GetFunc
 	handler admission.ResourceHandler
 
 	initialized bool
@@ -40,13 +43,13 @@ func NewGenericWebhook(
 	plural schema.GroupVersionResource,
 	singular string,
 	target schema.GroupVersionKind,
-	getter Getter,
+	factory GetterFactory,
 	handler admission.ResourceHandler) *GenericWebhook {
 	return &GenericWebhook{
 		plural:   plural,
 		singular: singular,
 		target:   target,
-		getter:   getter,
+		factory:  factory,
 		handler:  handler,
 	}
 }
@@ -61,7 +64,11 @@ func (h *GenericWebhook) Initialize(config *rest.Config, stopCh <-chan struct{})
 
 	h.initialized = true
 
-	return nil
+	var err error
+	if h.factory != nil {
+		h.get, err = h.factory.New(config)
+	}
+	return err
 }
 
 func (h *GenericWebhook) Admit(req *v1beta1.AdmissionRequest) *v1beta1.AdmissionResponse {
@@ -90,11 +97,11 @@ func (h *GenericWebhook) Admit(req *v1beta1.AdmissionRequest) *v1beta1.Admission
 
 	switch req.Operation {
 	case v1beta1.Delete:
-		if h.getter == nil {
+		if h.get == nil {
 			break
 		}
 		// req.Object.Raw = nil, so read from kubernetes
-		obj, err := h.getter.Get(req.Namespace, req.Name)
+		obj, err := h.get(req.Namespace, req.Name)
 		if err != nil && !kerr.IsNotFound(err) {
 			return StatusInternalServerError(err)
 		} else if err == nil {
