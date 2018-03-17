@@ -3,7 +3,7 @@ package plugin
 import (
 	"encoding/json"
 
-	hookapi "github.com/appscode/kutil/admission/api"
+	hooks "github.com/appscode/kutil/admission/v1beta1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	admission "k8s.io/api/admission/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -15,7 +15,7 @@ type CRDValidator struct {
 	CloudProvider string
 }
 
-var _ hookapi.AdmissionHook = &CRDValidator{}
+var _ hooks.AdmissionHook = &CRDValidator{}
 
 func (a *CRDValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
@@ -43,17 +43,17 @@ func (a *CRDValidator) Admit(req *admission.AdmissionRequest) *admission.Admissi
 		obj := &api.Certificate{}
 		err := json.Unmarshal(req.Object.Raw, obj)
 		if err != nil {
-			return hookapi.StatusBadRequest(err)
+			return hooks.StatusBadRequest(err)
 		}
 		err = obj.IsValid(a.CloudProvider)
 		if err != nil {
-			return hookapi.StatusForbidden(err)
+			return hooks.StatusForbidden(err)
 		}
 	case api.ResourceKindIngress:
 		obj := &api.Ingress{}
 		err := json.Unmarshal(req.Object.Raw, obj)
 		if err != nil {
-			return hookapi.StatusBadRequest(err)
+			return hooks.StatusBadRequest(err)
 		}
 
 		if req.Kind.Group == "extensions" {
@@ -66,7 +66,7 @@ func (a *CRDValidator) Admit(req *admission.AdmissionRequest) *admission.Admissi
 
 		err = obj.IsValid(a.CloudProvider)
 		if err != nil {
-			return hookapi.StatusForbidden(err)
+			return hooks.StatusForbidden(err)
 		}
 	}
 
