@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	hookapi "github.com/appscode/kutil/admission/api"
+	hooks "github.com/appscode/kutil/admission/v1beta1"
 	admissionreview "github.com/appscode/kutil/registry/admissionreview/v1beta1"
 	"github.com/appscode/voyager/pkg/operator"
 	"github.com/pkg/errors"
@@ -200,7 +200,7 @@ func appendUniqueGroupVersion(slice []schema.GroupVersion, elems ...schema.Group
 	return out
 }
 
-func postStartHookName(hook hookapi.AdmissionHook) string {
+func postStartHookName(hook hooks.AdmissionHook) string {
 	var ns []string
 	gvr, _ := hook.Resource()
 	ns = append(ns, fmt.Sprintf("admit-%s.%s.%s", gvr.Resource, gvr.Version, gvr.Group))
@@ -210,15 +210,15 @@ func postStartHookName(hook hookapi.AdmissionHook) string {
 	return strings.Join(append(ns, "init"), "-")
 }
 
-func admissionHooksByGroupThenVersion(admissionHooks ...hookapi.AdmissionHook) map[string]map[string][]hookapi.AdmissionHook {
-	ret := map[string]map[string][]hookapi.AdmissionHook{}
+func admissionHooksByGroupThenVersion(admissionHooks ...hooks.AdmissionHook) map[string]map[string][]hooks.AdmissionHook {
+	ret := map[string]map[string][]hooks.AdmissionHook{}
 
 	for i := range admissionHooks {
 		hook := admissionHooks[i]
 		gvr, _ := hook.Resource()
 		group, ok := ret[gvr.Group]
 		if !ok {
-			group = map[string][]hookapi.AdmissionHook{}
+			group = map[string][]hooks.AdmissionHook{}
 			ret[gvr.Group] = group
 		}
 		group[gvr.Version] = append(group[gvr.Version], hook)

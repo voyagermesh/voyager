@@ -1,7 +1,7 @@
 package operator
 
 import (
-	hookapi "github.com/appscode/kutil/admission/api"
+	hooks "github.com/appscode/kutil/admission/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	voyagerinformers "github.com/appscode/voyager/client/informers/externalversions"
 	"github.com/appscode/voyager/pkg/config"
@@ -21,7 +21,7 @@ type OperatorConfig struct {
 	CRDClient      kext_cs.ApiextensionsV1beta1Interface
 	VoyagerClient  cs.Interface
 	PromClient     prom.MonitoringV1Interface
-	AdmissionHooks []hookapi.AdmissionHook
+	AdmissionHooks []hooks.AdmissionHook
 }
 
 func NewOperatorConfig(clientConfig *rest.Config) *OperatorConfig {

@@ -1,5 +1,5 @@
 hash: 4cb7ed4779a9dc4d96a4535a7e765a493b599f146f09c2d1baf96a1305ce326a
-updated: 2018-03-13T14:17:04.40606949-07:00
+updated: 2018-03-17T10:22:53.546400158-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -35,9 +35,10 @@ imports:
   - api
   - prometheus/v1
 - name: github.com/appscode/kutil
-  version: 12b13fb456a4d1ac4a0a3d160b4251557e8723c2
+  version: 0c1620d6537df14d999bb6f171524f947f5391f6
   subpackages:
-  - admission/api
+  - admission
+  - admission/v1beta1
   - apiextensions/v1beta1
   - apps/v1beta1
   - core/v1
@@ -46,6 +47,7 @@ imports:
   - meta
   - rbac/v1
   - registry/admissionreview/v1beta1
+  - runtime/serializer/versioning
   - tools/analytics
   - tools/certstore
   - tools/clientcmd
@@ -170,7 +172,7 @@ imports:
 - name: github.com/fatih/structs
   version: ebf56d35bba727c68ac77f56f2fcf90b181851aa
 - name: github.com/fsnotify/fsnotify
-  version: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
+  version: f12c6236fe7b5cf6bcf30e5935d08cb079d78334
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/go-ini/ini
@@ -367,7 +369,7 @@ imports:
 - name: github.com/opencontainers/go-digest
   version: a6d0ee40d4207ea02364bd3b9e8e77b9159ba1eb
 - name: github.com/orcaman/concurrent-map
-  version: d4c23bd0e01134806215ffe65ba3fd22ec6721f7
+  version: df96f262a3121a116e9600730f60dc34866a6c21
 - name: github.com/ovh/go-ovh
   version: df6beeb652924ef66aa95690b392f62864ad8842
   subpackages:
