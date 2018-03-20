@@ -10,7 +10,7 @@ resources:
   type: git
   source:
     uri: https://github.com/appscode/voyager
-    branch: concourse-tests
+    branch: master
 
 - name: pull-request
   type: pull-request
@@ -20,14 +20,6 @@ resources:
     label: ok-to-test
     org: appscode
     access_token: ((access_token))
-
-- name: kubeconfig
-  type: s3
-  source:
-    bucket: kubeconfig-concourse
-    access_key_id: ((s3-access-key))
-    secret_access_key: ((s3-secret))
-    regexp: kubeconfig-(.*).zip
 
 jobs:
 - name: unit-test-voyager
@@ -64,11 +56,21 @@ jobs:
   - get: voyager
     trigger: true
     passed: [unit-test-voyager]
-  - get: kubeconfig
-    params:
-      unpack: true
   - task: run-e2e-test
-    file: voyager/hack/concourse/task_e2e_test.yml
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: tahsin/voyager-e2e
+          tag: latest
+      inputs:
+      - name: voyager
+      run:
+        path: voyager/hack/concourse/e2e_test.sh
+      params:
+        TOKEN: ((digitaloceanToken))
+
 
 - name: e2e-test-pr
   plan:
@@ -76,11 +78,20 @@ jobs:
     trigger: true
     version: every
     passed: [unit-test-pr]
-  - get: kubeconfig
-    params:
-      unpack: true
   - task: run-e2e-test
-    file: pull-request/hack/concourse/task_e2e_test_pr.yml
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: tahsin/voyager-e2e
+          tag: latest
+      inputs:
+      - name: pull-request
+      run:
+        path: pull-request/hack/concourse/e2e_test_pr.sh
+      params:
+        TOKEN: ((digitaloceanToken))
     on_success:
       put: pull-request
       params:
