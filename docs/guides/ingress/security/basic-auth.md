@@ -59,6 +59,10 @@ EOF
 
 $ kubectl create secret generic mypasswd --from-file auth
 $ rm -fv auth
+
+# run test servers
+$ kubectl run nginx --image=nginx
+$ kubectl expose deployment nginx --name=web --port=80 --target-port=80
 ```
 
 Create an Ingress with Basic Auth annotations
@@ -68,18 +72,20 @@ apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
   annotations:
+    ingress.appscode.com/type: NodePort
+    ingress.appscode.com/rewrite-target: /
     ingress.appscode.com/auth-type: basic
     ingress.appscode.com/auth-realm: My Server
     ingress.appscode.com/auth-secret: mypasswd
-  name: hello-basic-auth
+  name: basic-auth-ingress
   namespace: default
 spec:
   rules:
   - http:
       paths:
-      - path: /testpath
+      - path: /web
         backend:
-          serviceName: test-service
+          serviceName: web
           servicePort: 80
 ```
 
