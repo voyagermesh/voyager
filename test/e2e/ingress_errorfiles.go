@@ -139,7 +139,7 @@ Content-Type: text/html
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTP(framework.NoRetry, framework.TestDomain+":32368", ing, eps, "GET", "/testpath",
+			err = f.Ingress.DoHTTP(framework.NoRetry, framework.TestDomain, ing, eps, "GET", "/testpath",
 				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
@@ -148,7 +148,7 @@ Content-Type: text/html
 			)
 			Expect(err).NotTo(HaveOccurred())
 
-			err = f.Ingress.DoHTTP(framework.NoRetry, framework.TestDomain+":32368", ing, eps, "GET", "/wrongpath",
+			err = f.Ingress.DoHTTP(framework.NoRetry, framework.TestDomain, ing, eps, "GET", "/wrongpath",
 				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(http.StatusBadRequest)) &&
 						Expect(r.Body).Should(Equal("haproxy-errorfile"))
