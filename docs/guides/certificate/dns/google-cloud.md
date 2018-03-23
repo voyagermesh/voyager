@@ -21,7 +21,7 @@ This article has been tested with a GKE cluster.
 
 ```console
 $ kubectl version --short
-Client Version: v1.8.3
+Client Version: v1.8.4
 Server Version: v1.8.4-gke.0
 ```
 

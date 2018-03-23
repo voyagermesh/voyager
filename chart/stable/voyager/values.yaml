@@ -8,7 +8,7 @@ imageTags:
   ## Docker image tag containing Voyager
   voyager: 6.0.0
   ## Docker image tag containing HAProxy binary
-  haproxy: 1.7.10-6.0.0
+  haproxy: 1.8.4-6.0.0
 ## Optionally specify an array of imagePullSecrets.
 ## Secrets must be manually created in the namespace.
 ## ref: https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod

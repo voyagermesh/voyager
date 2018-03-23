@@ -91,7 +91,7 @@ func (c *Controller) syncIngress(key string) error {
 		}
 		fmt.Printf("Sync/Add/Update for Ingress %s\n", d.GetName())
 
-		err = c.mountIngress(d, true)
+		err = c.mountIngress(d)
 		if err != nil {
 			c.recorder.Event(
 				d.ObjectReference(),

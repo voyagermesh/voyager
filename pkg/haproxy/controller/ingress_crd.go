@@ -81,7 +81,7 @@ func (c *Controller) syncIngressCRD(key string) error {
 		fmt.Printf("Sync/Add/Update for Ingress %s\n", d.GetName())
 		d.Migrate()
 
-		err = c.mountIngress(d, true)
+		err = c.mountIngress(d)
 		if err != nil {
 			c.recorder.Event(
 				d.ObjectReference(),
@@ -197,7 +197,7 @@ func (c *Controller) projectCerts(ing *api.Ingress, projections map[string]iouti
 	return nil
 }
 
-func (c *Controller) mountIngress(ing *api.Ingress, reload bool) error {
+func (c *Controller) mountIngress(ing *api.Ingress) error {
 	cfgProjections := map[string]ioutilz.FileProjection{}
 	err := c.projectConfig(ing, cfgProjections)
 	if err != nil {
@@ -224,7 +224,7 @@ func (c *Controller) mountIngress(ing *api.Ingress, reload bool) error {
 		incCertChangedCounter()
 	}
 
-	if (cfgChanged || certChanged) && reload {
+	if cfgChanged || certChanged {
 		return runCmd(c.options.CmdFile)
 	}
 	return nil

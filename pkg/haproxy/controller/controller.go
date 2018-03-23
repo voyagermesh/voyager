@@ -133,9 +133,7 @@ func (c *Controller) Setup() (err error) {
 	if err != nil {
 		return
 	}
-	// Do not run cmd in initOnly as it will restart the HAProxy
-	// But the config map is not still mounted.
-	err = c.mountIngress(ing, false)
+	err = c.mountIngress(ing)
 	return
 }
 
@@ -236,12 +234,14 @@ func certificateToPEMData(crt, key []byte) []byte {
 }
 
 func runCmd(path string) error {
+	glog.Info("Running haproxy-reload")
 	output, err := exec.Command("sh", "-c", path).CombinedOutput()
 	msg := fmt.Sprintf("%v", string(output))
 	if err != nil {
 		return errors.Errorf("error restarting %v: %v", msg, err)
 	}
 	incReloadCounter()
+	glog.Info("output: ", msg)
 	return nil
 }
 

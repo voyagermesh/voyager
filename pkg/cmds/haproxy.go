@@ -1,7 +1,6 @@
 package cmds
 
 import (
-	"os"
 	"time"
 
 	"github.com/appscode/go/log"
@@ -31,7 +30,6 @@ var (
 		NumThreads:     1,
 		ResyncPeriod:   10 * time.Minute,
 	}
-	initOnly bool
 )
 
 func NewCmdHAProxyController() *cobra.Command {
@@ -60,9 +58,6 @@ func NewCmdHAProxyController() *cobra.Command {
 			if err := ctrl.Setup(); err != nil {
 				log.Fatalln(err)
 			}
-			if initOnly {
-				os.Exit(0)
-			}
 
 			// Now let's start the controller
 			stop := make(chan struct{})
@@ -84,7 +79,6 @@ func NewCmdHAProxyController() *cobra.Command {
 	cmd.Flags().StringVar(&opt.CertDir, "cert-dir", opt.CertDir, "Path where tls certificates are stored for HAProxy")
 	cmd.Flags().StringVarP(&opt.CmdFile, "reload-cmd", "b", opt.CmdFile, "Bash script that will be run to reload HAProxy")
 	cmd.Flags().StringVarP(&opt.CloudProvider, "cloud-provider", "c", opt.CloudProvider, "Name of cloud provider")
-	cmd.Flags().BoolVar(&initOnly, "init-only", initOnly, "If true, exits after initial tls mount")
 
 	return cmd
 }

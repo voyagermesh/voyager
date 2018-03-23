@@ -24,8 +24,8 @@ $ kops version
 Version 1.7.1 (git-c69b811)
 
 $ kubectl version --short
-Client Version: v1.8.3
-Server Version: v1.7.10
+Client Version: v1.8.4
+Server Version: v1.8.4
 ```
 
 ## Deploy Voyager operator
