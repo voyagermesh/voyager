@@ -173,16 +173,18 @@ while test $# -gt 0; do
 done
 
 if [ "$VOYAGER_UNINSTALL" -eq 1 ]; then
+    # delete webhooks and apiservices
+    kubectl delete validatingwebhookconfiguration -l app=voyager
+    kubectl delete mutatingwebhookconfiguration -l app=voyager
+    kubectl delete apiservice -l app=voyager
+    # delete voyager operator
     kubectl delete deployment -l app=voyager --namespace $VOYAGER_NAMESPACE
     kubectl delete service -l app=voyager --namespace $VOYAGER_NAMESPACE
     kubectl delete secret -l app=voyager --namespace $VOYAGER_NAMESPACE
-    kubectl delete apiservice -l app=voyager --namespace $VOYAGER_NAMESPACE
-    kubectl delete validatingwebhookconfiguration -l app=voyager --namespace $VOYAGER_NAMESPACE
-    kubectl delete mutatingwebhookconfiguration -l app=voyager --namespace $VOYAGER_NAMESPACE
-    # Delete RBAC objects, if --rbac flag was used.
+    # delete RBAC objects, if --rbac flag was used.
     kubectl delete serviceaccount -l app=voyager --namespace $VOYAGER_NAMESPACE
-    kubectl delete clusterrolebindings -l app=voyager --namespace $VOYAGER_NAMESPACE
-    kubectl delete clusterrole -l app=voyager --namespace $VOYAGER_NAMESPACE
+    kubectl delete clusterrolebindings -l app=voyager
+    kubectl delete clusterrole -l app=voyager
     kubectl delete rolebindings -l app=voyager --namespace $VOYAGER_NAMESPACE
     kubectl delete role -l app=voyager --namespace $VOYAGER_NAMESPACE
 
