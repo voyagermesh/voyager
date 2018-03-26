@@ -6,12 +6,12 @@ import (
 	"github.com/appscode/kutil"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1"
+	"github.com/evanphx/json-patch"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/jsonmergepatch"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -34,17 +34,21 @@ func CreateOrPatchCertificate(c cs.VoyagerV1beta1Interface, meta metav1.ObjectMe
 }
 
 func PatchCertificate(c cs.VoyagerV1beta1Interface, cur *api.Certificate, transform func(*api.Certificate) *api.Certificate) (*api.Certificate, kutil.VerbType, error) {
+	return PatchCertificateObject(c, cur, transform(cur.DeepCopy()))
+}
+
+func PatchCertificateObject(c cs.VoyagerV1beta1Interface, cur, mod *api.Certificate) (*api.Certificate, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	modJson, err := json.Marshal(transform(cur.DeepCopy()))
+	modJson, err := json.Marshal(mod)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	patch, err := jsonmergepatch.CreateThreeWayJSONMergePatch(curJson, modJson, curJson)
+	patch, err := jsonpatch.CreateMergePatch(curJson, modJson)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}

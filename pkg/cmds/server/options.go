@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	hooks "github.com/appscode/kutil/admission/v1beta1"
+	hooks "github.com/appscode/kubernetes-webhook-util/admission/v1beta1"
 	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned"

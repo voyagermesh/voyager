@@ -12,7 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
+var json = jsoniter.ConfigFastest
 
 func GetGroupVersionKind(v interface{}) schema.GroupVersionKind {
 	return core.SchemeGroupVersion.WithKind(meta.GetKind(v))
@@ -253,6 +253,14 @@ func MergeLocalObjectReferences(old, new []core.LocalObjectReference) []core.Loc
 }
 
 func EnsureOwnerReference(meta metav1.ObjectMeta, owner *core.ObjectReference) metav1.ObjectMeta {
+	if owner == nil ||
+		owner.APIVersion == "" ||
+		owner.Kind == "" ||
+		owner.Name == "" ||
+		owner.UID == "" {
+		return meta
+	}
+
 	fi := -1
 	for i, ref := range meta.OwnerReferences {
 		if ref.Kind == owner.Kind && ref.Name == owner.Name {

@@ -73,6 +73,8 @@ import:
 - package: k8s.io/kube-openapi
 - package: github.com/appscode/kutil
   version: release-6.0
+- package: github.com/appscode/kubernetes-webhook-util
+  version: release-6.0
 - package: github.com/appscode/kube-mon
   version: release-6.0
 testImport:
