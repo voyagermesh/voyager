@@ -162,7 +162,7 @@ Following configurations can be enabled for test via flags in `./hack/make.py te
 | cloud-provider | | Name of cloud Provider |
 | ingress-class | | | Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager. |
 | namespace | test- <random> | Run tests in this namespaces |
-| haproxy-image| appscode/haproxy:1.8.4-6.0.0 | HAProxy image name to run |
+| haproxy-image| appscode/haproxy:1.8.5-6.0.0 | HAProxy image name to run |
 | cleanup | true | Turn off cleanup for dynamically generated pods and configmaps. Helps with manual testing |
 | in-cluster | false | Operator is running inside cluster. Helps with running operator testing. |
 | daemon-host-name | master | Daemon host name to run daemon hosts |

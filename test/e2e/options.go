@@ -40,7 +40,7 @@ var (
 )
 
 func init() {
-	options.OperatorOptions.HAProxyImageTag = "1.8.4-hp183"
+	options.OperatorOptions.HAProxyImageTag = "1.8.5-hp183"
 	options.OperatorOptions.ExporterImageTag = "hp183"
 
 	options.AddGoFlags(flag.CommandLine)

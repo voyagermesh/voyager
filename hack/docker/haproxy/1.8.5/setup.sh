@@ -10,7 +10,7 @@ source "$REPO_ROOT/hack/libbuild/common/public_image.sh"
 detect_tag $REPO_ROOT/dist/.tag
 
 IMG=haproxy
-TAG=1.8.4-$TAG
+TAG=1.8.5-$TAG
 
 build() {
 	pushd $(dirname "${BASH_SOURCE}")

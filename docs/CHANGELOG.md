@@ -109,7 +109,7 @@ aliases:
 - Skip generating UpdateStatus method [\#887](https://github.com/appscode/voyager/pull/887) ([tamalsaha](https://github.com/tamalsaha))
 - Delete internal types [\#886](https://github.com/appscode/voyager/pull/886) ([tamalsaha](https://github.com/tamalsaha))
 - Use official code generator scripts [\#885](https://github.com/appscode/voyager/pull/885) ([tamalsaha](https://github.com/tamalsaha))
-- Use HAProxy 1.8.4 [\#884](https://github.com/appscode/voyager/pull/884) ([tamalsaha](https://github.com/tamalsaha))
+- Use HAProxy 1.8.5 [\#884](https://github.com/appscode/voyager/pull/884) ([tamalsaha](https://github.com/tamalsaha))
 - Move node selector to Ingress spec [\#883](https://github.com/appscode/voyager/pull/883) ([tamalsaha](https://github.com/tamalsaha))
 - Only check NodePort if provided [\#880](https://github.com/appscode/voyager/pull/880) ([tamalsaha](https://github.com/tamalsaha))
 - Create user facing aggregate roles [\#879](https://github.com/appscode/voyager/pull/879) ([tamalsaha](https://github.com/tamalsaha))
