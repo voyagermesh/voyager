@@ -1,3 +1,20 @@
+---
+title: Changelog | Voyager
+description: Changelog
+menu:
+  product_voyager_6.0.0:
+    identifier: changelog-voyager
+    name: Changelog
+    parent: welcome
+    weight: 10
+product_name: voyager
+menu_name: product_voyager_6.0.0
+section_menu_id: welcome
+url: /products/voyager/6.0.0/welcome/changelog/
+aliases:
+  - /products/voyager/6.0.0/CHANGELOG/
+---
+
 # Change Log
 
 ## [6.0.0](https://github.com/appscode/voyager/tree/6.0.0) (2018-03-13)
