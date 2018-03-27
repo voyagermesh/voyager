@@ -225,7 +225,7 @@ func (c *Controller) mountIngress(ing *api.Ingress) error {
 	}
 
 	if cfgChanged || certChanged {
-		return runCmd(c.options.CmdFile)
+		return runCmd()
 	}
 	return nil
 }

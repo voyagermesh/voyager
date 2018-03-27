@@ -463,7 +463,6 @@ func (c *loadBalancerController) ensurePods() (*apps.Deployment, kutil.VerbType,
 				fmt.Sprintf("--ingress-api-version=%s", c.Ingress.APISchema()),
 				fmt.Sprintf("--ingress-name=%s", c.Ingress.Name),
 				fmt.Sprintf("--qps=%v", c.cfg.QPS),
-				"--reload-cmd=/etc/sv/haproxy-controller/reload",
 			}, config.LoggerOptions.ToFlags()...),
 			Env: c.ensureEnvVars([]core.EnvVar{
 				{
