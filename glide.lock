@@ -1,5 +1,5 @@
 hash: c2dffc27b4f9fb7a28af11d0bad9bdf946b348b31237a5c328b77a953de4760f
-updated: 2018-03-26T11:55:00.529901399-07:00
+updated: 2018-03-27T17:09:33.397271287-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -25,7 +25,7 @@ imports:
   - types
   - version
 - name: github.com/appscode/jsonpatch
-  version: ee757872f6aca6d412d0d80543725bd4cf48f793
+  version: d1ada3d25b084ae42746377df856bbc74a901503
 - name: github.com/appscode/kube-mon
   version: eeb8de0ba83795dc2fd86c3667d6566a62276160
   subpackages:
@@ -35,7 +35,7 @@ imports:
   - api
   - prometheus/v1
 - name: github.com/appscode/kubernetes-webhook-util
-  version: 4b735465cee79f76eb8a498fa01e54dfb1fc4ec4
+  version: 52939d4c06ccf60997cdc8f0fa1fecb27b383a0d
   subpackages:
   - admission/v1beta1
   - registry/admissionreview/v1beta1
@@ -207,7 +207,7 @@ imports:
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
-  version: 0c93777250bd58222171888d1651979319d8b381
+  version: ab810a8a5d6524ae4659463790261878fe6a0718
   subpackages:
   - cmp
   - cmp/internal/diff
@@ -375,7 +375,7 @@ imports:
 - name: github.com/pires/go-proxyproto
   version: 2f38359974ffed92842a86ffcc17001b3f525e34
 - name: github.com/pkg/errors
-  version: 645ef00459ed84a119197bfb8d8205042c6df63d
+  version: 816c9085562cd7ee03e7f8188a1cfd942858cded
 - name: github.com/prometheus/client_golang
   version: c5b7fccd204277076155f10851dad72b76a49317
   subpackages:
@@ -419,7 +419,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: 89742aefa4b206dcf400792f3bd35b542998eb3b
 - name: github.com/spf13/afero
-  version: bbf41cb36dffe15dff5bf7e18c447801e7ffe163
+  version: a880a37ed1804d98f64b3b7d58b5e3f8fbf421c4
   subpackages:
   - mem
 - name: github.com/spf13/cobra
@@ -671,7 +671,6 @@ imports:
   - pkg/util/httpstream
   - pkg/util/intstr
   - pkg/util/json
-  - pkg/util/jsonmergepatch
   - pkg/util/mergepatch
   - pkg/util/net
   - pkg/util/proxy
