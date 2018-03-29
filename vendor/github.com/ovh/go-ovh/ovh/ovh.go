@@ -298,7 +298,7 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 // argument is not nil, it will also serialize it as json and inject
 // the required Content-Type header.
 //
-// If everyrthing went fine, unmarshall response into resType and return nil
+// If everything went fine, unmarshall response into resType and return nil
 // otherwise, return the error
 func (c *Client) CallAPI(method, path string, reqBody, resType interface{}, needAuth bool) error {
 	req, err := c.NewRequest(method, path, reqBody, needAuth)
