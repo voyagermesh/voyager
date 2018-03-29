@@ -50,6 +50,7 @@ export VOYAGER_NAMESPACE=kube-system
 export VOYAGER_SERVICE_ACCOUNT=voyager-operator
 export VOYAGER_ENABLE_RBAC=true
 export VOYAGER_RUN_ON_MASTER=0
+export VOYAGER_ENABLE_ADMISSION_WEBHOOK=false
 export VOYAGER_RESTRICT_TO_NAMESPACE=false
 export VOYAGER_ROLE_TYPE=ClusterRole
 export VOYAGER_DOCKER_REGISTRY=appscode
@@ -59,10 +60,7 @@ export VOYAGER_PURGE=0
 export VOYAGER_TEMPLATE_CONFIGMAP=
 
 KUBE_APISERVER_VERSION=$(kubectl version -o=json | $ONESSL jsonpath '{.serverVersion.gitVersion}')
-$ONESSL semver --check='>=1.9.0' $KUBE_APISERVER_VERSION
-if [ $? -eq 0 ]; then
-    export VOYAGER_ENABLE_ADMISSION_WEBHOOK=true
-fi
+$ONESSL semver --check='<1.9.0' $KUBE_APISERVER_VERSION || { export VOYAGER_ENABLE_ADMISSION_WEBHOOK=true; }
 
 show_help() {
     echo "voyager.sh - install voyager operator"
@@ -174,8 +172,8 @@ done
 
 if [ "$VOYAGER_UNINSTALL" -eq 1 ]; then
     # delete webhooks and apiservices
-    kubectl delete validatingwebhookconfiguration -l app=voyager
-    kubectl delete mutatingwebhookconfiguration -l app=voyager
+    kubectl delete validatingwebhookconfiguration -l app=voyager || true
+    kubectl delete mutatingwebhookconfiguration -l app=voyager || true
     kubectl delete apiservice -l app=voyager
     # delete voyager operator
     kubectl delete deployment -l app=voyager --namespace $VOYAGER_NAMESPACE
