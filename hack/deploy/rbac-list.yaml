@@ -26,7 +26,7 @@ rules:
   - monitoring.coreos.com
   resources:
   - servicemonitors
-  verbs: ["get", "create", "update", "patch", "list", "watch"]
+  verbs: ["get", "list", "watch", "create", "update", "patch"]
 - apiGroups:
   - apps
   resources:
