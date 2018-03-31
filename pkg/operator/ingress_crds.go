@@ -8,6 +8,7 @@ import (
 	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/queue"
+	"github.com/appscode/voyager/apis/voyager"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1/util"
 	"github.com/appscode/voyager/pkg/eventer"
@@ -82,19 +83,19 @@ func (op *Operator) reconcileEngress(key string) error {
 	ctrl := ingress.NewController(NewID(context.Background()), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Config, engress)
 
 	if engress.DeletionTimestamp != nil {
-		if core_util.HasFinalizer(engress.ObjectMeta, api.VoyagerFinalizer) {
+		if core_util.HasFinalizer(engress.ObjectMeta, voyager.GroupName) {
 			glog.Infof("Delete for engress %s\n", key)
 			ctrl.Delete()
 			util.PatchIngress(op.VoyagerClient.VoyagerV1beta1(), engress, func(obj *api.Ingress) *api.Ingress {
-				obj.ObjectMeta = core_util.RemoveFinalizer(obj.ObjectMeta, api.VoyagerFinalizer)
+				obj.ObjectMeta = core_util.RemoveFinalizer(obj.ObjectMeta, voyager.GroupName)
 				return obj
 			})
 		}
 	} else {
 		glog.Infof("Sync/Add/Update for engress %s\n", key)
-		if !core_util.HasFinalizer(engress.ObjectMeta, api.VoyagerFinalizer) {
+		if !core_util.HasFinalizer(engress.ObjectMeta, voyager.GroupName) {
 			util.PatchIngress(op.VoyagerClient.VoyagerV1beta1(), engress, func(obj *api.Ingress) *api.Ingress {
-				obj.ObjectMeta = core_util.AddFinalizer(obj.ObjectMeta, api.VoyagerFinalizer)
+				obj.ObjectMeta = core_util.AddFinalizer(obj.ObjectMeta, voyager.GroupName)
 				return obj
 			})
 		}

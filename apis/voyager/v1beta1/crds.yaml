@@ -1,27 +1,11 @@
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: certificates.voyager.appscode.com
-  labels:
-    app: voyager
-spec:
-  group: voyager.appscode.com
-  names:
-    kind: Certificate
-    listKind: CertificateList
-    plural: certificates
-    shortNames:
-    - cert
-    singular: certificate
-  scope: Namespaced
-  version: v1beta1
 ---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: ingresses.voyager.appscode.com
+  creationTimestamp: null
   labels:
     app: voyager
+  name: ingresses.voyager.appscode.com
 spec:
   group: voyager.appscode.com
   names:
@@ -32,4 +16,530 @@ spec:
     - ing
     singular: ingress
   scope: Namespaced
+  validation:
+    openAPIV3Schema:
+      description: Custom Ingress type for Voyager.
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata: {}
+        spec:
+          description: IngressSpec describes the Ingress the user wishes to exist.
+          properties:
+            affinity: {}
+            backend:
+              properties:
+                backendRules:
+                  description: Serialized HAProxy rules to apply on server backend
+                    including request, response or header rewrite. acls also can be
+                    used. https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#1
+                  items:
+                    type: string
+                  type: array
+                headerRules:
+                  description: |-
+                    Header rules to modifies the header.
+
+                    Deprecated: Use backendRule, will be removed.
+                  items:
+                    type: string
+                  type: array
+                hostNames:
+                  description: Host names to forward traffic to. If empty traffic
+                    will be forwarded to all subsets instance. If set only matched
+                    hosts will get the traffic. This is an handy way to send traffic
+                    to Specific StatefulSet pod. IE. Setting [web-0] will send traffic
+                    to only web-0 host for this StatefulSet, https://kubernetes.io/docs/tasks/stateful-application/basic-stateful-set/#creating-a-statefulset
+                  items:
+                    type: string
+                  type: array
+                name:
+                  description: User can specify backend name for using it with custom
+                    acl Otherwise it will be generated
+                  type: string
+                rewriteRules:
+                  description: |-
+                    Path rewrite rules with haproxy formatted regex.
+
+                    Deprecated: Use backendRule, will be removed.
+                  items:
+                    type: string
+                  type: array
+                serviceName:
+                  description: Specifies the name of the referenced service.
+                  type: string
+                servicePort: {}
+            externalIPs:
+              description: externalIPs is a list of IP addresses for which nodes in
+                the cluster will also accept traffic for this service.  These IPs
+                are not managed by Kubernetes.  The user is responsible for ensuring
+                that traffic arrives at a node with this IP.  A common example is
+                external load-balancers that are not part of the Kubernetes system.
+              items:
+                type: string
+              type: array
+            frontendRules:
+              description: Frontend rules specifies a set of rules that should be
+                applied in HAProxy frontend configuration. The set of keywords are
+                from here https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.1
+                Only frontend sections can be applied here. It is up to user to provide
+                valid set of rules. This allows acls or other options in frontend
+                sections in HAProxy config. Frontend rules will be mapped with Ingress
+                Rules according to port.
+              items:
+                properties:
+                  auth:
+                    properties:
+                      basic:
+                        properties:
+                          realm:
+                            type: string
+                          secretName:
+                            type: string
+                      tls:
+                        properties:
+                          errorPage:
+                            type: string
+                          headers:
+                            type: object
+                          secretName:
+                            type: string
+                          verifyClient:
+                            type: string
+                  port: {}
+                  rules:
+                    description: Serialized rules
+                    items:
+                      type: string
+                    type: array
+              type: array
+            imagePullSecrets:
+              description: 'ImagePullSecrets is an optional list of references to
+                secrets in the same namespace to use for pulling any of the images
+                used by this PodSpec. If specified, these secrets will be passed to
+                individual puller implementations for them to use. For example, in
+                the case of docker, only DockerConfig type secrets are honored. More
+                info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod'
+              items: {}
+              type: array
+            loadBalancerSourceRanges:
+              description: 'Optional: If specified and supported by the platform,
+                this will restrict traffic through the cloud-provider load-balancer
+                will be restricted to the specified client IPs. This field will be
+                ignored if the cloud-provider does not support the feature. https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/'
+              items:
+                type: string
+              type: array
+            nodeSelector:
+              description: 'NodeSelector is a selector which must be true for the
+                pod to fit on a node. Selector which must match a node''s labels for
+                the pod to be scheduled on that node. More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/'
+              type: object
+            resources: {}
+            rules:
+              description: A list of host rules used to configure the Ingress. If
+                unspecified, or no rule matches, all traffic is sent to the default
+                backend.
+              items:
+                description: IngressRule represents the rules mapping the paths under
+                  a specified host to the related backend services. Incoming requests
+                  are first evaluated for a host match, then routed to the backend
+                  associated with the matching IngressRuleValue.
+                properties:
+                  host:
+                    description: "Host is the fully qualified domain name of a network
+                      host, as defined by RFC 3986. Note the following deviations
+                      from the \"host\" part of the URI as defined in the RFC: 1.
+                      IPs are not allowed. Currently an IngressRuleValue can only
+                      apply to the\n\t  IP in the Spec of the parent Ingress.\n2.
+                      The `:` delimiter is not respected because ports are not allowed.\n\t
+                      \ Currently the port of an Ingress is implicitly :80 for http
+                      and\n\t  :443 for https.\nBoth these may change in the future.
+                      Incoming requests are matched against the host before the IngressRuleValue.
+                      If the host is unspecified, the Ingress routes all traffic based
+                      on the specified IngressRuleValue."
+                    type: string
+                  http:
+                    description: 'HTTPIngressRuleValue is a list of http selectors
+                      pointing to backends. In the example: http://<host>/<path>?<searchpart>
+                      -> backend where where parts of the url correspond to RFC 3986,
+                      this resource will be used to match against everything after
+                      the last ''/'' and before the first ''?'' or ''#''.'
+                    properties:
+                      address:
+                        description: The network address to listen HTTP(s) connections
+                          on.
+                        type: string
+                      noTLS:
+                        description: Set noTLS = true to force plain text. Else, auto
+                          detect like present
+                        type: boolean
+                      nodePort: {}
+                      paths:
+                        description: A collection of paths that map requests to backends.
+                        items:
+                          description: HTTPIngressPath associates a path regex with
+                            a backend. Incoming urls matching the path are forwarded
+                            to the backend.
+                          properties:
+                            backend:
+                              properties:
+                                backendRules:
+                                  description: Serialized HAProxy rules to apply on
+                                    server backend including request, response or
+                                    header rewrite. acls also can be used. https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#1
+                                  items:
+                                    type: string
+                                  type: array
+                                headerRules:
+                                  description: |-
+                                    Header rules to modifies the header.
+
+                                    Deprecated: Use backendRule, will be removed.
+                                  items:
+                                    type: string
+                                  type: array
+                                hostNames:
+                                  description: Host names to forward traffic to. If
+                                    empty traffic will be forwarded to all subsets
+                                    instance. If set only matched hosts will get the
+                                    traffic. This is an handy way to send traffic
+                                    to Specific StatefulSet pod. IE. Setting [web-0]
+                                    will send traffic to only web-0 host for this
+                                    StatefulSet, https://kubernetes.io/docs/tasks/stateful-application/basic-stateful-set/#creating-a-statefulset
+                                  items:
+                                    type: string
+                                  type: array
+                                name:
+                                  description: User can specify backend name for using
+                                    it with custom acl Otherwise it will be generated
+                                  type: string
+                                rewriteRules:
+                                  description: |-
+                                    Path rewrite rules with haproxy formatted regex.
+
+                                    Deprecated: Use backendRule, will be removed.
+                                  items:
+                                    type: string
+                                  type: array
+                                serviceName:
+                                  description: Specifies the name of the referenced
+                                    service.
+                                  type: string
+                                servicePort: {}
+                            path:
+                              description: Path is a extended POSIX regex as defined
+                                by IEEE Std 1003.1, (i.e this follows the egrep/unix
+                                syntax, not the perl syntax) matched against the path
+                                of an incoming request. Currently it can contain characters
+                                disallowed from the conventional "path" part of a
+                                URL as defined by RFC 3986. Paths must begin with
+                                a '/'. If unspecified, the path defaults to a catch
+                                all sending traffic to the backend.
+                              type: string
+                        type: array
+                      port: {}
+                    required:
+                    - paths
+                  tcp:
+                    properties:
+                      address:
+                        description: The network address to listen TCP connections
+                          on.
+                        type: string
+                      alpn:
+                        description: Application-Layer Protocol Negotiation (ALPN)
+                          is a Transport Layer Security (TLS) extension for application
+                          layer protocol negotiation. ALPN allows the application
+                          layer to negotiate which protocol should be performed over
+                          a secure connection in a manner which avoids additional
+                          round trips and which is independent of the application
+                          layer protocols. It is used by HTTP/2. If provided a list
+                          of alpn will be added to port as alpn option1,option2,...
+                          If SecretName is Provided this secret will be used to terminate
+                          SSL with alpn options. If Secret name is not provided backend
+                          server is responsible for handling SSL.
+                        items:
+                          type: string
+                        type: array
+                      backend:
+                        description: IngressBackend describes all endpoints for a
+                          given service and port.
+                        properties:
+                          backendRules:
+                            description: Serialized HAProxy rules to apply on server
+                              backend including request, response or header rewrite.
+                              acls also can be used. https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#1
+                            items:
+                              type: string
+                            type: array
+                          hostNames:
+                            description: Host names to forward traffic to. If empty
+                              traffic will be forwarded to all subsets instance. If
+                              set only matched hosts will get the traffic. This is
+                              an handy way to send traffic to Specific StatefulSet
+                              pod. IE. Setting [web-0] will send traffic to only web-0
+                              host for this StatefulSet, https://kubernetes.io/docs/tasks/stateful-application/basic-stateful-set/#creating-a-statefulset
+                            items:
+                              type: string
+                            type: array
+                          name:
+                            description: User can specify backend name for using it
+                              with custom acl Otherwise it will be generated
+                            type: string
+                          serviceName:
+                            description: Specifies the name of the referenced service.
+                            type: string
+                          servicePort: {}
+                      noTLS:
+                        description: Set noTLS = true to force plain text. Else, auto
+                          detect like present
+                        type: boolean
+                      nodePort: {}
+                      port: {}
+              type: array
+            schedulerName:
+              description: If specified, the pod will be dispatched by specified scheduler.
+                If not specified, the pod will be dispatched by default scheduler.
+              type: string
+            tls:
+              description: TLS is the TLS configuration. Currently the Ingress only
+                supports a single TLS port, 443, and assumes TLS termination. If multiple
+                members of this list specify different hosts, they will be multiplexed
+                on the same port according to the hostname specified through the SNI
+                TLS extension.
+              items:
+                description: IngressTLS describes the transport layer security associated
+                  with an Ingress.
+                properties:
+                  hosts:
+                    description: Hosts are a list of hosts included in the TLS certificate.
+                      The values in this list must match the name/s used in the tlsSecret.
+                      Defaults to the wildcard host setting for the loadbalancer controller
+                      fulfilling this Ingress, if left unspecified.
+                    items:
+                      type: string
+                    type: array
+                  ref:
+                    description: LocalTypedReference contains enough information to
+                      let you inspect or modify the referred object.
+                    properties:
+                      apiVersion:
+                        description: API version of the referent.
+                        type: string
+                      kind:
+                        description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+                        type: string
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                        type: string
+                  secretName:
+                    description: SecretName is the name of the secret used to terminate
+                      SSL traffic on 443. Field is left optional to allow SSL routing
+                      based on SNI hostname alone. If the SNI host in a listener conflicts
+                      with the "Host" header field used by an IngressRule, the SNI
+                      host is used for termination and value of the Host header is
+                      used for routing. Deprecated
+                    type: string
+              type: array
+            tolerations:
+              description: If specified, the pod's tolerations.
+              items: {}
+              type: array
+        status:
+          description: IngressStatus describe the current state of the Ingress.
+          properties:
+            loadBalancer: {}
   version: v1beta1
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: null
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    app: voyager
+  name: certificates.voyager.appscode.com
+spec:
+  group: voyager.appscode.com
+  names:
+    kind: Certificate
+    listKind: CertificateList
+    plural: certificates
+    shortNames:
+    - cert
+    singular: certificate
+  scope: Namespaced
+  validation:
+    openAPIV3Schema:
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata: {}
+        spec:
+          properties:
+            acmeStagingURL:
+              description: ACME server that will be used to obtain this certificate.
+                Deprecated
+              type: string
+            acmeUserSecretName:
+              description: |-
+                Secret contains ACMEUser information. Secret must contain a key `email` If empty tries to find an Secret via domains if not found create an ACMEUser and stores as a secret. Secrets key to be expected:
+                 ACME_EMAIL -> required, if not provided it will through error.
+                 ACME_SERVER_URL -> custom server url to generate certificates, default is lets encrypt.
+                 ACME_USER_DATA -> user data, if not found one will be created for the provided email,
+                   and stored in the key.
+              type: string
+            challengeProvider:
+              properties:
+                dns:
+                  properties:
+                    credentialSecretName:
+                      type: string
+                    provider:
+                      description: DNS Provider from the list https://github.com/appscode/voyager/blob/master/docs/tasks/certificate/providers.md
+                      type: string
+                http:
+                  properties:
+                    ingress:
+                      description: LocalTypedReference contains enough information
+                        to let you inspect or modify the referred object.
+                      properties:
+                        apiVersion:
+                          description: API version of the referent.
+                          type: string
+                        kind:
+                          description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+                          type: string
+                        name:
+                          description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                          type: string
+            domains:
+              description: Tries to obtain a single certificate using all domains
+                passed into Domains. The first domain in domains is used for the CommonName
+                field of the certificate, all other domains are added using the Subject
+                Alternate Names extension.
+              items:
+                type: string
+              type: array
+            email:
+              description: Deprecated
+              type: string
+            httpProviderIngressReference:
+              description: LocalTypedReference contains enough information to let
+                you inspect or modify the referred object.
+              properties:
+                apiVersion:
+                  description: API version of the referent.
+                  type: string
+                kind:
+                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+                  type: string
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                  type: string
+            provider:
+              description: Following fields are deprecated and will removed in future
+                version. https://github.com/appscode/voyager/pull/506 Deprecated.
+                DNS Provider.
+              type: string
+            providerCredentialSecretName:
+              description: ProviderCredentialSecretName is used to create the acme
+                client, that will do needed processing in DNS. Deprecated
+              type: string
+            storage:
+              properties:
+                secret: {}
+                vault:
+                  properties:
+                    name:
+                      type: string
+                    prefix:
+                      type: string
+          required:
+          - challengeProvider
+          - acmeUserSecretName
+        status:
+          properties:
+            acmeUserSecretName:
+              description: Deprecated
+              type: string
+            certificateObtained:
+              description: Deprecated
+              type: boolean
+            conditions:
+              items:
+                properties:
+                  lastUpdateTime: {}
+                  message:
+                    description: human readable message with details about the request
+                      state
+                    type: string
+                  reason:
+                    description: brief reason for the request state
+                    type: string
+                  type:
+                    description: request approval state, currently Approved or Denied.
+                    type: string
+                required:
+                - type
+              type: array
+            creationTime: {}
+            details:
+              properties:
+                accountRef:
+                  type: string
+                certStableUrl:
+                  type: string
+                certUrl:
+                  type: string
+                domain:
+                  type: string
+              required:
+              - domain
+              - certUrl
+              - certStableUrl
+            lastIssuedCertificate:
+              properties:
+                accountRef:
+                  type: string
+                certStableURL:
+                  type: string
+                certURL:
+                  type: string
+                notAfter: {}
+                notBefore: {}
+                serialNumber:
+                  type: string
+              required:
+              - certURL
+              - certStableURL
+            message:
+              description: Deprecated
+              type: string
+  version: v1beta1
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: null

@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	ResourceKindIngress = "Ingress"
-	ResourceNameIngress = "ingress"
-	ResourceTypeIngress = "ingresses"
+	ResourceKindIngress     = "Ingress"
+	ResourceSingularIngress = "ingress"
+	ResourcePluralIngress   = "ingresses"
 )
 
 // +genclient

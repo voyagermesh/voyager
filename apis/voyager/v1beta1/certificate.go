@@ -6,9 +6,9 @@ import (
 )
 
 const (
-	ResourceKindCertificate = "Certificate"
-	ResourceNameCertificate = "certificate"
-	ResourceTypeCertificate = "certificates"
+	ResourceKindCertificate     = "Certificate"
+	ResourceSingularCertificate = "certificate"
+	ResourcePluralCertificate   = "certificates"
 )
 
 // +genclient

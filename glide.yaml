@@ -47,7 +47,7 @@ import:
 - package: github.com/spf13/cobra
   version: master
 - package: github.com/spf13/pflag
-  version: v1.0.0
+  version: master
 - package: github.com/tredoe/osutil
 - package: github.com/xenolf/lego
   repo: https://github.com/appscode/lego.git

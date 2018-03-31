@@ -9,6 +9,7 @@ import (
 	ext_util "github.com/appscode/kutil/extensions/v1beta1"
 	"github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/queue"
+	"github.com/appscode/voyager/apis/voyager"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/ingress"
@@ -95,19 +96,19 @@ func (op *Operator) reconcileIngress(key string) error {
 	ctrl := ingress.NewController(NewID(context.Background()), op.KubeClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Config, engress)
 
 	if ing.DeletionTimestamp != nil {
-		if core_util.HasFinalizer(ing.ObjectMeta, api.VoyagerFinalizer) {
+		if core_util.HasFinalizer(ing.ObjectMeta, voyager.GroupName) {
 			glog.Infof("Delete for engress %s\n", key)
 			ctrl.Delete()
 			ext_util.PatchIngress(op.KubeClient, ing, func(obj *extensions.Ingress) *extensions.Ingress {
-				obj.ObjectMeta = core_util.RemoveFinalizer(obj.ObjectMeta, api.VoyagerFinalizer)
+				obj.ObjectMeta = core_util.RemoveFinalizer(obj.ObjectMeta, voyager.GroupName)
 				return obj
 			})
 		}
 	} else {
 		glog.Infof("Sync/Add/Update for ingress %s\n", key)
-		if !core_util.HasFinalizer(ing.ObjectMeta, api.VoyagerFinalizer) {
+		if !core_util.HasFinalizer(ing.ObjectMeta, voyager.GroupName) {
 			ext_util.PatchIngress(op.KubeClient, ing, func(obj *extensions.Ingress) *extensions.Ingress {
-				obj.ObjectMeta = core_util.AddFinalizer(obj.ObjectMeta, api.VoyagerFinalizer)
+				obj.ObjectMeta = core_util.AddFinalizer(obj.ObjectMeta, voyager.GroupName)
 				return obj
 			})
 		}
