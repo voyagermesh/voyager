@@ -132,6 +132,11 @@ func (c *controller) reconcileRoles() (kutil.VerbType, error) {
 				Resources: []string{"ingresses"},
 				Verbs:     []string{"get", "list", "watch"},
 			},
+			{
+				APIGroups: []string{core.GroupName},
+				Resources: []string{"events"},
+				Verbs:     []string{"create"},
+			},
 		}
 		return in
 	})
