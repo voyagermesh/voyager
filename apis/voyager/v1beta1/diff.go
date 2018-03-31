@@ -8,6 +8,7 @@ import (
 	"time"
 
 	core_util "github.com/appscode/kutil/core/v1"
+	"github.com/appscode/voyager/apis/voyager"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -39,7 +40,7 @@ func (r Ingress) HasChanged(o Ingress) (bool, error) {
 		return false, errors.New("not the same Ingress")
 	}
 
-	if o.DeletionTimestamp != nil && core_util.HasFinalizer(o.ObjectMeta, VoyagerFinalizer) {
+	if o.DeletionTimestamp != nil && core_util.HasFinalizer(o.ObjectMeta, voyager.GroupName) {
 		return true, nil
 	}
 

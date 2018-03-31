@@ -1,49 +1,44 @@
 package v1beta1
 
 import (
-	"github.com/appscode/voyager/apis/voyager"
+	crdutils "github.com/appscode/kutil/apiextensions/v1beta1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const VoyagerFinalizer = "voyager.appscode.com"
-
 func (r Ingress) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
-	return &apiextensions.CustomResourceDefinition{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:   ResourceTypeIngress + "." + SchemeGroupVersion.Group,
-			Labels: map[string]string{"app": "voyager"},
+	return crdutils.NewCustomResourceDefinition(crdutils.Config{
+		Group:         SchemeGroupVersion.Group,
+		Version:       SchemeGroupVersion.Version,
+		Plural:        ResourcePluralIngress,
+		Singular:      ResourceSingularIngress,
+		Kind:          ResourceKindIngress,
+		ListKind:      ResourceKindIngress + "List",
+		ShortNames:    []string{"ing"},
+		ResourceScope: string(apiextensions.NamespaceScoped),
+		Labels: crdutils.Labels{
+			LabelsMap: map[string]string{"app": "voyager"},
 		},
-		Spec: apiextensions.CustomResourceDefinitionSpec{
-			Group:   voyager.GroupName,
-			Version: SchemeGroupVersion.Version,
-			Scope:   apiextensions.NamespaceScoped,
-			Names: apiextensions.CustomResourceDefinitionNames{
-				Singular:   ResourceNameIngress,
-				Plural:     ResourceTypeIngress,
-				Kind:       ResourceKindIngress,
-				ShortNames: []string{"ing"},
-			},
-		},
-	}
+		SpecDefinitionName:    "github.com/appscode/voyager/apis/voyager/v1beta1.Ingress",
+		EnableValidation:      true,
+		GetOpenAPIDefinitions: GetOpenAPIDefinitions,
+	})
 }
 
 func (c Certificate) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
-	return &apiextensions.CustomResourceDefinition{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:   ResourceTypeCertificate + "." + SchemeGroupVersion.Group,
-			Labels: map[string]string{"app": "voyager"},
+	return crdutils.NewCustomResourceDefinition(crdutils.Config{
+		Group:         SchemeGroupVersion.Group,
+		Version:       SchemeGroupVersion.Version,
+		Plural:        ResourcePluralCertificate,
+		Singular:      ResourceSingularCertificate,
+		Kind:          ResourceKindCertificate,
+		ListKind:      ResourceKindCertificate + "List",
+		ShortNames:    []string{"cert"},
+		ResourceScope: string(apiextensions.NamespaceScoped),
+		Labels: crdutils.Labels{
+			LabelsMap: map[string]string{"app": "voyager"},
 		},
-		Spec: apiextensions.CustomResourceDefinitionSpec{
-			Group:   voyager.GroupName,
-			Version: SchemeGroupVersion.Version,
-			Scope:   apiextensions.NamespaceScoped,
-			Names: apiextensions.CustomResourceDefinitionNames{
-				Singular:   ResourceNameCertificate,
-				Plural:     ResourceTypeCertificate,
-				Kind:       ResourceKindCertificate,
-				ShortNames: []string{"cert"},
-			},
-		},
-	}
+		SpecDefinitionName:    "github.com/appscode/voyager/apis/voyager/v1beta1.Certificate",
+		EnableValidation:      true,
+		GetOpenAPIDefinitions: GetOpenAPIDefinitions,
+	})
 }
