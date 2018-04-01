@@ -10,7 +10,6 @@ spec:
   group: voyager.appscode.com
   names:
     kind: Ingress
-    listKind: IngressList
     plural: ingresses
     shortNames:
     - ing
@@ -376,7 +375,6 @@ spec:
   group: voyager.appscode.com
   names:
     kind: Certificate
-    listKind: CertificateList
     plural: certificates
     shortNames:
     - cert

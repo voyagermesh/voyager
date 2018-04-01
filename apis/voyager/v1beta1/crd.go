@@ -12,7 +12,6 @@ func (r Ingress) CustomResourceDefinition() *apiextensions.CustomResourceDefinit
 		Plural:        ResourcePluralIngress,
 		Singular:      ResourceSingularIngress,
 		Kind:          ResourceKindIngress,
-		ListKind:      ResourceKindIngress + "List",
 		ShortNames:    []string{"ing"},
 		ResourceScope: string(apiextensions.NamespaceScoped),
 		Labels: crdutils.Labels{
@@ -31,7 +30,6 @@ func (c Certificate) CustomResourceDefinition() *apiextensions.CustomResourceDef
 		Plural:        ResourcePluralCertificate,
 		Singular:      ResourceSingularCertificate,
 		Kind:          ResourceKindCertificate,
-		ListKind:      ResourceKindCertificate + "List",
 		ShortNames:    []string{"cert"},
 		ResourceScope: string(apiextensions.NamespaceScoped),
 		Labels: crdutils.Labels{
