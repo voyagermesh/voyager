@@ -1,5 +1,5 @@
-hash: 1596963029d94145703f740f040faad597b7cc93be4e9933cb70a743c717b579
-updated: 2018-04-01T02:02:20.250453658-07:00
+hash: 1a83fdd47a01ab36cf101d0f95634cfeb9f26ebd3f5ed4501b919cf3e743c3bd
+updated: 2018-04-03T22:46:37.536539+02:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -8,6 +8,13 @@ imports:
   subpackages:
   - compute/metadata
   - internal
+- name: github.com/akamai/AkamaiOPEN-edgegrid-golang
+  version: 3a3395517818df5a2d8020e462a4b95a504edee1
+  subpackages:
+  - client-v1
+  - configdns-v1
+  - edgegrid
+  - jsonhooks-v1
 - name: github.com/appscode/go
   version: f8f2e1c7d2d10789cdd0540468b487d14421dbf9
   subpackages:
@@ -25,7 +32,7 @@ imports:
   - types
   - version
 - name: github.com/appscode/jsonpatch
-  version: 58a38a46ddb591a543c6b1003213353e29331c5a
+  version: 1359b374de83fa14fd58ab10aa8ea4935f84d249
 - name: github.com/appscode/kube-mon
   version: eeb8de0ba83795dc2fd86c3667d6566a62276160
   subpackages:
@@ -40,7 +47,7 @@ imports:
   - admission/v1beta1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: c5d28c86658474b8138b099d4a210ca249ec131f
+  version: 83f1a2ee558a663702929a15ff7cfdfbfef331f1
   subpackages:
   - apiextensions/v1beta1
   - apps/v1beta1
@@ -90,13 +97,13 @@ imports:
   - service/route53
   - service/sts
 - name: github.com/Azure/azure-sdk-for-go
-  version: 2d49bb8f2cee530cc16f1f1a9f0aae763dee257d
+  version: 21b68149ccf7c16b3f028bb4c7fd0ab458fe308f
   subpackages:
   - arm/compute
-  - arm/dns
   - arm/network
+  - services/dns/mgmt/2017-09-01/dns
 - name: github.com/Azure/go-autorest
-  version: f6e08fe5e4d45c9a66e40196d3fed5f37331d224
+  version: d4e6b95c12a08b4de2d48b45d5b4d594e5d32fab
   subpackages:
   - autorest
   - autorest/adal
@@ -142,7 +149,7 @@ imports:
   subpackages:
   - pkg/client/monitoring/v1
 - name: github.com/cpuguy83/go-md2man
-  version: 71acacd42f85e5e82f70a55327789582a5200a90
+  version: 8d868be6e9bf9d5350910bab97a050e49887600f
   subpackages:
   - md2man
 - name: github.com/davecgh/go-spew
@@ -152,7 +159,7 @@ imports:
 - name: github.com/dgrijalva/jwt-go
   version: 01aeca54ebda6e0fbfafd0a524d234159c05ec20
 - name: github.com/dnsimple/dnsimple-go
-  version: 3a4b2e4e17f93fa9c2780f1c98b82da06fa8a826
+  version: af81b84b6e07a129c4067322cc13002b3ca6a9e9
   subpackages:
   - dnsimple
 - name: github.com/elazarl/go-bindata-assetfs
@@ -166,7 +173,7 @@ imports:
 - name: github.com/evanphx/json-patch
   version: 944e07253867aacae43c04b2e6a239005443f33a
 - name: github.com/fatih/structs
-  version: ebf56d35bba727c68ac77f56f2fcf90b181851aa
+  version: f5faa72e73092639913f5833b75e1ac1d6bc7a63
 - name: github.com/fsnotify/fsnotify
   version: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
 - name: github.com/ghodss/yaml
@@ -203,7 +210,7 @@ imports:
   - ptypes/struct
   - ptypes/timestamp
 - name: github.com/golang/snappy
-  version: d9eb7a3d35ec988b8585d4a0068e462c27d28380
+  version: 553a641470496b2327abcac10b36396bd98e45c9
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
@@ -363,9 +370,9 @@ imports:
   - matchers/support/goraph/util
   - types
 - name: github.com/orcaman/concurrent-map
-  version: a05df785d2dcc16310fb997ee1702100d047cfe1
+  version: d4c23bd0e01134806215ffe65ba3fd22ec6721f7
 - name: github.com/ovh/go-ovh
-  version: 498310cd1182ebfb928a6acb71b3ad93f56c2d4f
+  version: 02f7e9439689eda7ce4752c7f37e50cb678f2679
   subpackages:
   - ovh
 - name: github.com/pborman/uuid
@@ -409,17 +416,18 @@ imports:
 - name: github.com/russross/blackfriday
   version: 300106c228d52c8941d4b3de6054a6062a86dda3
 - name: github.com/sergi/go-diff
-  version: 97b2266dfe4bd4ea1b81a463322f04f8b724801e
+  version: 24e2351369ec4949b2ed0dc5c477afdd4c4034e8
+  repo: https://github.com/sergi/go-diff
   subpackages:
   - diffmatchpatch
 - name: github.com/sethgrid/pester
-  version: ed9870dad3170c0b25ab9b11830cc57c3a7798fb
+  version: 760f8913c0483b776294e1bee43f1d687527127b
 - name: github.com/shurcooL/sanitized_anchor_name
   version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/sirupsen/logrus
   version: 89742aefa4b206dcf400792f3bd35b542998eb3b
 - name: github.com/spf13/afero
-  version: a880a37ed1804d98f64b3b7d58b5e3f8fbf421c4
+  version: 63644898a8da0bc22138abf860edaf5277b6102e
   subpackages:
   - mem
 - name: github.com/spf13/cobra
@@ -427,7 +435,7 @@ imports:
   subpackages:
   - doc
 - name: github.com/spf13/pflag
-  version: 1cd4a0c365d95803411bec89fb7b76bade17053b
+  version: 1ce0cc6db4029d97571db82f85092fccedb572ce
 - name: github.com/timewasted/linode
   version: 37e84520dcf74488f67654f9c775b9752c232dc1
   subpackages:
@@ -438,12 +446,14 @@ imports:
   - user/crypt
   - user/crypt/common
   - user/crypt/sha512_crypt
+- name: github.com/tuvistavie/securerandom
+  version: 15512123a948d62f6361bd84818e11f2ad84059a
 - name: github.com/ugorji/go
   version: ded73eae5db7e7a0ef6f55aace87a2873c5d2b74
   subpackages:
   - codec
 - name: github.com/xenolf/lego
-  version: 2a44f405473b07ef68f2dd77826193582c293fa5
+  version: 0d704c9fdee28393851c7389655151c148143cdd
   repo: https://github.com/appscode/lego.git
   vcs: git
   subpackages:
@@ -454,6 +464,7 @@ imports:
   - providers/dns/dnsimple
   - providers/dns/dnsmadeeasy
   - providers/dns/dyn
+  - providers/dns/fastdns
   - providers/dns/gandi
   - providers/dns/godaddy
   - providers/dns/googlecloud
@@ -464,11 +475,12 @@ imports:
   - providers/dns/route53
   - providers/dns/vultr
 - name: github.com/yudai/gojsondiff
-  version: 7b1b7adf999dab73a6eb02669c3d82dbb27a3dd6
+  version: e21612694bdd50975f93cd5eaccb457477128e28
   subpackages:
   - formatter
 - name: github.com/yudai/golcs
   version: d1c525dea8ce39ea9a783d33cf08932305373f2c
+  repo: https://github.com/yudai/golcs
 - name: golang.org/x/crypto
   version: 81e90905daefcd6fd217b62423c0908922eadb30
   subpackages:
@@ -582,6 +594,8 @@ imports:
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/ini.v1
   version: 20b96f641a5ea98f2f8619ff4f3e061cff4833bd
+- name: gopkg.in/mattes/go-expand-tilde.v1
+  version: cb884138e64c9a8bf5c7d6106d74b0fca082df0c
 - name: gopkg.in/natefinch/lumberjack.v2
   version: 20b71e5b60d756d3d2f80def009790325acc2b23
 - name: gopkg.in/square/go-jose.v1

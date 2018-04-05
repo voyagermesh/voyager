@@ -3,9 +3,9 @@ import:
 - package: cloud.google.com/go
   version: v0.2.0
 - package: github.com/Azure/azure-sdk-for-go
-  version: v10.2.1-beta
+  version: v12.5.0-beta
 - package: github.com/Azure/go-autorest
-  version: ~8.1.1
+  version: 9.9.0
 - package: github.com/appscode/go
   version: master
 - package: github.com/prometheus/haproxy_exporter
@@ -52,7 +52,7 @@ import:
 - package: github.com/xenolf/lego
   repo: https://github.com/appscode/lego.git
   vcs: git
-  version: master
+  version: 2018-04
 - package: golang.org/x/oauth2
   repo: https://github.com/appscode/oauth2.git
   vcs: git

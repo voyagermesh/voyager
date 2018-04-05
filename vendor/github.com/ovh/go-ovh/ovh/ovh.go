@@ -21,7 +21,6 @@ const DefaultTimeout = 180 * time.Second
 const (
 	OvhEU        = "https://eu.api.ovh.com/1.0"
 	OvhCA        = "https://ca.api.ovh.com/1.0"
-	OvhUS        = "https://api.ovh.us/1.0"
 	KimsufiEU    = "https://eu.api.kimsufi.com/1.0"
 	KimsufiCA    = "https://ca.api.kimsufi.com/1.0"
 	SoyoustartEU = "https://eu.api.soyoustart.com/1.0"
@@ -33,7 +32,6 @@ const (
 var Endpoints = map[string]string{
 	"ovh-eu":        OvhEU,
 	"ovh-ca":        OvhCA,
-	"ovh-us":        OvhUS,
 	"kimsufi-eu":    KimsufiEU,
 	"kimsufi-ca":    KimsufiCA,
 	"soyoustart-eu": SoyoustartEU,
@@ -298,7 +296,7 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 // argument is not nil, it will also serialize it as json and inject
 // the required Content-Type header.
 //
-// If everything went fine, unmarshall response into resType and return nil
+// If everyrthing went fine, unmarshall response into resType and return nil
 // otherwise, return the error
 func (c *Client) CallAPI(method, path string, reqBody, resType interface{}, needAuth bool) error {
 	req, err := c.NewRequest(method, path, reqBody, needAuth)
