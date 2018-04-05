@@ -24,6 +24,7 @@ type E2EOptions struct {
 	TestCertificate bool
 	DumpLocation    string
 	LBPersistIP     string
+	OperatorOnly    bool
 }
 
 var (
@@ -34,6 +35,7 @@ var (
 		Cleanup:         true,
 		TestCertificate: false,
 		DumpLocation:    os.TempDir(),
+		OperatorOnly:    false,
 	}
 )
 
@@ -46,6 +48,7 @@ func init() {
 	flag.BoolVar(&options.TestCertificate, "cert", options.TestCertificate, "")
 	flag.StringVar(&options.DumpLocation, "dump", os.TempDir(), "")
 	flag.StringVar(&options.LBPersistIP, "lb-ip", options.LBPersistIP, "LoadBalancer persistent IP")
+	flag.BoolVar(&options.OperatorOnly, "operator-only", options.OperatorOnly, "run operator locally without running tests")
 	enableLogging()
 }
 

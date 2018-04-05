@@ -48,6 +48,10 @@ var _ = BeforeSuite(func() {
 
 	root = framework.New(operatorConfig, options.TestNamespace, options.Cleanup)
 
+	if options.OperatorOnly { // run operator locally without running tests
+		root.Operator.RunInformers(nil)
+	}
+
 	By("Ensuring Test Namespace " + options.TestNamespace)
 	err = root.EnsureNamespace()
 	Expect(err).NotTo(HaveOccurred())
@@ -56,7 +60,6 @@ var _ = BeforeSuite(func() {
 
 	if !meta.PossiblyInCluster() {
 		go root.Operator.RunInformers(nil)
-		// select {} // run operator locally without running tests
 	}
 
 	Eventually(invocation.Ingress.Setup).Should(BeNil())
