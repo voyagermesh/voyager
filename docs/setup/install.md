@@ -30,6 +30,7 @@ To install Voyager in your Kubernetes cluster, pick the appropriate cluster prov
 # provider=gke
 # provider=minikube
 # provider=openstack
+# provider=metallb
 
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider
@@ -166,6 +167,9 @@ Voyager can be used in minikube using `--provider=minikube`. In Minikube, a `Loa
 
 Voyager works great in baremetal cluster. To install, set `--provider=baremetal`. In baremetal cluster, `LoadBalancer` type ingress in not supported. You can use [NodePort](/docs/concepts/ingress-types/nodeport.md), [HostPort](/docs/concepts/ingress-types/hostport.md) or [Internal](/docs/concepts/ingress-types/internal.md) ingress objects.
 
+### Installing in Baremetal Cluster with MetalLB
+
+Follow the instructions for installing on baremetal cluster but specify `metallb` as provider. Then install MetalLB following the instructions [here](https://metallb.universe.tf/installation/). Now, you can use `LoadBalancer` type ingress in baremetal clusters.
 
 ## Verify installation
 To check if Voyager operator pods have started, run the following command:
