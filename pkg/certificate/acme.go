@@ -17,6 +17,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/dnsimple"
 	"github.com/xenolf/lego/providers/dns/dnsmadeeasy"
 	"github.com/xenolf/lego/providers/dns/dyn"
+	"github.com/xenolf/lego/providers/dns/fastdns"
 	"github.com/xenolf/lego/providers/dns/gandi"
 	"github.com/xenolf/lego/providers/dns/godaddy"
 	"github.com/xenolf/lego/providers/dns/googlecloud"
@@ -150,6 +151,21 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 			return nil, errors.Errorf("dns provider credential missing key %s", "DYN_PASSWORD")
 		}
 		return newDNSProvider(dyn.NewDNSProviderCredentials(customerName, userName, password))
+	case "fastdns":
+		var host, clientToken, clientSecret, accessToken string
+		if host, found = dnsLoader("AKAMAI_HOST"); !found {
+			return nil, errors.Errorf("dns provider credential missing key %s", "AKAMAI_HOST")
+		}
+		if clientToken, found = dnsLoader("AKAMAI_CLIENT_TOKEN"); !found {
+			return nil, errors.Errorf("dns provider credential missing key %s", "AKAMAI_CLIENT_TOKEN")
+		}
+		if clientSecret, found = dnsLoader("AKAMAI_CLIENT_SECRET"); !found {
+			return nil, errors.Errorf("dns provider credential missing key %s", "AKAMAI_CLIENT_SECRET")
+		}
+		if accessToken, found = dnsLoader("AKAMAI_ACCESS_TOKEN"); !found {
+			return nil, errors.Errorf("dns provider credential missing key %s", "AKAMAI_ACCESS_TOKEN")
+		}
+		return newDNSProvider(fastdns.NewDNSProviderClient(host, clientToken, clientSecret, accessToken))
 	case "gandi":
 		var apiKey string
 		if apiKey, found = dnsLoader("GANDI_API_KEY"); !found {

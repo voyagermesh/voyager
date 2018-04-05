@@ -29,6 +29,14 @@ Please see the list of supported providers and the keys expected in credential p
 
 To learn about necessary IAM permissions, please see [here](/docs/guides/certificate/dns/route53.md).
 
+### Akamai FastDNS
+ - Provider: `fastdns`
+ - Credential secret keys:
+   - `AKAMAI_HOST`: The Akamai API host
+   - `AKAMAI_CLIENT_TOKEN`: The Akamai client token for a user or service account
+   - `AKAMAI_CLIENT_SECRET`: The Akamai client secret for a user or service account
+   - `AKAMAI_ACCESS_TOKEN`: THe Akamai access token for a user or service account
+
 ### Microsoft Azure
  - Provider: `azure` or `acs`
  - Credential secret keys:

@@ -1,13 +1,14 @@
 package afero
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
 )
+
+var _ Lstater = (*BasePathFs)(nil)
 
 // The BasePathFs restricts all operations to a given path within an Fs.
 // The given file name to the operations on this Fs will be prepended with
@@ -40,7 +41,7 @@ func NewBasePathFs(source Fs, path string) Fs {
 // else the given file with the base path prepended
 func (b *BasePathFs) RealPath(name string) (path string, err error) {
 	if err := validateBasePathName(name); err != nil {
-		return "", err
+		return name, err
 	}
 
 	bpath := filepath.Clean(b.path)
@@ -62,7 +63,7 @@ func validateBasePathName(name string) error {
 	// On Windows a common mistake would be to provide an absolute OS path
 	// We could strip out the base part, but that would not be very portable.
 	if filepath.IsAbs(name) {
-		return &os.PathError{Op: "realPath", Path: name, Err: errors.New("got a real OS path instead of a virtual")}
+		return os.ErrNotExist
 	}
 
 	return nil
@@ -162,6 +163,18 @@ func (b *BasePathFs) Create(name string) (f File, err error) {
 		return nil, err
 	}
 	return &BasePathFile{File: sourcef, path: b.path}, nil
+}
+
+func (b *BasePathFs) LstatIfPossible(name string) (os.FileInfo, bool, error) {
+	name, err := b.RealPath(name)
+	if err != nil {
+		return nil, false, &os.PathError{Op: "lstat", Path: name, Err: err}
+	}
+	if lstater, ok := b.source.(Lstater); ok {
+		return lstater.LstatIfPossible(name)
+	}
+	fi, err := b.source.Stat(name)
+	return fi, false, err
 }
 
 // vim: ts=4 sw=4 noexpandtab nolist syn=go
