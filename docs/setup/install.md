@@ -169,8 +169,7 @@ Voyager works great in baremetal cluster. To install, set `--provider=baremetal`
 
 ### Installing in Baremetal Cluster with MetalLB
 
-follow the instructions for installing on baremetal but specify `metallb` as provider, then follow the instructions for [MetalLB](https://metallb.universe.tf/installation/)
-once setup, the `LoadBalancer` type for ingress' is supported.
+Follow the instructions for installing on baremetal cluster but specify `metallb` as provider. Then install MetalLB following the instructions [here](https://metallb.universe.tf/installation/). Now, you can use `LoadBalancer` type ingress in baremetal clusters.
 
 ## Verify installation
 To check if Voyager operator pods have started, run the following command:
