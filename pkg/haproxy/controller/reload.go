@@ -49,7 +49,7 @@ func checkHAProxyConfig() error {
 	glog.Info("Checking haproxy config...")
 	output, err := exec.Command("haproxy", "-c", "-f", HAPROXY_CONFIG).CombinedOutput()
 	if err != nil {
-		return errors.Errorf("haproxy-check failed, reason %s", err)
+		return errors.Errorf("haproxy-check failed, reason: %s %s", string(output), err)
 	}
 	glog.Infof("haproxy-check: %s", string(output))
 	return nil

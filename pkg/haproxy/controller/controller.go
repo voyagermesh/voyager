@@ -271,7 +271,10 @@ func (c *Controller) Run(stopCh chan struct{}) {
 	go func() {
 		for range ticker.C {
 			if _, err := checkHAProxyDaemon(); err != nil {
-				startHAProxy()
+				glog.Error(err)
+				if startHAProxy(); err != nil {
+					glog.Error(err)
+				}
 			}
 		}
 	}()
