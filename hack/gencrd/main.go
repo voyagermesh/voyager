@@ -79,7 +79,7 @@ func generateSwaggerJson() {
 		glog.Fatal(err)
 	}
 
-	filename := gort.GOPath() + "/src/github.com/appscode/voyager/apis/voyager/v1beta1/swagger.json"
+	filename := gort.GOPath() + "/src/github.com/appscode/voyager/apis/swagger.json"
 	err = ioutil.WriteFile(filename, []byte(apispec), 0644)
 	if err != nil {
 		glog.Fatal(err)
