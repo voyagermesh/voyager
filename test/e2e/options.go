@@ -40,9 +40,6 @@ var (
 )
 
 func init() {
-	options.OperatorOptions.HAProxyImageTag = "1.8.5-hp183"
-	options.OperatorOptions.ExporterImageTag = "hp183"
-
 	options.AddGoFlags(flag.CommandLine)
 	flag.StringVar(&options.KubeConfig, "kubeconfig", "", "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
 	flag.StringVar(&options.KubeContext, "kube-context", "", "Name of kube context")
