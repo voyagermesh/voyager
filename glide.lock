@@ -1,5 +1,5 @@
 hash: 1a83fdd47a01ab36cf101d0f95634cfeb9f26ebd3f5ed4501b919cf3e743c3bd
-updated: 2018-04-03T22:46:37.536539+02:00
+updated: 2018-04-09T01:16:16.787613261-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -9,14 +9,14 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/akamai/AkamaiOPEN-edgegrid-golang
-  version: 3a3395517818df5a2d8020e462a4b95a504edee1
+  version: 196fbdab2db66d0e231cc363efb63454f55fed1c
   subpackages:
   - client-v1
   - configdns-v1
   - edgegrid
   - jsonhooks-v1
 - name: github.com/appscode/go
-  version: f8f2e1c7d2d10789cdd0540468b487d14421dbf9
+  version: 0eb2cabe3897bfd0fe615e9849583a88bcc82df4
   subpackages:
   - analytics
   - context
@@ -32,7 +32,7 @@ imports:
   - types
   - version
 - name: github.com/appscode/jsonpatch
-  version: 1359b374de83fa14fd58ab10aa8ea4935f84d249
+  version: 58a38a46ddb591a543c6b1003213353e29331c5a
 - name: github.com/appscode/kube-mon
   version: eeb8de0ba83795dc2fd86c3667d6566a62276160
   subpackages:
@@ -47,7 +47,7 @@ imports:
   - admission/v1beta1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: 83f1a2ee558a663702929a15ff7cfdfbfef331f1
+  version: ddcd36b69e0ecb484abe64a6a9a99fd5099d9806
   subpackages:
   - apiextensions/v1beta1
   - apps/v1beta1
@@ -149,7 +149,7 @@ imports:
   subpackages:
   - pkg/client/monitoring/v1
 - name: github.com/cpuguy83/go-md2man
-  version: 8d868be6e9bf9d5350910bab97a050e49887600f
+  version: 71acacd42f85e5e82f70a55327789582a5200a90
   subpackages:
   - md2man
 - name: github.com/davecgh/go-spew
@@ -159,7 +159,7 @@ imports:
 - name: github.com/dgrijalva/jwt-go
   version: 01aeca54ebda6e0fbfafd0a524d234159c05ec20
 - name: github.com/dnsimple/dnsimple-go
-  version: af81b84b6e07a129c4067322cc13002b3ca6a9e9
+  version: 35883f25dd2b948b4ef522ddf5a1f1ec04d32512
   subpackages:
   - dnsimple
 - name: github.com/elazarl/go-bindata-assetfs
@@ -173,7 +173,7 @@ imports:
 - name: github.com/evanphx/json-patch
   version: 944e07253867aacae43c04b2e6a239005443f33a
 - name: github.com/fatih/structs
-  version: f5faa72e73092639913f5833b75e1ac1d6bc7a63
+  version: ebf56d35bba727c68ac77f56f2fcf90b181851aa
 - name: github.com/fsnotify/fsnotify
   version: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
 - name: github.com/ghodss/yaml
@@ -210,7 +210,7 @@ imports:
   - ptypes/struct
   - ptypes/timestamp
 - name: github.com/golang/snappy
-  version: 553a641470496b2327abcac10b36396bd98e45c9
+  version: d9eb7a3d35ec988b8585d4a0068e462c27d28380
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
@@ -370,9 +370,9 @@ imports:
   - matchers/support/goraph/util
   - types
 - name: github.com/orcaman/concurrent-map
-  version: d4c23bd0e01134806215ffe65ba3fd22ec6721f7
+  version: a05df785d2dcc16310fb997ee1702100d047cfe1
 - name: github.com/ovh/go-ovh
-  version: 02f7e9439689eda7ce4752c7f37e50cb678f2679
+  version: 34b9ffdf98692f9e9b57724d180549f88725b605
   subpackages:
   - ovh
 - name: github.com/pborman/uuid
@@ -416,12 +416,11 @@ imports:
 - name: github.com/russross/blackfriday
   version: 300106c228d52c8941d4b3de6054a6062a86dda3
 - name: github.com/sergi/go-diff
-  version: 24e2351369ec4949b2ed0dc5c477afdd4c4034e8
-  repo: https://github.com/sergi/go-diff
+  version: 97b2266dfe4bd4ea1b81a463322f04f8b724801e
   subpackages:
   - diffmatchpatch
 - name: github.com/sethgrid/pester
-  version: 760f8913c0483b776294e1bee43f1d687527127b
+  version: ed9870dad3170c0b25ab9b11830cc57c3a7798fb
 - name: github.com/shurcooL/sanitized_anchor_name
   version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/sirupsen/logrus
@@ -431,7 +430,7 @@ imports:
   subpackages:
   - mem
 - name: github.com/spf13/cobra
-  version: 4dab30cb33e6633c33c787106bafbfbfdde7842d
+  version: cd30c2a7e91a1d63fd9a0027accf18a681e9d50b
   subpackages:
   - doc
 - name: github.com/spf13/pflag
@@ -446,8 +445,6 @@ imports:
   - user/crypt
   - user/crypt/common
   - user/crypt/sha512_crypt
-- name: github.com/tuvistavie/securerandom
-  version: 15512123a948d62f6361bd84818e11f2ad84059a
 - name: github.com/ugorji/go
   version: ded73eae5db7e7a0ef6f55aace87a2873c5d2b74
   subpackages:
@@ -475,12 +472,11 @@ imports:
   - providers/dns/route53
   - providers/dns/vultr
 - name: github.com/yudai/gojsondiff
-  version: e21612694bdd50975f93cd5eaccb457477128e28
+  version: 7b1b7adf999dab73a6eb02669c3d82dbb27a3dd6
   subpackages:
   - formatter
 - name: github.com/yudai/golcs
   version: d1c525dea8ce39ea9a783d33cf08932305373f2c
-  repo: https://github.com/yudai/golcs
 - name: golang.org/x/crypto
   version: 81e90905daefcd6fd217b62423c0908922eadb30
   subpackages:
@@ -593,9 +589,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/ini.v1
-  version: 20b96f641a5ea98f2f8619ff4f3e061cff4833bd
-- name: gopkg.in/mattes/go-expand-tilde.v1
-  version: cb884138e64c9a8bf5c7d6106d74b0fca082df0c
+  version: 6333e38ac20b8949a8dd68baa3650f4dee8f39f0
 - name: gopkg.in/natefinch/lumberjack.v2
   version: 20b71e5b60d756d3d2f80def009790325acc2b23
 - name: gopkg.in/square/go-jose.v1
@@ -653,11 +647,15 @@ imports:
   - pkg/api/errors
   - pkg/api/meta
   - pkg/api/resource
+  - pkg/api/testing
+  - pkg/api/testing/fuzzer
+  - pkg/api/testing/roundtrip
   - pkg/api/validation
   - pkg/api/validation/path
   - pkg/apimachinery
   - pkg/apimachinery/announced
   - pkg/apimachinery/registered
+  - pkg/apis/meta/fuzzer
   - pkg/apis/meta/internalversion
   - pkg/apis/meta/v1
   - pkg/apis/meta/v1/unstructured

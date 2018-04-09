@@ -19,9 +19,9 @@ import (
 	"unicode"
 
 	"github.com/go-ini/ini"
+	"github.com/google/uuid"
+	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
-	"github.com/tuvistavie/securerandom"
-	"gopkg.in/mattes/go-expand-tilde.v1"
 )
 
 const defaultSection = "DEFAULT"
@@ -53,12 +53,12 @@ func makeEdgeTimeStamp() string {
 // It is a random string used to detect replayed request messages.
 // A GUID is recommended.
 func createNonce() string {
-	uuid, err := securerandom.Uuid()
+	uuid, err := uuid.NewRandom()
 	if err != nil {
 		log.Errorf("Generate Uuid failed, %s", err)
 		return ""
 	}
-	return uuid
+	return uuid.String()
 }
 
 func stringMinifier(in string) (out string) {
@@ -240,11 +240,7 @@ func InitEdgeRc(filepath string, section string) (Config, error) {
 		section = "default"
 	}
 
-	// Tilde seems to be not working when passing ~/.edgerc as file
-	// Takes current user and use home dir instead
-
-	path, err := tilde.Expand(filepath)
-
+	path, err := homedir.Expand(filepath)
 	if err != nil {
 		return c, fmt.Errorf("Fatal could not find home dir from user: %s", err)
 	}
