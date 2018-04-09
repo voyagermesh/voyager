@@ -681,8 +681,8 @@ type NaptrRecord struct {
 	Name        string   `json:"name,omitempty"`
 	TTL         int      `json:"ttl,omitempty"`
 	Active      bool     `json:"active,omitempty"`
-	Order       int      `json:"order,omitempty"`
-	Preference  int      `json:"preference,omitempty"`
+	Order       uint16   `json:"order,omitempty"`
+	Preference  uint16   `json:"preference,omitempty"`
 	Flags       string   `json:"flags,omitempty"`
 	Service     string   `json:"service,omitempty"`
 	Regexp      string   `json:"regexp,omitempty"`
@@ -731,13 +731,13 @@ func (record *NaptrRecord) SetField(name string, value interface{}) error {
 				return nil
 			}
 		case "order":
-			v, ok := value.(int)
+			v, ok := value.(uint16)
 			if ok {
 				record.Order = v
 				return nil
 			}
 		case "preference":
-			v, ok := value.(int)
+			v, ok := value.(uint16)
 			if ok {
 				record.Preference = v
 				return nil
@@ -1327,11 +1327,11 @@ type SoaRecord struct {
 	TTL          int      `json:"ttl,omitempty"`
 	Originserver string   `json:"originserver,omitempty"`
 	Contact      string   `json:"contact,omitempty"`
-	Serial       int      `json:"serial,omitempty"`
+	Serial       uint     `json:"serial,omitempty"`
 	Refresh      int      `json:"refresh,omitempty"`
 	Retry        int      `json:"retry,omitempty"`
 	Expire       int      `json:"expire,omitempty"`
-	Minimum      int      `json:"minimum,omitempty"`
+	Minimum      uint     `json:"minimum,omitempty"`
 }
 
 func NewSoaRecord() *SoaRecord {
@@ -1377,7 +1377,7 @@ func (record *SoaRecord) SetField(name string, value interface{}) error {
 				return nil
 			}
 		case "serial":
-			v, ok := value.(int)
+			v, ok := value.(uint)
 			if ok {
 				record.Serial = v
 				return nil
@@ -1401,7 +1401,7 @@ func (record *SoaRecord) SetField(name string, value interface{}) error {
 				return nil
 			}
 		case "minimum":
-			v, ok := value.(int)
+			v, ok := value.(uint)
 			if ok {
 				record.Minimum = v
 				return nil
@@ -1495,8 +1495,8 @@ type SrvRecord struct {
 	Active   bool     `json:"active,omitempty"`
 	Target   string   `json:"target,omitempty"`
 	Priority int      `json:"priority,omitempty"`
-	Weight   uint     `json:"weight,omitempty"`
-	Port     int      `json:"port,omitempty"`
+	Weight   uint16   `json:"weight,omitempty"`
+	Port     uint16   `json:"port,omitempty"`
 }
 
 func NewSrvRecord() *SrvRecord {
@@ -1551,13 +1551,13 @@ func (record *SrvRecord) SetField(name string, value interface{}) error {
 				return nil
 			}
 		case "weight":
-			v, ok := value.(uint)
+			v, ok := value.(uint16)
 			if ok {
 				record.Weight = v
 				return nil
 			}
 		case "port":
-			v, ok := value.(int)
+			v, ok := value.(uint16)
 			if ok {
 				record.Port = v
 				return nil

@@ -19,11 +19,18 @@ var (
 
 // currentUserHome attempts to get current user's home directory
 func currentUserHome() (string, error) {
+	userHome := ""
 	usr, err := user.Current()
 	if err != nil {
-		return "", err
+		// Fallback by trying to read $HOME
+		userHome = os.Getenv("HOME")
+		if userHome != "" {
+			err = nil
+		}
+	} else {
+		userHome = usr.HomeDir
 	}
-	return usr.HomeDir, nil
+	return userHome, nil
 }
 
 // appendConfigurationFile only if it exists. We need to do this because
