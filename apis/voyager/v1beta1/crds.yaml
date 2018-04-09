@@ -836,7 +836,9 @@ spec:
                 serviceName:
                   description: Specifies the name of the referenced service.
                   type: string
-                servicePort: {}
+                servicePort:
+                  format: int-or-string
+                  type: string
             externalIPs:
               description: externalIPs is a list of IP addresses for which nodes in
                 the cluster will also accept traffic for this service.  These IPs
@@ -874,7 +876,9 @@ spec:
                             type: string
                           verifyClient:
                             type: string
-                  port: {}
+                  port:
+                    format: int-or-string
+                    type: string
                   rules:
                     description: Serialized rules
                     items:
@@ -960,7 +964,9 @@ spec:
                         description: Set noTLS = true to force plain text. Else, auto
                           detect like present
                         type: boolean
-                      nodePort: {}
+                      nodePort:
+                        format: int-or-string
+                        type: string
                       paths:
                         description: A collection of paths that map requests to backends.
                         items:
@@ -1012,7 +1018,9 @@ spec:
                                   description: Specifies the name of the referenced
                                     service.
                                   type: string
-                                servicePort: {}
+                                servicePort:
+                                  format: int-or-string
+                                  type: string
                             path:
                               description: Path is a extended POSIX regex as defined
                                 by IEEE Std 1003.1, (i.e this follows the egrep/unix
@@ -1024,7 +1032,9 @@ spec:
                                 all sending traffic to the backend.
                               type: string
                         type: array
-                      port: {}
+                      port:
+                        format: int-or-string
+                        type: string
                     required:
                     - paths
                   tcp:
@@ -1076,13 +1086,19 @@ spec:
                           serviceName:
                             description: Specifies the name of the referenced service.
                             type: string
-                          servicePort: {}
+                          servicePort:
+                            format: int-or-string
+                            type: string
                       noTLS:
                         description: Set noTLS = true to force plain text. Else, auto
                           detect like present
                         type: boolean
-                      nodePort: {}
-                      port: {}
+                      nodePort:
+                        format: int-or-string
+                        type: string
+                      port:
+                        format: int-or-string
+                        type: string
               type: array
             schedulerName:
               description: If specified, the pod will be dispatched by specified scheduler.

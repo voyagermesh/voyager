@@ -24,6 +24,7 @@ import (
 	spec "github.com/go-openapi/spec"
 	resource "k8s.io/apimachinery/pkg/api/resource"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	intstr "k8s.io/apimachinery/pkg/util/intstr"
 	common "k8s.io/kube-openapi/pkg/common"
 )
 
@@ -11459,6 +11460,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 			},
 			Dependencies: []string{},
 		},
+		"k8s.io/apimachinery/pkg/util/intstr.IntOrString": intstr.IntOrString{}.OpenAPIDefinition(),
 		"k8s.io/apimachinery/pkg/version.Info": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
