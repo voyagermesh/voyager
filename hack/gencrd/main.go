@@ -42,10 +42,10 @@ func generateCRDDefinitions() {
 
 func generateSwaggerJson() {
 	var (
-		groupFactoryRegistry= make(announced.APIGroupFactoryRegistry)
-		registry= registered.NewOrDie("")
-		Scheme= runtime.NewScheme()
-		Codecs= serializer.NewCodecFactory(Scheme)
+		groupFactoryRegistry = make(announced.APIGroupFactoryRegistry)
+		registry             = registered.NewOrDie("")
+		Scheme               = runtime.NewScheme()
+		Codecs               = serializer.NewCodecFactory(Scheme)
 	)
 
 	install.Install(groupFactoryRegistry, registry, Scheme)
@@ -79,7 +79,7 @@ func generateSwaggerJson() {
 		glog.Fatal(err)
 	}
 
-	filename := gort.GOPath() + "/src/github.com/appscode/voyager/apis/swagger.json"
+	filename := gort.GOPath() + "/src/github.com/appscode/voyager/openapi-spec/v2/swagger.json"
 	err = ioutil.WriteFile(filename, []byte(apispec), 0644)
 	if err != nil {
 		glog.Fatal(err)

@@ -1,5 +1,5 @@
 hash: 1a83fdd47a01ab36cf101d0f95634cfeb9f26ebd3f5ed4501b919cf3e743c3bd
-updated: 2018-04-09T07:16:23.869207497-07:00
+updated: 2018-04-10T03:55:09.903462681-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -34,7 +34,7 @@ imports:
 - name: github.com/appscode/jsonpatch
   version: 58a38a46ddb591a543c6b1003213353e29331c5a
 - name: github.com/appscode/kube-mon
-  version: eeb8de0ba83795dc2fd86c3667d6566a62276160
+  version: 4dfc335dfdf2cda1652896fa15aa11aa1ae42edd
   subpackages:
   - agents
   - agents/coreosprometheusoperator
@@ -47,7 +47,7 @@ imports:
   - admission/v1beta1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: 97071957a4aa713c2245bb675a53939de3f3ef1a
+  version: c299ac799e9bf6554ee91c5e2863c6f8392b7f83
   subpackages:
   - apiextensions/v1beta1
   - apps/v1beta1
