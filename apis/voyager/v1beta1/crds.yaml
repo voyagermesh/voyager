@@ -837,8 +837,9 @@ spec:
                   description: Specifies the name of the referenced service.
                   type: string
                 servicePort:
-                  format: int-or-string
-                  type: string
+                  anyOf:
+                  - type: string
+                  - type: integer
             externalIPs:
               description: externalIPs is a list of IP addresses for which nodes in
                 the cluster will also accept traffic for this service.  These IPs
@@ -877,8 +878,9 @@ spec:
                           verifyClient:
                             type: string
                   port:
-                    format: int-or-string
-                    type: string
+                    anyOf:
+                    - type: string
+                    - type: integer
                   rules:
                     description: Serialized rules
                     items:
@@ -965,8 +967,9 @@ spec:
                           detect like present
                         type: boolean
                       nodePort:
-                        format: int-or-string
-                        type: string
+                        anyOf:
+                        - type: string
+                        - type: integer
                       paths:
                         description: A collection of paths that map requests to backends.
                         items:
@@ -1019,8 +1022,9 @@ spec:
                                     service.
                                   type: string
                                 servicePort:
-                                  format: int-or-string
-                                  type: string
+                                  anyOf:
+                                  - type: string
+                                  - type: integer
                             path:
                               description: Path is a extended POSIX regex as defined
                                 by IEEE Std 1003.1, (i.e this follows the egrep/unix
@@ -1033,8 +1037,9 @@ spec:
                               type: string
                         type: array
                       port:
-                        format: int-or-string
-                        type: string
+                        anyOf:
+                        - type: string
+                        - type: integer
                     required:
                     - paths
                   tcp:
@@ -1087,18 +1092,21 @@ spec:
                             description: Specifies the name of the referenced service.
                             type: string
                           servicePort:
-                            format: int-or-string
-                            type: string
+                            anyOf:
+                            - type: string
+                            - type: integer
                       noTLS:
                         description: Set noTLS = true to force plain text. Else, auto
                           detect like present
                         type: boolean
                       nodePort:
-                        format: int-or-string
-                        type: string
+                        anyOf:
+                        - type: string
+                        - type: integer
                       port:
-                        format: int-or-string
-                        type: string
+                        anyOf:
+                        - type: string
+                        - type: integer
               type: array
             schedulerName:
               description: If specified, the pod will be dispatched by specified scheduler.
