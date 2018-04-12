@@ -115,7 +115,7 @@ To use custom templates to render HAProxy configuration, visit [here](/docs/guid
 
 ## Using Helm
 
-Voyager can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/appscode/voyager/tree/6.0.0/chart/stable/voyager) included in this repository or from official charts repository. To install the chart with the release name `my-release`:
+Voyager can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/appscode/voyager/tree/6.0.0/chart/voyager) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
 
 ```console
 # Mac OSX amd64:
@@ -134,18 +134,20 @@ curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.1.0/
   && sudo mv onessl /usr/local/bin/
 
 # Kubernetes 1.8.x
+$ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
-$ helm install stable/voyager --name my-release --set cloudProvider=$provider
+$ helm install appscode/voyager --name my-release --set cloudProvider=$provider
 
 # Kubernetes 1.9.0 or later
+$ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
-$ helm install stable/voyager --name my-release \
+$ helm install appscode/voyager --name my-release \
   --set cloudProvider=$provider \
   --set apiserver.ca="$(onessl get kube-ca)" \
   --set apiserver.enableAdmissionWebhook=true
 ```
 
-To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/6.0.0/chart/stable/voyager).
+To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/6.0.0/chart/voyager).
 
 ### Installing in GKE Cluster
 
