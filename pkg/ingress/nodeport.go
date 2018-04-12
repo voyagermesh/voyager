@@ -142,6 +142,15 @@ func (c *nodePortController) Reconcile() error {
 			err,
 		)
 		return errors.WithStack(err)
+	} else if err = c.waitForNodePortAssignment(); err != nil {
+		c.recorder.Eventf(
+			c.Ingress.ObjectReference(),
+			core.EventTypeWarning,
+			eventer.EventReasonIngressServiceReconcileFailed,
+			"Timeout waiting for NodePort assignment, %s",
+			err.Error(),
+		)
+		return errors.WithStack(err)
 	} else if err = c.EnsureFirewall(svc); err != nil {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
