@@ -3,6 +3,7 @@ apiVersion: admissionregistration.k8s.io/v1beta1
 kind: ValidatingWebhookConfiguration
 metadata:
   name: admission.voyager.appscode.com
+  namespace: {{ .Release.Namespace }}  
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     app: "{{ template "voyager.name" . }}"
