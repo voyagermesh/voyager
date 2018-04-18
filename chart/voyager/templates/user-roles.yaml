@@ -3,7 +3,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: appscode:voyager:edit
-  namespace: {{ .Release.Namespace }}  
   labels:
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
@@ -27,7 +26,6 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: appscode:voyager:view
-  namespace: {{ .Release.Namespace }}  
   labels:
     rbac.authorization.k8s.io/aggregate-to-view: "true"
 rules:
