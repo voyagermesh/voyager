@@ -39,7 +39,7 @@ func HeaderName(v string) string {
 
 func HostACLs(host string, port int, nodePort, redirectToPort int32, useNodePort bool) []string {
 	host = strings.TrimSpace(host)
-	if host == "" {
+	if host == "" { // for wildcard domain, host is expected to be `*`
 		panic(fmt.Sprintf("found empty host for port %d", port))
 	}
 
