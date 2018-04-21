@@ -12,13 +12,13 @@ import (
 )
 
 const (
-	HAPROXY_CONFIG = "/etc/haproxy/haproxy.cfg"
-	HAPROXY_PID    = "/var/run/haproxy.pid"
-	HAPROXY_SOCK   = "/var/run/haproxy.sock"
+	haproxyConfig = "/etc/haproxy/haproxy.cfg"
+	haproxyPID    = "/var/run/haproxy.pid"
+	haproxySocket = "/var/run/haproxy.sock"
 )
 
 func getHAProxyPid() (int, error) {
-	file, err := os.Open(HAPROXY_PID)
+	file, err := os.Open(haproxyPID)
 	if err != nil {
 		return 0, err
 	}
@@ -32,11 +32,11 @@ func getHAProxyPid() (int, error) {
 func checkHAProxyDaemon() (int, error) {
 	pid, err := getHAProxyPid()
 	if err != nil {
-		return 0, errors.Errorf("error reading haproxy.pid file, reason %s", err)
+		return 0, errors.Wrap(err, "error reading haproxy.pid file")
 	}
 
 	if process, err := ps.FindProcess(pid); err != nil {
-		return 0, errors.Errorf("failed to get haproxy daemon process, reason %s", err)
+		return 0, errors.Wrap(err, "failed to get haproxy daemon process")
 	} else if process == nil {
 		return 0, errors.Errorf("haproxy daemon not running (pid %d)", pid)
 	}
@@ -47,7 +47,7 @@ func checkHAProxyDaemon() (int, error) {
 
 func checkHAProxyConfig() error {
 	glog.Info("Checking haproxy config...")
-	output, err := exec.Command("haproxy", "-c", "-f", HAPROXY_CONFIG).CombinedOutput()
+	output, err := exec.Command("haproxy", "-c", "-f", haproxyConfig).CombinedOutput()
 	if err != nil {
 		return errors.Errorf("haproxy-check failed, reason: %s %s", string(output), err)
 	}
@@ -61,7 +61,7 @@ func startHAProxy() error {
 	}
 	glog.Info("Starting haproxy...")
 
-	output, err := exec.Command("haproxy", "-f", HAPROXY_CONFIG, "-p", HAPROXY_PID).CombinedOutput()
+	output, err := exec.Command("haproxy", "-f", haproxyConfig, "-p", haproxyPID).CombinedOutput()
 	if err != nil {
 		return errors.Errorf("failed to start haproxy, reason: %s %s", string(output), err)
 	}
@@ -78,9 +78,9 @@ func reloadHAProxy(pid int) error {
 
 	output, err := exec.Command(
 		"haproxy",
-		"-f", HAPROXY_CONFIG,
-		"-p", HAPROXY_PID,
-		"-x", HAPROXY_SOCK,
+		"-f", haproxyConfig,
+		"-p", haproxyPID,
+		"-x", haproxySocket,
 		"-sf", strconv.Itoa(pid),
 	).CombinedOutput()
 	if err != nil {
