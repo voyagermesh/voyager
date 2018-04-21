@@ -3,6 +3,7 @@ package ioutil
 import (
 	"bufio"
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -114,4 +115,21 @@ func IsFileExists(path string) bool {
 		return false
 	}
 	return true
+}
+
+// WriteFile writes the contents from src to dst using io.Copy.
+// If dst does not exist, WriteFile creates it with permissions perm;
+// otherwise WriteFile truncates it before writing.
+func WriteFile(dst string, src io.Reader, perm os.FileMode) (err error) {
+	out, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, perm)
+	if err != nil {
+		return
+	}
+	defer func() {
+		if e := out.Close(); e != nil {
+			err = e
+		}
+	}()
+	_, err = io.Copy(out, src)
+	return
 }
