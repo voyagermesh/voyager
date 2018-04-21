@@ -30,11 +30,9 @@ voyager haproxy-controller [command] [flags]
   -h, --help                         help for haproxy-controller
       --ingress-api-version string   API version of ingress resource
       --ingress-name string          Name of ingress resource
-      --init-only                    If true, exits after initial tls mount
       --kubeconfig string            Path to kubeconfig file with authorization information (the master location is set by the master flag).
       --master string                The address of the Kubernetes API server (overrides any value in kubeconfig)
       --qps float32                  The maximum QPS to the master from this client (default 1e+06)
-  -b, --reload-cmd string            Bash script that will be run to reload HAProxy
       --resync-period duration       If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out. (default 10m0s)
 ```
 

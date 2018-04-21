@@ -1,7 +1,6 @@
 package cmds
 
 import (
-	"os"
 	"time"
 
 	"github.com/appscode/go/log"
@@ -21,7 +20,6 @@ var (
 		},
 		ConfigDir: "/etc/haproxy",
 		CertDir:   "/etc/ssl/private/haproxy",
-		CmdFile:   "",
 		// ref: https://github.com/kubernetes/ingress-nginx/blob/e4d53786e771cc6bdd55f180674b79f5b692e552/pkg/ingress/controller/launch.go#L252-L259
 		// High enough QPS to fit all expected use cases. QPS=0 is not set here, because client code is overriding it.
 		QPS: 1e6,
@@ -31,7 +29,6 @@ var (
 		NumThreads:     1,
 		ResyncPeriod:   10 * time.Minute,
 	}
-	initOnly bool
 )
 
 func NewCmdHAProxyController() *cobra.Command {
@@ -60,9 +57,6 @@ func NewCmdHAProxyController() *cobra.Command {
 			if err := ctrl.Setup(); err != nil {
 				log.Fatalln(err)
 			}
-			if initOnly {
-				os.Exit(0)
-			}
 
 			// Now let's start the controller
 			stop := make(chan struct{})
@@ -82,9 +76,7 @@ func NewCmdHAProxyController() *cobra.Command {
 	cmd.Flags().StringVar(&opt.IngressRef.APIVersion, "ingress-api-version", opt.IngressRef.APIVersion, "API version of ingress resource")
 	cmd.Flags().StringVar(&opt.IngressRef.Name, "ingress-name", opt.IngressRef.Name, "Name of ingress resource")
 	cmd.Flags().StringVar(&opt.CertDir, "cert-dir", opt.CertDir, "Path where tls certificates are stored for HAProxy")
-	cmd.Flags().StringVarP(&opt.CmdFile, "reload-cmd", "b", opt.CmdFile, "Bash script that will be run to reload HAProxy")
 	cmd.Flags().StringVarP(&opt.CloudProvider, "cloud-provider", "c", opt.CloudProvider, "Name of cloud provider")
-	cmd.Flags().BoolVar(&initOnly, "init-only", initOnly, "If true, exits after initial tls mount")
 
 	return cmd
 }

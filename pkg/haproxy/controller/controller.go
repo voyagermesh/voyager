@@ -2,8 +2,6 @@ package controller
 
 import (
 	"bytes"
-	"fmt"
-	"os/exec"
 	"strings"
 	"time"
 
@@ -133,9 +131,7 @@ func (c *Controller) Setup() (err error) {
 	if err != nil {
 		return
 	}
-	// Do not run cmd in initOnly as it will restart the HAProxy
-	// But the config map is not still mounted.
-	err = c.mountIngress(ing, false)
+	err = c.mountIngress(ing)
 	return
 }
 
@@ -235,11 +231,10 @@ func certificateToPEMData(crt, key []byte) []byte {
 	return buf.Bytes()
 }
 
-func runCmd(path string) error {
-	output, err := exec.Command("sh", "-c", path).CombinedOutput()
-	msg := fmt.Sprintf("%v", string(output))
-	if err != nil {
-		return errors.Errorf("error restarting %v: %v", msg, err)
+func runCmd() error {
+	glog.Info("Running haproxy start/reload...")
+	if err := startOrReloadHaproxy(); err != nil {
+		return err
 	}
 	incReloadCounter()
 	return nil
@@ -270,6 +265,19 @@ func (c *Controller) Run(stopCh chan struct{}) {
 	c.secretQueue.Run(stopCh)
 	c.getIngressWorker().Run(stopCh)
 	c.crtQueue.Run(stopCh)
+
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+	go func() {
+		for range ticker.C {
+			if _, err := checkHAProxyDaemon(); err != nil {
+				glog.Error(err)
+				if startHAProxy(); err != nil {
+					glog.Error(err)
+				}
+			}
+		}
+	}()
 
 	<-stopCh
 	glog.Info("Stopping haproxy-controller")
