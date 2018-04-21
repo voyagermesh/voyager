@@ -49,7 +49,7 @@ voyager run [flags]
       --docker-registry string                                  Docker image registry for HAProxy and Prometheus exporter (default "appscode")
       --enable-swagger-ui                                       Enables swagger ui on the apiserver at /swagger-ui
       --exporter-image-tag string                               Tag of Docker image containing Prometheus exporter (default "6.0.0")
-      --haproxy-image-tag string                                Tag of Docker image containing HAProxy binary (default "1.7.10-6.0.0")
+      --haproxy-image-tag string                                Tag of Docker image containing HAProxy binary (default "1.8.7-6.0.0")
       --haproxy.server-metric-fields string                     Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1 (default "2,3,4,5,6,7,8,9,13,14,15,16,17,18,21,24,33,35,38,39,40,41,42,43,44")
       --haproxy.timeout duration                                Timeout for trying to get stats from HAProxy. (default 5s)
   -h, --help                                                    help for run
@@ -62,11 +62,11 @@ voyager run [flags]
       --prometheus-crd-kinds CrdKinds                            - EXPERIMENTAL (could be removed in future releases) - customize CRD kind names
       --qps float                                               The maximum QPS to the master from this client (default 1e+06)
       --rbac                                                    Enable RBAC for operator & offshoot Kubernetes objects
-      --requestheader-allowed-names stringSlice                 List of client certificate common names to allow to provide usernames in headers specified by --requestheader-username-headers. If empty, any client certificate validated by the authorities in --requestheader-client-ca-file is allowed.
+      --requestheader-allowed-names strings                     List of client certificate common names to allow to provide usernames in headers specified by --requestheader-username-headers. If empty, any client certificate validated by the authorities in --requestheader-client-ca-file is allowed.
       --requestheader-client-ca-file string                     Root certificate bundle to use to verify client certificates on incoming requests before trusting usernames in headers specified by --requestheader-username-headers
-      --requestheader-extra-headers-prefix stringSlice          List of request header prefixes to inspect. X-Remote-Extra- is suggested. (default [x-remote-extra-])
-      --requestheader-group-headers stringSlice                 List of request headers to inspect for groups. X-Remote-Group is suggested. (default [x-remote-group])
-      --requestheader-username-headers stringSlice              List of request headers to inspect for usernames. X-Remote-User is common. (default [x-remote-user])
+      --requestheader-extra-headers-prefix strings              List of request header prefixes to inspect. X-Remote-Extra- is suggested. (default [x-remote-extra-])
+      --requestheader-group-headers strings                     List of request headers to inspect for groups. X-Remote-Group is suggested. (default [x-remote-group])
+      --requestheader-username-headers strings                  List of request headers to inspect for usernames. X-Remote-User is common. (default [x-remote-user])
       --restrict-to-operator-namespace                          If true, voyager operator will only handle Kubernetes objects in its own namespace.
       --resync-period duration                                  If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out. (default 10m0s)
       --secure-port int                                         The port on which to serve HTTPS with authentication and authorization. If 0, don't serve HTTPS at all. (default 443)
