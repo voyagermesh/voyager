@@ -28,7 +28,7 @@ type domainCheckResponse struct {
 // CheckDomain checks a domain name.
 //
 // See https://developer.dnsimple.com/v2/registrar/#check
-func (s *RegistrarService) CheckDomain(accountID, domainName string) (*domainCheckResponse, error) {
+func (s *RegistrarService) CheckDomain(accountID string, domainName string) (*domainCheckResponse, error) {
 	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/check", accountID, domainName))
 	checkResponse := &domainCheckResponse{}
 
@@ -70,7 +70,7 @@ type DomainPremiumPriceOptions struct {
 // - renewal
 //
 // See https://developer.dnsimple.com/v2/registrar/#premium-price
-func (s *RegistrarService) GetDomainPremiumPrice(accountID, domainName string, options *DomainPremiumPriceOptions) (*domainPremiumPriceResponse, error) {
+func (s *RegistrarService) GetDomainPremiumPrice(accountID string, domainName string, options *DomainPremiumPriceOptions) (*domainPremiumPriceResponse, error) {
 	var err error
 	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/premium_price", accountID, domainName))
 	priceResponse := &domainPremiumPriceResponse{}
