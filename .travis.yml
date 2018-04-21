@@ -1,13 +1,26 @@
 language: go
+sudo: required
+services:
+  - docker
 go:
- - 1.x
- - tip
+  - 1.x
+  - tip
 
-install: true
+before_install:
+  - sudo apt-get update && sudo apt-get install python python-pip
+  - sudo pip install git+https://github.com/ellisonbg/antipackage.git#egg=antipackage
+  - sudo pip install pyyaml
+
+install:
+  - curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+  - chmod +x kubectl; sudo mv kubectl /bin/
+  - wget https://cdn.rawgit.com/Mirantis/kubeadm-dind-cluster/master/fixed/dind-cluster-v1.8.sh && chmod +x dind-cluster-v1.8.sh && ./dind-cluster-v1.8.sh up
+
 
 script:
-  - go build ./...
-  - ./hack/coverage.sh
+  - kubectl get nodes
+  - ./hack/make.py test unit
+  - ./hack/make.py test minikube
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+- bash <(curl -s https://codecov.io/bash)
