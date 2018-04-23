@@ -21,8 +21,8 @@ This article has been tested with a GKE cluster.
 
 ```console
 $ kubectl version --short
-Client Version: v1.8.7
-Server Version: v1.8.7-gke.0
+Client Version: v1.8.8
+Server Version: v1.8.8-gke.0
 ```
 
 ## Deploy Voyager operator
