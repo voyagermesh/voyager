@@ -90,7 +90,7 @@ func (c *controller) ensureStatsService() (*core.Service, kutil.VerbType, error)
 		in.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
 		in.Annotations[api.OriginName] = c.Ingress.GetName()
 
-		in.Spec.Selector = c.Ingress.OffshootLabels()
+		in.Spec.Selector = c.Ingress.OffshootSelector()
 
 		desired := []core.ServicePort{
 			{

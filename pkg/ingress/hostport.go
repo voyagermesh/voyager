@@ -354,9 +354,10 @@ func (c *hostPortController) ensureService() (*core.Service, kutil.VerbType, err
 	return core_util.CreateOrPatchService(c.KubeClient, meta, func(obj *core.Service) *core.Service {
 		obj.ObjectMeta = c.ensureOwnerReference(obj.ObjectMeta)
 		obj.Spec.Type = core.ServiceTypeClusterIP
-		obj.Spec.Selector = c.Ingress.OffshootLabels()
+		obj.Spec.Selector = c.Ingress.OffshootSelector()
 		obj.Spec.ClusterIP = "None"
 
+		obj.Labels = c.Ingress.OffshootLabels()
 		// Annotations
 		if obj.Annotations == nil {
 			obj.Annotations = make(map[string]string)
@@ -420,7 +421,7 @@ func (c *hostPortController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 		obj.Labels = c.Ingress.OffshootLabels()
 		obj.ObjectMeta = c.ensureOwnerReference(obj.ObjectMeta)
 		obj.Spec.Selector = &metav1.LabelSelector{
-			MatchLabels: c.Ingress.OffshootLabels(),
+			MatchLabels: c.Ingress.OffshootSelector(),
 		}
 
 		// assign number of replicas for initial creation only
@@ -447,7 +448,7 @@ func (c *hostPortController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 		obj.Spec.Template.Annotations[api.LastAppliedAnnotationKeys] = strings.Join(newKeys, ",")
 
 		// pod spec
-		obj.Spec.Template.ObjectMeta.Labels = c.Ingress.OffshootLabels()
+		obj.Spec.Template.ObjectMeta.Labels = c.Ingress.OffshootSelector()
 		obj.Spec.Template.Spec.Affinity = c.Ingress.Spec.Affinity
 		obj.Spec.Template.Spec.SchedulerName = c.Ingress.Spec.SchedulerName
 		obj.Spec.Template.Spec.Tolerations = c.Ingress.Spec.Tolerations
@@ -556,5 +557,5 @@ func (c *hostPortController) deletePods() error {
 	if err != nil {
 		return err
 	}
-	return c.deletePodsForSelector(&metav1.LabelSelector{MatchLabels: c.Ingress.OffshootLabels()})
+	return c.deletePodsForSelector(&metav1.LabelSelector{MatchLabels: c.Ingress.OffshootSelector()})
 }
