@@ -70,15 +70,16 @@ type StatsInfo struct {
 type HTTPService struct {
 	*SharedInfo
 
-	FrontendName  string
-	Address       string
-	Port          int
-	NodePort      int32
-	OffloadSSL    bool
-	FrontendRules []string
-	BasicAuth     *BasicAuth
-	TLSAuth       *TLSAuth
-	Hosts         []*HTTPHost
+	FrontendName   string
+	Address        string
+	Port           int
+	NodePort       int32
+	RedirectToPort int32
+	OffloadSSL     bool
+	FrontendRules  []string
+	BasicAuth      *BasicAuth
+	TLSAuth        *TLSAuth
+	Hosts          []*HTTPHost
 }
 
 func (svc *HTTPService) RemoveBackendAuth() {

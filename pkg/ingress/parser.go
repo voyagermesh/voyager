@@ -235,6 +235,14 @@ func (c *controller) rewriteTarget(path string, rewriteRules []string) []string 
 	}
 }
 
+func getHost(host string) string {
+	host = strings.TrimSpace(host)
+	if host == `` || host == `*` {
+		return ``
+	}
+	return host
+}
+
 func (c *controller) generateConfig() error {
 	if c.Ingress.SSLPassthrough() {
 		if err := c.convertRulesForSSLPassthrough(); err != nil {
@@ -252,15 +260,6 @@ func (c *controller) generateConfig() error {
 	}
 
 	var td hpi.TemplateData
-
-	var nodePortSvc *core.Service
-	if c.Ingress.LBType() == api.LBTypeNodePort {
-		var err error
-		nodePortSvc, err = c.KubeClient.CoreV1().Services(c.Ingress.GetNamespace()).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-		if err != nil {
-			return err
-		}
-	}
 
 	si := &hpi.SharedInfo{
 		CORSConfig: hpi.CORSConfig{
@@ -401,7 +400,6 @@ func (c *controller) generateConfig() error {
 		Port    int
 	}
 	type httpInfo struct {
-		NodePort   int32
 		OffloadSSL bool
 		Hosts      map[string][]*hpi.HTTPPath
 	}
@@ -436,14 +434,7 @@ func (c *controller) generateConfig() error {
 			}
 			info.OffloadSSL = offloadSSL
 
-			if c.Ingress.LBType() == api.LBTypeNodePort && nodePortSvc != nil {
-				for _, port := range nodePortSvc.Spec.Ports {
-					if port.Port == int32(binder.Port) {
-						info.NodePort = port.NodePort
-					}
-				}
-			}
-			httpPaths := info.Hosts[rule.Host]
+			httpPaths := info.Hosts[getHost(rule.Host)]
 			for pi, path := range rule.HTTP.Paths {
 				bk, err := c.serviceEndpoints(dnsResolvers, userLists, path.Backend.ServiceName, path.Backend.ServicePort, path.Backend.HostNames)
 				if err != nil {
@@ -483,7 +474,7 @@ func (c *controller) generateConfig() error {
 					httpPaths = append(httpPaths, httpPath)
 				}
 			}
-			info.Hosts[rule.Host] = httpPaths
+			info.Hosts[getHost(rule.Host)] = httpPaths
 		} else if rule.TCP != nil {
 			bk, err := c.serviceEndpoints(dnsResolvers, userLists, rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort, rule.TCP.Backend.HostNames)
 			if err != nil {
@@ -591,7 +582,7 @@ func (c *controller) generateConfig() error {
 				for i := range httpPaths {
 					httpPaths[i].SSLRedirect = true
 				}
-				info.Hosts[httpHost] = httpPaths
+				info.Hosts[getHost(httpHost)] = httpPaths
 			}
 		}
 	}
@@ -638,15 +629,15 @@ func (c *controller) generateConfig() error {
 				if !i80Found {
 					i80 = &httpInfo{
 						Hosts: map[string][]*hpi.HTTPPath{
-							info.Host: make([]*hpi.HTTPPath, 0),
+							getHost(info.Host): make([]*hpi.HTTPPath, 0),
 						},
 					}
 				} else {
 					if _, ok := i80.Hosts[info.Host]; !ok {
-						i80.Hosts[info.Host] = make([]*hpi.HTTPPath, 0)
+						i80.Hosts[getHost(info.Host)] = make([]*hpi.HTTPPath, 0)
 					}
 				}
-				httpPaths := i80.Hosts[info.Host]
+				httpPaths := i80.Hosts[getHost(info.Host)]
 				redirPathExists := false
 				for _, p := range httpPaths {
 					if p.Path == "/" {
@@ -661,7 +652,7 @@ func (c *controller) generateConfig() error {
 					})
 				}
 
-				i80.Hosts[info.Host] = httpPaths
+				i80.Hosts[getHost(info.Host)] = httpPaths
 				httpServices[hostBinder{Address: binder.Address, Port: 80}] = i80
 			}
 		}
@@ -707,16 +698,16 @@ func (c *controller) generateConfig() error {
 					if !i80Found {
 						i80 = &httpInfo{
 							Hosts: map[string][]*hpi.HTTPPath{
-								tlsHost: make([]*hpi.HTTPPath, 0),
+								getHost(tlsHost): make([]*hpi.HTTPPath, 0),
 							},
 						}
 					} else {
-						if _, ok := i80.Hosts[tlsHost]; !ok {
-							i80.Hosts[tlsHost] = make([]*hpi.HTTPPath, 0)
+						if _, ok := i80.Hosts[getHost(tlsHost)]; !ok {
+							i80.Hosts[getHost(tlsHost)] = make([]*hpi.HTTPPath, 0)
 						}
 					}
 
-					httpPaths := i80.Hosts[tlsHost]
+					httpPaths := i80.Hosts[getHost(tlsHost)]
 					httpPathMap := make(map[string]*hpi.HTTPPath)
 					for _, p := range httpPaths {
 						httpPathMap[p.Path] = p
@@ -731,7 +722,7 @@ func (c *controller) generateConfig() error {
 						}
 					}
 
-					i80.Hosts[tlsHost] = httpPaths
+					i80.Hosts[getHost(tlsHost)] = httpPaths
 					httpServices[hostBinder{Address: binder.Address, Port: 80}] = i80
 				}
 			}
@@ -746,7 +737,6 @@ func (c *controller) generateConfig() error {
 			Address:       binder.Address,
 			Port:          binder.Port,
 			FrontendRules: fr.Rules,
-			NodePort:      info.NodePort,
 			OffloadSSL:    info.OffloadSSL,
 			Hosts:         make([]*hpi.HTTPHost, 0),
 		}
@@ -800,6 +790,28 @@ func (c *controller) generateConfig() error {
 	td.UserLists = make([]hpi.UserList, 0, len(userLists))
 	for k := range userLists {
 		td.UserLists = append(td.UserLists, userLists[k])
+	}
+
+	// assign node-ports
+	if c.Ingress.LBType() == api.LBTypeNodePort {
+		nodePortSvc, err := c.KubeClient.CoreV1().Services(c.Ingress.GetNamespace()).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		portMapping := make(map[int32]int32)
+		for _, port := range nodePortSvc.Spec.Ports {
+			portMapping[port.Port] = port.NodePort
+		}
+		for _, svc := range td.HTTPService {
+			svc.NodePort = portMapping[int32(svc.Port)]
+			if svc.Port == 80 {
+				if svc.UseNodePort {
+					svc.RedirectToPort = portMapping[443]
+				} else {
+					svc.RedirectToPort = 443
+				}
+			}
+		}
 	}
 
 	c.logger.Debugf("Rendering haproxy.cfg for Ingress %s/%s using data: %s", c.Ingress.Namespace, c.Ingress.Name, td)
