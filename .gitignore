@@ -8,9 +8,6 @@ _obj
 _test
 
 # Architecture specific extensions/prefixes
-*.[568vq]
-[568vq].out
-
 *.cgo1.go
 *.cgo2.c
 _cgo_defun.c
@@ -22,12 +19,14 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
 .idea/
 dist/
-hack/configs/.env
-**/dist
+*.pyc
+*.DS_Store
 .vscode/
-test/e2e/report.xml
 apiserver.local.config/
+hack/configs/.env
+test/e2e/report.xml
 .markdownlint.json
 coverage.txt
