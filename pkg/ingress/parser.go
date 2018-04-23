@@ -235,6 +235,14 @@ func (c *controller) rewriteTarget(path string, rewriteRules []string) []string 
 	}
 }
 
+func getHost(host string) string {
+	host = strings.TrimSpace(host)
+	if host == `` || host == `*` {
+		return ``
+	}
+	return host
+}
+
 func (c *controller) generateConfig() error {
 	if c.Ingress.SSLPassthrough() {
 		if err := c.convertRulesForSSLPassthrough(); err != nil {
@@ -426,7 +434,7 @@ func (c *controller) generateConfig() error {
 			}
 			info.OffloadSSL = offloadSSL
 
-			httpPaths := info.Hosts[rule.Host]
+			httpPaths := info.Hosts[getHost(rule.Host)]
 			for pi, path := range rule.HTTP.Paths {
 				bk, err := c.serviceEndpoints(dnsResolvers, userLists, path.Backend.ServiceName, path.Backend.ServicePort, path.Backend.HostNames)
 				if err != nil {
@@ -466,7 +474,7 @@ func (c *controller) generateConfig() error {
 					httpPaths = append(httpPaths, httpPath)
 				}
 			}
-			info.Hosts[rule.Host] = httpPaths
+			info.Hosts[getHost(rule.Host)] = httpPaths
 		} else if rule.TCP != nil {
 			bk, err := c.serviceEndpoints(dnsResolvers, userLists, rule.TCP.Backend.ServiceName, rule.TCP.Backend.ServicePort, rule.TCP.Backend.HostNames)
 			if err != nil {
@@ -574,7 +582,7 @@ func (c *controller) generateConfig() error {
 				for i := range httpPaths {
 					httpPaths[i].SSLRedirect = true
 				}
-				info.Hosts[httpHost] = httpPaths
+				info.Hosts[getHost(httpHost)] = httpPaths
 			}
 		}
 	}
@@ -621,15 +629,15 @@ func (c *controller) generateConfig() error {
 				if !i80Found {
 					i80 = &httpInfo{
 						Hosts: map[string][]*hpi.HTTPPath{
-							info.Host: make([]*hpi.HTTPPath, 0),
+							getHost(info.Host): make([]*hpi.HTTPPath, 0),
 						},
 					}
 				} else {
 					if _, ok := i80.Hosts[info.Host]; !ok {
-						i80.Hosts[info.Host] = make([]*hpi.HTTPPath, 0)
+						i80.Hosts[getHost(info.Host)] = make([]*hpi.HTTPPath, 0)
 					}
 				}
-				httpPaths := i80.Hosts[info.Host]
+				httpPaths := i80.Hosts[getHost(info.Host)]
 				redirPathExists := false
 				for _, p := range httpPaths {
 					if p.Path == "/" {
@@ -644,7 +652,7 @@ func (c *controller) generateConfig() error {
 					})
 				}
 
-				i80.Hosts[info.Host] = httpPaths
+				i80.Hosts[getHost(info.Host)] = httpPaths
 				httpServices[hostBinder{Address: binder.Address, Port: 80}] = i80
 			}
 		}
@@ -690,16 +698,16 @@ func (c *controller) generateConfig() error {
 					if !i80Found {
 						i80 = &httpInfo{
 							Hosts: map[string][]*hpi.HTTPPath{
-								tlsHost: make([]*hpi.HTTPPath, 0),
+								getHost(tlsHost): make([]*hpi.HTTPPath, 0),
 							},
 						}
 					} else {
-						if _, ok := i80.Hosts[tlsHost]; !ok {
-							i80.Hosts[tlsHost] = make([]*hpi.HTTPPath, 0)
+						if _, ok := i80.Hosts[getHost(tlsHost)]; !ok {
+							i80.Hosts[getHost(tlsHost)] = make([]*hpi.HTTPPath, 0)
 						}
 					}
 
-					httpPaths := i80.Hosts[tlsHost]
+					httpPaths := i80.Hosts[getHost(tlsHost)]
 					httpPathMap := make(map[string]*hpi.HTTPPath)
 					for _, p := range httpPaths {
 						httpPathMap[p.Path] = p
@@ -714,7 +722,7 @@ func (c *controller) generateConfig() error {
 						}
 					}
 
-					i80.Hosts[tlsHost] = httpPaths
+					i80.Hosts[getHost(tlsHost)] = httpPaths
 					httpServices[hostBinder{Address: binder.Address, Port: 80}] = i80
 				}
 			}
