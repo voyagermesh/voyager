@@ -325,7 +325,7 @@ func (r Ingress) OffshootName() string {
 	return VoyagerPrefix + r.Name
 }
 
-func (r Ingress) OffshootLabels() map[string]string {
+func (r Ingress) OffshootSelector() map[string]string {
 	lbl := map[string]string{
 		"origin":      "voyager",
 		"origin-name": r.Name,
@@ -334,6 +334,16 @@ func (r Ingress) OffshootLabels() map[string]string {
 	gv := strings.SplitN(r.APISchema(), "/", 2)
 	if len(gv) == 2 {
 		lbl["origin-api-group"] = gv[0]
+	}
+	return lbl
+}
+
+func (r Ingress) OffshootLabels() map[string]string {
+	lbl := r.OffshootSelector()
+	for k, v := range r.Labels {
+		if _, found := lbl[k]; !found {
+			lbl[k] = v
+		}
 	}
 	return lbl
 }

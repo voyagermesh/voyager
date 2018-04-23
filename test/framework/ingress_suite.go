@@ -75,7 +75,7 @@ func (i *ingressInvocation) Create(ing *api.Ingress) error {
 func (i *ingressInvocation) printInfoForDebug(ing *api.Ingress) {
 	for {
 		pods, err := i.KubeClient.CoreV1().Pods(ing.Namespace).List(metav1.ListOptions{
-			LabelSelector: labels.SelectorFromSet(labels.Set(ing.OffshootLabels())).String(),
+			LabelSelector: labels.SelectorFromSet(labels.Set(ing.OffshootSelector())).String(),
 		})
 		if err == nil {
 			if len(pods.Items) > 0 {
