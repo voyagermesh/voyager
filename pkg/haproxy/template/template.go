@@ -37,16 +37,27 @@ func HeaderName(v string) string {
 	return v[:index]
 }
 
-func HostACLs(host string, port int, nodePort, redirectToPort int32, useNodePort bool) []string {
+func HostACLs(host string, port int, nodePort int32, useNodePort bool) []string {
 	var conditions []string
 	host = strings.TrimSpace(host)
-	if host == `` || host == `*` { // for wildcard domain, host is expected to be `*` or ``
+
+	if port <= 0 {
+		panic(fmt.Sprintf("port expected to be > 0, found %d", port))
+	}
+	if useNodePort && nodePort <= 0 {
+		panic(fmt.Sprintf("nodeport expected to be > 0, found %d. must wait for nodeport assignment", nodePort))
+	}
+	if host == `*` {
+		panic("wildcard host must be empty, found *")
+	}
+
+	if host == `` { // for wildcard domain, host is expected to be ``
 		return conditions
 	}
 
-	if useNodePort && nodePort > 0 {
+	if useNodePort {
 		conditions = append(conditions, hostMatcher(fmt.Sprintf("%s:%d", host, nodePort)))
-	} else if !useNodePort && port > 0 {
+	} else {
 		if port != 80 && port != 443 { // non standard http ports
 			conditions = append(conditions, hostMatcher(fmt.Sprintf("%s:%d", host, port)))
 		} else { // http or https
@@ -54,11 +65,6 @@ func HostACLs(host string, port int, nodePort, redirectToPort int32, useNodePort
 			conditions = append(conditions, hostMatcher(fmt.Sprintf("%s:%d", host, port)))
 		}
 	}
-
-	if port == 80 && redirectToPort > 0 {
-		conditions = append(conditions, hostMatcher(fmt.Sprintf("%s:%d", host, redirectToPort)))
-	}
-
 	return conditions
 }
 
