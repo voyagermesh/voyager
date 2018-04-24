@@ -53,7 +53,7 @@ spec:
           value: ...
         - name: OAUTH2_PROXY_COOKIE_SECRET
           value: Y/XCgwGzcE/BIkhTtXFcSQ==
-        image: docker.io/colemickens/oauth2_proxy:latest
+        image: appscode/oauth2_proxy:2.2.0
         imagePullPolicy: Always
         name: oauth2-proxy
         ports:
@@ -182,7 +182,7 @@ spec:
           value: ...
         - name: OAUTH2_PROXY_COOKIE_SECRET
           value: Y/XCgwGzcE/BIkhTtXFcSQ==
-        image: docker.io/colemickens/oauth2_proxy:latest
+        image: appscode/oauth2_proxy:2.2.0
         imagePullPolicy: Always
         name: oauth2-proxy
         ports:
