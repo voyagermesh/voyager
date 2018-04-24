@@ -46,6 +46,7 @@ Guides show you how to use Voyager as a Kubernetes Ingress controller.
   - [Using Custom HAProxy Templates](/docs/guides/ingress/configuration/custom-templates.md)
 - Security
   - [Configure Basic Auth for HTTP Backends](/docs/guides/ingress/security/basic-auth.md)
+  - [Configure External Auth for HTTP Backends](/docs/guides/ingress/security/oauth.md)
   - [TLS Authentication](/docs/guides/ingress/security/tls-auth.md)
 - Monitoring
   - [Exposing HAProxy Stats](/docs/guides/ingress/monitoring/stats.md)
