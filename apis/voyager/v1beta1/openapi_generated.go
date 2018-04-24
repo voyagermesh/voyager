@@ -78,11 +78,23 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Ref: ref("github.com/appscode/voyager/apis/voyager/v1beta1.TLSAuth"),
 							},
 						},
+						"oauth": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Ref: ref("github.com/appscode/voyager/apis/voyager/v1beta1.OAuth"),
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
 			Dependencies: []string{
-				"github.com/appscode/voyager/apis/voyager/v1beta1.BasicAuth", "github.com/appscode/voyager/apis/voyager/v1beta1.TLSAuth"},
+				"github.com/appscode/voyager/apis/voyager/v1beta1.BasicAuth", "github.com/appscode/voyager/apis/voyager/v1beta1.OAuth", "github.com/appscode/voyager/apis/voyager/v1beta1.TLSAuth"},
 		},
 		"github.com/appscode/voyager/apis/voyager/v1beta1.BasicAuth": {
 			Schema: spec.Schema{
@@ -1191,6 +1203,52 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Description: "API version of the referent.",
 								Type:        []string{"string"},
 								Format:      "",
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{},
+		},
+		"github.com/appscode/voyager/apis/voyager/v1beta1.OAuth": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Properties: map[string]spec.Schema{
+						"host": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"authBackend": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"authPath": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"signinPath": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"paths": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
 							},
 						},
 					},

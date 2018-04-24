@@ -775,6 +775,23 @@ func (c *controller) generateConfig() error {
 			}
 			srv.RemoveBackendAuth()
 		}
+
+		// parse external auth
+		if fr.Auth != nil && len(fr.Auth.OAuth) > 0 {
+			for i := range srv.Hosts {
+				for _, oauth := range fr.Auth.OAuth {
+					if oauth.Host == srv.Hosts[i].Host {
+						srv.Hosts[i].ExternalAuth = &hpi.ExternalAuth{
+							AuthBackend: oauth.AuthBackend,
+							AuthPath:    oauth.AuthPath,
+							SigninPath:  oauth.SigninPath,
+							Paths:       oauth.Paths,
+						}
+					}
+				}
+			}
+		}
+
 		td.HTTPService = append(td.HTTPService, srv)
 	}
 

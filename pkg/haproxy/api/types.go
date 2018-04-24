@@ -100,8 +100,9 @@ func (svc HTTPService) sortKey() string {
 }
 
 type HTTPHost struct {
-	Host  string
-	Paths []*HTTPPath
+	Host         string
+	Paths        []*HTTPPath
+	ExternalAuth *ExternalAuth
 }
 
 type HTTPPath struct {
@@ -146,6 +147,13 @@ type Backend struct {
 	Sticky           bool
 	StickyCookieName string
 	StickyCookieHash string
+}
+
+type ExternalAuth struct {
+	AuthBackend string
+	AuthPath    string
+	SigninPath  string
+	Paths       []string
 }
 
 func (be *Backend) canonicalize(hasDuplicate bool, host, port, path string) {

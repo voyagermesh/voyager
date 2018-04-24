@@ -5,9 +5,11 @@ FROM haproxy:1.8.8-alpine
 # change timezone to UTC
 
 RUN set -x \
-  && apk add --update --no-cache ca-certificates su-exec runit socklog tzdata bash openrc \
+  && apk add --update --no-cache ca-certificates su-exec runit socklog tzdata bash openrc lua5.3 lua-socket \
   && rm -rf /etc/sv /etc/service \
-  && echo 'Etc/UTC' > /etc/timezone
+  && echo 'Etc/UTC' > /etc/timezone \
+  && ln -sf /usr/share/lua/ /usr/local/share/ \
+  && ln -sf /usr/lib/lua/ /usr/local/lib/
 
 ENV TZ     :/etc/localtime
 ENV LANG   en_US.utf8
@@ -17,6 +19,8 @@ COPY voyager /usr/bin/voyager
 # Setup runit scripts
 COPY sv /etc/sv/
 RUN ln -s /etc/sv /etc/service
+
+COPY auth-request.lua /etc/auth-request.lua
 
 COPY runit.sh /runit.sh
 ENTRYPOINT ["/runit.sh"]
