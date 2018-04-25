@@ -663,4 +663,92 @@ var dataTables = map[*Ingress]bool{
 			},
 		},
 	}: true,
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "Merging empty-host with wildcard-host"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port: intstr.FromInt(80),
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/foo",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(3444),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Host: "*",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port: intstr.FromInt(80),
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/not-foo",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(3444),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}: true, // merging "*" host with empty-host
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "Conflict merging empty-host with wildcard-host"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port: intstr.FromInt(80),
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/foo",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(3444),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Host: "*",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port: intstr.FromInt(80),
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/foo",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(3444),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // conflicting paths while merging "*" host with empty-host
 }
