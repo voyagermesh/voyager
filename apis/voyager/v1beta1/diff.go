@@ -260,9 +260,9 @@ func (r Ingress) UsesAuthSecret(namespace, name string) bool {
 // paths under empty-host and wildcard-host will be merged
 // but TLS will be matched separately
 func (r IngressRule) GetHost() string {
-	r.Host = strings.TrimSpace(r.Host)
-	if r.Host == `` || r.Host == `*` {
+	host := strings.TrimSpace(r.Host)
+	if host == `` || host == `*` {
 		return ``
 	}
-	return r.Host
+	return host
 }
