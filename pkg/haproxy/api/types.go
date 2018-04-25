@@ -128,19 +128,22 @@ type TCPService struct {
 
 	FrontendName  string
 	Address       string
-	Host          string
 	Port          string
 	FrontendRules []string
 	CertFile      string
 	PEMName       string
-	Backend       *Backend
 	ALPNOptions   string
 	TLSAuth       *TLSAuth
-	SSLRedirect   bool
+	Hosts         []*TCPHost
 }
 
 func (svc TCPService) sortKey() string {
-	return fmt.Sprintf("%s:%s", svc.Host, svc.Port)
+	return fmt.Sprintf("%s", svc.Port)
+}
+
+type TCPHost struct {
+	Host    string
+	Backend *Backend
 }
 
 type Backend struct {

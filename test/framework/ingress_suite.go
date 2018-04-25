@@ -1,6 +1,7 @@
 package framework
 
 import (
+	"crypto/tls"
 	"net/http"
 	"strconv"
 	"strings"
@@ -407,6 +408,32 @@ func (i *ingressInvocation) DoTestRedirectWithTransport(retryCount int, host str
 func (i *ingressInvocation) DoHTTPStatusWithHeader(retryCount int, ing *api.Ingress, eps []string, method, path string, h map[string]string, matcher func(resp *client.Response) bool) error {
 	for _, url := range eps {
 		resp, err := client.NewTestHTTPClient(url).Method(method).Header(h).Path(path).DoStatusWithRetry(retryCount)
+		if err != nil {
+			return err
+		}
+
+		log.Infoln("HTTP Response received from server", *resp)
+		if !matcher(resp) {
+			return errors.New("Failed to match")
+		}
+	}
+	return nil
+}
+
+func (i *ingressInvocation) DoHTTPWithSNI(retryCount int, host string, eps []string, matcher func(resp *client.Response) bool) error {
+	for _, url := range eps {
+		if strings.HasPrefix(url, "http://") {
+			url = "https://" + url[len("http://"):]
+		}
+
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{
+				ServerName:         host,
+				InsecureSkipVerify: true,
+			},
+		}
+
+		resp, err := client.NewTestHTTPClient(url).WithHost(host).WithTransport(tr).DoWithRetry(retryCount)
 		if err != nil {
 			return err
 		}

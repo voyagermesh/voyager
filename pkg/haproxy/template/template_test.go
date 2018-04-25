@@ -308,28 +308,36 @@ func TestTemplate(t *testing.T) {
 				FrontendName:  "stefan",
 				Port:          "333",
 				FrontendRules: []string{},
-				Backend: &hpi.Backend{
-					Name:         "stefan",
-					BackendRules: []string{"first rule", "second rule"},
-					Endpoints: []*hpi.Endpoint{
-						{Name: "first", IP: "10.244.2.1", Port: "2323"},
-						{Name: "first", IP: "10.244.2.2", Port: "2324"},
+				Hosts: []*hpi.TCPHost{
+					{
+						Backend: &hpi.Backend{
+							Name:         "stefan",
+							BackendRules: []string{"first rule", "second rule"},
+							Endpoints: []*hpi.Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323"},
+								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+							},
+						},
 					},
 				},
 			},
 			{
 				SharedInfo:    si,
 				FrontendName:  "daemon",
-				Host:          "hello.ok.domain",
 				Port:          "4444",
 				FrontendRules: []string{},
 				CertFile:      "this-is-secret",
 				PEMName:       "secret-pem",
-				Backend: &hpi.Backend{
-					Name: "daemon",
-					Endpoints: []*hpi.Endpoint{
-						{Name: "first", IP: "10.244.2.1", Port: "2323"},
-						{Name: "first", IP: "10.244.2.2", Port: "2324"},
+				Hosts: []*hpi.TCPHost{
+					{
+						Host: "hello.ok.domain",
+						Backend: &hpi.Backend{
+							Name: "daemon",
+							Endpoints: []*hpi.Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323"},
+								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+							},
+						},
 					},
 				},
 			},
@@ -337,14 +345,18 @@ func TestTemplate(t *testing.T) {
 				SharedInfo:    si,
 				FrontendName:  "katherin",
 				ALPNOptions:   "alpn h2options",
-				Host:          "hello.ok.domain",
 				Port:          "4444",
 				FrontendRules: []string{},
-				Backend: &hpi.Backend{
-					Name: "katherin",
-					Endpoints: []*hpi.Endpoint{
-						{Name: "first", IP: "10.244.2.1", Port: "2323"},
-						{Name: "first", IP: "10.244.2.2", Port: "2324"},
+				Hosts: []*hpi.TCPHost{
+					{
+						Host: "hello.ok.domain",
+						Backend: &hpi.Backend{
+							Name: "katherin",
+							Endpoints: []*hpi.Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323"},
+								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+							},
+						},
 					},
 				},
 			},
@@ -352,14 +364,18 @@ func TestTemplate(t *testing.T) {
 				SharedInfo:    si,
 				FrontendName:  "kate-becket",
 				ALPNOptions:   "alpn h2options",
-				Host:          "hello.ok.domain",
 				Port:          "4444",
 				FrontendRules: []string{},
-				Backend: &hpi.Backend{
-					Name: "kate-becket1",
-					Endpoints: []*hpi.Endpoint{
-						{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true},
-						{Name: "first", IP: "10.244.2.2", Port: "2324", ExternalName: "ext-name"},
+				Hosts: []*hpi.TCPHost{
+					{
+						Host: "hello.ok.domain",
+						Backend: &hpi.Backend{
+							Name: "kate-becket1",
+							Endpoints: []*hpi.Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true},
+								{Name: "first", IP: "10.244.2.2", Port: "2324", ExternalName: "ext-name"},
+							},
+						},
 					},
 				},
 			},
@@ -367,28 +383,36 @@ func TestTemplate(t *testing.T) {
 				SharedInfo:    si,
 				FrontendName:  "rick-castle",
 				ALPNOptions:   "alpn h2options",
-				Host:          "hello.ok.domain",
 				Port:          "4445",
 				FrontendRules: []string{},
-				Backend: &hpi.Backend{
-					Name: "kate-becket2",
-					Endpoints: []*hpi.Endpoint{
-						{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify none"},
-						{Name: "first", IP: "10.244.2.2", Port: "2324", ExternalName: "ext-name", TLSOption: "ssl verify required"},
+				Hosts: []*hpi.TCPHost{
+					{
+						Host: "hello.ok.domain",
+						Backend: &hpi.Backend{
+							Name: "kate-becket2",
+							Endpoints: []*hpi.Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify none"},
+								{Name: "first", IP: "10.244.2.2", Port: "2324", ExternalName: "ext-name", TLSOption: "ssl verify required"},
+							},
+						},
 					},
 				},
 			},
 			{
 				SharedInfo:   si,
 				FrontendName: "with-sticky-options",
-				Host:         "hello.ok.domain",
 				Port:         "4449",
-				Backend: &hpi.Backend{
-					Name:   "kate-becket3",
-					Sticky: true,
-					Endpoints: []*hpi.Endpoint{
-						{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify none"},
-						{Name: "first", IP: "10.244.2.2", Port: "2324", ExternalName: "ext-name", TLSOption: "ssl verify required"},
+				Hosts: []*hpi.TCPHost{
+					{
+						Host: "hello.ok.domain",
+						Backend: &hpi.Backend{
+							Name:   "kate-becket3",
+							Sticky: true,
+							Endpoints: []*hpi.Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323", UseDNSResolver: true, TLSOption: "ssl verify none"},
+								{Name: "first", IP: "10.244.2.2", Port: "2324", ExternalName: "ext-name", TLSOption: "ssl verify required"},
+							},
+						},
 					},
 				},
 			},
@@ -397,11 +421,15 @@ func TestTemplate(t *testing.T) {
 				FrontendName:  "with-frontend-rules",
 				Port:          "4445",
 				FrontendRules: []string{"rule one", "rule two"},
-				Backend: &hpi.Backend{
-					Name: "kate-becket4",
-					Endpoints: []*hpi.Endpoint{
-						{Name: "first", IP: "10.244.2.1", Port: "2323"},
-						{Name: "first", IP: "10.244.2.2", Port: "2324"},
+				Hosts: []*hpi.TCPHost{
+					{
+						Backend: &hpi.Backend{
+							Name: "kate-becket4",
+							Endpoints: []*hpi.Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323"},
+								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+							},
+						},
 					},
 				},
 			},
@@ -532,12 +560,16 @@ func TestTemplateAuth(t *testing.T) {
 				FrontendName:  "stefan",
 				Port:          "333",
 				FrontendRules: []string{},
-				Backend: &hpi.Backend{
-					Name:         "stefan",
-					BackendRules: []string{"first rule", "second rule"},
-					Endpoints: []*hpi.Endpoint{
-						{Name: "first", IP: "10.244.2.1", Port: "2323"},
-						{Name: "first", IP: "10.244.2.2", Port: "2324"},
+				Hosts: []*hpi.TCPHost{
+					{
+						Backend: &hpi.Backend{
+							Name:         "stefan",
+							BackendRules: []string{"first rule", "second rule"},
+							Endpoints: []*hpi.Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323"},
+								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+							},
+						},
 					},
 				},
 			},
@@ -760,13 +792,78 @@ func TestHealthCheck(t *testing.T) {
 				FrontendName:  "stefan",
 				Port:          "333",
 				FrontendRules: []string{},
-				Backend: &hpi.Backend{
-					Name: "stefan",
-					Endpoints: []*hpi.Endpoint{
-						{Name: "aaa", IP: "10.244.2.1", Port: "2323"},
-						{Name: "bbb", IP: "10.244.2.1", Port: "2323", CheckHealth: true},
-						{Name: "ccc", IP: "10.244.2.1", Port: "2323", CheckHealth: true, CheckHealthPort: "5050"},
-						{Name: "ddd", IP: "10.244.2.1", Port: "2323", ExternalName: "name", DNSResolver: "one", UseDNSResolver: true, CheckHealth: true, CheckHealthPort: "5050"},
+				Hosts: []*hpi.TCPHost{
+					{
+						Backend: &hpi.Backend{
+							Name: "stefan",
+							Endpoints: []*hpi.Endpoint{
+								{Name: "aaa", IP: "10.244.2.1", Port: "2323"},
+								{Name: "bbb", IP: "10.244.2.1", Port: "2323", CheckHealth: true},
+								{Name: "ccc", IP: "10.244.2.1", Port: "2323", CheckHealth: true, CheckHealthPort: "5050"},
+								{Name: "ddd", IP: "10.244.2.1", Port: "2323", ExternalName: "name", DNSResolver: "one", UseDNSResolver: true, CheckHealth: true, CheckHealthPort: "5050"},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
+	if assert.Nil(t, err) {
+		config, err := RenderConfig(testParsedConfig)
+		assert.Nil(t, err)
+		if testing.Verbose() {
+			fmt.Println(err, "\n", config)
+		}
+	}
+}
+
+func TestTcpSni(t *testing.T) {
+	si := &hpi.SharedInfo{}
+	testParsedConfig := hpi.TemplateData{
+		SharedInfo: si,
+		TCPService: []*hpi.TCPService{
+			{
+				SharedInfo:   si,
+				FrontendName: "fe-1",
+				Port:         "8080",
+				Hosts: []*hpi.TCPHost{
+					{
+						Backend: &hpi.Backend{
+							Name: "be-1",
+							Endpoints: []*hpi.Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323"},
+								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+							},
+						},
+						Host: "host-1",
+					},
+					{
+						Backend: &hpi.Backend{
+							Name: "be-2",
+							Endpoints: []*hpi.Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323"},
+								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+							},
+						},
+						Host: "host-2",
+					},
+				},
+			},
+			{
+				SharedInfo:   si,
+				FrontendName: "fe-2",
+				Port:         "9090",
+				Hosts: []*hpi.TCPHost{
+					{
+						Backend: &hpi.Backend{
+							Name: "be-3",
+							Endpoints: []*hpi.Endpoint{
+								{Name: "first", IP: "10.244.2.1", Port: "2323"},
+								{Name: "first", IP: "10.244.2.2", Port: "2324"},
+							},
+						},
+						Host: "host-3",
 					},
 				},
 			},

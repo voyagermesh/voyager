@@ -34,5 +34,13 @@ spec:
     name: proxy
     protocol: TCP
     targetPort: 6767
+  - port: 6443
+    name: https-1
+    protocol: TCP
+    targetPort: 6443
+  - port: 3443
+    name: https-2
+    protocol: TCP
+    targetPort: 3443
   selector:
     app: test-server

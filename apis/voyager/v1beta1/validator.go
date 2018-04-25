@@ -55,13 +55,13 @@ func (r *Ingress) Migrate() {
 func (r Ingress) IsValid(cloudProvider string) error {
 	for key, fn := range get {
 		if _, err := fn(r.Annotations); err != nil && err != kutil.ErrNotFound {
-			return errors.Errorf("can not parse annotaion %s. Reason: %s", key, err)
+			return errors.Errorf("can not parse annotation %s. Reason: %s", key, err)
 		}
 	}
 
 	timeouts, _ := get[DefaultsTimeOut](r.Annotations)
 	if err := checkMapKeys(timeouts.(map[string]string), sets.StringKeySet(timeoutDefaults)); err != nil {
-		return errors.Errorf("invalid value for annotaion %s. Reason: %s", DefaultsTimeOut, err)
+		return errors.Errorf("invalid value for annotation %s. Reason: %s", DefaultsTimeOut, err)
 	}
 
 	for ri, rule := range r.Spec.FrontendRules {
@@ -185,43 +185,76 @@ func (r Ingress) IsValid(cloudProvider string) error {
 				}
 			}
 		} else if rule.TCP != nil && rule.HTTP == nil {
+			var err error
+			var podPort, nodePort int
+
+			if podPort, err = checkRequiredPort(rule.TCP.Port); err != nil {
+				return fmt.Errorf("spec.rule[%d].tcp.port %s is invalid. Reason: %s", ri, rule.TCP.Port, err)
+			}
+			if nodePort, err = checkOptionalPort(rule.TCP.NodePort); err != nil {
+				return fmt.Errorf("spec.rule[%d].tcp.nodePort %s is invalid. Reason: %s", ri, rule.TCP.NodePort, err)
+			} else if nodePort > 0 {
+				if r.LBType() == LBTypeHostPort {
+					return fmt.Errorf("spec.rule[%d].tcp.nodePort %s may not be specified when `LBType` is `HostPort`", ri, rule.TCP.NodePort)
+				}
+			}
+			bindAddress, err := checkOptionalAddress(rule.TCP.Address)
+			if err != nil {
+				return fmt.Errorf("spec.rule[%d].tcp.address %s is invalid. Reason: %s", ri, rule.TCP.Address, err)
+			} else if err = checkExclusiveWildcard(bindAddress, podPort, addrs); err != nil {
+				return fmt.Errorf("spec.rule[%d].tcp.address %s is invalid. Reason: %s", ri, rule.TCP.Address, err)
+			}
+
 			var a *address
+			var addrKey = fmt.Sprintf("%s:%d", bindAddress, podPort)
 
-			if podPort, err := checkRequiredPort(rule.TCP.Port); err != nil {
-				return errors.Errorf("spec.rule[%d].tcp.port %s is invalid. Reason: %s", ri, rule.TCP.Port, err)
+			if ea, found := addrs[addrKey]; found {
+				if ea.Protocol != "tcp" {
+					return fmt.Errorf("spec.rule[%d].tcp is reusing port %d, also used in spec.rule[%d].http", ri, ea.PodPort, ea.FirstRuleIndex)
+				}
+				if nodePort != ea.NodePort {
+					return fmt.Errorf("spec.rule[%d].tcp.nodePort %d does not match with nodePort %d", ri, nodePort, ea.NodePort)
+				} else {
+					nodePorts[nodePort] = ri
+				}
+
+				// multi-host TCP: NoTLS and FoundTLS should be false for all rules
+				if rule.TCP.NoTLS || r.Spec.Rules[ea.FirstRuleIndex].TCP.NoTLS {
+					return fmt.Errorf("NoTLS found for multi-host tcp")
+				}
+				_, foundTLS := r.FindTLSSecret(rule.Host)
+				_, foundTLS1 := r.FindTLSSecret(r.Spec.Rules[ea.FirstRuleIndex].Host)
+				if foundTLS || foundTLS1 {
+					return fmt.Errorf("spec.TLS found for multi-host tcp")
+				}
+
+				a = ea
 			} else {
-				bindAddress, err := checkOptionalAddress(rule.TCP.Address)
-				if err != nil {
-					return errors.Errorf("spec.rule[%d].tcp.address %s is invalid. Reason: %s", ri, rule.TCP.Address, err)
-				} else if err = checkExclusiveWildcard(bindAddress, podPort, addrs); err != nil {
-					return errors.Errorf("spec.rule[%d].tcp.address %s is invalid. Reason: %s", ri, rule.TCP.Address, err)
-				}
-
-				var addrKey = fmt.Sprintf("%s:%d", bindAddress, podPort)
-				if ea, found := addrs[addrKey]; found {
-					return errors.Errorf("spec.rule[%d].tcp is reusing addr %s, also used in spec.rule[%d]", ri, ea, ea.FirstRuleIndex)
-				}
 				a = &address{
 					Protocol:       "tcp",
 					Address:        bindAddress,
 					PodPort:        podPort,
 					FirstRuleIndex: ri,
-					Hosts:          map[string]Paths{rule.GetHost(): {}},
+					Hosts:          map[string]Paths{},
+				}
+				if nodePort > 0 {
+					if ei, found := nodePorts[nodePort]; found {
+						return fmt.Errorf("spec.rule[%d].tcp is reusing nodePort %d for addr %s, also used in spec.rule[%d]", ri, nodePort, a, ei)
+					} else {
+						a.NodePort = nodePort
+						nodePorts[nodePort] = ri
+					}
 				}
 				addrs[addrKey] = a
 			}
-			if np, err := checkOptionalPort(rule.TCP.NodePort); err != nil {
-				return errors.Errorf("spec.rule[%d].tcp.nodePort %s is invalid. Reason: %s", ri, rule.TCP.NodePort, err)
-			} else if np > 0 {
-				if r.LBType() == LBTypeHostPort {
-					return errors.Errorf("spec.rule[%d].tcp.nodePort %s may not be specified when `LBType` is `HostPort`", ri, rule.TCP.NodePort)
+
+			if _, found := a.Hosts[rule.GetHost()]; !found {
+				a.Hosts[rule.GetHost()] = Paths{
+					"/": indices{RuleIndex: ri}, // for tcp no paths, just store indices in path "/"
 				}
-				if ei, found := nodePorts[np]; found {
-					return errors.Errorf("spec.rule[%d].tcp is reusing nodePort %d for addr %s, also used in spec.rule[%d]", ri, np, a, ei)
-				} else {
-					a.NodePort = np
-					nodePorts[np] = ri
-				}
+			} else { // some host under same address-binder
+				ei := a.Hosts[rule.GetHost()]["/"]
+				return errors.Errorf("spec.rule[%d].tcp is reusing host %s for addr %s, also used in spec.rule[%d]", ri, rule.Host, a, ei.RuleIndex)
 			}
 
 			if !checkBackendServiceName(rule.TCP.Backend.ServiceName) {
@@ -313,7 +346,7 @@ func checkBackendServiceName(name string) bool {
 func checkRequiredPort(port intstr.IntOrString) (int, error) {
 	if port.Type == intstr.Int {
 		if port.IntVal <= 0 {
-			return 0, errors.Errorf("port %s must a +ve interger", port)
+			return 0, errors.Errorf("port %s must a +ve integer", port)
 		}
 		return int(port.IntVal), nil
 	} else if port.Type == intstr.String {
@@ -325,7 +358,7 @@ func checkRequiredPort(port intstr.IntOrString) (int, error) {
 func checkOptionalPort(port intstr.IntOrString) (int, error) {
 	if port.Type == intstr.Int {
 		if port.IntVal < 0 {
-			return 0, errors.Errorf("port %s can't be -ve interger", port)
+			return 0, errors.Errorf("port %s can't be -ve integer", port)
 		}
 		return int(port.IntVal), nil
 	} else if port.Type == intstr.String {
@@ -371,11 +404,11 @@ func checkExclusiveWildcard(address string, port int, defined map[string]*addres
 
 func (c Certificate) IsValid(cloudProvider string) error {
 	if len(c.Spec.Domains) == 0 {
-		return errors.Errorf("doamin list is empty")
+		return errors.Errorf("domain list is empty")
 	}
 
 	if c.Spec.ChallengeProvider.HTTP == nil && c.Spec.ChallengeProvider.DNS == nil {
-		return errors.Errorf("certificate has no valid challange provider")
+		return errors.Errorf("certificate has no valid challenge provider")
 	}
 
 	if c.Spec.ChallengeProvider.HTTP != nil && c.Spec.ChallengeProvider.DNS != nil {

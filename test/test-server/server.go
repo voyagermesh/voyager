@@ -50,7 +50,7 @@ func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func runHTTP(port string) {
-	fmt.Println("http server running")
+	fmt.Println("http server running on port", port)
 	http.ListenAndServe(port, HTTPHandler{port})
 }
 
@@ -77,7 +77,7 @@ func (h HTTPSHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func runHTTPS(port string) {
-	fmt.Println("https server running")
+	fmt.Println("https server running on port", port)
 	GenCert("http.appscode.test,ssl.appscode.test")
 	http.ListenAndServeTLS(port, "cert.pem", "key.pem", HTTPSHandler{port})
 }
@@ -121,7 +121,7 @@ func runTCP(port string) {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println("tcp server listening")
+	fmt.Println("tcp server listening on port", port)
 	for {
 		con, err := ln.Accept()
 		if err != nil {
@@ -139,7 +139,7 @@ func runProxy(port string) {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println("tcp server listening")
+	fmt.Println("proxy server listening on port", port)
 	for {
 		con, err := ln.Accept()
 		if err != nil {

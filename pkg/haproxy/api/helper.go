@@ -92,13 +92,32 @@ func (td *TemplateData) sort() {
 		td.HTTPService[x] = svc
 	}
 
-	for _, svc := range td.TCPService {
-		if svc.Backend != nil {
-			svc.Backend.canonicalize(backends[svc.Backend.Name] > 1, svc.Host, svc.Port, "")
+	for x := range td.TCPService {
+		svc := td.TCPService[x]
+
+		sort.Slice(svc.Hosts, func(i, j int) bool {
+			host_i := hostName(svc.Hosts[i].Host)
+			host_rank_i := hostRank(svc.Hosts[i].Host)
+
+			host_j := hostName(svc.Hosts[j].Host)
+			host_rank_j := hostRank(svc.Hosts[j].Host)
+
+			if host_rank_i == host_rank_j {
+				return host_i > host_j
+			}
+			return host_rank_i > host_rank_j
+		})
+
+		for _, host := range svc.Hosts {
+			if host.Backend != nil {
+				host.Backend.canonicalize(backends[host.Backend.Name] > 1, host.Host, svc.Port, "")
+			}
 		}
+
 		if svc.TLSAuth != nil {
 			sort.Slice(svc.TLSAuth.Headers, func(i, j int) bool { return svc.TLSAuth.Headers[i].Header < svc.TLSAuth.Headers[j].Header })
 		}
+		td.TCPService[x] = svc
 	}
 
 	sort.Slice(td.HTTPService, func(i, j int) bool { return td.HTTPService[i].sortKey() < td.HTTPService[j].sortKey() })
@@ -129,8 +148,10 @@ func (td *TemplateData) countBackendNames() map[string]int {
 		}
 	}
 	for _, svc := range td.TCPService {
-		if svc.Backend != nil {
-			backends[svc.Backend.Name]++
+		for _, host := range svc.Hosts {
+			if host.Backend != nil {
+				backends[host.Backend.Name]++
+			}
 		}
 	}
 	return backends
@@ -215,11 +236,13 @@ func (td *TemplateData) IsValid() error {
 			frontends.Insert(svc.FrontendName)
 		}
 
-		if svc.Backend != nil {
-			if backends.Has(svc.Backend.Name) {
-				return errors.Errorf("haproxy backend name %s is reused", svc.Backend.Name)
-			} else {
-				backends.Insert(svc.Backend.Name)
+		for _, host := range svc.Hosts {
+			if host.Backend != nil {
+				if backends.Has(host.Backend.Name) {
+					return errors.Errorf("haproxy backend name %s is reused", host.Backend.Name)
+				} else {
+					backends.Insert(host.Backend.Name)
+				}
 			}
 		}
 	}
