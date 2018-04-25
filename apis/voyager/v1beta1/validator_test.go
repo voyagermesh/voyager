@@ -751,4 +751,56 @@ var dataTables = map[*Ingress]bool{
 			},
 		},
 	}: false, // conflicting paths while merging "*" host with empty-host
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "Merging empty-host with wildcard-host"},
+		Spec: IngressSpec{
+			TLS: []IngressTLS{
+				{
+					SecretName: "voyager-cert",
+					Hosts: []string{
+						"*",
+					},
+				},
+			},
+			Rules: []IngressRule{
+				{
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port: intstr.FromInt(80),
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/foo",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(3444),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Host: "*",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port: intstr.FromInt(80),
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/not-foo",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(3444),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // conflicting TLS merging "*" host with empty-host
 }
