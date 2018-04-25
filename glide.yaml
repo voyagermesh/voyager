@@ -69,7 +69,8 @@ import:
 - package: k8s.io/client-go
   version: v6.0.0
 - package: k8s.io/kubernetes
-  version: v1.9.0
+  repo: https://github.com/appscode/kubernetes.git
+  version: v1.9.0-ac
 - package: k8s.io/kube-openapi
 - package: github.com/appscode/kutil
   version: release-6.0
@@ -77,6 +78,14 @@ import:
   version: release-6.0
 - package: github.com/appscode/kube-mon
   version: release-6.0
+- package: github.com/openshift/api
+  version: release-3.9
+- package: github.com/openshift/client-go
+  version: release-3.9
+- package: github.com/openshift/origin
+  version: v3.9.0
+- package: github.com/appscode/ocutil
+  version: release-3.9
 testImport:
 - package: github.com/stretchr/testify
   version: v1.2.1

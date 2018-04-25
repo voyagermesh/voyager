@@ -10,8 +10,9 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
 	tools "github.com/appscode/kube-mon"
+	wapi "github.com/appscode/kubernetes-webhook-util/apis/workload/v1"
+	wcs "github.com/appscode/kubernetes-webhook-util/client/workload/v1"
 	"github.com/appscode/kutil"
-	apps_util "github.com/appscode/kutil/apps/v1beta1"
 	core_util "github.com/appscode/kutil/core/v1"
 	meta_util "github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/analytics"
@@ -24,7 +25,6 @@ import (
 	fakecloudprovider "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	"github.com/pkg/errors"
-	apps "k8s.io/api/apps/v1beta1"
 	core "k8s.io/api/core/v1"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -45,6 +45,7 @@ var _ Controller = &hostPortController{}
 func NewHostPortController(
 	ctx context.Context,
 	kubeClient kubernetes.Interface,
+	WorkloadClient wcs.Interface,
 	crdClient kext_cs.ApiextensionsV1beta1Interface,
 	extClient cs.Interface,
 	promClient pcm.MonitoringV1Interface,
@@ -56,6 +57,7 @@ func NewHostPortController(
 		controller: &controller{
 			logger:          log.New(ctx),
 			KubeClient:      kubeClient,
+			WorkloadClient:  WorkloadClient,
 			CRDClient:       crdClient,
 			VoyagerClient:   extClient,
 			PromClient:      promClient,
@@ -167,7 +169,7 @@ func (c *hostPortController) Reconcile() error {
 		c.reconcileRBAC()
 	}
 
-	if _, vt, err := c.ensurePods(); err != nil {
+	if vt, err := c.ensurePods(); err != nil {
 		c.recorder.Eventf(
 			c.Ingress.ObjectReference(),
 			core.EventTypeWarning,
@@ -405,12 +407,12 @@ func (c *hostPortController) ensureService() (*core.Service, kutil.VerbType, err
 	})
 }
 
-func (c *hostPortController) ensurePods() (*apps.Deployment, kutil.VerbType, error) {
-	meta := metav1.ObjectMeta{
-		Name:      c.Ingress.OffshootName(),
-		Namespace: c.Ingress.Namespace,
+func (c *hostPortController) ensurePods() (kutil.VerbType, error) {
+	obj, err := wcs.NewObjectForKind(c.Ingress.WorkloadController(), c.Ingress.OffshootName(), c.Ingress.Namespace)
+	if err != nil {
+		return kutil.VerbUnchanged, err
 	}
-	return apps_util.CreateOrPatchDeployment(c.KubeClient, meta, func(obj *apps.Deployment) *apps.Deployment {
+	_, vt, err := c.WorkloadClient.Workloads(c.Ingress.Namespace).CreateOrPatch(obj, func(obj *wapi.Workload) *wapi.Workload {
 		// deployment annotations
 		if obj.Annotations == nil {
 			obj.Annotations = make(map[string]string)
@@ -547,15 +549,5 @@ func (c *hostPortController) ensurePods() (*apps.Deployment, kutil.VerbType, err
 
 		return obj
 	})
-}
-
-func (c *hostPortController) deletePods() error {
-	policy := metav1.DeletePropagationForeground
-	err := c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{
-		PropagationPolicy: &policy,
-	})
-	if err != nil {
-		return err
-	}
-	return c.deletePodsForSelector(&metav1.LabelSelector{MatchLabels: c.Ingress.OffshootSelector()})
+	return vt, err
 }

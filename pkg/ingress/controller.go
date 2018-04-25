@@ -8,6 +8,8 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
+	wcs "github.com/appscode/kubernetes-webhook-util/client/workload/v1"
+	core_util "github.com/appscode/kutil/core/v1"
 	v1u "github.com/appscode/kutil/core/v1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
@@ -32,6 +34,7 @@ type Controller interface {
 
 type controller struct {
 	KubeClient      kubernetes.Interface
+	WorkloadClient  wcs.Interface
 	CRDClient       kext_cs.ApiextensionsV1beta1Interface
 	VoyagerClient   cs.Interface
 	PromClient      pcm.MonitoringV1Interface
@@ -55,6 +58,7 @@ type controller struct {
 func NewController(
 	ctx context.Context,
 	kubeClient kubernetes.Interface,
+	WorkloadClient wcs.Interface,
 	crdClient kext_cs.ApiextensionsV1beta1Interface,
 	extClient cs.Interface,
 	promClient pcm.MonitoringV1Interface,
@@ -64,13 +68,13 @@ func NewController(
 	ingress *api.Ingress) Controller {
 	switch ingress.LBType() {
 	case api.LBTypeHostPort:
-		return NewHostPortController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
+		return NewHostPortController(ctx, kubeClient, WorkloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
 	case api.LBTypeNodePort:
-		return NewNodePortController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
+		return NewNodePortController(ctx, kubeClient, WorkloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
 	case api.LBTypeLoadBalancer:
-		return NewLoadBalancerController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
+		return NewLoadBalancerController(ctx, kubeClient, WorkloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
 	case api.LBTypeInternal:
-		return NewInternalController(ctx, kubeClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
+		return NewInternalController(ctx, kubeClient, WorkloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
 	}
 	return nil
 }
@@ -116,4 +120,20 @@ func (c *controller) ensureEnvVars(vars []core.EnvVar) []core.EnvVar {
 		}
 	}
 	return vars
+}
+
+func (c *controller) deletePods() error {
+	policy := metav1.DeletePropagationForeground
+	options := &metav1.DeleteOptions{
+		PropagationPolicy: &policy,
+	}
+	obj, err := wcs.NewObjectForKind(c.Ingress.WorkloadController(), c.Ingress.OffshootName(), c.Ingress.Namespace)
+	if err != nil {
+		return err
+	}
+	err = c.WorkloadClient.Workloads(c.Ingress.Namespace).Delete(obj, options)
+	if err != nil {
+		return err
+	}
+	return core_util.RestartPods(c.KubeClient, c.Ingress.Namespace, &metav1.LabelSelector{MatchLabels: c.Ingress.OffshootSelector()})
 }

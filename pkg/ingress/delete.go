@@ -1,7 +1,6 @@
 package ingress
 
 import (
-	"github.com/appscode/go/types"
 	"github.com/pkg/errors"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -10,24 +9,6 @@ import (
 func (c *controller) deleteConfigMap() error {
 	c.logger.Infof("Deleting ConfigMap %s/%s", c.Ingress.Namespace, c.Ingress.OffshootName())
 	err := c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
-	if err != nil && !kerr.IsNotFound(err) {
-		return errors.WithStack(err)
-	}
-	return nil
-}
-
-// Ensures deleting all pods if its still exits.
-func (c *controller) deletePodsForSelector(selector *metav1.LabelSelector) error {
-	r, err := metav1.LabelSelectorAsSelector(selector)
-	if err != nil {
-		return err
-	}
-	c.logger.Infof("Deleting Pods in namespace %s with label", c.Ingress.Namespace, r.String())
-	err = c.KubeClient.CoreV1().Pods(c.Ingress.Namespace).DeleteCollection(&metav1.DeleteOptions{
-		GracePeriodSeconds: types.Int64P(0),
-	}, metav1.ListOptions{
-		LabelSelector: r.String(),
-	})
 	if err != nil && !kerr.IsNotFound(err) {
 		return errors.WithStack(err)
 	}

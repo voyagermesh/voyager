@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/appscode/go/log"
+	wcs "github.com/appscode/kubernetes-webhook-util/client/workload/v1"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	"github.com/appscode/kutil/tools/queue"
 	"github.com/appscode/pat"
@@ -30,10 +31,11 @@ import (
 type Operator struct {
 	config.Config
 
-	KubeClient    kubernetes.Interface
-	CRDClient     kext_cs.ApiextensionsV1beta1Interface
-	VoyagerClient cs.Interface
-	PromClient    prom.MonitoringV1Interface
+	KubeClient     kubernetes.Interface
+	WorkloadClient wcs.Interface
+	CRDClient      kext_cs.ApiextensionsV1beta1Interface
+	VoyagerClient  cs.Interface
+	PromClient     prom.MonitoringV1Interface
 
 	kubeInformerFactory    informers.SharedInformerFactory
 	voyagerInformerFactory voyagerinformers.SharedInformerFactory
