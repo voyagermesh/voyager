@@ -161,13 +161,13 @@ func (r Ingress) IsValid(cloudProvider string) error {
 			}
 
 			for pi, path := range rule.HTTP.Paths {
-				if _, found := a.Hosts[rule.Host]; !found {
-					a.Hosts[rule.Host] = Paths{}
+				if _, found := a.Hosts[rule.GetHost()]; !found {
+					a.Hosts[rule.GetHost()] = Paths{}
 				}
-				if ei, found := a.Hosts[rule.Host][path.Path]; found {
+				if ei, found := a.Hosts[rule.GetHost()][path.Path]; found {
 					return errors.Errorf("spec.rule[%d].http.paths[%d] is reusing path %s for addr %s, also used in spec.rule[%d].http.paths[%d]", ri, pi, path.Path, a, ei.RuleIndex, ei.PathIndex)
 				}
-				a.Hosts[rule.Host][path.Path] = indices{RuleIndex: ri, PathIndex: pi}
+				a.Hosts[rule.GetHost()][path.Path] = indices{RuleIndex: ri, PathIndex: pi}
 
 				if !checkBackendServiceName(path.Backend.ServiceName) {
 					return errors.Errorf("spec.rule[%d].http.paths[%d] has invalid serviceName for addr %s and path %s", ri, pi, a, path.Path)
@@ -206,7 +206,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 					Address:        bindAddress,
 					PodPort:        podPort,
 					FirstRuleIndex: ri,
-					Hosts:          map[string]Paths{rule.Host: {}},
+					Hosts:          map[string]Paths{rule.GetHost(): {}},
 				}
 				addrs[addrKey] = a
 			}

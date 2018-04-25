@@ -255,3 +255,14 @@ func (r Ingress) UsesAuthSecret(namespace, name string) bool {
 	}
 	return false
 }
+
+// unify wildcard-host into empty-host, this will ease template rendering
+// paths under empty-host and wildcard-host will be merged
+// but TLS will be matched separately
+func (r IngressRule) GetHost() string {
+	host := strings.TrimSpace(r.Host)
+	if host == `` || host == `*` {
+		return ``
+	}
+	return host
+}
