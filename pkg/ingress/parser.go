@@ -814,7 +814,11 @@ func (c *controller) generateConfig() error {
 		for _, svc := range td.HTTPService {
 			svc.NodePort = portMapping[int32(svc.Port)]
 			if svc.Port == 80 {
-				svc.RedirectToNodePort = portMapping[443]
+				var found bool
+				svc.NodePortFor443, found = portMapping[443]
+				if ! found {
+					return errors.Errorf("failed to process ssl-redirect: nodeport for port 443 not found")
+				}
 			}
 		}
 	}
