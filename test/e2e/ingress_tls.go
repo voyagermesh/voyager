@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -24,14 +25,7 @@ var _ = Describe("IngressTLS", func() {
 	BeforeEach(func() {
 		f = root.Invoke()
 		ing = f.Ingress.GetSkeleton()
-		ing.Annotations[api.SSLRedirect] = "false"
 		f.Ingress.SetSkeletonRule(ing)
-	})
-
-	BeforeEach(func() {
-		// if options.CloudProvider == "minikube" && !strings.HasPrefix(config.GinkgoConfig.FocusString, "IngressTLS") {
-		// 	 Skip("run in minikube only when single specs running")
-		// }
 	})
 
 	BeforeEach(func() {
@@ -72,7 +66,7 @@ var _ = Describe("IngressTLS", func() {
 	})
 
 	var (
-		shouldTestRedirect = func() {
+		shouldTestHttp = func(port int32, path string) {
 			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
@@ -80,39 +74,98 @@ var _ = Describe("IngressTLS", func() {
 
 			svc, err := f.Ingress.GetOffShootService(ing)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(len(svc.Spec.Ports)).Should(Equal(2))
-			Expect(svc.Spec.Ports[0].Port).To(Or(Equal(int32(80)), Equal(int32(443))))
-			Expect(svc.Spec.Ports[1].Port).To(Or(Equal(int32(80)), Equal(int32(443))))
+
+			var httpPort core.ServicePort
+			for _, p := range svc.Spec.Ports {
+				if p.Port == port {
+					httpPort = p
+				}
+			}
+
+			Expect(httpPort.Port).Should(Equal(port))
+
+			httpHost := framework.TestDomain
+			if ing.UseNodePort() {
+				httpHost = framework.TestDomain + ":" + fmt.Sprint(httpPort.NodePort)
+			}
+
+			err = f.Ingress.DoHTTP(framework.MaxRetry, httpHost, ing, f.Ingress.FilterEndpointsForPort(eps, httpPort), "GET", path, func(r *client.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+					Expect(r.Method).Should(Equal("GET")) &&
+					Expect(r.Path).Should(Equal(path))
+			})
+			Expect(err).NotTo(HaveOccurred())
+		}
+
+		shouldTestHttps = func(port int32, path string) {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			svc, err := f.Ingress.GetOffShootService(ing)
+			Expect(err).NotTo(HaveOccurred())
+
+			var httpsPort core.ServicePort
+			for _, p := range svc.Spec.Ports {
+				if p.Port == port {
+					httpsPort = p
+				}
+			}
+
+			Expect(httpsPort.Port).Should(Equal(port))
+
+			httpsHost := framework.TestDomain
+			if ing.UseNodePort() {
+				httpsHost = framework.TestDomain + ":" + fmt.Sprint(httpsPort.NodePort)
+			}
+
+			err = f.Ingress.DoHTTPs(framework.MaxRetry, httpsHost, "", ing, f.Ingress.FilterEndpointsForPort(eps, httpsPort), "GET", path, func(r *client.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+					Expect(r.Method).Should(Equal("GET")) &&
+					Expect(r.Path).Should(Equal(path)) &&
+					Expect(r.Host).Should(Equal(httpsHost))
+			})
+			Expect(err).NotTo(HaveOccurred())
+		}
+
+		shouldTestRedirect = func(path string) {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			svc, err := f.Ingress.GetOffShootService(ing)
+			Expect(err).NotTo(HaveOccurred())
 
 			var httpPort, httpsPort core.ServicePort
 			for _, p := range svc.Spec.Ports {
 				if p.Port == 80 {
 					httpPort = p
-				}
-
-				if p.Port == 443 {
+				} else if p.Port == 443 {
 					httpsPort = p
 				}
 			}
 
-			err = f.Ingress.DoHTTPsTestRedirect(framework.MaxRetry, framework.TestDomain, ing, f.Ingress.FilterEndpointsForPort(eps, httpPort), "GET", "/testpath/ok", func(r *client.Response) bool {
-				return Expect(r.Status).Should(Equal(301)) &&
-					Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
-					Expect(r.ResponseHeader.Get("Location")).Should(Equal("https://http.appscode.test/testpath/ok"))
-			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(httpPort.Port).Should(Equal(int32(80)))
+			Expect(httpsPort.Port).Should(Equal(int32(443)))
 
-			err = f.Ingress.DoHTTPs(framework.MaxRetry, framework.TestDomain, "", ing, f.Ingress.FilterEndpointsForPort(eps, httpsPort), "GET", "/testpath/ok", func(r *client.Response) bool {
-				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
-					Expect(r.Method).Should(Equal("GET")) &&
-					Expect(r.Path).Should(Equal("/testpath/ok")) &&
-					Expect(r.Host).Should(Equal(framework.TestDomain))
+			httpHost, httpsHost := framework.TestDomain, framework.TestDomain
+			if ing.UseNodePort() {
+				httpHost = framework.TestDomain + ":" + fmt.Sprint(httpPort.NodePort)
+				httpsHost = framework.TestDomain + ":" + fmt.Sprint(httpsPort.NodePort)
+			}
+
+			err = f.Ingress.DoHTTPsTestRedirect(framework.MaxRetry, httpHost, ing, f.Ingress.FilterEndpointsForPort(eps, httpPort), "GET", path, func(r *client.Response) bool {
+				return Expect(r.Status).Should(Equal(308)) &&
+					Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
+					Expect(r.ResponseHeader.Get("Location")).Should(Equal("https://"+httpsHost+path))
 			})
 			Expect(err).NotTo(HaveOccurred())
 		}
 	)
 
-	Describe("Https response", func() {
+	Describe("Https redirect and response", func() {
 		BeforeEach(func() {
 			ing.Spec = api.IngressSpec{
 				TLS: []api.IngressTLS{
@@ -144,28 +197,54 @@ var _ = Describe("IngressTLS", func() {
 			}
 		})
 
-		It("Should response HTTPs", func() {
-			By("Getting HTTP endpoints")
-			eps, err := f.Ingress.GetHTTPEndpoints(ing)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(eps)).Should(BeNumerically(">=", 1))
-
-			svc, err := f.Ingress.GetOffShootService(ing)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(svc.Spec.Ports)).Should(Equal(1))
-			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(443)))
-
-			err = f.Ingress.DoHTTPs(framework.MaxRetry, framework.TestDomain, "", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
-				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
-					Expect(r.Method).Should(Equal("GET")) &&
-					Expect(r.Path).Should(Equal("/testpath/ok")) &&
-					Expect(r.Host).Should(Equal(framework.TestDomain))
-			})
-			Expect(err).NotTo(HaveOccurred())
+		It("Should redirect HTTP to HTTPs and response HTTPs", func() {
+			shouldTestHttps(443, "/testpath/ok")
+			shouldTestRedirect("/testpath/ok")
 		})
 	})
 
-	Describe("Https redirect port specified", func() {
+	Describe("Redirect with use-nodeport", func() {
+		BeforeEach(func() {
+			ing.Annotations[api.LBType] = api.LBTypeNodePort
+			ing.Annotations[api.UseNodePort] = "true"
+
+			ing.Spec = api.IngressSpec{
+				TLS: []api.IngressTLS{
+					{
+						SecretName: secret.Name,
+						Hosts:      []string{framework.TestDomain},
+					},
+				},
+				Rules: []api.IngressRule{
+					{
+						Host: framework.TestDomain,
+						IngressRuleValue: api.IngressRuleValue{
+							HTTP: &api.HTTPIngressRuleValue{
+								Paths: []api.HTTPIngressPath{
+									{
+										Path: "/testpath",
+										Backend: api.HTTPIngressBackend{
+											IngressBackend: api.IngressBackend{
+												ServiceName: f.Ingress.TestServerName(),
+												ServicePort: intstr.FromInt(80),
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+		})
+
+		It("Should redirect to HTTPs with correct nodeport", func() {
+			shouldTestHttps(443, "/testpath/ok")
+			shouldTestRedirect("/testpath/ok")
+		})
+	})
+
+	Describe("No redirect for existing path", func() {
 		BeforeEach(func() {
 			ing.Spec = api.IngressSpec{
 				TLS: []api.IngressTLS{
@@ -186,9 +265,6 @@ var _ = Describe("IngressTLS", func() {
 										Path: "/testpath",
 										Backend: api.HTTPIngressBackend{
 											IngressBackend: api.IngressBackend{
-												BackendRules: []string{
-													"redirect scheme https code 301 if !{ ssl_fc }",
-												},
 												ServiceName: f.Ingress.TestServerName(),
 												ServicePort: intstr.FromInt(80),
 											},
@@ -221,10 +297,13 @@ var _ = Describe("IngressTLS", func() {
 			}
 		})
 
-		It("Should redirect HTTP", shouldTestRedirect)
+		It("should response http without redirect for existing path", func() {
+			shouldTestHttp(80, "/testpath/ok")
+			shouldTestHttps(443, "/testpath/ok")
+		})
 	})
 
-	Describe("Https redirect port not specified", func() {
+	Describe("Inject new redirect path", func() {
 		BeforeEach(func() {
 			ing.Spec = api.IngressSpec{
 				TLS: []api.IngressTLS{
@@ -238,15 +317,13 @@ var _ = Describe("IngressTLS", func() {
 						Host: framework.TestDomain,
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
+								Port:  intstr.FromInt(80),
 								NoTLS: true,
 								Paths: []api.HTTPIngressPath{
 									{
-										Path: "/testpath",
+										Path: "/alternate",
 										Backend: api.HTTPIngressBackend{
 											IngressBackend: api.IngressBackend{
-												BackendRules: []string{
-													"redirect scheme https code 301 if !{ ssl_fc }",
-												},
 												ServiceName: f.Ingress.TestServerName(),
 												ServicePort: intstr.FromInt(80),
 											},
@@ -260,6 +337,7 @@ var _ = Describe("IngressTLS", func() {
 						Host: framework.TestDomain,
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
+								Port: intstr.FromInt(443),
 								Paths: []api.HTTPIngressPath{
 									{
 										Path: "/testpath",
@@ -278,7 +356,11 @@ var _ = Describe("IngressTLS", func() {
 			}
 		})
 
-		It("Should redirect HTTP", shouldTestRedirect)
+		It("should inject new redirect path", func() {
+			shouldTestHttp(80, "/alternate/ok")
+			shouldTestHttps(443, "/testpath/ok")
+			shouldTestRedirect("/testpath/ok")
+		})
 	})
 
 	Describe("Http in port 443", func() {
@@ -287,12 +369,12 @@ var _ = Describe("IngressTLS", func() {
 				TLS: []api.IngressTLS{
 					{
 						SecretName: secret.Name,
-						Hosts:      []string{"443-with-out-ssl.test.com"},
+						Hosts:      []string{framework.TestDomain},
 					},
 				},
 				Rules: []api.IngressRule{
 					{
-						Host: "443-with-out-ssl.test.com",
+						Host: framework.TestDomain,
 						IngressRuleValue: api.IngressRuleValue{
 							HTTP: &api.HTTPIngressRuleValue{
 								NoTLS: true,
@@ -316,29 +398,15 @@ var _ = Describe("IngressTLS", func() {
 		})
 
 		It("Should response HTTP from port 443", func() {
-			By("Getting HTTP endpoints")
-			eps, err := f.Ingress.GetHTTPEndpoints(ing)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(eps)).Should(BeNumerically(">=", 1))
-
-			svc, err := f.Ingress.GetOffShootService(ing)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(svc.Spec.Ports)).Should(Equal(1))
-			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(443)))
-
-			err = f.Ingress.DoHTTP(framework.MaxRetry, "443-with-out-ssl.test.com", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
-				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
-					Expect(r.Method).Should(Equal("GET")) &&
-					Expect(r.Path).Should(Equal("/testpath/ok")) &&
-					Expect(r.Host).Should(Equal("443-with-out-ssl.test.com"))
-			})
-			Expect(err).NotTo(HaveOccurred())
+			shouldTestHttp(443, "/testpath/ok")
 		})
 	})
 
 	Describe("SSL Passthrough", func() {
 		BeforeEach(func() {
 			ing.Annotations[api.SSLPassthrough] = "true"
+			ing.Annotations[api.SSLRedirect] = "false"
+
 			ing.Spec = api.IngressSpec{
 				TLS: []api.IngressTLS{
 					{
@@ -393,6 +461,8 @@ var _ = Describe("IngressTLS", func() {
 	Describe("With HSTS Max Age Specified", func() {
 		BeforeEach(func() {
 			ing.Annotations[api.HSTSMaxAge] = "100"
+			ing.Annotations[api.SSLRedirect] = "false"
+
 			ing.Spec = api.IngressSpec{
 				TLS: []api.IngressTLS{
 					{
@@ -449,6 +519,8 @@ var _ = Describe("IngressTLS", func() {
 		BeforeEach(func() {
 			ing.Annotations[api.HSTSPreload] = "true"
 			ing.Annotations[api.HSTSIncludeSubDomains] = "true"
+			ing.Annotations[api.SSLRedirect] = "false"
+
 			ing.Spec = api.IngressSpec{
 				TLS: []api.IngressTLS{
 					{
