@@ -156,7 +156,7 @@ var _ = Describe("IngressTLS", func() {
 				httpsHost = framework.TestDomain + ":" + fmt.Sprint(httpsPort.NodePort)
 			}
 
-			err = f.Ingress.DoHTTPsTestRedirect(framework.MaxRetry, httpHost, ing, f.Ingress.FilterEndpointsForPort(eps, httpPort), "GET", path, func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPTestRedirectWithHost(framework.MaxRetry, httpHost, ing, f.Ingress.FilterEndpointsForPort(eps, httpPort), "GET", path, func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(308)) &&
 					Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
 					Expect(r.ResponseHeader.Get("Location")).Should(Equal("https://"+httpsHost+path))
@@ -585,29 +585,28 @@ var _ = Describe("IngressTLS", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			httpsAddr := strings.Replace(eps[0], "http", "https", 1) + "/testpath/ok"
+			redirectLocation := "https://" + framework.TestDomain + "/testpath/ok"
 
-			err = f.Ingress.DoHTTPTestRedirect(framework.NoRetry, ing, eps, "GET", "/testpath/ok",
-				func(r *client.Response) bool {
-					return Expect(r.Status).Should(Equal(308)) &&
-						Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
-						Expect(r.ResponseHeader.Get("Location")).Should(Equal(httpsAddr))
-				})
+			err = f.Ingress.DoHTTPTestRedirectWithHost(framework.MaxRetry, framework.TestDomain, ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
+				return Expect(r.Status).Should(Equal(308)) &&
+					Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
+					Expect(r.ResponseHeader.Get("Location")).Should(Equal(redirectLocation))
+			})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = f.Ingress.DoHTTPTestRedirectWithHeader(framework.NoRetry, ing, eps, "GET", "/testpath/ok",
+			err = f.Ingress.DoHTTPTestRedirectWithHeader(framework.MaxRetry, framework.TestDomain, ing, eps, "GET", "/testpath/ok",
 				map[string]string{
 					"X-Forwarded-Proto": "http",
 				},
 				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(308)) &&
 						Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
-						Expect(r.ResponseHeader.Get("Location")).Should(Equal(httpsAddr))
+						Expect(r.ResponseHeader.Get("Location")).Should(Equal(redirectLocation))
 				})
 			Expect(err).NotTo(HaveOccurred())
 
 			// should not redirect, should response normally
-			err = f.Ingress.DoHTTPWithHeader(framework.NoRetry, ing, eps, "GET", "/testpath/ok",
+			err = f.Ingress.DoHTTPWithHeader(framework.MaxRetry, ing, eps, "GET", "/testpath/ok",
 				map[string]string{
 					"X-Forwarded-Proto": "https",
 				},
@@ -615,6 +614,17 @@ var _ = Describe("IngressTLS", func() {
 					return Expect(r.Status).Should(Equal(200)) &&
 						Expect(r.Method).Should(Equal("GET")) &&
 						Expect(r.Path).Should(Equal("/testpath/ok"))
+				})
+			Expect(err).NotTo(HaveOccurred())
+
+			// bad-case: without host header, just replace http with https
+			// for-example: http://192.168.99.100:30001 -> https://192.168.99.100:30001
+			redirectLocation = strings.Replace(eps[0], "http", "https", 1) + "/testpath/ok"
+			err = f.Ingress.DoHTTPTestRedirect(framework.MaxRetry, ing, eps, "GET", "/testpath/ok",
+				func(r *client.Response) bool {
+					return Expect(r.Status).Should(Equal(308)) &&
+						Expect(r.ResponseHeader).Should(HaveKey("Location")) &&
+						Expect(r.ResponseHeader.Get("Location")).Should(Equal(redirectLocation))
 				})
 			Expect(err).NotTo(HaveOccurred())
 		})

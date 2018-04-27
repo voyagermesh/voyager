@@ -816,7 +816,7 @@ func (c *controller) generateConfig() error {
 			if svc.Port == 80 {
 				var found bool
 				svc.NodePortFor443, found = portMapping[443]
-				if ! found {
+				if !found {
 					return errors.Errorf("failed to process ssl-redirect: nodeport for port 443 not found")
 				}
 			}
