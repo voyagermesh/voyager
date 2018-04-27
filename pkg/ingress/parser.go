@@ -802,7 +802,7 @@ func (c *controller) generateConfig() error {
 	}
 
 	// assign node-ports
-	if c.Ingress.LBType() == api.LBTypeNodePort {
+	if c.Ingress.UseNodePort() {
 		nodePortSvc, err := c.KubeClient.CoreV1().Services(c.Ingress.GetNamespace()).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
 		if err != nil {
 			return err
@@ -814,11 +814,7 @@ func (c *controller) generateConfig() error {
 		for _, svc := range td.HTTPService {
 			svc.NodePort = portMapping[int32(svc.Port)]
 			if svc.Port == 80 {
-				if svc.UseNodePort {
-					svc.RedirectToPort = portMapping[443]
-				} else {
-					svc.RedirectToPort = 443
-				}
+				svc.RedirectToNodePort = portMapping[443]
 			}
 		}
 	}
