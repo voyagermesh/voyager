@@ -231,31 +231,6 @@ while test $# -gt 0; do
 done
 
 if [ "$VOYAGER_UNINSTALL" -eq 1 ]; then
-    # delete webhooks and apiservices
-    kubectl delete validatingwebhookconfiguration -l app=voyager || true
-    kubectl delete mutatingwebhookconfiguration -l app=voyager || true
-    kubectl delete apiservice -l app=voyager
-    # delete voyager operator
-    kubectl delete deployment -l app=voyager --namespace $VOYAGER_NAMESPACE
-    kubectl delete service -l app=voyager --namespace $VOYAGER_NAMESPACE
-    kubectl delete secret -l app=voyager --namespace $VOYAGER_NAMESPACE
-    # delete RBAC objects, if --rbac flag was used.
-    kubectl delete serviceaccount -l app=voyager --namespace $VOYAGER_NAMESPACE
-    kubectl delete clusterrolebindings -l app=voyager
-    kubectl delete clusterrole -l app=voyager
-    kubectl delete rolebindings -l app=voyager --namespace $VOYAGER_NAMESPACE
-    kubectl delete role -l app=voyager --namespace $VOYAGER_NAMESPACE
-
-    echo "waiting for voyager operator pod to stop running"
-    for (( ; ; )); do
-       pods=($(kubectl get pods --all-namespaces -l app=voyager -o jsonpath='{range .items[*]}{.metadata.name} {end}'))
-       total=${#pods[*]}
-        if [ $total -eq 0 ] ; then
-            break
-        fi
-       sleep 2
-    done
-
     # https://github.com/kubernetes/kubernetes/issues/60538
     if [ "$VOYAGER_PURGE" -eq 1 ]; then
         for crd in "${crds[@]}"; do
@@ -281,7 +256,35 @@ if [ "$VOYAGER_UNINSTALL" -eq 1 ]; then
             # delete crd
             kubectl delete crd ${crd}.voyager.appscode.com || true
         done
+
+        echo "waiting 5 seconds ..."
+        sleep 5;
     fi
+
+    # delete webhooks and apiservices
+    kubectl delete validatingwebhookconfiguration -l app=voyager || true
+    kubectl delete mutatingwebhookconfiguration -l app=voyager || true
+    kubectl delete apiservice -l app=voyager
+    # delete voyager operator
+    kubectl delete deployment -l app=voyager --namespace $VOYAGER_NAMESPACE
+    kubectl delete service -l app=voyager --namespace $VOYAGER_NAMESPACE
+    kubectl delete secret -l app=voyager --namespace $VOYAGER_NAMESPACE
+    # delete RBAC objects, if --rbac flag was used.
+    kubectl delete serviceaccount -l app=voyager --namespace $VOYAGER_NAMESPACE
+    kubectl delete clusterrolebindings -l app=voyager
+    kubectl delete clusterrole -l app=voyager
+    kubectl delete rolebindings -l app=voyager --namespace $VOYAGER_NAMESPACE
+    kubectl delete role -l app=voyager --namespace $VOYAGER_NAMESPACE
+
+    echo "waiting for voyager operator pod to stop running"
+    for (( ; ; )); do
+       pods=($(kubectl get pods --all-namespaces -l app=voyager -o jsonpath='{range .items[*]}{.metadata.name} {end}'))
+       total=${#pods[*]}
+        if [ $total -eq 0 ] ; then
+            break
+        fi
+       sleep 2
+    done
 
     echo
     echo "Successfully uninstalled Voyager!"
