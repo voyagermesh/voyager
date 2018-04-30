@@ -45,6 +45,20 @@ deployment "echoserver" created
 service "rest" exposed
 ```
 
+### Choosing Workload Kind
+
+By default Voyager will run HAProxy pods using `Deployment`. Since 6.1.0 release, Voyager can run HAProxy pods using either Deployment or DaemonSet. Set the annotation `ingress.appscode.com/workload-kind` on an ingress object to either `Deployment` or `DaemonSet` to enable this feature. If this annotation is missing, HAProxy pods will be run using a `Deployment` as before.
+
+```yaml
+apiVersion: voyager.appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-w-node-selector
+  namespace: demo
+  annotations:
+    ingress.appscode.com/workload-kind: DaemonSet
+```
+
 ### Using Node Selector
 
 [Node selectors](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) can be used assign HAProxy ingress pods to specific nodes. Below is an example where ingress pods are run on node with name`minikube`.
