@@ -13,6 +13,46 @@ function cleanup {
 }
 trap cleanup EXIT
 
+# ref: https://github.com/appscodelabs/libbuild/blob/master/common/lib.sh#L55
+inside_git_repo() {
+    git rev-parse --is-inside-work-tree > /dev/null 2>&1
+    inside_git=$?
+    if [ "$inside_git" -ne 0 ]; then
+        echo "Not inside a git repository"
+        exit 1
+    fi
+}
+
+detect_tag() {
+    inside_git_repo
+
+    # http://stackoverflow.com/a/1404862/3476121
+    git_tag=$(git describe --exact-match --abbrev=0 2>/dev/null || echo '')
+
+    commit_hash=$(git rev-parse --verify HEAD)
+    git_branch=$(git rev-parse --abbrev-ref HEAD)
+    commit_timestamp=$(git show -s --format=%ct)
+
+    if [ "$git_tag" != '' ]; then
+        TAG=$git_tag
+        TAG_STRATEGY='git_tag'
+    elif [ "$git_branch" != 'master' ] && [ "$git_branch" != 'HEAD' ] && [[ "$git_branch" != release-* ]]; then
+        TAG=$git_branch
+        TAG_STRATEGY='git_branch'
+    else
+        hash_ver=$(git describe --tags --always --dirty)
+        TAG="${hash_ver}"
+        TAG_STRATEGY='commit_hash'
+    fi
+
+    export TAG
+    export TAG_STRATEGY
+    export git_tag
+    export git_branch
+    export commit_hash
+    export commit_timestamp
+}
+
 # https://stackoverflow.com/a/677212/244009
 if [ -x "$(command -v onessl)" ]; then
     export ONESSL=onessl
@@ -20,19 +60,19 @@ else
     # ref: https://stackoverflow.com/a/27776822/244009
     case "$(uname -s)" in
         Darwin)
-            curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.1.0/onessl-darwin-amd64
+            curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.3.0/onessl-darwin-amd64
             chmod +x onessl
             export ONESSL=./onessl
             ;;
 
         Linux)
-            curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.1.0/onessl-linux-amd64
+            curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.3.0/onessl-linux-amd64
             chmod +x onessl
             export ONESSL=./onessl
             ;;
 
         CYGWIN*|MINGW32*|MSYS*)
-            curl -fsSL -o onessl.exe https://github.com/kubepack/onessl/releases/download/0.1.0/onessl-windows-amd64.exe
+            curl -fsSL -o onessl.exe https://github.com/kubepack/onessl/releases/download/0.3.0/onessl-windows-amd64.exe
             chmod +x onessl.exe
             export ONESSL=./onessl.exe
             ;;
@@ -50,11 +90,14 @@ export VOYAGER_NAMESPACE=kube-system
 export VOYAGER_SERVICE_ACCOUNT=voyager-operator
 export VOYAGER_ENABLE_RBAC=true
 export VOYAGER_RUN_ON_MASTER=0
-export VOYAGER_ENABLE_ADMISSION_WEBHOOK=false
+export VOYAGER_ENABLE_VALIDATING_WEBHOOK=false
 export VOYAGER_RESTRICT_TO_NAMESPACE=false
 export VOYAGER_ROLE_TYPE=ClusterRole
 export VOYAGER_DOCKER_REGISTRY=appscode
+export VOYAGER_IMAGE_TAG=canary
 export VOYAGER_IMAGE_PULL_SECRET=
+export VOYAGER_IMAGE_PULL_POLICY=IfNotPresent
+export VOYAGER_ENABLE_ANALYTICS=true
 export VOYAGER_UNINSTALL=0
 export VOYAGER_PURGE=0
 export VOYAGER_TEMPLATE_CONFIGMAP=
@@ -62,11 +105,14 @@ export VOYAGER_TEMPLATE_CONFIGMAP=
 export APPSCODE_ENV=${APPSCODE_ENV:-prod}
 export SCRIPT_LOCATION="curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0/"
 if [ "$APPSCODE_ENV" = "dev" ]; then
+    detect_tag
     export SCRIPT_LOCATION="cat "
+    export VOYAGER_IMAGE_TAG=$TAG
+    export VOYAGER_IMAGE_PULL_POLICY=Always
 fi
 
 KUBE_APISERVER_VERSION=$(kubectl version -o=json | $ONESSL jsonpath '{.serverVersion.gitVersion}')
-$ONESSL semver --check='<1.9.0' $KUBE_APISERVER_VERSION || { export VOYAGER_ENABLE_ADMISSION_WEBHOOK=true; }
+$ONESSL semver --check='<1.9.0' $KUBE_APISERVER_VERSION || { export VOYAGER_ENABLE_VALIDATING_WEBHOOK=true; }
 
 show_help() {
     echo "voyager.sh - install voyager operator"
@@ -82,8 +128,9 @@ show_help() {
     echo "    --image-pull-secret            name of secret used to pull voyager operator images"
     echo "    --restrict-to-namespace        restrict voyager to its own namespace"
     echo "    --run-on-master                run voyager operator on master"
-    echo "    --enable-admission-webhook     configure admission webhook for voyager CRDs"
+    echo "    --enable-validating-webhook    enable/disable validating webhooks for voyager CRDs"
     echo "    --template-cfgmap=CONFIGMAP    name of configmap with custom templates"
+    echo "    --enable-analytics             send usage events to Google Analytics (default: true)"
     echo "    --uninstall                    uninstall voyager"
     echo "    --purge                        purges Voyager crd objects and crds"
 }
@@ -131,12 +178,19 @@ while test $# -gt 0; do
             export VOYAGER_IMAGE_PULL_SECRET="name: '$secret'"
             shift
             ;;
-        --enable-admission-webhook*)
+        --enable-validating-webhook*)
             val=`echo $1 | sed -e 's/^[^=]*=//g'`
             if [ "$val" = "false" ]; then
-                export VOYAGER_ENABLE_ADMISSION_WEBHOOK=false
+                export VOYAGER_ENABLE_VALIDATING_WEBHOOK=false
             else
-                export VOYAGER_ENABLE_ADMISSION_WEBHOOK=true
+                export VOYAGER_ENABLE_VALIDATING_WEBHOOK=true
+            fi
+            shift
+            ;;
+        --enable-analytics*)
+            val=`echo $1 | sed -e 's/^[^=]*=//g'`
+            if [ "$val" = "false" ]; then
+                export VOYAGER_ENABLE_ANALYTICS=false
             fi
             shift
             ;;
@@ -238,6 +292,12 @@ echo "checking whether extended apiserver feature is enabled"
 $ONESSL has-keys configmap --namespace=kube-system --keys=requestheader-client-ca-file extension-apiserver-authentication || { echo "Set --requestheader-client-ca-file flag on Kubernetes apiserver"; exit 1; }
 echo ""
 
+export KUBE_CA=
+if [ "$VOYAGER_ENABLE_VALIDATING_WEBHOOK" = true ]; then
+    $ONESSL get kube-ca >/dev/null 2>&1 || { echo "Admission webhooks can't be used when kube apiserver is accesible without verifying its TLS certificate (insecure-skip-tls-verify : true)."; echo; exit 1; }
+    export KUBE_CA=$($ONESSL get kube-ca | $ONESSL base64)
+fi
+
 case "$VOYAGER_CLOUD_PROVIDER" in
 	acs)
 		export VOYAGER_CLOUD_CONFIG=/etc/kubernetes/azure.json
@@ -295,7 +355,6 @@ $ONESSL create server-cert server --domains=voyager-operator.$VOYAGER_NAMESPACE.
 export SERVICE_SERVING_CERT_CA=$(cat ca.crt | $ONESSL base64)
 export TLS_SERVING_CERT=$(cat server.crt | $ONESSL base64)
 export TLS_SERVING_KEY=$(cat server.key | $ONESSL base64)
-export KUBE_CA=$($ONESSL get kube-ca | $ONESSL base64)
 
 ${SCRIPT_LOCATION}hack/deploy/operator.yaml | $ONESSL envsubst | kubectl apply -f -
 
@@ -321,7 +380,7 @@ if [ "$VOYAGER_RUN_ON_MASTER" -eq 1 ]; then
       --patch="$(${SCRIPT_LOCATION}hack/deploy/run-on-master.yaml)"
 fi
 
-if [ "$VOYAGER_ENABLE_ADMISSION_WEBHOOK" = true ]; then
+if [ "$VOYAGER_ENABLE_VALIDATING_WEBHOOK" = true ]; then
     ${SCRIPT_LOCATION}hack/deploy/admission.yaml | $ONESSL envsubst | kubectl apply -f -
 fi
 

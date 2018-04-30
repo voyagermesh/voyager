@@ -62,8 +62,9 @@ options:
     --image-pull-secret            name of secret used to pull voyager operator images
     --restrict-to-namespace        restrict voyager to its own namespace
     --run-on-master                run voyager operator on master
-    --enable-admission-webhook     configure admission webhook for voyager CRDs
+    --enable-validating-webhook    enable/disable validating webhooks for voyager CRDs
     --template-cfgmap=CONFIGMAP    name of configmap with custom templates
+    --enable-analytics             send usage events to Google Analytics (default: true)
     --uninstall                    uninstall voyager
     --purge                        purges Voyager crd objects and crds
 ```
@@ -104,11 +105,11 @@ $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0/hack/deplo
     | bash -s -- --provider=$provider --docker-registry=MY_REGISTRY [--image-pull-secret=SECRET_NAME] [--rbac]
 ```
 
-Voyager implements a [validating admission webhook](https://kubernetes.io/docs/admin/admission-controllers/#validatingadmissionwebhook-alpha-in-18-beta-in-19) to validate Voyager CRDs. This is enabled by default for Kubernetes 1.9.0 or later releases. To disable this feature, pass the `--enable-admission-webhook=false` flag.
+Voyager implements a [validating admission webhook](https://kubernetes.io/docs/admin/admission-controllers/#validatingadmissionwebhook-alpha-in-18-beta-in-19) to validate Voyager CRDs. This is enabled by default for Kubernetes 1.9.0 or later releases. To disable this feature, pass the `--enable-validating-webhook=false` flag.
 
 ```console
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0/hack/deploy/voyager.sh \
-    | bash -s -- --provider=$provider --enable-admission-webhook [--rbac]
+    | bash -s -- --provider=$provider --enable-validating-webhook [--rbac]
 ```
 
 To use custom templates to render HAProxy configuration, visit [here](/docs/guides/ingress/configuration/custom-templates.md).
@@ -144,7 +145,7 @@ $ helm repo update
 $ helm install appscode/voyager --name my-release \
   --set cloudProvider=$provider \
   --set apiserver.ca="$(onessl get kube-ca)" \
-  --set apiserver.enableAdmissionWebhook=true
+  --set apiserver.enableValidatingWebhook=true
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/6.0.0/chart/voyager).
