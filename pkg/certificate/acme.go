@@ -10,7 +10,7 @@ import (
 
 	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/pkg/errors"
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/acmev2"
 	"github.com/xenolf/lego/providers/dns/azure"
 	"github.com/xenolf/lego/providers/dns/cloudflare"
 	"github.com/xenolf/lego/providers/dns/digitalocean"
@@ -30,8 +30,8 @@ import (
 )
 
 const (
-	LetsEncryptStagingURL = "https://acme-staging.api.letsencrypt.org/directory"
-	LetsEncryptProdURL    = "https://acme-v01.api.letsencrypt.org/directory"
+	LetsEncryptStagingURL = "https://acme-staging-v02.api.letsencrypt.org/directory"
+	LetsEncryptProdURL    = "https://acme-v02.api.letsencrypt.org/directory"
 )
 
 func (c *Controller) newACMEClient() (*acme.Client, error) {
@@ -47,7 +47,7 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 		if err := client.SetChallengeProvider(acme.DNS01, provider); err != nil {
 			return nil, err
 		}
-		client.ExcludeChallenges([]acme.Challenge{acme.HTTP01, acme.TLSSNI01})
+		client.ExcludeChallenges([]acme.Challenge{acme.HTTP01})
 		return client, nil
 	}
 
@@ -62,7 +62,7 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 		if err := client.SetChallengeProvider(acme.HTTP01, providers.DefaultHTTPProvider()); err != nil {
 			return nil, err
 		}
-		client.ExcludeChallenges([]acme.Challenge{acme.DNS01, acme.TLSSNI01})
+		client.ExcludeChallenges([]acme.Challenge{acme.DNS01})
 		return client, nil
 	case "aws", "route53":
 		if c.cfg.CloudProvider == "aws" && len(c.DNSCredentials) == 0 {

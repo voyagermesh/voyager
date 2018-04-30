@@ -1,5 +1,5 @@
-hash: d41bff7156d88ed7de823943b15f202fcf09ba63b91fd35bad2f923fa1a158c2
-updated: 2018-04-30T10:36:07.780668933-07:00
+hash: 87fd3ce7dca7fa5416f260ad33d5968ec7710e508efd93d437d5166117f5c3d7
+updated: 2018-04-30T11:30:41.662947563-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -468,11 +468,12 @@ imports:
   subpackages:
   - codec
 - name: github.com/xenolf/lego
-  version: fa316fd0a7cb84ea934a59842911ab406a14a34a
+  version: 664df3b13158ecf5f9b23b6554094726a47e2671
   repo: https://github.com/appscode/lego.git
   vcs: git
   subpackages:
   - acme
+  - acmev2
   - providers/dns/azure
   - providers/dns/cloudflare
   - providers/dns/digitalocean
@@ -498,6 +499,8 @@ imports:
 - name: golang.org/x/crypto
   version: 81e90905daefcd6fd217b62423c0908922eadb30
   subpackages:
+  - ed25519
+  - ed25519/internal/edwards25519
   - ocsp
   - ssh/terminal
 - name: golang.org/x/net
@@ -612,6 +615,11 @@ imports:
   version: 20b71e5b60d756d3d2f80def009790325acc2b23
 - name: gopkg.in/square/go-jose.v1
   version: aa2e30fdd1fe9dd3394119af66451ae790d50e0d
+  subpackages:
+  - cipher
+  - json
+- name: gopkg.in/square/go-jose.v2
+  version: f8f38de21b4dcd69d0413faf231983f5fd6634b1
   subpackages:
   - cipher
   - json
