@@ -47,7 +47,7 @@ func NewCmdVoyager(version string) *cobra.Command {
 	rootCmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 	// ref: https://github.com/kubernetes/kubernetes/issues/17162#issuecomment-225596212
 	flag.CommandLine.Parse([]string{})
-	rootCmd.PersistentFlags().BoolVar(&config.EnableAnalytics, "analytics", config.EnableAnalytics, "Send analytical events to Google Analytics")
+	rootCmd.PersistentFlags().BoolVar(&config.EnableAnalytics, "enable-analytics", config.EnableAnalytics, "Send analytical events to Google Analytics")
 
 	rootCmd.AddCommand(NewCmdExport())
 	rootCmd.AddCommand(NewCmdHAProxyController())
