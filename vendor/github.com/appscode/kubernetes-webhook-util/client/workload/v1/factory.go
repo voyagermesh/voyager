@@ -43,7 +43,7 @@ func NewObjectForGVK(gvk schema.GroupVersionKind, name, ns string) (runtime.Obje
 	return obj, nil
 }
 
-func NewObjectForKind(kind v1.WorkloadKind, name, ns string) (runtime.Object, error) {
+func NewObjectForKind(kind string, name, ns string) (runtime.Object, error) {
 	switch kind {
 	case v1.KindPod:
 		return &core.Pod{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns}}, nil
@@ -138,6 +138,8 @@ func ConvertToWorkload(obj runtime.Object) (*v1.Workload, error) {
 			replicas = &t.Spec.Replicas
 		}
 		return newWithObject(t.TypeMeta, t.ObjectMeta, replicas, &metav1.LabelSelector{MatchLabels: t.Spec.Selector}, *t.Spec.Template, obj), nil
+	case *v1.Workload:
+		return t, nil
 	default:
 		return nil, fmt.Errorf("the object is not a pod or does not have a pod template")
 	}

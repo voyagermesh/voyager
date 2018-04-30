@@ -52,6 +52,7 @@ func (c *OperatorConfig) New() (*Operator, error) {
 	op.initIngressCRDWatcher()
 	op.initIngressWatcher()
 	op.initDeploymentWatcher()
+	op.initDaemonSetWatcher()
 	op.initServiceWatcher()
 	op.initConfigMapWatcher()
 	op.initEndpointWatcher()

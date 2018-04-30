@@ -10,7 +10,7 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
 	tools "github.com/appscode/kube-mon"
-	wapi "github.com/appscode/kubernetes-webhook-util/apis/workload/v1"
+	wpi "github.com/appscode/kubernetes-webhook-util/apis/workload/v1"
 	wcs "github.com/appscode/kubernetes-webhook-util/client/workload/v1"
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
@@ -45,7 +45,7 @@ var _ Controller = &hostPortController{}
 func NewHostPortController(
 	ctx context.Context,
 	kubeClient kubernetes.Interface,
-	WorkloadClient wcs.Interface,
+	workloadClient wcs.Interface,
 	crdClient kext_cs.ApiextensionsV1beta1Interface,
 	extClient cs.Interface,
 	promClient pcm.MonitoringV1Interface,
@@ -57,7 +57,7 @@ func NewHostPortController(
 		controller: &controller{
 			logger:          log.New(ctx),
 			KubeClient:      kubeClient,
-			WorkloadClient:  WorkloadClient,
+			WorkloadClient:  workloadClient,
 			CRDClient:       crdClient,
 			VoyagerClient:   extClient,
 			PromClient:      promClient,
@@ -412,7 +412,7 @@ func (c *hostPortController) ensurePods() (kutil.VerbType, error) {
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	_, vt, err := c.WorkloadClient.Workloads(c.Ingress.Namespace).CreateOrPatch(obj, func(obj *wapi.Workload) *wapi.Workload {
+	_, vt, err := c.WorkloadClient.Workloads(c.Ingress.Namespace).CreateOrPatch(obj, func(obj *wpi.Workload) *wpi.Workload {
 		// deployment annotations
 		if obj.Annotations == nil {
 			obj.Annotations = make(map[string]string)

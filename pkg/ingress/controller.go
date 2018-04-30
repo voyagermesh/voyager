@@ -58,7 +58,7 @@ type controller struct {
 func NewController(
 	ctx context.Context,
 	kubeClient kubernetes.Interface,
-	WorkloadClient wcs.Interface,
+	workloadClient wcs.Interface,
 	crdClient kext_cs.ApiextensionsV1beta1Interface,
 	extClient cs.Interface,
 	promClient pcm.MonitoringV1Interface,
@@ -68,13 +68,13 @@ func NewController(
 	ingress *api.Ingress) Controller {
 	switch ingress.LBType() {
 	case api.LBTypeHostPort:
-		return NewHostPortController(ctx, kubeClient, WorkloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
+		return NewHostPortController(ctx, kubeClient, workloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
 	case api.LBTypeNodePort:
-		return NewNodePortController(ctx, kubeClient, WorkloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
+		return NewNodePortController(ctx, kubeClient, workloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
 	case api.LBTypeLoadBalancer:
-		return NewLoadBalancerController(ctx, kubeClient, WorkloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
+		return NewLoadBalancerController(ctx, kubeClient, workloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
 	case api.LBTypeInternal:
-		return NewInternalController(ctx, kubeClient, WorkloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
+		return NewInternalController(ctx, kubeClient, workloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
 	}
 	return nil
 }

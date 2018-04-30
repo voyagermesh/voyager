@@ -5,21 +5,19 @@ import (
 	"strings"
 )
 
-type WorkloadKind string
-
 const (
-	KindPod                   WorkloadKind = "Pod"
-	KindDeployment            WorkloadKind = "Deployment"
-	KindReplicaSet            WorkloadKind = "ReplicaSet"
-	KindReplicationController WorkloadKind = "ReplicationController"
-	KindStatefulSet           WorkloadKind = "StatefulSet"
-	KindDaemonSet             WorkloadKind = "DaemonSet"
-	KindJob                   WorkloadKind = "Job"
-	KindCronJob               WorkloadKind = "CronJob"
-	KindDeploymentConfig      WorkloadKind = "DeploymentConfig"
+	KindPod                   = "Pod"
+	KindDeployment            = "Deployment"
+	KindReplicaSet            = "ReplicaSet"
+	KindReplicationController = "ReplicationController"
+	KindStatefulSet           = "StatefulSet"
+	KindDaemonSet             = "DaemonSet"
+	KindJob                   = "Job"
+	KindCronJob               = "CronJob"
+	KindDeploymentConfig      = "DeploymentConfig"
 )
 
-func Canonicalize(kind string) (WorkloadKind, error) {
+func Canonicalize(kind string) (string, error) {
 	switch strings.ToLower(kind) {
 	case "deployments", "deployment", "deploy":
 		return KindDeployment, nil

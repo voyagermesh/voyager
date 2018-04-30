@@ -8,32 +8,32 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
-func (op *Operator) initDeploymentWatcher() {
-	op.dpInformer = op.kubeInformerFactory.Apps().V1beta1().Deployments().Informer()
-	op.dpQueue = queue.New("Deployment", op.MaxNumRequeues, op.NumThreads, op.reconcileDeployment)
-	op.dpInformer.AddEventHandler(queue.NewDeleteHandler(op.dpQueue.GetQueue()))
-	op.dpLister = op.kubeInformerFactory.Apps().V1beta1().Deployments().Lister()
+func (op *Operator) initDaemonSetWatcher() {
+	op.dmInformer = op.kubeInformerFactory.Extensions().V1beta1().DaemonSets().Informer()
+	op.dmQueue = queue.New("DaemonSet", op.MaxNumRequeues, op.NumThreads, op.reconcileDaemonSet)
+	op.dmInformer.AddEventHandler(queue.NewDeleteHandler(op.dmQueue.GetQueue()))
+	op.dmLister = op.kubeInformerFactory.Extensions().V1beta1().DaemonSets().Lister()
 }
 
-func (op *Operator) reconcileDeployment(key string) error {
+func (op *Operator) reconcileDaemonSet(key string) error {
 	_, exists, err := op.dpInformer.GetIndexer().GetByKey(key)
 	if err != nil {
 		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
 	}
 	if !exists {
-		glog.Warningf("Deployment %s does not exist anymore\n", key)
+		glog.Warningf("DaemonSet %s does not exist anymore\n", key)
 		if ns, name, err := cache.SplitMetaNamespaceKey(key); err != nil {
 			return err
 		} else {
-			return op.restoreDeployment(name, ns)
+			return op.restoreDaemonSet(name, ns)
 		}
 	}
 	return nil
 }
 
 // requeue ingress if user deletes haproxy-deployment
-func (op *Operator) restoreDeployment(name, ns string) error {
+func (op *Operator) restoreDaemonSet(name, ns string) error {
 	items, err := op.listIngresses()
 	if err != nil {
 		return err
@@ -43,7 +43,7 @@ func (op *Operator) restoreDeployment(name, ns string) error {
 		if ing.DeletionTimestamp == nil &&
 			ing.ShouldHandleIngress(op.IngressClass) &&
 			ing.Namespace == ns &&
-			ing.WorkloadController() == wpi.KindDeployment &&
+			ing.WorkloadController() == wpi.KindDaemonSet &&
 			ing.OffshootName() == name {
 			if key, err := cache.MetaNamespaceKeyFunc(ing); err != nil {
 				return err

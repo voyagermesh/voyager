@@ -6,8 +6,7 @@ import (
 	"strings"
 	"time"
 
-	wapi "github.com/appscode/kubernetes-webhook-util/apis/workload/v1"
-	"github.com/appscode/kutil"
+	wpi "github.com/appscode/kubernetes-webhook-util/apis/workload/v1"
 	"github.com/appscode/kutil/meta"
 	"github.com/appscode/voyager/apis/voyager"
 	"github.com/pkg/errors"
@@ -585,24 +584,24 @@ func (r Ingress) AcceptProxy() bool {
 	return v.(bool)
 }
 
-func (r Ingress) WorkloadController() wapi.WorkloadKind {
+func (r Ingress) WorkloadController() string {
 	v, _ := get[WorkloadController](r.Annotations)
-	return v.(wapi.WorkloadKind)
+	return v.(string)
 }
 
 func getWorkload(m map[string]string, key string) (interface{}, error) {
-	v, err := meta.GetString(m, key)
+	if m == nil {
+		return wpi.KindDeployment, nil
+	}
+	v, ok := m[key]
+	if !ok {
+		return wpi.KindDeployment, nil
+	}
+	w, err := wpi.Canonicalize(v)
 	if err != nil {
-		if err == kutil.ErrNotFound {
-			return wapi.KindDeployment, nil
-		}
 		return nil, err
 	}
-	w, err := wapi.Canonicalize(v.(string))
-	if err != nil {
-		return nil, err
-	}
-	if w != wapi.KindDeployment && w != wapi.KindDaemonSet {
+	if w != wpi.KindDeployment && w != wpi.KindDaemonSet {
 		return nil, errors.Errorf("%s must be either Deployment or DaemonSet, found %s", WorkloadController, w)
 	}
 	return w, nil
