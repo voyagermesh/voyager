@@ -397,4 +397,4 @@ for crd in "${crds[@]}"; do
 done
 
 echo
-echo "Successfully installed Voyager!"
+echo "Successfully installed Voyager in $VOYAGER_NAMESPACE namespace!"
