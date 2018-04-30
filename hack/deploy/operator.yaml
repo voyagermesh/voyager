@@ -21,7 +21,7 @@ spec:
       imagePullSecrets: [${VOYAGER_IMAGE_PULL_SECRET}]
       containers:
       - name: voyager
-        image: ${VOYAGER_DOCKER_REGISTRY}/voyager:${VOYAGER_SERVER_TAG}
+        image: ${VOYAGER_DOCKER_REGISTRY}/voyager:${VOYAGER_IMAGE_TAG}
         imagePullPolicy: ${VOYAGER_IMAGE_PULL_POLICY}
         args:
         - run
