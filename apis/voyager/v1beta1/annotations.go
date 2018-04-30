@@ -245,7 +245,7 @@ const (
 	RewriteTarget = EngressKey + "/" + "rewrite-target"
 
 	// Workload controller to use run HAProxy pods
-	WorkloadController = EngressKey + "/" + "workload-controller"
+	WorkloadKind = EngressKey + "/" + "workload-kind"
 )
 
 var (
@@ -297,7 +297,7 @@ func init() {
 	registerParser(PodAnnotations, meta.GetMap)
 	registerParser(DefaultsTimeOut, meta.GetMap)
 	registerParser(DefaultsOption, meta.GetMap)
-	registerParser(WorkloadController, getWorkload)
+	registerParser(WorkloadKind, getWorkload)
 }
 
 const (
@@ -584,8 +584,8 @@ func (r Ingress) AcceptProxy() bool {
 	return v.(bool)
 }
 
-func (r Ingress) WorkloadController() string {
-	v, _ := get[WorkloadController](r.Annotations)
+func (r Ingress) WorkloadKind() string {
+	v, _ := get[WorkloadKind](r.Annotations)
 	return v.(string)
 }
 
@@ -602,7 +602,7 @@ func getWorkload(m map[string]string, key string) (interface{}, error) {
 		return nil, err
 	}
 	if w != wpi.KindDeployment && w != wpi.KindDaemonSet {
-		return nil, errors.Errorf("%s must be either Deployment or DaemonSet, found %s", WorkloadController, w)
+		return nil, errors.Errorf("%s must be either Deployment or DaemonSet, found %s", WorkloadKind, w)
 	}
 	return w, nil
 }

@@ -43,7 +43,7 @@ func (op *Operator) restoreDeployment(name, ns string) error {
 		if ing.DeletionTimestamp == nil &&
 			ing.ShouldHandleIngress(op.IngressClass) &&
 			ing.Namespace == ns &&
-			ing.WorkloadController() == wpi.KindDeployment &&
+			ing.WorkloadKind() == wpi.KindDeployment &&
 			ing.OffshootName() == name {
 			if key, err := cache.MetaNamespaceKeyFunc(ing); err != nil {
 				return err

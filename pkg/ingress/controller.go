@@ -8,6 +8,7 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
+	wpi "github.com/appscode/kubernetes-webhook-util/apis/workload/v1"
 	wcs "github.com/appscode/kubernetes-webhook-util/client/workload/v1"
 	core_util "github.com/appscode/kutil/core/v1"
 	v1u "github.com/appscode/kutil/core/v1"
@@ -19,6 +20,7 @@ import (
 	vault "github.com/hashicorp/vault/api"
 	core "k8s.io/api/core/v1"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	core_listers "k8s.io/client-go/listers/core/v1"
@@ -122,12 +124,51 @@ func (c *controller) ensureEnvVars(vars []core.EnvVar) []core.EnvVar {
 	return vars
 }
 
+func (c *controller) IsExists() bool {
+	wk := c.Ingress.WorkloadKind()
+	if wk == wpi.KindDeployment {
+		_, err := c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		if kerr.IsNotFound(err) {
+			return false
+		}
+	} else if wk == wpi.KindDaemonSet {
+		_, err := c.KubeClient.ExtensionsV1beta1().DaemonSets(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		if kerr.IsNotFound(err) {
+			return false
+		}
+	}
+
+	_, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+	if kerr.IsNotFound(err) {
+		return false
+	}
+	_, err = c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+	if kerr.IsNotFound(err) {
+		return false
+	}
+	if c.cfg.EnableRBAC {
+		_, err = c.KubeClient.CoreV1().ServiceAccounts(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		if kerr.IsNotFound(err) {
+			return false
+		}
+		_, err = c.KubeClient.RbacV1beta1().Roles(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		if kerr.IsNotFound(err) {
+			return false
+		}
+		_, err = c.KubeClient.RbacV1beta1().RoleBindings(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		if kerr.IsNotFound(err) {
+			return false
+		}
+	}
+	return true
+}
+
 func (c *controller) deletePods() error {
 	policy := metav1.DeletePropagationForeground
 	options := &metav1.DeleteOptions{
 		PropagationPolicy: &policy,
 	}
-	obj, err := wcs.NewObjectForKind(c.Ingress.WorkloadController(), c.Ingress.OffshootName(), c.Ingress.Namespace)
+	obj, err := wcs.NewObjectForKind(c.Ingress.WorkloadKind(), c.Ingress.OffshootName(), c.Ingress.Namespace)
 	if err != nil {
 		return err
 	}

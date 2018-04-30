@@ -27,7 +27,6 @@ import (
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -99,36 +98,6 @@ func NewHostPortController(
 		c.logger.Infoln("No cloud manager found for provider", cfg.CloudProvider)
 	}
 	return c
-}
-
-func (c *hostPortController) IsExists() bool {
-	_, err := c.KubeClient.AppsV1beta1().Deployments(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-	if kerr.IsNotFound(err) {
-		return false
-	}
-	_, err = c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-	if kerr.IsNotFound(err) {
-		return false
-	}
-	_, err = c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-	if kerr.IsNotFound(err) {
-		return false
-	}
-	if c.cfg.EnableRBAC {
-		_, err = c.KubeClient.CoreV1().ServiceAccounts(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-		if kerr.IsNotFound(err) {
-			return false
-		}
-		_, err = c.KubeClient.RbacV1beta1().Roles(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-		if kerr.IsNotFound(err) {
-			return false
-		}
-		_, err = c.KubeClient.RbacV1beta1().RoleBindings(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-		if kerr.IsNotFound(err) {
-			return false
-		}
-	}
-	return true
 }
 
 func (c *hostPortController) Reconcile() error {
@@ -408,7 +377,7 @@ func (c *hostPortController) ensureService() (*core.Service, kutil.VerbType, err
 }
 
 func (c *hostPortController) ensurePods() (kutil.VerbType, error) {
-	obj, err := wcs.NewObjectForKind(c.Ingress.WorkloadController(), c.Ingress.OffshootName(), c.Ingress.Namespace)
+	obj, err := wcs.NewObjectForKind(c.Ingress.WorkloadKind(), c.Ingress.OffshootName(), c.Ingress.Namespace)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}

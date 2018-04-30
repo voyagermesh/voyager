@@ -43,7 +43,7 @@ func (op *Operator) restoreDaemonSet(name, ns string) error {
 		if ing.DeletionTimestamp == nil &&
 			ing.ShouldHandleIngress(op.IngressClass) &&
 			ing.Namespace == ns &&
-			ing.WorkloadController() == wpi.KindDaemonSet &&
+			ing.WorkloadKind() == wpi.KindDaemonSet &&
 			ing.OffshootName() == name {
 			if key, err := cache.MetaNamespaceKeyFunc(ing); err != nil {
 				return err
