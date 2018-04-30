@@ -19,7 +19,7 @@ aliases:
 Guides show you how to use Voyager's built-in certificate manager to issue free TLS/SSL certificates from Let's Encrypt.
 
 ## Features
-- Provision free TLS certificates from Let's Encrypt.
+- Provision free TLS certificates (including wildcard certificates) from Let's Encrypt.
 - Manage certificates declaratively using a Kubernetes Custom Resource Definition (CRD).
 - Domain validation using ACME http-01 and dns-01 challenges.
 - Support for many popular [DNS providers](/docs/guides/certificate/dns/providers.md).

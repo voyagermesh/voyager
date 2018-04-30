@@ -14,7 +14,7 @@ Voyager provides L7 and L4 loadbalancing using a custom Kubernetes [Ingress](htt
 This also support configurable application ports with all the options available in a standard Kubernetes [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/).
 
 ## Certificate
-Voyager can automaticallty provision and refresh SSL certificates issued from Let's Encrypt using a custom Kubernetes [Certificate](https://appscode.com/products/voyager/6.0.0/guides/certificate/) resource.
+Voyager can automatically provision and refresh SSL certificates (including wildcard certificates) issued from Let's Encrypt using a custom Kubernetes [Certificate](https://appscode.com/products/voyager/6.0.0/guides/certificate/) resource.
 
 ## Supported Versions
 Please pick a version of Voyager that matches your Kubernetes installation.
