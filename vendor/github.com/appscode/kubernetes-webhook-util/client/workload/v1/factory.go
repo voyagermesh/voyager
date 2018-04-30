@@ -34,6 +34,7 @@ func NewObjectForGVK(gvk schema.GroupVersionKind, name, ns string) (runtime.Obje
 	if err != nil {
 		return nil, err
 	}
+	obj.GetObjectKind().SetGroupVersionKind(gvk)
 	out, err := meta.Accessor(obj)
 	if err != nil {
 		return nil, err
@@ -46,23 +47,50 @@ func NewObjectForGVK(gvk schema.GroupVersionKind, name, ns string) (runtime.Obje
 func NewObjectForKind(kind string, name, ns string) (runtime.Object, error) {
 	switch kind {
 	case v1.KindPod:
-		return &core.Pod{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns}}, nil
+		return &core.Pod{
+			TypeMeta:   metav1.TypeMeta{APIVersion: core.SchemeGroupVersion.String(), Kind: v1.KindPod},
+			ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns},
+		}, nil
 	case v1.KindReplicationController:
-		return &core.ReplicationController{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns}}, nil
+		return &core.ReplicationController{
+			TypeMeta:   metav1.TypeMeta{APIVersion: core.SchemeGroupVersion.String(), Kind: v1.KindReplicationController},
+			ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns},
+		}, nil
 	case v1.KindDeployment:
-		return &appsv1beta1.Deployment{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns}}, nil
+		return &appsv1beta1.Deployment{
+			TypeMeta:   metav1.TypeMeta{APIVersion: appsv1beta1.SchemeGroupVersion.String(), Kind: v1.KindDeployment},
+			ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns},
+		}, nil
 	case v1.KindDaemonSet:
-		return &extensions.DaemonSet{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns}}, nil
+		return &extensions.DaemonSet{
+			TypeMeta:   metav1.TypeMeta{APIVersion: extensions.SchemeGroupVersion.String(), Kind: v1.KindDaemonSet},
+			ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns},
+		}, nil
 	case v1.KindReplicaSet:
-		return &extensions.ReplicaSet{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns}}, nil
+		return &extensions.ReplicaSet{
+			TypeMeta:   metav1.TypeMeta{APIVersion: extensions.SchemeGroupVersion.String(), Kind: v1.KindReplicaSet},
+			ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns},
+		}, nil
 	case v1.KindStatefulSet:
-		return &appsv1beta1.StatefulSet{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns}}, nil
+		return &appsv1beta1.StatefulSet{
+			TypeMeta:   metav1.TypeMeta{APIVersion: appsv1beta1.SchemeGroupVersion.String(), Kind: v1.KindStatefulSet},
+			ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns},
+		}, nil
 	case v1.KindJob:
-		return &batchv1.Job{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns}}, nil
+		return &batchv1.Job{
+			TypeMeta:   metav1.TypeMeta{APIVersion: batchv1.SchemeGroupVersion.String(), Kind: v1.KindJob},
+			ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns},
+		}, nil
 	case v1.KindCronJob:
-		return &batchv1beta1.CronJob{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns}}, nil
+		return &batchv1beta1.CronJob{
+			TypeMeta:   metav1.TypeMeta{APIVersion: batchv1beta1.SchemeGroupVersion.String(), Kind: v1.KindCronJob},
+			ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns},
+		}, nil
 	case v1.KindDeploymentConfig:
-		return &ocapps.DeploymentConfig{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns}}, nil
+		return &ocapps.DeploymentConfig{
+			TypeMeta:   metav1.TypeMeta{APIVersion: ocapps.SchemeGroupVersion.String(), Kind: v1.KindDeploymentConfig},
+			ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns},
+		}, nil
 	default:
 		return nil, fmt.Errorf("unknown kind %s", kind)
 	}

@@ -560,13 +560,17 @@ func (c *workloads) PatchObject(cur, mod *v1.Workload) (*v1.Workload, kutil.Verb
 }
 
 func (c *workloads) CreateOrPatch(obj runtime.Object, transform WorkloadTransformerFunc) (*v1.Workload, kutil.VerbType, error) {
+	gvk := obj.GetObjectKind().GroupVersionKind()
+	if gvk.String() == "" {
+		return nil, kutil.VerbUnchanged, fmt.Errorf("obj missing GroupVersionKind")
+	}
+
 	cur, err := c.Get(obj, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		name, err := meta.NewAccessor().Name(obj)
 		if err != nil {
 			return nil, kutil.VerbUnchanged, err
 		}
-		gvk := obj.GetObjectKind().GroupVersionKind()
 		glog.V(3).Infof("Creating %s %s/%s.", gvk, c.ns, name)
 		out, err := c.Create(transform(&v1.Workload{
 			TypeMeta: metav1.TypeMeta{
