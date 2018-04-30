@@ -46,14 +46,18 @@ The following tables lists the configurable parameters of the Voyager chart and 
 
 | Parameter                           | Description                                                   | Default               |
 | ------------------------------------| ------------------------------------------------------------- | ----------------------|
-| `dockerRegistry`                    | Docker registry used to pull Voyager related images           | `appscode`            |
-| `imageTags.voyager`                 | Tag of Voyager operator image                                 | `6.0.0`       |
-| `imageTags.haproxy`                 | Tag of HAProxy container image                                | `1.8.8-6.1.0` |
+| `replicaCount`                      | Number of operator replicas to create (only 1 is supported)   | `1`                   |
+| `voyager.registry`                  | Docker registry used to pull Voyager image                    | `appscode`            |
+| `voyager.repository`                | Voyager container image                                       | `voyager`             |
+| `voyager.tag`                       | Voyager container image tag                                   | `6.0.0`               |
+| `haproxy.registry`                  | Docker registry used to pull HAProxy image                    | `appscode`            |
+| `haproxy.repository`                | HAProxy container image                                       | `haproxy`             |
+| `haproxy.tag`                       | HAProxy container image tag                                   | `1.8.8-6.0.0`         |
 | `imagePullSecrets`                  | Specify image pull secrets                                    | `nil` (does not add image pull secrets to deployed pods) |
 | `imagePullPolicy`                   | Image pull policy                                             | `IfNotPresent`        |
 | `cloudProvider`                     | Name of cloud provider                                        | `nil`                 |
 | `cloudConfig`                       | Path to cloud config                                          | ``                    |
-| `criticalAddon`                     | If true, installs voyager operator as critical addon          | `false`               |
+| `criticalAddon`                     | If true, installs Voyager operator as critical addon          | `false`               |
 | `logLevel`                          | Log level for operator                                        | `3`                   |
 | `persistence.enabled`               | Enable mounting cloud config                                  | `false`               |
 | `persistence.hostPath`              | Host mount path for cloud config                              | `/etc/kubernetes`     |
@@ -66,7 +70,7 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `apiserver.versionPriority`         | The ordering of this API inside of the group.                 | 15                    |
 | `apiserver.enableValidatingWebhook` | Configure apiserver as adission webhooks for Voyager CRDs     | false                 |
 | `apiserver.ca`                      | CA certificate used by main Kubernetes api server             | ``                    |
-| `enableAnalytics`                   | Send usage events to Google Analytics                         | `true`             |
+| `enableAnalytics`                   | Send usage events to Google Analytics                         | `true`                |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
 

@@ -9,7 +9,7 @@ metadata:
     heritage: "{{ .Release.Service }}"
     release: "{{ .Release.Name }}"
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: "{{ template "voyager.name" . }}"
@@ -31,7 +31,7 @@ spec:
       {{- end }}
       containers:
       - name: voyager
-        image: {{ .Values.dockerRegistry }}/voyager:{{ .Values.imageTags.voyager }}
+        image: {{ .Values.voyager.registry }}/{{ .Values.voyager.repository }}:{{ .Values.voyager.tag }}
         imagePullPolicy: {{ .Values.imagePullPolicy  }}
         args:
         - run
@@ -41,9 +41,9 @@ spec:
         - --rbac={{ .Values.rbac.create }}
         - --ingress-class={{ .Values.ingressClass }}
         - --operator-service={{ template "voyager.fullname" . }}
-        - --docker-registry={{ .Values.dockerRegistry }}
-        - --haproxy-image-tag={{ .Values.imageTags.haproxy }}
-        - --exporter-image-tag={{ .Values.imageTags.voyager }}
+        - --docker-registry={{ .Values.haproxy.registry }}
+        - --haproxy-image-tag={{ .Values.haproxy.tag }}
+        - --exporter-image-tag={{ .Values.voyager.tag }}
         - --secure-port=8443
         - --audit-log-path=-
         - --tls-cert-file=/var/serving-cert/tls.crt
