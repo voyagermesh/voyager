@@ -6,6 +6,7 @@ import (
 	"time"
 
 	hooks "github.com/appscode/kubernetes-webhook-util/admission/v1beta1"
+	wcs "github.com/appscode/kubernetes-webhook-util/client/workload/v1"
 	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
@@ -150,6 +151,9 @@ func (s *OperatorOptions) ApplyTo(cfg *operator.OperatorConfig) error {
 	cfg.ClientConfig.Burst = s.Burst
 
 	if cfg.KubeClient, err = kubernetes.NewForConfig(cfg.ClientConfig); err != nil {
+		return err
+	}
+	if cfg.WorkloadClient, err = wcs.NewForConfig(cfg.ClientConfig); err != nil {
 		return err
 	}
 	if cfg.VoyagerClient, err = cs.NewForConfig(cfg.ClientConfig); err != nil {

@@ -2,6 +2,7 @@ package operator
 
 import (
 	"github.com/appscode/go/log"
+	wpi "github.com/appscode/kubernetes-webhook-util/apis/workload/v1"
 	"github.com/appscode/kutil/tools/queue"
 	"github.com/golang/glog"
 	"k8s.io/client-go/tools/cache"
@@ -42,6 +43,7 @@ func (op *Operator) restoreDeployment(name, ns string) error {
 		if ing.DeletionTimestamp == nil &&
 			ing.ShouldHandleIngress(op.IngressClass) &&
 			ing.Namespace == ns &&
+			ing.WorkloadKind() == wpi.KindDeployment &&
 			ing.OffshootName() == name {
 			if key, err := cache.MetaNamespaceKeyFunc(ing); err != nil {
 				return err

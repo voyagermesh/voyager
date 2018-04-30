@@ -1,5 +1,5 @@
-hash: 1a83fdd47a01ab36cf101d0f95634cfeb9f26ebd3f5ed4501b919cf3e743c3bd
-updated: 2018-04-21T13:05:52.044994665-07:00
+hash: d41bff7156d88ed7de823943b15f202fcf09ba63b91fd35bad2f923fa1a158c2
+updated: 2018-04-30T10:36:07.780668933-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -16,7 +16,7 @@ imports:
   - edgegrid
   - jsonhooks-v1
 - name: github.com/appscode/go
-  version: 0eb2cabe3897bfd0fe615e9849583a88bcc82df4
+  version: 230e0e4622c682b5d117db8c28a66404ed874ed5
   subpackages:
   - analytics
   - context
@@ -42,15 +42,16 @@ imports:
   - api
   - prometheus/v1
 - name: github.com/appscode/kubernetes-webhook-util
-  version: ddc919f31cdf677c9ca8a4697cc5163694d5e1a3
+  version: fda5b4a6c3c67673675f0bbdfff2a04d1d6eb800
   subpackages:
   - admission/v1beta1
+  - apis/workload/v1
+  - client/workload/v1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: c3aa54aedcceb925ba15c7bf4a6c2e456138755e
+  version: 2211bbe2c455d75d3b4e92d8389f3ba36eff6083
   subpackages:
   - apiextensions/v1beta1
-  - apps/v1beta1
   - core/v1
   - discovery
   - extensions/v1beta1
@@ -63,6 +64,8 @@ imports:
   - tools/queue
 - name: github.com/appscode/mergo
   version: e3000cb3d28c72b837601cac94debd91032d19fe
+- name: github.com/appscode/ocutil
+  version: c19400b3339c44efdfe4aa5682cbc7f84694273c
 - name: github.com/appscode/pat
   version: 48ff78925b7955367d8a048fc2b5cec8efadf8d3
 - name: github.com/aws/aws-sdk-go
@@ -160,7 +163,7 @@ imports:
 - name: github.com/dgrijalva/jwt-go
   version: 01aeca54ebda6e0fbfafd0a524d234159c05ec20
 - name: github.com/dnsimple/dnsimple-go
-  version: 83e0b9d4bd45f290bffb46486145b7693747302c
+  version: bbe1a2c87affea187478e24d3aea3cac25f870b3
   subpackages:
   - dnsimple
 - name: github.com/elazarl/go-bindata-assetfs
@@ -228,7 +231,7 @@ imports:
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/google/uuid
-  version: dec09d789f3dba190787f8b4454c7d3c936fed9e
+  version: 064e2069ce9c359c118179501254f67d7d37ba24
 - name: github.com/googleapis/gnostic
   version: 0c5108395e2debce0d731cf0287ddf7242066aba
   subpackages:
@@ -326,6 +329,8 @@ imports:
   version: 5d001d020961ae1c184f9f8152fdc73810481677
 - name: github.com/mitchellh/go-homedir
   version: b8bc1bf767474819792c23f32d8286a45736f1c6
+- name: github.com/mitchellh/go-ps
+  version: 4fdf99ab29366514c69ccccddab5dc58b8d84062
 - name: github.com/mitchellh/mapstructure
   version: 53818660ed4955e899c0bcafa97299a388bd7c8e
 - name: github.com/moul/http2curl
@@ -370,6 +375,18 @@ imports:
   - matchers/support/goraph/node
   - matchers/support/goraph/util
   - types
+- name: github.com/openshift/api
+  version: 0d921e363e951d89f583292c60d013c318df64dc
+  subpackages:
+  - apps/v1
+- name: github.com/openshift/client-go
+  version: 42d4abb856ce41c204a6e24342f12be5b5cd9ab8
+  subpackages:
+  - apps/clientset/versioned
+  - apps/clientset/versioned/scheme
+  - apps/clientset/versioned/typed/apps/v1
+- name: github.com/openshift/origin
+  version: 191fece9305a76f262baacc9de72c2c8cb4d5601
 - name: github.com/orcaman/concurrent-map
   version: a05df785d2dcc16310fb997ee1702100d047cfe1
 - name: github.com/ovh/go-ovh
@@ -421,7 +438,7 @@ imports:
   subpackages:
   - diffmatchpatch
 - name: github.com/sethgrid/pester
-  version: ed9870dad3170c0b25ab9b11830cc57c3a7798fb
+  version: 03e26c9abbbf5accb8349790bf9f41bde09d72c3
 - name: github.com/shurcooL/sanitized_anchor_name
   version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/sirupsen/logrus
@@ -431,7 +448,7 @@ imports:
   subpackages:
   - mem
 - name: github.com/spf13/cobra
-  version: 615425954c3b0d9485a7027d4d451fdcdfdee84e
+  version: ef82de70bb3f60c65fb8eebacbb2d122ef517385
   subpackages:
   - doc
 - name: github.com/spf13/pflag
@@ -451,7 +468,7 @@ imports:
   subpackages:
   - codec
 - name: github.com/xenolf/lego
-  version: 60e9c5aa1f0cace7a2c85bda13b9f6d8720515d6
+  version: fa316fd0a7cb84ea934a59842911ab406a14a34a
   repo: https://github.com/appscode/lego.git
   vcs: git
   subpackages:
@@ -550,7 +567,7 @@ imports:
   - googleapi
   - googleapi/internal/uritemplates
 - name: google.golang.org/appengine
-  version: 4f7eeb5305a4ba1966344836ba4af9996b7b4e05
+  version: 12d5545dc1cfa6047a286d5e853841b6471f4c19
   subpackages:
   - internal
   - internal/app_identity
@@ -955,8 +972,10 @@ imports:
   - pkg/util
   - pkg/util/proto
 - name: k8s.io/kubernetes
-  version: 925c127ec6b946659ad0fd596fa959be43f0cc05
+  version: e2f08b833aa10ad8f90688d64c8683859f1c9628
+  repo: https://github.com/appscode/kubernetes.git
   subpackages:
+  - pkg/api/legacyscheme
   - pkg/util/net/sets
 testImports:
 - name: github.com/pmezard/go-difflib

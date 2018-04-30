@@ -6,8 +6,10 @@ import (
 	"strings"
 	"time"
 
+	wpi "github.com/appscode/kubernetes-webhook-util/apis/workload/v1"
 	"github.com/appscode/kutil/meta"
 	"github.com/appscode/voyager/apis/voyager"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -241,6 +243,9 @@ const (
 
 	// https://github.com/kubernetes/ingress-nginx/blob/master/docs/examples/rewrite/README.md
 	RewriteTarget = EngressKey + "/" + "rewrite-target"
+
+	// Workload controller to use run HAProxy pods
+	WorkloadKind = EngressKey + "/" + "workload-kind"
 )
 
 var (
@@ -292,6 +297,7 @@ func init() {
 	registerParser(PodAnnotations, meta.GetMap)
 	registerParser(DefaultsTimeOut, meta.GetMap)
 	registerParser(DefaultsOption, meta.GetMap)
+	registerParser(WorkloadKind, getWorkload)
 }
 
 const (
@@ -576,6 +582,29 @@ func (r Ingress) KeepSourceIP() bool {
 func (r Ingress) AcceptProxy() bool {
 	v, _ := get[AcceptProxy](r.Annotations)
 	return v.(bool)
+}
+
+func (r Ingress) WorkloadKind() string {
+	v, _ := get[WorkloadKind](r.Annotations)
+	return v.(string)
+}
+
+func getWorkload(m map[string]string, key string) (interface{}, error) {
+	if m == nil {
+		return wpi.KindDeployment, nil
+	}
+	v, ok := m[key]
+	if !ok {
+		return wpi.KindDeployment, nil
+	}
+	w, err := wpi.Canonicalize(v)
+	if err != nil {
+		return nil, err
+	}
+	if w != wpi.KindDeployment && w != wpi.KindDaemonSet {
+		return nil, errors.Errorf("%s must be either Deployment or DaemonSet, found %s", WorkloadKind, w)
+	}
+	return w, nil
 }
 
 var timeoutDefaults = map[string]string{

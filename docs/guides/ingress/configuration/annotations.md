@@ -73,3 +73,4 @@ Below is the full list of supported annotations:
 | [ingress.appscode.com/dns-resolver-retries](/docs/guides/ingress/http/external-svc.md#using-external-domain) | int | `0` |
 | [ingress.appscode.com/dns-resolver-timeout](/docs/guides/ingress/http/external-svc.md#using-external-domain) | map | |
 | [ingress.appscode.com/dns-resolver-hold](/docs/guides/ingress/http/external-svc.md#using-external-domain) | map | |
+| [ingress.appscode.com/workload-kind](/docs/guides/ingress/pod-placement.md#choosing-workload-kind) | string | `Deployment` |

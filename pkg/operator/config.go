@@ -2,6 +2,7 @@ package operator
 
 import (
 	hooks "github.com/appscode/kubernetes-webhook-util/admission/v1beta1"
+	wcs "github.com/appscode/kubernetes-webhook-util/client/workload/v1"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	voyagerinformers "github.com/appscode/voyager/client/informers/externalversions"
 	"github.com/appscode/voyager/pkg/config"
@@ -18,6 +19,7 @@ type OperatorConfig struct {
 
 	ClientConfig   *rest.Config
 	KubeClient     kubernetes.Interface
+	WorkloadClient wcs.Interface
 	CRDClient      kext_cs.ApiextensionsV1beta1Interface
 	VoyagerClient  cs.Interface
 	PromClient     prom.MonitoringV1Interface
@@ -34,6 +36,7 @@ func (c *OperatorConfig) New() (*Operator, error) {
 	op := &Operator{
 		Config:                 c.Config,
 		KubeClient:             c.KubeClient,
+		WorkloadClient:         c.WorkloadClient,
 		kubeInformerFactory:    informers.NewFilteredSharedInformerFactory(c.KubeClient, c.ResyncPeriod, c.WatchNamespace, nil),
 		CRDClient:              c.CRDClient,
 		VoyagerClient:          c.VoyagerClient,
@@ -49,6 +52,7 @@ func (c *OperatorConfig) New() (*Operator, error) {
 	op.initIngressCRDWatcher()
 	op.initIngressWatcher()
 	op.initDeploymentWatcher()
+	op.initDaemonSetWatcher()
 	op.initServiceWatcher()
 	op.initConfigMapWatcher()
 	op.initEndpointWatcher()

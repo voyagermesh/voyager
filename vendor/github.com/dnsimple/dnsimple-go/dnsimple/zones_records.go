@@ -58,7 +58,7 @@ type ZoneRecordListOptions struct {
 
 // ListRecords lists the zone records for a zone.
 //
-// See https://developer.dnsimple.com/v2/zones/#list
+// See https://developer.dnsimple.com/v2/zones/records/#listZoneRecords
 func (s *ZonesService) ListRecords(accountID string, zoneName string, options *ZoneRecordListOptions) (*zoneRecordsResponse, error) {
 	path := versioned(zoneRecordPath(accountID, zoneName, 0))
 	recordsResponse := &zoneRecordsResponse{}
@@ -79,7 +79,7 @@ func (s *ZonesService) ListRecords(accountID string, zoneName string, options *Z
 
 // CreateRecord creates a zone record.
 //
-// See https://developer.dnsimple.com/v2/zones/#create
+// See https://developer.dnsimple.com/v2/zones/records/#createZoneRecord
 func (s *ZonesService) CreateRecord(accountID string, zoneName string, recordAttributes ZoneRecord) (*zoneRecordResponse, error) {
 	path := versioned(zoneRecordPath(accountID, zoneName, 0))
 	recordResponse := &zoneRecordResponse{}
@@ -95,7 +95,7 @@ func (s *ZonesService) CreateRecord(accountID string, zoneName string, recordAtt
 
 // GetRecord fetches a zone record.
 //
-// See https://developer.dnsimple.com/v2/zones/#get
+// See https://developer.dnsimple.com/v2/zones/records/#getZoneRecord
 func (s *ZonesService) GetRecord(accountID string, zoneName string, recordID int64) (*zoneRecordResponse, error) {
 	path := versioned(zoneRecordPath(accountID, zoneName, recordID))
 	recordResponse := &zoneRecordResponse{}
@@ -111,7 +111,7 @@ func (s *ZonesService) GetRecord(accountID string, zoneName string, recordID int
 
 // UpdateRecord updates a zone record.
 //
-// See https://developer.dnsimple.com/v2/zones/#update
+// See https://developer.dnsimple.com/v2/zones/records/#updateZoneRecord
 func (s *ZonesService) UpdateRecord(accountID string, zoneName string, recordID int64, recordAttributes ZoneRecord) (*zoneRecordResponse, error) {
 	path := versioned(zoneRecordPath(accountID, zoneName, recordID))
 	recordResponse := &zoneRecordResponse{}
@@ -127,7 +127,7 @@ func (s *ZonesService) UpdateRecord(accountID string, zoneName string, recordID 
 
 // DeleteRecord PERMANENTLY deletes a zone record from the zone.
 //
-// See https://developer.dnsimple.com/v2/zones/#delete
+// See https://developer.dnsimple.com/v2/zones/records/#deleteZoneRecord
 func (s *ZonesService) DeleteRecord(accountID string, zoneName string, recordID int64) (*zoneRecordResponse, error) {
 	path := versioned(zoneRecordPath(accountID, zoneName, recordID))
 	recordResponse := &zoneRecordResponse{}
