@@ -35,7 +35,13 @@ deployment "echoserver" created
 service "rest" exposed
 ```
 
-- Now, create an Ingress object running `kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/6.0.0/docs/examples/ingress/types/loadbalancer/ing.yaml`. Please note the annotaiton on ingress:
+- Now, create an Ingress object running
+
+```console
+kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/6.0.0/docs/examples/ingress/types/loadbalancer/ing.yaml
+```
+
+Please note the annotaiton on ingress:
 
 ```yaml
   annotations:
