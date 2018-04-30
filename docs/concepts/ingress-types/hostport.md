@@ -35,7 +35,7 @@ deployment "echoserver" created
 service "rest" exposed
 ```
 
-- Now, create an Ingress object running 
+- Now, create an Ingress object running
 
 ```console
 kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/6.0.0/docs/examples/ingress/types/hostport/ing.yaml
