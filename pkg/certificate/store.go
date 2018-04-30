@@ -13,7 +13,7 @@ import (
 	"github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1/util"
 	vault "github.com/hashicorp/vault/api"
 	"github.com/pkg/errors"
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/acmev2"
 	core "k8s.io/api/core/v1"
 	k8serror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

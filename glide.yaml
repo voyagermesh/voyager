@@ -52,7 +52,7 @@ import:
 - package: github.com/xenolf/lego
   repo: https://github.com/appscode/lego.git
   vcs: git
-  version: 2018-04
+  version: acmev2
 - package: golang.org/x/oauth2
   repo: https://github.com/appscode/oauth2.git
   vcs: git

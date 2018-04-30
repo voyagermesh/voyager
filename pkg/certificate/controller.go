@@ -17,7 +17,7 @@ import (
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/pkg/errors"
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/acmev2"
 	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -201,14 +201,11 @@ func (c *Controller) getACMEClient() error {
 	}
 
 	if !registered {
-		registration, err := c.acmeClient.Register()
+		registration, err := c.acmeClient.Register(true)
 		if err != nil {
 			return errors.Errorf("failed to register user %s. Reason: %s", c.acmeUser.Email, err)
 		}
 		c.acmeUser.Registration = registration
-		if err := c.acmeClient.AgreeToTOS(); err != nil {
-			return errors.Errorf("failed to register user %s. Reason: %s", c.acmeUser.Email, err)
-		}
 		c.UserSecret, _, err = v1u.PatchSecret(c.KubeClient, c.UserSecret, func(in *core.Secret) *core.Secret {
 			if in.Data == nil {
 				in.Data = make(map[string][]byte)
@@ -232,13 +229,9 @@ func (c *Controller) create() error {
 			return err
 		}
 	}
-	cert, errs := c.acmeClient.ObtainCertificate(c.crd.Spec.Domains, true, nil, false)
-	if len(errs) > 0 {
-		causes := make([]string, 0, len(errs))
-		for k, v := range errs {
-			causes = append(causes, k+": "+v.Error())
-		}
-		return c.processError(errors.Errorf("failed to create certificate. Reason: %s", strings.Join(causes, ", ")))
+	cert, err := c.acmeClient.ObtainCertificate(c.crd.Spec.Domains, true, nil, false)
+	if err != nil {
+		return c.processError(errors.Wrap(err, "failed to create certificate."))
 	}
 	return c.store.Save(c.crd, cert)
 }
