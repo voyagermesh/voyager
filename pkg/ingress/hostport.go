@@ -377,7 +377,7 @@ func (c *hostPortController) ensureService() (*core.Service, kutil.VerbType, err
 }
 
 func (c *hostPortController) ensurePods() (kutil.VerbType, error) {
-	obj, err := wcs.NewObjectForKind(c.Ingress.WorkloadKind(), c.Ingress.OffshootName(), c.Ingress.Namespace)
+	obj, err := wcs.NewObject(c.Ingress.WorkloadKind(), c.Ingress.OffshootName(), c.Ingress.Namespace)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}

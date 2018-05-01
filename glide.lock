@@ -1,5 +1,5 @@
 hash: 87fd3ce7dca7fa5416f260ad33d5968ec7710e508efd93d437d5166117f5c3d7
-updated: 2018-04-30T11:30:41.662947563-07:00
+updated: 2018-05-01T00:02:58.269837741-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -42,7 +42,7 @@ imports:
   - api
   - prometheus/v1
 - name: github.com/appscode/kubernetes-webhook-util
-  version: fda5b4a6c3c67673675f0bbdfff2a04d1d6eb800
+  version: d5f5497d85773ad6e4c0d0364702ad7fb155c03c
   subpackages:
   - admission/v1beta1
   - apis/workload/v1
@@ -468,7 +468,7 @@ imports:
   subpackages:
   - codec
 - name: github.com/xenolf/lego
-  version: 664df3b13158ecf5f9b23b6554094726a47e2671
+  version: 3aebf03cbb4625e96d5ad9708531ca7d4182e1d7
   repo: https://github.com/appscode/lego.git
   vcs: git
   subpackages:

@@ -299,7 +299,7 @@ func (c *internalController) ensureService() (*core.Service, kutil.VerbType, err
 }
 
 func (c *internalController) ensurePods() (kutil.VerbType, error) {
-	obj, err := wcs.NewObjectForKind(c.Ingress.WorkloadKind(), c.Ingress.OffshootName(), c.Ingress.Namespace)
+	obj, err := wcs.NewObject(c.Ingress.WorkloadKind(), c.Ingress.OffshootName(), c.Ingress.Namespace)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}

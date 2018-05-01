@@ -15,6 +15,26 @@ const (
 	KindJob                   = "Job"
 	KindCronJob               = "CronJob"
 	KindDeploymentConfig      = "DeploymentConfig"
+
+	ResourcePods                   = "pods"
+	ResourceDeployments            = "deployments"
+	ResourceReplicaSets            = "replicasets"
+	ResourceReplicationControllers = "replicationsontrollers"
+	ResourceStatefulSets           = "statefulsets"
+	ResourceDaemonSets             = "daemonsets"
+	ResourceJobs                   = "jobs"
+	ResourceCronJobs               = "cronjobs"
+	ResourceDeploymentConfigs      = "deploymentconfigs"
+
+	ResourcePod                   = "pod"
+	ResourceDeployment            = "deployment"
+	ResourceReplicaSet            = "replicaset"
+	ResourceReplicationController = "replicationsontroller"
+	ResourceStatefulSet           = "statefulset"
+	ResourceDaemonSet             = "daemonset"
+	ResourceJob                   = "job"
+	ResourceCronJob               = "cronjob"
+	ResourceDeploymentConfig      = "deploymentconfig"
 )
 
 func Canonicalize(kind string) (string, error) {

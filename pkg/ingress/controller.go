@@ -168,7 +168,7 @@ func (c *controller) deletePods() error {
 	options := &metav1.DeleteOptions{
 		PropagationPolicy: &policy,
 	}
-	obj, err := wcs.NewObjectForKind(c.Ingress.WorkloadKind(), c.Ingress.OffshootName(), c.Ingress.Namespace)
+	obj, err := wcs.NewObject(c.Ingress.WorkloadKind(), c.Ingress.OffshootName(), c.Ingress.Namespace)
 	if err != nil {
 		return err
 	}
