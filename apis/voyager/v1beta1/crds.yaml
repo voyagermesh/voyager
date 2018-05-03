@@ -867,6 +867,22 @@ spec:
                             type: string
                           secretName:
                             type: string
+                      oauth:
+                        items:
+                          properties:
+                            authBackend:
+                              type: string
+                            authPath:
+                              type: string
+                            host:
+                              type: string
+                            paths:
+                              items:
+                                type: string
+                              type: array
+                            signinPath:
+                              type: string
+                        type: array
                       tls:
                         properties:
                           errorPage:

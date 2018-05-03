@@ -192,7 +192,7 @@
         {
           "uniqueItems": true,
           "type": "integer",
-          "description": "Timeout for the list/watch call.",
+          "description": "Timeout for the list/watch call. This limits the duration of the call, regardless of any activity or inactivity.",
           "name": "timeoutSeconds",
           "in": "query"
         },
@@ -293,7 +293,7 @@
         {
           "uniqueItems": true,
           "type": "integer",
-          "description": "Timeout for the list/watch call.",
+          "description": "Timeout for the list/watch call. This limits the duration of the call, regardless of any activity or inactivity.",
           "name": "timeoutSeconds",
           "in": "query"
         },
@@ -372,7 +372,7 @@
           {
             "uniqueItems": true,
             "type": "integer",
-            "description": "Timeout for the list/watch call.",
+            "description": "Timeout for the list/watch call. This limits the duration of the call, regardless of any activity or inactivity.",
             "name": "timeoutSeconds",
             "in": "query"
           },
@@ -516,7 +516,7 @@
           {
             "uniqueItems": true,
             "type": "integer",
-            "description": "Timeout for the list/watch call.",
+            "description": "Timeout for the list/watch call. This limits the duration of the call, regardless of any activity or inactivity.",
             "name": "timeoutSeconds",
             "in": "query"
           },
@@ -841,7 +841,7 @@
           {
             "uniqueItems": true,
             "type": "integer",
-            "description": "Timeout for the list/watch call.",
+            "description": "Timeout for the list/watch call. This limits the duration of the call, regardless of any activity or inactivity.",
             "name": "timeoutSeconds",
             "in": "query"
           },
@@ -985,7 +985,7 @@
           {
             "uniqueItems": true,
             "type": "integer",
-            "description": "Timeout for the list/watch call.",
+            "description": "Timeout for the list/watch call. This limits the duration of the call, regardless of any activity or inactivity.",
             "name": "timeoutSeconds",
             "in": "query"
           },
@@ -1332,7 +1332,7 @@
         {
           "uniqueItems": true,
           "type": "integer",
-          "description": "Timeout for the list/watch call.",
+          "description": "Timeout for the list/watch call. This limits the duration of the call, regardless of any activity or inactivity.",
           "name": "timeoutSeconds",
           "in": "query"
         },
@@ -1433,7 +1433,7 @@
         {
           "uniqueItems": true,
           "type": "integer",
-          "description": "Timeout for the list/watch call.",
+          "description": "Timeout for the list/watch call. This limits the duration of the call, regardless of any activity or inactivity.",
           "name": "timeoutSeconds",
           "in": "query"
         },
@@ -1542,7 +1542,7 @@
         {
           "uniqueItems": true,
           "type": "integer",
-          "description": "Timeout for the list/watch call.",
+          "description": "Timeout for the list/watch call. This limits the duration of the call, regardless of any activity or inactivity.",
           "name": "timeoutSeconds",
           "in": "query"
         },
@@ -1659,7 +1659,7 @@
         {
           "uniqueItems": true,
           "type": "integer",
-          "description": "Timeout for the list/watch call.",
+          "description": "Timeout for the list/watch call. This limits the duration of the call, regardless of any activity or inactivity.",
           "name": "timeoutSeconds",
           "in": "query"
         },
@@ -1768,7 +1768,7 @@
         {
           "uniqueItems": true,
           "type": "integer",
-          "description": "Timeout for the list/watch call.",
+          "description": "Timeout for the list/watch call. This limits the duration of the call, regardless of any activity or inactivity.",
           "name": "timeoutSeconds",
           "in": "query"
         },
@@ -1885,7 +1885,7 @@
         {
           "uniqueItems": true,
           "type": "integer",
-          "description": "Timeout for the list/watch call.",
+          "description": "Timeout for the list/watch call. This limits the duration of the call, regardless of any activity or inactivity.",
           "name": "timeoutSeconds",
           "in": "query"
         },
@@ -1925,6 +1925,12 @@
       "properties": {
         "basic": {
           "$ref": "#/definitions/com.github.appscode.voyager.apis.voyager.v1beta1.BasicAuth"
+        },
+        "oauth": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/com.github.appscode.voyager.apis.voyager.v1beta1.OAuth"
+          }
         },
         "tls": {
           "$ref": "#/definitions/com.github.appscode.voyager.apis.voyager.v1beta1.TLSAuth"
@@ -2500,6 +2506,28 @@
         },
         "name": {
           "description": "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
+          "type": "string"
+        }
+      }
+    },
+    "com.github.appscode.voyager.apis.voyager.v1beta1.OAuth": {
+      "properties": {
+        "authBackend": {
+          "type": "string"
+        },
+        "authPath": {
+          "type": "string"
+        },
+        "host": {
+          "type": "string"
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "signinPath": {
           "type": "string"
         }
       }
