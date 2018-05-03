@@ -54,7 +54,7 @@ func (c *controller) getExporterSidecar() (*core.Container, error) {
 			Args: append([]string{
 				"export",
 				fmt.Sprintf("--address=:%d", monSpec.Prometheus.Port),
-				fmt.Sprintf("--analytics=%v", config.EnableAnalytics),
+				fmt.Sprintf("--enable-analytics=%v", config.EnableAnalytics),
 			}, config.LoggerOptions.ToFlags()...),
 			Env: []core.EnvVar{
 				{

@@ -198,7 +198,7 @@ def test_deploy(provider):
                     'run',
                     '--cloud-provider=' + provider,
                     '--v=5',
-                    '--analytics=false'
+                    '--enable-analytics=false'
                 ]
             result.append(doc)
         dist = libbuild.REPO_ROOT + '/dist'
