@@ -47,7 +47,7 @@ service "rest" exposed
 
 ### Choosing Workload Kind
 
-By default Voyager will run HAProxy pods using `Deployment`. Since 6.1.0 release, Voyager can run HAProxy pods using either Deployment or DaemonSet. Set the annotation `ingress.appscode.com/workload-kind` on an ingress object to either `Deployment` or `DaemonSet` to enable this feature. If this annotation is missing, HAProxy pods will be run using a `Deployment` as before.
+By default Voyager will run HAProxy pods using `Deployment`. Since 7.0.0 release, Voyager can run HAProxy pods using either Deployment or DaemonSet. Set the annotation `ingress.appscode.com/workload-kind` on an ingress object to either `Deployment` or `DaemonSet` to enable this feature. If this annotation is missing, HAProxy pods will be run using a `Deployment` as before.
 
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
