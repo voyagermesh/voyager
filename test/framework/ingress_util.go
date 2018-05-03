@@ -2,6 +2,7 @@ package framework
 
 import (
 	"fmt"
+	"net"
 	"net/url"
 	"os/exec"
 	"strconv"
@@ -19,6 +20,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -321,40 +323,67 @@ func (i *ingressInvocation) NodeSelector() map[string]string {
 	return map[string]string{}
 }
 
-func getMinikubeURLs(ing *api_v1beta1.Ingress) ([]string, error) {
-	serverAddr := make([]string, 0)
-	var err error
-
-	gomega.Eventually(func() error {
+func getMinikubeIP() (ip net.IP, err error) {
+	wait.PollImmediate(2*time.Second, 3*time.Minute, func() (bool, error) {
 		var outputs []byte
-		outputs, err = exec.Command(
-			"/usr/local/bin/minikube",
-			"service",
-			ing.OffshootName(),
-			"--url",
-			"-n",
-			ing.Namespace,
-		).CombinedOutput()
-		if err == nil {
-			for _, output := range strings.Split(string(outputs), "\n") {
-				if strings.HasPrefix(output, "http") {
-					serverAddr = append(serverAddr, output)
-				}
+		if outputs, err = exec.Command("minikube", "ip").CombinedOutput(); err != nil {
+			return false, nil // retry
+		} else {
+			output := strings.TrimSpace(string(outputs))
+			if ip = net.ParseIP(output); ip == nil {
+				err = errors.Errorf("failed to parse minikube ip: %s", output)
+				return false, nil // retry
+			} else {
+				return true, nil
 			}
-			return nil
 		}
-		return err
-	}, "5m", "10s").Should(gomega.BeNil())
+	})
+	return
+}
 
+func getMinikubeURLs(k kubernetes.Interface, ing *api_v1beta1.Ingress) ([]string, error) {
+	serverAddr := make([]string, 0)
+
+	minikubeIP, err := getMinikubeIP()
 	if err != nil {
 		return nil, err
+	}
+
+	// get offshoot service
+	var svc *core.Service
+	wait.PollImmediate(2*time.Second, 3*time.Minute, func() (bool, error) {
+		svc, err = k.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+		if err != nil {
+			return false, nil // retry
+		} else {
+			return true, nil
+		}
+	})
+	if err != nil { // failed even after retry
+		return nil, err
+	}
+
+	for _, p := range svc.Spec.Ports {
+		var accessPort int32
+		if svc.Spec.Type == core.ServiceTypeClusterIP {
+			accessPort = p.Port
+		} else {
+			accessPort = p.NodePort
+		}
+		if accessPort > 0 {
+			u, err := url.Parse(fmt.Sprintf("http://%s:%d", minikubeIP, accessPort))
+			if err != nil {
+				return nil, err
+			}
+			serverAddr = append(serverAddr, u.String())
+		}
 	}
 	return serverAddr, nil
 }
 
 func getLoadBalancerURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.Ingress) ([]string, error) {
 	if provider == "minikube" {
-		return getMinikubeURLs(ing)
+		return getMinikubeURLs(k, ing)
 	}
 
 	serverAddr := make([]string, 0)
@@ -396,7 +425,6 @@ func getLoadBalancerURLs(provider string, k kubernetes.Interface, ing *api_v1bet
 		}
 		return nil
 	}, "5m", "10s").Should(gomega.BeNil())
-
 	if err != nil {
 		return nil, err
 	}
@@ -404,6 +432,10 @@ func getLoadBalancerURLs(provider string, k kubernetes.Interface, ing *api_v1bet
 }
 
 func getHostPortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.Ingress) ([]string, error) {
+	if provider == "minikube" {
+		return getMinikubeURLs(k, ing)
+	}
+
 	serverAddr := make([]string, 0)
 	nodes, err := k.CoreV1().Nodes().List(metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(ing.Spec.NodeSelector).String(),
@@ -433,7 +465,7 @@ func getHostPortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.I
 
 	for _, node := range nodes.Items {
 		for _, addr := range node.Status.Addresses {
-			if (addr.Type == core.NodeExternalIP) || (provider == "minikube" && addr.Type == core.NodeInternalIP) {
+			if addr.Type == core.NodeExternalIP {
 				for _, port := range ports {
 					u, err := url.Parse(fmt.Sprintf("http://%s:%d", addr.Address, port))
 					if err != nil {
@@ -449,11 +481,10 @@ func getHostPortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.I
 
 func getNodePortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.Ingress) ([]string, error) {
 	if provider == "minikube" {
-		return getMinikubeURLs(ing)
+		return getMinikubeURLs(k, ing)
 	}
 
 	serverAddr := make([]string, 0)
-
 	nodes, err := k.CoreV1().Nodes().List(metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(ing.Spec.NodeSelector).String(),
 	})
@@ -476,7 +507,6 @@ func getNodePortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.I
 		}
 		return err
 	}, "10m", "10s").Should(gomega.BeNil())
-
 	if err != nil {
 		return nil, err
 	}
