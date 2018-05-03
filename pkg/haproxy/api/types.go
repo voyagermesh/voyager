@@ -82,6 +82,17 @@ type HTTPService struct {
 	Hosts          []*HTTPHost
 }
 
+func (svc HTTPService) RedirectSSL() bool {
+	for _, host := range svc.Hosts {
+		for _, path := range host.Paths {
+			if path.SSLRedirect {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func (svc *HTTPService) RemoveBackendAuth() {
 	for i := range svc.Hosts {
 		for j := range svc.Hosts[i].Paths {

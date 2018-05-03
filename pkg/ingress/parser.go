@@ -816,25 +816,11 @@ func (c *controller) generateConfig() error {
 
 			// check if at-least one path with ssl-redirect exists
 			// if ssl-redirect-path found, check for 443-nodeport, error out if 443-nodeport not found
-			if svc.Port == 80 {
-				sslRedirect := false
-				for _, host := range svc.Hosts {
-					for _, path := range host.Paths {
-						if path.SSLRedirect {
-							sslRedirect = true
-							break
-						}
-					}
-					if sslRedirect {
-						break
-					}
-				}
-				if sslRedirect {
-					var found bool
-					svc.NodePortFor443, found = portMapping[443]
-					if !found {
-						return errors.Errorf("failed to process ssl-redirect: nodeport for port 443 not found")
-					}
+			if svc.Port == 80 && svc.RedirectSSL() {
+				var found bool
+				svc.NodePortFor443, found = portMapping[443]
+				if !found {
+					return errors.Errorf("failed to process ssl-redirect: nodeport for port 443 not found")
 				}
 			}
 		}
