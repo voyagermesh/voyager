@@ -326,7 +326,7 @@ func (i *ingressInvocation) NodeSelector() map[string]string {
 func getMinikubeIP() (ip net.IP, err error) {
 	wait.PollImmediate(2*time.Second, 3*time.Minute, func() (bool, error) {
 		var outputs []byte
-		if outputs, err = exec.Command("/usr/local/bin/minikube", "ip").CombinedOutput(); err != nil {
+		if outputs, err = exec.Command("minikube", "ip").CombinedOutput(); err != nil {
 			return false, nil // retry
 		} else {
 			output := strings.TrimSpace(string(outputs))
