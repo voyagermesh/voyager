@@ -382,7 +382,7 @@ func (c *internalController) ensurePods() (kutil.VerbType, error) {
 			Name:  "haproxy",
 			Image: c.cfg.HAProxyImage,
 			Args: append([]string{
-				fmt.Sprintf("--analytics=%v", config.EnableAnalytics),
+				fmt.Sprintf("--enable-analytics=%v", config.EnableAnalytics),
 				fmt.Sprintf("--burst=%v", c.cfg.Burst),
 				fmt.Sprintf("--cloud-provider=%s", c.cfg.CloudProvider),
 				fmt.Sprintf("--ingress-api-version=%s", c.Ingress.APISchema()),
