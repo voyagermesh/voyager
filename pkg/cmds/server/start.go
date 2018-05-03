@@ -56,7 +56,7 @@ func (o VoyagerOptions) Config() (*server.VoyagerConfig, error) {
 	}
 
 	serverConfig := genericapiserver.NewRecommendedConfig(server.Codecs)
-	if err := o.RecommendedOptions.ApplyTo(serverConfig); err != nil {
+	if err := o.RecommendedOptions.ApplyTo(serverConfig, server.Scheme); err != nil {
 		return nil, err
 	}
 
