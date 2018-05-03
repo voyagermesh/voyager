@@ -802,7 +802,7 @@ func (c *controller) generateConfig() error {
 	}
 
 	// assign node-ports
-	if c.Ingress.LBType() == api.LBTypeNodePort {
+	if c.Ingress.UseNodePort() {
 		nodePortSvc, err := c.KubeClient.CoreV1().Services(c.Ingress.GetNamespace()).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
 		if err != nil {
 			return err
@@ -813,11 +813,14 @@ func (c *controller) generateConfig() error {
 		}
 		for _, svc := range td.HTTPService {
 			svc.NodePort = portMapping[int32(svc.Port)]
-			if svc.Port == 80 {
-				if svc.UseNodePort {
-					svc.RedirectToPort = portMapping[443]
-				} else {
-					svc.RedirectToPort = 443
+
+			// check if at-least one path with ssl-redirect exists
+			// if ssl-redirect-path found, check for 443-nodeport, error out if 443-nodeport not found
+			if svc.Port == 80 && svc.RedirectSSL() {
+				var found bool
+				svc.NodePortFor443, found = portMapping[443]
+				if !found {
+					return errors.Errorf("failed to process ssl-redirect: nodeport for port 443 not found")
 				}
 			}
 		}

@@ -74,12 +74,23 @@ type HTTPService struct {
 	Address        string
 	Port           int
 	NodePort       int32
-	RedirectToPort int32
+	NodePortFor443 int32
 	OffloadSSL     bool
 	FrontendRules  []string
 	BasicAuth      *BasicAuth
 	TLSAuth        *TLSAuth
 	Hosts          []*HTTPHost
+}
+
+func (svc HTTPService) RedirectSSL() bool {
+	for _, host := range svc.Hosts {
+		for _, path := range host.Paths {
+			if path.SSLRedirect {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (svc *HTTPService) RemoveBackendAuth() {
