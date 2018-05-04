@@ -326,7 +326,7 @@ var dataTables = map[*Ingress]bool{
 				},
 			},
 		},
-	}: false, // useTLS for TCP multi-host // TODO: check
+	}: false, // useTLS for TCP multi-host // TODO: check if it is possible to use TLS in multi-host TCP
 	{
 		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with conflicting TLS"},
 		Spec: IngressSpec{

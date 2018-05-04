@@ -238,7 +238,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 					}
 				}
 
-				if useTLS { // TODO: check
+				if useTLS { // TODO: check if it is possible to use TLS in multi-host TCP
 					return errors.Errorf("multiple TCP rules with TLS under address", addrKey)
 				}
 
