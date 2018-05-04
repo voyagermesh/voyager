@@ -522,7 +522,7 @@ func (c *controller) generateConfig() error {
 				info.Hosts = append(info.Hosts, tcpHost)
 				info.ALPNOptions = parseALPNOptions(rule.TCP.ALPN) // TODO: alpn for multi-host
 
-				if len(info.Hosts) > 0 { // for multi-host tcp, no ssl offload
+				if len(info.Hosts) > 0 { // for multi-host tcp, no ssl offload // TODO: check
 					info.CertFile = ""
 				} else if ref, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoTLS {
 					if ref.Kind == api.ResourceKindCertificate {

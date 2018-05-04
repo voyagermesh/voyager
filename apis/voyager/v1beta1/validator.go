@@ -87,6 +87,8 @@ func (r Ingress) IsValid(cloudProvider string) error {
 	addrs := make(map[string]*address)
 	nodePorts := make(map[int]int)
 	usesHTTPRule := false
+	sslPassthrough := r.SSLPassthrough()
+
 	for ri, rule := range r.Spec.Rules {
 		if rule.HTTP != nil && rule.TCP == nil {
 			usesHTTPRule = true
@@ -205,6 +207,12 @@ func (r Ingress) IsValid(cloudProvider string) error {
 				return errors.Errorf("spec.rule[%d].tcp.address %s is invalid. Reason: %s", ri, rule.TCP.Address, err)
 			}
 
+			_, foundTLS := r.FindTLSSecret(rule.Host)
+			useTLS := foundTLS && !rule.TCP.NoTLS
+			if sslPassthrough && useTLS {
+				return errors.Errorf("TLS defined for spec.rule[%d].tcp in SSLPassthrough mode", ri)
+			}
+
 			var a *address
 			var addrKey = fmt.Sprintf("%s:%d", bindAddress, podPort)
 
@@ -230,8 +238,6 @@ func (r Ingress) IsValid(cloudProvider string) error {
 					}
 				}
 
-				_, foundTLS := r.FindTLSSecret(rule.Host)
-				useTLS := foundTLS && !rule.TCP.NoTLS
 				if useTLS { // TODO: check
 					return errors.Errorf("multiple TCP rules with TLS under address", addrKey)
 				}

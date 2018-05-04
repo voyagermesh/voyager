@@ -559,6 +559,71 @@ var dataTables = map[*Ingress]bool{
 		},
 	}: true,
 	{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "TLS in passthrough mode",
+			Annotations: map[string]string{
+				SSLPassthrough: "true",
+			},
+		},
+		Spec: IngressSpec{
+			TLS: []IngressTLS{
+				{
+					SecretName: "voyager-cert",
+					Hosts: []string{
+						"voyager.appscode.test",
+					},
+				},
+			},
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // TLS defined in passthrough mode
+	{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "NoTLS in passthrough mode",
+			Annotations: map[string]string{
+				SSLPassthrough: "true",
+			},
+		},
+		Spec: IngressSpec{
+			TLS: []IngressTLS{
+				{
+					SecretName: "voyager-cert",
+					Hosts: []string{
+						"voyager.appscode.test",
+					},
+				},
+			},
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							NoTLS: true,
+							Port:  intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: true, // NoTLS in passthrough mode
+	{
 		ObjectMeta: metav1.ObjectMeta{Name: "Multi rule"},
 		Spec: IngressSpec{
 			Backend: &HTTPIngressBackend{
