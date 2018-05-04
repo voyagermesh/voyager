@@ -469,6 +469,37 @@ var dataTables = map[*Ingress]bool{
 		},
 	}: false, // wildcard host with multiple rules under same address-binder
 	{
+		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with wildcard host (2)"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+				{
+					Host: "*",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo2",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // wildcard host with multiple rules under same address-binder
+	{
 		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with empty host"},
 		Spec: IngressSpec{
 			Rules: []IngressRule{
