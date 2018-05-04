@@ -196,7 +196,7 @@ var _ = Describe("IngressTLS", func() {
 
 		BeforeEach(func() { // create TLS secret for alterTestDomain
 			var err error
-			alterSecret, err = f.Ingress.CreateTLSSecretForHost(f.UniqueName()+"-alter", []string{alterTestDomain})
+			alterSecret, err = f.Ingress.CreateTLSSecretForHost(f.UniqueName(), []string{alterTestDomain})
 			Expect(err).NotTo(HaveOccurred())
 		})
 		AfterEach(func() {
