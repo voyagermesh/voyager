@@ -238,9 +238,9 @@ func (r Ingress) IsValid(cloudProvider string) error {
 					}
 				}
 
-				if useTLS { // TODO: check if it is possible to use TLS in multi-host TCP
-					return errors.Errorf("multiple TCP rules with TLS under address", addrKey)
-				}
+				//if useTLS { // TODO: check if it is possible to use TLS in multi-host TCP
+				//	return errors.Errorf("multiple TCP rules with TLS under address", addrKey)
+				//}
 
 				_, foundTLS1 := r.FindTLSSecret(r.Spec.Rules[ea.FirstRuleIndex].Host)
 				useTLS1 := foundTLS1 && !r.Spec.Rules[ea.FirstRuleIndex].TCP.NoTLS

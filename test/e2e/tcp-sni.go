@@ -65,7 +65,7 @@ var _ = Describe("Ingress TCP SNI", func() {
 		}
 	})
 
-	Describe("Create", func() {
+	Describe("Without TLS", func() {
 		BeforeEach(func() {
 			ing.Spec.Rules = []api.IngressRule{
 				{
@@ -114,6 +114,95 @@ var _ = Describe("Ingress TCP SNI", func() {
 
 			By("Request with host: ssl.appscode.test")
 			err = f.Ingress.DoHTTPWithSNI(framework.MaxRetry, "ssl.appscode.test", eps, func(r *client.Response) bool {
+				return Expect(r.ServerPort).Should(Equal(":3443"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+	Describe("With TLS", func() {
+		var secret, alterSecret *core.Secret
+		domain := "http.appscode.test"
+		alterDomain := "http.voyager.test"
+
+		BeforeEach(func() {
+			var err error
+			secret, err = f.Ingress.CreateTLSSecretForHost(f.UniqueName(), []string{domain})
+			Expect(err).NotTo(HaveOccurred())
+			alterSecret, err = f.Ingress.CreateTLSSecretForHost(f.UniqueName(), []string{alterDomain})
+			Expect(err).NotTo(HaveOccurred())
+		})
+		AfterEach(func() {
+			if options.Cleanup {
+				f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{})
+				f.KubeClient.CoreV1().Secrets(alterSecret.Namespace).Delete(alterSecret.Name, &metav1.DeleteOptions{})
+			}
+		})
+
+		BeforeEach(func() {
+			ing.Spec.TLS = []api.IngressTLS{
+				{
+					Ref: &api.LocalTypedReference{
+						Kind: "Secret",
+						Name: secret.Name,
+					},
+					Hosts: []string{domain},
+				},
+				{
+					Ref: &api.LocalTypedReference{
+						Kind: "Secret",
+						Name: alterSecret.Name,
+					},
+					Hosts: []string{alterDomain},
+				},
+			}
+			ing.Spec.Rules = []api.IngressRule{
+				{
+					Host: domain,
+					IngressRuleValue: api.IngressRuleValue{
+						TCP: &api.TCPIngressRuleValue{
+							Port: intstr.FromInt(8443),
+							Backend: api.IngressBackend{
+								ServiceName: f.Ingress.TestServerHTTPSName(),
+								ServicePort: intstr.FromInt(443),
+							},
+						},
+					},
+				},
+				{
+					Host: alterDomain,
+					IngressRuleValue: api.IngressRuleValue{
+						TCP: &api.TCPIngressRuleValue{
+							Port: intstr.FromInt(8443),
+							Backend: api.IngressBackend{
+								ServiceName: f.Ingress.TestServerHTTPSName(),
+								ServicePort: intstr.FromInt(3443),
+							},
+						},
+					},
+				},
+			}
+		})
+
+		It("Should response based on Host", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			svc, err := f.Ingress.GetOffShootService(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(svc.Spec.Ports)).Should(Equal(1))
+			Expect(svc.Spec.Ports[0].Port).To(Equal(int32(8443)))
+
+			By("Request with host: http.appscode.test")
+			err = f.Ingress.DoHTTPWithSNI(framework.MaxRetry, domain, eps, func(r *client.Response) bool {
+				return Expect(r.ServerPort).Should(Equal(":6443"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Request with host: ssl.appscode.test")
+			err = f.Ingress.DoHTTPWithSNI(framework.MaxRetry, alterDomain, eps, func(r *client.Response) bool {
 				return Expect(r.ServerPort).Should(Equal(":3443"))
 			})
 			Expect(err).NotTo(HaveOccurred())
