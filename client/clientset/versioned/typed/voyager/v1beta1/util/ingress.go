@@ -80,3 +80,23 @@ func TryUpdateIngress(c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, tran
 	}
 	return
 }
+
+func UpdateIngressStatus(c cs.VoyagerV1beta1Interface, cur *api.Ingress, transform func(*api.IngressStatus) *api.IngressStatus, useSubresource ...bool) (*api.Ingress, error) {
+	if len(useSubresource) > 1 {
+		return nil, errors.Errorf("invalid value passed for useSubresource: %v", useSubresource)
+	}
+
+	mod := &api.Ingress{
+		TypeMeta:   cur.TypeMeta,
+		ObjectMeta: cur.ObjectMeta,
+		Spec:       cur.Spec,
+		Status:     *transform(cur.Status.DeepCopy()),
+	}
+
+	if len(useSubresource) == 1 && useSubresource[0] {
+		return c.Ingresses(cur.Namespace).UpdateStatus(mod)
+	}
+
+	out, _, err := PatchIngressObject(c, cur, mod)
+	return out, err
+}

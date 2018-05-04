@@ -100,6 +100,18 @@ func (c *FakeIngresses) Update(ingress *v1beta1.Ingress) (result *v1beta1.Ingres
 	return obj.(*v1beta1.Ingress), err
 }
 
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
+func (c *FakeIngresses) UpdateStatus(ingress *v1beta1.Ingress) (*v1beta1.Ingress, error) {
+	obj, err := c.Fake.
+		Invokes(testing.NewUpdateSubresourceAction(ingressesResource, "status", c.ns, ingress), &v1beta1.Ingress{})
+
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*v1beta1.Ingress), err
+}
+
 // Delete takes name of the ingress and deletes it. Returns an error if one occurs.
 func (c *FakeIngresses) Delete(name string, options *v1.DeleteOptions) error {
 	_, err := c.Fake.
