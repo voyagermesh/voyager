@@ -80,3 +80,23 @@ func TryUpdateCertificate(c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, 
 	}
 	return
 }
+
+func UpateCertificateStatus(c cs.VoyagerV1beta1Interface, cur *api.Certificate, transform func(*api.CertificateStatus) *api.CertificateStatus, useSubresource ...bool) (*api.Certificate, error) {
+	if len(useSubresource) > 1 {
+		return nil, errors.Errorf("invalid value passed for useSubresource: %v", useSubresource)
+	}
+
+	mod := &api.Certificate{
+		TypeMeta:   cur.TypeMeta,
+		ObjectMeta: cur.ObjectMeta,
+		Spec:       cur.Spec,
+		Status:     *transform(cur.Status.DeepCopy()),
+	}
+
+	if len(useSubresource) == 1 && useSubresource[0] {
+		return c.Certificates(cur.Namespace).UpdateStatus(mod)
+	}
+
+	out, _, err := PatchCertificateObject(c, cur, mod)
+	return out, err
+}
