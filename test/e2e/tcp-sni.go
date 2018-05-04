@@ -107,13 +107,13 @@ var _ = Describe("Ingress TCP SNI", func() {
 			Expect(svc.Spec.Ports[0].Port).To(Equal(int32(8443)))
 
 			By("Request with host: http.appscode.test")
-			err = f.Ingress.DoHTTPWithSNI(5, "http.appscode.test", eps, func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPWithSNI(framework.MaxRetry, "http.appscode.test", eps, func(r *client.Response) bool {
 				return Expect(r.ServerPort).Should(Equal(":6443"))
 			})
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Request with host: ssl.appscode.test")
-			err = f.Ingress.DoHTTPWithSNI(5, "ssl.appscode.test", eps, func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPWithSNI(framework.MaxRetry, "ssl.appscode.test", eps, func(r *client.Response) bool {
 				return Expect(r.ServerPort).Should(Equal(":3443"))
 			})
 			Expect(err).NotTo(HaveOccurred())

@@ -122,21 +122,8 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 
 	Describe("CreateWithTLS", func() {
 		BeforeEach(func() {
-			crt, key, err := f.CertStore.NewServerCertPair("server", f.ServerSANs())
-			Expect(err).NotTo(HaveOccurred())
-
-			secret = &core.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      f.Ingress.UniqueName(),
-					Namespace: ing.GetNamespace(),
-				},
-				Data: map[string][]byte{
-					core.TLSCertKey:       crt,
-					core.TLSPrivateKeyKey: key,
-				},
-				Type: core.SecretTypeTLS,
-			}
-			_, err = f.KubeClient.CoreV1().Secrets(secret.Namespace).Create(secret)
+			var err error
+			secret, err = f.Ingress.CreateTLSSecretForHost(f.UniqueName(), []string{framework.TestDomain})
 			Expect(err).NotTo(HaveOccurred())
 		})
 
