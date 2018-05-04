@@ -288,7 +288,47 @@ var dataTables = map[*Ingress]bool{
 		},
 	}: true, // this should work after adding tcp-sni support
 	{
-		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with matching spec.TLS"},
+		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with conflicting TLS"},
+		Spec: IngressSpec{
+			TLS: []IngressTLS{
+				{
+					SecretName: "voyager-cert",
+					Hosts: []string{
+						"voyager.appscode.test",
+						"voyager.appscode.com",
+					},
+				},
+			},
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+				{
+					Host: "voyager.appscode.com",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo2",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // useTLS for TCP multi-host // TODO: check
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with conflicting TLS"},
 		Spec: IngressSpec{
 			TLS: []IngressTLS{
 				{
@@ -325,10 +365,18 @@ var dataTables = map[*Ingress]bool{
 				},
 			},
 		},
-	}: false, // should not specify spec.TLS for any host of TCP multi-host
+	}: false, // conflicting useTLS
 	{
 		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with NoTLS"},
 		Spec: IngressSpec{
+			TLS: []IngressTLS{
+				{
+					SecretName: "voyager-cert",
+					Hosts: []string{
+						"voyager.appscode.test",
+					},
+				},
+			},
 			Rules: []IngressRule{
 				{
 					Host: "voyager.appscode.test",
@@ -357,7 +405,7 @@ var dataTables = map[*Ingress]bool{
 				},
 			},
 		},
-	}: false, // should not specify 'NoTLS' for any TCP multi-host rule
+	}: true, // useTLS will be false for both rules
 	{
 		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with reusing host"},
 		Spec: IngressSpec{
@@ -389,6 +437,67 @@ var dataTables = map[*Ingress]bool{
 			},
 		},
 	}: false, // some host under same address-binder
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with wildcard host"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					Host: "*",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo2",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // wildcard host with multiple rules under same address-binder
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with empty host"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo2",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // empty host with multiple rules under same address-binder
 	{
 		ObjectMeta: metav1.ObjectMeta{Name: "TCP with different port"},
 		Spec: IngressSpec{
