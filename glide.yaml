@@ -62,6 +62,9 @@ import:
   version: v1.2.1
 - package: k8s.io/api
   version: kubernetes-1.10.0
+- package: k8s.io/apiserver
+  repo: https://github.com/tamalsaha/apiserver.git
+  version: k-1.10
 - package: k8s.io/apiextensions-apiserver
   version: kubernetes-1.10.0
 - package: k8s.io/apimachinery
