@@ -75,11 +75,14 @@ $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack
 
 
 ## Using Helm
-Voyager can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/appscode/voyager/tree/5.0.0-rc.11/chart/stable/voyager) included in this repository or from official charts repository. To install the chart with the release name `my-release`:
+Voyager can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/appscode/voyager/tree/5.0.0-rc.11/chart/stable/voyager) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
+
 ```console
+$ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
-$ helm install stable/voyager --name my-release
+$ helm install appscode/voyager
 ```
+
 To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/5.0.0-rc.11/chart/stable/voyager).
 
 
