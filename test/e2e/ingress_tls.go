@@ -466,62 +466,6 @@ var _ = Describe("IngressTLS", func() {
 		})
 	})
 
-	Describe("SSL Passthrough", func() {
-		BeforeEach(func() {
-			ing.Annotations[api.SSLPassthrough] = "true"
-			ing.Annotations[api.SSLRedirect] = "false"
-
-			ing.Spec = api.IngressSpec{
-				TLS: []api.IngressTLS{
-					{
-						SecretName: secret.Name,
-						Hosts:      []string{framework.TestDomain},
-					},
-				},
-				Rules: []api.IngressRule{
-					{
-						Host: framework.TestDomain,
-						IngressRuleValue: api.IngressRuleValue{
-							HTTP: &api.HTTPIngressRuleValue{
-								Paths: []api.HTTPIngressPath{
-									{
-										Path: "/testpath",
-										Backend: api.HTTPIngressBackend{
-											IngressBackend: api.IngressBackend{
-												ServiceName: f.Ingress.TestServerName(),
-												ServicePort: intstr.FromInt(80),
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			}
-		})
-
-		It("Should Open 443", func() {
-			By("Getting HTTP endpoints")
-			eps, err := f.Ingress.GetHTTPEndpoints(ing)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(eps)).Should(BeNumerically(">=", 1))
-
-			svc, err := f.Ingress.GetOffShootService(ing)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(svc.Spec.Ports)).Should(Equal(1))
-			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(443)))
-
-			err = f.Ingress.DoHTTPs(framework.MaxRetry, framework.TestDomain, "", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
-				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
-					Expect(r.Method).Should(Equal("GET")) &&
-					Expect(r.Path).Should(Equal("/testpath/ok")) &&
-					Expect(r.Host).Should(Equal(framework.TestDomain))
-			})
-			Expect(err).NotTo(HaveOccurred())
-		})
-	})
-
 	Describe("With HSTS Max Age Specified", func() {
 		BeforeEach(func() {
 			ing.Annotations[api.HSTSMaxAge] = "100"
