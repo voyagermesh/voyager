@@ -288,7 +288,7 @@ var dataTables = map[*Ingress]bool{
 		},
 	}: true, // this should work after adding tcp-sni support
 	{
-		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with conflicting TLS"},
+		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with TLS"},
 		Spec: IngressSpec{
 			TLS: []IngressTLS{
 				{
@@ -326,7 +326,7 @@ var dataTables = map[*Ingress]bool{
 				},
 			},
 		},
-	}: false, // useTLS for TCP multi-host // TODO: check if it is possible to use TLS in multi-host TCP
+	}: true, // useTLS for TCP multi-host
 	{
 		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with conflicting TLS"},
 		Spec: IngressSpec{

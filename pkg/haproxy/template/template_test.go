@@ -326,8 +326,7 @@ func TestTemplate(t *testing.T) {
 				FrontendName:  "daemon",
 				Port:          "4444",
 				FrontendRules: []string{},
-				CertFile:      "this-is-secret",
-				PEMName:       "secret-pem",
+				OffloadSSL:    true,
 				Hosts: []*hpi.TCPHost{
 					{
 						Host: "hello.ok.domain",

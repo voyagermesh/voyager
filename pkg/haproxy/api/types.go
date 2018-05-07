@@ -130,8 +130,7 @@ type TCPService struct {
 	Address       string
 	Port          string
 	FrontendRules []string
-	CertFile      string
-	PEMName       string
+	OffloadSSL    bool
 	ALPNOptions   string
 	TLSAuth       *TLSAuth
 	Hosts         []*TCPHost

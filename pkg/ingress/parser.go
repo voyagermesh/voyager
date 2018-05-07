@@ -244,7 +244,7 @@ type httpInfo struct {
 	Hosts      map[string][]*hpi.HTTPPath
 }
 type tcpInfo struct {
-	CertFile    string
+	OffloadSSL  bool
 	ALPNOptions string
 	Hosts       []*hpi.TCPHost
 }
@@ -522,17 +522,8 @@ func (c *controller) generateConfig() error {
 				info.Hosts = append(info.Hosts, tcpHost)
 				info.ALPNOptions = parseALPNOptions(rule.TCP.ALPN) // TODO: alpn for multi-host
 
-				// currently TLS for multi-host TCP will cause validation error
-				// TODO: check if it is possible to use TLS in multi-host TCP
-				if ref, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoTLS {
-					if ref.Kind == api.ResourceKindCertificate {
-						crd, err := c.VoyagerClient.VoyagerV1beta1().Certificates(c.Ingress.Namespace).Get(ref.Name, metav1.GetOptions{})
-						if err == nil {
-							info.CertFile = crd.SecretName() + ".pem"
-						}
-					} else {
-						info.CertFile = ref.Name + ".pem" // Add file extension too
-					}
+				if _, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoTLS {
+					info.OffloadSSL = true
 				}
 			}
 		}
@@ -670,7 +661,7 @@ func (c *controller) generateConfig() error {
 			Port:          strconv.Itoa(binder.Port),
 			FrontendRules: fr.Rules,
 			ALPNOptions:   info.ALPNOptions,
-			CertFile:      info.CertFile,
+			OffloadSSL:    info.OffloadSSL,
 			Hosts:         info.Hosts,
 		}
 
