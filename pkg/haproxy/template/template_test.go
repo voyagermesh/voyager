@@ -824,43 +824,43 @@ func TestTcpSni(t *testing.T) {
 		TCPService: []*hpi.TCPService{
 			{
 				SharedInfo:   si,
-				FrontendName: "fe-1",
+				FrontendName: "no-sni",
 				Port:         "8080",
 				Hosts: []*hpi.TCPHost{
 					{
-						Backend: &hpi.Backend{Name: "be-1"},
-						Host:    "host-1",
+						Backend: &hpi.Backend{Name: "no-sni"},
+						Host:    "http.voyager.test",
 					},
 				},
 			},
 			{
 				SharedInfo:   si,
-				FrontendName: "fe-2",
+				FrontendName: "wildcard-without-tls",
 				Port:         "8080",
 				Hosts: []*hpi.TCPHost{
 					{
-						Backend: &hpi.Backend{Name: "be-2"},
-						Host:    "host-1",
+						Backend: &hpi.Backend{Name: "wildcard-without-tls-1"},
+						Host:    "*.voyager.test",
 					},
 					{
-						Backend: &hpi.Backend{Name: "be-3"},
-						Host:    "host-2",
+						Backend: &hpi.Backend{Name: "wildcard-without-tls-2"},
+						Host:    "http.voyager.test",
 					},
 				},
 			},
 			{
 				SharedInfo:   si,
-				FrontendName: "fe-3",
+				FrontendName: "wildcard-with-tls",
 				Port:         "8080",
 				OffloadSSL:   true,
 				Hosts: []*hpi.TCPHost{
 					{
-						Backend: &hpi.Backend{Name: "be-4"},
-						Host:    "host-1",
+						Backend: &hpi.Backend{Name: "wildcard-with-tls-1"},
+						Host:    "*.voyager.test",
 					},
 					{
-						Backend: &hpi.Backend{Name: "be-5"},
-						Host:    "*host-2",
+						Backend: &hpi.Backend{Name: "wildcard-with-tls-2"},
+						Host:    "http.voyager.test",
 					},
 				},
 			},

@@ -75,13 +75,16 @@ func hostMatcher(v string) string {
 	return "hdr(host) -i " + v
 }
 
-func SNIMathcer(offloadSSL bool, host string) string {
+func SNIMatcher(offloadSSL bool, host string) string {
 	if offloadSSL {
 		if strings.HasPrefix(host, "*") {
 			return "ssl_fc_sni_end -i " + host[1:]
 		}
 		return "ssl_fc_sni -i " + host
 	} else {
+		if strings.HasPrefix(host, "*") {
+			return "req_ssl_sni -i -m end " + host[1:]
+		}
 		return "req_ssl_sni -i " + host
 	}
 }
@@ -104,7 +107,7 @@ var (
 		"acl_name":     ACLName,
 		"header_name":  HeaderName,
 		"host_acls":    HostACLs,
-		"sni_matcher":  SNIMathcer,
+		"sni_matcher":  SNIMatcher,
 		"backend_hash": BackendHash,
 	}
 
