@@ -367,6 +367,72 @@ var dataTables = map[*Ingress]bool{
 		},
 	}: false, // conflicting useTLS
 	{
+		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host matching ALPN after sort"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							ALPN: []string{"a", "b", "c"},
+							Backend: IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+				{
+					Host: "voyager.appscode.com",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							ALPN: []string{"b", "a", "c"},
+							Backend: IngressBackend{
+								ServiceName: "foo2",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: true, // ALPN matched after sort
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host ALPN conflict"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							ALPN: []string{"a", "b"},
+							Backend: IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+				{
+					Host: "voyager.appscode.com",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							ALPN: []string{"x", "y"},
+							Backend: IngressBackend{
+								ServiceName: "foo2",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // conflicting ALPN
+	{
 		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with NoTLS"},
 		Spec: IngressSpec{
 			TLS: []IngressTLS{

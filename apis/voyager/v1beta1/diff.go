@@ -269,7 +269,7 @@ func (r IngressRule) GetHost() string {
 }
 
 func (r TCPIngressRuleValue) ParseALPNOptions() string {
-	opt := append([]string{}, r.ALPN...) // don't modify input
+	opt := append([]string{}, r.ALPN...) // copy slice, don't modify the input
 	if len(opt) <= 0 {
 		return ""
 	}
