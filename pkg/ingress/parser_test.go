@@ -13,13 +13,12 @@ import (
 
 func TestALPNOptions(t *testing.T) {
 	dataTable := map[string][]string{
-		"alpn h2,http/1.1,http/1.0": {
+		"": {},
+		"alpn h2,http/1.0,http/1.1": {
 			"h2",
 			"http/1.1",
 			"http/1.0",
 		},
-
-		"": {},
 	}
 
 	for k, v := range dataTable {

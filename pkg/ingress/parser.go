@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -857,6 +858,7 @@ func parseALPNOptions(opt []string) string {
 	if len(opt) <= 0 {
 		return ""
 	}
+	sort.Strings(opt)
 	return "alpn " + strings.Join(opt, ",")
 }
 
