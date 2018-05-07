@@ -828,41 +828,39 @@ func TestTcpSni(t *testing.T) {
 				Port:         "8080",
 				Hosts: []*hpi.TCPHost{
 					{
-						Backend: &hpi.Backend{
-							Name: "be-1",
-							Endpoints: []*hpi.Endpoint{
-								{Name: "first", IP: "10.244.2.1", Port: "2323"},
-								{Name: "first", IP: "10.244.2.2", Port: "2324"},
-							},
-						},
-						Host: "host-1",
-					},
-					{
-						Backend: &hpi.Backend{
-							Name: "be-2",
-							Endpoints: []*hpi.Endpoint{
-								{Name: "first", IP: "10.244.2.1", Port: "2323"},
-								{Name: "first", IP: "10.244.2.2", Port: "2324"},
-							},
-						},
-						Host: "host-2",
+						Backend: &hpi.Backend{Name: "be-1"},
+						Host:    "host-1",
 					},
 				},
 			},
 			{
 				SharedInfo:   si,
 				FrontendName: "fe-2",
-				Port:         "9090",
+				Port:         "8080",
 				Hosts: []*hpi.TCPHost{
 					{
-						Backend: &hpi.Backend{
-							Name: "be-3",
-							Endpoints: []*hpi.Endpoint{
-								{Name: "first", IP: "10.244.2.1", Port: "2323"},
-								{Name: "first", IP: "10.244.2.2", Port: "2324"},
-							},
-						},
-						Host: "host-3",
+						Backend: &hpi.Backend{Name: "be-2"},
+						Host:    "host-1",
+					},
+					{
+						Backend: &hpi.Backend{Name: "be-3"},
+						Host:    "host-2",
+					},
+				},
+			},
+			{
+				SharedInfo:   si,
+				FrontendName: "fe-3",
+				Port:         "8080",
+				OffloadSSL:   true,
+				Hosts: []*hpi.TCPHost{
+					{
+						Backend: &hpi.Backend{Name: "be-4"},
+						Host:    "host-1",
+					},
+					{
+						Backend: &hpi.Backend{Name: "be-5"},
+						Host:    "*host-2",
 					},
 				},
 			},

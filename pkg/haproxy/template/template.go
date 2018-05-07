@@ -75,6 +75,17 @@ func hostMatcher(v string) string {
 	return "hdr(host) -i " + v
 }
 
+func SNIMathcer(offloadSSL bool, host string) string {
+	if offloadSSL {
+		if strings.HasPrefix(host, "*") {
+			return "ssl_fc_sni_end -i " + host[1:]
+		}
+		return "ssl_fc_sni -i " + host
+	} else {
+		return "req_ssl_sni -i " + host
+	}
+}
+
 func BackendHash(value string, index int, mode string) string {
 	if mode == "md5" {
 		hash := md5.Sum([]byte(value))
@@ -93,6 +104,7 @@ var (
 		"acl_name":     ACLName,
 		"header_name":  HeaderName,
 		"host_acls":    HostACLs,
+		"sni_matcher":  SNIMathcer,
 		"backend_hash": BackendHash,
 	}
 
