@@ -121,15 +121,20 @@ var _ = Describe("Ingress TCP SNI", func() {
 	})
 
 	Describe("With TLS", func() {
-		var secret, alterSecret *core.Secret
+		var secret, alterSecret, wildcardSecret *core.Secret
 		domain := "http.appscode.test"
 		alterDomain := "http.voyager.test"
+		wildcardDomain := "*.voyager.com"
 
 		BeforeEach(func() {
 			var err error
 			secret, err = f.Ingress.CreateTLSSecretForHost(f.UniqueName(), []string{domain})
 			Expect(err).NotTo(HaveOccurred())
 			alterSecret, err = f.Ingress.CreateTLSSecretForHost(f.UniqueName(), []string{alterDomain})
+			Expect(err).NotTo(HaveOccurred())
+			alterSecret, err = f.Ingress.CreateTLSSecretForHost(f.UniqueName(), []string{alterDomain})
+			Expect(err).NotTo(HaveOccurred())
+			wildcardSecret, err = f.Ingress.CreateTLSSecretForHost(f.UniqueName(), []string{wildcardDomain})
 			Expect(err).NotTo(HaveOccurred())
 		})
 		AfterEach(func() {
@@ -155,6 +160,13 @@ var _ = Describe("Ingress TCP SNI", func() {
 					},
 					Hosts: []string{alterDomain},
 				},
+				{
+					Ref: &api.LocalTypedReference{
+						Kind: "Secret",
+						Name: wildcardSecret.Name,
+					},
+					Hosts: []string{wildcardDomain},
+				},
 			}
 			ing.Spec.Rules = []api.IngressRule{
 				{
@@ -163,8 +175,8 @@ var _ = Describe("Ingress TCP SNI", func() {
 						TCP: &api.TCPIngressRuleValue{
 							Port: intstr.FromInt(8443),
 							Backend: api.IngressBackend{
-								ServiceName: f.Ingress.TestServerHTTPSName(),
-								ServicePort: intstr.FromInt(443),
+								ServiceName: f.Ingress.TestServerName(),
+								ServicePort: intstr.FromInt(8989),
 							},
 						},
 					},
@@ -175,8 +187,20 @@ var _ = Describe("Ingress TCP SNI", func() {
 						TCP: &api.TCPIngressRuleValue{
 							Port: intstr.FromInt(8443),
 							Backend: api.IngressBackend{
-								ServiceName: f.Ingress.TestServerHTTPSName(),
-								ServicePort: intstr.FromInt(3443),
+								ServiceName: f.Ingress.TestServerName(),
+								ServicePort: intstr.FromInt(9090),
+							},
+						},
+					},
+				},
+				{
+					Host: wildcardDomain,
+					IngressRuleValue: api.IngressRuleValue{
+						TCP: &api.TCPIngressRuleValue{
+							Port: intstr.FromInt(8443),
+							Backend: api.IngressBackend{
+								ServiceName: f.Ingress.TestServerName(),
+								ServicePort: intstr.FromInt(9090),
 							},
 						},
 					},
@@ -197,13 +221,19 @@ var _ = Describe("Ingress TCP SNI", func() {
 
 			By("Request with host: http.appscode.test")
 			err = f.Ingress.DoHTTPWithSNI(framework.MaxRetry, domain, eps, func(r *client.Response) bool {
-				return Expect(r.ServerPort).Should(Equal(":6443"))
+				return Expect(r.ServerPort).Should(Equal(":8989"))
 			})
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Request with host: ssl.appscode.test")
 			err = f.Ingress.DoHTTPWithSNI(framework.MaxRetry, alterDomain, eps, func(r *client.Response) bool {
-				return Expect(r.ServerPort).Should(Equal(":3443"))
+				return Expect(r.ServerPort).Should(Equal(":9090"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Request with host: appscode.voyager.com") // matches wildcard domain
+			err = f.Ingress.DoHTTPWithSNI(framework.MaxRetry, "appscode.voyager.com", eps, func(r *client.Response) bool {
+				return Expect(r.ServerPort).Should(Equal(":9090"))
 			})
 			Expect(err).NotTo(HaveOccurred())
 		})
