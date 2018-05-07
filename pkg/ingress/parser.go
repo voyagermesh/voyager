@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"net/url"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -521,7 +520,7 @@ func (c *controller) generateConfig() error {
 				}
 
 				info.Hosts = append(info.Hosts, tcpHost)
-				info.ALPNOptions = parseALPNOptions(rule.TCP.ALPN) // TODO: alpn for multi-host
+				info.ALPNOptions = rule.TCP.ParseALPNOptions()
 
 				if _, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoTLS {
 					info.OffloadSSL = true
@@ -852,14 +851,6 @@ func getFrontendRulesForPort(rules []api.FrontendRule, port int) api.FrontendRul
 		}
 	}
 	return api.FrontendRule{}
-}
-
-func parseALPNOptions(opt []string) string {
-	if len(opt) <= 0 {
-		return ""
-	}
-	sort.Strings(opt)
-	return "alpn " + strings.Join(opt, ",")
 }
 
 func getEndpointName(ep core.EndpointAddress) string {

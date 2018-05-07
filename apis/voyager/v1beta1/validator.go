@@ -207,6 +207,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 				return errors.Errorf("spec.rule[%d].tcp.address %s is invalid. Reason: %s", ri, rule.TCP.Address, err)
 			}
 
+			// should not use TLS in passthrough mode
 			_, foundTLS := r.FindTLSSecret(rule.Host)
 			useTLS := foundTLS && !rule.TCP.NoTLS
 			if sslPassthrough && useTLS {
@@ -238,10 +239,16 @@ func (r Ingress) IsValid(cloudProvider string) error {
 					}
 				}
 
+				// check for conflicting TLS
 				_, foundTLS1 := r.FindTLSSecret(r.Spec.Rules[ea.FirstRuleIndex].Host)
 				useTLS1 := foundTLS1 && !r.Spec.Rules[ea.FirstRuleIndex].TCP.NoTLS
 				if useTLS != useTLS1 {
 					return errors.Errorf("spec.rule[%d].TCP has conflicting TLS spec with spec.rule[%d].TCP", ri, ea.FirstRuleIndex)
+				}
+
+				// check for conflicting ALPN
+				if rule.TCP.ParseALPNOptions() != r.Spec.Rules[ea.FirstRuleIndex].TCP.ParseALPNOptions() {
+					return errors.Errorf("spec.rule[%d].TCP has conflicting ALPN spec with spec.rule[%d].TCP", ri, ea.FirstRuleIndex)
 				}
 
 				a = ea

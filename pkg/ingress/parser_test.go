@@ -22,7 +22,8 @@ func TestALPNOptions(t *testing.T) {
 	}
 
 	for k, v := range dataTable {
-		assert.Equal(t, k, parseALPNOptions(v))
+		tcpRule := api.TCPIngressRuleValue{ALPN: v}
+		assert.Equal(t, k, tcpRule.ParseALPNOptions())
 	}
 }
 
