@@ -11,4 +11,4 @@ touch /var/run/haproxy.pid
 mkdir -p /etc/ssl/private/haproxy
 
 echo "Starting runit..."
-exec /usr/bin/runsvdir -P /etc/service
+exec /sbin/runsvdir -P /etc/service
