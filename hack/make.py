@@ -52,6 +52,7 @@ libbuild.BIN_MATRIX = {
 }
 if libbuild.ENV not in ['prod']:
     libbuild.BIN_MATRIX['voyager']['distro'] = {
+        'alpine': ['amd64'],
         'linux': ['amd64']
     }
 libbuild.BUCKET_MATRIX = {

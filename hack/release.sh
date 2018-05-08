@@ -16,6 +16,9 @@ rm -rf dist
 ./hack/docker/haproxy/1.8.8/setup.sh
 ./hack/docker/haproxy/1.8.8/setup.sh release
 
+./hack/docker/haproxy/1.8.8/setup.sh
+./hack/docker/haproxy/1.8.8-alpine/setup.sh release
+
 rm dist/.tag
 
 popd
