@@ -768,10 +768,9 @@ func httpBlocked80(address string, httpServices map[hostBinder]*httpInfo) bool {
 			}
 		}
 		return false
-	} else {
-		_, ok := httpServices[hostBinder{Address: `*`, Port: 80}]
-		return ok
 	}
+	_, ok := httpServices[hostBinder{Address: `*`, Port: 80}]
+	return ok
 }
 
 // if TCP mode uses port 80, so we can't setup 80 -> 443 redirection
@@ -783,10 +782,9 @@ func tcpBlocked80(address string, tcpServices map[hostBinder]*tcpInfo) bool {
 			}
 		}
 		return false
-	} else {
-		_, ok := tcpServices[hostBinder{Address: address, Port: 80}]
-		return ok
 	}
+	_, ok := tcpServices[hostBinder{Address: address, Port: 80}]
+	return ok
 }
 
 func getBasicAuthUsers(userLists map[string]hpi.UserList, sec *core.Secret) ([]string, error) {
