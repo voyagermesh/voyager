@@ -16,11 +16,15 @@ build() {
 	pushd $(dirname "${BASH_SOURCE}")
 	cp $REPO_ROOT/dist/voyager/voyager-linux-amd64 voyager
 	chmod +x voyager
+
 	# download socklog (`socklog` not available for `stretch`, use `jessie` deb instead)
 	curl -L -o socklog.deb http://ftp.us.debian.org/debian/pool/main/s/socklog/socklog_2.1.0-8_amd64.deb
+	# download auth-request.lua
+	curl -L -o auth-request.lua https://raw.githubusercontent.com/appscode/haproxy-auth-request/master/auth-request.lua
+
 	local cmd="docker build -t appscode/$IMG:$TAG ."
 	echo $cmd; $cmd
-	rm voyager socklog.deb
+	rm voyager socklog.deb auth-request.lua
 	popd
 }
 

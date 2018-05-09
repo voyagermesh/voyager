@@ -3,8 +3,8 @@ package template
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/appscode/go/log"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCheckRenderedConfig(t *testing.T) {

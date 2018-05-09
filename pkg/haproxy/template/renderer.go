@@ -2,14 +2,14 @@ package template
 
 import (
 	"bytes"
+	"io/ioutil"
+	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/appscode/go/log"
 	hpi "github.com/appscode/voyager/pkg/haproxy/api"
-	"os/exec"
-	"io/ioutil"
 	"github.com/pkg/errors"
-	"os"
 )
 
 func RenderConfig(data hpi.TemplateData) (string, error) {
