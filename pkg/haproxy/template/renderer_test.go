@@ -9,9 +9,12 @@ import (
 
 func TestCheckRenderedConfig(t *testing.T) {
 	data := map[string]bool{
-		`listen http-in
-        bind *:80
-        server http-server 127.0.0.1:8080`: true, // valid config
+		`
+global
+	lua-load /tmp/auth-request.lua
+listen http-in
+	bind *:80
+	server http-server 127.0.0.1:8080`: true, // valid config - required /tmp/auth-request.lua
 
 		`listen http-in`: false, // invalid config - no bind
 
