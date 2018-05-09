@@ -18,7 +18,7 @@ build() {
 	chmod +x voyager
 
 	# download auth-request.lua
-	curl -fsSL -o auth-request.lua https://raw.githubusercontent.com/appscode/haproxy-auth-request/master/auth-request.lua
+	curl -fsSL -o auth-request.lua https://raw.githubusercontent.com/appscode/haproxy-auth-request/v1.8.8/auth-request.lua
 
 	local cmd="docker build -t appscode/$IMG:$TAG ."
 	echo $cmd; $cmd
