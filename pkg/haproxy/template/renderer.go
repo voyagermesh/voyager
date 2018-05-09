@@ -33,8 +33,8 @@ func RenderConfig(data hpi.TemplateData) (string, error) {
 	}
 	cfg := strings.Join(result, "\n")
 
-	log.Infoln("Checking haproxy.cfg...\n", cfg)
 	if err = CheckRenderedConfig(cfg); err != nil {
+		log.Debugln("Checking haproxy.cfg...\n", cfg)
 		return "", err
 	}
 	return cfg, nil
