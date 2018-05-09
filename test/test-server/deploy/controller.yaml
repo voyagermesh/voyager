@@ -5,7 +5,7 @@ metadata:
   labels:
     app: test-server
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     app: test-server
   template:
@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: server
-          image: appscode/test-server:1.0
+          image: appscode/test-server:2.2
           env:
           - name: POD_NAME
             valueFrom:
@@ -36,3 +36,7 @@ spec:
               containerPort: 5656
             - name: proxy
               containerPort: 6767
+            - name: https-1
+              containerPort: 6443
+            - name: https-2
+              containerPort: 3443

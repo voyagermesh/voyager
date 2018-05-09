@@ -4,6 +4,7 @@ import (
 	"crypto/x509"
 	"net"
 	"reflect"
+	"sort"
 	"strings"
 	"time"
 
@@ -265,4 +266,13 @@ func (r IngressRule) GetHost() string {
 		return ``
 	}
 	return host
+}
+
+func (r TCPIngressRuleValue) ParseALPNOptions() string {
+	opt := append([]string{}, r.ALPN...) // copy slice, don't modify the input
+	if len(opt) <= 0 {
+		return ""
+	}
+	sort.Strings(opt)
+	return "alpn " + strings.Join(opt, ",")
 }

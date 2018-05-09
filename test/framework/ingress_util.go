@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/util/cert"
 )
 
 func (i *ingressInvocation) GetSkeleton() *api_v1beta1.Ingress {
@@ -1220,4 +1221,29 @@ func (i *ingressInvocation) CreateResourceWithSendProxy(version string) (metav1.
 	})
 
 	return meta, err
+}
+
+func (i *ingressInvocation) CreateTLSSecretForHost(name string, hosts []string) (*core.Secret, error) {
+	crt, key, err := i.CertStore.NewServerCertPair(
+		"server",
+		cert.AltNames{
+			IPs:      []net.IP{net.ParseIP("127.0.0.1"), net.ParseIP("192.168.99.100")},
+			DNSNames: hosts,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	secret := &core.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: i.Namespace(),
+		},
+		Type: core.SecretTypeTLS,
+		Data: map[string][]byte{
+			core.TLSCertKey:       crt,
+			core.TLSPrivateKeyKey: key,
+		},
+	}
+	return i.KubeClient.CoreV1().Secrets(secret.Namespace).Create(secret)
 }

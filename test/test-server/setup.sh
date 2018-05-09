@@ -4,7 +4,7 @@ VERSION=2.2
 
 build() {
     rm -rf dist/*
-    GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o dist/server -a -ldflags '-linkmode external -extldflags -static -w' *.go
+    CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o dist/server *.go
 }
 
 build_docker() {

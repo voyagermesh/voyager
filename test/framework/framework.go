@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	MaxRetry   = 200
+	MaxRetry   = 10
 	NoRetry    = 1
 	TestDomain = "http.appscode.test"
 )

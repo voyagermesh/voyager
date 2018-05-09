@@ -13,17 +13,17 @@ import (
 
 func TestALPNOptions(t *testing.T) {
 	dataTable := map[string][]string{
-		"alpn h2,http/1.1,http/1.0": {
+		"": {},
+		"alpn h2,http/1.0,http/1.1": {
 			"h2",
 			"http/1.1",
 			"http/1.0",
 		},
-
-		"": {},
 	}
 
 	for k, v := range dataTable {
-		assert.Equal(t, k, parseALPNOptions(v))
+		tcpRule := api.TCPIngressRuleValue{ALPN: v}
+		assert.Equal(t, k, tcpRule.ParseALPNOptions())
 	}
 }
 
@@ -202,7 +202,7 @@ var dataEng = map[*api.Ingress]bool{
 				},
 			},
 		},
-	}: true,
+	}: false, // can't use TLS in passthrough mode
 	{
 		ObjectMeta: metav1.ObjectMeta{Name: "data-5", Annotations: sslPassthroughAnnotation},
 		Spec: api.IngressSpec{
@@ -382,5 +382,5 @@ var dataIng = map[*v1beta1.Ingress]bool{
 				},
 			},
 		},
-	}: true,
+	}: false, // can't use TLS in passthrough mode
 }

@@ -27,20 +27,8 @@ var _ = Describe("IngressTCP", func() {
 	})
 
 	BeforeEach(func() {
-		crt, key, err := f.CertStore.NewServerCertPair("server", f.ServerSANs())
-		Expect(err).NotTo(HaveOccurred())
-		secret = &core.Secret{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      f.Ingress.UniqueName(),
-				Namespace: ing.GetNamespace(),
-			},
-			Type: core.SecretTypeTLS,
-			Data: map[string][]byte{
-				core.TLSCertKey:       crt,
-				core.TLSPrivateKeyKey: key,
-			},
-		}
-		_, err = f.KubeClient.CoreV1().Secrets(secret.Namespace).Create(secret)
+		var err error
+		secret, err = f.Ingress.CreateTLSSecretForHost(f.UniqueName(), []string{framework.TestDomain})
 		Expect(err).NotTo(HaveOccurred())
 	})
 

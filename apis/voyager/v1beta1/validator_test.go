@@ -257,7 +257,348 @@ var dataTables = map[*Ingress]bool{
 		},
 	}: true,
 	{
-		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi in Same Port"},
+		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host in same port"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+				{
+					Host: "voyager.appscode.com",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo2",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: true, // this should work after adding tcp-sni support
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with TLS"},
+		Spec: IngressSpec{
+			TLS: []IngressTLS{
+				{
+					SecretName: "voyager-cert",
+					Hosts: []string{
+						"voyager.appscode.test",
+						"voyager.appscode.com",
+					},
+				},
+			},
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+				{
+					Host: "voyager.appscode.com",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo2",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: true, // useTLS for TCP multi-host
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with conflicting TLS"},
+		Spec: IngressSpec{
+			TLS: []IngressTLS{
+				{
+					SecretName: "voyager-cert",
+					Hosts: []string{
+						"voyager.appscode.test",
+					},
+				},
+			},
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+				{
+					Host: "voyager.appscode.com",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo2",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // conflicting useTLS
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host matching ALPN after sort"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							ALPN: []string{"a", "b", "c"},
+							Backend: IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+				{
+					Host: "voyager.appscode.com",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							ALPN: []string{"b", "a", "c"},
+							Backend: IngressBackend{
+								ServiceName: "foo2",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: true, // ALPN matched after sort
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host ALPN conflict"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							ALPN: []string{"a", "b"},
+							Backend: IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+				{
+					Host: "voyager.appscode.com",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							ALPN: []string{"x", "y"},
+							Backend: IngressBackend{
+								ServiceName: "foo2",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // conflicting ALPN
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host ALPN conflict"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+				{
+					Host: "voyager.appscode.com",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							ALPN: []string{"x", "y"},
+							Backend: IngressBackend{
+								ServiceName: "foo2",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // conflicting ALPN with NoALPN
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with NoTLS"},
+		Spec: IngressSpec{
+			TLS: []IngressTLS{
+				{
+					SecretName: "voyager-cert",
+					Hosts: []string{
+						"voyager.appscode.test",
+					},
+				},
+			},
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							NoTLS: true,
+							Port:  intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+				{
+					Host: "voyager.appscode.com",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo2",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: true, // useTLS will be false for both rules
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with reusing host"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo2",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // some host under same address-binder
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with wildcard host"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					Host: "*",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo2",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // wildcard host with multiple rules under same address-binder
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with wildcard host (2)"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+				{
+					Host: "*",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo2",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // wildcard host with multiple rules under same address-binder
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host with empty host"},
 		Spec: IngressSpec{
 			Rules: []IngressRule{
 				{
@@ -272,6 +613,7 @@ var dataTables = map[*Ingress]bool{
 					},
 				},
 				{
+					Host: "voyager.appscode.test",
 					IngressRuleValue: IngressRuleValue{
 						TCP: &TCPIngressRuleValue{
 							Port: intstr.FromInt(3434),
@@ -284,7 +626,7 @@ var dataTables = map[*Ingress]bool{
 				},
 			},
 		},
-	}: false,
+	}: false, // empty host with multiple rules under same address-binder
 	{
 		ObjectMeta: metav1.ObjectMeta{Name: "TCP with different port"},
 		Spec: IngressSpec{
@@ -314,6 +656,71 @@ var dataTables = map[*Ingress]bool{
 			},
 		},
 	}: true,
+	{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "TLS in passthrough mode",
+			Annotations: map[string]string{
+				SSLPassthrough: "true",
+			},
+		},
+		Spec: IngressSpec{
+			TLS: []IngressTLS{
+				{
+					SecretName: "voyager-cert",
+					Hosts: []string{
+						"voyager.appscode.test",
+					},
+				},
+			},
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // TLS defined in passthrough mode
+	{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "NoTLS in passthrough mode",
+			Annotations: map[string]string{
+				SSLPassthrough: "true",
+			},
+		},
+		Spec: IngressSpec{
+			TLS: []IngressTLS{
+				{
+					SecretName: "voyager-cert",
+					Hosts: []string{
+						"voyager.appscode.test",
+					},
+				},
+			},
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							NoTLS: true,
+							Port:  intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromInt(3444),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: true, // NoTLS in passthrough mode
 	{
 		ObjectMeta: metav1.ObjectMeta{Name: "Multi rule"},
 		Spec: IngressSpec{
