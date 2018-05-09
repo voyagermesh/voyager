@@ -8,20 +8,21 @@ import (
 )
 
 func TestCheckRenderedConfig(t *testing.T) {
-	cfg := `listen http-in
+	data := map[string]bool{
+		`listen http-in
         bind *:80
-        server http-server 127.0.0.1:8080
-`
-	err := CheckRenderedConfig(cfg)
-	if err != nil {
-		log.Errorln(err)
-	}
-	assert.Equal(t, true, err == nil)
+        server http-server 127.0.0.1:8080`: true, // valid config
 
-	cfg = "listen http-in"
-	err = CheckRenderedConfig(cfg)
-	if err != nil {
-		log.Errorln(err)
+		`listen http-in`: false, // invalid config - no bind
+
+		``: false, // invalid config - no listener
 	}
-	assert.Equal(t, false, err == nil)
+
+	for cfg, result := range data {
+		err := CheckRenderedConfig(cfg)
+		if err != nil {
+			log.Errorln(err)
+		}
+		assert.Equal(t, result, err == nil)
+	}
 }
