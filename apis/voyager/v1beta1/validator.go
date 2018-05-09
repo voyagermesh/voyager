@@ -109,8 +109,8 @@ func (r Ingress) IsValid(cloudProvider string) error {
 			if nodePort, err = checkOptionalPort(rule.HTTP.NodePort); err != nil {
 				return errors.Errorf("spec.rule[%d].http.nodePort %s is invalid. Reason: %s", ri, rule.HTTP.NodePort, err)
 			} else if nodePort > 0 {
-				if r.LBType() == LBTypeHostPort {
-					return errors.Errorf("spec.rule[%d].http.nodePort %s may not be specified when `LBType` is `HostPort`", ri, rule.HTTP.NodePort)
+				if r.LBType() == LBTypeHostPort || r.LBType() == LBTypeInternal {
+					return errors.Errorf("spec.rule[%d].http.nodePort %s may not be specified when `LBType` is %s", ri, rule.HTTP.NodePort, r.LBType())
 				}
 			}
 			bindAddress, err := checkOptionalAddress(rule.HTTP.Address)
@@ -196,8 +196,8 @@ func (r Ingress) IsValid(cloudProvider string) error {
 			if nodePort, err = checkOptionalPort(rule.TCP.NodePort); err != nil {
 				return errors.Errorf("spec.rule[%d].tcp.nodePort %s is invalid. Reason: %s", ri, rule.TCP.NodePort, err)
 			} else if nodePort > 0 {
-				if r.LBType() == LBTypeHostPort {
-					return errors.Errorf("spec.rule[%d].tcp.nodePort %s may not be specified when `LBType` is `HostPort`", ri, rule.TCP.NodePort)
+				if r.LBType() == LBTypeHostPort || r.LBType() == LBTypeInternal {
+					return errors.Errorf("spec.rule[%d].tcp.nodePort %s may not be specified when `LBType` is %s", ri, rule.TCP.NodePort, r.LBType())
 				}
 			}
 			bindAddress, err := checkOptionalAddress(rule.TCP.Address)
