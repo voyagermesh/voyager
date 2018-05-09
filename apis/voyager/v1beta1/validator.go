@@ -273,10 +273,10 @@ func (r Ingress) IsValid(cloudProvider string) error {
 
 			if _, found := a.Hosts[rule.GetHost()]; !found {
 				a.Hosts[rule.GetHost()] = Paths{
-					"/": indices{RuleIndex: ri}, // for tcp no paths, just store indices in path "/"
+					"": indices{RuleIndex: ri}, // for tcp no paths, just store indices in empty-path
 				}
 			} else { // same host under same address-binder
-				ei := a.Hosts[rule.GetHost()]["/"]
+				ei := a.Hosts[rule.GetHost()][""]
 				return errors.Errorf("spec.rule[%d].tcp is reusing host %s for addr %s, also used in spec.rule[%d]", ri, rule.Host, a, ei.RuleIndex)
 			}
 
