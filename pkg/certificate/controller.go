@@ -161,6 +161,17 @@ func (c *Controller) Process() error {
 				eventer.EventReasonCertificateIssueSuccessful,
 				"Successfully renewed certificate",
 			)
+		} else if err == ErrEmptyCert {
+			err := c.create()
+			if err == nil {
+				c.recorder.Eventf(
+					c.crd.ObjectReference(),
+					core.EventTypeNormal,
+					eventer.EventReasonCertificateIssueSuccessful,
+					"Successfully issued certificate",
+				)
+			}
+			return err
 		}
 		return err
 	}
@@ -243,6 +254,8 @@ func (c *Controller) create() error {
 	return c.store.Save(c.crd, cert)
 }
 
+var ErrEmptyCert = errors.New("empty cert")
+
 func (c *Controller) renew() error {
 	if err := c.getACMEClient(); err != nil {
 		return err
@@ -262,6 +275,9 @@ func (c *Controller) renew() error {
 	cert, err := c.acmeClient.RenewCertificate(acmeCert, true, false)
 	if err != nil {
 		return c.processError(err)
+	}
+	if len(cert.Certificate) == 0 || len(cert.PrivateKey) == 0 {
+		return ErrEmptyCert
 	}
 	return c.store.Save(c.crd, cert)
 }
