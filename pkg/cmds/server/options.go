@@ -68,7 +68,7 @@ func NewOperatorOptions() *OperatorOptions {
 	return &OperatorOptions{
 		DockerRegistry:    "appscode",
 		HAProxyImageTag:   "1.8.8-7.0.0-rc.0-alpine",
-		ExporterImageTag:  "6.0.0",
+		ExporterImageTag:  "7.0.0-rc.0",
 		OperatorNamespace: meta.Namespace(),
 		OperatorService:   "voyager-operator",
 		EnableRBAC:        false,

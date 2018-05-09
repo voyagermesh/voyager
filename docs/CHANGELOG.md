@@ -2,28 +2,28 @@
 title: Changelog | Voyager
 description: Changelog
 menu:
-  product_voyager_6.0.0:
+  product_voyager_7.0.0-rc.0:
     identifier: changelog-voyager
     name: Changelog
     parent: welcome
     weight: 10
 product_name: voyager
-menu_name: product_voyager_6.0.0
+menu_name: product_voyager_7.0.0-rc.0
 section_menu_id: welcome
-url: /products/voyager/6.0.0/welcome/changelog/
+url: /products/voyager/7.0.0-rc.0/welcome/changelog/
 aliases:
-  - /products/voyager/6.0.0/CHANGELOG/
+  - /products/voyager/7.0.0-rc.0/CHANGELOG/
 ---
 
 # Change Log
 
-## [6.0.0](https://github.com/appscode/voyager/tree/6.0.0) (2018-03-13)
-[Full Changelog](https://github.com/appscode/voyager/compare/6.0.0-rc.2...6.0.0)
+## [7.0.0-rc.0](https://github.com/appscode/voyager/tree/7.0.0-rc.0) (2018-03-13)
+[Full Changelog](https://github.com/appscode/voyager/compare/7.0.0-rc.0-rc.2...7.0.0-rc.0)
 
 **Fixed bugs:**
 
 - TCP Ingress: invalid memory address or nil pointer dereference [\#906](https://github.com/appscode/voyager/issues/906)
-- Voyager 6.0.0 on GKE 1.8.5:  Failed to list \*v1beta1.Ingress: unstructured cannot convert field labels [\#889](https://github.com/appscode/voyager/issues/889)
+- Voyager 7.0.0-rc.0 on GKE 1.8.5:  Failed to list \*v1beta1.Ingress: unstructured cannot convert field labels [\#889](https://github.com/appscode/voyager/issues/889)
 - Run service monitor informer in its own go routine. [\#929](https://github.com/appscode/voyager/pull/929) ([tamalsaha](https://github.com/tamalsaha))
 - Various fixes and improved logging [\#928](https://github.com/appscode/voyager/pull/928) ([tamalsaha](https://github.com/tamalsaha))
 - Use user provided cookie name for default backend [\#920](https://github.com/appscode/voyager/pull/920) ([tamalsaha](https://github.com/tamalsaha))
@@ -43,7 +43,7 @@ aliases:
 
 **Merged pull requests:**
 
-- Update docs for 6.0.0 [\#932](https://github.com/appscode/voyager/pull/932) ([tamalsaha](https://github.com/tamalsaha))
+- Update docs for 7.0.0-rc.0 [\#932](https://github.com/appscode/voyager/pull/932) ([tamalsaha](https://github.com/tamalsaha))
 - Document how to create internal LB in openstack [\#931](https://github.com/appscode/voyager/pull/931) ([tamalsaha](https://github.com/tamalsaha))
 - Fix typo in README [\#927](https://github.com/appscode/voyager/pull/927) ([shaneog](https://github.com/shaneog))
 - Update overview.md [\#926](https://github.com/appscode/voyager/pull/926) ([bewiwi](https://github.com/bewiwi))
@@ -52,23 +52,23 @@ aliases:
 - Make headerRule, rewriteRule plural [\#919](https://github.com/appscode/voyager/pull/919) ([tamalsaha](https://github.com/tamalsaha))
 - Make it clear that installer is a single command [\#915](https://github.com/appscode/voyager/pull/915) ([tamalsaha](https://github.com/tamalsaha))
 
-## [6.0.0-rc.2](https://github.com/appscode/voyager/tree/6.0.0-rc.2) (2018-03-05)
-[Full Changelog](https://github.com/appscode/voyager/compare/6.0.0-rc.1...6.0.0-rc.2)
+## [7.0.0-rc.0-rc.2](https://github.com/appscode/voyager/tree/7.0.0-rc.0-rc.2) (2018-03-05)
+[Full Changelog](https://github.com/appscode/voyager/compare/7.0.0-rc.0-rc.1...7.0.0-rc.0-rc.2)
 
 **Merged pull requests:**
 
 - Update docs that --rbac is default on [\#914](https://github.com/appscode/voyager/pull/914) ([tamalsaha](https://github.com/tamalsaha))
 - Enable RBAC by default in installer [\#913](https://github.com/appscode/voyager/pull/913) ([tamalsaha](https://github.com/tamalsaha))
 - Fix installer [\#912](https://github.com/appscode/voyager/pull/912) ([tamalsaha](https://github.com/tamalsaha))
-- Prepare docs for 6.0.0-rc.2 [\#911](https://github.com/appscode/voyager/pull/911) ([tamalsaha](https://github.com/tamalsaha))
+- Prepare docs for 7.0.0-rc.0-rc.2 [\#911](https://github.com/appscode/voyager/pull/911) ([tamalsaha](https://github.com/tamalsaha))
 - Stop using field selector in haproxy controller [\#910](https://github.com/appscode/voyager/pull/910) ([tamalsaha](https://github.com/tamalsaha))
 - Update chart to match RBAC best practices for charts [\#909](https://github.com/appscode/voyager/pull/909) ([tamalsaha](https://github.com/tamalsaha))
 - Add checks to installer script [\#908](https://github.com/appscode/voyager/pull/908) ([tamalsaha](https://github.com/tamalsaha))
 - Cleanup admission webhook [\#907](https://github.com/appscode/voyager/pull/907) ([tamalsaha](https://github.com/tamalsaha))
-- Update changelog for 6.0.0-rc.1 [\#905](https://github.com/appscode/voyager/pull/905) ([tamalsaha](https://github.com/tamalsaha))
+- Update changelog for 7.0.0-rc.0-rc.1 [\#905](https://github.com/appscode/voyager/pull/905) ([tamalsaha](https://github.com/tamalsaha))
 
-## [6.0.0-rc.1](https://github.com/appscode/voyager/tree/6.0.0-rc.1) (2018-02-28)
-[Full Changelog](https://github.com/appscode/voyager/compare/6.0.0-rc.0...6.0.0-rc.1)
+## [7.0.0-rc.0-rc.1](https://github.com/appscode/voyager/tree/7.0.0-rc.0-rc.1) (2018-02-28)
+[Full Changelog](https://github.com/appscode/voyager/compare/7.0.0-rc.0-rc.0...7.0.0-rc.0-rc.1)
 
 **Implemented enhancements:**
 
@@ -84,7 +84,7 @@ aliases:
 
 - Update Prometheus integration [\#893](https://github.com/appscode/voyager/issues/893)
 - Disabling HSTS - doesn't work [\#881](https://github.com/appscode/voyager/issues/881)
-- Upgrade from 5.0.0-rc.11 to 6.0.0-rc.0 [\#876](https://github.com/appscode/voyager/issues/876)
+- Upgrade from 5.0.0-rc.11 to 7.0.0-rc.0-rc.0 [\#876](https://github.com/appscode/voyager/issues/876)
 - AWS ELB Proxy IP forwarded for occurs errors  [\#749](https://github.com/appscode/voyager/issues/749)
 - How to use voyager instead of kubernetes nginx ingress controller [\#742](https://github.com/appscode/voyager/issues/742)
 - RBAC for voyager [\#732](https://github.com/appscode/voyager/issues/732)
@@ -96,7 +96,7 @@ aliases:
 
 **Merged pull requests:**
 
-- Prepare docs for 6.0.0-rc.1 [\#904](https://github.com/appscode/voyager/pull/904) ([tamalsaha](https://github.com/tamalsaha))
+- Prepare docs for 7.0.0-rc.0-rc.1 [\#904](https://github.com/appscode/voyager/pull/904) ([tamalsaha](https://github.com/tamalsaha))
 - Fix service name in chart [\#903](https://github.com/appscode/voyager/pull/903) ([tamalsaha](https://github.com/tamalsaha))
 - Update links to latest release [\#901](https://github.com/appscode/voyager/pull/901) ([tamalsaha](https://github.com/tamalsaha))
 - Support --enable-admission-webhook=false [\#900](https://github.com/appscode/voyager/pull/900) ([tamalsaha](https://github.com/tamalsaha))
@@ -117,8 +117,8 @@ aliases:
 - Use github.com/pkg/errors [\#877](https://github.com/appscode/voyager/pull/877) ([tamalsaha](https://github.com/tamalsaha))
 - Update docs for supported annotations [\#871](https://github.com/appscode/voyager/pull/871) ([diptadas](https://github.com/diptadas))
 
-## [6.0.0-rc.0](https://github.com/appscode/voyager/tree/6.0.0-rc.0) (2018-02-14)
-[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0-rc.11...6.0.0-rc.0)
+## [7.0.0-rc.0-rc.0](https://github.com/appscode/voyager/tree/7.0.0-rc.0-rc.0) (2018-02-14)
+[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0-rc.11...7.0.0-rc.0-rc.0)
 
 **Fixed bugs:**
 
@@ -193,12 +193,12 @@ aliases:
 - Copy generic-admission-server code into pkg [\#835](https://github.com/appscode/voyager/pull/835) ([tamalsaha](https://github.com/tamalsaha))
 - Log TemplateData in debug mode [\#834](https://github.com/appscode/voyager/pull/834) ([tamalsaha](https://github.com/tamalsaha))
 -  Removed maps from template data [\#831](https://github.com/appscode/voyager/pull/831) ([diptadas](https://github.com/diptadas))
-- Prepare docs for 6.0.0-alpha.0 [\#830](https://github.com/appscode/voyager/pull/830) ([tamalsaha](https://github.com/tamalsaha))
+- Prepare docs for 7.0.0-rc.0-alpha.0 [\#830](https://github.com/appscode/voyager/pull/830) ([tamalsaha](https://github.com/tamalsaha))
 - Support private docker registry in installer [\#829](https://github.com/appscode/voyager/pull/829) ([tamalsaha](https://github.com/tamalsaha))
 - Add ValidatingAdmissionWebhook for Voyager CRDs [\#828](https://github.com/appscode/voyager/pull/828) ([tamalsaha](https://github.com/tamalsaha))
 - Use kubectl auth reconcile in installer script [\#827](https://github.com/appscode/voyager/pull/827) ([tamalsaha](https://github.com/tamalsaha))
 - Update changelog [\#826](https://github.com/appscode/voyager/pull/826) ([tamalsaha](https://github.com/tamalsaha))
-- Update client-go to 6.0.0 [\#825](https://github.com/appscode/voyager/pull/825) ([tamalsaha](https://github.com/tamalsaha))
+- Update client-go to 7.0.0-rc.0 [\#825](https://github.com/appscode/voyager/pull/825) ([tamalsaha](https://github.com/tamalsaha))
 - Update copyright year to 2018 [\#824](https://github.com/appscode/voyager/pull/824) ([tamalsaha](https://github.com/tamalsaha))
 - Merge tls-mounter & kloader into haproxy-controller [\#823](https://github.com/appscode/voyager/pull/823) ([tamalsaha](https://github.com/tamalsaha))
 - Updating kube-mon so service-monitor-endpoint-port is optional [\#822](https://github.com/appscode/voyager/pull/822) ([jeffersongirao](https://github.com/jeffersongirao))

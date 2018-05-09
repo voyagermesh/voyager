@@ -25413,7 +25413,7 @@ func (s *CreateNatGatewayOutput) SetNatGateway(v *NatGateway) *CreateNatGatewayO
 type CreateNetworkAclEntryInput struct {
 	_ struct{} `type:"structure"`
 
-	// The IPv4 network range to allow or deny, in CIDR notation (for example 172.16.0.0/24).
+	// The IPv4 network range to allow or deny, in CIDR notation (for example 172.17.0.0-rc.0/24).
 	CidrBlock *string `locationName:"cidrBlock" type:"string"`
 
 	// Checks whether you have the required permissions for the action, without
@@ -50446,7 +50446,7 @@ func (s *ReplaceNetworkAclAssociationOutput) SetNewAssociationId(v string) *Repl
 type ReplaceNetworkAclEntryInput struct {
 	_ struct{} `type:"structure"`
 
-	// The IPv4 network range to allow or deny, in CIDR notation (for example 172.16.0.0/24).
+	// The IPv4 network range to allow or deny, in CIDR notation (for example 172.17.0.0-rc.0/24).
 	CidrBlock *string `locationName:"cidrBlock" type:"string"`
 
 	// Checks whether you have the required permissions for the action, without

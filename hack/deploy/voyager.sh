@@ -103,7 +103,7 @@ export VOYAGER_PURGE=0
 export VOYAGER_TEMPLATE_CONFIGMAP=
 
 export APPSCODE_ENV=${APPSCODE_ENV:-prod}
-export SCRIPT_LOCATION="curl -fsSL https://raw.githubusercontent.com/appscode/voyager/6.0.0/"
+export SCRIPT_LOCATION="curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.0/"
 if [ "$APPSCODE_ENV" = "dev" ]; then
     detect_tag
     export SCRIPT_LOCATION="cat "

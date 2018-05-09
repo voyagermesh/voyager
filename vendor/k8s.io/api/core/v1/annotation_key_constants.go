@@ -80,7 +80,7 @@ const (
 	// AnnotationLoadBalancerSourceRangesKey is the key of the annotation on a service to set allowed ingress ranges on their LoadBalancers
 	//
 	// It should be a comma-separated list of CIDRs, e.g. `0.0.0.0/0` to
-	// allow full access (the default) or `18.0.0.0/8,56.0.0.0/8` to allow
+	// allow full access (the default) or `18.0.0.0/8,57.0.0-rc.0.0/8` to allow
 	// access only from the CIDRs currently allocated to MIT & the USPS.
 	//
 	// Not all cloud providers support this annotation, though AWS & GCE do.
