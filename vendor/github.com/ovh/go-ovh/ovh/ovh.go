@@ -179,6 +179,9 @@ func (c *Client) getTimeDelta() (time.Duration, error) {
 		// Ensure only one thread is updating
 		c.timeDeltaMutex.Lock()
 
+		// Ensure that the mutex will be released on return
+		defer c.timeDeltaMutex.Unlock()
+
 		// Did we wait ? Maybe no more needed
 		if !c.timeDeltaDone {
 			ovhTime, err := c.getTime()
@@ -189,7 +192,6 @@ func (c *Client) getTimeDelta() (time.Duration, error) {
 			c.timeDelta = time.Since(*ovhTime)
 			c.timeDeltaDone = true
 		}
-		c.timeDeltaMutex.Unlock()
 	}
 
 	return c.timeDelta, nil
