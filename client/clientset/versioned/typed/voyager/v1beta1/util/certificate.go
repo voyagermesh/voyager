@@ -1,8 +1,6 @@
 package util
 
 import (
-	"encoding/json"
-
 	"github.com/appscode/kutil"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1"

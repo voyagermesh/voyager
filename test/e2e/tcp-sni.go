@@ -153,7 +153,7 @@ var _ = Describe("Ingress TCP SNI", func() {
 					IngressRuleValue: api.IngressRuleValue{
 						TCP: &api.TCPIngressRuleValue{
 							NoTLS: true,
-							Port: intstr.FromInt(8443),
+							Port:  intstr.FromInt(8443),
 							Backend: api.IngressBackend{
 								ServiceName: f.Ingress.TestServerHTTPSName(),
 								ServicePort: intstr.FromInt(443),
