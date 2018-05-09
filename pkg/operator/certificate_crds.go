@@ -136,7 +136,7 @@ func (op *Operator) CheckCertificates() {
 			for i := range result {
 				cert := result[i]
 				if cert.IsRateLimited() {
-					log.Infoln("skipping certificate %s/%s, since rate limited", cert.Namespace, cert.Name)
+					log.Infof("skipping certificate %s/%s, since rate limited", cert.Namespace, cert.Name)
 					continue
 				}
 				ctrl, err := certificate.NewController(op.KubeClient, op.VoyagerClient, op.Config, cert)
