@@ -973,7 +973,7 @@ func (c *controller) convertRulesForSSLPassthrough() error {
 			rule.TCP = &api.TCPIngressRuleValue{
 				Address:  rule.HTTP.Address,
 				Port:     rule.HTTP.Port,
-				NoTLS:    rule.HTTP.NoTLS,
+				NoTLS:    true, // don't use TLS in passthrough mode
 				NodePort: rule.HTTP.NodePort,
 				Backend:  rule.HTTP.Paths[0].Backend.IngressBackend,
 			}
