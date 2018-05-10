@@ -16,20 +16,15 @@ section_menu_id: guides
 
 The annotation `ingress.appscode.com/ssl-passthrough` allows to configure TLS termination in the backend and not in haproxy. When set to `true`, passes TLS connections directly to backend.
 
-If `ssl-passthrough` is used the mode has to be TCP. For more details see  [here](https://www.haproxy.com/documentation/haproxy/deployment-guides/tls-infrastructure/). 
-When `ssl-pasthrough` is enabled, voyager automatically converts your HTTP rules to TCP rules.
+If `ssl-passthrough` is used, HAProxy will use `tcp`. For more details see  [here](https://www.haproxy.com/documentation/haproxy/deployment-guides/tls-infrastructure/). When `ssl-pasthrough` is enabled, Voyager automatically converts your HTTP ingress rules to TCP rules.
 
-Please note that following things are not supported while using `ssl-pasthrough`:
+Please note that following features are not supported when using `ssl-pasthrough`:
 
 - Multiple paths for HTTP rules.
 - `headerRules` and `rewriteRules` for backends.
-- Specifying TLS for TCP rules.
+- Specifying TLS for TCP rules. So even if you define `spec.tls` for your HTTP hosts, it will be ignored.
 
-Note that, you can not use TLS in passthrough mode. To ensure that voyager always sets `noTLS=true` when converting HTTP rules to TCP rules.
-So even if you define `spec.tls` for your HTTP hosts, it will be ignored.
-
-But voyager will not modify your existing TCP rules. Instead it will cause a validation error if TLS defined for existing TCP rules.
-In that case, you have to either ensure TCP hosts do not match with `spec.tls` or, just set `noTLS=true` for those TCP rules.
+Voyager will not modify your existing TCP rules. Instead it will cause a validation error if TLS defined for existing TCP rules on same port. In that case, you have to either ensure TCP hosts do not match with `spec.tls` or, just set `noTLS=true` for those TCP rules.
 
 ## Ingress Example
 
@@ -85,7 +80,7 @@ defaults
 	# mode is overwritten in case of tcp services
 	mode http
 frontend tcp-0_0_0_0-8443
-	bind *:8443    
+	bind *:8443
 	mode tcp
 	default_backend test-server.default:443
 backend test-server.default:443
