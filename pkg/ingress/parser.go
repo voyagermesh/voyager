@@ -722,6 +722,10 @@ func (c *controller) generateConfig() error {
 		c.HAProxyConfig = cfg
 		c.logger.Debugf("Generated haproxy.cfg for Ingress %s/%s", c.Ingress.Namespace, c.Ingress.Name)
 	}
+	if err := template.CheckHAProxyConfig(c.HAProxyConfig); err != nil {
+		c.logger.Debugf("Checking haproxy.cfg for Ingress %s/%s...\n%s", c.Ingress.Namespace, c.Ingress.Name, c.HAProxyConfig)
+		return err
+	}
 	return nil
 }
 

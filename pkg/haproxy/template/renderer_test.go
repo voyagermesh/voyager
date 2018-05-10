@@ -7,14 +7,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCheckRenderedConfig(t *testing.T) {
+func TestCheckHAProxyConfig(t *testing.T) {
 	data := map[string]bool{
 		`
 global
-	lua-load /tmp/auth-request.lua
+	lua-load /etc/auth-request.lua
 listen http-in
 	bind *:80
-	server http-server 127.0.0.1:8080`: true, // valid config - required /tmp/auth-request.lua
+	server http-server 127.0.0.1:8080`: true, // valid config - required /etc/auth-request.lua
 
 		`listen http-in`: false, // invalid config - no bind
 
@@ -22,7 +22,7 @@ listen http-in
 	}
 
 	for cfg, result := range data {
-		err := CheckRenderedConfig(cfg)
+		err := CheckHAProxyConfig(cfg)
 		if err != nil {
 			log.Errorln(err)
 		}
