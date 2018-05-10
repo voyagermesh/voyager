@@ -202,7 +202,7 @@ var dataEng = map[*api.Ingress]bool{
 				},
 			},
 		},
-	}: false, // can't use TLS in passthrough mode
+	}: true, // when converting http to tcp in ssl-passthrough, always set NoTLS=true, so no validation error
 	{
 		ObjectMeta: metav1.ObjectMeta{Name: "data-5", Annotations: sslPassthroughAnnotation},
 		Spec: api.IngressSpec{
@@ -382,5 +382,5 @@ var dataIng = map[*v1beta1.Ingress]bool{
 				},
 			},
 		},
-	}: false, // can't use TLS in passthrough mode
+	}: true, // when converting http to tcp in ssl-passthrough, always set NoTLS=true, so no validation error
 }
