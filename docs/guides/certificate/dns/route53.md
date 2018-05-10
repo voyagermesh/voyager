@@ -373,7 +373,7 @@ spec:
           servicePort: 80
 ```
 
-Wait for the LoadBlanacer CNAME to be assigned. Once the CNAME is assigned, set the LoadBlancer hostname as the CNAME record for test domain `www.kiteci.pro`
+Wait for the LoadBalancer CNAME to be assigned. Once the CNAME is assigned, set the LoadBalancer hostname as the CNAME record for test domain `www.kiteci.pro`
 
 ```console
 $ kubectl get svc voyager-test-ingress -o wide
