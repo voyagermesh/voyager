@@ -1,15 +1,11 @@
 # Configuring Multiple Hosts in TCP Mode
 
-In non-passthrough mode (http mode), haproxy can decrypt the TLS connections using provided `certs`
-and choose backends based host header.
-
-On the other hand, in passthrough mode (tcp mode), haproxy don't perform TLS termination, so no way to read the host header.
+In HTTP mode, haproxy choose backends based on host header. But in TCP mode, haproxy does not evaluate the HTTP headers.
 
 This problem can be solved using Server Name Indication (SNI) that allows the client to include the hostname during `SSL Hello`.
-Note that, SNI hostname is send as plain texts. So haproxy can choose backend based on SNI hostname without terminating TLS.
+Note that, SNI hostname is send as plain texts. So haproxy can choose backend based on SNI hostname even in TCP mode.
  
-This example demonstrates how to configure multiple hosts in SSL passthrough using SNI, 
-i.e. choose backends based on host in TCP mode.
+This example demonstrates how to configure voyager to choose backends based on host in TCP mode.
 
 ## Minikube walk-through
 
@@ -57,13 +53,14 @@ spec:
 # DO NOT EDIT!
 global
 	daemon
-	stats socket /tmp/haproxy
+	stats socket /var/run/haproxy.sock level admin expose-fd listeners
 	server-state-file global
 	server-state-base /var/state/haproxy/
 	# log using a syslog socket
 	log /dev/log local0 info
 	tune.ssl.default-dh-param 2048
 	ssl-default-bind-ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK
+	lua-load /etc/auth-request.lua
 defaults
 	log global
 	# https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.2-option%20abortonclose
@@ -89,10 +86,10 @@ frontend tcp-0_0_0_0-8443
 	use_backend test-server.default:3443 if { req_ssl_sni -i voyager.appscode.com }
 backend test-server.default:6443
 	mode tcp
-	server pod-test-server-6n4bq 172.17.0.3:6443     
+	server pod-test-server-tct6l 172.17.0.4:6443     
 backend test-server.default:3443
 	mode tcp
-	server pod-test-server-6n4bq 172.17.0.3:3443    
+	server pod-test-server-tct6l 172.17.0.4:3443  
 ```
 
 ### Get service url
@@ -134,6 +131,39 @@ curl: (35) gnutls_handshake() failed: The TLS connection was non-properly termin
 - In 3rd request, request is forwarded to `test-server:3443` based on host.
 - In 4th request, host not matched with any rules, so no backend to serve the request.
 
-### References
+## Notes
+
+- For single host TCP no SNI will be used. That means HAProxy will forward request to specified backend no matter SNI matched or not. 
+
+- You can specify TLS for multiple hosts, in that case haproxy will terminate TLS and then choose backend based on SNI.
+
+- Conflicting TLS among different rules under same port will cause validation error. That means you can't use TLS for one rule while other rule under same port don't use TLS.
+Note that, if you specify `NoTLS=true` for any rule (both TCP and HTTP), voyager will ignore `Spec.TLS` for that rule.
+
+- All TCP rules under same port must have same set of ALPN options. Voyager will cause validation error if you specify ALPN for one rule but not for another rule or, different ALPN for different rules.
+
+- You can use wildcard hosts like `*.voyager.com`.
+
+- If host is not specified or, only `*` is used as host for any TCP rule, no more rule can be defined for that port.
+
+For example following will cause validation error:
+
+```yaml
+spec:
+  rules:
+  - host: *
+    tcp:
+      port: 8443
+      backend:
+        serviceName: test-server
+        servicePort: 6443
+  - host: voyager.appscode.com
+    tcp:
+      port: 8443
+      backend:
+        serviceName: test-server
+        servicePort: 3443
+```  
+## References
 
 - https://www.haproxy.com/blog/enhanced-ssl-load-balancing-with-server-name-indication-sni-tls-extension/
