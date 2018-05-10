@@ -1,13 +1,13 @@
 ---
 title: Using AWS Certificate Manager | Kubernetes Ingress
 menu:
-  product_voyager_6.0.0:
+  product_voyager_7.0.0-rc.0:
     identifier: aws-cm-tls
     name: AWS Cert Manager
     parent: tls-ingress
     weight: 15
 product_name: voyager
-menu_name: product_voyager_6.0.0
+menu_name: product_voyager_7.0.0-rc.0
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
