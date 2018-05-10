@@ -37,15 +37,15 @@ func TestConvertRulesForSSLPassthrough(t *testing.T) {
 	var err error
 	for k, result := range dataIng {
 		c.Ingress, err = api.NewEngressFromIngress(k)
-		if assert.Equal(t, err, nil, "Ingress/Migrate:", k.Name, result, err) {
+		if assert.Equal(t, err, nil, "Ingress/Migrate: %v, result: %v, reason: %v", k.Name, result, err) {
 			err = c.convertRulesForSSLPassthrough()
-			assert.Equal(t, err == nil, result, "Ingress:", k.Name, result, err)
+			assert.Equal(t, err == nil, result, "Ingress: %v, result: %v, reason: %v", k.Name, result, err)
 		}
 	}
 	for k, result := range dataEng {
 		c.Ingress = k
 		err = c.convertRulesForSSLPassthrough()
-		assert.Equal(t, err == nil, result, "Engress:", k.Name, result, err)
+		assert.Equal(t, err == nil, result, "Engress: %v, result: %v, reason: %v", k.Name, result, err)
 	}
 }
 
@@ -108,7 +108,7 @@ var dataEng = map[*api.Ingress]bool{
 				},
 			},
 		},
-	}: false,
+	}: false, // multiple paths
 	{
 		ObjectMeta: metav1.ObjectMeta{Name: "data-3", Annotations: sslPassthroughAnnotation},
 		Spec: api.IngressSpec{
@@ -149,7 +149,7 @@ var dataEng = map[*api.Ingress]bool{
 				},
 			},
 		},
-	}: false,
+	}: false, // multiple rules, same port, empty host
 	{
 		ObjectMeta: metav1.ObjectMeta{Name: "data-4", Annotations: sslPassthroughAnnotation},
 		Spec: api.IngressSpec{
@@ -182,29 +182,70 @@ var dataEng = map[*api.Ingress]bool{
 						},
 					},
 				},
+			},
+		},
+	}: true, // when converting http to tcp in ssl-passthrough, always set NoTLS=true, so no validation error
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "data-5", Annotations: sslPassthroughAnnotation},
+		Spec: api.IngressSpec{
+			TLS: []api.IngressTLS{
 				{
-					Host: "not-tls-host",
+					Ref: &api.LocalTypedReference{
+						Name: "voyager-cert",
+					},
+					Hosts: []string{
+						"tls-host",
+					},
+				},
+			},
+			Rules: []api.IngressRule{
+				{
+					Host: "tls-host",
 					IngressRuleValue: api.IngressRuleValue{
-						HTTP: &api.HTTPIngressRuleValue{
-							Paths: []api.HTTPIngressPath{
-								{
-									Path: "/path-1",
-									Backend: api.HTTPIngressBackend{
-										IngressBackend: api.IngressBackend{
-											ServiceName: "foo",
-											ServicePort: intstr.FromString("80"),
-										},
-									},
-								},
+						TCP: &api.TCPIngressRuleValue{
+							Port: intstr.FromInt(4545),
+							Backend: api.IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromString("80"),
 							},
 						},
 					},
 				},
 			},
 		},
-	}: false, // can't use TLS in passthrough mode
+	}: false, // tls specified for tcp rule
 	{
-		ObjectMeta: metav1.ObjectMeta{Name: "data-5", Annotations: sslPassthroughAnnotation},
+		ObjectMeta: metav1.ObjectMeta{Name: "data-6", Annotations: sslPassthroughAnnotation},
+		Spec: api.IngressSpec{
+			TLS: []api.IngressTLS{
+				{
+					Ref: &api.LocalTypedReference{
+						Name: "voyager-cert",
+					},
+					Hosts: []string{
+						"tls-host",
+					},
+				},
+			},
+			Rules: []api.IngressRule{
+				{
+					Host: "tls-host",
+					IngressRuleValue: api.IngressRuleValue{
+						TCP: &api.TCPIngressRuleValue{
+							NoTLS: true,
+							Port:  intstr.FromInt(4545),
+							Backend: api.IngressBackend{
+								ServiceName: "foo",
+								ServicePort: intstr.FromString("80"),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: true, // tls specified for tcp rule, but found NoTLS
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "data-7", Annotations: sslPassthroughAnnotation},
 		Spec: api.IngressSpec{
 			Rules: []api.IngressRule{
 				{
@@ -244,7 +285,50 @@ var dataEng = map[*api.Ingress]bool{
 				},
 			},
 		},
-	}: true,
+	}: true, // different ports
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "data-8", Annotations: sslPassthroughAnnotation},
+		Spec: api.IngressSpec{
+			Rules: []api.IngressRule{
+				{
+					Host: "host-1",
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
+								{
+									Path: "/path-1",
+									Backend: api.HTTPIngressBackend{
+										IngressBackend: api.IngressBackend{
+											ServiceName: "foo",
+											ServicePort: intstr.FromString("80"),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Host: "host-2",
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
+								{
+									Path: "/path-1",
+									Backend: api.HTTPIngressBackend{
+										IngressBackend: api.IngressBackend{
+											ServiceName: "foo",
+											ServicePort: intstr.FromString("80"),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}: true, // tcp-sni case after conversion, same port, multiple hosts
 }
 
 var dataIng = map[*v1beta1.Ingress]bool{
@@ -298,89 +382,5 @@ var dataIng = map[*v1beta1.Ingress]bool{
 				},
 			},
 		},
-	}: false,
-	{
-		ObjectMeta: metav1.ObjectMeta{Name: "data-3", Annotations: sslPassthroughAnnotation},
-		Spec: v1beta1.IngressSpec{
-			Rules: []v1beta1.IngressRule{
-				{
-					IngressRuleValue: v1beta1.IngressRuleValue{
-						HTTP: &v1beta1.HTTPIngressRuleValue{
-							Paths: []v1beta1.HTTPIngressPath{
-								{
-									Path: "/path-1",
-									Backend: v1beta1.IngressBackend{
-										ServiceName: "foo",
-										ServicePort: intstr.FromString("80"),
-									},
-								},
-							},
-						},
-					},
-				},
-				{
-					IngressRuleValue: v1beta1.IngressRuleValue{
-						HTTP: &v1beta1.HTTPIngressRuleValue{
-							Paths: []v1beta1.HTTPIngressPath{
-								{
-									Path: "/path-1",
-									Backend: v1beta1.IngressBackend{
-										ServiceName: "foo",
-										ServicePort: intstr.FromString("80"),
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}: false,
-	{
-		ObjectMeta: metav1.ObjectMeta{Name: "data-4", Annotations: sslPassthroughAnnotation},
-		Spec: v1beta1.IngressSpec{
-			TLS: []v1beta1.IngressTLS{
-				{
-					SecretName: "voyager-cert",
-					Hosts: []string{
-						"tls-host",
-					},
-				},
-			},
-			Rules: []v1beta1.IngressRule{
-				{
-					Host: "tls-host",
-					IngressRuleValue: v1beta1.IngressRuleValue{
-						HTTP: &v1beta1.HTTPIngressRuleValue{
-							Paths: []v1beta1.HTTPIngressPath{
-								{
-									Path: "/path-1",
-									Backend: v1beta1.IngressBackend{
-										ServiceName: "foo",
-										ServicePort: intstr.FromString("80"),
-									},
-								},
-							},
-						},
-					},
-				},
-				{
-					Host: "not-tls-host",
-					IngressRuleValue: v1beta1.IngressRuleValue{
-						HTTP: &v1beta1.HTTPIngressRuleValue{
-							Paths: []v1beta1.HTTPIngressPath{
-								{
-									Path: "/path-1",
-									Backend: v1beta1.IngressBackend{
-										ServiceName: "foo",
-										ServicePort: intstr.FromString("80"),
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}: false, // can't use TLS in passthrough mode
+	}: false, // multiple paths
 }

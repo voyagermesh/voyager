@@ -1,8 +1,6 @@
 package e2e
 
 import (
-	"net/http"
-
 	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
@@ -281,56 +279,6 @@ var _ = Describe("Ingress TCP SNI", func() {
 			By("Request with host: http.appscode.test") // matches wildcard domain
 			err = f.Ingress.DoHTTPWithSNI(framework.MaxRetry, "http.appscode.test", eps, func(r *client.Response) bool {
 				return Expect(r.ServerPort).Should(Equal(":9090"))
-			})
-			Expect(err).NotTo(HaveOccurred())
-		})
-	})
-
-	Describe("SSL Passthrough", func() {
-		BeforeEach(func() {
-			ing.Annotations[api.SSLPassthrough] = "true"
-			ing.Annotations[api.SSLRedirect] = "false"
-			ing.Spec = api.IngressSpec{
-				Rules: []api.IngressRule{
-					{
-						Host: framework.TestDomain,
-						IngressRuleValue: api.IngressRuleValue{
-							HTTP: &api.HTTPIngressRuleValue{
-								Port: intstr.FromInt(8443),
-								Paths: []api.HTTPIngressPath{
-									{
-										Path: "/testpath",
-										Backend: api.HTTPIngressBackend{
-											IngressBackend: api.IngressBackend{
-												ServiceName: f.Ingress.TestServerHTTPSName(),
-												ServicePort: intstr.FromInt(3443),
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			}
-		})
-
-		It("Should Open port 8443 in TCP mode", func() {
-			By("Getting HTTP endpoints")
-			eps, err := f.Ingress.GetHTTPEndpoints(ing)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(eps)).Should(BeNumerically(">=", 1))
-
-			svc, err := f.Ingress.GetOffShootService(ing)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(svc.Spec.Ports)).Should(Equal(1))
-			Expect(svc.Spec.Ports[0].Port).Should(Equal(int32(8443)))
-
-			err = f.Ingress.DoHTTPs(framework.MaxRetry, framework.TestDomain, "", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
-				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
-					Expect(r.Method).Should(Equal("GET")) &&
-					Expect(r.Path).Should(Equal("/testpath/ok")) &&
-					Expect(r.Host).Should(Equal(framework.TestDomain))
 			})
 			Expect(err).NotTo(HaveOccurred())
 		})
