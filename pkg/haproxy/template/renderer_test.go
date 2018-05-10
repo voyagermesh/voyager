@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCheckHAProxyConfig(t *testing.T) {
+func TestValidateConfig(t *testing.T) {
 	data := map[string]bool{
 		`
 # global
@@ -22,7 +22,7 @@ listen http-in
 	}
 
 	for cfg, result := range data {
-		err := CheckHAProxyConfig(cfg)
+		err := ValidateConfig(cfg)
 		if err != nil {
 			log.Errorln(err)
 		}

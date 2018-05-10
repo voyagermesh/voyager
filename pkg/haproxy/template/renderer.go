@@ -34,7 +34,7 @@ func RenderConfig(data hpi.TemplateData) (string, error) {
 	return strings.Join(result, "\n"), nil
 }
 
-func CheckHAProxyConfig(cfg string) error {
+func ValidateConfig(cfg string) error {
 	tmpfile, err := ioutil.TempFile("", "haproxy-config-")
 	if err != nil {
 		return err
