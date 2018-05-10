@@ -9,7 +9,7 @@ This example demonstrates how to configure Voyager to choose backends based on S
 ### Deploy test server
 
 ```console
-$ kubectl apply -f $GOPATH/src/github.com/appscode/voyager/test/test-server/deploy/
+$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/master/test/test-server/deploy/test-server.yaml
 ```
 
 ### Create ingress
