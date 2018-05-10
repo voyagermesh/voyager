@@ -2,28 +2,118 @@
 title: Changelog | Voyager
 description: Changelog
 menu:
-  product_voyager_6.0.0:
+  product_voyager_7.0.0-rc.0:
     identifier: changelog-voyager
     name: Changelog
     parent: welcome
     weight: 10
 product_name: voyager
-menu_name: product_voyager_6.0.0
+menu_name: product_voyager_7.0.0-rc.0
 section_menu_id: welcome
-url: /products/voyager/6.0.0/welcome/changelog/
+url: /products/voyager/7.0.0-rc.0/welcome/changelog/
 aliases:
-  - /products/voyager/6.0.0/CHANGELOG/
+  - /products/voyager/7.0.0-rc.0/CHANGELOG/
 ---
 
 # Change Log
 
-## [6.0.0](https://github.com/appscode/voyager/tree/6.0.0) (2018-03-13)
+## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
+
+[Full Changelog](https://github.com/appscode/voyager/compare/6.0.0...HEAD)
+
+**Fixed bugs:**
+
+- question re: ssl-passthrough [\#1012](https://github.com/appscode/voyager/issues/1012)
+- SSL redirect not working for LB type NodePort  [\#967](https://github.com/appscode/voyager/issues/967)
+- Generate correct schema for int-or-string type [\#978](https://github.com/appscode/voyager/pull/978) ([tamalsaha](https://github.com/tamalsaha))
+- Fix openapi spec for voyager crds [\#973](https://github.com/appscode/voyager/pull/973) ([tamalsaha](https://github.com/tamalsaha))
+- Fix errors while updating existing CRD  [\#971](https://github.com/appscode/voyager/pull/971) ([diptadas](https://github.com/diptadas))
+- Add RBAC for events [\#961](https://github.com/appscode/voyager/pull/961) ([tamalsaha](https://github.com/tamalsaha))
+
+**Closed issues:**
+
+- Test failing for LB type NodePort in Minikube v26  [\#1000](https://github.com/appscode/voyager/issues/1000)
+- Support Stretch / Alpine based HAproxy image [\#997](https://github.com/appscode/voyager/issues/997)
+- Consider implementing LetsEncrypt wildcard certificates [\#994](https://github.com/appscode/voyager/issues/994)
+- Test HAproxy config before setting to configmap [\#989](https://github.com/appscode/voyager/issues/989)
+- labels are not inherited to resources created via voyager Ingress [\#986](https://github.com/appscode/voyager/issues/986)
+- Add Explicit {{ .Release.Namespace }} reference in Helm Chart [\#984](https://github.com/appscode/voyager/issues/984)
+- Support for MetalLB [\#970](https://github.com/appscode/voyager/issues/970)
+- Failed to update existing CRDs [\#969](https://github.com/appscode/voyager/issues/969)
+- Voyager ingress pod re-created in case of tls setup [\#966](https://github.com/appscode/voyager/issues/966)
+- Support for parsing manifest yaml spec into client-go data structures [\#964](https://github.com/appscode/voyager/issues/964)
+- Getting error while trying to install release-6.0: Error: unknown shorthand flag: 'o' in -o=json [\#959](https://github.com/appscode/voyager/issues/959)
+- voyager pod replica is changed  [\#940](https://github.com/appscode/voyager/issues/940)
+- Bring back DaemonSet support to place pods [\#897](https://github.com/appscode/voyager/issues/897)
+- Support SNI mode in TCP [\#751](https://github.com/appscode/voyager/issues/751)
+- Support external-auth  /oauth2 [\#638](https://github.com/appscode/voyager/issues/638)
+- Generate non-GO clients for Voyager CRDs [\#456](https://github.com/appscode/voyager/issues/456)
+- Issue wildcard certs using ACME v2 [\#185](https://github.com/appscode/voyager/issues/185)
+
+**Merged pull requests:**
+
+- Updated tcp-sni doc [\#1033](https://github.com/appscode/voyager/pull/1033) ([diptadas](https://github.com/diptadas))
+- Fix typo [\#1032](https://github.com/appscode/voyager/pull/1032) ([jaymeyerowitz](https://github.com/jaymeyerowitz))
+-  Updated doc for ssl-passthrough [\#1031](https://github.com/appscode/voyager/pull/1031) ([diptadas](https://github.com/diptadas))
+- Separated config-check from render-config [\#1030](https://github.com/appscode/voyager/pull/1030) ([diptadas](https://github.com/diptadas))
+- Remove AssignTypeKind and GetGroupVersionKind util methods [\#1029](https://github.com/appscode/voyager/pull/1029) ([tamalsaha](https://github.com/tamalsaha))
+- Check HAProxy config before writing into configmap [\#1026](https://github.com/appscode/voyager/pull/1026) ([diptadas](https://github.com/diptadas))
+- Handle empty renewed certificate [\#1025](https://github.com/appscode/voyager/pull/1025) ([tamalsaha](https://github.com/tamalsaha))
+- Update chart path for release-5.0 [\#1021](https://github.com/appscode/voyager/pull/1021) ([tamalsaha](https://github.com/tamalsaha))
+- Fix imagePullSecrets location for 5.0.0 chart [\#1020](https://github.com/appscode/voyager/pull/1020) ([gavvvr](https://github.com/gavvvr))
+- Don't panic if admission options is nil [\#1019](https://github.com/appscode/voyager/pull/1019) ([tamalsaha](https://github.com/tamalsaha))
+- Disable admission controllers for webhook server [\#1018](https://github.com/appscode/voyager/pull/1018) ([tamalsaha](https://github.com/tamalsaha))
+- Add Update\*\*\*Status helpers [\#1017](https://github.com/appscode/voyager/pull/1017) ([tamalsaha](https://github.com/tamalsaha))
+- Update client-go v7.0.0 [\#1016](https://github.com/appscode/voyager/pull/1016) ([tamalsaha](https://github.com/tamalsaha))
+- Add haproxy stretch image [\#1014](https://github.com/appscode/voyager/pull/1014) ([diptadas](https://github.com/diptadas))
+- Rename flag --analytics to --enable-analytics [\#1013](https://github.com/appscode/voyager/pull/1013) ([diptadas](https://github.com/diptadas))
+- Update workload api [\#1011](https://github.com/appscode/voyager/pull/1011) ([tamalsaha](https://github.com/tamalsaha))
+- Remove voyager crds before uninstalling operator [\#1010](https://github.com/appscode/voyager/pull/1010) ([tamalsaha](https://github.com/tamalsaha))
+- Update private registry support in chart [\#1009](https://github.com/appscode/voyager/pull/1009) ([tamalsaha](https://github.com/tamalsaha))
+- Rename --analytics -\> --enable-analytics [\#1008](https://github.com/appscode/voyager/pull/1008) ([tamalsaha](https://github.com/tamalsaha))
+- Print namespace where voyager is installed [\#1007](https://github.com/appscode/voyager/pull/1007) ([tamalsaha](https://github.com/tamalsaha))
+- Change default HAProxy tag to 1.8.8-6.1.0 [\#1006](https://github.com/appscode/voyager/pull/1006) ([tamalsaha](https://github.com/tamalsaha))
+- Improve installer [\#1005](https://github.com/appscode/voyager/pull/1005) ([tamalsaha](https://github.com/tamalsaha))
+- Fixed minikube urls for LB type hostport [\#1003](https://github.com/appscode/voyager/pull/1003) ([diptadas](https://github.com/diptadas))
+- Regex replace host header only if port matched in SSL redirect   [\#1002](https://github.com/appscode/voyager/pull/1002) ([diptadas](https://github.com/diptadas))
+- Fixed nodeport service url for minikube [\#1001](https://github.com/appscode/voyager/pull/1001) ([diptadas](https://github.com/diptadas))
+- Support both Deployment and DaemonSet to run HAProxy pods [\#999](https://github.com/appscode/voyager/pull/999) ([tamalsaha](https://github.com/tamalsaha))
+- Updated validator for merging empty-host with wildcard-host   [\#998](https://github.com/appscode/voyager/pull/998) ([diptadas](https://github.com/diptadas))
+- Issue wildcard certs using LE ACME v2 [\#996](https://github.com/appscode/voyager/pull/996) ([tamalsaha](https://github.com/tamalsaha))
+- Use appscode/oauth2\_proxy docker image  [\#995](https://github.com/appscode/voyager/pull/995) ([diptadas](https://github.com/diptadas))
+- Fix .gitignore file [\#993](https://github.com/appscode/voyager/pull/993) ([tamalsaha](https://github.com/tamalsaha))
+- Use HAProxy 1.8.8 [\#992](https://github.com/appscode/voyager/pull/992) ([tamalsaha](https://github.com/tamalsaha))
+- Use separate offshootLabels and offshootSelector [\#991](https://github.com/appscode/voyager/pull/991) ([tamalsaha](https://github.com/tamalsaha))
+- Revendor DNSimple api [\#988](https://github.com/appscode/voyager/pull/988) ([tamalsaha](https://github.com/tamalsaha))
+- Add namespace to relevant kubernetes resources [\#985](https://github.com/appscode/voyager/pull/985) ([Rigdon](https://github.com/Rigdon))
+- Set version in swagger.json [\#983](https://github.com/appscode/voyager/pull/983) ([tamalsaha](https://github.com/tamalsaha))
+- Update chart readme [\#982](https://github.com/appscode/voyager/pull/982) ([tamalsaha](https://github.com/tamalsaha))
+- Update chart repository location [\#981](https://github.com/appscode/voyager/pull/981) ([tamalsaha](https://github.com/tamalsaha))
+- Support installing from local installer scripts [\#979](https://github.com/appscode/voyager/pull/979) ([tamalsaha](https://github.com/tamalsaha))
+- Move swagger.json to apis pkg [\#976](https://github.com/appscode/voyager/pull/976) ([tamalsaha](https://github.com/tamalsaha))
+- Generate swagger.json [\#975](https://github.com/appscode/voyager/pull/975) ([tamalsaha](https://github.com/tamalsaha))
+- Add install package for voyager crds [\#974](https://github.com/appscode/voyager/pull/974) ([tamalsaha](https://github.com/tamalsaha))
+- \#970 Added metallb as a cloud provider option [\#972](https://github.com/appscode/voyager/pull/972) ([schubter](https://github.com/schubter))
+- Fix SSL redirect for LB type NodePort [\#968](https://github.com/appscode/voyager/pull/968) ([diptadas](https://github.com/diptadas))
+- Adding support to Akamai FastDNS provider for certificates [\#965](https://github.com/appscode/voyager/pull/965) ([jeffersongirao](https://github.com/jeffersongirao))
+- Skip setting ListKind [\#963](https://github.com/appscode/voyager/pull/963) ([tamalsaha](https://github.com/tamalsaha))
+- Add CRD Validation [\#962](https://github.com/appscode/voyager/pull/962) ([tamalsaha](https://github.com/tamalsaha))
+- hard to copy line [\#960](https://github.com/appscode/voyager/pull/960) ([joshuacox](https://github.com/joshuacox))
+- Add support for external-auth/oauth [\#954](https://github.com/appscode/voyager/pull/954) ([diptadas](https://github.com/diptadas))
+- concourse configs [\#946](https://github.com/appscode/voyager/pull/946) ([tahsinrahman](https://github.com/tahsinrahman))
+- Use HAProxy 1.8.7 [\#806](https://github.com/appscode/voyager/pull/806) ([tamalsaha](https://github.com/tamalsaha))
+- Support SNI in TCP mode [\#805](https://github.com/appscode/voyager/pull/805) ([tamalsaha](https://github.com/tamalsaha))
+
+## [6.0.0](https://github.com/appscode/voyager/tree/6.0.0) (2018-03-30)
 [Full Changelog](https://github.com/appscode/voyager/compare/6.0.0-rc.2...6.0.0)
 
 **Fixed bugs:**
 
+- Controller is not doing Sync/Add/Update for Service [\#941](https://github.com/appscode/voyager/issues/941)
 - TCP Ingress: invalid memory address or nil pointer dereference [\#906](https://github.com/appscode/voyager/issues/906)
+- Preemptible instances issues \(6.0.0.rc.0\) [\#902](https://github.com/appscode/voyager/issues/902)
 - Voyager 6.0.0 on GKE 1.8.5:  Failed to list \*v1beta1.Ingress: unstructured cannot convert field labels [\#889](https://github.com/appscode/voyager/issues/889)
+- Add missing RBAC for service monitors in chart [\#958](https://github.com/appscode/voyager/pull/958) ([tamalsaha](https://github.com/tamalsaha))
 - Run service monitor informer in its own go routine. [\#929](https://github.com/appscode/voyager/pull/929) ([tamalsaha](https://github.com/tamalsaha))
 - Various fixes and improved logging [\#928](https://github.com/appscode/voyager/pull/928) ([tamalsaha](https://github.com/tamalsaha))
 - Use user provided cookie name for default backend [\#920](https://github.com/appscode/voyager/pull/920) ([tamalsaha](https://github.com/tamalsaha))
@@ -32,6 +122,7 @@ aliases:
 
 **Closed issues:**
 
+- voyager.sh install file now fails for k8s version below 1.9.0 [\#955](https://github.com/appscode/voyager/issues/955)
 - Support LB type in Openstack [\#930](https://github.com/appscode/voyager/issues/930)
 - Deployment model of voyager a bit overcomplex? [\#924](https://github.com/appscode/voyager/issues/924)
 - HTTP to HTTPS redirect [\#923](https://github.com/appscode/voyager/issues/923)
@@ -43,6 +134,22 @@ aliases:
 
 **Merged pull requests:**
 
+- Revendor depenencies [\#957](https://github.com/appscode/voyager/pull/957) ([tamalsaha](https://github.com/tamalsaha))
+- Fix install instruction for minikube 0.24.x \(Kube 1.8.0\) [\#956](https://github.com/appscode/voyager/pull/956) ([tamalsaha](https://github.com/tamalsaha))
+- Skip downloading onessl if already exists [\#953](https://github.com/appscode/voyager/pull/953) ([tamalsaha](https://github.com/tamalsaha))
+- Revendor jsonpatch library [\#952](https://github.com/appscode/voyager/pull/952) ([tamalsaha](https://github.com/tamalsaha))
+- Add front matter for changelog [\#951](https://github.com/appscode/voyager/pull/951) ([tamalsaha](https://github.com/tamalsaha))
+- Use appscode/kubernetes-webhook-util [\#950](https://github.com/appscode/voyager/pull/950) ([tamalsaha](https://github.com/tamalsaha))
+- Reorg objects deleted in uninstall command [\#949](https://github.com/appscode/voyager/pull/949) ([tamalsaha](https://github.com/tamalsaha))
+- Fixed nodeport-errorfile test [\#948](https://github.com/appscode/voyager/pull/948) ([diptadas](https://github.com/diptadas))
+- Fixed haproxy duplicate logging [\#947](https://github.com/appscode/voyager/pull/947) ([diptadas](https://github.com/diptadas))
+- Revendor webhook api [\#944](https://github.com/appscode/voyager/pull/944) ([tamalsaha](https://github.com/tamalsaha))
+- Use correct queue for ingress [\#942](https://github.com/appscode/voyager/pull/942) ([tamalsaha](https://github.com/tamalsaha))
+- Mention how to handle wildcard domains in documentation [\#938](https://github.com/appscode/voyager/pull/938) ([hofmeister](https://github.com/hofmeister))
+- Add links for badges [\#937](https://github.com/appscode/voyager/pull/937) ([tamalsaha](https://github.com/tamalsaha))
+- Install deps using glide in travis [\#936](https://github.com/appscode/voyager/pull/936) ([tamalsaha](https://github.com/tamalsaha))
+- Add travis.yaml [\#935](https://github.com/appscode/voyager/pull/935) ([tamalsaha](https://github.com/tamalsaha))
+- Add badge for docker pull stats [\#934](https://github.com/appscode/voyager/pull/934) ([tamalsaha](https://github.com/tamalsaha))
 - Update docs for 6.0.0 [\#932](https://github.com/appscode/voyager/pull/932) ([tamalsaha](https://github.com/tamalsaha))
 - Document how to create internal LB in openstack [\#931](https://github.com/appscode/voyager/pull/931) ([tamalsaha](https://github.com/tamalsaha))
 - Fix typo in README [\#927](https://github.com/appscode/voyager/pull/927) ([shaneog](https://github.com/shaneog))
@@ -109,7 +216,7 @@ aliases:
 - Skip generating UpdateStatus method [\#887](https://github.com/appscode/voyager/pull/887) ([tamalsaha](https://github.com/tamalsaha))
 - Delete internal types [\#886](https://github.com/appscode/voyager/pull/886) ([tamalsaha](https://github.com/tamalsaha))
 - Use official code generator scripts [\#885](https://github.com/appscode/voyager/pull/885) ([tamalsaha](https://github.com/tamalsaha))
-- Use HAProxy 1.8.5 [\#884](https://github.com/appscode/voyager/pull/884) ([tamalsaha](https://github.com/tamalsaha))
+- Use HAProxy 1.7.10 [\#884](https://github.com/appscode/voyager/pull/884) ([tamalsaha](https://github.com/tamalsaha))
 - Move node selector to Ingress spec [\#883](https://github.com/appscode/voyager/pull/883) ([tamalsaha](https://github.com/tamalsaha))
 - Only check NodePort if provided [\#880](https://github.com/appscode/voyager/pull/880) ([tamalsaha](https://github.com/tamalsaha))
 - Create user facing aggregate roles [\#879](https://github.com/appscode/voyager/pull/879) ([tamalsaha](https://github.com/tamalsaha))

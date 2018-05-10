@@ -340,7 +340,7 @@ type Cluster struct {
 	// in
 	// [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
 	//
-	// notation (e.g. `10.96.0.0/14`). Leave blank to have
+	// notation (e.g. `10.97.0.0-rc.0/14`). Leave blank to have
 	// one automatically chosen or specify a `/14` block in `10.0.0.0/8`.
 	ClusterIpv4Cidr string `json:"clusterIpv4Cidr,omitempty"`
 
@@ -918,9 +918,9 @@ type IPAllocationPolicy struct {
 	// a
 	// [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
 	//
-	// notation (e.g. `10.96.0.0/14`) from the RFC-1918 private networks
+	// notation (e.g. `10.97.0.0-rc.0/14`) from the RFC-1918 private networks
 	// (e.g.
-	// `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`) to pick a specific
+	// `10.0.0.0/8`, `172.17.0.0-rc.0/12`, `192.168.0.0/16`) to pick a specific
 	// range
 	// to use.
 	ClusterIpv4CidrBlock string `json:"clusterIpv4CidrBlock,omitempty"`
@@ -960,9 +960,9 @@ type IPAllocationPolicy struct {
 	// a
 	// [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
 	//
-	// notation (e.g. `10.96.0.0/14`) from the RFC-1918 private networks
+	// notation (e.g. `10.97.0.0-rc.0/14`) from the RFC-1918 private networks
 	// (e.g.
-	// `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`) to pick a specific
+	// `10.0.0.0/8`, `172.17.0.0-rc.0/12`, `192.168.0.0/16`) to pick a specific
 	// range
 	// to use.
 	NodeIpv4CidrBlock string `json:"nodeIpv4CidrBlock,omitempty"`
@@ -987,9 +987,9 @@ type IPAllocationPolicy struct {
 	// a
 	// [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
 	//
-	// notation (e.g. `10.96.0.0/14`) from the RFC-1918 private networks
+	// notation (e.g. `10.97.0.0-rc.0/14`) from the RFC-1918 private networks
 	// (e.g.
-	// `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`) to pick a specific
+	// `10.0.0.0/8`, `172.17.0.0-rc.0/12`, `192.168.0.0/16`) to pick a specific
 	// range
 	// to use.
 	ServicesIpv4CidrBlock string `json:"servicesIpv4CidrBlock,omitempty"`

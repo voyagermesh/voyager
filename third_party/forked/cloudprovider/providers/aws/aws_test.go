@@ -564,7 +564,7 @@ func TestIpPermissionExistsHandlesRangeSubsets(t *testing.T) {
 
 	newIpPermission := ec2.IpPermission{
 		IpRanges: []*ec2.IpRange{
-			{CidrIp: aws.String("172.16.0.0/16")},
+			{CidrIp: aws.String("172.17.0.0-rc.0/16")},
 		},
 	}
 
