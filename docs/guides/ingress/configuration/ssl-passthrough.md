@@ -45,6 +45,7 @@ spec:
   rules:
   - host: voyager.appscode.test
     http:
+      port: 8443
       paths:
       - path: /foo
         backend:
@@ -83,8 +84,8 @@ defaults
 	# default traffic mode is http
 	# mode is overwritten in case of tcp services
 	mode http
-frontend tcp-0_0_0_0-80
-	bind *:80
+frontend tcp-0_0_0_0-8443
+	bind *:8443    
 	mode tcp
 	default_backend test-server.default:443
 backend test-server.default:443
@@ -96,8 +97,8 @@ Now check the response:
 
 ```console
 $ minikube service --url voyager-test-ingress
-http://192.168.99.100:30754
+http://192.168.99.100:31692
 
-$ curl -k https://192.168.99.100:30754
-{"type":"http","host":"192.168.99.100:30754","serverPort":":6443","path":"/","method":"GET","headers":{"Accept":["*/*"],"User-Agent":["curl/7.47.0"]}}
+$ curl -k https://192.168.99.100:31692
+{"type":"http","host":"192.168.99.100:31692","serverPort":":6443","path":"/","method":"GET","headers":{"Accept":["*/*"],"User-Agent":["curl/7.47.0"]}}
 ```
