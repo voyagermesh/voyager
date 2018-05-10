@@ -1,13 +1,13 @@
 ---
 title: TCP SNI | Kubernetes Ingress
 menu:
-  product_voyager_6.0.0:
+  product_voyager_7.0.0-rc.0:
     identifier: tcp-sni
     name: TCP SNI
     parent: tcp-ingress
     weight: 20
 product_name: voyager
-menu_name: product_voyager_6.0.0
+menu_name: product_voyager_7.0.0-rc.0
 section_menu_id: guides
 ---
 
