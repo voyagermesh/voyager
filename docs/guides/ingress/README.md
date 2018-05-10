@@ -36,6 +36,7 @@ Guides show you how to use Voyager as a Kubernetes Ingress controller.
   - [Supports AWS certificate manager](/docs/guides/ingress/tls/aws-cert-manager.md)
 - TCP
   - [TCP LoadBalancing](/docs/guides/ingress/tcp/overview.md)
+  - [TCP SNI](/docs/guides/ingress/tcp/tcp-sni.md)
 - Configuration
   - [Customize generated HAProxy config via BackendRule](/docs/guides/ingress/configuration/backend-rule.md) (can be used for [http rewriting](https://www.haproxy.com/doc/aloha/7.0/haproxy/http_rewriting.html), add [health checks](https://www.haproxy.com/doc/aloha/7.0/haproxy/healthchecks.html), etc.)
   - [Apply Frontend Rules](/docs/guides/ingress/configuration/frontend-rule.md)
