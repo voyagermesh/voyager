@@ -1,4 +1,19 @@
-# Configuring Multiple Hosts in TCP Mode
+---
+title: TCP SNI | Kubernetes Ingress
+menu:
+  product_voyager_6.0.0:
+    identifier: tcp-sni
+    name: TCP SNI
+    parent: tcp-ingress
+    weight: 20
+product_name: voyager
+menu_name: product_voyager_6.0.0
+section_menu_id: guides
+---
+
+> New to Voyager? Please start [here](/docs/concepts/overview.md).
+
+# Using TCP SNI
 
 In TCP mode, HAProxy can choose backends using Server Name Indication (SNI). This allows clients to include the hostname during `SSL Hello`. SNI hostname is send in plain text. So, HAProxy can choose backend based on SNI hostname even in TCP mode.
 

@@ -1,4 +1,19 @@
-# External Authentication
+---
+title: OAuth2 Authentication | Kubernetes Ingress
+menu:
+  product_voyager_6.0.0:
+    identifier: oauth2-security
+    name: OAuth2
+    parent: security-ingress
+    weight: 20
+product_name: voyager
+menu_name: product_voyager_6.0.0
+section_menu_id: guides
+---
+
+> New to Voyager? Please start [here](/docs/concepts/overview.md).
+
+# OAuth2 Authentication
 
 You can configure [external authentication / oauth](https://oauth.net/2/) on Voyager Ingress controller via `frontendrules`.
 For this you have to configure and expose [oauth2-proxy](https://github.com/bitly/oauth2_proxy) and specify it as a backend under same host.
