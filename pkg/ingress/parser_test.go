@@ -37,15 +37,15 @@ func TestConvertRulesForSSLPassthrough(t *testing.T) {
 	var err error
 	for k, result := range dataIng {
 		c.Ingress, err = api.NewEngressFromIngress(k)
-		if assert.Equal(t, err, nil, "Ingress/Migrate:", k.Name, result, err) {
+		if assert.Equal(t, err, nil, "Ingress/Migrate: %v, result: %v, reason: %v", k.Name, result, err) {
 			err = c.convertRulesForSSLPassthrough()
-			assert.Equal(t, err == nil, result, "Ingress:", k.Name, result, err)
+			assert.Equal(t, err == nil, result, "Ingress: %v, result: %v, reason: %v", k.Name, result, err)
 		}
 	}
 	for k, result := range dataEng {
 		c.Ingress = k
 		err = c.convertRulesForSSLPassthrough()
-		assert.Equal(t, err == nil, result, "Engress:", k.Name, result, err)
+		assert.Equal(t, err == nil, result, "Engress: %v, result: %v, reason: %v", k.Name, result, err)
 	}
 }
 
