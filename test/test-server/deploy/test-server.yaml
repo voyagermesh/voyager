@@ -40,3 +40,50 @@ spec:
               containerPort: 6443
             - name: https-2
               containerPort: 3443
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-server
+  labels:
+    app: test-server
+spec:
+  ports:
+  - port: 80
+    name: http-1
+    protocol: TCP
+    targetPort: 8080
+  - port: 8989
+    name: http-2
+    protocol: TCP
+    targetPort: 8989
+  - port: 9090
+    name: http-3
+    protocol: TCP
+    targetPort: 9090
+  - port: 4343
+    name: tcp-1
+    protocol: TCP
+    targetPort: 4343
+  - port: 4545
+    name: tcp-2
+    protocol: TCP
+    targetPort: 4545
+  - port: 5656
+    name: tcp-3
+    protocol: TCP
+    targetPort: 5656
+  - port: 6767
+    name: proxy
+    protocol: TCP
+    targetPort: 6767
+  - port: 6443
+    name: https-1
+    protocol: TCP
+    targetPort: 6443
+  - port: 3443
+    name: https-2
+    protocol: TCP
+    targetPort: 3443
+  selector:
+    app: test-server
