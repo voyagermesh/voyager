@@ -16,8 +16,8 @@ import (
 
 var _ = Describe("Ingress SSL Passthrough", func() {
 	var (
-		f              *framework.Invocation
-		ing            *api.Ingress
+		f   *framework.Invocation
+		ing *api.Ingress
 	)
 
 	BeforeEach(func() {
