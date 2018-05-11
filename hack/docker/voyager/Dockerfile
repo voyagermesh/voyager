@@ -8,5 +8,6 @@ RUN set -x \
 COPY auth-request.lua /etc/auth-request.lua
 COPY templates /srv/voyager/templates/
 COPY voyager /usr/bin/voyager
+COPY test.pem /etc/ssl/private/haproxy/tls/test.pem
 
 ENTRYPOINT ["voyager"]
