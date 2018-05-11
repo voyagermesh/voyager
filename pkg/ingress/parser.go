@@ -723,7 +723,7 @@ func (c *controller) generateConfig() error {
 		c.logger.Debugf("Generated haproxy.cfg for Ingress %s/%s", c.Ingress.Namespace, c.Ingress.Name)
 	}
 	// ref: https://github.com/appscode/voyager/pull/1038
-	if c.cfg.ValidateHAProxyConfig && !td.UsesTLSAuth() {
+	if meta.PossiblyInCluster() && c.cfg.ValidateHAProxyConfig && !td.UsesTLSAuth() {
 		if err := template.ValidateConfig(c.HAProxyConfig); err != nil {
 			c.logger.Warningf("haproxy.cfg is invalid for Ingress %s/%s: \n%s", c.Ingress.Namespace, c.Ingress.Name, err)
 			return err
