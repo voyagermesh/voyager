@@ -9,4 +9,8 @@ COPY auth-request.lua /etc/auth-request.lua
 COPY templates /srv/voyager/templates/
 COPY voyager /usr/bin/voyager
 
+# https://github.com/appscode/voyager/pull/1038
+COPY test.pem /etc/ssl/private/haproxy/tls/test.pem
+COPY errorfiles /srv/voyager/errorfiles/
+
 ENTRYPOINT ["voyager"]

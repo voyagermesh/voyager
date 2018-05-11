@@ -47,6 +47,8 @@ type OperatorOptions struct {
 	OpsAddress                string
 	haProxyServerMetricFields string
 	haProxyTimeout            time.Duration
+
+	ValidateHAProxyConfig bool
 }
 
 func (s OperatorOptions) HAProxyImage() string {
@@ -87,6 +89,8 @@ func NewOperatorOptions() *OperatorOptions {
 		OpsAddress:                fmt.Sprintf(":%d", api.DefaultExporterPortNumber),
 		haProxyServerMetricFields: collector.ServerMetrics.String(),
 		haProxyTimeout:            5 * time.Second,
+
+		ValidateHAProxyConfig: true,
 	}
 }
 
@@ -114,6 +118,8 @@ func (s *OperatorOptions) AddGoFlags(fs *flag.FlagSet) {
 
 	fs.StringVar(&s.PrometheusCrdGroup, "prometheus-crd-apigroup", s.PrometheusCrdGroup, "prometheus CRD  API group name")
 	fs.Var(&s.PrometheusCrdKinds, "prometheus-crd-kinds", " - EXPERIMENTAL (could be removed in future releases) - customize CRD kind names")
+
+	fs.BoolVar(&s.ValidateHAProxyConfig, "validate-haproxy-config", s.ValidateHAProxyConfig, "If true, validates generated haproxy.cfg before sending to HAProxy pods.")
 }
 
 func (s *OperatorOptions) AddFlags(fs *pflag.FlagSet) {
@@ -146,6 +152,7 @@ func (s *OperatorOptions) ApplyTo(cfg *operator.OperatorConfig) error {
 	cfg.RestrictToOperatorNamespace = s.RestrictToOperatorNamespace
 	cfg.ResyncPeriod = s.ResyncPeriod
 	cfg.WatchNamespace = s.WatchNamespace()
+	cfg.ValidateHAProxyConfig = s.ValidateHAProxyConfig
 
 	cfg.ClientConfig.QPS = float32(s.QPS)
 	cfg.ClientConfig.Burst = s.Burst

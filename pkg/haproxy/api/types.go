@@ -21,6 +21,20 @@ type TemplateData struct {
 	UserLists       []UserList
 }
 
+func (td TemplateData) UsesTLSAuth() bool {
+	for _, srv := range td.HTTPService {
+		if srv.TLSAuth != nil {
+			return true
+		}
+	}
+	for _, srv := range td.TCPService {
+		if srv.TLSAuth != nil {
+			return true
+		}
+	}
+	return false
+}
+
 type TimeoutConfig struct {
 	Phase    string
 	Duration string
