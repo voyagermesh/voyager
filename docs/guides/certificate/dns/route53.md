@@ -41,7 +41,7 @@ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.0/hack/de
 If you are trying this on a RBAC enabled cluster, pass the flag `--rbac` to installer script.
 
 ```console
-# install without RBAC
+# install with RBAC
 curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.0/hack/deploy/voyager.sh \
   | bash -s -- --provider=aws --run-on-master --rbac
 ```
