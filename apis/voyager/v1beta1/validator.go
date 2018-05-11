@@ -98,9 +98,8 @@ func (r Ingress) IsValid(cloudProvider string) error {
 			if err != nil {
 				return errors.Errorf("spec.rule[%d].http.port %s is invalid. Reason: %s", ri, rule.HTTP.Port, err)
 			}
-			if podPort == 0 {
-				// detect port
-				if _, foundTLS := r.FindTLSSecret(rule.Host); foundTLS && !rule.HTTP.NoTLS {
+			if podPort == 0 { // detect port
+				if r.UseTLSForRule(rule) {
 					podPort = 443
 				} else {
 					podPort = 80
@@ -135,13 +134,11 @@ func (r Ingress) IsValid(cloudProvider string) error {
 					}
 				}
 
-				_, foundTLS := r.FindTLSSecret(rule.Host)
-				useTLS := foundTLS && !rule.HTTP.NoTLS
-				_, foundTLS1 := r.FindTLSSecret(r.Spec.Rules[ea.FirstRuleIndex].Host)
-				useTLS1 := foundTLS1 && !r.Spec.Rules[ea.FirstRuleIndex].HTTP.NoTLS
-				if useTLS != useTLS1 {
+				// check for conflicting TLS
+				if r.UseTLSForRule(rule) != r.UseTLSForRule(r.Spec.Rules[ea.FirstRuleIndex]) {
 					return errors.Errorf("spec.rule[%d].http has conflicting TLS spec with spec.rule[%d].http", ri, ea.FirstRuleIndex)
 				}
+
 				a = ea // paths will be merged into the original one
 			} else {
 				a = &address{
@@ -208,8 +205,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 			}
 
 			// should not use TLS in passthrough mode
-			_, foundTLS := r.FindTLSSecret(rule.Host)
-			useTLS := foundTLS && !rule.TCP.NoTLS
+			useTLS := r.UseTLSForRule(rule)
 			if sslPassthrough && useTLS {
 				return errors.Errorf("TLS defined for spec.rule[%d].tcp in SSLPassthrough mode", ri)
 			}
@@ -240,9 +236,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 				}
 
 				// check for conflicting TLS
-				_, foundTLS1 := r.FindTLSSecret(r.Spec.Rules[ea.FirstRuleIndex].Host)
-				useTLS1 := foundTLS1 && !r.Spec.Rules[ea.FirstRuleIndex].TCP.NoTLS
-				if useTLS != useTLS1 {
+				if useTLS != r.UseTLSForRule(r.Spec.Rules[ea.FirstRuleIndex]) {
 					return errors.Errorf("spec.rule[%d].TCP has conflicting TLS spec with spec.rule[%d].TCP", ri, ea.FirstRuleIndex)
 				}
 
