@@ -58,7 +58,7 @@ var _ = BeforeSuite(func() {
 
 	invocation = root.Invoke()
 
-	if !meta.PossiblyInCluster() {
+	if !meta.PossiblyInCluster() && !options.SelfHostedOperator {
 		go root.Operator.RunInformers(nil)
 	}
 

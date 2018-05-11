@@ -17,25 +17,27 @@ import (
 type E2EOptions struct {
 	*server.OperatorOptions
 
-	KubeContext     string
-	KubeConfig      string
-	TestNamespace   string
-	Cleanup         bool
-	TestCertificate bool
-	DumpLocation    string
-	LBPersistIP     string
-	OperatorOnly    bool
+	KubeContext        string
+	KubeConfig         string
+	TestNamespace      string
+	Cleanup            bool
+	TestCertificate    bool
+	DumpLocation       string
+	LBPersistIP        string
+	OperatorOnly       bool
+	SelfHostedOperator bool
 }
 
 var (
 	options = &E2EOptions{
-		OperatorOptions: server.NewOperatorOptions(),
-		KubeConfig:      filepath.Join(homedir.HomeDir(), ".kube", "config"),
-		TestNamespace:   rand.WithUniqSuffix("test-voyager"),
-		Cleanup:         true,
-		TestCertificate: false,
-		DumpLocation:    os.TempDir(),
-		OperatorOnly:    false,
+		OperatorOptions:    server.NewOperatorOptions(),
+		KubeConfig:         filepath.Join(homedir.HomeDir(), ".kube", "config"),
+		TestNamespace:      rand.WithUniqSuffix("test-voyager"),
+		Cleanup:            true,
+		TestCertificate:    false,
+		DumpLocation:       os.TempDir(),
+		OperatorOnly:       false,
+		SelfHostedOperator: false,
 	}
 )
 
@@ -49,6 +51,7 @@ func init() {
 	flag.StringVar(&options.DumpLocation, "dump", os.TempDir(), "")
 	flag.StringVar(&options.LBPersistIP, "lb-ip", options.LBPersistIP, "LoadBalancer persistent IP")
 	flag.BoolVar(&options.OperatorOnly, "operator-only", options.OperatorOnly, "run operator locally without running tests")
+	flag.BoolVar(&options.SelfHostedOperator, "selfhosted-operator", options.SelfHostedOperator, "If true, operator runs inside cluster")
 	enableLogging()
 }
 
