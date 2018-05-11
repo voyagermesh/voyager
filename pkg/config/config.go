@@ -40,4 +40,5 @@ type Config struct {
 	RestrictToOperatorNamespace bool
 	ResyncPeriod                time.Duration
 	WatchNamespace              string
+	ValidateHAProxyConfig       bool
 }
