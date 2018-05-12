@@ -139,6 +139,11 @@ func (r Ingress) IsValid(cloudProvider string) error {
 					return errors.Errorf("spec.rule[%d].http has conflicting TLS spec with spec.rule[%d].http", ri, ea.FirstRuleIndex)
 				}
 
+				// check for conflicting ALPN
+				if rule.ParseALPNOptions() != r.Spec.Rules[ea.FirstRuleIndex].ParseALPNOptions() {
+					return errors.Errorf("spec.rule[%d].HTTP has conflicting ALPN spec with spec.rule[%d].HTTP", ri, ea.FirstRuleIndex)
+				}
+
 				a = ea // paths will be merged into the original one
 			} else {
 				a = &address{
@@ -241,7 +246,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 				}
 
 				// check for conflicting ALPN
-				if rule.TCP.ParseALPNOptions() != r.Spec.Rules[ea.FirstRuleIndex].TCP.ParseALPNOptions() {
+				if rule.ParseALPNOptions() != r.Spec.Rules[ea.FirstRuleIndex].ParseALPNOptions() {
 					return errors.Errorf("spec.rule[%d].TCP has conflicting ALPN spec with spec.rule[%d].TCP", ri, ea.FirstRuleIndex)
 				}
 

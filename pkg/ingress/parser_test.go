@@ -22,8 +22,19 @@ func TestALPNOptions(t *testing.T) {
 	}
 
 	for k, v := range dataTable {
-		tcpRule := api.TCPIngressRuleValue{ALPN: v}
+		tcpRule := api.IngressRule{
+			IngressRuleValue: api.IngressRuleValue{
+				TCP: &api.TCPIngressRuleValue{ALPN: v},
+			},
+		}
 		assert.Equal(t, k, tcpRule.ParseALPNOptions())
+
+		httpRule := api.IngressRule{
+			IngressRuleValue: api.IngressRuleValue{
+				HTTP: &api.HTTPIngressRuleValue{ALPN: v},
+			},
+		}
+		assert.Equal(t, k, httpRule.ParseALPNOptions())
 	}
 }
 
