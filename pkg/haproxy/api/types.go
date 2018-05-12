@@ -90,6 +90,7 @@ type HTTPService struct {
 	NodePort       int32
 	NodePortFor443 int32
 	OffloadSSL     bool
+	ALPNOptions    string
 	FrontendRules  []string
 	BasicAuth      *BasicAuth
 	TLSAuth        *TLSAuth

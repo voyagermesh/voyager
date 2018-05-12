@@ -1210,4 +1210,144 @@ var dataTables = map[*Ingress]bool{
 			},
 		},
 	}: false, // conflicting TLS merging "*" host with empty-host
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "HTTP ALPN after sort"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							ALPN: []string{"a", "b", "c"},
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/path-1",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(3444),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Host: "voyager.appscode.com",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							ALPN: []string{"b", "c", "a"},
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/path-2",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(3444),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}: true, // ALPN matched after sort
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "HTTP ALPN conflict"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							ALPN: []string{"a", "b", "c"},
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/path-1",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(3444),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Host: "voyager.appscode.com",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							ALPN: []string{"x", "y"},
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/path-2",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(3444),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // conflicting ALPN
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "HTTP conflicting ALPN with NoALPN"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							ALPN: []string{"a", "b", "c"},
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/path-1",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(3444),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Host: "voyager.appscode.com",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/path-2",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(3444),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // conflicting ALPN with NoALPN
 }

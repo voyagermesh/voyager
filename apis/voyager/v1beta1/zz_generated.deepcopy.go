@@ -483,6 +483,11 @@ func (in *HTTPIngressRuleValue) DeepCopyInto(out *HTTPIngressRuleValue) {
 	*out = *in
 	out.Port = in.Port
 	out.NodePort = in.NodePort
+	if in.ALPN != nil {
+		in, out := &in.ALPN, &out.ALPN
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.Paths != nil {
 		in, out := &in.Paths, &out.Paths
 		*out = make([]HTTPIngressPath, len(*in))

@@ -240,8 +240,9 @@ type hostBinder struct {
 	Port    int
 }
 type httpInfo struct {
-	OffloadSSL bool
-	Hosts      map[string][]*hpi.HTTPPath
+	OffloadSSL  bool
+	ALPNOptions string
+	Hosts       map[string][]*hpi.HTTPPath
 }
 type tcpInfo struct {
 	OffloadSSL  bool
@@ -408,17 +409,22 @@ func (c *controller) generateConfig() error {
 	for ri, rule := range c.Ingress.Spec.Rules {
 		if rule.HTTP != nil {
 			binder := hostBinder{Address: rule.HTTP.Address}
-			offloadSSL := false
+			info := &httpInfo{Hosts: make(map[string][]*hpi.HTTPPath)}
+			if v, ok := httpServices[binder]; ok {
+				info = v
+			} else {
+				httpServices[binder] = info
+			}
 
 			if c.Ingress.UseTLSForRule(rule) {
-				offloadSSL = true
+				info.OffloadSSL = true
 				if port := rule.HTTP.Port.IntValue(); port > 0 {
 					binder.Port = port
 				} else {
 					binder.Port = 443
 				}
 			} else {
-				offloadSSL = false
+				info.OffloadSSL = false
 				if port := rule.HTTP.Port.IntValue(); port > 0 {
 					binder.Port = port
 				} else {
@@ -426,13 +432,7 @@ func (c *controller) generateConfig() error {
 				}
 			}
 
-			info := &httpInfo{Hosts: make(map[string][]*hpi.HTTPPath)}
-			if v, ok := httpServices[binder]; ok {
-				info = v
-			} else {
-				httpServices[binder] = info
-			}
-			info.OffloadSSL = offloadSSL
+			info.ALPNOptions = rule.ParseALPNOptions()
 
 			httpPaths := info.Hosts[rule.GetHost()]
 			for pi, path := range rule.HTTP.Paths {
@@ -520,7 +520,7 @@ func (c *controller) generateConfig() error {
 				}
 
 				info.Hosts = append(info.Hosts, tcpHost)
-				info.ALPNOptions = rule.TCP.ParseALPNOptions()
+				info.ALPNOptions = rule.ParseALPNOptions()
 
 				if c.Ingress.UseTLSForRule(rule) {
 					info.OffloadSSL = true
@@ -595,6 +595,7 @@ func (c *controller) generateConfig() error {
 			Port:          binder.Port,
 			FrontendRules: fr.Rules,
 			OffloadSSL:    info.OffloadSSL,
+			ALPNOptions:   info.ALPNOptions,
 			Hosts:         make([]*hpi.HTTPHost, 0),
 		}
 		for host, paths := range info.Hosts {
@@ -983,6 +984,7 @@ func (c *controller) convertRulesForSSLPassthrough() error {
 				NoTLS:    true, // don't use TLS in passthrough mode
 				NodePort: rule.HTTP.NodePort,
 				Backend:  rule.HTTP.Paths[0].Backend.IngressBackend,
+				ALPN:     rule.HTTP.ALPN,
 			}
 			rule.HTTP = nil // remove http rule after conversion
 			c.Ingress.Spec.Rules[i] = rule
