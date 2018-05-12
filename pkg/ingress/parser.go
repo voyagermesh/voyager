@@ -410,7 +410,7 @@ func (c *controller) generateConfig() error {
 			binder := hostBinder{Address: rule.HTTP.Address}
 			offloadSSL := false
 
-			if _, foundTLS := c.Ingress.FindTLSSecret(rule.Host); foundTLS && !rule.HTTP.NoTLS {
+			if c.Ingress.UseTLSForRule(rule) {
 				offloadSSL = true
 				if port := rule.HTTP.Port.IntValue(); port > 0 {
 					binder.Port = port
@@ -522,7 +522,7 @@ func (c *controller) generateConfig() error {
 				info.Hosts = append(info.Hosts, tcpHost)
 				info.ALPNOptions = rule.TCP.ParseALPNOptions()
 
-				if _, ok := c.Ingress.FindTLSSecret(rule.Host); ok && !rule.TCP.NoTLS {
+				if c.Ingress.UseTLSForRule(rule) {
 					info.OffloadSSL = true
 				}
 			}
@@ -971,7 +971,7 @@ func (c *controller) convertRulesForSSLPassthrough() error {
 			}
 
 			if rule.HTTP.Port.IntValue() == 0 {
-				if _, foundTLS := c.Ingress.FindTLSSecret(rule.Host); foundTLS && !rule.HTTP.NoTLS {
+				if c.Ingress.UseTLSForRule(rule) {
 					rule.HTTP.Port = intstr.FromInt(443)
 				} else {
 					rule.HTTP.Port = intstr.FromInt(80)

@@ -67,6 +67,14 @@ func (r Ingress) HasChanged(o Ingress) (bool, error) {
 	return !reflect.DeepEqual(ra, oa), nil
 }
 
+func (r Ingress) UseTLSForRule(rule IngressRule) bool {
+	if (rule.HTTP != nil && rule.HTTP.NoTLS) || (rule.TCP != nil && rule.TCP.NoTLS) {
+		return false
+	}
+	_, ok := r.FindTLSSecret(rule.Host)
+	return ok
+}
+
 func (r Ingress) FindTLSSecret(h string) (*LocalTypedReference, bool) {
 	if h == "" {
 		return nil, false
