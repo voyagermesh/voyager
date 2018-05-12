@@ -984,6 +984,7 @@ func (c *controller) convertRulesForSSLPassthrough() error {
 				NoTLS:    true, // don't use TLS in passthrough mode
 				NodePort: rule.HTTP.NodePort,
 				Backend:  rule.HTTP.Paths[0].Backend.IngressBackend,
+				ALPN:     rule.HTTP.ALPN,
 			}
 			rule.HTTP = nil // remove http rule after conversion
 			c.Ingress.Spec.Rules[i] = rule
