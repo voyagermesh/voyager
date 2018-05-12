@@ -12,29 +12,41 @@ import (
 )
 
 func TestALPNOptions(t *testing.T) {
-	dataTable := map[string][]string{
-		"": {},
-		"alpn h2,http/1.0,http/1.1": {
-			"h2",
-			"http/1.1",
-			"http/1.0",
-		},
+	{
+		dataTable := map[string][]string{
+			"": {},
+			"alpn h2,http/1.0,http/1.1": {
+				"h2",
+				"http/1.1",
+				"http/1.0",
+			},
+		}
+		for k, v := range dataTable {
+			tcpRule := api.IngressRule{
+				IngressRuleValue: api.IngressRuleValue{
+					TCP: &api.TCPIngressRuleValue{ALPN: v},
+				},
+			}
+			assert.Equal(t, k, tcpRule.ParseALPNOptions())
+		}
 	}
-
-	for k, v := range dataTable {
-		tcpRule := api.IngressRule{
-			IngressRuleValue: api.IngressRuleValue{
-				TCP: &api.TCPIngressRuleValue{ALPN: v},
+	{
+		dataTable := map[string][]string{
+			"alpn http/1.1": {},
+			"alpn h2,http/1.0,http/1.1": {
+				"h2",
+				"http/1.1",
+				"http/1.0",
 			},
 		}
-		assert.Equal(t, k, tcpRule.ParseALPNOptions())
-
-		httpRule := api.IngressRule{
-			IngressRuleValue: api.IngressRuleValue{
-				HTTP: &api.HTTPIngressRuleValue{ALPN: v},
-			},
+		for k, v := range dataTable {
+			httpRule := api.IngressRule{
+				IngressRuleValue: api.IngressRuleValue{
+					HTTP: &api.HTTPIngressRuleValue{ALPN: v},
+				},
+			}
+			assert.Equal(t, k, httpRule.ParseALPNOptions())
 		}
-		assert.Equal(t, k, httpRule.ParseALPNOptions())
 	}
 }
 
