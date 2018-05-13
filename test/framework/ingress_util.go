@@ -328,7 +328,7 @@ func getLoadBalancerURLs(provider string, k kubernetes.Interface, ing *api_v1bet
 		gomega.Eventually(func() error {
 			var outputs []byte
 			outputs, err = exec.Command(
-				"/usr/local/bin/minikube",
+				"minikube",
 				"service",
 				ing.OffshootName(),
 				"--url",
