@@ -2,23 +2,23 @@
 title: Changelog | Voyager
 description: Changelog
 menu:
-  product_voyager_7.0.0-rc.0:
+  product_voyager_7.0.0-rc.1:
     identifier: changelog-voyager
     name: Changelog
     parent: welcome
     weight: 10
 product_name: voyager
-menu_name: product_voyager_7.0.0-rc.0
+menu_name: product_voyager_7.0.0-rc.1
 section_menu_id: welcome
-url: /products/voyager/7.0.0-rc.0/welcome/changelog/
+url: /products/voyager/7.0.0-rc.1/welcome/changelog/
 aliases:
-  - /products/voyager/7.0.0-rc.0/CHANGELOG/
+  - /products/voyager/7.0.0-rc.1/CHANGELOG/
 ---
 
 # Change Log
 
-## [7.0.0-rc.0](https://github.com/appscode/voyager/tree/7.0.0-rc.0) (2018-05-10)
-[Full Changelog](https://github.com/appscode/voyager/compare/6.0.0...7.0.0-rc.0)
+## [7.0.0-rc.1](https://github.com/appscode/voyager/tree/7.0.0-rc.1) (2018-05-10)
+[Full Changelog](https://github.com/appscode/voyager/compare/6.0.0...7.0.0-rc.1)
 
 **Fixed bugs:**
 
@@ -56,7 +56,7 @@ aliases:
 -  Updated doc for ssl-passthrough [\#1031](https://github.com/appscode/voyager/pull/1031) ([diptadas](https://github.com/diptadas))
 - Separated config-check from render-config [\#1030](https://github.com/appscode/voyager/pull/1030) ([diptadas](https://github.com/diptadas))
 - Remove AssignTypeKind and GetGroupVersionKind util methods [\#1029](https://github.com/appscode/voyager/pull/1029) ([tamalsaha](https://github.com/tamalsaha))
-- Prepare docs for 7.0.0-rc.0 [\#1027](https://github.com/appscode/voyager/pull/1027) ([tamalsaha](https://github.com/tamalsaha))
+- Prepare docs for 7.0.0-rc.1 [\#1027](https://github.com/appscode/voyager/pull/1027) ([tamalsaha](https://github.com/tamalsaha))
 - Check HAProxy config before writing into configmap [\#1026](https://github.com/appscode/voyager/pull/1026) ([diptadas](https://github.com/diptadas))
 - Handle empty renewed certificate [\#1025](https://github.com/appscode/voyager/pull/1025) ([tamalsaha](https://github.com/tamalsaha))
 - Update chart path for release-5.0 [\#1021](https://github.com/appscode/voyager/pull/1021) ([tamalsaha](https://github.com/tamalsaha))
