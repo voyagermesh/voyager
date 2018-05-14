@@ -409,22 +409,17 @@ func (c *controller) generateConfig() error {
 	for ri, rule := range c.Ingress.Spec.Rules {
 		if rule.HTTP != nil {
 			binder := hostBinder{Address: rule.HTTP.Address}
-			info := &httpInfo{Hosts: make(map[string][]*hpi.HTTPPath)}
-			if v, ok := httpServices[binder]; ok {
-				info = v
-			} else {
-				httpServices[binder] = info
-			}
+			offloadSSL := false
 
 			if c.Ingress.UseTLSForRule(rule) {
-				info.OffloadSSL = true
+				offloadSSL = true
 				if port := rule.HTTP.Port.IntValue(); port > 0 {
 					binder.Port = port
 				} else {
 					binder.Port = 443
 				}
 			} else {
-				info.OffloadSSL = false
+				offloadSSL = false
 				if port := rule.HTTP.Port.IntValue(); port > 0 {
 					binder.Port = port
 				} else {
@@ -432,6 +427,13 @@ func (c *controller) generateConfig() error {
 				}
 			}
 
+			info := &httpInfo{Hosts: make(map[string][]*hpi.HTTPPath)}
+			if v, ok := httpServices[binder]; ok {
+				info = v
+			} else {
+				httpServices[binder] = info
+			}
+			info.OffloadSSL = offloadSSL
 			info.ALPNOptions = rule.ParseALPNOptions()
 
 			httpPaths := info.Hosts[rule.GetHost()]
