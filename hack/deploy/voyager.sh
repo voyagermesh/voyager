@@ -94,7 +94,7 @@ export VOYAGER_ENABLE_VALIDATING_WEBHOOK=false
 export VOYAGER_RESTRICT_TO_NAMESPACE=false
 export VOYAGER_ROLE_TYPE=ClusterRole
 export VOYAGER_DOCKER_REGISTRY=appscode
-export VOYAGER_IMAGE_TAG=7.0.0-rc.0
+export VOYAGER_IMAGE_TAG=7.0.0-rc.1
 export VOYAGER_IMAGE_PULL_SECRET=
 export VOYAGER_IMAGE_PULL_POLICY=IfNotPresent
 export VOYAGER_ENABLE_ANALYTICS=true
@@ -103,7 +103,7 @@ export VOYAGER_PURGE=0
 export VOYAGER_TEMPLATE_CONFIGMAP=
 
 export APPSCODE_ENV=${APPSCODE_ENV:-prod}
-export SCRIPT_LOCATION="curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.0/"
+export SCRIPT_LOCATION="curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.1/"
 if [ "$APPSCODE_ENV" = "dev" ]; then
     detect_tag
     export SCRIPT_LOCATION="cat "
