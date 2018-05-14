@@ -2,13 +2,13 @@
 title: Install Voyager
 description: Voyager Install
 menu:
-  product_voyager_7.0.0-rc.0:
+  product_voyager_7.0.0-rc.1:
     identifier: install-voyager
     name: Install
     parent: setup
     weight: 10
 product_name: voyager
-menu_name: product_voyager_7.0.0-rc.0
+menu_name: product_voyager_7.0.0-rc.1
 section_menu_id: setup
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
@@ -32,7 +32,7 @@ To install Voyager in your Kubernetes cluster, pick the appropriate cluster prov
 # provider=openstack
 # provider=metallb
 
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.0/hack/deploy/voyager.sh \
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.1/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider
 ```
 
@@ -45,10 +45,10 @@ voyager-operator-846d47f489-jrb58       1/1       Running   0          48s
 
 #### Customizing Installer
 
-The installer script and associated yaml files can be found in the [/hack/deploy](https://github.com/appscode/voyager/tree/7.0.0-rc.0/hack/deploy) folder. To see the full list of flags available to installer, use the `-h` flag.
+The installer script and associated yaml files can be found in the [/hack/deploy](https://github.com/appscode/voyager/tree/7.0.0-rc.1/hack/deploy) folder. To see the full list of flags available to installer, use the `-h` flag.
 
 ```console
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.0/hack/deploy/voyager.sh | bash -s -- -h
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.1/hack/deploy/voyager.sh | bash -s -- -h
 voyager.sh - install voyager operator
 
 voyager.sh [options]
@@ -72,7 +72,7 @@ options:
 If you would like to run Voyager operator pod in `master` instances, pass the `--run-on-master` flag:
 
 ```console
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.0/hack/deploy/voyager.sh \
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.1/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider --run-on-master [--rbac]
 ```
 
@@ -80,7 +80,7 @@ Voyager operator will be installed in a `kube-system` namespace by default. If y
 
 ```console
 $ kubectl create namespace voyager
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.0/hack/deploy/voyager.sh \
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.1/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider --namespace=voyager [--run-on-master] [--rbac]
 ```
 
@@ -88,7 +88,7 @@ By default, Voyager operator will watch Ingress objects in any namespace. If you
 
 ```console
 $ kubectl create namespace voyager
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.0/hack/deploy/voyager.sh \
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.1/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider --namespace=voyager --restrict-to-namespace [--run-on-master] [--rbac]
 ```
 
@@ -101,14 +101,14 @@ To pass the address of your private registry and optionally a image pull secret 
 
 ```console
 $ kubectl create namespace voyager
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.0/hack/deploy/voyager.sh \
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.1/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider --docker-registry=MY_REGISTRY [--image-pull-secret=SECRET_NAME] [--rbac]
 ```
 
 Voyager implements a [validating admission webhook](https://kubernetes.io/docs/admin/admission-controllers/#validatingadmissionwebhook-alpha-in-18-beta-in-19) to validate Voyager CRDs. This is enabled by default for Kubernetes 1.9.0 or later releases. To disable this feature, pass the `--enable-validating-webhook=false` flag.
 
 ```console
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.0/hack/deploy/voyager.sh \
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.1/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider --enable-validating-webhook [--rbac]
 ```
 
@@ -116,7 +116,7 @@ To use custom templates to render HAProxy configuration, visit [here](/docs/guid
 
 ## Using Helm
 
-Voyager can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/appscode/voyager/tree/7.0.0-rc.0/chart/voyager) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
+Voyager can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/appscode/voyager/tree/7.0.0-rc.1/chart/voyager) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
 
 ```console
 # Mac OSX amd64:
@@ -148,7 +148,7 @@ $ helm install appscode/voyager --name my-release \
   --set apiserver.enableValidatingWebhook=true
 ```
 
-To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/7.0.0-rc.0/chart/voyager).
+To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/7.0.0-rc.1/chart/voyager).
 
 ### Installing in GKE Cluster
 
@@ -229,12 +229,12 @@ $ POD_NAMESPACE=kube-system
 $ POD_NAME=$(kubectl get pods -n $POD_NAMESPACE -l app=voyager -o jsonpath={.items[0].metadata.name})
 $ kubectl exec -it $POD_NAME -n $POD_NAMESPACE voyager version
 
-Version = 7.0.0-rc.0
+Version = 7.0.0-rc.1
 VersionStrategy = tag
 Os = alpine
 Arch = amd64
 CommitHash = ab0b38d8f5d5b4b4508768a594a9d98f2c76abd8
 GitBranch = release-4.0
-GitTag = 7.0.0-rc.0
+GitTag = 7.0.0-rc.1
 CommitTimestamp = 2017-10-08T12:45:26
 ```

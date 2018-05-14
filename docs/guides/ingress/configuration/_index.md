@@ -1,10 +1,10 @@
 ---
 title: Configuration
 menu:
-  product_voyager_7.0.0-rc.0:
+  product_voyager_7.0.0-rc.1:
     identifier: config-ingress
     name: Configuration
     parent: ingress-guides
     weight: 25
-menu_name: product_voyager_7.0.0-rc.0
+menu_name: product_voyager_7.0.0-rc.1
 ---
