@@ -2,7 +2,7 @@
 
 Voyager can enable HTTP/2 from version >=7.0.0-rc.1
 
-To enable http2, you must first setup a [certificate](https://appscode.com/products/voyager/6.0.0/guides/certificate/) (Let's Encrypt), or use an existing one then create an ingress resource configuration like so:
+To enable http2, you must first setup a [certificate](/docs/guides/certificate) (Let's Encrypt), or use an existing one. Then create an ingress object like below:
 
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
