@@ -1,3 +1,18 @@
+---
+title: HTTP2 | Kubernetes Ingress
+menu:
+  product_voyager_7.0.0-rc.1:
+    identifier: h2-http
+    name: HTTP2
+    parent: http-ingress
+    weight: 26
+product_name: voyager
+menu_name: product_voyager_7.0.0-rc.1
+section_menu_id: guides
+---
+
+> New to Voyager? Please start [here](/docs/concepts/overview.md).
+
 # Enable HTTP/2 on ingress resource
 
 Voyager can enable HTTP/2 from version >=7.0.0-rc.1
