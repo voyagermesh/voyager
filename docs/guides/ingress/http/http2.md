@@ -34,7 +34,7 @@ spec:
       - http/1.0
 ```
 
-The important bit here is `alpn`. In this example the ingress resource will first offer `HTTP/2`, then `HTTP/1.1` and finally `HTTP/1.0` to the connecting client. If it's not specified, it defaults to HTTP/1.1
+The important bit here is `alpn`. In this example the ingress can negotiate from `HTTP/2` all the way down to `HTTP/1.0`. If `alpn` isn't specified at all, the negotiated protocol will be `HTTP/1.1` (default).
 
 The above settings are reflected in the generated haproxy `ConfigMap`:
 
