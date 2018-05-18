@@ -330,6 +330,34 @@ func (r Ingress) IsValid(cloudProvider string) error {
 		return errors.Errorf("ingress %s/%s of type %s can't use `spec.LoadBalancerSourceRanges`", r.Namespace, r.Name, r.LBType())
 	}
 
+	// validate external auth
+	for ri, rule := range r.Spec.FrontendRules {
+		oauthHosts := make(map[string]int)
+		for ii, oauth := range rule.Auth.OAuth {
+			// check multiple oauth for same host under same port
+			if jj, found := oauthHosts[oauth.Host]; found {
+				return errors.Errorf("spec.frontendRules[%d].oauth[%d] is reusing host %s for port %s, also used in spec.frontendRules[%d].oauth[%d]", ri, ii, rule.Auth.OAuth[ii].Host, rule.Port, ri, jj)
+			} else {
+				oauthHosts[oauth.Host] = ii
+			}
+
+			// check auth backend exists
+			authBackendFound := false
+			for _, addr := range addrs {
+				if addr.PodPort == int(rule.Port.IntVal) {
+					for _, path := range addr.Hosts[oauth.Host] {
+						if r.Spec.Rules[path.RuleIndex].HTTP.Paths[path.PathIndex].Backend.Name == oauth.AuthBackend {
+							authBackendFound = true
+						}
+					}
+				}
+			}
+			if !authBackendFound {
+				return errors.Errorf("specified auth backend not found for spec.frontendRules[%d].oauth[%d]", ri, ii)
+			}
+		}
+	}
+
 	return nil
 }
 
