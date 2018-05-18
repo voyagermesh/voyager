@@ -890,10 +890,11 @@ func TestOauth(t *testing.T) {
 					{
 						Host: "voyager.appscode.test",
 						ExternalAuth: &hpi.ExternalAuth{
-							AuthBackend: "auth-be",
-							AuthPath:    "/oauth2/auth",
-							SigninPath:  "/oauth2/start",
-							Paths:       []string{"/app", "/foo"},
+							AuthBackend:     "auth-be",
+							AuthBackendPath: "/oauth2",
+							AuthPath:        "/oauth2/auth",
+							SigninPath:      "/oauth2/start",
+							Paths:           []string{"/app", "/foo"},
 						},
 						Paths: []*hpi.HTTPPath{
 							{

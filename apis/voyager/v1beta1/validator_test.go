@@ -1350,4 +1350,242 @@ var dataTables = map[*Ingress]bool{
 			},
 		},
 	}: false, // conflicting ALPN with NoALPN
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "Multiple Oauth under same port"},
+		Spec: IngressSpec{
+			FrontendRules: []FrontendRule{
+				{
+					Port: intstr.FromInt(80),
+					Auth: &AuthOption{
+						OAuth: []OAuth{
+							{
+								Host:        "team01.appscode.test",
+								AuthBackend: "auth-be-1",
+							},
+							{
+								Host:        "team02.appscode.test",
+								AuthBackend: "auth-be-2",
+							},
+						},
+					},
+				},
+			},
+			Rules: []IngressRule{
+				{
+					Host: "team01.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port: intstr.FromInt(80),
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/path-1",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											Name:        "auth-be-1",
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(8080),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Host: "team02.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port: intstr.FromInt(80),
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/path-2",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											Name:        "auth-be-2",
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(8080),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}: true,
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "Multiple Oauth under same port"},
+		Spec: IngressSpec{
+			FrontendRules: []FrontendRule{
+				{
+					Port: intstr.FromInt(80),
+					Auth: &AuthOption{
+						OAuth: []OAuth{
+							{
+								Host:        "auth.appscode.test",
+								AuthBackend: "auth-be-1",
+							},
+							{
+								Host:        "auth.appscode.test",
+								AuthBackend: "auth-be-2",
+							},
+						},
+					},
+				},
+			},
+			Rules: []IngressRule{
+				{
+					Host: "auth.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port: intstr.FromInt(80),
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/path-1",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											Name:        "auth-be-1",
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(8080),
+										},
+									},
+								},
+								{
+									Path: "/path-2",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											Name:        "auth-be-2",
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(8080),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // multiple oauth for same host under same port
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "Auth backend not found"},
+		Spec: IngressSpec{
+			FrontendRules: []FrontendRule{
+				{
+					Port: intstr.FromInt(80),
+					Auth: &AuthOption{
+						OAuth: []OAuth{
+							{
+								Host:        "auth.appscode.test",
+								AuthBackend: "auth-be",
+							},
+						},
+					},
+				},
+			},
+			Rules: []IngressRule{
+				{
+					Host: "auth.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port: intstr.FromInt(8080),
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/path-1",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											Name:        "auth-be-1",
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(8080),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // auth backend not found: port not matched
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "Auth backend not found"},
+		Spec: IngressSpec{
+			FrontendRules: []FrontendRule{
+				{
+					Port: intstr.FromInt(80),
+					Auth: &AuthOption{
+						OAuth: []OAuth{
+							{
+								Host:        "auth.appscode.test",
+								AuthBackend: "auth-be",
+							},
+						},
+					},
+				},
+			},
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port: intstr.FromInt(80),
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/path-1",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											Name:        "auth-be-1",
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(8080),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // auth backend not found: host not matched
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "Auth backend not found"},
+		Spec: IngressSpec{
+			FrontendRules: []FrontendRule{
+				{
+					Port: intstr.FromInt(80),
+					Auth: &AuthOption{
+						OAuth: []OAuth{
+							{
+								Host:        "auth.appscode.test",
+								AuthBackend: "auth-be",
+							},
+						},
+					},
+				},
+			},
+			Rules: []IngressRule{
+				{
+					Host: "auth.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port: intstr.FromInt(80),
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/path-1",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											Name:        "auth-be-2",
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(8080),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // auth backend not found: backend name not matched
 }
