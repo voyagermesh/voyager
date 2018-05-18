@@ -177,8 +177,6 @@ func (s *OperatorOptions) ApplyTo(cfg *operator.OperatorConfig) error {
 		CloudProvider: s.CloudProvider,
 	}}
 
-	cfg.OpsAddress = s.OpsAddress
-
 	return nil
 }
 
