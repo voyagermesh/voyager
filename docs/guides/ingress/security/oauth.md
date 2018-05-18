@@ -289,7 +289,8 @@ $ python -c 'import os,base64; print base64.b64encode(os.urandom(16))'
  
 - If you use standard ports, you have to write frontend rules under port `80` for non-tls and under port `443` for tls.
 
-- You can configure different auth backends for different paths under same host. For example:
+- You can not use different auth backends for different paths under same host and port.
+However, it is possible to configure different auth backends for different hosts under same port. For example:
 
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
@@ -297,40 +298,28 @@ kind: Ingress
 metadata:
   name: auth-ingress
   namespace: default
-  annotations:
-    ingress.appscode.com/type: NodePort
-    ingress.appscode.com/use-node-port: "true"
 spec:
   frontendRules:
   - port: 80
     auth:
       oauth:
-      - host: voyager.appscode.ninja
+      - host: team01.example.com
         authBackend: google-auth
         authPath: /google/auth
         signinPath: /google/start
         paths:
         - /foo
-      - host: voyager.appscode.ninja
+      - host: team02.example.com
         authBackend: github-auth
         authPath: /github/auth
         signinPath: /github/start
         paths:
         - /bar
   rules:
-  - host: voyager.appscode.ninja
+  - host: team01.example.com
     http:
-      nodePort: 32666
       paths:
-      - path: /health
-        backend:
-          serviceName: test-server
-          servicePort: 80
       - path: /foo
-        backend:
-          serviceName: test-server
-          servicePort: 80
-      - path: /bar
         backend:
           serviceName: test-server
           servicePort: 80
@@ -339,6 +328,13 @@ spec:
           name: google-auth
           serviceName: oauth2-proxy-google
           servicePort: 4180
+  - host: team02.example.com
+    http:
+      paths:
+      - path: /bar
+        backend:
+          serviceName: test-server
+          servicePort: 80
       - path: /github
         backend:
           name: github-auth
