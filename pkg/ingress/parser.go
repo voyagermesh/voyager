@@ -647,6 +647,12 @@ func (c *controller) generateConfig() error {
 							SigninPath:  oauth.SigninPath,
 							Paths:       oauth.Paths,
 						}
+						// get auth-backend path
+						for _, path := range srv.Hosts[i].Paths {
+							if path.Backend.Name == oauth.AuthBackend {
+								srv.Hosts[i].ExternalAuth.AuthBackendPath = path.Path
+							}
+						}
 					}
 				}
 			}

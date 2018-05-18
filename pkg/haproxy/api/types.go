@@ -178,10 +178,11 @@ type Backend struct {
 }
 
 type ExternalAuth struct {
-	AuthBackend string
-	AuthPath    string
-	SigninPath  string
-	Paths       []string
+	AuthBackend     string
+	AuthBackendPath string
+	AuthPath        string
+	SigninPath      string
+	Paths           []string
 }
 
 func (be *Backend) canonicalize(hasDuplicate bool, host, port, path string) {
