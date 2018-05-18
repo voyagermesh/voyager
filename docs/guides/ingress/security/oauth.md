@@ -325,7 +325,7 @@ spec:
           servicePort: 80
       - path: /google
         backend:
-		  name: google-auth
+          name: google-auth
           serviceName: oauth2-proxy-google
           servicePort: 4180
   - host: team02.example.com
