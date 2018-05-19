@@ -1,6 +1,7 @@
 package v1beta1
 
 import (
+	"encoding/json"
 	"net"
 	"strconv"
 	"strings"
@@ -10,6 +11,7 @@ import (
 	"github.com/appscode/kutil/meta"
 	"github.com/appscode/voyager/apis/voyager"
 	"github.com/pkg/errors"
+	core "k8s.io/api/core/v1"
 )
 
 const (
@@ -246,6 +248,10 @@ const (
 
 	// Workload controller to use run HAProxy pods
 	WorkloadKind = EngressKey + "/" + "workload-kind"
+
+	// ref: https://github.com/appscode/voyager/issues/1054
+	NodeSelector = EngressKey + "/" + "node-selector"
+	Tolerations  = EngressKey + "/" + "tolerations"
 )
 
 var (
@@ -298,6 +304,8 @@ func init() {
 	registerParser(DefaultsTimeOut, meta.GetMap)
 	registerParser(DefaultsOption, meta.GetMap)
 	registerParser(WorkloadKind, getWorkload)
+	registerParser(NodeSelector, meta.GetMap)
+	registerParser(Tolerations, getTolerations)
 }
 
 const (
@@ -605,6 +613,23 @@ func getWorkload(m map[string]string, key string) (interface{}, error) {
 		return nil, errors.Errorf("%s must be either Deployment or DaemonSet, found %s", WorkloadKind, w)
 	}
 	return w, nil
+}
+
+func getTolerations(m map[string]string, key string) (interface{}, error) {
+	if m == nil {
+		return nil, nil
+	}
+	v, ok := m[key]
+	if !ok {
+		return nil, nil
+	}
+
+	var out []core.Toleration
+	err := json.Unmarshal([]byte(v), &out)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 var timeoutDefaults = map[string]string{
