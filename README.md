@@ -21,7 +21,7 @@ Please pick a version of Voyager that matches your Kubernetes installation.
 
 | Voyager Version                                                                        | Docs                                                                    | Kubernetes Version | Prometheus operator Version |
 |----------------------------------------------------------------------------------------|-------------------------------------------------------------------------|--------------------|-----------------------------|
-| [7.0.0-rc.1](https://github.com/appscode/voyager/releases/tag/7.0.0-rc.1) (uses CRD)   | [User Guide](https://appscode.com/products/voyager/7.0.0-rc.1/)         | 1.8.x+             | 0.16.0+ (test/qa clusters)  |
+| [7.0.0-rc.1](https://github.com/appscode/voyager/releases/tag/7.0.0-rc.1) (uses CRD)   | [User Guide](https://appscode.com/products/voyager/7.0.0-rc.1/)         | 1.8.x+ (test/qa clusters)  | 0.16.0+             |
 | [6.0.0](https://github.com/appscode/voyager/releases/tag/6.0.0) (uses CRD)             | [User Guide](https://appscode.com/products/voyager/6.0.0/)              | 1.8.x+             | 0.16.0+                     |
 | [5.0.0-rc.11](https://github.com/appscode/voyager/releases/tag/5.0.0-rc.11) (uses CRD) | [User Guide](https://appscode.com/products/voyager/5.0.0-rc.11/)        | 1.7.x              | 0.12.0+                     |
 | [3.2.2](https://github.com/appscode/voyager/releases/tag/3.2.2) (uses TPR)             | [User Guide](https://github.com/appscode/voyager/tree/3.2.2/docs)       | 1.5.x - 1.7.x      | < 0.12.0                    |
