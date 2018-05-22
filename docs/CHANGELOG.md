@@ -17,9 +17,8 @@ aliases:
 
 # Change Log
 
-## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
-
-[Full Changelog](https://github.com/appscode/voyager/compare/7.0.0-rc.1...HEAD)
+## [7.0.0-rc.2](https://github.com/appscode/voyager/tree/7.0.0-rc.2) (2018-05-22)
+[Full Changelog](https://github.com/appscode/voyager/compare/7.0.0-rc.1...7.0.0-rc.2)
 
 **Fixed bugs:**
 
@@ -31,6 +30,11 @@ aliases:
 
 **Merged pull requests:**
 
+- Clarify messaging [\#1064](https://github.com/appscode/voyager/pull/1064) ([tamalsaha](https://github.com/tamalsaha))
+- Install correct version of voyager chart [\#1063](https://github.com/appscode/voyager/pull/1063) ([tamalsaha](https://github.com/tamalsaha))
+- Avoid creating apiservice when webhooks are not used. [\#1062](https://github.com/appscode/voyager/pull/1062) ([tamalsaha](https://github.com/tamalsaha))
+- Add --haproxy-image-tag flag to installer [\#1061](https://github.com/appscode/voyager/pull/1061) ([tamalsaha](https://github.com/tamalsaha))
+- Prepare docs for 7.0.0-rc.2 [\#1060](https://github.com/appscode/voyager/pull/1060) ([tamalsaha](https://github.com/tamalsaha))
 - Support NodeSelector and Tolerations via annotation for std ingress [\#1059](https://github.com/appscode/voyager/pull/1059) ([tamalsaha](https://github.com/tamalsaha))
 - Remove redundant assignment [\#1058](https://github.com/appscode/voyager/pull/1058) ([gavvvr](https://github.com/gavvvr))
 - Move oauth2-proxy image to Voyager repo [\#1057](https://github.com/appscode/voyager/pull/1057) ([tamalsaha](https://github.com/tamalsaha))
