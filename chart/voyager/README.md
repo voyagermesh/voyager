@@ -1,5 +1,5 @@
 # Voyager
-[Voyager by AppsCode](https://github.com/appscode/voyager) - Secure Ingress Controller for Kubernetes
+[Voyager by AppsCode](https://github.com/appscode/voyager) - Secure HAProxy Ingress Controller for Kubernetes
 
 ## TL;DR;
 
