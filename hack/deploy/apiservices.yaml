@@ -1,0 +1,16 @@
+# register as aggregated apiserver
+apiVersion: apiregistration.k8s.io/v1beta1
+kind: APIService
+metadata:
+  name: v1beta1.admission.voyager.appscode.com
+  labels:
+    app: voyager
+spec:
+  caBundle: ${SERVICE_SERVING_CERT_CA}
+  group: admission.voyager.appscode.com
+  groupPriorityMinimum: 1000
+  versionPriority: 15
+  service:
+    name: voyager-operator
+    namespace: ${VOYAGER_NAMESPACE}
+  version: v1beta1

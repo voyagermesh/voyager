@@ -387,7 +387,8 @@ if [ "$VOYAGER_RUN_ON_MASTER" -eq 1 ]; then
 fi
 
 if [ "$VOYAGER_ENABLE_VALIDATING_WEBHOOK" = true ]; then
-    ${SCRIPT_LOCATION}hack/deploy/admission.yaml | $ONESSL envsubst | kubectl apply -f -
+    ${SCRIPT_LOCATION}hack/deploy/apiservices.yaml | $ONESSL envsubst | kubectl apply -f -
+    ${SCRIPT_LOCATION}hack/deploy/validating-webhook.yaml | $ONESSL envsubst | kubectl apply -f -
 fi
 
 echo
