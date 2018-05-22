@@ -74,3 +74,5 @@ Below is the full list of supported annotations:
 | [ingress.appscode.com/dns-resolver-timeout](/docs/guides/ingress/http/external-svc.md#using-external-domain) | map | |
 | [ingress.appscode.com/dns-resolver-hold](/docs/guides/ingress/http/external-svc.md#using-external-domain) | map | |
 | [ingress.appscode.com/workload-kind](/docs/guides/ingress/pod-placement.md#choosing-workload-kind) | string | `Deployment` |
+| [ingress.appscode.com/node-selector](/docs/guides/ingress/pod-placement.md#using-node-selector) | map | |
+| [ingress.appscode.com/tolerations](/docs/guides/ingress/pod-placement.md#using-taints-and-toleration) | array | |
