@@ -45,5 +45,5 @@ voyager version [flags]
 
 ### SEE ALSO
 
-* [voyager](/docs/reference/voyager.md)	 - Voyager by Appscode - Secure Ingress Controller for Kubernetes
+* [voyager](/docs/reference/voyager.md)	 - Voyager by Appscode - Secure HAProxy Ingress Controller for Kubernetes
 

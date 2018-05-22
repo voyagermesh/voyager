@@ -126,7 +126,7 @@ $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
 $ helm search appscode/voyager
 NAME              CHART VERSION APP VERSION DESCRIPTION
-appscode/voyager  7.0.0-rc.2    7.0.0-rc.2  Voyager by AppsCode - Secure Ingress Controller...
+appscode/voyager  7.0.0-rc.2    7.0.0-rc.2  Voyager by AppsCode - Secure HAProxy Ingress Controller...
 
 # Kubernetes 1.8.x
 $ helm install appscode/voyager --name voyager-operator --version 7.0.0-rc.2 --set cloudProvider=$provider

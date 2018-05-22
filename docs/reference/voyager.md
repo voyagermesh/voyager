@@ -16,11 +16,11 @@ aliases:
 ---
 ## voyager
 
-Voyager by Appscode - Secure Ingress Controller for Kubernetes
+Voyager by Appscode - Secure HAProxy Ingress Controller for Kubernetes
 
 ### Synopsis
 
-Voyager by Appscode - Secure Ingress Controller for Kubernetes
+Voyager by Appscode - Secure HAProxy Ingress Controller for Kubernetes
 
 ### Options
 
