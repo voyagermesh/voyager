@@ -95,6 +95,7 @@ export VOYAGER_RESTRICT_TO_NAMESPACE=false
 export VOYAGER_ROLE_TYPE=ClusterRole
 export VOYAGER_DOCKER_REGISTRY=appscode
 export VOYAGER_IMAGE_TAG=7.0.0-rc.2
+export VOYAGER_HAPROXY_IMAGE_TAG=1.8.8-7.0.0-rc.2-alpine
 export VOYAGER_IMAGE_PULL_SECRET=
 export VOYAGER_IMAGE_PULL_POLICY=IfNotPresent
 export VOYAGER_ENABLE_ANALYTICS=true
@@ -125,6 +126,7 @@ show_help() {
     echo "-p, --provider=PROVIDER            specify a cloud provider"
     echo "    --rbac                         create RBAC roles and bindings (default: true)"
     echo "    --docker-registry              docker registry used to pull voyager images (default: appscode)"
+    echo "    --haproxy-image-tag            tag of Docker image containing HAProxy binary (default: 1.8.8-7.0.0-rc.2-alpine)"
     echo "    --image-pull-secret            name of secret used to pull voyager operator images"
     echo "    --restrict-to-namespace        restrict voyager to its own namespace"
     echo "    --run-on-master                run voyager operator on master"
@@ -171,6 +173,10 @@ while test $# -gt 0; do
             ;;
         --docker-registry*)
             export VOYAGER_DOCKER_REGISTRY=`echo $1 | sed -e 's/^[^=]*=//g'`
+            shift
+            ;;
+        --haproxy-image-tag*)
+            export VOYAGER_HAPROXY_IMAGE_TAG=`echo $1 | sed -e 's/^[^=]*=//g'`
             shift
             ;;
         --image-pull-secret*)
