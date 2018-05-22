@@ -93,6 +93,33 @@ spec:
           servicePort: 80
 ```
 
+If you are using official `extensions/v1beta1` ingress api group, use `ingress.appscode.com/node-selector` annotation to provide the selectors. For example:
+
+```
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-w-node-selector
+  namespace: demo
+  annotations:
+    ingress.appscode.com/type: NodePort
+    ingress.appscode.com/use-node-port: 'true'
+    ingress.appscode.com/replicas: '2'
+    ingress.appscode.com/node-selector: '{"kubernetes.io/hostname": "minikube"}'
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        backend:
+          serviceName: rest
+          servicePort: 80
+      - path: /web
+        backend:
+          serviceName: web
+          servicePort: 80
+```
+
 ### Using Pod Anti-affinity
 
 [Affinity rules](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity) can be used assign HAProxy ingress pods to specific nodes or ensure that 2 separate HAProxy ingress pods are not placed on same node. Affinity rules are set via `spec.affinity` field in Voyager Ingress CRD. Below is an example where ingress pods are spread over run on node with name`minikube`.
@@ -177,6 +204,33 @@ spec:
     operator: Equal
     value: 'true'
     effect: NoSchedule
+```
+
+If you are using official `extensions/v1beta1` ingress api group, use `ingress.appscode.com/tolerations` annotation to provide the toleration information. For example:
+
+```
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-w-toleration
+  namespace: demo
+  annotations:
+    ingress.appscode.com/type: NodePort
+    ingress.appscode.com/use-node-port: 'true'
+    ingress.appscode.com/replicas: '2'
+    ingress.appscode.com/tolerations: '[{"key": "IngressOnly", "operator": "Equal", "value": "true", "effect": "NoSchedule"}]'
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        backend:
+          serviceName: rest
+          servicePort: 80
+      - path: /web
+        backend:
+          serviceName: web
+          servicePort: 80
 ```
 
 You can use these various option in combination with each other to achieve desired result. Say, you want to run your HAProxy pods on master instances. This can be done using an Ingress like below:
