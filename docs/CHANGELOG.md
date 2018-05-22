@@ -2,20 +2,40 @@
 title: Changelog | Voyager
 description: Changelog
 menu:
-  product_voyager_7.0.0-rc.1:
+  product_voyager_7.0.0-rc.2:
     identifier: changelog-voyager
     name: Changelog
     parent: welcome
     weight: 10
 product_name: voyager
-menu_name: product_voyager_7.0.0-rc.1
+menu_name: product_voyager_7.0.0-rc.2
 section_menu_id: welcome
-url: /products/voyager/7.0.0-rc.1/welcome/changelog/
+url: /products/voyager/7.0.0-rc.2/welcome/changelog/
 aliases:
-  - /products/voyager/7.0.0-rc.1/CHANGELOG/
+  - /products/voyager/7.0.0-rc.2/CHANGELOG/
 ---
 
 # Change Log
+
+## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
+
+[Full Changelog](https://github.com/appscode/voyager/compare/7.0.0-rc.1...HEAD)
+
+**Fixed bugs:**
+
+- Fix OAuth implementation [\#1053](https://github.com/appscode/voyager/issues/1053)
+
+**Closed issues:**
+
+- Can't run tests on Solus linux, path for minikube is hardcoded [\#1047](https://github.com/appscode/voyager/issues/1047)
+
+**Merged pull requests:**
+
+- Support NodeSelector and Tolerations via annotation for std ingress [\#1059](https://github.com/appscode/voyager/pull/1059) ([tamalsaha](https://github.com/tamalsaha))
+- Remove redundant assignment [\#1058](https://github.com/appscode/voyager/pull/1058) ([gavvvr](https://github.com/gavvvr))
+- Move oauth2-proxy image to Voyager repo [\#1057](https://github.com/appscode/voyager/pull/1057) ([tamalsaha](https://github.com/tamalsaha))
+- No auth-check for auth-backend-path itself [\#1056](https://github.com/appscode/voyager/pull/1056) ([diptadas](https://github.com/diptadas))
+- Added http2 example [\#1052](https://github.com/appscode/voyager/pull/1052) ([ssro](https://github.com/ssro))
 
 ## [7.0.0-rc.1](https://github.com/appscode/voyager/tree/7.0.0-rc.1) (2018-05-14)
 [Full Changelog](https://github.com/appscode/voyager/compare/7.0.0-rc.0...7.0.0-rc.1)
@@ -35,6 +55,7 @@ aliases:
 
 **Merged pull requests:**
 
+- Update changelog [\#1051](https://github.com/appscode/voyager/pull/1051) ([tamalsaha](https://github.com/tamalsaha))
 - Prepare docs for 7.0.0-rc.1 [\#1050](https://github.com/appscode/voyager/pull/1050) ([tamalsaha](https://github.com/tamalsaha))
 - Correctly set port to binder [\#1049](https://github.com/appscode/voyager/pull/1049) ([tamalsaha](https://github.com/tamalsaha))
 - Do not use absolute path for minikube, fixes \#1047 for 6.0 branch [\#1048](https://github.com/appscode/voyager/pull/1048) ([gavvvr](https://github.com/gavvvr))
