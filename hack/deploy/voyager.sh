@@ -287,6 +287,8 @@ if [ "$VOYAGER_UNINSTALL" -eq 1 ]; then
             # delete crd
             kubectl delete crd ${crd}.voyager.appscode.com || true
         done
+        # delete user roles
+        kubectl delete clusterroles appscode:voyager:edit appscode:voyager:view
     fi
 
     echo
