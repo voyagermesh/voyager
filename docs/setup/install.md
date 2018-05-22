@@ -122,6 +122,25 @@ To use custom templates to render HAProxy configuration, visit [here](/docs/guid
 Voyager can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/appscode/voyager/tree/7.0.0-rc.2/chart/voyager) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
 
 ```console
+$ helm repo add appscode https://charts.appscode.com/stable/
+$ helm repo update
+$ helm search appscode/voyager
+NAME              CHART VERSION APP VERSION DESCRIPTION
+appscode/voyager  7.0.0-rc.2    7.0.0-rc.2  Voyager by AppsCode - Secure Ingress Controller...
+
+# Kubernetes 1.8.x
+$ helm install appscode/voyager --name voyager-operator --version 7.0.0-rc.2 --set cloudProvider=$provider
+
+# Kubernetes 1.9.0 or later
+$ helm install appscode/voyager --name voyager-operator --version 7.0.0-rc.2 \
+  --set cloudProvider=$provider \
+  --set apiserver.ca="$(onessl get kube-ca)" \
+  --set apiserver.enableValidatingWebhook=true
+```
+
+To install `onessl`, run the following commands:
+
+```console
 # Mac OSX amd64:
 curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.1.0/onessl-darwin-amd64 \
   && chmod +x onessl \
@@ -136,19 +155,6 @@ curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.1.0/
 curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.1.0/onessl-linux-arm64 \
   && chmod +x onessl \
   && sudo mv onessl /usr/local/bin/
-
-# Kubernetes 1.8.x
-$ helm repo add appscode https://charts.appscode.com/stable/
-$ helm repo update
-$ helm install appscode/voyager --name my-release --set cloudProvider=$provider
-
-# Kubernetes 1.9.0 or later
-$ helm repo add appscode https://charts.appscode.com/stable/
-$ helm repo update
-$ helm install appscode/voyager --name my-release \
-  --set cloudProvider=$provider \
-  --set apiserver.ca="$(onessl get kube-ca)" \
-  --set apiserver.enableValidatingWebhook=true
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/7.0.0-rc.2/chart/voyager).
