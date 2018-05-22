@@ -8,15 +8,17 @@ spec:
         - --v=3
         - --rbac=${VOYAGER_ENABLE_RBAC}
         - --cloud-provider=${VOYAGER_CLOUD_PROVIDER}
-        - --cloud-config=${VOYAGER_CLOUD_CONFIG}
+        - --cloud-config=${VOYAGER_CLOUD_CONFIG} # ie. /etc/kubernetes/azure.json for azure
         - --ingress-class=${VOYAGER_INGRESS_CLASS}
         - --restrict-to-operator-namespace=${VOYAGER_RESTRICT_TO_NAMESPACE}
         - --docker-registry=${VOYAGER_DOCKER_REGISTRY}
-        - --custom-templates=/srv/voyager/custom/*.cfg
+        - --haproxy-image-tag=${VOYAGER_HAPROXY_IMAGE_TAG}
         - --secure-port=8443
         - --audit-log-path=-
         - --tls-cert-file=/var/serving-cert/tls.crt
         - --tls-private-key-file=/var/serving-cert/tls.key
+        - --enable-analytics=${VOYAGER_ENABLE_ANALYTICS}
+        - --custom-templates=/srv/voyager/custom/*.cfg
         name: voyager
         volumeMounts:
         - mountPath: /srv/voyager/custom
