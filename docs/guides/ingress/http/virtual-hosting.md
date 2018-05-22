@@ -1,13 +1,13 @@
 ---
 title: Virtual Hosting | Kubernetes Ingress
 menu:
-  product_voyager_7.0.0-rc.1:
+  product_voyager_7.0.0-rc.2:
     identifier: virtual-hosting-http
     name: Virtual Hosting
     parent: http-ingress
     weight: 15
 product_name: voyager
-menu_name: product_voyager_7.0.0-rc.1
+menu_name: product_voyager_7.0.0-rc.2
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
