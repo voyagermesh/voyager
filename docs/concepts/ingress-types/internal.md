@@ -1,13 +1,13 @@
 ---
 title: Internal Ingress | Voyager
 menu:
-  product_voyager_7.0.0-rc.1:
+  product_voyager_7.0.0-rc.2:
     identifier: internal-ingress
     name: Internal
     parent: ingress-types-concepts
     weight: 25
 product_name: voyager
-menu_name: product_voyager_7.0.0-rc.1
+menu_name: product_voyager_7.0.0-rc.2
 section_menu_id: concepts
 ---
 
@@ -20,14 +20,14 @@ In `Internal` type Ingress, HAProxy pods are exposed via a ClusterIP type Kubern
 - First, deploy voyager operator.
 
 ```console
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.1/hack/deploy/voyager.sh \
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.2/hack/deploy/voyager.sh \
     | bash -s -- --provider=minikube
 ```
 
 - Now, deploy test servers using [this script](/docs/examples/ingress/types/internal/deploy-servers.sh) script.
 
 ```console
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.1/docs/examples/ingress/types/internal/deploy-servers.sh | bash
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.2/docs/examples/ingress/types/internal/deploy-servers.sh | bash
 
 deployment "nginx" created
 service "web" exposed
@@ -38,7 +38,7 @@ service "rest" exposed
 - Now, create an Ingress object running
 
 ```console
-kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.1/docs/examples/ingress/types/internal/ing.yaml
+kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.2/docs/examples/ingress/types/internal/ing.yaml
 ```
 
 Please note the annotaiton on ingress:

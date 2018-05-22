@@ -1,13 +1,13 @@
 ---
 title: Header and URL Rewriting | Voayger
 menu:
-  product_voyager_7.0.0-rc.1:
+  product_voyager_7.0.0-rc.2:
     identifier: rewrite-http
     name: Rewrite Support
     parent: http-ingress
     weight: 25
 product_name: voyager
-menu_name: product_voyager_7.0.0-rc.1
+menu_name: product_voyager_7.0.0-rc.2
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
