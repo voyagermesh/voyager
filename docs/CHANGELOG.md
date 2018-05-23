@@ -2,20 +2,33 @@
 title: Changelog | Voyager
 description: Changelog
 menu:
-  product_voyager_7.0.0-rc.2:
+  product_voyager_7.0.0-rc.3:
     identifier: changelog-voyager
     name: Changelog
     parent: welcome
     weight: 10
 product_name: voyager
-menu_name: product_voyager_7.0.0-rc.2
+menu_name: product_voyager_7.0.0-rc.3
 section_menu_id: welcome
-url: /products/voyager/7.0.0-rc.2/welcome/changelog/
+url: /products/voyager/7.0.0-rc.3/welcome/changelog/
 aliases:
-  - /products/voyager/7.0.0-rc.2/CHANGELOG/
+  - /products/voyager/7.0.0-rc.3/CHANGELOG/
 ---
 
 # Change Log
+
+## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
+
+[Full Changelog](https://github.com/appscode/voyager/compare/7.0.0-rc.2...HEAD)
+
+**Fixed bugs:**
+
+- rc2 operator crashes [\#1070](https://github.com/appscode/voyager/issues/1070)
+
+**Merged pull requests:**
+
+- Checked nil pointer before validating oauth [\#1071](https://github.com/appscode/voyager/pull/1071) ([diptadas](https://github.com/diptadas))
+- Update changelog [\#1069](https://github.com/appscode/voyager/pull/1069) ([tamalsaha](https://github.com/tamalsaha))
 
 ## [7.0.0-rc.2](https://github.com/appscode/voyager/tree/7.0.0-rc.2) (2018-05-23)
 [Full Changelog](https://github.com/appscode/voyager/compare/7.0.0-rc.1...7.0.0-rc.2)

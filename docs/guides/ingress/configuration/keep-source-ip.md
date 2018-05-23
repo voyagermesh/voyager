@@ -1,13 +1,13 @@
 ---
 title: Configure Ingress Keep Source IP
 menu:
-  product_voyager_7.0.0-rc.2:
+  product_voyager_7.0.0-rc.3:
     identifier: keep-source-ip-configuration
     name: Keep Source IP
     parent: config-ingress
     weight: 10
 product_name: voyager
-menu_name: product_voyager_7.0.0-rc.2
+menu_name: product_voyager_7.0.0-rc.3
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).

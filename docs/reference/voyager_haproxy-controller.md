@@ -1,12 +1,12 @@
 ---
 title: Voyager Haproxy-Controller
 menu:
-  product_voyager_7.0.0-rc.2:
+  product_voyager_7.0.0-rc.3:
     identifier: voyager-haproxy-controller
     name: Voyager Haproxy-Controller
     parent: reference
 product_name: voyager
-menu_name: product_voyager_7.0.0-rc.2
+menu_name: product_voyager_7.0.0-rc.3
 section_menu_id: reference
 ---
 ## voyager haproxy-controller
