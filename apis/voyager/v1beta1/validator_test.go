@@ -1,10 +1,8 @@
 package v1beta1
 
 import (
-	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -13,8 +11,9 @@ func TestIsValid(t *testing.T) {
 	for k, result := range dataTables {
 		k.Migrate()
 		err := k.IsValid("minikube")
-		if !assert.Equal(t, err == nil, result) {
-			fmt.Println("Failed Tests:", k.Name, "Reason\n", err)
+		resultFound := err == nil
+		if result != resultFound {
+			t.Errorf("Failed Tests: %s, Expected: %v, Found: %v, Reason %v", k.Name, result, resultFound, err)
 		}
 	}
 }
@@ -1588,4 +1587,39 @@ var dataTables = map[*Ingress]bool{
 			},
 		},
 	}: false, // auth backend not found: backend name not matched
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "FrontendRule without auth"},
+		Spec: IngressSpec{
+			FrontendRules: []FrontendRule{
+				{
+					Port: intstr.FromInt(80),
+					Rules: []string{
+						"acl acl_fake path_beg /fake",
+					},
+				},
+			},
+			Rules: []IngressRule{
+				{
+					Host: "auth.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port: intstr.FromInt(80),
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/path-1",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											Name:        "auth-be-2",
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(8080),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}: true, // frontend-rule without auth
 }
