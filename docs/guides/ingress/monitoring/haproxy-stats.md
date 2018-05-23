@@ -1,13 +1,13 @@
 ---
 title: Exposing HAProxy Stats
 menu:
-  product_voyager_7.0.0-rc.2:
+  product_voyager_7.0.0-rc.3:
     identifier: haproxy-stats-monitoring
     name: Exposing HAProxy Stats
     parent: monitoring-ingress
     weight: 10
 product_name: voyager
-menu_name: product_voyager_7.0.0-rc.2
+menu_name: product_voyager_7.0.0-rc.3
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
@@ -65,7 +65,7 @@ kubectl expose deployment nginx --name=web --port=80 --target-port=80 -n demo
 Now create Ingress `ing.yaml`
 
 ```console
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.2/docs/examples/monitoring/stats-ing.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/7.0.0-rc.3/docs/examples/monitoring/stats-ing.yaml
 ingress "stats-ing" created
 
 $ kubectl get pods,svc -n demo
