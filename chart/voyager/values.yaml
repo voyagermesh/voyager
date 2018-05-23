@@ -6,11 +6,11 @@ replicaCount: 1
 voyager:
   registry: appscode
   repository: voyager
-  tag: 7.0.0-rc.2
+  tag: 7.0.0-rc.3
 haproxy:
   registry: appscode
   repository: haproxy
-  tag: 1.8.8-7.0.0-rc.2-alpine
+  tag: 1.8.8-7.0.0-rc.3-alpine
 ## Optionally specify an array of imagePullSecrets.
 ## Secrets must be manually created in the namespace.
 ## ref: https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod

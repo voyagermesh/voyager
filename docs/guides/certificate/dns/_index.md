@@ -2,10 +2,10 @@
 title: DNS Challenger
 description: DNS Challenger
 menu:
-  product_voyager_7.0.0-rc.2:
+  product_voyager_7.0.0-rc.3:
     identifier: dns-certificate
     parent: certificate-guides
     name: DNS Challenger
     weight: 15
-menu_name: product_voyager_7.0.0-rc.2
+menu_name: product_voyager_7.0.0-rc.3
 ---
