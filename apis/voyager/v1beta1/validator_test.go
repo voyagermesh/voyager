@@ -11,9 +11,9 @@ func TestIsValid(t *testing.T) {
 	for k, result := range dataTables {
 		k.Migrate()
 		err := k.IsValid("minikube")
-		resultFound := err == nil
-		if result != resultFound {
-			t.Errorf("Failed Tests: %s, Expected: %v, Found: %v, Reason %v", k.Name, result, resultFound, err)
+		resultActual := err == nil
+		if result != resultActual {
+			t.Errorf("Failed Tests: %s, Expected: %v, Actual: %v, Reason %v", k.Name, result, resultActual, err)
 		}
 	}
 }
