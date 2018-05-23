@@ -17,12 +17,13 @@ aliases:
 
 # Change Log
 
-## [7.0.0-rc.2](https://github.com/appscode/voyager/tree/7.0.0-rc.2) (2018-05-22)
+## [7.0.0-rc.2](https://github.com/appscode/voyager/tree/7.0.0-rc.2) (2018-05-23)
 [Full Changelog](https://github.com/appscode/voyager/compare/7.0.0-rc.1...7.0.0-rc.2)
 
 **Fixed bugs:**
 
 - Fix OAuth implementation [\#1053](https://github.com/appscode/voyager/issues/1053)
+- Use hooks for user roles in chart [\#1066](https://github.com/appscode/voyager/pull/1066) ([tamalsaha](https://github.com/tamalsaha))
 
 **Closed issues:**
 
@@ -30,6 +31,9 @@ aliases:
 
 **Merged pull requests:**
 
+- Don't exit if migration fails. [\#1068](https://github.com/appscode/voyager/pull/1068) ([tamalsaha](https://github.com/tamalsaha))
+- Delete user roles on purge [\#1067](https://github.com/appscode/voyager/pull/1067) ([tamalsaha](https://github.com/tamalsaha))
+- Update changelog [\#1065](https://github.com/appscode/voyager/pull/1065) ([tamalsaha](https://github.com/tamalsaha))
 - Clarify messaging [\#1064](https://github.com/appscode/voyager/pull/1064) ([tamalsaha](https://github.com/tamalsaha))
 - Install correct version of voyager chart [\#1063](https://github.com/appscode/voyager/pull/1063) ([tamalsaha](https://github.com/tamalsaha))
 - Avoid creating apiservice when webhooks are not used. [\#1062](https://github.com/appscode/voyager/pull/1062) ([tamalsaha](https://github.com/tamalsaha))
