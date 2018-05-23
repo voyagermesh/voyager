@@ -8,12 +8,12 @@ import (
 )
 
 func TestIsValid(t *testing.T) {
-	for k, result := range dataTables {
+	for k, expected := range dataTables {
 		k.Migrate()
 		err := k.IsValid("minikube")
-		resultActual := err == nil
-		if result != resultActual {
-			t.Errorf("Failed Tests: %s, Expected: %v, Actual: %v, Reason %v", k.Name, result, resultActual, err)
+		actual := err == nil
+		if expected != actual {
+			t.Errorf("Failed Tests: %s, Expected: %v, Actual: %v, Reason %v", k.Name, expected, actual, err)
 		}
 	}
 }
