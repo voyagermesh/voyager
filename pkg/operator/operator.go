@@ -172,7 +172,7 @@ func (w *Operator) Run(stopCh <-chan struct{}) {
 	// https://github.com/appscode/voyager/pull/506
 	err = w.MigrateCertificates()
 	if err != nil {
-		log.Fatalln("Failed certificate migrations:", err)
+		log.Errorln("Failed certificate migrations:", err)
 	}
 	// https://github.com/appscode/voyager/issues/229
 	w.PurgeOffshootsWithDeprecatedLabels()
