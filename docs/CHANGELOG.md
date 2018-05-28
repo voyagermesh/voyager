@@ -17,9 +17,15 @@ aliases:
 
 # Change Log
 
-## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
+## [7.0.0](https://github.com/appscode/voyager/tree/7.0.0) (2018-05-28)
+[Full Changelog](https://github.com/appscode/voyager/compare/7.0.0-rc.3...7.0.0)
 
-[Full Changelog](https://github.com/appscode/voyager/compare/7.0.0-rc.2...HEAD)
+**Merged pull requests:**
+
+- Prepare 7.0.0 release [\#1076](https://github.com/appscode/voyager/pull/1076) ([tamalsaha](https://github.com/tamalsaha))
+
+## [7.0.0-rc.3](https://github.com/appscode/voyager/tree/7.0.0-rc.3) (2018-05-23)
+[Full Changelog](https://github.com/appscode/voyager/compare/7.0.0-rc.2...7.0.0-rc.3)
 
 **Fixed bugs:**
 
@@ -27,6 +33,7 @@ aliases:
 
 **Merged pull requests:**
 
+- Prepare docs for 7.0.0-rc.3 [\#1072](https://github.com/appscode/voyager/pull/1072) ([tamalsaha](https://github.com/tamalsaha))
 - Checked nil pointer before validating oauth [\#1071](https://github.com/appscode/voyager/pull/1071) ([diptadas](https://github.com/diptadas))
 - Update changelog [\#1069](https://github.com/appscode/voyager/pull/1069) ([tamalsaha](https://github.com/tamalsaha))
 
