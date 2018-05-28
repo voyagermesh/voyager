@@ -1,13 +1,13 @@
 ---
 title: HTTP2 | Kubernetes Ingress
 menu:
-  product_voyager_7.0.0-rc.3:
+  product_voyager_7.0.0:
     identifier: h2-http
     name: HTTP2
     parent: http-ingress
     weight: 26
 product_name: voyager
-menu_name: product_voyager_7.0.0-rc.3
+menu_name: product_voyager_7.0.0
 section_menu_id: guides
 ---
 
@@ -15,7 +15,7 @@ section_menu_id: guides
 
 # Enable HTTP/2 on ingress resource
 
-Voyager can enable HTTP/2 from version >=7.0.0-rc.3
+Voyager can enable HTTP/2 from version >=7.0.0
 
 To enable http2, you must first setup a [certificate](/docs/guides/certificate) (Let's Encrypt), or use an existing one. Then create an ingress object like below:
 
