@@ -1,13 +1,13 @@
 ---
 title: Configure Ingress Loadbalancer IP
 menu:
-  product_voyager_7.0.0-rc.3:
+  product_voyager_7.0.0:
     identifier: loadbalancer-ip-configuration
     name: Loadbalancer IP
     parent: config-ingress
     weight: 10
 product_name: voyager
-menu_name: product_voyager_7.0.0-rc.3
+menu_name: product_voyager_7.0.0
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
