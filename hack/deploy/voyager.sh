@@ -322,7 +322,6 @@ case "$VOYAGER_CLOUD_PROVIDER" in
 		export VOYAGER_INGRESS_CLASS=
 		;;
 	baremetal)
-		export VOYAGER_CLOUD_PROVIDER=
 		export VOYAGER_CLOUD_CONFIG=
 		export VOYAGER_INGRESS_CLASS=
 		;;
