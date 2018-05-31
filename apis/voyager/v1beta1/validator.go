@@ -66,7 +66,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 
 	for ri, rule := range r.Spec.FrontendRules {
 		if _, err := checkRequiredPort(rule.Port); err != nil {
-			return errors.Errorf("spec.frontendRules[%d].port %s is invalid. Reason: %s", ri, rule.Port, err)
+			return errors.Errorf("spec.frontendRules[%d].port %s is invalid. Reason: %s", ri, rule.Port.String(), err)
 		}
 	}
 	for ti, tls := range r.Spec.TLS {
@@ -96,7 +96,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 			var podPort, nodePort int
 			podPort, err = checkOptionalPort(rule.HTTP.Port)
 			if err != nil {
-				return errors.Errorf("spec.rule[%d].http.port %s is invalid. Reason: %s", ri, rule.HTTP.Port, err)
+				return errors.Errorf("spec.rule[%d].http.port %s is invalid. Reason: %s", ri, rule.HTTP.Port.String(), err)
 			}
 			if podPort == 0 { // detect port
 				if r.UseTLSForRule(rule) {
@@ -106,10 +106,10 @@ func (r Ingress) IsValid(cloudProvider string) error {
 				}
 			}
 			if nodePort, err = checkOptionalPort(rule.HTTP.NodePort); err != nil {
-				return errors.Errorf("spec.rule[%d].http.nodePort %s is invalid. Reason: %s", ri, rule.HTTP.NodePort, err)
+				return errors.Errorf("spec.rule[%d].http.nodePort %s is invalid. Reason: %s", ri, rule.HTTP.NodePort.String(), err)
 			} else if nodePort > 0 {
 				if r.LBType() == LBTypeHostPort || r.LBType() == LBTypeInternal {
-					return errors.Errorf("spec.rule[%d].http.nodePort %s may not be specified when `LBType` is %s", ri, rule.HTTP.NodePort, r.LBType())
+					return errors.Errorf("spec.rule[%d].http.nodePort %s may not be specified when `LBType` is %s", ri, rule.HTTP.NodePort.String(), r.LBType())
 				}
 			}
 			bindAddress, err := checkOptionalAddress(rule.HTTP.Address)
@@ -180,7 +180,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 					return errors.Errorf("spec.rule[%d].http.paths[%d] is using invalid serviceName for addr %s. Reason: %s", ri, pi, a, strings.Join(errs, ","))
 				}
 				if _, err := checkRequiredPort(path.Backend.ServicePort); err != nil {
-					return errors.Errorf("spec.rule[%d].http.paths[%d] is using invalid servicePort %s for addr %s and path %s. Reason: %s", ri, pi, path.Backend.ServicePort, a, path.Path, err)
+					return errors.Errorf("spec.rule[%d].http.paths[%d] is using invalid servicePort %s for addr %s and path %s. Reason: %s", ri, pi, path.Backend.ServicePort.String(), a, path.Path, err)
 				}
 				for hi, hdr := range path.Backend.HeaderRules {
 					if len(strings.Fields(hdr)) == 1 {
@@ -193,13 +193,13 @@ func (r Ingress) IsValid(cloudProvider string) error {
 			var podPort, nodePort int
 
 			if podPort, err = checkRequiredPort(rule.TCP.Port); err != nil {
-				return errors.Errorf("spec.rule[%d].tcp.port %s is invalid. Reason: %s", ri, rule.TCP.Port, err)
+				return errors.Errorf("spec.rule[%d].tcp.port %s is invalid. Reason: %s", ri, rule.TCP.Port.String(), err)
 			}
 			if nodePort, err = checkOptionalPort(rule.TCP.NodePort); err != nil {
-				return errors.Errorf("spec.rule[%d].tcp.nodePort %s is invalid. Reason: %s", ri, rule.TCP.NodePort, err)
+				return errors.Errorf("spec.rule[%d].tcp.nodePort %s is invalid. Reason: %s", ri, rule.TCP.NodePort.String(), err)
 			} else if nodePort > 0 {
 				if r.LBType() == LBTypeHostPort || r.LBType() == LBTypeInternal {
-					return errors.Errorf("spec.rule[%d].tcp.nodePort %s may not be specified when `LBType` is %s", ri, rule.TCP.NodePort, r.LBType())
+					return errors.Errorf("spec.rule[%d].tcp.nodePort %s may not be specified when `LBType` is %s", ri, rule.TCP.NodePort.String(), r.LBType())
 				}
 			}
 			bindAddress, err := checkOptionalAddress(rule.TCP.Address)
@@ -286,7 +286,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 				return errors.Errorf("spec.rule[%d].tcp is using invalid serviceName for addr %s. Reason: %s", ri, a, strings.Join(errs, ","))
 			}
 			if _, err := checkRequiredPort(rule.TCP.Backend.ServicePort); err != nil {
-				return errors.Errorf("spec.rule[%d].tcp is using invalid servicePort %s for addr %s. Reason: %s", ri, rule.TCP.Backend.ServicePort, a, err)
+				return errors.Errorf("spec.rule[%d].tcp is using invalid servicePort %s for addr %s. Reason: %s", ri, rule.TCP.Backend.ServicePort.String(), a, err)
 			}
 		} else if rule.TCP == nil && rule.HTTP == nil {
 			return errors.Errorf("spec.rule[%d] is missing both HTTP and TCP specification", ri)
@@ -337,7 +337,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 			for ii, oauth := range rule.Auth.OAuth {
 				// check multiple oauth for same host under same port
 				if jj, found := oauthHosts[oauth.Host]; found {
-					return errors.Errorf("spec.frontendRules[%d].oauth[%d] is reusing host %s for port %s, also used in spec.frontendRules[%d].oauth[%d]", ri, ii, rule.Auth.OAuth[ii].Host, rule.Port, ri, jj)
+					return errors.Errorf("spec.frontendRules[%d].oauth[%d] is reusing host %s for port %s, also used in spec.frontendRules[%d].oauth[%d]", ri, ii, rule.Auth.OAuth[ii].Host, rule.Port.String(), ri, jj)
 				} else {
 					oauthHosts[oauth.Host] = ii
 				}
