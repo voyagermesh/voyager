@@ -24,14 +24,14 @@ func (c *Controller) initIngressCRDWatcher() {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (rt.Object, error) {
 			return c.VoyagerClient.Ingresses(c.options.IngressRef.Namespace).List(metav1.ListOptions{
-			// https://github.com/kubernetes/kubernetes/issues/51046
-			//FieldSelector: fields.OneTermEqualSelector("metadata.name", c.options.IngressRef.Name).String(),
+				// https://github.com/kubernetes/kubernetes/issues/51046
+				//FieldSelector: fields.OneTermEqualSelector("metadata.name", c.options.IngressRef.Name).String(),
 			})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 			return c.VoyagerClient.Ingresses(c.options.IngressRef.Namespace).Watch(metav1.ListOptions{
-			// https://github.com/kubernetes/kubernetes/issues/51046
-			//FieldSelector: fields.OneTermEqualSelector("metadata.name", c.options.IngressRef.Name).String(),
+				// https://github.com/kubernetes/kubernetes/issues/51046
+				//FieldSelector: fields.OneTermEqualSelector("metadata.name", c.options.IngressRef.Name).String(),
 			})
 		},
 	}

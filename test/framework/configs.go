@@ -17,7 +17,7 @@ func init() {
 	flag.StringVar(&testConfigs.Master, "master", "", "The address of the Kubernetes API server (overrides any value in kubeconfig)")
 	flag.StringVar(&testConfigs.KubeConfig, "kubeconfig", "", "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
 	flag.StringVar(&testConfigs.CloudProviderName, "cloud-provider", "", "Name of cloud provider")
-	flag.StringVar(&testConfigs.HAProxyImageName, "haproxy-image", "appscode/haproxy:1.7.9-5.0.0-rc.11", "haproxy image name to be run")
+	flag.StringVar(&testConfigs.HAProxyImageName, "haproxy-image", "appscode/haproxy:1.7.9-5.0.0", "haproxy image name to be run")
 	flag.StringVar(&testConfigs.IngressClass, "ingress-class", "", "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
 	flag.BoolVar(&testConfigs.Cleanup, "cleanup", true, "")
 	flag.BoolVar(&testConfigs.InCluster, "in-cluster", false, "")

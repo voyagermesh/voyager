@@ -2,20 +2,20 @@
 title: Install Voyager
 description: Voyager Install
 menu:
-  product_voyager_5.0.0-rc.11:
+  product_voyager_5.0.0:
     identifier: install-voyager
     name: Install
     parent: setup
     weight: 10
 product_name: voyager
-menu_name: product_voyager_5.0.0-rc.11
+menu_name: product_voyager_5.0.0
 section_menu_id: setup
 ---
 
 # Installation Guide
 
 ## Using YAML
-Voyager can be installed via installer script included in the [/hack/deploy](https://github.com/appscode/voyager/tree/5.0.0-rc.11/hack/deploy) folder.
+Voyager can be installed via installer script included in the [/hack/deploy](https://github.com/appscode/voyager/tree/5.0.0/hack/deploy) folder.
 
 ```console
 # provider=acs
@@ -27,7 +27,7 @@ Voyager can be installed via installer script included in the [/hack/deploy](htt
 # provider=minikube
 # provider=openstack
 
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/voyager.sh | bash -s -- -h
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0/hack/deploy/voyager.sh | bash -s -- -h
 voyager.sh - install voyager operator
 
 voyager.sh [options]
@@ -42,18 +42,18 @@ options:
     --template-cfgmap=CONFIGMAP    name of configmap with custom templates
 
 # install without RBAC roles
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/voyager.sh \
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider
 
 # Install with RBAC roles
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/voyager.sh \
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider --rbac
 ```
 
 If you would like to run Voyager operator pod in `master` instances, pass the `--run-on-master` flag:
 
 ```console
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/voyager.sh \
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider --run-on-master [--rbac]
 ```
 
@@ -61,7 +61,7 @@ Voyager operator will be installed in a `kube-system` namespace by default. If y
 
 ```console
 $ kubectl create namespace voyager
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/voyager.sh \
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider --namespace=voyager [--run-on-master] [--rbac]
 ```
 
@@ -69,21 +69,21 @@ By default, Voyager operator will watch Ingress objects in any namespace. If you
 
 ```console
 $ kubectl create namespace voyager
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0-rc.11/hack/deploy/voyager.sh \
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/5.0.0/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider --restrict-to-namespace [--namespace=voyager] [--run-on-master] [--rbac]
 ```
 
 
 ## Using Helm
-Voyager can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/appscode/voyager/tree/5.0.0-rc.11/chart/stable/voyager) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
+Voyager can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/appscode/voyager/tree/5.0.0/chart/stable/voyager) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
 
 ```console
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
-$ helm install appscode/voyager
+$ helm install appscode/voyager --name voyager-operator --version 5.0.0 --set cloudProvider=$provider
 ```
 
-To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/5.0.0-rc.11/chart/stable/voyager).
+To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/5.0.0/chart/stable/voyager).
 
 
 ## Verify installation
@@ -124,12 +124,12 @@ $ POD_NAMESPACE=kube-system
 $ POD_NAME=$(kubectl get pods -n $POD_NAMESPACE -l app=voyager -o jsonpath={.items[0].metadata.name})
 $ kubectl exec -it $POD_NAME -n $POD_NAMESPACE voyager version
 
-Version = 5.0.0-rc.11
+Version = 5.0.0
 VersionStrategy = tag
 Os = alpine
 Arch = amd64
 CommitHash = ab0b38d8f5d5b4b4508768a594a9d98f2c76abd8
 GitBranch = release-4.0
-GitTag = 5.0.0-rc.11
+GitTag = 5.0.0
 CommitTimestamp = 2017-10-08T12:45:26
 ```
