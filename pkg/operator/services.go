@@ -39,6 +39,17 @@ func (op *Operator) initServiceWatcher() cache.Controller {
 					op.updateHAProxyConfig(ctx, svc)
 				}
 			},
+			UpdateFunc: func(oldObj, newObj interface{}) {
+				ctx := etx.Background()
+				if oldSvc, ok := oldObj.(*core.Service); ok {
+					if newSvc, ok := newObj.(*core.Service); ok {
+						if hasServiceAuthAnnotationChanged(oldSvc, newSvc) {
+							log.New(ctx).Infof("Service %s@%s updated", newSvc.Name, newSvc.Namespace)
+							op.updateHAProxyConfig(ctx, newSvc)
+						}
+					}
+				}
+			},
 			DeleteFunc: func(obj interface{}) {
 				ctx := etx.Background()
 				if svc, ok := obj.(*core.Service); ok {
@@ -142,4 +153,17 @@ func (op *Operator) updateHAProxyConfig(ctx context.Context, svc *core.Service) 
 		}
 	}
 	return nil
+}
+
+func hasServiceAuthAnnotationChanged(oldSvc, newSvc *core.Service) bool {
+	if oldSvc.Annotations[tapi.AuthType] != newSvc.Annotations[tapi.AuthType] {
+		return true
+	}
+	if oldSvc.Annotations[tapi.AuthRealm] != newSvc.Annotations[tapi.AuthRealm] {
+		return true
+	}
+	if oldSvc.Annotations[tapi.AuthSecret] != newSvc.Annotations[tapi.AuthSecret] {
+		return true
+	}
+	return false
 }

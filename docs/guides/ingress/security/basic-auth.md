@@ -26,9 +26,9 @@ Voyager Ingress read user and password from files stored on secrets, one user
 and password per line. Secret name, realm and type are configured with annotations
 in the ingress resource:
 
-* `ingress.kubernetes.io/auth-type`: the only supported type is `basic`
-* `ingress.kubernetes.io/auth-realm`: an optional string with authentication realm
-* `ingress.kubernetes.io/auth-secret`: name of the secret
+* `ingress.appscode.com/auth-type`: the only supported type is `basic`
+* `ingress.appscode.com/auth-realm`: an optional string with authentication realm
+* `ingress.appscode.com/auth-secret`: name of the secret
 
 Each line of the `auth` file should have:
 
@@ -67,9 +67,9 @@ apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
   annotations:
-    ingress.kubernetes.io/auth-type: basic
-    ingress.kubernetes.io/auth-realm: My Server
-    ingress.kubernetes.io/auth-secret: mypasswd
+    ingress.appscode.com/auth-type: basic
+    ingress.appscode.com/auth-realm: My Server
+    ingress.appscode.com/auth-secret: mypasswd
   name: hello-basic-auth
   namespace: default
 spec:
@@ -122,9 +122,9 @@ metadata:
   name: test-svc
   namespace: default
   annotations:
-    ingress.kubernetes.io/auth-type: basic
-    ingress.kubernetes.io/auth-realm: My Server
-    ingress.kubernetes.io/auth-secret: mypasswd
+    ingress.appscode.com/auth-type: basic
+    ingress.appscode.com/auth-realm: My Server
+    ingress.appscode.com/auth-secret: mypasswd
 spec:
   ports:
   - name: http-1
