@@ -397,8 +397,10 @@ echo
 echo "waiting until voyager operator deployment is ready"
 $ONESSL wait-until-ready deployment voyager-operator --namespace $VOYAGER_NAMESPACE || { echo "Voyager operator deployment failed to be ready"; exit 1; }
 
-echo "waiting until voyager apiservice is available"
-$ONESSL wait-until-ready apiservice v1beta1.admission.voyager.appscode.com || { echo "Voyager apiservice failed to be ready"; exit 1; }
+if [ "$VOYAGER_ENABLE_VALIDATING_WEBHOOK" = true ]; then
+    echo "waiting until voyager apiservice is available"
+    $ONESSL wait-until-ready apiservice v1beta1.admission.voyager.appscode.com || { echo "Voyager apiservice failed to be ready"; exit 1; }
+fi
 
 echo "waiting until voyager crds are ready"
 for crd in "${crds[@]}"; do
