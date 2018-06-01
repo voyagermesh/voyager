@@ -1,10 +1,10 @@
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  labels:
-    app: voyager
   name: voyager-operator
   namespace: ${VOYAGER_NAMESPACE}
+  labels:
+    app: voyager
 spec:
   replicas: 1
   selector:
