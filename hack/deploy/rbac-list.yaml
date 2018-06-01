@@ -1,5 +1,5 @@
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ${VOYAGER_ROLE_TYPE}
+kind: ClusterRole
 metadata:
   name: voyager-operator
   namespace: ${VOYAGER_NAMESPACE}
@@ -13,11 +13,26 @@ rules:
   verbs:
   - "*"
 - apiGroups:
-  - extensions
+  - voyager.appscode.com
+  resources: ["*"]
+  verbs: ["list"]
+- apiGroups: [""]
   resources:
-  - thirdpartyresources
-  verbs:
-  - "*"
+  - nodes
+  verbs: ["list", "watch", "get"]
+- apiGroups: [""]
+  resources:
+  - namespaces
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ${VOYAGER_ROLE_TYPE}
+metadata:
+  name: voyager-operator
+  namespace: ${VOYAGER_NAMESPACE}
+  labels:
+    app: voyager
+rules:
 - apiGroups:
   - voyager.appscode.com
   resources: ["*"]
@@ -52,20 +67,12 @@ rules:
   verbs: ["get", "list", "watch", "create", "update", "patch"]
 - apiGroups: [""]
   resources:
-  - namespaces
-  verbs: ["get", "list", "watch"]
-- apiGroups: [""]
-  resources:
   - events
   verbs: ["create"]
 - apiGroups: [""]
   resources:
   - pods
   verbs: ["list", "watch", "delete", "deletecollection"]
-- apiGroups: [""]
-  resources:
-  - nodes
-  verbs: ["list", "watch", "get"]
 - apiGroups: [""]
   resources:
   - serviceaccounts
@@ -76,6 +83,21 @@ rules:
   - rolebindings
   - roles
   verbs: ["get", "create", "delete", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: voyager-operator
+  labels:
+    app: voyager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: voyager-operator
+subjects:
+- kind: ServiceAccount
+  name: ${VOYAGER_SERVICE_ACCOUNT}
+  namespace: ${VOYAGER_NAMESPACE}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ${VOYAGER_ROLE_TYPE}Binding
