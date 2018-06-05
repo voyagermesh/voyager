@@ -11,7 +11,11 @@ echo ""
 function cleanup {
     rm -rf $ONESSL ca.crt ca.key server.crt server.key
 }
-trap cleanup EXIT
+
+export APPSCODE_ENV=${APPSCODE_ENV:-prod}
+if [ "$APPSCODE_ENV" != "test-concourse" ]; then
+    trap cleanup EXIT
+fi
 
 # ref: https://github.com/appscodelabs/libbuild/blob/master/common/lib.sh#L55
 inside_git_repo() {
@@ -103,9 +107,8 @@ export VOYAGER_UNINSTALL=0
 export VOYAGER_PURGE=0
 export VOYAGER_TEMPLATE_CONFIGMAP=
 
-export APPSCODE_ENV=${APPSCODE_ENV:-prod}
 export SCRIPT_LOCATION="curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0/"
-if [ "$APPSCODE_ENV" = "dev" ]; then
+if [[ "$APPSCODE_ENV" = "dev" || "$APPSCODE_ENV" = "test-concourse" ]]; then
     detect_tag
     export SCRIPT_LOCATION="cat "
     export VOYAGER_IMAGE_TAG=$TAG
