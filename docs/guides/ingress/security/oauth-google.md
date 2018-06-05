@@ -18,14 +18,14 @@ section_menu_id: guides
 You can configure [external authentication / oauth](https://oauth.net/2/) on Voyager Ingress controller via `frontendrules`.
 For this you have to configure and expose [oauth2-proxy](https://github.com/bitly/oauth2_proxy) and specify it as a backend under same host.
 
-This example will demonstrate how to configure external authentication in both TLS and non-TLS mode using `github` as auth provider.
+This example will demonstrate how to configure external authentication in both TLS and non-TLS mode using `google` as auth provider.
 
-## Example using Github (non-TLS)
+## Example using Google (non-TLS)
 
-First configure github auth provider by following instructions provided [here](https://github.com/bitly/oauth2_proxy#github-auth-provider) and generate client-id and client-secret.
+First configure google auth provider by following instructions provided [here](https://github.com/bitly/oauth2_proxy#google-auth-provider) and generate client-id and client-secret.
 
-Set `Authorization callback URL` to `http://<host:port>/oauth2/callback`.
-In this example it is set to `http://voyager.appscode.ninja`.
+In this example `Authorized JavaScript origins` is set to `http://voyager.appscode.ninja`
+and `Authorized redirect URIs` is set to `http://voyager.appscode.ninja/oauth2/callback`.
 
 Now deploy and expose a test server:
 
@@ -57,7 +57,7 @@ spec:
     spec:
       containers:
       - args:
-        - --provider=github
+        - --provider=google
         - --email-domain=*
         - --upstream=file:///dev/null
         - --http-address=0.0.0.0:4180
@@ -137,12 +137,12 @@ Now browse the followings:
 - http://voyager.appscode.ninja/app (external-auth required)
 - http://voyager.appscode.ninja/health (external-auth not required)
 
-## Example using Github (with TLS)
+## Example using Google (with TLS)
 
-First configure github auth provider by following instructions provided [here](https://github.com/bitly/oauth2_proxy#github-auth-provider) and generate client-id and client-secret.
+First configure google auth provider by following instructions provided [here](https://github.com/bitly/oauth2_proxy#google-auth-provider) and generate client-id and client-secret.
 
-Set `Authorization callback URL` to `https://<host:port>/oauth2/callback`.
-In this example it is set to `https://voyager.appscode.ninja`.
+In this example `Authorized JavaScript origins` is set to `https://voyager.appscode.ninja`
+and `Authorized redirect URIs` is set to `https://voyager.appscode.ninja/oauth2/callback`.
 
 Now deploy and expose a test server:
 
@@ -181,7 +181,7 @@ spec:
     spec:
       containers:
       - args:
-        - --provider=github
+        - --provider=google
         - --email-domain=*
         - --upstream=file:///dev/null
         - --http-address=0.0.0.0:4180
@@ -263,74 +263,3 @@ Now browse the followings:
 
 - https://voyager.appscode.ninja/app (external-auth required)
 - https://voyager.appscode.ninja/health (external-auth not required)
-
-Please note the followings:
-
-- Oauth will be enabled only for the specified paths. It is not necessary that this paths should match with the paths specified in the http-rules.
-
-- Auth backend and app backend should be under same host.
-
-- For secure/tls connections, you have to set `cookie-secure=true` (default) and for insecure/non-tls connections, you have to set `cookie-secure=false` in `oauth2-proxy`.
-
-- You can use any random string as `OAUTH2_PROXY_COOKIE_SECRET`. You can generate one using following command:
-
-```console
-$ python -c 'import os,base64; print base64.b64encode(os.urandom(16))'
-```
- 
-- If you use standard ports, you have to write frontend rules under port `80` for non-tls and under port `443` for tls.
-
-- You can not use different auth backends for different paths under same host and port.
-However, it is possible to configure different auth backends for different hosts under same port. For example:
-
-```yaml
-apiVersion: voyager.appscode.com/v1beta1
-kind: Ingress
-metadata:
-  name: auth-ingress
-  namespace: default
-spec:
-  frontendRules:
-  - port: 80
-    auth:
-      oauth:
-      - host: team01.example.com
-        authBackend: google-auth
-        authPath: /google/auth
-        signinPath: /google/start
-        paths:
-        - /foo
-      - host: team02.example.com
-        authBackend: github-auth
-        authPath: /github/auth
-        signinPath: /github/start
-        paths:
-        - /bar
-  rules:
-  - host: team01.example.com
-    http:
-      paths:
-      - path: /foo
-        backend:
-          serviceName: test-server
-          servicePort: 80
-      - path: /google
-        backend:
-          name: google-auth
-          serviceName: oauth2-proxy-google
-          servicePort: 4180
-  - host: team02.example.com
-    http:
-      paths:
-      - path: /bar
-        backend:
-          serviceName: test-server
-          servicePort: 80
-      - path: /github
-        backend:
-          name: github-auth
-          serviceName: oauth2-proxy-github
-          servicePort: 4180
-```
-
-Learn how to use google as auth provider [here](oauth-google.md).
