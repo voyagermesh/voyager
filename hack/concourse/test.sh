@@ -68,6 +68,7 @@ EOF
 # create cluster using pharmer
 pharmer create credential --from-file=cred.json --provider=DigitalOcean cred
 pharmer create cluster $NAME --provider=digitalocean --zone=nyc1 --nodes=2gb=1 --credential-uid=cred --kubernetes-version=v1.10.0
+pharmer apply $NAME || true
 pharmer apply $NAME
 pharmer use cluster $NAME
 #wait for cluster to be ready
