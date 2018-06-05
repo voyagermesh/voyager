@@ -104,4 +104,4 @@ EOF
 
 #source ./hack/deploy/voyager.sh --provider=baremetal
 #./hack/make.py test e2e --cloud-provider=baremetal --selfhosted-operator
-./dev-test.sh --provider=baremetal --docker-registry=appscodeci
+./hack/dev-test.sh --provider=baremetal --docker-registry=appscodeci
