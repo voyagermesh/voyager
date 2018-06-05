@@ -3,6 +3,8 @@ set -xeou pipefail
 
 # uses: $ ./dev-test.sh --provider=minikube --docker-registry=appscodeci
 
+pushd ${GOPATH}/src/github.com/appscode/voyager
+
 export APPSCODE_ENV=dev
 
 while test $# -gt 0; do
@@ -19,18 +21,20 @@ while test $# -gt 0; do
 done
 
 # build & push voyager docker image
-./hack/docker/voyager/setup.sh
-./hack/docker/voyager/setup.sh push
+docker/voyager/setup.sh
+docker/voyager/setup.sh push
 
 # build & push haproxy docker image
-./hack/docker/haproxy/1.8.8-alpine/setup.sh
-./hack/docker/haproxy/1.8.8-alpine/setup.sh push
+docker/haproxy/1.8.8-alpine/setup.sh
+docker/haproxy/1.8.8-alpine/setup.sh push
 
 # deploy voyager operator
-./hack/deploy/voyager.sh --provider=${provider}
+deploy/voyager.sh --provider=${provider}
 
 # run e2e tests
-./hack/make.py test e2e --cloud-provider=${provider} --selfhosted-operator
+make.py test e2e --cloud-provider=${provider} --selfhosted-operator
 
 # uninstall voyager operator
-./hack/deploy/voyager.sh --provider=${provider} --uninstall
+deploy/voyager.sh --provider=${provider} --uninstall
+
+popd
