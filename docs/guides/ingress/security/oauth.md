@@ -23,8 +23,8 @@ This example will demonstrate how to configure external authentication in both T
 ## Example using Github (non-TLS)
 
 First create a new github oauth app from [here](https://github.com/settings/applications) and generate client-id and client-secret.
-Set Authorization callback URL to `http://<host:port>/oauth2`. 
-In this example it is set to `http://voyager.appscode.ninja:32666/oauth2`.
+Set Authorization callback URL to `http://<host:port>/oauth2/callback`.
+In this example it is set to `http://voyager.appscode.ninja/oauth2/callback`.
 
 Now deploy and expose a test server:
 
@@ -67,7 +67,7 @@ spec:
         - name: OAUTH2_PROXY_CLIENT_SECRET
           value: ...
         - name: OAUTH2_PROXY_COOKIE_SECRET
-          value: Y/XCgwGzcE/BIkhTtXFcSQ==
+          value: ...
         image: appscode/oauth2_proxy:2.2.0
         imagePullPolicy: Always
         name: oauth2-proxy
@@ -101,9 +101,6 @@ kind: Ingress
 metadata:
   name: auth-ingress
   namespace: default
-  annotations:
-    ingress.appscode.com/type: NodePort
-    ingress.appscode.com/use-node-port: "true"
 spec:
   frontendRules:
   - port: 80
@@ -118,7 +115,6 @@ spec:
   rules:
   - host: voyager.appscode.ninja
     http:
-      nodePort: 32666
       paths:
       - path: /health
         backend:
@@ -137,16 +133,16 @@ spec:
 
 Now browse the followings:
 
-- http://voyager.appscode.ninja:32666/app (external-auth required)
-- http://voyager.appscode.ninja:32666/health (external-auth not required)
+- http://voyager.appscode.ninja/app (external-auth required)
+- http://voyager.appscode.ninja/health (external-auth not required)
 
 ## Example using Github (with TLS)
 
 First create a new github oauth app from [here](https://github.com/settings/applications) and generate client-id and client-secret.
 
-Set Authorization callback URL to `https://<host:port>/oauth2`.
+Set Authorization callback URL to `https://<host:port>/oauth2/callback`.
 
-In this example it is set to `https://voyager.appscode.ninja:32666/oauth2`.
+In this example it is set to `https://voyager.appscode.ninja/oauth2/callback`.
 
 Now deploy and expose a test server:
 
@@ -195,8 +191,7 @@ spec:
           value: ...
         - name: OAUTH2_PROXY_CLIENT_SECRET
           value: ...
-        - name: OAUTH2_PROXY_COOKIE_SECRET
-          value: Y/XCgwGzcE/BIkhTtXFcSQ==
+        - OAUTH2_PROXY_COOKIE_SECRET = ...
         image: appscode/oauth2_proxy:2.2.0
         imagePullPolicy: Always
         name: oauth2-proxy
@@ -230,9 +225,6 @@ kind: Ingress
 metadata:
   name: auth-ingress
   namespace: default
-  annotations:
-    ingress.appscode.com/type: NodePort
-    ingress.appscode.com/use-node-port: "true"
 spec:
   tls:
   - secretName: tls-secret
@@ -251,7 +243,6 @@ spec:
   rules:
   - host: voyager.appscode.ninja
     http:
-      nodePort: 32666
       paths:
       - path: /health
         backend:
@@ -270,8 +261,8 @@ spec:
 
 Now browse the followings:
 
-- https://voyager.appscode.ninja:32666/app (external-auth required)
-- https://voyager.appscode.ninja:32666/health (external-auth not required)
+- https://voyager.appscode.ninja/app (external-auth required)
+- https://voyager.appscode.ninja/health (external-auth not required)
 
 Please note the followings:
 
