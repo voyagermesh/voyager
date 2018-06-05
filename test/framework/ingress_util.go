@@ -12,7 +12,7 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
 	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
 	apps "k8s.io/api/apps/v1beta1"
 	core "k8s.io/api/core/v1"
@@ -382,74 +382,61 @@ func getMinikubeURLs(k kubernetes.Interface, ing *api_v1beta1.Ingress) ([]string
 	return serverAddr, nil
 }
 
-func getLoadBalancerURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.Ingress) ([]string, error) {
-	if provider == "minikube" {
-		return getMinikubeURLs(k, ing)
+func (i *ingressInvocation) getLoadBalancerURLs(ing *api_v1beta1.Ingress) ([]string, error) {
+	if i.Operator.CloudProvider == "minikube" {
+		return getMinikubeURLs(i.KubeClient, ing)
 	}
 
-	serverAddr := make([]string, 0)
-	var err error
+	var serverAddr []string
 
-	gomega.Eventually(func() error {
-		var svc *core.Service
-		svc, err = k.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
-		if err == nil {
-			if len(svc.Status.LoadBalancer.Ingress) != 0 {
-				ips := make([]string, 0)
-				for _, ingress := range svc.Status.LoadBalancer.Ingress {
-					if provider == "aws" {
-						ips = append(ips, ingress.Hostname)
-					} else {
-						ips = append(ips, ingress.IP)
-					}
+	svc, err := i.GetServiceWithLoadBalancerStatus(ing.OffshootName(), ing.Namespace)
+	Expect(err).NotTo(HaveOccurred())
 
-				}
-				var ports []int32
-				if len(svc.Spec.Ports) > 0 {
-					for _, port := range svc.Spec.Ports {
-						if port.NodePort > 0 {
-							ports = append(ports, port.Port)
-						}
-					}
-				}
-				for _, port := range ports {
-					for _, ip := range ips {
-						u, err := url.Parse(fmt.Sprintf("http://%s:%d", ip, port))
-						if err != nil {
-							return err
-						}
-						serverAddr = append(serverAddr, u.String())
-					}
-				}
-				return nil
+	ips := make([]string, 0)
+	for _, ingress := range svc.Status.LoadBalancer.Ingress {
+		if i.Operator.CloudProvider == "aws" {
+			ips = append(ips, ingress.Hostname)
+		} else {
+			ips = append(ips, ingress.IP)
+		}
+	}
+
+	var ports []int32
+	if len(svc.Spec.Ports) > 0 {
+		for _, port := range svc.Spec.Ports {
+			if port.NodePort > 0 {
+				ports = append(ports, port.Port)
 			}
 		}
-		return nil
-	}, "5m", "10s").Should(gomega.BeNil())
-	if err != nil {
-		return nil, err
 	}
+
+	for _, port := range ports {
+		for _, ip := range ips {
+			u, err := url.Parse(fmt.Sprintf("http://%s:%d", ip, port))
+			if err != nil {
+				return nil, err
+			}
+			serverAddr = append(serverAddr, u.String())
+		}
+	}
+
 	return serverAddr, nil
 }
 
-func getHostPortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.Ingress) ([]string, error) {
-	if provider == "minikube" {
-		return getMinikubeURLs(k, ing)
+func (i *ingressInvocation) getHostPortURLs(ing *api_v1beta1.Ingress) ([]string, error) {
+	if i.Operator.CloudProvider == "minikube" {
+		return getMinikubeURLs(i.KubeClient, ing)
 	}
 
-	serverAddr := make([]string, 0)
-	nodes, err := k.CoreV1().Nodes().List(metav1.ListOptions{
-		LabelSelector: labels.SelectorFromSet(ing.Spec.NodeSelector).String(),
-	})
-	if err != nil {
-		return nil, err
-	}
+	var (
+		svc        *core.Service
+		ports      []int32
+		serverAddr []string
+		err        error
+	)
 
-	var svc *core.Service
-	var ports []int32
-
-	gomega.Eventually(func() error {
-		svc, err = k.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+	Eventually(func() error {
+		svc, err = i.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			if len(svc.Spec.Ports) > 0 {
 				for _, port := range svc.Spec.Ports {
@@ -459,12 +446,23 @@ func getHostPortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.I
 			return nil
 		}
 		return err
-	}, "10m", "10s").Should(gomega.BeNil())
+	}, "10m", "10s").Should(BeNil())
 	if err != nil {
 		return nil, err
 	}
 
-	for _, node := range nodes.Items {
+	pods, err := i.KubeClient.CoreV1().Pods(ing.Namespace).List(metav1.ListOptions{
+		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector).String(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, pod := range pods.Items {
+		node, err := i.KubeClient.CoreV1().Nodes().Get(pod.Spec.NodeName, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
 		for _, addr := range node.Status.Addresses {
 			if addr.Type == core.NodeExternalIP {
 				for _, port := range ports {
@@ -477,16 +475,17 @@ func getHostPortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.I
 			}
 		}
 	}
+
 	return serverAddr, nil
 }
 
-func getNodePortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.Ingress) ([]string, error) {
-	if provider == "minikube" {
-		return getMinikubeURLs(k, ing)
+func (i *ingressInvocation) getNodePortURLs(ing *api_v1beta1.Ingress) ([]string, error) {
+	if i.Operator.CloudProvider == "minikube" {
+		return getMinikubeURLs(i.KubeClient, ing)
 	}
 
 	serverAddr := make([]string, 0)
-	nodes, err := k.CoreV1().Nodes().List(metav1.ListOptions{
+	nodes, err := i.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(ing.Spec.NodeSelector).String(),
 	})
 	if err != nil {
@@ -496,8 +495,8 @@ func getNodePortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.I
 	var svc *core.Service
 	var ports []int32
 
-	gomega.Eventually(func() error {
-		svc, err = k.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+	Eventually(func() error {
+		svc, err = i.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			if len(svc.Spec.Ports) > 0 {
 				for _, port := range svc.Spec.Ports {
@@ -507,7 +506,7 @@ func getNodePortURLs(provider string, k kubernetes.Interface, ing *api_v1beta1.I
 			return nil
 		}
 		return err
-	}, "10m", "10s").Should(gomega.BeNil())
+	}, "10m", "10s").Should(BeNil())
 	if err != nil {
 		return nil, err
 	}
@@ -1246,4 +1245,42 @@ func (i *ingressInvocation) CreateTLSSecretForHost(name string, hosts []string) 
 		},
 	}
 	return i.KubeClient.CoreV1().Secrets(secret.Namespace).Create(secret)
+}
+
+func (i *ingressInvocation) GetIngressWithLoadBalancerStatus(name, namespace string) (*api_v1beta1.Ingress, error) {
+	var (
+		ing *api_v1beta1.Ingress
+		err error
+	)
+	wait.PollImmediate(2*time.Second, 3*time.Minute, func() (bool, error) {
+		ing, err = i.VoyagerClient.VoyagerV1beta1().Ingresses(namespace).Get(name, metav1.GetOptions{})
+		if err != nil || len(ing.Status.LoadBalancer.Ingress) == 0 { // retry
+			return false, nil
+		} else {
+			return true, nil
+		}
+	})
+	if err != nil {
+		return nil, errors.Errorf("failed to get Status.LoadBalancer.Ingress for ingress %s/%s", name, namespace)
+	}
+	return ing, nil
+}
+
+func (i *ingressInvocation) GetServiceWithLoadBalancerStatus(name, namespace string) (*core.Service, error) {
+	var (
+		svc *core.Service
+		err error
+	)
+	wait.PollImmediate(2*time.Second, 3*time.Minute, func() (bool, error) {
+		svc, err = i.KubeClient.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
+		if err != nil || len(svc.Status.LoadBalancer.Ingress) == 0 { // retry
+			return false, nil
+		} else {
+			return true, nil
+		}
+	})
+	if err != nil {
+		return nil, errors.Errorf("failed to get Status.LoadBalancer.Ingress for service %s/%s", name, namespace)
+	}
+	return svc, nil
 }

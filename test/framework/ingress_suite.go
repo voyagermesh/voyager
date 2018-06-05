@@ -157,11 +157,11 @@ func (i *ingressInvocation) EventuallyStarted(ing *api.Ingress) GomegaAsyncAsser
 func (i *ingressInvocation) GetHTTPEndpoints(ing *api.Ingress) ([]string, error) {
 	switch ing.LBType() {
 	case api.LBTypeLoadBalancer:
-		return getLoadBalancerURLs(i.Operator.CloudProvider, i.KubeClient, ing)
+		return i.getLoadBalancerURLs(ing)
 	case api.LBTypeHostPort:
-		return getHostPortURLs(i.Operator.CloudProvider, i.KubeClient, ing)
+		return i.getHostPortURLs(ing)
 	case api.LBTypeNodePort:
-		return getNodePortURLs(i.Operator.CloudProvider, i.KubeClient, ing)
+		return i.getNodePortURLs(ing)
 	}
 	return nil, errors.New("LBType Not recognized")
 }

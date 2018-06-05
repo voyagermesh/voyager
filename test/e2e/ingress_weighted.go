@@ -79,12 +79,13 @@ var _ = Describe("IngressWithHostName", func() {
 			if options.CloudProvider == "minikube" {
 				Skip("Minikube do not support this")
 			}
-			// Check Status for ingress
-			baseIngress, err := f.VoyagerClient.VoyagerV1beta1().Ingresses(ing.Namespace).Get(ing.Name, metav1.GetOptions{})
+
+			svc, err := f.Ingress.GetServiceWithLoadBalancerStatus(ing.OffshootName(), ing.Namespace)
 			Expect(err).NotTo(HaveOccurred())
 
-			svc, err := f.Ingress.GetOffShootService(ing)
+			baseIngress, err := f.Ingress.GetIngressWithLoadBalancerStatus(ing.Name, ing.Namespace)
 			Expect(err).NotTo(HaveOccurred())
+
 			Expect(len(baseIngress.Status.LoadBalancer.Ingress)).Should(Equal(len(svc.Status.LoadBalancer.Ingress)))
 			Expect(baseIngress.Status.LoadBalancer.Ingress[0]).Should(Equal(svc.Status.LoadBalancer.Ingress[0]))
 		})
