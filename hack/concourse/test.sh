@@ -46,16 +46,16 @@ NAME=voyager$(git rev-parse --short HEAD)
 ./hack/builddeps.sh
 
 # build and push docker images
-#export APPSCODE_ENV=dev
-#export DOCKER_REGISTRY=appscodeci
+export APPSCODE_ENV=dev
+export DOCKER_REGISTRY=appscodeci
 
 # build & push voyager docker image
-#./hack/docker/voyager/setup.sh
-#./hack/docker/voyager/setup.sh push
+./hack/docker/voyager/setup.sh
+./hack/docker/voyager/setup.sh push
 
 # build & push haproxy docker image
-#./hack/docker/haproxy/1.8.8-alpine/setup.sh
-#./hack/docker/haproxy/1.8.8-alpine/setup.sh push
+./hack/docker/haproxy/1.8.8-alpine/setup.sh
+./hack/docker/haproxy/1.8.8-alpine/setup.sh push
 
 popd
 
@@ -103,6 +103,6 @@ TEST_ACME_USER_EMAIL=$TEST_ACME_USER_EMAIL
 TEST_DNS_DOMAINS=$TEST_DNS_DOMAINS
 EOF
 
-#source ./hack/deploy/voyager.sh --provider=baremetal
-#./hack/make.py test e2e --cloud-provider=baremetal --selfhosted-operator
-./hack/dev-test.sh --provider=baremetal --docker-registry=appscodeci
+# deploy voyager operator
+source ./hack/deploy/voyager.sh --provider=baremetal
+./hack/make.py test e2e --cloud-provider=baremetal --selfhosted-operator
