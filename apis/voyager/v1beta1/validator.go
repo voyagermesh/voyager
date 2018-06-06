@@ -60,7 +60,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 	}
 
 	timeouts, _ := get[DefaultsTimeOut](r.Annotations)
-	if err := checkMapKeys(timeouts.(map[string]string), sets.StringKeySet(timeoutDefaults)); err != nil {
+	if err := checkMapKeys(timeouts.(map[string]string), sets.NewString(timeoutKeys...)); err != nil {
 		return errors.Errorf("invalid value for annotation %s. Reason: %s", DefaultsTimeOut, err)
 	}
 

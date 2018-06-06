@@ -632,6 +632,20 @@ func getTolerations(m map[string]string, key string) (interface{}, error) {
 	return out, nil
 }
 
+var timeoutKeys = []string{
+	"check",
+	"client",
+	"client-fin",
+	"connect",
+	"http-keep-alive",
+	"http-request",
+	"queue",
+	"server",
+	"server-fin",
+	"tarpit",
+	"tunnel",
+}
+
 var timeoutDefaults = map[string]string{
 	// Maximum time to wait for a connection attempt to a server to succeed.
 	"connect": "50s",
