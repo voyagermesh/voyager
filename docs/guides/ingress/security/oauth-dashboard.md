@@ -1,3 +1,18 @@
+---
+title: Securing Kubernetes Dashboard | Kubernetes Ingress
+menu:
+  product_voyager_7.0.0:
+    identifier: oauth2-dashboard
+    name: Kubernetes Dashboard
+    parent: oauth2-security
+    weight: 20
+product_name: voyager
+menu_name: product_voyager_7.0.0
+section_menu_id: guides
+---
+
+> New to Voyager? Please start [here](/docs/concepts/overview.md).
+
 # Securing Kubernetes Dashboard Using Github Oauth
 
 In this example we will deploy kubernetes dashboard and access it through ingress. Also secure the access with voyager external auth using github as auth provider.
