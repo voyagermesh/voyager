@@ -1,89 +1,16 @@
 package v1
 
 import (
+	"fmt"
+
 	"github.com/appscode/go/types"
-	"github.com/appscode/kutil/meta"
 	"github.com/appscode/mergo"
 	"github.com/json-iterator/go"
-	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/conversion"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var json = jsoniter.ConfigFastest
-
-func GetGroupVersionKind(v interface{}) schema.GroupVersionKind {
-	return core.SchemeGroupVersion.WithKind(meta.GetKind(v))
-}
-
-func AssignTypeKind(v interface{}) error {
-	_, err := conversion.EnforcePtr(v)
-	if err != nil {
-		return err
-	}
-
-	switch u := v.(type) {
-	case *core.Pod:
-		u.APIVersion = core.SchemeGroupVersion.String()
-		u.Kind = meta.GetKind(v)
-		return nil
-	case *core.ReplicationController:
-		u.APIVersion = core.SchemeGroupVersion.String()
-		u.Kind = meta.GetKind(v)
-		return nil
-	case *core.ConfigMap:
-		u.APIVersion = core.SchemeGroupVersion.String()
-		u.Kind = meta.GetKind(v)
-		return nil
-	case *core.Secret:
-		u.APIVersion = core.SchemeGroupVersion.String()
-		u.Kind = meta.GetKind(v)
-		return nil
-	case *core.Service:
-		u.APIVersion = core.SchemeGroupVersion.String()
-		u.Kind = meta.GetKind(v)
-		return nil
-	case *core.PersistentVolumeClaim:
-		u.APIVersion = core.SchemeGroupVersion.String()
-		u.Kind = meta.GetKind(v)
-		return nil
-	case *core.PersistentVolume:
-		u.APIVersion = core.SchemeGroupVersion.String()
-		u.Kind = meta.GetKind(v)
-		return nil
-	case *core.Node:
-		u.APIVersion = core.SchemeGroupVersion.String()
-		u.Kind = meta.GetKind(v)
-		return nil
-	case *core.ServiceAccount:
-		u.APIVersion = core.SchemeGroupVersion.String()
-		u.Kind = meta.GetKind(v)
-		return nil
-	case *core.Namespace:
-		u.APIVersion = core.SchemeGroupVersion.String()
-		u.Kind = meta.GetKind(v)
-		return nil
-	case *core.Endpoints:
-		u.APIVersion = core.SchemeGroupVersion.String()
-		u.Kind = meta.GetKind(v)
-		return nil
-	case *core.ComponentStatus:
-		u.APIVersion = core.SchemeGroupVersion.String()
-		u.Kind = meta.GetKind(v)
-		return nil
-	case *core.LimitRange:
-		u.APIVersion = core.SchemeGroupVersion.String()
-		u.Kind = meta.GetKind(v)
-		return nil
-	case *core.Event:
-		u.APIVersion = core.SchemeGroupVersion.String()
-		u.Kind = meta.GetKind(v)
-		return nil
-	}
-	return errors.New("unknown v1beta1 object type")
-}
 
 func RemoveNextInitializer(m metav1.ObjectMeta) metav1.ObjectMeta {
 	if m.GetInitializers() != nil {
@@ -200,6 +127,25 @@ func EnsureVolumeMountDeleted(mounts []core.VolumeMount, name string) []core.Vol
 	return mounts
 }
 
+func UpsertVolumeMountByPath(mounts []core.VolumeMount, nv core.VolumeMount) []core.VolumeMount {
+	for i, vol := range mounts {
+		if vol.MountPath == nv.MountPath {
+			mounts[i] = nv
+			return mounts
+		}
+	}
+	return append(mounts, nv)
+}
+
+func EnsureVolumeMountDeletedByPath(mounts []core.VolumeMount, mountPath string) []core.VolumeMount {
+	for i, v := range mounts {
+		if v.MountPath == mountPath {
+			return append(mounts[:i], mounts[i+1:]...)
+		}
+	}
+	return mounts
+}
+
 func UpsertEnvVars(vars []core.EnvVar, nv ...core.EnvVar) []core.EnvVar {
 	upsert := func(env core.EnvVar) {
 		for i, v := range vars {
@@ -259,6 +205,9 @@ func EnsureOwnerReference(meta metav1.ObjectMeta, owner *core.ObjectReference) m
 		owner.Name == "" ||
 		owner.UID == "" {
 		return meta
+	}
+	if meta.Namespace != owner.Namespace {
+		panic(fmt.Errorf("owner %s %s must be from the same namespace as object %s", owner.Kind, owner.Name, meta.Name))
 	}
 
 	fi := -1
