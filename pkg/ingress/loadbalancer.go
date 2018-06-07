@@ -335,7 +335,7 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 
 		// LoadBalancerIP
 		switch c.cfg.CloudProvider {
-		case "gce", "gke", "azure", "acs", "openstack":
+		case "gce", "gke", "azure", "acs", "openstack", "metallb", "digitalocean", "linode":
 			if ip := c.Ingress.LoadBalancerIP(); ip != nil {
 				obj.Spec.LoadBalancerIP = ip.String()
 			}
