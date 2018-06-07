@@ -77,7 +77,7 @@ if test $# -gt 0; then
             exit 0
             ;;
         "uninstall")
-            uinstall
+            uninstall
             exit 0
             ;;
         *)
