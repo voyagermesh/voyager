@@ -1,9 +1,9 @@
 ---
-title: OAuth2 Authentication | Kubernetes Ingress
+title: OAuth2 Authentication Using Github | Kubernetes Ingress
 menu:
   product_voyager_7.0.0:
-    identifier: oauth2-google
-    name: OAuth2 Google
+    identifier: oauth2-github
+    name: OAuth2 Github
     parent: oauth2-security
     weight: 20
 product_name: voyager
@@ -13,16 +13,16 @@ section_menu_id: guides
 
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
 
-# OAuth2 Authentication Using Google
+# OAuth2 Authentication Using Github
 
-This example will demonstrate how to configure external authentication in both TLS and non-TLS mode using Google as auth provider.
+This example will demonstrate how to configure external authentication in both TLS and non-TLS mode using Github as auth provider.
 
-## Example using Google (no TLS)
+## Example using Github (no TLS)
 
-First configure google auth provider by following instructions provided [here](https://github.com/bitly/oauth2_proxy#google-auth-provider) and generate client-id and client-secret.
+First configure github auth provider by following instructions provided [here](https://github.com/bitly/oauth2_proxy#github-auth-provider) and generate client-id and client-secret.
 
-In this example `Authorized JavaScript origins` is set to `http://voyager.appscode.ninja`
-and `Authorized redirect URIs` is set to `http://voyager.appscode.ninja/oauth2/callback`.
+Set `Authorization callback URL` to `http://<host:port>/oauth2/callback`.
+In this example it is set to `http://voyager.appscode.ninja`.
 
 Now deploy and expose a test server:
 
@@ -54,7 +54,7 @@ spec:
     spec:
       containers:
       - args:
-        - --provider=google
+        - --provider=github
         - --email-domain=*
         - --upstream=file:///dev/null
         - --http-address=0.0.0.0:4180
@@ -134,12 +134,12 @@ Now browse the followings:
 - http://voyager.appscode.ninja/app (external-auth required)
 - http://voyager.appscode.ninja/health (external-auth not required)
 
-## Example using Google (with TLS)
+## Example using Github (with TLS)
 
-First configure google auth provider by following instructions provided [here](https://github.com/bitly/oauth2_proxy#google-auth-provider) and generate client-id and client-secret.
+First configure github auth provider by following instructions provided [here](https://github.com/bitly/oauth2_proxy#github-auth-provider) and generate client-id and client-secret.
 
-In this example `Authorized JavaScript origins` is set to `https://voyager.appscode.ninja`
-and `Authorized redirect URIs` is set to `https://voyager.appscode.ninja/oauth2/callback`.
+Set `Authorization callback URL` to `https://<host:port>/oauth2/callback`.
+In this example it is set to `https://voyager.appscode.ninja`.
 
 Now deploy and expose a test server:
 
@@ -178,7 +178,7 @@ spec:
     spec:
       containers:
       - args:
-        - --provider=google
+        - --provider=github
         - --email-domain=*
         - --upstream=file:///dev/null
         - --http-address=0.0.0.0:4180
