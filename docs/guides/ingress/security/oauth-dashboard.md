@@ -1,28 +1,24 @@
 # Securing Kubernetes Dashboard Using Github Oauth
 
-In this example we will deploy kubernetes dashboard and access it through ingress.
-Also secure the access with voyager external auth using github as auth provider.
+In this example we will deploy kubernetes dashboard and access it through ingress. Also secure the access with voyager external auth using github as auth provider.
 
 ## Deploy Dashboard
 
 ```
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/tree/oauth-doc/docs/examples/ingress/oauth/dashboard.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.8.3/src/deploy/recommended/kubernetes-dashboard.yaml
 ```
 
-By default the dashboard configures HTTPS with a self signed certificate.
-But since we will access dashboard through ingress without directly exposing it, we can use HTTP connection between haproxy and dashboard.
-In order to do so we need following changes to the recommended setup described [here](https://raw.githubusercontent.com/kubernetes/dashboard/v1.8.3/src/deploy/recommended/kubernetes-dashboard.yaml).
+By default the dashboard configures HTTPS with a self signed certificate. We need to apply `ingress.appscode.com/backend-tls: ssl verify none` annotation to `kubernetes-dashboard` service so that haproxy pod can establish HTTPS connection with dashboard pod.
 
-- Set `livenessProbe` scheme to HTTP instead of HTTPS.
-- Removed `auto-generate-certificates` flag and added `insecure-bind-address=0.0.0.0`, `insecure-port=9090`, `enable-insecure-loginDeploy` flags.
-- Replaced port `8443` with `9090` and `443` with `80`.
+```
+$ kubectl annotate service kubernetes-dashboard -n kube-system ingress.appscode.com/backend-tls='ssl verify none'
+```
 
 ## Configure Github Oauth App
 
 Configure github auth provider by following instructions provided [here](https://github.com/bitly/oauth2_proxy#github-auth-provider) and generate client-id and client-secret.
 
-Set `Authorization callback URL` to `https://<host:port>/oauth2/callback`.
-In this example it is set to `https://voyager.appscode.ninja`.
+Set `Authorization callback URL` to `https://<host:port>/oauth2/callback`. In this example it is set to `https://voyager.appscode.ninja`.
 
 ## Configure and Deploy Oauth Proxy
 
@@ -122,7 +118,7 @@ spec:
       - path: /
         backend:
           serviceName: kubernetes-dashboard
-          servicePort: 80
+          servicePort: 443
       - path: /oauth2
         backend:
           name: auth-be
@@ -132,8 +128,7 @@ spec:
 
 ## Access DashBoard
 
-Now browse https://voyager.appscode.ninja, it will redirect you to Github login page.
-After successful login, it will redirect you to dashboard login page.
+Now browse https://voyager.appscode.ninja, it will redirect you to Github login page. After successful login, it will redirect you to dashboard login page.
 
 We will use token of an existing service-account `replicaset-controller` to login dashboard. It should have permissions to see Replica Sets in the cluster. You can also create your own service-account with different roles.
 
@@ -169,8 +164,3 @@ token:      ...
 ```
 
 Now use the token to login dashboard.
-
-## References
-
-- https://github.com/kubernetes/dashboard
-- https://blog.heptio.com/on-securing-the-kubernetes-dashboard-16b09b1b7aca
