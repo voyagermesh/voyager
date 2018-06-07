@@ -1,7 +1,9 @@
 #!/bin/bash
-set -xeou pipefail
+set -eou pipefail
 
-# uses: $ ./dev-test.sh --provider=minikube --docker-registry=appscodeci
+# usages:
+# $ ./dev-test.sh --provider=minikube --docker-registry=appscodeci build|push|install|e2e|uninstall
+# $ ./dev-test.sh --provider=minikube --docker-registry=appscodeci
 
 pushd ${GOPATH}/src/github.com/appscode/voyager
 
@@ -17,24 +19,78 @@ while test $# -gt 0; do
             export DOCKER_REGISTRY=`echo $1 | sed -e 's/^[^=]*=//g'`
             shift
             ;;
+        --*)
+            echo "Error: Unknown option ($1)"
+            exit 1
+            ;;
+        *)
+            break
+            ;;
     esac
 done
 
-# build & push voyager docker image
-docker/voyager/setup.sh
-docker/voyager/setup.sh push
+docker_build() {
+    echo "===building voyager docker image==="
+    ./hack/docker/voyager/setup.sh
+    echo "===building haproxy docker image==="
+    ./hack/docker/haproxy/1.8.8-alpine/setup.sh
+}
 
-# build & push haproxy docker image
-docker/haproxy/1.8.8-alpine/setup.sh
-docker/haproxy/1.8.8-alpine/setup.sh push
+docker_push() {
+    echo "===pushing voyager docker image==="
+    ./hack/docker/voyager/setup.sh push
+    echo "===pushing haproxy docker image==="
+    ./hack/docker/haproxy/1.8.8-alpine/setup.sh push
+}
 
-# deploy voyager operator
-deploy/voyager.sh --provider=${provider}
+install() {
+    echo "===installing voyager operator==="
+    ./hack/deploy/voyager.sh --provider=${provider}
+}
 
-# run e2e tests
-make.py test e2e --cloud-provider=${provider} --selfhosted-operator
+e2e() {
+    echo "===running voyager e2e tests==="
+    /hack/make.py test e2e --cloud-provider=${provider} --selfhosted-operator
+}
 
-# uninstall voyager operator
-deploy/voyager.sh --provider=${provider} --uninstall
+uninstall() {
+    echo "===uninstalling voyager operator==="
+    ./hack/deploy/voyager.sh --provider=${provider} --uninstall --purge
+}
+
+if test $# -gt 0; then
+    case "$1" in
+        "build")
+            docker_build
+            exit 0
+            ;;
+        "push")
+            docker_push
+            exit 0
+            ;;
+        "install")
+            install
+            exit 0
+            ;;
+        "e2e")
+            e2e
+            exit 0
+            ;;
+        "uninstall")
+            uinstall
+            exit 0
+            ;;
+        *)
+            echo "Error: Command not supported ($1)"
+            exit 1
+            ;;
+    esac
+fi
+
+docker_build
+docker_push
+install
+e2e
+uninstall
 
 popd
