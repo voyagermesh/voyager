@@ -1252,7 +1252,7 @@ func (i *ingressInvocation) GetIngressWithLoadBalancerStatus(name, namespace str
 		ing *api_v1beta1.Ingress
 		err error
 	)
-	wait.PollImmediate(2*time.Second, 3*time.Minute, func() (bool, error) {
+	wait.PollImmediate(2*time.Second, 20*time.Minute, func() (bool, error) {
 		ing, err = i.VoyagerClient.VoyagerV1beta1().Ingresses(namespace).Get(name, metav1.GetOptions{})
 		if err != nil || len(ing.Status.LoadBalancer.Ingress) == 0 { // retry
 			return false, nil
@@ -1271,7 +1271,7 @@ func (i *ingressInvocation) GetServiceWithLoadBalancerStatus(name, namespace str
 		svc *core.Service
 		err error
 	)
-	wait.PollImmediate(2*time.Second, 3*time.Minute, func() (bool, error) {
+	wait.PollImmediate(2*time.Second, 20*time.Minute, func() (bool, error) {
 		svc, err = i.KubeClient.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
 		if err != nil || len(svc.Status.LoadBalancer.Ingress) == 0 { // retry
 			return false, nil
