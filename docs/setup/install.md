@@ -31,6 +31,8 @@ To install Voyager in your Kubernetes cluster, pick the appropriate cluster prov
 # provider=minikube
 # provider=openstack
 # provider=metallb
+# provider=digitalocean
+# provider=linode
 
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider
@@ -182,6 +184,14 @@ Voyager works great in baremetal cluster. To install, set `--provider=baremetal`
 ### Installing in Baremetal Cluster with MetalLB
 
 Follow the instructions for installing on baremetal cluster but specify `metallb` as provider. Then install MetalLB following the instructions [here](https://metallb.universe.tf/installation/). Now, you can use `LoadBalancer` type ingress in baremetal clusters.
+
+### Installing in DigitalOcean Cluster
+
+To use `LoadBalancer` type ingress in [DigitalOcean](https://www.digitalocean.com/) cluster, install Kubernetes [cloud controller manager for DigitalOcean](https://github.com/digitalocean/digitalocean-cloud-controller-manager). Otherwise set cloud provider to `barematal`.
+
+### Installing in Linode Cluster
+
+To use `LoadBalancer` type ingress in [Linode](https://www.linode.com/) cluster, install Kubernetes [cloud controller manager for Linode](https://github.com/pharmer/cloud-controller-manager). Otherwise set cloud provider to `barematal`.
 
 ## Verify installation
 To check if Voyager operator pods have started, run the following command:
