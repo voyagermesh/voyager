@@ -341,6 +341,10 @@ case "$VOYAGER_CLOUD_PROVIDER" in
 			export VOYAGER_RUN_ON_MASTER=0
 		fi
 		;;
+	linode)
+		export VOYAGER_CLOUD_CONFIG=
+		export VOYAGER_INGRESS_CLASS=
+		;;
 	metallb)
 		export VOYAGER_CLOUD_CONFIG=
 		export VOYAGER_INGRESS_CLASS=
