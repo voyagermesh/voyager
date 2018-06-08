@@ -325,6 +325,10 @@ case "$VOYAGER_CLOUD_PROVIDER" in
 		export VOYAGER_CLOUD_CONFIG=
 		export VOYAGER_INGRESS_CLASS=
 		;;
+	digitalocean)
+		export VOYAGER_CLOUD_CONFIG=
+		export VOYAGER_INGRESS_CLASS=
+		;;
 	gce)
 		export VOYAGER_CLOUD_CONFIG=
 		export VOYAGER_INGRESS_CLASS=
@@ -336,6 +340,10 @@ case "$VOYAGER_CLOUD_PROVIDER" in
 			echo "GKE clusters do not provide access to master instance(s). Ignoring --run-on-master flag."
 			export VOYAGER_RUN_ON_MASTER=0
 		fi
+		;;
+	linode)
+		export VOYAGER_CLOUD_CONFIG=
+		export VOYAGER_INGRESS_CLASS=
 		;;
 	metallb)
 		export VOYAGER_CLOUD_CONFIG=
