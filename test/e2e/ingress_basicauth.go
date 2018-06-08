@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/client"
@@ -97,7 +98,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTPStatus(framework.NoRetry, ing, eps, "GET", "/testpath", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPStatus(framework.MaxRetry, ing, eps, "GET", "/testpath", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusUnauthorized))
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -195,7 +196,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTPStatus(framework.NoRetry, ing, eps, "GET", "/testpath", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPStatus(framework.MaxRetry, ing, eps, "GET", "/testpath", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusUnauthorized))
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -341,7 +342,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTPStatus(framework.NoRetry, ing, eps, "GET", "/testpath", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPStatus(framework.MaxRetry, ing, eps, "GET", "/testpath", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusUnauthorized))
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -430,7 +431,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 
 			// Test passing valid password to the other port fails
 			err = f.Ingress.DoHTTPStatusWithHeader(
-				framework.NoRetry,
+				framework.MaxRetry,
 				ing,
 				f.Ingress.FilterEndpointsForPort(eps, port80),
 				"GET",
@@ -509,7 +510,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTPStatus(framework.NoRetry, ing, eps, "GET", "/testpath", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPStatus(framework.MaxRetry, ing, eps, "GET", "/testpath", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusUnauthorized))
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -630,13 +631,13 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTPStatus(framework.NoRetry, ing, eps, "GET", "/testpath", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPStatus(framework.MaxRetry, ing, eps, "GET", "/testpath", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusUnauthorized))
 			})
 			Expect(err).NotTo(HaveOccurred())
 
 			err = f.Ingress.DoHTTPStatusWithHeader(
-				framework.NoRetry,
+				framework.MaxRetry,
 				ing,
 				eps,
 				"GET",
@@ -651,7 +652,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			err = f.Ingress.DoHTTPWithHeader(
-				framework.NoRetry,
+				framework.MaxRetry,
 				ing,
 				eps,
 				"GET",
@@ -668,7 +669,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			err = f.Ingress.DoHTTPWithHeader(
-				framework.NoRetry,
+				framework.MaxRetry,
 				ing,
 				eps,
 				"GET",
@@ -685,7 +686,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			err = f.Ingress.DoHTTPWithHeader(
-				framework.NoRetry,
+				framework.MaxRetry,
 				ing,
 				eps,
 				"GET",
@@ -699,6 +700,130 @@ var _ = Describe("IngressWithBasicAuth", func() {
 						Expect(r.Path).Should(Equal("/testpath"))
 				},
 			)
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+	Describe("Service Auth Update", func() {
+		var (
+			secretNew *core.Secret
+			meta      metav1.ObjectMeta
+		)
+		BeforeEach(func() {
+			By("Creating new secret") // will be used when service updated
+			secretNew = &core.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      f.Ingress.UniqueName(),
+					Namespace: ing.GetNamespace(),
+				},
+				StringData: map[string]string{
+					"auth": "foo::new-bar",
+				},
+			}
+			_, err := f.KubeClient.CoreV1().Secrets(secretNew.Namespace).Create(secretNew)
+			Expect(err).NotTo(HaveOccurred())
+
+			// at first service will point `secret` and after update it will point `secretNew`
+			meta, err = f.Ingress.CreateResourceWithServiceAuth(secret)
+			Expect(err).NotTo(HaveOccurred())
+
+			ing.Spec.Rules = []api.IngressRule{
+				{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
+								{
+									Path: "/testpath",
+									Backend: api.HTTPIngressBackend{
+										IngressBackend: api.IngressBackend{
+											ServiceName: meta.Name,
+											ServicePort: intstr.FromInt(80),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+		})
+
+		AfterEach(func() {
+			By("Deleting new secret")
+			err := f.KubeClient.CoreV1().Secrets(secretNew.Namespace).Delete(secretNew.Name, &metav1.DeleteOptions{})
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("Should response HTTP on service update", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			err = f.Ingress.DoHTTPStatus(framework.MaxRetry, ing, eps, "GET", "/testpath", func(r *client.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusUnauthorized))
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Ingress.DoHTTPWithHeader(
+				framework.MaxRetry,
+				ing,
+				eps,
+				"GET",
+				"/testpath",
+				map[string]string{
+					"Authorization": "Basic Zm9vOmJhcg==", // foo:bar
+				},
+				func(r *client.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Updating service annotations")
+			core_util.CreateOrPatchService(f.KubeClient, meta, func(in *core.Service) *core.Service {
+				in.Annotations[api.AuthSecret] = secretNew.Name
+				return in
+			})
+
+			By("Waiting for operator to process service update")
+			time.Sleep(5 * time.Second)
+
+			By("Sending request with updated auth")
+			err = f.Ingress.DoHTTPWithHeader(
+				framework.MaxRetry,
+				ing,
+				eps,
+				"GET",
+				"/testpath",
+				map[string]string{
+					"Authorization": "Basic Zm9vOm5ldy1iYXI=", // foo:new-bar
+				},
+				func(r *client.Response) bool {
+					return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+						Expect(r.Method).Should(Equal("GET")) &&
+						Expect(r.Path).Should(Equal("/testpath"))
+				},
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Removing service annotations")
+			core_util.CreateOrPatchService(f.KubeClient, meta, func(in *core.Service) *core.Service {
+				delete(in.Annotations, api.AuthType)
+				delete(in.Annotations, api.AuthRealm)
+				delete(in.Annotations, api.AuthSecret)
+				return in
+			})
+
+			By("Waiting for operator to process service update")
+			time.Sleep(5 * time.Second)
+
+			By("Sending request without auth")
+			err = f.Ingress.DoHTTPStatus(framework.MaxRetry, ing, eps, "GET", "/testpath", func(r *client.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusUnauthorized))
+			})
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
@@ -753,14 +878,14 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTPStatus(framework.NoRetry, ing, eps, "GET", "/testpath", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPStatus(framework.MaxRetry, ing, eps, "GET", "/testpath", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusUnauthorized))
 			})
 			Expect(err).NotTo(HaveOccurred())
 
 			// should Unauthorized, since 'secret2' will be replaced by global 'secret'
 			err = f.Ingress.DoHTTPStatusWithHeader(
-				framework.NoRetry,
+				framework.MaxRetry,
 				ing,
 				eps,
 				"GET",
@@ -775,7 +900,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			err = f.Ingress.DoHTTPWithHeader(
-				framework.NoRetry,
+				framework.MaxRetry,
 				ing,
 				eps,
 				"GET",
@@ -792,7 +917,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			err = f.Ingress.DoHTTPWithHeader(
-				framework.NoRetry,
+				framework.MaxRetry,
 				ing,
 				eps,
 				"GET",
@@ -809,7 +934,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			err = f.Ingress.DoHTTPWithHeader(
-				framework.NoRetry,
+				framework.MaxRetry,
 				ing,
 				eps,
 				"GET",
@@ -861,7 +986,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTPStatus(framework.NoRetry, ing, eps, "GET", "/testpath", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPStatus(framework.MaxRetry, ing, eps, "GET", "/testpath", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusUnauthorized))
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -893,7 +1018,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			// Wait for update to be done
 			time.Sleep(time.Second * 30)
 
-			err = f.Ingress.DoHTTPStatus(framework.NoRetry, ing, eps, "GET", "/testpath", func(r *client.Response) bool {
+			err = f.Ingress.DoHTTPStatus(framework.MaxRetry, ing, eps, "GET", "/testpath", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusUnauthorized))
 			})
 			Expect(err).NotTo(HaveOccurred())

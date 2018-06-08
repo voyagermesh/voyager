@@ -14,6 +14,7 @@ source "$REPO_ROOT/hack/libbuild/common/public_image.sh"
 
 APPSCODE_ENV=${APPSCODE_ENV:-dev}
 IMG=voyager
+DOCKER_REGISTRY=${DOCKER_REGISTRY:-appscode}
 
 mkdir -p $REPO_ROOT/dist
 if [ -f "$REPO_ROOT/dist/.tag" ]; then
@@ -42,7 +43,7 @@ build_docker() {
 	# download auth-request.lua
 	curl -fsSL -o auth-request.lua https://raw.githubusercontent.com/appscode/haproxy-auth-request/v1.8.8/auth-request.lua
 
-	local cmd="docker build -t appscode/$IMG:$TAG ."
+	local cmd="docker build -t $DOCKER_REGISTRY/$IMG:$TAG ."
 	echo $cmd; $cmd
 
 	rm voyager auth-request.lua

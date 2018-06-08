@@ -626,8 +626,10 @@ var _ = Describe("IngressTLS", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// bad-case: without host header, just replace http with https
-			// for-example: http://192.168.99.100:30001 -> https://192.168.99.100:30001
+			// for-example: minikube: http://192.168.99.100:30001 -> https://192.168.99.100:30001
+			// cloud: http://11.22.33.44:80 -> https://11.22.33.44:443
 			redirectLocation = strings.Replace(eps[0], "http", "https", 1) + "/testpath/ok"
+			redirectLocation = strings.Replace(redirectLocation, ":80", ":443", 1)
 			err = f.Ingress.DoHTTPTestRedirect(framework.MaxRetry, ing, eps, "GET", "/testpath/ok",
 				func(r *client.Response) bool {
 					return Expect(r.Status).Should(Equal(308)) &&

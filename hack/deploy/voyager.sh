@@ -93,7 +93,7 @@ export VOYAGER_RUN_ON_MASTER=0
 export VOYAGER_ENABLE_VALIDATING_WEBHOOK=false
 export VOYAGER_RESTRICT_TO_NAMESPACE=false
 export VOYAGER_ROLE_TYPE=ClusterRole
-export VOYAGER_DOCKER_REGISTRY=appscode
+export VOYAGER_DOCKER_REGISTRY=${DOCKER_REGISTRY:-appscode}
 export VOYAGER_IMAGE_TAG=7.0.0
 export VOYAGER_HAPROXY_IMAGE_TAG=1.8.8-7.0.0-alpine
 export VOYAGER_IMAGE_PULL_SECRET=
@@ -109,6 +109,7 @@ if [ "$APPSCODE_ENV" = "dev" ]; then
     detect_tag
     export SCRIPT_LOCATION="cat "
     export VOYAGER_IMAGE_TAG=$TAG
+    export VOYAGER_HAPROXY_IMAGE_TAG=1.8.8-$TAG-alpine
     export VOYAGER_IMAGE_PULL_POLICY=Always
 fi
 
@@ -321,7 +322,6 @@ case "$VOYAGER_CLOUD_PROVIDER" in
 		export VOYAGER_INGRESS_CLASS=
 		;;
 	baremetal)
-		export VOYAGER_CLOUD_PROVIDER=
 		export VOYAGER_CLOUD_CONFIG=
 		export VOYAGER_INGRESS_CLASS=
 		;;

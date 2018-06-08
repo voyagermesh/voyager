@@ -23,7 +23,7 @@ func NewIPRange(from string, to string) IPRange {
 
 var privateIPRanges = []IPRange{
 	NewIPRange("10.0.0.0", "10.255.255.255"),
-	NewIPRange("172.17.0.0-rc.0", "172.31.255.255"),
+	NewIPRange("172.16.0.0", "172.31.255.255"),
 	NewIPRange("192.168.0.0", "192.168.255.255"),
 }
 
