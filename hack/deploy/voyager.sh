@@ -325,6 +325,10 @@ case "$VOYAGER_CLOUD_PROVIDER" in
 		export VOYAGER_CLOUD_CONFIG=
 		export VOYAGER_INGRESS_CLASS=
 		;;
+	digitalocean)
+		export VOYAGER_CLOUD_CONFIG=
+		export VOYAGER_INGRESS_CLASS=
+		;;
 	gce)
 		export VOYAGER_CLOUD_CONFIG=
 		export VOYAGER_INGRESS_CLASS=
