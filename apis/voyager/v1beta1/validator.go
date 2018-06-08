@@ -371,16 +371,22 @@ func (r Ingress) SupportsLBType(cloudProvider string) bool {
 			cloudProvider == "gke" ||
 			cloudProvider == "azure" ||
 			cloudProvider == "acs" ||
+			cloudProvider == "aks" ||
 			cloudProvider == "openstack" ||
 			cloudProvider == "minikube" ||
 			cloudProvider == "metallb" ||
 			cloudProvider == "digitalocean" ||
 			cloudProvider == "linode"
 	case LBTypeNodePort:
-		return cloudProvider != "acs"
+		return cloudProvider != "acs" &&
+			cloudProvider != "aks"
 	case LBTypeHostPort:
 		// TODO: https://github.com/appscode/voyager/issues/374
-		return cloudProvider != "acs" && cloudProvider != "azure" && cloudProvider != "gce" && cloudProvider != "gke"
+		return cloudProvider != "acs" &&
+			cloudProvider != "aks" &&
+			cloudProvider != "azure" &&
+			cloudProvider != "gce" &&
+			cloudProvider != "gke"
 	case LBTypeInternal:
 		return true
 	default:

@@ -309,11 +309,15 @@ if [ "$VOYAGER_ENABLE_VALIDATING_WEBHOOK" = true ]; then
 fi
 
 case "$VOYAGER_CLOUD_PROVIDER" in
-	acs)
-		export VOYAGER_CLOUD_CONFIG=/etc/kubernetes/azure.json
+	aws)
+		export VOYAGER_CLOUD_CONFIG=
 		export VOYAGER_INGRESS_CLASS=
 		;;
-	aws)
+	acs)
+		export VOYAGER_CLOUD_CONFIG=
+		export VOYAGER_INGRESS_CLASS=
+		;;
+	aks)
 		export VOYAGER_CLOUD_CONFIG=
 		export VOYAGER_INGRESS_CLASS=
 		;;
