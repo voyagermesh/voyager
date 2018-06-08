@@ -84,7 +84,7 @@ func NewHostPortController(
 			c.logger.Infoln("Initialized cloud provider: "+cfg.CloudProvider, cloudInterface)
 			c.CloudManager = cloudInterface
 		}
-	} else if cfg.CloudProvider == "acs" {
+	} else if cfg.CloudProvider == "azure" {
 		cloudInterface, err := cloudprovider.InitCloudProvider("azure", cfg.CloudConfigFile)
 		if err != nil {
 			c.logger.Errorln("Failed to initialize cloud provider:"+cfg.CloudProvider, err)

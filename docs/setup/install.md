@@ -23,6 +23,7 @@ To install Voyager in your Kubernetes cluster, pick the appropriate cluster prov
 
 ```console
 # provider=acs
+# provider=aks
 # provider=aws
 # provider=azure
 # provider=baremetal

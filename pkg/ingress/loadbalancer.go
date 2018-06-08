@@ -326,7 +326,7 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 		// ExternalTrafficPolicy
 		if c.Ingress.KeepSourceIP() {
 			switch c.cfg.CloudProvider {
-			case "gce", "gke", "azure", "acs", "metallb":
+			case "gce", "gke", "azure", "acs", "aks", "metallb":
 				// https://github.com/appscode/voyager/issues/276
 				// ref: https://kubernetes.io/docs/tasks/services/source-ip/#source-ip-for-services-with-typeloadbalancer
 				obj.Spec.ExternalTrafficPolicy = core.ServiceExternalTrafficPolicyTypeLocal
@@ -335,7 +335,7 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 
 		// LoadBalancerIP
 		switch c.cfg.CloudProvider {
-		case "gce", "gke", "azure", "acs", "openstack", "metallb", "digitalocean", "linode":
+		case "gce", "gke", "azure", "acs", "aks", "openstack", "metallb", "digitalocean", "linode":
 			if ip := c.Ingress.LoadBalancerIP(); ip != nil {
 				obj.Spec.LoadBalancerIP = ip.String()
 			}

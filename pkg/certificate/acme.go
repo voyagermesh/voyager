@@ -82,7 +82,7 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 			hostedZoneID = zoneID
 		}
 		return newDNSProvider(route53.NewDNSProviderCredentials(accessKeyId, secretAccessKey, hostedZoneID))
-	case "azure", "acs":
+	case "azure", "acs", "aks":
 		var clientId, clientSecret, subscriptionId, tenantId, resourceGroup string
 		if clientId, found = dnsLoader("AZURE_CLIENT_ID"); !found {
 			return nil, errors.Errorf("dns provider credential missing key %s", "AZURE_CLIENT_ID")

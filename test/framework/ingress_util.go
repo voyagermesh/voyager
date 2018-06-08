@@ -602,6 +602,7 @@ func (i *ingressInvocation) SupportsServiceIP() bool {
 		i.Operator.CloudProvider == "gke" ||
 		i.Operator.CloudProvider == "azure" ||
 		i.Operator.CloudProvider == "acs" ||
+		i.Operator.CloudProvider == "aks" ||
 		i.Operator.CloudProvider == "openstack"
 }
 
