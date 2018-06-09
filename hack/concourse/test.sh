@@ -18,18 +18,22 @@ chmod +x pharmer-linux-amd64
 mv pharmer-linux-amd64 /bin/pharmer
 
 function cleanup_test_stuff {
+    set +e
+
     # delete cluster on exit
-    pharmer get cluster || true
-    pharmer delete cluster $NAME || true
-    pharmer get cluster || true
-    sleep 300 || true
-    pharmer apply $NAME || true
-    pharmer get cluster || true
+    pharmer get cluster
+    pharmer delete cluster $NAME
+    pharmer get cluster
+    sleep 300
+    pharmer apply $NAME
+    pharmer apply $NAME
+    pharmer get cluster
 
     # delete docker image on exit
-    curl -LO https://raw.githubusercontent.com/appscodelabs/libbuild/master/docker.py || true
-    chmod +x docker.py || true
-    ./docker.py del_tag appscodeci voyager $VOYAGER_IMAGE_TAG || true
+    curl -LO https://raw.githubusercontent.com/appscodelabs/libbuild/master/docker.py
+    chmod +x docker.py
+    ./docker.py del_tag appscodeci voyager $VOYAGER_IMAGE_TAG
+    ./docker.py del_tag appscodeci haproxy $HAPROXY_IMAGE_TAG
 }
 trap cleanup_test_stuff EXIT
 
