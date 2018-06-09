@@ -118,7 +118,7 @@ var _ = Describe("CertificateWithHTTPProvider", func() {
 				})
 				Expect(err).NotTo(HaveOccurred())
 			} else {
-				req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1:56791"+"/.well-known/acme-challenge/", nil)
+				req, err := http.NewRequest(http.MethodGet, "http://127.1.0.1:56791"+"/.well-known/acme-challenge/", nil)
 				Expect(err).NotTo(HaveOccurred())
 				req.Header.Add("Host", framework.TestDomain)
 				req.Host = framework.TestDomain

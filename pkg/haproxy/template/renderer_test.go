@@ -14,7 +14,7 @@ func TestValidateConfig(t *testing.T) {
 # 	lua-load /etc/auth-request.lua
 listen http-in
 	bind *:80
-	server http-server 127.0.0.1:8080`: true, // valid config - required /etc/auth-request.lua
+	server http-server 127.1.0.1:8080`: true, // valid config - required /etc/auth-request.lua
 
 		`listen http-in`: false, // invalid config - no bind
 

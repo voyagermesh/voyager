@@ -49,10 +49,10 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `replicaCount`                      | Number of operator replicas to create (only 1 is supported)   | `1`                   |
 | `voyager.registry`                  | Docker registry used to pull Voyager image                    | `appscode`            |
 | `voyager.repository`                | Voyager container image                                       | `voyager`             |
-| `voyager.tag`                       | Voyager container image tag                                   | `7.0.0`          |
+| `voyager.tag`                       | Voyager container image tag                                   | `7.1.0`          |
 | `haproxy.registry`                  | Docker registry used to pull HAProxy image                    | `appscode`            |
 | `haproxy.repository`                | HAProxy container image                                       | `haproxy`             |
-| `haproxy.tag`                       | HAProxy container image tag                                   | `1.8.9-7.0.0-alpine` |
+| `haproxy.tag`                       | HAProxy container image tag                                   | `1.8.9-7.1.0-alpine` |
 | `imagePullSecrets`                  | Specify image pull secrets                                    | `nil` (does not add image pull secrets to deployed pods) |
 | `imagePullPolicy`                   | Image pull policy                                             | `IfNotPresent`        |
 | `cloudProvider`                     | Name of cloud provider                                        | `nil`                 |

@@ -1,13 +1,13 @@
 ---
 title: HostPort Ingress | Voyager
 menu:
-  product_voyager_7.0.0:
+  product_voyager_7.1.0:
     identifier: hostport-ingress
     name: HostPort
     parent: ingress-types-concepts
     weight: 20
 product_name: voyager
-menu_name: product_voyager_7.0.0
+menu_name: product_voyager_7.1.0
 section_menu_id: concepts
 ---
 
@@ -20,14 +20,14 @@ In `HostPort` type Ingress, HAProxy pods are run via a Kubernetes deployment nam
 - First, deploy voyager operator.
 
 ```console
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0/hack/deploy/voyager.sh \
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.1.0/hack/deploy/voyager.sh \
     | bash -s -- --provider=minikube
 ```
 
 - Now, deploy test servers using [this script](/docs/examples/ingress/types/hostport/deploy-servers.sh) script.
 
 ```console
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.0.0/docs/examples/ingress/types/hostport/deploy-servers.sh | bash
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.1.0/docs/examples/ingress/types/hostport/deploy-servers.sh | bash
 
 deployment "nginx" created
 service "web" exposed
@@ -38,7 +38,7 @@ service "rest" exposed
 - Now, create an Ingress object running
 
 ```console
-kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/7.0.0/docs/examples/ingress/types/hostport/ing.yaml
+kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/7.1.0/docs/examples/ingress/types/hostport/ing.yaml
 ```
 
 Please note the annotaiton on ingress:
@@ -67,7 +67,7 @@ svc/web                    ClusterIP   10.99.232.60   <none>        80/TCP    6m
 ```console
 $ minikube ssh
 
-$ curl -vv 127.0.0.1 -H "Host: web.example.com"
+$ curl -vv 127.1.0.1 -H "Host: web.example.com"
 > GET / HTTP/1.1
 > Host: web.example.com
 > User-Agent: curl/7.53.0
@@ -110,7 +110,7 @@ Commercial support is available at
 ```
 
 ```console
-$ curl -vv 127.0.0.1 -H "Host: app.example.com"
+$ curl -vv 127.1.0.1 -H "Host: app.example.com"
 > GET / HTTP/1.1
 > Host: app.example.com
 > User-Agent: curl/7.53.0
@@ -138,7 +138,7 @@ accept=*/*
 connection=close
 host=app.example.com
 user-agent=curl/7.53.0
-x-forwarded-for=127.0.0.1
+x-forwarded-for=127.1.0.1
 BODY:
 ```
 
@@ -147,7 +147,7 @@ Now, if you run `netstat`, you should port 80 is listened on by haproxy.
 ```console
 $ netstat -tuln | grep 80
 tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN
-tcp        0      0 127.0.0.1:2380          0.0.0.0:*               LISTEN
+tcp        0      0 127.1.0.1:2380          0.0.0.0:*               LISTEN
 ```
 
 ## FAQ
