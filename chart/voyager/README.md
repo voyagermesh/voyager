@@ -52,7 +52,7 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `voyager.tag`                       | Voyager container image tag                                   | `7.0.0`          |
 | `haproxy.registry`                  | Docker registry used to pull HAProxy image                    | `appscode`            |
 | `haproxy.repository`                | HAProxy container image                                       | `haproxy`             |
-| `haproxy.tag`                       | HAProxy container image tag                                   | `1.8.8-7.0.0-alpine` |
+| `haproxy.tag`                       | HAProxy container image tag                                   | `1.8.9-7.0.0-alpine` |
 | `imagePullSecrets`                  | Specify image pull secrets                                    | `nil` (does not add image pull secrets to deployed pods) |
 | `imagePullPolicy`                   | Image pull policy                                             | `IfNotPresent`        |
 | `cloudProvider`                     | Name of cloud provider                                        | `nil`                 |
