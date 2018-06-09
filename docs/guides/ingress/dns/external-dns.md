@@ -49,7 +49,7 @@ spec:
 
 ## HostPort Ingress
 
-[HostPort](/docs/concepts/ingress-types/hostport.md) type Ingress is supported by external-dns, since version [v0.5.0-alpha.1](https://github.com/kubernetes-incubator/external-dns/releases/tag/v0.5.0-alpha.1). Here, apply `"external-dns.alpha.kubernetes.io/hostname"` annotation on the HAProxy **services**.
+[HostPort](/docs/concepts/ingress-types/hostport.md) type Ingress is [supported by external-dns](https://github.com/kubernetes-incubator/external-dns/blob/v0.5.2/docs/tutorials/hostport.md). Here, apply `"external-dns.alpha.kubernetes.io/hostname"` annotation on the HAProxy **services**.
 
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
