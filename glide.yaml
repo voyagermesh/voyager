@@ -3,51 +3,58 @@ import:
 - package: cloud.google.com/go
   version: v0.2.0
 - package: github.com/Azure/azure-sdk-for-go
-  version: v12.5.0-beta
+  version: v12.4.0-beta
 - package: github.com/Azure/go-autorest
-  version: 9.9.0
+  version: v9.9.0
 - package: github.com/appscode/go
   version: master
-- package: github.com/prometheus/haproxy_exporter
-  repo: https://github.com/appscode/haproxy_exporter.git
-  version: master
 - package: github.com/appscode/pat
+  version: master
 - package: github.com/aws/aws-sdk-go
   version: v1.12.7
 - package: github.com/benbjohnson/clock
 - package: github.com/coreos/prometheus-operator
-  repo: https://github.com/tamalsaha/prometheus-operator.git
-  version: k-1.10
+  version: v0.20.0
+- package: github.com/evanphx/json-patch
+  version: v3.0.0
 - package: github.com/ghodss/yaml
   version: v1.0.0
 - package: github.com/go-openapi/spec
 - package: github.com/golang/glog
 - package: github.com/google/go-cmp
-  version: master
+  version: v0.2.0
 - package: github.com/hashicorp/go-version
   repo: https://github.com/appscode/go-version.git
   vcs: git
   version: master
 - package: github.com/hashicorp/vault
-  version: v0.10.0
+  version: v0.10.2
 - package: github.com/jpillora/go-ogle-analytics
+- package: github.com/json-iterator/go
+  version: 1.1.3
+- package: github.com/mitchellh/go-ps
 - package: github.com/moul/http2curl
 - package: github.com/onsi/ginkgo
-  version: v1.4.0
+  version: v1.5.0
 - package: github.com/onsi/gomega
-  version: v1.3.0
+  version: v1.4.0
 - package: github.com/orcaman/concurrent-map
 - package: github.com/pires/go-proxyproto
+- package: github.com/pkg/errors
+  version: v0.8.0
 - package: github.com/prometheus/client_golang
   version: v0.8.0
 - package: github.com/prometheus/common
   version: 3233b24a36715a2fe36d162260457857a56d672d
+- package: github.com/prometheus/haproxy_exporter
+  repo: https://github.com/appscode/haproxy_exporter.git
+  version: master
 - package: github.com/spf13/afero
-  version: master
+  version: v1.1.0
 - package: github.com/spf13/cobra
-  version: master
+  version: v0.0.3
 - package: github.com/spf13/pflag
-  version: master
+  version: v1.0.1
 - package: github.com/tredoe/osutil
 - package: github.com/xenolf/lego
   repo: https://github.com/appscode/lego.git
@@ -59,26 +66,29 @@ import:
   version: master
 - package: google.golang.org/api
 - package: gopkg.in/gcfg.v1
-  version: v1.2.1
+  version: v1.2.3
 - package: k8s.io/api
   version: kubernetes-1.10.0
-- package: k8s.io/apiserver
-  repo: https://github.com/tamalsaha/apiserver.git
-  version: k-1.10
 - package: k8s.io/apiextensions-apiserver
   version: kubernetes-1.10.0
 - package: k8s.io/apimachinery
-  version: kubernetes-1.10.0
+  repo: https://github.com/pharmer/apimachinery.git
+  vcs: git
+  version: release-1.10
+- package: k8s.io/apiserver
+  repo: https://github.com/tamalsaha/apiserver.git
+  version: k-1.10
 - package: k8s.io/client-go
   version: v7.0.0
+- package: k8s.io/kube-openapi
+  version: master
 - package: k8s.io/kubernetes
   version: v1.10.0
-- package: k8s.io/kube-openapi
 - package: github.com/appscode/kutil
   version: release-7.0
-- package: github.com/appscode/kubernetes-webhook-util
-  version: release-7.0
 - package: github.com/appscode/kube-mon
+  version: release-7.0
+- package: github.com/appscode/kubernetes-webhook-util
   version: release-7.0
 - package: github.com/openshift/api
   version: 09a4e3d50f1aae6613b1b86941ffb8bded21e674
@@ -88,6 +98,8 @@ import:
   version: 93f12e580ece30e0055f030dcd6d239116ff5cb4
 - package: github.com/appscode/ocutil
   version: release-3.10
+- package: github.com/mailru/easyjson
+  version: 2f5df55504ebc322e4d52d34df6a1f5b503bf26d
 testImport:
 - package: github.com/stretchr/testify
-  version: v1.2.1
+  version: v1.2.2
