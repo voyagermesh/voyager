@@ -59,6 +59,7 @@ spec:
         - --upstream=file:///dev/null
         - --http-address=0.0.0.0:4180
         - --cookie-secure=false
+        - --set-xauthrequest=true
         env:
         - name: OAUTH2_PROXY_CLIENT_ID
           value: ...
@@ -88,6 +89,8 @@ spec:
   selector:
     k8s-app: oauth2-proxy
 ```
+
+Here, `--set-xauthrequest` flag sets `X-Auth-Request-User` and `X-Auth-Request-User` headers, which will be forwarded to backend.
 
 Finally create the ingress:
 
@@ -183,6 +186,7 @@ spec:
         - --upstream=file:///dev/null
         - --http-address=0.0.0.0:4180
         - --cookie-secure=true
+        - --set-xauthrequest=true
         env:
         - name: OAUTH2_PROXY_CLIENT_ID
           value: ...
