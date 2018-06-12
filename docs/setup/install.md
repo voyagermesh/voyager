@@ -17,7 +17,7 @@ section_menu_id: setup
 
 Voyager operator can be installed via a script or as a Helm chart.
 
-<ul class="nav nav-tabs" id="myTab" role="tablist">
+<ul class="nav nav-tabs" id="installerTab" role="tablist">
   <li class="nav-item">
     <a class="nav-link active" id="script-tab" data-toggle="tab" href="#script" role="tab" aria-controls="script" aria-selected="true">Script</a>
   </li>
@@ -25,7 +25,7 @@ Voyager operator can be installed via a script or as a Helm chart.
     <a class="nav-link" id="helm-tab" data-toggle="tab" href="#helm" role="tab" aria-controls="helm" aria-selected="false">Helm</a>
   </li>
 </ul>
-<div class="tab-content" id="myTabContent">
+<div class="tab-content" id="installerTabContent">
   <div class="tab-pane fade show active" id="script" role="tabpanel" aria-labelledby="script-tab">
 
 ## Using Script
