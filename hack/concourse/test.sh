@@ -20,20 +20,22 @@ mv pharmer-linux-amd64 /bin/pharmer
 function cleanup_test_stuff {
     set +e
 
+    # uninstall voyager operator
+    pushd $GOPATH/src/github.com/appscode/voyager
+    ./hack/dev-test.sh --provider=digitalocean --docker-registry=appscodeci uninstall
+    popd
+
     # delete cluster on exit
     pharmer get cluster
     pharmer delete cluster $NAME
-    pharmer get cluster
-    sleep 300
-    pharmer apply $NAME
     pharmer apply $NAME
     pharmer get cluster
 
     # delete docker image on exit
-    curl -LO https://raw.githubusercontent.com/appscodelabs/libbuild/master/docker.py
-    chmod +x docker.py
-    ./docker.py del_tag appscodeci voyager $VOYAGER_IMAGE_TAG
-    ./docker.py del_tag appscodeci haproxy $HAPROXY_IMAGE_TAG
+    # curl -LO https://raw.githubusercontent.com/appscodelabs/libbuild/master/docker.py
+    # chmod +x docker.py
+    # ./docker.py del_tag appscodeci voyager $VOYAGER_IMAGE_TAG
+    # ./docker.py del_tag appscodeci haproxy $HAPROXY_IMAGE_TAG
 }
 trap cleanup_test_stuff EXIT
 
@@ -49,17 +51,15 @@ NAME=voyager$(git rev-parse --short HEAD)
 # install dependencies
 ./hack/builddeps.sh
 
-# build and push docker images
-export APPSCODE_ENV=dev
-export DOCKER_REGISTRY=appscodeci
+# set env for dev-test.sh
+# export APPSCODE_ENV=dev
+# export DOCKER_REGISTRY=appscodeci
 
-# build & push voyager docker image
-./hack/docker/voyager/setup.sh
-./hack/docker/voyager/setup.sh push
+# build voyager and haproxy docker image
+./hack/dev-test.sh --provider=digitalocean --docker-registry=appscodeci build
 
-# build & push haproxy docker image
-./hack/docker/haproxy/1.8.8-alpine/setup.sh
-./hack/docker/haproxy/1.8.8-alpine/setup.sh push
+# push voyager and haproxy docker image
+./hack/dev-test.sh --provider=digitalocean --docker-registry=appscodeci build
 
 popd
 
@@ -72,14 +72,13 @@ EOF
 # create cluster using pharmer
 pharmer create credential --from-file=cred.json --provider=DigitalOcean cred
 pharmer create cluster $NAME --provider=digitalocean --zone=nyc1 --nodes=2gb=1 --credential-uid=cred --kubernetes-version=v1.10.0
-pharmer apply $NAME || true
 pharmer apply $NAME
 pharmer use cluster $NAME
-#wait for cluster to be ready
+# wait for cluster to be ready
 sleep 120
 kubectl get nodes
 
-# create storageclass
+# create storage-class
 cat > sc.yaml <<EOF
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -108,5 +107,7 @@ TEST_DNS_DOMAINS=$TEST_DNS_DOMAINS
 EOF
 
 # deploy voyager operator
-source ./hack/deploy/voyager.sh --provider=baremetal
-./hack/make.py test e2e --cloud-provider=baremetal --selfhosted-operator
+./hack/dev-test.sh --provider=digitalocean --docker-registry=appscodeci install
+
+# run voyager e2e tests
+./hack/dev-test.sh --provider=digitalocean --docker-registry=appscodeci e2e
