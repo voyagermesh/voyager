@@ -176,6 +176,8 @@ curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.3.0/
 
 To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/7.1.0/chart/voyager).
 
+</div>
+
 ### Installing in GKE Cluster
 
 If you are installing Voyager on a GKE cluster, you will need cluster admin permissions to install Voyager operator. Run the following command to grant admin permision to the cluster.
