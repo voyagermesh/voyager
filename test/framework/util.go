@@ -13,7 +13,7 @@ func (r *rootInvocation) UniqueName() string {
 
 func (r *Framework) ServerSANs() cert.AltNames {
 	return cert.AltNames{
-		IPs:      []net.IP{net.ParseIP("127.0.0.1"), net.ParseIP("192.168.99.100")},
+		IPs:      []net.IP{net.ParseIP("127.1.0.1"), net.ParseIP("192.168.99.100")},
 		DNSNames: []string{TestDomain},
 	}
 }

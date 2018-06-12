@@ -10,7 +10,7 @@ import (
 
 const (
 	NO_PROTOCOL = "There is no spoon"
-	IP4_ADDR    = "127.0.0.1"
+	IP4_ADDR    = "127.1.0.1"
 	IP6_ADDR    = "::1"
 	PORT        = 65533
 )
@@ -21,7 +21,7 @@ var (
 )
 
 func TestTCPServer(t *testing.T) {
-	resp, err := NewTestTCPClient("127.0.0.1:6767").DoWithRetry(5)
+	resp, err := NewTestTCPClient("127.1.0.1:6767").DoWithRetry(5)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -29,7 +29,7 @@ func TestTCPServer(t *testing.T) {
 }
 
 func TestProxyV1Server(t *testing.T) {
-	resp, err := NewTestTCPClient("127.0.0.1:6767").
+	resp, err := NewTestTCPClient("127.1.0.1:6767").
 		WithProxyHeader(&proxyproto.Header{
 			Version:            1,
 			Command:            proxyproto.PROXY,
@@ -46,7 +46,7 @@ func TestProxyV1Server(t *testing.T) {
 }
 
 func TestProxyV2Server(t *testing.T) {
-	resp, err := NewTestTCPClient("127.0.0.1:6767").
+	resp, err := NewTestTCPClient("127.1.0.1:6767").
 		WithProxyHeader(&proxyproto.Header{
 			Version:            2,
 			Command:            proxyproto.PROXY,

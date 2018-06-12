@@ -1,17 +1,17 @@
 ---
 title: Certificate | Voyager
 menu:
-  product_voyager_7.0.0:
+  product_voyager_7.1.0:
     identifier: readme-certificate
     name: Readme
     parent: certificate-guides
     weight: -1
 product_name: voyager
-menu_name: product_voyager_7.0.0
+menu_name: product_voyager_7.1.0
 section_menu_id: guides
-url: /products/voyager/7.0.0/guides/certificate/
+url: /products/voyager/7.1.0/guides/certificate/
 aliases:
-  - /products/voyager/7.0.0/guides/certificate/README/
+  - /products/voyager/7.1.0/guides/certificate/README/
 ---
 
 # Guides
