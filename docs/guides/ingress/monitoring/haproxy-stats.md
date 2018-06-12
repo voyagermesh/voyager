@@ -28,7 +28,7 @@ is not exposed to the internet.
 
 ## Accessing HAProxy Stats
 
-To access the HAPRoxy stats webpage, you can use port forwarding feature in kubectl. This article shows you the relevant stepos using a minikube cluster.
+To access the HAPRoxy stats webpage, you can use port forwarding feature in kubectl. This article shows you the relevant steps using a minikube cluster.
 
 
 ### Before You Begin
