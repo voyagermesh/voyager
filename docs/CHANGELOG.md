@@ -21,16 +21,35 @@ aliases:
 
 [Full Changelog](https://github.com/appscode/voyager/compare/7.1.0...HEAD)
 
+**Merged pull requests:**
+
+- haproxy-stats.md typo fix [\#1127](https://github.com/appscode/voyager/pull/1127) ([gavvvr](https://github.com/gavvvr))
+
+## [7.1.0](https://github.com/appscode/voyager/tree/7.1.0) (2018-06-12)
+[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0...7.1.0)
+
 **Fixed bugs:**
 
+- Deleting voyager gets stuck [\#1098](https://github.com/appscode/voyager/issues/1098)
 - Port 443 is opened with aws cert manager even only TCP is used [\#707](https://github.com/appscode/voyager/issues/707)
+- acme-challenge .well-known path is getting redirected [\#1097](https://github.com/appscode/voyager/issues/1097)
+- CRD registration fails with --restrict-to-namespace  [\#1083](https://github.com/appscode/voyager/issues/1083)
+- Fix formatting errors in validator [\#1085](https://github.com/appscode/voyager/pull/1085) ([tamalsaha](https://github.com/tamalsaha))
 
 **Closed issues:**
 
 - Add metallb support for ExternalTrafficPolicy [\#1116](https://github.com/appscode/voyager/issues/1116)
 - Add support for metallb in install script [\#1115](https://github.com/appscode/voyager/issues/1115)
+- Add load-balancer-ip annotation support for metallb. [\#1105](https://github.com/appscode/voyager/issues/1105)
+- Update timeout keys [\#1103](https://github.com/appscode/voyager/issues/1103)
+- ReplicaSet pod always in Terminating status in GKE [\#1095](https://github.com/appscode/voyager/issues/1095)
+- Problem with TCP Ingress on GKE [\#1084](https://github.com/appscode/voyager/issues/1084)
 - Fix HAProxy config checks [\#1028](https://github.com/appscode/voyager/issues/1028)
 - Inject side-car to configure sysctl [\#758](https://github.com/appscode/voyager/issues/758)
+- oauth2 to accept self-signed certificates in backend [\#1107](https://github.com/appscode/voyager/issues/1107)
+-  get username from oauth2\_proxy and forward this to protected backend [\#1102](https://github.com/appscode/voyager/issues/1102)
+- Document how to setup kube dashboard with Voyager [\#1075](https://github.com/appscode/voyager/issues/1075)
+- Document using Google oauth with Voyager [\#1074](https://github.com/appscode/voyager/issues/1074)
 
 **Merged pull requests:**
 
@@ -40,31 +59,9 @@ aliases:
 - Fix documentation about external-dns service [\#1120](https://github.com/appscode/voyager/pull/1120) ([giovannicandido](https://github.com/giovannicandido))
 - Add support for aks [\#1119](https://github.com/appscode/voyager/pull/1119) ([tamalsaha](https://github.com/tamalsaha))
 - Additional metallb support [\#1117](https://github.com/appscode/voyager/pull/1117) ([zsandrus](https://github.com/zsandrus))
+- Forward X-Auth-Request headers in oauth [\#1114](https://github.com/appscode/voyager/pull/1114) ([diptadas](https://github.com/diptadas))
 - Added digitalocean & Linode provider to installer script [\#1113](https://github.com/appscode/voyager/pull/1113) ([diptadas](https://github.com/diptadas))
-
-## [7.1.0](https://github.com/appscode/voyager/tree/7.1.0) (2018-06-07)
-[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0...7.1.0)
-
-**Fixed bugs:**
-
-- Deleting voyager gets stuck [\#1098](https://github.com/appscode/voyager/issues/1098)
-- acme-challenge .well-known path is getting redirected [\#1097](https://github.com/appscode/voyager/issues/1097)
-- CRD registration fails with --restrict-to-namespace  [\#1083](https://github.com/appscode/voyager/issues/1083)
-- Fix formatting errors in validator [\#1085](https://github.com/appscode/voyager/pull/1085) ([tamalsaha](https://github.com/tamalsaha))
-
-**Closed issues:**
-
-- Add load-balancer-ip annotation support for metallb. [\#1105](https://github.com/appscode/voyager/issues/1105)
-- Update timeout keys [\#1103](https://github.com/appscode/voyager/issues/1103)
-- ReplicaSet pod always in Terminating status in GKE [\#1095](https://github.com/appscode/voyager/issues/1095)
-- Problem with TCP Ingress on GKE [\#1084](https://github.com/appscode/voyager/issues/1084)
-- oauth2 to accept self-signed certificates in backend [\#1107](https://github.com/appscode/voyager/issues/1107)
--  get username from oauth2\_proxy and forward this to protected backend [\#1102](https://github.com/appscode/voyager/issues/1102)
-- Document how to setup kube dashboard with Voyager [\#1075](https://github.com/appscode/voyager/issues/1075)
-- Document using Google oauth with Voyager [\#1074](https://github.com/appscode/voyager/issues/1074)
-
-**Merged pull requests:**
-
+- Prepare docs for 7.1.0 release [\#1111](https://github.com/appscode/voyager/pull/1111) ([tamalsaha](https://github.com/tamalsaha))
 - Add LoadBalancer type ingress support for DO and Linode [\#1109](https://github.com/appscode/voyager/pull/1109) ([tamalsaha](https://github.com/tamalsaha))
 - Add metallb to providers that can have LoadBalancerIP set. [\#1106](https://github.com/appscode/voyager/pull/1106) ([zsandrus](https://github.com/zsandrus))
 - Update timeout key list [\#1104](https://github.com/appscode/voyager/pull/1104) ([tamalsaha](https://github.com/tamalsaha))
@@ -74,7 +71,9 @@ aliases:
 - Wait for loadbalancer ip assignment in e2e tests [\#1090](https://github.com/appscode/voyager/pull/1090) ([diptadas](https://github.com/diptadas))
 - Added test for service auth annotation updates [\#1089](https://github.com/appscode/voyager/pull/1089) ([diptadas](https://github.com/diptadas))
 - Detect haproxy-image-tag in dev mode [\#1082](https://github.com/appscode/voyager/pull/1082) ([diptadas](https://github.com/diptadas))
+- Add togglable tabs for Installation: Script & Helm [\#1125](https://github.com/appscode/voyager/pull/1125) ([sajibcse68](https://github.com/sajibcse68))
 - Apply validation rules to ingress names [\#1110](https://github.com/appscode/voyager/pull/1110) ([tamalsaha](https://github.com/tamalsaha))
+- Concourse tests [\#1081](https://github.com/appscode/voyager/pull/1081) ([tahsinrahman](https://github.com/tahsinrahman))
 
 ## [5.0.0](https://github.com/appscode/voyager/tree/5.0.0) (2018-06-01)
 [Full Changelog](https://github.com/appscode/voyager/compare/7.0.0...5.0.0)
