@@ -50,7 +50,7 @@ install() {
 
 e2e() {
     echo "===running voyager e2e tests==="
-    /hack/make.py test e2e --cloud-provider=${provider} --selfhosted-operator
+    ./hack/make.py test e2e --cloud-provider=${provider} --selfhosted-operator
 }
 
 uninstall() {
