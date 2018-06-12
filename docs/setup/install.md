@@ -17,6 +17,17 @@ section_menu_id: setup
 
 Voyager operator can be installed via a script or as a Helm chart.
 
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="script-tab" data-toggle="tab" href="#script" role="tab" aria-controls="script" aria-selected="true">Script</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="helm-tab" data-toggle="tab" href="#helm" role="tab" aria-controls="helm" aria-selected="false">Helm</a>
+  </li>
+</ul>
+<div class="tab-content" id="myTabContent">
+  <div class="tab-pane fade show active" id="script" role="tabpanel" aria-labelledby="script-tab">
+
 ## Using Script
 
 To install Voyager in your Kubernetes cluster, pick the appropriate cluster provider and run the following command:
@@ -119,6 +130,9 @@ $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.1.0/hack/deplo
 ```
 
 To use custom templates to render HAProxy configuration, visit [here](/docs/guides/ingress/configuration/custom-templates.md).
+
+</div>
+<div class="tab-pane fade" id="helm" role="tabpanel" aria-labelledby="helm-tab">
 
 ## Using Helm
 
