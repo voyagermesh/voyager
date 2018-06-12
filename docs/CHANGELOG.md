@@ -2,26 +2,168 @@
 title: Changelog | Voyager
 description: Changelog
 menu:
-  product_voyager_7.0.0:
+  product_voyager_7.1.0:
     identifier: changelog-voyager
     name: Changelog
     parent: welcome
     weight: 10
 product_name: voyager
-menu_name: product_voyager_7.0.0
+menu_name: product_voyager_7.1.0
 section_menu_id: welcome
-url: /products/voyager/7.0.0/welcome/changelog/
+url: /products/voyager/7.1.0/welcome/changelog/
 aliases:
-  - /products/voyager/7.0.0/CHANGELOG/
+  - /products/voyager/7.1.0/CHANGELOG/
 ---
 
 # Change Log
+
+## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
+
+[Full Changelog](https://github.com/appscode/voyager/compare/7.1.0...HEAD)
+
+**Fixed bugs:**
+
+- Port 443 is opened with aws cert manager even only TCP is used [\#707](https://github.com/appscode/voyager/issues/707)
+
+**Closed issues:**
+
+- Add metallb support for ExternalTrafficPolicy [\#1116](https://github.com/appscode/voyager/issues/1116)
+- Add support for metallb in install script [\#1115](https://github.com/appscode/voyager/issues/1115)
+- Fix HAProxy config checks [\#1028](https://github.com/appscode/voyager/issues/1028)
+- Inject side-car to configure sysctl [\#758](https://github.com/appscode/voyager/issues/758)
+
+**Merged pull requests:**
+
+- Upgrade to HAProxy 1.8.9 [\#1124](https://github.com/appscode/voyager/pull/1124) ([tamalsaha](https://github.com/tamalsaha))
+- Revendor dependencies [\#1123](https://github.com/appscode/voyager/pull/1123) ([tamalsaha](https://github.com/tamalsaha))
+- Stop processing http request for LE well-known acme challenge path [\#1121](https://github.com/appscode/voyager/pull/1121) ([tamalsaha](https://github.com/tamalsaha))
+- Fix documentation about external-dns service [\#1120](https://github.com/appscode/voyager/pull/1120) ([giovannicandido](https://github.com/giovannicandido))
+- Add support for aks [\#1119](https://github.com/appscode/voyager/pull/1119) ([tamalsaha](https://github.com/tamalsaha))
+- Additional metallb support [\#1117](https://github.com/appscode/voyager/pull/1117) ([zsandrus](https://github.com/zsandrus))
+- Added digitalocean & Linode provider to installer script [\#1113](https://github.com/appscode/voyager/pull/1113) ([diptadas](https://github.com/diptadas))
+
+## [7.1.0](https://github.com/appscode/voyager/tree/7.1.0) (2018-06-07)
+[Full Changelog](https://github.com/appscode/voyager/compare/5.0.0...7.1.0)
+
+**Fixed bugs:**
+
+- Deleting voyager gets stuck [\#1098](https://github.com/appscode/voyager/issues/1098)
+- acme-challenge .well-known path is getting redirected [\#1097](https://github.com/appscode/voyager/issues/1097)
+- CRD registration fails with --restrict-to-namespace  [\#1083](https://github.com/appscode/voyager/issues/1083)
+- Fix formatting errors in validator [\#1085](https://github.com/appscode/voyager/pull/1085) ([tamalsaha](https://github.com/tamalsaha))
+
+**Closed issues:**
+
+- Add load-balancer-ip annotation support for metallb. [\#1105](https://github.com/appscode/voyager/issues/1105)
+- Update timeout keys [\#1103](https://github.com/appscode/voyager/issues/1103)
+- ReplicaSet pod always in Terminating status in GKE [\#1095](https://github.com/appscode/voyager/issues/1095)
+- Problem with TCP Ingress on GKE [\#1084](https://github.com/appscode/voyager/issues/1084)
+- oauth2 to accept self-signed certificates in backend [\#1107](https://github.com/appscode/voyager/issues/1107)
+-  get username from oauth2\_proxy and forward this to protected backend [\#1102](https://github.com/appscode/voyager/issues/1102)
+- Document how to setup kube dashboard with Voyager [\#1075](https://github.com/appscode/voyager/issues/1075)
+- Document using Google oauth with Voyager [\#1074](https://github.com/appscode/voyager/issues/1074)
+
+**Merged pull requests:**
+
+- Add LoadBalancer type ingress support for DO and Linode [\#1109](https://github.com/appscode/voyager/pull/1109) ([tamalsaha](https://github.com/tamalsaha))
+- Add metallb to providers that can have LoadBalancerIP set. [\#1106](https://github.com/appscode/voyager/pull/1106) ([zsandrus](https://github.com/zsandrus))
+- Update timeout key list [\#1104](https://github.com/appscode/voyager/pull/1104) ([tamalsaha](https://github.com/tamalsaha))
+- Document how to setup kube dashboard with Voyager [\#1101](https://github.com/appscode/voyager/pull/1101) ([diptadas](https://github.com/diptadas))
+- Document using Google oauth with Voyager [\#1100](https://github.com/appscode/voyager/pull/1100) ([diptadas](https://github.com/diptadas))
+- Update version for 1.7 [\#1094](https://github.com/appscode/voyager/pull/1094) ([tamalsaha](https://github.com/tamalsaha))
+- Wait for loadbalancer ip assignment in e2e tests [\#1090](https://github.com/appscode/voyager/pull/1090) ([diptadas](https://github.com/diptadas))
+- Added test for service auth annotation updates [\#1089](https://github.com/appscode/voyager/pull/1089) ([diptadas](https://github.com/diptadas))
+- Detect haproxy-image-tag in dev mode [\#1082](https://github.com/appscode/voyager/pull/1082) ([diptadas](https://github.com/diptadas))
+- Apply validation rules to ingress names [\#1110](https://github.com/appscode/voyager/pull/1110) ([tamalsaha](https://github.com/tamalsaha))
+
+## [5.0.0](https://github.com/appscode/voyager/tree/5.0.0) (2018-06-01)
+[Full Changelog](https://github.com/appscode/voyager/compare/7.0.0...5.0.0)
+
+**Implemented enhancements:**
+
+- Allow configuration of error files [\#525](https://github.com/appscode/voyager/issues/525)
+- Don't require spec.providerCredentialSecretName for own provider [\#366](https://github.com/appscode/voyager/issues/366)
+- Limit Connections [\#571](https://github.com/appscode/voyager/pull/571) ([sadlil](https://github.com/sadlil))
+- Reimplement certificate controller [\#506](https://github.com/appscode/voyager/pull/506) ([sadlil](https://github.com/sadlil))
+- Fix HTTP Provider Certificate [\#502](https://github.com/appscode/voyager/pull/502) ([sadlil](https://github.com/sadlil))
+- Add ssl passthrough support for annotations [\#501](https://github.com/appscode/voyager/pull/501) ([sadlil](https://github.com/sadlil))
+- Add Max Body size and CORS annotations [\#500](https://github.com/appscode/voyager/pull/500) ([sadlil](https://github.com/sadlil))
+- Add support for affinity annotations for ingress [\#493](https://github.com/appscode/voyager/pull/493) ([sadlil](https://github.com/sadlil))
+
+**Fixed bugs:**
+
+- failed calling admission webhook "admission.voyager.appscode.com" [\#1080](https://github.com/appscode/voyager/issues/1080)
+- Upgrade Prometheus Operator [\#608](https://github.com/appscode/voyager/issues/608)
+- Test wildcard domains work with TLS [\#598](https://github.com/appscode/voyager/issues/598)
+- Watch secrets and update the config when Basic auth changes [\#560](https://github.com/appscode/voyager/issues/560)
+- Using HTTP challenge provider results in pod stuck at ContainerCreating stage [\#455](https://github.com/appscode/voyager/issues/455)
+- Avoid concurrency for NewACMEClient [\#382](https://github.com/appscode/voyager/issues/382)
+- ProviderCredential has to be created before Certificate object [\#370](https://github.com/appscode/voyager/issues/370)
+- Make AWS\_ACCESS\_KEY\_ID optional [\#644](https://github.com/appscode/voyager/pull/644) ([tamalsaha](https://github.com/tamalsaha))
+- All Tests and Bug fixes for release-4 [\#628](https://github.com/appscode/voyager/pull/628) ([sadlil](https://github.com/sadlil))
+- Don't reload HAProxy using tls mounter setup phase [\#610](https://github.com/appscode/voyager/pull/610) ([tamalsaha](https://github.com/tamalsaha))
+- Inject well-known/acme-challenge path at the top of rules [\#588](https://github.com/appscode/voyager/pull/588) ([tamalsaha](https://github.com/tamalsaha))
+- Fix NodePort mode in GKE [\#575](https://github.com/appscode/voyager/pull/575) ([tamalsaha](https://github.com/tamalsaha))
+- Add PATCH permission and fix deployment RBAC spec [\#568](https://github.com/appscode/voyager/pull/568) ([tamalsaha](https://github.com/tamalsaha))
+- Fix RBAC permissions for apps/v1beta1 Deployments [\#565](https://github.com/appscode/voyager/pull/565) ([tamalsaha](https://github.com/tamalsaha))
+- Fix cert controller bugs [\#541](https://github.com/appscode/voyager/pull/541) ([sadlil](https://github.com/sadlil))
+
+**Closed issues:**
+
+- 7.0.0 chart fails on already existing clusterrole [\#1092](https://github.com/appscode/voyager/issues/1092)
+- Basic auth doesn't work 5.0.0-rc.11 [\#1079](https://github.com/appscode/voyager/issues/1079)
+- loadBalancerIP is ignored in azure mode [\#572](https://github.com/appscode/voyager/issues/572)
+- NodePort mode adds port to host header rule, but shouldn't [\#552](https://github.com/appscode/voyager/issues/552)
+- Test 3.2.0 to 5.0.0 migration is smooth [\#527](https://github.com/appscode/voyager/issues/527)
+- Bug: not creating RBAC roles in NodePort mode [\#524](https://github.com/appscode/voyager/issues/524)
+- Allow configuring options for each server entry [\#516](https://github.com/appscode/voyager/issues/516)
+- Redesign Certificate CRD [\#505](https://github.com/appscode/voyager/issues/505)
+- Upgrade haproxy\_exporter to 0.8.0 [\#504](https://github.com/appscode/voyager/issues/504)
+- \[Feature request\] Support for tolerations in ingress pod spec [\#503](https://github.com/appscode/voyager/issues/503)
+- DNS resolver test is timing out [\#484](https://github.com/appscode/voyager/issues/484)
+- Use Deployment for HostPort mode [\#446](https://github.com/appscode/voyager/issues/446)
+- Allow users to provide custom templates [\#444](https://github.com/appscode/voyager/issues/444)
+- Add Voyager to official ingress project docs. [\#437](https://github.com/appscode/voyager/issues/437)
+- Basic Auth annotations implementation [\#424](https://github.com/appscode/voyager/issues/424)
+- Set DNSpolicy to ClusterFirstWithHostNet in HostPort mode [\#417](https://github.com/appscode/voyager/issues/417)
+- se fields service.spec.externalTrafficPolicy and service.spec.healthCheckNodePort instead [\#415](https://github.com/appscode/voyager/issues/415)
+- Validate certificates [\#393](https://github.com/appscode/voyager/issues/393)
+- Document AWS IAM permissions for LE DNS validation. [\#337](https://github.com/appscode/voyager/issues/337)
+- Use kubernetes/code-generator to generate clients [\#329](https://github.com/appscode/voyager/issues/329)
+- Install Voyager as critical addon [\#292](https://github.com/appscode/voyager/issues/292)
+- Use OwnerReference [\#285](https://github.com/appscode/voyager/issues/285)
+- Bring annotation parity with Nginx Ingress [\#278](https://github.com/appscode/voyager/issues/278)
+- Update GCP annotation for preserving source IP [\#276](https://github.com/appscode/voyager/issues/276)
+- Switch to CustomResourceDefinitions [\#239](https://github.com/appscode/voyager/issues/239)
+- Use Deployments from apps/v1beta1 [\#238](https://github.com/appscode/voyager/issues/238)
+
+**Merged pull requests:**
+
+- Prepare docs for 5.0.0 release [\#1093](https://github.com/appscode/voyager/pull/1093) ([tamalsaha](https://github.com/tamalsaha))
+- Fix installer script for --restrict-to-namespace mode [\#1091](https://github.com/appscode/voyager/pull/1091) ([tamalsaha](https://github.com/tamalsaha))
+- Use yaml file to create service account in installer script [\#1088](https://github.com/appscode/voyager/pull/1088) ([tamalsaha](https://github.com/tamalsaha))
+- Avoid waiting for api services when not installed [\#1087](https://github.com/appscode/voyager/pull/1087) ([tamalsaha](https://github.com/tamalsaha))
+-  Trigger update when service auth-annotations changed [\#1086](https://github.com/appscode/voyager/pull/1086) ([diptadas](https://github.com/diptadas))
+- Update developer-guide [\#642](https://github.com/appscode/voyager/pull/642) ([sadlil](https://github.com/sadlil))
+- Support TLS auth annotations [\#621](https://github.com/appscode/voyager/pull/621) ([tamalsaha](https://github.com/tamalsaha))
+- Support Basic auth in FrontendRules [\#617](https://github.com/appscode/voyager/pull/617) ([tamalsaha](https://github.com/tamalsaha))
+- Support ingress.kubernetes.io/ssl-redirect [\#616](https://github.com/appscode/voyager/pull/616) ([tamalsaha](https://github.com/tamalsaha))
+- Secret Update reflection [\#605](https://github.com/appscode/voyager/pull/605) ([sadlil](https://github.com/sadlil))
+- Add LocalTypedReference type [\#579](https://github.com/appscode/voyager/pull/579) ([tamalsaha](https://github.com/tamalsaha))
+- Add ingress class support for helm chart [\#559](https://github.com/appscode/voyager/pull/559) ([xcompass](https://github.com/xcompass))
+- Docs for 4.0 - part 1 [\#556](https://github.com/appscode/voyager/pull/556) ([sadlil](https://github.com/sadlil))
+- Don't log error if to-be-deleted object is missing. [\#554](https://github.com/appscode/voyager/pull/554) ([tamalsaha](https://github.com/tamalsaha))
+- Generate ugorji stuff [\#553](https://github.com/appscode/voyager/pull/553) ([tamalsaha](https://github.com/tamalsaha))
+- Add owner reference for Ingress [\#530](https://github.com/appscode/voyager/pull/530) ([tamalsaha](https://github.com/tamalsaha))
+- Add HAProxy 1.7.9 [\#522](https://github.com/appscode/voyager/pull/522) ([tamalsaha](https://github.com/tamalsaha))
+- Add support for `ingress.kubernetes.io/session-cookie-hash`. [\#497](https://github.com/appscode/voyager/pull/497) ([sadlil](https://github.com/sadlil))
 
 ## [7.0.0](https://github.com/appscode/voyager/tree/7.0.0) (2018-05-28)
 [Full Changelog](https://github.com/appscode/voyager/compare/7.0.0-rc.3...7.0.0)
 
 **Merged pull requests:**
 
+- Update changelog [\#1077](https://github.com/appscode/voyager/pull/1077) ([tamalsaha](https://github.com/tamalsaha))
 - Prepare 7.0.0 release [\#1076](https://github.com/appscode/voyager/pull/1076) ([tamalsaha](https://github.com/tamalsaha))
 
 ## [7.0.0-rc.3](https://github.com/appscode/voyager/tree/7.0.0-rc.3) (2018-05-23)
@@ -336,7 +478,6 @@ aliases:
 - Support direct scrapping via Prometheus [\#593](https://github.com/appscode/voyager/issues/593)
 - Use field selectors in TLS mounters [\#558](https://github.com/appscode/voyager/issues/558)
 - Update Voyager to use workqueue [\#535](https://github.com/appscode/voyager/issues/535)
-- Test 3.2.0 to 5.0.0 migration is smooth [\#527](https://github.com/appscode/voyager/issues/527)
 - Change BackendRule to BackendRules [\#468](https://github.com/appscode/voyager/issues/468)
 - Use Kutil based PATCH to apply changes [\#457](https://github.com/appscode/voyager/issues/457)
 - Use Secret to store HAProxy.conf [\#447](https://github.com/appscode/voyager/issues/447)
@@ -486,8 +627,6 @@ aliases:
 
 - List of created ingresses? [\#745](https://github.com/appscode/voyager/issues/745)
 - create san cert with panic [\#744](https://github.com/appscode/voyager/issues/744)
-- \[Feature request\] Support for tolerations in ingress pod spec [\#503](https://github.com/appscode/voyager/issues/503)
-- Document AWS IAM permissions for LE DNS validation. [\#337](https://github.com/appscode/voyager/issues/337)
 
 **Merged pull requests:**
 
@@ -656,16 +795,11 @@ aliases:
 - Update prometheus-operator to implement DeepCopy\(\) [\#652](https://github.com/appscode/voyager/pull/652) ([tamalsaha](https://github.com/tamalsaha))
 - Fix NPE in time.Equal method [\#651](https://github.com/appscode/voyager/pull/651) ([tamalsaha](https://github.com/tamalsaha))
 - Change `k8s.io/api/core/v1` pkg alias to core [\#650](https://github.com/appscode/voyager/pull/650) ([tamalsaha](https://github.com/tamalsaha))
-- Update developer-guide [\#642](https://github.com/appscode/voyager/pull/642) ([sadlil](https://github.com/sadlil))
 - Use client-go 5.x [\#629](https://github.com/appscode/voyager/pull/629) ([tamalsaha](https://github.com/tamalsaha))
 - Generate openapi spec [\#596](https://github.com/appscode/voyager/pull/596) ([tamalsaha](https://github.com/tamalsaha))
 
 ## [4.0.0-rc.18](https://github.com/appscode/voyager/tree/4.0.0-rc.18) (2017-10-18)
 [Full Changelog](https://github.com/appscode/voyager/compare/4.0.0-rc.17...4.0.0-rc.18)
-
-**Fixed bugs:**
-
-- Make AWS\_ACCESS\_KEY\_ID optional [\#644](https://github.com/appscode/voyager/pull/644) ([tamalsaha](https://github.com/tamalsaha))
 
 **Closed issues:**
 
@@ -673,10 +807,6 @@ aliases:
 
 ## [4.0.0-rc.17](https://github.com/appscode/voyager/tree/4.0.0-rc.17) (2017-10-18)
 [Full Changelog](https://github.com/appscode/voyager/compare/4.0.0-rc.16...4.0.0-rc.17)
-
-**Fixed bugs:**
-
-- Test wildcard domains work with TLS [\#598](https://github.com/appscode/voyager/issues/598)
 
 **Closed issues:**
 
@@ -715,10 +845,6 @@ aliases:
 ## [4.0.0-rc.14](https://github.com/appscode/voyager/tree/4.0.0-rc.14) (2017-10-16)
 [Full Changelog](https://github.com/appscode/voyager/compare/4.0.0-rc.13...4.0.0-rc.14)
 
-**Fixed bugs:**
-
-- All Tests and Bug fixes for release-4 [\#628](https://github.com/appscode/voyager/pull/628) ([sadlil](https://github.com/sadlil))
-
 **Merged pull requests:**
 
 - Rename SecretName to CertFile [\#632](https://github.com/appscode/voyager/pull/632) ([tamalsaha](https://github.com/tamalsaha))
@@ -737,15 +863,9 @@ aliases:
 ## [4.0.0-rc.12](https://github.com/appscode/voyager/tree/4.0.0-rc.12) (2017-10-13)
 [Full Changelog](https://github.com/appscode/voyager/compare/4.0.0-rc.11...4.0.0-rc.12)
 
-**Closed issues:**
-
-- Add Voyager to official ingress project docs. [\#437](https://github.com/appscode/voyager/issues/437)
-
 **Merged pull requests:**
 
 - Prepare docs for 4.0.0-rc.12 [\#622](https://github.com/appscode/voyager/pull/622) ([tamalsaha](https://github.com/tamalsaha))
-- Support TLS auth annotations [\#621](https://github.com/appscode/voyager/pull/621) ([tamalsaha](https://github.com/tamalsaha))
-- Support Basic auth in FrontendRules [\#617](https://github.com/appscode/voyager/pull/617) ([tamalsaha](https://github.com/tamalsaha))
 
 ## [4.0.0-rc.11](https://github.com/appscode/voyager/tree/4.0.0-rc.11) (2017-10-12)
 [Full Changelog](https://github.com/appscode/voyager/compare/4.0.0-rc.10...4.0.0-rc.11)
@@ -756,8 +876,6 @@ aliases:
 
 **Fixed bugs:**
 
-- Upgrade Prometheus Operator [\#608](https://github.com/appscode/voyager/issues/608)
-- Watch secrets and update the config when Basic auth changes [\#560](https://github.com/appscode/voyager/issues/560)
 - TLS auth [\#606](https://github.com/appscode/voyager/pull/606) ([sadlil](https://github.com/sadlil))
 
 **Closed issues:**
@@ -770,17 +888,12 @@ aliases:
 
 - Allow restricting voyager in a single namespace [\#619](https://github.com/appscode/voyager/pull/619) ([tamalsaha](https://github.com/tamalsaha))
 - Add support for CRL when using TLS Auth [\#618](https://github.com/appscode/voyager/pull/618) ([tamalsaha](https://github.com/tamalsaha))
-- Support ingress.kubernetes.io/ssl-redirect [\#616](https://github.com/appscode/voyager/pull/616) ([tamalsaha](https://github.com/tamalsaha))
 - Remove support for ingress.appscode.com/egress-points annotations [\#615](https://github.com/appscode/voyager/pull/615) ([tamalsaha](https://github.com/tamalsaha))
 - Add Wildcard domain Test [\#614](https://github.com/appscode/voyager/pull/614) ([sadlil](https://github.com/sadlil))
 - Move CRD definition to api folder. [\#613](https://github.com/appscode/voyager/pull/613) ([tamalsaha](https://github.com/tamalsaha))
 
 ## [4.0.0-rc.10](https://github.com/appscode/voyager/tree/4.0.0-rc.10) (2017-10-10)
 [Full Changelog](https://github.com/appscode/voyager/compare/4.0.0-rc.9...4.0.0-rc.10)
-
-**Fixed bugs:**
-
-- Don't reload HAProxy using tls mounter setup phase [\#610](https://github.com/appscode/voyager/pull/610) ([tamalsaha](https://github.com/tamalsaha))
 
 **Closed issues:**
 
@@ -792,15 +905,10 @@ aliases:
 - Prepare docs for 4.0.0-rc.10 release [\#611](https://github.com/appscode/voyager/pull/611) ([tamalsaha](https://github.com/tamalsaha))
 - Update Prometheus operator dependency to 0.13.0 [\#609](https://github.com/appscode/voyager/pull/609) ([tamalsaha](https://github.com/tamalsaha))
 - Add doc showing how to detect operator version [\#607](https://github.com/appscode/voyager/pull/607) ([tamalsaha](https://github.com/tamalsaha))
-- Secret Update reflection [\#605](https://github.com/appscode/voyager/pull/605) ([sadlil](https://github.com/sadlil))
 - Use .test TLD [\#601](https://github.com/appscode/voyager/pull/601) ([tamalsaha](https://github.com/tamalsaha))
 
 ## [4.0.0-rc.9](https://github.com/appscode/voyager/tree/4.0.0-rc.9) (2017-10-08)
 [Full Changelog](https://github.com/appscode/voyager/compare/4.0.0-rc.8...4.0.0-rc.9)
-
-**Implemented enhancements:**
-
-- Limit Connections [\#571](https://github.com/appscode/voyager/pull/571) ([sadlil](https://github.com/sadlil))
 
 **Fixed bugs:**
 
@@ -832,39 +940,23 @@ aliases:
 
 - LE: Too many invalid authorizations recently [\#587](https://github.com/appscode/voyager/issues/587)
 - Fix HTTP challenger [\#589](https://github.com/appscode/voyager/pull/589) ([tamalsaha](https://github.com/tamalsaha))
-- Inject well-known/acme-challenge path at the top of rules [\#588](https://github.com/appscode/voyager/pull/588) ([tamalsaha](https://github.com/tamalsaha))
 
 ## [4.0.0-rc.5](https://github.com/appscode/voyager/tree/4.0.0-rc.5) (2017-10-06)
 [Full Changelog](https://github.com/appscode/voyager/compare/4.0.0-rc.4...4.0.0-rc.5)
-
-**Implemented enhancements:**
-
-- Allow configuration of error files [\#525](https://github.com/appscode/voyager/issues/525)
 
 **Fixed bugs:**
 
 - Support static ip for Azure/ACS cluster. [\#584](https://github.com/appscode/voyager/pull/584) ([tamalsaha](https://github.com/tamalsaha))
 
-**Closed issues:**
-
-- loadBalancerIP is ignored in azure mode [\#572](https://github.com/appscode/voyager/issues/572)
-- Allow configuring options for each server entry [\#516](https://github.com/appscode/voyager/issues/516)
-- Basic Auth annotations implementation [\#424](https://github.com/appscode/voyager/issues/424)
-
 **Merged pull requests:**
 
 - Prepare docs for 4.0.0-rc.5 [\#585](https://github.com/appscode/voyager/pull/585) ([tamalsaha](https://github.com/tamalsaha))
 - Rename SecretRef to TLSRef [\#580](https://github.com/appscode/voyager/pull/580) ([tamalsaha](https://github.com/tamalsaha))
-- Add LocalTypedReference type [\#579](https://github.com/appscode/voyager/pull/579) ([tamalsaha](https://github.com/tamalsaha))
 - Add errofiles annotation [\#574](https://github.com/appscode/voyager/pull/574) ([diptadas](https://github.com/diptadas))
 - Add force-ssl-redirect annotation [\#563](https://github.com/appscode/voyager/pull/563) ([diptadas](https://github.com/diptadas))
 
 ## [4.0.0-rc.4](https://github.com/appscode/voyager/tree/4.0.0-rc.4) (2017-10-05)
 [Full Changelog](https://github.com/appscode/voyager/compare/3.2.2...4.0.0-rc.4)
-
-**Fixed bugs:**
-
-- Fix NodePort mode in GKE [\#575](https://github.com/appscode/voyager/pull/575) ([tamalsaha](https://github.com/tamalsaha))
 
 **Closed issues:**
 
@@ -884,11 +976,6 @@ aliases:
 ## [4.0.0-rc.3](https://github.com/appscode/voyager/tree/4.0.0-rc.3) (2017-10-04)
 [Full Changelog](https://github.com/appscode/voyager/compare/4.0.0-rc.2...4.0.0-rc.3)
 
-**Fixed bugs:**
-
-- Add PATCH permission and fix deployment RBAC spec [\#568](https://github.com/appscode/voyager/pull/568) ([tamalsaha](https://github.com/tamalsaha))
-- Fix RBAC permissions for apps/v1beta1 Deployments [\#565](https://github.com/appscode/voyager/pull/565) ([tamalsaha](https://github.com/tamalsaha))
-
 **Merged pull requests:**
 
 - Prepare docs for 4.0.0-rc.3 [\#569](https://github.com/appscode/voyager/pull/569) ([tamalsaha](https://github.com/tamalsaha))
@@ -898,40 +985,21 @@ aliases:
 ## [4.0.0-rc.2](https://github.com/appscode/voyager/tree/4.0.0-rc.2) (2017-10-04)
 [Full Changelog](https://github.com/appscode/voyager/compare/4.0.0-rc.1...4.0.0-rc.2)
 
-**Fixed bugs:**
-
-- Using HTTP challenge provider results in pod stuck at ContainerCreating stage [\#455](https://github.com/appscode/voyager/issues/455)
-
 **Closed issues:**
 
-- NodePort mode adds port to host header rule, but shouldn't [\#552](https://github.com/appscode/voyager/issues/552)
 - Name server by pod name instead of endpoint ip [\#550](https://github.com/appscode/voyager/issues/550)
 - ocsp stapling [\#531](https://github.com/appscode/voyager/issues/531)
-- Bug: not creating RBAC roles in NodePort mode [\#524](https://github.com/appscode/voyager/issues/524)
-- DNS resolver test is timing out [\#484](https://github.com/appscode/voyager/issues/484)
 
 **Merged pull requests:**
 
 - Prepare docs for 4.0.0-rc.2 [\#561](https://github.com/appscode/voyager/pull/561) ([tamalsaha](https://github.com/tamalsaha))
-- Add ingress class support for helm chart [\#559](https://github.com/appscode/voyager/pull/559) ([xcompass](https://github.com/xcompass))
 - Fix \#552 [\#557](https://github.com/appscode/voyager/pull/557) ([sadlil](https://github.com/sadlil))
-- Docs for 4.0 - part 1 [\#556](https://github.com/appscode/voyager/pull/556) ([sadlil](https://github.com/sadlil))
 - Add service auth annotation [\#555](https://github.com/appscode/voyager/pull/555) ([diptadas](https://github.com/diptadas))
-- Don't log error if to-be-deleted object is missing. [\#554](https://github.com/appscode/voyager/pull/554) ([tamalsaha](https://github.com/tamalsaha))
-- Generate ugorji stuff [\#553](https://github.com/appscode/voyager/pull/553) ([tamalsaha](https://github.com/tamalsaha))
 -  Name server by pod name instead of endpoint ip [\#551](https://github.com/appscode/voyager/pull/551) ([sadlil](https://github.com/sadlil))
 - Add max-connections annotation [\#546](https://github.com/appscode/voyager/pull/546) ([diptadas](https://github.com/diptadas))
 
 ## [4.0.0-rc.1](https://github.com/appscode/voyager/tree/4.0.0-rc.1) (2017-09-27)
 [Full Changelog](https://github.com/appscode/voyager/compare/4.0.0-rc.0...4.0.0-rc.1)
-
-**Fixed bugs:**
-
-- Fix cert controller bugs [\#541](https://github.com/appscode/voyager/pull/541) ([sadlil](https://github.com/sadlil))
-
-**Closed issues:**
-
-- Install Voyager as critical addon [\#292](https://github.com/appscode/voyager/issues/292)
 
 **Merged pull requests:**
 
@@ -953,35 +1021,21 @@ aliases:
 ## [4.0.0-rc.0](https://github.com/appscode/voyager/tree/4.0.0-rc.0) (2017-09-24)
 [Full Changelog](https://github.com/appscode/voyager/compare/3.2.1...4.0.0-rc.0)
 
-**Implemented enhancements:**
-
-- Don't require spec.providerCredentialSecretName for own provider [\#366](https://github.com/appscode/voyager/issues/366)
-- Reimplement certificate controller [\#506](https://github.com/appscode/voyager/pull/506) ([sadlil](https://github.com/sadlil))
-
 **Fixed bugs:**
 
 - AWS secrets don't seem to be used for ACME validation [\#526](https://github.com/appscode/voyager/issues/526)
-- Avoid concurrency for NewACMEClient [\#382](https://github.com/appscode/voyager/issues/382)
-- ProviderCredential has to be created before Certificate object [\#370](https://github.com/appscode/voyager/issues/370)
 - Watcher should exit if it can't connect to master [\#136](https://github.com/appscode/voyager/issues/136)
 
 **Closed issues:**
 
-- Redesign Certificate CRD [\#505](https://github.com/appscode/voyager/issues/505)
-- Upgrade haproxy\_exporter to 0.8.0 [\#504](https://github.com/appscode/voyager/issues/504)
 - Support providing secrets as a PV [\#496](https://github.com/appscode/voyager/issues/496)
 - Use SharedInformer [\#443](https://github.com/appscode/voyager/issues/443)
 - GCE: Services \(LoadBalancer\) with static ip causes panic in 1.7 [\#416](https://github.com/appscode/voyager/issues/416)
-- se fields service.spec.externalTrafficPolicy and service.spec.healthCheckNodePort instead [\#415](https://github.com/appscode/voyager/issues/415)
-- Validate certificates [\#393](https://github.com/appscode/voyager/issues/393)
 - Don't retry if rate-limited by LE [\#356](https://github.com/appscode/voyager/issues/356)
-- Use OwnerReference [\#285](https://github.com/appscode/voyager/issues/285)
 
 **Merged pull requests:**
 
-- Add owner reference for Ingress [\#530](https://github.com/appscode/voyager/pull/530) ([tamalsaha](https://github.com/tamalsaha))
 - Fix install guide link. [\#523](https://github.com/appscode/voyager/pull/523) ([tamalsaha](https://github.com/tamalsaha))
-- Add HAProxy 1.7.9 [\#522](https://github.com/appscode/voyager/pull/522) ([tamalsaha](https://github.com/tamalsaha))
 - Add e2e test for HSTS annotations [\#521](https://github.com/appscode/voyager/pull/521) ([diptadas](https://github.com/diptadas))
 - Fix HSTS header template [\#520](https://github.com/appscode/voyager/pull/520) ([diptadas](https://github.com/diptadas))
 - Add hsts-preload and hsts-include-subdomains annotations [\#519](https://github.com/appscode/voyager/pull/519) ([diptadas](https://github.com/diptadas))
@@ -991,12 +1045,6 @@ aliases:
 
 ## [3.2.1](https://github.com/appscode/voyager/tree/3.2.1) (2017-09-19)
 [Full Changelog](https://github.com/appscode/voyager/compare/4.0.0-alpha.1...3.2.1)
-
-**Implemented enhancements:**
-
-- Fix HTTP Provider Certificate [\#502](https://github.com/appscode/voyager/pull/502) ([sadlil](https://github.com/sadlil))
-- Add ssl passthrough support for annotations [\#501](https://github.com/appscode/voyager/pull/501) ([sadlil](https://github.com/sadlil))
-- Add Max Body size and CORS annotations [\#500](https://github.com/appscode/voyager/pull/500) ([sadlil](https://github.com/sadlil))
 
 **Merged pull requests:**
 
@@ -1009,19 +1057,15 @@ aliases:
 
 **Implemented enhancements:**
 
-- Add support for affinity annotations for ingress [\#493](https://github.com/appscode/voyager/pull/493) ([sadlil](https://github.com/sadlil))
 - Fix tests for 4.0 [\#492](https://github.com/appscode/voyager/pull/492) ([sadlil](https://github.com/sadlil))
 
 **Closed issues:**
 
 - Allow configuring templates per Ingress [\#482](https://github.com/appscode/voyager/issues/482)
-- Bring annotation parity with Nginx Ingress [\#278](https://github.com/appscode/voyager/issues/278)
-- Update GCP annotation for preserving source IP [\#276](https://github.com/appscode/voyager/issues/276)
 
 **Merged pull requests:**
 
 - Use kloader 4.0.0 [\#498](https://github.com/appscode/voyager/pull/498) ([tamalsaha](https://github.com/tamalsaha))
-- Add support for `ingress.kubernetes.io/session-cookie-hash`. [\#497](https://github.com/appscode/voyager/pull/497) ([sadlil](https://github.com/sadlil))
 - Correct a small typo in the weighted doco [\#495](https://github.com/appscode/voyager/pull/495) ([leprechaun](https://github.com/leprechaun))
 - Add ObjectReference methods. [\#494](https://github.com/appscode/voyager/pull/494) ([tamalsaha](https://github.com/tamalsaha))
 - Update Chart RBAC format as recommended. [\#490](https://github.com/appscode/voyager/pull/490) ([tamalsaha](https://github.com/tamalsaha))
@@ -1032,14 +1076,6 @@ aliases:
 **Implemented enhancements:**
 
 - Replace TPR with CRD [\#419](https://github.com/appscode/voyager/pull/419) ([sadlil](https://github.com/sadlil))
-
-**Closed issues:**
-
-- Use Deployment for HostPort mode [\#446](https://github.com/appscode/voyager/issues/446)
-- Set DNSpolicy to ClusterFirstWithHostNet in HostPort mode [\#417](https://github.com/appscode/voyager/issues/417)
-- Use kubernetes/code-generator to generate clients [\#329](https://github.com/appscode/voyager/issues/329)
-- Switch to CustomResourceDefinitions [\#239](https://github.com/appscode/voyager/issues/239)
-- Use Deployments from apps/v1beta1 [\#238](https://github.com/appscode/voyager/issues/238)
 
 **Merged pull requests:**
 
@@ -1152,7 +1188,6 @@ aliases:
 **Closed issues:**
 
 - `keep-source-ip` should enable PROXY protocol is bare metal cluster [\#451](https://github.com/appscode/voyager/issues/451)
-- Allow users to provide custom templates [\#444](https://github.com/appscode/voyager/issues/444)
 
 **Merged pull requests:**
 
