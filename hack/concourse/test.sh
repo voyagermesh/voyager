@@ -28,6 +28,7 @@ function cleanup_test_stuff {
     # delete cluster on exit
     pharmer get cluster
     pharmer delete cluster $NAME
+    sleep 120 # pharmer issue: droplets not deleting if apply immediately after delete
     pharmer apply $NAME
     pharmer get cluster
 
