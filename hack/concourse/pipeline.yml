@@ -2,8 +2,8 @@ resource_types:
 - name: pull-request
   type: docker-image
   source:
-    repository: tahsin/git-pull-resource
-    tag: show-stderr
+    repository: appscodeci/github-pr-resource
+    tag: latest
 
 resources:
 - name: voyager
@@ -18,92 +18,60 @@ resources:
     owner: appscode
     repo: voyager
     label: ok-to-test
-    org: appscode
     access_token: ((access_token))
 
+- name: creds
+  type: s3
+  source:
+    bucket: appscode-ci
+    access_key_id: ((s3-access-key))
+    secret_access_key: ((s3-secret))
+    versioned_file: appscode/voyager/voyager.zip
+
 jobs:
-- name: unit-test-voyager
-  plan:
-  - get: voyager
-    trigger: true
-  - task: run-unit-test
-    file: voyager/hack/concourse/task_unit_test.yml
-
-- name: unit-test-pr
-  plan:
-  - get: pull-request
-    version: every
-    trigger: true
-  - put: pull-request
-    params:
-      path: pull-request
-      status: pending
-  - task: run-unit-test
-    file: pull-request/hack/concourse/task_unit_test_pr.yml
-    on_success:
-      put: pull-request
-      params:
-        path: pull-request
-        status: success
-    on_failure:
-      put: pull-request
-      params:
-        path: pull-request
-        status: failure
-
 - name: e2e-test-voyager
   plan:
   - get: voyager
     trigger: true
-    passed: [unit-test-voyager]
+  - get: creds
+    params:
+      unpack: true
   - task: run-e2e-test
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: tahsin/voyager-e2e
-          tag: latest
-      inputs:
-      - name: voyager
-      run:
-        path: voyager/hack/concourse/e2e_test.sh
-      params:
-        TOKEN: ((digitaloceanToken))
+    file: voyager/hack/concourse/task.yml
+    privileged: true
+    params:
+      TOKEN: ((digitaloceanToken))
+      TEST_GCE_PROJECT: ((test_gce_project))
+      TEST_ACME_USER_EMAIL: ((test_acme_user_email))
+      TEST_DNS_DOMAINS: ((test_dns_domains))
+      DOCKER_USER: ((docker_user))
+      DOCKER_PASS: ((docker_pass))
 
-
-- name: e2e-test-pr
+- name: e2e-test-voyager-pr
   plan:
   - get: pull-request
     trigger: true
     version: every
-    passed: [unit-test-pr]
-  - put: pull-request
+  - get: creds
     params:
-      path: pull-request
-      status: pending
+      unpack: true
+  - put: pull-request
+    params: {path: pull-request, status: pending}
   - task: run-e2e-test
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: tahsin/voyager-e2e
-          tag: latest
-      inputs:
-      - name: pull-request
-      run:
-        path: pull-request/hack/concourse/e2e_test_pr.sh
-      params:
-        TOKEN: ((digitaloceanToken))
+    file: pull-request/hack/concourse/task.yml
+    privileged: true
+    input_mapping:
+      voyager: pull-request
+    params:
+      TOKEN: ((digitaloceanToken))
+      TEST_GCE_PROJECT: ((test_gce_project))
+      TEST_ACME_USER_EMAIL: ((test_acme_user_email))
+      TEST_DNS_DOMAINS: ((test_dns_domains))
+      DOCKER_USER: ((docker_user))
+      DOCKER_PASS: ((docker_pass))
     on_success:
       put: pull-request
-      params:
-        path: pull-request
-        status: success
+      params: {path: pull-request, status: success}
     on_failure:
       put: pull-request
-      params:
-        path: pull-request
-        status: failure
-
+      params: {path: pull-request, status: failure}
