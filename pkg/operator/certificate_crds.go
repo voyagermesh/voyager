@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/appscode/go/log"
+	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate"
@@ -12,6 +13,7 @@ import (
 	"github.com/benbjohnson/clock"
 	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"
 )
@@ -136,8 +138,29 @@ func (op *Operator) CheckCertificates() {
 			for i := range result {
 				cert := result[i]
 				if cert.IsRateLimited() {
-					log.Infof("skipping certificate %s/%s, since rate limited", cert.Namespace, cert.Name)
-					continue
+					// get a new account and retry
+					s := metav1.ObjectMeta{
+						Namespace: cert.Namespace,
+						Name:      cert.Spec.ACMEUserSecretName,
+					}
+					_, _, err := core_util.CreateOrPatchSecret(op.KubeClient, s, func(in *core.Secret) *core.Secret {
+						if _, ok := in.Data[api.ACMEUserPrivatekey]; ok {
+							delete(in.Data, api.ACMEUserPrivatekey)
+						}
+						if _, ok := in.Data[api.ACMERegistrationData]; ok {
+							delete(in.Data, api.ACMERegistrationData)
+						}
+						return in
+					})
+					if err != nil {
+						op.recorder.Event(
+							cert.ObjectReference(),
+							core.EventTypeWarning,
+							eventer.EventReasonCertificateInvalid,
+							err.Error(),
+						)
+						return
+					}
 				}
 				ctrl, err := certificate.NewController(op.KubeClient, op.VoyagerClient, op.Config, cert)
 				if err != nil {
