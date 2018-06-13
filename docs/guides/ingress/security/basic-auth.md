@@ -1,16 +1,16 @@
 ---
 title: Basic Authentication | Kubernetes Ingress
 menu:
-  product_voyager_7.1.0:
+  product_voyager_7.1.1:
     identifier: basic-auth-security
     name: Basic Auth
     parent: security-ingress
     weight: 10
 product_name: voyager
-menu_name: product_voyager_7.1.0
+menu_name: product_voyager_7.1.1
 section_menu_id: guides
 aliases:
-  - /products/voyager/7.1.0/guides/ingress/security/
+  - /products/voyager/7.1.1/guides/ingress/security/
 ---
 
 > New to Voyager? Please start [here](/docs/concepts/overview.md).

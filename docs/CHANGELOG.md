@@ -2,30 +2,37 @@
 title: Changelog | Voyager
 description: Changelog
 menu:
-  product_voyager_7.1.0:
+  product_voyager_7.1.1:
     identifier: changelog-voyager
     name: Changelog
     parent: welcome
     weight: 10
 product_name: voyager
-menu_name: product_voyager_7.1.0
+menu_name: product_voyager_7.1.1
 section_menu_id: welcome
-url: /products/voyager/7.1.0/welcome/changelog/
+url: /products/voyager/7.1.1/welcome/changelog/
 aliases:
-  - /products/voyager/7.1.0/CHANGELOG/
+  - /products/voyager/7.1.1/CHANGELOG/
 ---
 
 # Change Log
 
-## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
+## [7.1.1](https://github.com/appscode/voyager/tree/7.1.1) (2018-06-13)
+[Full Changelog](https://github.com/appscode/voyager/compare/7.1.0...7.1.1)
 
-[Full Changelog](https://github.com/appscode/voyager/compare/7.1.0...HEAD)
+**Fixed bugs:**
+
+- Fix rbac permissions for service monitors [\#1133](https://github.com/appscode/voyager/pull/1133) ([tamalsaha](https://github.com/tamalsaha))
+
+**Closed issues:**
+
+- Get new LE account if user hits rate limits [\#1122](https://github.com/appscode/voyager/issues/1122)
 
 **Merged pull requests:**
 
-- haproxy-stats.md typo fix [\#1127](https://github.com/appscode/voyager/pull/1127) ([gavvvr](https://github.com/gavvvr))
+- Get new LE account if user hits rate limits [\#1134](https://github.com/appscode/voyager/pull/1134) ([tamalsaha](https://github.com/tamalsaha))
 
-## [7.1.0](https://github.com/appscode/voyager/tree/7.1.0) (2018-06-12)
+## [7.1.0](https://github.com/appscode/voyager/tree/7.1.0) (2018-06-13)
 [Full Changelog](https://github.com/appscode/voyager/compare/5.0.0...7.1.0)
 
 **Fixed bugs:**
@@ -53,6 +60,9 @@ aliases:
 
 **Merged pull requests:**
 
+- Fix haproxy-stats page link [\#1131](https://github.com/appscode/voyager/pull/1131) ([tamalsaha](https://github.com/tamalsaha))
+- Update changelog [\#1129](https://github.com/appscode/voyager/pull/1129) ([tamalsaha](https://github.com/tamalsaha))
+- haproxy-stats.md typo fix [\#1127](https://github.com/appscode/voyager/pull/1127) ([gavvvr](https://github.com/gavvvr))
 - Upgrade to HAProxy 1.8.9 [\#1124](https://github.com/appscode/voyager/pull/1124) ([tamalsaha](https://github.com/tamalsaha))
 - Revendor dependencies [\#1123](https://github.com/appscode/voyager/pull/1123) ([tamalsaha](https://github.com/tamalsaha))
 - Stop processing http request for LE well-known acme challenge path [\#1121](https://github.com/appscode/voyager/pull/1121) ([tamalsaha](https://github.com/tamalsaha))
