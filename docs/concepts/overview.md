@@ -25,11 +25,11 @@ The above diagram shows how the Voyager operator works. When Voyager is [install
 
 - a Configmap named `voyager-${ingress-name}`: This contains the auto generated HAProxy configuration under `haproxy.cfg` key.
 
-- a Deployment named `voyager-${ingress-name}`: This runs HAProxy pods that mounts the above configmap. Each pod has one container for HAProxy. This container also includes some additional binary to reload HAProxy when the respective configmap updates. This also includes logic for mounting and updating SSL secrets referenced in the corresponding Ingress resource. HAProxy pods can also contain a side-car container for exporting Prometheus ready metrics, if [enabled](/docs/guides/ingress/monitoring/stats.md).
+- a Deployment named `voyager-${ingress-name}`: This runs HAProxy pods that mounts the above configmap. Each pod has one container for HAProxy. This container also includes some additional binary to reload HAProxy when the respective configmap updates. This also includes logic for mounting and updating SSL secrets referenced in the corresponding Ingress resource. HAProxy pods can also contain a side-car container for exporting Prometheus ready metrics, if [enabled](/docs/guides/ingress/monitoring/haproxy-stats.md).
 
 - a Service named  `voyager-${ingress-name}`: This Kubernetes Service exposes the above HAProxy pods to the internet. The type of Service can be configured by user via `ingress.appscode.com/type` annotation on the Ingress.
 
-- a Service named  `voyager-${ingress-name}-stats`: This Kubernetes Service is used to expose Prometheus ready metrics for HAProxy pods. This service is always of type `ClusterIP` and only created if stats are [enabled](/docs/guides/ingress/monitoring/stats.md).
+- a Service named  `voyager-${ingress-name}-stats`: This Kubernetes Service is used to expose Prometheus ready metrics for HAProxy pods. This service is always of type `ClusterIP` and only created if stats are [enabled](/docs/guides/ingress/monitoring/haproxy-stats.md).
 
 ## Certificate
 
