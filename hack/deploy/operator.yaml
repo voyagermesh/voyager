@@ -53,6 +53,9 @@ spec:
             path: /healthz
             port: 8443
             scheme: HTTPS
+        resources:
+          requests:
+            cpu: "100m"
       volumes:
       - hostPath:
           path: /etc/kubernetes
