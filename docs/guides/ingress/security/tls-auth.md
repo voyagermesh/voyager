@@ -1,13 +1,13 @@
 ---
 title: TLS Authentication | Kubernetes Ingress
 menu:
-  product_voyager_7.1.0:
+  product_voyager_7.1.1:
     identifier: tls-auth-security
     name: TLS Auth
     parent: security-ingress
     weight: 15
 product_name: voyager
-menu_name: product_voyager_7.1.0
+menu_name: product_voyager_7.1.1
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
