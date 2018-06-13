@@ -30,7 +30,10 @@ aliases:
 
 **Merged pull requests:**
 
+- Prepare docs for 7.1.1 release [\#1135](https://github.com/appscode/voyager/pull/1135) ([tamalsaha](https://github.com/tamalsaha))
 - Get new LE account if user hits rate limits [\#1134](https://github.com/appscode/voyager/pull/1134) ([tamalsaha](https://github.com/tamalsaha))
+- Do not create namespace from yaml, it gets created with kubectl manually [\#1132](https://github.com/appscode/voyager/pull/1132) ([gavvvr](https://github.com/gavvvr))
+- Allocate cpu for operator pod. [\#1136](https://github.com/appscode/voyager/pull/1136) ([tamalsaha](https://github.com/tamalsaha))
 
 ## [7.1.0](https://github.com/appscode/voyager/tree/7.1.0) (2018-06-13)
 [Full Changelog](https://github.com/appscode/voyager/compare/5.0.0...7.1.0)
