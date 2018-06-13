@@ -50,6 +50,6 @@ Guides show you how to use Voyager as a Kubernetes Ingress controller.
   - [Configure External Auth for HTTP Backends](/docs/guides/ingress/security/oauth.md)
   - [TLS Authentication](/docs/guides/ingress/security/tls-auth.md)
 - Monitoring
-  - [Exposing HAProxy Stats](/docs/guides/ingress/monitoring/stats.md)
+  - [Exposing HAProxy Stats](/docs/guides/ingress/monitoring/haproxy-stats.md)
 - [Scaling Ingress](/docs/guides/ingress/scaling.md)
 - [Placement of Ingress Pods](/docs/guides/ingress/pod-placement.md)
