@@ -46,7 +46,6 @@ If RBAC *is* enabled, Run the following command to prepare your cluster for this
 
 ```console
 $ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/7.1.0/docs/examples/monitoring/coreos-operator/rbac/demo-0.yaml
-namespace "demo" created
 clusterrole "prometheus-operator" created
 serviceaccount "prometheus-operator" created
 clusterrolebinding "prometheus-operator" created
@@ -98,7 +97,6 @@ If RBAC *is not* enabled, Run the following command to prepare your cluster for 
 
 ```console
 $ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/7.1.0/docs/examples/monitoring/coreos-operator/demo-0.yaml
-namespace "demo" created
 deployment "prometheus-operator" created
 
 $ kubectl get pods -n demo --watch
