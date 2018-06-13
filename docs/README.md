@@ -2,18 +2,18 @@
 title: Welcome | Voyager
 description: Welcome to Voyager
 menu:
-  product_voyager_7.1.0:
+  product_voyager_7.1.1:
     identifier: readme-voyager
     name: Readme
     parent: welcome
     weight: -1
 product_name: voyager
-menu_name: product_voyager_7.1.0
+menu_name: product_voyager_7.1.1
 section_menu_id: welcome
-url: /products/voyager/7.1.0/welcome/
+url: /products/voyager/7.1.1/welcome/
 aliases:
-  - /products/voyager/7.1.0/
-  - /products/voyager/7.1.0/README/
+  - /products/voyager/7.1.1/
+  - /products/voyager/7.1.1/README/
 ---
 
 # Voyager
