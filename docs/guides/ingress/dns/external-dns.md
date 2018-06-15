@@ -44,7 +44,7 @@ spec:
 
 ## NodePort Ingress
 
-`external-dns` does not support [NodePort](/docs/concepts/ingress-types/nodeport.md) ingress.
+Since [v0.5.3](https://github.com/kubernetes-incubator/external-dns/releases/tag/v0.5.3), `external-dns` supports [NodePort](/docs/concepts/ingress-types/nodeport.md) ingress.
 
 
 ## HostPort Ingress
