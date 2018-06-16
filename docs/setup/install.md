@@ -146,10 +146,13 @@ NAME              CHART VERSION APP VERSION DESCRIPTION
 appscode/voyager  7.1.1    7.1.1  Voyager by AppsCode - Secure HAProxy Ingress Controller...
 
 # Kubernetes 1.8.x
-$ helm install appscode/voyager --name voyager-operator --version 7.1.1 --set cloudProvider=$provider
+$ helm install appscode/voyager --name voyager-operator --version 7.1.1 \
+  --namespace kube-system \
+  --set cloudProvider=$provider
 
 # Kubernetes 1.9.0 or later
 $ helm install appscode/voyager --name voyager-operator --version 7.1.1 \
+  --namespace kube-system \
   --set cloudProvider=$provider \
   --set apiserver.ca="$(onessl get kube-ca)" \
   --set apiserver.enableValidatingWebhook=true
