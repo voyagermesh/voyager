@@ -43,13 +43,13 @@ type Controller struct {
 	store             *CertStore
 }
 
-func NewController(kubeClient kubernetes.Interface, extClient cs.Interface, cfg config.Config, tpr *api.Certificate) (*Controller, error) {
+func NewController(kubeClient kubernetes.Interface, extClient cs.Interface, cfg config.Config, tpr *api.Certificate, recorder record.EventRecorder) (*Controller, error) {
 	ctrl := &Controller{
 		KubeClient:    kubeClient,
 		VoyagerClient: extClient,
 		cfg:           cfg,
 		crd:           tpr,
-		recorder:      eventer.NewEventRecorder(kubeClient, "voyager-operator"),
+		recorder:      recorder,
 	}
 	err := ctrl.crd.IsValid(ctrl.cfg.CloudProvider)
 	if err != nil {
