@@ -95,7 +95,7 @@ func (op *Operator) reconcileCertificate(key string) error {
 			)
 			return err
 		}
-		ctrl, err := certificate.NewController(op.KubeClient, op.VoyagerClient, op.Config, cert)
+		ctrl, err := certificate.NewController(op.KubeClient, op.VoyagerClient, op.Config, cert, op.recorder)
 		if err != nil {
 			op.recorder.Event(
 				cert.ObjectReference(),
@@ -162,7 +162,7 @@ func (op *Operator) CheckCertificates() {
 						return
 					}
 				}
-				ctrl, err := certificate.NewController(op.KubeClient, op.VoyagerClient, op.Config, cert)
+				ctrl, err := certificate.NewController(op.KubeClient, op.VoyagerClient, op.Config, cert, op.recorder)
 				if err != nil {
 					op.recorder.Event(
 						cert.ObjectReference(),

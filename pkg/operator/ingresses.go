@@ -93,7 +93,7 @@ func (op *Operator) reconcileIngress(key string) error {
 		return nil
 	}
 
-	ctrl := ingress.NewController(NewID(context.Background()), op.KubeClient, op.WorkloadClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Config, engress)
+	ctrl := ingress.NewController(NewID(context.Background()), op.KubeClient, op.WorkloadClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Config, engress, op.recorder)
 
 	if ing.DeletionTimestamp != nil {
 		if core_util.HasFinalizer(ing.ObjectMeta, voyager.GroupName) {

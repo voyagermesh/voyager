@@ -80,7 +80,7 @@ func (op *Operator) reconcileEngress(key string) error {
 
 	engress := obj.(*api.Ingress).DeepCopy()
 	engress.Migrate()
-	ctrl := ingress.NewController(NewID(context.Background()), op.KubeClient, op.WorkloadClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Config, engress)
+	ctrl := ingress.NewController(NewID(context.Background()), op.KubeClient, op.WorkloadClient, op.CRDClient, op.VoyagerClient, op.PromClient, op.svcLister, op.epLister, op.Config, engress, op.recorder)
 
 	if engress.DeletionTimestamp != nil {
 		if core_util.HasFinalizer(engress.ObjectMeta, voyager.GroupName) {

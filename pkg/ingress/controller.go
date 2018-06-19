@@ -67,16 +67,17 @@ func NewController(
 	serviceLister core_listers.ServiceLister,
 	endpointsLister core_listers.EndpointsLister,
 	cfg config.Config,
-	ingress *api.Ingress) Controller {
+	ingress *api.Ingress,
+	recorder record.EventRecorder) Controller {
 	switch ingress.LBType() {
 	case api.LBTypeHostPort:
-		return NewHostPortController(ctx, kubeClient, workloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
+		return NewHostPortController(ctx, kubeClient, workloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress, recorder)
 	case api.LBTypeNodePort:
-		return NewNodePortController(ctx, kubeClient, workloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
+		return NewNodePortController(ctx, kubeClient, workloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress, recorder)
 	case api.LBTypeLoadBalancer:
-		return NewLoadBalancerController(ctx, kubeClient, workloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
+		return NewLoadBalancerController(ctx, kubeClient, workloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress, recorder)
 	case api.LBTypeInternal:
-		return NewInternalController(ctx, kubeClient, workloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress)
+		return NewInternalController(ctx, kubeClient, workloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress, recorder)
 	}
 	return nil
 }

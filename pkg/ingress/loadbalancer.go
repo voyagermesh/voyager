@@ -32,6 +32,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	core_listers "k8s.io/client-go/listers/core/v1"
+	"k8s.io/client-go/tools/record"
 )
 
 type loadBalancerController struct {
@@ -50,7 +51,8 @@ func NewLoadBalancerController(
 	serviceLister core_listers.ServiceLister,
 	endpointsLister core_listers.EndpointsLister,
 	cfg config.Config,
-	ingress *api.Ingress) Controller {
+	ingress *api.Ingress,
+	recorder record.EventRecorder) Controller {
 	return &loadBalancerController{
 		controller: &controller{
 			logger:          log.New(ctx),
@@ -63,7 +65,7 @@ func NewLoadBalancerController(
 			EndpointsLister: endpointsLister,
 			cfg:             cfg,
 			Ingress:         ingress,
-			recorder:        eventer.NewEventRecorder(kubeClient, "voyager operator"),
+			recorder:        recorder,
 		},
 	}
 }
