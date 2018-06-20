@@ -46,7 +46,7 @@ type CertificateSpec struct {
 
 	// Indicates that the certificate is paused.
 	// +optional
-	Paused bool `json:"paused,omitempty" protobuf:"varint,7,opt,name=paused"`
+	Paused bool `json:"paused,omitempty"`
 
 	// Following fields are deprecated and will removed in future version.
 	// https://github.com/appscode/voyager/pull/506

@@ -85,6 +85,10 @@ func (op *Operator) reconcileCertificate(key string) error {
 		glog.Infof("Sync/Add/Update for Certificate %s\n", key)
 
 		cert := obj.(*api.Certificate).DeepCopy()
+		if cert.Spec.Paused {
+			glog.Infof("Skipping paused Certificate %s\n", key)
+			return nil
+		}
 		if _, err := op.MigrateCertificate(cert); err != nil {
 			op.recorder.Eventf(
 				cert.ObjectReference(),
@@ -137,6 +141,11 @@ func (op *Operator) CheckCertificates() {
 			}
 			for i := range result {
 				cert := result[i]
+				if cert.Spec.Paused {
+					glog.Infof("Skipping paused Certificate %s/%s", cert.Namespace, cert.Name)
+					continue
+				}
+
 				if cert.IsRateLimited() {
 					// get a new account and retry
 					s := metav1.ObjectMeta{
@@ -162,6 +171,7 @@ func (op *Operator) CheckCertificates() {
 						return
 					}
 				}
+
 				ctrl, err := certificate.NewController(op.KubeClient, op.VoyagerClient, op.Config, cert, op.recorder)
 				if err != nil {
 					op.recorder.Event(
