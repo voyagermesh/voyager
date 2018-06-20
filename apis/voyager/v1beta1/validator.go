@@ -406,19 +406,19 @@ func checkBackendServiceName(name string) bool {
 func checkRequiredPort(port intstr.IntOrString) (int, error) {
 	if port.Type == intstr.Int {
 		if port.IntVal <= 0 {
-			return 0, errors.Errorf("port %s must a +ve integer", port)
+			return 0, errors.Errorf("port %s must a +ve integer", port.String())
 		}
 		return int(port.IntVal), nil
 	} else if port.Type == intstr.String {
 		return strconv.Atoi(port.StrVal)
 	}
-	return 0, errors.Errorf("invalid data type %v for port %s", port.Type, port)
+	return 0, errors.Errorf("invalid data type %v for port %s", port.Type, port.String())
 }
 
 func checkOptionalPort(port intstr.IntOrString) (int, error) {
 	if port.Type == intstr.Int {
 		if port.IntVal < 0 {
-			return 0, errors.Errorf("port %s can't be -ve integer", port)
+			return 0, errors.Errorf("port %s can't be -ve integer", port.String())
 		}
 		return int(port.IntVal), nil
 	} else if port.Type == intstr.String {
@@ -427,7 +427,7 @@ func checkOptionalPort(port intstr.IntOrString) (int, error) {
 		}
 		return strconv.Atoi(port.StrVal)
 	}
-	return 0, errors.Errorf("invalid data type %v for port %s", port.Type, port)
+	return 0, errors.Errorf("invalid data type %v for port %s", port.Type, port.String())
 }
 
 func checkOptionalAddress(address string) (string, error) {
