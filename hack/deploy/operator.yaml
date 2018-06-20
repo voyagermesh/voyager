@@ -40,7 +40,6 @@ spec:
         - --enable-analytics=${VOYAGER_ENABLE_ANALYTICS}
         ports:
         - containerPort: 8443
-        - containerPort: 56790
         - containerPort: 56791
         volumeMounts:
         - mountPath: /etc/kubernetes
@@ -94,9 +93,6 @@ spec:
   - name: admission
     port: 443
     targetPort: 8443
-  - name: ops
-    port: 56790
-    targetPort: 56790
   - name: acme
     port: 56791
     targetPort: 56791

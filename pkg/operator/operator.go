@@ -1,20 +1,16 @@
 package operator
 
 import (
-	"net/http"
-
 	"github.com/appscode/go/log"
 	wcs "github.com/appscode/kubernetes-webhook-util/client/workload/v1"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	"github.com/appscode/kutil/tools/queue"
-	"github.com/appscode/pat"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	voyagerinformers "github.com/appscode/voyager/client/informers/externalversions"
 	api_listers "github.com/appscode/voyager/client/listers/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/config"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	kext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -179,13 +175,7 @@ func (w *Operator) Run(stopCh <-chan struct{}) {
 	// https://github.com/appscode/voyager/issues/446
 	w.PurgeOffshootsDaemonSet()
 
-	go w.RunInformers(stopCh)
-
-	m := pat.New()
-	m.Get("/metrics", promhttp.Handler())
-	http.Handle("/", m)
-	log.Infoln("Listening on", w.OpsAddress)
-	log.Fatal(http.ListenAndServe(w.OpsAddress, nil))
+	w.RunInformers(stopCh)
 }
 
 func (op *Operator) listIngresses() ([]api.Ingress, error) {

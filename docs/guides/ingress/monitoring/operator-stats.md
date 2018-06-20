@@ -14,8 +14,6 @@ section_menu_id: guides
 
 # Monitoring Voyager operator
 
-Voyager operator exposes Prometheus ready metrics via the following endpoints on port `:56790`:
+Voyager operator exposes Prometheus ready metrics via the following endpoints on port `:8443`:
 
 - `/metrics`: Scrape this to monitor operator.
-
-To change the port, use `--ops-address` flag on Voyager opreator.
