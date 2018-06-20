@@ -332,6 +332,9 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 				// https://github.com/appscode/voyager/issues/276
 				// ref: https://kubernetes.io/docs/tasks/services/source-ip/#source-ip-for-services-with-typeloadbalancer
 				obj.Spec.ExternalTrafficPolicy = core.ServiceExternalTrafficPolicyTypeLocal
+				if c.Ingress.HealthCheckNodeport() > 0 {
+					obj.Spec.HealthCheckNodePort = int32(c.Ingress.HealthCheckNodeport())
+				}
 			}
 		}
 

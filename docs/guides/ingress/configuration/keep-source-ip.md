@@ -33,6 +33,7 @@ metadata:
   namespace: default
   annotations:
     ingress.appscode.com/keep-source-ip: "true"
+    ingress.appscode.com/health-check-nodeport: "32312"
 spec:
   rules:
   - host: voyager.appscode.test
@@ -43,3 +44,5 @@ spec:
           serviceName: test-server
           servicePort: 80
 ```
+
+Here `health-check-nodeport` annotation specifies `HealthCheckNodePort` field for services used to expose HAProxy. If not specified, it will be auto-assigned by kubernetes. Note that, it is only effective when `keep-source-ip` is `true` and ingress type is `LoadBalancer`.
