@@ -67,6 +67,9 @@ func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, 
 			ep.DNSResolver = resolver.Name
 			ep.CheckHealth = resolver.CheckHealth
 		}
+		if service.Annotations != nil {
+			ep.TLSOption = service.Annotations[api.BackendTLSOptions]
+		}
 		return &hpi.Backend{Endpoints: []*hpi.Endpoint{&ep}}, nil
 	}
 	p, ok := getSpecifiedPort(service.Spec.Ports, port)
