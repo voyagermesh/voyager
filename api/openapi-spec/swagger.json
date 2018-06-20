@@ -2085,6 +2085,10 @@
           "description": "This is the ingress Reference that will be used if provider is http Deprecated",
           "$ref": "#/definitions/com.github.appscode.voyager.apis.voyager.v1beta1.LocalTypedReference"
         },
+        "paused": {
+          "description": "Indicates that the certificate is paused.",
+          "type": "boolean"
+        },
         "provider": {
           "description": "Following fields are deprecated and will removed in future version. https://github.com/appscode/voyager/pull/506 Deprecated. DNS Provider.",
           "type": "string"
