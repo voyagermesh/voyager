@@ -59,6 +59,7 @@ spec:
         - --upstream=file:///dev/null
         - --http-address=0.0.0.0:4180
         - --cookie-secure=false
+        - --pass-id-token=true
         - --set-xauthrequest=true
         env:
         - name: OAUTH2_PROXY_CLIENT_ID
@@ -67,7 +68,7 @@ spec:
           value: ...
         - name: OAUTH2_PROXY_COOKIE_SECRET
           value: ...
-        image: appscode/oauth2_proxy:2.2.0
+        image: appscode/oauth2_proxy:2.3.0
         imagePullPolicy: Always
         name: oauth2-proxy
         ports:
@@ -90,7 +91,7 @@ spec:
     k8s-app: oauth2-proxy
 ```
 
-Here, `--set-xauthrequest` flag sets `X-Auth-Request-User` and `X-Auth-Request-User` headers, which will be forwarded to backend.
+Here, `--set-xauthrequest` flag sets `X-Auth-Request-User` and `X-Auth-Request-Email` headers, which will be forwarded to backend. It also sets `X-Auth-Request-Id-Token` header when `--pass-id-token` flag is `true`.
 
 Finally create the ingress:
 
@@ -193,7 +194,7 @@ spec:
         - name: OAUTH2_PROXY_CLIENT_SECRET
           value: ...
         - OAUTH2_PROXY_COOKIE_SECRET = ...
-        image: appscode/oauth2_proxy:2.2.0
+        image: appscode/oauth2_proxy:2.3.0
         imagePullPolicy: Always
         name: oauth2-proxy
         ports:

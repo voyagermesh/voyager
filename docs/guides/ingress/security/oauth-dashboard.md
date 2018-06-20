@@ -70,7 +70,7 @@ spec:
         - name: OAUTH2_PROXY_CLIENT_SECRET
           value: ...
         - OAUTH2_PROXY_COOKIE_SECRET = ...
-        image: appscode/oauth2_proxy:2.2.0
+        image: appscode/oauth2_proxy:2.3.0
         imagePullPolicy: Always
         name: oauth2-proxy
         ports:
