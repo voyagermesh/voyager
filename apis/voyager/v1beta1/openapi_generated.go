@@ -319,6 +319,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Ref:         ref("github.com/appscode/voyager/apis/voyager/v1beta1.CertificateStorage"),
 							},
 						},
+						"paused": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Indicates that the certificate is paused.",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
 						"provider": {
 							SchemaProps: spec.SchemaProps{
 								Description: "Following fields are deprecated and will removed in future version. https://github.com/appscode/voyager/pull/506 Deprecated. DNS Provider.",

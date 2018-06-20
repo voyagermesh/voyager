@@ -44,6 +44,10 @@ type CertificateSpec struct {
 	// Storage backend to store the certificates currently, kubernetes secret and vault.
 	Storage CertificateStorage `json:"storage,omitempty"`
 
+	// Indicates that the certificate is paused.
+	// +optional
+	Paused bool `json:"paused,omitempty"`
+
 	// Following fields are deprecated and will removed in future version.
 	// https://github.com/appscode/voyager/pull/506
 	// Deprecated. DNS Provider.

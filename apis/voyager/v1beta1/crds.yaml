@@ -1617,6 +1617,9 @@ spec:
                 name:
                   description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                   type: string
+            paused:
+              description: Indicates that the certificate is paused.
+              type: boolean
             provider:
               description: Following fields are deprecated and will removed in future
                 version. https://github.com/appscode/voyager/pull/506 Deprecated.
