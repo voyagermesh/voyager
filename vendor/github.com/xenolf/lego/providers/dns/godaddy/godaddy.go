@@ -2,17 +2,17 @@
 package godaddy
 
 import (
-	"fmt"
-	"io"
-	"net/http"
-	"os"
-	"time"
-
 	"bytes"
 	"encoding/json"
-	"github.com/xenolf/lego/acme"
+	"fmt"
+	"io"
 	"io/ioutil"
+	"net/http"
 	"strings"
+	"time"
+
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // GoDaddyAPIURL represents the API endpoint to call.
@@ -28,9 +28,12 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables: GODADDY_API_KEY
 // and GODADDY_API_SECRET.
 func NewDNSProvider() (*DNSProvider, error) {
-	apikey := os.Getenv("GODADDY_API_KEY")
-	secret := os.Getenv("GODADDY_API_SECRET")
-	return NewDNSProviderCredentials(apikey, secret)
+	values, err := env.Get("GODADDY_API_KEY", "GODADDY_API_SECRET")
+	if err != nil {
+		return nil, fmt.Errorf("GoDaddy: %v", err)
+	}
+
+	return NewDNSProviderCredentials(values["GODADDY_API_KEY"], values["GODADDY_API_SECRET"])
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a
@@ -75,7 +78,7 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 			Type: "TXT",
 			Name: recordName,
 			Data: value,
-			Ttl:  ttl,
+			TTL:  ttl,
 		},
 	}
 
@@ -98,7 +101,7 @@ func (c *DNSProvider) updateRecords(records []DNSRecord, domainZone string, reco
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := ioutil.ReadAll(resp.Body)
-		return fmt.Errorf("Could not create record %v; Status: %v; Body: %s\n", string(body), resp.StatusCode, string(bodyBytes))
+		return fmt.Errorf("could not create record %v; Status: %v; Body: %s", string(body), resp.StatusCode, string(bodyBytes))
 	}
 	return nil
 }
@@ -146,10 +149,11 @@ func (c *DNSProvider) makeRequest(method, uri string, body io.Reader) (*http.Res
 	return client.Do(req)
 }
 
+// DNSRecord a DNS record
 type DNSRecord struct {
 	Type     string `json:"type"`
 	Name     string `json:"name"`
 	Data     string `json:"data"`
 	Priority int    `json:"priority,omitempty"`
-	Ttl      int    `json:"ttl,omitempty"`
+	TTL      int    `json:"ttl,omitempty"`
 }

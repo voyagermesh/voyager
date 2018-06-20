@@ -4,38 +4,23 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path"
-	"strings"
 	"text/tabwriter"
 
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/acmev2"
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/log"
 )
 
-// Logger is used to log errors; if nil, the default log.Logger is used.
-var Logger *log.Logger
-
-// logger is an helper function to retrieve the available logger
-func logger() *log.Logger {
-	if Logger == nil {
-		Logger = log.New(os.Stderr, "", log.LstdFlags)
-	}
-	return Logger
-}
-
-var gittag string
+var (
+	version = "dev"
+)
 
 func main() {
 	app := cli.NewApp()
 	app.Name = "lego"
 	app.Usage = "Let's Encrypt client written in Go"
-
-	version := "0.4.1"
-	if strings.HasPrefix(gittag, "v") {
-		version = gittag
-	}
 
 	app.Version = version
 
@@ -49,7 +34,7 @@ func main() {
 
 	app.Before = func(c *cli.Context) error {
 		if c.GlobalString("path") == "" {
-			logger().Fatal("Could not determine current working directory. Please pass --path.")
+			log.Fatal("Could not determine current working directory. Please pass --path.")
 		}
 		return nil
 	}
@@ -117,7 +102,7 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:  "server, s",
-			Value: "https://acme-v01.api.letsencrypt.org/directory",
+			Value: "https://acme-v02.api.letsencrypt.org/directory",
 			Usage: "CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.",
 		},
 		cli.StringFlag{
@@ -127,6 +112,18 @@ func main() {
 		cli.BoolFlag{
 			Name:  "accept-tos, a",
 			Usage: "By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.",
+		},
+		cli.BoolFlag{
+			Name:  "eab",
+			Usage: "Use External Account Binding for account registration. Requires --kid and --hmac.",
+		},
+		cli.StringFlag{
+			Name:  "kid",
+			Usage: "Key identifier from External CA. Used for External Account Binding.",
+		},
+		cli.StringFlag{
+			Name:  "hmac",
+			Usage: "MAC key from External CA. Should be in Base64 URL Encoding without padding format. Used for External Account Binding.",
 		},
 		cli.StringFlag{
 			Name:  "key-type, k",
@@ -140,7 +137,7 @@ func main() {
 		},
 		cli.StringSliceFlag{
 			Name:  "exclude, x",
-			Usage: "Explicitly disallow solvers by name from being used. Solvers: \"http-01\", \"tls-sni-01\", \"dns-01\",.",
+			Usage: "Explicitly disallow solvers by name from being used. Solvers: \"http-01\", \"dns-01\", \"tls-alpn-01\".",
 		},
 		cli.StringFlag{
 			Name:  "webroot",
@@ -153,6 +150,10 @@ func main() {
 		cli.StringFlag{
 			Name:  "http",
 			Usage: "Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port",
+		},
+		cli.StringFlag{
+			Name:  "tls",
+			Usage: "Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port",
 		},
 		cli.StringFlag{
 			Name:  "dns",

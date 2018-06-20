@@ -7,11 +7,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 var dynBaseURL = "https://api.dynect.net/REST"
@@ -43,10 +43,12 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables: DYN_CUSTOMER_NAME,
 // DYN_USER_NAME and DYN_PASSWORD.
 func NewDNSProvider() (*DNSProvider, error) {
-	customerName := os.Getenv("DYN_CUSTOMER_NAME")
-	userName := os.Getenv("DYN_USER_NAME")
-	password := os.Getenv("DYN_PASSWORD")
-	return NewDNSProviderCredentials(customerName, userName, password)
+	values, err := env.Get("DYN_CUSTOMER_NAME", "DYN_USER_NAME", "DYN_PASSWORD")
+	if err != nil {
+		return nil, fmt.Errorf("DynDNS: %v", err)
+	}
+
+	return NewDNSProviderCredentials(values["DYN_CUSTOMER_NAME"], values["DYN_USER_NAME"], values["DYN_PASSWORD"])
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a
@@ -80,7 +82,7 @@ func (d *DNSProvider) sendRequest(method, resource string, payload interface{}) 
 		req.Header.Set("Auth-Token", d.token)
 	}
 
-	client := &http.Client{Timeout: time.Duration(10 * time.Second)}
+	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -158,7 +160,7 @@ func (d *DNSProvider) logout() error {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Auth-Token", d.token)
 
-	client := &http.Client{Timeout: time.Duration(10 * time.Second)}
+	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -206,12 +208,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return err
 	}
 
-	err = d.logout()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return d.logout()
 }
 
 func (d *DNSProvider) publish(zone, notes string) error {
@@ -222,12 +219,9 @@ func (d *DNSProvider) publish(zone, notes string) error {
 
 	pub := &publish{Publish: true, Notes: notes}
 	resource := fmt.Sprintf("Zone/%s/", zone)
-	_, err := d.sendRequest("PUT", resource, pub)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	_, err := d.sendRequest("PUT", resource, pub)
+	return err
 }
 
 // CleanUp removes the TXT record matching the specified parameters
@@ -253,7 +247,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Auth-Token", d.token)
 
-	client := &http.Client{Timeout: time.Duration(10 * time.Second)}
+	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -269,10 +263,5 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return err
 	}
 
-	err = d.logout()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return d.logout()
 }

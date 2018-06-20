@@ -10,7 +10,7 @@ import (
 
 	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/pkg/errors"
-	"github.com/xenolf/lego/acmev2"
+	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/providers/dns/azure"
 	"github.com/xenolf/lego/providers/dns/cloudflare"
 	"github.com/xenolf/lego/providers/dns/digitalocean"
@@ -19,8 +19,8 @@ import (
 	"github.com/xenolf/lego/providers/dns/dyn"
 	"github.com/xenolf/lego/providers/dns/fastdns"
 	"github.com/xenolf/lego/providers/dns/gandi"
+	"github.com/xenolf/lego/providers/dns/gcloud"
 	"github.com/xenolf/lego/providers/dns/godaddy"
-	"github.com/xenolf/lego/providers/dns/googlecloud"
 	"github.com/xenolf/lego/providers/dns/linode"
 	"github.com/xenolf/lego/providers/dns/namecheap"
 	"github.com/xenolf/lego/providers/dns/ovh"
@@ -199,7 +199,7 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 			if err != nil {
 				return nil, err
 			}
-			return newDNSProvider(googlecloud.NewDNSProviderCredentials(string(projectID), nil))
+			return newDNSProvider(gcloud.NewDNSProviderCredentials(string(projectID), nil))
 		}
 		var project, jsonKey string
 		if project, found = dnsLoader("GCE_PROJECT"); !found {
@@ -215,7 +215,7 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 		if len(jsonKey) <= 0 {
 			return nil, errors.New("GCE_SERVICE_ACCOUNT_DATA is missing")
 		}
-		return newDNSProvider(googlecloud.NewDNSProviderCredentials(string(project), []byte(jsonKey)))
+		return newDNSProvider(gcloud.NewDNSProviderCredentials(string(project), []byte(jsonKey)))
 	case "linode":
 		var apiKey string
 		if apiKey, found = dnsLoader("LINODE_API_KEY"); !found {

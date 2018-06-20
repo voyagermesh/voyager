@@ -4,12 +4,13 @@ package linode
 
 import (
 	"errors"
-	"os"
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/timewasted/linode/dns"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 const (
@@ -19,7 +20,7 @@ const (
 )
 
 type hostedZoneInfo struct {
-	domainId     int
+	domainID     int
 	resourceName string
 }
 
@@ -31,8 +32,12 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Linode.
 // Credentials must be passed in the environment variable: LINODE_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	apiKey := os.Getenv("LINODE_API_KEY")
-	return NewDNSProviderCredentials(apiKey)
+	values, err := env.Get("LINODE_API_KEY")
+	if err != nil {
+		return nil, fmt.Errorf("Linode: %v", err)
+	}
+
+	return NewDNSProviderCredentials(values["LINODE_API_KEY"])
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a
@@ -72,7 +77,7 @@ func (p *DNSProvider) Present(domain, token, keyAuth string) error {
 		return err
 	}
 
-	if _, err = p.linode.CreateDomainResourceTXT(zone.domainId, acme.UnFqdn(fqdn), value, 60); err != nil {
+	if _, err = p.linode.CreateDomainResourceTXT(zone.domainID, acme.UnFqdn(fqdn), value, 60); err != nil {
 		return err
 	}
 
@@ -88,7 +93,7 @@ func (p *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	// Get all TXT records for the specified domain.
-	resources, err := p.linode.GetResourcesByType(zone.domainId, "TXT")
+	resources, err := p.linode.GetResourcesByType(zone.domainID, "TXT")
 	if err != nil {
 		return err
 	}
@@ -101,7 +106,7 @@ func (p *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 				return err
 			}
 			if resp.ResourceID != resource.ResourceID {
-				return errors.New("Error deleting resource: resource IDs do not match!")
+				return errors.New("error deleting resource: resource IDs do not match")
 			}
 			break
 		}
@@ -125,7 +130,7 @@ func (p *DNSProvider) getHostedZoneInfo(fqdn string) (*hostedZoneInfo, error) {
 	}
 
 	return &hostedZoneInfo{
-		domainId:     domain.DomainID,
+		domainID:     domain.DomainID,
 		resourceName: resourceName,
 	}, nil
 }

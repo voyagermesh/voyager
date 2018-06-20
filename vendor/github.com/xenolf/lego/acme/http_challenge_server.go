@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/xenolf/lego/log"
 )
 
 // HTTPProviderServer implements ChallengeProvider for `http-01` challenge
@@ -70,9 +72,9 @@ func (s *HTTPProviderServer) serve(domain, token, keyAuth string) {
 		if strings.HasPrefix(r.Host, domain) && r.Method == "GET" {
 			w.Header().Add("Content-Type", "text/plain")
 			w.Write([]byte(keyAuth))
-			logf("[INFO][%s] Served key authentication", domain)
+			log.Printf("[INFO][%s] Served key authentication", domain)
 		} else {
-			logf("[WARN] Received request for domain %s with method %s but the domain did not match any challenge. Please ensure your are passing the HOST header properly.", r.Host, r.Method)
+			log.Printf("[WARN] Received request for domain %s with method %s but the domain did not match any challenge. Please ensure your are passing the HOST header properly.", r.Host, r.Method)
 			w.Write([]byte("TEST"))
 		}
 	})
