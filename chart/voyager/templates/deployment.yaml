@@ -51,7 +51,6 @@ spec:
         - --enable-analytics={{ .Values.enableAnalytics }}
         ports:
         - containerPort: 8443
-        - containerPort: 56790
         - containerPort: 56791
         readinessProbe:
           httpGet:

@@ -35,7 +35,6 @@ type Config struct {
 	NumThreads                  int
 	OperatorNamespace           string
 	OperatorService             string
-	OpsAddress                  string
 	QPS                         float32
 	RestrictToOperatorNamespace bool
 	ResyncPeriod                time.Duration

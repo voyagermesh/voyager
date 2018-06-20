@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ template "voyager.fullname" . }}
-  namespace: {{ .Release.Namespace }}  
+  namespace: {{ .Release.Namespace }}
   labels:
     app: "{{ template "voyager.name" . }}"
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
@@ -14,10 +14,6 @@ spec:
   - name: admission
     port: 443
     targetPort: 8443
-  # Port used to expose Prometheus metrics for the operator
-  - name: ops
-    port: 56790
-    targetPort: 56790
   # Port used to respond to Let's Encrypt HTTP challenges
   - name: acme
     port: 56791

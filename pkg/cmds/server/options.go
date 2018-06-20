@@ -8,7 +8,6 @@ import (
 	hooks "github.com/appscode/kubernetes-webhook-util/admission/v1beta1"
 	wcs "github.com/appscode/kubernetes-webhook-util/client/workload/v1"
 	"github.com/appscode/kutil/meta"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	"github.com/appscode/voyager/pkg/admission/plugin"
 	"github.com/appscode/voyager/pkg/config"
@@ -44,7 +43,6 @@ type OperatorOptions struct {
 	PrometheusCrdKinds prom.CrdKinds
 
 	customTemplates           string
-	OpsAddress                string
 	haProxyServerMetricFields string
 	haProxyTimeout            time.Duration
 
@@ -86,7 +84,6 @@ func NewOperatorOptions() *OperatorOptions {
 		PrometheusCrdKinds: prom.DefaultCrdKinds,
 
 		customTemplates:           "",
-		OpsAddress:                fmt.Sprintf(":%d", api.DefaultExporterPortNumber),
 		haProxyServerMetricFields: collector.ServerMetrics.String(),
 		haProxyTimeout:            5 * time.Second,
 
@@ -112,7 +109,6 @@ func (s *OperatorOptions) AddGoFlags(fs *flag.FlagSet) {
 	fs.StringVar(&s.OperatorService, "operator-service", s.OperatorService, "Name of service used to expose voyager operator")
 	fs.BoolVar(&s.RestrictToOperatorNamespace, "restrict-to-operator-namespace", s.RestrictToOperatorNamespace, "If true, voyager operator will only handle Kubernetes objects in its own namespace.")
 
-	fs.StringVar(&s.OpsAddress, "ops-address", s.OpsAddress, "Address to listen on for web interface and telemetry.")
 	fs.StringVar(&s.haProxyServerMetricFields, "haproxy.server-metric-fields", s.haProxyServerMetricFields, "Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1")
 	fs.DurationVar(&s.haProxyTimeout, "haproxy.timeout", s.haProxyTimeout, "Timeout for trying to get stats from HAProxy.")
 
@@ -147,7 +143,6 @@ func (s *OperatorOptions) ApplyTo(cfg *operator.OperatorConfig) error {
 	cfg.NumThreads = s.NumThreads
 	cfg.OperatorNamespace = s.OperatorNamespace
 	cfg.OperatorService = s.OperatorService
-	cfg.OpsAddress = s.OpsAddress
 	cfg.QPS = float32(s.QPS)
 	cfg.RestrictToOperatorNamespace = s.RestrictToOperatorNamespace
 	cfg.ResyncPeriod = s.ResyncPeriod
