@@ -246,48 +246,15 @@ spec:
           emptyDir: {}
 ```
 
-### In RBAC enabled cluster
-
-If RBAC *is* enabled, Run the following command to deploy prometheus in kubernetes:
+Now, run the following command to deploy prometheus in kubernetes:
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/7.1.1/docs/examples/monitoring/builtin-prometheus/rbac/demo-2.yaml
+$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/7.1.1/docs/examples/monitoring/builtin-prometheus/demo-2.yaml
 clusterrole "prometheus-server" created
 serviceaccount "prometheus-server" created
 clusterrolebinding "prometheus-server" created
 deployment "prometheus-server" created
 service "prometheus-service" created
-
-# Verify RBAC stuffs
-$ kubectl get clusterroles
-NAME                AGE
-prometheus-server   57s
-
-$ kubectl get clusterrolebindings
-NAME                AGE
-prometheus-server   1m
-
-
-$ kubectl get serviceaccounts -n demo
-NAME                SECRETS   AGE
-default             1         48m
-prometheus-server   1         1m
-```
-
-### In RBAC \*not\* enabled cluster
-
-If RBAC *is not* enabled, run the following command to prepare your cluster for this tutorial:
-
-```console
-$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/7.1.1/docs/examples/monitoring/builtin-prometheus/demo-2.yaml
-deployment "prometheus-server" created
-service "prometheus-service" created
-
-
-$ kubectl get pods -n demo --watch
-NAME                                     READY     STATUS    RESTARTS   AGE
-mgo-mon-prometheus-0                     2/2       Running   0          48m
-prometheus-server-79c7cf44fc-m95lm       1/1       Running   0          34s
 ```
 
 ### Prometheus Dashboard
