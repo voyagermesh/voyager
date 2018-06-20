@@ -9,12 +9,12 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface
@@ -28,13 +28,17 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variable:
 // PDNS_API_URL and PDNS_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	key := os.Getenv("PDNS_API_KEY")
-	hostUrl, err := url.Parse(os.Getenv("PDNS_API_URL"))
+	values, err := env.Get("PDNS_API_KEY", "PDNS_API_URL")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("PDNS: %v", err)
 	}
 
-	return NewDNSProviderCredentials(hostUrl, key)
+	hostURL, err := url.Parse(values["PDNS_API_URL"])
+	if err != nil {
+		return nil, fmt.Errorf("PDNS: %v", err)
+	}
+
+	return NewDNSProviderCredentials(hostURL, values["PDNS_API_KEY"])
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a
@@ -90,7 +94,7 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	rrsets := rrSets{
 		RRSets: []rrSet{
-			rrSet{
+			{
 				Name:       name,
 				ChangeType: "REPLACE",
 				Type:       "TXT",
@@ -107,12 +111,7 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	_, err = c.makeRequest("PATCH", zone.URL, bytes.NewReader(body))
-	if err != nil {
-		fmt.Println("here")
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // CleanUp removes the TXT record matching the specified parameters
@@ -131,7 +130,7 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	rrsets := rrSets{
 		RRSets: []rrSet{
-			rrSet{
+			{
 				Name:       set.Name,
 				Type:       set.Type,
 				ChangeType: "DELETE",
@@ -144,11 +143,7 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	_, err = c.makeRequest("PATCH", zone.URL, bytes.NewReader(body))
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (c *DNSProvider) getHostedZone(fqdn string) (*hostedZone, error) {
@@ -220,7 +215,7 @@ func (c *DNSProvider) findTxtRecord(fqdn string) (*rrSet, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("No existing record found for %s", fqdn)
+	return nil, fmt.Errorf("no existing record found for %s", fqdn)
 }
 
 func (c *DNSProvider) getAPIVersion() {

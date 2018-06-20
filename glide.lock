@@ -1,5 +1,5 @@
-hash: e34fc93fea9418ccc740f22e66e42da60d3c3432971348055e02b48041466bfb
-updated: 2018-06-09T09:00:36.431017662-07:00
+hash: a0fd0ccd49ad3fd3014927875ac58c0cae461809782b2c56c58da72159fa0773
+updated: 2018-06-20T00:40:55.427157168-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -49,7 +49,7 @@ imports:
   - client/workload/v1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: f771c672ed25b25dd14cb4435aab6e8b4685907d
+  version: 85abe6c009de4b732e5963cb1ec82950efd2fdda
   subpackages:
   - apiextensions/v1beta1
   - core/v1
@@ -286,7 +286,7 @@ imports:
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/google/uuid
-  version: dec09d789f3dba190787f8b4454c7d3c936fed9e
+  version: 8c31c18f31ede9fc8eae72290a7e7a8064e9b3e3
 - name: github.com/googleapis/gnostic
   version: 0c5108395e2debce0d731cf0287ddf7242066aba
   subpackages:
@@ -374,7 +374,7 @@ imports:
   subpackages:
   - pbutil
 - name: github.com/miekg/dns
-  version: f90eb8fb4590a3c81327ccca86ed4c4ca898c73d
+  version: 5d001d020961ae1c184f9f8152fdc73810481677
 - name: github.com/mitchellh/go-homedir
   version: 3864e76763d94a6df2f9960b16a20a33da9f9a66
 - name: github.com/mitchellh/go-ps
@@ -482,8 +482,7 @@ imports:
 - name: github.com/ryanuber/go-glob
   version: 256dc444b735e061061cf46c809487313d5b0065
 - name: github.com/sergi/go-diff
-  version: 24e2351369ec4949b2ed0dc5c477afdd4c4034e8
-  repo: https://github.com/sergi/go-diff
+  version: 97b2266dfe4bd4ea1b81a463322f04f8b724801e
   subpackages:
   - diffmatchpatch
 - name: github.com/shurcooL/sanitized_anchor_name
@@ -515,12 +514,13 @@ imports:
   subpackages:
   - codec
 - name: github.com/xenolf/lego
-  version: 22d663752e7d4a2da895188fbe8321c60b2c368f
+  version: e80b3cfff9c2f8865a1bc407efb4964260715252
   repo: https://github.com/appscode/lego.git
   vcs: git
   subpackages:
   - acme
-  - acmev2
+  - log
+  - platform/config/env
   - providers/dns/azure
   - providers/dns/cloudflare
   - providers/dns/digitalocean
@@ -530,7 +530,6 @@ imports:
   - providers/dns/fastdns
   - providers/dns/gandi
   - providers/dns/godaddy
-  - providers/dns/googlecloud
   - providers/dns/linode
   - providers/dns/namecheap
   - providers/dns/ovh
@@ -538,12 +537,11 @@ imports:
   - providers/dns/route53
   - providers/dns/vultr
 - name: github.com/yudai/gojsondiff
-  version: 0525c875b75ca60b9e67ddc44496aa16f21066b0
+  version: 7b1b7adf999dab73a6eb02669c3d82dbb27a3dd6
   subpackages:
   - formatter
 - name: github.com/yudai/golcs
   version: d1c525dea8ce39ea9a783d33cf08932305373f2c
-  repo: https://github.com/yudai/golcs
 - name: golang.org/x/crypto
   version: 81e90905daefcd6fd217b62423c0908922eadb30
   subpackages:
@@ -554,7 +552,6 @@ imports:
 - name: golang.org/x/net
   version: 1c05540f6879653db88113bc4a2b70aec4bd491f
   subpackages:
-  - bpf
   - context
   - context/ctxhttp
   - html
@@ -563,11 +560,7 @@ imports:
   - http2
   - http2/hpack
   - idna
-  - internal/iana
-  - internal/socket
   - internal/timeseries
-  - ipv4
-  - ipv6
   - lex/httplex
   - publicsuffix
   - trace
@@ -622,12 +615,11 @@ imports:
   subpackages:
   - compute/v1
   - container/v1
-  - dns/v1
   - gensupport
   - googleapi
   - googleapi/internal/uritemplates
 - name: google.golang.org/appengine
-  version: b1f26356af11148e710935ed1ac8a7f5702c7612
+  version: 12d5545dc1cfa6047a286d5e853841b6471f4c19
   subpackages:
   - internal
   - internal/app_identity
@@ -675,13 +667,8 @@ imports:
   version: 06f5f3d67269ccec1fe5fe4134ba6e982984f7f5
 - name: gopkg.in/natefinch/lumberjack.v2
   version: 20b71e5b60d756d3d2f80def009790325acc2b23
-- name: gopkg.in/square/go-jose.v1
-  version: 6e50787b7338112747e64f32753fb4f9dbfb8f79
-  subpackages:
-  - cipher
-  - json
 - name: gopkg.in/square/go-jose.v2
-  version: f8f38de21b4dcd69d0413faf231983f5fd6634b1
+  version: 76dd09796242edb5b897103a75df2645c028c960
   subpackages:
   - cipher
   - json
@@ -1040,7 +1027,7 @@ imports:
   - util/retry
   - util/workqueue
 - name: k8s.io/kube-openapi
-  version: 8a9b82f00b3a86eac24681da3f9fe6c34c01cea2
+  version: bf40560368791a7dddfeea9b3cfcf89b34139f44
   subpackages:
   - pkg/builder
   - pkg/common

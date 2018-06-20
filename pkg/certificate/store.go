@@ -13,7 +13,7 @@ import (
 	"github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1/util"
 	vault "github.com/hashicorp/vault/api"
 	"github.com/pkg/errors"
-	"github.com/xenolf/lego/acmev2"
+	"github.com/xenolf/lego/acme"
 	core "k8s.io/api/core/v1"
 	k8serror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -96,7 +96,7 @@ func (s *CertStore) Get(crd *api.Certificate) (pemCrt, pemKey []byte, err error)
 	return
 }
 
-func (s *CertStore) Save(crd *api.Certificate, cert acme.CertificateResource) error {
+func (s *CertStore) Save(crd *api.Certificate, cert *acme.CertificateResource) error {
 	if crd.Spec.Storage.Vault != nil {
 		data := map[string]interface{}{
 			core.TLSCertKey:       string(cert.Certificate),
