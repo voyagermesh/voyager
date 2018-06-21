@@ -20,10 +20,46 @@ You can enable [haproxy-health-checks](https://www.haproxy.com/documentation/alo
 
 First deploy and expose a test server:
 
-```console
-$ kubectl run test-server --image=appscode/test-server:2.2
-$ kubectl expose deployment test-server --port=8080 --target-port=8080
-$ kubectl expose deployment test-server --port=9090 --target-port=9090
+```yaml
+$ kubectl apply -f test-server.yaml
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    run: test-server
+  name: test-server
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      run: test-server
+  template:
+    metadata:
+      labels:
+        run: test-server
+    spec:
+      containers:
+      - image: appscode/test-server:2.2
+        name: test-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: test-server
+  name: test-server
+  namespace: default
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: web
+  - port: 9090
+    targetPort: 9090
+    name: health
+  selector:
+    run: test-server
 ```
 
 Here, port 8080 will serve client's request and port 9090 will be used for health checks.
@@ -51,8 +87,8 @@ spec:
 Now we need to annotate the backend service to enable health check for that backend.
 
 ```console
-$ kc annotate svc test-server ingress.appscode.com/check="true"
-$ kc annotate svc test-server ingress.appscode.com/check-port="9090"
+$ kubectl annotate svc test-server ingress.appscode.com/check="true"
+$ kubectl annotate svc test-server ingress.appscode.com/check-port="9090"
 ```
 
 You can also specify the health-check behaviour using backend rules. For example:
