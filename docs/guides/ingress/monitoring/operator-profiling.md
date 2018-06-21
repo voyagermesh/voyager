@@ -64,6 +64,23 @@ Forwarding from [::1]:8443 -> 8443
 
 ![operator-profiler](/docs/images/monitoring/operator-profiler.png)
 
+To look at a 30-second CPU profile:
+
+```console
+$ go tool pprof https+insecure://localhost:8443/debug/pprof/profile
+Entering interactive mode (type "help" for commands, "o" for options)
+(pprof) top10
+(pprof) pdf
+```
+
+To look at the heap profile:
+
+```console
+$ go tool pprof https+insecure://localhost:8443/debug/pprof/heap
+(pprof) top10
+(pprof) pdf
+```
+
 4. Once you are done, remove access to `system:anonymous` user.
 
 ```console
