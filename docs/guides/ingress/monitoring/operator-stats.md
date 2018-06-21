@@ -20,7 +20,7 @@ Voyager operator exposes Prometheus ready metrics via the following endpoints on
 
 Follow the steps below to view the metrics:
 
-1. Give `system:anonymous` user access to `/metrics` url.
+1. Give `system:anonymous` user access to `/metrics` url. **This is not safe to do on a production cluster.**
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
