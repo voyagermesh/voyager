@@ -65,3 +65,11 @@ Forwarding from [::1]:8443 -> 8443
 3. Now, visit the url: https://127.0.0.1:8443/metrics
 
 ![operator-metrics](/docs/images/monitoring/operator-metrics.png)
+
+4. Once you are done, remove access to `system:anonymous` user.
+
+```console
+$ kubectl delete -f docs/examples/monitoring/metrics-collector.yaml
+clusterrole.rbac.authorization.k8s.io "appscode:system:metrics-collector" deleted
+clusterrolebinding.rbac.authorization.k8s.io "appscode:system:metrics-collector" deleted
+```
