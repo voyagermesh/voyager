@@ -77,3 +77,5 @@ Below is the full list of supported annotations:
 | [ingress.appscode.com/workload-kind](/docs/guides/ingress/pod-placement.md#choosing-workload-kind) | string | `Deployment` |
 | [ingress.appscode.com/node-selector](/docs/guides/ingress/pod-placement.md#using-node-selector) | map | |
 | [ingress.appscode.com/tolerations](/docs/guides/ingress/pod-placement.md#using-taints-and-toleration) | array | |
+| [ingress.appscode.com/check](/docs/guides/ingress/configuration/health-check.md) | bool | `false` |
+| [ingress.appscode.com/check-port](/docs/guides/ingress/configuration/health-check.md) | int | |
