@@ -56,6 +56,7 @@ Below is the full list of supported annotations:
 | [ingress.appscode.com/ssl-passthrough](/docs/guides/ingress/configuration/ssl-passthrough.md) | bool | `false` |
 | [ingress.appscode.com/rewrite-target](/docs/guides/ingress/configuration/rewrite-target.md) | string | |
 | [ingress.appscode.com/keep-source-ip](/docs/guides/ingress/configuration/keep-source-ip.md) | bool | `false` |
+| [ingress.appscode.com/health-check-nodeport](/docs/guides/ingress/configuration/keep-source-ip.md) | int | |
 | [ingress.appscode.com/load-balancer-ip](/docs/guides/ingress/configuration/loadbalancer-ip.md) | string | |
 | [ingress.appscode.com/annotations-pod](/docs/guides/ingress/configuration/pod-annotations.md) | map | |
 | [ingress.appscode.com/annotations-service](/docs/guides/ingress/configuration/service-annotations.md) | map | |

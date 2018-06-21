@@ -81,6 +81,9 @@ const (
 	// Ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
 	KeepSourceIP = EngressKey + "/" + "keep-source-ip"
 
+	// https://github.com/appscode/voyager/issues/1128
+	HealthCheckNodeport = EngressKey + "/" + "health-check-nodeport"
+
 	// Enforces the use of the PROXY protocol over any connection accepted by HAProxy.
 	AcceptProxy = EngressKey + "/" + "accept-proxy"
 
@@ -292,6 +295,7 @@ func init() {
 	registerParser(SSLPassthrough, meta.GetBool)
 	registerParser(StatsOn, meta.GetBool)
 	registerParser(KeepSourceIP, meta.GetBool)
+	registerParser(HealthCheckNodeport, meta.GetInt)
 	registerParser(AcceptProxy, meta.GetBool)
 	registerParser(MaxConnections, meta.GetInt)
 	registerParser(StatsPort, meta.GetInt)
@@ -585,6 +589,11 @@ func (r Ingress) PodsAnnotations() (map[string]string, bool) {
 func (r Ingress) KeepSourceIP() bool {
 	v, _ := get[KeepSourceIP](r.Annotations)
 	return v.(bool)
+}
+
+func (r Ingress) HealthCheckNodeport() int {
+	v, _ := get[HealthCheckNodeport](r.Annotations)
+	return v.(int)
 }
 
 func (r Ingress) AcceptProxy() bool {
