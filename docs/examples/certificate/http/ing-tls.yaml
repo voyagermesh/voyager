@@ -8,8 +8,8 @@ spec:
   - hosts:
     - kiteci.com
     ref:
-      kind: Certificate
-      name: kitecicom
+      kind: Secret
+      name: tls-kitecicom
   rules:
   - host: kiteci.com
     http:

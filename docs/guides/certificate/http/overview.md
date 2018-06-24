@@ -137,8 +137,8 @@ spec:
   - hosts:
     - kiteci.com
     ref:
-      kind: Certificate
-      name: kitecicom
+      kind: Secret
+      name: tls-kitecicom
 ```
 
 After editing, your Ingress should look similar to [this](/docs/examples/certificate/http/ing-tls-acme.yaml).
