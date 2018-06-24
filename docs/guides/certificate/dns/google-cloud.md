@@ -322,8 +322,8 @@ spec:
   - hosts:
     - www.kiteci.com
     ref:
-      kind: Certificate
-      name: kitecicom
+      kind: Secret
+      name: tls-kitecicom
   rules:
   - host: www.kiteci.com
     http:
