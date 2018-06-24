@@ -81,7 +81,7 @@ There are several options:
 The above example shows how to issue a SANS certificate with multiple domains. The only restriction is that all domains must be using the same DNS provider account. They can use different domain registrars.
 
 ### How to issue Wildcard certificates via Let's Encrypt?
-Voyager supports issuing wildcard certificates using Let's Encrypt since version 7.1.1. To issue wildcard domain, set the domain name in your certificate crd as `"*.yourdomain.com"`. Please note that wildcard domain is only supported with DNS challenges and can't be issued via HTTP challenge.
+Voyager supports issuing wildcard certificates using Let's Encrypt since version 7.0.0. To issue wildcard domain, set the domain name in your certificate crd as `"*.yourdomain.com"`. Please note that wildcard domain is only supported with DNS challenges and can't be issued via HTTP challenge.
 
 ### Does Voyager support OCSP stapling?
 Voyager currently does not issue certificates that use OCSP stapling. See [here](https://github.com/appscode/voyager/issues/531) for prior discussions.
