@@ -357,8 +357,8 @@ spec:
   - hosts:
     - www.kiteci.pro
     ref:
-      kind: Certificate
-      name: kitecipro
+      kind: Secret
+      name: tls-kitecipro
   rules:
   - host: www.kiteci.pro
     http:

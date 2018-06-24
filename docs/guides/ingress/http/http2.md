@@ -33,8 +33,8 @@ spec:
   - hosts:
     - host.example.com
     ref:
-      kind: Certificate
-      name: host
+      kind: Secret
+      name: tls-host
   rules:
   - host: host.example.com
     http:
