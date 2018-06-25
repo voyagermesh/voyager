@@ -1,13 +1,13 @@
 ---
 title: Exposing Service | Kubernetes Ingress
 menu:
-  product_voyager_7.1.1:
+  product_voyager_7.2.0:
     identifier: single-svc-http
     name: Single Service
     parent: http-ingress
     weight: 10
 product_name: voyager
-menu_name: product_voyager_7.1.1
+menu_name: product_voyager_7.2.0
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
