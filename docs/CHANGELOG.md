@@ -17,9 +17,8 @@ aliases:
 
 # Change Log
 
-## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
-
-[Full Changelog](https://github.com/appscode/voyager/compare/7.1.1...HEAD)
+## [7.2.0](https://github.com/appscode/voyager/tree/7.2.0) (2018-06-25)
+[Full Changelog](https://github.com/appscode/voyager/compare/7.1.1...7.2.0)
 
 **Implemented enhancements:**
 
@@ -42,23 +41,24 @@ aliases:
 
 **Merged pull requests:**
 
+- Preparep docs for 7.2.0 release [\#1160](https://github.com/appscode/voyager/pull/1160) ([tamalsaha](https://github.com/tamalsaha))
 - Use secrets for TLS connections [\#1159](https://github.com/appscode/voyager/pull/1159) ([tamalsaha](https://github.com/tamalsaha))
 - Document operator profiler [\#1158](https://github.com/appscode/voyager/pull/1158) ([tamalsaha](https://github.com/tamalsaha))
-- Document how to view operator metrics [\#1157](https://github.com/appscode/voyager/pull/1157) ([tamalsaha](https://github.com/tamalsaha))
 - Added docs for backend health check [\#1156](https://github.com/appscode/voyager/pull/1156) ([diptadas](https://github.com/diptadas))
-- Fix fmt string in validator [\#1155](https://github.com/appscode/voyager/pull/1155) ([tamalsaha](https://github.com/tamalsaha))
 - Fix fmt string in validator [\#1154](https://github.com/appscode/voyager/pull/1154) ([tamalsaha](https://github.com/tamalsaha))
 - Allow user to set healthCheckNodePort [\#1153](https://github.com/appscode/voyager/pull/1153) ([diptadas](https://github.com/diptadas))
-- Always use RBAC-enabled instructions for monitoring tutorials [\#1152](https://github.com/appscode/voyager/pull/1152) ([tamalsaha](https://github.com/tamalsaha))
-- Expose webhook server to expose operator metrics [\#1151](https://github.com/appscode/voyager/pull/1151) ([tamalsaha](https://github.com/tamalsaha))
-- Revendor dependencies [\#1150](https://github.com/appscode/voyager/pull/1150) ([tamalsaha](https://github.com/tamalsaha))
 - Pause certificate checks [\#1149](https://github.com/appscode/voyager/pull/1149) ([tamalsaha](https://github.com/tamalsaha))
 - Parse tls-backend annotation for external service [\#1148](https://github.com/appscode/voyager/pull/1148) ([enver](https://github.com/enver))
 - Revendor xenolf/lego [\#1147](https://github.com/appscode/voyager/pull/1147) ([tamalsaha](https://github.com/tamalsaha))
 - Move openapi-spec to api folder [\#1143](https://github.com/appscode/voyager/pull/1143) ([tamalsaha](https://github.com/tamalsaha))
-- Use one global event recorder [\#1141](https://github.com/appscode/voyager/pull/1141) ([tamalsaha](https://github.com/tamalsaha))
 - Node port services are supported by external-dns [\#1138](https://github.com/appscode/voyager/pull/1138) ([tamalsaha](https://github.com/tamalsaha))
 - Forward X-Auth-Request-Id-Token header in oauth [\#1126](https://github.com/appscode/voyager/pull/1126) ([diptadas](https://github.com/diptadas))
+- Document how to view operator metrics [\#1157](https://github.com/appscode/voyager/pull/1157) ([tamalsaha](https://github.com/tamalsaha))
+- Fix fmt string in validator [\#1155](https://github.com/appscode/voyager/pull/1155) ([tamalsaha](https://github.com/tamalsaha))
+- Always use RBAC-enabled instructions for monitoring tutorials [\#1152](https://github.com/appscode/voyager/pull/1152) ([tamalsaha](https://github.com/tamalsaha))
+- Expose webhook server to expose operator metrics [\#1151](https://github.com/appscode/voyager/pull/1151) ([tamalsaha](https://github.com/tamalsaha))
+- Revendor dependencies [\#1150](https://github.com/appscode/voyager/pull/1150) ([tamalsaha](https://github.com/tamalsaha))
+- Use one global event recorder [\#1141](https://github.com/appscode/voyager/pull/1141) ([tamalsaha](https://github.com/tamalsaha))
 
 ## [7.1.1](https://github.com/appscode/voyager/tree/7.1.1) (2018-06-13)
 [Full Changelog](https://github.com/appscode/voyager/compare/7.1.0...7.1.1)
