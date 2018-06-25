@@ -1,10 +1,10 @@
 ---
 title: TLS
 menu:
-  product_voyager_7.1.1:
+  product_voyager_7.2.0:
     identifier: tls-ingress
     name: TLS
     parent: ingress-guides
     weight: 15
-menu_name: product_voyager_7.1.1
+menu_name: product_voyager_7.2.0
 ---

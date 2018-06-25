@@ -1,10 +1,10 @@
 ---
 title: TCP
 menu:
-  product_voyager_7.1.1:
+  product_voyager_7.2.0:
     identifier: tcp-ingress
     name: TCP
     parent: ingress-guides
     weight: 20
-menu_name: product_voyager_7.1.1
+menu_name: product_voyager_7.2.0
 ---

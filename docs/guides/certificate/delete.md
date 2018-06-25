@@ -1,13 +1,13 @@
 ---
 title: Delete Certificate | Voyager
 menu:
-  product_voyager_7.1.1:
+  product_voyager_7.2.0:
     identifier: delete-certificate
     name: Delete
     parent: certificate-guides
     weight: 20
 product_name: voyager
-menu_name: product_voyager_7.1.1
+menu_name: product_voyager_7.2.0
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).

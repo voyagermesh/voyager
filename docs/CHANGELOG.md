@@ -2,20 +2,63 @@
 title: Changelog | Voyager
 description: Changelog
 menu:
-  product_voyager_7.1.1:
+  product_voyager_7.2.0:
     identifier: changelog-voyager
     name: Changelog
     parent: welcome
     weight: 10
 product_name: voyager
-menu_name: product_voyager_7.1.1
+menu_name: product_voyager_7.2.0
 section_menu_id: welcome
-url: /products/voyager/7.1.1/welcome/changelog/
+url: /products/voyager/7.2.0/welcome/changelog/
 aliases:
-  - /products/voyager/7.1.1/CHANGELOG/
+  - /products/voyager/7.2.0/CHANGELOG/
 ---
 
 # Change Log
+
+## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
+
+[Full Changelog](https://github.com/appscode/voyager/compare/7.1.1...HEAD)
+
+**Implemented enhancements:**
+
+- Allow user to set healthCheckNodePort for LoadBalancer [\#1128](https://github.com/appscode/voyager/issues/1128)
+
+**Fixed bugs:**
+
+- Certificate renew fails [\#1023](https://github.com/appscode/voyager/issues/1023)
+- Operator's memory usage over time [\#1004](https://github.com/appscode/voyager/issues/1004)
+
+**Closed issues:**
+
+- 4xx and 5xx stats are not reported via prometheus exporter [\#1146](https://github.com/appscode/voyager/issues/1146)
+- Release java client for Voyager [\#1142](https://github.com/appscode/voyager/issues/1142)
+- Document ingress.appscode.com/check  [\#1140](https://github.com/appscode/voyager/issues/1140)
+- tls-backend annotation ignored for external service [\#1139](https://github.com/appscode/voyager/issues/1139)
+- Revendor lego [\#1137](https://github.com/appscode/voyager/issues/1137)
+- support forwarding authorization header for oauth2\_proxy [\#1073](https://github.com/appscode/voyager/issues/1073)
+- Pause Certificate [\#1022](https://github.com/appscode/voyager/issues/1022)
+
+**Merged pull requests:**
+
+- Use secrets for TLS connections [\#1159](https://github.com/appscode/voyager/pull/1159) ([tamalsaha](https://github.com/tamalsaha))
+- Document operator profiler [\#1158](https://github.com/appscode/voyager/pull/1158) ([tamalsaha](https://github.com/tamalsaha))
+- Document how to view operator metrics [\#1157](https://github.com/appscode/voyager/pull/1157) ([tamalsaha](https://github.com/tamalsaha))
+- Added docs for backend health check [\#1156](https://github.com/appscode/voyager/pull/1156) ([diptadas](https://github.com/diptadas))
+- Fix fmt string in validator [\#1155](https://github.com/appscode/voyager/pull/1155) ([tamalsaha](https://github.com/tamalsaha))
+- Fix fmt string in validator [\#1154](https://github.com/appscode/voyager/pull/1154) ([tamalsaha](https://github.com/tamalsaha))
+- Allow user to set healthCheckNodePort [\#1153](https://github.com/appscode/voyager/pull/1153) ([diptadas](https://github.com/diptadas))
+- Always use RBAC-enabled instructions for monitoring tutorials [\#1152](https://github.com/appscode/voyager/pull/1152) ([tamalsaha](https://github.com/tamalsaha))
+- Expose webhook server to expose operator metrics [\#1151](https://github.com/appscode/voyager/pull/1151) ([tamalsaha](https://github.com/tamalsaha))
+- Revendor dependencies [\#1150](https://github.com/appscode/voyager/pull/1150) ([tamalsaha](https://github.com/tamalsaha))
+- Pause certificate checks [\#1149](https://github.com/appscode/voyager/pull/1149) ([tamalsaha](https://github.com/tamalsaha))
+- Parse tls-backend annotation for external service [\#1148](https://github.com/appscode/voyager/pull/1148) ([enver](https://github.com/enver))
+- Revendor xenolf/lego [\#1147](https://github.com/appscode/voyager/pull/1147) ([tamalsaha](https://github.com/tamalsaha))
+- Move openapi-spec to api folder [\#1143](https://github.com/appscode/voyager/pull/1143) ([tamalsaha](https://github.com/tamalsaha))
+- Use one global event recorder [\#1141](https://github.com/appscode/voyager/pull/1141) ([tamalsaha](https://github.com/tamalsaha))
+- Node port services are supported by external-dns [\#1138](https://github.com/appscode/voyager/pull/1138) ([tamalsaha](https://github.com/tamalsaha))
+- Forward X-Auth-Request-Id-Token header in oauth [\#1126](https://github.com/appscode/voyager/pull/1126) ([diptadas](https://github.com/diptadas))
 
 ## [7.1.1](https://github.com/appscode/voyager/tree/7.1.1) (2018-06-13)
 [Full Changelog](https://github.com/appscode/voyager/compare/7.1.0...7.1.1)

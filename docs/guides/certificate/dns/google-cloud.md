@@ -2,13 +2,13 @@
 title: Issue Let's Encrypt certificate using Google Cloud DNS
 description: Issue Let's Encrypt certificate using Google Cloud DNS in Kubernetes
 menu:
-  product_voyager_7.1.1:
+  product_voyager_7.2.0:
     identifier: googlecloud-dns
     name: Google Cloud
     parent: dns-certificate
     weight: 15
 product_name: voyager
-menu_name: product_voyager_7.1.1
+menu_name: product_voyager_7.2.0
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
@@ -31,7 +31,7 @@ Deploy Voyager operator following instructions [here](/docs/setup/install.md).
 
 ```console
 # install without RBAC
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.1.1/hack/deploy/voyager.sh \
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.2.0/hack/deploy/voyager.sh \
   | bash -s -- --provider=gke
 ```
 
@@ -39,7 +39,7 @@ If you are trying this on a RBAC enabled cluster, pass the flag `--rbac` to inst
 
 ```console
 # install without RBAC
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.1.1/hack/deploy/voyager.sh \
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.2.0/hack/deploy/voyager.sh \
   | bash -s -- --provider=gke --rbac
 ```
 
