@@ -1,13 +1,13 @@
 ---
 title: NodePort Ingress | Voyager
 menu:
-  product_voyager_7.1.1:
+  product_voyager_7.2.0:
     identifier: nodeport-ingress
     name: NodePort
     parent: ingress-types-concepts
     weight: 15
 product_name: voyager
-menu_name: product_voyager_7.1.1
+menu_name: product_voyager_7.2.0
 section_menu_id: concepts
 ---
 
@@ -20,7 +20,7 @@ In `NodePort` type Ingress, HAProxy pods are exposed via a NodePort type Kuberne
 - First, deploy voyager operator.
 
 ```console
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.1.1/hack/deploy/voyager.sh \
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.2.0/hack/deploy/voyager.sh \
     | bash -s -- --provider=minikube
 ```
 

@@ -1227,7 +1227,7 @@ func (i *ingressInvocation) CreateTLSSecretForHost(name string, hosts []string) 
 	crt, key, err := i.CertStore.NewServerCertPair(
 		"server",
 		cert.AltNames{
-			IPs:      []net.IP{net.ParseIP("127.1.1.1"), net.ParseIP("192.168.99.100")},
+			IPs:      []net.IP{net.ParseIP("127.0.0.1"), net.ParseIP("192.168.99.100")},
 			DNSNames: hosts,
 		},
 	)
