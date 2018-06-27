@@ -185,9 +185,9 @@ type ExternalAuth struct {
 	Paths           []string
 }
 
-func (be *Backend) canonicalize(hasDuplicate bool, host, port, path string) {
+func (be *Backend) canonicalize(hasDuplicate bool, address, host, port, path string) {
 	if be.NameGenerated && hasDuplicate { // assign unique backend name
-		hashed := md5.Sum([]byte(host + "-" + port + "-" + path))
+		hashed := md5.Sum([]byte(address + "-" + host + "-" + port + "-" + path))
 		be.Name = be.Name + "-" + hex.EncodeToString(hashed[:])
 	}
 	sort.Slice(be.Endpoints, func(i, j int) bool { return be.Endpoints[i].IP < be.Endpoints[j].IP })

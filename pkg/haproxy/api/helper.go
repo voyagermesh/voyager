@@ -37,7 +37,7 @@ func (td *TemplateData) convertWildcardHostToEmpty() {
 func (td *TemplateData) sort() {
 	backends := td.countBackendNames()
 	if td.DefaultBackend != nil {
-		td.DefaultBackend.canonicalize(backends[td.DefaultBackend.Name] > 1, "", "", "")
+		td.DefaultBackend.canonicalize(backends[td.DefaultBackend.Name] > 1, "", "", "", "")
 	}
 	for x := range td.HTTPService {
 		svc := td.HTTPService[x]
@@ -64,6 +64,7 @@ func (td *TemplateData) sort() {
 				if host.Paths[z].Backend != nil {
 					host.Paths[z].Backend.canonicalize(
 						backends[host.Paths[z].Backend.Name] > 1,
+						svc.Address,
 						host.Host,
 						strconv.Itoa(svc.Port),
 						host.Paths[z].Path,
@@ -110,7 +111,7 @@ func (td *TemplateData) sort() {
 
 		for _, host := range svc.Hosts {
 			if host.Backend != nil {
-				host.Backend.canonicalize(backends[host.Backend.Name] > 1, host.Host, svc.Port, "")
+				host.Backend.canonicalize(backends[host.Backend.Name] > 1, svc.Address, host.Host, svc.Port, "")
 			}
 		}
 
