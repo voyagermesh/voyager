@@ -55,6 +55,9 @@ spec:
         resources:
           requests:
             cpu: "100m"
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+        beta.kubernetes.io/arch: amd64
       volumes:
       - hostPath:
           path: /etc/kubernetes
