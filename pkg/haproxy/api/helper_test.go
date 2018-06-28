@@ -59,7 +59,7 @@ func TestPathOrdering(t *testing.T) {
 		host := hosts[y]
 		for z := range host.Paths {
 			if host.Paths[z].Backend != nil {
-				host.Paths[z].Backend.canonicalize(false, host.Host, "80", host.Paths[z].Path)
+				host.Paths[z].Backend.canonicalize(false, "", host.Host, "80", host.Paths[z].Path)
 			}
 		}
 
