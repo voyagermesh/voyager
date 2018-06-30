@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"encoding/json"
+	"fmt"
 
 	hooks "github.com/appscode/kubernetes-webhook-util/admission/v1beta1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -63,6 +64,17 @@ func (a *CRDValidator) Admit(req *admission.AdmissionRequest) *admission.Admissi
 			obj.Annotations[api.APISchema] = api.APISchemaIngress
 		}
 		obj.Migrate()
+
+		if req.Operation == admission.Update {
+			oldObj := &api.Ingress{}
+			err := json.Unmarshal(req.OldObject.Raw, oldObj)
+			if err != nil {
+				return hooks.StatusBadRequest(err)
+			}
+			if obj.LBType() != oldObj.LBType() {
+				return hooks.StatusBadRequest(fmt.Errorf("can't change load balancer type from %s to %s", oldObj.LBType(), obj.LBType()))
+			}
+		}
 
 		err = obj.IsValid(a.CloudProvider)
 		if err != nil {
