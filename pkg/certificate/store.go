@@ -129,10 +129,10 @@ func (s *CertStore) Save(crd *api.Certificate, cert *acme.CertificateResource) e
 	if err != nil {
 		return errors.Errorf("failed to parse tls.crt for Certificate %s/%s. Reason: %s", crd.Namespace, crd.Name, err)
 	}
-	_, _, err = util.PatchCertificate(s.VoyagerClient.VoyagerV1beta1(), crd, func(in *api.Certificate) *api.Certificate {
+	_, err = util.UpdateCertificateStatus(s.VoyagerClient.VoyagerV1beta1(), crd, func(in *api.CertificateStatus) *api.CertificateStatus {
 		// Update certificate data to add Details Information
 		t := metav1.Now()
-		in.Status.LastIssuedCertificate = &api.CertificateDetails{
+		in.LastIssuedCertificate = &api.CertificateDetails{
 			SerialNumber:  crt.SerialNumber.String(),
 			NotBefore:     metav1.NewTime(crt.NotBefore),
 			NotAfter:      metav1.NewTime(crt.NotAfter),
@@ -142,19 +142,19 @@ func (s *CertStore) Save(crd *api.Certificate, cert *acme.CertificateResource) e
 		}
 
 		found := false
-		for i := range in.Status.Conditions {
-			if in.Status.Conditions[i].Type == api.CertificateIssued {
-				in.Status.Conditions[i].LastUpdateTime = t
+		for i := range in.Conditions {
+			if in.Conditions[i].Type == api.CertificateIssued {
+				in.Conditions[i].LastUpdateTime = t
 				found = true
 			}
 		}
 		if !found {
-			in.Status.Conditions = append(in.Status.Conditions, api.CertificateCondition{
+			in.Conditions = append(in.Conditions, api.CertificateCondition{
 				Type:           api.CertificateIssued,
 				LastUpdateTime: t,
 			})
 		}
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	return err
 }

@@ -79,6 +79,7 @@ options:
     --run-on-master                run voyager operator on master
     --enable-validating-webhook    enable/disable validating webhooks for voyager CRDs
     --template-cfgmap=CONFIGMAP    name of configmap with custom templates
+    --enable-status-subresource    If enabled, uses status sub resource for Voyager crds
     --enable-analytics             send usage events to Google Analytics (default: true)
     --uninstall                    uninstall voyager
     --purge                        purges Voyager crd objects and crds
@@ -128,6 +129,8 @@ Voyager implements a [validating admission webhook](https://kubernetes.io/docs/a
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.2.0/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider --enable-validating-webhook [--rbac]
 ```
+
+Voyager 7.3.0 or later releases can use status sub resource for CustomResourceDefintions. This is enabled by default for Kubernetes 1.11.0 or later releases. To disable this feature, pass the `--enable-status-subresource=false` flag.
 
 To use custom templates to render HAProxy configuration, visit [here](/docs/guides/ingress/configuration/custom-templates.md).
 

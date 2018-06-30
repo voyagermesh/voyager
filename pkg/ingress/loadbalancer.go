@@ -20,6 +20,7 @@ import (
 	"github.com/appscode/kutil/tools/analytics"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
+	"github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1/util"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
@@ -512,7 +513,7 @@ func (c *loadBalancerController) updateStatus() error {
 				return errors.WithStack(err)
 			}
 			ing.Status.LoadBalancer.Ingress = statuses
-			_, err = c.KubeClient.ExtensionsV1beta1().Ingresses(c.Ingress.Namespace).Update(ing)
+			_, err = c.KubeClient.ExtensionsV1beta1().Ingresses(c.Ingress.Namespace).UpdateStatus(ing)
 			if err != nil {
 				return errors.WithStack(err)
 			}
@@ -521,8 +522,10 @@ func (c *loadBalancerController) updateStatus() error {
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			ing.Status.LoadBalancer.Ingress = statuses
-			_, err = c.VoyagerClient.VoyagerV1beta1().Ingresses(c.Ingress.Namespace).Update(ing)
+			_, err = util.UpdateIngressStatus(c.VoyagerClient.VoyagerV1beta1(), ing, func(in *api.IngressStatus) *api.IngressStatus {
+				in.LoadBalancer.Ingress = statuses
+				return in
+			}, api.EnableStatusSubresource)
 			if err != nil {
 				return errors.WithStack(err)
 			}

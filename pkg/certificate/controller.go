@@ -276,7 +276,7 @@ func (c *Controller) renew() error {
 }
 
 func (c *Controller) processError(err error) error {
-	util.PatchCertificate(c.VoyagerClient.VoyagerV1beta1(), c.crd, func(in *api.Certificate) *api.Certificate {
+	util.UpdateCertificateStatus(c.VoyagerClient.VoyagerV1beta1(), c.crd, func(in *api.CertificateStatus) *api.CertificateStatus {
 		// Update certificate data to add Details Information
 		t := metav1.Now()
 		found := false
@@ -284,22 +284,22 @@ func (c *Controller) processError(err error) error {
 		if strings.Contains(err.Error(), "urn:acme:error:rateLimited") {
 			condType = api.CertificateRateLimited
 		}
-		for i := range in.Status.Conditions {
-			if in.Status.Conditions[i].Type == condType {
-				in.Status.Conditions[i].LastUpdateTime = t
-				in.Status.Conditions[i].Reason = err.Error()
+		for i := range in.Conditions {
+			if in.Conditions[i].Type == condType {
+				in.Conditions[i].LastUpdateTime = t
+				in.Conditions[i].Reason = err.Error()
 				found = true
 			}
 		}
 		if !found {
-			in.Status.Conditions = append(in.Status.Conditions, api.CertificateCondition{
+			in.Conditions = append(in.Conditions, api.CertificateCondition{
 				Type:           condType,
 				LastUpdateTime: t,
 				Reason:         err.Error(),
 			})
 		}
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	return err
 }
 
