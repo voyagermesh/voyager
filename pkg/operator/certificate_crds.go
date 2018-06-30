@@ -89,16 +89,6 @@ func (op *Operator) reconcileCertificate(key string) error {
 			glog.Infof("Skipping paused Certificate %s\n", key)
 			return nil
 		}
-		if _, err := op.MigrateCertificate(cert); err != nil {
-			op.recorder.Eventf(
-				cert.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonCertificateMigration,
-				"Reason: %s",
-				err.Error(),
-			)
-			return err
-		}
 		ctrl, err := certificate.NewController(op.KubeClient, op.VoyagerClient, op.Config, cert, op.recorder)
 		if err != nil {
 			op.recorder.Event(

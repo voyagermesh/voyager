@@ -1900,27 +1900,6 @@
     }
   },
   "definitions": {
-    "com.github.appscode.voyager.apis.voyager.v1beta1.ACMECertificateDetails": {
-      "required": [
-        "domain",
-        "certUrl",
-        "certStableUrl"
-      ],
-      "properties": {
-        "accountRef": {
-          "type": "string"
-        },
-        "certStableUrl": {
-          "type": "string"
-        },
-        "certUrl": {
-          "type": "string"
-        },
-        "domain": {
-          "type": "string"
-        }
-      }
-    },
     "com.github.appscode.voyager.apis.voyager.v1beta1.AuthOption": {
       "properties": {
         "basic": {
@@ -2058,10 +2037,6 @@
         "acmeUserSecretName"
       ],
       "properties": {
-        "acmeStagingURL": {
-          "description": "ACME server that will be used to obtain this certificate. Deprecated",
-          "type": "string"
-        },
         "acmeUserSecretName": {
           "description": "Secret contains ACMEUser information. Secret must contain a key `email` If empty tries to find an Secret via domains if not found create an ACMEUser and stores as a secret. Secrets key to be expected:\n ACME_EMAIL -\u003e required, if not provided it will through error.\n ACME_SERVER_URL -\u003e custom server url to generate certificates, default is lets encrypt.\n ACME_USER_DATA -\u003e user data, if not found one will be created for the provided email,\n   and stored in the key.",
           "type": "string"
@@ -2077,25 +2052,9 @@
             "type": "string"
           }
         },
-        "email": {
-          "description": "Deprecated",
-          "type": "string"
-        },
-        "httpProviderIngressReference": {
-          "description": "This is the ingress Reference that will be used if provider is http Deprecated",
-          "$ref": "#/definitions/com.github.appscode.voyager.apis.voyager.v1beta1.LocalTypedReference"
-        },
         "paused": {
           "description": "Indicates that the certificate is paused.",
           "type": "boolean"
-        },
-        "provider": {
-          "description": "Following fields are deprecated and will removed in future version. https://github.com/appscode/voyager/pull/506 Deprecated. DNS Provider.",
-          "type": "string"
-        },
-        "providerCredentialSecretName": {
-          "description": "ProviderCredentialSecretName is used to create the acme client, that will do needed processing in DNS. Deprecated",
-          "type": "string"
         },
         "storage": {
           "description": "Storage backend to store the certificates currently, kubernetes secret and vault.",
@@ -2105,14 +2064,6 @@
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.CertificateStatus": {
       "properties": {
-        "acmeUserSecretName": {
-          "description": "Deprecated",
-          "type": "string"
-        },
-        "certificateObtained": {
-          "description": "Deprecated",
-          "type": "boolean"
-        },
         "conditions": {
           "type": "array",
           "items": {
@@ -2122,16 +2073,8 @@
         "creationTime": {
           "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.Time"
         },
-        "details": {
-          "description": "Deprecated",
-          "$ref": "#/definitions/com.github.appscode.voyager.apis.voyager.v1beta1.ACMECertificateDetails"
-        },
         "lastIssuedCertificate": {
           "$ref": "#/definitions/com.github.appscode.voyager.apis.voyager.v1beta1.CertificateDetails"
-        },
-        "message": {
-          "description": "Deprecated",
-          "type": "string"
         }
       }
     },

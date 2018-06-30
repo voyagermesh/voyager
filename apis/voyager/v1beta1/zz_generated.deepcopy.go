@@ -204,7 +204,6 @@ func (in *CertificateSpec) DeepCopyInto(out *CertificateSpec) {
 	}
 	in.ChallengeProvider.DeepCopyInto(&out.ChallengeProvider)
 	in.Storage.DeepCopyInto(&out.Storage)
-	out.HTTPProviderIngressReference = in.HTTPProviderIngressReference
 	return
 }
 
@@ -243,15 +242,6 @@ func (in *CertificateStatus) DeepCopyInto(out *CertificateStatus) {
 		} else {
 			*out = new(CertificateDetails)
 			(*in).DeepCopyInto(*out)
-		}
-	}
-	if in.Details != nil {
-		in, out := &in.Details, &out.Details
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(ACMECertificateDetails)
-			**out = **in
 		}
 	}
 	return
