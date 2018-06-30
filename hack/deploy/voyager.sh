@@ -106,6 +106,7 @@ export VOYAGER_ENABLE_ANALYTICS=true
 export VOYAGER_UNINSTALL=0
 export VOYAGER_PURGE=0
 export VOYAGER_TEMPLATE_CONFIGMAP=
+export VOYAGER_ENABLE_STATUS_SUBRESOURCE=false
 
 export SCRIPT_LOCATION="curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.2.0/"
 if [[ "$APPSCODE_ENV" = "dev" || "$APPSCODE_ENV" = "test-concourse" ]]; then
@@ -118,6 +119,7 @@ fi
 
 KUBE_APISERVER_VERSION=$(kubectl version -o=json | $ONESSL jsonpath '{.serverVersion.gitVersion}')
 $ONESSL semver --check='<1.9.0' $KUBE_APISERVER_VERSION || { export VOYAGER_ENABLE_VALIDATING_WEBHOOK=true; }
+$ONESSL semver --check='<1.11.0' $KUBE_APISERVER_VERSION || { export VOYAGER_ENABLE_STATUS_SUBRESOURCE=true; }
 
 show_help() {
     echo "voyager.sh - install voyager operator"
@@ -136,6 +138,7 @@ show_help() {
     echo "    --run-on-master                run voyager operator on master"
     echo "    --enable-validating-webhook    enable/disable validating webhooks for voyager CRDs"
     echo "    --template-cfgmap=CONFIGMAP    name of configmap with custom templates"
+    echo "    --enable-status-subresource    If enabled, uses status sub resource for Voyager crds"
     echo "    --enable-analytics             send usage events to Google Analytics (default: true)"
     echo "    --uninstall                    uninstall voyager"
     echo "    --purge                        purges Voyager crd objects and crds"
@@ -194,6 +197,13 @@ while test $# -gt 0; do
                 export VOYAGER_ENABLE_VALIDATING_WEBHOOK=false
             else
                 export VOYAGER_ENABLE_VALIDATING_WEBHOOK=true
+            fi
+            shift
+            ;;
+        --enable-status-subresource*)
+            val=`echo $1 | sed -e 's/^[^=]*=//g'`
+            if [ "$val" = "false" ]; then
+                export VOYAGER_ENABLE_STATUS_SUBRESOURCE=false
             fi
             shift
             ;;
