@@ -783,7 +783,6 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"github.com/appscode/voyager/apis/voyager/v1beta1.Ingress": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
-					Description: "Custom Ingress type for Voyager.",
 					Properties: map[string]spec.Schema{
 						"kind": {
 							SchemaProps: spec.SchemaProps{
