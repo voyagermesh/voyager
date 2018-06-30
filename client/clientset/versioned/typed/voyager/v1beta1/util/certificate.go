@@ -79,7 +79,7 @@ func TryUpdateCertificate(c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, 
 	return
 }
 
-func UpateCertificateStatus(c cs.VoyagerV1beta1Interface, cur *api.Certificate, transform func(*api.CertificateStatus) *api.CertificateStatus, useSubresource ...bool) (*api.Certificate, error) {
+func UpdateCertificateStatus(c cs.VoyagerV1beta1Interface, cur *api.Certificate, transform func(*api.CertificateStatus) *api.CertificateStatus, useSubresource ...bool) (*api.Certificate, error) {
 	if len(useSubresource) > 1 {
 		return nil, errors.Errorf("invalid value passed for useSubresource: %v", useSubresource)
 	}

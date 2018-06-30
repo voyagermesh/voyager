@@ -61,6 +61,7 @@ voyager run [flags]
       --contention-profiling                                    Enable lock contention profiling, if profiling is enabled
       --custom-templates string                                 Glob pattern of custom HAProxy template files used to override built-in templates
       --docker-registry string                                  Docker image registry for HAProxy and Prometheus exporter (default "appscode")
+      --enable-status-subresource                               If true, uses sub resource for Voyager crds.
       --enable-swagger-ui                                       Enables swagger ui on the apiserver at /swagger-ui
       --exporter-image-tag string                               Tag of Docker image containing Prometheus exporter (default "7.2.0")
       --haproxy-image-tag string                                Tag of Docker image containing HAProxy binary (default "1.8.9-7.2.0-alpine")

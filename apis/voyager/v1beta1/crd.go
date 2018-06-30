@@ -7,6 +7,10 @@ import (
 	"k8s.io/kube-openapi/pkg/common"
 )
 
+var (
+	EnableStatusSubresource bool
+)
+
 func (r Ingress) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
 	return crdutils.NewCustomResourceDefinition(crdutils.Config{
 		Group:         SchemeGroupVersion.Group,
@@ -19,9 +23,10 @@ func (r Ingress) CustomResourceDefinition() *apiextensions.CustomResourceDefinit
 		Labels: crdutils.Labels{
 			LabelsMap: map[string]string{"app": "voyager"},
 		},
-		SpecDefinitionName:    "github.com/appscode/voyager/apis/voyager/v1beta1.Ingress",
-		EnableValidation:      true,
-		GetOpenAPIDefinitions: GetOpenAPIDefinitions,
+		SpecDefinitionName:      "github.com/appscode/voyager/apis/voyager/v1beta1.Ingress",
+		EnableValidation:        true,
+		GetOpenAPIDefinitions:   GetOpenAPIDefinitions,
+		EnableStatusSubresource: EnableStatusSubresource,
 	}, setNameSchema)
 }
 
@@ -37,9 +42,10 @@ func (c Certificate) CustomResourceDefinition() *apiextensions.CustomResourceDef
 		Labels: crdutils.Labels{
 			LabelsMap: map[string]string{"app": "voyager"},
 		},
-		SpecDefinitionName:    "github.com/appscode/voyager/apis/voyager/v1beta1.Certificate",
-		EnableValidation:      true,
-		GetOpenAPIDefinitions: GetOpenAPIDefinitions,
+		SpecDefinitionName:      "github.com/appscode/voyager/apis/voyager/v1beta1.Certificate",
+		EnableValidation:        true,
+		GetOpenAPIDefinitions:   GetOpenAPIDefinitions,
+		EnableStatusSubresource: EnableStatusSubresource,
 	})
 }
 
