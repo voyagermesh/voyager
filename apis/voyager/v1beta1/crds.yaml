@@ -1556,10 +1556,6 @@ spec:
               type: string
         spec:
           properties:
-            acmeStagingURL:
-              description: ACME server that will be used to obtain this certificate.
-                Deprecated
-              type: string
             acmeUserSecretName:
               description: |-
                 Secret contains ACMEUser information. Secret must contain a key `email` If empty tries to find an Secret via domains if not found create an ACMEUser and stores as a secret. Secrets key to be expected:
@@ -1600,34 +1596,9 @@ spec:
               items:
                 type: string
               type: array
-            email:
-              description: Deprecated
-              type: string
-            httpProviderIngressReference:
-              description: LocalTypedReference contains enough information to let
-                you inspect or modify the referred object.
-              properties:
-                apiVersion:
-                  description: API version of the referent.
-                  type: string
-                kind:
-                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
-                  type: string
-                name:
-                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
-                  type: string
             paused:
               description: Indicates that the certificate is paused.
               type: boolean
-            provider:
-              description: Following fields are deprecated and will removed in future
-                version. https://github.com/appscode/voyager/pull/506 Deprecated.
-                DNS Provider.
-              type: string
-            providerCredentialSecretName:
-              description: ProviderCredentialSecretName is used to create the acme
-                client, that will do needed processing in DNS. Deprecated
-              type: string
             storage:
               properties:
                 secret:
@@ -1648,12 +1619,6 @@ spec:
           - acmeUserSecretName
         status:
           properties:
-            acmeUserSecretName:
-              description: Deprecated
-              type: string
-            certificateObtained:
-              description: Deprecated
-              type: boolean
             conditions:
               items:
                 properties:
@@ -1676,20 +1641,6 @@ spec:
             creationTime:
               format: date-time
               type: string
-            details:
-              properties:
-                accountRef:
-                  type: string
-                certStableUrl:
-                  type: string
-                certUrl:
-                  type: string
-                domain:
-                  type: string
-              required:
-              - domain
-              - certUrl
-              - certStableUrl
             lastIssuedCertificate:
               properties:
                 accountRef:
@@ -1709,9 +1660,6 @@ spec:
               required:
               - certURL
               - certStableURL
-            message:
-              description: Deprecated
-              type: string
   version: v1beta1
 status:
   acceptedNames:

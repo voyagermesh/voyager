@@ -47,26 +47,6 @@ type CertificateSpec struct {
 	// Indicates that the certificate is paused.
 	// +optional
 	Paused bool `json:"paused,omitempty"`
-
-	// Following fields are deprecated and will removed in future version.
-	// https://github.com/appscode/voyager/pull/506
-	// Deprecated. DNS Provider.
-	Provider string `json:"provider,omitempty"`
-	// Deprecated
-	Email string `json:"email,omitempty"`
-
-	// This is the ingress Reference that will be used if provider is http
-	// Deprecated
-	HTTPProviderIngressReference LocalTypedReference `json:"httpProviderIngressReference,omitempty"`
-
-	// ProviderCredentialSecretName is used to create the acme client, that will do
-	// needed processing in DNS.
-	// Deprecated
-	ProviderCredentialSecretName string `json:"providerCredentialSecretName,omitempty"`
-
-	// ACME server that will be used to obtain this certificate.
-	// Deprecated
-	ACMEServerURL string `json:"acmeStagingURL,omitempty"`
 }
 
 type ChallengeProvider struct {
@@ -98,14 +78,6 @@ type CertificateStatus struct {
 	CreationTime          *metav1.Time           `json:"creationTime,omitempty"`
 	Conditions            []CertificateCondition `json:"conditions,omitempty"`
 	LastIssuedCertificate *CertificateDetails    `json:"lastIssuedCertificate,omitempty"`
-	// Deprecated
-	CertificateObtained bool `json:"certificateObtained,omitempty"`
-	// Deprecated
-	Message string `json:"message, omitempty"`
-	// Deprecated
-	ACMEUserSecretName string `json:"acmeUserSecretName,omitempty"`
-	// Deprecated
-	Details *ACMECertificateDetails `json:"details,omitempty"`
 }
 
 type ACMECertificateDetails struct {

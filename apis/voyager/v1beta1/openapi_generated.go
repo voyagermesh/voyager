@@ -326,46 +326,12 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
-						"provider": {
-							SchemaProps: spec.SchemaProps{
-								Description: "Following fields are deprecated and will removed in future version. https://github.com/appscode/voyager/pull/506 Deprecated. DNS Provider.",
-								Type:        []string{"string"},
-								Format:      "",
-							},
-						},
-						"email": {
-							SchemaProps: spec.SchemaProps{
-								Description: "Deprecated",
-								Type:        []string{"string"},
-								Format:      "",
-							},
-						},
-						"httpProviderIngressReference": {
-							SchemaProps: spec.SchemaProps{
-								Description: "This is the ingress Reference that will be used if provider is http Deprecated",
-								Ref:         ref("github.com/appscode/voyager/apis/voyager/v1beta1.LocalTypedReference"),
-							},
-						},
-						"providerCredentialSecretName": {
-							SchemaProps: spec.SchemaProps{
-								Description: "ProviderCredentialSecretName is used to create the acme client, that will do needed processing in DNS. Deprecated",
-								Type:        []string{"string"},
-								Format:      "",
-							},
-						},
-						"acmeStagingURL": {
-							SchemaProps: spec.SchemaProps{
-								Description: "ACME server that will be used to obtain this certificate. Deprecated",
-								Type:        []string{"string"},
-								Format:      "",
-							},
-						},
 					},
 					Required: []string{"challengeProvider", "acmeUserSecretName"},
 				},
 			},
 			Dependencies: []string{
-				"github.com/appscode/voyager/apis/voyager/v1beta1.CertificateStorage", "github.com/appscode/voyager/apis/voyager/v1beta1.ChallengeProvider", "github.com/appscode/voyager/apis/voyager/v1beta1.LocalTypedReference"},
+				"github.com/appscode/voyager/apis/voyager/v1beta1.CertificateStorage", "github.com/appscode/voyager/apis/voyager/v1beta1.ChallengeProvider"},
 		},
 		"github.com/appscode/voyager/apis/voyager/v1beta1.CertificateStatus": {
 			Schema: spec.Schema{
@@ -393,38 +359,11 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Ref: ref("github.com/appscode/voyager/apis/voyager/v1beta1.CertificateDetails"),
 							},
 						},
-						"certificateObtained": {
-							SchemaProps: spec.SchemaProps{
-								Description: "Deprecated",
-								Type:        []string{"boolean"},
-								Format:      "",
-							},
-						},
-						"message": {
-							SchemaProps: spec.SchemaProps{
-								Description: "Deprecated",
-								Type:        []string{"string"},
-								Format:      "",
-							},
-						},
-						"acmeUserSecretName": {
-							SchemaProps: spec.SchemaProps{
-								Description: "Deprecated",
-								Type:        []string{"string"},
-								Format:      "",
-							},
-						},
-						"details": {
-							SchemaProps: spec.SchemaProps{
-								Description: "Deprecated",
-								Ref:         ref("github.com/appscode/voyager/apis/voyager/v1beta1.ACMECertificateDetails"),
-							},
-						},
 					},
 				},
 			},
 			Dependencies: []string{
-				"github.com/appscode/voyager/apis/voyager/v1beta1.ACMECertificateDetails", "github.com/appscode/voyager/apis/voyager/v1beta1.CertificateCondition", "github.com/appscode/voyager/apis/voyager/v1beta1.CertificateDetails", "k8s.io/apimachinery/pkg/apis/meta/v1.Time"},
+				"github.com/appscode/voyager/apis/voyager/v1beta1.CertificateCondition", "github.com/appscode/voyager/apis/voyager/v1beta1.CertificateDetails", "k8s.io/apimachinery/pkg/apis/meta/v1.Time"},
 		},
 		"github.com/appscode/voyager/apis/voyager/v1beta1.CertificateStorage": {
 			Schema: spec.Schema{
