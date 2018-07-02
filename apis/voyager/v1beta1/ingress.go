@@ -16,6 +16,10 @@ const (
 // +k8s:openapi-gen=true
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
+// Ingress is a collection of rules that allow inbound connections to reach the
+// endpoints defined by a backend. An Ingress can be configured to give services
+// externally-reachable urls, load balance traffic, terminate SSL, offer name
+// based virtual hosting etc.
 type Ingress struct {
 	metav1.TypeMeta `json:",inline"`
 	// Standard object's metadata.

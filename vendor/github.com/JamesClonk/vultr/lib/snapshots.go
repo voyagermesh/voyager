@@ -13,8 +13,6 @@ type Snapshot struct {
 	Size        string `json:"size"`
 	Status      string `json:"status"`
 	Created     string `json:"date_created"`
-	OSID        string `json:"OSID"`
-	AppID       string `json:"APPID"`
 }
 
 type snapshots []Snapshot
