@@ -37,7 +37,10 @@ func generateCRDDefinitions() {
 		api.Certificate{}.CustomResourceDefinition(),
 	}
 	for _, crd := range crds {
-		crdutils.MarshallCrd(f, crd, "yaml")
+		err = crdutils.MarshallCrd(f, crd, "yaml")
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
