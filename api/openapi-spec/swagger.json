@@ -1927,6 +1927,7 @@
       }
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.Certificate": {
+      "description": "Certificate is a collection of domains for which a SSL certificate is issued from Let's Encrypt.",
       "properties": {
         "apiVersion": {
           "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
@@ -2230,6 +2231,7 @@
       }
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.Ingress": {
+      "description": "Ingress is a collection of rules that allow inbound connections to reach the endpoints defined by a backend. An Ingress can be configured to give services externally-reachable urls, load balance traffic, terminate SSL, offer name based virtual hosting etc.",
       "properties": {
         "apiVersion": {
           "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
