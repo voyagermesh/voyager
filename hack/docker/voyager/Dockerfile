@@ -1,4 +1,4 @@
-FROM haproxy:1.8.9-alpine
+FROM haproxy:1.8.12-alpine
 
 RUN set -x \
   && apk add --update --no-cache ca-certificates lua5.3 lua-socket \
