@@ -19,7 +19,7 @@ package azure
 import (
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/arm/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 )
 
 func findSecurityRule(rules []network.SecurityRule, rule network.SecurityRule) bool {

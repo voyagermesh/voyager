@@ -29,71 +29,79 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"github.com/appscode/kube-mon/api.AgentSpec": {
-			Schema: spec.Schema{
-				SchemaProps: spec.SchemaProps{
-					Properties: map[string]spec.Schema{
-						"agent": {
-							SchemaProps: spec.SchemaProps{
-								Description: "Valid values: coreos-prometheus-operator",
-								Type:        []string{"string"},
-								Format:      "",
-							},
+		"github.com/appscode/kube-mon/api.AgentSpec":      schema_githubcom_appscode_kube_mon_api_AgentSpec(ref),
+		"github.com/appscode/kube-mon/api.PrometheusSpec": schema_githubcom_appscode_kube_mon_api_PrometheusSpec(ref),
+	}
+}
+
+func schema_githubcom_appscode_kube_mon_api_AgentSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Properties: map[string]spec.Schema{
+					"agent": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Valid values: coreos-prometheus-operator",
+							Type:        []string{"string"},
+							Format:      "",
 						},
-						"prometheus": {
-							SchemaProps: spec.SchemaProps{
-								Ref: ref("github.com/appscode/kube-mon/api.PrometheusSpec"),
-							},
+					},
+					"prometheus": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/appscode/kube-mon/api.PrometheusSpec"),
 						},
 					},
 				},
 			},
-			Dependencies: []string{
-				"github.com/appscode/kube-mon/api.PrometheusSpec"},
 		},
-		"github.com/appscode/kube-mon/api.PrometheusSpec": {
-			Schema: spec.Schema{
-				SchemaProps: spec.SchemaProps{
-					Properties: map[string]spec.Schema{
-						"port": {
-							SchemaProps: spec.SchemaProps{
-								Description: "Port number for the exporter side car.",
-								Type:        []string{"integer"},
-								Format:      "int32",
-							},
+		Dependencies: []string{
+			"github.com/appscode/kube-mon/api.PrometheusSpec"},
+	}
+}
+
+func schema_githubcom_appscode_kube_mon_api_PrometheusSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Properties: map[string]spec.Schema{
+					"port": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Port number for the exporter side car.",
+							Type:        []string{"integer"},
+							Format:      "int32",
 						},
-						"namespace": {
-							SchemaProps: spec.SchemaProps{
-								Description: "Namespace of Prometheus. Service monitors will be created in this namespace.",
-								Type:        []string{"string"},
-								Format:      "",
-							},
+					},
+					"namespace": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Namespace of Prometheus. Service monitors will be created in this namespace.",
+							Type:        []string{"string"},
+							Format:      "",
 						},
-						"labels": {
-							SchemaProps: spec.SchemaProps{
-								Description: "Labels are key value pairs that is used to select Prometheus instance via ServiceMonitor labels.",
-								Type:        []string{"object"},
-								AdditionalProperties: &spec.SchemaOrBool{
-									Schema: &spec.Schema{
-										SchemaProps: spec.SchemaProps{
-											Type:   []string{"string"},
-											Format: "",
-										},
+					},
+					"labels": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Labels are key value pairs that is used to select Prometheus instance via ServiceMonitor labels.",
+							Type:        []string{"object"},
+							AdditionalProperties: &spec.SchemaOrBool{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Type:   []string{"string"},
+										Format: "",
 									},
 								},
 							},
 						},
-						"interval": {
-							SchemaProps: spec.SchemaProps{
-								Description: "Interval at which metrics should be scraped",
-								Type:        []string{"string"},
-								Format:      "",
-							},
+					},
+					"interval": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Interval at which metrics should be scraped",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
 				},
 			},
-			Dependencies: []string{},
 		},
+		Dependencies: []string{},
 	}
 }

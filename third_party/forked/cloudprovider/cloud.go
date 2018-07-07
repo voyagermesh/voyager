@@ -17,6 +17,7 @@ limitations under the License.
 package cloudprovider
 
 import (
+	"context"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -83,7 +84,7 @@ func GetLoadBalancerSourceRanges(service *apiv1.Service) (netsets.IPNet, error) 
 type Firewall interface {
 	// EnsureFirewall creates and/or update firewall rules.
 	// Implementations must treat the *apiv1.Service parameter as read-only and not modify it.
-	EnsureFirewall(service *apiv1.Service, hostnames []string) error
+	EnsureFirewall(ctx context.Context, service *apiv1.Service, hostnames []string) error
 
 	// EnsureFirewallDeleted deletes the specified firewall if it
 	// exists, returning nil if the firewall specified either didn't exist or
@@ -92,7 +93,7 @@ type Firewall interface {
 	// have multiple underlying components, meaning a Get could say that the firewall
 	// doesn't exist even if some part of it is still laying around.
 	// Implementations must treat the *apiv1.Service parameter as read-only and not modify it.
-	EnsureFirewallDeleted(service *apiv1.Service) error
+	EnsureFirewallDeleted(ctx context.Context, service *apiv1.Service) error
 }
 
 var InstanceNotFound = errors.New("instance not found")

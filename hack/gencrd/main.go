@@ -14,10 +14,7 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/golang/glog"
 	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	"k8s.io/apimachinery/pkg/apimachinery/announced"
-	"k8s.io/apimachinery/pkg/apimachinery/registered"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/kube-openapi/pkg/common"
 	"path/filepath"
@@ -46,16 +43,13 @@ func generateCRDDefinitions() {
 
 func generateSwaggerJson() {
 	var (
-		groupFactoryRegistry = make(announced.APIGroupFactoryRegistry)
-		registry             = registered.NewOrDie("")
 		Scheme               = runtime.NewScheme()
 		Codecs               = serializer.NewCodecFactory(Scheme)
 	)
 
-	install.Install(groupFactoryRegistry, registry, Scheme)
+	install.Install(Scheme)
 
 	apispec, err := openapi.RenderOpenAPISpec(openapi.Config{
-		Registry: registry,
 		Scheme:   Scheme,
 		Codecs:   Codecs,
 		Info: spec.InfoProps{
@@ -74,9 +68,9 @@ func generateSwaggerJson() {
 		OpenAPIDefinitions: []common.GetOpenAPIDefinitions{
 			v1beta1.GetOpenAPIDefinitions,
 		},
-		Resources: []schema.GroupVersionResource{
-			v1beta1.SchemeGroupVersion.WithResource(v1beta1.ResourcePluralCertificate),
-			v1beta1.SchemeGroupVersion.WithResource(v1beta1.ResourcePluralIngress),
+		Resources: []openapi.TypeInfo{
+			{v1beta1.SchemeGroupVersion, v1beta1.ResourcePluralCertificate, v1beta1.ResourceKindCertificate,  true},
+			{v1beta1.SchemeGroupVersion, v1beta1.ResourcePluralIngress, v1beta1.ResourceKindIngress, true},
 		},
 	})
 	if err != nil {

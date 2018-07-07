@@ -17,10 +17,11 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"net/http"
 
-	"github.com/Azure/azure-sdk-for-go/arm/compute"
-	"github.com/Azure/azure-sdk-for-go/arm/network"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2017-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 	"github.com/Azure/go-autorest/autorest"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -39,11 +40,11 @@ func checkResourceExistsFromError(err error) (bool, error) {
 	return false, v
 }
 
-func (az *Cloud) getVirtualMachine(nodeName types.NodeName) (vm compute.VirtualMachine, exists bool, err error) {
+func (az *Cloud) getVirtualMachine(ctx context.Context, nodeName types.NodeName) (vm compute.VirtualMachine, exists bool, err error) {
 	var realErr error
 
 	vmName := string(nodeName)
-	vm, err = az.VirtualMachinesClient.Get(az.ResourceGroup, vmName, "")
+	vm, err = az.VirtualMachinesClient.Get(ctx, az.ResourceGroup, vmName, "")
 
 	exists, realErr = checkResourceExistsFromError(err)
 	if realErr != nil {
@@ -57,10 +58,10 @@ func (az *Cloud) getVirtualMachine(nodeName types.NodeName) (vm compute.VirtualM
 	return vm, exists, err
 }
 
-func (az *Cloud) getSecurityGroup() (sg network.SecurityGroup, exists bool, err error) {
+func (az *Cloud) getSecurityGroup(ctx context.Context) (sg network.SecurityGroup, exists bool, err error) {
 	var realErr error
 
-	sg, err = az.SecurityGroupsClient.Get(az.ResourceGroup, az.SecurityGroupName, "")
+	sg, err = az.SecurityGroupsClient.Get(ctx, az.ResourceGroup, az.SecurityGroupName, "")
 
 	exists, realErr = checkResourceExistsFromError(err)
 	if realErr != nil {
