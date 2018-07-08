@@ -70,7 +70,7 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `apiserver.versionPriority`         | The ordering of this API inside of the group.                 | 15                    |
 | `apiserver.enableValidatingWebhook` | Configure apiserver as adission webhooks for Voyager CRDs     | `false`               |
 | `apiserver.ca`                      | CA certificate used by main Kubernetes api server             | ``                    |
-| `enableStatusSubresource`           | If true, uses status sub resource for Voyager crds            | `false`               |
+| `apiserver.enableStatusSubresource` | If true, uses status sub resource for Voyager crds            | `false`               |
 | `enableAnalytics`                   | Send usage events to Google Analytics                         | `true`                |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
