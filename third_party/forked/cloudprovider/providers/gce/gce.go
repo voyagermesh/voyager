@@ -17,6 +17,7 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -396,7 +397,7 @@ func (gce *GCECloud) GetSecurityGroupName(service *apiv1.Service) string {
 // Due to an interesting series of design decisions, this handles both creating
 // new load balancers and updating existing load balancers, recognizing when
 // each is needed.
-func (gce *GCECloud) EnsureFirewall(apiService *apiv1.Service, hostnames []string) error {
+func (gce *GCECloud) EnsureFirewall(ctx context.Context, apiService *apiv1.Service, hostnames []string) error {
 	hostSet := sets.NewString(hostnames...)
 	hosts, err := gce.getInstancesByNames(hostSet.List())
 	if err != nil {
@@ -687,7 +688,7 @@ func (gce *GCECloud) computeHostTags(hosts []*gceInstance) ([]string, error) {
 }
 
 // EnsureFirewallDeleted is an implementation of Firewall.EnsureFirewallDeleted.
-func (gce *GCECloud) EnsureFirewallDeleted(service *apiv1.Service) error {
+func (gce *GCECloud) EnsureFirewallDeleted(ctx context.Context, service *apiv1.Service) error {
 	fwName := gce.GetSecurityGroupName(service)
 	glog.V(2).Infof("EnsureFirewallDeleted(%v, %v, %v, %v)", service.Namespace, service.Name, fwName,
 		gce.region)

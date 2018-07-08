@@ -1,11 +1,12 @@
 package azure
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/arm/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	"github.com/golang/glog"
@@ -15,12 +16,12 @@ import (
 )
 
 // EnsureFirewall creates and/or update firewall rules.
-func (az *Cloud) EnsureFirewall(service *apiv1.Service, hostnames []string) error {
+func (az *Cloud) EnsureFirewall(ctx context.Context, service *apiv1.Service, hostnames []string) error {
 	serviceName := getServiceName(service)
 	glog.V(2).Infof("ensure(%s): START EnsureFirewall", serviceName)
 	hostname := hostnames[0]
 
-	machine, exists, err := az.getVirtualMachine(types.NodeName(hostname))
+	machine, exists, err := az.getVirtualMachine(ctx, types.NodeName(hostname))
 	if err != nil {
 		return err
 	} else if !exists {
@@ -35,7 +36,7 @@ func (az *Cloud) EnsureFirewall(service *apiv1.Service, hostnames []string) erro
 		}
 	}
 
-	nic, err := az.InterfacesClient.Get(az.ResourceGroup, nicName, "")
+	nic, err := az.InterfacesClient.Get(ctx, az.ResourceGroup, nicName, "")
 	exists, realErr := checkResourceExistsFromError(err)
 	if realErr != nil {
 		return realErr
@@ -45,7 +46,7 @@ func (az *Cloud) EnsureFirewall(service *apiv1.Service, hostnames []string) erro
 	}
 	internlIP := *(*nic.IPConfigurations)[0].PrivateIPAddress
 
-	sg, err := az.SecurityGroupsClient.Get(az.ResourceGroup, az.SecurityGroupName, "")
+	sg, err := az.SecurityGroupsClient.Get(ctx, az.ResourceGroup, az.SecurityGroupName, "")
 	if err != nil {
 		return err
 	}
@@ -56,8 +57,7 @@ func (az *Cloud) EnsureFirewall(service *apiv1.Service, hostnames []string) erro
 	}
 	if sgNeedsUpdate {
 		glog.V(3).Infof("ensure(%s): sg(%s) - updating", serviceName, *sg.Name)
-		_, errchan := az.SecurityGroupsClient.CreateOrUpdate(az.ResourceGroup, *sg.Name, sg, nil)
-		err := <-errchan
+		_, err := az.SecurityGroupsClient.CreateOrUpdate(ctx, az.ResourceGroup, *sg.Name, sg)
 		if err != nil {
 			return err
 		}
@@ -70,7 +70,7 @@ func (az *Cloud) EnsureFirewall(service *apiv1.Service, hostnames []string) erro
 // EnsureFirewallDeleted deletes the specified firewall rules if those
 // exist, returning nil if the firewall rules specified either didn't exist or
 // was successfully deleted.
-func (az *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
+func (az *Cloud) EnsureFirewallDeleted(ctx context.Context, service *apiv1.Service) error {
 	serviceName := getServiceName(service)
 
 	glog.V(2).Infof("delete(%s): START EnsureFirewallDeleted", serviceName)
@@ -78,7 +78,7 @@ func (az *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 	// reconcile logic is capable of fully reconcile, so we can use this to delete
 	service.Spec.Ports = []apiv1.ServicePort{}
 
-	sg, existsSg, err := az.getSecurityGroup()
+	sg, existsSg, err := az.getSecurityGroup(ctx)
 	if err != nil {
 		return err
 	}
@@ -90,8 +90,7 @@ func (az *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
 		}
 		if sgNeedsUpdate {
 			glog.V(3).Infof("delete(%s): sg(%s) - updating", serviceName, az.SecurityGroupName)
-			_, errchan := az.SecurityGroupsClient.CreateOrUpdate(az.ResourceGroup, *reconciledSg.Name, reconciledSg, nil)
-			err := <-errchan
+			_, err := az.SecurityGroupsClient.CreateOrUpdate(ctx, az.ResourceGroup, *reconciledSg.Name, reconciledSg)
 			if err != nil {
 				return err
 			}

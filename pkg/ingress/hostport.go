@@ -269,7 +269,7 @@ func (c *hostPortController) EnsureFirewall(svc *core.Service) error {
 			for i, node := range nodes.Items {
 				hostnames[i] = node.Name
 			}
-			err = fw.EnsureFirewall(svc, hostnames)
+			err = fw.EnsureFirewall(context.Background(), svc, hostnames)
 			if err != nil {
 				return err
 			}
@@ -296,7 +296,7 @@ func (c *hostPortController) Delete() {
 	}
 	if c.CloudManager != nil { // TODO @ Dipta: fix this
 		if fw, ok := c.CloudManager.Firewall(); ok {
-			err := fw.EnsureFirewallDeleted(&core.Service{
+			err := fw.EnsureFirewallDeleted(context.Background(), &core.Service{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      c.Ingress.OffshootName(),
 					Namespace: c.Ingress.Namespace,

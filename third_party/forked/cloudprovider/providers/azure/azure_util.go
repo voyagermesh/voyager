@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/arm/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
 	"github.com/pkg/errors"
 	apiv1 "k8s.io/api/core/v1"

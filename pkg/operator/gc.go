@@ -25,11 +25,13 @@ func (op *Operator) PurgeOffshootsWithDeprecatedLabels() error {
 					})
 			}
 
-			op.KubeClient.CoreV1().Services(ing.Namespace).DeleteCollection(
-				&metav1.DeleteOptions{},
-				metav1.ListOptions{
-					LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
-				})
+			if services, err := op.KubeClient.CoreV1().Services(ing.Namespace).List(metav1.ListOptions{
+				LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
+			}); err == nil {
+				for _, svc := range services.Items {
+					op.KubeClient.CoreV1().Services(ing.Namespace).Delete(svc.Name, &metav1.DeleteOptions{})
+				}
+			}
 		}
 		return err
 	}
@@ -51,11 +53,13 @@ func (op *Operator) PurgeOffshootsWithDeprecatedLabels() error {
 					})
 			}
 
-			op.KubeClient.CoreV1().Services(ing.Namespace).DeleteCollection(
-				&metav1.DeleteOptions{},
-				metav1.ListOptions{
-					LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
-				})
+			if services, err := op.KubeClient.CoreV1().Services(ing.Namespace).List(metav1.ListOptions{
+				LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
+			}); err == nil {
+				for _, svc := range services.Items {
+					op.KubeClient.CoreV1().Services(ing.Namespace).Delete(svc.Name, &metav1.DeleteOptions{})
+				}
+			}
 		}
 		return err
 	}

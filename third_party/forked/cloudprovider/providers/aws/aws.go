@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"strings"
@@ -1149,7 +1150,7 @@ func (c *Cloud) GetSecurityGroupName(service *apiv1.Service) string {
 }
 
 // EnsureFirewall implements Firewall.EnsureFirewall
-func (c *Cloud) EnsureFirewall(apiService *apiv1.Service, hostnames []string) error {
+func (c *Cloud) EnsureFirewall(ctx context.Context, apiService *apiv1.Service, hostnames []string) error {
 	glog.V(2).Infof("EnsureFirewall(%v, %v, %v, %v, %v)",
 		apiService.Namespace, apiService.Name, c.region, apiService.Spec.Ports, hostnames)
 
@@ -1295,7 +1296,7 @@ func (c *Cloud) updateInstanceSecurityGroups(ingressSecurityGroupId string, inst
 }
 
 // EnsureFirewallDeleted implements Firewall.EnsureFirewallDeleted.
-func (c *Cloud) EnsureFirewallDeleted(service *apiv1.Service) error {
+func (c *Cloud) EnsureFirewallDeleted(ctx context.Context, service *apiv1.Service) error {
 	//loadBalancerName := cloudprovider.GetLoadBalancerName(service)
 	// Collect the security groups to delete
 	var securityGroupID string

@@ -7,10 +7,7 @@ import (
 	hooks "github.com/appscode/kubernetes-webhook-util/admission/v1beta1"
 	admissionreview "github.com/appscode/kubernetes-webhook-util/registry/admissionreview/v1beta1"
 	"github.com/appscode/voyager/pkg/operator"
-	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
-	"k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/apimachinery/pkg/apimachinery"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -86,7 +83,7 @@ func (c *VoyagerConfig) Complete() CompletedConfig {
 
 // New returns a new instance of VoyagerServer from the given config.
 func (c completedConfig) New() (*VoyagerServer, error) {
-	genericServer, err := c.GenericConfig.New("voyager-apiserver", genericapiserver.EmptyDelegate) // completion is done in Complete, no need for a second time
+	genericServer, err := c.GenericConfig.New("voyager-apiserver", genericapiserver.NewEmptyDelegate()) // completion is done in Complete, no need for a second time
 	if err != nil {
 		return nil, err
 	}
@@ -101,33 +98,10 @@ func (c completedConfig) New() (*VoyagerServer, error) {
 	}
 
 	for _, versionMap := range admissionHooksByGroupThenVersion(c.OperatorConfig.AdmissionHooks...) {
-		accessor := meta.NewAccessor()
-		versionInterfaces := &meta.VersionInterfaces{
-			ObjectConvertor:  Scheme,
-			MetadataAccessor: accessor,
-		}
-		interfacesFor := func(version schema.GroupVersion) (*meta.VersionInterfaces, error) {
-			if version != admission.SchemeGroupVersion {
-				return nil, errors.Errorf("unexpected version %v", version)
-			}
-			return versionInterfaces, nil
-		}
-		restMapper := meta.NewDefaultRESTMapper([]schema.GroupVersion{admission.SchemeGroupVersion}, interfacesFor)
 		// TODO we're going to need a later k8s.io/apiserver so that we can get discovery to list a different group version for
 		// our endpoint which we'll use to back some custom storage which will consume the AdmissionReview type and give back the correct response
 		apiGroupInfo := genericapiserver.APIGroupInfo{
-			GroupMeta: apimachinery.GroupMeta{
-				// filled in later
-				//GroupVersion:  admissionVersion,
-				//GroupVersions: []schema.GroupVersion{admissionVersion},
-
-				SelfLinker:    runtime.SelfLinker(accessor),
-				RESTMapper:    restMapper,
-				InterfacesFor: interfacesFor,
-				InterfacesByVersion: map[schema.GroupVersion]*meta.VersionInterfaces{
-					admission.SchemeGroupVersion: versionInterfaces,
-				},
-			},
+			PrioritizedVersions:          []schema.GroupVersion{admission.SchemeGroupVersion},
 			VersionedResourcesStorageMap: map[string]map[string]rest.Storage{},
 			// TODO unhardcode this.  It was hardcoded before, but we need to re-evaluate
 			OptionsExternalVersion: &schema.GroupVersion{Version: "v1"},
@@ -139,17 +113,11 @@ func (c completedConfig) New() (*VoyagerServer, error) {
 		for _, admissionHooks := range versionMap {
 			for i := range admissionHooks {
 				admissionHook := admissionHooks[i]
-				admissionResource, singularResourceType := admissionHook.Resource()
+				admissionResource, _ := admissionHook.Resource()
 				admissionVersion := admissionResource.GroupVersion()
 
-				restMapper.AddSpecific(
-					admission.SchemeGroupVersion.WithKind("AdmissionReview"),
-					admissionResource,
-					admissionVersion.WithResource(singularResourceType),
-					meta.RESTScopeRoot)
-
 				// just overwrite the groupversion with a random one.  We don't really care or know.
-				apiGroupInfo.GroupMeta.GroupVersions = appendUniqueGroupVersion(apiGroupInfo.GroupMeta.GroupVersions, admissionVersion)
+				apiGroupInfo.PrioritizedVersions = appendUniqueGroupVersion(apiGroupInfo.PrioritizedVersions, admissionVersion)
 
 				admissionReview := admissionreview.NewREST(admissionHook.Admit)
 				v1alpha1storage, ok := apiGroupInfo.VersionedResourcesStorageMap[admissionVersion.Version]
@@ -160,9 +128,6 @@ func (c completedConfig) New() (*VoyagerServer, error) {
 				apiGroupInfo.VersionedResourcesStorageMap[admissionVersion.Version] = v1alpha1storage
 			}
 		}
-
-		// just prefer the first one in the list for consistency
-		apiGroupInfo.GroupMeta.GroupVersion = apiGroupInfo.GroupMeta.GroupVersions[0]
 
 		if err := s.GenericAPIServer.InstallAPIGroup(&apiGroupInfo); err != nil {
 			return nil, err
