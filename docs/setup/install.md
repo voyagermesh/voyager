@@ -153,12 +153,20 @@ $ helm install appscode/voyager --name voyager-operator --version 7.3.0 \
   --namespace kube-system \
   --set cloudProvider=$provider
 
-# Kubernetes 1.9.0 or later
+# Kubernetes 1.9.x - 1.10.x
 $ helm install appscode/voyager --name voyager-operator --version 7.3.0 \
   --namespace kube-system \
   --set cloudProvider=$provider \
   --set apiserver.ca="$(onessl get kube-ca)" \
   --set apiserver.enableValidatingWebhook=true
+
+# Kubernetes 1.11.x or later
+$ helm install appscode/voyager --name voyager-operator --version 7.3.0 \
+  --namespace kube-system \
+  --set cloudProvider=$provider \
+  --set apiserver.ca="$(onessl get kube-ca)" \
+  --set apiserver.enableValidatingWebhook=true \
+  --set apiserver.enableStatusSubresource=true
 ```
 
 To install `onessl`, run the following commands:
