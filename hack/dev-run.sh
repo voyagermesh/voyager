@@ -3,15 +3,15 @@
 REPOROOT="$GOPATH/src/github.com/appscode/voyager"
 
 tls-mounter() {
-    echo "Running tls-mounter for dev mode"
-    "${REPOROOT}"/hack/make.py
+  echo "Running tls-mounter for dev mode"
+  "${REPOROOT}"/hack/make.py
 
-    mkdir -p /tmp/tls-mount
+  mkdir -p /tmp/tls-mount
 
-    kubectl apply -f "${REPOROOT}"/apis/voyager/v1beta1/crds.yaml
-    kubectl create secret tls test-secret --cert="${REPOROOT}"/test/testdata/certs/ca.crt --key="${REPOROOT}"/test/testdata/certs/ca.key
+  kubectl apply -f "${REPOROOT}"/apis/voyager/v1beta1/crds.yaml
+  kubectl create secret tls test-secret --cert="${REPOROOT}"/test/testdata/certs/ca.crt --key="${REPOROOT}"/test/testdata/certs/ca.key
 
-    cat <<EOF | kubectl apply -f -
+  cat <<EOF | kubectl apply -f -
 apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
@@ -36,27 +36,29 @@ spec:
         path: /bar
 EOF
 
-    voyager tls-mounter \
-      --ingress-api-version=voyager.appscode.com/v1beta1 \
-      --ingress-name=test-ingress \
-      --cloud-provider=minikube \
-      --v=3 \
-      --kubeconfig="${HOME}"/.kube/config \
-      --mount=/tmp/tls-mount
+  voyager tls-mounter \
+    --ingress-api-version=voyager.appscode.com/v1beta1 \
+    --ingress-name=test-ingress \
+    --cloud-provider=minikube \
+    --v=3 \
+    --kubeconfig="${HOME}"/.kube/config \
+    --mount=/tmp/tls-mount
 }
 
 RETVAL=0
 if [ $# -eq 0 ]; then
-    echo "No Target specified"
-    exit 1
+  echo "No Target specified"
+  exit 1
 fi
 
 case "$1" in
-    tls-mounter)
-        tls-mounter
-        ;;
-    *)	(10)
-        echo $"Usage: $0 {tls-mounter}"
-        RETVAL=1
+  tls-mounter)
+    tls-mounter
+    ;;
+  *)
+    (10)
+    echo $"Usage: $0 {tls-mounter}"
+    RETVAL=1
+    ;;
 esac
 exit ${RETVAL}

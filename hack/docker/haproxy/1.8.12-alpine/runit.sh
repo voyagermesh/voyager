@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export HAPROXY_CONTROLLER_ARGS="$@"
-export > /etc/envvars
+export >/etc/envvars
 
 [[ $DEBUG == true ]] && set -x
 

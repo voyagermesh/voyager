@@ -14,19 +14,20 @@ TAG=1.8.12-$TAG
 DOCKER_REGISTRY=${DOCKER_REGISTRY:-appscode}
 
 build() {
-	pushd $(dirname "${BASH_SOURCE}")
-	cp $REPO_ROOT/dist/voyager/voyager-linux-amd64 voyager
-	chmod +x voyager
+  pushd $(dirname "${BASH_SOURCE}")
+  cp $REPO_ROOT/dist/voyager/voyager-linux-amd64 voyager
+  chmod +x voyager
 
-	# download socklog (`socklog` not available for `stretch`, use `jessie` deb instead)
-	curl -L -o socklog.deb http://ftp.us.debian.org/debian/pool/main/s/socklog/socklog_2.1.0-8_amd64.deb
-	# download auth-request.lua
-	curl -fsSL -o auth-request.lua https://raw.githubusercontent.com/appscode/haproxy-auth-request/v1.8.12/auth-request.lua
+  # download socklog (`socklog` not available for `stretch`, use `jessie` deb instead)
+  curl -L -o socklog.deb http://ftp.us.debian.org/debian/pool/main/s/socklog/socklog_2.1.0-8_amd64.deb
+  # download auth-request.lua
+  curl -fsSL -o auth-request.lua https://raw.githubusercontent.com/appscode/haproxy-auth-request/v1.8.12/auth-request.lua
 
-	local cmd="docker build -t $DOCKER_REGISTRY/$IMG:$TAG ."
-	echo $cmd; $cmd
-	rm voyager socklog.deb auth-request.lua
-	popd
+  local cmd="docker build -t $DOCKER_REGISTRY/$IMG:$TAG ."
+  echo $cmd
+  $cmd
+  rm voyager socklog.deb auth-request.lua
+  popd
 }
 
 binary_repo $@
