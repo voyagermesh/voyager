@@ -2,20 +2,45 @@
 title: Changelog | Voyager
 description: Changelog
 menu:
-  product_voyager_7.2.0:
+  product_voyager_7.3.0:
     identifier: changelog-voyager
     name: Changelog
     parent: welcome
     weight: 10
 product_name: voyager
-menu_name: product_voyager_7.2.0
+menu_name: product_voyager_7.3.0
 section_menu_id: welcome
-url: /products/voyager/7.2.0/welcome/changelog/
+url: /products/voyager/7.3.0/welcome/changelog/
 aliases:
-  - /products/voyager/7.2.0/CHANGELOG/
+  - /products/voyager/7.3.0/CHANGELOG/
 ---
 
 # Change Log
+
+## [7.3.0](https://github.com/appscode/voyager/tree/7.3.0) (2018-07-08)
+[Full Changelog](https://github.com/appscode/voyager/compare/7.2.0...7.3.0)
+
+**Fixed bugs:**
+
+- Throw validation error when LBType changes. [\#1172](https://github.com/appscode/voyager/pull/1172) ([tamalsaha](https://github.com/tamalsaha))
+
+**Closed issues:**
+
+- Backend name conflicts for multiple bind addresses [\#1164](https://github.com/appscode/voyager/issues/1164)
+- RBAC broken in 7.2 if using ClusterRole [\#1163](https://github.com/appscode/voyager/issues/1163)
+
+**Merged pull requests:**
+
+- Format shell scripts [\#1178](https://github.com/appscode/voyager/pull/1178) ([tamalsaha](https://github.com/tamalsaha))
+- Remove status from crd.yaml [\#1176](https://github.com/appscode/voyager/pull/1176) ([tamalsaha](https://github.com/tamalsaha))
+- Add description to crd structs [\#1174](https://github.com/appscode/voyager/pull/1174) ([tamalsaha](https://github.com/tamalsaha))
+- Use HAProxy 1.8.12 [\#1175](https://github.com/appscode/voyager/pull/1175) ([tamalsaha](https://github.com/tamalsaha))
+- Document enableStatusSubresource in chart [\#1171](https://github.com/appscode/voyager/pull/1171) ([tamalsaha](https://github.com/tamalsaha))
+- Remove deprecated fields from Certificate crd [\#1170](https://github.com/appscode/voyager/pull/1170) ([tamalsaha](https://github.com/tamalsaha))
+- Enable status subresource for voyager crds [\#1169](https://github.com/appscode/voyager/pull/1169) ([tamalsaha](https://github.com/tamalsaha))
+- Remove description on root schema [\#1168](https://github.com/appscode/voyager/pull/1168) ([conorbranagan](https://github.com/conorbranagan))
+- Add nodeSelector for the operator [\#1166](https://github.com/appscode/voyager/pull/1166) ([ocdi](https://github.com/ocdi))
+- Fixed auto-generated backend names [\#1165](https://github.com/appscode/voyager/pull/1165) ([diptadas](https://github.com/diptadas))
 
 ## [7.2.0](https://github.com/appscode/voyager/tree/7.2.0) (2018-06-25)
 [Full Changelog](https://github.com/appscode/voyager/compare/7.1.1...7.2.0)
@@ -42,7 +67,6 @@ aliases:
 **Merged pull requests:**
 
 - Preparep docs for 7.2.0 release [\#1160](https://github.com/appscode/voyager/pull/1160) ([tamalsaha](https://github.com/tamalsaha))
-- Use secrets for TLS connections [\#1159](https://github.com/appscode/voyager/pull/1159) ([tamalsaha](https://github.com/tamalsaha))
 - Document operator profiler [\#1158](https://github.com/appscode/voyager/pull/1158) ([tamalsaha](https://github.com/tamalsaha))
 - Added docs for backend health check [\#1156](https://github.com/appscode/voyager/pull/1156) ([diptadas](https://github.com/diptadas))
 - Fix fmt string in validator [\#1154](https://github.com/appscode/voyager/pull/1154) ([tamalsaha](https://github.com/tamalsaha))
@@ -53,6 +77,7 @@ aliases:
 - Move openapi-spec to api folder [\#1143](https://github.com/appscode/voyager/pull/1143) ([tamalsaha](https://github.com/tamalsaha))
 - Node port services are supported by external-dns [\#1138](https://github.com/appscode/voyager/pull/1138) ([tamalsaha](https://github.com/tamalsaha))
 - Forward X-Auth-Request-Id-Token header in oauth [\#1126](https://github.com/appscode/voyager/pull/1126) ([diptadas](https://github.com/diptadas))
+- Use secrets for TLS connections [\#1159](https://github.com/appscode/voyager/pull/1159) ([tamalsaha](https://github.com/tamalsaha))
 - Document how to view operator metrics [\#1157](https://github.com/appscode/voyager/pull/1157) ([tamalsaha](https://github.com/tamalsaha))
 - Fix fmt string in validator [\#1155](https://github.com/appscode/voyager/pull/1155) ([tamalsaha](https://github.com/tamalsaha))
 - Always use RBAC-enabled instructions for monitoring tutorials [\#1152](https://github.com/appscode/voyager/pull/1152) ([tamalsaha](https://github.com/tamalsaha))
