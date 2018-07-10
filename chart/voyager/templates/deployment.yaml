@@ -79,10 +79,19 @@ spec:
           path: {{ .Values.persistence.hostPath | quote }}
         name: cloudconfig
 {{- end -}}
-{{- if and .Values.criticalAddon (eq .Release.Namespace "kube-system") }}
+{{- if or .Values.tolerations (and .Values.criticalAddon (eq .Release.Namespace "kube-system")) }}
       tolerations:
+{{- if .Values.tolerations }}
+{{ toYaml .Values.tolerations | indent 8 }}
+{{- end -}}
+{{- if and .Values.criticalAddon (eq .Release.Namespace "kube-system") }}
       - key: CriticalAddonsOnly
         operator: Exists
+{{- end -}}
+{{- end -}}
+{{- if .Values.affinity }}
+      affinity:
+{{ toYaml .Values.affinity | indent 8 }}
 {{- end -}}
 {{- if .Values.nodeSelector }}
       nodeSelector:
