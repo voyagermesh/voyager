@@ -14,12 +14,18 @@ var (
 func (r Ingress) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
 	return crdutils.NewCustomResourceDefinition(crdutils.Config{
 		Group:         SchemeGroupVersion.Group,
-		Version:       SchemeGroupVersion.Version,
 		Plural:        ResourcePluralIngress,
 		Singular:      ResourceSingularIngress,
 		Kind:          ResourceKindIngress,
 		ShortNames:    []string{"ing"},
 		ResourceScope: string(apiextensions.NamespaceScoped),
+		Versions: []apiextensions.CustomResourceDefinitionVersion{
+			{
+				Name:    SchemeGroupVersion.Version,
+				Served:  true,
+				Storage: true,
+			},
+		},
 		Labels: crdutils.Labels{
 			LabelsMap: map[string]string{"app": "voyager"},
 		},
@@ -27,18 +33,42 @@ func (r Ingress) CustomResourceDefinition() *apiextensions.CustomResourceDefinit
 		EnableValidation:        true,
 		GetOpenAPIDefinitions:   GetOpenAPIDefinitions,
 		EnableStatusSubresource: EnableStatusSubresource,
+		AdditionalPrinterColumns: []apiextensions.CustomResourceColumnDefinition{
+			{
+				Name:     "Hosts",
+				Type:     "string",
+				JSONPath: ".spec.rules[0].host",
+			},
+			// Address? Port ?
+			{
+				Name:     "LoadBalancerIP",
+				Type:     "string",
+				JSONPath: ".status.loadBalancer.ingress",
+			},
+			{
+				Name:     "Age",
+				Type:     "date",
+				JSONPath: ".metadata.creationTimestamp",
+			},
+		},
 	}, setNameSchema)
 }
 
 func (c Certificate) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
 	return crdutils.NewCustomResourceDefinition(crdutils.Config{
 		Group:         SchemeGroupVersion.Group,
-		Version:       SchemeGroupVersion.Version,
 		Plural:        ResourcePluralCertificate,
 		Singular:      ResourceSingularCertificate,
 		Kind:          ResourceKindCertificate,
 		ShortNames:    []string{"cert"},
 		ResourceScope: string(apiextensions.NamespaceScoped),
+		Versions: []apiextensions.CustomResourceDefinitionVersion{
+			{
+				Name:    SchemeGroupVersion.Version,
+				Served:  true,
+				Storage: true,
+			},
+		},
 		Labels: crdutils.Labels{
 			LabelsMap: map[string]string{"app": "voyager"},
 		},
@@ -46,6 +76,18 @@ func (c Certificate) CustomResourceDefinition() *apiextensions.CustomResourceDef
 		EnableValidation:        true,
 		GetOpenAPIDefinitions:   GetOpenAPIDefinitions,
 		EnableStatusSubresource: EnableStatusSubresource,
+		AdditionalPrinterColumns: []apiextensions.CustomResourceColumnDefinition{
+			{
+				Name:     "Domains",
+				Type:     "string",
+				JSONPath: ".spec.domains[0]",
+			},
+			{
+				Name:     "Age",
+				Type:     "date",
+				JSONPath: ".metadata.creationTimestamp",
+			},
+		},
 	})
 }
 
