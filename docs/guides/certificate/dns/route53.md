@@ -2,13 +2,13 @@
 title: Issue Let's Encrypt certificate using AWS Route53
 description: Issue Let's Encrypt certificate using AWS Route53 in Kubernetes
 menu:
-  product_voyager_7.3.0:
+  product_voyager_7.4.0:
     identifier: route53-dns
     name: AWS Route53
     parent: dns-certificate
     weight: 10
 product_name: voyager
-menu_name: product_voyager_7.3.0
+menu_name: product_voyager_7.4.0
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
@@ -34,7 +34,7 @@ Deploy Voyager operator following instructions [here](/docs/setup/install.md).
 
 ```console
 # install without RBAC
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.3.0/hack/deploy/voyager.sh \
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.4.0/hack/deploy/voyager.sh \
   | bash -s -- --provider=aws --run-on-master
 ```
 
@@ -42,7 +42,7 @@ If you are trying this on a RBAC enabled cluster, pass the flag `--rbac` to inst
 
 ```console
 # install with RBAC
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.3.0/hack/deploy/voyager.sh \
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.4.0/hack/deploy/voyager.sh \
   | bash -s -- --provider=aws --run-on-master --rbac
 ```
 
