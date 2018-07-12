@@ -1,13 +1,13 @@
 ---
 title: Monitor HAProxy using Prometheus
 menu:
-  product_voyager_7.3.0:
+  product_voyager_7.4.0:
     identifier: builtin-prom-monitoring
     name: Monitor HAProxy using Prometheus
     parent: monitoring-ingress
     weight: 15
 product_name: voyager
-menu_name: product_voyager_7.3.0
+menu_name: product_voyager_7.4.0
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
@@ -50,7 +50,7 @@ kubectl expose deployment nginx --name=web --port=80 --target-port=80 -n demo
 Now create Ingress `ing.yaml`
 
 ```console
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/7.3.0/docs/examples/monitoring/builtin-prometheus/ing.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/7.4.0/docs/examples/monitoring/builtin-prometheus/ing.yaml
 ingress "stats-ing" created
 ```
 
@@ -202,7 +202,7 @@ data:
 ```
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/7.3.0/docs/examples/monitoring/builtin-prometheus/demo-1.yaml
+$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/7.4.0/docs/examples/monitoring/builtin-prometheus/demo-1.yaml
 configmap "prometheus-server-conf" created
 ```
 
@@ -249,7 +249,7 @@ spec:
 Now, run the following command to deploy prometheus in kubernetes:
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/7.3.0/docs/examples/monitoring/builtin-prometheus/demo-2.yaml
+$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/7.4.0/docs/examples/monitoring/builtin-prometheus/demo-2.yaml
 clusterrole "prometheus-server" created
 serviceaccount "prometheus-server" created
 clusterrolebinding "prometheus-server" created
