@@ -2,35 +2,51 @@
 title: Changelog | Voyager
 description: Changelog
 menu:
-  product_voyager_7.3.0:
+  product_voyager_7.4.0:
     identifier: changelog-voyager
     name: Changelog
     parent: welcome
     weight: 10
 product_name: voyager
-menu_name: product_voyager_7.3.0
+menu_name: product_voyager_7.4.0
 section_menu_id: welcome
-url: /products/voyager/7.3.0/welcome/changelog/
+url: /products/voyager/7.4.0/welcome/changelog/
 aliases:
-  - /products/voyager/7.3.0/CHANGELOG/
+  - /products/voyager/7.4.0/CHANGELOG/
 ---
 
 # Change Log
+
+## [7.4.0](https://github.com/appscode/voyager/tree/7.4.0) (2018-07-12)
+[Full Changelog](https://github.com/appscode/voyager/compare/7.3.0...7.4.0)
+
+**Closed issues:**
+
+- Supporting multiple hostnames per backend service [\#1187](https://github.com/appscode/voyager/issues/1187)
+- Custom Tolerations and affinity [\#1181](https://github.com/appscode/voyager/issues/1181)
+
+**Merged pull requests:**
+
+- Chart support for custom tolerations and affinity [\#1182](https://github.com/appscode/voyager/pull/1182) ([octplane](https://github.com/octplane))
 
 ## [7.3.0](https://github.com/appscode/voyager/tree/7.3.0) (2018-07-08)
 [Full Changelog](https://github.com/appscode/voyager/compare/7.2.0...7.3.0)
 
 **Fixed bugs:**
 
+- Upgrade HAProxy  [\#1173](https://github.com/appscode/voyager/issues/1173)
 - Throw validation error when LBType changes. [\#1172](https://github.com/appscode/voyager/pull/1172) ([tamalsaha](https://github.com/tamalsaha))
 
 **Closed issues:**
 
 - Backend name conflicts for multiple bind addresses [\#1164](https://github.com/appscode/voyager/issues/1164)
 - RBAC broken in 7.2 if using ClusterRole [\#1163](https://github.com/appscode/voyager/issues/1163)
+- Crash when operator container starts [\#1161](https://github.com/appscode/voyager/issues/1161)
 
 **Merged pull requests:**
 
+- Update chart installation instruction for Kubernetes 1.11 [\#1180](https://github.com/appscode/voyager/pull/1180) ([tamalsaha](https://github.com/tamalsaha))
+- Prepare docs for 7.3.0 [\#1179](https://github.com/appscode/voyager/pull/1179) ([tamalsaha](https://github.com/tamalsaha))
 - Format shell scripts [\#1178](https://github.com/appscode/voyager/pull/1178) ([tamalsaha](https://github.com/tamalsaha))
 - Remove status from crd.yaml [\#1176](https://github.com/appscode/voyager/pull/1176) ([tamalsaha](https://github.com/tamalsaha))
 - Add description to crd structs [\#1174](https://github.com/appscode/voyager/pull/1174) ([tamalsaha](https://github.com/tamalsaha))
