@@ -211,7 +211,7 @@ func (c *loadBalancerController) Reconcile() error {
 		}
 	} else { // monitoring disabled, delete old agent, ignore error here
 		if err := c.ensureMonitoringAgentDeleted(nil); err != nil {
-			log.Errorf("failed to delete old monitoring agent, reason: %s", err)
+			log.Warningf("failed to delete old monitoring agent, reason: %s", err)
 		}
 	}
 

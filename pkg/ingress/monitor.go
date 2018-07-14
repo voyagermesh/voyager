@@ -9,6 +9,7 @@ import (
 	meta_util "github.com/appscode/kutil/meta"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -19,7 +20,7 @@ func (c *controller) ensureMonitoringAgent(monSpec *mona.AgentSpec) (kutil.VerbT
 	// do this before applying new agent-type annotation
 	// ignore err here
 	if err := c.ensureMonitoringAgentDeleted(agent); err != nil {
-		log.Errorf("failed to delete old monitoring agent, reason: %s", err)
+		log.Warningf("failed to delete old monitoring agent, reason: %s", err)
 	}
 
 	// create/update new agent
@@ -33,6 +34,9 @@ func (c *controller) ensureMonitoringAgent(monSpec *mona.AgentSpec) (kutil.VerbT
 
 func (c *controller) ensureMonitoringAgentDeleted(newAgent mona.Agent) error {
 	if oldAgent, err := c.getOldAgent(); err != nil {
+		if kerr.IsNotFound(err) {
+			return nil
+		}
 		return err
 	} else if newAgent == nil || oldAgent.GetType() != newAgent.GetType() { // delete old agent
 		if _, err := oldAgent.Delete(c.Ingress.StatsAccessor()); err != nil {
@@ -46,11 +50,11 @@ func (c *controller) getOldAgent() (mona.Agent, error) {
 	// get stat service
 	svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.StatsServiceName(), metav1.GetOptions{})
 	if err != nil {
-		return nil, errors.Errorf("failed to get stat service %s, reason: %s", c.Ingress.StatsServiceName(), err.Error())
+		return nil, err
 	}
 	agentType, err := meta_util.GetStringValue(svc.Annotations, mona.KeyAgent)
 	if err != nil {
-		return nil, errors.Errorf("failed to get agent type, reason: %s", err.Error())
+		return nil, errors.Wrap(err, "failed to get agent type")
 	}
 	return agents.New(mona.AgentType(agentType), c.KubeClient, c.CRDClient, c.PromClient), nil
 }
