@@ -1,5 +1,5 @@
-hash: 679f0eca5977cc0df368493c8026b718a42700df8da32b04b291ae50cf50a416
-updated: 2018-07-10T07:39:08.136254231-07:00
+hash: cfd10e8c85a0cae2873bc9db99ead07b9b09eebc87cf646cda7a72b2cb0da211
+updated: 2018-07-18T19:00:37.517964503-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -51,7 +51,7 @@ imports:
   - client/workload/v1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: 2f50a9a96687d25cddd29f38bf4da10ebe888eca
+  version: d3937b4296055e551cd85c7d3fff52449a2f80a0
   subpackages:
   - apiextensions/v1beta1
   - core/v1
@@ -312,13 +312,13 @@ imports:
   subpackages:
   - diskcache
 - name: github.com/hashicorp/errwrap
-  version: 7554cd9344cec97297fa6649b055a8c98c2a1e55
+  version: d6c0cd88035724dd42e0f335ae30161c20575ecc
 - name: github.com/hashicorp/go-cleanhttp
   version: d5fe4b57a186c716b0e00b8c301cbd9b4182694d
 - name: github.com/hashicorp/go-multierror
-  version: b7773ae218740a7be65057fc60b366a49b538a44
+  version: 3d5d8f294aa03d8e98859feac328afbdf1ae0703
 - name: github.com/hashicorp/go-retryablehttp
-  version: 3b087ef2d313afe6c55b2f511d20db04ca767075
+  version: e651d75abec6fbd4f2c09508f72ae7af8a8b7171
 - name: github.com/hashicorp/go-rootcerts
   version: 6bb64b370b90e7ef1fa532be9e591a81c3493e00
 - name: github.com/hashicorp/go-sockaddr
@@ -442,7 +442,7 @@ imports:
 - name: github.com/orcaman/concurrent-map
   version: a05df785d2dcc16310fb997ee1702100d047cfe1
 - name: github.com/ovh/go-ovh
-  version: 858d9a5df2fb99a2f91d6e700726e83502b80589
+  version: c3e61035ea66f5c637719c90140da4e3ac3b1bf0
   subpackages:
   - ovh
 - name: github.com/pborman/uuid
@@ -782,7 +782,9 @@ imports:
   - third_party/forked/golang/json
   - third_party/forked/golang/reflect
 - name: k8s.io/apiserver
-  version: 01459b68eb5fee2dcf5ca0e29df8bcac89ead47b
+  version: f830fbdc07ead94d6dc70f70177603263bfc9d8d
+  repo: https://github.com/pharmer/apiserver.git
+  vcs: git
   subpackages:
   - pkg/admission
   - pkg/admission/configuration
@@ -1041,7 +1043,7 @@ imports:
   - util/retry
   - util/workqueue
 - name: k8s.io/kube-openapi
-  version: d83b052f768a50a309c692a9c271da3f3276ff88
+  version: 0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803
   subpackages:
   - pkg/builder
   - pkg/common
