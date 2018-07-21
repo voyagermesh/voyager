@@ -1,3 +1,5 @@
+# Voyager
+
 [![Go Report Card](https://goreportcard.com/badge/github.com/appscode/voyager)](https://goreportcard.com/report/github.com/appscode/voyager)
 [![Build Status](https://travis-ci.org/appscode/voyager.svg?branch=master)](https://travis-ci.org/appscode/voyager)
 [![codecov](https://codecov.io/gh/appscode/voyager/branch/master/graph/badge.svg)](https://codecov.io/gh/appscode/voyager)
@@ -5,7 +7,10 @@
 [![Slack](https://slack.appscode.com/badge.svg)](https://slack.appscode.com)
 [![Twitter](https://img.shields.io/twitter/follow/appscodehq.svg?style=social&logo=twitter&label=Follow)](https://twitter.com/intent/follow?screen_name=AppsCodeHQ)
 
-# Voyager
+[![Throughput Graph](https://graphs.waffle.io/appscode/voyager/throughput.svg)](https://waffle.io/appscode/voyager/metrics/throughput)
+
+> Secure HAProxy Ingress Controller for Kubernetes
+
 Voyager is a [HAProxy](http://www.haproxy.org/) backed [secure](#certificate) L7 and L4 [ingress](#ingress) controller for Kubernetes developed by
 [AppsCode](https://appscode.com). This can be used with any Kubernetes cloud providers including aws, gce, gke, azure, acs. This can also be used with bare metal Kubernetes clusters.
 
