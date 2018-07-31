@@ -1,12 +1,12 @@
 package agents
 
 import (
-	"github.com/appscode/kube-mon/agents/coreosprometheusoperator"
-	"github.com/appscode/kube-mon/agents/prometheusbuiltin"
-	"github.com/appscode/kube-mon/api"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	ecs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
+	"kmodules.xyz/monitoring-agent-api/agents/coreosprometheusoperator"
+	"kmodules.xyz/monitoring-agent-api/agents/prometheusbuiltin"
+	"kmodules.xyz/monitoring-agent-api/api"
 )
 
 func New(at api.AgentType, k8sClient kubernetes.Interface, extClient ecs.ApiextensionsV1beta1Interface, promClient prom.MonitoringV1Interface) api.Agent {

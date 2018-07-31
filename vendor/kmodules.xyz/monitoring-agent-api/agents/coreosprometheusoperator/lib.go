@@ -4,7 +4,6 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	ecs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
@@ -12,6 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
+	"kmodules.xyz/monitoring-agent-api/api"
 )
 
 // PrometheusCoreosOperator creates `ServiceMonitor` so that CoreOS Prometheus operator can generate necessary config for Prometheus.

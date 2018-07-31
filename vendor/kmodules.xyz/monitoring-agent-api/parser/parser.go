@@ -1,13 +1,12 @@
-package monitoring
+package parser
 
 import (
 	"fmt"
-
 	"path"
 
-	"github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	"github.com/appscode/kutil/meta"
+	"kmodules.xyz/monitoring-agent-api/api"
 )
 
 const (

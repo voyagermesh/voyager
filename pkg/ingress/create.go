@@ -3,7 +3,6 @@ package ingress
 import (
 	"fmt"
 
-	tools "github.com/appscode/kube-mon"
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/appscode/kutil/tools/analytics"
@@ -12,6 +11,7 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"kmodules.xyz/monitoring-agent-api/parser"
 )
 
 const (
@@ -44,7 +44,7 @@ func (c *controller) getExporterSidecar() (*core.Container, error) {
 	if !c.Ingress.Stats() {
 		return nil, nil // Don't add sidecar is stats is not exposed.
 	}
-	monSpec, err := tools.Parse(c.Ingress.Annotations, api.EngressKey, api.DefaultExporterPortNumber)
+	monSpec, err := parser.Parse(c.Ingress.Annotations, api.EngressKey, api.DefaultExporterPortNumber)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (c *controller) ensureStatsService() (*core.Service, kutil.VerbType, error)
 				TargetPort: intstr.FromString(api.StatsPortName),
 			},
 		}
-		monSpec, err := tools.Parse(c.Ingress.Annotations, api.EngressKey, api.DefaultExporterPortNumber)
+		monSpec, err := parser.Parse(c.Ingress.Annotations, api.EngressKey, api.DefaultExporterPortNumber)
 		if err == nil && monSpec != nil && monSpec.Prometheus != nil {
 			desired = append(desired, core.ServicePort{
 				Name:       api.ExporterPortName,

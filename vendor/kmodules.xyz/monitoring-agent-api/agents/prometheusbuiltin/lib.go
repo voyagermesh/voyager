@@ -3,13 +3,13 @@ package prometheusbuiltin
 import (
 	"fmt"
 
-	"github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"kmodules.xyz/monitoring-agent-api/api"
 )
 
 // PrometheusBuiltin applies `prometheus.io` annotations on stats service so that Prometheus can scrape this stats service.
