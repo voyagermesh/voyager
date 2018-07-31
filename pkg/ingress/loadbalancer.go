@@ -11,7 +11,6 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
-	tools "github.com/appscode/kube-mon"
 	wpi "github.com/appscode/kubernetes-webhook-util/apis/workload/v1"
 	wcs "github.com/appscode/kubernetes-webhook-util/client/workload/v1"
 	"github.com/appscode/kutil"
@@ -34,6 +33,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	core_listers "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/record"
+	"kmodules.xyz/monitoring-agent-api/parser"
 )
 
 type loadBalancerController struct {
@@ -187,7 +187,7 @@ func (c *loadBalancerController) Reconcile() error {
 		}
 	}
 
-	monSpec, err := tools.Parse(c.Ingress.Annotations, api.EngressKey, api.DefaultExporterPortNumber)
+	monSpec, err := parser.Parse(c.Ingress.Annotations, api.EngressKey, api.DefaultExporterPortNumber)
 	if err != nil {
 		return errors.WithStack(err)
 	}

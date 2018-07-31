@@ -2,7 +2,6 @@ package operator
 
 import (
 	"github.com/appscode/go/log"
-	prom_util "github.com/appscode/kube-mon/prometheus/v1"
 	"github.com/appscode/kutil/discovery"
 	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -10,6 +9,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
+	prom_util "kmodules.xyz/monitoring-agent-api/prometheus/v1"
 )
 
 func (op *Operator) initServiceMonitorWatcher() {

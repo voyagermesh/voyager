@@ -3,7 +3,7 @@ package v1beta1
 import (
 	"fmt"
 
-	"github.com/appscode/kube-mon/api"
+	"kmodules.xyz/monitoring-agent-api/api"
 )
 
 const (

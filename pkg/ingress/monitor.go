@@ -2,8 +2,6 @@ package ingress
 
 import (
 	"github.com/appscode/go/log"
-	"github.com/appscode/kube-mon/agents"
-	mona "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
 	meta_util "github.com/appscode/kutil/meta"
@@ -11,6 +9,8 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"kmodules.xyz/monitoring-agent-api/agents"
+	mona "kmodules.xyz/monitoring-agent-api/api"
 )
 
 func (c *controller) ensureMonitoringAgent(monSpec *mona.AgentSpec) (kutil.VerbType, error) {

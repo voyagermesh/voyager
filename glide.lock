@@ -1,5 +1,5 @@
-hash: cfd10e8c85a0cae2873bc9db99ead07b9b09eebc87cf646cda7a72b2cb0da211
-updated: 2018-07-18T19:00:37.517964503-07:00
+hash: 0d35998aa97623cdc7d642760b19d5b1180cfe79f52f146b2e75983244239faf
+updated: 2018-07-31T06:26:46.185198384-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -35,14 +35,6 @@ imports:
   version: 0dcf3ac121c7c30e035b41ba9f652d1ce5994242
 - name: github.com/appscode/jsonpatch
   version: 1359b374de83fa14fd58ab10aa8ea4935f84d249
-- name: github.com/appscode/kube-mon
-  version: 6844d3b8506f97e79663419dfe8a3b7bfe1b3264
-  subpackages:
-  - agents
-  - agents/coreosprometheusoperator
-  - agents/prometheusbuiltin
-  - api
-  - prometheus/v1
 - name: github.com/appscode/kubernetes-webhook-util
   version: 73ca8be3135ee210b778c7dc19709c24bf3481eb
   subpackages:
@@ -51,7 +43,7 @@ imports:
   - client/workload/v1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: d3937b4296055e551cd85c7d3fff52449a2f80a0
+  version: c9b929cfcab96c233c1b0ab59cd4a5ab6a4ff96a
   subpackages:
   - apiextensions/v1beta1
   - core/v1
@@ -440,7 +432,7 @@ imports:
 - name: github.com/openshift/origin
   version: fecffb2fce100260088a1b9f268c0901a778cf2b
 - name: github.com/orcaman/concurrent-map
-  version: a05df785d2dcc16310fb997ee1702100d047cfe1
+  version: b28018939af9022337862b94a463abb18abb3e0e
 - name: github.com/ovh/go-ovh
   version: c3e61035ea66f5c637719c90140da4e3ac3b1bf0
   subpackages:
@@ -782,7 +774,7 @@ imports:
   - third_party/forked/golang/json
   - third_party/forked/golang/reflect
 - name: k8s.io/apiserver
-  version: f830fbdc07ead94d6dc70f70177603263bfc9d8d
+  version: 79540596e3b2021b528c4c147fb78cebc29a2f75
   repo: https://github.com/pharmer/apiserver.git
   vcs: git
   subpackages:
@@ -1043,7 +1035,7 @@ imports:
   - util/retry
   - util/workqueue
 - name: k8s.io/kube-openapi
-  version: 0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803
+  version: d8ea2fe547a448256204cfc68dfee7b26c720acb
   subpackages:
   - pkg/builder
   - pkg/common
@@ -1055,6 +1047,17 @@ imports:
   subpackages:
   - pkg/api/legacyscheme
   - pkg/util/net/sets
+- name: kmodules.xyz/monitoring-agent-api
+  version: 323ed6f2129deea0309979d9396728c613f369d4
+  repo: https://github.com/kmodules/monitoring-agent-api.git
+  vcs: git
+  subpackages:
+  - agents
+  - agents/coreosprometheusoperator
+  - agents/prometheusbuiltin
+  - api
+  - parser
+  - prometheus/v1
 testImports:
 - name: github.com/pmezard/go-difflib
   version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
