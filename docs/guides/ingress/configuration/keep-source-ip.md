@@ -46,3 +46,11 @@ spec:
 ```
 
 Here `health-check-nodeport` annotation specifies `HealthCheckNodePort` field for services used to expose HAProxy. If not specified, it will be auto-assigned by kubernetes. Note that, it is only effective when `keep-source-ip` is `true` and ingress type is `LoadBalancer`.
+
+---
+
+**NB:** Please note that, Kubernetes support for AWS NLB is limited as of 1.11.x release. Check [kubernetes/features#423](https://github.com/kubernetes/features/issues/423#issuecomment-407512634) for NLB support status.
+
+`service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "*"` annotation is not supported for AWS NLB as of 1.11.x release. At this time proxy protocol attribute needs to be set on the NLB target group either manually from the aws console or from [aws cli](https://docs.aws.amazon.com/cli/latest/reference/elbv2/modify-target-group-attributes.html).
+
+---
