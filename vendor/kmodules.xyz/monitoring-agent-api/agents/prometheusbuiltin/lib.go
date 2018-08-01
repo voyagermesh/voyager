@@ -9,7 +9,7 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"kmodules.xyz/monitoring-agent-api/api"
+	api "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 // PrometheusBuiltin applies `prometheus.io` annotations on stats service so that Prometheus can scrape this stats service.

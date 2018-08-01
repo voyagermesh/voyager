@@ -1,5 +1,5 @@
 hash: 0d35998aa97623cdc7d642760b19d5b1180cfe79f52f146b2e75983244239faf
-updated: 2018-07-31T06:26:46.185198384-07:00
+updated: 2018-08-01T15:07:30.054467715-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -1035,7 +1035,7 @@ imports:
   - util/retry
   - util/workqueue
 - name: k8s.io/kube-openapi
-  version: d8ea2fe547a448256204cfc68dfee7b26c720acb
+  version: e3762e86a74c878ffed47484592986685639c2cd
   subpackages:
   - pkg/builder
   - pkg/common
@@ -1048,14 +1048,14 @@ imports:
   - pkg/api/legacyscheme
   - pkg/util/net/sets
 - name: kmodules.xyz/monitoring-agent-api
-  version: 323ed6f2129deea0309979d9396728c613f369d4
+  version: 2b926a410fbfe224acd3297619e15734eb0ad75d
   repo: https://github.com/kmodules/monitoring-agent-api.git
   vcs: git
   subpackages:
   - agents
   - agents/coreosprometheusoperator
   - agents/prometheusbuiltin
-  - api
+  - api/v1
   - parser
   - prometheus/v1
 testImports:
