@@ -6,7 +6,7 @@ import (
 
 	"github.com/appscode/kutil"
 	"github.com/appscode/kutil/meta"
-	"kmodules.xyz/monitoring-agent-api/api"
+	api "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 const (

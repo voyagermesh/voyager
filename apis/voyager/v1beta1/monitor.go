@@ -3,7 +3,7 @@ package v1beta1
 import (
 	"fmt"
 
-	"kmodules.xyz/monitoring-agent-api/api"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 const (
@@ -12,7 +12,7 @@ const (
 	DefaultExporterPortNumber = 56790
 )
 
-func (r Ingress) StatsAccessor() api.StatsAccessor {
+func (r Ingress) StatsAccessor() mona.StatsAccessor {
 	return &statsService{ing: r}
 }
 

@@ -6,7 +6,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"kmodules.xyz/monitoring-agent-api/agents/coreosprometheusoperator"
 	"kmodules.xyz/monitoring-agent-api/agents/prometheusbuiltin"
-	"kmodules.xyz/monitoring-agent-api/api"
+	api "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 func New(at api.AgentType, k8sClient kubernetes.Interface, extClient ecs.ApiextensionsV1beta1Interface, promClient prom.MonitoringV1Interface) api.Agent {
