@@ -14,8 +14,8 @@ var (
 func (r Ingress) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
 	return crdutils.NewCustomResourceDefinition(crdutils.Config{
 		Group:         SchemeGroupVersion.Group,
-		Plural:        ResourcePluralIngress,
-		Singular:      ResourceSingularIngress,
+		Plural:        ResourceIngresses,
+		Singular:      ResourceIngress,
 		Kind:          ResourceKindIngress,
 		ShortNames:    []string{"ing"},
 		ResourceScope: string(apiextensions.NamespaceScoped),
@@ -57,8 +57,8 @@ func (r Ingress) CustomResourceDefinition() *apiextensions.CustomResourceDefinit
 func (c Certificate) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
 	return crdutils.NewCustomResourceDefinition(crdutils.Config{
 		Group:         SchemeGroupVersion.Group,
-		Plural:        ResourcePluralCertificate,
-		Singular:      ResourceSingularCertificate,
+		Plural:        ResourceCertificates,
+		Singular:      ResourceCertificate,
 		Kind:          ResourceKindCertificate,
 		ShortNames:    []string{"cert"},
 		ResourceScope: string(apiextensions.NamespaceScoped),
