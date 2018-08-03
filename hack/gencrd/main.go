@@ -22,36 +22,39 @@ import (
 
 func generateCRDDefinitions() {
 	filename := gort.GOPath() + "/src/github.com/appscode/voyager/apis/voyager/v1beta1/crds.yaml"
+	os.Remove(filename)
 
-	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	err := os.MkdirAll(filepath.Join(gort.GOPath(), "/src/github.com/appscode/voyager/api/crds"), 0755)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer f.Close()
 
 	crds := []*crd_api.CustomResourceDefinition{
 		api.Ingress{}.CustomResourceDefinition(),
 		api.Certificate{}.CustomResourceDefinition(),
 	}
 	for _, crd := range crds {
-		err = crdutils.MarshallCrd(f, crd, "yaml")
+		filename := filepath.Join(gort.GOPath(), "/src/github.com/appscode/voyager/api/crds", crd.Spec.Names.Singular+".yaml")
+		f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 		if err != nil {
 			log.Fatal(err)
 		}
+		crdutils.MarshallCrd(f, crd, "yaml")
+		f.Close()
 	}
 }
 
 func generateSwaggerJson() {
 	var (
-		Scheme               = runtime.NewScheme()
-		Codecs               = serializer.NewCodecFactory(Scheme)
+		Scheme = runtime.NewScheme()
+		Codecs = serializer.NewCodecFactory(Scheme)
 	)
 
 	install.Install(Scheme)
 
 	apispec, err := openapi.RenderOpenAPISpec(openapi.Config{
-		Scheme:   Scheme,
-		Codecs:   Codecs,
+		Scheme: Scheme,
+		Codecs: Codecs,
 		Info: spec.InfoProps{
 			Title:   "Voyager",
 			Version: "v7.4.0",
@@ -69,8 +72,8 @@ func generateSwaggerJson() {
 			v1beta1.GetOpenAPIDefinitions,
 		},
 		Resources: []openapi.TypeInfo{
-			{v1beta1.SchemeGroupVersion, v1beta1.ResourcePluralCertificate, v1beta1.ResourceKindCertificate,  true},
-			{v1beta1.SchemeGroupVersion, v1beta1.ResourcePluralIngress, v1beta1.ResourceKindIngress, true},
+			{v1beta1.SchemeGroupVersion, v1beta1.ResourceCertificates, v1beta1.ResourceKindCertificate, true},
+			{v1beta1.SchemeGroupVersion, v1beta1.ResourceIngresses, v1beta1.ResourceKindIngress, true},
 		},
 	})
 	if err != nil {
