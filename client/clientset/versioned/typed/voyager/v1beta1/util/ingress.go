@@ -1,6 +1,8 @@
 package util
 
 import (
+	"fmt"
+
 	"github.com/appscode/kutil"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1"
@@ -79,22 +81,60 @@ func TryUpdateIngress(c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, tran
 	return
 }
 
-func UpdateIngressStatus(c cs.VoyagerV1beta1Interface, cur *api.Ingress, transform func(*api.IngressStatus) *api.IngressStatus, useSubresource ...bool) (*api.Ingress, error) {
+func UpdateIngressStatus(
+	c cs.VoyagerV1beta1Interface,
+	in *api.Ingress,
+	transform func(*api.IngressStatus) *api.IngressStatus,
+	useSubresource ...bool,
+) (result *api.Ingress, err error) {
 	if len(useSubresource) > 1 {
 		return nil, errors.Errorf("invalid value passed for useSubresource: %v", useSubresource)
 	}
 
-	mod := &api.Ingress{
-		TypeMeta:   cur.TypeMeta,
-		ObjectMeta: cur.ObjectMeta,
-		Spec:       cur.Spec,
-		Status:     *transform(cur.Status.DeepCopy()),
+	apply := func(x *api.Ingress, copy bool) *api.Ingress {
+		out := &api.Ingress{
+			TypeMeta:   x.TypeMeta,
+			ObjectMeta: x.ObjectMeta,
+			Spec:       x.Spec,
+		}
+		if copy {
+			out.Status = *transform(in.Status.DeepCopy())
+		} else {
+			out.Status = *transform(&in.Status)
+		}
+		return out
 	}
 
 	if len(useSubresource) == 1 && useSubresource[0] {
-		return c.Ingresses(cur.Namespace).UpdateStatus(mod)
+		attempt := 0
+		cur := in.DeepCopy()
+		err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+			attempt++
+			var e2 error
+			result, e2 = c.Ingresses(in.Namespace).UpdateStatus(apply(cur, false))
+			if kerr.IsConflict(e2) {
+				latest, e3 := c.Ingresses(in.Namespace).Get(in.Name, metav1.GetOptions{})
+				switch {
+				case e3 == nil:
+					cur = latest
+					return false, nil
+				case kutil.IsRequestRetryable(e3):
+					return false, nil
+				default:
+					return false, e3
+				}
+			} else if err != nil && !kutil.IsRequestRetryable(e2) {
+				return false, e2
+			}
+			return e2 == nil, nil
+		})
+
+		if err != nil {
+			err = fmt.Errorf("failed to update status of Ingress %s/%s after %d attempts due to %v", in.Namespace, in.Name, attempt, err)
+		}
+		return
 	}
 
-	out, _, err := PatchIngressObject(c, cur, mod)
-	return out, err
+	result, _, err = PatchIngressObject(c, in, apply(in, true))
+	return
 }
