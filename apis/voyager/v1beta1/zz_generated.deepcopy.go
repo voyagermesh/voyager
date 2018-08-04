@@ -720,6 +720,24 @@ func (in *IngressSpec) DeepCopyInto(out *IngressSpec) {
 		*out = make([]v1.LocalObjectReference, len(*in))
 		copy(*out, *in)
 	}
+	if in.Priority != nil {
+		in, out := &in.Priority, &out.Priority
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(int32)
+			**out = **in
+		}
+	}
+	if in.SecurityContext != nil {
+		in, out := &in.SecurityContext, &out.SecurityContext
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.PodSecurityContext)
+			(*in).DeepCopyInto(*out)
+		}
+	}
 	if in.ExternalIPs != nil {
 		in, out := &in.ExternalIPs, &out.ExternalIPs
 		*out = make([]string, len(*in))
