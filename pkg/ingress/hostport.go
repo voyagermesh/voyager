@@ -427,6 +427,9 @@ func (c *hostPortController) ensurePods() (kutil.VerbType, error) {
 		obj.Spec.Template.Spec.Tolerations = c.Ingress.Spec.Tolerations
 		obj.Spec.Template.Spec.NodeSelector = c.Ingress.Spec.NodeSelector
 		obj.Spec.Template.Spec.ImagePullSecrets = c.Ingress.Spec.ImagePullSecrets
+		obj.Spec.Template.Spec.PriorityClassName = c.Ingress.Spec.PriorityClassName
+		obj.Spec.Template.Spec.Priority = c.Ingress.Spec.Priority
+		obj.Spec.Template.Spec.SecurityContext = c.Ingress.Spec.SecurityContext
 		obj.Spec.Template.Spec.HostNetwork = true
 		obj.Spec.Template.Spec.DNSPolicy = core.DNSClusterFirstWithHostNet
 		if c.cfg.EnableRBAC {

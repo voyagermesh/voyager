@@ -349,6 +349,9 @@ func (c *internalController) ensurePods() (kutil.VerbType, error) {
 		obj.Spec.Template.Spec.Tolerations = c.Ingress.Spec.Tolerations
 		obj.Spec.Template.Spec.NodeSelector = c.Ingress.Spec.NodeSelector
 		obj.Spec.Template.Spec.ImagePullSecrets = c.Ingress.Spec.ImagePullSecrets
+		obj.Spec.Template.Spec.PriorityClassName = c.Ingress.Spec.PriorityClassName
+		obj.Spec.Template.Spec.Priority = c.Ingress.Spec.Priority
+		obj.Spec.Template.Spec.SecurityContext = c.Ingress.Spec.SecurityContext
 		if c.cfg.EnableRBAC {
 			obj.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
 		}
