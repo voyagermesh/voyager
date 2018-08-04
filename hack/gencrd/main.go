@@ -9,8 +9,7 @@ import (
 	crdutils "github.com/appscode/kutil/apiextensions/v1beta1"
 	"github.com/appscode/kutil/openapi"
 	"github.com/appscode/voyager/apis/voyager/install"
-	"github.com/appscode/voyager/apis/voyager/v1beta1"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/go-openapi/spec"
 	"github.com/golang/glog"
 	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -21,6 +20,8 @@ import (
 )
 
 func generateCRDDefinitions() {
+	v1beta1.EnableStatusSubresource = true
+
 	filename := gort.GOPath() + "/src/github.com/appscode/voyager/apis/voyager/v1beta1/crds.yaml"
 	os.Remove(filename)
 
@@ -30,8 +31,8 @@ func generateCRDDefinitions() {
 	}
 
 	crds := []*crd_api.CustomResourceDefinition{
-		api.Ingress{}.CustomResourceDefinition(),
-		api.Certificate{}.CustomResourceDefinition(),
+		v1beta1.Ingress{}.CustomResourceDefinition(),
+		v1beta1.Certificate{}.CustomResourceDefinition(),
 	}
 	for _, crd := range crds {
 		filename := filepath.Join(gort.GOPath(), "/src/github.com/appscode/voyager/api/crds", crd.Spec.Names.Singular+".yaml")
