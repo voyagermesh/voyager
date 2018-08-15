@@ -1,5 +1,5 @@
-hash: 0d35998aa97623cdc7d642760b19d5b1180cfe79f52f146b2e75983244239faf
-updated: 2018-08-02T17:42:52.711021448-07:00
+hash: ca0f853442606d4f9d8f97fdbb34ddd761f00b0c155b45a353333adbeafd5f58
+updated: 2018-08-14T18:33:16.356335519-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -43,7 +43,7 @@ imports:
   - client/workload/v1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: d31eda1052245a20fb5757fbf12c6c8ace8a12a7
+  version: 266e2ad77d953e86893aa1abba587d3f29bbdc92
   subpackages:
   - apiextensions/v1beta1
   - core/v1
@@ -512,7 +512,7 @@ imports:
   subpackages:
   - codec
 - name: github.com/xenolf/lego
-  version: e80b3cfff9c2f8865a1bc407efb4964260715252
+  version: 0b6736776fb2f9dbb2bd685fbb4601086a7fd853
   repo: https://github.com/appscode/lego.git
   vcs: git
   subpackages:
@@ -774,7 +774,7 @@ imports:
   - third_party/forked/golang/json
   - third_party/forked/golang/reflect
 - name: k8s.io/apiserver
-  version: 79540596e3b2021b528c4c147fb78cebc29a2f75
+  version: bf4767929ee604e8b2a6ca0322c2b6f12fd6c912
   repo: https://github.com/pharmer/apiserver.git
   vcs: git
   subpackages:
