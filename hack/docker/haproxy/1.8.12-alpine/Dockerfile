@@ -21,3 +21,5 @@ RUN ln -s /etc/sv /etc/service
 
 COPY runit.sh /runit.sh
 ENTRYPOINT ["/runit.sh"]
+
+USER nobody:nobody

@@ -1,0 +1,74 @@
+SHELL := /bin/bash
+BIN := voyager
+haproxy_version ?= 1.8.12
+CGO_ENV ?= CGO_ENABLED=0
+PKG := github.com/appscode/$(BIN)
+DOCKER_REGISTRY ?= tahsin
+UID := $(shell id -u $$USER)
+
+GOOS ?= $(shell go env GOOS)
+GOARCH ?= $(shell go env GOARCH)
+GOARM ?= $(shell go env GOARM)
+GOPATH = $(shell go env GOPATH)
+REPO_ROOT := $(GOPATH)/src/$(PKG)
+
+ifeq ($(GOOS),windows)
+	EXT := .exe
+endif
+
+IMAGE_NAME ?= $(BIN)
+IMAGE_TYPE ?= debug
+
+platforms := linux/amd64 linux/arm64 linux/arm/7 linux/arm/6 windows/amd64 darwin/amd64
+docker_image_names := voyager haproxy
+
+# metadata
+commit_hash := $(shell git rev-parse --verify HEAD)
+git_branch := $(shell git rev-parse --abbrev-ref HEAD)
+git_tag := $(shell git describe --exact-match --abbrev=0 2>/dev/null || echo "")
+commit_timestamp := $(shell date --date="@$$(git show -s --format=%ct)" --utc +%FT%T)
+build_timestamp := $(shell date --utc +%FT%T)
+build_host:= $(shell hostname)
+build_host_os:= $(shell go env GOHOSTOS)
+build_host_arch:= $(shell go env GOHOSTARCH)
+version_strategy := commit_hash
+version := $(shell git describe --tags --always --dirty)
+
+# compiler flags
+linker_opts := -X main.GitTag=$(git_tag) -X main.CommitHash=$(commit_hash) -X main.CommitTimestamp=$(commit_timestamp) \
+	-X main.VersionStrategy=$(version_strategy) -X main.Version=$(version) -X main.GitBranch=$(git_branch) \
+	-X main.Os=$(GOOS) -X main.Arch=$(GOARCH)
+
+ifeq ($(CGO_ENV),CGO_ENABLED=1)
+	CGO := -a -installsuffix cgo
+	linker_opts += -linkmode external -extldflags -static -w
+endif
+
+ifdef git_tag
+	version := $(git_tag)
+	version_strategy := tag
+else
+	ifneq ($(git_branch),$(or master, HEAD))
+		ifeq (,$(findstring release-,$(git_branch)))
+			version := $(git_branch)
+			version_strategy := branch
+			linker_opts += -X main.BuildTimestamp=$(build_timestamp) -X main.BuildHost=$(build_host) \
+						   -X main.BuildHostOS=$(build_host_os) -X main.BuildHostArch=$(build_host_arch)
+		endif
+	endif
+endif
+ldflags :=-ldflags '$(linker_opts)'
+
+# check if metadata is set correctly
+metadata version:
+	@echo commit_timestamp=$(commit_timestamp)
+	@echo build_host=      $(build_host)
+	@echo build_host_arch= $(build_host_arch)
+	@echo build_host_os=   $(build_host_os)
+	@echo build_timestamp= $(build_timestamp)
+	@echo commit_hash=     $(commit_hash)
+	@echo commit_timestamp=$(commit_timestamp)
+	@echo git_branch=      $(git_branch)
+	@echo git_tag=         $(git_tag)
+	@echo version=         $(version)
+	@echo version_strategy=$(version_strategy)

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eou pipefail
+set -eoux pipefail
 
 GOPATH=$(go env GOPATH)
 REPO_ROOT=$GOPATH/src/github.com/appscode/voyager
