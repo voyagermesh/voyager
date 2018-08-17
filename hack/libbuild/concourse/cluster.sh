@@ -7,7 +7,7 @@ pushd $REPO_NAME
 NAME=$REPO_NAME-$(git rev-parse --short HEAD)
 popd
 
-function cleanup() {
+function cleanup_test_stuff() {
   set +eou pipefail
 
   # Workload Descriptions if the test fails
@@ -54,7 +54,7 @@ function cleanup() {
   chmod +x docker.py
   ./docker.py del_tag $DOCKER_REGISTRY $OPERATOR_NAME "$CUSTOM_OPERATOR_TAG"
 }
-trap cleanup EXIT
+trap cleanup_test_stuff EXIT
 
 function pharmer_common() {
   # create cluster using pharmer
