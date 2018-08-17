@@ -16,6 +16,10 @@ spec:
     type: date
   group: voyager.appscode.com
   names:
+    categories:
+    - networking
+    - appscode
+    - all
     kind: Certificate
     plural: certificates
     shortNames:
