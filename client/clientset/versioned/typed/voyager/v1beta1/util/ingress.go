@@ -90,17 +90,12 @@ func UpdateIngressStatus(
 	if len(useSubresource) > 1 {
 		return nil, errors.Errorf("invalid value passed for useSubresource: %v", useSubresource)
 	}
-
-	apply := func(x *api.Ingress, copy bool) *api.Ingress {
+	apply := func(x *api.Ingress) *api.Ingress {
 		out := &api.Ingress{
 			TypeMeta:   x.TypeMeta,
 			ObjectMeta: x.ObjectMeta,
 			Spec:       x.Spec,
-		}
-		if copy {
-			out.Status = *transform(in.Status.DeepCopy())
-		} else {
-			out.Status = *transform(&in.Status)
+			Status:     *transform(in.Status.DeepCopy()),
 		}
 		return out
 	}
@@ -111,7 +106,7 @@ func UpdateIngressStatus(
 		err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 			attempt++
 			var e2 error
-			result, e2 = c.Ingresses(in.Namespace).UpdateStatus(apply(cur, false))
+			result, e2 = c.Ingresses(in.Namespace).UpdateStatus(apply(cur))
 			if kerr.IsConflict(e2) {
 				latest, e3 := c.Ingresses(in.Namespace).Get(in.Name, metav1.GetOptions{})
 				switch {
@@ -135,6 +130,6 @@ func UpdateIngressStatus(
 		return
 	}
 
-	result, _, err = PatchIngressObject(c, in, apply(in, true))
+	result, _, err = PatchIngressObject(c, in, apply(in))
 	return
 }
