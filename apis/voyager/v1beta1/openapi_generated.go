@@ -637,6 +637,13 @@ func schema_voyager_apis_voyager_v1beta1_CertificateStatus(ref common.ReferenceC
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Properties: map[string]spec.Schema{
+					"observedGeneration": {
+						SchemaProps: spec.SchemaProps{
+							Description: "observedGeneration is the most recent generation observed for this resource. It corresponds to the resource's generation, which is updated on mutation by the API Server.",
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
 					"creationTime": {
 						SchemaProps: spec.SchemaProps{
 							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
@@ -1462,6 +1469,13 @@ func schema_voyager_apis_voyager_v1beta1_IngressStatus(ref common.ReferenceCallb
 			SchemaProps: spec.SchemaProps{
 				Description: "IngressStatus describe the current state of the Ingress.",
 				Properties: map[string]spec.Schema{
+					"observedGeneration": {
+						SchemaProps: spec.SchemaProps{
+							Description: "observedGeneration is the most recent generation observed for this resource. It corresponds to the resource's generation, which is updated on mutation by the API Server.",
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
 					"loadBalancer": {
 						SchemaProps: spec.SchemaProps{
 							Description: "LoadBalancer contains the current status of the load-balancer.",

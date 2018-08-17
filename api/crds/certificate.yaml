@@ -436,6 +436,12 @@ spec:
               required:
               - certURL
               - certStableURL
+            observedGeneration:
+              description: observedGeneration is the most recent generation observed
+                for this resource. It corresponds to the resource's generation, which
+                is updated on mutation by the API Server.
+              format: int64
+              type: integer
   version: v1beta1
   versions:
   - name: v1beta1
