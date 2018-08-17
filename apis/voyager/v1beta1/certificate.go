@@ -77,6 +77,11 @@ type VaultStore struct {
 }
 
 type CertificateStatus struct {
+	// observedGeneration is the most recent generation observed for this resource. It corresponds to the
+	// resource's generation, which is updated on mutation by the API Server.
+	// +optional
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+
 	CreationTime          *metav1.Time           `json:"creationTime,omitempty"`
 	Conditions            []CertificateCondition `json:"conditions,omitempty"`
 	LastIssuedCertificate *CertificateDetails    `json:"lastIssuedCertificate,omitempty"`

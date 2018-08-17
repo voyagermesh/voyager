@@ -160,6 +160,11 @@ type IngressTLS struct {
 
 // IngressStatus describe the current state of the Ingress.
 type IngressStatus struct {
+	// observedGeneration is the most recent generation observed for this resource. It corresponds to the
+	// resource's generation, which is updated on mutation by the API Server.
+	// +optional
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+
 	// LoadBalancer contains the current status of the load-balancer.
 	LoadBalancer core.LoadBalancerStatus `json:"loadBalancer,omitempty"`
 }
