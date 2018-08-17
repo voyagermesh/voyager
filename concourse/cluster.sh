@@ -52,7 +52,7 @@ function cleanup_test_stuff() {
   # delete docker image on exit
   curl -LO https://raw.githubusercontent.com/appscodelabs/libbuild/master/docker.py
   chmod +x docker.py
-  ./docker.py del_tag $DOCKER_REGISTRY $OPERATOR_NAME "$CUSTOM_OPERATOR_TAG"
+  ./docker.py del_tag $DOCKER_REGISTRY $OPERATOR_NAME $TAG
 }
 trap cleanup_test_stuff EXIT
 
