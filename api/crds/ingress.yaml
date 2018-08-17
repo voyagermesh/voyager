@@ -19,6 +19,10 @@ spec:
     type: date
   group: voyager.appscode.com
   names:
+    categories:
+    - networking
+    - appscode
+    - all
     kind: Ingress
     plural: ingresses
     shortNames:

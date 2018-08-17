@@ -18,6 +18,7 @@ func (r Ingress) CustomResourceDefinition() *apiextensions.CustomResourceDefinit
 		Singular:      ResourceIngress,
 		Kind:          ResourceKindIngress,
 		ShortNames:    []string{"ing"},
+		Categories:    []string{"networking", "appscode", "all"},
 		ResourceScope: string(apiextensions.NamespaceScoped),
 		Versions: []apiextensions.CustomResourceDefinitionVersion{
 			{
@@ -61,6 +62,7 @@ func (c Certificate) CustomResourceDefinition() *apiextensions.CustomResourceDef
 		Singular:      ResourceCertificate,
 		Kind:          ResourceKindCertificate,
 		ShortNames:    []string{"cert"},
+		Categories:    []string{"networking", "appscode", "all"},
 		ResourceScope: string(apiextensions.NamespaceScoped),
 		Versions: []apiextensions.CustomResourceDefinitionVersion{
 			{
