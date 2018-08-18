@@ -16,12 +16,6 @@ rules:
   verbs:
   - "*"
 - apiGroups:
-  - extensions
-  resources:
-  - thirdpartyresources
-  verbs:
-  - "*"
-- apiGroups:
   - voyager.appscode.com
   resources: ["*"]
   verbs: ["*"]
@@ -33,13 +27,12 @@ rules:
 - apiGroups:
   - apps
   resources:
+  - daemonsets
   - deployments
   verbs: ["*"]
 - apiGroups:
   - extensions
   resources:
-  - deployments
-  - daemonsets
   - ingresses
   verbs: ["*"]
 - apiGroups: [""]

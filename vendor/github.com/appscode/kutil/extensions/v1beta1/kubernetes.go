@@ -7,8 +7,8 @@ import (
 
 var json = jsoniter.ConfigFastest
 
-func IsOwnedByDeployment(references []metav1.OwnerReference) bool {
-	for _, ref := range references {
+func IsOwnedByDeployment(refs []metav1.OwnerReference) bool {
+	for _, ref := range refs {
 		if ref.Kind == "Deployment" && ref.Name != "" {
 			return true
 		}

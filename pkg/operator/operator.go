@@ -17,7 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
-	apps_listers "k8s.io/client-go/listers/apps/v1beta1"
+	apps_listers "k8s.io/client-go/listers/apps/v1"
 	core_listers "k8s.io/client-go/listers/core/v1"
 	ext_listers "k8s.io/client-go/listers/extensions/v1beta1"
 	"k8s.io/client-go/tools/cache"
@@ -56,7 +56,7 @@ type Operator struct {
 	// DaemonSet
 	dmQueue    *queue.Worker
 	dmInformer cache.SharedIndexInformer
-	dmLister   ext_listers.DaemonSetLister
+	dmLister   apps_listers.DaemonSetLister
 
 	// Endpoint
 	epQueue    *queue.Worker

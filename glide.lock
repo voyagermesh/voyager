@@ -1,5 +1,5 @@
-hash: ca0f853442606d4f9d8f97fdbb34ddd761f00b0c155b45a353333adbeafd5f58
-updated: 2018-08-16T20:01:53.138947117-07:00
+hash: d2ca5a03b2ab0e7d6c0eb4fcc3548c933d6484f9797c666a6903f6b916c40add
+updated: 2018-08-18T09:55:12.662030528-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -43,7 +43,7 @@ imports:
   - client/workload/v1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: 6d0655abaa259a3d3637fb01e225d6a898e20dc8
+  version: 569ee52ec2c8bb3c151daa20a8433cfa6cc1bfce
   subpackages:
   - apiextensions/v1beta1
   - core/v1
@@ -370,7 +370,7 @@ imports:
   subpackages:
   - pbutil
 - name: github.com/miekg/dns
-  version: 4bda1db8399af2743f88be0ddb0761dfa89f2853
+  version: e57bf427e68187a27e22adceac868350d7a7079b
 - name: github.com/mitchellh/go-homedir
   version: 58046073cbffe2f25d425fe1331102f55cf719de
 - name: github.com/mitchellh/go-ps
@@ -671,7 +671,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/ini.v1
-  version: 32e4c1e6bc4e7d0d8451aa6b75200d19e37a536a
+  version: 06f5f3d67269ccec1fe5fe4134ba6e982984f7f5
 - name: gopkg.in/natefinch/lumberjack.v2
   version: 20b71e5b60d756d3d2f80def009790325acc2b23
 - name: gopkg.in/square/go-jose.v2
