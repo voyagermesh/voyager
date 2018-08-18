@@ -12,12 +12,52 @@ resources:
     uri: https://github.com/appscode/voyager
     branch: master
 
-- name: pull-request
+- name: gke
   type: pull-request
   source:
     owner: appscode
     repo: voyager
-    label: ok-to-test
+    label: ok-to-test/gke
+    access_token: ((access_token))
+
+- name: aws
+  type: pull-request
+  source:
+    owner: appscode
+    repo: voyager
+    label: ok-to-test/kops-aws
+    access_token: ((access_token))
+
+- name: azure-aks
+  type: pull-request
+  source:
+    owner: appscode
+    repo: voyager
+    label: ok-to-test/aks
+    access_token: ((access_token))
+
+- name: azure-acs
+  type: pull-request
+  source:
+    owner: appscode
+    repo: voyager
+    label: ok-to-test/acs
+    access_token: ((access_token))
+
+- name: do
+  type: pull-request
+  source:
+    owner: appscode
+    repo: voyager
+    label: ok-to-test/do
+    access_token: ((access_token))
+
+- name: kubespray
+  type: pull-request
+  source:
+    owner: appscode
+    repo: voyager
+    label: ok-to-test/kubespray
     access_token: ((access_token))
 
 - name: creds
@@ -26,52 +66,186 @@ resources:
     bucket: appscode-ci
     access_key_id: ((s3-access-key))
     secret_access_key: ((s3-secret))
-    versioned_file: appscode/voyager/voyager.zip
+    versioned_file: appscode/creds.zip
 
 jobs:
-- name: e2e-test-voyager
+- name: test-voyager-master
   plan:
   - get: voyager
     trigger: true
   - get: creds
     params:
       unpack: true
-  - task: run-e2e-test
-    file: voyager/hack/concourse/task.yml
+  - task: test-e2e
     privileged: true
+    file: voyager/hack/concourse/task.yml
     params:
-      TOKEN: ((digitaloceanToken))
-      TEST_GCE_PROJECT: ((test_gce_project))
-      TEST_ACME_USER_EMAIL: ((test_acme_user_email))
-      TEST_DNS_DOMAINS: ((test_dns_domains))
+      ClusterProvider: digitalocean
       DOCKER_USER: ((docker_user))
       DOCKER_PASS: ((docker_pass))
 
-- name: e2e-test-voyager-pr
+- name: test-voyager-gke
   plan:
-  - get: pull-request
+  - get: gke
     trigger: true
     version: every
+  - put: gke
+    params: { path: gke, status: pending}
   - get: creds
     params:
       unpack: true
-  - put: pull-request
-    params: {path: pull-request, status: pending}
-  - task: run-e2e-test
-    file: pull-request/hack/concourse/task.yml
+  - task: test-e2e
     privileged: true
+    file: gke/hack/concourse/task.yml
     input_mapping:
-      voyager: pull-request
+      voyager: gke
     params:
-      TOKEN: ((digitaloceanToken))
-      TEST_GCE_PROJECT: ((test_gce_project))
-      TEST_ACME_USER_EMAIL: ((test_acme_user_email))
-      TEST_DNS_DOMAINS: ((test_dns_domains))
+      ClusterProvider: gke
       DOCKER_USER: ((docker_user))
       DOCKER_PASS: ((docker_pass))
     on_success:
-      put: pull-request
-      params: {path: pull-request, status: success}
+      put: gke
+      params: { path: gke, status: success}
     on_failure:
-      put: pull-request
-      params: {path: pull-request, status: failure}
+      put: gke
+      params: {path: gke, status: failure}
+
+- name: test-voyager-aws
+  plan:
+  - get: aws
+    version: every
+    trigger: true
+  - put: aws
+    params: { path: aws, status: pending}
+  - get: creds
+    params:
+      unpack: true
+  - task: test-aws-kops
+    privileged: true
+    file: aws/hack/concourse/task.yml
+    input_mapping:
+      voyager: aws
+    params:
+      KOPS_AWS_ACCESS_KEY_ID: ((kops_aws_access_key_id))
+      KOPS_AWS_SECRET_ACCESS_KEY: ((kops_aws_secret_access_key))
+      ClusterProvider: aws
+      DOCKER_USER: ((docker_user))
+      DOCKER_PASS: ((docker_pass))
+    on_success:
+      put: aws
+      params: { path: aws, status: success}
+    on_failure:
+      put: aws
+      params: {path: aws, status: failure}
+
+- name: test-azure-aks
+  plan:
+  - get: azure-aks
+    version: every
+    trigger: true
+  - put: azure-aks
+    params: { path: azure-aks, status: pending}
+  - get: creds
+    params:
+      unpack: true
+  - task: test-azure-aks
+    privileged: true
+    file: azure-aks/hack/concourse/task.yml
+    input_mapping:
+      voyager: azure-aks
+    params:
+      ClusterProvider: aks
+      APP_ID: ((azure_app_id))
+      TENANT_ID: ((azure_tenant_id))
+      PASSWORD: ((azure_password))
+      DOCKER_USER: ((docker_user))
+      DOCKER_PASS: ((docker_pass))
+    on_success:
+      put: azure-aks
+      params: { path: azure-aks, status: success}
+    on_failure:
+      put: azure-aks
+      params: {path: azure-aks, status: failure}
+
+- name: test-azure-acs
+  plan:
+  - get: azure-acs
+    version: every
+    trigger: true
+  - put: azure-acs
+    params: { path: azure-acs, status: pending}
+  - get: creds
+    params:
+      unpack: true
+  - task: test-azure-acs
+    privileged: true
+    file: azure-acs/hack/concourse/task.yml
+    input_mapping:
+      voyager: azure-acs
+    params:
+      ClusterProvider: acs
+      APP_ID: ((azure_app_id))
+      TENANT_ID: ((azure_tenant_id))
+      PASSWORD: ((azure_password))
+      DOCKER_USER: ((docker_user))
+      DOCKER_PASS: ((docker_pass))
+    on_success:
+      put: azure-acs
+      params: { path: azure-acs, status: success}
+    on_failure:
+      put: azure-acs
+      params: {path: azure-acs, status: failure}
+
+- name: test-voyager-do
+  plan:
+  - get: do
+    version: every
+    trigger: true
+  - put: do
+    params: { path: do, status: pending}
+  - get: creds
+    params:
+      unpack: true
+  - task: test-do
+    privileged: true
+    file: do/hack/concourse/task.yml
+    input_mapping:
+      voyager: do
+    params:
+      ClusterProvider: digitalocean
+      DOCKER_USER: ((docker_user))
+      DOCKER_PASS: ((docker_pass))
+    on_success:
+      put: do
+      params: { path: do, status: success}
+    on_failure:
+      put: do
+      params: {path: do, status: failure}
+
+- name: test-voyager-kubespray
+  plan:
+  - get: kubespray
+    version: every
+    trigger: true
+  - put: kubespray
+    params: { path: kubespray, status: pending}
+  - get: creds
+    params:
+      unpack: true
+  - task: test-kubespray
+    privileged: true
+    file: kubespray/hack/concourse/task.yml
+    input_mapping:
+      voyager: kubespray
+    params:
+      DOCKER_USER: ((docker_user))
+      DOCKER_PASS: ((docker_pass))
+      ClusterProvider: kubespray
+      PACKET_API_TOKEN: ((packet_api_token))
+      PACKET_PROJECT_ID: ((packet_project_id))
+    on_success:
+      put: kubespray
+      params: { path: kubespray, status: success}
+    on_failure:
+      put: kubespray
+      params: {path: kubespray, status: failure}
