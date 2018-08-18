@@ -9,10 +9,10 @@ import (
 )
 
 func (op *Operator) initDeploymentWatcher() {
-	op.dpInformer = op.kubeInformerFactory.Apps().V1beta1().Deployments().Informer()
+	op.dpInformer = op.kubeInformerFactory.Apps().V1().Deployments().Informer()
 	op.dpQueue = queue.New("Deployment", op.MaxNumRequeues, op.NumThreads, op.reconcileDeployment)
 	op.dpInformer.AddEventHandler(queue.NewDeleteHandler(op.dpQueue.GetQueue()))
-	op.dpLister = op.kubeInformerFactory.Apps().V1beta1().Deployments().Lister()
+	op.dpLister = op.kubeInformerFactory.Apps().V1().Deployments().Lister()
 }
 
 func (op *Operator) reconcileDeployment(key string) error {

@@ -45,13 +45,12 @@ rules:
 - apiGroups:
   - apps
   resources:
+  - daemonsets
   - deployments
   verbs: ["*"]
 - apiGroups:
   - extensions
   resources:
-  - deployments
-  - daemonsets
   - ingresses
   verbs: ["*"]
 - apiGroups: [""]

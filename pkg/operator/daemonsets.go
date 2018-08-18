@@ -9,10 +9,10 @@ import (
 )
 
 func (op *Operator) initDaemonSetWatcher() {
-	op.dmInformer = op.kubeInformerFactory.Extensions().V1beta1().DaemonSets().Informer()
+	op.dmInformer = op.kubeInformerFactory.Apps().V1().DaemonSets().Informer()
 	op.dmQueue = queue.New("DaemonSet", op.MaxNumRequeues, op.NumThreads, op.reconcileDaemonSet)
 	op.dmInformer.AddEventHandler(queue.NewDeleteHandler(op.dmQueue.GetQueue()))
-	op.dmLister = op.kubeInformerFactory.Extensions().V1beta1().DaemonSets().Lister()
+	op.dmLister = op.kubeInformerFactory.Apps().V1().DaemonSets().Lister()
 }
 
 func (op *Operator) reconcileDaemonSet(key string) error {

@@ -103,6 +103,8 @@ import:
   version: release-3.11
 - package: github.com/mailru/easyjson
   version: 2f5df55504ebc322e4d52d34df6a1f5b503bf26d
+- package: github.com/miekg/dns
+  version: v1.0.7
 testImport:
 - package: github.com/stretchr/testify
   version: v1.2.2

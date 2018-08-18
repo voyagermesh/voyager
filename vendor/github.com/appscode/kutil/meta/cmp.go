@@ -51,7 +51,7 @@ func EqualAnnotation(x, y map[string]string) bool {
 	}
 
 	for k, v := range x {
-		if k == "kubectl.kubernetes.io/last-applied-configuration" {
+		if k == lastAppliedConfiguration {
 			continue
 		}
 		if y[k] != v {
