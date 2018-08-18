@@ -28,6 +28,7 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
+		"github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.APIServerConfig":       schema_pkg_client_monitoring_v1_APIServerConfig(ref),
 		"github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.AlertingSpec":          schema_pkg_client_monitoring_v1_AlertingSpec(ref),
 		"github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.Alertmanager":          schema_pkg_client_monitoring_v1_Alertmanager(ref),
 		"github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.AlertmanagerEndpoints": schema_pkg_client_monitoring_v1_AlertmanagerEndpoints(ref),
@@ -291,6 +292,54 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 	}
 }
 
+func schema_pkg_client_monitoring_v1_APIServerConfig(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "APIServerConfig defines a host and auth methods to access apiserver. More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#kubernetes_sd_config",
+				Properties: map[string]spec.Schema{
+					"host": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Host of apiserver. A valid string consisting of a hostname or IP followed by an optional port number",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"basicAuth": {
+						SchemaProps: spec.SchemaProps{
+							Description: "BasicAuth allow an endpoint to authenticate over basic authentication",
+							Ref:         ref("github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.BasicAuth"),
+						},
+					},
+					"bearerToken": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Bearer token for accessing apiserver.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"bearerTokenFile": {
+						SchemaProps: spec.SchemaProps{
+							Description: "File to read bearer token for accessing apiserver.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"tlsConfig": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TLS Config to use for accessing apiserver.",
+							Ref:         ref("github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.TLSConfig"),
+						},
+					},
+				},
+				Required: []string{"host"},
+			},
+		},
+		Dependencies: []string{
+			"github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.BasicAuth", "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.TLSConfig"},
+	}
+}
+
 func schema_pkg_client_monitoring_v1_AlertingSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
@@ -426,7 +475,7 @@ func schema_pkg_client_monitoring_v1_AlertmanagerList(ref common.ReferenceCallba
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "A list of Alertmanagers.",
+				Description: "AlertmanagerList is a list of Alertmanagers.",
 				Properties: map[string]spec.Schema{
 					"kind": {
 						SchemaProps: spec.SchemaProps{
@@ -474,7 +523,7 @@ func schema_pkg_client_monitoring_v1_AlertmanagerSpec(ref common.ReferenceCallba
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Specification of the desired behavior of the Alertmanager cluster. More info: https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#spec-and-status",
+				Description: "AlertmanagerSpec is a specification of the desired behavior of the Alertmanager cluster. More info: https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#spec-and-status",
 				Properties: map[string]spec.Schema{
 					"podMetadata": {
 						SchemaProps: spec.SchemaProps{
@@ -485,6 +534,13 @@ func schema_pkg_client_monitoring_v1_AlertmanagerSpec(ref common.ReferenceCallba
 					"version": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Version the cluster should be on.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"tag": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Tag of Alertmanager container image to be deployed. Defaults to the value of `version`.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -535,6 +591,13 @@ func schema_pkg_client_monitoring_v1_AlertmanagerSpec(ref common.ReferenceCallba
 							Description: "Size is the expected size of the alertmanager cluster. The controller will eventually make the size of the running cluster equal to the expected size.",
 							Type:        []string{"integer"},
 							Format:      "int32",
+						},
+					},
+					"retention": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Time duration Alertmanager shall retain data for. Default is '120h'.",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
 					"storage": {
@@ -648,7 +711,7 @@ func schema_pkg_client_monitoring_v1_AlertmanagerStatus(ref common.ReferenceCall
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Most recent observed status of the Alertmanager cluster. Read-only. Not included when requesting from the apiserver, only from the Prometheus Operator API itself. More info: https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#spec-and-status",
+				Description: "AlertmanagerStatus is the most recent observed status of the Alertmanager cluster. Read-only. Not included when requesting from the apiserver, only from the Prometheus Operator API itself. More info: https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#spec-and-status",
 				Properties: map[string]spec.Schema{
 					"paused": {
 						SchemaProps: spec.SchemaProps{
@@ -845,7 +908,7 @@ func schema_pkg_client_monitoring_v1_NamespaceSelector(ref common.ReferenceCallb
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "A selector for selecting namespaces either selecting all namespaces or a list of namespaces.",
+				Description: "NamespaceSelector is a selector for selecting either all namespaces or a list of namespaces.",
 				Properties: map[string]spec.Schema{
 					"any": {
 						SchemaProps: spec.SchemaProps{
@@ -1009,7 +1072,7 @@ func schema_pkg_client_monitoring_v1_PrometheusRuleList(ref common.ReferenceCall
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "A list of PrometheusRules.",
+				Description: "PrometheusRuleList is a list of PrometheusRules.",
 				Properties: map[string]spec.Schema{
 					"kind": {
 						SchemaProps: spec.SchemaProps{
@@ -1084,7 +1147,7 @@ func schema_pkg_client_monitoring_v1_PrometheusSpec(ref common.ReferenceCallback
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Specification of the desired behavior of the Prometheus cluster. More info: https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#spec-and-status",
+				Description: "PrometheusSpec is a specification of the desired behavior of the Prometheus cluster. More info: https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#spec-and-status",
 				Properties: map[string]spec.Schema{
 					"podMetadata": {
 						SchemaProps: spec.SchemaProps{
@@ -1107,6 +1170,13 @@ func schema_pkg_client_monitoring_v1_PrometheusSpec(ref common.ReferenceCallback
 					"version": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Version of Prometheus to be deployed.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"tag": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Tag of Prometheus container image to be deployed. Defaults to the value of `version`.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -1147,7 +1217,7 @@ func schema_pkg_client_monitoring_v1_PrometheusSpec(ref common.ReferenceCallback
 					},
 					"retention": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Time duration Prometheus shall retain data for.",
+							Description: "Time duration Prometheus shall retain data for. Default is '24h'.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -1209,7 +1279,7 @@ func schema_pkg_client_monitoring_v1_PrometheusSpec(ref common.ReferenceCallback
 					},
 					"ruleSelector": {
 						SchemaProps: spec.SchemaProps{
-							Description: "A selector to select which PrometheusRules to mount for loading alerting rules from.",
+							Description: "A selector to select which PrometheusRules to mount for loading alerting rules from. Until (excluding) Prometheus Operator v0.24.0 Prometheus Operator will migrate any legacy rule ConfigMaps to PrometheusRule custom resources selected by RuleSelector. Make sure it does not match any config maps that you do not want to be migrated.",
 							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector"),
 						},
 					},
@@ -1349,6 +1419,12 @@ func schema_pkg_client_monitoring_v1_PrometheusSpec(ref common.ReferenceCallback
 							Ref:         ref("k8s.io/api/core/v1.SecretKeySelector"),
 						},
 					},
+					"apiserverConfig": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIServerConfig allows specifying a host and auth methods to access apiserver. If left empty, Prometheus is assumed to run inside of the cluster and will discover API servers automatically and use the pod's CA certificate and bearer token file at /var/run/secrets/kubernetes.io/serviceaccount/.",
+							Ref:         ref("github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.APIServerConfig"),
+						},
+					},
 					"thanos": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Thanos configuration allows configuring various aspects of a Prometheus server in a Thanos environment.\n\nThis section is experimental, it may change significantly without deprecation notice in any release.\n\nThis is experimental and may change significantly without backward compatibility in any release.",
@@ -1359,7 +1435,7 @@ func schema_pkg_client_monitoring_v1_PrometheusSpec(ref common.ReferenceCallback
 			},
 		},
 		Dependencies: []string{
-			"github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.AlertingSpec", "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.RemoteReadSpec", "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.RemoteWriteSpec", "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.StorageSpec", "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.ThanosSpec", "k8s.io/api/core/v1.Affinity", "k8s.io/api/core/v1.Container", "k8s.io/api/core/v1.LocalObjectReference", "k8s.io/api/core/v1.PodSecurityContext", "k8s.io/api/core/v1.ResourceRequirements", "k8s.io/api/core/v1.SecretKeySelector", "k8s.io/api/core/v1.Toleration", "k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			"github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.APIServerConfig", "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.AlertingSpec", "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.RemoteReadSpec", "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.RemoteWriteSpec", "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.StorageSpec", "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.ThanosSpec", "k8s.io/api/core/v1.Affinity", "k8s.io/api/core/v1.Container", "k8s.io/api/core/v1.LocalObjectReference", "k8s.io/api/core/v1.PodSecurityContext", "k8s.io/api/core/v1.ResourceRequirements", "k8s.io/api/core/v1.SecretKeySelector", "k8s.io/api/core/v1.Toleration", "k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 
@@ -1367,7 +1443,7 @@ func schema_pkg_client_monitoring_v1_PrometheusStatus(ref common.ReferenceCallba
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Most recent observed status of the Prometheus cluster. Read-only. Not included when requesting from the apiserver, only from the Prometheus Operator API itself. More info: https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#spec-and-status",
+				Description: "PrometheusStatus is the most recent observed status of the Prometheus cluster. Read-only. Not included when requesting from the apiserver, only from the Prometheus Operator API itself. More info: https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#spec-and-status",
 				Properties: map[string]spec.Schema{
 					"paused": {
 						SchemaProps: spec.SchemaProps{
@@ -1849,7 +1925,7 @@ func schema_pkg_client_monitoring_v1_ServiceMonitorList(ref common.ReferenceCall
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "A list of ServiceMonitors.",
+				Description: "ServiceMonitorList is a list of ServiceMonitors.",
 				Properties: map[string]spec.Schema{
 					"kind": {
 						SchemaProps: spec.SchemaProps{
@@ -2060,10 +2136,17 @@ func schema_pkg_client_monitoring_v1_ThanosGCSSpec(ref common.ReferenceCallback)
 							Format:      "",
 						},
 					},
+					"credentials": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Secret to access our Bucket.",
+							Ref:         ref("k8s.io/api/core/v1.SecretKeySelector"),
+						},
+					},
 				},
 			},
 		},
-		Dependencies: []string{},
+		Dependencies: []string{
+			"k8s.io/api/core/v1.SecretKeySelector"},
 	}
 }
 
@@ -2071,7 +2154,7 @@ func schema_pkg_client_monitoring_v1_ThanosS3Spec(ref common.ReferenceCallback) 
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "ThanosSpec defines parameters for of AWS Simple Storage Service (S3) with Thanos. (S3 compatible services apply as well)",
+				Description: "ThanosS3Spec defines parameters for of AWS Simple Storage Service (S3) with Thanos. (S3 compatible services apply as well)",
 				Properties: map[string]spec.Schema{
 					"bucket": {
 						SchemaProps: spec.SchemaProps{
@@ -2113,6 +2196,13 @@ func schema_pkg_client_monitoring_v1_ThanosS3Spec(ref common.ReferenceCallback) 
 							Format:      "",
 						},
 					},
+					"encryptsse": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Whether to use Server Side Encryption",
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
 				},
 			},
 		},
@@ -2141,11 +2231,24 @@ func schema_pkg_client_monitoring_v1_ThanosSpec(ref common.ReferenceCallback) co
 							Format:      "",
 						},
 					},
+					"tag": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Tag of Thanos sidecar container image to be deployed. Defaults to the value of `version`.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 					"baseImage": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Thanos base image if other than default.",
 							Type:        []string{"string"},
 							Format:      "",
+						},
+					},
+					"resources": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Resources defines the resource requirements for the Thanos sidecar. If not provided, no requests/limits will be set",
+							Ref:         ref("k8s.io/api/core/v1.ResourceRequirements"),
 						},
 					},
 					"gcs": {
@@ -2164,7 +2267,7 @@ func schema_pkg_client_monitoring_v1_ThanosSpec(ref common.ReferenceCallback) co
 			},
 		},
 		Dependencies: []string{
-			"github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.ThanosGCSSpec", "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.ThanosS3Spec"},
+			"github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.ThanosGCSSpec", "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1.ThanosS3Spec", "k8s.io/api/core/v1.ResourceRequirements"},
 	}
 }
 

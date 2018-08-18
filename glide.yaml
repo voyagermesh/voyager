@@ -16,7 +16,7 @@ import:
   version: v1.12.7
 - package: github.com/benbjohnson/clock
 - package: github.com/coreos/prometheus-operator
-  version: ccf8867cdb9e5bd099093e27cfdb5fecce15c90b
+  version: v0.23.1
 - package: github.com/evanphx/json-patch
   version: v3.0.0
 - package: github.com/ghodss/yaml
@@ -31,7 +31,7 @@ import:
   version: v0.10.3
 - package: github.com/jpillora/go-ogle-analytics
 - package: github.com/json-iterator/go
-  version: 1.1.4
+  version: 1.1.5
 - package: github.com/mitchellh/go-ps
 - package: github.com/moul/http2curl
 - package: github.com/onsi/ginkgo
@@ -80,6 +80,8 @@ import:
   vcs: git
   version: k-1.11
 - package: k8s.io/client-go
+  repo: https://github.com/pharmer/client-go.git
+  vcs: git
   version: v8.0.0
 - package: k8s.io/kube-openapi
   version: master
