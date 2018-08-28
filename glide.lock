@@ -1,5 +1,5 @@
 hash: 203c4be40b193eb284ec82c6e072e22dce8d8b391fca25a9449cc5c03a1104dd
-updated: 2018-08-18T12:14:18.706786708-07:00
+updated: 2018-08-27T22:15:15.40717666-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -43,7 +43,7 @@ imports:
   - client/workload/v1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: 569ee52ec2c8bb3c151daa20a8433cfa6cc1bfce
+  version: ab96b8d0056d39ca0c57dc6705864423b50515bc
   subpackages:
   - apiextensions/v1beta1
   - core/v1
@@ -229,6 +229,8 @@ imports:
   version: dcef7f55730566d41eae5db10e7d6981829720f6
 - name: github.com/evanphx/json-patch
   version: afac545df32f2287a079e2dfb7ba2745a643747e
+- name: github.com/fatih/structs
+  version: ebf56d35bba727c68ac77f56f2fcf90b181851aa
 - name: github.com/fsnotify/fsnotify
   version: f12c6236fe7b5cf6bcf30e5935d08cb079d78334
 - name: github.com/ghodss/yaml
@@ -283,7 +285,7 @@ imports:
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/google/uuid
-  version: 064e2069ce9c359c118179501254f67d7d37ba24
+  version: 8c31c18f31ede9fc8eae72290a7e7a8064e9b3e3
 - name: github.com/googleapis/gnostic
   version: 0c5108395e2debce0d731cf0287ddf7242066aba
   subpackages:
@@ -304,11 +306,11 @@ imports:
   subpackages:
   - diskcache
 - name: github.com/hashicorp/errwrap
-  version: d6c0cd88035724dd42e0f335ae30161c20575ecc
+  version: 8a6fb523712970c966eefc6b39ed2c5e74880354
 - name: github.com/hashicorp/go-cleanhttp
   version: d5fe4b57a186c716b0e00b8c301cbd9b4182694d
 - name: github.com/hashicorp/go-multierror
-  version: 3d5d8f294aa03d8e98859feac328afbdf1ae0703
+  version: 886a7fbe3eb1c874d46f623bfa70af45f425b3d1
 - name: github.com/hashicorp/go-retryablehttp
   version: e651d75abec6fbd4f2c09508f72ae7af8a8b7171
 - name: github.com/hashicorp/go-rootcerts
@@ -344,7 +346,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/JamesClonk/vultr
-  version: 267be0d362b67d505ee045d54185b31673b206c1
+  version: fa1c0367800db75e4d10d0ec90c49a8731670224
   subpackages:
   - lib
 - name: github.com/jmespath/go-jmespath
@@ -372,7 +374,7 @@ imports:
 - name: github.com/miekg/dns
   version: e57bf427e68187a27e22adceac868350d7a7079b
 - name: github.com/mitchellh/go-homedir
-  version: 58046073cbffe2f25d425fe1331102f55cf719de
+  version: ae18d6b8b3205b561c79e8e5f69bff09736185f4
 - name: github.com/mitchellh/go-ps
   version: 4fdf99ab29366514c69ccccddab5dc58b8d84062
 - name: github.com/mitchellh/mapstructure
