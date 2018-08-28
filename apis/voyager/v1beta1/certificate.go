@@ -82,6 +82,9 @@ type CertificateStatus struct {
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 
+	// +optional
+	ObservedGenerationHash string `json:"observedGenerationHash,omitempty"`
+
 	CreationTime          *metav1.Time           `json:"creationTime,omitempty"`
 	Conditions            []CertificateCondition `json:"conditions,omitempty"`
 	LastIssuedCertificate *CertificateDetails    `json:"lastIssuedCertificate,omitempty"`

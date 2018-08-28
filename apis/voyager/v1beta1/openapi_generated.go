@@ -644,6 +644,12 @@ func schema_voyager_apis_voyager_v1beta1_CertificateStatus(ref common.ReferenceC
 							Format:      "int64",
 						},
 					},
+					"observedGenerationHash": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
 					"creationTime": {
 						SchemaProps: spec.SchemaProps{
 							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
@@ -1474,6 +1480,12 @@ func schema_voyager_apis_voyager_v1beta1_IngressStatus(ref common.ReferenceCallb
 							Description: "observedGeneration is the most recent generation observed for this resource. It corresponds to the resource's generation, which is updated on mutation by the API Server.",
 							Type:        []string{"integer"},
 							Format:      "int64",
+						},
+					},
+					"observedGenerationHash": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
 						},
 					},
 					"loadBalancer": {

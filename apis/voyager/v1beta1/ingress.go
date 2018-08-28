@@ -165,6 +165,9 @@ type IngressStatus struct {
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 
+	// +optional
+	ObservedGenerationHash string `json:"observedGenerationHash,omitempty"`
+
 	// LoadBalancer contains the current status of the load-balancer.
 	LoadBalancer core.LoadBalancerStatus `json:"loadBalancer,omitempty"`
 }

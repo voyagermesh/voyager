@@ -122,8 +122,8 @@ func (az *Cloud) reconcileFirewall(sg network.SecurityGroup, service *apiv1.Serv
 				DestinationPortRange:     to.StringPtr(strconv.Itoa(int(port.NodePort))),
 				SourceAddressPrefix:      to.StringPtr("Internet"),
 				DestinationAddressPrefix: to.StringPtr(destAddr),
-				Access:    network.SecurityRuleAccessAllow,
-				Direction: network.SecurityRuleDirectionInbound,
+				Access:                   network.SecurityRuleAccessAllow,
+				Direction:                network.SecurityRuleDirectionInbound,
 			},
 		}
 	}
