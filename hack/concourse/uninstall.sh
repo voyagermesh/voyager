@@ -7,7 +7,7 @@ set -x
 
 # remove creds
 rm -rf /gcs.json
-rm -rf hack/configs/.env
+rm -rf hack/config/.env
 
 # remove docker images
 source "hack/libbuild/common/lib.sh"
