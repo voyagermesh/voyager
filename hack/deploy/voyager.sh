@@ -18,9 +18,7 @@ function cleanup() {
 }
 
 export APPSCODE_ENV=${APPSCODE_ENV:-prod}
-if [ "$APPSCODE_ENV" != "test-concourse" ]; then
-  trap cleanup EXIT
-fi
+trap cleanup EXIT
 
 # ref: https://github.com/appscodelabs/libbuild/blob/master/common/lib.sh#L55
 inside_git_repo() {
@@ -114,7 +112,7 @@ export VOYAGER_TEMPLATE_CONFIGMAP=
 export VOYAGER_ENABLE_STATUS_SUBRESOURCE=false
 
 export SCRIPT_LOCATION="curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.4.0/"
-if [[ "$APPSCODE_ENV" == "dev" || "$APPSCODE_ENV" == "test-concourse" ]]; then
+if [[ "$APPSCODE_ENV" == "dev" ]]; then
   detect_tag
   export SCRIPT_LOCATION="cat "
   export VOYAGER_IMAGE_TAG=$TAG
