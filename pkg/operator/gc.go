@@ -92,7 +92,7 @@ func (op *Operator) PurgeOffshootsDaemonSet() error {
 		for _, ing := range ingresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
 				name := api.VoyagerPrefix + ing.Name
-				log.Infoln("Deleting DaemonSet %s/%s", ing.Namespace, name)
+				log.Infof("Deleting DaemonSet %s/%s", ing.Namespace, name)
 				op.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).Delete(name, &metav1.DeleteOptions{})
 			}
 		}
@@ -113,7 +113,7 @@ func (op *Operator) PurgeOffshootsDaemonSet() error {
 							return err
 						}
 					}
-					log.Infoln("Deleting DaemonSet %s/%s", ing.Namespace, name)
+					log.Infof("Deleting DaemonSet %s/%s", ing.Namespace, name)
 					op.KubeClient.ExtensionsV1beta1().DaemonSets(ing.Namespace).Delete(name, &metav1.DeleteOptions{})
 				}
 			}
