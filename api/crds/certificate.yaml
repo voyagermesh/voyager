@@ -437,12 +437,8 @@ spec:
               - certURL
               - certStableURL
             observedGeneration:
-              description: observedGeneration is the most recent generation observed
-                for this resource. It corresponds to the resource's generation, which
-                is updated on mutation by the API Server.
-              format: int64
-              type: integer
-            observedGenerationHash:
+              description: IntHash represents as int64 Generation and string Hash.
+                It is json serialized into <int64>$<hash_string>.
               type: string
   version: v1beta1
   versions:
