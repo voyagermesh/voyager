@@ -62,6 +62,7 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `persistence.enabled`               | Enable mounting cloud config                                  | `false`               |
 | `persistence.hostPath`              | Host mount path for cloud config                              | `/etc/kubernetes`     |
 | `affinity`                          | Affinity rules for pod assignment                             | `{}`                  |
+| `annotations`                       | Annotations applied to operator pod(s)                        | `{}`                  |
 | `nodeSelector`                      | Node labels for pod assignment                                | `{}`                  |
 | `tolerations`                       | Tolerations used pod assignment                               | `{}`                  |
 | `rbac.create`                       | If `true`, create and use RBAC resources                      | `true`                |
