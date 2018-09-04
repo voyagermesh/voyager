@@ -35,6 +35,10 @@ persistence:
   enabled: false
   hostPath: /etc/kubernetes
 
+## Annotations passed to operator pod(s).
+##
+annotations: {}
+
 ## Node labels for pod assignment
 ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
 ##

@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "voyager.fullname" . }}
@@ -8,6 +8,10 @@ metadata:
     app: "{{ template "voyager.name" . }}"
     heritage: "{{ .Release.Service }}"
     release: "{{ .Release.Name }}"
+{{- if .Values.annotations }}
+  annotations:
+{{ toYaml .Values.annotations | indent 4 }}
+{{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
