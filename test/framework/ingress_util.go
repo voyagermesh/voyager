@@ -1224,11 +1224,10 @@ func (i *ingressInvocation) CreateResourceWithSendProxy(version string) (metav1.
 }
 
 func (i *ingressInvocation) CreateTLSSecretForHost(name string, hosts []string) (*core.Secret, error) {
-	crt, key, err := i.CertStore.NewServerCertPair(
-		"server",
+	crt, key, err := i.CertStore.NewServerCertPairBytes(
 		cert.AltNames{
+			DNSNames: append([]string{"server"}, hosts...),
 			IPs:      []net.IP{net.ParseIP("127.0.0.1"), net.ParseIP("192.168.99.100")},
-			DNSNames: hosts,
 		},
 	)
 	if err != nil {
