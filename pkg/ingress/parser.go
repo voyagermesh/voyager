@@ -4,7 +4,10 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -907,6 +910,17 @@ func (c *controller) getErrorFiles() ([]*hpi.ErrorFile, error) {
 	configMap, err := c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Get(c.Ingress.ErrorFilesConfigMapName(), metav1.GetOptions{})
 	if err != nil {
 		return nil, err
+	}
+
+	for k := range configMap.Data {
+		if !strings.HasSuffix(k, ".http") {
+			continue
+		}
+
+		f := filepath.Join(ErrorFilesLocation, k)
+		if _, err := os.Stat(f); os.IsNotExist(err) {
+			ioutil.WriteFile(f, []byte(""), 0644)
+		}
 	}
 
 	commands := sets.NewString("errorfile", "errorloc", "errorloc302", "errorloc303")
