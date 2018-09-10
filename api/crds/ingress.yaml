@@ -926,7 +926,7 @@ spec:
                   description: Specifies the name of the referenced service.
                   type: string
                 servicePort:
-                  anyOf:
+                  oneOf:
                   - type: string
                   - type: integer
             externalIPs:
@@ -983,7 +983,7 @@ spec:
                           verifyClient:
                             type: string
                   port:
-                    anyOf:
+                    oneOf:
                     - type: string
                     - type: integer
                   rules:
@@ -1103,7 +1103,7 @@ spec:
                           detect like present
                         type: boolean
                       nodePort:
-                        anyOf:
+                        oneOf:
                         - type: string
                         - type: integer
                       paths:
@@ -1158,7 +1158,7 @@ spec:
                                     service.
                                   type: string
                                 servicePort:
-                                  anyOf:
+                                  oneOf:
                                   - type: string
                                   - type: integer
                             path:
@@ -1173,7 +1173,7 @@ spec:
                               type: string
                         type: array
                       port:
-                        anyOf:
+                        oneOf:
                         - type: string
                         - type: integer
                     required:
@@ -1228,7 +1228,7 @@ spec:
                             description: Specifies the name of the referenced service.
                             type: string
                           servicePort:
-                            anyOf:
+                            oneOf:
                             - type: string
                             - type: integer
                       noTLS:
@@ -1236,11 +1236,11 @@ spec:
                           detect like present
                         type: boolean
                       nodePort:
-                        anyOf:
+                        oneOf:
                         - type: string
                         - type: integer
                       port:
-                        anyOf:
+                        oneOf:
                         - type: string
                         - type: integer
               type: array
@@ -1436,9 +1436,10 @@ spec:
                         type: string
                   type: array
             observedGeneration:
-              description: IntHash represents as int64 Generation and string Hash.
-                It is json serialized into <int64>$<hash_string>.
-              type: string
+              oneOf:
+              - type: string
+              - format: int64
+                type: integer
   version: v1beta1
   versions:
   - name: v1beta1
