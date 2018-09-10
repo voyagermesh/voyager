@@ -437,9 +437,10 @@ spec:
               - certURL
               - certStableURL
             observedGeneration:
-              description: IntHash represents as int64 Generation and string Hash.
-                It is json serialized into <int64>$<hash_string>.
-              type: string
+              oneOf:
+              - type: string
+              - format: int64
+                type: integer
   version: v1beta1
   versions:
   - name: v1beta1

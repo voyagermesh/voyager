@@ -60,5 +60,6 @@ type StatsAccessor interface {
 	ServiceName() string
 	ServiceMonitorName() string
 	Path() string
+	// Scheme is used to determine url scheme /metrics endpoint
 	Scheme() string
 }
