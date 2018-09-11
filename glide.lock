@@ -1,5 +1,5 @@
-hash: 3e2685c331aa5d1a4a40094c0775ed31e5df16f82679d7582cddd8b401623bcc
-updated: 2018-09-10T10:03:07.674426717-07:00
+hash: 1d30973135732db17922d9e537dc11be34d88d9d70827693975f1c29708673c6
+updated: 2018-09-10T21:05:29.656762516-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -203,7 +203,7 @@ imports:
   - daemon
   - journal
 - name: github.com/coreos/prometheus-operator
-  version: ba92b2f232ef24684b9dc6bde03b74e1630909a6
+  version: 27b1eb72d9d93e5ab447121e2b884bc558bde01d
   subpackages:
   - pkg/client/monitoring/v1
 - name: github.com/cpuguy83/go-md2man
@@ -347,7 +347,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/JamesClonk/vultr
-  version: fa1c0367800db75e4d10d0ec90c49a8731670224
+  version: 267be0d362b67d505ee045d54185b31673b206c1
   subpackages:
   - lib
 - name: github.com/jmespath/go-jmespath
@@ -672,7 +672,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/ini.v1
-  version: 32e4c1e6bc4e7d0d8451aa6b75200d19e37a536a
+  version: 06f5f3d67269ccec1fe5fe4134ba6e982984f7f5
 - name: gopkg.in/natefinch/lumberjack.v2
   version: 20b71e5b60d756d3d2f80def009790325acc2b23
 - name: gopkg.in/square/go-jose.v2
@@ -782,7 +782,7 @@ imports:
   - third_party/forked/golang/json
   - third_party/forked/golang/reflect
 - name: k8s.io/apiserver
-  version: 8573140a007810ee0d5a165647f171b0a77acfe5
+  version: 9970aee1898bc65beb8f3829b2ddf8e191777f78
   repo: https://github.com/pharmer/apiserver.git
   vcs: git
   subpackages:
