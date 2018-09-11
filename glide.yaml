@@ -16,7 +16,7 @@ import:
   version: v1.12.7
 - package: github.com/benbjohnson/clock
 - package: github.com/coreos/prometheus-operator
-  version: v0.23.1
+  version: v0.23.2
 - package: github.com/evanphx/json-patch
   version: v3.0.0
 - package: github.com/ghodss/yaml
