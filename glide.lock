@@ -1,5 +1,5 @@
-hash: 1d30973135732db17922d9e537dc11be34d88d9d70827693975f1c29708673c6
-updated: 2018-09-10T21:05:29.656762516-07:00
+hash: ae595ac767f3a782884e3c99f5fdf3e96c8f59ca5bfd278eee42976df6a1b893
+updated: 2018-09-11T17:36:36.317793772-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -35,7 +35,7 @@ imports:
 - name: github.com/appscode/go-version
   version: 0dcf3ac121c7c30e035b41ba9f652d1ce5994242
 - name: github.com/appscode/jsonpatch
-  version: 1359b374de83fa14fd58ab10aa8ea4935f84d249
+  version: 5af499cf01c842bfdd7761a433fc90525ccd6836
 - name: github.com/appscode/kubernetes-webhook-util
   version: cb010279d0a6d1885e6316f78cf3ef682fca7a42
   subpackages:
@@ -44,7 +44,7 @@ imports:
   - client/workload/v1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: 6a61b0d2df81e2d5b4764bee574eb43a9a954a5a
+  version: 58a89a000f0c44560e97537d989ec6d2fba95f64
   subpackages:
   - apiextensions/v1beta1
   - core/v1
@@ -875,7 +875,9 @@ imports:
   - plugin/pkg/authenticator/token/webhook
   - plugin/pkg/authorizer/webhook
 - name: k8s.io/client-go
-  version: 2cefa64ff137e128daeddbd1775cd775708a05bf
+  version: 805859b028aa45844e5d3b699d1dfad9eed753ad
+  repo: https://github.com/pharmer/client-go.git
+  vcs: git
   subpackages:
   - deprecated-dynamic
   - discovery
