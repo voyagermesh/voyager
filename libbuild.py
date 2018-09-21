@@ -411,7 +411,9 @@ DEP_LIST = [
     },
     {
       "package": "k8s.io/client-go",
-      "version": "kubernetes-1.11.3"
+      "repo": "https://github.com/pharmer/client-go.git",
+      "vcs": "git",
+      "version": "release-1.11.3"
     },
     {
       "package": "k8s.io/kubernetes",
@@ -419,6 +421,10 @@ DEP_LIST = [
     },
     {
       "package": "k8s.io/kube-aggregator",
+      "version": "kubernetes-1.11.3"
+    },
+    {
+      "package": "k8s.io/metrics",
       "version": "kubernetes-1.11.3"
     },
     {
@@ -521,7 +527,7 @@ def revendor():
         call('glide slow', cwd=REPO_ROOT)
         if git_requires_commit():
             call('git add --all', cwd=REPO_ROOT)
-            call('git commit -s -a -m "Revendor api"', cwd=REPO_ROOT)
+            call('git commit -s -a -m "Use kubernetes-1.11.3"', cwd=REPO_ROOT)
             call('git push origin {0}'.format(revendor_branch), cwd=REPO_ROOT)
         else:
             call('git reset HEAD --hard', cwd=REPO_ROOT)
