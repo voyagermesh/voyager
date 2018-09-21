@@ -16,7 +16,7 @@ build() {
 	pushd $(dirname "${BASH_SOURCE}")
 	cp $REPO_ROOT/dist/voyager/voyager-alpine-amd64 voyager
 	chmod +x voyager
-	local cmd="docker build -t appscode/$IMG:$TAG ."
+	local cmd="docker build --pull -t appscode/$IMG:$TAG ."
 	echo $cmd; $cmd
 	rm voyager
 	popd

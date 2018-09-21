@@ -9,7 +9,7 @@ build() {
 
 build_docker() {
     cp Dockerfile dist/
-    docker build -t appscode/test-server:${VERSION} ./dist
+    docker build --pull -t appscode/test-server:${VERSION} ./dist
 }
 
 docker_push() {
