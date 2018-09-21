@@ -16,7 +16,7 @@ build() {
 	pushd $(dirname "${BASH_SOURCE}")
 	gsutil cp gs://appscode-dev/binaries/reloader/0.2.6/reloader-linux-amd64 reloader
 	chmod +x reloader
-	local cmd="docker build -t appscode/$IMG:$TAG ."
+	local cmd="docker build --pull -t appscode/$IMG:$TAG ."
 	echo $cmd; $cmd
 	rm reloader
 	popd
