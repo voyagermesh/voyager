@@ -377,6 +377,7 @@ func (c *nodePortController) ensureService() (*core.Service, kutil.VerbType, err
 				newKeys = append(newKeys, k)
 			}
 		}
+		sort.Strings(newKeys)
 		obj.Annotations[api.LastAppliedAnnotationKeys] = strings.Join(newKeys, ",")
 
 		// LoadBalancerSourceRanges
@@ -455,6 +456,7 @@ func (c *nodePortController) ensurePods() (kutil.VerbType, error) {
 				newKeys = append(newKeys, k)
 			}
 		}
+		sort.Strings(newKeys)
 		obj.Spec.Template.Annotations[api.LastAppliedAnnotationKeys] = strings.Join(newKeys, ",")
 
 		// pod spec
