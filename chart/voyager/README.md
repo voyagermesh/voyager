@@ -53,7 +53,7 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `haproxy.registry`                  | Docker registry used to pull HAProxy image                    | `appscode`            |
 | `haproxy.repository`                | HAProxy container image                                       | `haproxy`             |
 | `haproxy.tag`                       | HAProxy container image tag                                   | `1.8.12-7.4.0-alpine` |
-| `cleaner.registry`                  | Docker registry used to pull Webhook cleaner image            | `appcode`             |
+| `cleaner.registry`                  | Docker registry used to pull Webhook cleaner image            | `appscode`             |
 | `cleaner.repository`                | Webhook cleaner container image                               | `kubectl`             |
 | `cleaner.tag`                       | Webhook cleaner container image tag                           | `v1.11`               |
 | `imagePullSecrets`                  | Specify image pull secrets                                    | `nil` (does not add image pull secrets to deployed pods) |
