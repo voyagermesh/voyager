@@ -54,6 +54,9 @@ spec:
         - --tls-private-key-file=/var/serving-cert/tls.key
         - --enable-status-subresource={{ .Values.apiserver.enableStatusSubresource }}
         - --enable-analytics={{ .Values.enableAnalytics }}
+        {{- if .Values.template.cfgmap }}
+        - --custom-templates=/srv/voyager/custom/*.cfg
+        {{- end }}
         ports:
         - containerPort: 8443
         - containerPort: 56791
@@ -73,6 +76,11 @@ spec:
           name: cloudconfig
           readOnly: true
 {{- end }}
+{{- if .Values.template.cfgmap }}
+        - mountPath: /srv/voyager/custom
+          name: templates
+          readOnly: true
+{{- end }}
       volumes:
       - name: serving-cert
         secret:
@@ -82,6 +90,11 @@ spec:
       - hostPath:
           path: {{ .Values.persistence.hostPath | quote }}
         name: cloudconfig
+{{- end -}}
+{{- if .Values.template.cfgmap }}
+      - configMap:
+          name: {{ .Values.template.cfgmap }}
+        name: templates
 {{- end -}}
 {{- if or .Values.tolerations (and .Values.criticalAddon (eq .Release.Namespace "kube-system")) }}
       tolerations:
