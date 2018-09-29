@@ -280,6 +280,7 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 				newKeys = append(newKeys, k)
 			}
 		}
+		sort.Strings(newKeys)
 		obj.Annotations[api.LastAppliedAnnotationKeys] = strings.Join(newKeys, ",")
 
 		// Remove old annotations from 3.2.x release.
@@ -391,6 +392,7 @@ func (c *loadBalancerController) ensurePods() (kutil.VerbType, error) {
 				newKeys = append(newKeys, k)
 			}
 		}
+		sort.Strings(newKeys)
 		obj.Spec.Template.Annotations[api.LastAppliedAnnotationKeys] = strings.Join(newKeys, ",")
 
 		// pod spec

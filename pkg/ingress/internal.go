@@ -273,6 +273,7 @@ func (c *internalController) ensureService() (*core.Service, kutil.VerbType, err
 				newKeys = append(newKeys, k)
 			}
 		}
+		sort.Strings(newKeys)
 		obj.Annotations[api.LastAppliedAnnotationKeys] = strings.Join(newKeys, ",")
 
 		// ExternalIPs
@@ -340,6 +341,7 @@ func (c *internalController) ensurePods() (kutil.VerbType, error) {
 				newKeys = append(newKeys, k)
 			}
 		}
+		sort.Strings(newKeys)
 		obj.Spec.Template.Annotations[api.LastAppliedAnnotationKeys] = strings.Join(newKeys, ",")
 
 		// pod spec
