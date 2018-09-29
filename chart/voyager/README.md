@@ -53,6 +53,9 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `haproxy.registry`                  | Docker registry used to pull HAProxy image                    | `appscode`            |
 | `haproxy.repository`                | HAProxy container image                                       | `haproxy`             |
 | `haproxy.tag`                       | HAProxy container image tag                                   | `1.8.12-7.4.0-alpine` |
+| `cleaner.registry`                  | Docker registry used to pull Webhook cleaner image            | `appcode`             |
+| `cleaner.repository`                | Webhook cleaner container image                               | `kubectl`             |
+| `cleaner.tag`                       | Webhook cleaner container image tag                           | `v1.11`               |
 | `imagePullSecrets`                  | Specify image pull secrets                                    | `nil` (does not add image pull secrets to deployed pods) |
 | `imagePullPolicy`                   | Image pull policy                                             | `IfNotPresent`        |
 | `cloudProvider`                     | Name of cloud provider                                        | `nil`                 |
@@ -69,6 +72,7 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `serviceAccount.create`             | If `true`, create a new service account                       | `true`                |
 | `serviceAccount.name`               | Service account to be used. If not set and `serviceAccount.create` is `true`, a name is generated using the fullname template | `` |
 | `ingressClass`                      | Ingress class to watch for. If empty, it handles all ingress  | ``                    |
+| `templates.cfgmap`                  | Name of configmap with custom templates                       | ``                    |
 | `apiserver.groupPriorityMinimum`    | The minimum priority the group should have.                   | 10000                 |
 | `apiserver.versionPriority`         | The ordering of this API inside of the group.                 | 15                    |
 | `apiserver.enableValidatingWebhook` | Configure apiserver as adission webhooks for Voyager CRDs     | `false`               |

@@ -11,6 +11,10 @@ haproxy:
   registry: appscode
   repository: haproxy
   tag: 1.8.12-7.4.0-alpine
+cleaner:
+  registry: appcode
+  repository: kubectl
+  tag: v1.11
 ## Optionally specify an array of imagePullSecrets.
 ## Secrets must be manually created in the namespace.
 ## ref: https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod
