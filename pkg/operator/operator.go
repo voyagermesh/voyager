@@ -177,8 +177,6 @@ func (w *Operator) Run(stopCh <-chan struct{}) {
 	w.PurgeOffshootsDaemonSet()
 
 	w.RunInformers(stopCh)
-
-	<-stopCh
 }
 
 func (op *Operator) listIngresses() ([]api.Ingress, error) {

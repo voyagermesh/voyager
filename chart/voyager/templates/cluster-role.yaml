@@ -13,15 +13,12 @@ rules:
   - apiextensions.k8s.io
   resources:
   - customresourcedefinitions
-  verbs:
-  - "*"
+  verbs: ["*"]
 - apiGroups:
   - admissionregistration.k8s.io
   resources:
-  - mutatingwebhookconfigurations
   - validatingwebhookconfigurations
-  verbs:
-  - delete
+  verbs: ["delete", "list", "watch", "patch"]
 - apiGroups:
   - voyager.appscode.com
   resources: ["*"]
