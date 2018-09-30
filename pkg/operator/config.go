@@ -3,6 +3,7 @@ package operator
 import (
 	hooks "github.com/appscode/kubernetes-webhook-util/admission/v1beta1"
 	wcs "github.com/appscode/kubernetes-webhook-util/client/workload/v1"
+	reg_util "github.com/appscode/kutil/admissionregistration/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	voyagerinformers "github.com/appscode/voyager/client/informers/externalversions"
 	"github.com/appscode/voyager/pkg/config"
@@ -12,6 +13,10 @@ import (
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+)
+
+const (
+	validatingWebhook = "admission.voyager.appscode.com"
 )
 
 type OperatorConfig struct {
@@ -35,6 +40,7 @@ func NewOperatorConfig(clientConfig *rest.Config) *OperatorConfig {
 func (c *OperatorConfig) New() (*Operator, error) {
 	op := &Operator{
 		Config:                 c.Config,
+		ClientConfig:           c.ClientConfig,
 		KubeClient:             c.KubeClient,
 		WorkloadClient:         c.WorkloadClient,
 		kubeInformerFactory:    informers.NewFilteredSharedInformerFactory(c.KubeClient, c.ResyncPeriod, c.WatchNamespace, nil),
@@ -46,6 +52,9 @@ func (c *OperatorConfig) New() (*Operator, error) {
 	}
 
 	if err := op.ensureCustomResourceDefinitions(); err != nil {
+		return nil, err
+	}
+	if err := reg_util.UpdateValidatingWebhookCABundle(c.ClientConfig, validatingWebhook); err != nil {
 		return nil, err
 	}
 
