@@ -1,5 +1,5 @@
-hash: ae595ac767f3a782884e3c99f5fdf3e96c8f59ca5bfd278eee42976df6a1b893
-updated: 2018-09-11T17:36:36.317793772-07:00
+hash: 50a57b52a2a7bd161a4ec9f839187de7126e477863d18d9d2274282e81a8c625
+updated: 2018-09-30T03:25:27.190676301-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -44,8 +44,9 @@ imports:
   - client/workload/v1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: 58a89a000f0c44560e97537d989ec6d2fba95f64
+  version: 8098faaaba7e4781cbaecf630c8583be1b58d36c
   subpackages:
+  - admissionregistration/v1beta1
   - apiextensions/v1beta1
   - core/v1
   - discovery
@@ -57,6 +58,7 @@ imports:
   - tools/certstore
   - tools/clientcmd
   - tools/queue
+  - tools/watch
 - name: github.com/appscode/mergo
   version: 9f23e2d6bd2a77f959b2bf6acdbefd708a83a4a4
 - name: github.com/appscode/ocutil
@@ -231,7 +233,7 @@ imports:
 - name: github.com/evanphx/json-patch
   version: afac545df32f2287a079e2dfb7ba2745a643747e
 - name: github.com/fatih/structs
-  version: ebf56d35bba727c68ac77f56f2fcf90b181851aa
+  version: 4966fc68f5b7593aafa6cbbba2d65ec6e1416047
 - name: github.com/fsnotify/fsnotify
   version: f12c6236fe7b5cf6bcf30e5935d08cb079d78334
 - name: github.com/ghodss/yaml
@@ -280,7 +282,7 @@ imports:
   - cmp/internal/function
   - cmp/internal/value
 - name: github.com/google/go-querystring
-  version: 53e6ce116135b80d037921a7fdd5138cf32d7a8a
+  version: 44c6ddd0a2342c386950e880b658017258da92fc
   subpackages:
   - query
 - name: github.com/google/gofuzz
@@ -1045,7 +1047,7 @@ imports:
   - util/retry
   - util/workqueue
 - name: k8s.io/kube-openapi
-  version: e3762e86a74c878ffed47484592986685639c2cd
+  version: 91cfa479c814065e420cee7ed227db0f63a5854e
   subpackages:
   - pkg/builder
   - pkg/common

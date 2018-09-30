@@ -3,6 +3,7 @@ package operator
 import (
 	"github.com/appscode/go/log"
 	wcs "github.com/appscode/kubernetes-webhook-util/client/workload/v1"
+	reg_util "github.com/appscode/kutil/admissionregistration/v1beta1"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -20,6 +21,7 @@ import (
 	apps_listers "k8s.io/client-go/listers/apps/v1"
 	core_listers "k8s.io/client-go/listers/core/v1"
 	ext_listers "k8s.io/client-go/listers/extensions/v1beta1"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 )
@@ -27,6 +29,7 @@ import (
 type Operator struct {
 	config.Config
 
+	ClientConfig   *rest.Config
 	KubeClient     kubernetes.Interface
 	WorkloadClient wcs.Interface
 	CRDClient      kext_cs.ApiextensionsV1beta1Interface
@@ -153,9 +156,12 @@ func (op *Operator) RunInformers(stopCh <-chan struct{}) {
 	if op.smonInformer != nil {
 		op.smonQueue.Run(stopCh)
 	}
+	cancel, _ := reg_util.SyncValidatingWebhookCABundle(op.ClientConfig, validatingWebhook)
 
 	<-stopCh
-	log.Infoln("Stopping Stash controller")
+
+	cancel()
+	log.Infoln("Stopping Voyager controller")
 }
 
 func (w *Operator) Run(stopCh <-chan struct{}) {
