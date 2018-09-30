@@ -148,44 +148,9 @@ $ helm search appscode/voyager
 NAME              CHART VERSION APP VERSION DESCRIPTION
 appscode/voyager  7.4.0    7.4.0  Voyager by AppsCode - Secure HAProxy Ingress Controller...
 
-# Kubernetes 1.8.x
 $ helm install appscode/voyager --name voyager-operator --version 7.4.0 \
   --namespace kube-system \
   --set cloudProvider=$provider
-
-# Kubernetes 1.9.x - 1.10.x
-$ helm install appscode/voyager --name voyager-operator --version 7.4.0 \
-  --namespace kube-system \
-  --set cloudProvider=$provider \
-  --set apiserver.ca="$(onessl get kube-ca)" \
-  --set apiserver.enableValidatingWebhook=true
-
-# Kubernetes 1.11.x or later
-$ helm install appscode/voyager --name voyager-operator --version 7.4.0 \
-  --namespace kube-system \
-  --set cloudProvider=$provider \
-  --set apiserver.ca="$(onessl get kube-ca)" \
-  --set apiserver.enableValidatingWebhook=true \
-  --set apiserver.enableStatusSubresource=true
-```
-
-To install `onessl`, run the following commands:
-
-```console
-# Mac OSX amd64:
-curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.3.0/onessl-darwin-amd64 \
-  && chmod +x onessl \
-  && sudo mv onessl /usr/local/bin/
-
-# Linux amd64:
-curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.3.0/onessl-linux-amd64 \
-  && chmod +x onessl \
-  && sudo mv onessl /usr/local/bin/
-
-# Linux arm64:
-curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.3.0/onessl-linux-arm64 \
-  && chmod +x onessl \
-  && sudo mv onessl /usr/local/bin/
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/7.4.0/chart/voyager).
