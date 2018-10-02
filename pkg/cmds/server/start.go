@@ -62,7 +62,7 @@ func (o VoyagerOptions) Config() (*server.VoyagerConfig, error) {
 		return nil, err
 	}
 	// Fixes https://github.com/Azure/AKS/issues/522
-	clientcmd.FixAKS(serverConfig.ClientConfig)
+	clientcmd.Fix(serverConfig.ClientConfig)
 
 	operatorConfig := operator.NewOperatorConfig(serverConfig.ClientConfig)
 	if err := o.OperatorOptions.ApplyTo(operatorConfig); err != nil {
