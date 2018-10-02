@@ -140,14 +140,9 @@ func (f *File) Section(name string) *Section {
 
 // Section returns list of Section.
 func (f *File) Sections() []*Section {
-	if f.BlockMode {
-		f.lock.RLock()
-		defer f.lock.RUnlock()
-	}
-
 	sections := make([]*Section, len(f.sectionList))
-	for i, name := range f.sectionList {
-		sections[i] = f.sections[name]
+	for i := range f.sectionList {
+		sections[i] = f.Section(f.sectionList[i])
 	}
 	return sections
 }
@@ -228,7 +223,7 @@ func (f *File) Append(source interface{}, others ...interface{}) error {
 
 func (f *File) writeToBuffer(indent string) (*bytes.Buffer, error) {
 	equalSign := "="
-	if PrettyFormat || PrettyEqual {
+	if PrettyFormat {
 		equalSign = " = "
 	}
 
@@ -305,10 +300,6 @@ func (f *File) writeToBuffer(indent string) (*bytes.Buffer, error) {
 				} else {
 					key.Comment = key.Comment[:1] + " " + strings.TrimSpace(key.Comment[1:])
 				}
-
-				// Support multiline comments
-				key.Comment = strings.Replace(key.Comment, "\n", "\n; ", -1)
-
 				if _, err := buf.WriteString(key.Comment + LineBreak); err != nil {
 					return nil, err
 				}
