@@ -4,6 +4,7 @@ import (
 	"io"
 	"net"
 
+	"github.com/appscode/kutil/tools/clientcmd"
 	"github.com/appscode/voyager/pkg/operator"
 	"github.com/appscode/voyager/pkg/server"
 	"github.com/pkg/errors"
@@ -57,10 +58,11 @@ func (o VoyagerOptions) Config() (*server.VoyagerConfig, error) {
 	}
 
 	serverConfig := genericapiserver.NewRecommendedConfig(server.Codecs)
-	serverConfig.EnableMetrics = true
 	if err := o.RecommendedOptions.ApplyTo(serverConfig, server.Scheme); err != nil {
 		return nil, err
 	}
+	// Fixes https://github.com/Azure/AKS/issues/522
+	clientcmd.FixAKS(serverConfig.ClientConfig)
 
 	operatorConfig := operator.NewOperatorConfig(serverConfig.ClientConfig)
 	if err := o.OperatorOptions.ApplyTo(operatorConfig); err != nil {
