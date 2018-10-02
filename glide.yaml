@@ -117,6 +117,8 @@ import:
   version: 95c6576299259db960f6c5b9b69ea52422860fce
 - package: github.com/dnsimple/dnsimple-go
   version: 35bcc6b47c20ec9bf3a53adcb7fa9665a75f0e7b
+- package: github.com/golang/protobuf
+  version: v1.1.0
 testImport:
 - package: github.com/stretchr/testify
   version: v1.2.2
