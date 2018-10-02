@@ -5,7 +5,9 @@ import (
 	"os"
 
 	"github.com/appscode/kutil/meta"
+	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"github.com/spf13/pflag"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
@@ -66,29 +68,48 @@ func NamespaceFromContext(kubeconfigPath, contextName string) (string, error) {
 }
 
 func fix(cfg *rest.Config, err error) (*rest.Config, error) {
-	return FixAKS(cfg), err
+	return Fix(cfg), err
 }
 
-func FixAKS(cfg *rest.Config) *rest.Config {
-	if cfg == nil {
-		return nil
+var fixAKS = true
+
+func init() {
+	pflag.BoolVar(&fixAKS, "use-kubeapiserver-fqdn-for-aks", fixAKS, "if true, uses kube-apiserver FQDN for AKS cluster to workaround https://github.com/Azure/AKS/issues/522")
+}
+
+// FixAKS uses kube-apiserver FQDN for AKS cluster to workaround https://github.com/Azure/AKS/issues/522
+func Fix(cfg *rest.Config) *rest.Config {
+	if cfg == nil || !fixAKS {
+		return cfg
 	}
 
 	// ref: https://github.com/kubernetes/client-go/blob/kubernetes-1.11.3/rest/config.go#L309
 	host, port := os.Getenv("KUBERNETES_SERVICE_HOST"), os.Getenv("KUBERNETES_SERVICE_PORT")
-	if len(host) == 0 || len(port) == 0 {
-		return cfg
-	}
-	if cfg.Host != "https://"+net.JoinHostPort(host, port) &&
-		cfg.Host != "https://kubernetes.default.svc" &&
-		cfg.Host != "https://kubernetes.default.svc:443" {
-		return cfg
-	}
+	if len(host) > 0 &&
+		len(port) > 0 &&
+		in(cfg.Host, "https://"+net.JoinHostPort(host, port), "https://kubernetes.default.svc", "https://kubernetes.default.svc:443") {
+		// uses service ip or cluster dns
 
-	if cert, err := meta.APIServerCertificate(cfg); err == nil {
-		if host, err := meta.TestAKS(cert); err == nil {
-			cfg.Host = "https://" + host
+		if cert, err := meta.APIServerCertificate(cfg); err == nil {
+			// kube-apiserver cert found
+
+			if host, err := meta.TestAKS(cert); err == nil {
+				// AKS cluster
+
+				h := "https://" + host
+				glog.Infof("resetting Kubeconfig host to %s from %s for AKS to workaround https://github.com/Azure/AKS/issues/522", h, cfg.Host)
+				cfg.Host = h
+			}
 		}
 	}
 	return cfg
+}
+
+func in(x string, a ...string) bool {
+	for _, v := range a {
+		if x == v {
+			return true
+		}
+	}
+	return false
 }
