@@ -31,8 +31,8 @@ It will generate following block in `defaults` section of haproxy.cfg:
 
 ```ini
 errorfile 503 /srv/voyager/errorfiles/503.http
-errofile  408 /dev/null
-errloc    500 https://example.com/500.hlml
+errorfile 408 /dev/null
+errorloc  500 https://example.com/500.hlml
 ```
 
 Note that, when status code with `.http` suffix is used as key, the command will be `errorfile` and you just need to specify the file contents as value.
