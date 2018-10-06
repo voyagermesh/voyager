@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	validatingWebhook = "admission.voyager.appscode.com"
+	validatingWebhookConfig = "admission.voyager.appscode.com"
 )
 
 type OperatorConfig struct {
@@ -59,8 +59,11 @@ func (c *OperatorConfig) New() (*Operator, error) {
 	if err := op.ensureCustomResourceDefinitions(); err != nil {
 		return nil, err
 	}
-	if err := reg_util.UpdateValidatingWebhookCABundle(c.ClientConfig, validatingWebhook); err != nil {
-		return nil, err
+
+	if c.EnableValidatingWebhook {
+		if err := reg_util.UpdateValidatingWebhookCABundle(c.ClientConfig, validatingWebhookConfig); err != nil {
+			return nil, err
+		}
 	}
 
 	op.initIngressCRDWatcher()

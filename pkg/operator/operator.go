@@ -156,11 +156,13 @@ func (op *Operator) RunInformers(stopCh <-chan struct{}) {
 	if op.smonInformer != nil {
 		op.smonQueue.Run(stopCh)
 	}
-	cancel, _ := reg_util.SyncValidatingWebhookCABundle(op.ClientConfig, validatingWebhook)
+
+	if op.EnableValidatingWebhook {
+		cancel, _ := reg_util.SyncValidatingWebhookCABundle(op.ClientConfig, validatingWebhookConfig)
+		defer cancel()
+	}
 
 	<-stopCh
-
-	cancel()
 	log.Infoln("Stopping Voyager controller")
 }
 

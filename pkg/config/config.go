@@ -40,4 +40,5 @@ type Config struct {
 	ResyncPeriod                time.Duration
 	WatchNamespace              string
 	ValidateHAProxyConfig       bool
+	EnableValidatingWebhook     bool
 }

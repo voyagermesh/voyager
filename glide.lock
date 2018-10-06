@@ -1,5 +1,5 @@
-hash: 9a54365b95f752ca102135ba505b90613143713cafb6374647b94ccf7adb6658
-updated: 2018-10-02T15:13:21.708598645-07:00
+hash: ccbbcc183885c3844a9d1f71fbb3a5bd2d987d8d9977c8788054606e3ffaccd7
+updated: 2018-10-08T01:35:32.091364548-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -44,7 +44,7 @@ imports:
   - client/workload/v1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: ab4a23e683a5b1c2d7f23f49b30c0316de8c7f94
+  version: cad796a750d7b905cdccdff9c85f333607757cbf
   subpackages:
   - admissionregistration/v1beta1
   - apiextensions/v1beta1
@@ -235,26 +235,26 @@ imports:
 - name: github.com/fatih/structs
   version: 4966fc68f5b7593aafa6cbbba2d65ec6e1416047
 - name: github.com/fsnotify/fsnotify
-  version: f12c6236fe7b5cf6bcf30e5935d08cb079d78334
+  version: ccc981bf80385c528a65fbfdd49bf2d8da22aa23
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/go-ini/ini
   version: 300e940a926eb277d3901b20bdfcc54928ad3642
 - name: github.com/go-openapi/jsonpointer
-  version: 46af16f9f7b149af66e5d1bd010e3574dc06de98
+  version: ef5f0afec364d3b9396b7b77b43dbe26bf1f8004
 - name: github.com/go-openapi/jsonreference
-  version: 13c6e3589ad90f49bd3e3bbe2c2cb3d7a4142272
+  version: 8483a886a90412cd6858df4ea3483dce9c8e35a3
 - name: github.com/go-openapi/spec
-  version: 1de3e0542de65ad8d75452a595886fdd0befb363
+  version: 5bae59e25b21498baea7f9d46e9c147ec106a42e
 - name: github.com/go-openapi/swag
-  version: f3f9494671f93fcff853e3c6e9e948b3eb71e590
+  version: 5899d5c5e619fda5fa86e14795a835f473ca284c
 - name: github.com/gogo/protobuf
   version: c0656edd0d9eab7c66d1eb0c568f9039345796f7
   subpackages:
   - proto
   - sortkeys
 - name: github.com/golang/glog
-  version: 44145f04b68cf362d9c4df2182967c2275eaefed
+  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
 - name: github.com/golang/groupcache
   version: 02826c3e79038b59d737d3b1c0a1d937f71a4433
   subpackages:
@@ -271,7 +271,7 @@ imports:
   - ptypes/struct
   - ptypes/timestamp
 - name: github.com/golang/snappy
-  version: d9eb7a3d35ec988b8585d4a0068e462c27d28380
+  version: 2e65f85255dbc3072edf28d6b5b8efc472979f5a
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
@@ -288,7 +288,7 @@ imports:
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/google/uuid
-  version: 8c31c18f31ede9fc8eae72290a7e7a8064e9b3e3
+  version: 9b3b1e0f5f99ae461456d768e7d301a7acdaa2d8
 - name: github.com/googleapis/gnostic
   version: 0c5108395e2debce0d731cf0287ddf7242066aba
   subpackages:
@@ -349,7 +349,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/JamesClonk/vultr
-  version: fa1c0367800db75e4d10d0ec90c49a8731670224
+  version: 267be0d362b67d505ee045d54185b31673b206c1
   subpackages:
   - lib
 - name: github.com/jmespath/go-jmespath
@@ -381,7 +381,7 @@ imports:
 - name: github.com/mitchellh/go-ps
   version: 4fdf99ab29366514c69ccccddab5dc58b8d84062
 - name: github.com/mitchellh/mapstructure
-  version: 53818660ed4955e899c0bcafa97299a388bd7c8e
+  version: 3536a929edddb9a5b34bd6861dc4a9647cb459fe
 - name: github.com/modern-go/concurrent
   version: bacd9c7ef1dd9b15be4a9909b8ac7a4e313eec94
 - name: github.com/modern-go/reflect2
@@ -485,7 +485,8 @@ imports:
 - name: github.com/ryanuber/go-glob
   version: 256dc444b735e061061cf46c809487313d5b0065
 - name: github.com/sergi/go-diff
-  version: 97b2266dfe4bd4ea1b81a463322f04f8b724801e
+  version: 24e2351369ec4949b2ed0dc5c477afdd4c4034e8
+  repo: https://github.com/sergi/go-diff
   subpackages:
   - diffmatchpatch
 - name: github.com/shurcooL/sanitized_anchor_name
@@ -541,11 +542,12 @@ imports:
   - providers/dns/route53
   - providers/dns/vultr
 - name: github.com/yudai/gojsondiff
-  version: 7b1b7adf999dab73a6eb02669c3d82dbb27a3dd6
+  version: 0525c875b75ca60b9e67ddc44496aa16f21066b0
   subpackages:
   - formatter
 - name: github.com/yudai/golcs
   version: d1c525dea8ce39ea9a783d33cf08932305373f2c
+  repo: https://github.com/yudai/golcs
 - name: golang.org/x/crypto
   version: 49796115aa4b964c318aad4f3084fdb41e9aa067
   subpackages:
@@ -629,7 +631,7 @@ imports:
   - googleapi
   - googleapi/internal/uritemplates
 - name: google.golang.org/appengine
-  version: 12d5545dc1cfa6047a286d5e853841b6471f4c19
+  version: ae0ab99deb4dc413a2b4bd6c8bdd0eb67f1e4d06
   subpackages:
   - internal
   - internal/app_identity
@@ -674,7 +676,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/ini.v1
-  version: 32e4c1e6bc4e7d0d8451aa6b75200d19e37a536a
+  version: 7b294651033cd7d9e7f0d9ffa1b75ed1e198e737
 - name: gopkg.in/natefinch/lumberjack.v2
   version: 20b71e5b60d756d3d2f80def009790325acc2b23
 - name: gopkg.in/square/go-jose.v2
@@ -784,7 +786,7 @@ imports:
   - third_party/forked/golang/json
   - third_party/forked/golang/reflect
 - name: k8s.io/apiserver
-  version: 9970aee1898bc65beb8f3829b2ddf8e191777f78
+  version: dea48c5b25a85e0fa07fec5bd5b8ec8fcaae6653
   repo: https://github.com/pharmer/apiserver.git
   vcs: git
   subpackages:
@@ -1046,6 +1048,16 @@ imports:
   - util/jsonpath
   - util/retry
   - util/workqueue
+- name: k8s.io/kube-aggregator
+  version: 07bfdba27d43fe6b7eea965213b3aad555de2457
+  subpackages:
+  - pkg/apis/apiregistration
+  - pkg/apis/apiregistration/v1
+  - pkg/apis/apiregistration/v1beta1
+  - pkg/client/clientset_generated/clientset
+  - pkg/client/clientset_generated/clientset/scheme
+  - pkg/client/clientset_generated/clientset/typed/apiregistration/v1
+  - pkg/client/clientset_generated/clientset/typed/apiregistration/v1beta1
 - name: k8s.io/kube-openapi
   version: 91cfa479c814065e420cee7ed227db0f63a5854e
   subpackages:

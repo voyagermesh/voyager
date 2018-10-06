@@ -48,6 +48,8 @@ type OperatorOptions struct {
 	haProxyTimeout            time.Duration
 
 	ValidateHAProxyConfig bool
+
+	EnableValidatingWebhook bool
 }
 
 func (s OperatorOptions) HAProxyImage() string {
@@ -118,6 +120,7 @@ func (s *OperatorOptions) AddGoFlags(fs *flag.FlagSet) {
 
 	fs.BoolVar(&s.ValidateHAProxyConfig, "validate-haproxy-config", s.ValidateHAProxyConfig, "If true, validates generated haproxy.cfg before sending to HAProxy pods.")
 
+	fs.BoolVar(&s.EnableValidatingWebhook, "enable-validating-webhook", s.EnableValidatingWebhook, "If true, enables validating webhooks for Voyager CRDs.")
 	fs.BoolVar(&api.EnableStatusSubresource, "enable-status-subresource", api.EnableStatusSubresource, "If true, uses sub resource for Voyager crds.")
 }
 
@@ -151,6 +154,7 @@ func (s *OperatorOptions) ApplyTo(cfg *operator.OperatorConfig) error {
 	cfg.ResyncPeriod = s.ResyncPeriod
 	cfg.WatchNamespace = s.WatchNamespace()
 	cfg.ValidateHAProxyConfig = s.ValidateHAProxyConfig
+	cfg.EnableValidatingWebhook = s.EnableValidatingWebhook
 
 	cfg.ClientConfig.QPS = float32(s.QPS)
 	cfg.ClientConfig.Burst = s.Burst
@@ -171,9 +175,11 @@ func (s *OperatorOptions) ApplyTo(cfg *operator.OperatorConfig) error {
 		return err
 	}
 
-	cfg.AdmissionHooks = []hooks.AdmissionHook{&plugin.CRDValidator{
-		CloudProvider: s.CloudProvider,
-	}}
+	if s.EnableValidatingWebhook {
+		cfg.AdmissionHooks = []hooks.AdmissionHook{&plugin.CRDValidator{
+			CloudProvider: s.CloudProvider,
+		}}
+	}
 
 	return nil
 }

@@ -37,6 +37,7 @@ spec:
         - --audit-log-path=-
         - --tls-cert-file=/var/serving-cert/tls.crt
         - --tls-private-key-file=/var/serving-cert/tls.key
+        - --enable-validating-webhook=${VOYAGER_ENABLE_VALIDATING_WEBHOOK}
         - --enable-status-subresource=${VOYAGER_ENABLE_STATUS_SUBRESOURCE}
         - --enable-analytics=${VOYAGER_ENABLE_ANALYTICS}
         ports:

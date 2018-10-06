@@ -80,3 +80,28 @@ func isAKS() error {
 	}
 	return nil
 }
+
+const eksDomain = ".eks.amazonaws.com"
+
+func TestEKS(cert *x509.Certificate) (string, error) {
+	for _, host := range cert.DNSNames {
+		if strings.HasSuffix(host, eksDomain) && isEKS() == nil {
+			return host, nil
+		}
+	}
+	return "", errors.New("not EKS")
+}
+
+// ref: https://cloud.google.com/compute/docs/storing-retrieving-metadata
+func isEKS() error {
+	data, err := ioutil.ReadFile("/sys/class/dmi/id/sys_vendor")
+	if err != nil {
+		return err
+	}
+	sysVendor := strings.TrimSpace(string(data))
+
+	if sysVendor != "Amazon EC2" {
+		return errors.New("not EKS")
+	}
+	return nil
+}
