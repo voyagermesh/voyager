@@ -138,6 +138,23 @@ type IngressSpec struct {
 	// that are not part of the Kubernetes system.
 	// +optional
 	ExternalIPs []string `json:"externalIPs,omitempty"`
+
+	// Periodic probe of container liveness.
+	// Container will be restarted if the probe fails.
+	// Cannot be updated.
+	// +optional
+	LivenessProbe *core.Probe `json:"livenessProbe,omitempty"`
+
+	// Periodic probe of container service readiness.
+	// Container will be removed from service endpoints if the probe fails.
+	// Cannot be updated.
+	// +optional
+	ReadinessProbe *core.Probe `json:"readinessProbe,omitempty"`
+
+	// Set this value longer than the expected cleanup time for your process.
+	// Defaults to 30 seconds.
+	// +optional
+	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
 }
 
 // IngressTLS describes the transport layer security associated with an Ingress.

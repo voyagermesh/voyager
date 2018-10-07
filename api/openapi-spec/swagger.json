@@ -2382,6 +2382,10 @@
             "$ref": "#/definitions/io.k8s.api.core.v1.LocalObjectReference"
           }
         },
+        "livenessProbe": {
+          "description": "Periodic probe of container liveness. Container will be restarted if the probe fails. Cannot be updated.",
+          "$ref": "#/definitions/io.k8s.api.core.v1.Probe"
+        },
         "loadBalancerSourceRanges": {
           "description": "Optional: If specified and supported by the platform, this will restrict traffic through the cloud-provider load-balancer will be restricted to the specified client IPs. This field will be ignored if the cloud-provider does not support the feature. https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/",
           "type": "array",
@@ -2405,6 +2409,10 @@
           "description": "If specified, indicates the pod's priority. \"system-node-critical\" and \"system-cluster-critical\" are two special keywords which indicate the highest priorities with the former being the highest priority. Any other name must be defined by creating a PriorityClass object with that name. If not specified, the pod priority will be default or zero if there is no default.",
           "type": "string"
         },
+        "readinessProbe": {
+          "description": "Periodic probe of container service readiness. Container will be removed from service endpoints if the probe fails. Cannot be updated.",
+          "$ref": "#/definitions/io.k8s.api.core.v1.Probe"
+        },
         "resources": {
           "description": "Compute Resources required by the sidecar container.",
           "$ref": "#/definitions/io.k8s.api.core.v1.ResourceRequirements"
@@ -2423,6 +2431,11 @@
         "securityContext": {
           "description": "SecurityContext holds pod-level security attributes and common container settings. Optional: Defaults to empty.  See type description for default values of each field.",
           "$ref": "#/definitions/io.k8s.api.core.v1.PodSecurityContext"
+        },
+        "terminationGracePeriodSeconds": {
+          "description": "Set this value longer than the expected cleanup time for your process. Defaults to 30 seconds.",
+          "type": "integer",
+          "format": "int64"
         },
         "tls": {
           "description": "TLS is the TLS configuration. Currently the Ingress only supports a single TLS port, 443, and assumes TLS termination. If multiple members of this list specify different hosts, they will be multiplexed on the same port according to the hostname specified through the SNI TLS extension.",
@@ -2586,6 +2599,66 @@
         "podAntiAffinity": {
           "description": "Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).",
           "$ref": "#/definitions/io.k8s.api.core.v1.PodAntiAffinity"
+        }
+      }
+    },
+    "io.k8s.api.core.v1.ExecAction": {
+      "description": "ExecAction describes a \"run in container\" action.",
+      "properties": {
+        "command": {
+          "description": "Command is the command line to execute inside the container, the working directory for the command  is root ('/') in the container's filesystem. The command is simply exec'd, it is not run inside a shell, so traditional shell instructions ('|', etc) won't work. To use a shell, you need to explicitly call out to that shell. Exit status of 0 is treated as live/healthy and non-zero is unhealthy.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "io.k8s.api.core.v1.HTTPGetAction": {
+      "description": "HTTPGetAction describes an action based on HTTP Get requests.",
+      "required": [
+        "port"
+      ],
+      "properties": {
+        "host": {
+          "description": "Host name to connect to, defaults to the pod IP. You probably want to set \"Host\" in httpHeaders instead.",
+          "type": "string"
+        },
+        "httpHeaders": {
+          "description": "Custom headers to set in the request. HTTP allows repeated headers.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/io.k8s.api.core.v1.HTTPHeader"
+          }
+        },
+        "path": {
+          "description": "Path to access on the HTTP server.",
+          "type": "string"
+        },
+        "port": {
+          "description": "Name or number of the port to access on the container. Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.",
+          "$ref": "#/definitions/io.k8s.apimachinery.pkg.util.intstr.IntOrString"
+        },
+        "scheme": {
+          "description": "Scheme to use for connecting to the host. Defaults to HTTP.",
+          "type": "string"
+        }
+      }
+    },
+    "io.k8s.api.core.v1.HTTPHeader": {
+      "description": "HTTPHeader describes a custom header to be used in HTTP probes",
+      "required": [
+        "name",
+        "value"
+      ],
+      "properties": {
+        "name": {
+          "description": "The header field name",
+          "type": "string"
+        },
+        "value": {
+          "description": "The header field value",
+          "type": "string"
         }
       }
     },
@@ -2819,6 +2892,48 @@
         }
       }
     },
+    "io.k8s.api.core.v1.Probe": {
+      "description": "Probe describes a health check to be performed against a container to determine whether it is alive or ready to receive traffic.",
+      "properties": {
+        "exec": {
+          "description": "One and only one of the following should be specified. Exec specifies the action to take.",
+          "$ref": "#/definitions/io.k8s.api.core.v1.ExecAction"
+        },
+        "failureThreshold": {
+          "description": "Minimum consecutive failures for the probe to be considered failed after having succeeded. Defaults to 3. Minimum value is 1.",
+          "type": "integer",
+          "format": "int32"
+        },
+        "httpGet": {
+          "description": "HTTPGet specifies the http request to perform.",
+          "$ref": "#/definitions/io.k8s.api.core.v1.HTTPGetAction"
+        },
+        "initialDelaySeconds": {
+          "description": "Number of seconds after the container has started before liveness probes are initiated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes",
+          "type": "integer",
+          "format": "int32"
+        },
+        "periodSeconds": {
+          "description": "How often (in seconds) to perform the probe. Default to 10 seconds. Minimum value is 1.",
+          "type": "integer",
+          "format": "int32"
+        },
+        "successThreshold": {
+          "description": "Minimum consecutive successes for the probe to be considered successful after having failed. Defaults to 1. Must be 1 for liveness. Minimum value is 1.",
+          "type": "integer",
+          "format": "int32"
+        },
+        "tcpSocket": {
+          "description": "TCPSocket specifies an action involving a TCP port. TCP hooks not yet supported",
+          "$ref": "#/definitions/io.k8s.api.core.v1.TCPSocketAction"
+        },
+        "timeoutSeconds": {
+          "description": "Number of seconds after which the probe times out. Defaults to 1 second. Minimum value is 1. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes",
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
     "io.k8s.api.core.v1.ResourceRequirements": {
       "description": "ResourceRequirements describes the compute resource requirements.",
       "properties": {
@@ -2873,6 +2988,22 @@
         "value": {
           "description": "Value of a property to set",
           "type": "string"
+        }
+      }
+    },
+    "io.k8s.api.core.v1.TCPSocketAction": {
+      "description": "TCPSocketAction describes an action based on opening a socket",
+      "required": [
+        "port"
+      ],
+      "properties": {
+        "host": {
+          "description": "Optional: Host name to connect to, defaults to the pod IP.",
+          "type": "string"
+        },
+        "port": {
+          "description": "Number or name of the port to access on the container. Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.",
+          "$ref": "#/definitions/io.k8s.apimachinery.pkg.util.intstr.IntOrString"
         }
       }
     },
