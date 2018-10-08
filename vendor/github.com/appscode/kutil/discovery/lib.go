@@ -51,7 +51,7 @@ func CheckAPIVersion(client discovery.DiscoveryInterface, constraint string) (bo
 }
 
 func IsPreferredAPIResource(client discovery.DiscoveryInterface, groupVersion, kind string) bool {
-	if resourceList, err := client.ServerPreferredResources(); err == nil {
+	if resourceList, err := client.ServerPreferredResources(); discovery.IsGroupDiscoveryFailedError(err) || err == nil {
 		for _, resources := range resourceList {
 			if resources.GroupVersion != groupVersion {
 				continue

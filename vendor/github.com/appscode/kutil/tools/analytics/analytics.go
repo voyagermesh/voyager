@@ -7,8 +7,11 @@ import (
 	"net"
 	"os"
 	"sort"
+	"strings"
 
 	"github.com/appscode/go/analytics"
+	net2 "github.com/appscode/go/net"
+	"github.com/appscode/go/sets"
 	"github.com/appscode/kutil/meta"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -46,6 +49,69 @@ func ClientID() string {
 	if cert, err := meta.APIServerCertificate(cfg); err == nil {
 		if domain, err := meta.TestAKS(cert); err == nil {
 			return hash(domain)
+		}
+		if domain, err := meta.TestEKS(cert); err == nil {
+			return hash(domain)
+		}
+
+		dnsNames := sets.NewString(cert.DNSNames...)
+
+		if len(cert.Subject.CommonName) > 0 {
+			if ip := net.ParseIP(cert.Subject.CommonName); ip != nil {
+				// GKE
+				if !ip.IsLoopback() &&
+					!ip.IsMulticast() &&
+					!ip.IsGlobalUnicast() &&
+					!ip.IsInterfaceLocalMulticast() &&
+					!ip.IsLinkLocalMulticast() &&
+					!ip.IsLinkLocalUnicast() &&
+					(ip.To4() == nil || !net2.IsPrivateIP(ip)) { // either ipv6 or a public ipv4
+					return hash(cert.Subject.CommonName)
+				}
+			} else {
+				dnsNames.Insert(cert.Subject.CommonName)
+			}
+		}
+
+		var domains []string
+		for _, host := range dnsNames.List() {
+			if host == "kubernetes" ||
+				host == "kubernetes.default" ||
+				host == "kubernetes.default.svc" ||
+				host == "kubernetes.default.svc.cluster.local" ||
+				host == "localhost" ||
+				strings.HasSuffix(host, ".compute.internal") ||
+				!strings.ContainsRune(host, '.') {
+				continue
+			}
+			domains = append(domains, host)
+		}
+		if len(domains) > 0 {
+			sort.Strings(domains)
+			return hash(domains...)
+		}
+
+		var ips []net.IP
+		for i, ip := range cert.IPAddresses {
+			if ip.IsLoopback() ||
+				ip.IsMulticast() ||
+				ip.IsGlobalUnicast() ||
+				ip.IsInterfaceLocalMulticast() ||
+				ip.IsLinkLocalMulticast() ||
+				ip.IsLinkLocalUnicast() {
+				continue
+			}
+			if ip.To4() == nil || !net2.IsPrivateIP(ip) {
+				ips = append(ips, cert.IPAddresses[i])
+			}
+		}
+		if len(ips) > 0 {
+			sort.Slice(ips, func(i, j int) bool { return bytes.Compare(ips[i], ips[j]) < 0 })
+			hasher := md5.New()
+			for _, ip := range ips {
+				hasher.Write(ip)
+			}
+			return hex.EncodeToString(hasher.Sum(nil))
 		}
 	}
 
@@ -85,9 +151,12 @@ func ClientID() string {
 	return hex.EncodeToString(hasher.Sum(nil))
 }
 
-func hash(id string) string {
-	hashed := md5.Sum([]byte(id))
-	return hex.EncodeToString(hashed[:])
+func hash(data ...string) string {
+	hasher := md5.New()
+	for _, x := range data {
+		hasher.Write([]byte(x))
+	}
+	return hex.EncodeToString(hasher.Sum(nil))
 }
 
 func nodeIP(node core.Node) []byte {

@@ -15,6 +15,11 @@ rules:
   - customresourcedefinitions
   verbs: ["*"]
 - apiGroups:
+  - apiregistration.k8s.io
+  resources:
+  - apiservices
+  verbs: ["list", "watch"]
+- apiGroups:
   - admissionregistration.k8s.io
   resources:
   - validatingwebhookconfigurations

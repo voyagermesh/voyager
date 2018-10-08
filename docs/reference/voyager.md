@@ -26,6 +26,7 @@ Voyager by Appscode - Secure HAProxy Ingress Controller for Kubernetes
 
 ```
       --alsologtostderr                  log to standard error as well as files
+      --bypass-validating-webhook-xray   if true, bypasses validating webhook xray checks
       --enable-analytics                 Send analytical events to Google Analytics (default true)
   -h, --help                             help for voyager
       --log.format logFormatFlag         Set the log target and format. Example: "logger:syslog?appname=bob&local=7" or "logger:stdout?json=true" (default "logger:stderr")

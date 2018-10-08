@@ -83,6 +83,8 @@ import:
   repo: https://github.com/pharmer/client-go.git
   vcs: git
   version: release-1.11.3
+- package: k8s.io/kube-aggregator
+  version: kubernetes-1.11.3
 - package: k8s.io/kube-openapi
   version: 91cfa479c814065e420cee7ed227db0f63a5854e
 - package: k8s.io/kubernetes

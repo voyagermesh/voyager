@@ -6,15 +6,23 @@ import (
 
 	hooks "github.com/appscode/kubernetes-webhook-util/admission/v1beta1"
 	admissionreview "github.com/appscode/kubernetes-webhook-util/registry/admissionreview/v1beta1"
+	reg_util "github.com/appscode/kutil/admissionregistration/v1beta1"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/operator"
 	admission "k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/apiserver/pkg/registry/rest"
 	genericapiserver "k8s.io/apiserver/pkg/server"
+)
+
+const (
+	apiserviceName    = "v1beta1.admission.voyager.appscode.com"
+	validatingWebhook = "admission.voyager.appscode.com"
 )
 
 var (
@@ -146,6 +154,43 @@ func (c completedConfig) New() (*VoyagerServer, error) {
 		)
 	}
 
+	if c.OperatorConfig.EnableValidatingWebhook {
+		s.GenericAPIServer.AddPostStartHookOrDie("validating-webhook-xray",
+			func(context genericapiserver.PostStartHookContext) error {
+				go func() {
+					xray := reg_util.NewCreateValidatingWebhookXray(c.OperatorConfig.ClientConfig, apiserviceName, validatingWebhook, &api.Ingress{
+						TypeMeta: metav1.TypeMeta{
+							APIVersion: api.SchemeGroupVersion.String(),
+							Kind:       api.ResourceKindIngress,
+						},
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      "test-ingress-for-webhook-xray",
+							Namespace: "default",
+						},
+						Spec: api.IngressSpec{
+							Rules: []api.IngressRule{
+								{
+									IngressRuleValue: api.IngressRuleValue{
+										TCP: &api.TCPIngressRuleValue{
+											Port: intstr.FromInt(3434),
+											Backend: api.IngressBackend{
+												ServiceName: "",
+												ServicePort: intstr.FromInt(3444),
+											},
+										},
+									},
+								},
+							},
+						},
+					})
+					if err := xray.IsActive(); err != nil {
+						panic(err)
+					}
+				}()
+				return nil
+			},
+		)
+	}
 	return s, nil
 }
 
