@@ -14,10 +14,6 @@ const (
 	ACMEResponderPort = 56791
 )
 
-func init() {
-	defaultHTTPProvider.serve()
-}
-
 var defaultHTTPProvider = NewHTTPProviderServer()
 
 func DefaultHTTPProvider() *HTTPProviderServer {
@@ -30,7 +26,6 @@ func DefaultHTTPProvider() *HTTPProviderServer {
 type HTTPProviderServer struct {
 	ChallengeHolders map[string]string
 	mu               sync.Mutex
-	once             sync.Once
 }
 
 // NewHTTPProviderServer creates a new HTTPProviderServer on the selected interface and port.
@@ -58,46 +53,41 @@ func (s *HTTPProviderServer) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (s *HTTPProviderServer) serve() {
+func (s *HTTPProviderServer) NewServeMux() *http.ServeMux {
 	// The handler validates the HOST header and request type.
 	// For validation it then writes the token the server returned with the challenge
-	var wg sync.WaitGroup
-	go s.once.Do(
-		func() {
-			defer wg.Done()
-			wg.Add(1)
-			mux := http.NewServeMux()
-			mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-				token := strings.TrimRight(r.RequestURI, "/")
-				idx := strings.Index(token, URLPrefix)
-				if idx >= 0 {
-					token = token[idx+len(URLPrefix):]
-				}
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		token := strings.TrimRight(r.RequestURI, "/")
+		idx := strings.Index(token, URLPrefix)
+		if idx >= 0 {
+			token = token[idx+len(URLPrefix):]
+		}
 
-				s.mu.Lock()
-				defer s.mu.Unlock()
-				keyAuth, ok := s.ChallengeHolders[token+"@"+r.Host]
+		s.mu.Lock()
+		defer s.mu.Unlock()
+		keyAuth, ok := s.ChallengeHolders[token+"@"+r.Host]
 
-				if ok && r.Method == "GET" {
-					w.Header().Add("Content-Type", "text/plain")
-					w.Write([]byte(keyAuth))
-					log.Infof("[%s] Served key authentication", r.Host)
-				} else {
-					log.Infof("Received request for domain %s with method %s but the domain did not match any challenge. Please ensure your are passing the HOST header properly.", r.Host, r.Method)
-					w.Write([]byte("TEST"))
-				}
-			})
+		if ok && r.Method == "GET" {
+			w.Header().Add("Content-Type", "text/plain")
+			w.Write([]byte(keyAuth))
+			log.Infof("[%s] Served key authentication", r.Host)
+		} else {
+			log.Infof("Received request for domain %s with method %s but the domain did not match any challenge. Please ensure your are passing the HOST header properly.", r.Host, r.Method)
+			w.Write([]byte("TEST"))
+		}
+	})
+	return mux
+}
 
-			httpServer := &http.Server{
-				Handler: mux,
-				Addr:    fmt.Sprintf(":%d", ACMEResponderPort),
-			}
-			// Once httpServer is shut down we don't want any lingering
-			// connections, so disable KeepAlives.
-			log.Infoln("Running http server provider...")
-			httpServer.SetKeepAlivesEnabled(false)
-			go httpServer.ListenAndServe()
-		},
-	)
-	wg.Wait()
+func (s *HTTPProviderServer) Serve() {
+	srv := &http.Server{
+		Handler: s.NewServeMux(),
+		Addr:    fmt.Sprintf(":%d", ACMEResponderPort),
+	}
+	// Once httpServer is shut down we don't want any lingering
+	// connections, so disable KeepAlives.
+	log.Infoln("Running http server provider...")
+	srv.SetKeepAlivesEnabled(false)
+	srv.ListenAndServe()
 }

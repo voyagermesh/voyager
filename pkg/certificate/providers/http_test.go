@@ -1,17 +1,24 @@
 package providers
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"testing"
-	"time"
 )
 
 func TestNotFound(t *testing.T) {
-	defaultHTTPProvider.serve()
-	time.Sleep(time.Second * 5)
-	resp, err := http.Get(fmt.Sprintf("http://127.0.0.1:%d/.well-known/acme-challenge/token", ACMEResponderPort))
+	ts := httptest.NewServer(DefaultHTTPProvider().NewServeMux())
+	defer ts.Close()
+
+	u, err := url.Parse(ts.URL)
+	if err != nil {
+		t.Fatalf("invalid test server url %s", err)
+	}
+
+	u.Path = "/.well-known/acme-challenge/token"
+	resp, err := http.Get(u.String())
 	if err != nil {
 		t.Fatal("expected Nil, found", err)
 	}
@@ -31,10 +38,18 @@ func TestNotFound(t *testing.T) {
 }
 
 func TestFound(t *testing.T) {
-	defaultHTTPProvider.serve()
-	time.Sleep(time.Second * 5)
-	defaultHTTPProvider.Present(fmt.Sprintf("127.0.0.1:%d", ACMEResponderPort), "token", "key")
-	resp, err := http.Get(fmt.Sprintf("http://127.0.0.1:%d/.well-known/acme-challenge/token", ACMEResponderPort))
+	ts := httptest.NewServer(DefaultHTTPProvider().NewServeMux())
+	defer ts.Close()
+
+	u, err := url.Parse(ts.URL)
+	if err != nil {
+		t.Fatalf("invalid test server url %s", err)
+	}
+
+	defaultHTTPProvider.Present(u.Host, "token", "key")
+
+	u.Path = "/.well-known/acme-challenge/token"
+	resp, err := http.Get(u.String())
 	if err != nil {
 		t.Fatal("expected Nil, found", err)
 	}

@@ -10,6 +10,7 @@ import (
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	voyagerinformers "github.com/appscode/voyager/client/informers/externalversions"
 	api_listers "github.com/appscode/voyager/client/listers/voyager/v1beta1"
+	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/appscode/voyager/pkg/config"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	kext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -115,6 +116,7 @@ func (op *Operator) ensureCustomResourceDefinitions() error {
 func (op *Operator) RunInformers(stopCh <-chan struct{}) {
 	defer runtime.HandleCrash()
 
+	go providers.DefaultHTTPProvider().Serve()
 	go op.CheckCertificates()
 
 	log.Infoln("Starting Voyager controller")
