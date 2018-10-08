@@ -43,6 +43,15 @@ spec:
         ports:
         - containerPort: 8443
         - containerPort: 56791
+        env:
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         volumeMounts:
         - mountPath: /etc/kubernetes
           name: cloudconfig

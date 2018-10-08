@@ -2,14 +2,18 @@ package server
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	hooks "github.com/appscode/kubernetes-webhook-util/admission/v1beta1"
 	admissionreview "github.com/appscode/kubernetes-webhook-util/registry/admissionreview/v1beta1"
 	reg_util "github.com/appscode/kutil/admissionregistration/v1beta1"
+	dynamic_util "github.com/appscode/kutil/dynamic"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/appscode/voyager/pkg/operator"
 	admission "k8s.io/api/admission/v1beta1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -18,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/apiserver/pkg/registry/rest"
 	genericapiserver "k8s.io/apiserver/pkg/server"
+	"k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -184,6 +189,20 @@ func (c completedConfig) New() (*VoyagerServer, error) {
 						},
 					})
 					if err := xray.IsActive(); err != nil {
+						w, e2 := dynamic_util.DetectWorkload(
+							c.OperatorConfig.ClientConfig,
+							core.SchemeGroupVersion.WithResource("pods"),
+							os.Getenv("MY_POD_NAMESPACE"),
+							os.Getenv("MY_POD_NAME"))
+						if e2 == nil {
+							eventer.CreateEventWithLog(
+								kubernetes.NewForConfigOrDie(c.OperatorConfig.ClientConfig),
+								"voyager-operator",
+								w,
+								core.EventTypeWarning,
+								"AdmissionWebhookNotActivated",
+								err.Error())
+						}
 						panic(err)
 					}
 				}()

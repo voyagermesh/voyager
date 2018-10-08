@@ -1,5 +1,5 @@
 hash: ccbbcc183885c3844a9d1f71fbb3a5bd2d987d8d9977c8788054606e3ffaccd7
-updated: 2018-10-08T01:35:32.091364548-07:00
+updated: 2018-10-08T08:37:47.752415149-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -44,12 +44,13 @@ imports:
   - client/workload/v1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: cad796a750d7b905cdccdff9c85f333607757cbf
+  version: 76382d5913229f319bd4558a60b80605de9fa63c
   subpackages:
   - admissionregistration/v1beta1
   - apiextensions/v1beta1
   - core/v1
   - discovery
+  - dynamic
   - extensions/v1beta1
   - meta
   - openapi
@@ -241,9 +242,9 @@ imports:
 - name: github.com/go-ini/ini
   version: 300e940a926eb277d3901b20bdfcc54928ad3642
 - name: github.com/go-openapi/jsonpointer
-  version: ef5f0afec364d3b9396b7b77b43dbe26bf1f8004
+  version: 46af16f9f7b149af66e5d1bd010e3574dc06de98
 - name: github.com/go-openapi/jsonreference
-  version: 8483a886a90412cd6858df4ea3483dce9c8e35a3
+  version: 13c6e3589ad90f49bd3e3bbe2c2cb3d7a4142272
 - name: github.com/go-openapi/spec
   version: 5bae59e25b21498baea7f9d46e9c147ec106a42e
 - name: github.com/go-openapi/swag
@@ -769,6 +770,7 @@ imports:
   - pkg/util/framer
   - pkg/util/intstr
   - pkg/util/json
+  - pkg/util/jsonmergepatch
   - pkg/util/mergepatch
   - pkg/util/net
   - pkg/util/rand
