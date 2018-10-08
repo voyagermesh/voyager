@@ -354,6 +354,7 @@ func (c *internalController) ensurePods() (kutil.VerbType, error) {
 		obj.Spec.Template.Spec.PriorityClassName = c.Ingress.Spec.PriorityClassName
 		obj.Spec.Template.Spec.Priority = c.Ingress.Spec.Priority
 		obj.Spec.Template.Spec.SecurityContext = c.Ingress.Spec.SecurityContext
+		obj.Spec.Template.Spec.TerminationGracePeriodSeconds = c.Ingress.Spec.TerminationGracePeriodSeconds
 		if c.cfg.EnableRBAC {
 			obj.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
 		}
@@ -402,8 +403,10 @@ func (c *internalController) ensurePods() (kutil.VerbType, error) {
 					Value: config.AnalyticsClientID,
 				},
 			}),
-			Ports:     []core.ContainerPort{},
-			Resources: c.Ingress.Spec.Resources,
+			Ports:          []core.ContainerPort{},
+			Resources:      c.Ingress.Spec.Resources,
+			LivenessProbe:  c.Ingress.Spec.LivenessProbe,
+			ReadinessProbe: c.Ingress.Spec.ReadinessProbe,
 			VolumeMounts: []core.VolumeMount{
 				{
 					Name:      TLSCertificateVolumeName,

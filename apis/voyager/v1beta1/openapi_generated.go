@@ -1468,11 +1468,30 @@ func schema_voyager_apis_voyager_v1beta1_IngressSpec(ref common.ReferenceCallbac
 							},
 						},
 					},
+					"livenessProbe": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Periodic probe of container liveness. Container will be restarted if the probe fails. Cannot be updated.",
+							Ref:         ref("k8s.io/api/core/v1.Probe"),
+						},
+					},
+					"readinessProbe": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Periodic probe of container service readiness. Container will be removed from service endpoints if the probe fails. Cannot be updated.",
+							Ref:         ref("k8s.io/api/core/v1.Probe"),
+						},
+					},
+					"terminationGracePeriodSeconds": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Set this value longer than the expected cleanup time for your process. Defaults to 30 seconds.",
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"github.com/appscode/voyager/apis/voyager/v1beta1.FrontendRule", "github.com/appscode/voyager/apis/voyager/v1beta1.HTTPIngressBackend", "github.com/appscode/voyager/apis/voyager/v1beta1.IngressRule", "github.com/appscode/voyager/apis/voyager/v1beta1.IngressTLS", "k8s.io/api/core/v1.Affinity", "k8s.io/api/core/v1.LocalObjectReference", "k8s.io/api/core/v1.PodSecurityContext", "k8s.io/api/core/v1.ResourceRequirements", "k8s.io/api/core/v1.Toleration"},
+			"github.com/appscode/voyager/apis/voyager/v1beta1.FrontendRule", "github.com/appscode/voyager/apis/voyager/v1beta1.HTTPIngressBackend", "github.com/appscode/voyager/apis/voyager/v1beta1.IngressRule", "github.com/appscode/voyager/apis/voyager/v1beta1.IngressTLS", "k8s.io/api/core/v1.Affinity", "k8s.io/api/core/v1.LocalObjectReference", "k8s.io/api/core/v1.PodSecurityContext", "k8s.io/api/core/v1.Probe", "k8s.io/api/core/v1.ResourceRequirements", "k8s.io/api/core/v1.Toleration"},
 	}
 }
 

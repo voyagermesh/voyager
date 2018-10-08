@@ -751,6 +751,33 @@ func (in *IngressSpec) DeepCopyInto(out *IngressSpec) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.LivenessProbe != nil {
+		in, out := &in.LivenessProbe, &out.LivenessProbe
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Probe)
+			(*in).DeepCopyInto(*out)
+		}
+	}
+	if in.ReadinessProbe != nil {
+		in, out := &in.ReadinessProbe, &out.ReadinessProbe
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Probe)
+			(*in).DeepCopyInto(*out)
+		}
+	}
+	if in.TerminationGracePeriodSeconds != nil {
+		in, out := &in.TerminationGracePeriodSeconds, &out.TerminationGracePeriodSeconds
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(int64)
+			**out = **in
+		}
+	}
 	return
 }
 
