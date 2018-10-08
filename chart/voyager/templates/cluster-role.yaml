@@ -38,6 +38,7 @@ rules:
   resources:
   - daemonsets
   - deployments
+  - replicasets
   verbs: ["*"]
 - apiGroups:
   - extensions
@@ -66,7 +67,7 @@ rules:
 - apiGroups: [""]
   resources:
   - pods
-  verbs: ["list", "watch", "delete", "deletecollection"]
+  verbs: ["get", "list", "watch", "delete", "deletecollection"]
 - apiGroups: [""]
   resources:
   - nodes

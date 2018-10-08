@@ -37,7 +37,7 @@ var bypassValidatingWebhookXray = false
 
 var ErrMissingKind = errors.New("test object missing kind")
 var ErrMissingVersion = errors.New("test object missing version")
-var ErrInactiveWebhook = errors.New("webhook is inactive")
+var ErrWebhookNotActivated = errors.New("Admission webhooks are not activated. Enable it by configuring --enable-admission-plugins flag of kube-apiserver. For details, visit: https://appsco.de/kube-apiserver-webhooks")
 
 type ValidatingWebhookXray struct {
 	config         *rest.Config
@@ -200,7 +200,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 		} else if err != nil {
 			return false, err
 		}
-		return false, ErrInactiveWebhook
+		return false, ErrWebhookNotActivated
 	} else if d.op == v1beta1.Update {
 		_, err := ri.Create(&u)
 		if kutil.IsRequestRetryable(err) {
@@ -234,7 +234,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 			return false, err
 		}
 
-		return false, ErrInactiveWebhook
+		return false, ErrWebhookNotActivated
 	} else if d.op == v1beta1.Delete {
 		_, err := ri.Create(&u)
 		if kutil.IsRequestRetryable(err) {
@@ -273,7 +273,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 		} else if err != nil {
 			return false, err
 		}
-		return false, ErrInactiveWebhook
+		return false, ErrWebhookNotActivated
 	}
 
 	return false, nil

@@ -53,7 +53,7 @@ func (c *OperatorConfig) New() (*Operator, error) {
 		VoyagerClient:          c.VoyagerClient,
 		voyagerInformerFactory: voyagerinformers.NewFilteredSharedInformerFactory(c.VoyagerClient, c.ResyncPeriod, c.WatchNamespace, nil),
 		PromClient:             c.PromClient,
-		recorder:               eventer.NewEventRecorder(c.KubeClient, "voyager operator"),
+		recorder:               eventer.NewEventRecorder(c.KubeClient, "voyager-operator"),
 	}
 
 	if err := op.ensureCustomResourceDefinitions(); err != nil {
