@@ -41,6 +41,7 @@ const (
 	EventReasonIngressStatsServiceReconcileSuccessful = "StatsServiceReconcileSuccessful"
 	EventReasonIngressTLSMountFailed                  = "TLSMountFailed"
 	EventReasonBackendInvalid                         = "BackendInvalid"
+	EventReasonAdmissionWebhookNotActivated           = "AdmissionWebhookNotActivated"
 )
 
 func NewEventRecorder(client kubernetes.Interface, component string) record.EventRecorder {

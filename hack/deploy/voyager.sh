@@ -60,26 +60,37 @@ detect_tag() {
   export commit_timestamp
 }
 
-# https://stackoverflow.com/a/677212/244009
-if [ -x "$(command -v onessl)" ]; then
-  export ONESSL=onessl
-else
+onessl_found() {
+  # https://stackoverflow.com/a/677212/244009
+  if [ -x "$(command -v onessl)" ]; then
+    onessl wait-until-has -h >/dev/null 2>&1 || {
+      # old version of onessl found
+      return 1
+    }
+    export ONESSL=onessl
+    return 0
+  fi
+  return 1
+}
+
+onessl_found || {
+  echo "Downloading onessl ..."
   # ref: https://stackoverflow.com/a/27776822/244009
   case "$(uname -s)" in
     Darwin)
-      curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.3.0/onessl-darwin-amd64
+      curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.8.0/onessl-darwin-amd64
       chmod +x onessl
       export ONESSL=./onessl
       ;;
 
     Linux)
-      curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.3.0/onessl-linux-amd64
+      curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.8.0/onessl-linux-amd64
       chmod +x onessl
       export ONESSL=./onessl
       ;;
 
     CYGWIN* | MINGW32* | MSYS*)
-      curl -fsSL -o onessl.exe https://github.com/kubepack/onessl/releases/download/0.3.0/onessl-windows-amd64.exe
+      curl -fsSL -o onessl.exe https://github.com/kubepack/onessl/releases/download/0.8.0/onessl-windows-amd64.exe
       chmod +x onessl.exe
       export ONESSL=./onessl.exe
       ;;
@@ -87,7 +98,7 @@ else
       echo 'other OS'
       ;;
   esac
-fi
+}
 
 # ref: https://stackoverflow.com/a/7069755/244009
 # ref: https://jonalmeida.com/posts/2013/05/26/different-ways-to-implement-flags-in-bash/
@@ -453,6 +464,23 @@ for crd in "${crds[@]}"; do
     exit 1
   }
 done
+
+if [ "$VOYAGER_ENABLE_VALIDATING_WEBHOOK" = true ]; then
+  $ONESSL wait-until-has annotation \
+    --apiVersion=admissionregistration.k8s.io/v1beta1 \
+    --kind=ValidatingWebhookConfiguration \
+    --name=admission.voyager.appscode.com \
+    --key=admission-webhooks.appscode.com/activated \
+    --value=true \
+    --timeout=60s || {
+    echo "Admission webhooks are not activated. Enable it by configuring --enable-admission-plugins flag of kube-apiserver. For details, visit: https://appsco.de/kube-apiserver-webhooks ."
+    echo "After admission webhooks are activated, please uninstall and then reinstall Voyager operator."
+    # uninstall misconfigured webhooks to avoid failures
+    kubectl delete validatingwebhookconfiguration -l app=voyager || true
+    kubectl delete mutatingwebhookconfiguration -l app=voyager || true
+    exit 1
+  }
+fi
 
 echo
 echo "Successfully installed Voyager in $VOYAGER_NAMESPACE namespace!"
