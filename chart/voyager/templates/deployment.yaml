@@ -60,7 +60,7 @@ spec:
         - --enable-status-subresource=true
 {{- end }}
         - --enable-analytics={{ .Values.enableAnalytics }}
-        {{- if .Values.template.cfgmap }}
+        {{- if .Values.templates.cfgmap }}
         - --custom-templates=/srv/voyager/custom/*.cfg
         {{- end }}
         ports:
@@ -91,7 +91,7 @@ spec:
           name: cloudconfig
           readOnly: true
 {{- end }}
-{{- if .Values.template.cfgmap }}
+{{- if .Values.templates.cfgmap }}
         - mountPath: /srv/voyager/custom
           name: templates
           readOnly: true
@@ -106,9 +106,9 @@ spec:
           path: {{ .Values.persistence.hostPath | quote }}
         name: cloudconfig
 {{- end -}}
-{{- if .Values.template.cfgmap }}
+{{- if .Values.templates.cfgmap }}
       - configMap:
-          name: {{ .Values.template.cfgmap }}
+          name: {{ .Values.templates.cfgmap }}
         name: templates
 {{- end -}}
 {{- if or .Values.tolerations (and .Values.criticalAddon (eq .Release.Namespace "kube-system")) }}
