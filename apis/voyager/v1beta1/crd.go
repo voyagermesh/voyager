@@ -36,18 +36,18 @@ func (r Ingress) CustomResourceDefinition() *apiextensions.CustomResourceDefinit
 		EnableStatusSubresource: EnableStatusSubresource,
 		AdditionalPrinterColumns: []apiextensions.CustomResourceColumnDefinition{
 			{
-				Name:     "Hosts",
+				Name:     "HOSTS",
 				Type:     "string",
 				JSONPath: ".spec.rules[0].host",
 			},
 			// Address? Port ?
 			{
-				Name:     "LoadBalancerIP",
+				Name:     "LOAD_BALANCER_IP",
 				Type:     "string",
 				JSONPath: ".status.loadBalancer.ingress",
 			},
 			{
-				Name:     "Age",
+				Name:     "AGE",
 				Type:     "date",
 				JSONPath: ".metadata.creationTimestamp",
 			},

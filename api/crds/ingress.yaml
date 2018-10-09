@@ -9,13 +9,13 @@ metadata:
 spec:
   additionalPrinterColumns:
   - JSONPath: .spec.rules[0].host
-    name: Hosts
+    name: HOSTS
     type: string
   - JSONPath: .status.loadBalancer.ingress
-    name: LoadBalancerIP
+    name: LOAD_BALANCER_IP
     type: string
   - JSONPath: .metadata.creationTimestamp
-    name: Age
+    name: AGE
     type: date
   group: voyager.appscode.com
   names:
