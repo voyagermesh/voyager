@@ -92,7 +92,7 @@ func TryUpdateMutatingWebhookConfiguration(c kubernetes.Interface, name string, 
 
 func UpdateMutatingWebhookCABundle(config *rest.Config, webhookConfigName string, extraConditions ...watchtools.ConditionFunc) error {
 	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, kutil.GCTimeout)
+	ctx, cancel := context.WithTimeout(ctx, kutil.ReadinessTimeout)
 	defer cancel()
 
 	err := rest.LoadTLSFiles(config)
@@ -174,7 +174,7 @@ func SyncMutatingWebhookCABundle(config *rest.Config, webhookConfigName string) 
 			case watch.Deleted:
 				return false, nil
 			case watch.Error:
-				return false, errors.Wrap(err, "error watching")
+				return false, errors.New("error watching")
 			case watch.Added, watch.Modified:
 				cur := event.Object.(*reg.MutatingWebhookConfiguration)
 				_, _, err := PatchMutatingWebhookConfiguration(kc, cur, func(in *reg.MutatingWebhookConfiguration) *reg.MutatingWebhookConfiguration {

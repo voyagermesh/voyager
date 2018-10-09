@@ -20,7 +20,7 @@ rules:
   - admissionregistration.k8s.io
   resources:
   - validatingwebhookconfigurations
-  verbs: ["delete", "list", "watch", "patch"]
+  verbs: ["delete", "get", "list", "watch", "patch"]
 - apiGroups:
   - voyager.appscode.com
   resources: ["*"]

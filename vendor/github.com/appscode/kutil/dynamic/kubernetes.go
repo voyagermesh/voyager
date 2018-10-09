@@ -1,55 +1,169 @@
 package dynamic
 
 import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/appscode/kutil"
 	"github.com/appscode/kutil/core/v1"
 	discovery_util "github.com/appscode/kutil/discovery"
+	watchtools "github.com/appscode/kutil/tools/watch"
+	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
 )
 
-func DetectWorkload(config *rest.Config, resource schema.GroupVersionResource, namespace, name string) (*unstructured.Unstructured, error) {
+func UntilHasLabel(config *rest.Config, gvk schema.GroupVersionKind, namespace, name string, key string, value *string, timeout time.Duration) (out string, err error) {
+	return untilHasKey(config, gvk, namespace, name, func(event watch.Event) (bool, error) {
+		switch event.Type {
+		case watch.Deleted:
+			return false, nil
+		case watch.Error:
+			return false, errors.Wrap(err, "error watching")
+		case watch.Added, watch.Modified:
+			m, e2 := meta.Accessor(event.Object)
+			if e2 != nil {
+				return false, e2
+			}
+			if v, ok := m.GetLabels()[key]; !ok {
+				return false, nil // continue
+			} else if value == nil {
+				return true, nil
+			} else if *value != v {
+				return false, nil // continue
+			}
+			return true, nil
+		default:
+			return false, fmt.Errorf("unexpected event type: %v", event.Type)
+		}
+	}, timeout)
+}
+
+func UntilHasAnnotation(config *rest.Config, gvk schema.GroupVersionKind, namespace, name string, key string, value *string, timeout time.Duration) (out string, err error) {
+	return untilHasKey(config, gvk, namespace, name, func(event watch.Event) (bool, error) {
+		switch event.Type {
+		case watch.Deleted:
+			return false, nil
+		case watch.Error:
+			return false, errors.Wrap(err, "error watching")
+		case watch.Added, watch.Modified:
+			m, e2 := meta.Accessor(event.Object)
+			if e2 != nil {
+				return false, e2
+			}
+			if v, ok := m.GetAnnotations()[key]; !ok {
+				return false, nil // continue
+			} else if value == nil {
+				return true, nil
+			} else if *value != v {
+				return false, nil // continue
+			}
+			return true, nil
+		default:
+			return false, fmt.Errorf("unexpected event type: %v", event.Type)
+		}
+	}, timeout)
+}
+
+func untilHasKey(config *rest.Config, gvk schema.GroupVersionKind, namespace, name string, cond watchtools.ConditionFunc, timeout time.Duration) (out string, err error) {
+	ctx := context.Background()
+	if timeout > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, kutil.ReadinessTimeout)
+		defer cancel()
+	}
+
 	kc := kubernetes.NewForConfigOrDie(config)
 	dc, err := dynamic.NewForConfig(config)
 	if err != nil {
-		return nil, err
+		return
+	}
+
+	gvr, err := discovery_util.ResourceForGVK(kc.Discovery(), gvk)
+	if err != nil {
+		return
+	}
+
+	var ri dynamic.ResourceInterface
+	if namespace != "" {
+		ri = dc.Resource(gvr).Namespace(namespace)
+	} else {
+		ri = dc.Resource(gvr)
+	}
+
+	lw := &cache.ListWatch{
+		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, name).String()
+			return ri.List(options)
+		},
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, name).String()
+			return ri.Watch(options)
+		},
+	}
+
+	obj, err := scheme.Scheme.New(gvk)
+	if err != nil {
+		return
+	}
+	_, err = watchtools.UntilWithSync(ctx,
+		lw,
+		obj,
+		nil,
+		cond,
+	)
+	return
+}
+
+func DetectWorkload(config *rest.Config, resource schema.GroupVersionResource, namespace, name string) (*unstructured.Unstructured, schema.GroupVersionResource, error) {
+	kc := kubernetes.NewForConfigOrDie(config)
+	dc, err := dynamic.NewForConfig(config)
+	if err != nil {
+		return nil, resource, err
 	}
 
 	obj, err := dc.Resource(resource).Namespace(namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
-		return nil, err
+		return nil, resource, err
 	}
-	return findWorkload(kc, dc, obj)
+	return findWorkload(kc, dc, resource, obj)
 }
 
-func findWorkload(kc kubernetes.Interface, dc dynamic.Interface, obj *unstructured.Unstructured) (*unstructured.Unstructured, error) {
+func findWorkload(kc kubernetes.Interface, dc dynamic.Interface, resource schema.GroupVersionResource, obj *unstructured.Unstructured) (*unstructured.Unstructured, schema.GroupVersionResource, error) {
 	m, err := meta.Accessor(obj)
 	if err != nil {
-		return nil, err
+		return nil, resource, err
 	}
 	for _, ref := range m.GetOwnerReferences() {
 		if ref.Controller != nil && *ref.Controller {
 			gvk := schema.FromAPIVersionAndKind(ref.APIVersion, ref.Kind)
 			gvr, err := discovery_util.ResourceForGVK(kc.Discovery(), gvk)
 			if err != nil {
-				return nil, err
+				return nil, gvr, err
 			}
 			parent, err := dc.Resource(gvr).Namespace(m.GetNamespace()).Get(ref.Name, metav1.GetOptions{})
 			if err != nil {
-				return nil, err
+				return nil, gvr, err
 			}
-			return findWorkload(kc, dc, parent)
+			return findWorkload(kc, dc, gvr, parent)
 		}
 	}
-	return obj, nil
+	return obj, resource, nil
 }
 
 func RemoveOwnerReferenceForItems(

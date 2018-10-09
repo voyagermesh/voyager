@@ -26,8 +26,9 @@ import (
 )
 
 const (
-	apiserviceName    = "v1beta1.admission.voyager.appscode.com"
-	validatingWebhook = "admission.voyager.appscode.com"
+	apiserviceName          = "v1beta1.admission.voyager.appscode.com"
+	validatingWebhookConfig = "admission.voyager.appscode.com"
+	validatingWebhook       = "admission.voyager.appscode.com"
 )
 
 var (
@@ -163,7 +164,7 @@ func (c completedConfig) New() (*VoyagerServer, error) {
 		s.GenericAPIServer.AddPostStartHookOrDie("validating-webhook-xray",
 			func(context genericapiserver.PostStartHookContext) error {
 				go func() {
-					xray := reg_util.NewCreateValidatingWebhookXray(c.OperatorConfig.ClientConfig, apiserviceName, validatingWebhook, &api.Ingress{
+					xray := reg_util.NewCreateValidatingWebhookXray(c.OperatorConfig.ClientConfig, apiserviceName, validatingWebhookConfig, validatingWebhook, &api.Ingress{
 						TypeMeta: metav1.TypeMeta{
 							APIVersion: api.SchemeGroupVersion.String(),
 							Kind:       api.ResourceKindIngress,
@@ -189,7 +190,7 @@ func (c completedConfig) New() (*VoyagerServer, error) {
 						},
 					})
 					if err := xray.IsActive(); err != nil {
-						w, e2 := dynamic_util.DetectWorkload(
+						w, _, e2 := dynamic_util.DetectWorkload(
 							c.OperatorConfig.ClientConfig,
 							core.SchemeGroupVersion.WithResource("pods"),
 							os.Getenv("MY_POD_NAMESPACE"),
@@ -200,7 +201,7 @@ func (c completedConfig) New() (*VoyagerServer, error) {
 								"voyager-operator",
 								w,
 								core.EventTypeWarning,
-								"AdmissionWebhookNotActivated",
+								eventer.EventReasonAdmissionWebhookNotActivated,
 								err.Error())
 						}
 						panic(err)
