@@ -29,58 +29,21 @@ import (
 )
 
 func UntilHasLabel(config *rest.Config, gvk schema.GroupVersionKind, namespace, name string, key string, value *string, timeout time.Duration) (out string, err error) {
-	return untilHasKey(config, gvk, namespace, name, func(event watch.Event) (bool, error) {
-		switch event.Type {
-		case watch.Deleted:
-			return false, nil
-		case watch.Error:
-			return false, errors.Wrap(err, "error watching")
-		case watch.Added, watch.Modified:
-			m, e2 := meta.Accessor(event.Object)
-			if e2 != nil {
-				return false, e2
-			}
-			if v, ok := m.GetLabels()[key]; !ok {
-				return false, nil // continue
-			} else if value == nil {
-				return true, nil
-			} else if *value != v {
-				return false, nil // continue
-			}
-			return true, nil
-		default:
-			return false, fmt.Errorf("unexpected event type: %v", event.Type)
-		}
-	}, timeout)
+	return untilHasKey(config, gvk, namespace, name, func(obj metav1.Object) map[string]string { return obj.GetLabels() }, key, value, timeout)
 }
 
 func UntilHasAnnotation(config *rest.Config, gvk schema.GroupVersionKind, namespace, name string, key string, value *string, timeout time.Duration) (out string, err error) {
-	return untilHasKey(config, gvk, namespace, name, func(event watch.Event) (bool, error) {
-		switch event.Type {
-		case watch.Deleted:
-			return false, nil
-		case watch.Error:
-			return false, errors.Wrap(err, "error watching")
-		case watch.Added, watch.Modified:
-			m, e2 := meta.Accessor(event.Object)
-			if e2 != nil {
-				return false, e2
-			}
-			if v, ok := m.GetAnnotations()[key]; !ok {
-				return false, nil // continue
-			} else if value == nil {
-				return true, nil
-			} else if *value != v {
-				return false, nil // continue
-			}
-			return true, nil
-		default:
-			return false, fmt.Errorf("unexpected event type: %v", event.Type)
-		}
-	}, timeout)
+	return untilHasKey(config, gvk, namespace, name, func(obj metav1.Object) map[string]string { return obj.GetAnnotations() }, key, value, timeout)
 }
 
-func untilHasKey(config *rest.Config, gvk schema.GroupVersionKind, namespace, name string, cond watchtools.ConditionFunc, timeout time.Duration) (out string, err error) {
+func untilHasKey(
+	config *rest.Config,
+	gvk schema.GroupVersionKind,
+	namespace, name string,
+	fn func(metav1.Object) map[string]string,
+	key string, value *string,
+	timeout time.Duration) (out string, err error) {
+
 	ctx := context.Background()
 	if timeout > 0 {
 		var cancel context.CancelFunc
@@ -125,7 +88,30 @@ func untilHasKey(config *rest.Config, gvk schema.GroupVersionKind, namespace, na
 		lw,
 		obj,
 		nil,
-		cond,
+		func(event watch.Event) (bool, error) {
+			switch event.Type {
+			case watch.Deleted:
+				return false, nil
+			case watch.Error:
+				return false, errors.Wrap(err, "error watching")
+			case watch.Added, watch.Modified:
+				m, e2 := meta.Accessor(event.Object)
+				if e2 != nil {
+					return false, e2
+				}
+				var ok bool
+				if out, ok = fn(m)[key]; !ok {
+					return false, nil // continue
+				} else if value == nil {
+					return true, nil
+				} else if *value != out {
+					return false, nil // continue
+				}
+				return true, nil
+			default:
+				return false, fmt.Errorf("unexpected event type: %v", event.Type)
+			}
+		},
 	)
 	return
 }

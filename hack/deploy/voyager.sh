@@ -65,6 +65,7 @@ onessl_found() {
   if [ -x "$(command -v onessl)" ]; then
     onessl wait-until-has -h >/dev/null 2>&1 || {
       # old version of onessl found
+      echo "Found outdated onessl"
       return 1
     }
     export ONESSL=onessl
@@ -466,20 +467,23 @@ for crd in "${crds[@]}"; do
 done
 
 if [ "$VOYAGER_ENABLE_VALIDATING_WEBHOOK" = true ]; then
-  $ONESSL wait-until-has annotation \
+  echo "Checking if admission webhook(s) are activated or not ..."
+  active=$($ONESSL wait-until-has annotation \
     --apiVersion=admissionregistration.k8s.io/v1beta1 \
     --kind=ValidatingWebhookConfiguration \
     --name=admission.voyager.appscode.com \
     --key=admission-webhooks.appscode.com/activated \
-    --value=true \
-    --timeout=60s || {
+    --timeout=3m || {
+    echo "Failed to check if admission webhook(s) are activated or not. Please check operator logs to debug further."
+    exit 1
+  })
+  if [ "$active" = false ]; then
     echo "Admission webhooks are not activated. Enable it by configuring --enable-admission-plugins flag of kube-apiserver. For details, visit: https://appsco.de/kube-apiserver-webhooks ."
     echo "After admission webhooks are activated, please uninstall and then reinstall Voyager operator."
     # uninstall misconfigured webhooks to avoid failures
     kubectl delete validatingwebhookconfiguration -l app=voyager || true
-    kubectl delete mutatingwebhookconfiguration -l app=voyager || true
     exit 1
-  }
+  fi
 fi
 
 echo

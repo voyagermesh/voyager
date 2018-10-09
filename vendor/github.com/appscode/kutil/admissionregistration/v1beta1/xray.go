@@ -34,6 +34,10 @@ func init() {
 	pflag.BoolVar(&bypassValidatingWebhookXray, "bypass-validating-webhook-xray", bypassValidatingWebhookXray, "if true, bypasses validating webhook xray checks")
 }
 
+const (
+	KeyAdmissionWebhooksActivated = "admission-webhooks.appscode.com/activated"
+)
+
 var bypassValidatingWebhookXray = false
 
 var ErrMissingKind = errors.New("test object missing kind")
@@ -137,7 +141,7 @@ func (d ValidatingWebhookXray) IsActive() error {
 			if len(in.Annotations) == 0 {
 				in.Annotations = map[string]string{}
 			}
-			in.Annotations["admission-webhooks.appscode.com/activated"] = strconv.FormatBool(err == nil)
+			in.Annotations[KeyAdmissionWebhooksActivated] = strconv.FormatBool(err == nil)
 			return in
 		})
 	}
