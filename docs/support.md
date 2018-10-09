@@ -2,17 +2,17 @@
 title: Support | Voyager
 description: Support
 menu:
-  product_voyager_7.4.0:
+  product_voyager_8.0.0:
     identifier: support-voyager
     name: Support
     parent: welcome
     weight: 25
 product_name: voyager
-menu_name: product_voyager_7.4.0
+menu_name: product_voyager_8.0.0
 section_menu_id: welcome
-url: /products/voyager/7.4.0/welcome/support/
+url: /products/voyager/8.0.0/welcome/support/
 aliases:
-  - /products/voyager/7.4.0/support/
+  - /products/voyager/8.0.0/support/
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
 
