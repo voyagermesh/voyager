@@ -56,7 +56,7 @@ var _ = Describe("Restore ingress offshoots", func() {
 
 	It("Should restore deployment", func() {
 		By("Deleting haproxy deployment")
-		err := f.KubeClient.AppsV1beta1().Deployments(ing.Namespace).Delete(ing.OffshootName(), nil)
+		err := f.KubeClient.AppsV1().Deployments(ing.Namespace).Delete(ing.OffshootName(), nil)
 		Expect(err).NotTo(HaveOccurred())
 
 		By("Checking deployment restored")
