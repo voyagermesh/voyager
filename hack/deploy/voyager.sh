@@ -136,6 +136,9 @@ KUBE_APISERVER_VERSION=$(kubectl version -o=json | $ONESSL jsonpath '{.serverVer
 $ONESSL semver --check='<1.9.0' $KUBE_APISERVER_VERSION || { export VOYAGER_ENABLE_VALIDATING_WEBHOOK=true; }
 $ONESSL semver --check='<1.11.0' $KUBE_APISERVER_VERSION || { export VOYAGER_ENABLE_STATUS_SUBRESOURCE=true; }
 
+export VOYAGER_WEBHOOK_SIDE_EFFECTS=
+$ONESSL semver --check='<1.12.0' $KUBE_APISERVER_VERSION || { export VOYAGER_WEBHOOK_SIDE_EFFECTS='sideEffects: None'; }
+
 show_help() {
   echo "voyager.sh - install voyager operator"
   echo " "
