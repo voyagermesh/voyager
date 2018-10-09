@@ -2,20 +2,91 @@
 title: Changelog | Voyager
 description: Changelog
 menu:
-  product_voyager_7.4.0:
+  product_voyager_8.0.0:
     identifier: changelog-voyager
     name: Changelog
     parent: welcome
     weight: 10
 product_name: voyager
-menu_name: product_voyager_7.4.0
+menu_name: product_voyager_8.0.0
 section_menu_id: welcome
-url: /products/voyager/7.4.0/welcome/changelog/
+url: /products/voyager/8.0.0/welcome/changelog/
 aliases:
-  - /products/voyager/7.4.0/CHANGELOG/
+  - /products/voyager/8.0.0/CHANGELOG/
 ---
 
 # Change Log
+
+## [8.0.0](https://github.com/appscode/voyager/tree/8.0.0) (2018-10-09)
+[Full Changelog](https://github.com/appscode/voyager/compare/7.4.0...8.0.0)
+
+**Fixed bugs:**
+
+- Support custom errorfiles with .http ext [\#1238](https://github.com/appscode/voyager/issues/1238)
+- Correctly handle ignored openapi prefixes [\#1198](https://github.com/appscode/voyager/pull/1198) ([tamalsaha](https://github.com/tamalsaha))
+
+**Closed issues:**
+
+- Understanding/Documenting CPU Usage, behaviour and limits. [\#1267](https://github.com/appscode/voyager/issues/1267)
+- "enableValidatingWebhook: false" doesn't work anymore [\#1264](https://github.com/appscode/voyager/issues/1264)
+- Support readiness and liveness probes in generated deployments [\#1262](https://github.com/appscode/voyager/issues/1262)
+- Haproxy pods are constantly recreated when using multiple annotations [\#1251](https://github.com/appscode/voyager/issues/1251)
+- Support TLSv1.3 [\#1245](https://github.com/appscode/voyager/issues/1245)
+- Support Internal Load Balancer Type [\#1197](https://github.com/appscode/voyager/issues/1197)
+- Fix error message [\#1194](https://github.com/appscode/voyager/issues/1194)
+- official page: docs link dead [\#1190](https://github.com/appscode/voyager/issues/1190)
+- Use apps/v1 api [\#583](https://github.com/appscode/voyager/issues/583)
+
+**Merged pull requests:**
+
+- Detect failure quickly. [\#1268](https://github.com/appscode/voyager/pull/1268) ([tamalsaha](https://github.com/tamalsaha))
+- Check webhooks are activated in insaller script [\#1266](https://github.com/appscode/voyager/pull/1266) ([tamalsaha](https://github.com/tamalsaha))
+- Write webhook xray event to operator workload [\#1265](https://github.com/appscode/voyager/pull/1265) ([tamalsaha](https://github.com/tamalsaha))
+- Support readinessProbe and livenessProbe [\#1263](https://github.com/appscode/voyager/pull/1263) ([bpineau](https://github.com/bpineau))
+- Update error-files.md [\#1260](https://github.com/appscode/voyager/pull/1260) ([simnyc](https://github.com/simnyc))
+- Update FixAKS helper [\#1259](https://github.com/appscode/voyager/pull/1259) ([tamalsaha](https://github.com/tamalsaha))
+- Use FQDN for kube-apiserver in AKS [\#1258](https://github.com/appscode/voyager/pull/1258) ([tamalsaha](https://github.com/tamalsaha))
+- Rename webhook apiserver ca CN [\#1257](https://github.com/appscode/voyager/pull/1257) ([tamalsaha](https://github.com/tamalsaha))
+- Check if Kubernetes version is supported before running operator [\#1256](https://github.com/appscode/voyager/pull/1256) ([tamalsaha](https://github.com/tamalsaha))
+- Format user roles [\#1255](https://github.com/appscode/voyager/pull/1255) ([tamalsaha](https://github.com/tamalsaha))
+- Enable webhooks by default in chart [\#1254](https://github.com/appscode/voyager/pull/1254) ([tamalsaha](https://github.com/tamalsaha))
+- Support configuring cleaner image via vaules in chart [\#1253](https://github.com/appscode/voyager/pull/1253) ([tamalsaha](https://github.com/tamalsaha))
+- Sort pod annotations to avoid template changes [\#1252](https://github.com/appscode/voyager/pull/1252) ([lbernail](https://github.com/lbernail))
+- Use --pull flag with docker build [\#1248](https://github.com/appscode/voyager/pull/1248) ([tamalsaha](https://github.com/tamalsaha))
+- add support for custom templates from config map to chart [\#1246](https://github.com/appscode/voyager/pull/1246) ([bodewig](https://github.com/bodewig))
+- Use forked k8s.io/client-go v1.11.3 [\#1243](https://github.com/appscode/voyager/pull/1243) ([tamalsaha](https://github.com/tamalsaha))
+- Update k8s.io/apiserver [\#1241](https://github.com/appscode/voyager/pull/1241) ([tamalsaha](https://github.com/tamalsaha))
+- Use kubernetes-1.11.3 [\#1240](https://github.com/appscode/voyager/pull/1240) ([tamalsaha](https://github.com/tamalsaha))
+- Update CertStore [\#1239](https://github.com/appscode/voyager/pull/1239) ([tamalsaha](https://github.com/tamalsaha))
+- Touch custom errorfiles provided in configmap [\#1237](https://github.com/appscode/voyager/pull/1237) ([tamalsaha](https://github.com/tamalsaha))
+- Support pod annotations in chart [\#1236](https://github.com/appscode/voyager/pull/1236) ([tamalsaha](https://github.com/tamalsaha))
+- Set serviceAccount for clearner job [\#1235](https://github.com/appscode/voyager/pull/1235) ([tamalsaha](https://github.com/tamalsaha))
+- Cleanup webhooks when chart is deleted [\#1233](https://github.com/appscode/voyager/pull/1233) ([tamalsaha](https://github.com/tamalsaha))
+- Fix log formatting [\#1232](https://github.com/appscode/voyager/pull/1232) ([tamalsaha](https://github.com/tamalsaha))
+- Use IntHash as status.observedGeneration [\#1231](https://github.com/appscode/voyager/pull/1231) ([tamalsaha](https://github.com/tamalsaha))
+- Update pipeline [\#1230](https://github.com/appscode/voyager/pull/1230) ([tahsinrahman](https://github.com/tahsinrahman))
+- Add observedGenerationHash field [\#1228](https://github.com/appscode/voyager/pull/1228) ([tamalsaha](https://github.com/tamalsaha))
+- Fix uninstall for concourse [\#1227](https://github.com/appscode/voyager/pull/1227) ([tahsinrahman](https://github.com/tahsinrahman))
+- Use priorityClass `system-cluster-critical` for operator pods. [\#1223](https://github.com/appscode/voyager/pull/1223) ([tamalsaha](https://github.com/tamalsaha))
+- Revendor prometheus-operator [\#1222](https://github.com/appscode/voyager/pull/1222) ([tamalsaha](https://github.com/tamalsaha))
+- Use apps/v1 apiGroup [\#1221](https://github.com/appscode/voyager/pull/1221) ([tamalsaha](https://github.com/tamalsaha))
+- Use concourse scripts from libbuild [\#1219](https://github.com/appscode/voyager/pull/1219) ([tahsinrahman](https://github.com/tahsinrahman))
+- Add AlreadyObserved helpers [\#1218](https://github.com/appscode/voyager/pull/1218) ([tamalsaha](https://github.com/tamalsaha))
+- Add categories [\#1217](https://github.com/appscode/voyager/pull/1217) ([tamalsaha](https://github.com/tamalsaha))
+- Fix UpdateStatus helpers [\#1216](https://github.com/appscode/voyager/pull/1216) ([tamalsaha](https://github.com/tamalsaha))
+- Upgrade xenwolf/lego library [\#1214](https://github.com/appscode/voyager/pull/1214) ([tamalsaha](https://github.com/tamalsaha))
+- Support pod priority [\#1213](https://github.com/appscode/voyager/pull/1213) ([tamalsaha](https://github.com/tamalsaha))
+- Enable status sub resource for crd yamls [\#1212](https://github.com/appscode/voyager/pull/1212) ([tamalsaha](https://github.com/tamalsaha))
+- Move crds to api folder [\#1209](https://github.com/appscode/voyager/pull/1209) ([tamalsaha](https://github.com/tamalsaha))
+- Retry UpdateStatus calls [\#1208](https://github.com/appscode/voyager/pull/1208) ([tamalsaha](https://github.com/tamalsaha))
+- Revendor monitoring-agent-api [\#1207](https://github.com/appscode/voyager/pull/1207) ([tamalsaha](https://github.com/tamalsaha))
+- Use kmodules.xyz/monitoring-agent-api [\#1206](https://github.com/appscode/voyager/pull/1206) ([tamalsaha](https://github.com/tamalsaha))
+- Document limited NLB support [\#1205](https://github.com/appscode/voyager/pull/1205) ([tamalsaha](https://github.com/tamalsaha))
+- Update GKE cluster role [\#1204](https://github.com/appscode/voyager/pull/1204) ([tamalsaha](https://github.com/tamalsaha))
+- Add throughput graph [\#1201](https://github.com/appscode/voyager/pull/1201) ([tamalsaha](https://github.com/tamalsaha))
+- Don't error out if old monitoring agent is missing [\#1195](https://github.com/appscode/voyager/pull/1195) ([tamalsaha](https://github.com/tamalsaha))
+- Prepare docs for 7.4.0 release [\#1192](https://github.com/appscode/voyager/pull/1192) ([tamalsaha](https://github.com/tamalsaha))
+- Add validation webhook xray [\#1261](https://github.com/appscode/voyager/pull/1261) ([tamalsaha](https://github.com/tamalsaha))
 
 ## [7.4.0](https://github.com/appscode/voyager/tree/7.4.0) (2018-07-12)
 [Full Changelog](https://github.com/appscode/voyager/compare/7.3.0...7.4.0)
@@ -27,7 +98,10 @@ aliases:
 
 **Merged pull requests:**
 
+- Prepare docs for 7.4.0 release [\#1189](https://github.com/appscode/voyager/pull/1189) ([tamalsaha](https://github.com/tamalsaha))
+- Use version and additional columns for crds [\#1183](https://github.com/appscode/voyager/pull/1183) ([tamalsaha](https://github.com/tamalsaha))
 - Chart support for custom tolerations and affinity [\#1182](https://github.com/appscode/voyager/pull/1182) ([octplane](https://github.com/octplane))
+- Update client-go to v8.0.0 [\#1177](https://github.com/appscode/voyager/pull/1177) ([tamalsaha](https://github.com/tamalsaha))
 
 ## [7.3.0](https://github.com/appscode/voyager/tree/7.3.0) (2018-07-08)
 [Full Changelog](https://github.com/appscode/voyager/compare/7.2.0...7.3.0)

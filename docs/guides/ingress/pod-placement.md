@@ -1,13 +1,13 @@
 ---
 title: Placement of Ingress Pods | Voyager
 menu:
-  product_voyager_7.4.0:
+  product_voyager_8.0.0:
     identifier: pod-placement-ingress
     name: Pod Placement
     parent: ingress-guides
     weight: 50
 product_name: voyager
-menu_name: product_voyager_7.4.0
+menu_name: product_voyager_8.0.0
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
@@ -25,14 +25,14 @@ Now, install Voyager operator in your `minikube` cluster following the steps [he
 ```console
 minikube start
 # install without RBAC
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/7.4.0/hack/deploy/voyager.sh \
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/8.0.0/hack/deploy/voyager.sh \
   | bash -s -- minikube
 ```
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
 ```console
-$ curl -fSsL https://raw.githubusercontent.com/appscode/voyager/7.4.0/docs/examples/ingress/pod-placement/deploy-servers.sh | bash
+$ curl -fSsL https://raw.githubusercontent.com/appscode/voyager/8.0.0/docs/examples/ingress/pod-placement/deploy-servers.sh | bash
 + kubectl create namespace demo
 namespace "demo" created
 + kubectl run nginx --image=nginx --namespace=demo
@@ -47,7 +47,7 @@ service "rest" exposed
 
 ### Choosing Workload Kind
 
-By default Voyager will run HAProxy pods using `Deployment`. Since 7.4.0 release, Voyager can run HAProxy pods using either Deployment or DaemonSet. Set the annotation `ingress.appscode.com/workload-kind` on an ingress object to either `Deployment` or `DaemonSet` to enable this feature. If this annotation is missing, HAProxy pods will be run using a `Deployment` as before.
+By default Voyager will run HAProxy pods using `Deployment`. Since 8.0.0 release, Voyager can run HAProxy pods using either Deployment or DaemonSet. Set the annotation `ingress.appscode.com/workload-kind` on an ingress object to either `Deployment` or `DaemonSet` to enable this feature. If this annotation is missing, HAProxy pods will be run using a `Deployment` as before.
 
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
@@ -64,7 +64,7 @@ metadata:
 [Node selectors](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) can be used assign HAProxy ingress pods to specific nodes. Below is an example where ingress pods are run on node with name`minikube`.
 
 ```console
-kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/7.4.0/docs/examples/ingress/pod-placement/ingress-w-node-selector.yaml
+kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/8.0.0/docs/examples/ingress/pod-placement/ingress-w-node-selector.yaml
 ```
 
 ```yaml
@@ -125,7 +125,7 @@ spec:
 [Affinity rules](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity) can be used assign HAProxy ingress pods to specific nodes or ensure that 2 separate HAProxy ingress pods are not placed on same node. Affinity rules are set via `spec.affinity` field in Voyager Ingress CRD. Below is an example where ingress pods are spread over run on node with name`minikube`.
 
 ```console
-kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/7.4.0/docs/examples/ingress/pod-placement/ingress-w-pod-anti-affinity.yaml
+kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/8.0.0/docs/examples/ingress/pod-placement/ingress-w-pod-anti-affinity.yaml
 ```
 
 ```yaml
@@ -174,7 +174,7 @@ Using [taints and toleration](https://kubernetes.io/docs/concepts/configuration/
 # taint nodes where only HAProxy ingress pods will run
 kubectl taint nodes minikube IngressOnly=true:NoSchedule
 
-kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/7.4.0/docs/examples/ingress/pod-placement/ingress-w-toleration.yaml
+kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/8.0.0/docs/examples/ingress/pod-placement/ingress-w-toleration.yaml
 ```
 
 ```yaml
