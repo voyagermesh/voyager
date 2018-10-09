@@ -33,3 +33,4 @@ webhooks:
     resources:
     - ingresses
   failurePolicy: Fail
+  sideEffects: None
