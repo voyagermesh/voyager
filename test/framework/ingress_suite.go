@@ -120,7 +120,7 @@ func (i *ingressInvocation) IsExistsEventually(ing *api.Ingress) bool {
 
 func (i *ingressInvocation) IsExists(ing *api.Ingress) error {
 	var err error
-	_, err = i.KubeClient.AppsV1beta1().Deployments(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+	_, err = i.KubeClient.AppsV1().Deployments(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		return err
 	}
