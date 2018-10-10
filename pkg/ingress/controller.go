@@ -152,11 +152,11 @@ func (c *controller) IsExists() bool {
 		if kerr.IsNotFound(err) {
 			return false
 		}
-		_, err = c.KubeClient.RbacV1beta1().Roles(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		_, err = c.KubeClient.RbacV1().Roles(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
 			return false
 		}
-		_, err = c.KubeClient.RbacV1beta1().RoleBindings(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		_, err = c.KubeClient.RbacV1().RoleBindings(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
 			return false
 		}

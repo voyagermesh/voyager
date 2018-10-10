@@ -473,19 +473,20 @@ if [ "$VOYAGER_ENABLE_VALIDATING_WEBHOOK" = true ]; then
   echo
   echo "Checking whether admission webhook(s) are activated or not"
   active=$($ONESSL wait-until-has annotation \
-    --apiVersion=admissionregistration.k8s.io/v1beta1 \
-    --kind=ValidatingWebhookConfiguration \
-    --name=admission.voyager.appscode.com \
-    --key=admission-webhooks.appscode.com/activated \
-    --timeout=3m || {
+    --apiVersion=apiregistration.k8s.io/v1beta1 \
+    --kind=APIService \
+    --name=v1beta1.admission.voyager.appscode.com \
+    --key=xray.appscode.com/admission-webhooks \
+    --timeout=5m || {
     echo "Failed to check if admission webhook(s) are activated or not. Please check operator logs to debug further."
     exit 1
   })
-  if [ "$active" = false ]; then
+  echo "[][][] $active ..."
+  if [ "$active" = "failed" ]; then
     echo "Admission webhooks are not activated. Enable it by configuring --enable-admission-plugins flag of kube-apiserver. For details, visit: https://appsco.de/kube-apiserver-webhooks ."
     echo "After admission webhooks are activated, please uninstall and then reinstall Voyager operator."
     # uninstall misconfigured webhooks to avoid failures
-    kubectl delete validatingwebhookconfiguration -l app=voyager || true
+    # kubectl delete validatingwebhookconfiguration -l app=voyager || true
     exit 1
   fi
 fi

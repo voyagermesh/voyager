@@ -164,7 +164,7 @@ func (c completedConfig) New() (*VoyagerServer, error) {
 		s.GenericAPIServer.AddPostStartHookOrDie("validating-webhook-xray",
 			func(context genericapiserver.PostStartHookContext) error {
 				go func() {
-					xray := reg_util.NewCreateValidatingWebhookXray(c.OperatorConfig.ClientConfig, apiserviceName, validatingWebhookConfig, validatingWebhook, &api.Ingress{
+					xray := reg_util.NewCreateValidatingWebhookXray(c.OperatorConfig.ClientConfig, apiserviceName, validatingWebhook, &api.Ingress{
 						TypeMeta: metav1.TypeMeta{
 							APIVersion: api.SchemeGroupVersion.String(),
 							Kind:       api.ResourceKindIngress,
@@ -188,7 +188,7 @@ func (c completedConfig) New() (*VoyagerServer, error) {
 								},
 							},
 						},
-					})
+					}, context.StopCh)
 					if err := xray.IsActive(); err != nil {
 						w, _, e2 := dynamic_util.DetectWorkload(
 							c.OperatorConfig.ClientConfig,

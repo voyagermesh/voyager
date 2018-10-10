@@ -183,7 +183,10 @@ func SyncMutatingWebhookCABundle(config *rest.Config, webhookConfigName string) 
 					}
 					return in
 				})
-				return false, err // continue
+				if err != nil {
+					glog.Warning(err)
+				}
+				return false, nil // continue
 			default:
 				return false, fmt.Errorf("unexpected event type: %v", event.Type)
 			}

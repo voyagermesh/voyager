@@ -90,7 +90,7 @@ import:
 - package: k8s.io/kubernetes
   version: v1.11.3
 - package: github.com/appscode/kutil
-  version: master
+  version: release-8.0
 - package: kmodules.xyz/monitoring-agent-api
   repo: https://github.com/kmodules/monitoring-agent-api.git
   vcs: git

@@ -15,7 +15,7 @@ rules:
   - apiregistration.k8s.io
   resources:
   - apiservices
-  verbs: ["list", "watch"]
+  verbs: ["get", "patch"]
 - apiGroups:
   - admissionregistration.k8s.io
   resources:
