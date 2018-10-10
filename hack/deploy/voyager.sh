@@ -475,13 +475,13 @@ if [ "$VOYAGER_ENABLE_VALIDATING_WEBHOOK" = true ]; then
     --apiVersion=apiregistration.k8s.io/v1beta1 \
     --kind=APIService \
     --name=v1beta1.admission.voyager.appscode.com \
-    --key=xray.appscode.com/admission-webhooks \
+    --key=admission-webhook.appscode.com/active \
     --timeout=5m || {
     echo
     echo "Failed to check if admission webhook(s) are activated or not. Please check operator logs to debug further."
     exit 1
   })
-  if [ "$active" = "failed" ]; then
+  if [ "$active" = false ]; then
     echo
     echo "Admission webhooks are not activated."
     echo "Enable it by configuring --enable-admission-plugins flag of kube-apiserver."

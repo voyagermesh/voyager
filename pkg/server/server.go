@@ -26,9 +26,8 @@ import (
 )
 
 const (
-	apiserviceName          = "v1beta1.admission.voyager.appscode.com"
-	validatingWebhookConfig = "admission.voyager.appscode.com"
-	validatingWebhook       = "admission.voyager.appscode.com"
+	apiserviceName    = "v1beta1.admission.voyager.appscode.com"
+	validatingWebhook = "admission.voyager.appscode.com"
 )
 
 var (

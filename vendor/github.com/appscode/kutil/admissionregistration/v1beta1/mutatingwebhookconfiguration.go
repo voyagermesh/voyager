@@ -118,7 +118,7 @@ func UpdateMutatingWebhookCABundle(config *rest.Config, webhookConfigName string
 			case watch.Deleted:
 				return false, nil
 			case watch.Error:
-				return false, errors.Wrap(err, "error watching")
+				return false, errors.New("error watching")
 			case watch.Added, watch.Modified:
 				cur := event.Object.(*reg.MutatingWebhookConfiguration)
 				_, _, err := PatchMutatingWebhookConfiguration(kc, cur, func(in *reg.MutatingWebhookConfiguration) *reg.MutatingWebhookConfiguration {
@@ -127,6 +127,9 @@ func UpdateMutatingWebhookCABundle(config *rest.Config, webhookConfigName string
 					}
 					return in
 				})
+				if err != nil {
+					glog.Warning(err)
+				}
 				return err == nil, err
 			default:
 				return false, fmt.Errorf("unexpected event type: %v", event.Type)

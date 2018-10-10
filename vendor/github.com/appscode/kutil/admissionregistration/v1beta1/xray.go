@@ -34,7 +34,8 @@ func init() {
 }
 
 const (
-	KeyAdmissionWebhooksXray = "xray.appscode.com/admission-webhooks"
+	KeyAdmissionWebhookActive = "admission-webhook.appscode.com/active"
+	KeyAdmissionWebhookStatus = "admission-webhook.appscode.com/status"
 )
 
 var bypassValidatingWebhookXray = false
@@ -94,7 +95,9 @@ func retry(err error) error {
 		kerr.IsServiceUnavailable(err) ||
 		kerr.IsTimeout(err) ||
 		kerr.IsServerTimeout(err) ||
-		kerr.IsTooManyRequests(err) {
+		kerr.IsTooManyRequests(err) ||
+		(kerr.ReasonForError(err) == metav1.StatusReasonUnknown &&
+			strings.HasPrefix(err.Error(), "Internal error occurred: failed calling admission webhook")) {
 		return nil
 	}
 	return err
@@ -107,7 +110,7 @@ func (d ValidatingWebhookXray) IsActive() error {
 	if bypassValidatingWebhookXray {
 		apisvc, err := apireg.ApiregistrationV1beta1().APIServices().Get(d.apisvc, metav1.GetOptions{})
 		if err == nil {
-			d.updateAPIService(apireg, apisvc, "bypassed")
+			d.updateAPIService(apireg, apisvc, nil)
 		}
 		return nil
 	}
@@ -143,10 +146,8 @@ func (d ValidatingWebhookXray) IsActive() error {
 					}
 				}
 				active, errActive := d.check()
-				if active {
-					d.updateAPIService(apireg, apisvc, "active")
-				} else if errActive != nil {
-					d.updateAPIService(apireg, apisvc, "failed")
+				if active || errActive != nil {
+					d.updateAPIService(apireg, apisvc, errActive)
 				}
 				return active, errActive
 			}
@@ -155,24 +156,30 @@ func (d ValidatingWebhookXray) IsActive() error {
 	}, d.stopCh)
 }
 
-func (d ValidatingWebhookXray) updateAPIService(apireg apireg_cs.Interface, apisvc *apiregistration.APIService, active string) {
+func (d ValidatingWebhookXray) updateAPIService(apireg apireg_cs.Interface, apisvc *apiregistration.APIService, err error) {
 	fn := func(annotations map[string]string) map[string]string {
 		if len(annotations) == 0 {
 			annotations = map[string]string{}
 		}
-		annotations[KeyAdmissionWebhooksXray] = active
+		if err == nil {
+			annotations[KeyAdmissionWebhookActive] = "true"
+			annotations[KeyAdmissionWebhookStatus] = ""
+		} else {
+			annotations[KeyAdmissionWebhookActive] = "false"
+			annotations[KeyAdmissionWebhookStatus] = err.Error()
+		}
 		return annotations
 	}
 
 	apireg_util.PatchAPIService(apireg, apisvc, func(in *apiregistration.APIService) *apiregistration.APIService {
 		data, ok := in.Annotations[meta_util.LastAppliedConfigAnnotation]
 		if ok {
-			u, err := runtime.Decode(unstructured.UnstructuredJSONScheme, []byte(data))
-			if err != nil {
+			u, e2 := runtime.Decode(unstructured.UnstructuredJSONScheme, []byte(data))
+			if e2 != nil {
 				goto LastAppliedConfig
 			}
-			m, err := meta.Accessor(u)
-			if err != nil {
+			m, e2 := meta.Accessor(u)
+			if e2 != nil {
 				goto LastAppliedConfig
 			}
 			m.SetAnnotations(fn(m.GetAnnotations()))
@@ -187,7 +194,7 @@ func (d ValidatingWebhookXray) updateAPIService(apireg apireg_cs.Interface, apis
 	})
 }
 
-func (d ValidatingWebhookXray) errMsgPrefix() string {
+func (d ValidatingWebhookXray) errForbidden() string {
 	return fmt.Sprintf(`admission webhook %q denied the request:`, d.webhook)
 }
 
@@ -243,23 +250,19 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 	if d.op == v1beta1.Create {
 		_, err := ri.Create(&u)
 		if kerr.IsForbidden(err) &&
-			strings.HasPrefix(err.Error(), d.errMsgPrefix()) {
+			strings.HasPrefix(err.Error(), d.errForbidden()) {
 			glog.Infof("failed to create invalid test object as expected with error: %s", err)
 			return true, nil
-		} else if kutil.IsRequestRetryable(err) {
-			return false, nil
 		} else if err != nil {
-			return false, err
+			return false, retry(err)
 		}
 
 		ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})
 		return false, ErrWebhookNotActivated
 	} else if d.op == v1beta1.Update {
 		_, err := ri.Create(&u)
-		if kutil.IsRequestRetryable(err) {
-			return false, nil
-		} else if err != nil {
-			return false, err
+		if err != nil {
+			return false, retry(err)
 		}
 
 		mod := d.testObj.DeepCopyObject()
@@ -278,27 +281,23 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 		defer ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})
 
 		if kerr.IsForbidden(err) &&
-			strings.HasPrefix(err.Error(), d.errMsgPrefix()) {
+			strings.HasPrefix(err.Error(), d.errForbidden()) {
 			glog.Infof("failed to update test object as expected with error: %s", err)
 			return true, nil
-		} else if kutil.IsRequestRetryable(err) {
-			return false, nil
 		} else if err != nil {
-			return false, err
+			return false, retry(err)
 		}
 
 		return false, ErrWebhookNotActivated
 	} else if d.op == v1beta1.Delete {
 		_, err := ri.Create(&u)
-		if kutil.IsRequestRetryable(err) {
-			return false, nil
-		} else if err != nil {
-			return false, err
+		if err != nil {
+			return false, retry(err)
 		}
 
 		err = ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})
 		if kerr.IsForbidden(err) &&
-			strings.HasPrefix(err.Error(), d.errMsgPrefix()) {
+			strings.HasPrefix(err.Error(), d.errForbidden()) {
 			defer func() {
 				// update to make it valid
 				mod := d.testObj.DeepCopyObject()
@@ -321,10 +320,8 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 
 			glog.Infof("failed to delete test object as expected with error: %s", err)
 			return true, nil
-		} else if kutil.IsRequestRetryable(err) {
-			return false, nil
 		} else if err != nil {
-			return false, err
+			return false, retry(err)
 		}
 		return false, ErrWebhookNotActivated
 	}
