@@ -2,23 +2,23 @@
 title: Changelog | Voyager
 description: Changelog
 menu:
-  product_voyager_8.0.0:
+  product_voyager_8.0.1:
     identifier: changelog-voyager
     name: Changelog
     parent: welcome
     weight: 10
 product_name: voyager
-menu_name: product_voyager_8.0.0
+menu_name: product_voyager_8.0.1
 section_menu_id: welcome
-url: /products/voyager/8.0.0/welcome/changelog/
+url: /products/voyager/8.0.1/welcome/changelog/
 aliases:
-  - /products/voyager/8.0.0/CHANGELOG/
+  - /products/voyager/8.0.1/CHANGELOG/
 ---
 
 # Change Log
 
-## [8.0.0](https://github.com/appscode/voyager/tree/8.0.0) (2018-10-09)
-[Full Changelog](https://github.com/appscode/voyager/compare/7.4.0...8.0.0)
+## [8.0.1](https://github.com/appscode/voyager/tree/8.0.1) (2018-10-09)
+[Full Changelog](https://github.com/appscode/voyager/compare/7.4.0...8.0.1)
 
 **Fixed bugs:**
 
@@ -101,7 +101,7 @@ aliases:
 - Prepare docs for 7.4.0 release [\#1189](https://github.com/appscode/voyager/pull/1189) ([tamalsaha](https://github.com/tamalsaha))
 - Use version and additional columns for crds [\#1183](https://github.com/appscode/voyager/pull/1183) ([tamalsaha](https://github.com/tamalsaha))
 - Chart support for custom tolerations and affinity [\#1182](https://github.com/appscode/voyager/pull/1182) ([octplane](https://github.com/octplane))
-- Update client-go to v8.0.0 [\#1177](https://github.com/appscode/voyager/pull/1177) ([tamalsaha](https://github.com/tamalsaha))
+- Update client-go to v8.0.1 [\#1177](https://github.com/appscode/voyager/pull/1177) ([tamalsaha](https://github.com/tamalsaha))
 
 ## [7.3.0](https://github.com/appscode/voyager/tree/7.3.0) (2018-07-08)
 [Full Changelog](https://github.com/appscode/voyager/compare/7.2.0...7.3.0)

@@ -2,13 +2,13 @@
 title: Install Voyager
 description: Voyager Install
 menu:
-  product_voyager_8.0.0:
+  product_voyager_8.0.1:
     identifier: install-voyager
     name: Install
     parent: setup
     weight: 10
 product_name: voyager
-menu_name: product_voyager_8.0.0
+menu_name: product_voyager_8.0.1
 section_menu_id: setup
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
@@ -46,7 +46,7 @@ To install Voyager in your Kubernetes cluster, pick the appropriate cluster prov
 # provider=digitalocean
 # provider=linode
 
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/8.0.0/hack/deploy/voyager.sh \
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/8.0.1/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider
 ```
 
@@ -59,10 +59,10 @@ voyager-operator-846d47f489-jrb58       1/1       Running   0          48s
 
 #### Customizing Installer
 
-The installer script and associated yaml files can be found in the [/hack/deploy](https://github.com/appscode/voyager/tree/8.0.0/hack/deploy) folder. To see the full list of flags available to installer, use the `-h` flag.
+The installer script and associated yaml files can be found in the [/hack/deploy](https://github.com/appscode/voyager/tree/8.0.1/hack/deploy) folder. To see the full list of flags available to installer, use the `-h` flag.
 
 ```console
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/8.0.0/hack/deploy/voyager.sh | bash -s -- -h
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/8.0.1/hack/deploy/voyager.sh | bash -s -- -h
 voyager.sh - install voyager operator
 
 voyager.sh [options]
@@ -73,7 +73,7 @@ options:
 -p, --provider=PROVIDER            specify a cloud provider
     --rbac                         create RBAC roles and bindings (default: true)
     --docker-registry              docker registry used to pull voyager images (default: appscode)
-    --haproxy-image-tag            tag of Docker image containing HAProxy binary (default: 1.8.12-8.0.0-alpine)
+    --haproxy-image-tag            tag of Docker image containing HAProxy binary (default: 1.8.12-8.0.1-alpine)
     --image-pull-secret            name of secret used to pull voyager operator images
     --restrict-to-namespace        restrict voyager to its own namespace
     --run-on-master                run voyager operator on master
@@ -88,7 +88,7 @@ options:
 If you would like to run Voyager operator pod in `master` instances, pass the `--run-on-master` flag:
 
 ```console
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/8.0.0/hack/deploy/voyager.sh \
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/8.0.1/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider --run-on-master [--rbac]
 ```
 
@@ -96,7 +96,7 @@ Voyager operator will be installed in a `kube-system` namespace by default. If y
 
 ```console
 $ kubectl create namespace voyager
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/8.0.0/hack/deploy/voyager.sh \
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/8.0.1/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider --namespace=voyager [--run-on-master] [--rbac]
 ```
 
@@ -104,7 +104,7 @@ By default, Voyager operator will watch Ingress objects in any namespace. If you
 
 ```console
 $ kubectl create namespace voyager
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/8.0.0/hack/deploy/voyager.sh \
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/8.0.1/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider --namespace=voyager --restrict-to-namespace [--run-on-master] [--rbac]
 ```
 
@@ -117,20 +117,20 @@ To pass the address of your private registry and optionally a image pull secret 
 
 ```console
 $ kubectl create namespace voyager
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/8.0.0/hack/deploy/voyager.sh \
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/8.0.1/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider --docker-registry=MY_REGISTRY [--image-pull-secret=SECRET_NAME] [--rbac]
 ```
 
-By default, Voyager uses Alpine based HAProxy image (1.8.12-8.0.0-alpine). But you can also Debian based image for HAProxy by setting --haproxy-image-tag=1.8.12-8.0.0 flag.
+By default, Voyager uses Alpine based HAProxy image (1.8.12-8.0.1-alpine). But you can also Debian based image for HAProxy by setting --haproxy-image-tag=1.8.12-8.0.1 flag.
 
 Voyager implements a [validating admission webhook](https://kubernetes.io/docs/admin/admission-controllers/#validatingadmissionwebhook-alpha-in-18-beta-in-19) to validate Voyager CRDs. This is enabled by default for Kubernetes 1.9.0 or later releases. To disable this feature, pass the `--enable-validating-webhook=false` flag.
 
 ```console
-$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/8.0.0/hack/deploy/voyager.sh \
+$ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/8.0.1/hack/deploy/voyager.sh \
     | bash -s -- --provider=$provider --enable-validating-webhook [--rbac]
 ```
 
-Voyager 8.0.0 or later releases can use status sub resource for CustomResourceDefintions. This is enabled by default for Kubernetes 1.11.0 or later releases. To disable this feature, pass the `--enable-status-subresource=false` flag.
+Voyager 8.0.1 or later releases can use status sub resource for CustomResourceDefintions. This is enabled by default for Kubernetes 1.11.0 or later releases. To disable this feature, pass the `--enable-status-subresource=false` flag.
 
 To use custom templates to render HAProxy configuration, visit [here](/docs/guides/ingress/configuration/custom-templates.md).
 
@@ -139,21 +139,21 @@ To use custom templates to render HAProxy configuration, visit [here](/docs/guid
 
 ## Using Helm
 
-Voyager can be installed via [Helm](https://helm.sh/) 2.9.x or later versions using the [chart](https://github.com/appscode/voyager/tree/8.0.0/chart/voyager) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
+Voyager can be installed via [Helm](https://helm.sh/) 2.9.x or later versions using the [chart](https://github.com/appscode/voyager/tree/8.0.1/chart/voyager) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
 
 ```console
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
 $ helm search appscode/voyager
 NAME              CHART VERSION APP VERSION DESCRIPTION
-appscode/voyager  8.0.0    8.0.0  Voyager by AppsCode - Secure HAProxy Ingress Controller...
+appscode/voyager  8.0.1    8.0.1  Voyager by AppsCode - Secure HAProxy Ingress Controller...
 
-$ helm install appscode/voyager --name voyager-operator --version 8.0.0 \
+$ helm install appscode/voyager --name voyager-operator --version 8.0.1 \
   --namespace kube-system \
   --set cloudProvider=$provider
 ```
 
-To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/8.0.0/chart/voyager).
+To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/8.0.1/chart/voyager).
 
 </div>
 
@@ -242,12 +242,12 @@ $ POD_NAMESPACE=kube-system
 $ POD_NAME=$(kubectl get pods -n $POD_NAMESPACE -l app=voyager -o jsonpath={.items[0].metadata.name})
 $ kubectl exec -it $POD_NAME -n $POD_NAMESPACE voyager version
 
-Version = 8.0.0
+Version = 8.0.1
 VersionStrategy = tag
 Os = alpine
 Arch = amd64
 CommitHash = ab0b38d8f5d5b4b4508768a594a9d98f2c76abd8
 GitBranch = release-4.0
-GitTag = 8.0.0
+GitTag = 8.0.1
 CommitTimestamp = 2017-10-08T12:45:26
 ```
