@@ -1,13 +1,13 @@
 ---
 title: Configure Ingress Service Annotations
 menu:
-  product_voyager_8.0.0:
+  product_voyager_8.0.1:
     identifier: service-annotations-configuration
     name: Service Annotations
     parent: config-ingress
     weight: 10
 product_name: voyager
-menu_name: product_voyager_8.0.0
+menu_name: product_voyager_8.0.1
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
