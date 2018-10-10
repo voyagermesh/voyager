@@ -2,17 +2,17 @@
 title: Acknowledgement | Voyager
 description: Acknowledgement
 menu:
-  product_voyager_8.0.0:
+  product_voyager_8.0.1:
     identifier: acknowledgement-voyager
     name: Acknowledgement
     parent: welcome
     weight: 20
 product_name: voyager
-menu_name: product_voyager_8.0.0
+menu_name: product_voyager_8.0.1
 section_menu_id: welcome
-url: /products/voyager/8.0.0/welcome/acknowledgement/
+url: /products/voyager/8.0.1/welcome/acknowledgement/
 aliases:
-  - /products/voyager/8.0.0/acknowledgement/
+  - /products/voyager/8.0.1/acknowledgement/
 ---
 
 # Acknowledgement

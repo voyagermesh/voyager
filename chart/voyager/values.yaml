@@ -6,11 +6,11 @@ replicaCount: 1
 voyager:
   registry: appscode
   repository: voyager
-  tag: 8.0.0
+  tag: 8.0.1
 haproxy:
   registry: appscode
   repository: haproxy
-  tag: 1.8.12-8.0.0-alpine
+  tag: 1.8.12-8.0.1-alpine
 cleaner:
   registry: appscode
   repository: kubectl
