@@ -14,9 +14,8 @@ import (
 	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
-	apps "k8s.io/api/apps/v1beta1"
+	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -664,11 +663,14 @@ func (i *ingressInvocation) CreateResourceWithHostNames() (metav1.ObjectMeta, er
 		return meta, err
 	}
 
-	_, err = i.KubeClient.AppsV1beta1().StatefulSets(i.Namespace()).Create(&apps.StatefulSet{
+	_, err = i.KubeClient.AppsV1().StatefulSets(i.Namespace()).Create(&apps.StatefulSet{
 		ObjectMeta: meta,
 		Spec: apps.StatefulSetSpec{
 			Replicas:    types.Int32P(2),
 			ServiceName: meta.Name,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: meta.Labels,
+			},
 			Template: core.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: meta.Labels,
@@ -728,7 +730,7 @@ func (i *ingressInvocation) CreateResourceWithHostNames() (metav1.ObjectMeta, er
 
 func (i *ingressInvocation) DeleteResourceWithHostNames(meta metav1.ObjectMeta) error {
 	policy := metav1.DeletePropagationBackground
-	if err := i.KubeClient.AppsV1beta1().StatefulSets(meta.Namespace).Delete(meta.Name, &metav1.DeleteOptions{PropagationPolicy: &policy}); err != nil {
+	if err := i.KubeClient.AppsV1().StatefulSets(meta.Namespace).Delete(meta.Name, &metav1.DeleteOptions{PropagationPolicy: &policy}); err != nil {
 		return err
 	}
 
@@ -764,12 +766,12 @@ func (i *ingressInvocation) CreateResourceWithBackendWeight() (metav1.ObjectMeta
 		return meta, err
 	}
 
-	_, err = i.KubeClient.ExtensionsV1beta1().Deployments(i.Namespace()).Create(&extensions.Deployment{
+	_, err = i.KubeClient.AppsV1().Deployments(i.Namespace()).Create(&apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "dep-1-" + meta.Name,
 			Namespace: meta.Namespace,
 		},
-		Spec: extensions.DeploymentSpec{
+		Spec: apps.DeploymentSpec{
 			Replicas: types.Int32P(1),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
@@ -818,12 +820,12 @@ func (i *ingressInvocation) CreateResourceWithBackendWeight() (metav1.ObjectMeta
 		return meta, err
 	}
 
-	_, err = i.KubeClient.ExtensionsV1beta1().Deployments(i.Namespace()).Create(&extensions.Deployment{
+	_, err = i.KubeClient.AppsV1().Deployments(i.Namespace()).Create(&apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "dep-2-" + meta.Name,
 			Namespace: meta.Namespace,
 		},
-		Spec: extensions.DeploymentSpec{
+		Spec: apps.DeploymentSpec{
 			Replicas: types.Int32P(1),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
@@ -876,23 +878,23 @@ func (i *ingressInvocation) CreateResourceWithBackendWeight() (metav1.ObjectMeta
 }
 
 func (i *ingressInvocation) DeleteResourceWithBackendWeight(meta metav1.ObjectMeta) {
-	dp1, err := i.KubeClient.ExtensionsV1beta1().Deployments(meta.Namespace).Get("dep-1-"+meta.Name, metav1.GetOptions{})
+	dp1, err := i.KubeClient.AppsV1().Deployments(meta.Namespace).Get("dep-1-"+meta.Name, metav1.GetOptions{})
 	if err == nil {
 		dp1.Spec.Replicas = types.Int32P(0)
-		i.KubeClient.ExtensionsV1beta1().Deployments(dp1.Namespace).Update(dp1)
+		i.KubeClient.AppsV1().Deployments(dp1.Namespace).Update(dp1)
 	}
-	dp2, err := i.KubeClient.ExtensionsV1beta1().Deployments(meta.Namespace).Get("dep-2-"+meta.Name, metav1.GetOptions{})
+	dp2, err := i.KubeClient.AppsV1().Deployments(meta.Namespace).Get("dep-2-"+meta.Name, metav1.GetOptions{})
 	if err == nil {
 		dp2.Spec.Replicas = types.Int32P(0)
-		i.KubeClient.ExtensionsV1beta1().Deployments(dp2.Namespace).Update(dp2)
+		i.KubeClient.AppsV1().Deployments(dp2.Namespace).Update(dp2)
 	}
 	time.Sleep(time.Second * 5)
 	orphan := false
-	i.KubeClient.ExtensionsV1beta1().Deployments(dp1.Namespace).Delete(dp1.Name, &metav1.DeleteOptions{
+	i.KubeClient.AppsV1().Deployments(dp1.Namespace).Delete(dp1.Name, &metav1.DeleteOptions{
 		OrphanDependents: &orphan,
 	})
 
-	i.KubeClient.ExtensionsV1beta1().Deployments(dp2.Namespace).Delete(dp2.Name, &metav1.DeleteOptions{
+	i.KubeClient.AppsV1().Deployments(dp2.Namespace).Delete(dp2.Name, &metav1.DeleteOptions{
 		OrphanDependents: &orphan,
 	})
 
@@ -926,12 +928,12 @@ func (i *ingressInvocation) CreateResourceWithBackendMaxConn(maxconn int) (metav
 		return meta, err
 	}
 
-	_, err = i.KubeClient.ExtensionsV1beta1().Deployments(i.Namespace()).Create(&extensions.Deployment{
+	_, err = i.KubeClient.AppsV1().Deployments(i.Namespace()).Create(&apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "dep-1-" + meta.Name,
 			Namespace: meta.Namespace,
 		},
-		Spec: extensions.DeploymentSpec{
+		Spec: apps.DeploymentSpec{
 			Replicas: types.Int32P(1),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
@@ -1013,12 +1015,12 @@ func (i *ingressInvocation) CreateResourceWithServiceAuth(secret *core.Secret) (
 		return meta, err
 	}
 
-	_, err = i.KubeClient.ExtensionsV1beta1().Deployments(i.Namespace()).Create(&extensions.Deployment{
+	_, err = i.KubeClient.AppsV1().Deployments(i.Namespace()).Create(&apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "dep-1-" + meta.Name,
 			Namespace: meta.Namespace,
 		},
-		Spec: extensions.DeploymentSpec{
+		Spec: apps.DeploymentSpec{
 			Replicas: types.Int32P(1),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
@@ -1093,12 +1095,12 @@ func (i *ingressInvocation) CreateResourceWithServiceAnnotation(svcAnnotation ma
 		return meta, err
 	}
 
-	_, err = i.KubeClient.ExtensionsV1beta1().Deployments(i.Namespace()).Create(&extensions.Deployment{
+	_, err = i.KubeClient.AppsV1().Deployments(i.Namespace()).Create(&apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "dep-1-" + meta.Name,
 			Namespace: meta.Namespace,
 		},
-		Spec: extensions.DeploymentSpec{
+		Spec: apps.DeploymentSpec{
 			Replicas: types.Int32P(1),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
@@ -1172,12 +1174,12 @@ func (i *ingressInvocation) CreateResourceWithSendProxy(version string) (metav1.
 		return meta, err
 	}
 
-	_, err = i.KubeClient.ExtensionsV1beta1().Deployments(i.Namespace()).Create(&extensions.Deployment{
+	_, err = i.KubeClient.AppsV1().Deployments(i.Namespace()).Create(&apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "dep-1-" + meta.Name,
 			Namespace: meta.Namespace,
 		},
-		Spec: extensions.DeploymentSpec{
+		Spec: apps.DeploymentSpec{
 			Replicas: types.Int32P(1),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
