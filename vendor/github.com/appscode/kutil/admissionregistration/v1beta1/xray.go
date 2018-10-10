@@ -91,13 +91,15 @@ func NewDeleteValidatingWebhookXray(config *rest.Config, apisvc, webhook string,
 }
 
 func retry(err error) error {
-	if kerr.IsNotFound(err) ||
+	if err == nil {
+		return nil
+	}
+	if strings.HasPrefix(err.Error(), "Internal error occurred: failed calling admission webhook") ||
+		kerr.IsNotFound(err) ||
 		kerr.IsServiceUnavailable(err) ||
 		kerr.IsTimeout(err) ||
 		kerr.IsServerTimeout(err) ||
-		kerr.IsTooManyRequests(err) ||
-		(kerr.ReasonForError(err) == metav1.StatusReasonUnknown &&
-			strings.HasPrefix(err.Error(), "Internal error occurred: failed calling admission webhook")) {
+		kerr.IsTooManyRequests(err) {
 		return nil
 	}
 	return err
@@ -145,11 +147,12 @@ func (d ValidatingWebhookXray) IsActive() error {
 						}
 					}
 				}
-				active, errActive := d.check()
-				if active || errActive != nil {
-					d.updateAPIService(apireg, apisvc, errActive)
+				active, err := d.check()
+				err = retry(err)
+				if active || err != nil {
+					d.updateAPIService(apireg, apisvc, err)
 				}
-				return active, errActive
+				return active, err
 			}
 		}
 		return false, nil
@@ -254,7 +257,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 			glog.Infof("failed to create invalid test object as expected with error: %s", err)
 			return true, nil
 		} else if err != nil {
-			return false, retry(err)
+			return false, err
 		}
 
 		ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})
@@ -262,7 +265,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 	} else if d.op == v1beta1.Update {
 		_, err := ri.Create(&u)
 		if err != nil {
-			return false, retry(err)
+			return false, err
 		}
 
 		mod := d.testObj.DeepCopyObject()
@@ -285,14 +288,14 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 			glog.Infof("failed to update test object as expected with error: %s", err)
 			return true, nil
 		} else if err != nil {
-			return false, retry(err)
+			return false, err
 		}
 
 		return false, ErrWebhookNotActivated
 	} else if d.op == v1beta1.Delete {
 		_, err := ri.Create(&u)
 		if err != nil {
-			return false, retry(err)
+			return false, err
 		}
 
 		err = ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})
@@ -321,7 +324,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 			glog.Infof("failed to delete test object as expected with error: %s", err)
 			return true, nil
 		} else if err != nil {
-			return false, retry(err)
+			return false, err
 		}
 		return false, ErrWebhookNotActivated
 	}
