@@ -179,14 +179,14 @@ func (c *controller) reconcileRoleBinding() (kutil.VerbType, error) {
 
 func (c *controller) ensureRoleBindingDeleted() error {
 	c.logger.Infof("Deleting RoleBinding %s/%s", c.Ingress.Namespace, c.Ingress.OffshootName())
-	return c.KubeClient.RbacV1beta1().
+	return c.KubeClient.RbacV1().
 		RoleBindings(c.Ingress.Namespace).
 		Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
 }
 
 func (c *controller) ensureRolesDeleted() error {
 	c.logger.Infof("Deleting Role %s/%s", c.Ingress.Namespace, c.Ingress.OffshootName())
-	return c.KubeClient.RbacV1beta1().
+	return c.KubeClient.RbacV1().
 		Roles(c.Ingress.Namespace).
 		Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
 }
