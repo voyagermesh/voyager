@@ -23,7 +23,6 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 )
@@ -47,7 +46,7 @@ func untilHasKey(
 	ctx := context.Background()
 	if timeout > 0 {
 		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(ctx, kutil.ReadinessTimeout)
+		ctx, cancel = context.WithTimeout(ctx, timeout)
 		defer cancel()
 	}
 
@@ -80,13 +79,9 @@ func untilHasKey(
 		},
 	}
 
-	obj, err := scheme.Scheme.New(gvk)
-	if err != nil {
-		return
-	}
 	_, err = watchtools.UntilWithSync(ctx,
 		lw,
-		obj,
+		&unstructured.Unstructured{},
 		nil,
 		func(event watch.Event) (bool, error) {
 			switch event.Type {
@@ -100,14 +95,10 @@ func untilHasKey(
 					return false, e2
 				}
 				var ok bool
-				if out, ok = fn(m)[key]; !ok {
-					return false, nil // continue
-				} else if value == nil {
+				if out, ok = fn(m)[key]; ok && (value == nil || *value == out) {
 					return true, nil
-				} else if *value != out {
-					return false, nil // continue
 				}
-				return true, nil
+				return false, nil // continue
 			default:
 				return false, fmt.Errorf("unexpected event type: %v", event.Type)
 			}

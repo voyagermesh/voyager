@@ -1,14 +1,14 @@
 package v1beta1
 
 import (
-	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/appscode/kutil"
+	apireg_util "github.com/appscode/kutil/apiregistration/v1beta1"
+	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/appscode/kutil/discovery"
-	watchtools "github.com/appscode/kutil/tools/watch"
+	meta_util "github.com/appscode/kutil/meta"
 	"github.com/evanphx/json-patch"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
@@ -18,14 +18,13 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/cache"
 	apiregistration "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1beta1"
 	apireg_cs "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset"
 )
@@ -35,7 +34,7 @@ func init() {
 }
 
 const (
-	KeyAdmissionWebhooksActivated = "admission-webhooks.appscode.com/activated"
+	KeyAdmissionWebhooksXray = "xray.appscode.com/admission-webhooks"
 )
 
 var bypassValidatingWebhookXray = false
@@ -45,114 +44,154 @@ var ErrMissingVersion = errors.New("test object missing version")
 var ErrWebhookNotActivated = errors.New("Admission webhooks are not activated. Enable it by configuring --enable-admission-plugins flag of kube-apiserver. For details, visit: https://appsco.de/kube-apiserver-webhooks")
 
 type ValidatingWebhookXray struct {
-	config        *rest.Config
-	apisvc        string
-	webhookConfig string
-	webhook       string
-	testObj       runtime.Object
-	op            v1beta1.OperationType
-	transform     func(_ runtime.Object)
+	config    *rest.Config
+	apisvc    string
+	webhook   string
+	testObj   runtime.Object
+	op        v1beta1.OperationType
+	transform func(_ runtime.Object)
+	stopCh    <-chan struct{}
 }
 
-func NewCreateValidatingWebhookXray(config *rest.Config, apisvc, webhookConfig, webhook string, testObj runtime.Object) *ValidatingWebhookXray {
+func NewCreateValidatingWebhookXray(config *rest.Config, apisvc, webhook string, testObj runtime.Object, stopCh <-chan struct{}) *ValidatingWebhookXray {
 	return &ValidatingWebhookXray{
-		config:        config,
-		apisvc:        apisvc,
-		webhookConfig: webhookConfig,
-		webhook:       webhook,
-		testObj:       testObj,
-		op:            v1beta1.Create,
-		transform:     nil,
+		config:    config,
+		apisvc:    apisvc,
+		webhook:   webhook,
+		testObj:   testObj,
+		op:        v1beta1.Create,
+		transform: nil,
+		stopCh:    stopCh,
 	}
 }
 
-func NewUpdateValidatingWebhookXray(config *rest.Config, apisvc, webhookConfig, webhook string, testObj runtime.Object, transform func(_ runtime.Object)) *ValidatingWebhookXray {
+func NewUpdateValidatingWebhookXray(config *rest.Config, apisvc, webhook string, testObj runtime.Object, transform func(_ runtime.Object), stopCh <-chan struct{}) *ValidatingWebhookXray {
 	return &ValidatingWebhookXray{
-		config:        config,
-		apisvc:        apisvc,
-		webhookConfig: webhookConfig,
-		webhook:       webhook,
-		testObj:       testObj,
-		op:            v1beta1.Update,
-		transform:     transform,
+		config:    config,
+		apisvc:    apisvc,
+		webhook:   webhook,
+		testObj:   testObj,
+		op:        v1beta1.Update,
+		transform: transform,
+		stopCh:    stopCh,
 	}
 }
 
-func NewDeleteValidatingWebhookXray(config *rest.Config, apisvc, webhookConfig, webhook string, testObj runtime.Object, transform func(_ runtime.Object)) *ValidatingWebhookXray {
+func NewDeleteValidatingWebhookXray(config *rest.Config, apisvc, webhook string, testObj runtime.Object, transform func(_ runtime.Object), stopCh <-chan struct{}) *ValidatingWebhookXray {
 	return &ValidatingWebhookXray{
-		config:        config,
-		apisvc:        apisvc,
-		webhookConfig: webhookConfig,
-		webhook:       webhook,
-		testObj:       testObj,
-		op:            v1beta1.Delete,
-		transform:     transform,
+		config:    config,
+		apisvc:    apisvc,
+		webhook:   webhook,
+		testObj:   testObj,
+		op:        v1beta1.Delete,
+		transform: transform,
+		stopCh:    stopCh,
 	}
 }
 
-func (d ValidatingWebhookXray) IsActive() error {
-	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, kutil.ReadinessTimeout)
-	defer cancel()
-
-	err := rest.LoadTLSFiles(d.config)
-	if err != nil {
-		return err
-	}
-
-	kc := kubernetes.NewForConfigOrDie(d.config)
-	apireg := apireg_cs.NewForConfigOrDie(d.config)
-	lw := &cache.ListWatch{
-		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, d.apisvc).String()
-			return apireg.ApiregistrationV1beta1().APIServices().List(options)
-		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, d.apisvc).String()
-			return apireg.ApiregistrationV1beta1().APIServices().Watch(options)
-		},
-	}
-
-	_, err = watchtools.UntilWithSync(
-		ctx,
-		lw,
-		&apiregistration.APIService{},
-		nil,
-		func(event watch.Event) (bool, error) {
-			switch event.Type {
-			case watch.Deleted:
-				return false, nil
-			case watch.Error:
-				return false, errors.New("error watching")
-			case watch.Added, watch.Modified:
-				cur := event.Object.(*apiregistration.APIService)
-				for _, cond := range cur.Status.Conditions {
-					if cond.Type == apiregistration.Available && cond.Status == apiregistration.ConditionTrue {
-						return d.check()
-					}
-				}
-				return false, nil
-			default:
-				return false, fmt.Errorf("unexpected event type: %v", event.Type)
-			}
-		})
-	if w, e2 := kc.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Get(d.webhookConfig, metav1.GetOptions{}); e2 == nil {
-		PatchValidatingWebhookConfiguration(kc, w, func(in *v1beta1.ValidatingWebhookConfiguration) *v1beta1.ValidatingWebhookConfiguration {
-			if len(in.Annotations) == 0 {
-				in.Annotations = map[string]string{}
-			}
-			in.Annotations[KeyAdmissionWebhooksActivated] = strconv.FormatBool(err == nil)
-			return in
-		})
+func retry(err error) error {
+	if kerr.IsNotFound(err) ||
+		kerr.IsServiceUnavailable(err) ||
+		kerr.IsTimeout(err) ||
+		kerr.IsServerTimeout(err) ||
+		kerr.IsTooManyRequests(err) {
+		return nil
 	}
 	return err
 }
 
-func (d ValidatingWebhookXray) check() (bool, error) {
+func (d ValidatingWebhookXray) IsActive() error {
+	kc := kubernetes.NewForConfigOrDie(d.config)
+	apireg := apireg_cs.NewForConfigOrDie(d.config)
+
 	if bypassValidatingWebhookXray {
-		return true, nil
+		apisvc, err := apireg.ApiregistrationV1beta1().APIServices().Get(d.apisvc, metav1.GetOptions{})
+		if err == nil {
+			d.updateAPIService(apireg, apisvc, "bypassed")
+		}
+		return nil
 	}
 
+	return wait.PollImmediateUntil(kutil.RetryInterval, func() (bool, error) {
+		apisvc, err := apireg.ApiregistrationV1beta1().APIServices().Get(d.apisvc, metav1.GetOptions{})
+		if err != nil {
+			return false, retry(err)
+		}
+		for _, cond := range apisvc.Status.Conditions {
+			if cond.Type == apiregistration.Available && cond.Status == apiregistration.ConditionTrue {
+				// Kubernetes is slow to update APIService.status. So, we double check that the pods are running and ready.
+				if apisvc.Spec.Service != nil {
+					svc, err := kc.CoreV1().Services(apisvc.Spec.Service.Namespace).Get(apisvc.Spec.Service.Name, metav1.GetOptions{})
+					if err != nil {
+						return false, retry(err)
+					}
+
+					pods, err := kc.CoreV1().Pods(apisvc.Spec.Service.Namespace).List(metav1.ListOptions{
+						LabelSelector: labels.SelectorFromSet(svc.Spec.Selector).String(),
+					})
+					if err != nil {
+						return false, retry(err)
+					}
+					if len(pods.Items) == 0 {
+						return false, nil
+					}
+					for _, pod := range pods.Items {
+						ready, _ := core_util.PodRunningAndReady(pod)
+						if !ready {
+							return false, nil
+						}
+					}
+				}
+				active, errActive := d.check()
+				if active {
+					d.updateAPIService(apireg, apisvc, "active")
+				} else if errActive != nil {
+					d.updateAPIService(apireg, apisvc, "failed")
+				}
+				return active, errActive
+			}
+		}
+		return false, nil
+	}, d.stopCh)
+}
+
+func (d ValidatingWebhookXray) updateAPIService(apireg apireg_cs.Interface, apisvc *apiregistration.APIService, active string) {
+	fn := func(annotations map[string]string) map[string]string {
+		if len(annotations) == 0 {
+			annotations = map[string]string{}
+		}
+		annotations[KeyAdmissionWebhooksXray] = active
+		return annotations
+	}
+
+	apireg_util.PatchAPIService(apireg, apisvc, func(in *apiregistration.APIService) *apiregistration.APIService {
+		data, ok := in.Annotations[meta_util.LastAppliedConfigAnnotation]
+		if ok {
+			u, err := runtime.Decode(unstructured.UnstructuredJSONScheme, []byte(data))
+			if err != nil {
+				goto LastAppliedConfig
+			}
+			m, err := meta.Accessor(u)
+			if err != nil {
+				goto LastAppliedConfig
+			}
+			m.SetAnnotations(fn(m.GetAnnotations()))
+			if mod, err := runtime.Encode(unstructured.UnstructuredJSONScheme, u); err == nil {
+				in.Annotations[meta_util.LastAppliedConfigAnnotation] = string(mod)
+			}
+		}
+
+	LastAppliedConfig:
+		in.Annotations = fn(in.Annotations)
+		return in
+	})
+}
+
+func (d ValidatingWebhookXray) errMsgPrefix() string {
+	return fmt.Sprintf(`admission webhook %q denied the request:`, d.webhook)
+}
+
+func (d ValidatingWebhookXray) check() (bool, error) {
 	kc, err := kubernetes.NewForConfig(d.config)
 	if err != nil {
 		return false, err
@@ -204,7 +243,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 	if d.op == v1beta1.Create {
 		_, err := ri.Create(&u)
 		if kerr.IsForbidden(err) &&
-			strings.HasPrefix(err.Error(), fmt.Sprintf(`admission webhook %q denied the request:`, d.webhook)) {
+			strings.HasPrefix(err.Error(), d.errMsgPrefix()) {
 			glog.Infof("failed to create invalid test object as expected with error: %s", err)
 			return true, nil
 		} else if kutil.IsRequestRetryable(err) {
@@ -213,12 +252,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 			return false, err
 		}
 
-		err = ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})
-		if kutil.IsRequestRetryable(err) {
-			return false, nil
-		} else if err != nil {
-			return false, err
-		}
+		ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})
 		return false, ErrWebhookNotActivated
 	} else if d.op == v1beta1.Update {
 		_, err := ri.Create(&u)
@@ -244,7 +278,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 		defer ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})
 
 		if kerr.IsForbidden(err) &&
-			strings.HasPrefix(err.Error(), fmt.Sprintf(`admission webhook %q denied the request:`, d.webhook)) {
+			strings.HasPrefix(err.Error(), d.errMsgPrefix()) {
 			glog.Infof("failed to update test object as expected with error: %s", err)
 			return true, nil
 		} else if kutil.IsRequestRetryable(err) {
@@ -264,7 +298,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 
 		err = ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})
 		if kerr.IsForbidden(err) &&
-			strings.HasPrefix(err.Error(), fmt.Sprintf(`admission webhook %q denied the request:`, d.webhook)) {
+			strings.HasPrefix(err.Error(), d.errMsgPrefix()) {
 			defer func() {
 				// update to make it valid
 				mod := d.testObj.DeepCopyObject()
