@@ -117,7 +117,9 @@ func (d ValidatingWebhookXray) IsActive() error {
 		return nil
 	}
 
+	attempt := 0
 	return wait.PollImmediateUntil(kutil.RetryInterval, func() (bool, error) {
+		attempt++
 		apisvc, err := apireg.ApiregistrationV1beta1().APIServices().Get(d.apisvc, metav1.GetOptions{})
 		if err != nil {
 			return false, retry(err)
@@ -148,6 +150,9 @@ func (d ValidatingWebhookXray) IsActive() error {
 					}
 				}
 				active, err := d.check()
+				if err != nil {
+					glog.Warningf("Attempt %d to detect ValidatingWebhook activation failed due to %s", attempt, err.Error())
+				}
 				err = retry(err)
 				if active || err != nil {
 					d.updateAPIService(apireg, apisvc, err)
@@ -219,7 +224,6 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 	if gvk.Kind == "" {
 		return false, ErrMissingKind
 	}
-	glog.Infof("testing ValidatingWebhook %s using an object with GVK = %s", d.webhook, gvk.String())
 
 	gvr, err := discovery.ResourceForGVK(kc.Discovery(), gvk)
 	if err != nil {

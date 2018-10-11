@@ -122,6 +122,8 @@ export VOYAGER_UNINSTALL=0
 export VOYAGER_PURGE=0
 export VOYAGER_TEMPLATE_CONFIGMAP=
 export VOYAGER_ENABLE_STATUS_SUBRESOURCE=false
+export VOYAGER_BYPASS_VALIDATING_WEBHOOK_XRAY=false
+export VOYAGER_USE_KUBEAPISERVER_FQDN_FOR_AKS=true
 
 export SCRIPT_LOCATION="curl -fsSL https://raw.githubusercontent.com/appscode/voyager/8.0.1/"
 if [[ "$APPSCODE_ENV" == "dev" ]]; then
@@ -145,21 +147,23 @@ show_help() {
   echo "voyager.sh [options]"
   echo " "
   echo "options:"
-  echo "-h, --help                         show brief help"
-  echo "-n, --namespace=NAMESPACE          specify namespace (default: kube-system)"
-  echo "-p, --provider=PROVIDER            specify a cloud provider"
-  echo "    --rbac                         create RBAC roles and bindings (default: true)"
-  echo "    --docker-registry              docker registry used to pull voyager images (default: appscode)"
-  echo "    --haproxy-image-tag            tag of Docker image containing HAProxy binary (default: 1.8.12-8.0.1-alpine)"
-  echo "    --image-pull-secret            name of secret used to pull voyager operator images"
-  echo "    --restrict-to-namespace        restrict voyager to its own namespace"
-  echo "    --run-on-master                run voyager operator on master"
-  echo "    --enable-validating-webhook    enable/disable validating webhooks for voyager CRDs"
-  echo "    --template-cfgmap=CONFIGMAP    name of configmap with custom templates"
-  echo "    --enable-status-subresource    If enabled, uses status sub resource for Voyager crds"
-  echo "    --enable-analytics             send usage events to Google Analytics (default: true)"
-  echo "    --uninstall                    uninstall voyager"
-  echo "    --purge                        purges Voyager crd objects and crds"
+  echo "-h, --help                             show brief help"
+  echo "-n, --namespace=NAMESPACE              specify namespace (default: kube-system)"
+  echo "-p, --provider=PROVIDER                specify a cloud provider"
+  echo "    --rbac                             create RBAC roles and bindings (default: true)"
+  echo "    --docker-registry                  docker registry used to pull voyager images (default: appscode)"
+  echo "    --haproxy-image-tag                tag of Docker image containing HAProxy binary (default: 1.8.12-8.0.1-alpine)"
+  echo "    --image-pull-secret                name of secret used to pull voyager operator images"
+  echo "    --restrict-to-namespace            restrict voyager to its own namespace"
+  echo "    --run-on-master                    run voyager operator on master"
+  echo "    --enable-validating-webhook        enable/disable validating webhooks for voyager CRDs"
+  echo "    --bypass-validating-webhook-xray   if true, bypasses validating webhook xray checks"
+  echo "    --template-cfgmap=CONFIGMAP        name of configmap with custom templates"
+  echo "    --enable-status-subresource        if enabled, uses status sub resource for Voyager crds"
+  echo "    --use-kubeapiserver-fqdn-for-aks   if true, uses kube-apiserver FQDN for AKS cluster to workaround https://github.com/Azure/AKS/issues/522 (default true)"
+  echo "    --enable-analytics                 send usage events to Google Analytics (default: true)"
+  echo "    --uninstall                        uninstall voyager"
+  echo "    --purge                            purges Voyager crd objects and crds"
 }
 
 while test $# -gt 0; do
@@ -218,10 +222,28 @@ while test $# -gt 0; do
       fi
       shift
       ;;
+    --bypass-validating-webhook-xray*)
+      val=$(echo $1 | sed -e 's/^[^=]*=//g')
+      if [ "$val" = "false" ]; then
+        export VOYAGER_BYPASS_VALIDATING_WEBHOOK_XRAY=false
+      else
+        export VOYAGER_BYPASS_VALIDATING_WEBHOOK_XRAY=true
+      fi
+      shift
+      ;;
     --enable-status-subresource*)
       val=$(echo $1 | sed -e 's/^[^=]*=//g')
       if [ "$val" = "false" ]; then
         export VOYAGER_ENABLE_STATUS_SUBRESOURCE=false
+      fi
+      shift
+      ;;
+    --use-kubeapiserver-fqdn-for-aks*)
+      val=$(echo $1 | sed -e 's/^[^=]*=//g')
+      if [ "$val" = "false" ]; then
+        export VOYAGER_USE_KUBEAPISERVER_FQDN_FOR_AKS=false
+      else
+        export VOYAGER_USE_KUBEAPISERVER_FQDN_FOR_AKS=true
       fi
       shift
       ;;
