@@ -150,6 +150,19 @@ $ helm search appscode/voyager
 NAME              CHART VERSION APP VERSION DESCRIPTION
 appscode/voyager  8.0.1    8.0.1  Voyager by AppsCode - Secure HAProxy Ingress Controller...
 
+# provider=acs
+# provider=aks
+# provider=aws
+# provider=azure
+# provider=baremetal
+# provider=gce
+# provider=gke
+# provider=minikube
+# provider=openstack
+# provider=metallb
+# provider=digitalocean
+# provider=linode
+
 $ helm install appscode/voyager --name voyager-operator --version 8.0.1 \
   --namespace kube-system \
   --set cloudProvider=$provider
