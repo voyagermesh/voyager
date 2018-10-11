@@ -17,8 +17,25 @@ aliases:
 
 # Change Log
 
-## [8.0.1](https://github.com/appscode/voyager/tree/8.0.1) (2018-10-09)
-[Full Changelog](https://github.com/appscode/voyager/compare/7.4.0...8.0.1)
+## [8.0.1](https://github.com/appscode/voyager/tree/8.0.1) (2018-10-11)
+[Full Changelog](https://github.com/appscode/voyager/compare/8.0.0...8.0.1)
+
+**Fixed bugs:**
+
+- Support EKS [\#1130](https://github.com/appscode/voyager/issues/1130)
+- Test against AKS [\#1112](https://github.com/appscode/voyager/issues/1112)
+- Only use apps/v1 apigroup from controller. [\#1274](https://github.com/appscode/voyager/pull/1274) ([tamalsaha](https://github.com/tamalsaha))
+
+**Merged pull requests:**
+
+- Expose flags to installer script [\#1278](https://github.com/appscode/voyager/pull/1278) ([tamalsaha](https://github.com/tamalsaha))
+- Fix webhook xray checker [\#1277](https://github.com/appscode/voyager/pull/1277) ([tamalsaha](https://github.com/tamalsaha))
+- Handle ErrCallingWebhook in xray [\#1276](https://github.com/appscode/voyager/pull/1276) ([tamalsaha](https://github.com/tamalsaha))
+- Prepare docs for 8.0.1 release [\#1275](https://github.com/appscode/voyager/pull/1275) ([tamalsaha](https://github.com/tamalsaha))
+- Fix upgrade flow for installer script [\#1273](https://github.com/appscode/voyager/pull/1273) ([tamalsaha](https://github.com/tamalsaha))
+
+## [8.0.0](https://github.com/appscode/voyager/tree/8.0.0) (2018-10-09)
+[Full Changelog](https://github.com/appscode/voyager/compare/7.4.0...8.0.0)
 
 **Fixed bugs:**
 
@@ -39,6 +56,10 @@ aliases:
 
 **Merged pull requests:**
 
+- Fix Ingress column header [\#1272](https://github.com/appscode/voyager/pull/1272) ([tamalsaha](https://github.com/tamalsaha))
+- Fix chart [\#1271](https://github.com/appscode/voyager/pull/1271) ([tamalsaha](https://github.com/tamalsaha))
+- Set SideEffects to None for webhooks [\#1270](https://github.com/appscode/voyager/pull/1270) ([tamalsaha](https://github.com/tamalsaha))
+- Prepare docs for 8.0.0 release [\#1269](https://github.com/appscode/voyager/pull/1269) ([tamalsaha](https://github.com/tamalsaha))
 - Detect failure quickly. [\#1268](https://github.com/appscode/voyager/pull/1268) ([tamalsaha](https://github.com/tamalsaha))
 - Check webhooks are activated in insaller script [\#1266](https://github.com/appscode/voyager/pull/1266) ([tamalsaha](https://github.com/tamalsaha))
 - Write webhook xray event to operator workload [\#1265](https://github.com/appscode/voyager/pull/1265) ([tamalsaha](https://github.com/tamalsaha))
@@ -101,7 +122,7 @@ aliases:
 - Prepare docs for 7.4.0 release [\#1189](https://github.com/appscode/voyager/pull/1189) ([tamalsaha](https://github.com/tamalsaha))
 - Use version and additional columns for crds [\#1183](https://github.com/appscode/voyager/pull/1183) ([tamalsaha](https://github.com/tamalsaha))
 - Chart support for custom tolerations and affinity [\#1182](https://github.com/appscode/voyager/pull/1182) ([octplane](https://github.com/octplane))
-- Update client-go to v8.0.1 [\#1177](https://github.com/appscode/voyager/pull/1177) ([tamalsaha](https://github.com/tamalsaha))
+- Update client-go to v8.0.0 [\#1177](https://github.com/appscode/voyager/pull/1177) ([tamalsaha](https://github.com/tamalsaha))
 
 ## [7.3.0](https://github.com/appscode/voyager/tree/7.3.0) (2018-07-08)
 [Full Changelog](https://github.com/appscode/voyager/compare/7.2.0...7.3.0)
