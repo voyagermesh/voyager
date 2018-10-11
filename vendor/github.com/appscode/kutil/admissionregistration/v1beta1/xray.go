@@ -119,7 +119,6 @@ func (d ValidatingWebhookXray) IsActive() error {
 
 	attempt := 0
 	return wait.PollImmediateUntil(kutil.RetryInterval, func() (bool, error) {
-		attempt++
 		apisvc, err := apireg.ApiregistrationV1beta1().APIServices().Get(d.apisvc, metav1.GetOptions{})
 		if err != nil {
 			return false, retry(err)
@@ -149,6 +148,7 @@ func (d ValidatingWebhookXray) IsActive() error {
 						}
 					}
 				}
+				attempt++
 				active, err := d.check()
 				if err != nil {
 					glog.Warningf("Attempt %d to detect ValidatingWebhook activation failed due to %s", attempt, err.Error())
