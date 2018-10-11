@@ -1,5 +1,5 @@
 hash: b2155c622e425133255050e04558a88c338f4e30248635ba2efdb8a0b2e76063
-updated: 2018-10-10T12:16:09.702522315-07:00
+updated: 2018-10-10T19:33:16.797272075-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -44,7 +44,7 @@ imports:
   - client/workload/v1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: cffdd7fff1c7770203d3c4c2fc284c25859b1d24
+  version: bdd1f31b29579d7b7605f9c295b8592cfbf8a47d
   subpackages:
   - admissionregistration/v1beta1
   - apiextensions/v1beta1
@@ -235,7 +235,7 @@ imports:
 - name: github.com/evanphx/json-patch
   version: afac545df32f2287a079e2dfb7ba2745a643747e
 - name: github.com/fatih/structs
-  version: 4966fc68f5b7593aafa6cbbba2d65ec6e1416047
+  version: 878a968ab22548362a09bdb3322f98b00f470d46
 - name: github.com/fsnotify/fsnotify
   version: f12c6236fe7b5cf6bcf30e5935d08cb079d78334
 - name: github.com/ghodss/yaml
