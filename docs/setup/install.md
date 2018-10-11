@@ -68,21 +68,23 @@ voyager.sh - install voyager operator
 voyager.sh [options]
 
 options:
--h, --help                         show brief help
--n, --namespace=NAMESPACE          specify namespace (default: kube-system)
--p, --provider=PROVIDER            specify a cloud provider
-    --rbac                         create RBAC roles and bindings (default: true)
-    --docker-registry              docker registry used to pull voyager images (default: appscode)
-    --haproxy-image-tag            tag of Docker image containing HAProxy binary (default: 1.8.12-8.0.1-alpine)
-    --image-pull-secret            name of secret used to pull voyager operator images
-    --restrict-to-namespace        restrict voyager to its own namespace
-    --run-on-master                run voyager operator on master
-    --enable-validating-webhook    enable/disable validating webhooks for voyager CRDs
-    --template-cfgmap=CONFIGMAP    name of configmap with custom templates
-    --enable-status-subresource    If enabled, uses status sub resource for Voyager crds
-    --enable-analytics             send usage events to Google Analytics (default: true)
-    --uninstall                    uninstall voyager
-    --purge                        purges Voyager crd objects and crds
+-h, --help                             show brief help
+-n, --namespace=NAMESPACE              specify namespace (default: kube-system)
+-p, --provider=PROVIDER                specify a cloud provider
+    --rbac                             create RBAC roles and bindings (default: true)
+    --docker-registry                  docker registry used to pull voyager images (default: appscode)
+    --haproxy-image-tag                tag of Docker image containing HAProxy binary (default: 1.8.12-8.0.1-alpine)
+    --image-pull-secret                name of secret used to pull voyager operator images
+    --restrict-to-namespace            restrict voyager to its own namespace
+    --run-on-master                    run voyager operator on master
+    --enable-validating-webhook        enable/disable validating webhooks for voyager CRDs
+    --bypass-validating-webhook-xray   if true, bypasses validating webhook xray checks
+    --template-cfgmap=CONFIGMAP        name of configmap with custom templates
+    --enable-status-subresource        if enabled, uses status sub resource for Voyager crds
+    --use-kubeapiserver-fqdn-for-aks   if true, uses kube-apiserver FQDN for AKS cluster to workaround https://github.com/Azure/AKS/issues/522 (default true)
+    --enable-analytics                 send usage events to Google Analytics (default: true)
+    --uninstall                        uninstall voyager
+    --purge                            purges Voyager crd objects and crds
 ```
 
 If you would like to run Voyager operator pod in `master` instances, pass the `--run-on-master` flag:
