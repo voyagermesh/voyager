@@ -8,7 +8,6 @@ import (
 	"github.com/appscode/kutil"
 	"github.com/appscode/kutil/core/v1"
 	discovery_util "github.com/appscode/kutil/discovery"
-	watchtools "github.com/appscode/kutil/tools/watch"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -25,6 +24,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
+	watchtools "k8s.io/client-go/tools/watch"
 )
 
 func UntilHasLabel(config *rest.Config, gvk schema.GroupVersionKind, namespace, name string, key string, value *string, timeout time.Duration) (out string, err error) {

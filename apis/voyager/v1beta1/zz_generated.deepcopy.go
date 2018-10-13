@@ -46,21 +46,13 @@ func (in *AuthOption) DeepCopyInto(out *AuthOption) {
 	*out = *in
 	if in.Basic != nil {
 		in, out := &in.Basic, &out.Basic
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(BasicAuth)
-			**out = **in
-		}
+		*out = new(BasicAuth)
+		**out = **in
 	}
 	if in.TLS != nil {
 		in, out := &in.TLS, &out.TLS
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(TLSAuth)
-			(*in).DeepCopyInto(*out)
-		}
+		*out = new(TLSAuth)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.OAuth != nil {
 		in, out := &in.OAuth, &out.OAuth
@@ -222,19 +214,11 @@ func (in *CertificateStatus) DeepCopyInto(out *CertificateStatus) {
 	*out = *in
 	if in.ObservedGeneration != nil {
 		in, out := &in.ObservedGeneration, &out.ObservedGeneration
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = (*in).DeepCopy()
-		}
+		*out = (*in).DeepCopy()
 	}
 	if in.CreationTime != nil {
 		in, out := &in.CreationTime, &out.CreationTime
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = (*in).DeepCopy()
-		}
+		*out = (*in).DeepCopy()
 	}
 	if in.Conditions != nil {
 		in, out := &in.Conditions, &out.Conditions
@@ -245,12 +229,8 @@ func (in *CertificateStatus) DeepCopyInto(out *CertificateStatus) {
 	}
 	if in.LastIssuedCertificate != nil {
 		in, out := &in.LastIssuedCertificate, &out.LastIssuedCertificate
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(CertificateDetails)
-			(*in).DeepCopyInto(*out)
-		}
+		*out = new(CertificateDetails)
+		(*in).DeepCopyInto(*out)
 	}
 	return
 }
@@ -270,21 +250,13 @@ func (in *CertificateStorage) DeepCopyInto(out *CertificateStorage) {
 	*out = *in
 	if in.Secret != nil {
 		in, out := &in.Secret, &out.Secret
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(v1.LocalObjectReference)
-			**out = **in
-		}
+		*out = new(v1.LocalObjectReference)
+		**out = **in
 	}
 	if in.Vault != nil {
 		in, out := &in.Vault, &out.Vault
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(VaultStore)
-			**out = **in
-		}
+		*out = new(VaultStore)
+		**out = **in
 	}
 	return
 }
@@ -304,21 +276,13 @@ func (in *ChallengeProvider) DeepCopyInto(out *ChallengeProvider) {
 	*out = *in
 	if in.HTTP != nil {
 		in, out := &in.HTTP, &out.HTTP
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(HTTPChallengeProvider)
-			**out = **in
-		}
+		*out = new(HTTPChallengeProvider)
+		**out = **in
 	}
 	if in.DNS != nil {
 		in, out := &in.DNS, &out.DNS
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(DNSChallengeProvider)
-			**out = **in
-		}
+		*out = new(DNSChallengeProvider)
+		**out = **in
 	}
 	return
 }
@@ -395,12 +359,8 @@ func (in *FrontendRule) DeepCopyInto(out *FrontendRule) {
 	}
 	if in.Auth != nil {
 		in, out := &in.Auth, &out.Auth
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(AuthOption)
-			(*in).DeepCopyInto(*out)
-		}
+		*out = new(AuthOption)
+		(*in).DeepCopyInto(*out)
 	}
 	return
 }
@@ -632,21 +592,13 @@ func (in *IngressRuleValue) DeepCopyInto(out *IngressRuleValue) {
 	*out = *in
 	if in.HTTP != nil {
 		in, out := &in.HTTP, &out.HTTP
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(HTTPIngressRuleValue)
-			(*in).DeepCopyInto(*out)
-		}
+		*out = new(HTTPIngressRuleValue)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TCP != nil {
 		in, out := &in.TCP, &out.TCP
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(TCPIngressRuleValue)
-			(*in).DeepCopyInto(*out)
-		}
+		*out = new(TCPIngressRuleValue)
+		(*in).DeepCopyInto(*out)
 	}
 	return
 }
@@ -666,12 +618,8 @@ func (in *IngressSpec) DeepCopyInto(out *IngressSpec) {
 	*out = *in
 	if in.Backend != nil {
 		in, out := &in.Backend, &out.Backend
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(HTTPIngressBackend)
-			(*in).DeepCopyInto(*out)
-		}
+		*out = new(HTTPIngressBackend)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TLS != nil {
 		in, out := &in.TLS, &out.TLS
@@ -709,12 +657,8 @@ func (in *IngressSpec) DeepCopyInto(out *IngressSpec) {
 	}
 	if in.Affinity != nil {
 		in, out := &in.Affinity, &out.Affinity
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(v1.Affinity)
-			(*in).DeepCopyInto(*out)
-		}
+		*out = new(v1.Affinity)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.Tolerations != nil {
 		in, out := &in.Tolerations, &out.Tolerations
@@ -730,21 +674,13 @@ func (in *IngressSpec) DeepCopyInto(out *IngressSpec) {
 	}
 	if in.Priority != nil {
 		in, out := &in.Priority, &out.Priority
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(int32)
-			**out = **in
-		}
+		*out = new(int32)
+		**out = **in
 	}
 	if in.SecurityContext != nil {
 		in, out := &in.SecurityContext, &out.SecurityContext
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(v1.PodSecurityContext)
-			(*in).DeepCopyInto(*out)
-		}
+		*out = new(v1.PodSecurityContext)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.ExternalIPs != nil {
 		in, out := &in.ExternalIPs, &out.ExternalIPs
@@ -753,30 +689,18 @@ func (in *IngressSpec) DeepCopyInto(out *IngressSpec) {
 	}
 	if in.LivenessProbe != nil {
 		in, out := &in.LivenessProbe, &out.LivenessProbe
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(v1.Probe)
-			(*in).DeepCopyInto(*out)
-		}
+		*out = new(v1.Probe)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.ReadinessProbe != nil {
 		in, out := &in.ReadinessProbe, &out.ReadinessProbe
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(v1.Probe)
-			(*in).DeepCopyInto(*out)
-		}
+		*out = new(v1.Probe)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TerminationGracePeriodSeconds != nil {
 		in, out := &in.TerminationGracePeriodSeconds, &out.TerminationGracePeriodSeconds
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(int64)
-			**out = **in
-		}
+		*out = new(int64)
+		**out = **in
 	}
 	return
 }
@@ -796,11 +720,7 @@ func (in *IngressStatus) DeepCopyInto(out *IngressStatus) {
 	*out = *in
 	if in.ObservedGeneration != nil {
 		in, out := &in.ObservedGeneration, &out.ObservedGeneration
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = (*in).DeepCopy()
-		}
+		*out = (*in).DeepCopy()
 	}
 	in.LoadBalancer.DeepCopyInto(&out.LoadBalancer)
 	return
@@ -826,12 +746,8 @@ func (in *IngressTLS) DeepCopyInto(out *IngressTLS) {
 	}
 	if in.Ref != nil {
 		in, out := &in.Ref, &out.Ref
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(LocalTypedReference)
-			**out = **in
-		}
+		*out = new(LocalTypedReference)
+		**out = **in
 	}
 	return
 }
