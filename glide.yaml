@@ -3,9 +3,9 @@ import:
 - package: cloud.google.com/go
   version: v0.2.0
 - package: github.com/Azure/azure-sdk-for-go
-  version: v14.6.0
+  version: v19.0.0
 - package: github.com/Azure/go-autorest
-  version: v10.6.2
+  version: v10.14.0
 - package: github.com/appscode/go
   version: master
 - package: github.com/appscode/go-version
@@ -13,10 +13,12 @@ import:
 - package: github.com/appscode/pat
   version: master
 - package: github.com/aws/aws-sdk-go
-  version: v1.12.7
+  version: v1.14.12
 - package: github.com/benbjohnson/clock
 - package: github.com/coreos/prometheus-operator
-  version: v0.23.2
+  repo: https://github.com/kmodules/prometheus-operator.git
+  vcs: git
+  version: k-1.12
 - package: github.com/evanphx/json-patch
   version: v3.0.0
 - package: github.com/ghodss/yaml
@@ -50,7 +52,7 @@ import:
   repo: https://github.com/appscode/haproxy_exporter.git
   version: master
 - package: github.com/spf13/afero
-  version: v1.1.0
+  version: v1.1.2
 - package: github.com/spf13/cobra
   version: v0.0.3
 - package: github.com/spf13/pflag
@@ -68,35 +70,33 @@ import:
 - package: gopkg.in/gcfg.v1
   version: v1.2.3
 - package: k8s.io/api
-  version: kubernetes-1.11.3
+  version: kubernetes-1.12.0
 - package: k8s.io/apiextensions-apiserver
-  version: kubernetes-1.11.3
+  version: kubernetes-1.12.0
 - package: k8s.io/apimachinery
-  repo: https://github.com/pharmer/apimachinery.git
+  repo: https://github.com/kmodules/apimachinery.git
   vcs: git
-  version: release-1.11.3
+  version: ac-1.12.0
 - package: k8s.io/apiserver
-  repo: https://github.com/pharmer/apiserver.git
+  repo: https://github.com/kmodules/apiserver.git
   vcs: git
-  version: release-1.11.3
+  version: ac-1.12.0
 - package: k8s.io/client-go
-  repo: https://github.com/pharmer/client-go.git
-  vcs: git
-  version: release-1.11.3
+  version: v9.0.0
 - package: k8s.io/kube-aggregator
-  version: kubernetes-1.11.3
+  version: kubernetes-1.12.0
 - package: k8s.io/kube-openapi
-  version: 91cfa479c814065e420cee7ed227db0f63a5854e
+  version: 0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803
 - package: k8s.io/kubernetes
-  version: v1.11.3
+  version: v1.12.0
 - package: github.com/appscode/kutil
-  version: release-8.0
+  version: release-9.0
 - package: kmodules.xyz/monitoring-agent-api
   repo: https://github.com/kmodules/monitoring-agent-api.git
   vcs: git
-  version: release-8.0
+  version: release-9.0
 - package: github.com/appscode/kubernetes-webhook-util
-  version: release-8.0
+  version: release-9.0
 - package: github.com/openshift/api
   version: 31a7bbd2266d178da3c12bb83f5274d387f775e6
 - package: github.com/openshift/client-go
@@ -121,6 +121,10 @@ import:
   version: 35bcc6b47c20ec9bf3a53adcb7fa9665a75f0e7b
 - package: github.com/golang/protobuf
   version: v1.1.0
+- package: golang.org/x/crypto
+  version: de0752318171da717af4ce24d0a2e8626afaeb11
+- package: github.com/davecgh/go-spew
+  version: v1.1.1
 testImport:
 - package: github.com/stretchr/testify
   version: v1.2.2

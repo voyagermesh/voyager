@@ -21,7 +21,7 @@ package v1beta1
 import (
 	time "time"
 
-	voyager_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
+	voyagerv1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	versioned "github.com/appscode/voyager/client/clientset/versioned"
 	internalinterfaces "github.com/appscode/voyager/client/informers/externalversions/internalinterfaces"
 	v1beta1 "github.com/appscode/voyager/client/listers/voyager/v1beta1"
@@ -70,7 +70,7 @@ func NewFilteredIngressInformer(client versioned.Interface, namespace string, re
 				return client.VoyagerV1beta1().Ingresses(namespace).Watch(options)
 			},
 		},
-		&voyager_v1beta1.Ingress{},
+		&voyagerv1beta1.Ingress{},
 		resyncPeriod,
 		indexers,
 	)
@@ -81,7 +81,7 @@ func (f *ingressInformer) defaultInformer(client versioned.Interface, resyncPeri
 }
 
 func (f *ingressInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&voyager_v1beta1.Ingress{}, f.defaultInformer)
+	return f.factory.InformerFor(&voyagerv1beta1.Ingress{}, f.defaultInformer)
 }
 
 func (f *ingressInformer) Lister() v1beta1.IngressLister {

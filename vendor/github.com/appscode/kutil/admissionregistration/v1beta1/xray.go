@@ -255,7 +255,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 	}
 
 	if d.op == v1beta1.Create {
-		_, err := ri.Create(&u)
+		_, err := ri.Create(&u, metav1.CreateOptions{})
 		if kerr.IsForbidden(err) &&
 			strings.HasPrefix(err.Error(), d.errForbidden()) {
 			glog.Infof("failed to create invalid test object as expected with error: %s", err)
@@ -267,7 +267,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 		ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})
 		return false, ErrWebhookNotActivated
 	} else if d.op == v1beta1.Update {
-		_, err := ri.Create(&u)
+		_, err := ri.Create(&u, metav1.CreateOptions{})
 		if err != nil {
 			return false, err
 		}
@@ -284,7 +284,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 			return false, err
 		}
 
-		_, err = ri.Patch(accessor.GetName(), types.MergePatchType, patch)
+		_, err = ri.Patch(accessor.GetName(), types.MergePatchType, patch, metav1.UpdateOptions{})
 		defer ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})
 
 		if kerr.IsForbidden(err) &&
@@ -297,7 +297,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 
 		return false, ErrWebhookNotActivated
 	} else if d.op == v1beta1.Delete {
-		_, err := ri.Create(&u)
+		_, err := ri.Create(&u, metav1.CreateOptions{})
 		if err != nil {
 			return false, err
 		}
@@ -319,7 +319,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 					return
 				}
 
-				ri.Patch(accessor.GetName(), types.MergePatchType, patch)
+				ri.Patch(accessor.GetName(), types.MergePatchType, patch, metav1.UpdateOptions{})
 
 				// delete
 				ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})

@@ -21,7 +21,7 @@ package v1beta1
 import (
 	time "time"
 
-	voyager_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
+	voyagerv1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	versioned "github.com/appscode/voyager/client/clientset/versioned"
 	internalinterfaces "github.com/appscode/voyager/client/informers/externalversions/internalinterfaces"
 	v1beta1 "github.com/appscode/voyager/client/listers/voyager/v1beta1"
@@ -70,7 +70,7 @@ func NewFilteredCertificateInformer(client versioned.Interface, namespace string
 				return client.VoyagerV1beta1().Certificates(namespace).Watch(options)
 			},
 		},
-		&voyager_v1beta1.Certificate{},
+		&voyagerv1beta1.Certificate{},
 		resyncPeriod,
 		indexers,
 	)
@@ -81,7 +81,7 @@ func (f *certificateInformer) defaultInformer(client versioned.Interface, resync
 }
 
 func (f *certificateInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&voyager_v1beta1.Certificate{}, f.defaultInformer)
+	return f.factory.InformerFor(&voyagerv1beta1.Certificate{}, f.defaultInformer)
 }
 
 func (f *certificateInformer) Lister() v1beta1.CertificateLister {

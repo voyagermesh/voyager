@@ -29,37 +29,42 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"kmodules.xyz/monitoring-agent-api/api.AgentSpec":      schema_kmodulesxyz_monitoring_agent_api_api_AgentSpec(ref),
-		"kmodules.xyz/monitoring-agent-api/api.PrometheusSpec": schema_kmodulesxyz_monitoring_agent_api_api_PrometheusSpec(ref),
+		"kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec":      schema_kmodulesxyz_monitoring_agent_api_api_v1_AgentSpec(ref),
+		"kmodules.xyz/monitoring-agent-api/api/v1.PrometheusSpec": schema_kmodulesxyz_monitoring_agent_api_api_v1_PrometheusSpec(ref),
 	}
 }
 
-func schema_kmodulesxyz_monitoring_agent_api_api_AgentSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_kmodulesxyz_monitoring_agent_api_api_v1_AgentSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Properties: map[string]spec.Schema{
 					"agent": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Valid values: coreos-prometheus-operator",
-							Type:        []string{"string"},
-							Format:      "",
+							Type:   []string{"string"},
+							Format: "",
 						},
 					},
 					"prometheus": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("kmodules.xyz/monitoring-agent-api/api.PrometheusSpec"),
+							Ref: ref("kmodules.xyz/monitoring-agent-api/api/v1.PrometheusSpec"),
+						},
+					},
+					"resources": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Compute Resources required by the sidecar container. Deprecated: Use podTemplate.spec.resources",
+							Ref:         ref("k8s.io/api/core/v1.ResourceRequirements"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"kmodules.xyz/monitoring-agent-api/api.PrometheusSpec"},
+			"k8s.io/api/core/v1.ResourceRequirements", "kmodules.xyz/monitoring-agent-api/api/v1.PrometheusSpec"},
 	}
 }
 
-func schema_kmodulesxyz_monitoring_agent_api_api_PrometheusSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_kmodulesxyz_monitoring_agent_api_api_v1_PrometheusSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
