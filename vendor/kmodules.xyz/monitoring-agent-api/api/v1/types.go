@@ -2,8 +2,9 @@ package v1
 
 import (
 	"strings"
-	core "k8s.io/api/core/v1"
+
 	"github.com/appscode/kutil"
+	core "k8s.io/api/core/v1"
 )
 
 type AgentType string
@@ -29,9 +30,8 @@ func (at AgentType) Vendor() string {
 type AgentSpec struct {
 	Agent      AgentType       `json:"agent,omitempty"`
 	Prometheus *PrometheusSpec `json:"prometheus,omitempty"`
-	// Compute Resources required by the sidecar container.
-	// Deprecated: Use podTemplate.spec.resources
-	Resources *core.ResourceRequirements `json:"resources,omitempty"`
+	// Compute Resources required by the exporter container.
+	Resources core.ResourceRequirements `json:"resources,omitempty"`
 }
 
 type PrometheusSpec struct {

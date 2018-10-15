@@ -52,7 +52,7 @@ func schema_kmodulesxyz_monitoring_agent_api_api_v1_AgentSpec(ref common.Referen
 					},
 					"resources": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Compute Resources required by the sidecar container. Deprecated: Use podTemplate.spec.resources",
+							Description: "Compute Resources required by the exporter container.",
 							Ref:         ref("k8s.io/api/core/v1.ResourceRequirements"),
 						},
 					},

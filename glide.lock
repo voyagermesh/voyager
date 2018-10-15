@@ -1,5 +1,5 @@
 hash: 3bb4c4cfd1efe482b9aad585021d4a7506cc693a4fbb265e6f8eab8c6639ced3
-updated: 2018-10-13T07:35:56.639796717-07:00
+updated: 2018-10-14T21:04:36.513480071-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -44,7 +44,7 @@ imports:
   - client/workload/v1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: 303298aa86dad096fed4c49ba117700e506eca2c
+  version: 25382b15981e816818803a66b6e1a1270efa89ab
   subpackages:
   - admissionregistration/v1beta1
   - apiextensions/v1beta1
@@ -287,7 +287,7 @@ imports:
   - ptypes/struct
   - ptypes/timestamp
 - name: github.com/golang/snappy
-  version: 2e65f85255dbc3072edf28d6b5b8efc472979f5a
+  version: d9eb7a3d35ec988b8585d4a0068e462c27d28380
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
@@ -367,7 +367,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/JamesClonk/vultr
-  version: 267be0d362b67d505ee045d54185b31673b206c1
+  version: fa1c0367800db75e4d10d0ec90c49a8731670224
   subpackages:
   - lib
 - name: github.com/jmespath/go-jmespath
@@ -686,7 +686,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/ini.v1
-  version: 7b294651033cd7d9e7f0d9ffa1b75ed1e198e737
+  version: 06f5f3d67269ccec1fe5fe4134ba6e982984f7f5
 - name: gopkg.in/natefinch/lumberjack.v2
   version: 20b71e5b60d756d3d2f80def009790325acc2b23
 - name: gopkg.in/square/go-jose.v2
@@ -1099,7 +1099,7 @@ imports:
   - pkg/api/legacyscheme
   - pkg/util/net/sets
 - name: kmodules.xyz/monitoring-agent-api
-  version: cb29a44ae61b9096ce83750c2b070d57daa8d953
+  version: 626ef00ec8baebe0d2b451cf8f06450c2588f237
   repo: https://github.com/kmodules/monitoring-agent-api.git
   vcs: git
   subpackages:
