@@ -26,8 +26,7 @@ import (
 )
 
 const (
-	apiserviceName    = "v1beta1.admission.voyager.appscode.com"
-	validatingWebhook = "admission.voyager.appscode.com"
+	apiserviceName = "v1beta1.admission.voyager.appscode.com"
 )
 
 var (
@@ -163,7 +162,7 @@ func (c completedConfig) New() (*VoyagerServer, error) {
 		s.GenericAPIServer.AddPostStartHookOrDie("validating-webhook-xray",
 			func(context genericapiserver.PostStartHookContext) error {
 				go func() {
-					xray := reg_util.NewCreateValidatingWebhookXray(c.OperatorConfig.ClientConfig, apiserviceName, validatingWebhook, &api.Ingress{
+					xray := reg_util.NewCreateValidatingWebhookXray(c.OperatorConfig.ClientConfig, apiserviceName, &api.Ingress{
 						TypeMeta: metav1.TypeMeta{
 							APIVersion: api.SchemeGroupVersion.String(),
 							Kind:       api.ResourceKindIngress,
