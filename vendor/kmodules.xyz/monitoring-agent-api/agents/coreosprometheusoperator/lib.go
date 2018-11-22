@@ -138,9 +138,10 @@ func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor
 			},
 			Endpoints: []prom.Endpoint{
 				{
-					Port:     portName,
-					Interval: spec.Prometheus.Interval,
-					Path:     sp.Path(),
+					Port:        portName,
+					Interval:    spec.Prometheus.Interval,
+					Path:        sp.Path(),
+					HonorLabels: true,
 				},
 			},
 			Selector: metav1.LabelSelector{
