@@ -16,9 +16,7 @@ import:
   version: v1.14.12
 - package: github.com/benbjohnson/clock
 - package: github.com/coreos/prometheus-operator
-  repo: https://github.com/kmodules/prometheus-operator.git
-  vcs: git
-  version: k-1.12
+  version: v0.25.0
 - package: github.com/evanphx/json-patch
   version: v3.0.0
 - package: github.com/ghodss/yaml
@@ -56,7 +54,7 @@ import:
 - package: github.com/spf13/cobra
   version: v0.0.3
 - package: github.com/spf13/pflag
-  version: v1.0.1
+  version: v1.0.3
 - package: github.com/tredoe/osutil
 - package: github.com/xenolf/lego
   repo: https://github.com/appscode/lego.git
@@ -125,6 +123,10 @@ import:
   version: de0752318171da717af4ce24d0a2e8626afaeb11
 - package: github.com/davecgh/go-spew
   version: v1.1.1
+- package: github.com/russross/blackfriday
+  version: v1.5.2
+- package: gopkg.in/yaml.v2
+  version: v2.2.1
 testImport:
 - package: github.com/stretchr/testify
   version: v1.2.2
