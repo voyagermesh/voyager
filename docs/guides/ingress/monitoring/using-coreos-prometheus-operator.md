@@ -139,7 +139,7 @@ Voyager operator watches for `Ingress` objects using Kubernetes api. When a `Ing
 | ingress.appscode.com/service-monitor-labels                   | map     |         | `Required`. Indicates labels applied to service monitor. |
 | ingress.appscode.com/service-monitor-namespace                | string  |         | `Required`. Indicates namespace where service monitors are created. This must be the same namespace of the Prometheus instance. |
 | ingress.appscode.com/service-monitor-endpoint-port            | integer | 56790   | `Optional`. Indicates the port used by exporter side-car to expose Prometheus metrics endpoint. If the default port 56790 is used to expose traffic, change it to an unused port. |
-| ingress.appscode.com/service-monitor-endpoint-scrape-interval | string  |         | `Optional`. Indicates the srace interval for HAProxy exporter endpoint
+| ingress.appscode.com/service-monitor-endpoint-scrape-interval | string  |         | `Optional`. Indicates the scrape interval for HAProxy exporter endpoint
 
 You can verify it running the following commands:
 
