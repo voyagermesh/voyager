@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/appscode/kutil/meta"
+	"github.com/appscode/kutil/tools/cli"
 	"github.com/appscode/kutil/tools/clientcmd"
 	"github.com/appscode/voyager/client/clientset/versioned/scheme"
-	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/operator"
 	"github.com/appscode/voyager/test/framework"
 	. "github.com/onsi/ginkgo"
@@ -34,7 +34,7 @@ func RunE2ETestSuit(t *testing.T) {
 
 var _ = BeforeSuite(func() {
 	scheme.AddToScheme(clientsetscheme.Scheme)
-	config.LoggerOptions.Verbosity = "5"
+	cli.LoggerOptions.Verbosity = "5"
 
 	options.validate()
 

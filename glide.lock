@@ -1,5 +1,5 @@
 hash: 2b7e4ae140bf16542658317ae3ca4a9510579b0127f093d072fcdf7f5e295d05
-updated: 2018-11-22T07:35:20.82300991-08:00
+updated: 2018-12-01T19:44:43.31088352-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -44,7 +44,7 @@ imports:
   - client/workload/v1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: fefd3df6cc52ad5cd7c175e18a1af2d736ce858d
+  version: 239838b6231b8a27a66426e25678351ce50c4cfd
   subpackages:
   - admissionregistration/v1beta1
   - apiextensions/v1beta1
@@ -58,6 +58,7 @@ imports:
   - rbac/v1
   - tools/analytics
   - tools/certstore
+  - tools/cli
   - tools/clientcmd
   - tools/queue
 - name: github.com/appscode/mergo
@@ -285,7 +286,7 @@ imports:
   - ptypes/struct
   - ptypes/timestamp
 - name: github.com/golang/snappy
-  version: cef980a12b316c5b7e5bb3a8e168eb43ae999a88
+  version: d9eb7a3d35ec988b8585d4a0068e462c27d28380
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
@@ -331,7 +332,7 @@ imports:
 - name: github.com/hashicorp/go-multierror
   version: 886a7fbe3eb1c874d46f623bfa70af45f425b3d1
 - name: github.com/hashicorp/go-retryablehttp
-  version: 4502c0ecdaf0b50d857611af23831260f99be6bf
+  version: dfbae6744eb4c188d26ef53f1d39444c0c68b60c
 - name: github.com/hashicorp/go-rootcerts
   version: 6bb64b370b90e7ef1fa532be9e591a81c3493e00
 - name: github.com/hashicorp/go-sockaddr

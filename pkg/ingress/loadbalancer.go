@@ -17,6 +17,7 @@ import (
 	core_util "github.com/appscode/kutil/core/v1"
 	meta_util "github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/analytics"
+	"github.com/appscode/kutil/tools/cli"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	"github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1/util"
@@ -441,17 +442,17 @@ func (c *loadBalancerController) ensurePods() (kutil.VerbType, error) {
 			Name:  "haproxy",
 			Image: c.cfg.HAProxyImage,
 			Args: append([]string{
-				fmt.Sprintf("--enable-analytics=%v", config.EnableAnalytics),
+				fmt.Sprintf("--enable-analytics=%v", cli.EnableAnalytics),
 				fmt.Sprintf("--burst=%v", c.cfg.Burst),
 				fmt.Sprintf("--cloud-provider=%s", c.cfg.CloudProvider),
 				fmt.Sprintf("--ingress-api-version=%s", c.Ingress.APISchema()),
 				fmt.Sprintf("--ingress-name=%s", c.Ingress.Name),
 				fmt.Sprintf("--qps=%v", c.cfg.QPS),
-			}, config.LoggerOptions.ToFlags()...),
+			}, cli.LoggerOptions.ToFlags()...),
 			Env: c.ensureEnvVars([]core.EnvVar{
 				{
 					Name:  analytics.Key,
-					Value: config.AnalyticsClientID,
+					Value: cli.AnalyticsClientID,
 				},
 			}),
 			Ports:          []core.ContainerPort{},

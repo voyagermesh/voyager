@@ -13,7 +13,7 @@ import (
 func main() {
 	logs.InitLogs()
 	defer logs.FlushLogs()
-	if err := cmds.NewCmdVoyager(Version).Execute(); err != nil {
+	if err := cmds.NewCmdVoyager().Execute(); err != nil {
 		log.Fatal(err)
 	}
 }

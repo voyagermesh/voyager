@@ -3,16 +3,12 @@ package config
 import (
 	"time"
 
-	"github.com/appscode/go/log/golog"
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/kutil/meta"
 )
 
 var (
-	AnalyticsClientID string
-	EnableAnalytics   = true
-	LoggerOptions     golog.Options
-	BuiltinTemplates  = "/srv/voyager/templates/*.cfg"
+	BuiltinTemplates = "/srv/voyager/templates/*.cfg"
 )
 
 func init() {

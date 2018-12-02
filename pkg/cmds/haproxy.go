@@ -4,7 +4,9 @@ import (
 	"time"
 
 	"github.com/appscode/go/log"
+	v "github.com/appscode/go/version"
 	"github.com/appscode/kutil/meta"
+	"github.com/appscode/kutil/tools/cli"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	hpc "github.com/appscode/voyager/pkg/haproxy/controller"
 	"github.com/spf13/cobra"
@@ -40,6 +42,9 @@ func NewCmdHAProxyController() *cobra.Command {
 		Use:               "haproxy-controller [command]",
 		Short:             `Synchronizes HAProxy config`,
 		DisableAutoGenTag: true,
+		PreRun: func(c *cobra.Command, args []string) {
+			cli.SendPeriodicAnalytics(c, v.Version.Version)
+		},
 		Run: func(cmd *cobra.Command, args []string) {
 			// creates the connection
 			config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)

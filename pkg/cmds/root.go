@@ -4,14 +4,11 @@ import (
 	"flag"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/appscode/go/log/golog"
 	v "github.com/appscode/go/version"
-	"github.com/appscode/kutil/tools/analytics"
+	"github.com/appscode/kutil/tools/cli"
 	"github.com/appscode/voyager/client/clientset/versioned/scheme"
-	"github.com/appscode/voyager/pkg/config"
-	"github.com/jpillora/go-ogle-analytics"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	genericapiserver "k8s.io/apiserver/pkg/server"
@@ -19,11 +16,7 @@ import (
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 )
 
-const (
-	gaTrackingCode = "UA-62096468-20"
-)
-
-func NewCmdVoyager(version string) *cobra.Command {
+func NewCmdVoyager() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:               "voyager [command]",
 		Short:             `Voyager by Appscode - Secure HAProxy Ingress Controller for Kubernetes`,
@@ -32,22 +25,16 @@ func NewCmdVoyager(version string) *cobra.Command {
 			c.Flags().VisitAll(func(flag *pflag.Flag) {
 				log.Printf("FLAG: --%s=%q", flag.Name, flag.Value)
 			})
-			if config.EnableAnalytics && gaTrackingCode != "" {
-				if client, err := ga.NewClient(gaTrackingCode); err == nil {
-					config.AnalyticsClientID = analytics.ClientID()
-					client.ClientID(config.AnalyticsClientID)
-					parts := strings.Split(c.CommandPath(), " ")
-					client.Send(ga.NewEvent(parts[0], strings.Join(parts[1:], "/")).Label(version))
-				}
-			}
+			cli.SendAnalytics(c, v.Version.Version)
+
 			scheme.AddToScheme(clientsetscheme.Scheme)
-			config.LoggerOptions = golog.ParseFlags(c.Flags())
+			cli.LoggerOptions = golog.ParseFlags(c.Flags())
 		},
 	}
 	rootCmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 	// ref: https://github.com/kubernetes/kubernetes/issues/17162#issuecomment-225596212
 	flag.CommandLine.Parse([]string{})
-	rootCmd.PersistentFlags().BoolVar(&config.EnableAnalytics, "enable-analytics", config.EnableAnalytics, "Send analytical events to Google Analytics")
+	rootCmd.PersistentFlags().BoolVar(&cli.EnableAnalytics, "enable-analytics", cli.EnableAnalytics, "Send analytical events to Google Analytics")
 
 	rootCmd.AddCommand(NewCmdExport())
 	rootCmd.AddCommand(NewCmdHAProxyController())
