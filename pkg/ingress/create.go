@@ -6,8 +6,8 @@ import (
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/appscode/kutil/tools/analytics"
+	"github.com/appscode/kutil/tools/cli"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/config"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -54,12 +54,12 @@ func (c *controller) getExporterSidecar() (*core.Container, error) {
 			Args: append([]string{
 				"export",
 				fmt.Sprintf("--address=:%d", monSpec.Prometheus.Port),
-				fmt.Sprintf("--enable-analytics=%v", config.EnableAnalytics),
-			}, config.LoggerOptions.ToFlags()...),
+				fmt.Sprintf("--enable-analytics=%v", cli.EnableAnalytics),
+			}, cli.LoggerOptions.ToFlags()...),
 			Env: []core.EnvVar{
 				{
 					Name:  analytics.Key,
-					Value: config.AnalyticsClientID,
+					Value: cli.AnalyticsClientID,
 				},
 			},
 			Image:           c.cfg.ExporterImage,
