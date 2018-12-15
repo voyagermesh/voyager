@@ -10,7 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -30,7 +30,6 @@ func checkFolder(path string) error {
 }
 
 func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
-
 	if c.GlobalIsSet("http-timeout") {
 		acme.HTTPClient = http.Client{Timeout: time.Duration(c.GlobalInt("http-timeout")) * time.Second}
 	}
@@ -60,7 +59,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		log.Fatal("You have to pass an account (email address) to the program using --email or -m")
 	}
 
-	//TODO: move to account struct? Currently MUST pass email.
+	// TODO: move to account struct? Currently MUST pass email.
 	acc := NewAccount(c.GlobalString("email"), conf)
 
 	keyType, err := conf.KeyType()
@@ -80,35 +79,37 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	}
 
 	if c.GlobalIsSet("webroot") {
-		provider, err := webroot.NewHTTPProvider(c.GlobalString("webroot"))
-		if err != nil {
-			log.Fatal(err)
+		provider, errO := webroot.NewHTTPProvider(c.GlobalString("webroot"))
+		if errO != nil {
+			log.Fatal(errO)
 		}
 
-		err = client.SetChallengeProvider(acme.HTTP01, provider)
-		if err != nil {
-			log.Fatal(err)
+		errO = client.SetChallengeProvider(acme.HTTP01, provider)
+		if errO != nil {
+			log.Fatal(errO)
 		}
 
 		// --webroot=foo indicates that the user specifically want to do a HTTP challenge
 		// infer that the user also wants to exclude all other challenges
 		client.ExcludeChallenges([]acme.Challenge{acme.DNS01, acme.TLSALPN01})
 	}
+
 	if c.GlobalIsSet("memcached-host") {
-		provider, err := memcached.NewMemcachedProvider(c.GlobalStringSlice("memcached-host"))
-		if err != nil {
-			log.Fatal(err)
+		provider, errO := memcached.NewMemcachedProvider(c.GlobalStringSlice("memcached-host"))
+		if errO != nil {
+			log.Fatal(errO)
 		}
 
-		err = client.SetChallengeProvider(acme.HTTP01, provider)
-		if err != nil {
-			log.Fatal(err)
+		errO = client.SetChallengeProvider(acme.HTTP01, provider)
+		if errO != nil {
+			log.Fatal(errO)
 		}
 
 		// --memcached-host=foo:11211 indicates that the user specifically want to do a HTTP challenge
 		// infer that the user also wants to exclude all other challenges
 		client.ExcludeChallenges([]acme.Challenge{acme.DNS01, acme.TLSALPN01})
 	}
+
 	if c.GlobalIsSet("http") {
 		if !strings.Contains(c.GlobalString("http"), ":") {
 			log.Fatalf("The --http switch only accepts interface:port or :port for its argument.")
@@ -124,18 +125,22 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		if !strings.Contains(c.GlobalString("tls"), ":") {
 			log.Fatalf("The --tls switch only accepts interface:port or :port for its argument.")
 		}
-		client.SetTLSAddress(c.GlobalString("tls"))
-	}
 
-	if c.GlobalIsSet("dns") {
-		provider, err := dns.NewDNSChallengeProviderByName(c.GlobalString("dns"))
+		err = client.SetTLSAddress(c.GlobalString("tls"))
 		if err != nil {
 			log.Fatal(err)
 		}
+	}
 
-		err = client.SetChallengeProvider(acme.DNS01, provider)
-		if err != nil {
-			log.Fatal(err)
+	if c.GlobalIsSet("dns") {
+		provider, errO := dns.NewDNSChallengeProviderByName(c.GlobalString("dns"))
+		if errO != nil {
+			log.Fatal(errO)
+		}
+
+		errO = client.SetChallengeProvider(acme.DNS01, provider)
+		if errO != nil {
+			log.Fatal(errO)
 		}
 
 		// --dns=foo indicates that the user specifically want to do a DNS challenge
@@ -151,18 +156,30 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 }
 
 func saveCertRes(certRes *acme.CertificateResource, conf *Configuration) {
-	// make sure no funny chars are in the cert names (like wildcards ;))
-	domainName := strings.Replace(certRes.Domain, "*", "_", -1)
+	var domainName string
+
+	// Check filename cli parameter
+	if conf.context.GlobalString("filename") == "" {
+		// Make sure no funny chars are in the cert names (like wildcards ;))
+		domainName = strings.Replace(certRes.Domain, "*", "_", -1)
+	} else {
+		domainName = conf.context.GlobalString("filename")
+	}
 
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	certOut := path.Join(conf.CertPath(), domainName+".crt")
-	privOut := path.Join(conf.CertPath(), domainName+".key")
-	pemOut := path.Join(conf.CertPath(), domainName+".pem")
-	metaOut := path.Join(conf.CertPath(), domainName+".json")
-	issuerOut := path.Join(conf.CertPath(), domainName+".issuer.crt")
+	certOut := filepath.Join(conf.CertPath(), domainName+".crt")
+	privOut := filepath.Join(conf.CertPath(), domainName+".key")
+	pemOut := filepath.Join(conf.CertPath(), domainName+".pem")
+	metaOut := filepath.Join(conf.CertPath(), domainName+".json")
+	issuerOut := filepath.Join(conf.CertPath(), domainName+".issuer.crt")
 
-	err := ioutil.WriteFile(certOut, certRes.Certificate, 0600)
+	err := checkFolder(filepath.Dir(certOut))
+	if err != nil {
+		log.Fatalf("Could not check/create path: %v", err)
+	}
+
+	err = ioutil.WriteFile(certOut, certRes.Certificate, 0600)
 	if err != nil {
 		log.Fatalf("Unable to save Certificate for domain %s\n\t%v", certRes.Domain, err)
 	}
@@ -299,7 +316,10 @@ func run(c *cli.Context) error {
 		}
 
 		acc.Registration = reg
-		acc.Save()
+		err = acc.Save()
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		log.Print("!!!! HEADS UP !!!!")
 		log.Printf(`
@@ -366,7 +386,7 @@ func revoke(c *cli.Context) error {
 	for _, domain := range c.GlobalStringSlice("domains") {
 		log.Printf("Trying to revoke certificate for domain %s", domain)
 
-		certPath := path.Join(conf.CertPath(), domain+".crt")
+		certPath := filepath.Join(conf.CertPath(), domain+".crt")
 		certBytes, err := ioutil.ReadFile(certPath)
 		if err != nil {
 			log.Println(err)
@@ -399,9 +419,9 @@ func renew(c *cli.Context) error {
 	// load the cert resource from files.
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	certPath := path.Join(conf.CertPath(), domain+".crt")
-	privPath := path.Join(conf.CertPath(), domain+".key")
-	metaPath := path.Join(conf.CertPath(), domain+".json")
+	certPath := filepath.Join(conf.CertPath(), domain+".crt")
+	privPath := filepath.Join(conf.CertPath(), domain+".key")
+	metaPath := filepath.Join(conf.CertPath(), domain+".json")
 
 	certBytes, err := ioutil.ReadFile(certPath)
 	if err != nil {
@@ -409,8 +429,8 @@ func renew(c *cli.Context) error {
 	}
 
 	if c.IsSet("days") {
-		expTime, err := acme.GetPEMCertExpiration(certBytes)
-		if err != nil {
+		expTime, errE := acme.GetPEMCertExpiration(certBytes)
+		if errE != nil {
 			log.Printf("Could not get Certification expiration for domain %s", domain)
 		}
 
@@ -425,14 +445,14 @@ func renew(c *cli.Context) error {
 	}
 
 	var certRes acme.CertificateResource
-	if err := json.Unmarshal(metaBytes, &certRes); err != nil {
-		log.Fatalf("Error while marshalling the meta data for domain %s\n\t%v", domain, err)
+	if err = json.Unmarshal(metaBytes, &certRes); err != nil {
+		log.Fatalf("Error while marshaling the meta data for domain %s\n\t%v", domain, err)
 	}
 
 	if c.Bool("reuse-key") {
-		keyBytes, err := ioutil.ReadFile(privPath)
-		if err != nil {
-			log.Fatalf("Error while loading the private key for domain %s\n\t%v", domain, err)
+		keyBytes, errR := ioutil.ReadFile(privPath)
+		if errR != nil {
+			log.Fatalf("Error while loading the private key for domain %s\n\t%v", domain, errR)
 		}
 		certRes.PrivateKey = keyBytes
 	}

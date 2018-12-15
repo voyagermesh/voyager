@@ -1,5 +1,5 @@
-hash: f900eb23aa46b28edc97e75407145950e25c66ad24d2d45717d6929c2db7a111
-updated: 2018-12-15T00:38:18.569896967-08:00
+hash: 46d4c450183789463ee951715f2f6b99bd39ef42122782beb53e534e5b6045c8
+updated: 2018-12-15T01:56:21.200713637-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -116,6 +116,7 @@ imports:
   - autorest
   - autorest/adal
   - autorest/azure
+  - autorest/azure/auth
   - autorest/date
   - autorest/to
   - autorest/validation
@@ -126,6 +127,8 @@ imports:
   version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
   subpackages:
   - quantile
+- name: github.com/cloudflare/cloudflare-go
+  version: 73188131583704facec77adbb1e666a7917f973c
 - name: github.com/coreos/etcd
   version: 420a452267a7ce45b3fcbed04d54030d69964fc1
   subpackages:
@@ -225,6 +228,8 @@ imports:
   - spew
 - name: github.com/dgrijalva/jwt-go
   version: 01aeca54ebda6e0fbfafd0a524d234159c05ec20
+- name: github.com/dimchansky/utfbom
+  version: d2133a1ce379ef6fa992b0514a77146c60db9d1c
 - name: github.com/dnsimple/dnsimple-go
   version: 35bcc6b47c20ec9bf3a53adcb7fa9665a75f0e7b
   subpackages:
@@ -515,7 +520,7 @@ imports:
   subpackages:
   - codec
 - name: github.com/xenolf/lego
-  version: 0b6736776fb2f9dbb2bd685fbb4601086a7fd853
+  version: e57a0a1b7259bc2cd83fc3c5b9e6578a9dd432e3
   repo: https://github.com/appscode/lego.git
   vcs: git
   subpackages:
@@ -551,6 +556,8 @@ imports:
   - ed25519/internal/edwards25519
   - ocsp
   - pbkdf2
+  - pkcs12
+  - pkcs12/internal/rc2
   - ssh/terminal
 - name: golang.org/x/net
   version: 1c05540f6879653db88113bc4a2b70aec4bd491f
