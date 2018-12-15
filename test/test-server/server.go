@@ -12,7 +12,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/pires/go-proxyproto"
+	proxyproto "github.com/pires/go-proxyproto"
 )
 
 type Response struct {

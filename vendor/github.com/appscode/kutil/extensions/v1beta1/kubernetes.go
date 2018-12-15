@@ -1,7 +1,7 @@
 package v1beta1
 
 import (
-	"github.com/json-iterator/go"
+	jsoniter "github.com/json-iterator/go"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

@@ -14,7 +14,7 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/moul/http2curl"
-	"github.com/pires/go-proxyproto"
+	proxyproto "github.com/pires/go-proxyproto"
 )
 
 type httpClient struct {
