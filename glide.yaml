@@ -1,7 +1,7 @@
 package: github.com/appscode/voyager
 import:
 - package: cloud.google.com/go
-  version: v0.2.0
+  version: v0.23.0
 - package: github.com/Azure/azure-sdk-for-go
   version: v19.0.0
 - package: github.com/Azure/go-autorest
@@ -10,6 +10,10 @@ import:
   version: master
 - package: github.com/appscode/go-version
   version: master
+- package: github.com/appscode/kubernetes-webhook-util
+  version: release-9.0
+- package: github.com/appscode/kutil
+  version: release-9.0
 - package: github.com/appscode/pat
   version: master
 - package: github.com/aws/aws-sdk-go
@@ -17,21 +21,35 @@ import:
 - package: github.com/benbjohnson/clock
 - package: github.com/coreos/prometheus-operator
   version: v0.25.0
+- package: github.com/cpuguy83/go-md2man
+  version: v1.0.8
+- package: github.com/davecgh/go-spew
+  version: v1.1.1
+- package: github.com/dnsimple/dnsimple-go
+  version: 35bcc6b47c20ec9bf3a53adcb7fa9665a75f0e7b
 - package: github.com/evanphx/json-patch
   version: v3.0.0
 - package: github.com/ghodss/yaml
   version: v1.0.0
 - package: github.com/go-openapi/spec
 - package: github.com/golang/glog
+- package: github.com/golang/protobuf
+  version: v1.0.0
 - package: github.com/google/go-cmp
   version: v0.2.0
-- package: gopkg.in/square/go-jose.v2
-  version: v2.1.6
+- package: github.com/gorilla/websocket
+  version: v1.4.0
 - package: github.com/hashicorp/vault
   version: v0.10.3
+- package: github.com/imdario/mergo
+  version: v0.3.5
 - package: github.com/jpillora/go-ogle-analytics
 - package: github.com/json-iterator/go
   version: 1.1.5
+- package: github.com/mailru/easyjson
+  version: 2f5df55504ebc322e4d52d34df6a1f5b503bf26d
+- package: github.com/miekg/dns
+  version: v1.0.7
 - package: github.com/mitchellh/go-ps
 - package: github.com/moul/http2curl
 - package: github.com/onsi/ginkgo
@@ -49,6 +67,8 @@ import:
 - package: github.com/prometheus/haproxy_exporter
   repo: https://github.com/appscode/haproxy_exporter.git
   version: master
+- package: github.com/russross/blackfriday
+  version: v1.5.2
 - package: github.com/spf13/afero
   version: v1.1.2
 - package: github.com/spf13/cobra
@@ -60,13 +80,23 @@ import:
   repo: https://github.com/appscode/lego.git
   vcs: git
   version: 2018-08
+- package: golang.org/x/crypto
+  version: de0752318171da717af4ce24d0a2e8626afaeb11
+- package: golang.org/x/net
+  version: 1c05540f6879653db88113bc4a2b70aec4bd491f
 - package: golang.org/x/oauth2
-  repo: https://github.com/appscode/oauth2.git
-  vcs: git
-  version: master
+  version: d668ce993890a79bda886613ee587a69dd5da7a6
+- package: golang.org/x/sys
+  version: 95c6576299259db960f6c5b9b69ea52422860fce
+- package: golang.org/x/text
+  version: b19bf474d317b857955b12035d2c5acb57ce8b01
 - package: google.golang.org/api
 - package: gopkg.in/gcfg.v1
   version: v1.2.3
+- package: gopkg.in/square/go-jose.v2
+  version: v2.2.1
+- package: gopkg.in/yaml.v2
+  version: v2.2.1
 - package: k8s.io/api
   version: kubernetes-1.12.0
 - package: k8s.io/apiextensions-apiserver
@@ -87,46 +117,12 @@ import:
   version: 0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803
 - package: k8s.io/kubernetes
   version: v1.12.0
-- package: github.com/appscode/kutil
-  version: release-9.0
 - package: kmodules.xyz/monitoring-agent-api
   repo: https://github.com/kmodules/monitoring-agent-api.git
   vcs: git
   version: release-9.0
-- package: github.com/appscode/kubernetes-webhook-util
-  version: release-9.0
-- package: github.com/openshift/api
-  version: 31a7bbd2266d178da3c12bb83f5274d387f775e6
-- package: github.com/openshift/client-go
-  version: 4688ad28de2e88110c0ea30179c51b9b205f99be
-- package: github.com/openshift/origin
-  version: fecffb2fce100260088a1b9f268c0901a778cf2b
-- package: github.com/appscode/ocutil
-  version: release-3.11
-- package: github.com/mailru/easyjson
-  version: 2f5df55504ebc322e4d52d34df6a1f5b503bf26d
-- package: github.com/miekg/dns
-  version: v1.0.7
-- package: github.com/cpuguy83/go-md2man
-  version: v1.0.8
-- package: golang.org/x/text
-  version: b19bf474d317b857955b12035d2c5acb57ce8b01
-- package: golang.org/x/net
-  version: 1c05540f6879653db88113bc4a2b70aec4bd491f
-- package: golang.org/x/sys
-  version: 95c6576299259db960f6c5b9b69ea52422860fce
-- package: github.com/dnsimple/dnsimple-go
-  version: 35bcc6b47c20ec9bf3a53adcb7fa9665a75f0e7b
-- package: github.com/golang/protobuf
+- package: sigs.k8s.io/yaml
   version: v1.1.0
-- package: golang.org/x/crypto
-  version: de0752318171da717af4ce24d0a2e8626afaeb11
-- package: github.com/davecgh/go-spew
-  version: v1.1.1
-- package: github.com/russross/blackfriday
-  version: v1.5.2
-- package: gopkg.in/yaml.v2
-  version: v2.2.1
 testImport:
 - package: github.com/stretchr/testify
   version: v1.2.2

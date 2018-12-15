@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/golang/glog"
-	"github.com/mitchellh/go-ps"
+	ps "github.com/mitchellh/go-ps"
 	"github.com/pkg/errors"
 )
 

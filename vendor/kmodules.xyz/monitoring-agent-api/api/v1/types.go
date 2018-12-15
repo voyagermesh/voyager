@@ -30,8 +30,32 @@ func (at AgentType) Vendor() string {
 type AgentSpec struct {
 	Agent      AgentType       `json:"agent,omitempty"`
 	Prometheus *PrometheusSpec `json:"prometheus,omitempty"`
-	// Compute Resources required by the exporter container.
+	// Arguments to the entrypoint.
+	// The docker image's CMD is used if this is not provided.
+	// Variable references $(VAR_NAME) are expanded using the container's environment. If a variable
+	// cannot be resolved, the reference in the input string will be unchanged. The $(VAR_NAME) syntax
+	// can be escaped with a double $$, ie: $$(VAR_NAME). Escaped references will never be expanded,
+	// regardless of whether the variable exists or not.
+	// Cannot be updated.
+	// More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell
+	// +optional
+	Args []string `json:"args,omitempty"`
+	// List of environment variables to set in the container.
+	// Cannot be updated.
+	// +optional
+	// +patchMergeKey=name
+	// +patchStrategy=merge
+	Env []core.EnvVar `json:"env,omitempty" patchStrategy:"merge" patchMergeKey:"name"`
+	// Compute Resources required by exporter container.
+	// Cannot be updated.
+	// More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+	// +optional
 	Resources core.ResourceRequirements `json:"resources,omitempty"`
+	// Security options the pod should run with.
+	// More info: https://kubernetes.io/docs/concepts/policy/security-context/
+	// More info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+	// +optional
+	SecurityContext *core.SecurityContext `json:"securityContext,omitempty"`
 }
 
 type PrometheusSpec struct {

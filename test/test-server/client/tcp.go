@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pires/go-proxyproto"
+	proxyproto "github.com/pires/go-proxyproto"
 )
 
 type tcpClient struct {
