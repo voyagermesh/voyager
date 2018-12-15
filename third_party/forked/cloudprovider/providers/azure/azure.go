@@ -27,7 +27,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
-	"github.com/ghodss/yaml"
+	"sigs.k8s.io/yaml"
 )
 
 // CloudProviderName is the value used for the --cloud-provider flag
