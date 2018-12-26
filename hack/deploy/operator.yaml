@@ -65,6 +65,13 @@ spec:
             path: /healthz
             port: 8443
             scheme: HTTPS
+          initialDelaySeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8443
+            scheme: HTTPS
+          initialDelaySeconds: 5
         resources:
           requests:
             cpu: "100m"
