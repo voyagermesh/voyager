@@ -32,8 +32,8 @@ pushd $GOPATH/src/github.com/$ORG_NAME/$REPO_NAME
 ./hack/docker/voyager/setup.sh push
 ./hack/docker/haproxy/1.8.12-alpine/setup.sh push
 
-./hack/deploy/voyager.sh --provider=$ClusterProvier
+./hack/deploy/voyager.sh --provider=$ClusterProvider
 
-./hack/make.py test e2e --cloud-provider=$ClusterProvier --selfhosted-operator
+./hack/make.py test e2e --cloud-provider=$ClusterProvider --selfhosted-operator
 
 popd
