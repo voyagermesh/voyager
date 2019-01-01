@@ -219,6 +219,10 @@ func (c *loadBalancerController) Reconcile() error {
 	return nil
 }
 
+func (c *loadBalancerController) FirewallSupported() bool {
+	return false
+}
+
 func (c *loadBalancerController) EnsureFirewall(svc *core.Service) error {
 	return nil
 }

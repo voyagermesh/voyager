@@ -93,7 +93,7 @@ func (op *Operator) reconcileEngress(key string) error {
 		}
 	} else {
 		glog.Infof("Sync/Add/Update for engress %s\n", key)
-		if !core_util.HasFinalizer(engress.ObjectMeta, voyager.GroupName) {
+		if !core_util.HasFinalizer(engress.ObjectMeta, voyager.GroupName) && ctrl.FirewallSupported() {
 			util.PatchIngress(op.VoyagerClient.VoyagerV1beta1(), engress, func(obj *api.Ingress) *api.Ingress {
 				obj.ObjectMeta = core_util.AddFinalizer(obj.ObjectMeta, voyager.GroupName)
 				return obj

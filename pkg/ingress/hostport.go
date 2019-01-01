@@ -257,6 +257,14 @@ func (c *hostPortController) Reconcile() error {
 	return nil
 }
 
+func (c *hostPortController) FirewallSupported() bool {
+	if c.CloudManager != nil {
+		_, ok := c.CloudManager.Firewall()
+		return ok
+	}
+	return false
+}
+
 func (c *hostPortController) EnsureFirewall(svc *core.Service) error {
 	if c.CloudManager != nil {
 		if fw, ok := c.CloudManager.Firewall(); ok {

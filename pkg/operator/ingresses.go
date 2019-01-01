@@ -106,7 +106,7 @@ func (op *Operator) reconcileIngress(key string) error {
 		}
 	} else {
 		glog.Infof("Sync/Add/Update for ingress %s\n", key)
-		if !core_util.HasFinalizer(ing.ObjectMeta, voyager.GroupName) {
+		if !core_util.HasFinalizer(ing.ObjectMeta, voyager.GroupName) && ctrl.FirewallSupported() {
 			ext_util.PatchIngress(op.KubeClient, ing, func(obj *extensions.Ingress) *extensions.Ingress {
 				obj.ObjectMeta = core_util.AddFinalizer(obj.ObjectMeta, voyager.GroupName)
 				return obj

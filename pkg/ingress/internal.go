@@ -213,6 +213,10 @@ func (c *internalController) Reconcile() error {
 	return nil
 }
 
+func (c *internalController) FirewallSupported() bool {
+	return false
+}
+
 func (c *internalController) EnsureFirewall(svc *core.Service) error {
 	return nil
 }

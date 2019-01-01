@@ -31,6 +31,7 @@ type Controller interface {
 	IsExists() bool
 	Reconcile() error
 	Delete()
+	FirewallSupported() bool
 	EnsureFirewall(svc *core.Service) error
 }
 

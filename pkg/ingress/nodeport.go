@@ -270,6 +270,14 @@ func (c *nodePortController) Reconcile() error {
 	return nil
 }
 
+func (c *nodePortController) FirewallSupported() bool {
+	if c.CloudManager != nil {
+		_, ok := c.CloudManager.Firewall()
+		return ok
+	}
+	return false
+}
+
 func (c *nodePortController) EnsureFirewall(svc *core.Service) error {
 	if c.CloudManager != nil {
 		if fw, ok := c.CloudManager.Firewall(); ok {
