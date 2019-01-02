@@ -50,6 +50,9 @@ type CertificateSpec struct {
 	// Indicates that the certificate is paused.
 	// +optional
 	Paused bool `json:"paused,omitempty"`
+
+	// Configure certificate renewal buffer period in days. Default 15 days.
+	RenewalBuffer int `json:"renewalBuffer,omitempty"`
 }
 
 type ChallengeProvider struct {
