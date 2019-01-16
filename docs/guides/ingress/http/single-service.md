@@ -53,7 +53,12 @@ spec:
       - backend:
           serviceName: test-service
           servicePort: '80'
-
+  - host: default.example.com
+    http:
+      paths:
+      - backend:
+          serviceName: default-service
+          servicePort: '80'
 ```
 **Default Backend**: An Ingress with no rules, like the one shown in the previous section, sends all
 traffic to a single default backend. You can use the same technique to tell a loadbalancer
