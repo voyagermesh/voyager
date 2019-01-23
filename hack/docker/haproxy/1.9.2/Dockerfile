@@ -1,4 +1,4 @@
-FROM haproxy:1.9.0
+FROM haproxy:1.9.2
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV DEBCONF_NONINTERACTIVE_SEEN true

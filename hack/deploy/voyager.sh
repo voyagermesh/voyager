@@ -114,7 +114,7 @@ export VOYAGER_RESTRICT_TO_NAMESPACE=false
 export VOYAGER_ROLE_TYPE=ClusterRole
 export VOYAGER_DOCKER_REGISTRY=${DOCKER_REGISTRY:-appscode}
 export VOYAGER_IMAGE_TAG=8.0.1
-export VOYAGER_HAPROXY_IMAGE_TAG=1.9.0-8.0.1-alpine
+export VOYAGER_HAPROXY_IMAGE_TAG=1.9.2-8.0.1-alpine
 export VOYAGER_IMAGE_PULL_SECRET=
 export VOYAGER_IMAGE_PULL_POLICY=IfNotPresent
 export VOYAGER_ENABLE_ANALYTICS=true
@@ -130,12 +130,12 @@ if [[ "$APPSCODE_ENV" == "dev" ]]; then
   detect_tag
   export SCRIPT_LOCATION="cat "
   export VOYAGER_IMAGE_TAG=$TAG
-  export VOYAGER_HAPROXY_IMAGE_TAG=1.9.0-$TAG-alpine
+  export VOYAGER_HAPROXY_IMAGE_TAG=1.9.2-$TAG-alpine
   export VOYAGER_IMAGE_PULL_POLICY=Always
 fi
 
 KUBE_APISERVER_VERSION=$(kubectl version -o=json | $ONESSL jsonpath '{.serverVersion.gitVersion}')
-$ONESSL semver --check='<1.9.0' $KUBE_APISERVER_VERSION || { export VOYAGER_ENABLE_VALIDATING_WEBHOOK=true; }
+$ONESSL semver --check='<1.9.2' $KUBE_APISERVER_VERSION || { export VOYAGER_ENABLE_VALIDATING_WEBHOOK=true; }
 $ONESSL semver --check='<1.11.0' $KUBE_APISERVER_VERSION || { export VOYAGER_ENABLE_STATUS_SUBRESOURCE=true; }
 
 export VOYAGER_WEBHOOK_SIDE_EFFECTS=
@@ -152,7 +152,7 @@ show_help() {
   echo "-p, --provider=PROVIDER                specify a cloud provider"
   echo "    --rbac                             create RBAC roles and bindings (default: true)"
   echo "    --docker-registry                  docker registry used to pull voyager images (default: appscode)"
-  echo "    --haproxy-image-tag                tag of Docker image containing HAProxy binary (default: 1.9.0-8.0.1-alpine)"
+  echo "    --haproxy-image-tag                tag of Docker image containing HAProxy binary (default: 1.9.2-8.0.1-alpine)"
   echo "    --image-pull-secret                name of secret used to pull voyager operator images"
   echo "    --restrict-to-namespace            restrict voyager to its own namespace"
   echo "    --run-on-master                    run voyager operator on master"

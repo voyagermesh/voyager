@@ -1,4 +1,4 @@
-FROM haproxy:1.9.0-alpine
+FROM haproxy:1.9.2-alpine
 
 # Installs required packages
 # Change timezone to UTC
