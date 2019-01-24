@@ -500,6 +500,19 @@ func (c *nodePortController) ensurePods() (kutil.VerbType, error) {
 				},
 			)
 		}
+		for _, configVolume := range c.Ingress.Spec.ConfigVolumes {
+			obj.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
+				obj.Spec.Template.Spec.Volumes,
+				core.Volume{
+					Name: configVolume.Name,
+					VolumeSource: core.VolumeSource{
+						ConfigMap: configVolume.ConfigMap,
+						Secret:    configVolume.Secret,
+						Projected: configVolume.Projected,
+					},
+				},
+			)
+		}
 
 		// container spec
 		haproxyContainer := core.Container{
@@ -536,6 +549,15 @@ func (c *nodePortController) ensurePods() (kutil.VerbType, error) {
 				core.VolumeMount{
 					Name:      ErrorFilesVolumeName,
 					MountPath: ErrorFilesLocation,
+				},
+			)
+		}
+		for _, configVolume := range c.Ingress.Spec.ConfigVolumes {
+			haproxyContainer.VolumeMounts = append(
+				haproxyContainer.VolumeMounts,
+				core.VolumeMount{
+					Name:      configVolume.Name,
+					MountPath: configVolume.MountPath,
 				},
 			)
 		}

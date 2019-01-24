@@ -22,6 +22,7 @@ type LocalTypedReference struct {
 // Represents the source of a volume to mount.
 // Only one of its members may be specified.
 type VolumeSource struct {
+	Name string `json:"name,omitempty"`
 	// Secret represents a secret that should populate this volume.
 	// More info: https://kubernetes.io/docs/concepts/storage/volumes#secret
 	// +optional
