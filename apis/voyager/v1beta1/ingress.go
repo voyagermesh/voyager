@@ -63,6 +63,9 @@ type IngressSpec struct {
 	// port according to the hostname specified through the SNI TLS extension.
 	TLS []IngressTLS `json:"tls,omitempty"`
 
+	// Config volumes are used to mount any secret or configmap into HAProxy pods.
+	ConfigVolumes []VolumeSource `json:"configVolumes,omitempty"`
+
 	// Frontend rules specifies a set of rules that should be applied in
 	// HAProxy frontend configuration. The set of keywords are from here
 	// https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.1
