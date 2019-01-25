@@ -705,6 +705,9 @@ func (r Ingress) HAProxyOptions() map[string]bool {
 	if len(ret) == 0 {
 		ret["http-server-close"] = true
 		ret["dontlognull"] = true
+		if r.UseHTX() {
+			ret["http-use-htx"] = true
+		}
 	}
 	return ret
 }

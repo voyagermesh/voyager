@@ -15,7 +15,7 @@ func TestALPNOptions(t *testing.T) {
 	{
 		dataTable := map[string][]string{
 			"": {},
-			"alpn h2,http/1.0,http/1.1": {
+			"alpn h2,http/1.1,http/1.0": {
 				"h2",
 				"http/1.1",
 				"http/1.0",
@@ -33,7 +33,7 @@ func TestALPNOptions(t *testing.T) {
 	{
 		dataTable := map[string][]string{
 			"alpn http/1.1": {},
-			"alpn h2,http/1.0,http/1.1": {
+			"alpn h2,http/1.1,http/1.0": {
 				"h2",
 				"http/1.1",
 				"http/1.0",

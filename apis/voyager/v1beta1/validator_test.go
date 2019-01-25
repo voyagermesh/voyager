@@ -384,39 +384,6 @@ var dataTables = map[*Ingress]bool{
 		},
 	}: false, // conflicting useTLS
 	{
-		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host matching ALPN after sort"},
-		Spec: IngressSpec{
-			Rules: []IngressRule{
-				{
-					Host: "voyager.appscode.test",
-					IngressRuleValue: IngressRuleValue{
-						TCP: &TCPIngressRuleValue{
-							Port: intstr.FromInt(3434),
-							ALPN: []string{"a", "b", "c"},
-							Backend: IngressBackend{
-								ServiceName: "foo",
-								ServicePort: intstr.FromInt(3444),
-							},
-						},
-					},
-				},
-				{
-					Host: "voyager.appscode.com",
-					IngressRuleValue: IngressRuleValue{
-						TCP: &TCPIngressRuleValue{
-							Port: intstr.FromInt(3434),
-							ALPN: []string{"b", "a", "c"},
-							Backend: IngressBackend{
-								ServiceName: "foo2",
-								ServicePort: intstr.FromInt(3444),
-							},
-						},
-					},
-				},
-			},
-		},
-	}: true, // ALPN matched after sort
-	{
 		ObjectMeta: metav1.ObjectMeta{Name: "TCP multi-host ALPN conflict"},
 		Spec: IngressSpec{
 			Rules: []IngressRule{
@@ -1228,53 +1195,6 @@ var dataTables = map[*Ingress]bool{
 		},
 	}: false, // conflicting TLS merging "*" host with empty-host
 	{
-		ObjectMeta: metav1.ObjectMeta{Name: "HTTP ALPN after sort"},
-		Spec: IngressSpec{
-			Rules: []IngressRule{
-				{
-					Host: "voyager.appscode.test",
-					IngressRuleValue: IngressRuleValue{
-						HTTP: &HTTPIngressRuleValue{
-							Port: intstr.FromInt(3434),
-							ALPN: []string{"a", "b", "c"},
-							Paths: []HTTPIngressPath{
-								{
-									Path: "/path-1",
-									Backend: HTTPIngressBackend{
-										IngressBackend: IngressBackend{
-											ServiceName: "foo",
-											ServicePort: intstr.FromInt(3444),
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-				{
-					Host: "voyager.appscode.com",
-					IngressRuleValue: IngressRuleValue{
-						HTTP: &HTTPIngressRuleValue{
-							Port: intstr.FromInt(3434),
-							ALPN: []string{"b", "c", "a"},
-							Paths: []HTTPIngressPath{
-								{
-									Path: "/path-2",
-									Backend: HTTPIngressBackend{
-										IngressBackend: IngressBackend{
-											ServiceName: "foo",
-											ServicePort: intstr.FromInt(3444),
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}: true, // ALPN matched after sort
-	{
 		ObjectMeta: metav1.ObjectMeta{Name: "HTTP ALPN conflict"},
 		Spec: IngressSpec{
 			Rules: []IngressRule{
@@ -1367,6 +1287,110 @@ var dataTables = map[*Ingress]bool{
 			},
 		},
 	}: false, // conflicting ALPN with NoALPN
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "HTTP conflicting Proto"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port:  intstr.FromInt(3434),
+							Proto: "http/1.1",
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/path-1",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(3444),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Host: "voyager.appscode.com",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port:  intstr.FromInt(3434),
+							Proto: "h2",
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/path-2",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(3444),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // conflicting Proto
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "Default backend Proto with ALPN"},
+		Spec: IngressSpec{
+			Backend: &HTTPIngressBackend{
+				IngressBackend: IngressBackend{
+					ServiceName: "foo",
+					ServicePort: intstr.FromInt(3444),
+					ALPN:        []string{"a", "b", "c"},
+					Proto:       "h2",
+				},
+			},
+		},
+	}: false, // Proto with ALPN
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "HTTP Proto with ALPN"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Port:  intstr.FromInt(3434),
+							ALPN:  []string{"a", "b", "c"},
+							Proto: "h2",
+						},
+					},
+				},
+			},
+		},
+	}: false, // Proto with ALPN
+	{
+		ObjectMeta: metav1.ObjectMeta{Name: "HTTP backend Proto with ALPN"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					Host: "voyager.appscode.test",
+					IngressRuleValue: IngressRuleValue{
+						HTTP: &HTTPIngressRuleValue{
+							Paths: []HTTPIngressPath{
+								{
+									Path: "/path-1",
+									Backend: HTTPIngressBackend{
+										IngressBackend: IngressBackend{
+											ServiceName: "foo",
+											ServicePort: intstr.FromInt(3444),
+											ALPN:        []string{"a", "b", "c"},
+											Proto:       "h2",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}: false, // Proto with ALPN
 	{
 		ObjectMeta: metav1.ObjectMeta{Name: "Multiple Oauth under same port"},
 		Spec: IngressSpec{
