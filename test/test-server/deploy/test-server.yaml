@@ -15,7 +15,10 @@ spec:
     spec:
       containers:
         - name: server
-          image: appscode/test-server:2.2
+          image: appscode/test-server:2.3
+          args:
+          - --ca
+          # get CA: kubectl exec -it test-server-64855d98cc-njc4w cat cert.pem > ca.pem
           env:
           - name: POD_NAME
             valueFrom:
