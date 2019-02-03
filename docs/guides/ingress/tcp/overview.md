@@ -58,6 +58,3 @@ For this Ingress, HAProxy will open up 3 separate ports:
 - port 7878: Passes traffic to pods behind tcp-service:50077. Uses TLS, since `spec.TLS` has a matching host.
 
 - port 7880: Passes traffic to pods behind tcp-service:50077. __Uses no TLS__, even though `spec.TLS` has a matching host. This is because `tcp.noTLS` is set to true for this rule.
-
-### Restrictions
- - For one Ingress, you cannot have multiple `tcp` rules listening to same port, even if they do not have same `host`.
