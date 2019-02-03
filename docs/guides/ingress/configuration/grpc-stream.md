@@ -14,7 +14,12 @@ section_menu_id: guides
 
 # Enable HTTP/2
 
-// TODO
+You can configure HTTP/2.0 by configuring `proto` or, `alpn` under `rules.http` section (for frontend) or, `backend` section (for specific backend). If you want to use only `HTTP/2.0`, then you can specify it using `proto: h2`. However, if you like to use both `HTTP/2.0` and `HTTP/1.1` in a preferred order, then you need to specify the order using `ALPN`.
+
+Please note the followings:
+- TLS needed to be configured for using `ALPN`.
+- A single rule/backend can't use both `ALPN` and `proto`.
+- Multiple rules pointing the same frontend can't use different `ALPN` or, `proto` configurations.
 
 ## Example: gRPC Stream
 
