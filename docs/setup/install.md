@@ -73,7 +73,7 @@ options:
 -p, --provider=PROVIDER                specify a cloud provider
     --rbac                             create RBAC roles and bindings (default: true)
     --docker-registry                  docker registry used to pull voyager images (default: appscode)
-    --haproxy-image-tag                tag of Docker image containing HAProxy binary (default: 1.8.12-8.0.1-alpine)
+    --haproxy-image-tag                tag of Docker image containing HAProxy binary (default: 1.9.2-8.0.1-alpine)
     --image-pull-secret                name of secret used to pull voyager operator images
     --restrict-to-namespace            restrict voyager to its own namespace
     --run-on-master                    run voyager operator on master
@@ -123,7 +123,7 @@ $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/8.0.1/hack/deplo
     | bash -s -- --provider=$provider --docker-registry=MY_REGISTRY [--image-pull-secret=SECRET_NAME] [--rbac]
 ```
 
-By default, Voyager uses Alpine based HAProxy image (1.8.12-8.0.1-alpine). But you can also Debian based image for HAProxy by setting --haproxy-image-tag=1.8.12-8.0.1 flag.
+By default, Voyager uses Alpine based HAProxy image (1.9.2-8.0.1-alpine). But you can also Debian based image for HAProxy by setting --haproxy-image-tag=1.9.2-8.0.1 flag.
 
 Voyager implements a [validating admission webhook](https://kubernetes.io/docs/admin/admission-controllers/#validatingadmissionwebhook-alpha-in-18-beta-in-19) to validate Voyager CRDs. This is enabled by default for Kubernetes 1.9.0 or later releases. To disable this feature, pass the `--enable-validating-webhook=false` flag.
 
