@@ -44,7 +44,7 @@ metadata:
   namespace: default
 spec:
   backend:
-    serviceName: test-service
+    serviceName: default-service
     servicePort: '80'
   rules:
   - host: appscode.example.com
@@ -53,7 +53,12 @@ spec:
       - backend:
           serviceName: test-service
           servicePort: '80'
-
+  - host: default.example.com
+    http:
+      paths:
+      - backend:
+          serviceName: default-service
+          servicePort: '80'
 ```
 **Default Backend**: An Ingress with no rules, like the one shown in the previous section, sends all
 traffic to a single default backend. You can use the same technique to tell a loadbalancer
@@ -62,6 +67,6 @@ Traffic is routed to your default backend if none of the Hosts in your Ingress m
 request header, and/or none of the paths match url of request.
 
 This Ingress will forward traffic to `test-service` if request comes from the host `appscode.example.com` only.
-Other requests will be forwarded to default backend.
+Other requests will be forwarded to default backend, `default-service`.
 
 Default Backend also supports `headerRules` and `rewriteRules`.
