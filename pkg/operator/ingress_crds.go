@@ -99,6 +99,12 @@ func (op *Operator) reconcileEngress(key string) error {
 				return obj
 			})
 		}
+		if core_util.HasFinalizer(engress.ObjectMeta, voyager.GroupName) && !ctrl.FirewallSupported() {
+			util.PatchIngress(op.VoyagerClient.VoyagerV1beta1(), engress, func(obj *api.Ingress) *api.Ingress {
+				obj.ObjectMeta = core_util.RemoveFinalizer(obj.ObjectMeta, voyager.GroupName)
+				return obj
+			})
+		}
 		if engress.ShouldHandleIngress(op.IngressClass) {
 			return ctrl.Reconcile()
 		} else {
