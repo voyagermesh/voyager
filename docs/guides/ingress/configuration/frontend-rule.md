@@ -96,6 +96,52 @@ spec:
         servicePort: '50077'
 ```
 
+## Example: ACL from file
+
+This example demonstrates how to use additional files with frontend rules. First create a configmap containing whitelisted IPs:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: whitelist-config
+  namespace: default
+data:
+  whitelist.lst: 192.168.1.1/32 192.168.2.1/32 192.168.0.1/24
+```
+
+Then mount this configmap using `spec.configVolumes` and specify the file path using frontend rules.
+
+```yaml
+apiVersion: voyager.appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: test-ingress
+  namespace: default
+  annotation:
+    ingress.appscode.com/keep-source-ip: "true"
+spec:
+  configVolumes:
+  - name: whitelist-vol
+    configMap:
+      name: whitelist-config
+      mountPath: /etc/haproxy
+  frontendRules:
+  - port: 80
+    rules:
+    - acl network_allowed src -f /etc/haproxy/whitelist.lst
+    - block if !network_allowed
+  rules:
+  - host: foo.bar.com
+    http:
+      paths:
+      - backend:
+          serviceName: s1
+          servicePort: '80'
+```
+
+See [here](/docs/guides/ingress/configuration/config-volumes.md) for complete example of `configVolumes`.
+
 ## FAQ
 
 ### Why does not IP whitelisting work in LoadBalancer type Ingress in AWS?
