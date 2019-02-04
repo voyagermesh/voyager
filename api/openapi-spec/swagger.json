@@ -2087,7 +2087,7 @@
           "description": "Indicates that the certificate is paused.",
           "type": "boolean"
         },
-        "renewalBuffer": {
+        "renewalBufferDays": {
           "description": "Configure certificate renewal buffer period in days. Default 15 days.",
           "type": "integer",
           "format": "int32"

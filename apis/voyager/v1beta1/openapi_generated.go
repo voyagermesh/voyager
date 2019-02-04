@@ -641,7 +641,7 @@ func schema_voyager_apis_voyager_v1beta1_CertificateSpec(ref common.ReferenceCal
 							Format:      "",
 						},
 					},
-					"renewalBuffer": {
+					"renewalBufferDays": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Configure certificate renewal buffer period in days. Default 15 days.",
 							Type:        []string{"integer"},
