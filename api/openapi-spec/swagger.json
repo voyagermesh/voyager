@@ -2392,6 +2392,13 @@
           "description": "A default backend capable of servicing requests that don't match any rule. At least one of 'backend' or 'rules' must be specified. This field is optional to allow the loadbalancer controller or defaulting logic to specify a global default.",
           "$ref": "#/definitions/com.github.appscode.voyager.apis.voyager.v1beta1.HTTPIngressBackend"
         },
+        "configVolumes": {
+          "description": "Config volumes are used to mount any secret or configmap into HAProxy pods.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/com.github.appscode.voyager.apis.voyager.v1beta1.VolumeSource"
+          }
+        },
         "externalIPs": {
           "description": "externalIPs is a list of IP addresses for which nodes in the cluster will also accept traffic for this service.  These IPs are not managed by Kubernetes.  The user is responsible for ensuring that traffic arrives at a node with this IP.  A common example is external load-balancers that are not part of the Kubernetes system.",
           "type": "array",
@@ -2616,6 +2623,33 @@
         }
       }
     },
+    "com.github.appscode.voyager.apis.voyager.v1beta1.VolumeSource": {
+      "description": "Represents the source of a volume to mount. Only one of its members may be specified.",
+      "required": [
+        "mountPath"
+      ],
+      "properties": {
+        "configMap": {
+          "description": "ConfigMap represents a configMap that should populate this volume",
+          "$ref": "#/definitions/io.k8s.api.core.v1.ConfigMapVolumeSource"
+        },
+        "mountPath": {
+          "description": "Path within the container at which the volume should be mounted.  Must not contain ':'.",
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projected": {
+          "description": "Items for all in one resources secrets, configmaps, and downward API",
+          "$ref": "#/definitions/io.k8s.api.core.v1.ProjectedVolumeSource"
+        },
+        "secret": {
+          "description": "Secret represents a secret that should populate this volume. More info: https://kubernetes.io/docs/concepts/storage/volumes#secret",
+          "$ref": "#/definitions/io.k8s.api.core.v1.SecretVolumeSource"
+        }
+      }
+    },
     "io.k8s.api.core.v1.Affinity": {
       "description": "Affinity is a group of affinity scheduling rules.",
       "properties": {
@@ -2630,6 +2664,88 @@
         "podAntiAffinity": {
           "description": "Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).",
           "$ref": "#/definitions/io.k8s.api.core.v1.PodAntiAffinity"
+        }
+      }
+    },
+    "io.k8s.api.core.v1.ConfigMapProjection": {
+      "description": "Adapts a ConfigMap into a projected volume.\n\nThe contents of the target ConfigMap's Data field will be presented in a projected volume as files using the keys in the Data field as the file names, unless the items element is populated with specific mappings of keys to paths. Note that this is identical to a configmap volume source without the default mode.",
+      "properties": {
+        "items": {
+          "description": "If unspecified, each key-value pair in the Data field of the referenced ConfigMap will be projected into the volume as a file whose name is the key and content is the value. If specified, the listed keys will be projected into the specified paths, and unlisted keys will not be present. If a key is specified which is not present in the ConfigMap, the volume setup will error unless it is marked optional. Paths must be relative and may not contain the '..' path or start with '..'.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/io.k8s.api.core.v1.KeyToPath"
+          }
+        },
+        "name": {
+          "description": "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
+          "type": "string"
+        },
+        "optional": {
+          "description": "Specify whether the ConfigMap or it's keys must be defined",
+          "type": "boolean"
+        }
+      }
+    },
+    "io.k8s.api.core.v1.ConfigMapVolumeSource": {
+      "description": "Adapts a ConfigMap into a volume.\n\nThe contents of the target ConfigMap's Data field will be presented in a volume as files using the keys in the Data field as the file names, unless the items element is populated with specific mappings of keys to paths. ConfigMap volumes support ownership management and SELinux relabeling.",
+      "properties": {
+        "defaultMode": {
+          "description": "Optional: mode bits to use on created files by default. Must be a value between 0 and 0777. Defaults to 0644. Directories within the path are not affected by this setting. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.",
+          "type": "integer",
+          "format": "int32"
+        },
+        "items": {
+          "description": "If unspecified, each key-value pair in the Data field of the referenced ConfigMap will be projected into the volume as a file whose name is the key and content is the value. If specified, the listed keys will be projected into the specified paths, and unlisted keys will not be present. If a key is specified which is not present in the ConfigMap, the volume setup will error unless it is marked optional. Paths must be relative and may not contain the '..' path or start with '..'.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/io.k8s.api.core.v1.KeyToPath"
+          }
+        },
+        "name": {
+          "description": "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
+          "type": "string"
+        },
+        "optional": {
+          "description": "Specify whether the ConfigMap or it's keys must be defined",
+          "type": "boolean"
+        }
+      }
+    },
+    "io.k8s.api.core.v1.DownwardAPIProjection": {
+      "description": "Represents downward API info for projecting into a projected volume. Note that this is identical to a downwardAPI volume source without the default mode.",
+      "properties": {
+        "items": {
+          "description": "Items is a list of DownwardAPIVolume file",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/io.k8s.api.core.v1.DownwardAPIVolumeFile"
+          }
+        }
+      }
+    },
+    "io.k8s.api.core.v1.DownwardAPIVolumeFile": {
+      "description": "DownwardAPIVolumeFile represents information to create the file containing the pod field",
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "fieldRef": {
+          "description": "Required: Selects a field of the pod: only annotations, labels, name and namespace are supported.",
+          "$ref": "#/definitions/io.k8s.api.core.v1.ObjectFieldSelector"
+        },
+        "mode": {
+          "description": "Optional: mode bits to use on this file, must be a value between 0 and 0777. If not specified, the volume defaultMode will be used. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.",
+          "type": "integer",
+          "format": "int32"
+        },
+        "path": {
+          "description": "Required: Path is  the relative path name of the file to be created. Must not be absolute or contain the '..' path. Must be utf-8 encoded. The first item of the relative path must not start with '..'",
+          "type": "string"
+        },
+        "resourceFieldRef": {
+          "description": "Selects a resource of the container: only resources limits and requests (limits.cpu, limits.memory, requests.cpu and requests.memory) are currently supported.",
+          "$ref": "#/definitions/io.k8s.api.core.v1.ResourceFieldSelector"
         }
       }
     },
@@ -2689,6 +2805,28 @@
         },
         "value": {
           "description": "The header field value",
+          "type": "string"
+        }
+      }
+    },
+    "io.k8s.api.core.v1.KeyToPath": {
+      "description": "Maps a string key to a path within a volume.",
+      "required": [
+        "key",
+        "path"
+      ],
+      "properties": {
+        "key": {
+          "description": "The key to project.",
+          "type": "string"
+        },
+        "mode": {
+          "description": "Optional: mode bits to use on this file, must be a value between 0 and 0777. If not specified, the volume defaultMode will be used. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.",
+          "type": "integer",
+          "format": "int32"
+        },
+        "path": {
+          "description": "The relative path of the file to map the key to. May not be an absolute path. May not contain the path element '..'. May not start with the string '..'.",
           "type": "string"
         }
       }
@@ -2798,6 +2936,22 @@
           "items": {
             "$ref": "#/definitions/io.k8s.api.core.v1.NodeSelectorRequirement"
           }
+        }
+      }
+    },
+    "io.k8s.api.core.v1.ObjectFieldSelector": {
+      "description": "ObjectFieldSelector selects an APIVersioned field of an object.",
+      "required": [
+        "fieldPath"
+      ],
+      "properties": {
+        "apiVersion": {
+          "description": "Version of the schema the FieldPath is written in terms of, defaults to \"v1\".",
+          "type": "string"
+        },
+        "fieldPath": {
+          "description": "Path of the field to select in the specified API version.",
+          "type": "string"
         }
       }
     },
@@ -2965,6 +3119,46 @@
         }
       }
     },
+    "io.k8s.api.core.v1.ProjectedVolumeSource": {
+      "description": "Represents a projected volume source",
+      "required": [
+        "sources"
+      ],
+      "properties": {
+        "defaultMode": {
+          "description": "Mode bits to use on created files by default. Must be a value between 0 and 0777. Directories within the path are not affected by this setting. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.",
+          "type": "integer",
+          "format": "int32"
+        },
+        "sources": {
+          "description": "list of volume projections",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/io.k8s.api.core.v1.VolumeProjection"
+          }
+        }
+      }
+    },
+    "io.k8s.api.core.v1.ResourceFieldSelector": {
+      "description": "ResourceFieldSelector represents container resources (cpu, memory) and their output format",
+      "required": [
+        "resource"
+      ],
+      "properties": {
+        "containerName": {
+          "description": "Container name: required for volumes, optional for env vars",
+          "type": "string"
+        },
+        "divisor": {
+          "description": "Specifies the output format of the exposed resources, defaults to \"1\"",
+          "$ref": "#/definitions/io.k8s.apimachinery.pkg.api.resource.Quantity"
+        },
+        "resource": {
+          "description": "Required: resource to select",
+          "type": "string"
+        }
+      }
+    },
     "io.k8s.api.core.v1.ResourceRequirements": {
       "description": "ResourceRequirements describes the compute resource requirements.",
       "properties": {
@@ -3001,6 +3195,72 @@
         },
         "user": {
           "description": "User is a SELinux user label that applies to the container.",
+          "type": "string"
+        }
+      }
+    },
+    "io.k8s.api.core.v1.SecretProjection": {
+      "description": "Adapts a secret into a projected volume.\n\nThe contents of the target Secret's Data field will be presented in a projected volume as files using the keys in the Data field as the file names. Note that this is identical to a secret volume source without the default mode.",
+      "properties": {
+        "items": {
+          "description": "If unspecified, each key-value pair in the Data field of the referenced Secret will be projected into the volume as a file whose name is the key and content is the value. If specified, the listed keys will be projected into the specified paths, and unlisted keys will not be present. If a key is specified which is not present in the Secret, the volume setup will error unless it is marked optional. Paths must be relative and may not contain the '..' path or start with '..'.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/io.k8s.api.core.v1.KeyToPath"
+          }
+        },
+        "name": {
+          "description": "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
+          "type": "string"
+        },
+        "optional": {
+          "description": "Specify whether the Secret or its key must be defined",
+          "type": "boolean"
+        }
+      }
+    },
+    "io.k8s.api.core.v1.SecretVolumeSource": {
+      "description": "Adapts a Secret into a volume.\n\nThe contents of the target Secret's Data field will be presented in a volume as files using the keys in the Data field as the file names. Secret volumes support ownership management and SELinux relabeling.",
+      "properties": {
+        "defaultMode": {
+          "description": "Optional: mode bits to use on created files by default. Must be a value between 0 and 0777. Defaults to 0644. Directories within the path are not affected by this setting. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.",
+          "type": "integer",
+          "format": "int32"
+        },
+        "items": {
+          "description": "If unspecified, each key-value pair in the Data field of the referenced Secret will be projected into the volume as a file whose name is the key and content is the value. If specified, the listed keys will be projected into the specified paths, and unlisted keys will not be present. If a key is specified which is not present in the Secret, the volume setup will error unless it is marked optional. Paths must be relative and may not contain the '..' path or start with '..'.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/io.k8s.api.core.v1.KeyToPath"
+          }
+        },
+        "optional": {
+          "description": "Specify whether the Secret or it's keys must be defined",
+          "type": "boolean"
+        },
+        "secretName": {
+          "description": "Name of the secret in the pod's namespace to use. More info: https://kubernetes.io/docs/concepts/storage/volumes#secret",
+          "type": "string"
+        }
+      }
+    },
+    "io.k8s.api.core.v1.ServiceAccountTokenProjection": {
+      "description": "ServiceAccountTokenProjection represents a projected service account token volume. This projection can be used to insert a service account token into the pods runtime filesystem for use against APIs (Kubernetes API Server or otherwise).",
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "audience": {
+          "description": "Audience is the intended audience of the token. A recipient of a token must identify itself with an identifier specified in the audience of the token, and otherwise should reject the token. The audience defaults to the identifier of the apiserver.",
+          "type": "string"
+        },
+        "expirationSeconds": {
+          "description": "ExpirationSeconds is the requested duration of validity of the service account token. As the token approaches expiration, the kubelet volume plugin will proactively rotate the service account token. The kubelet will start trying to rotate the token if the token is older than 80 percent of its time to live or if the token is older than 24 hours.Defaults to 1 hour and must be at least 10 minutes.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "path": {
+          "description": "Path is the path relative to the mount point of the file to project the token into.",
           "type": "string"
         }
       }
@@ -3061,6 +3321,27 @@
         "value": {
           "description": "Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.",
           "type": "string"
+        }
+      }
+    },
+    "io.k8s.api.core.v1.VolumeProjection": {
+      "description": "Projection that may be projected along with other supported volume types",
+      "properties": {
+        "configMap": {
+          "description": "information about the configMap data to project",
+          "$ref": "#/definitions/io.k8s.api.core.v1.ConfigMapProjection"
+        },
+        "downwardAPI": {
+          "description": "information about the downwardAPI data to project",
+          "$ref": "#/definitions/io.k8s.api.core.v1.DownwardAPIProjection"
+        },
+        "secret": {
+          "description": "information about the secret data to project",
+          "$ref": "#/definitions/io.k8s.api.core.v1.SecretProjection"
+        },
+        "serviceAccountToken": {
+          "description": "information about the serviceAccountToken data to project",
+          "$ref": "#/definitions/io.k8s.api.core.v1.ServiceAccountTokenProjection"
         }
       }
     },

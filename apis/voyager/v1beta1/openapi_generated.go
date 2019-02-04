@@ -68,6 +68,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"github.com/appscode/voyager/apis/voyager/v1beta1.TLSAuth":                schema_voyager_apis_voyager_v1beta1_TLSAuth(ref),
 		"github.com/appscode/voyager/apis/voyager/v1beta1.Target":                 schema_voyager_apis_voyager_v1beta1_Target(ref),
 		"github.com/appscode/voyager/apis/voyager/v1beta1.VaultStore":             schema_voyager_apis_voyager_v1beta1_VaultStore(ref),
+		"github.com/appscode/voyager/apis/voyager/v1beta1.VolumeSource":           schema_voyager_apis_voyager_v1beta1_VolumeSource(ref),
 		"github.com/appscode/voyager/apis/voyager/v1beta1.statsService":           schema_voyager_apis_voyager_v1beta1_statsService(ref),
 		"k8s.io/api/core/v1.AWSElasticBlockStoreVolumeSource":                     schema_k8sio_api_core_v1_AWSElasticBlockStoreVolumeSource(ref),
 		"k8s.io/api/core/v1.Affinity":                                             schema_k8sio_api_core_v1_Affinity(ref),
@@ -1346,6 +1347,19 @@ func schema_voyager_apis_voyager_v1beta1_IngressSpec(ref common.ReferenceCallbac
 							},
 						},
 					},
+					"configVolumes": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Config volumes are used to mount any secret or configmap into HAProxy pods.",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("github.com/appscode/voyager/apis/voyager/v1beta1.VolumeSource"),
+									},
+								},
+							},
+						},
+					},
 					"frontendRules": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Frontend rules specifies a set of rules that should be applied in HAProxy frontend configuration. The set of keywords are from here https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.1 Only frontend sections can be applied here. It is up to user to provide valid set of rules. This allows acls or other options in frontend sections in HAProxy config. Frontend rules will be mapped with Ingress Rules according to port.",
@@ -1502,7 +1516,7 @@ func schema_voyager_apis_voyager_v1beta1_IngressSpec(ref common.ReferenceCallbac
 			},
 		},
 		Dependencies: []string{
-			"github.com/appscode/voyager/apis/voyager/v1beta1.FrontendRule", "github.com/appscode/voyager/apis/voyager/v1beta1.HTTPIngressBackend", "github.com/appscode/voyager/apis/voyager/v1beta1.IngressRule", "github.com/appscode/voyager/apis/voyager/v1beta1.IngressTLS", "k8s.io/api/core/v1.Affinity", "k8s.io/api/core/v1.LocalObjectReference", "k8s.io/api/core/v1.PodSecurityContext", "k8s.io/api/core/v1.Probe", "k8s.io/api/core/v1.ResourceRequirements", "k8s.io/api/core/v1.Toleration"},
+			"github.com/appscode/voyager/apis/voyager/v1beta1.FrontendRule", "github.com/appscode/voyager/apis/voyager/v1beta1.HTTPIngressBackend", "github.com/appscode/voyager/apis/voyager/v1beta1.IngressRule", "github.com/appscode/voyager/apis/voyager/v1beta1.IngressTLS", "github.com/appscode/voyager/apis/voyager/v1beta1.VolumeSource", "k8s.io/api/core/v1.Affinity", "k8s.io/api/core/v1.LocalObjectReference", "k8s.io/api/core/v1.PodSecurityContext", "k8s.io/api/core/v1.Probe", "k8s.io/api/core/v1.ResourceRequirements", "k8s.io/api/core/v1.Toleration"},
 	}
 }
 
@@ -1804,6 +1818,52 @@ func schema_voyager_apis_voyager_v1beta1_VaultStore(ref common.ReferenceCallback
 			},
 		},
 		Dependencies: []string{},
+	}
+}
+
+func schema_voyager_apis_voyager_v1beta1_VolumeSource(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "Represents the source of a volume to mount. Only one of its members may be specified.",
+				Properties: map[string]spec.Schema{
+					"name": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"secret": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Secret represents a secret that should populate this volume. More info: https://kubernetes.io/docs/concepts/storage/volumes#secret",
+							Ref:         ref("k8s.io/api/core/v1.SecretVolumeSource"),
+						},
+					},
+					"configMap": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ConfigMap represents a configMap that should populate this volume",
+							Ref:         ref("k8s.io/api/core/v1.ConfigMapVolumeSource"),
+						},
+					},
+					"projected": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Items for all in one resources secrets, configmaps, and downward API",
+							Ref:         ref("k8s.io/api/core/v1.ProjectedVolumeSource"),
+						},
+					},
+					"mountPath": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Path within the container at which the volume should be mounted.  Must not contain ':'.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"mountPath"},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/core/v1.ConfigMapVolumeSource", "k8s.io/api/core/v1.ProjectedVolumeSource", "k8s.io/api/core/v1.SecretVolumeSource"},
 	}
 }
 

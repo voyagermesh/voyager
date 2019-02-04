@@ -28,6 +28,8 @@ Available options:
 
 - `verfyhost <hostname>`: Sets a <hostname> to look for in the Subject and SubjectAlternateNames fields provided in the certificate sent by the server. If <hostname> can’t be found, then the TLS handshake is aborted. This only applies when verify required is configured.
 
+- `ca-file <file-path>`: Specify a CA file to verify the backend server. See [here](/docs/guides/ingress/configuration/config-volumes.md) for complete example.
+
 Example: `ingress.appscode.com/backend-tls: "ssl verify none"`
 
 If this annotation is not set HAProxy will connect to backend as http. This value should not be set if the backend do not support https resolution.
