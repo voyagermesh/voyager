@@ -19,6 +19,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/dyn"
 	"github.com/xenolf/lego/providers/dns/fastdns"
 	"github.com/xenolf/lego/providers/dns/gandi"
+	"github.com/xenolf/lego/providers/dns/gandiv5"
 	"github.com/xenolf/lego/providers/dns/gcloud"
 	"github.com/xenolf/lego/providers/dns/godaddy"
 	"github.com/xenolf/lego/providers/dns/linode"
@@ -172,6 +173,12 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 			return nil, errors.Errorf("dns provider credential missing key %s", "GANDI_API_KEY")
 		}
 		return newDNSProvider(gandi.NewDNSProviderCredentials(apiKey))
+	case "gandiv5":
+		var apiKey string
+		if apiKey, found = dnsLoader("GANDIV5_API_KEY"); !found {
+			return nil, errors.Errorf("dns provider credential missing key %s", "GANDIV5_API_KEY")
+		}
+		return newDNSProvider(gandiv5.NewDNSProviderCredentials(apiKey))
 	case "godaddy":
 		var apiKey, apiSecret string
 		if apiKey, found = dnsLoader("GODADDY_API_KEY"); !found {
