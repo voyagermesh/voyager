@@ -52,7 +52,7 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `voyager.tag`                        | Voyager container image tag                                   | `8.0.1`          |
 | `haproxy.registry`                   | Docker registry used to pull HAProxy image                    | `appscode`            |
 | `haproxy.repository`                 | HAProxy container image                                       | `haproxy`             |
-| `haproxy.tag`                        | HAProxy container image tag                                   | `1.8.12-8.0.1-alpine` |
+| `haproxy.tag`                        | HAProxy container image tag                                   | `1.9.2-8.0.1-alpine` |
 | `cleaner.registry`                   | Docker registry used to pull Webhook cleaner image            | `appscode`            |
 | `cleaner.repository`                 | Webhook cleaner container image                               | `kubectl`             |
 | `cleaner.tag`                        | Webhook cleaner container image tag                           | `v1.11`               |

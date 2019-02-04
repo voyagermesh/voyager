@@ -33,14 +33,14 @@ docker_build() {
   echo "===building voyager docker image==="
   ./hack/docker/voyager/setup.sh
   echo "===building haproxy docker image==="
-  ./hack/docker/haproxy/1.8.12-alpine/setup.sh
+  ./hack/docker/haproxy/1.9.2-alpine/setup.sh
 }
 
 docker_push() {
   echo "===pushing voyager docker image==="
   ./hack/docker/voyager/setup.sh push
   echo "===pushing haproxy docker image==="
-  ./hack/docker/haproxy/1.8.12-alpine/setup.sh push
+  ./hack/docker/haproxy/1.9.2-alpine/setup.sh push
 }
 
 install() {
