@@ -28,7 +28,7 @@ Guides show you how to use Voyager's built-in certificate manager to issue free 
 
 ## Next Steps
 - [Issue Let's Encrypt certificate using HTTP-01 challenge](/docs/guides/certificate/http/overview.md)
-- DNS-01 chanllege providers
+- DNS-01 challenge providers
   - [Issue Let's Encrypt certificate using AWS Route53](/docs/guides/certificate/dns/route53.md)
   - [Issue Let's Encrypt certificate using Google Cloud DNS](/docs/guides/certificate/dns/google-cloud.md)
   - [Supported DNS Challenge Providers](/docs/guides/certificate/dns/providers.md)
