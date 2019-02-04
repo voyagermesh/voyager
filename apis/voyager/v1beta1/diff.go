@@ -229,7 +229,11 @@ func (c Certificate) MatchesDomains(crt *x509.Certificate) bool {
 }
 
 func (c Certificate) ShouldRenew(crt *x509.Certificate) bool {
-	return !crt.NotAfter.After(time.Now().Add(time.Hour * 24 * 7))
+	bufferDays := c.Spec.RenewalBufferDays
+	if bufferDays <= 0 {
+		bufferDays = 15 // default 15 days
+	}
+	return !crt.NotAfter.After(time.Now().Add(time.Duration(bufferDays) * 24 * time.Hour))
 }
 
 func (c Certificate) IsRateLimited() bool {

@@ -364,6 +364,11 @@ spec:
             paused:
               description: Indicates that the certificate is paused.
               type: boolean
+            renewalBufferDays:
+              description: Configure certificate renewal buffer period in days. Default
+                15 days.
+              format: int32
+              type: integer
             storage:
               properties:
                 secret:

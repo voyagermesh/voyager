@@ -2087,6 +2087,11 @@
           "description": "Indicates that the certificate is paused.",
           "type": "boolean"
         },
+        "renewalBufferDays": {
+          "description": "Configure certificate renewal buffer period in days. Default 15 days.",
+          "type": "integer",
+          "format": "int32"
+        },
         "storage": {
           "description": "Storage backend to store the certificates currently, kubernetes secret and vault.",
           "$ref": "#/definitions/com.github.appscode.voyager.apis.voyager.v1beta1.CertificateStorage"
