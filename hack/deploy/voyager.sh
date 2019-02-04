@@ -135,7 +135,7 @@ if [[ "$APPSCODE_ENV" == "dev" ]]; then
 fi
 
 KUBE_APISERVER_VERSION=$(kubectl version -o=json | $ONESSL jsonpath '{.serverVersion.gitVersion}')
-$ONESSL semver --check='<1.9.2' $KUBE_APISERVER_VERSION || { export VOYAGER_ENABLE_VALIDATING_WEBHOOK=true; }
+$ONESSL semver --check='<1.9.0' $KUBE_APISERVER_VERSION || { export VOYAGER_ENABLE_VALIDATING_WEBHOOK=true; }
 $ONESSL semver --check='<1.11.0' $KUBE_APISERVER_VERSION || { export VOYAGER_ENABLE_STATUS_SUBRESOURCE=true; }
 
 export VOYAGER_WEBHOOK_SIDE_EFFECTS=
