@@ -8,19 +8,23 @@ import (
 )
 
 var (
+	lengthV4   = uint16(12)
+	lengthV6   = uint16(36)
+	lengthUnix = uint16(218)
+
 	lengthV4Bytes = func() []byte {
 		a := make([]byte, 2)
-		binary.BigEndian.PutUint16(a, 12)
+		binary.BigEndian.PutUint16(a, lengthV4)
 		return a
 	}()
 	lengthV6Bytes = func() []byte {
 		a := make([]byte, 2)
-		binary.BigEndian.PutUint16(a, 36)
+		binary.BigEndian.PutUint16(a, lengthV6)
 		return a
 	}()
 	lengthUnixBytes = func() []byte {
 		a := make([]byte, 2)
-		binary.BigEndian.PutUint16(a, 218)
+		binary.BigEndian.PutUint16(a, lengthUnix)
 		return a
 	}()
 )
@@ -96,10 +100,13 @@ func parseVersion2(reader *bufio.Reader) (header *Header, err error) {
 		return nil, ErrInvalidLength
 	}
 
+	// Length-limited reader for payload section
+	payloadReader := io.LimitReader(reader, int64(length))
+
 	// Read addresses and ports
 	if header.TransportProtocol.IsIPv4() {
 		var addr _addr4
-		if err := binary.Read(io.LimitReader(reader, int64(length)), binary.BigEndian, &addr); err != nil {
+		if err := binary.Read(payloadReader, binary.BigEndian, &addr); err != nil {
 			return nil, ErrInvalidAddress
 		}
 		header.SourceAddress = addr.Src[:]
@@ -108,7 +115,7 @@ func parseVersion2(reader *bufio.Reader) (header *Header, err error) {
 		header.DestinationPort = addr.DstPort
 	} else if header.TransportProtocol.IsIPv6() {
 		var addr _addr6
-		if err := binary.Read(io.LimitReader(reader, int64(length)), binary.BigEndian, &addr); err != nil {
+		if err := binary.Read(payloadReader, binary.BigEndian, &addr); err != nil {
 			return nil, ErrInvalidAddress
 		}
 		header.SourceAddress = addr.Src[:]
@@ -119,7 +126,7 @@ func parseVersion2(reader *bufio.Reader) (header *Header, err error) {
 	// TODO fully support Unix addresses
 	//	else if header.TransportProtocol.IsUnix() {
 	//		var addr _addrUnix
-	//		if err := binary.Read(io.LimitReader(reader, int64(length)), binary.BigEndian, &addr); err != nil {
+	//		if err := binary.Read(payloadReader, binary.BigEndian, &addr); err != nil {
 	//			return nil, ErrInvalidAddress
 	//		}
 	//
@@ -132,6 +139,9 @@ func parseVersion2(reader *bufio.Reader) (header *Header, err error) {
 	//}
 
 	// TODO add encapsulated TLV support
+
+	// Drain the remaining padding
+	payloadReader.Read(make([]byte, length))
 
 	return header, nil
 }
@@ -182,11 +192,11 @@ func (header *Header) writeVersion2(w io.Writer) (int64, error) {
 
 func (header *Header) validateLength(length uint16) bool {
 	if header.TransportProtocol.IsIPv4() {
-		return length == 12
+		return length >= lengthV4
 	} else if header.TransportProtocol.IsIPv6() {
-		return length == 36
+		return length >= lengthV6
 	} else if header.TransportProtocol.IsUnix() {
-		return length == 218
+		return length >= lengthUnix
 	}
 	return false
 }

@@ -1,13 +1,18 @@
 package e2e
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
+	hello "github.com/appscode/hello-grpc/pkg/apis/hello/v1alpha1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -27,53 +32,29 @@ var _ = Describe("IngressGRPC", func() {
 		f = root.Invoke()
 		ing = f.Ingress.GetSkeleton()
 
-		By("Creating TLS secrets for HAProxy")
-		tlsSecretHAProxy, err = f.Ingress.CreateTLSSecretForHost(f.UniqueName(), []string{framework.TestDomain})
-		Expect(err).NotTo(HaveOccurred())
-
-		By("Creating TLS secrets for Backend Server")
-		tlsSecretBackend, err = f.Ingress.CreateTLSSecretForHost(f.UniqueName(), []string{framework.TestDomain})
-		Expect(err).NotTo(HaveOccurred())
-
 		By("Creating gRPC sample server")
-		grpcController, err = createGRPCController(f, tlsSecretBackend.Name)
+		grpcController, err = createGRPCController(f)
 		Expect(err).NotTo(HaveOccurred())
 
 		By("Creating gRPC sample service")
-		grpcService, err = createGRPCService(f, "/tmp/server-crt/tls.crt")
+		grpcService, err = createGRPCService(f)
 		Expect(err).NotTo(HaveOccurred())
 
-		ing.Spec.TLS = []api.IngressTLS{
-			{
-				Hosts:      []string{"*"},
-				SecretName: tlsSecretHAProxy.Name,
-			},
-		}
-		// TODO
-		/*ing.Spec.ConfigVolumes = []api.VolumeSource{
-			{
-				Name:      "server-crt-volume",
-				MountPath: "/tmp/server-crt",
-				Secret: &core.SecretVolumeSource{
-					SecretName: tlsSecretBackend.Name,
-				},
-			},
-		}*/
 		ing.Spec.Rules = []api.IngressRule{
 			{
 				Host: "*",
 				IngressRuleValue: api.IngressRuleValue{
 					HTTP: &api.HTTPIngressRuleValue{
-						Port: intstr.FromInt(3001),
-						ALPN: []string{"h2", "http/1.1"},
+						Port:  intstr.FromInt(3001),
+						Proto: "h2",
 						Paths: []api.HTTPIngressPath{
 							{
 								Path: "/",
 								Backend: api.HTTPIngressBackend{
 									IngressBackend: api.IngressBackend{
-										ALPN:        []string{"h2", "http/1.1"},
+										Proto:       "h2",
 										ServiceName: grpcService.Name,
-										ServicePort: intstr.FromInt(3000), // gRPC port
+										ServicePort: intstr.FromInt(80),
 									},
 								},
 							},
@@ -117,66 +98,75 @@ var _ = Describe("IngressGRPC", func() {
 			Expect(len(svc.Spec.Ports)).Should(Equal(1)) // 3001
 
 			By("Requesting gRPC in endpoint " + eps[0])
-			err = doGRPC(eps[0])
+			err = doGRPC(eps[0], "")
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
 })
 
-func doGRPC(url string) error {
-	// TODO
+func doGRPC(address, crtPath string) error {
+	option := grpc.WithInsecure()
+	if len(crtPath) > 0 {
+		creds, err := credentials.NewClientTLSFromFile(crtPath, "")
+		if err != nil {
+			fmt.Errorf("failed to load TLS certificate")
+		}
+		option = grpc.WithTransportCredentials(creds)
+	}
+
+	conn, err := grpc.Dial(address, option)
+	if err != nil {
+		return fmt.Errorf("did not connect, %v", err)
+	}
+	defer conn.Close()
+
+	client := hello.NewHelloServiceClient(conn)
+	result, err := client.Intro(context.Background(), &hello.IntroRequest{Name: "Voyager"})
+	if err != nil {
+		return err
+	}
+	log.Infoln(result)
 	return nil
 }
 
-func createGRPCController(f *framework.Invocation, tlsSecretName string) (*core.ReplicationController, error) {
+func createGRPCController(f *framework.Invocation) (*core.ReplicationController, error) {
 	return f.KubeClient.CoreV1().ReplicationControllers(f.Namespace()).Create(&core.ReplicationController{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      f.UniqueName(),
 			Namespace: f.Namespace(),
 			Labels: map[string]string{
-				"app": "test-grpc-server-" + f.App(),
+				"app": "hello-grpc-" + f.App(),
 			},
 		},
 		Spec: core.ReplicationControllerSpec{
 			Replicas: types.Int32P(1),
 			Selector: map[string]string{
-				"app": "test-grpc-server-" + f.App(),
+				"app": "hello-grpc-" + f.App(),
 			},
 			Template: &core.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"app": "test-grpc-server-" + f.App(),
+						"app": "hello-grpc-" + f.App(),
 					},
 				},
 				Spec: core.PodSpec{
-					Volumes: []core.Volume{
-						{
-							Name: "tls-secret",
-							VolumeSource: core.VolumeSource{
-								Secret: &core.SecretVolumeSource{
-									SecretName: tlsSecretName,
-								},
-							},
-						},
-					},
 					Containers: []core.Container{
 						{
 							Name:  "grpc-server",
-							Image: "diptadas/sample-grpc-server:1.0",
+							Image: "appscode/hello-grpc:0.1.0",
 							Args: []string{
-								"--crt=/tmp/server-crt/tls.crt",
-								"--key=/tmp/server-crt/tls.key",
+								"run",
+								"--v=3",
 							},
 							Ports: []core.ContainerPort{
 								{
-									Name:          "grpc",
-									ContainerPort: 3000,
+									ContainerPort: 8080,
 								},
-							},
-							VolumeMounts: []core.VolumeMount{
 								{
-									Name:      "tls-secret",
-									MountPath: "/tmp/server-crt",
+									ContainerPort: 8443,
+								},
+								{
+									ContainerPort: 56790,
 								},
 							},
 						},
@@ -187,29 +177,38 @@ func createGRPCController(f *framework.Invocation, tlsSecretName string) (*core.
 	})
 }
 
-func createGRPCService(f *framework.Invocation, caFilePath string) (*core.Service, error) {
+func createGRPCService(f *framework.Invocation) (*core.Service, error) {
 	return f.KubeClient.CoreV1().Services(f.Namespace()).Create(&core.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      f.UniqueName(),
 			Namespace: f.Namespace(),
 			Labels: map[string]string{
-				"app": "test-grpc-server-" + f.App(),
-			},
-			Annotations: map[string]string{
-				"ingress.appscode.com/backend-tls": fmt.Sprintf("ssl ca-file %s", caFilePath),
+				"app": "hello-grpc-" + f.App(),
 			},
 		},
 		Spec: core.ServiceSpec{
 			Ports: []core.ServicePort{
 				{
-					Name:       "grpc",
-					Port:       3000,
-					TargetPort: intstr.FromInt(3000),
+					Name:       "http",
+					Port:       80,
+					TargetPort: intstr.FromInt(8080),
+					Protocol:   "TCP",
+				},
+				{
+					Name:       "tls",
+					Port:       443,
+					TargetPort: intstr.FromInt(8443),
+					Protocol:   "TCP",
+				},
+				{
+					Name:       "opa",
+					Port:       56790,
+					TargetPort: intstr.FromInt(56790),
 					Protocol:   "TCP",
 				},
 			},
 			Selector: map[string]string{
-				"app": "test-grpc-server-" + f.App(),
+				"app": "hello-grpc-" + f.App(),
 			},
 		},
 	})

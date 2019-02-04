@@ -53,6 +53,7 @@ type ServerOptions struct {
 	SSHKey               string
 	ReservedIP           string
 	IPV6                 bool
+	Networks             []string
 	PrivateNetworking    bool
 	AutoBackups          bool
 	DontNotifyOnActivate bool
@@ -293,14 +294,20 @@ func (c *Client) CreateServer(name string, regionID, planID, osID int, options *
 			values.Add("reserved_ip_v4", options.ReservedIP)
 		}
 
+		if options.Networks != nil && len(options.Networks) != 0 {
+			for _, n := range options.Networks {
+				values.Add("NETWORKID[]", n)
+			}
+		} else {
+			values.Add("enable_private_network", "no")
+			if options.PrivateNetworking {
+				values.Set("enable_private_network", "yes")
+			}
+		}
+
 		values.Add("enable_ipv6", "no")
 		if options.IPV6 {
 			values.Set("enable_ipv6", "yes")
-		}
-
-		values.Add("enable_private_network", "no")
-		if options.PrivateNetworking {
-			values.Set("enable_private_network", "yes")
 		}
 
 		values.Add("auto_backups", "no")
@@ -475,6 +482,32 @@ func (c *Client) GetISOStatusofServer(id string) (isoStatus ISOStatus, err error
 	return isoStatus, nil
 }
 
+// RestoreBackup restore the specified backup to the virtual machine
+func (c *Client) RestoreBackup(id, backupID string) error {
+	values := url.Values{
+		"SUBID":    {id},
+		"BACKUPID": {backupID},
+	}
+
+	if err := c.post(`server/restore_backup`, values, nil); err != nil {
+		return err
+	}
+	return nil
+}
+
+// RestoreSnapshot restore the specified snapshot to the virtual machine
+func (c *Client) RestoreSnapshot(id, snapshotID string) error {
+	values := url.Values{
+		"SUBID":      {id},
+		"SNAPSHOTID": {snapshotID},
+	}
+
+	if err := c.post(`server/restore_snapshot`, values, nil); err != nil {
+		return err
+	}
+	return nil
+}
+
 // DeleteServer deletes an existing virtual machine
 func (c *Client) DeleteServer(id string) error {
 	values := url.Values{
@@ -558,4 +591,97 @@ func (c *Client) ListApplicationsforServer(id string) (apps []Application, err e
 	}
 	sort.Sort(applications(apps))
 	return apps, nil
+}
+
+// PrivateNetwork on Vultr
+type PrivateNetwork struct {
+	ID         string `json:"NETWORKID"`
+	MACAddress string `json:"mac_address"`
+	IPAddress  string `json:"ip_address"`
+}
+
+type privateNetworks []PrivateNetwork
+
+func (p privateNetworks) Len() int      { return len(p) }
+func (p privateNetworks) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
+func (p privateNetworks) Less(i, j int) bool {
+	return strings.ToLower(p[i].MACAddress) < strings.ToLower(p[j].MACAddress)
+}
+
+// ListPrivateNetworksForServer lists all the private networks to which an existing virtual machine is attached
+func (c *Client) ListPrivateNetworksForServer(id string) (nets []PrivateNetwork, err error) {
+	var netMap map[string]PrivateNetwork
+	if err := c.get(`server/private_networks?SUBID=`+id, &netMap); err != nil {
+		return nil, err
+	}
+
+	for _, net := range netMap {
+		nets = append(nets, net)
+	}
+	sort.Sort(privateNetworks(nets))
+	return nets, nil
+}
+
+// DisablePrivateNetworkForServer removes the given virtual machine from the given private network
+func (c *Client) DisablePrivateNetworkForServer(id, networkID string) error {
+	values := url.Values{
+		"SUBID":     {id},
+		"NETWORKID": {networkID},
+	}
+
+	return c.post(`server/private_network_disable`, values, nil)
+}
+
+// EnablePrivateNetworkForServer enables private networking for the given virtual machine.
+// If private networking is already enabled, then nothing occurs.
+// If multiple private networks exist in the virtual machine's region, then the network ID must be specified.
+func (c *Client) EnablePrivateNetworkForServer(id, networkID string) error {
+	values := url.Values{
+		"SUBID": {id},
+	}
+	if networkID != "" {
+		values.Add("NETWORKID", networkID)
+	}
+
+	return c.post(`server/private_network_enable`, values, nil)
+}
+
+// BackupSchedule represents a scheduled backup on a server
+// see: server/backup_set_schedule, server/backup_get_schedule
+type BackupSchedule struct {
+	CronType             string `json:"cron_type"`
+	NextScheduledTimeUtc string `json:"next_scheduled_time_utc"`
+	Hour                 int    `json:"hour"`
+	Dow                  int    `json:"dow"`
+	Dom                  int    `json:"dom"`
+}
+
+// BackupScheduleResponse details about a virtual machines backup schedule
+type BackupScheduleResponse struct {
+	Enabled bool `json:"enabled"`
+	BackupSchedule
+}
+
+// BackupGetSchedule returns a virtual machines backup schedule
+func (c *Client) BackupGetSchedule(id string) (*BackupScheduleResponse, error) {
+	var bsr = &BackupScheduleResponse{}
+	values := url.Values{
+		"SUBID": {id},
+	}
+	if err := c.post(`server/backup_get_schedule`, values, &bsr); err != nil {
+		return nil, err
+	}
+	return bsr, nil
+}
+
+// BackupSetSchedule sets the backup schedule given a BackupSchedule struct
+func (c *Client) BackupSetSchedule(id string, bs BackupSchedule) error {
+	values := url.Values{
+		"SUBID":     {id},
+		"cron_type": {bs.CronType},
+		"hour":      {string(bs.Hour)},
+		"dow":       {string(bs.Dow)},
+		"dom":       {string(bs.Dom)},
+	}
+	return c.post(`server/backup_set_schedule`, values, nil)
 }
