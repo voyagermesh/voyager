@@ -166,18 +166,40 @@ func (c *controller) getEndpoints(svc *core.Service, servicePort *core.ServicePo
 			}
 		}
 	}
-	return &hpi.Backend{
-		BasicAuth:        c.getServiceAuth(userLists, svc),
-		Endpoints:        eps,
-		Sticky:           c.Ingress.Sticky() || isServiceSticky(svc.Annotations),
-		StickyCookieName: c.Ingress.StickySessionCookieName(),
-		StickyCookieHash: c.Ingress.StickySessionCookieHashType(),
-	}, nil
+
+	backend := &hpi.Backend{
+		BasicAuth: c.getServiceAuth(userLists, svc),
+		Endpoints: eps,
+	}
+
+	if c.Ingress.Sticky() {
+		backend.Sticky = true
+		backend.StickyCookieName = c.Ingress.StickySessionCookieName()
+		backend.StickyCookieHash = c.Ingress.StickySessionCookieHashType()
+	} else if isServiceSticky(svc.Annotations) {
+		backend.Sticky = true
+		backend.StickyCookieName = serviceStickySessionCookieName(svc.Annotations)
+		backend.StickyCookieHash = serviceStickySessionCookieHashType(svc.Annotations)
+	}
+
+	return backend, nil
 }
 
 func isServiceSticky(annotations map[string]string) bool {
 	v, _ := meta.GetStringValue(annotations, api.IngressAffinity)
 	return v == "cookie"
+}
+
+func serviceStickySessionCookieName(annotations map[string]string) string {
+	if v, _ := meta.GetStringValue(annotations, api.IngressAffinitySessionCookieName); v != "" {
+		return v
+	}
+	return "SERVERID"
+}
+
+func serviceStickySessionCookieHashType(annotations map[string]string) string {
+	v, _ := meta.GetStringValue(annotations, api.IngressAffinitySessionCookieHash)
+	return v
 }
 
 func isForwardable(hostNames []string, hostName string) bool {
