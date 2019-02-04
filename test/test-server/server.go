@@ -76,9 +76,11 @@ func (h HTTPSHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+// cd ~/go/src/github.com/appscode/voyager/test/test-server
+// go run *.go --ca
+// curl --cacert cert.pem 'https://ssl.appscode.test:6443' --resolve ssl.appscode.test:6443:127.0.0.1
 func runHTTPS(port string) {
 	fmt.Println("https server running on port", port)
-	GenCert("http.appscode.test,ssl.appscode.test")
 	http.ListenAndServeTLS(port, "cert.pem", "key.pem", HTTPSHandler{port})
 }
 
@@ -164,6 +166,7 @@ func main() {
 
 	go runProxy(":6767")
 
+	GenCert("http.appscode.test,ssl.appscode.test")
 	go runHTTPS(":6443")
 	go runHTTPS(":3443")
 
