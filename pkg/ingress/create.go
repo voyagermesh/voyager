@@ -83,6 +83,7 @@ func (c *controller) ensureStatsService() (*core.Service, kutil.VerbType, error)
 	}
 
 	return core_util.CreateOrPatchService(c.KubeClient, meta, func(in *core.Service) *core.Service {
+		in.ObjectMeta = c.ensureOwnerReference(in.ObjectMeta)
 		in.Labels = c.Ingress.StatsLabels()
 		if in.Annotations == nil {
 			in.Annotations = map[string]string{}
