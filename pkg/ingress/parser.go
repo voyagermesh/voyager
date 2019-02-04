@@ -195,7 +195,7 @@ func isForwardable(hostNames []string, hostName string) bool {
 
 func getSpecifiedPort(ports []core.ServicePort, port intstr.IntOrString) (*core.ServicePort, bool) {
 	for _, p := range ports {
-		if int(p.Port) == port.IntValue() {
+		if int(p.Port) == port.IntValue() || p.Name == port.StrVal {
 			return &p, true
 		}
 	}

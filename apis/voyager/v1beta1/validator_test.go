@@ -38,6 +38,24 @@ var dataTables = map[*Ingress]bool{
 		},
 	}: false,
 	{
+		ObjectMeta: metav1.ObjectMeta{Name: "Named backend service port"},
+		Spec: IngressSpec{
+			Rules: []IngressRule{
+				{
+					IngressRuleValue: IngressRuleValue{
+						TCP: &TCPIngressRuleValue{
+							Port: intstr.FromInt(3434),
+							Backend: IngressBackend{
+								ServiceName: "service-with-named-port",
+								ServicePort: intstr.FromString("http"),
+							},
+						},
+					},
+				},
+			},
+		},
+	}: true,
+	{
 		ObjectMeta: metav1.ObjectMeta{Name: "Invalid backend service name"},
 		Spec: IngressSpec{
 			Rules: []IngressRule{
