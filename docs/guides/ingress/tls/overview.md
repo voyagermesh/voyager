@@ -13,8 +13,8 @@ section_menu_id: guides
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
 
 # TLS
-You can secure an Ingress by specifying a secret containing TLS pem or by referring a `certificate.voyager.appscode.com` resource.
-`certificate.voyager.appscode.com` can manage an certificate resource and use that certificate to encrypt communication.
+You can secure an Ingress by specifying a secret containing TLS pem or by referring a `certificates.voyager.appscode.com` resource.
+`certificates.voyager.appscode.com` can manage an certificate resource and use that certificate to encrypt communication.
 
 This tutorial will show you how to secure an Ingress using TLS/SSL certificates.
 
