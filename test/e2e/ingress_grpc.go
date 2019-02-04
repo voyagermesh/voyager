@@ -3,6 +3,8 @@ package e2e
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
@@ -18,14 +20,13 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-var _ = Describe("IngressGRPC", func() {
+var _ = FDescribe("IngressGRPC", func() {
 	var (
-		f                                  *framework.Invocation
-		ing                                *api.Ingress
-		tlsSecretHAProxy, tlsSecretBackend *core.Secret
-		grpcController                     *core.ReplicationController
-		grpcService                        *core.Service
-		err                                error
+		f              *framework.Invocation
+		ing            *api.Ingress
+		grpcController *core.ReplicationController
+		grpcService    *core.Service
+		err            error
 	)
 
 	BeforeEach(func() {
@@ -77,10 +78,9 @@ var _ = Describe("IngressGRPC", func() {
 	})
 
 	AfterEach(func() {
+		time.Sleep(time.Hour)
 		if options.Cleanup {
 			f.Ingress.Delete(ing)
-			f.KubeClient.CoreV1().Secrets(tlsSecretHAProxy.Namespace).Delete(tlsSecretHAProxy.Name, &metav1.DeleteOptions{})
-			f.KubeClient.CoreV1().Secrets(tlsSecretBackend.Namespace).Delete(tlsSecretBackend.Name, &metav1.DeleteOptions{})
 			f.KubeClient.CoreV1().Services(f.Ingress.Namespace()).Delete(grpcService.Name, &metav1.DeleteOptions{})
 			f.KubeClient.CoreV1().ReplicationControllers(f.Ingress.Namespace()).Delete(grpcController.Name, &metav1.DeleteOptions{})
 		}
@@ -105,6 +105,9 @@ var _ = Describe("IngressGRPC", func() {
 })
 
 func doGRPC(address, crtPath string) error {
+	address = strings.TrimPrefix(address, "http://")
+	address = strings.TrimPrefix(address, "https://")
+
 	option := grpc.WithInsecure()
 	if len(crtPath) > 0 {
 		creds, err := credentials.NewClientTLSFromFile(crtPath, "")
@@ -187,6 +190,7 @@ func createGRPCService(f *framework.Invocation) (*core.Service, error) {
 			},
 		},
 		Spec: core.ServiceSpec{
+			Type: core.ServiceTypeNodePort, // TODO ClusterIP
 			Ports: []core.ServicePort{
 				{
 					Name:       "http",
