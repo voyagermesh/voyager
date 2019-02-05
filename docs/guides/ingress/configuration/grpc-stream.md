@@ -21,7 +21,7 @@ Please note the followings:
 - A single rule/backend can't use both `ALPN` and `proto`.
 - Multiple rules pointing the same frontend can't use different `ALPN` or, `proto` configurations.
 
-## Example: gRPC Stream
+## Example: gRPC Without TLS
 
 First create demo namespace for this example.
 
@@ -37,37 +37,42 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   labels:
-    run: test-server
-  name: test-server
+    run: grpc-server
+  name: grpc-server
   namespace: demo
 spec:
   selector:
     matchLabels:
-      run: test-server
+      run: grpc-server
   template:
     metadata:
       labels:
-        run: test-server
+        run: grpc-server
     spec:
       containers:
-      - image: diptadas/haproxy-grpc-sample-server:1.3
-        name: test-server
+      - image: appscode/hello-grpc:0.1.0
+        args:
+        - run
+        - --v=3
+        name: grpc-server
         imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    run: test-server
-  name: test-server
+    run: grpc-server
+  name: grpc-server
   namespace: demo
 spec:
   ports:
   - port: 3000
-    targetPort: 3000
-    name: grpc
+    targetPort: 8080
+    name: h2c
   selector:
-    run: test-server
+    run: grpc-server
 ```
 
 ### Create Ingress
@@ -87,7 +92,7 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: test-server
+          serviceName: grpc-server
           servicePort: 3000
           proto: h2
 ```
@@ -134,33 +139,25 @@ frontend http-0_0_0_0-3001
   http-request set-var(req.scheme) str(https) if is_proxy_https
   http-request set-var(req.scheme) str(http) if ! is_proxy_https
   acl acl_: path_beg /
-  use_backend test-server.demo:3000 if  acl_:
-backend test-server.demo:3000
-  server pod-test-server-bd758cd57-2sj2f 172.17.0.6:3000        proto h2
+  use_backend grpc-server.demo:3000 if  acl_:
+backend grpc-server.demo:3000
+  server pod-grpc-server-6c7f686bbb-jhngb 172.17.0.6:8080        proto h2
 ```
 
 ### Check Response
 
 ```console
 $ minikube service --url voyager-test-ingress -n demo
-http://192.168.99.100:30003
+http://192.168.99.100:30652
 ```
 
-Run a gRPC client using docker.
+Run gRPC client using docker.
 
 ```
-$ docker run -it diptadas/haproxy-grpc-sample-client:1.3 --address=192.168.99.100:30003
-2019/02/05 04:58:42 192.168.99.100:30003 
-Generating codenames...
-2019/02/05 04:58:42 Received: Curious Warthog
-2019/02/05 04:58:43 Received: Languid Giraffe
-2019/02/05 04:58:44 Received: Mighty Shark
-2019/02/05 04:58:45 Received: Mighty Heron
-2019/02/05 04:58:46 Received: Sleepy Vulture
-2019/02/05 04:58:47 Received: Languid Lizard
+$ docker run -it diptadas/hello-client:0.1.0 --address=192.168.99.100:30652
+2019/02/05 08:01:18 192.168.99.100:30652
+2019/02/05 08:01:18 intro:"hello, Voyager!"
 ```
-
-You will see a stream of random names.
 
 ### Cleanup
 
@@ -172,5 +169,4 @@ namespace "demo" deleted
 ## Reference
 
 - https://www.haproxy.com/blog/haproxy-1-9-2-adds-grpc-support
-- https://github.com/appscode/haproxy-grpc-sample/tree/x1
 
