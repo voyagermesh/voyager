@@ -30,9 +30,7 @@ $ kubectl create namespace demo
 namespace/demo created
 ```
 
-### Deploy Test Server
-
-Deploy a gRPC test server.
+### Deploy gRPC Test Server
 
 ```yaml
 apiVersion: extensions/v1beta1
@@ -52,7 +50,7 @@ spec:
         run: test-server
     spec:
       containers:
-      - image: diptadas/grpc-sample-server
+      - image: diptadas/haproxy-grpc-sample-server:1.3
         name: test-server
         imagePullPolicy: Always
 ---
@@ -63,8 +61,6 @@ metadata:
     run: test-server
   name: test-server
   namespace: demo
-  annotations:
-    ingress.appscode.com/backend-tls: ssl ca-file /tmp/ca/server.crt
 spec:
   ports:
   - port: 3000
@@ -74,25 +70,7 @@ spec:
     run: test-server
 ```
 
-Here, using `ingress.appscode.com/backend-tls` annotation we have specified the path of CA file. HAProxy will use this CA file to verify the backend server. So, we need to provide the CA file inside the haproxy-container in path `/tmp/ca/server.crt`. 
-
-### Create Secret
-
-Create secret for haproxy server.
-
-```
-$ kubectl create secret tls haproxy-secret -n demo --cert=sample/creds/haproxy.crt  --key=sample/creds/haproxy.key
-```
-
-Also, create another secret using the CA file of backend server.
-
-```
-$ kubectl create secret generic ca-secret -n demo --from-file=sample/creds/server.crt
-```
-
 ### Create Ingress
-
-Create the ingress and specify the secret of backend-server CA in `spec.configVolumes` and secret of haproxy TLS in `spec.tls`.
 
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
@@ -100,32 +78,18 @@ kind: Ingress
 metadata:
   name: test-ingress
   namespace: demo
-  annotations:
-    ingress.appscode.com/default-option: '{"http-server-close": "true", "dontlognull": "true", "http-use-htx": "true", "logasap": "true"}'
 spec:
-  tls:
-  - secretName: haproxy-secret
-    hosts:
-    - "*"
-  configVolumes:
-  - name: ca-vol
-    secret:
-      secretName: ca-secret
-    mountPath: /tmp/ca
   rules:
   - host: "*"
     http:
-      alpn:
-      - h2
-      - http/1.1
+      port: 3001
+      proto: h2
       paths:
       - path: /
         backend:
           serviceName: test-server
           servicePort: 3000
-          alpn:
-          - h2
-          - http/1.1
+          proto: h2
 ```
 
 ### Generated haproxy.cfg
@@ -150,7 +114,6 @@ defaults
   option dontlognull
   option http-server-close
   option http-use-htx
-  option logasap
   # Timeout values
   timeout client 50s
   timeout client-fin 50s
@@ -161,25 +124,8 @@ defaults
   # default traffic mode is http
   # mode is overwritten in case of tcp services
   mode http
-frontend http-0_0_0_0-80
-  bind *:80  
-  mode http
-  option httplog
-  option forwardfor
-  acl is_proxy_https hdr(X-Forwarded-Proto) https
-  acl is_proxy_https ssl_fc
-  http-request set-var(req.scheme) str(https) if is_proxy_https
-  http-request set-var(req.scheme) str(http) if ! is_proxy_https
-  acl acl_: path_beg /
-  http-request set-var(req.redirect_to_ssl) req.hdr(host) if ! is_proxy_https  acl_:
-  http-request replace-header Host ^(.*?):80+$ \1:443 if { var(req.redirect_to_ssl) -m found }
-  http-request redirect scheme https code 308 if { var(req.redirect_to_ssl) -m found }
-frontend http-0_0_0_0-443
-  bind *:443  ssl no-sslv3 no-tlsv10 no-tls-tickets crt /etc/ssl/private/haproxy/tls/  alpn h2,http/1.1 
-  # Mark all cookies as secure
-  rsprep ^Set-Cookie:\ (.*) Set-Cookie:\ \1;\ Secure
-  # Add the HSTS header with a 6 month default max-age
-  http-response set-header Strict-Transport-Security max-age=15768000
+frontend http-0_0_0_0-3001
+  bind *:3001  proto h2
   mode http
   option httplog
   option forwardfor
@@ -190,28 +136,28 @@ frontend http-0_0_0_0-443
   acl acl_: path_beg /
   use_backend test-server.demo:3000 if  acl_:
 backend test-server.demo:3000
-  server pod-test-server-84947f8d55-r7xv9 172.17.0.5:3000     ssl ca-file /tmp/ca/server.crt    alpn h2,http/1.1
+  server pod-test-server-bd758cd57-2sj2f 172.17.0.6:3000        proto h2
 ```
 
 ### Check Response
 
 ```console
 $ minikube service --url voyager-test-ingress -n demo
-http://192.168.99.100:32277
-http://192.168.99.100:30139
+http://192.168.99.100:30003
 ```
 
 Run a gRPC client using docker.
 
 ```
-$ docker run -it --env SERVER_ADDRESS=haproxy:32277 --env TLS_CERT=haproxy.crt --add-host=haproxy:192.168.99.100 diptadas/grpc-sample-client
-
+$ docker run -it diptadas/haproxy-grpc-sample-client:1.3 --address=192.168.99.100:30003
+2019/02/05 04:58:42 192.168.99.100:30003 
 Generating codenames...
-2019/01/25 13:43:04 Received: Gallant Heron
-2019/01/25 13:43:05 Received: Wicked Warthog
-2019/01/25 13:43:06 Received: Quizzical Coyote
-2019/01/25 13:43:07 Received: Artistic Shark
-2019/01/25 13:43:08 Received: Lucid Vulture
+2019/02/05 04:58:42 Received: Curious Warthog
+2019/02/05 04:58:43 Received: Languid Giraffe
+2019/02/05 04:58:44 Received: Mighty Shark
+2019/02/05 04:58:45 Received: Mighty Heron
+2019/02/05 04:58:46 Received: Sleepy Vulture
+2019/02/05 04:58:47 Received: Languid Lizard
 ```
 
 You will see a stream of random names.
@@ -222,4 +168,9 @@ You will see a stream of random names.
 $ kubectl delete ns demo
 namespace "demo" deleted
 ```
+
+## Reference
+
+- https://www.haproxy.com/blog/haproxy-1-9-2-adds-grpc-support
+- https://github.com/appscode/haproxy-grpc-sample/tree/x1
 
