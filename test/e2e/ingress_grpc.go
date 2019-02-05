@@ -18,7 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-var _ = FDescribe("IngressGRPC", func() {
+var _ = Describe("IngressGRPC", func() {
 	var (
 		f              *framework.Invocation
 		ing            *api.Ingress
