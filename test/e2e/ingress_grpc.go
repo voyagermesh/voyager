@@ -4,9 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
-	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
 	hello "github.com/appscode/hello-grpc/pkg/apis/hello/v1alpha1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -78,7 +76,6 @@ var _ = FDescribe("IngressGRPC", func() {
 	})
 
 	AfterEach(func() {
-		time.Sleep(time.Hour)
 		if options.Cleanup {
 			f.Ingress.Delete(ing)
 			f.KubeClient.CoreV1().Services(f.Ingress.Namespace()).Delete(grpcService.Name, &metav1.DeleteOptions{})
@@ -98,13 +95,14 @@ var _ = FDescribe("IngressGRPC", func() {
 			Expect(len(svc.Spec.Ports)).Should(Equal(1)) // 3001
 
 			By("Requesting gRPC in endpoint " + eps[0])
-			err = doGRPC(eps[0], "")
+			result, err := doGRPC(eps[0], "", &hello.IntroRequest{Name: "Voyager"})
 			Expect(err).NotTo(HaveOccurred())
+			Expect(result.Intro).Should(Equal("hello, Voyager!"))
 		})
 	})
 })
 
-func doGRPC(address, crtPath string) error {
+func doGRPC(address, crtPath string, request *hello.IntroRequest) (*hello.IntroResponse, error) {
 	address = strings.TrimPrefix(address, "http://")
 	address = strings.TrimPrefix(address, "https://")
 
@@ -112,24 +110,19 @@ func doGRPC(address, crtPath string) error {
 	if len(crtPath) > 0 {
 		creds, err := credentials.NewClientTLSFromFile(crtPath, "")
 		if err != nil {
-			fmt.Errorf("failed to load TLS certificate")
+			return nil, fmt.Errorf("failed to load TLS certificate")
 		}
 		option = grpc.WithTransportCredentials(creds)
 	}
 
 	conn, err := grpc.Dial(address, option)
 	if err != nil {
-		return fmt.Errorf("did not connect, %v", err)
+		return nil, fmt.Errorf("did not connect, %v", err)
 	}
 	defer conn.Close()
 
 	client := hello.NewHelloServiceClient(conn)
-	result, err := client.Intro(context.Background(), &hello.IntroRequest{Name: "Voyager"})
-	if err != nil {
-		return err
-	}
-	log.Infoln(result)
-	return nil
+	return client.Intro(context.Background(), request)
 }
 
 func createGRPCController(f *framework.Invocation) (*core.ReplicationController, error) {
@@ -165,12 +158,6 @@ func createGRPCController(f *framework.Invocation) (*core.ReplicationController,
 								{
 									ContainerPort: 8080,
 								},
-								{
-									ContainerPort: 8443,
-								},
-								{
-									ContainerPort: 56790,
-								},
 							},
 						},
 					},
@@ -196,18 +183,6 @@ func createGRPCService(f *framework.Invocation) (*core.Service, error) {
 					Name:       "http",
 					Port:       80,
 					TargetPort: intstr.FromInt(8080),
-					Protocol:   "TCP",
-				},
-				{
-					Name:       "tls",
-					Port:       443,
-					TargetPort: intstr.FromInt(8443),
-					Protocol:   "TCP",
-				},
-				{
-					Name:       "opa",
-					Port:       56790,
-					TargetPort: intstr.FromInt(56790),
 					Protocol:   "TCP",
 				},
 			},
