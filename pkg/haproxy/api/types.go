@@ -91,6 +91,7 @@ type HTTPService struct {
 	NodePortFor443 int32
 	OffloadSSL     bool
 	ALPNOptions    string
+	Proto          string
 	FrontendRules  []string
 	BasicAuth      *BasicAuth
 	TLSAuth        *TLSAuth
@@ -147,6 +148,7 @@ type TCPService struct {
 	FrontendRules []string
 	OffloadSSL    bool
 	ALPNOptions   string
+	Proto         string
 	TLSAuth       *TLSAuth
 	Hosts         []*TCPHost
 }
@@ -175,6 +177,9 @@ type Backend struct {
 	Sticky           bool
 	StickyCookieName string
 	StickyCookieHash string
+
+	ALPNOptions string
+	Proto       string
 }
 
 type ExternalAuth struct {

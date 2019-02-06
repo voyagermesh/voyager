@@ -84,6 +84,11 @@ func (r Ingress) IsValid(cloudProvider string) error {
 		}
 	}
 
+	// check if both alpn and proto specified in the same rule/backend
+	if err := r.ProtoWithALPN(); err != nil {
+		return err
+	}
+
 	addrs := make(map[string]*address)
 	nodePorts := make(map[int]int)
 	usesHTTPRule := false
@@ -142,6 +147,11 @@ func (r Ingress) IsValid(cloudProvider string) error {
 				// check for conflicting ALPN
 				if rule.ParseALPNOptions() != r.Spec.Rules[ea.FirstRuleIndex].ParseALPNOptions() {
 					return errors.Errorf("spec.rules[%d].HTTP has conflicting ALPN spec with spec.rules[%d].HTTP", ri, ea.FirstRuleIndex)
+				}
+
+				// check for conflicting Proto
+				if rule.HTTP.Proto != r.Spec.Rules[ea.FirstRuleIndex].HTTP.Proto {
+					return errors.Errorf("spec.rules[%d].HTTP has conflicting Proto spec with spec.rules[%d].HTTP", ri, ea.FirstRuleIndex)
 				}
 
 				a = ea // paths will be merged into the original one
@@ -245,6 +255,11 @@ func (r Ingress) IsValid(cloudProvider string) error {
 				// check for conflicting ALPN
 				if rule.ParseALPNOptions() != r.Spec.Rules[ea.FirstRuleIndex].ParseALPNOptions() {
 					return errors.Errorf("spec.rules[%d].TCP has conflicting ALPN spec with spec.rules[%d].TCP", ri, ea.FirstRuleIndex)
+				}
+
+				// check for conflicting Proto
+				if rule.TCP.Proto != r.Spec.Rules[ea.FirstRuleIndex].TCP.Proto {
+					return errors.Errorf("spec.rules[%d].TCP has conflicting Proto spec with spec.rules[%d].TCP", ri, ea.FirstRuleIndex)
 				}
 
 				a = ea

@@ -941,3 +941,100 @@ func TestOauth(t *testing.T) {
 		}
 	}
 }
+
+func TestProtoAndALPN(t *testing.T) {
+	si := &hpi.SharedInfo{}
+	testParsedConfig := hpi.TemplateData{
+		SharedInfo: si,
+		HTTPService: []*hpi.HTTPService{
+			{
+				Port:         1111,
+				SharedInfo:   si,
+				FrontendName: "with-alpn-1",
+				ALPNOptions:  "alpn h2,http/1.1",
+				OffloadSSL:   true,
+				Hosts: []*hpi.HTTPHost{
+					{
+						Paths: []*hpi.HTTPPath{
+							{
+								Backend: &hpi.Backend{
+									Name:  "bk-1",
+									Proto: "h2",
+									Endpoints: []*hpi.Endpoint{
+										{Name: "aaa", IP: "10.244.2.1", Port: "2323"},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			{
+				Port:         2222,
+				SharedInfo:   si,
+				FrontendName: "with-alpn-2",
+				Proto:        "h2",
+				OffloadSSL:   true,
+				Hosts: []*hpi.HTTPHost{
+					{
+						Paths: []*hpi.HTTPPath{
+							{
+								Backend: &hpi.Backend{
+									Name:        "bk-2",
+									ALPNOptions: "alpn http/1.1,http/1.0",
+									Endpoints: []*hpi.Endpoint{
+										{Name: "aaa", IP: "10.244.2.1", Port: "2323"},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		TCPService: []*hpi.TCPService{
+			{
+				Port:         "3333",
+				SharedInfo:   si,
+				FrontendName: "with-alpn-3",
+				ALPNOptions:  "alpn h2,http/1.1",
+				Hosts: []*hpi.TCPHost{
+					{
+						Backend: &hpi.Backend{
+							Name:  "bk-3",
+							Proto: "h2",
+							Endpoints: []*hpi.Endpoint{
+								{Name: "aaa", IP: "10.244.2.1", Port: "2323"},
+							},
+						},
+					},
+				},
+			},
+			{
+				Port:         "4444",
+				SharedInfo:   si,
+				FrontendName: "with-alpn-4",
+				Proto:        "h2",
+				Hosts: []*hpi.TCPHost{
+					{
+						Backend: &hpi.Backend{
+							Name:        "bk-4",
+							ALPNOptions: "alpn http/1.1,http/1.0",
+							Endpoints: []*hpi.Endpoint{
+								{Name: "aaa", IP: "10.244.2.1", Port: "2323"},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
+	if assert.Nil(t, err) {
+		config, err := RenderConfig(testParsedConfig)
+		assert.Nil(t, err)
+		if testing.Verbose() {
+			fmt.Println(err, "\n", config)
+		}
+	}
+}

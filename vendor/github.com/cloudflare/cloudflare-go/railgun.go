@@ -46,10 +46,11 @@ type railgunsResponse struct {
 }
 
 // CreateRailgun creates a new Railgun.
-//
-// API reference: https://api.cloudflare.com/#railgun-create-railgun
+// API reference:
+// 	https://api.cloudflare.com/#railgun-create-railgun
+// 	POST /railguns
 func (api *API) CreateRailgun(name string) (Railgun, error) {
-	uri := api.userBaseURL("") + "/railguns"
+	uri := "/railguns"
 	params := struct {
 		Name string `json:"name"`
 	}{
@@ -67,14 +68,15 @@ func (api *API) CreateRailgun(name string) (Railgun, error) {
 }
 
 // ListRailguns lists Railguns connected to an account.
-//
-// API reference: https://api.cloudflare.com/#railgun-list-railguns
+// API reference:
+//  https://api.cloudflare.com/#railgun-list-railguns
+//  GET /railguns
 func (api *API) ListRailguns(options RailgunListOptions) ([]Railgun, error) {
 	v := url.Values{}
 	if options.Direction != "" {
 		v.Set("direction", options.Direction)
 	}
-	uri := api.userBaseURL("") + "/railguns" + "?" + v.Encode()
+	uri := "/railguns" + "?" + v.Encode()
 	res, err := api.makeRequest("GET", uri, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, errMakeRequestError)
@@ -87,10 +89,11 @@ func (api *API) ListRailguns(options RailgunListOptions) ([]Railgun, error) {
 }
 
 // RailgunDetails returns the details for a Railgun.
-//
-// API reference: https://api.cloudflare.com/#railgun-railgun-details
+// API reference:
+// 	https://api.cloudflare.com/#railgun-railgun-details
+// 	GET /railguns/:identifier
 func (api *API) RailgunDetails(railgunID string) (Railgun, error) {
-	uri := api.userBaseURL("") + "/railguns/" + railgunID
+	uri := "/railguns/" + railgunID
 	res, err := api.makeRequest("GET", uri, nil)
 	if err != nil {
 		return Railgun{}, errors.Wrap(err, errMakeRequestError)
@@ -103,10 +106,11 @@ func (api *API) RailgunDetails(railgunID string) (Railgun, error) {
 }
 
 // RailgunZones returns the zones that are currently using a Railgun.
-//
-// API reference: https://api.cloudflare.com/#railgun-get-zones-connected-to-a-railgun
+// API reference:
+// 	https://api.cloudflare.com/#railgun-get-zones-connected-to-a-railgun
+// 	GET /railguns/:identifier/zones
 func (api *API) RailgunZones(railgunID string) ([]Zone, error) {
-	uri := api.userBaseURL("") + "/railguns/" + railgunID + "/zones"
+	uri := "/railguns/" + railgunID + "/zones"
 	res, err := api.makeRequest("GET", uri, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, errMakeRequestError)
@@ -119,10 +123,11 @@ func (api *API) RailgunZones(railgunID string) ([]Zone, error) {
 }
 
 // enableRailgun enables (true) or disables (false) a Railgun for all zones connected to it.
-//
-// API reference: https://api.cloudflare.com/#railgun-enable-or-disable-a-railgun
+// API reference:
+//  https://api.cloudflare.com/#railgun-enable-or-disable-a-railgun
+//  PATCH /railguns/:identifier
 func (api *API) enableRailgun(railgunID string, enable bool) (Railgun, error) {
-	uri := api.userBaseURL("") + "/railguns/" + railgunID
+	uri := "/railguns/" + railgunID
 	params := struct {
 		Enabled bool `json:"enabled"`
 	}{
@@ -140,24 +145,27 @@ func (api *API) enableRailgun(railgunID string, enable bool) (Railgun, error) {
 }
 
 // EnableRailgun enables a Railgun for all zones connected to it.
-//
-// API reference: https://api.cloudflare.com/#railgun-enable-or-disable-a-railgun
+// API reference:
+//  https://api.cloudflare.com/#railgun-enable-or-disable-a-railgun
+//  PATCH /railguns/:identifier
 func (api *API) EnableRailgun(railgunID string) (Railgun, error) {
 	return api.enableRailgun(railgunID, true)
 }
 
 // DisableRailgun enables a Railgun for all zones connected to it.
-//
-// API reference: https://api.cloudflare.com/#railgun-enable-or-disable-a-railgun
+// API reference:
+//  https://api.cloudflare.com/#railgun-enable-or-disable-a-railgun
+//  PATCH /railguns/:identifier
 func (api *API) DisableRailgun(railgunID string) (Railgun, error) {
 	return api.enableRailgun(railgunID, false)
 }
 
 // DeleteRailgun disables and deletes a Railgun.
-//
-// API reference: https://api.cloudflare.com/#railgun-delete-railgun
+// API reference:
+// 	https://api.cloudflare.com/#railgun-delete-railgun
+// 	DELETE /railguns/:identifier
 func (api *API) DeleteRailgun(railgunID string) error {
-	uri := api.userBaseURL("") + "/railguns/" + railgunID
+	uri := "/railguns/" + railgunID
 	if _, err := api.makeRequest("DELETE", uri, nil); err != nil {
 		return errors.Wrap(err, errMakeRequestError)
 	}
@@ -201,7 +209,7 @@ type RailgunDiagnosis struct {
 	ConnectionClose bool   `json:"connection_close"`
 	Cloudflare      string `json:"cloudflare"`
 	CFRay           string `json:"cf-ray"`
-	// NOTE: Cloudflare's online API documentation does not yet have definitions
+	// NOTE: CloudFlare's online API documentation does not yet have definitions
 	// for the following fields. See: https://api.cloudflare.com/#railgun-connections-for-a-zone-test-railgun-connection/
 	CFWANError    string `json:"cf-wan-error"`
 	CFCacheStatus string `json:"cf-cache-status"`
@@ -214,8 +222,9 @@ type railgunDiagnosisResponse struct {
 }
 
 // ZoneRailguns returns the available Railguns for a zone.
-//
-// API reference: https://api.cloudflare.com/#railguns-for-a-zone-get-available-railguns
+// API reference:
+// 	https://api.cloudflare.com/#railguns-for-a-zone-get-available-railguns
+// 	GET /zones/:zone_identifier/railguns
 func (api *API) ZoneRailguns(zoneID string) ([]ZoneRailgun, error) {
 	uri := "/zones/" + zoneID + "/railguns"
 	res, err := api.makeRequest("GET", uri, nil)
@@ -229,9 +238,10 @@ func (api *API) ZoneRailguns(zoneID string) ([]ZoneRailgun, error) {
 	return r.Result, nil
 }
 
-// ZoneRailgunDetails returns the configuration for a given Railgun.
-//
-// API reference: https://api.cloudflare.com/#railguns-for-a-zone-get-railgun-details
+// Railgun returns the configuration for a given Railgun.
+// API reference:
+// 	https://api.cloudflare.com/#railguns-for-a-zone-get-railgun-details
+// 	GET /zones/:zone_identifier/railguns/:identifier
 func (api *API) ZoneRailgunDetails(zoneID, railgunID string) (ZoneRailgun, error) {
 	uri := "/zones/" + zoneID + "/railguns/" + railgunID
 	res, err := api.makeRequest("GET", uri, nil)
@@ -245,9 +255,10 @@ func (api *API) ZoneRailgunDetails(zoneID, railgunID string) (ZoneRailgun, error
 	return r.Result, nil
 }
 
-// TestRailgunConnection tests a Railgun connection for a given zone.
-//
-// API reference: https://api.cloudflare.com/#railgun-connections-for-a-zone-test-railgun-connection
+// TestRailgunResponse tests a Railgun connection for a given zone.
+// API reference:
+//  https://api.cloudflare.com/#railgun-connections-for-a-zone-test-railgun-connection
+//  GET /zones/:zone_identifier/railguns/:identifier/diagnose
 func (api *API) TestRailgunConnection(zoneID, railgunID string) (RailgunDiagnosis, error) {
 	uri := "/zones/" + zoneID + "/railguns/" + railgunID + "/diagnose"
 	res, err := api.makeRequest("GET", uri, nil)
@@ -262,8 +273,9 @@ func (api *API) TestRailgunConnection(zoneID, railgunID string) (RailgunDiagnosi
 }
 
 // connectZoneRailgun connects (true) or disconnects (false) a Railgun for a given zone.
-//
-// API reference: https://api.cloudflare.com/#railguns-for-a-zone-connect-or-disconnect-a-railgun
+// API reference:
+//  https://api.cloudflare.com/#railguns-for-a-zone-connect-or-disconnect-a-railgun
+//  PATCH /zones/:zone_identifier/railguns/:identifier
 func (api *API) connectZoneRailgun(zoneID, railgunID string, connect bool) (ZoneRailgun, error) {
 	uri := "/zones/" + zoneID + "/railguns/" + railgunID
 	params := struct {
@@ -282,16 +294,18 @@ func (api *API) connectZoneRailgun(zoneID, railgunID string, connect bool) (Zone
 	return r.Result, nil
 }
 
-// ConnectZoneRailgun connects a Railgun for a given zone.
-//
-// API reference: https://api.cloudflare.com/#railguns-for-a-zone-connect-or-disconnect-a-railgun
+// ZoneRailgun connects a Railgun for a given zone.
+// API reference:
+// 	https://api.cloudflare.com/#railguns-for-a-zone-connect-or-disconnect-a-railgun
+// 	PATCH /zones/:zone_identifier/railguns/:identifier
 func (api *API) ConnectZoneRailgun(zoneID, railgunID string) (ZoneRailgun, error) {
 	return api.connectZoneRailgun(zoneID, railgunID, true)
 }
 
-// DisconnectZoneRailgun disconnects a Railgun for a given zone.
-//
-// API reference: https://api.cloudflare.com/#railguns-for-a-zone-connect-or-disconnect-a-railgun
+// ZoneRailgun disconnects a Railgun for a given zone.
+// API reference:
+//  https://api.cloudflare.com/#railguns-for-a-zone-connect-or-disconnect-a-railgun
+//  PATCH /zones/:zone_identifier/railguns/:identifier
 func (api *API) DisconnectZoneRailgun(zoneID, railgunID string) (ZoneRailgun, error) {
 	return api.connectZoneRailgun(zoneID, railgunID, false)
 }

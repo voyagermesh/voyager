@@ -508,6 +508,11 @@ func (in *IngressBackend) DeepCopyInto(out *IngressBackend) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.ALPN != nil {
+		in, out := &in.ALPN, &out.ALPN
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 

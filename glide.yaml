@@ -129,6 +129,10 @@ import:
   version: release-9.0
 - package: sigs.k8s.io/yaml
   version: v1.1.0
+- package: github.com/grpc-ecosystem/grpc-gateway
+  repo: https://github.com/appscode/grpc-gateway.git
+  vcs: git
+  version: v1.3.1-ac
 testImport:
 - package: github.com/stretchr/testify
   version: v1.2.2

@@ -949,6 +949,27 @@ func schema_voyager_apis_voyager_v1beta1_HTTPIngressBackend(ref common.Reference
 							},
 						},
 					},
+					"alpn": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Application-Layer Protocol Negotiation (ALPN) is a Transport Layer Security (TLS) extension for application layer protocol negotiation. ALPN allows the application layer to negotiate which protocol should be performed over a secure connection in a manner which avoids additional round trips and which is independent of the application layer protocols. It is used by HTTP/2. If provided a list of alpn will be added to port as alpn option1,option2,... If SecretName is Provided this secret will be used to terminate SSL with alpn options. If Secret name is not provided backend server is responsible for handling SSL. Note that, the order of the options indicates the preference If the ALPN list contains \"h2\",  \"option http-use-htx\" will be added to enable HTX mode https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#option%20http-use-htx https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#alpn",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Type:   []string{"string"},
+										Format: "",
+									},
+								},
+							},
+						},
+					},
+					"proto": {
+						SchemaProps: spec.SchemaProps{
+							Description: "HTTP protocol to use If the Proto contains \"h2\",  \"option http-use-htx\" will be added to enable HTX mode https://www.haproxy.com/blog/haproxy-1-9-2-adds-grpc-support/",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 					"rewriteRules": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Path rewrite rules with haproxy formatted regex.\n\nDeprecated: Use backendRule, will be removed.",
@@ -1046,7 +1067,7 @@ func schema_voyager_apis_voyager_v1beta1_HTTPIngressRuleValue(ref common.Referen
 					},
 					"alpn": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Application-Layer Protocol Negotiation (ALPN) is a Transport Layer Security (TLS) extension for application layer protocol negotiation. ALPN allows the application layer to negotiate which protocol should be performed over a secure connection in a manner which avoids additional round trips and which is independent of the application layer protocols. It is used by HTTP/2. If provided a list of alpn will be added to port as alpn option1,option2,... If SecretName is Provided this secret will be used to terminate SSL with alpn options. If Secret name is not provided backend server is responsible for handling SSL.",
+							Description: "Application-Layer Protocol Negotiation (ALPN) is a Transport Layer Security (TLS) extension for application layer protocol negotiation. ALPN allows the application layer to negotiate which protocol should be performed over a secure connection in a manner which avoids additional round trips and which is independent of the application layer protocols. It is used by HTTP/2. If provided a list of alpn will be added to port as alpn option1,option2,... If SecretName is Provided this secret will be used to terminate SSL with alpn options. If Secret name is not provided backend server is responsible for handling SSL. Note that, the order of the options indicates the preference If the ALPN list contains \"h2\",  \"option http-use-htx\" will be added to enable HTX mode https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#option%20http-use-htx https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#alpn",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -1056,6 +1077,13 @@ func schema_voyager_apis_voyager_v1beta1_HTTPIngressRuleValue(ref common.Referen
 									},
 								},
 							},
+						},
+					},
+					"proto": {
+						SchemaProps: spec.SchemaProps{
+							Description: "HTTP protocol to use If the Proto contains \"h2\",  \"option http-use-htx\" will be added to enable HTX mode https://www.haproxy.com/blog/haproxy-1-9-2-adds-grpc-support/",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
 					"paths": {
@@ -1178,6 +1206,27 @@ func schema_voyager_apis_voyager_v1beta1_IngressBackend(ref common.ReferenceCall
 									},
 								},
 							},
+						},
+					},
+					"alpn": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Application-Layer Protocol Negotiation (ALPN) is a Transport Layer Security (TLS) extension for application layer protocol negotiation. ALPN allows the application layer to negotiate which protocol should be performed over a secure connection in a manner which avoids additional round trips and which is independent of the application layer protocols. It is used by HTTP/2. If provided a list of alpn will be added to port as alpn option1,option2,... If SecretName is Provided this secret will be used to terminate SSL with alpn options. If Secret name is not provided backend server is responsible for handling SSL. Note that, the order of the options indicates the preference If the ALPN list contains \"h2\",  \"option http-use-htx\" will be added to enable HTX mode https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#option%20http-use-htx https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#alpn",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Type:   []string{"string"},
+										Format: "",
+									},
+								},
+							},
+						},
+					},
+					"proto": {
+						SchemaProps: spec.SchemaProps{
+							Description: "HTTP protocol to use If the Proto contains \"h2\",  \"option http-use-htx\" will be added to enable HTX mode https://www.haproxy.com/blog/haproxy-1-9-2-adds-grpc-support/",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
 				},
@@ -1709,7 +1758,7 @@ func schema_voyager_apis_voyager_v1beta1_TCPIngressRuleValue(ref common.Referenc
 					},
 					"alpn": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Application-Layer Protocol Negotiation (ALPN) is a Transport Layer Security (TLS) extension for application layer protocol negotiation. ALPN allows the application layer to negotiate which protocol should be performed over a secure connection in a manner which avoids additional round trips and which is independent of the application layer protocols. It is used by HTTP/2. If provided a list of alpn will be added to port as alpn option1,option2,... If SecretName is Provided this secret will be used to terminate SSL with alpn options. If Secret name is not provided backend server is responsible for handling SSL.",
+							Description: "Application-Layer Protocol Negotiation (ALPN) is a Transport Layer Security (TLS) extension for application layer protocol negotiation. ALPN allows the application layer to negotiate which protocol should be performed over a secure connection in a manner which avoids additional round trips and which is independent of the application layer protocols. It is used by HTTP/2. If provided a list of alpn will be added to port as alpn option1,option2,... If SecretName is Provided this secret will be used to terminate SSL with alpn options. If Secret name is not provided backend server is responsible for handling SSL. Note that, the order of the options indicates the preference If the ALPN list contains \"h2\",  \"option http-use-htx\" will be added to enable HTX mode https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#option%20http-use-htx https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#alpn",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -1719,6 +1768,13 @@ func schema_voyager_apis_voyager_v1beta1_TCPIngressRuleValue(ref common.Referenc
 									},
 								},
 							},
+						},
+					},
+					"proto": {
+						SchemaProps: spec.SchemaProps{
+							Description: "HTTP protocol to use If the Proto contains \"h2\",  \"option http-use-htx\" will be added to enable HTX mode https://www.haproxy.com/blog/haproxy-1-9-2-adds-grpc-support/",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
 				},

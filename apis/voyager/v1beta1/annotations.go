@@ -705,6 +705,14 @@ func (r Ingress) HAProxyOptions() map[string]bool {
 	if len(ret) == 0 {
 		ret["http-server-close"] = true
 		ret["dontlognull"] = true
+		if r.UseHTX() {
+			ret["http-use-htx"] = true
+
+			// HAProxy defaults to only logging the traffic when the full request/response transaction has completed.
+			// When streaming data bidirectionally between the client and server,
+			// you should use 'option logasap' to tell HAProxy to log the connection right away.
+			ret["logasap"] = true
+		}
 	}
 	return ret
 }

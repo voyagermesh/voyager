@@ -4,8 +4,10 @@ import (
 	"errors"
 	"reflect"
 
+	"github.com/appscode/go/types"
 	"github.com/appscode/kutil"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
+	corev1 "k8s.io/api/core/v1"
 	ecs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -95,6 +97,7 @@ func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new 
 		}
 
 		actual.Labels = new.Prometheus.Labels
+		actual.ObjectMeta = agent.ensureOwnerReference(actual.ObjectMeta, *svc)
 		actual.Spec.Selector = metav1.LabelSelector{
 			MatchLabels: svc.Labels,
 		}
@@ -149,6 +152,7 @@ func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor
 			},
 		},
 	}
+	sm.ObjectMeta = agent.ensureOwnerReference(sm.ObjectMeta, *svc)
 	if _, err := agent.promClient.ServiceMonitors(spec.Prometheus.Namespace).Create(sm); err != nil && !kerr.IsAlreadyExists(err) {
 		return kutil.VerbUnchanged, err
 	}
@@ -192,4 +196,24 @@ func (agent *PrometheusCoreosOperator) supportsCoreOSOperator() bool {
 		return false
 	}
 	return true
+}
+
+func (agent *PrometheusCoreosOperator) ensureOwnerReference(in metav1.ObjectMeta, svc corev1.Service) metav1.ObjectMeta {
+	fi := -1
+	for i, ref := range in.OwnerReferences {
+		if ref.Kind == "Service" && ref.Name == svc.Name {
+			fi = i
+			break
+		}
+	}
+	if fi == -1 {
+		in.OwnerReferences = append(in.OwnerReferences, metav1.OwnerReference{})
+		fi = len(in.OwnerReferences) - 1
+	}
+	in.OwnerReferences[fi].APIVersion = "v1"
+	in.OwnerReferences[fi].Kind = "Service"
+	in.OwnerReferences[fi].Name = svc.Name
+	in.OwnerReferences[fi].UID = svc.UID
+	in.OwnerReferences[fi].BlockOwnerDeletion = types.TrueP()
+	return in
 }
