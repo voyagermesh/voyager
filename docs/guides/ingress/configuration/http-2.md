@@ -119,6 +119,7 @@ defaults
   option dontlognull
   option http-server-close
   option http-use-htx
+  option logasap
   # Timeout values
   timeout client 50s
   timeout client-fin 50s
@@ -317,6 +318,7 @@ defaults
   option dontlognull
   option http-server-close
   option http-use-htx
+  option logasap
   # Timeout values
   timeout client 50s
   timeout client-fin 50s
