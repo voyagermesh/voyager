@@ -178,7 +178,7 @@ namespace/demo created
 
 ### Create Secrets
 
-Generate certs and create secret for backend server:
+Generate certs and create secret for backend server. Here we are using [onessl](https://github.com/kubepack/onessl). You can use openssl or any other tools to generate the certificates.
 
 ```
 $ mkdir server-certs; cd server-certs
