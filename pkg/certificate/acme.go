@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/pkg/errors"
@@ -19,6 +20,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/dyn"
 	"github.com/xenolf/lego/providers/dns/fastdns"
 	"github.com/xenolf/lego/providers/dns/gandi"
+	"github.com/xenolf/lego/providers/dns/gandiv5"
 	"github.com/xenolf/lego/providers/dns/gcloud"
 	"github.com/xenolf/lego/providers/dns/godaddy"
 	"github.com/xenolf/lego/providers/dns/linode"
@@ -172,6 +174,36 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 			return nil, errors.Errorf("dns provider credential missing key %s", "GANDI_API_KEY")
 		}
 		return newDNSProvider(gandi.NewDNSProviderCredentials(apiKey))
+	case "gandiv5":
+		var apiKey string
+		config := gandiv5.NewDefaultConfig()
+		if apiKey, found = dnsLoader("GANDIV5_API_KEY"); !found {
+			return nil, errors.Errorf("dns provider credential missing key %s", "GANDIV5_API_KEY")
+		}
+		config.APIKey = apiKey
+		if ttl, found := dnsLoader("GANDIV5_TTL"); found {
+			if ttlInt, err := strconv.Atoi(ttl); err == nil {
+				config.TTL = ttlInt
+			}
+		}
+		if propagationTimeout, found := dnsLoader("GANDIV5_PROPAGATION_TIMEOUT"); found {
+			if propagationTimeoutInt, err := strconv.Atoi(propagationTimeout); err == nil {
+				config.PropagationTimeout = time.Duration(propagationTimeoutInt) * time.Second
+			}
+		}
+		if pollingInterval, found := dnsLoader("GANDIV5_POLLING_INTERVAL"); found {
+			if pollingIntervalInt, err := strconv.Atoi(pollingInterval); err == nil {
+				config.PollingInterval = time.Duration(pollingIntervalInt) * time.Second
+			}
+		}
+		if httpTimeout, found := dnsLoader("GANDIV5_HTTP_TIMEOUT"); found {
+			if httpTimeoutInt, err := strconv.Atoi(httpTimeout); err == nil {
+				config.HTTPClient = &http.Client{
+					Timeout: time.Duration(httpTimeoutInt) * time.Second,
+				}
+			}
+		}
+		return newDNSProvider(gandiv5.NewDNSProviderConfig(config))
 	case "godaddy":
 		var apiKey, apiSecret string
 		if apiKey, found = dnsLoader("GODADDY_API_KEY"); !found {

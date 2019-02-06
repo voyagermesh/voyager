@@ -554,6 +554,7 @@ imports:
   - providers/dns/dyn
   - providers/dns/fastdns
   - providers/dns/gandi
+  - providers/dns/gandiv5
   - providers/dns/gcloud
   - providers/dns/godaddy
   - providers/dns/linode
