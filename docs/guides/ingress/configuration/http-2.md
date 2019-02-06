@@ -154,7 +154,7 @@ http://192.168.99.100:30652
 Run gRPC client using docker.
 
 ```
-$ docker run -it diptadas/hello-client:0.1.0 --address=192.168.99.100:30652
+$ docker run -it appscode/hello-grpc:0.1.0 client --address=192.168.99.100:30652 --name=Voyager
 2019/02/05 08:01:18 192.168.99.100:30652
 2019/02/05 08:01:18 intro:"hello, Voyager!"
 ```
@@ -356,7 +356,7 @@ http://192.168.99.100:30446
 Run gRPC client using docker and specify the haproxy certs.
 
 ```
-$ docker run -v $(pwd)/haproxy-certs:/tmp/certs -it diptadas/hello-client:0.1.0 --address=192.168.99.100:30446 --crt=/tmp/certs/bundle.crt
+$ docker run -v $(pwd)/haproxy-certs:/tmp/certs -it appscode/hello-grpc:0.1.0 client --address=192.168.99.100:30446 --crt=/tmp/certs/bundle.crt --name=Voyager
 2019/02/05 12:11:13 192.168.99.100:30446
 2019/02/05 12:11:13 intro:"hello, Voyager!"
 ```
