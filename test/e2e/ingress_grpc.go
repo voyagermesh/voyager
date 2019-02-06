@@ -3,8 +3,6 @@ package e2e
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"github.com/appscode/go/types"
 	hello "github.com/appscode/hello-grpc/pkg/apis/hello/v1alpha1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -16,9 +14,10 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"strings"
 )
 
-var _ = Describe("IngressGRPC", func() {
+var _ = FDescribe("IngressGRPC", func() {
 	var (
 		f              *framework.Invocation
 		ing            *api.Ingress
@@ -94,10 +93,15 @@ var _ = Describe("IngressGRPC", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(svc.Spec.Ports)).Should(Equal(1)) // 3001
 
-			By("Requesting gRPC in endpoint " + eps[0])
+			By("Requesting Intro API in endpoint " + eps[0])
 			result, err := doGRPC(eps[0], "", &hello.IntroRequest{Name: "Voyager"})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(result.Intro).Should(Equal("hello, Voyager!"))
+
+			By("Requesting Stream API in endpoint " + eps[0])
+			result, err = doGRPCStream(eps[0], "", &hello.IntroRequest{Name: "Voyager"})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(result.Intro).Should(Equal("0: hello, Voyager!"))
 		})
 	})
 })
@@ -125,6 +129,35 @@ func doGRPC(address, crtPath string, request *hello.IntroRequest) (*hello.IntroR
 	return client.Intro(context.Background(), request)
 }
 
+func doGRPCStream(address, crtPath string, request *hello.IntroRequest) (*hello.IntroResponse, error) {
+	address = strings.TrimPrefix(address, "http://")
+	address = strings.TrimPrefix(address, "https://")
+
+	option := grpc.WithInsecure()
+	if len(crtPath) > 0 {
+		creds, err := credentials.NewClientTLSFromFile(crtPath, "")
+		if err != nil {
+			return nil, fmt.Errorf("failed to load TLS certificate")
+		}
+		option = grpc.WithTransportCredentials(creds)
+
+	}
+
+	conn, err := grpc.Dial(address, option)
+	if err != nil {
+		return nil, fmt.Errorf("did not connect, %v", err)
+	}
+	defer conn.Close()
+
+	streamClient, err := hello.NewHelloServiceClient(conn).Stream(context.Background(), request)
+	if err != nil {
+		return nil, err
+	}
+
+	// just receive first result instead of streaming all results
+	return streamClient.Recv()
+}
+
 func createGRPCController(f *framework.Invocation) (*core.ReplicationController, error) {
 	return f.KubeClient.CoreV1().ReplicationControllers(f.Namespace()).Create(&core.ReplicationController{
 		ObjectMeta: metav1.ObjectMeta{
@@ -149,7 +182,7 @@ func createGRPCController(f *framework.Invocation) (*core.ReplicationController,
 					Containers: []core.Container{
 						{
 							Name:  "grpc-server",
-							Image: "appscode/hello-grpc:0.1.0",
+							Image: "diptadas/hello-grpc:x3",
 							Args: []string{
 								"run",
 								"--v=3",

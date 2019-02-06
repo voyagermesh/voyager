@@ -1,5 +1,5 @@
-hash: 88180038251a36293e1be762935f22ca2f12d6ea02d518b17131ca513945c571
-updated: 2019-02-04T11:39:34.995577258+06:00
+hash: 0ed30ee7fbb179e45bd7e1f05798cd847e7f98880e0284fecf101aec771435e7
+updated: 2019-02-06T17:53:30.412710527+06:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -34,7 +34,7 @@ imports:
 - name: github.com/appscode/go-version
   version: 7aba545c679b0f45679eeb406dc662d2c8a04c26
 - name: github.com/appscode/hello-grpc
-  version: eee4f2094e7029eb7991c9c01e0f574e6092a66e
+  version: 6e3e35fbbfaf3256a6d8cff3dce704c62aa56e03
   subpackages:
   - pkg/apis/hello/v1alpha1
 - name: github.com/appscode/jsonpatch
