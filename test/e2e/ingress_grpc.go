@@ -3,6 +3,9 @@ package e2e
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/appscode/go/types"
 	hello "github.com/appscode/hello-grpc/pkg/apis/hello/v1alpha1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
@@ -14,10 +17,9 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"strings"
 )
 
-var _ = FDescribe("IngressGRPC", func() {
+var _ = Describe("IngressGRPC", func() {
 	var (
 		f              *framework.Invocation
 		ing            *api.Ingress
@@ -94,17 +96,37 @@ var _ = FDescribe("IngressGRPC", func() {
 			Expect(len(svc.Spec.Ports)).Should(Equal(1)) // 3001
 
 			By("Requesting Intro API in endpoint " + eps[0])
-			result, err := doGRPC(eps[0], "", &hello.IntroRequest{Name: "Voyager"})
+			result, err := doWithRetry(eps[0], "Voyager", false, framework.MaxRetry)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(result.Intro).Should(Equal("hello, Voyager!"))
+			Expect(result).Should(Equal("hello, Voyager!"))
 
 			By("Requesting Stream API in endpoint " + eps[0])
-			result, err = doGRPCStream(eps[0], "", &hello.IntroRequest{Name: "Voyager"})
+			result, err = doWithRetry(eps[0], "Voyager", true, framework.MaxRetry)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(result.Intro).Should(Equal("0: hello, Voyager!"))
+			Expect(result).Should(Equal("0: hello, Voyager!"))
 		})
 	})
 })
+
+func doWithRetry(address, name string, stream bool, retryCount int) (string, error) {
+	var (
+		request = &hello.IntroRequest{Name: name}
+		result  *hello.IntroResponse
+		err     error
+	)
+	for i := 0; i < retryCount; i++ {
+		if stream {
+			result, err = doGRPCStream(address, "", request)
+		} else {
+			result, err = doGRPC(address, "", request)
+		}
+		if err == nil {
+			return result.Intro, nil
+		}
+		time.Sleep(time.Second * 5)
+	}
+	return "", err
+}
 
 func doGRPC(address, crtPath string, request *hello.IntroRequest) (*hello.IntroResponse, error) {
 	address = strings.TrimPrefix(address, "http://")
