@@ -82,6 +82,16 @@ To learn about necessary IAM permissions, please see [here](/docs/guides/certifi
  - Credential secret keys:
    - `GANDI_API_KEY`: The API key for a Gandi user
 
+### Gandi V5
+
+- Provider: `gandiv5`
+- Credential secret keys:
+  - `GANDIV5_API_KEY`: The V5 API key for a Gandi user
+  - `GANDIV5_TTL`: `Optional`. The TXT record TTL
+  - `GANDIV5_PROPAGATION_TIMEOUT`: `Optional`. Acme package timeout (in seconds) when checking for DNS record propagation
+  - `GANDIV5_POLLING_INTERVAL`: `Optional`. Acme package polling interval (in seconds) when checking for DNS record propagation
+  - `GANDIV5_HTTP_TIMEOUT`: `Optional`. HTTP client request timeout (in seconds).
+
 ### GoDaddy
  - Provider: `godaddy`
  - Credential secret keys:
