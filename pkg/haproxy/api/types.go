@@ -180,6 +180,8 @@ type Backend struct {
 
 	ALPNOptions string
 	Proto       string
+
+	LoadBalanceOn string
 }
 
 type ExternalAuth struct {

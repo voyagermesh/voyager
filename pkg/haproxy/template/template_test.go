@@ -1038,3 +1038,66 @@ func TestProtoAndALPN(t *testing.T) {
 		}
 	}
 }
+
+func TestBackendLoadBalance(t *testing.T) {
+	si := &hpi.SharedInfo{
+		DefaultBackend: &hpi.Backend{
+			Name: "default",
+			Endpoints: []*hpi.Endpoint{
+				{Name: "first", IP: "10.244.2.1", Port: "2323"},
+			},
+			LoadBalanceOn: "leastconn",
+		},
+	}
+	testParsedConfig := hpi.TemplateData{
+		SharedInfo: si,
+		HTTPService: []*hpi.HTTPService{
+			{
+				Port:         1111,
+				SharedInfo:   si,
+				FrontendName: "http-fe",
+				Hosts: []*hpi.HTTPHost{
+					{
+						Paths: []*hpi.HTTPPath{
+							{
+								Backend: &hpi.Backend{
+									Name: "http-bk",
+									Endpoints: []*hpi.Endpoint{
+										{Name: "aaa", IP: "10.244.2.1", Port: "2323"},
+									},
+									LoadBalanceOn: "leastconn",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		TCPService: []*hpi.TCPService{
+			{
+				Port:         "2222",
+				SharedInfo:   si,
+				FrontendName: "tcp-fe",
+				Hosts: []*hpi.TCPHost{
+					{
+						Backend: &hpi.Backend{
+							Name: "tcp-bk",
+							Endpoints: []*hpi.Endpoint{
+								{Name: "aaa", IP: "10.244.2.1", Port: "2323"},
+							},
+							LoadBalanceOn: "leastconn",
+						},
+					},
+				},
+			},
+		},
+	}
+	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
+	if assert.Nil(t, err) {
+		config, err := RenderConfig(testParsedConfig)
+		assert.Nil(t, err)
+		if testing.Verbose() {
+			fmt.Println(err, "\n", config)
+		}
+	}
+}

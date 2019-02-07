@@ -394,6 +394,7 @@ func (c *controller) generateConfig() error {
 				StickyCookieHash: bk.StickyCookieHash,
 				ALPNOptions:      c.Ingress.Spec.Backend.ParseALPNOptions(),
 				Proto:            c.Ingress.Spec.Backend.Proto,
+				LoadBalanceOn:    c.Ingress.Spec.Backend.LoadBalanceOn,
 			}
 			if c.Ingress.Spec.Backend.Name != "" {
 				si.DefaultBackend.Name = c.Ingress.Spec.Backend.Name
@@ -504,6 +505,7 @@ func (c *controller) generateConfig() error {
 							StickyCookieHash: bk.StickyCookieHash,
 							ALPNOptions:      path.Backend.ParseALPNOptions(),
 							Proto:            path.Backend.Proto,
+							LoadBalanceOn:    path.Backend.LoadBalanceOn,
 						},
 					}
 					if path.Backend.IngressBackend.Name != "" {
@@ -554,6 +556,7 @@ func (c *controller) generateConfig() error {
 						StickyCookieHash: bk.StickyCookieHash,
 						ALPNOptions:      rule.TCP.Backend.ParseALPNOptions(),
 						Proto:            rule.TCP.Backend.Proto,
+						LoadBalanceOn:    rule.TCP.Backend.LoadBalanceOn,
 					},
 				}
 
