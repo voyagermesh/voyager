@@ -204,7 +204,7 @@ func createGRPCController(f *framework.Invocation) (*core.ReplicationController,
 					Containers: []core.Container{
 						{
 							Name:  "grpc-server",
-							Image: "diptadas/hello-grpc:x3",
+							Image: "appscode/hello-grpc:0.1.0",
 							Args: []string{
 								"run",
 								"--v=3",
