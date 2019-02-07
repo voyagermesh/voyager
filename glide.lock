@@ -1,5 +1,5 @@
-hash: 88180038251a36293e1be762935f22ca2f12d6ea02d518b17131ca513945c571
-updated: 2019-02-04T11:39:34.995577258+06:00
+hash: 4893ce6a8eb0f66b0f8e7a7bd9cb0e28b5e34e22ff0e96ad6671841ebe44b2ba
+updated: 2019-02-06T20:17:29.299587427-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -34,7 +34,7 @@ imports:
 - name: github.com/appscode/go-version
   version: 7aba545c679b0f45679eeb406dc662d2c8a04c26
 - name: github.com/appscode/hello-grpc
-  version: eee4f2094e7029eb7991c9c01e0f574e6092a66e
+  version: eea009cbf42e54d0a19cbf08dd1fdfa75502b69e
   subpackages:
   - pkg/apis/hello/v1alpha1
 - name: github.com/appscode/jsonpatch
@@ -132,7 +132,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/cloudflare/cloudflare-go
-  version: ba610b87e64f5e99e8ddd614e50669c66c2ec9b5
+  version: 73188131583704facec77adbb1e666a7917f973c
 - name: github.com/coreos/etcd
   version: 420a452267a7ce45b3fcbed04d54030d69964fc1
   subpackages:
@@ -256,7 +256,7 @@ imports:
 - name: github.com/fatih/structs
   version: 878a968ab22548362a09bdb3322f98b00f470d46
 - name: github.com/fsnotify/fsnotify
-  version: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
+  version: f12c6236fe7b5cf6bcf30e5935d08cb079d78334
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/go-ini/ini
@@ -266,7 +266,7 @@ imports:
 - name: github.com/go-openapi/jsonreference
   version: 13c6e3589ad90f49bd3e3bbe2c2cb3d7a4142272
 - name: github.com/go-openapi/spec
-  version: 7abd5745472fff5eb3685386d5fb8bf38683154d
+  version: 1de3e0542de65ad8d75452a595886fdd0befb363
 - name: github.com/go-openapi/swag
   version: f3f9494671f93fcff853e3c6e9e948b3eb71e590
 - name: github.com/gogo/protobuf
@@ -292,7 +292,7 @@ imports:
   - ptypes/struct
   - ptypes/timestamp
 - name: github.com/golang/snappy
-  version: 2e65f85255dbc3072edf28d6b5b8efc472979f5a
+  version: cef980a12b316c5b7e5bb3a8e168eb43ae999a88
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
@@ -383,7 +383,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/JamesClonk/vultr
-  version: 882c666acc57cfc9fb3ccd8132655609092eb4af
+  version: fa1c0367800db75e4d10d0ec90c49a8731670224
   subpackages:
   - lib
 - name: github.com/jmespath/go-jmespath
@@ -537,7 +537,7 @@ imports:
 - name: github.com/xeipuuv/gojsonreference
   version: e02fc20de94c78484cd5ffb007f8af96be030a45
 - name: github.com/xeipuuv/gojsonschema
-  version: 93e72a773fade158921402d6a24c819b48aba29d
+  version: f971f3cd73b2899de6923801c147f075263e0c50
 - name: github.com/xenolf/lego
   version: e57a0a1b7259bc2cd83fc3c5b9e6578a9dd432e3
   repo: https://github.com/appscode/lego.git

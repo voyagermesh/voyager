@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/appscode/go/types"
 	hello "github.com/appscode/hello-grpc/pkg/apis/hello/v1alpha1"
@@ -94,13 +95,38 @@ var _ = Describe("IngressGRPC", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(svc.Spec.Ports)).Should(Equal(1)) // 3001
 
-			By("Requesting gRPC in endpoint " + eps[0])
-			result, err := doGRPC(eps[0], "", &hello.IntroRequest{Name: "Voyager"})
+			By("Requesting Intro API in endpoint " + eps[0])
+			result, err := doWithRetry(eps[0], "Voyager", false, framework.MaxRetry)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(result.Intro).Should(Equal("hello, Voyager!"))
+			Expect(result).Should(Equal("hello, Voyager!"))
+
+			By("Requesting Stream API in endpoint " + eps[0])
+			result, err = doWithRetry(eps[0], "Voyager", true, framework.MaxRetry)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(result).Should(Equal("0: hello, Voyager!"))
 		})
 	})
 })
+
+func doWithRetry(address, name string, stream bool, retryCount int) (string, error) {
+	var (
+		request = &hello.IntroRequest{Name: name}
+		result  *hello.IntroResponse
+		err     error
+	)
+	for i := 0; i < retryCount; i++ {
+		if stream {
+			result, err = doGRPCStream(address, "", request)
+		} else {
+			result, err = doGRPC(address, "", request)
+		}
+		if err == nil {
+			return result.Intro, nil
+		}
+		time.Sleep(time.Second * 5)
+	}
+	return "", err
+}
 
 func doGRPC(address, crtPath string, request *hello.IntroRequest) (*hello.IntroResponse, error) {
 	address = strings.TrimPrefix(address, "http://")
@@ -123,6 +149,35 @@ func doGRPC(address, crtPath string, request *hello.IntroRequest) (*hello.IntroR
 
 	client := hello.NewHelloServiceClient(conn)
 	return client.Intro(context.Background(), request)
+}
+
+func doGRPCStream(address, crtPath string, request *hello.IntroRequest) (*hello.IntroResponse, error) {
+	address = strings.TrimPrefix(address, "http://")
+	address = strings.TrimPrefix(address, "https://")
+
+	option := grpc.WithInsecure()
+	if len(crtPath) > 0 {
+		creds, err := credentials.NewClientTLSFromFile(crtPath, "")
+		if err != nil {
+			return nil, fmt.Errorf("failed to load TLS certificate")
+		}
+		option = grpc.WithTransportCredentials(creds)
+
+	}
+
+	conn, err := grpc.Dial(address, option)
+	if err != nil {
+		return nil, fmt.Errorf("did not connect, %v", err)
+	}
+	defer conn.Close()
+
+	streamClient, err := hello.NewHelloServiceClient(conn).Stream(context.Background(), request)
+	if err != nil {
+		return nil, err
+	}
+
+	// just receive first result instead of streaming all results
+	return streamClient.Recv()
 }
 
 func createGRPCController(f *framework.Invocation) (*core.ReplicationController, error) {

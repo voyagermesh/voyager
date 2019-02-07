@@ -133,6 +133,8 @@ import:
   repo: https://github.com/appscode/grpc-gateway.git
   vcs: git
   version: v1.3.1-ac
+- package: github.com/appscode/hello-grpc
+  version: 0.1.0
 testImport:
 - package: github.com/stretchr/testify
   version: v1.2.2
