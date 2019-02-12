@@ -57,7 +57,7 @@ For the above ingress, all three backend connections will be sticky.
 
 ## Sticky Service
 
-Applying annotation `ingress.appscode.com/affinity` to a service will configures any backend
+Applying annotation `ingress.appscode.com/affinity` to a service configures any backend
 that uses that service to use sticky connection. As an example, the following Ingress will only
 configure sticky connections for backends that use `s1` Service.
 
