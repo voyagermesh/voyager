@@ -124,6 +124,7 @@ export VOYAGER_TEMPLATE_CONFIGMAP=
 export VOYAGER_ENABLE_STATUS_SUBRESOURCE=false
 export VOYAGER_BYPASS_VALIDATING_WEBHOOK_XRAY=false
 export VOYAGER_USE_KUBEAPISERVER_FQDN_FOR_AKS=true
+export VOYAGER_PRIORITY_CLASS=system-cluster-critical
 
 export SCRIPT_LOCATION="curl -fsSL https://raw.githubusercontent.com/appscode/voyager/8.0.1/"
 if [[ "$APPSCODE_ENV" == "dev" ]]; then
@@ -289,6 +290,10 @@ while test $# -gt 0; do
       ;;
   esac
 done
+
+if [ "$VOYAGER_NAMESPACE" != "kube-system" ]; then
+    export VOYAGER_PRIORITY_CLASS=""
+fi
 
 if [ "$VOYAGER_UNINSTALL" -eq 1 ]; then
   # delete webhooks and apiservices
