@@ -1,13 +1,13 @@
 ---
 title: Certificate FAQ | Voyager
 menu:
-  product_voyager_8.0.1:
+  product_voyager_9.0.0:
     identifier: faq-certificate
     name: FAQ
     parent: certificate-guides
     weight: 25
 product_name: voyager
-menu_name: product_voyager_8.0.1
+menu_name: product_voyager_9.0.0
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
