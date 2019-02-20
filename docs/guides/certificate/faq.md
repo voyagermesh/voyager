@@ -17,7 +17,7 @@ section_menu_id: guides
 ## Let's Encrypt FAQs
 
 ### How do I renew my LE certificates?
-LE issues certificates that are valid for 90 days. Voyager operator will try renewing your certificate 7 days prior to expiration. Once renewed certificates are issued, HAProxy will be automatically updated to use the new certificates.
+LE issues certificates that are valid for 90 days. Since 9.0.0 release, Voyager operator will try renewing your certificate 15 days (was 7 days in prior releases) prior to expiration. You can also [configure](https://github.com/appscode/voyager/pull/1316/files) how soon Voyager should try to renew the certificate by setting the `spec.renewalBufferDays` field in `Certificate` crd. Once renewed certificates are issued, HAProxy will be automatically updated to use the new certificates.
 
 ### I think I did everything according to this doc but my certificate is not issuing? How do I debug?
 To debug, describe the certificate object and check the events listed under it. Voyager will report any warning events under the certificate object.
