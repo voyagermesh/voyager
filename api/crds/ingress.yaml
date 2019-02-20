@@ -929,6 +929,10 @@ spec:
                   items:
                     type: string
                   type: array
+                loadBalanceOn:
+                  description: Define the load balancing algorithm to be used in a
+                    backend. https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#balance
+                  type: string
                 name:
                   description: User can specify backend name for using it with custom
                     acl Otherwise it will be generated
@@ -1768,6 +1772,10 @@ spec:
                                   items:
                                     type: string
                                   type: array
+                                loadBalanceOn:
+                                  description: Define the load balancing algorithm
+                                    to be used in a backend. https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#balance
+                                  type: string
                                 name:
                                   description: User can specify backend name for using
                                     it with custom acl Otherwise it will be generated
@@ -1879,6 +1887,10 @@ spec:
                             items:
                               type: string
                             type: array
+                          loadBalanceOn:
+                            description: Define the load balancing algorithm to be
+                              used in a backend. https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#balance
+                            type: string
                           name:
                             description: User can specify backend name for using it
                               with custom acl Otherwise it will be generated

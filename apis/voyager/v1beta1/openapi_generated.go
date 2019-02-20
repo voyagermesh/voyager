@@ -970,6 +970,13 @@ func schema_voyager_apis_voyager_v1beta1_HTTPIngressBackend(ref common.Reference
 							Format:      "",
 						},
 					},
+					"loadBalanceOn": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Define the load balancing algorithm to be used in a backend. https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#balance",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 					"rewriteRules": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Path rewrite rules with haproxy formatted regex.\n\nDeprecated: Use backendRule, will be removed.",
@@ -1225,6 +1232,13 @@ func schema_voyager_apis_voyager_v1beta1_IngressBackend(ref common.ReferenceCall
 					"proto": {
 						SchemaProps: spec.SchemaProps{
 							Description: "HTTP protocol to use If the Proto contains \"h2\",  \"option http-use-htx\" will be added to enable HTX mode https://www.haproxy.com/blog/haproxy-1-9-2-adds-grpc-support/",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"loadBalanceOn": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Define the load balancing algorithm to be used in a backend. https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#balance",
 							Type:        []string{"string"},
 							Format:      "",
 						},

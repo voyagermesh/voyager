@@ -369,6 +369,10 @@ type IngressBackend struct {
 	// If the Proto contains "h2",  "option http-use-htx" will be added to enable HTX mode
 	// https://www.haproxy.com/blog/haproxy-1-9-2-adds-grpc-support/
 	Proto string `json:"proto,omitempty"`
+
+	// Define the load balancing algorithm to be used in a backend.
+	// https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#balance
+	LoadBalanceOn string `json:"loadBalanceOn,omitempty"`
 }
 
 type HTTPIngressBackend struct {
