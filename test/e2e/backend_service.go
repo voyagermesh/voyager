@@ -129,4 +129,83 @@ var _ = Describe("Frontend rule using specified backend", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
+
+	Context("missing backend with matched path prefix", func() {
+		BeforeEach(func() {
+			f = root.Invoke()
+			ing.Spec.Rules = []api.IngressRule{
+				{
+					IngressRuleValue: api.IngressRuleValue{
+						HTTP: &api.HTTPIngressRuleValue{
+							Paths: []api.HTTPIngressPath{
+								{
+									Path: "/",
+									Backend: api.HTTPIngressBackend{
+										IngressBackend: api.IngressBackend{
+											ServiceName: f.Ingress.TestServerName(),
+											ServicePort: intstr.FromInt(8989),
+										},
+									},
+								},
+								{
+									Path: "/f",
+									Backend: api.HTTPIngressBackend{
+										IngressBackend: api.IngressBackend{
+											ServiceName: f.Ingress.TestServerName(),
+											ServicePort: intstr.FromInt(9090),
+										},
+									},
+								},
+								{
+									Path: "/foo",
+									Backend: api.HTTPIngressBackend{
+										IngressBackend: api.IngressBackend{
+											ServiceName: "unknown-service",
+											ServicePort: intstr.FromInt(80),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+		})
+		It("Should work for correct backend", func() {
+			By("Getting HTTP endpoints")
+			eps, err := f.Ingress.GetHTTPEndpoints(ing)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			// matches "/f"
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/f", func(r *client.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+					Expect(r.Method).Should(Equal("GET")) &&
+					Expect(r.Path).Should(Equal("/f")) &&
+					Expect(r.ServerPort).Should(Equal(":9090"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			// matches "/"
+			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/xy", func(r *client.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
+					Expect(r.Method).Should(Equal("GET")) &&
+					Expect(r.Path).Should(Equal("/xy")) &&
+					Expect(r.ServerPort).Should(Equal(":8989"))
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			// matches "/foo" - service unavailable 503
+			err = f.Ingress.DoHTTPStatus(framework.MaxRetry, ing, eps, "GET", "/foo", func(r *client.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusServiceUnavailable))
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			// matches "/foo" - service unavailable 503
+			err = f.Ingress.DoHTTPStatus(framework.MaxRetry, ing, eps, "GET", "/foo-bar", func(r *client.Response) bool {
+				return Expect(r.Status).Should(Equal(http.StatusServiceUnavailable))
+			})
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
 })
