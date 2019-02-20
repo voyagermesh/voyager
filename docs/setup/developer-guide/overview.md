@@ -118,7 +118,12 @@ $ ./hack/make.py test unit
 #### Run e2e Test
 To run e2e tests in minikube, add the following line to your machine's `/etc/hosts` file:
 ```console
-echo "$(minikube ip)   http.appscode.test" >> /etc/hosts
+$ minikube delete; minikube start
+$ echo "$(minikube ip)   http.appscode.test" >> /etc/hosts
+
+$ ./hack/docker/voyager/setup.sh; ./hack/docker/voyager/setup.sh push
+$ env APPSCODE_ENV=dev ./hack/deploy/voyager.sh --provider=minikube
+$ ./hack/make.py test minikube --selfhosted-operator
 ```
 
 ```
