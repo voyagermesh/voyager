@@ -1,18 +1,19 @@
 ---
-title: Enable HTTP/2
+title: Configure HTTP/2 and GRPC | Kubernetes Ingress
 menu:
   product_voyager_9.0.0:
     identifier: enable-http-2
-    name: Enable HTTP/2
-    parent: Enable HTTP/2
+    name: Configure HTTP/2 and GRPC
+    parent: config-ingress
     weight: 10
 product_name: voyager
 menu_name: product_voyager_9.0.0
 section_menu_id: guides
 ---
+
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
 
-# Enable HTTP/2
+# Configure HTTP/2 and GRPC
 
 You can configure HTTP/2 by configuring `proto` or, `alpn` under `rules.http` section (for frontend) or, `backend` section (for specific backend). If you want to use only `HTTP/2.0`, then you can specify it using `proto: h2`. However, if you like to use both `HTTP/2.0` and `HTTP/1.1` in a preferred order, then you need to specify the order using `ALPN`.
 
