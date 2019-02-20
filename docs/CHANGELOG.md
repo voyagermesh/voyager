@@ -17,6 +17,85 @@ aliases:
 
 # Change Log
 
+## [9.0.0](https://github.com/appscode/voyager/tree/9.0.0) (2019-02-20)
+[Full Changelog](https://github.com/appscode/voyager/compare/8.0.1...9.0.0)
+
+**Implemented enhancements:**
+
+- Mount custom configmap [\#1304](https://github.com/appscode/voyager/issues/1304)
+
+**Fixed bugs:**
+
+- appscode/oauth2\_proxy:2.3.0 is broken [\#1300](https://github.com/appscode/voyager/issues/1300)
+- Unavailable services get removed from HAProxy configuration [\#1285](https://github.com/appscode/voyager/issues/1285)
+
+**Closed issues:**
+
+- Add support for Gandi V5 acme dns provider [\#1337](https://github.com/appscode/voyager/issues/1337)
+- Memory and CPU requests for Daemonset? [\#1335](https://github.com/appscode/voyager/issues/1335)
+- HAProxy OAuth2 [\#1329](https://github.com/appscode/voyager/issues/1329)
+- Do not sort ALPN options [\#1327](https://github.com/appscode/voyager/issues/1327)
+- Support Haproxy 1.9.2 and gRPC [\#1326](https://github.com/appscode/voyager/issues/1326)
+- 503 Service Unavailable [\#1319](https://github.com/appscode/voyager/issues/1319)
+- Certificate renew should be configurable [\#1314](https://github.com/appscode/voyager/issues/1314)
+- Ingress Configuration with URL Redirection [\#1307](https://github.com/appscode/voyager/issues/1307)
+- unsupported LBType LoadBalancer [\#1297](https://github.com/appscode/voyager/issues/1297)
+- ingress uses unsupported LBType LoadBalancer [\#1293](https://github.com/appscode/voyager/issues/1293)
+- Dependabot couldn't find a Gopkg.toml for this project [\#1289](https://github.com/appscode/voyager/issues/1289)
+- Voyager can't communicate with other pods other than stats port [\#1287](https://github.com/appscode/voyager/issues/1287)
+- Cannot set cookie name or path [\#1286](https://github.com/appscode/voyager/issues/1286)
+- Voyager pods are destroyed and recreated without any clear reason. [\#1284](https://github.com/appscode/voyager/issues/1284)
+- Potential Issue With VOYAGER\_\* Environment Variables [\#1224](https://github.com/appscode/voyager/issues/1224)
+- support of named servicePort [\#1193](https://github.com/appscode/voyager/issues/1193)
+- Disable onessl analytics when voyager analytics is disabled [\#1332](https://github.com/appscode/voyager/issues/1332)
+- TLS with HTTP and TCP - Certificate Mismatch [\#1325](https://github.com/appscode/voyager/issues/1325)
+- installation error [\#1318](https://github.com/appscode/voyager/issues/1318)
+- Readiness probe failed: HTTP probe failed with statuscode: 403 [\#1296](https://github.com/appscode/voyager/issues/1296)
+- 503 Service Unavailable when nodePort is set to 443 [\#1290](https://github.com/appscode/voyager/issues/1290)
+- Stuck at deletion - finalizers:  voyager.appscode.com [\#1249](https://github.com/appscode/voyager/issues/1249)
+- TCP SNI doesn't seem to work [\#1247](https://github.com/appscode/voyager/issues/1247)
+- Support multiple certificates for tls struct [\#1167](https://github.com/appscode/voyager/issues/1167)
+- Document how to use LB alg `leastconn` [\#945](https://github.com/appscode/voyager/issues/945)
+
+**Merged pull requests:**
+
+- Prepare docs for 9.0.0 release [\#1349](https://github.com/appscode/voyager/pull/1349) ([tamalsaha](https://github.com/tamalsaha))
+- Don't remove backends with empty endpoints [\#1348](https://github.com/appscode/voyager/pull/1348) ([tamalsaha](https://github.com/tamalsaha))
+- Pass Annotations to Operator PodTemplate [\#1347](https://github.com/appscode/voyager/pull/1347) ([tamalsaha](https://github.com/tamalsaha))
+- Don't use priority class when operator namespace is not kube-system [\#1346](https://github.com/appscode/voyager/pull/1346) ([tamalsaha](https://github.com/tamalsaha))
+- Use onessl 0.10.0 [\#1345](https://github.com/appscode/voyager/pull/1345) ([tamalsaha](https://github.com/tamalsaha))
+- Fix the case for deploying using MINGW64 for windows [\#1344](https://github.com/appscode/voyager/pull/1344) ([tamalsaha](https://github.com/tamalsaha))
+- Add guides for configuring multiple TLS [\#1342](https://github.com/appscode/voyager/pull/1342) ([diptadas](https://github.com/diptadas))
+- Update sticky-session.md [\#1341](https://github.com/appscode/voyager/pull/1341) ([mkozjak](https://github.com/mkozjak))
+-  Add option for configuring load balancing algorithm in backends [\#1340](https://github.com/appscode/voyager/pull/1340) ([diptadas](https://github.com/diptadas))
+- Add test for gRPC stream [\#1339](https://github.com/appscode/voyager/pull/1339) ([diptadas](https://github.com/diptadas))
+- Add support for Gandi V5 acme dns provider [\#1338](https://github.com/appscode/voyager/pull/1338) ([ThomasKliszowski](https://github.com/ThomasKliszowski))
+- Update TCP docs [\#1336](https://github.com/appscode/voyager/pull/1336) ([diptadas](https://github.com/diptadas))
+- Fix test-server certs [\#1331](https://github.com/appscode/voyager/pull/1331) ([diptadas](https://github.com/diptadas))
+- Support mounting any configmap/secret into HAProxy pod [\#1330](https://github.com/appscode/voyager/pull/1330) ([diptadas](https://github.com/diptadas))
+- Add support for gRPC [\#1328](https://github.com/appscode/voyager/pull/1328) ([diptadas](https://github.com/diptadas))
+- readme: overview: certificates.voyager.appscode.com [\#1324](https://github.com/appscode/voyager/pull/1324) ([mkozjak](https://github.com/mkozjak))
+- readme: single-service update [\#1323](https://github.com/appscode/voyager/pull/1323) ([mkozjak](https://github.com/mkozjak))
+- single-service: should be 'test-service' instead of 'test-server' [\#1322](https://github.com/appscode/voyager/pull/1322) ([mkozjak](https://github.com/mkozjak))
+- readme: minor typo fix [\#1321](https://github.com/appscode/voyager/pull/1321) ([mkozjak](https://github.com/mkozjak))
+- Add option for configuring certificate renewal [\#1316](https://github.com/appscode/voyager/pull/1316) ([diptadas](https://github.com/diptadas))
+- Add finalizer only when firewall supported [\#1315](https://github.com/appscode/voyager/pull/1315) ([diptadas](https://github.com/diptadas))
+- Fix ClusterProvider name for concourse tests [\#1313](https://github.com/appscode/voyager/pull/1313) ([tahsinrahman](https://github.com/tahsinrahman))
+- Update haproxy version to 1.9.2 [\#1312](https://github.com/appscode/voyager/pull/1312) ([diptadas](https://github.com/diptadas))
+- Fix cookie name and hash type in service annotation [\#1311](https://github.com/appscode/voyager/pull/1311) ([diptadas](https://github.com/diptadas))
+- Add support for named service port [\#1310](https://github.com/appscode/voyager/pull/1310) ([diptadas](https://github.com/diptadas))
+- Add certificate health checker [\#1309](https://github.com/appscode/voyager/pull/1309) ([tamalsaha](https://github.com/tamalsaha))
+- Update webhook error message format for Kubernetes 1.13+ [\#1306](https://github.com/appscode/voyager/pull/1306) ([tamalsaha](https://github.com/tamalsaha))
+- Update xenwolf/lego to 2018-12 [\#1305](https://github.com/appscode/voyager/pull/1305) ([tamalsaha](https://github.com/tamalsaha))
+- Update appscode/oauth2\_proxy image version [\#1301](https://github.com/appscode/voyager/pull/1301) ([diptadas](https://github.com/diptadas))
+- Set periodic analytics [\#1298](https://github.com/appscode/voyager/pull/1298) ([tamalsaha](https://github.com/tamalsaha))
+- Fixed typo [\#1295](https://github.com/appscode/voyager/pull/1295) ([endrec](https://github.com/endrec))
+- Update Kubernetes client libraries to 1.12.0 [\#1292](https://github.com/appscode/voyager/pull/1292) ([tamalsaha](https://github.com/tamalsaha))
+- Update xray to handle any webhook denied request [\#1282](https://github.com/appscode/voyager/pull/1282) ([tamalsaha](https://github.com/tamalsaha))
+- Expose flags to chart [\#1281](https://github.com/appscode/voyager/pull/1281) ([tamalsaha](https://github.com/tamalsaha))
+- Pass image pull secrets for cleaner job in chart [\#1280](https://github.com/appscode/voyager/pull/1280) ([tamalsaha](https://github.com/tamalsaha))
+- Update kubernetes client libraries to 1.12.0 [\#1279](https://github.com/appscode/voyager/pull/1279) ([tamalsaha](https://github.com/tamalsaha))
+
 ## [8.0.1](https://github.com/appscode/voyager/tree/8.0.1) (2018-10-11)
 [Full Changelog](https://github.com/appscode/voyager/compare/8.0.0...8.0.1)
 
