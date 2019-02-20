@@ -32,6 +32,7 @@ Guides show you how to use Voyager as a Kubernetes Ingress controller.
   - [Blue Green Deployments using weighted Loadbalancing](/docs/guides/ingress/http/blue-green-deployment.md)
 - TLS/SSL
   - [TLS Termination](/docs/guides/ingress/tls/overview.md)
+  - [Multiple TLS Entries](/docs/guides/ingress/tls/multiple-tls.md)
   - [Backend TLS](/docs/guides/ingress/tls/backend-tls.md)
   - [Supports AWS certificate manager](/docs/guides/ingress/tls/aws-cert-manager.md)
 - TCP
@@ -44,6 +45,7 @@ Guides show you how to use Voyager as a Kubernetes Ingress controller.
   - [Specify NodePort](/docs/guides/ingress/configuration/node-port.md)
   - [Configure global options](/docs/guides/ingress/configuration/default-options.md)
   - [Configure Custom Timeouts for HAProxy](/docs/guides/ingress/configuration/default-timeouts.md)
+  - [Configure Load balancing algorithm](/docs/guides/ingress/configuration/loadbalance-algorithm.md)
   - [Using Custom HAProxy Templates](/docs/guides/ingress/configuration/custom-templates.md)
   - [Using Additional Configuration Files](/docs/guides/ingress/configuration/config-volumes.md)
   - [Using HTTP/2 and gRPC](/docs/guides/ingress/configuration/http-2.md)

@@ -12,7 +12,7 @@ section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
 
-# Load Balancing Algorithm
+# Configure Load Balancing Algorithm
 
 You can configure a backend to use a specific [load balancing algorithm](https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#balance) using `backend.loadBalanceOn`. You can specify any HAProxy supported options along with arguments.
 
