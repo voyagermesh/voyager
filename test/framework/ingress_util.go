@@ -107,6 +107,10 @@ func (i *ingressInvocation) setupTestServers() error {
 	if err := i.createTestServerService(); err != nil {
 		return err
 	}
+
+	if err := i.createEmptyService(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -185,6 +189,25 @@ func (i *ingressInvocation) createTestServerService() error {
 			},
 			Selector: map[string]string{
 				"app": "test-server-" + i.app,
+			},
+		},
+	})
+	return err
+}
+
+func (i *ingressInvocation) createEmptyService() error {
+	_, err := i.KubeClient.CoreV1().Services(i.Namespace()).Create(&core.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      emptyServiceName,
+			Namespace: i.Namespace(),
+			Labels: map[string]string{
+				"app": "test-server-" + i.app,
+			},
+		},
+		Spec: core.ServiceSpec{
+			Ports: i.testServerServicePorts(),
+			Selector: map[string]string{
+				"invalid": "test-server-" + i.app,
 			},
 		},
 	})

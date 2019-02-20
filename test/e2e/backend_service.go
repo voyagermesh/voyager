@@ -160,7 +160,7 @@ var _ = Describe("Frontend rule using specified backend", func() {
 									Path: "/foo",
 									Backend: api.HTTPIngressBackend{
 										IngressBackend: api.IngressBackend{
-											ServiceName: "unknown-service",
+											ServiceName: f.Ingress.EmptyServiceName(),
 											ServicePort: intstr.FromInt(80),
 										},
 									},
