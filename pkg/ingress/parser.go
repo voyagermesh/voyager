@@ -364,23 +364,25 @@ func (c *controller) generateConfig() error {
 	}
 
 	dnsResolvers := make(map[string]*api.DNSResolver)
-	if c.Ingress.Spec.Backend != nil {
+	if c.Ingress.Spec.Backend != nil { // default backend
 		bk, err := c.serviceEndpoints(dnsResolvers, userLists, c.Ingress.Spec.Backend.ServiceName, c.Ingress.Spec.Backend.ServicePort, c.Ingress.Spec.Backend.HostNames)
 		if err != nil {
 			c.recorder.Eventf(
 				c.Ingress.ObjectReference(),
 				core.EventTypeWarning,
 				eventer.EventReasonBackendInvalid,
-				"spec.backend skipped, reason: %s", err,
-			)
-		} else if len(bk.Endpoints) == 0 {
-			c.recorder.Eventf(
-				c.Ingress.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonBackendInvalid,
-				"spec.backend skipped, reason: %s", "endpoint not found",
+				"can't resolve spec.backend, reason: %s", err,
 			)
 		} else {
+			if len(bk.Endpoints) == 0 {
+				c.recorder.Event(
+					c.Ingress.ObjectReference(),
+					core.EventTypeWarning,
+					eventer.EventReasonBackendInvalid,
+					"can't resolve spec.backend, reason: endpoint not found",
+				)
+			}
+
 			si.DefaultBackend = &hpi.Backend{
 				BasicAuth:        bk.BasicAuth,
 				Endpoints:        bk.Endpoints,
@@ -477,16 +479,18 @@ func (c *controller) generateConfig() error {
 						c.Ingress.ObjectReference(),
 						core.EventTypeWarning,
 						eventer.EventReasonBackendInvalid,
-						"spec.rules[%d].http.paths[%d] skipped, reason: %s", ri, pi, err,
-					)
-				} else if len(bk.Endpoints) == 0 {
-					c.recorder.Eventf(
-						c.Ingress.ObjectReference(),
-						core.EventTypeWarning,
-						eventer.EventReasonBackendInvalid,
-						"spec.rules[%d].http.paths[%d] skipped, reason: %s", ri, pi, "endpoint not found",
+						"can't resolve backend for spec.rules[%d].http.paths[%d], reason: %s", ri, pi, err,
 					)
 				} else {
+					if len(bk.Endpoints) == 0 {
+						c.recorder.Eventf(
+							c.Ingress.ObjectReference(),
+							core.EventTypeWarning,
+							eventer.EventReasonBackendInvalid,
+							"can't resolve backend for spec.rules[%d].http.paths[%d], reason: %s", ri, pi, "endpoint not found",
+						)
+					}
+
 					httpPath := &hpi.HTTPPath{
 						Path: path.Path,
 						Backend: &hpi.Backend{
@@ -528,16 +532,18 @@ func (c *controller) generateConfig() error {
 					c.Ingress.ObjectReference(),
 					core.EventTypeWarning,
 					eventer.EventReasonBackendInvalid,
-					"spec.rules[%d].tcp skipped, reason: %s", ri, err,
-				)
-			} else if len(bk.Endpoints) == 0 {
-				c.recorder.Eventf(
-					c.Ingress.ObjectReference(),
-					core.EventTypeWarning,
-					eventer.EventReasonBackendInvalid,
-					"spec.rules[%d].tcp skipped, reason: %s", ri, "endpoint not found",
+					"can't resolve backend for spec.rules[%d].tcp, reason: %s", ri, err,
 				)
 			} else {
+				if len(bk.Endpoints) == 0 {
+					c.recorder.Eventf(
+						c.Ingress.ObjectReference(),
+						core.EventTypeWarning,
+						eventer.EventReasonBackendInvalid,
+						"can't resolve backend for spec.rules[%d].tcp, reason: %s", ri, "endpoint not found",
+					)
+				}
+
 				tcpHost := &hpi.TCPHost{
 					Host: rule.GetHost(),
 					Backend: &hpi.Backend{
