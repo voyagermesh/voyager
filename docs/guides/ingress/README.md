@@ -1,17 +1,17 @@
 ---
 title: Ingress | Voyager
 menu:
-  product_voyager_8.0.1:
+  product_voyager_9.0.0:
     identifier: readme-ingress
     name: Readme
     parent: ingress-guides
     weight: -1
 product_name: voyager
-menu_name: product_voyager_8.0.1
+menu_name: product_voyager_9.0.0
 section_menu_id: guides
-url: /products/voyager/8.0.1/guides/ingress/
+url: /products/voyager/9.0.0/guides/ingress/
 aliases:
-  - /products/voyager/8.0.1/guides/ingress/README/
+  - /products/voyager/9.0.0/guides/ingress/README/
 ---
 
 # Guides
