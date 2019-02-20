@@ -70,8 +70,8 @@ func (s OperatorOptions) WatchNamespace() string {
 func NewOperatorOptions() *OperatorOptions {
 	return &OperatorOptions{
 		DockerRegistry:    "appscode",
-		HAProxyImageTag:   "1.9.2-8.0.1-alpine",
-		ExporterImageTag:  "8.0.1",
+		HAProxyImageTag:   "1.9.2-9.0.0-alpine",
+		ExporterImageTag:  "9.0.0",
 		OperatorNamespace: meta.Namespace(),
 		OperatorService:   "voyager-operator",
 		EnableRBAC:        false,
