@@ -24,6 +24,7 @@ voyager run [flags]
 ### Options
 
 ```
+      --audit-dynamic-configuration                             Enables dynamic audit configuration. This feature also requires the DynamicAuditing feature flag
       --audit-log-batch-buffer-size int                         The size of the buffer to store events before batching and writing. Only used in batch mode. (default 10000)
       --audit-log-batch-max-size int                            The maximum size of a batch. Only used in batch mode. (default 1)
       --audit-log-batch-max-wait duration                       The amount of time to wait before force writing the batch that hadn't reached the max size. Only used in batch mode.
@@ -34,12 +35,12 @@ voyager run [flags]
       --audit-log-maxage int                                    The maximum number of days to retain old audit log files based on the timestamp encoded in their filename.
       --audit-log-maxbackup int                                 The maximum number of old audit log files to retain.
       --audit-log-maxsize int                                   The maximum size in megabytes of the audit log file before it gets rotated.
-      --audit-log-mode string                                   Strategy for sending audit events. Blocking indicates sending events should block server responses. Batch causes the backend to buffer and write events asynchronously. Known modes are batch,blocking. (default "blocking")
+      --audit-log-mode string                                   Strategy for sending audit events. Blocking indicates sending events should block server responses. Batch causes the backend to buffer and write events asynchronously. Known modes are batch,blocking,blocking-strict. (default "blocking")
       --audit-log-path string                                   If set, all requests coming to the apiserver will be logged to this file.  '-' means standard out.
       --audit-log-truncate-enabled                              Whether event and batch truncating is enabled.
       --audit-log-truncate-max-batch-size int                   Maximum size of the batch sent to the underlying backend. Actual serialized size can be several hundreds of bytes greater. If a batch exceeds this limit, it is split into several batches of smaller size. (default 10485760)
       --audit-log-truncate-max-event-size int                   Maximum size of the audit event sent to the underlying backend. If the size of an event is greater than this number, first request and response are removed, and if this doesn't reduce the size enough, event is discarded. (default 102400)
-      --audit-log-version string                                API group and version used for serializing audit events written to log. (default "audit.k8s.io/v1beta1")
+      --audit-log-version string                                API group and version used for serializing audit events written to log. (default "audit.k8s.io/v1")
       --audit-policy-file string                                Path to the file that defines the audit policy configuration.
       --audit-webhook-batch-buffer-size int                     The size of the buffer to store events before batching and writing. Only used in batch mode. (default 10000)
       --audit-webhook-batch-max-size int                        The maximum size of a batch. Only used in batch mode. (default 400)
@@ -49,11 +50,11 @@ voyager run [flags]
       --audit-webhook-batch-throttle-qps float32                Maximum average number of batches per second. Only used in batch mode. (default 10)
       --audit-webhook-config-file string                        Path to a kubeconfig formatted file that defines the audit webhook configuration.
       --audit-webhook-initial-backoff duration                  The amount of time to wait before retrying the first failed request. (default 10s)
-      --audit-webhook-mode string                               Strategy for sending audit events. Blocking indicates sending events should block server responses. Batch causes the backend to buffer and write events asynchronously. Known modes are batch,blocking. (default "batch")
+      --audit-webhook-mode string                               Strategy for sending audit events. Blocking indicates sending events should block server responses. Batch causes the backend to buffer and write events asynchronously. Known modes are batch,blocking,blocking-strict. (default "batch")
       --audit-webhook-truncate-enabled                          Whether event and batch truncating is enabled.
       --audit-webhook-truncate-max-batch-size int               Maximum size of the batch sent to the underlying backend. Actual serialized size can be several hundreds of bytes greater. If a batch exceeds this limit, it is split into several batches of smaller size. (default 10485760)
       --audit-webhook-truncate-max-event-size int               Maximum size of the audit event sent to the underlying backend. If the size of an event is greater than this number, first request and response are removed, and if this doesn't reduce the size enough, event is discarded. (default 102400)
-      --audit-webhook-version string                            API group and version used for serializing audit events written to webhook. (default "audit.k8s.io/v1beta1")
+      --audit-webhook-version string                            API group and version used for serializing audit events written to webhook. (default "audit.k8s.io/v1")
       --authentication-kubeconfig string                        kubeconfig file pointing at the 'core' kubernetes server with enough rights to create tokenaccessreviews.authentication.k8s.io.
       --authentication-skip-lookup                              If false, the authentication-kubeconfig will be used to lookup missing authentication configuration from the cluster.
       --authentication-token-webhook-cache-ttl duration         The duration to cache responses from the webhook token authenticator. (default 10s)
@@ -83,8 +84,6 @@ voyager run [flags]
       --kubeconfig string                                       kubeconfig file pointing at the 'core' kubernetes server.
       --operator-service string                                 Name of service used to expose voyager operator (default "voyager-operator")
       --profiling                                               Enable profiling via web interface host:port/debug/pprof/ (default true)
-      --prometheus-crd-apigroup string                          prometheus CRD  API group name (default "monitoring.coreos.com")
-      --prometheus-crd-kinds CrdKinds                            - EXPERIMENTAL (could be removed in future releases) - customize CRD kind names
       --qps float                                               The maximum QPS to the master from this client (default 1e+06)
       --rbac                                                    Enable RBAC for operator & offshoot Kubernetes objects
       --requestheader-allowed-names strings                     List of client certificate common names to allow to provide usernames in headers specified by --requestheader-username-headers. If empty, any client certificate validated by the authorities in --requestheader-client-ca-file is allowed.
@@ -114,7 +113,7 @@ voyager run [flags]
       --log.level levelFlag              Only log messages with the given severity or above. Valid levels: [debug, info, warn, error, fatal] (default "info")
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
-      --logtostderr                      log to standard error instead of files (default true)
+      --logtostderr                      log to standard error instead of files
       --stderrthreshold severity         logs at or above this threshold go to stderr
       --use-kubeapiserver-fqdn-for-aks   if true, uses kube-apiserver FQDN for AKS cluster to workaround https://github.com/Azure/AKS/issues/522 (default true)
   -v, --v Level                          log level for V logs
