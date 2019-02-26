@@ -14,7 +14,9 @@ section_menu_id: guides
 
 # Multiple TLS Certificates
 
-You can secure an Ingress by specifying TLS secrets or `certificates.voyager.appscode.com` resources inside `spec.tls` section of the Ingress. This tutorial will show you how to configure multiple TLS secrets/certificates for different hosts within a single ingress.
+You can secure an Ingress by specifying TLS secrets or `certificates.voyager.appscode.com` resources inside `spec.tls` section of the Ingress. Voyager writes the TLS secrets in `/etc/ssl/private/haproxy/tls/{secret-name}.pem` files inside the HAProxy pod. So if you specify multiple TLS secrets, all of them will be mounted in `/etc/ssl/private/haproxy/tls` folder. HAProxy presents the certificate to clients which matches with the TLS Server Name Indication (SNI) field of the request. If no SNI is provided by the client or if the SNI does not match with any certificate, then the first loaded certificate will be presented. So you need send request with correct SNI. Note that, `Host` header does not indicates the SNI.
+
+This tutorial will show you how to configure multiple TLS secrets/certificates for different hosts within a single ingress.
 
 ## Before You Begin
 
