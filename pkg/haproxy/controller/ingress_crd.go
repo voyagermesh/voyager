@@ -6,7 +6,6 @@ import (
 	"time"
 
 	ioutilz "github.com/appscode/go/ioutil"
-	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	voyager_informers "github.com/appscode/voyager/client/informers/externalversions/voyager/v1beta1"
@@ -16,6 +15,7 @@ import (
 	extensions "k8s.io/api/extensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/cache"
+	"kmodules.xyz/client-go/tools/queue"
 )
 
 func (c *Controller) initIngressCRDWatcher() {

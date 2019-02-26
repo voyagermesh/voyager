@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	hpi "github.com/appscode/voyager/pkg/haproxy/api"
@@ -26,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"kmodules.xyz/client-go/meta"
 )
 
 func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, userLists map[string]hpi.UserList, bkSvc string, port intstr.IntOrString, hostNames []string) (*hpi.Backend, error) {

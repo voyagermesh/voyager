@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
-	wpi "github.com/appscode/kubernetes-webhook-util/apis/workload/v1"
-	"github.com/appscode/kutil/meta"
 	"github.com/appscode/voyager/apis/voyager"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
+	"kmodules.xyz/client-go/meta"
+	wpi "kmodules.xyz/webhook-runtime/apis/workload/v1"
 )
 
 const (

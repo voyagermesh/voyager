@@ -5,8 +5,6 @@ import (
 	"time"
 
 	"github.com/appscode/go/log"
-	core_util "github.com/appscode/kutil/core/v1"
-	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/pkg/eventer"
@@ -16,6 +14,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"
+	core_util "kmodules.xyz/client-go/core/v1"
+	"kmodules.xyz/client-go/tools/queue"
 )
 
 func (op *Operator) initCertificateCRDWatcher() {

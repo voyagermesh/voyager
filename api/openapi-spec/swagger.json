@@ -343,13 +343,6 @@
           },
           {
             "uniqueItems": true,
-            "type": "boolean",
-            "description": "If true, partially initialized resources are included in the response.",
-            "name": "includeUninitialized",
-            "in": "query"
-          },
-          {
-            "uniqueItems": true,
             "type": "string",
             "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
             "name": "labelSelector",
@@ -424,6 +417,13 @@
             "schema": {
               "$ref": "#/definitions/com.github.appscode.voyager.apis.voyager.v1beta1.Certificate"
             }
+          },
+          {
+            "uniqueItems": true,
+            "type": "string",
+            "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
+            "name": "dryRun",
+            "in": "query"
           }
         ],
         "responses": {
@@ -487,13 +487,6 @@
           },
           {
             "uniqueItems": true,
-            "type": "boolean",
-            "description": "If true, partially initialized resources are included in the response.",
-            "name": "includeUninitialized",
-            "in": "query"
-          },
-          {
-            "uniqueItems": true,
             "type": "string",
             "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
             "name": "labelSelector",
@@ -544,6 +537,13 @@
         }
       },
       "parameters": [
+        {
+          "uniqueItems": true,
+          "type": "boolean",
+          "description": "If true, partially initialized resources are included in the response.",
+          "name": "includeUninitialized",
+          "in": "query"
+        },
         {
           "uniqueItems": true,
           "type": "string",
@@ -619,6 +619,13 @@
             "schema": {
               "$ref": "#/definitions/com.github.appscode.voyager.apis.voyager.v1beta1.Certificate"
             }
+          },
+          {
+            "uniqueItems": true,
+            "type": "string",
+            "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
+            "name": "dryRun",
+            "in": "query"
           }
         ],
         "responses": {
@@ -663,7 +670,6 @@
           {
             "name": "body",
             "in": "body",
-            "required": true,
             "schema": {
               "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.DeleteOptions"
             }
@@ -745,6 +751,13 @@
             "schema": {
               "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.Patch"
             }
+          },
+          {
+            "uniqueItems": true,
+            "type": "string",
+            "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
+            "name": "dryRun",
+            "in": "query"
           }
         ],
         "responses": {
@@ -825,13 +838,6 @@
           },
           {
             "uniqueItems": true,
-            "type": "boolean",
-            "description": "If true, partially initialized resources are included in the response.",
-            "name": "includeUninitialized",
-            "in": "query"
-          },
-          {
-            "uniqueItems": true,
             "type": "string",
             "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
             "name": "labelSelector",
@@ -906,6 +912,13 @@
             "schema": {
               "$ref": "#/definitions/com.github.appscode.voyager.apis.voyager.v1beta1.Ingress"
             }
+          },
+          {
+            "uniqueItems": true,
+            "type": "string",
+            "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
+            "name": "dryRun",
+            "in": "query"
           }
         ],
         "responses": {
@@ -969,13 +982,6 @@
           },
           {
             "uniqueItems": true,
-            "type": "boolean",
-            "description": "If true, partially initialized resources are included in the response.",
-            "name": "includeUninitialized",
-            "in": "query"
-          },
-          {
-            "uniqueItems": true,
             "type": "string",
             "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
             "name": "labelSelector",
@@ -1026,6 +1032,13 @@
         }
       },
       "parameters": [
+        {
+          "uniqueItems": true,
+          "type": "boolean",
+          "description": "If true, partially initialized resources are included in the response.",
+          "name": "includeUninitialized",
+          "in": "query"
+        },
         {
           "uniqueItems": true,
           "type": "string",
@@ -1101,6 +1114,13 @@
             "schema": {
               "$ref": "#/definitions/com.github.appscode.voyager.apis.voyager.v1beta1.Ingress"
             }
+          },
+          {
+            "uniqueItems": true,
+            "type": "string",
+            "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
+            "name": "dryRun",
+            "in": "query"
           }
         ],
         "responses": {
@@ -1145,7 +1165,6 @@
           {
             "name": "body",
             "in": "body",
-            "required": true,
             "schema": {
               "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.DeleteOptions"
             }
@@ -1227,6 +1246,13 @@
             "schema": {
               "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.Patch"
             }
+          },
+          {
+            "uniqueItems": true,
+            "type": "string",
+            "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
+            "name": "dryRun",
+            "in": "query"
           }
         ],
         "responses": {
@@ -3821,7 +3847,7 @@
       }
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.OwnerReference": {
-      "description": "OwnerReference contains enough information to let you identify an owning object. Currently, an owning object must be in the same namespace, so there is no namespace field.",
+      "description": "OwnerReference contains enough information to let you identify an owning object. An owning object must be in the same namespace as the dependent, or be cluster-scoped, so there is no namespace field.",
       "required": [
         "apiVersion",
         "kind",

@@ -5,10 +5,6 @@ import (
 
 	. "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
-	core_util "github.com/appscode/kutil/core/v1"
-	ext_util "github.com/appscode/kutil/extensions/v1beta1"
-	"github.com/appscode/kutil/meta"
-	"github.com/appscode/kutil/tools/queue"
 	"github.com/appscode/voyager/apis/voyager"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
@@ -17,6 +13,10 @@ import (
 	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
 	"k8s.io/client-go/tools/cache"
+	core_util "kmodules.xyz/client-go/core/v1"
+	ext_util "kmodules.xyz/client-go/extensions/v1beta1"
+	"kmodules.xyz/client-go/meta"
+	"kmodules.xyz/client-go/tools/queue"
 )
 
 func (op *Operator) initIngressWatcher() {

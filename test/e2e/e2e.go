@@ -4,9 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/appscode/kutil/meta"
-	"github.com/appscode/kutil/tools/cli"
-	"github.com/appscode/kutil/tools/clientcmd"
 	"github.com/appscode/voyager/client/clientset/versioned/scheme"
 	"github.com/appscode/voyager/pkg/operator"
 	"github.com/appscode/voyager/test/framework"
@@ -14,6 +11,9 @@ import (
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
+	"kmodules.xyz/client-go/meta"
+	"kmodules.xyz/client-go/tools/cli"
+	"kmodules.xyz/client-go/tools/clientcmd"
 )
 
 const (

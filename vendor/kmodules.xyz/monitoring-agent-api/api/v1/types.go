@@ -3,8 +3,8 @@ package v1
 import (
 	"strings"
 
-	"github.com/appscode/kutil"
 	core "k8s.io/api/core/v1"
+	kutil "kmodules.xyz/client-go"
 )
 
 type AgentType string

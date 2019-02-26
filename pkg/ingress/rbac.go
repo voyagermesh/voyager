@@ -1,15 +1,15 @@
 package ingress
 
 import (
-	"github.com/appscode/kutil"
-	core_util "github.com/appscode/kutil/core/v1"
-	rbac_util "github.com/appscode/kutil/rbac/v1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
 	rbac "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kutil "kmodules.xyz/client-go"
+	core_util "kmodules.xyz/client-go/core/v1"
+	rbac_util "kmodules.xyz/client-go/rbac/v1"
 )
 
 func (c *controller) reconcileRBAC() error {

@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/appscode/kutil"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
+	kutil "kmodules.xyz/client-go"
 )
 
 // +k8s:openapi-gen=false

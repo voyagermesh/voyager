@@ -15,47 +15,66 @@ type LoadBalancerPool struct {
 	Description       string               `json:"description"`
 	Name              string               `json:"name"`
 	Enabled           bool                 `json:"enabled"`
+	MinimumOrigins    int                  `json:"minimum_origins,omitempty"`
 	Monitor           string               `json:"monitor,omitempty"`
 	Origins           []LoadBalancerOrigin `json:"origins"`
 	NotificationEmail string               `json:"notification_email,omitempty"`
+
+	// CheckRegions defines the geographic region(s) from where to run health-checks from - e.g. "WNAM", "WEU", "SAF", "SAM".
+	// Providing a null/empty value means "all regions", which may not be available to all plan types.
+	CheckRegions []string `json:"check_regions"`
 }
 
+// LoadBalancerOrigin represents a Load Balancer origin's properties.
 type LoadBalancerOrigin struct {
-	Name    string `json:"name"`
-	Address string `json:"address"`
-	Enabled bool   `json:"enabled"`
+	Name    string  `json:"name"`
+	Address string  `json:"address"`
+	Enabled bool    `json:"enabled"`
+	Weight  float64 `json:"weight"`
 }
 
 // LoadBalancerMonitor represents a load balancer monitor's properties.
 type LoadBalancerMonitor struct {
-	ID            string              `json:"id,omitempty"`
-	CreatedOn     *time.Time          `json:"created_on,omitempty"`
-	ModifiedOn    *time.Time          `json:"modified_on,omitempty"`
-	Type          string              `json:"type"`
-	Description   string              `json:"description"`
-	Method        string              `json:"method"`
-	Path          string              `json:"path"`
-	Header        map[string][]string `json:"header"`
-	Timeout       int                 `json:"timeout"`
-	Retries       int                 `json:"retries"`
-	Interval      int                 `json:"interval"`
-	ExpectedBody  string              `json:"expected_body"`
-	ExpectedCodes string              `json:"expected_codes"`
+	ID              string              `json:"id,omitempty"`
+	CreatedOn       *time.Time          `json:"created_on,omitempty"`
+	ModifiedOn      *time.Time          `json:"modified_on,omitempty"`
+	Type            string              `json:"type"`
+	Description     string              `json:"description"`
+	Method          string              `json:"method"`
+	Path            string              `json:"path"`
+	Header          map[string][]string `json:"header"`
+	Timeout         int                 `json:"timeout"`
+	Retries         int                 `json:"retries"`
+	Interval        int                 `json:"interval"`
+	Port            uint16              `json:"port,omitempty"`
+	ExpectedBody    string              `json:"expected_body"`
+	ExpectedCodes   string              `json:"expected_codes"`
+	FollowRedirects bool                `json:"follow_redirects"`
+	AllowInsecure   bool                `json:"allow_insecure"`
 }
 
 // LoadBalancer represents a load balancer's properties.
 type LoadBalancer struct {
-	ID           string              `json:"id,omitempty"`
-	CreatedOn    *time.Time          `json:"created_on,omitempty"`
-	ModifiedOn   *time.Time          `json:"modified_on,omitempty"`
-	Description  string              `json:"description"`
-	Name         string              `json:"name"`
-	TTL          int                 `json:"ttl,omitempty"`
-	FallbackPool string              `json:"fallback_pool"`
-	DefaultPools []string            `json:"default_pools"`
-	RegionPools  map[string][]string `json:"region_pools"`
-	PopPools     map[string][]string `json:"pop_pools"`
-	Proxied      bool                `json:"proxied"`
+	ID             string              `json:"id,omitempty"`
+	CreatedOn      *time.Time          `json:"created_on,omitempty"`
+	ModifiedOn     *time.Time          `json:"modified_on,omitempty"`
+	Description    string              `json:"description"`
+	Name           string              `json:"name"`
+	TTL            int                 `json:"ttl,omitempty"`
+	FallbackPool   string              `json:"fallback_pool"`
+	DefaultPools   []string            `json:"default_pools"`
+	RegionPools    map[string][]string `json:"region_pools"`
+	PopPools       map[string][]string `json:"pop_pools"`
+	Proxied        bool                `json:"proxied"`
+	Persistence    string              `json:"session_affinity,omitempty"`
+	PersistenceTTL int                 `json:"session_affinity_ttl,omitempty"`
+
+	// SteeringPolicy controls pool selection logic.
+	// "off" select pools in DefaultPools order
+	// "geo" select pools based on RegionPools/PopPools
+	// "dynamic_latency" select pools based on RTT (requires health checks)
+	// "" maps to "geo" if RegionPools or PopPools have entries otherwise "off"
+	SteeringPolicy string `json:"steering_policy,omitempty"`
 }
 
 // loadBalancerPoolResponse represents the response from the load balancer pool endpoints.

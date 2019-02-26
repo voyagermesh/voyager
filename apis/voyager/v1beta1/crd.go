@@ -1,10 +1,10 @@
 package v1beta1
 
 import (
-	crdutils "github.com/appscode/kutil/apiextensions/v1beta1"
 	"github.com/go-openapi/spec"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/kube-openapi/pkg/common"
+	crdutils "kmodules.xyz/client-go/apiextensions/v1beta1"
 )
 
 var (

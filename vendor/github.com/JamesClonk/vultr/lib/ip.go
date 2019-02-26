@@ -11,6 +11,7 @@ type IPv4 struct {
 	IP         string `json:"ip"`
 	Netmask    string `json:"netmask"`
 	Gateway    string `json:"gateway"`
+	MAC        string `json:"mac_address"`
 	Type       string `json:"type"`
 	ReverseDNS string `json:"reverse"`
 }
@@ -66,7 +67,7 @@ func (s reverseDNSIPv6s) Less(i, j int) bool { return s[i].IP < s[j].IP }
 // ListIPv4 lists the IPv4 information of a virtual machine
 func (c *Client) ListIPv4(id string) (list []IPv4, err error) {
 	var ipMap map[string][]IPv4
-	if err := c.get(`server/list_ipv4?SUBID=`+id, &ipMap); err != nil {
+	if err := c.get(`server/list_ipv4?SUBID=`+id+`&public_network=yes`, &ipMap); err != nil {
 		return nil, err
 	}
 

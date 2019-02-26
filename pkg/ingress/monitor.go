@@ -2,13 +2,13 @@ package ingress
 
 import (
 	"github.com/appscode/go/log"
-	"github.com/appscode/kutil"
-	core_util "github.com/appscode/kutil/core/v1"
-	meta_util "github.com/appscode/kutil/meta"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kutil "kmodules.xyz/client-go"
+	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/monitoring-agent-api/agents"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )

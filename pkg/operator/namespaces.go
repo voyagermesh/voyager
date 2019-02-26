@@ -1,10 +1,10 @@
 package operator
 
 import (
-	"github.com/appscode/kutil/tools/queue"
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
+	"kmodules.xyz/client-go/tools/queue"
 )
 
 func (op *Operator) initNamespaceWatcher() {

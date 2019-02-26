@@ -7,7 +7,6 @@ import (
 	"os"
 	"path"
 
-	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	"github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1/util"
@@ -18,6 +17,7 @@ import (
 	k8serror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	core_util "kmodules.xyz/client-go/core/v1"
 )
 
 type CertStore struct {

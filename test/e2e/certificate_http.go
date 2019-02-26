@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate"
 	"github.com/appscode/voyager/test/framework"
@@ -13,6 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"kmodules.xyz/client-go/meta"
 )
 
 var _ = Describe("CertificateWithHTTPProvider", func() {

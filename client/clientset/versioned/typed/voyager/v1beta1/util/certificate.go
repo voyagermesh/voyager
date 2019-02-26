@@ -3,7 +3,6 @@ package util
 import (
 	"fmt"
 
-	"github.com/appscode/kutil"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1"
 	jsonpatch "github.com/evanphx/json-patch"
@@ -13,6 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
+	kutil "kmodules.xyz/client-go"
 )
 
 func CreateOrPatchCertificate(c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(alert *api.Certificate) *api.Certificate) (*api.Certificate, kutil.VerbType, error) {

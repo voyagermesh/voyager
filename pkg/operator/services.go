@@ -2,7 +2,6 @@ package operator
 
 import (
 	"github.com/appscode/go/log"
-	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 	"github.com/golang/glog"
@@ -10,6 +9,7 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
+	"kmodules.xyz/client-go/tools/queue"
 )
 
 func (op *Operator) initServiceWatcher() {

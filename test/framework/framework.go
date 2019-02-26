@@ -4,13 +4,13 @@ import (
 	"sync"
 
 	"github.com/appscode/go/crypto/rand"
-	"github.com/appscode/kutil/tools/certstore"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	"github.com/appscode/voyager/pkg/operator"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/afero"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
+	"kmodules.xyz/client-go/tools/certstore"
 )
 
 const (

@@ -2,28 +2,32 @@ package operator
 
 import (
 	"github.com/appscode/go/log"
-	"github.com/appscode/kutil/discovery"
-	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
+	promapi "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	"github.com/golang/glog"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
+	"kmodules.xyz/client-go/discovery"
+	"kmodules.xyz/client-go/tools/queue"
 	prom_util "kmodules.xyz/monitoring-agent-api/prometheus/v1"
 )
 
 func (op *Operator) initServiceMonitorWatcher() {
-	if !discovery.IsPreferredAPIResource(op.KubeClient.Discovery(), prom_util.SchemeGroupVersion.String(), prom.ServiceMonitorsKind) {
-		log.Warningf("Skipping watching non-preferred GroupVersion:%s Kind:%s", prom_util.SchemeGroupVersion.String(), prom.ServiceMonitorsKind)
+	if !discovery.IsPreferredAPIResource(op.KubeClient.Discovery(), prom_util.SchemeGroupVersion.String(), promapi.ServiceMonitorsKind) {
+		log.Warningf("Skipping watching non-preferred GroupVersion:%s Kind:%s", prom_util.SchemeGroupVersion.String(), promapi.ServiceMonitorsKind)
 		return
 	}
 
 	op.smonInformer = cache.NewSharedIndexInformer(
 		&cache.ListWatch{
-			ListFunc:  op.PromClient.ServiceMonitors(op.WatchNamespace).List,
+			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+				return op.PromClient.ServiceMonitors(op.WatchNamespace).List(options)
+			},
 			WatchFunc: op.PromClient.ServiceMonitors(op.WatchNamespace).Watch,
 		},
-		&prom.ServiceMonitor{}, op.ResyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+		&promapi.ServiceMonitor{}, op.ResyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
 	)
 	op.smonQueue = queue.New("ServiceMonitor", op.MaxNumRequeues, op.NumThreads, op.reconcileServiceMonitor)
 	op.smonInformer.AddEventHandler(queue.NewDeleteHandler(op.smonQueue.GetQueue()))
