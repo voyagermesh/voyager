@@ -5,14 +5,14 @@ import (
 
 	"github.com/appscode/go/log"
 	v "github.com/appscode/go/version"
-	"github.com/appscode/kutil/meta"
-	"github.com/appscode/kutil/tools/cli"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	hpc "github.com/appscode/voyager/pkg/haproxy/controller"
 	"github.com/spf13/cobra"
 	core "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	"kmodules.xyz/client-go/meta"
+	"kmodules.xyz/client-go/tools/cli"
 )
 
 var (

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/appscode/kutil"
-	"github.com/appscode/kutil/meta"
+	kutil "kmodules.xyz/client-go"
+	"kmodules.xyz/client-go/meta"
 	api "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 

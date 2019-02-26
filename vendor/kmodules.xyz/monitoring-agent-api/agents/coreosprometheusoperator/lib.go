@@ -5,14 +5,15 @@ import (
 	"reflect"
 
 	"github.com/appscode/go/types"
-	"github.com/appscode/kutil"
-	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
+	promapi "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
+	prom "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	corev1 "k8s.io/api/core/v1"
 	ecs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
+	kutil "kmodules.xyz/client-go"
 	api "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
@@ -48,8 +49,7 @@ func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new 
 	})
 
 	vt := kutil.VerbUnchanged
-	oldItems := old.(*prom.ServiceMonitorList)
-	for _, item := range oldItems.Items {
+		for _, item := range old.Items {
 		if item != nil && (new == nil || item.Namespace != new.Prometheus.Namespace) {
 			err := agent.promClient.ServiceMonitors(item.Namespace).Delete(sp.ServiceMonitorName(), nil)
 			if err != nil && !kerr.IsNotFound(err) {
@@ -101,7 +101,7 @@ func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new 
 		actual.Spec.Selector = metav1.LabelSelector{
 			MatchLabels: svc.Labels,
 		}
-		actual.Spec.NamespaceSelector = prom.NamespaceSelector{
+		actual.Spec.NamespaceSelector = promapi.NamespaceSelector{
 			MatchNames: []string{sp.GetNamespace()},
 		}
 		for i := range actual.Spec.Endpoints {
@@ -129,17 +129,17 @@ func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor
 		return kutil.VerbUnchanged, errors.New("no port found in stats service")
 	}
 
-	sm := &prom.ServiceMonitor{
+	sm := &promapi.ServiceMonitor{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      sp.ServiceMonitorName(),
 			Namespace: spec.Prometheus.Namespace,
 			Labels:    spec.Prometheus.Labels,
 		},
-		Spec: prom.ServiceMonitorSpec{
-			NamespaceSelector: prom.NamespaceSelector{
+		Spec: promapi.ServiceMonitorSpec{
+			NamespaceSelector: promapi.NamespaceSelector{
 				MatchNames: []string{sp.GetNamespace()},
 			},
-			Endpoints: []prom.Endpoint{
+			Endpoints: []promapi.Endpoint{
 				{
 					Port:        portName,
 					Interval:    spec.Prometheus.Interval,
@@ -174,8 +174,7 @@ func (agent *PrometheusCoreosOperator) Delete(sp api.StatsAccessor) (kutil.VerbT
 	}
 
 	vt := kutil.VerbUnchanged
-	oldItems := old.(*prom.ServiceMonitorList)
-	for _, item := range oldItems.Items {
+	for _, item := range old.Items {
 		err := agent.promClient.ServiceMonitors(item.Namespace).Delete(sp.ServiceMonitorName(), nil)
 		if err != nil && !kerr.IsNotFound(err) {
 			return kutil.VerbUnchanged, err
@@ -187,11 +186,11 @@ func (agent *PrometheusCoreosOperator) Delete(sp api.StatsAccessor) (kutil.VerbT
 }
 
 func (agent *PrometheusCoreosOperator) supportsCoreOSOperator() bool {
-	_, err := agent.extClient.CustomResourceDefinitions().Get(prom.PrometheusName+"."+prom.Group, metav1.GetOptions{})
+	_, err := agent.extClient.CustomResourceDefinitions().Get(promapi.PrometheusName+"."+promapi.SchemeGroupVersion.Group, metav1.GetOptions{})
 	if err != nil {
 		return false
 	}
-	_, err = agent.extClient.CustomResourceDefinitions().Get(prom.ServiceMonitorName+"."+prom.Group, metav1.GetOptions{})
+	_, err = agent.extClient.CustomResourceDefinitions().Get(promapi.ServiceMonitorName+"."+promapi.SchemeGroupVersion.Group, metav1.GetOptions{})
 	if err != nil {
 		return false
 	}

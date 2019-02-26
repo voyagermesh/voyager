@@ -1,19 +1,19 @@
 package operator
 
 import (
-	hooks "github.com/appscode/kubernetes-webhook-util/admission/v1beta1"
-	wcs "github.com/appscode/kubernetes-webhook-util/client/workload/v1"
-	reg_util "github.com/appscode/kutil/admissionregistration/v1beta1"
-	"github.com/appscode/kutil/discovery"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	voyagerinformers "github.com/appscode/voyager/client/informers/externalversions"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/eventer"
-	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
+	prom "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
+	"kmodules.xyz/client-go/discovery"
+	hooks "kmodules.xyz/webhook-runtime/admission/v1beta1"
+	wcs "kmodules.xyz/webhook-runtime/client/workload/v1"
 )
 
 const (

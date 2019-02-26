@@ -5,22 +5,22 @@ import (
 	"fmt"
 	"time"
 
-	hooks "github.com/appscode/kubernetes-webhook-util/admission/v1beta1"
-	wcs "github.com/appscode/kubernetes-webhook-util/client/workload/v1"
-	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	"github.com/appscode/voyager/pkg/admission/plugin"
 	"github.com/appscode/voyager/pkg/config"
 	"github.com/appscode/voyager/pkg/haproxy/template"
 	"github.com/appscode/voyager/pkg/operator"
-	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
+	prom "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"github.com/pkg/errors"
 	"github.com/prometheus/haproxy_exporter/collector"
 	"github.com/spf13/pflag"
 	core "k8s.io/api/core/v1"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
+	"kmodules.xyz/client-go/meta"
+	hooks "kmodules.xyz/webhook-runtime/admission/v1beta1"
+	wcs "kmodules.xyz/webhook-runtime/client/workload/v1"
 )
 
 type OperatorOptions struct {
@@ -39,9 +39,6 @@ type OperatorOptions struct {
 	DockerRegistry              string
 	HAProxyImageTag             string
 	ExporterImageTag            string
-
-	PrometheusCrdGroup string
-	PrometheusCrdKinds prom.CrdKinds
 
 	customTemplates           string
 	haProxyServerMetricFields string
@@ -82,9 +79,7 @@ func NewOperatorOptions() *OperatorOptions {
 		// High enough QPS to fit all expected use cases. QPS=0 is not set here, because client code is overriding it.
 		QPS: 1e6,
 		// High enough Burst to fit all expected use cases. Burst=0 is not set here, because client code is overriding it.
-		Burst:              1e6,
-		PrometheusCrdGroup: prom.Group,
-		PrometheusCrdKinds: prom.DefaultCrdKinds,
+		Burst: 1e6,
 
 		customTemplates:           "",
 		haProxyServerMetricFields: collector.ServerMetrics.String(),
@@ -114,9 +109,6 @@ func (s *OperatorOptions) AddGoFlags(fs *flag.FlagSet) {
 
 	fs.StringVar(&s.haProxyServerMetricFields, "haproxy.server-metric-fields", s.haProxyServerMetricFields, "Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1")
 	fs.DurationVar(&s.haProxyTimeout, "haproxy.timeout", s.haProxyTimeout, "Timeout for trying to get stats from HAProxy.")
-
-	fs.StringVar(&s.PrometheusCrdGroup, "prometheus-crd-apigroup", s.PrometheusCrdGroup, "prometheus CRD  API group name")
-	fs.Var(&s.PrometheusCrdKinds, "prometheus-crd-kinds", " - EXPERIMENTAL (could be removed in future releases) - customize CRD kind names")
 
 	fs.BoolVar(&s.ValidateHAProxyConfig, "validate-haproxy-config", s.ValidateHAProxyConfig, "If true, validates generated haproxy.cfg before sending to HAProxy pods.")
 
@@ -171,7 +163,7 @@ func (s *OperatorOptions) ApplyTo(cfg *operator.OperatorConfig) error {
 	if cfg.CRDClient, err = kext_cs.NewForConfig(cfg.ClientConfig); err != nil {
 		return err
 	}
-	if cfg.PromClient, err = prom.NewForConfig(&s.PrometheusCrdKinds, s.PrometheusCrdGroup, cfg.ClientConfig); err != nil {
+	if cfg.PromClient, err = prom.NewForConfig(cfg.ClientConfig); err != nil {
 		return err
 	}
 

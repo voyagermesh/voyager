@@ -2,17 +2,13 @@ package operator
 
 import (
 	"github.com/appscode/go/log"
-	wcs "github.com/appscode/kubernetes-webhook-util/client/workload/v1"
-	reg_util "github.com/appscode/kutil/admissionregistration/v1beta1"
-	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
-	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	voyagerinformers "github.com/appscode/voyager/client/informers/externalversions"
 	api_listers "github.com/appscode/voyager/client/listers/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate/providers"
 	"github.com/appscode/voyager/pkg/config"
-	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
+	prom "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	kext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -25,6 +21,10 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
+	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
+	apiext_util "kmodules.xyz/client-go/apiextensions/v1beta1"
+	"kmodules.xyz/client-go/tools/queue"
+	wcs "kmodules.xyz/webhook-runtime/client/workload/v1"
 )
 
 type Operator struct {

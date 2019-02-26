@@ -3,14 +3,14 @@ package ingress
 import (
 	"fmt"
 
-	"github.com/appscode/kutil"
-	core_util "github.com/appscode/kutil/core/v1"
-	"github.com/appscode/kutil/tools/analytics"
-	"github.com/appscode/kutil/tools/cli"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	kutil "kmodules.xyz/client-go"
+	core_util "kmodules.xyz/client-go/core/v1"
+	"kmodules.xyz/client-go/tools/analytics"
+	"kmodules.xyz/client-go/tools/cli"
 	"kmodules.xyz/monitoring-agent-api/parser"
 )
 

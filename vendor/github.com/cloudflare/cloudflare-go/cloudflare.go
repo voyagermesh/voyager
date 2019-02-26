@@ -3,12 +3,20 @@ package cloudflare
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"io/ioutil"
+	"log"
+	"math"
 	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/pkg/errors"
+	"golang.org/x/time/rate"
 )
 
 const apiURL = "https://api.cloudflare.com/client/v4"
@@ -26,24 +34,30 @@ type API struct {
 	APIEmail          string
 	APIUserServiceKey string
 	BaseURL           string
-	organizationID    string
+	OrganizationID    string
+	UserAgent         string
 	headers           http.Header
 	httpClient        *http.Client
 	authType          int
+	rateLimiter       *rate.Limiter
+	retryPolicy       RetryPolicy
+	logger            Logger
 }
 
-// New creates a new Cloudflare v4 API client.
-func New(key, email string, opts ...Option) (*API, error) {
-	if key == "" || email == "" {
-		return nil, errors.New(errEmptyCredentials)
-	}
+// newClient provides shared logic for New and NewWithUserServiceKey
+func newClient(opts ...Option) (*API, error) {
+	silentLogger := log.New(ioutil.Discard, "", log.LstdFlags)
 
 	api := &API{
-		APIKey:   key,
-		APIEmail: email,
-		BaseURL:  apiURL,
-		headers:  make(http.Header),
-		authType: AuthKeyEmail,
+		BaseURL:     apiURL,
+		headers:     make(http.Header),
+		rateLimiter: rate.NewLimiter(rate.Limit(4), 1), // 4rps equates to default api limit (1200 req/5 min)
+		retryPolicy: RetryPolicy{
+			MaxRetries:    3,
+			MinRetryDelay: time.Duration(1) * time.Second,
+			MaxRetryDelay: time.Duration(30) * time.Second,
+		},
+		logger: silentLogger,
 	}
 
 	err := api.parseOptions(opts...)
@@ -60,6 +74,41 @@ func New(key, email string, opts ...Option) (*API, error) {
 	return api, nil
 }
 
+// New creates a new Cloudflare v4 API client.
+func New(key, email string, opts ...Option) (*API, error) {
+	if key == "" || email == "" {
+		return nil, errors.New(errEmptyCredentials)
+	}
+
+	api, err := newClient(opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	api.APIKey = key
+	api.APIEmail = email
+	api.authType = AuthKeyEmail
+
+	return api, nil
+}
+
+// NewWithUserServiceKey creates a new Cloudflare v4 API client using service key authentication.
+func NewWithUserServiceKey(key string, opts ...Option) (*API, error) {
+	if key == "" {
+		return nil, errors.New(errEmptyCredentials)
+	}
+
+	api, err := newClient(opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	api.APIUserServiceKey = key
+	api.authType = AuthUserService
+
+	return api, nil
+}
+
 // SetAuthType sets the authentication method (AuthyKeyEmail or AuthUserService).
 func (api *API) SetAuthType(authType int) {
 	api.authType = authType
@@ -67,86 +116,176 @@ func (api *API) SetAuthType(authType int) {
 
 // ZoneIDByName retrieves a zone's ID from the name.
 func (api *API) ZoneIDByName(zoneName string) (string, error) {
-	res, err := api.ListZones(zoneName)
+	res, err := api.ListZonesContext(context.TODO(), WithZoneFilter(zoneName))
 	if err != nil {
-		return "", errors.Wrap(err, "ListZones command failed")
+		return "", errors.Wrap(err, "ListZonesContext command failed")
 	}
-	for _, zone := range res {
-		if zone.Name == zoneName {
-			return zone.ID, nil
+
+	if len(res.Result) > 1 && api.OrganizationID == "" {
+		return "", errors.New("ambiguous zone name used without an account ID")
+	}
+
+	for _, zone := range res.Result {
+		if api.OrganizationID != "" {
+			if zone.Name == zoneName && api.OrganizationID == zone.Account.ID {
+				return zone.ID, nil
+			}
+		} else {
+			if zone.Name == zoneName {
+				return zone.ID, nil
+			}
 		}
 	}
+
 	return "", errors.New("Zone could not be found")
 }
 
 // makeRequest makes a HTTP request and returns the body as a byte slice,
 // closing it before returnng. params will be serialized to JSON.
 func (api *API) makeRequest(method, uri string, params interface{}) ([]byte, error) {
-	return api.makeRequestWithAuthType(method, uri, params, api.authType)
+	return api.makeRequestWithAuthType(context.TODO(), method, uri, params, api.authType)
 }
 
-func (api *API) makeRequestWithAuthType(method, uri string, params interface{}, authType int) ([]byte, error) {
+func (api *API) makeRequestContext(ctx context.Context, method, uri string, params interface{}) ([]byte, error) {
+	return api.makeRequestWithAuthType(ctx, method, uri, params, api.authType)
+}
+
+func (api *API) makeRequestWithHeaders(method, uri string, params interface{}, headers http.Header) ([]byte, error) {
+	return api.makeRequestWithAuthTypeAndHeaders(context.TODO(), method, uri, params, api.authType, headers)
+}
+
+func (api *API) makeRequestWithAuthType(ctx context.Context, method, uri string, params interface{}, authType int) ([]byte, error) {
+	return api.makeRequestWithAuthTypeAndHeaders(ctx, method, uri, params, authType, nil)
+}
+
+func (api *API) makeRequestWithAuthTypeAndHeaders(ctx context.Context, method, uri string, params interface{}, authType int, headers http.Header) ([]byte, error) {
 	// Replace nil with a JSON object if needed
-	var reqBody io.Reader
+	var jsonBody []byte
+	var err error
+
 	if params != nil {
-		json, err := json.Marshal(params)
-		if err != nil {
-			return nil, errors.Wrap(err, "error marshalling params to JSON")
+		if paramBytes, ok := params.([]byte); ok {
+			jsonBody = paramBytes
+		} else {
+			jsonBody, err = json.Marshal(params)
+			if err != nil {
+				return nil, errors.Wrap(err, "error marshalling params to JSON")
+			}
 		}
-		reqBody = bytes.NewReader(json)
 	} else {
-		reqBody = nil
+		jsonBody = nil
 	}
 
-	resp, err := api.request(method, uri, reqBody, authType)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
+	var resp *http.Response
+	var respErr error
+	var reqBody io.Reader
+	var respBody []byte
+	for i := 0; i <= api.retryPolicy.MaxRetries; i++ {
+		if jsonBody != nil {
+			reqBody = bytes.NewReader(jsonBody)
+		}
+		if i > 0 {
+			// expect the backoff introduced here on errored requests to dominate the effect of rate limiting
+			// dont need a random component here as the rate limiter should do something similar
+			// nb time duration could truncate an arbitrary float. Since our inputs are all ints, we should be ok
+			sleepDuration := time.Duration(math.Pow(2, float64(i-1)) * float64(api.retryPolicy.MinRetryDelay))
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not read response body")
+			if sleepDuration > api.retryPolicy.MaxRetryDelay {
+				sleepDuration = api.retryPolicy.MaxRetryDelay
+			}
+			// useful to do some simple logging here, maybe introduce levels later
+			api.logger.Printf("Sleeping %s before retry attempt number %d for request %s %s", sleepDuration.String(), i, method, uri)
+			time.Sleep(sleepDuration)
+
+		}
+		api.rateLimiter.Wait(context.TODO())
+		if err != nil {
+			return nil, errors.Wrap(err, "Error caused by request rate limiting")
+		}
+		resp, respErr = api.request(ctx, method, uri, reqBody, authType, headers)
+
+		// retry if the server is rate limiting us or if it failed
+		// assumes server operations are rolled back on failure
+		if respErr != nil || resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode >= 500 {
+			// if we got a valid http response, try to read body so we can reuse the connection
+			// see https://golang.org/pkg/net/http/#Client.Do
+			if respErr == nil {
+				respBody, err = ioutil.ReadAll(resp.Body)
+				resp.Body.Close()
+
+				respErr = errors.Wrap(err, "could not read response body")
+
+				api.logger.Printf("Request: %s %s got an error response %d: %s\n", method, uri, resp.StatusCode,
+					strings.Replace(strings.Replace(string(respBody), "\n", "", -1), "\t", "", -1))
+			} else {
+				api.logger.Printf("Error performing request: %s %s : %s \n", method, uri, respErr.Error())
+			}
+			continue
+		} else {
+			respBody, err = ioutil.ReadAll(resp.Body)
+			defer resp.Body.Close()
+			if err != nil {
+				return nil, errors.Wrap(err, "could not read response body")
+			}
+			break
+		}
+	}
+	if respErr != nil {
+		return nil, respErr
 	}
 
-	switch resp.StatusCode {
-	case http.StatusOK:
-		break
-	case http.StatusUnauthorized:
+	switch {
+	case resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices:
+	case resp.StatusCode == http.StatusUnauthorized:
 		return nil, errors.Errorf("HTTP status %d: invalid credentials", resp.StatusCode)
-	case http.StatusForbidden:
+	case resp.StatusCode == http.StatusForbidden:
 		return nil, errors.Errorf("HTTP status %d: insufficient permissions", resp.StatusCode)
-	case http.StatusServiceUnavailable, http.StatusBadGateway, http.StatusGatewayTimeout,
-		522, 523, 524:
+	case resp.StatusCode == http.StatusServiceUnavailable,
+		resp.StatusCode == http.StatusBadGateway,
+		resp.StatusCode == http.StatusGatewayTimeout,
+		resp.StatusCode == 522,
+		resp.StatusCode == 523,
+		resp.StatusCode == 524:
 		return nil, errors.Errorf("HTTP status %d: service failure", resp.StatusCode)
+	// This isn't a great solution due to the way the `default` case is
+	// a catch all and that the `filters/validate-expr` returns a HTTP 400
+	// yet the clients need to use the HTTP body as a JSON string.
+	case resp.StatusCode == 400 && strings.HasSuffix(resp.Request.URL.Path, "/filters/validate-expr"):
+		return nil, errors.Errorf("%s", respBody)
 	default:
 		var s string
-		if body != nil {
-			s = string(body)
+		if respBody != nil {
+			s = string(respBody)
 		}
 		return nil, errors.Errorf("HTTP status %d: content %q", resp.StatusCode, s)
 	}
 
-	return body, nil
+	return respBody, nil
 }
 
 // request makes a HTTP request to the given API endpoint, returning the raw
 // *http.Response, or an error if one occurred. The caller is responsible for
 // closing the response body.
-func (api *API) request(method, uri string, reqBody io.Reader, authType int) (*http.Response, error) {
+func (api *API) request(ctx context.Context, method, uri string, reqBody io.Reader, authType int, headers http.Header) (*http.Response, error) {
 	req, err := http.NewRequest(method, api.BaseURL+uri, reqBody)
 	if err != nil {
 		return nil, errors.Wrap(err, "HTTP request creation failed")
 	}
+	req.WithContext(ctx)
 
-	// Apply any user-defined headers first.
-	req.Header = cloneHeader(api.headers)
+	combinedHeaders := make(http.Header)
+	copyHeader(combinedHeaders, api.headers)
+	copyHeader(combinedHeaders, headers)
+	req.Header = combinedHeaders
 	if authType&AuthKeyEmail != 0 {
 		req.Header.Set("X-Auth-Key", api.APIKey)
 		req.Header.Set("X-Auth-Email", api.APIEmail)
 	}
 	if authType&AuthUserService != 0 {
 		req.Header.Set("X-Auth-User-Service-Key", api.APIUserServiceKey)
+	}
+	if api.UserAgent != "" {
+		req.Header.Set("User-Agent", api.UserAgent)
 	}
 
 	if req.Header.Get("Content-Type") == "" {
@@ -167,20 +306,18 @@ func (api *API) request(method, uri string, reqBody io.Reader, authType int) (*h
 // accountBase is the base URL for endpoints referring to the current user. It exists as a
 // parameter because it is not consistent across APIs.
 func (api *API) userBaseURL(accountBase string) string {
-	if api.organizationID != "" {
-		return "/organizations/" + api.organizationID
+	if api.OrganizationID != "" {
+		return "/accounts/" + api.OrganizationID
 	}
 	return accountBase
 }
 
-// cloneHeader returns a shallow copy of the header.
-// copied from https://godoc.org/github.com/golang/gddo/httputil/header#Copy
-func cloneHeader(header http.Header) http.Header {
-	h := make(http.Header)
-	for k, vs := range header {
-		h[k] = vs
+// copyHeader copies all headers for `source` and sets them on `target`.
+// based on https://godoc.org/github.com/golang/gddo/httputil/header#Copy
+func copyHeader(target, source http.Header) {
+	for k, vs := range source {
+		target[k] = vs
 	}
-	return h
 }
 
 // ResponseInfo contains a code and message returned by the API as errors or
@@ -226,4 +363,46 @@ func (api *API) Raw(method, endpoint string, data interface{}) (json.RawMessage,
 		return nil, errors.Wrap(err, errUnmarshalError)
 	}
 	return r.Result, nil
+}
+
+// PaginationOptions can be passed to a list request to configure paging
+// These values will be defaulted if omitted, and PerPage has min/max limits set by resource
+type PaginationOptions struct {
+	Page    int `json:"page,omitempty"`
+	PerPage int `json:"per_page,omitempty"`
+}
+
+// RetryPolicy specifies number of retries and min/max retry delays
+// This config is used when the client exponentially backs off after errored requests
+type RetryPolicy struct {
+	MaxRetries    int
+	MinRetryDelay time.Duration
+	MaxRetryDelay time.Duration
+}
+
+// Logger defines the interface this library needs to use logging
+// This is a subset of the methods implemented in the log package
+type Logger interface {
+	Printf(format string, v ...interface{})
+}
+
+// ReqOption is a functional option for configuring API requests
+type ReqOption func(opt *reqOption)
+type reqOption struct {
+	params url.Values
+}
+
+// WithZoneFilter applies a filter based on zone name.
+func WithZoneFilter(zone string) ReqOption {
+	return func(opt *reqOption) {
+		opt.params.Set("name", zone)
+	}
+}
+
+// WithPagination configures the pagination for a response.
+func WithPagination(opts PaginationOptions) ReqOption {
+	return func(opt *reqOption) {
+		opt.params.Set("page", strconv.Itoa(opts.Page))
+		opt.params.Set("per_page", strconv.Itoa(opts.PerPage))
+	}
 }

@@ -2,10 +2,10 @@ package operator
 
 import (
 	"github.com/appscode/go/log"
-	wpi "github.com/appscode/kubernetes-webhook-util/apis/workload/v1"
-	"github.com/appscode/kutil/tools/queue"
 	"github.com/golang/glog"
 	"k8s.io/client-go/tools/cache"
+	"kmodules.xyz/client-go/tools/queue"
+	wpi "kmodules.xyz/webhook-runtime/apis/workload/v1"
 )
 
 func (op *Operator) initDeploymentWatcher() {

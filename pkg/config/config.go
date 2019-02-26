@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/appscode/go/runtime"
-	"github.com/appscode/kutil/meta"
+	"kmodules.xyz/client-go/meta"
 )
 
 var (

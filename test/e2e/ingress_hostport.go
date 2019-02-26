@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/appscode/kutil/meta"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/client"
@@ -13,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"kmodules.xyz/client-go/meta"
 )
 
 var _ = Describe("IngressHostPort", func() {

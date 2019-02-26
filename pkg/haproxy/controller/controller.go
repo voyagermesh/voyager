@@ -6,7 +6,6 @@ import (
 	"time"
 
 	ioutilz "github.com/appscode/go/ioutil"
-	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	voyagerinformers "github.com/appscode/voyager/client/informers/externalversions"
@@ -21,6 +20,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
+	"kmodules.xyz/client-go/tools/queue"
 )
 
 type Options struct {

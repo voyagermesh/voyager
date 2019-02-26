@@ -2,12 +2,12 @@ package controller
 
 import (
 	ioutilz "github.com/appscode/go/ioutil"
-	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/cache"
+	"kmodules.xyz/client-go/tools/queue"
 )
 
 func (c *Controller) initConfigMapWatcher() {

@@ -2,9 +2,9 @@ package operator
 
 import (
 	"github.com/appscode/go/log"
-	"github.com/appscode/kutil/tools/queue"
 	"github.com/golang/glog"
 	"k8s.io/client-go/tools/cache"
+	"kmodules.xyz/client-go/tools/queue"
 )
 
 func (op *Operator) initConfigMapWatcher() {

@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/appscode/go/log"
-	v1u "github.com/appscode/kutil/core/v1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	"github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1/util"
@@ -25,6 +24,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/cert"
+	v1u "kmodules.xyz/client-go/core/v1"
 )
 
 type Controller struct {

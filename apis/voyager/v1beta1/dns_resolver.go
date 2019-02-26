@@ -1,11 +1,11 @@
 package v1beta1
 
 import (
-	"github.com/appscode/kutil"
-	"github.com/appscode/kutil/meta"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	kutil "kmodules.xyz/client-go"
+	"kmodules.xyz/client-go/meta"
 )
 
 const (

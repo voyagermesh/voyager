@@ -4,7 +4,6 @@ import (
 	"io"
 	"net"
 
-	"github.com/appscode/kutil/tools/clientcmd"
 	"github.com/appscode/voyager/pkg/operator"
 	"github.com/appscode/voyager/pkg/server"
 	"github.com/pkg/errors"
@@ -12,6 +11,8 @@ import (
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	genericoptions "k8s.io/apiserver/pkg/server/options"
+	"kmodules.xyz/client-go/meta"
+	"kmodules.xyz/client-go/tools/clientcmd"
 )
 
 const defaultEtcdPathPrefix = "/registry/voyager.appscode.com"
@@ -27,10 +28,14 @@ type VoyagerOptions struct {
 func NewVoyagerOptions(out, errOut io.Writer) *VoyagerOptions {
 	o := &VoyagerOptions{
 		// TODO we will nil out the etcd storage options.  This requires a later level of k8s.io/apiserver
-		RecommendedOptions: genericoptions.NewRecommendedOptions(defaultEtcdPathPrefix, server.Codecs.LegacyCodec(admissionv1beta1.SchemeGroupVersion)),
-		OperatorOptions:    NewOperatorOptions(),
-		StdOut:             out,
-		StdErr:             errOut,
+		RecommendedOptions: genericoptions.NewRecommendedOptions(
+			defaultEtcdPathPrefix,
+			server.Codecs.LegacyCodec(admissionv1beta1.SchemeGroupVersion),
+			genericoptions.NewProcessInfo("voyager-operator", meta.Namespace()),
+		),
+		OperatorOptions: NewOperatorOptions(),
+		StdOut:          out,
+		StdErr:          errOut,
 	}
 	o.RecommendedOptions.Etcd = nil
 	o.RecommendedOptions.Admission = nil

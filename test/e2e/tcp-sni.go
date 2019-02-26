@@ -1,7 +1,6 @@
 package e2e
 
 import (
-	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/framework"
 	"github.com/appscode/voyager/test/test-server/client"
@@ -10,6 +9,7 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	core_util "kmodules.xyz/client-go/core/v1"
 )
 
 var _ = Describe("Ingress TCP SNI", func() {

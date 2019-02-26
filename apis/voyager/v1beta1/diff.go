@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
-	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/appscode/voyager/apis/voyager"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	core_util "kmodules.xyz/client-go/core/v1"
 )
 
 const (

@@ -3,15 +3,15 @@ package v1
 import (
 	"errors"
 
-	"github.com/appscode/kutil/meta"
-	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
+	api "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/conversion"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"kmodules.xyz/client-go/meta"
 )
 
-var SchemeGroupVersion = schema.GroupVersion{Group: prom.Group, Version: prom.Version}
+var SchemeGroupVersion = schema.GroupVersion{Group: api.SchemeGroupVersion.Group, Version: api.Version}
 
 func GetGroupVersionKind(v interface{}) schema.GroupVersionKind {
 	return SchemeGroupVersion.WithKind(meta.GetKind(v))
@@ -24,17 +24,17 @@ func AssignTypeKind(v interface{}) error {
 	}
 
 	switch u := v.(type) {
-	case *prom.Prometheus:
+	case *api.Prometheus:
 		u.APIVersion = SchemeGroupVersion.String()
-		u.Kind = prom.PrometheusesKind
+		u.Kind = api.PrometheusesKind
 		return nil
-	case *prom.ServiceMonitor:
+	case *api.ServiceMonitor:
 		u.APIVersion = SchemeGroupVersion.String()
-		u.Kind = prom.ServiceMonitorsKind
+		u.Kind = api.ServiceMonitorsKind
 		return nil
-	case *prom.Alertmanager:
+	case *api.Alertmanager:
 		u.APIVersion = SchemeGroupVersion.String()
-		u.Kind = prom.AlertmanagersKind
+		u.Kind = api.AlertmanagersKind
 		return nil
 	}
 	return errors.New("unknown api object type")
@@ -42,14 +42,14 @@ func AssignTypeKind(v interface{}) error {
 
 func addKnownTypes(s *runtime.Scheme) error {
 	s.AddKnownTypes(SchemeGroupVersion,
-		&prom.Prometheus{},
-		&prom.PrometheusList{},
+		&api.Prometheus{},
+		&api.PrometheusList{},
 
-		&prom.ServiceMonitor{},
-		&prom.ServiceMonitorList{},
+		&api.ServiceMonitor{},
+		&api.ServiceMonitorList{},
 
-		&prom.Alertmanager{},
-		&prom.AlertmanagerList{},
+		&api.Alertmanager{},
+		&api.AlertmanagerList{},
 	)
 
 	s.AddKnownTypes(SchemeGroupVersion,

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/appscode/kutil/tools/queue"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/eventer"
 	"github.com/golang/glog"
@@ -15,6 +14,7 @@ import (
 	ext_informers "k8s.io/client-go/informers/extensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
+	"kmodules.xyz/client-go/tools/queue"
 )
 
 func (c *Controller) initIngressWatcher() {
