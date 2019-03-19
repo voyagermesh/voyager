@@ -10,7 +10,7 @@ voyager:
 haproxy:
   registry: appscode
   repository: haproxy
-  tag: 1.9.2-9.0.0-alpine
+  tag: 1.9.4-9.0.0-alpine
 cleaner:
   registry: appscode
   repository: kubectl

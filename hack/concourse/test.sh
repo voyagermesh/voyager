@@ -27,10 +27,10 @@ pushd $GOPATH/src/github.com/$ORG_NAME/$REPO_NAME
 ./hack/builddeps.sh
 
 ./hack/docker/voyager/setup.sh
-./hack/docker/haproxy/1.9.2-alpine/setup.sh
+./hack/docker/haproxy/1.9.4-alpine/setup.sh
 
 ./hack/docker/voyager/setup.sh push
-./hack/docker/haproxy/1.9.2-alpine/setup.sh push
+./hack/docker/haproxy/1.9.4-alpine/setup.sh push
 
 ./hack/deploy/voyager.sh --provider=$ClusterProvider
 
