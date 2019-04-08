@@ -13,11 +13,11 @@ rm -rf dist
 ./hack/docker/voyager/setup.sh
 ./hack/docker/voyager/setup.sh release
 
-./hack/docker/haproxy/1.9.4/setup.sh
-./hack/docker/haproxy/1.9.4/setup.sh release
+./hack/docker/haproxy/1.9.6/setup.sh
+./hack/docker/haproxy/1.9.6/setup.sh release
 
-./hack/docker/haproxy/1.9.4-alpine/setup.sh
-./hack/docker/haproxy/1.9.4-alpine/setup.sh release
+./hack/docker/haproxy/1.9.6-alpine/setup.sh
+./hack/docker/haproxy/1.9.6-alpine/setup.sh release
 
 rm dist/.tag
 

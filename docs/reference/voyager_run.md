@@ -75,7 +75,7 @@ voyager run [flags]
       --enable-swagger-ui                                       Enables swagger ui on the apiserver at /swagger-ui
       --enable-validating-webhook                               If true, enables validating webhooks for Voyager CRDs.
       --exporter-image-tag string                               Tag of Docker image containing Prometheus exporter (default "9.0.0")
-      --haproxy-image-tag string                                Tag of Docker image containing HAProxy binary (default "1.9.4-9.0.0-alpine")
+      --haproxy-image-tag string                                Tag of Docker image containing HAProxy binary (default "1.9.6-9.0.0-alpine")
       --haproxy.server-metric-fields string                     Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1 (default "2,3,4,5,6,7,8,9,13,14,15,16,17,18,21,24,33,35,38,39,40,41,42,43,44")
       --haproxy.timeout duration                                Timeout for trying to get stats from HAProxy. (default 5s)
   -h, --help                                                    help for run

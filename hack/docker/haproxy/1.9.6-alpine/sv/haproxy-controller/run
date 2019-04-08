@@ -1,0 +1,8 @@
+#!/bin/bash
+
+source /etc/envvars
+
+echo "Starting HAProxy controller ..."
+cmd="exec voyager haproxy-controller $HAPROXY_CONTROLLER_ARGS"
+echo $cmd
+$cmd
