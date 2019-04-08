@@ -71,7 +71,7 @@ spec:
           value: ...
         - name: OAUTH2_PROXY_COOKIE_SECRET
           value: ...
-        image: appscode/oauth2_proxy:2.3.1
+        image: quay.io/pusher/oauth2_proxy:v3.1.0
         imagePullPolicy: Always
         name: oauth2-proxy
         ports:

@@ -59,7 +59,8 @@ spec:
         - --upstream=file:///dev/null
         - --http-address=0.0.0.0:4180
         - --cookie-secure=false
-        - --pass-id-token=true
+        - --pass-authorization-header=true
+        - --set-authorization-header=true
         - --set-xauthrequest=true
         env:
         - name: OAUTH2_PROXY_CLIENT_ID
@@ -68,7 +69,7 @@ spec:
           value: ...
         - name: OAUTH2_PROXY_COOKIE_SECRET
           value: ...
-        image: appscode/oauth2_proxy:2.3.1
+        image: quay.io/pusher/oauth2_proxy:v3.1.0
         imagePullPolicy: Always
         name: oauth2-proxy
         ports:
@@ -91,7 +92,7 @@ spec:
     k8s-app: oauth2-proxy
 ```
 
-Here, `--set-xauthrequest` flag sets `X-Auth-Request-User` and `X-Auth-Request-Email` headers, which will be forwarded to backend. It also sets `X-Auth-Request-Id-Token` header when `--pass-id-token` flag is `true`.
+Here, `--set-xauthrequest` flag sets `X-Auth-Request-User` and `X-Auth-Request-Email` headers, which will be forwarded to backend. `--pass-authorization-header` and `--set-authorization-header` set OIDC IDToken via `Authorization` Bearer header and `X-Auth-Request-Id-Token` header.
 
 Finally create the ingress:
 
@@ -195,7 +196,7 @@ spec:
           value: ...
         - name: OAUTH2_PROXY_COOKIE_SECRET
           value: ...
-        image: appscode/oauth2_proxy:2.3.1
+        image: quay.io/pusher/oauth2_proxy:v3.1.0
         imagePullPolicy: Always
         name: oauth2-proxy
         ports:
