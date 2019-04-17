@@ -7,8 +7,6 @@
 [![Slack](https://slack.appscode.com/badge.svg)](https://slack.appscode.com)
 [![Twitter](https://img.shields.io/twitter/follow/appscodehq.svg?style=social&logo=twitter&label=Follow)](https://twitter.com/intent/follow?screen_name=AppsCodeHQ)
 
-[![Throughput Graph](https://graphs.waffle.io/appscode/voyager/throughput.svg)](https://waffle.io/appscode/voyager/metrics/throughput)
-
 > Secure HAProxy Ingress Controller for Kubernetes
 
 Voyager is a [HAProxy](http://www.haproxy.org/) backed [secure](#certificate) L7 and L4 [ingress](#ingress) controller for Kubernetes developed by
