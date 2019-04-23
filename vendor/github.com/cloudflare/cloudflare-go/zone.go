@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -261,6 +262,7 @@ type PurgeCacheResponse struct {
 type newZone struct {
 	Name      string `json:"name"`
 	JumpStart bool   `json:"jump_start"`
+	Type      string `json:"type"`
 	// We use a pointer to get a nil type when the field is empty.
 	// This allows us to completely omit this with json.Marshal().
 	Organization *Organization `json:"organization,omitempty"`
@@ -275,12 +277,18 @@ type newZone struct {
 // This will add the new zone to the specified multi-user organization.
 //
 // API reference: https://api.cloudflare.com/#zone-create-a-zone
-func (api *API) CreateZone(name string, jumpstart bool, org Organization) (Zone, error) {
+func (api *API) CreateZone(name string, jumpstart bool, org Organization, zoneType string) (Zone, error) {
 	var newzone newZone
 	newzone.Name = name
 	newzone.JumpStart = jumpstart
 	if org.ID != "" {
 		newzone.Organization = &org
+	}
+
+	if zoneType == "partial" {
+		newzone.Type = "partial"
+	} else {
+		newzone.Type = "full"
 	}
 
 	res, err := api.makeRequest("POST", "/zones", newzone)
@@ -342,10 +350,7 @@ func (api *API) ListZones(z ...string) ([]Zone, error) {
 			}
 		}
 	} else {
-		// TODO: Paginate here. We only grab the first page of results.
-		// Could do this concurrently after the first request by creating a
-		// sync.WaitGroup or just a channel + workers.
-		res, err = api.makeRequest("GET", "/zones", nil)
+		res, err = api.makeRequest("GET", "/zones?per_page=50", nil)
 		if err != nil {
 			return []Zone{}, errors.Wrap(err, errMakeRequestError)
 		}
@@ -353,7 +358,40 @@ func (api *API) ListZones(z ...string) ([]Zone, error) {
 		if err != nil {
 			return []Zone{}, errors.Wrap(err, errUnmarshalError)
 		}
-		zones = r.Result
+
+		totalPageCount := r.TotalPages
+		var wg sync.WaitGroup
+		wg.Add(totalPageCount)
+		errc := make(chan error)
+
+		for i := 1; i <= totalPageCount; i++ {
+			go func(pageNumber int) error {
+				res, err = api.makeRequest("GET", fmt.Sprintf("/zones?per_page=50&page=%d", pageNumber), nil)
+				if err != nil {
+					errc <- err
+				}
+
+				err = json.Unmarshal(res, &r)
+				if err != nil {
+					errc <- err
+				}
+
+				for _, zone := range r.Result {
+					zones = append(zones, zone)
+				}
+
+				select {
+				case err := <-errc:
+					return err
+				default:
+					wg.Done()
+				}
+
+				return nil
+			}(i)
+		}
+
+		wg.Wait()
 	}
 
 	return zones, nil

@@ -29,6 +29,15 @@ var JSONSerializer = func() *Codec {
 	return &Codec{&codec{info.Serializer}}
 }()
 
+var JSONPrettySerializer = func() *Codec {
+	mediaType := "application/json"
+	info, ok := runtime.SerializerInfoForMediaType(scheme.Codecs.SupportedMediaTypes(), mediaType)
+	if !ok {
+		panic("unsupported media type " + mediaType)
+	}
+	return &Codec{&codec{info.PrettySerializer}}
+}()
+
 var YAMLSerializer = func() *Codec {
 	mediaType := "application/yaml"
 	info, ok := runtime.SerializerInfoForMediaType(scheme.Codecs.SupportedMediaTypes(), mediaType)
@@ -86,6 +95,22 @@ func MarshalToJson(obj runtime.Object, gv schema.GroupVersion) ([]byte, error) {
 	return runtime.Encode(encoder, obj)
 }
 
+// MarshalToPrettyJson marshals an object into pretty json.
+func MarshalToPrettyJson(obj runtime.Object, gv schema.GroupVersion) ([]byte, error) {
+	encoder := versioning.NewCodec(
+		JSONPrettySerializer,
+		nil,
+		runtime.UnsafeObjectConvertor(scheme.Scheme),
+		scheme.Scheme,
+		scheme.Scheme,
+		nil,
+		gv,
+		nil,
+		scheme.Scheme.Name(),
+	)
+	return runtime.Encode(encoder, obj)
+}
+
 // UnmarshalFromJSON unmarshals an object into json.
 func UnmarshalFromJSON(data []byte, gv schema.GroupVersion) (runtime.Object, error) {
 	decoder := versioning.NewCodec(
@@ -104,6 +129,10 @@ func UnmarshalFromJSON(data []byte, gv schema.GroupVersion) (runtime.Object, err
 
 // Decode takes an input structure and uses reflection to translate it to
 // the output structure. output must be a pointer to a map or struct.
+//
+// WARNING: `json` tags are not respected when struct converted to map[string]interface{}
+// WARNING: Embedded structs are not decoded properly: https://github.com/mitchellh/mapstructure/pull/80
+//
 func Decode(input interface{}, output interface{}) error {
 	config := &mapstructure.DecoderConfig{
 		DecodeHook: StringToQuantityHookFunc(),
