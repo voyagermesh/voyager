@@ -2,20 +2,40 @@
 title: Changelog | Voyager
 description: Changelog
 menu:
-  product_voyager_9.0.0:
+  product_voyager_10.0.0:
     identifier: changelog-voyager
     name: Changelog
     parent: welcome
     weight: 10
 product_name: voyager
-menu_name: product_voyager_9.0.0
+menu_name: product_voyager_10.0.0
 section_menu_id: welcome
-url: /products/voyager/9.0.0/welcome/changelog/
+url: /products/voyager/10.0.0/welcome/changelog/
 aliases:
-  - /products/voyager/9.0.0/CHANGELOG/
+  - /products/voyager/10.0.0/CHANGELOG/
 ---
 
 # Change Log
+
+## [10.0.0](https://github.com/appscode/voyager/tree/10.0.0) (2019-04-28)
+[Full Changelog](https://github.com/appscode/voyager/compare/9.0.0...10.0.0)
+
+**Closed issues:**
+
+- Custom LUA scripts support [\#1370](https://github.com/appscode/voyager/issues/1370)
+- 9.0.0 fails to install on new GKE cluster [\#1360](https://github.com/appscode/voyager/issues/1360)
+- Cannot use voyager/client with client-go collision with vendored packages [\#1356](https://github.com/appscode/voyager/issues/1356)
+- Oauth2\_Proxy is dead, long live Oauth2\_Proxy [\#1302](https://github.com/appscode/voyager/issues/1302)
+- Upgrade to HAProxy 1.9.5 [\#1362](https://github.com/appscode/voyager/issues/1362)
+
+**Merged pull requests:**
+
+- Update Kubernetes client libraries to 1.13.5 [\#1379](https://github.com/appscode/voyager/pull/1379) ([tamalsaha](https://github.com/tamalsaha))
+- Get id-token from Authorization header [\#1376](https://github.com/appscode/voyager/pull/1376) ([diptadas](https://github.com/diptadas))
+- Update haproxy version to 1.9.6 [\#1374](https://github.com/appscode/voyager/pull/1374) ([diptadas](https://github.com/diptadas))
+- Update haproxy version to 1.9.4 [\#1368](https://github.com/appscode/voyager/pull/1368) ([diptadas](https://github.com/diptadas))
+- Update Kubernetes client libraries to 1.13.0 [\#1359](https://github.com/appscode/voyager/pull/1359) ([tamalsaha](https://github.com/tamalsaha))
+- Clarify how HAProxy presents certificates to clients [\#1358](https://github.com/appscode/voyager/pull/1358) ([diptadas](https://github.com/diptadas))
 
 ## [9.0.0](https://github.com/appscode/voyager/tree/9.0.0) (2019-02-20)
 [Full Changelog](https://github.com/appscode/voyager/compare/8.0.1...9.0.0)
@@ -59,6 +79,11 @@ aliases:
 
 **Merged pull requests:**
 
+- Update LE certificate renewal buffer info [\#1355](https://github.com/appscode/voyager/pull/1355) ([tamalsaha](https://github.com/tamalsaha))
+- Release 9.0.0 [\#1354](https://github.com/appscode/voyager/pull/1354) ([tamalsaha](https://github.com/tamalsaha))
+- Fix hugo frontmatter for HTTP/2 doc [\#1353](https://github.com/appscode/voyager/pull/1353) ([tamalsaha](https://github.com/tamalsaha))
+- Fix e2e test for empty backend [\#1352](https://github.com/appscode/voyager/pull/1352) ([tamalsaha](https://github.com/tamalsaha))
+- Update changelog for 9.0.0 [\#1350](https://github.com/appscode/voyager/pull/1350) ([tamalsaha](https://github.com/tamalsaha))
 - Prepare docs for 9.0.0 release [\#1349](https://github.com/appscode/voyager/pull/1349) ([tamalsaha](https://github.com/tamalsaha))
 - Don't remove backends with empty endpoints [\#1348](https://github.com/appscode/voyager/pull/1348) ([tamalsaha](https://github.com/tamalsaha))
 - Pass Annotations to Operator PodTemplate [\#1347](https://github.com/appscode/voyager/pull/1347) ([tamalsaha](https://github.com/tamalsaha))

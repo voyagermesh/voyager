@@ -1,13 +1,13 @@
 ---
 title: Securing Kubernetes Dashboard | Kubernetes Ingress
 menu:
-  product_voyager_9.0.0:
+  product_voyager_10.0.0:
     identifier: oauth2-dashboard
     name: Kubernetes Dashboard
     parent: oauth2-security
     weight: 20
 product_name: voyager
-menu_name: product_voyager_9.0.0
+menu_name: product_voyager_10.0.0
 section_menu_id: guides
 ---
 

@@ -1,13 +1,13 @@
 ---
 title: Monitor HAProxy using CoreOS Prometheus operator
 menu:
-  product_voyager_9.0.0:
+  product_voyager_10.0.0:
     identifier: coreos-operator-monitoring
     name: Monitor with CoreOS Prometheus operator
     parent: monitoring-ingress
     weight: 20
 product_name: voyager
-menu_name: product_voyager_9.0.0
+menu_name: product_voyager_10.0.0
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
@@ -43,7 +43,7 @@ Note that the yaml files that are used in this tutorial, stored in [docs/example
 Now, run the following command to prepare your cluster for this tutorial:
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/9.0.0/docs/examples/monitoring/coreos-operator/demo-0.yaml
+$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/10.0.0/docs/examples/monitoring/coreos-operator/demo-0.yaml
 clusterrole "prometheus-operator" created
 serviceaccount "prometheus-operator" created
 clusterrolebinding "prometheus-operator" created
@@ -64,7 +64,7 @@ servicemonitors.monitoring.coreos.com   11m
 Once the Prometheus operator CRDs are registered, run the following command to create a Prometheus.
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/9.0.0/docs/examples/monitoring/coreos-operator/demo-1.yaml
+$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/10.0.0/docs/examples/monitoring/coreos-operator/demo-1.yaml
 clusterrole "prometheus" created
 serviceaccount "prometheus" created
 clusterrolebinding "prometheus" created
@@ -103,7 +103,7 @@ kubectl expose deployment nginx --name=web --port=80 --target-port=80 -n demo
 Now create Ingress `ing.yaml`
 
 ```console
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/9.0.0/docs/examples/monitoring/coreos-operator/ing.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/10.0.0/docs/examples/monitoring/coreos-operator/ing.yaml
 ingress "stats-ing" created
 ```
 
