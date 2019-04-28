@@ -2,13 +2,13 @@
 title: Overview | Developer Guide
 description: Developer Guide Overview
 menu:
-  product_voyager_9.0.0:
+  product_voyager_10.0.0:
     identifier: developer-guide-readme
     name: Overview
     parent: developer-guide
     weight: 15
 product_name: voyager
-menu_name: product_voyager_9.0.0
+menu_name: product_voyager_10.0.0
 section_menu_id: setup
 ---
 
@@ -167,7 +167,7 @@ Following configurations can be enabled for test via flags in `./hack/make.py te
 | cloud-provider | | Name of cloud Provider |
 | ingress-class | | | Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager. |
 | namespace | test- <random> | Run tests in this namespaces |
-| haproxy-image| appscode/haproxy:1.9.6-9.0.0-alpine | HAProxy image name to run |
+| haproxy-image| appscode/haproxy:1.9.6-10.0.0-alpine | HAProxy image name to run |
 | cleanup | true | Turn off cleanup for dynamically generated pods and configmaps. Helps with manual testing |
 | in-cluster | false | Operator is running inside cluster. Helps with running operator testing. |
 | daemon-host-name | master | Daemon host name to run daemon hosts |
@@ -183,5 +183,5 @@ Following configurations can be enabled for test via flags in `./hack/make.py te
 
 ```console
 # Create Third Party Resources
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/9.0.0/apis/voyager/v1beta1/crds.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/10.0.0/apis/voyager/v1beta1/crds.yaml
 ```
