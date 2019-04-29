@@ -66,7 +66,7 @@ data:
 
 To issue a free TLS/SSL certificate from Let's Encrypt, create a `Certificate` object with the list of domains. To learn more, please visit the following links:
 
-- [Using HTTP-01 challenge](/docs/guides/certificate/http.md)
+- [Using HTTP-01 challenge](/docs/guides/certificate/http/overview.md)
 - [Using DNS-01 challenge](/docs/guides/certificate/dns/providers.md)
 
 ## Secure HTTP Service

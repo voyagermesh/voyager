@@ -29,7 +29,7 @@ kind: Ingress
 metadata:
   name: test-ingress
   namespace: default
-  annotation:
+  annotations:
     ingress.appscode.com/affinity: 'cookie'
 spec:
   rules:

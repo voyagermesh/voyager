@@ -210,8 +210,8 @@ type IngressRule struct {
 	// IngressRuleValue represents a rule to route requests for this IngressRule.
 	// If unspecified, the rule defaults to a http catch-all. Whether that sends
 	// just traffic matching the host to the default backend or all traffic to the
-	// default backend, is left to the controller fulfilling the Ingress. Http is
-	// currently the only supported IngressRuleValue.
+	// default backend, is left to the controller fulfilling the Ingress. Http and TCP are
+	// currently supported IngressRuleValue.
 	IngressRuleValue `json:",inline,omitempty"`
 }
 

@@ -139,7 +139,7 @@ const (
 	//     		- none : Doesn’t verify the certificate of the server
 	//     		- required (default value) : TLS handshake is aborted if the validation of the certificate presented by the server returns an error.
 	//
-	// verfyhost <hostname>: https://cbonte.github.io/haproxy-dconv/1.8/configuration.html#5.2-verifyhost
+	// verifyhost <hostname>: https://cbonte.github.io/haproxy-dconv/1.8/configuration.html#5.2-verifyhost
 	//    	Sets a <hostname> to look for in the Subject and SubjectAlternateNames fields provided in the
 	//    	certificate sent by the server. If <hostname> can’t be found, then the TLS handshake is aborted.
 	//    	This only applies when verify required is configured.
