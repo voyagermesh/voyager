@@ -15,27 +15,27 @@ Voyager is a [HAProxy](http://www.haproxy.org/) backed [secure](#certificate) L7
 ***We are exploring what's next for Voyager. As an ingress controller, its is mostly feature complete at this point. The obvious direction will be to grow Voyager into a full scale L7 api gateway and service mesh. We want to hear your feedback on the roadmap for Voyager. Please take 5 minutes to answer this survey: https://appsco.de/voyager-survey-201902***
 
 ## Ingress
-Voyager provides L7 and L4 loadbalancing using a custom Kubernetes [Ingress](https://appscode.com/products/voyager/9.0.0/guides/ingress/) resource. This is built on top of the [HAProxy](http://www.haproxy.org/) to support high availability, sticky sessions, name and path-based virtual hosting.
+Voyager provides L7 and L4 loadbalancing using a custom Kubernetes [Ingress](https://appscode.com/products/voyager/10.0.0/guides/ingress/) resource. This is built on top of the [HAProxy](http://www.haproxy.org/) to support high availability, sticky sessions, name and path-based virtual hosting.
 This also support configurable application ports with all the options available in a standard Kubernetes [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/).
 
 ## Certificate
-Voyager can automatically provision and refresh SSL certificates (including wildcard certificates) issued from Let's Encrypt using a custom Kubernetes [Certificate](https://appscode.com/products/voyager/9.0.0/guides/certificate/) resource.
+Voyager can automatically provision and refresh SSL certificates (including wildcard certificates) issued from Let's Encrypt using a custom Kubernetes [Certificate](https://appscode.com/products/voyager/10.0.0/guides/certificate/) resource.
 
 ## Supported Versions
 Please pick a version of Voyager that matches your Kubernetes installation.
 
 | Voyager Version                                                                        | Docs                                                                    | Kubernetes Version | Prometheus operator Version |
 |----------------------------------------------------------------------------------------|-------------------------------------------------------------------------|--------------------|-----------------------------|
-| [9.0.0](https://github.com/appscode/voyager/releases/tag/9.0.0) (uses CRD)             | [User Guide](https://appscode.com/products/voyager/9.0.0/)              | 1.9.x+             | 0.16.0+                     |
+| [10.0.0](https://github.com/appscode/voyager/releases/tag/10.0.0) (uses CRD)             | [User Guide](https://appscode.com/products/voyager/10.0.0/)              | 1.9.x+             | 0.16.0+                     |
 | [7.4.0](https://github.com/appscode/voyager/releases/tag/7.4.0) (uses CRD)             | [User Guide](https://appscode.com/products/voyager/7.4.0/)              | 1.8.x - 1.11.x     | 0.16.0+                     |
 | [5.0.0](https://github.com/appscode/voyager/releases/tag/5.0.0) (uses CRD)             | [User Guide](https://appscode.com/products/voyager/5.0.0/)              | 1.7.x              | 0.12.0+                     |
 | [3.2.2](https://github.com/appscode/voyager/releases/tag/3.2.2) (uses TPR)             | [User Guide](https://github.com/appscode/voyager/tree/3.2.2/docs)       | 1.5.x - 1.7.x      | < 0.12.0                    |
 
 ## Installation
-To install Voyager, please follow the guide [here](https://appscode.com/products/voyager/9.0.0/setup/install/).
+To install Voyager, please follow the guide [here](https://appscode.com/products/voyager/10.0.0/setup/install/).
 
 ## Using Voyager
-Want to learn how to use Voyager? Please start [here](https://appscode.com/products/voyager/9.0.0/welcome/).
+Want to learn how to use Voyager? Please start [here](https://appscode.com/products/voyager/10.0.0/welcome/).
 
 ## Voyager API Clients
 You can use Voyager api clients to programmatically access its CRD objects. Here are the supported clients:
@@ -44,7 +44,7 @@ You can use Voyager api clients to programmatically access its CRD objects. Here
 - Java: https://github.com/voyager-client/java
 
 ## Contribution guidelines
-Want to help improve Voyager? Please start [here](https://appscode.com/products/voyager/9.0.0/welcome/contributing/).
+Want to help improve Voyager? Please start [here](https://appscode.com/products/voyager/10.0.0/welcome/contributing/).
 
 ---
 
