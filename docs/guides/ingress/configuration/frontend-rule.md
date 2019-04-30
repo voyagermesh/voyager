@@ -68,7 +68,7 @@ kind: Ingress
 metadata:
   name: test-ingress
   namespace: default
-  annotation:
+  annotations:
     ingress.appscode.com/keep-source-ip: "true"
 spec:
   frontendRules:
@@ -118,7 +118,7 @@ kind: Ingress
 metadata:
   name: test-ingress
   namespace: default
-  annotation:
+  annotations:
     ingress.appscode.com/keep-source-ip: "true"
 spec:
   configVolumes:

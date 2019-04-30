@@ -26,7 +26,7 @@ Available options:
   - `none`: Doesn’t verify the certificate of the server
   - `required (default value)`: TLS handshake is aborted if the validation of the certificate presented by the server returns an error.
 
-- `verfyhost <hostname>`: Sets a <hostname> to look for in the Subject and SubjectAlternateNames fields provided in the certificate sent by the server. If <hostname> can’t be found, then the TLS handshake is aborted. This only applies when verify required is configured.
+- `verifyhost <hostname>`: Sets a <hostname> to look for in the Subject and SubjectAlternateNames fields provided in the certificate sent by the server. If <hostname> can’t be found, then the TLS handshake is aborted. This only applies when verify required is configured.
 
 - `ca-file <file-path>`: Specify a CA file to verify the backend server. See [here](/docs/guides/ingress/configuration/config-volumes.md) for complete example.
 
