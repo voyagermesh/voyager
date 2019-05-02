@@ -43,7 +43,7 @@ Below is the full list of supported annotations:
 | [ingress.appscode.com/auth-tls-verify-client](/docs/guides/ingress/security/tls-auth.md) | `required` or, `optional` | `required` |
 | [ingress.appscode.com/backend-tls](/docs/guides/ingress/tls/backend-tls.md) | string | |
 | [ingress.appscode.com/replicas](/docs/guides/ingress/scaling.md) | int | `1` |
-| [ingress.appscode.com/backend-weight](/docs/guides/ingress/http/blue-green-deployment.md) | int | |
+| [ingress.appscode.com/backend-weight](/docs/guides/ingress/http/blue-green-deployment.md) | int | 1 |
 | [ingress.appscode.com/whitelist-source-range](/docs/guides/ingress/configuration/whitelist.md) | string | |
 | [ingress.appscode.com/max-connections](/docs/guides/ingress/configuration/max-connections.md) | int | |
 | [ingress.appscode.com/ssl-redirect](/docs/guides/ingress/configuration/ssl-redirect.md) | bool | `true` |

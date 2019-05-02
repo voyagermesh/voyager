@@ -131,9 +131,10 @@ func (c *controller) getEndpoints(svc *core.Service, servicePort *core.ServicePo
 			for _, epAddress := range ss.Addresses {
 				if isForwardable(hostNames, epAddress.Hostname) {
 					ep := &hpi.Endpoint{
-						Name: getEndpointName(epAddress),
-						IP:   epAddress.IP,
-						Port: targetPort,
+						Name:   getEndpointName(epAddress),
+						IP:     epAddress.IP,
+						Port:   targetPort,
+						Weight: -1,
 					}
 					if epAddress.TargetRef != nil {
 						// Use PodList via service selector
