@@ -60,7 +60,7 @@ metadata:
   labels:
     app: deployment
     app-version: v2
-  name: deploymet-2
+  name: deployment-2
   namespace: default
 spec:
   replicas: 1

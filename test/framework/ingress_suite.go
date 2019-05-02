@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	testServerImage = "appscode/test-server:2.3"
+	testServerImage = "appscode/test-server:2.4"
 )
 
 var (
@@ -79,6 +79,7 @@ func (i *ingressInvocation) Create(ing *api.Ingress) error {
 	go i.printInfoForDebug(ing)
 	return nil
 }
+
 func (i *ingressInvocation) printInfoForDebug(ing *api.Ingress) {
 	for {
 		pods, err := i.KubeClient.CoreV1().Pods(ing.Namespace).List(metav1.ListOptions{
@@ -348,6 +349,21 @@ func (i *ingressInvocation) DoHTTPTestRedirectWithHeader(retryCount int, host st
 func (i *ingressInvocation) DoHTTPStatus(retryCount int, ing *api.Ingress, eps []string, method, path string, matcher func(resp *client.Response) bool) error {
 	for _, url := range eps {
 		resp, err := client.NewTestHTTPClient(url).Method(method).Path(path).DoStatusWithRetry(retryCount)
+		if err != nil {
+			return err
+		}
+
+		log.Infoln("HTTP Response received from server", *resp)
+		if !matcher(resp) {
+			return errors.New("Failed to match")
+		}
+	}
+	return nil
+}
+
+func (i *ingressInvocation) DoHTTPStatusWithCookies(retryCount int, ing *api.Ingress, eps []string, method, path string, cookies []*http.Cookie, matcher func(resp *client.Response) bool) error {
+	for _, url := range eps {
+		resp, err := client.NewTestHTTPClient(url).Method(method).Path(path).Cookie(cookies).DoStatusWithRetry(retryCount)
 		if err != nil {
 			return err
 		}

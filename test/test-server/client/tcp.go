@@ -1,14 +1,16 @@
 package client
 
 import (
+	"bytes"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
+	"io"
 	"net"
 	"strings"
 	"time"
 
-	proxyproto "github.com/pires/go-proxyproto"
+	"github.com/pires/go-proxyproto"
 )
 
 type tcpClient struct {
@@ -74,8 +76,19 @@ func (t *tcpClient) do() (*Response, error) {
 	if t.header != nil {
 		t.header.WriteTo(conn)
 	}
+
+	var buf bytes.Buffer
+	io.Copy(&buf, conn)
+	data := buf.String()
+
 	req := &Response{}
-	err = json.NewDecoder(conn).Decode(req)
+
+	if len(data) <= 2 || (data[0] != '{') {
+		req.Body = data
+		return req, nil
+	}
+
+	err = json.NewDecoder(strings.NewReader(string(data))).Decode(req)
 	if err != nil {
 		return nil, err
 	}

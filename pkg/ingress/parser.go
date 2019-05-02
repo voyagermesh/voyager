@@ -159,6 +159,8 @@ func (c *controller) getEndpoints(svc *core.Service, servicePort *core.ServicePo
 							ep.CheckHealthPort = svc.Annotations[api.CheckHealthPort]
 						}
 						ep.SendProxy = api.ProxyProtocolCommand(svc.Annotations[api.SendProxy])
+						ep.AgentPort = svc.Annotations[api.AgentPort]
+						ep.AgentInterval = svc.Annotations[api.AgentInterval]
 					}
 
 					eps = append(eps, ep)

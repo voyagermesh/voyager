@@ -14,7 +14,7 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/moul/http2curl"
-	proxyproto "github.com/pires/go-proxyproto"
+	"github.com/pires/go-proxyproto"
 )
 
 type httpClient struct {
@@ -24,6 +24,7 @@ type httpClient struct {
 	path    string
 	host    string
 	header  map[string]string
+	cookies []*http.Cookie
 }
 
 type Response struct {
@@ -39,6 +40,7 @@ type Response struct {
 	Body            string             `json:"body,omitempty"`
 	HTTPSServerName string             `json:"-"`
 	Proxy           *proxyproto.Header `json:"proxy,omitempty"`
+	Cookies         []*http.Cookie     `json:"cookies,omitempty"`
 }
 
 func (r Response) String() string {
@@ -109,6 +111,11 @@ func (t *httpClient) Header(h map[string]string) *httpClient {
 	return t
 }
 
+func (t *httpClient) Cookie(cookies []*http.Cookie) *httpClient {
+	t.cookies = cookies
+	return t
+}
+
 func (t *httpClient) DoWithRetry(limit int) (*Response, error) {
 	var resp *Response
 	var err error
@@ -175,6 +182,12 @@ func (t *httpClient) do(parse bool) (*Response, error) {
 		req.Body = newBody(cl)
 	}
 
+	if len(t.cookies) > 0 {
+		for _, cookie := range t.cookies {
+			req.AddCookie(cookie)
+		}
+	}
+
 	reqCopy := &http.Request{}
 	*reqCopy = *req
 	reqCopy.Body = nil
@@ -189,6 +202,7 @@ func (t *httpClient) do(parse bool) (*Response, error) {
 	responseStruct := &Response{
 		Status:         resp.StatusCode,
 		ResponseHeader: resp.Header,
+		Cookies:        resp.Cookies(),
 	}
 
 	if t.client.Transport != nil {
