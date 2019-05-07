@@ -1,5 +1,5 @@
-hash: 04147619cbc993d2b68c99f600124bc46b8d32f1b70f2f3a5f51fb85edaff06c
-updated: 2019-04-23T01:01:28.641980755-07:00
+hash: 1d5cab01c15251ad1dece975ecd1a8b93caccfbbfad1ea3e22e40ee58267eadb
+updated: 2019-05-07T18:40:55.975478434-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -8,14 +8,22 @@ imports:
   subpackages:
   - compute/metadata
 - name: github.com/akamai/AkamaiOPEN-edgegrid-golang
-  version: 009960c8b2c7c57a0c5c488a3c8c778c16f3f586
+  version: 3d34267ed5e472f9ea26cfe6cb3a109e8ab6a587
+  repo: https://github.com/tamalsaha/AkamaiOPEN-edgegrid-golang.git
+  vcs: git
   subpackages:
   - client-v1
   - configdns-v1
   - edgegrid
   - jsonhooks-v1
+- name: github.com/alecthomas/template
+  version: a0175ee3bccc567396460bf5acd36800cb10c49c
+  subpackages:
+  - parse
+- name: github.com/alecthomas/units
+  version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/appscode/go
-  version: 50c98d5fbcddac827713a481a7e34a26df5e4b57
+  version: 60025f1135c977fecd189c12dbfa259d837d7a18
   subpackages:
   - analytics
   - context
@@ -31,8 +39,6 @@ imports:
   - sets
   - types
   - version
-- name: github.com/appscode/go-version
-  version: 7aba545c679b0f45679eeb406dc662d2c8a04c26
 - name: github.com/appscode/hello-grpc
   version: eea009cbf42e54d0a19cbf08dd1fdfa75502b69e
   subpackages:
@@ -107,7 +113,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/cloudflare/cloudflare-go
-  version: 360b08415ad4e17384aa3efefa58a72e54fd03db
+  version: 024278eb1b129df5cf9fdaf301c08b99283e81bc
 - name: github.com/coreos/etcd
   version: 27fc7e2296f506182f58ce846e48f36b34fe6842
   subpackages:
@@ -236,9 +242,9 @@ imports:
 - name: github.com/go-ini/ini
   version: a9da9309fb4822643ceebb765f80025c35ac19a1
 - name: github.com/go-openapi/jsonpointer
-  version: 46af16f9f7b149af66e5d1bd010e3574dc06de98
+  version: ef5f0afec364d3b9396b7b77b43dbe26bf1f8004
 - name: github.com/go-openapi/jsonreference
-  version: 13c6e3589ad90f49bd3e3bbe2c2cb3d7a4142272
+  version: 8483a886a90412cd6858df4ea3483dce9c8e35a3
 - name: github.com/go-openapi/spec
   version: 5bae59e25b21498baea7f9d46e9c147ec106a42e
 - name: github.com/go-openapi/swag
@@ -286,7 +292,7 @@ imports:
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/google/uuid
-  version: 8c31c18f31ede9fc8eae72290a7e7a8064e9b3e3
+  version: c2e93f3ae59f2904160ceaab466009f965df46d6
 - name: github.com/googleapis/gnostic
   version: 0c5108395e2debce0d731cf0287ddf7242066aba
   subpackages:
@@ -326,7 +332,7 @@ imports:
 - name: github.com/hashicorp/go-multierror
   version: 886a7fbe3eb1c874d46f623bfa70af45f425b3d1
 - name: github.com/hashicorp/go-retryablehttp
-  version: 4ea34a9a437e0e910fe5fea5be81372a39336bb0
+  version: 9b17f7ddd2013491e14493c353b7ae9ffad48ee2
 - name: github.com/hashicorp/go-rootcerts
   version: 63503fb4e1eca22f9ae0f90b49c5d5538a0e87eb
 - name: github.com/hashicorp/go-sockaddr
@@ -456,7 +462,7 @@ imports:
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 3233b24a36715a2fe36d162260457857a56d672d
+  version: a82f4c12f983cc2649298185f296632953e50d3e
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
@@ -464,7 +470,7 @@ imports:
   - model
   - version
 - name: github.com/prometheus/haproxy_exporter
-  version: 91c6ff36313fe48390d89eaf9baa0736544e4931
+  version: b4abf52090e27dcb405a72b2adaa88ffe1bdc47d
   repo: https://github.com/appscode/haproxy_exporter.git
   subpackages:
   - collector
@@ -514,7 +520,7 @@ imports:
 - name: github.com/xeipuuv/gojsonreference
   version: bd5ef7bd5415a7ac448318e64f11a24cd21e594b
 - name: github.com/xeipuuv/gojsonschema
-  version: 6b940e3ae769b991236921508565ab80d55b324f
+  version: 354ad34c2300dd6e84920ac70b41487336219e43
 - name: github.com/xenolf/lego
   version: e57a0a1b7259bc2cd83fc3c5b9e6578a9dd432e3
   repo: https://github.com/appscode/lego.git
@@ -621,6 +627,8 @@ imports:
   version: f51c12702a4d776e4c1fa9b0fabab841babae631
   subpackages:
   - rate
+- name: gomodules.xyz/version
+  version: 7cec7ee542d33f2f96567de581394bb157684337
 - name: google.golang.org/api
   version: 3639d6d93f377f39a1de765fa4ef37b3c7ca8bd9
   subpackages:
@@ -676,6 +684,8 @@ imports:
   - status
   - tap
   - transport
+- name: gopkg.in/alecthomas/kingpin.v2
+  version: 947dcec5ba9c011838740e680966fd7087a71d0d
 - name: gopkg.in/gcfg.v1
   version: 61b2c08bc8f6068f7c5ca684372f9a6cb1c45ebe
   subpackages:
@@ -902,7 +912,7 @@ imports:
   - plugin/pkg/authenticator/token/webhook
   - plugin/pkg/authorizer/webhook
 - name: k8s.io/cli-runtime
-  version: 79bf4e0b64544d8c490247abae089bea572ddae6
+  version: f2b4781c3ae1e55b0657ab4fa0c8b702282d018f
   subpackages:
   - pkg/genericclioptions
   - pkg/genericclioptions/printers
@@ -1118,7 +1128,7 @@ imports:
 - name: k8s.io/utils
   version: 66066c83e385e385ccc3c964b44fd7dcd413d0ed
 - name: kmodules.xyz/client-go
-  version: 5dcc4cecf4c96d58e0624cd41311f3a4663db7d7
+  version: e4690d8026e75096e2bc385a9d1bb5b2a0e07ad0
   subpackages:
   - admissionregistration/v1beta1
   - apiextensions/v1beta1
@@ -1161,6 +1171,8 @@ imports:
   - apis/workload/v1
   - client/workload/v1
   - registry/admissionreview/v1beta1
+- name: sigs.k8s.io/kustomize
+  version: a6f65144121d1955266b0cd836ce954c04122dc8
 - name: sigs.k8s.io/yaml
   version: fd68e9863619f6ec2fdd8625fe1f02e7c877e480
 testImports:
