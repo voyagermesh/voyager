@@ -8,8 +8,6 @@ import:
   version: v11.1.0
 - package: github.com/appscode/go
   version: master
-- package: github.com/appscode/go-version
-  version: master
 - package: github.com/appscode/hello-grpc
   version: 0.1.0
 - package: github.com/appscode/pat
@@ -26,7 +24,7 @@ import:
 - package: github.com/dnsimple/dnsimple-go
   version: 35bcc6b47c20ec9bf3a53adcb7fa9665a75f0e7b
 - package: github.com/evanphx/json-patch
-  version: 5858425f75500d40c52783dce87d085a483ce135
+  version: v4.2.0
 - package: github.com/ghodss/yaml
   version: v1.0.0
 - package: github.com/go-ini/ini
@@ -72,7 +70,7 @@ import:
 - package: github.com/prometheus/client_golang
   version: v0.9.2
 - package: github.com/prometheus/common
-  version: 3233b24a36715a2fe36d162260457857a56d672d
+  version: v0.3.0
 - package: github.com/prometheus/haproxy_exporter
   repo: https://github.com/appscode/haproxy_exporter.git
   version: master
@@ -130,6 +128,8 @@ import:
   version: c59034cc13d587f5ef4e85ca0ade0c1866ae8e1d
 - package: k8s.io/kubernetes
   version: v1.13.5
+- package: k8s.io/cli-runtime
+  version: kubernetes-1.13.5
 - package: k8s.io/utils
   version: 66066c83e385e385ccc3c964b44fd7dcd413d0ed
 - package: kmodules.xyz/client-go
@@ -140,6 +140,12 @@ import:
   version: release-10.0
 - package: sigs.k8s.io/yaml
   version: v1.1.0
+- package: sigs.k8s.io/kustomize
+  version: v2.0.3
+- package: github.com/akamai/AkamaiOPEN-edgegrid-golang
+  repo: https://github.com/tamalsaha/AkamaiOPEN-edgegrid-golang.git
+  vcs: git
+  version: gomod
 testImport:
 - package: github.com/stretchr/testify
   version: v1.2.2
