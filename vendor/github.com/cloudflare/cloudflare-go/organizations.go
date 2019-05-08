@@ -139,8 +139,7 @@ type organizationInvitesResponse struct {
 	ResultInfo `json:"result_info"`
 }
 
-// OrganizationInvites returns list of invites for specified organization of
-// the logged-in user.
+// OrganizationMembers returns list of invites for specified organization of the logged-in user.
 //
 // API reference: https://api.cloudflare.com/#organization-invites
 func (api *API) OrganizationInvites(organizationID string) ([]OrganizationInvite, ResultInfo, error) {
