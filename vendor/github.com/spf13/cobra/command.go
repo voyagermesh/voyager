@@ -817,11 +817,13 @@ func (c *Command) ExecuteC() (cmd *Command, err error) {
 	// overriding
 	c.InitDefaultHelpCmd()
 
-	args := c.args
+	var args []string
 
 	// Workaround FAIL with "go test -v" or "cobra.test -test.v", see #155
 	if c.args == nil && filepath.Base(os.Args[0]) != "cobra.test" {
 		args = os.Args[1:]
+	} else {
+		args = c.args
 	}
 
 	var flags []string
@@ -1333,7 +1335,7 @@ func (c *Command) LocalFlags() *flag.FlagSet {
 	return c.lflags
 }
 
-// InheritedFlags returns all flags which were inherited from parent commands.
+// InheritedFlags returns all flags which were inherited from parents commands.
 func (c *Command) InheritedFlags() *flag.FlagSet {
 	c.mergePersistentFlags()
 

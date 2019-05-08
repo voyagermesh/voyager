@@ -8,9 +8,9 @@ import (
 	"github.com/appscode/voyager/pkg/operator"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/afero"
+	"gomodules.xyz/cert/certstore"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
-	"kmodules.xyz/client-go/tools/certstore"
 )
 
 const (

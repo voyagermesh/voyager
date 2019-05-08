@@ -15,10 +15,10 @@ import (
 	"github.com/appscode/voyager/test/test-server/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"gomodules.xyz/cert/certstore"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"kmodules.xyz/client-go/tools/certstore"
 )
 
 var _ = Describe("IngressWithTLSAuth", func() {

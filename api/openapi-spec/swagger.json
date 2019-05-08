@@ -156,13 +156,6 @@
         },
         {
           "uniqueItems": true,
-          "type": "boolean",
-          "description": "If true, partially initialized resources are included in the response.",
-          "name": "includeUninitialized",
-          "in": "query"
-        },
-        {
-          "uniqueItems": true,
           "type": "string",
           "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
           "name": "labelSelector",
@@ -253,13 +246,6 @@
           "type": "string",
           "description": "A selector to restrict the list of returned objects by their fields. Defaults to everything.",
           "name": "fieldSelector",
-          "in": "query"
-        },
-        {
-          "uniqueItems": true,
-          "type": "boolean",
-          "description": "If true, partially initialized resources are included in the response.",
-          "name": "includeUninitialized",
           "in": "query"
         },
         {
@@ -424,6 +410,13 @@
             "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
             "name": "dryRun",
             "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "string",
+            "description": "fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint.",
+            "name": "fieldManager",
+            "in": "query"
           }
         ],
         "responses": {
@@ -539,13 +532,6 @@
       "parameters": [
         {
           "uniqueItems": true,
-          "type": "boolean",
-          "description": "If true, partially initialized resources are included in the response.",
-          "name": "includeUninitialized",
-          "in": "query"
-        },
-        {
-          "uniqueItems": true,
           "type": "string",
           "description": "object name and auth scope, such as for teams and projects",
           "name": "namespace",
@@ -625,6 +611,13 @@
             "type": "string",
             "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
             "name": "dryRun",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "string",
+            "description": "fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint.",
+            "name": "fieldManager",
             "in": "query"
           }
         ],
@@ -757,6 +750,20 @@
             "type": "string",
             "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
             "name": "dryRun",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "string",
+            "description": "fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint. This field is required for apply requests (application/apply-patch) but optional for non-apply patch types (JsonPatch, MergePatch, StrategicMergePatch).",
+            "name": "fieldManager",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "boolean",
+            "description": "Force is going to \"force\" Apply requests. It means user will re-acquire conflicting fields owned by other people. Force flag must be unset for non-apply patch requests.",
+            "name": "force",
             "in": "query"
           }
         ],
@@ -919,6 +926,13 @@
             "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
             "name": "dryRun",
             "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "string",
+            "description": "fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint.",
+            "name": "fieldManager",
+            "in": "query"
           }
         ],
         "responses": {
@@ -1034,13 +1048,6 @@
       "parameters": [
         {
           "uniqueItems": true,
-          "type": "boolean",
-          "description": "If true, partially initialized resources are included in the response.",
-          "name": "includeUninitialized",
-          "in": "query"
-        },
-        {
-          "uniqueItems": true,
           "type": "string",
           "description": "object name and auth scope, such as for teams and projects",
           "name": "namespace",
@@ -1120,6 +1127,13 @@
             "type": "string",
             "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
             "name": "dryRun",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "string",
+            "description": "fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint.",
+            "name": "fieldManager",
             "in": "query"
           }
         ],
@@ -1253,6 +1267,20 @@
             "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
             "name": "dryRun",
             "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "string",
+            "description": "fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint. This field is required for apply requests (application/apply-patch) but optional for non-apply patch types (JsonPatch, MergePatch, StrategicMergePatch).",
+            "name": "fieldManager",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "boolean",
+            "description": "Force is going to \"force\" Apply requests. It means user will re-acquire conflicting fields owned by other people. Force flag must be unset for non-apply patch requests.",
+            "name": "force",
+            "in": "query"
           }
         ],
         "responses": {
@@ -1344,13 +1372,6 @@
           "type": "string",
           "description": "A selector to restrict the list of returned objects by their fields. Defaults to everything.",
           "name": "fieldSelector",
-          "in": "query"
-        },
-        {
-          "uniqueItems": true,
-          "type": "boolean",
-          "description": "If true, partially initialized resources are included in the response.",
-          "name": "includeUninitialized",
           "in": "query"
         },
         {
@@ -1449,13 +1470,6 @@
         },
         {
           "uniqueItems": true,
-          "type": "boolean",
-          "description": "If true, partially initialized resources are included in the response.",
-          "name": "includeUninitialized",
-          "in": "query"
-        },
-        {
-          "uniqueItems": true,
           "type": "string",
           "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
           "name": "labelSelector",
@@ -1546,13 +1560,6 @@
           "type": "string",
           "description": "A selector to restrict the list of returned objects by their fields. Defaults to everything.",
           "name": "fieldSelector",
-          "in": "query"
-        },
-        {
-          "uniqueItems": true,
-          "type": "boolean",
-          "description": "If true, partially initialized resources are included in the response.",
-          "name": "includeUninitialized",
           "in": "query"
         },
         {
@@ -1655,13 +1662,6 @@
           "type": "string",
           "description": "A selector to restrict the list of returned objects by their fields. Defaults to everything.",
           "name": "fieldSelector",
-          "in": "query"
-        },
-        {
-          "uniqueItems": true,
-          "type": "boolean",
-          "description": "If true, partially initialized resources are included in the response.",
-          "name": "includeUninitialized",
           "in": "query"
         },
         {
@@ -1776,13 +1776,6 @@
         },
         {
           "uniqueItems": true,
-          "type": "boolean",
-          "description": "If true, partially initialized resources are included in the response.",
-          "name": "includeUninitialized",
-          "in": "query"
-        },
-        {
-          "uniqueItems": true,
           "type": "string",
           "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
           "name": "labelSelector",
@@ -1885,13 +1878,6 @@
         },
         {
           "uniqueItems": true,
-          "type": "boolean",
-          "description": "If true, partially initialized resources are included in the response.",
-          "name": "includeUninitialized",
-          "in": "query"
-        },
-        {
-          "uniqueItems": true,
           "type": "string",
           "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
           "name": "labelSelector",
@@ -1957,6 +1943,7 @@
       "type": "string"
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.AuthOption": {
+      "type": "object",
       "properties": {
         "basic": {
           "$ref": "#/definitions/com.github.appscode.voyager.apis.voyager.v1beta1.BasicAuth"
@@ -1973,6 +1960,7 @@
       }
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.BasicAuth": {
+      "type": "object",
       "properties": {
         "realm": {
           "type": "string"
@@ -1984,6 +1972,7 @@
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.Certificate": {
       "description": "Certificate is a collection of domains for which a SSL certificate is issued from Let's Encrypt.",
+      "type": "object",
       "properties": {
         "apiVersion": {
           "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
@@ -2006,12 +1995,13 @@
       "x-kubernetes-group-version-kind": [
         {
           "group": "voyager.appscode.com",
-          "version": "v1beta1",
-          "kind": "Certificate"
+          "kind": "Certificate",
+          "version": "v1beta1"
         }
       ]
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.CertificateCondition": {
+      "type": "object",
       "required": [
         "type"
       ],
@@ -2035,6 +2025,7 @@
       }
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.CertificateDetails": {
+      "type": "object",
       "required": [
         "certURL",
         "certStableURL"
@@ -2061,6 +2052,7 @@
       }
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.CertificateList": {
+      "type": "object",
       "properties": {
         "apiVersion": {
           "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
@@ -2083,12 +2075,13 @@
       "x-kubernetes-group-version-kind": [
         {
           "group": "voyager.appscode.com",
-          "version": "v1beta1",
-          "kind": "CertificateList"
+          "kind": "CertificateList",
+          "version": "v1beta1"
         }
       ]
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.CertificateSpec": {
+      "type": "object",
       "required": [
         "challengeProvider",
         "acmeUserSecretName"
@@ -2125,6 +2118,7 @@
       }
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.CertificateStatus": {
+      "type": "object",
       "properties": {
         "conditions": {
           "type": "array",
@@ -2145,6 +2139,7 @@
       }
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.CertificateStorage": {
+      "type": "object",
       "properties": {
         "secret": {
           "$ref": "#/definitions/io.k8s.api.core.v1.LocalObjectReference"
@@ -2155,6 +2150,7 @@
       }
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.ChallengeProvider": {
+      "type": "object",
       "properties": {
         "dns": {
           "$ref": "#/definitions/com.github.appscode.voyager.apis.voyager.v1beta1.DNSChallengeProvider"
@@ -2165,6 +2161,7 @@
       }
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.DNSChallengeProvider": {
+      "type": "object",
       "properties": {
         "credentialSecretName": {
           "type": "string"
@@ -2176,6 +2173,7 @@
       }
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.FrontendRule": {
+      "type": "object",
       "properties": {
         "auth": {
           "$ref": "#/definitions/com.github.appscode.voyager.apis.voyager.v1beta1.AuthOption"
@@ -2194,6 +2192,7 @@
       }
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.HTTPChallengeProvider": {
+      "type": "object",
       "properties": {
         "ingress": {
           "$ref": "#/definitions/com.github.appscode.voyager.apis.voyager.v1beta1.LocalTypedReference"
@@ -2201,6 +2200,7 @@
       }
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.HTTPIngressBackend": {
+      "type": "object",
       "properties": {
         "alpn": {
           "description": "Application-Layer Protocol Negotiation (ALPN) is a Transport Layer Security (TLS) extension for application layer protocol negotiation. ALPN allows the application layer to negotiate which protocol should be performed over a secure connection in a manner which avoids additional round trips and which is independent of the application layer protocols. It is used by HTTP/2. If provided a list of alpn will be added to port as alpn option1,option2,... If SecretName is Provided this secret will be used to terminate SSL with alpn options. If Secret name is not provided backend server is responsible for handling SSL. Note that, the order of the options indicates the preference If the ALPN list contains \"h2\",  \"option http-use-htx\" will be added to enable HTX mode https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#option%20http-use-htx https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#alpn",
@@ -2261,6 +2261,7 @@
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.HTTPIngressPath": {
       "description": "HTTPIngressPath associates a path regex with a backend. Incoming urls matching the path are forwarded to the backend.",
+      "type": "object",
       "properties": {
         "backend": {
           "description": "Backend defines the referenced service endpoint to which the traffic will be forwarded to.",
@@ -2274,6 +2275,7 @@
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.HTTPIngressRuleValue": {
       "description": "HTTPIngressRuleValue is a list of http selectors pointing to backends. In the example: http://\u003chost\u003e/\u003cpath\u003e?\u003csearchpart\u003e -\u003e backend where where parts of the url correspond to RFC 3986, this resource will be used to match against everything after the last '/' and before the first '?' or '#'.",
+      "type": "object",
       "required": [
         "paths"
       ],
@@ -2316,6 +2318,7 @@
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.Ingress": {
       "description": "Ingress is a collection of rules that allow inbound connections to reach the endpoints defined by a backend. An Ingress can be configured to give services externally-reachable urls, load balance traffic, terminate SSL, offer name based virtual hosting etc.",
+      "type": "object",
       "properties": {
         "apiVersion": {
           "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
@@ -2341,13 +2344,14 @@
       "x-kubernetes-group-version-kind": [
         {
           "group": "voyager.appscode.com",
-          "version": "v1beta1",
-          "kind": "Ingress"
+          "kind": "Ingress",
+          "version": "v1beta1"
         }
       ]
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.IngressBackend": {
       "description": "IngressBackend describes all endpoints for a given service and port.",
+      "type": "object",
       "properties": {
         "alpn": {
           "description": "Application-Layer Protocol Negotiation (ALPN) is a Transport Layer Security (TLS) extension for application layer protocol negotiation. ALPN allows the application layer to negotiate which protocol should be performed over a secure connection in a manner which avoids additional round trips and which is independent of the application layer protocols. It is used by HTTP/2. If provided a list of alpn will be added to port as alpn option1,option2,... If SecretName is Provided this secret will be used to terminate SSL with alpn options. If Secret name is not provided backend server is responsible for handling SSL. Note that, the order of the options indicates the preference If the ALPN list contains \"h2\",  \"option http-use-htx\" will be added to enable HTX mode https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#option%20http-use-htx https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#alpn",
@@ -2394,6 +2398,7 @@
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.IngressList": {
       "description": "IngressList is a collection of Ingress.",
+      "type": "object",
       "required": [
         "items"
       ],
@@ -2421,13 +2426,14 @@
       "x-kubernetes-group-version-kind": [
         {
           "group": "voyager.appscode.com",
-          "version": "v1beta1",
-          "kind": "IngressList"
+          "kind": "IngressList",
+          "version": "v1beta1"
         }
       ]
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.IngressRule": {
       "description": "IngressRule represents the rules mapping the paths under a specified host to the related backend services. Incoming requests are first evaluated for a host match, then routed to the backend associated with the matching IngressRuleValue.",
+      "type": "object",
       "properties": {
         "host": {
           "description": "Host is the fully qualified domain name of a network host, as defined by RFC 3986. Note the following deviations from the \"host\" part of the URI as defined in the RFC: 1. IPs are not allowed. Currently an IngressRuleValue can only apply to the\n\t  IP in the Spec of the parent Ingress.\n2. The `:` delimiter is not respected because ports are not allowed.\n\t  Currently the port of an Ingress is implicitly :80 for http and\n\t  :443 for https.\nBoth these may change in the future. Incoming requests are matched against the host before the IngressRuleValue. If the host is unspecified, the Ingress routes all traffic based on the specified IngressRuleValue.",
@@ -2443,6 +2449,7 @@
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.IngressSpec": {
       "description": "IngressSpec describes the Ingress the user wishes to exist.",
+      "type": "object",
       "properties": {
         "affinity": {
           "description": "If specified, the pod's scheduling constraints",
@@ -2553,6 +2560,7 @@
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.IngressStatus": {
       "description": "IngressStatus describe the current state of the Ingress.",
+      "type": "object",
       "properties": {
         "loadBalancer": {
           "description": "LoadBalancer contains the current status of the load-balancer.",
@@ -2566,6 +2574,7 @@
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.IngressTLS": {
       "description": "IngressTLS describes the transport layer security associated with an Ingress.",
+      "type": "object",
       "properties": {
         "hosts": {
           "description": "Hosts are a list of hosts included in the TLS certificate. The values in this list must match the name/s used in the tlsSecret. Defaults to the wildcard host setting for the loadbalancer controller fulfilling this Ingress, if left unspecified.",
@@ -2586,6 +2595,7 @@
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.LocalTypedReference": {
       "description": "LocalTypedReference contains enough information to let you inspect or modify the referred object.",
+      "type": "object",
       "properties": {
         "apiVersion": {
           "description": "API version of the referent.",
@@ -2602,6 +2612,7 @@
       }
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.OAuth": {
+      "type": "object",
       "properties": {
         "authBackend": {
           "type": "string"
@@ -2624,6 +2635,7 @@
       }
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.TCPIngressRuleValue": {
+      "type": "object",
       "properties": {
         "address": {
           "description": "The network address to listen TCP connections on.",
@@ -2659,6 +2671,7 @@
       }
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.TLSAuth": {
+      "type": "object",
       "properties": {
         "errorPage": {
           "type": "string"
@@ -2678,6 +2691,7 @@
       }
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.VaultStore": {
+      "type": "object",
       "properties": {
         "name": {
           "type": "string"
@@ -2689,6 +2703,7 @@
     },
     "com.github.appscode.voyager.apis.voyager.v1beta1.VolumeSource": {
       "description": "Represents the source of a volume to mount. Only one of its members may be specified.",
+      "type": "object",
       "required": [
         "mountPath"
       ],
@@ -2716,6 +2731,7 @@
     },
     "io.k8s.api.core.v1.Affinity": {
       "description": "Affinity is a group of affinity scheduling rules.",
+      "type": "object",
       "properties": {
         "nodeAffinity": {
           "description": "Describes node affinity scheduling rules for the pod.",
@@ -2733,6 +2749,7 @@
     },
     "io.k8s.api.core.v1.ConfigMapProjection": {
       "description": "Adapts a ConfigMap into a projected volume.\n\nThe contents of the target ConfigMap's Data field will be presented in a projected volume as files using the keys in the Data field as the file names, unless the items element is populated with specific mappings of keys to paths. Note that this is identical to a configmap volume source without the default mode.",
+      "type": "object",
       "properties": {
         "items": {
           "description": "If unspecified, each key-value pair in the Data field of the referenced ConfigMap will be projected into the volume as a file whose name is the key and content is the value. If specified, the listed keys will be projected into the specified paths, and unlisted keys will not be present. If a key is specified which is not present in the ConfigMap, the volume setup will error unless it is marked optional. Paths must be relative and may not contain the '..' path or start with '..'.",
@@ -2753,6 +2770,7 @@
     },
     "io.k8s.api.core.v1.ConfigMapVolumeSource": {
       "description": "Adapts a ConfigMap into a volume.\n\nThe contents of the target ConfigMap's Data field will be presented in a volume as files using the keys in the Data field as the file names, unless the items element is populated with specific mappings of keys to paths. ConfigMap volumes support ownership management and SELinux relabeling.",
+      "type": "object",
       "properties": {
         "defaultMode": {
           "description": "Optional: mode bits to use on created files by default. Must be a value between 0 and 0777. Defaults to 0644. Directories within the path are not affected by this setting. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.",
@@ -2778,6 +2796,7 @@
     },
     "io.k8s.api.core.v1.DownwardAPIProjection": {
       "description": "Represents downward API info for projecting into a projected volume. Note that this is identical to a downwardAPI volume source without the default mode.",
+      "type": "object",
       "properties": {
         "items": {
           "description": "Items is a list of DownwardAPIVolume file",
@@ -2790,6 +2809,7 @@
     },
     "io.k8s.api.core.v1.DownwardAPIVolumeFile": {
       "description": "DownwardAPIVolumeFile represents information to create the file containing the pod field",
+      "type": "object",
       "required": [
         "path"
       ],
@@ -2815,6 +2835,7 @@
     },
     "io.k8s.api.core.v1.ExecAction": {
       "description": "ExecAction describes a \"run in container\" action.",
+      "type": "object",
       "properties": {
         "command": {
           "description": "Command is the command line to execute inside the container, the working directory for the command  is root ('/') in the container's filesystem. The command is simply exec'd, it is not run inside a shell, so traditional shell instructions ('|', etc) won't work. To use a shell, you need to explicitly call out to that shell. Exit status of 0 is treated as live/healthy and non-zero is unhealthy.",
@@ -2827,6 +2848,7 @@
     },
     "io.k8s.api.core.v1.HTTPGetAction": {
       "description": "HTTPGetAction describes an action based on HTTP Get requests.",
+      "type": "object",
       "required": [
         "port"
       ],
@@ -2858,6 +2880,7 @@
     },
     "io.k8s.api.core.v1.HTTPHeader": {
       "description": "HTTPHeader describes a custom header to be used in HTTP probes",
+      "type": "object",
       "required": [
         "name",
         "value"
@@ -2875,6 +2898,7 @@
     },
     "io.k8s.api.core.v1.KeyToPath": {
       "description": "Maps a string key to a path within a volume.",
+      "type": "object",
       "required": [
         "key",
         "path"
@@ -2897,6 +2921,7 @@
     },
     "io.k8s.api.core.v1.LoadBalancerIngress": {
       "description": "LoadBalancerIngress represents the status of a load-balancer ingress point: traffic intended for the service should be sent to an ingress point.",
+      "type": "object",
       "properties": {
         "hostname": {
           "description": "Hostname is set for load-balancer ingress points that are DNS based (typically AWS load-balancers)",
@@ -2910,6 +2935,7 @@
     },
     "io.k8s.api.core.v1.LoadBalancerStatus": {
       "description": "LoadBalancerStatus represents the status of a load-balancer.",
+      "type": "object",
       "properties": {
         "ingress": {
           "description": "Ingress is a list containing ingress points for the load-balancer. Traffic intended for the service should be sent to these ingress points.",
@@ -2922,6 +2948,7 @@
     },
     "io.k8s.api.core.v1.LocalObjectReference": {
       "description": "LocalObjectReference contains enough information to let you locate the referenced object inside the same namespace.",
+      "type": "object",
       "properties": {
         "name": {
           "description": "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
@@ -2931,6 +2958,7 @@
     },
     "io.k8s.api.core.v1.NodeAffinity": {
       "description": "Node affinity is a group of node affinity scheduling rules.",
+      "type": "object",
       "properties": {
         "preferredDuringSchedulingIgnoredDuringExecution": {
           "description": "The scheduler will prefer to schedule pods to nodes that satisfy the affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding \"weight\" to the sum if the node matches the corresponding matchExpressions; the node(s) with the highest sum are the most preferred.",
@@ -2947,6 +2975,7 @@
     },
     "io.k8s.api.core.v1.NodeSelector": {
       "description": "A node selector represents the union of the results of one or more label queries over a set of nodes; that is, it represents the OR of the selectors represented by the node selector terms.",
+      "type": "object",
       "required": [
         "nodeSelectorTerms"
       ],
@@ -2962,6 +2991,7 @@
     },
     "io.k8s.api.core.v1.NodeSelectorRequirement": {
       "description": "A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.",
+      "type": "object",
       "required": [
         "key",
         "operator"
@@ -2986,6 +3016,7 @@
     },
     "io.k8s.api.core.v1.NodeSelectorTerm": {
       "description": "A null or empty node selector term matches no objects. The requirements of them are ANDed. The TopologySelectorTerm type implements a subset of the NodeSelectorTerm.",
+      "type": "object",
       "properties": {
         "matchExpressions": {
           "description": "A list of node selector requirements by node's labels.",
@@ -3005,6 +3036,7 @@
     },
     "io.k8s.api.core.v1.ObjectFieldSelector": {
       "description": "ObjectFieldSelector selects an APIVersioned field of an object.",
+      "type": "object",
       "required": [
         "fieldPath"
       ],
@@ -3021,6 +3053,7 @@
     },
     "io.k8s.api.core.v1.PodAffinity": {
       "description": "Pod affinity is a group of inter pod affinity scheduling rules.",
+      "type": "object",
       "properties": {
         "preferredDuringSchedulingIgnoredDuringExecution": {
           "description": "The scheduler will prefer to schedule pods to nodes that satisfy the affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding \"weight\" to the sum if the node has pods which matches the corresponding podAffinityTerm; the node(s) with the highest sum are the most preferred.",
@@ -3040,6 +3073,7 @@
     },
     "io.k8s.api.core.v1.PodAffinityTerm": {
       "description": "Defines a set of pods (namely those matching the labelSelector relative to the given namespace(s)) that this pod should be co-located (affinity) or not co-located (anti-affinity) with, where co-located is defined as running on a node whose value of the label with key \u003ctopologyKey\u003e matches that of any node on which a pod of the set of pods is running",
+      "type": "object",
       "required": [
         "topologyKey"
       ],
@@ -3063,6 +3097,7 @@
     },
     "io.k8s.api.core.v1.PodAntiAffinity": {
       "description": "Pod anti affinity is a group of inter pod anti affinity scheduling rules.",
+      "type": "object",
       "properties": {
         "preferredDuringSchedulingIgnoredDuringExecution": {
           "description": "The scheduler will prefer to schedule pods to nodes that satisfy the anti-affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling anti-affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding \"weight\" to the sum if the node has pods which matches the corresponding podAffinityTerm; the node(s) with the highest sum are the most preferred.",
@@ -3082,6 +3117,7 @@
     },
     "io.k8s.api.core.v1.PodSecurityContext": {
       "description": "PodSecurityContext holds pod-level security attributes and common container settings. Some fields are also present in container.securityContext.  Field values of container.securityContext take precedence over field values of PodSecurityContext.",
+      "type": "object",
       "properties": {
         "fsGroup": {
           "description": "A special supplemental group that applies to all containers in a pod. Some volume types allow the Kubelet to change the ownership of that volume to be owned by the pod:\n\n1. The owning GID will be the FSGroup 2. The setgid bit is set (new files created in the volume will be owned by FSGroup) 3. The permission bits are OR'd with rw-rw----\n\nIf unset, the Kubelet will not modify the ownership and permissions of any volume.",
@@ -3125,6 +3161,7 @@
     },
     "io.k8s.api.core.v1.PreferredSchedulingTerm": {
       "description": "An empty preferred scheduling term matches all objects with implicit weight 0 (i.e. it's a no-op). A null preferred scheduling term matches no objects (i.e. is also a no-op).",
+      "type": "object",
       "required": [
         "weight",
         "preference"
@@ -3143,6 +3180,7 @@
     },
     "io.k8s.api.core.v1.Probe": {
       "description": "Probe describes a health check to be performed against a container to determine whether it is alive or ready to receive traffic.",
+      "type": "object",
       "properties": {
         "exec": {
           "description": "One and only one of the following should be specified. Exec specifies the action to take.",
@@ -3185,6 +3223,7 @@
     },
     "io.k8s.api.core.v1.ProjectedVolumeSource": {
       "description": "Represents a projected volume source",
+      "type": "object",
       "required": [
         "sources"
       ],
@@ -3205,6 +3244,7 @@
     },
     "io.k8s.api.core.v1.ResourceFieldSelector": {
       "description": "ResourceFieldSelector represents container resources (cpu, memory) and their output format",
+      "type": "object",
       "required": [
         "resource"
       ],
@@ -3225,6 +3265,7 @@
     },
     "io.k8s.api.core.v1.ResourceRequirements": {
       "description": "ResourceRequirements describes the compute resource requirements.",
+      "type": "object",
       "properties": {
         "limits": {
           "description": "Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/",
@@ -3244,6 +3285,7 @@
     },
     "io.k8s.api.core.v1.SELinuxOptions": {
       "description": "SELinuxOptions are the labels to be applied to the container",
+      "type": "object",
       "properties": {
         "level": {
           "description": "Level is SELinux level label that applies to the container.",
@@ -3265,6 +3307,7 @@
     },
     "io.k8s.api.core.v1.SecretProjection": {
       "description": "Adapts a secret into a projected volume.\n\nThe contents of the target Secret's Data field will be presented in a projected volume as files using the keys in the Data field as the file names. Note that this is identical to a secret volume source without the default mode.",
+      "type": "object",
       "properties": {
         "items": {
           "description": "If unspecified, each key-value pair in the Data field of the referenced Secret will be projected into the volume as a file whose name is the key and content is the value. If specified, the listed keys will be projected into the specified paths, and unlisted keys will not be present. If a key is specified which is not present in the Secret, the volume setup will error unless it is marked optional. Paths must be relative and may not contain the '..' path or start with '..'.",
@@ -3285,6 +3328,7 @@
     },
     "io.k8s.api.core.v1.SecretVolumeSource": {
       "description": "Adapts a Secret into a volume.\n\nThe contents of the target Secret's Data field will be presented in a volume as files using the keys in the Data field as the file names. Secret volumes support ownership management and SELinux relabeling.",
+      "type": "object",
       "properties": {
         "defaultMode": {
           "description": "Optional: mode bits to use on created files by default. Must be a value between 0 and 0777. Defaults to 0644. Directories within the path are not affected by this setting. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.",
@@ -3310,6 +3354,7 @@
     },
     "io.k8s.api.core.v1.ServiceAccountTokenProjection": {
       "description": "ServiceAccountTokenProjection represents a projected service account token volume. This projection can be used to insert a service account token into the pods runtime filesystem for use against APIs (Kubernetes API Server or otherwise).",
+      "type": "object",
       "required": [
         "path"
       ],
@@ -3331,6 +3376,7 @@
     },
     "io.k8s.api.core.v1.Sysctl": {
       "description": "Sysctl defines a kernel parameter to be set",
+      "type": "object",
       "required": [
         "name",
         "value"
@@ -3348,6 +3394,7 @@
     },
     "io.k8s.api.core.v1.TCPSocketAction": {
       "description": "TCPSocketAction describes an action based on opening a socket",
+      "type": "object",
       "required": [
         "port"
       ],
@@ -3364,6 +3411,7 @@
     },
     "io.k8s.api.core.v1.Toleration": {
       "description": "The pod this Toleration is attached to tolerates any taint that matches the triple \u003ckey,value,effect\u003e using the matching operator \u003coperator\u003e.",
+      "type": "object",
       "properties": {
         "effect": {
           "description": "Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.",
@@ -3390,6 +3438,7 @@
     },
     "io.k8s.api.core.v1.VolumeProjection": {
       "description": "Projection that may be projected along with other supported volume types",
+      "type": "object",
       "properties": {
         "configMap": {
           "description": "information about the configMap data to project",
@@ -3411,6 +3460,7 @@
     },
     "io.k8s.api.core.v1.WeightedPodAffinityTerm": {
       "description": "The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)",
+      "type": "object",
       "required": [
         "weight",
         "podAffinityTerm"
@@ -3433,6 +3483,7 @@
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.APIGroup": {
       "description": "APIGroup contains the name, the supported versions, and the preferred version of a group.",
+      "type": "object",
       "required": [
         "name",
         "versions"
@@ -3472,13 +3523,14 @@
       "x-kubernetes-group-version-kind": [
         {
           "group": "",
-          "version": "v1",
-          "kind": "APIGroup"
+          "kind": "APIGroup",
+          "version": "v1"
         }
       ]
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.APIGroupList": {
       "description": "APIGroupList is a list of APIGroup, to allow clients to discover the API at /apis.",
+      "type": "object",
       "required": [
         "groups"
       ],
@@ -3502,13 +3554,14 @@
       "x-kubernetes-group-version-kind": [
         {
           "group": "",
-          "version": "v1",
-          "kind": "APIGroupList"
+          "kind": "APIGroupList",
+          "version": "v1"
         }
       ]
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.APIResource": {
       "description": "APIResource specifies the name of a resource and whether it is namespaced.",
+      "type": "object",
       "required": [
         "name",
         "singularName",
@@ -3551,6 +3604,10 @@
           "description": "singularName is the singular name of the resource.  This allows clients to handle plural and singular opaquely. The singularName is more correct for reporting status on a single item and both singular and plural are allowed from the kubectl CLI interface.",
           "type": "string"
         },
+        "storageVersionHash": {
+          "description": "The hash value of the storage version, the version this resource is converted to when written to the data store. Value must be treated as opaque by clients. Only equality comparison on the value is valid. This is an alpha feature and may change or be removed in the future. The field is populated by the apiserver only if the StorageVersionHash feature gate is enabled. This field will remain optional even if it graduates.",
+          "type": "string"
+        },
         "verbs": {
           "description": "verbs is a list of supported kube verbs (this includes get, list, watch, create, update, patch, delete, deletecollection, and proxy)",
           "type": "array",
@@ -3566,6 +3623,7 @@
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.APIResourceList": {
       "description": "APIResourceList is a list of APIResource, it is used to expose the name of the resources supported in a specific group and version, and if the resource is namespaced.",
+      "type": "object",
       "required": [
         "groupVersion",
         "resources"
@@ -3594,13 +3652,14 @@
       "x-kubernetes-group-version-kind": [
         {
           "group": "",
-          "version": "v1",
-          "kind": "APIResourceList"
+          "kind": "APIResourceList",
+          "version": "v1"
         }
       ]
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.DeleteOptions": {
       "description": "DeleteOptions may be provided when deleting an API object.",
+      "type": "object",
       "properties": {
         "apiVersion": {
           "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
@@ -3638,18 +3697,23 @@
       "x-kubernetes-group-version-kind": [
         {
           "group": "",
-          "version": "v1",
-          "kind": "DeleteOptions"
+          "kind": "DeleteOptions",
+          "version": "v1"
         },
         {
           "group": "voyager.appscode.com",
-          "version": "v1beta1",
-          "kind": "DeleteOptions"
+          "kind": "DeleteOptions",
+          "version": "v1beta1"
         }
       ]
     },
+    "io.k8s.apimachinery.pkg.apis.meta.v1.Fields": {
+      "description": "Fields stores a set of fields in a data structure like a Trie. To understand how this is used, see: https://github.com/kubernetes-sigs/structured-merge-diff",
+      "type": "object"
+    },
     "io.k8s.apimachinery.pkg.apis.meta.v1.GroupVersionForDiscovery": {
       "description": "GroupVersion contains the \"group/version\" and \"version\" string of a version. It is made a struct to keep extensibility.",
+      "type": "object",
       "required": [
         "groupVersion",
         "version"
@@ -3667,6 +3731,7 @@
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.Initializer": {
       "description": "Initializer is information about an initializer that has not yet completed.",
+      "type": "object",
       "required": [
         "name"
       ],
@@ -3679,6 +3744,7 @@
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.Initializers": {
       "description": "Initializers tracks the progress of initialization.",
+      "type": "object",
       "required": [
         "pending"
       ],
@@ -3700,6 +3766,7 @@
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.LabelSelector": {
       "description": "A label selector is a label query over a set of resources. The result of matchLabels and matchExpressions are ANDed. An empty label selector matches all objects. A null label selector matches no objects.",
+      "type": "object",
       "properties": {
         "matchExpressions": {
           "description": "matchExpressions is a list of label selector requirements. The requirements are ANDed.",
@@ -3719,6 +3786,7 @@
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.LabelSelectorRequirement": {
       "description": "A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.",
+      "type": "object",
       "required": [
         "key",
         "operator"
@@ -3745,6 +3813,7 @@
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.ListMeta": {
       "description": "ListMeta describes metadata that synthetic resources must have, including lists and various status objects. A resource may have only one of {ObjectMeta, ListMeta}.",
+      "type": "object",
       "properties": {
         "continue": {
           "description": "continue may be set if the user set a limit on the number of items returned, and indicates that the server has more data available. The value is opaque and may be used to issue another request to the endpoint that served this list to retrieve the next set of available objects. Continuing a consistent list may not be possible if the server configuration has changed or more than a few minutes have passed. The resourceVersion field returned when using this continue value will be identical to the value in the first response, unless you have received this token from an error message.",
@@ -3760,8 +3829,35 @@
         }
       }
     },
+    "io.k8s.apimachinery.pkg.apis.meta.v1.ManagedFieldsEntry": {
+      "description": "ManagedFieldsEntry is a workflow-id, a FieldSet and the group version of the resource that the fieldset applies to.",
+      "type": "object",
+      "properties": {
+        "apiVersion": {
+          "description": "APIVersion defines the version of this resource that this field set applies to. The format is \"group/version\" just like the top-level APIVersion field. It is necessary to track the version of a field set because it cannot be automatically converted.",
+          "type": "string"
+        },
+        "fields": {
+          "description": "Fields identifies a set of fields.",
+          "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.Fields"
+        },
+        "manager": {
+          "description": "Manager is an identifier of the workflow managing these fields.",
+          "type": "string"
+        },
+        "operation": {
+          "description": "Operation is the type of operation which lead to this ManagedFieldsEntry being created. The only valid values for this field are 'Apply' and 'Update'.",
+          "type": "string"
+        },
+        "time": {
+          "description": "Time is timestamp of when these fields were set. It should always be empty if Operation is 'Apply'",
+          "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.Time"
+        }
+      }
+    },
     "io.k8s.apimachinery.pkg.apis.meta.v1.ObjectMeta": {
       "description": "ObjectMeta is metadata that all persisted resources must have, which includes all objects users must create.",
+      "type": "object",
       "properties": {
         "annotations": {
           "description": "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. They are not queryable and should be preserved when modifying objects. More info: http://kubernetes.io/docs/user-guide/annotations",
@@ -3805,7 +3901,7 @@
           "format": "int64"
         },
         "initializers": {
-          "description": "An initializer is a controller which enforces some system invariant at object creation time. This field is a list of initializers that have not yet acted on this object. If nil or empty, this object has been completely initialized. Otherwise, the object is considered uninitialized and is hidden (in list/watch and get calls) from clients that haven't explicitly asked to observe uninitialized objects.\n\nWhen an object is created, the system will populate this list with the current set of initializers. Only privileged users may set or modify this list. Once it is empty, it may not be modified further by any user.",
+          "description": "An initializer is a controller which enforces some system invariant at object creation time. This field is a list of initializers that have not yet acted on this object. If nil or empty, this object has been completely initialized. Otherwise, the object is considered uninitialized and is hidden (in list/watch and get calls) from clients that haven't explicitly asked to observe uninitialized objects.\n\nWhen an object is created, the system will populate this list with the current set of initializers. Only privileged users may set or modify this list. Once it is empty, it may not be modified further by any user.\n\nDEPRECATED - initializers are an alpha field and will be removed in v1.15.",
           "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.Initializers"
         },
         "labels": {
@@ -3813,6 +3909,13 @@
           "type": "object",
           "additionalProperties": {
             "type": "string"
+          }
+        },
+        "managedFields": {
+          "description": "ManagedFields maps workflow-id and version to the set of fields that are managed by that workflow. This is mostly for internal housekeeping, and users typically shouldn't need to set or understand this field. A workflow can be the user's name, a controller's name, or the name of a specific apply path like \"ci-cd\". The set of fields is always in the version that the workflow used when modifying the object.\n\nThis field is alpha and can be changed or removed without notice.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.ManagedFieldsEntry"
           }
         },
         "name": {
@@ -3848,6 +3951,7 @@
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.OwnerReference": {
       "description": "OwnerReference contains enough information to let you identify an owning object. An owning object must be in the same namespace as the dependent, or be cluster-scoped, so there is no namespace field.",
+      "type": "object",
       "required": [
         "apiVersion",
         "kind",
@@ -3882,11 +3986,17 @@
       }
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.Patch": {
-      "description": "Patch is provided to give a concrete name and type to the Kubernetes PATCH request body."
+      "description": "Patch is provided to give a concrete name and type to the Kubernetes PATCH request body.",
+      "type": "object"
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.Preconditions": {
       "description": "Preconditions must be fulfilled before an operation (update, delete, etc.) is carried out.",
+      "type": "object",
       "properties": {
+        "resourceVersion": {
+          "description": "Specifies the target ResourceVersion",
+          "type": "string"
+        },
         "uid": {
           "description": "Specifies the target UID.",
           "type": "string"
@@ -3895,6 +4005,7 @@
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.ServerAddressByClientCIDR": {
       "description": "ServerAddressByClientCIDR helps the client to determine the server address that they should use, depending on the clientCIDR that they match.",
+      "type": "object",
       "required": [
         "clientCIDR",
         "serverAddress"
@@ -3912,6 +4023,7 @@
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.Status": {
       "description": "Status is a return value for calls that don't return other objects.",
+      "type": "object",
       "properties": {
         "apiVersion": {
           "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
@@ -3950,18 +4062,19 @@
       "x-kubernetes-group-version-kind": [
         {
           "group": "",
-          "version": "v1",
-          "kind": "Status"
+          "kind": "Status",
+          "version": "v1"
         },
         {
           "group": "voyager.appscode.com",
-          "version": "v1beta1",
-          "kind": "Status"
+          "kind": "Status",
+          "version": "v1beta1"
         }
       ]
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.StatusCause": {
       "description": "StatusCause provides more information about an api.Status failure, including cases when multiple errors are encountered.",
+      "type": "object",
       "properties": {
         "field": {
           "description": "The field of the resource that has caused this error, as named by its JSON serialization. May include dot and postfix notation for nested attributes. Arrays are zero-indexed.  Fields may appear more than once in an array of causes due to fields having multiple errors. Optional.\n\nExamples:\n  \"name\" - the field \"name\" on the current resource\n  \"items[0].name\" - the field \"name\" on the first array entry in \"items\"",
@@ -3979,6 +4092,7 @@
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.StatusDetails": {
       "description": "StatusDetails is a set of additional properties that MAY be set by the server to provide additional information about a response. The Reason field of a Status object defines what attributes will be set. Clients must ignore fields that do not match the defined type of each attribute, and should assume that any attribute may be empty, invalid, or under defined.",
+      "type": "object",
       "properties": {
         "causes": {
           "description": "The Causes array includes more details associated with the StatusReason failure. Not all StatusReasons may provide detailed causes.",
@@ -4017,6 +4131,7 @@
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.WatchEvent": {
       "description": "Event represents a single event to a watched resource.",
+      "type": "object",
       "required": [
         "type",
         "object"
@@ -4033,13 +4148,13 @@
       "x-kubernetes-group-version-kind": [
         {
           "group": "",
-          "version": "v1",
-          "kind": "WatchEvent"
+          "kind": "WatchEvent",
+          "version": "v1"
         },
         {
           "group": "voyager.appscode.com",
-          "version": "v1beta1",
-          "kind": "WatchEvent"
+          "kind": "WatchEvent",
+          "version": "v1beta1"
         }
       ]
     },
