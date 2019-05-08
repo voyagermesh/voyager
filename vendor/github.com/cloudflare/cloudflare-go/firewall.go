@@ -68,13 +68,6 @@ func (api *API) CreateUserAccessRule(accessRule AccessRule) (*AccessRuleResponse
 	return api.createAccessRule("/user", accessRule)
 }
 
-// UserAccessRule returns the details of a user's account access rule.
-//
-// API reference: https://api.cloudflare.com/#user-level-firewall-access-rule-list-access-rules
-func (api *API) UserAccessRule(accessRuleID string) (*AccessRuleResponse, error) {
-	return api.retrieveAccessRule("/user", accessRuleID)
-}
-
 // UpdateUserAccessRule updates a single access rule for the logged-in user &
 // given access rule identifier.
 //
@@ -109,13 +102,6 @@ func (api *API) CreateZoneAccessRule(zoneID string, accessRule AccessRule) (*Acc
 	return api.createAccessRule("/zones/"+zoneID, accessRule)
 }
 
-// ZoneAccessRule returns the details of a zone's access rule.
-//
-// API reference: https://api.cloudflare.com/#firewall-access-rule-for-a-zone-list-access-rules
-func (api *API) ZoneAccessRule(zoneID string, accessRuleID string) (*AccessRuleResponse, error) {
-	return api.retrieveAccessRule("/zones/"+zoneID, accessRuleID)
-}
-
 // UpdateZoneAccessRule updates a single access rule for the given zone &
 // access rule identifiers.
 //
@@ -139,7 +125,7 @@ func (api *API) DeleteZoneAccessRule(zoneID, accessRuleID string) (*AccessRuleRe
 //
 // API reference: https://api.cloudflare.com/#organization-level-firewall-access-rule-list-access-rules
 func (api *API) ListOrganizationAccessRules(organizationID string, accessRule AccessRule, page int) (*AccessRuleListResponse, error) {
-	return api.listAccessRules("/accounts/"+organizationID, accessRule, page)
+	return api.listAccessRules("/organizations/"+organizationID, accessRule, page)
 }
 
 // CreateOrganizationAccessRule creates a firewall access rule for the given
@@ -147,14 +133,7 @@ func (api *API) ListOrganizationAccessRules(organizationID string, accessRule Ac
 //
 // API reference: https://api.cloudflare.com/#organization-level-firewall-access-rule-create-access-rule
 func (api *API) CreateOrganizationAccessRule(organizationID string, accessRule AccessRule) (*AccessRuleResponse, error) {
-	return api.createAccessRule("/accounts/"+organizationID, accessRule)
-}
-
-// OrganizationAccessRule returns the details of an organization's access rule.
-//
-// API reference: https://api.cloudflare.com/#account-level-firewall-access-rule-access-rule-details
-func (api *API) OrganizationAccessRule(organizationID string, accessRuleID string) (*AccessRuleResponse, error) {
-	return api.retrieveAccessRule("/accounts/"+organizationID, accessRuleID)
+	return api.createAccessRule("/organizations/"+organizationID, accessRule)
 }
 
 // UpdateOrganizationAccessRule updates a single access rule for the given
@@ -162,7 +141,7 @@ func (api *API) OrganizationAccessRule(organizationID string, accessRuleID strin
 //
 // API reference: https://api.cloudflare.com/#organization-level-firewall-access-rule-update-access-rule
 func (api *API) UpdateOrganizationAccessRule(organizationID, accessRuleID string, accessRule AccessRule) (*AccessRuleResponse, error) {
-	return api.updateAccessRule("/accounts/"+organizationID, accessRuleID, accessRule)
+	return api.updateAccessRule("/organizations/"+organizationID, accessRuleID, accessRule)
 }
 
 // DeleteOrganizationAccessRule deletes a single access rule for the given
@@ -170,7 +149,7 @@ func (api *API) UpdateOrganizationAccessRule(organizationID, accessRuleID string
 //
 // API reference: https://api.cloudflare.com/#organization-level-firewall-access-rule-delete-access-rule
 func (api *API) DeleteOrganizationAccessRule(organizationID, accessRuleID string) (*AccessRuleResponse, error) {
-	return api.deleteAccessRule("/accounts/"+organizationID, accessRuleID)
+	return api.deleteAccessRule("/organizations/"+organizationID, accessRuleID)
 }
 
 func (api *API) listAccessRules(prefix string, accessRule AccessRule, page int) (*AccessRuleListResponse, error) {
@@ -217,24 +196,6 @@ func (api *API) listAccessRules(prefix string, accessRule AccessRule, page int) 
 func (api *API) createAccessRule(prefix string, accessRule AccessRule) (*AccessRuleResponse, error) {
 	uri := prefix + "/firewall/access_rules/rules"
 	res, err := api.makeRequest("POST", uri, accessRule)
-	if err != nil {
-		return nil, errors.Wrap(err, errMakeRequestError)
-	}
-
-	response := &AccessRuleResponse{}
-	err = json.Unmarshal(res, &response)
-	if err != nil {
-		return nil, errors.Wrap(err, errUnmarshalError)
-	}
-
-	return response, nil
-}
-
-func (api *API) retrieveAccessRule(prefix, accessRuleID string) (*AccessRuleResponse, error) {
-	uri := prefix + "/firewall/access_rules/rules/" + accessRuleID
-
-	res, err := api.makeRequest("GET", uri, nil)
-
 	if err != nil {
 		return nil, errors.Wrap(err, errMakeRequestError)
 	}

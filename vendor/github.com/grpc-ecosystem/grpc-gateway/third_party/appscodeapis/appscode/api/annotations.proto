@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package appscode.api;
+
+import "appscode/api/cors.proto";
+import "google/protobuf/descriptor.proto";
+
+option java_multiple_files = true;
+option java_outer_classname = "AnnotationsProto";
+option java_package = "com.appscode.api";
+
+extend google.protobuf.MethodOptions {
+  // See `CorsRule`.
+  CorsRule cors = 50000;
+}
