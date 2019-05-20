@@ -47,7 +47,7 @@ menu_name: product_voyager_{{ .Version }}
 section_menu_id: reference
 {{- if .RootCmd }}
 aliases:
-  - products/voyager/{{ .Version }}/reference/
+  - /products/voyager/{{ .Version }}/reference/
 {{ end }}
 ---
 `))
