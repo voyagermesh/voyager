@@ -3,6 +3,11 @@ go:
  - 1.x
  - tip
 
+cache:
+  directories:
+  - $HOME/.cache/go-build
+  - $GOPATH/pkg/mod
+
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y haproxy
