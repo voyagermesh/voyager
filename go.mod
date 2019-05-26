@@ -12,7 +12,7 @@ require (
 	github.com/NYTimes/gziphandler v1.1.1 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v0.0.0-20190507234932-3d34267ed5e4 // indirect
-	github.com/appscode/go v0.0.0-20190424183524-60025f1135c9
+	github.com/appscode/go v0.0.0-20190523031839-1468ee3a76e8
 	github.com/appscode/hello-grpc v0.0.0-20190207041230-eea009cbf42e
 	github.com/appscode/jsonpatch v0.0.0-20190108182946-7c0e3b262f30 // indirect
 	github.com/appscode/pat v0.0.0-20170521084856-48ff78925b79
@@ -25,7 +25,6 @@ require (
 	github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e // indirect
 	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
 	github.com/coreos/prometheus-operator v0.29.0
-	github.com/cpuguy83/go-md2man v1.0.8 // indirect
 	github.com/dgrijalva/jwt-go v0.0.0-20160705203006-01aeca54ebda // indirect
 	github.com/dimchansky/utfbom v1.1.0 // indirect
 	github.com/dnsimple/dnsimple-go v0.0.0-20180703121714-35bcc6b47c20 // indirect
@@ -63,8 +62,8 @@ require (
 	github.com/juju/ratelimit v0.0.0-20151125201925-77ed1c8a0121 // indirect
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/mailru/easyjson v0.0.0-20190403194419-1ea4449da983 // indirect
+	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/miekg/dns v1.0.7 // indirect
-	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-ps v0.0.0-20170309133038-4fdf99ab2936
 	github.com/moul/http2curl v1.0.0
 	github.com/onsi/ginkgo v1.7.0
@@ -78,11 +77,10 @@ require (
 	github.com/prometheus/client_golang v0.9.2
 	github.com/prometheus/common v0.3.0
 	github.com/prometheus/haproxy_exporter v0.0.0-00010101000000-000000000000
-	github.com/russross/blackfriday v1.5.2 // indirect
 	github.com/sergi/go-diff v0.0.0-20170118131230-24e2351369ec // indirect
 	github.com/soheilhy/cmux v0.0.0-20181025144106-8a8ea3c53959 // indirect
 	github.com/spf13/afero v1.1.2
-	github.com/spf13/cobra v0.0.3
+	github.com/spf13/cobra v0.0.4
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.3.0

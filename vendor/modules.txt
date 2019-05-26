@@ -39,7 +39,7 @@ github.com/alecthomas/template
 github.com/alecthomas/template/parse
 # github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf
 github.com/alecthomas/units
-# github.com/appscode/go v0.0.0-20190424183524-60025f1135c9
+# github.com/appscode/go v0.0.0-20190523031839-1468ee3a76e8
 github.com/appscode/go/version
 github.com/appscode/go/encoding/json/types
 github.com/appscode/go/log
@@ -115,7 +115,7 @@ github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1
 github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1
 github.com/coreos/prometheus-operator/pkg/client/versioned/scheme
 github.com/coreos/prometheus-operator/pkg/apis/monitoring
-# github.com/cpuguy83/go-md2man v1.0.8
+# github.com/cpuguy83/go-md2man v1.0.10
 github.com/cpuguy83/go-md2man/md2man
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
@@ -381,7 +381,7 @@ github.com/sirupsen/logrus
 # github.com/spf13/afero v1.1.2
 github.com/spf13/afero
 github.com/spf13/afero/mem
-# github.com/spf13/cobra v0.0.3
+# github.com/spf13/cobra v0.0.4
 github.com/spf13/cobra/doc
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.3
