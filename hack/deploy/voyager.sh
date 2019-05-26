@@ -76,29 +76,35 @@ onessl_found() {
 
 onessl_found || {
   echo "Downloading onessl ..."
-  # ref: https://stackoverflow.com/a/27776822/244009
-  case "$(uname -s)" in
-    Darwin)
-      curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.10.0/onessl-darwin-amd64
-      chmod +x onessl
-      export ONESSL=./onessl
-      ;;
+  if [[ "$(uname -m)" == "aarch64" ]]; then
+    curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.10.0/onessl-linux-arm64
+    chmod +x onessl
+    export ONESSL=./onessl
+  else
+    # ref: https://stackoverflow.com/a/27776822/244009
+    case "$(uname -s)" in
+      Darwin)
+        curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.10.0/onessl-darwin-amd64
+        chmod +x onessl
+        export ONESSL=./onessl
+        ;;
 
-    Linux)
-      curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.10.0/onessl-linux-amd64
-      chmod +x onessl
-      export ONESSL=./onessl
-      ;;
+      Linux)
+        curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.10.0/onessl-linux-amd64
+        chmod +x onessl
+        export ONESSL=./onessl
+        ;;
 
-    CYGWIN* | MINGW* | MSYS*)
-      curl -fsSL -o onessl.exe https://github.com/kubepack/onessl/releases/download/0.10.0/onessl-windows-amd64.exe
-      chmod +x onessl.exe
-      export ONESSL=./onessl.exe
-      ;;
-    *)
-      echo 'other OS'
-      ;;
-  esac
+      CYGWIN* | MINGW* | MSYS*)
+        curl -fsSL -o onessl.exe https://github.com/kubepack/onessl/releases/download/0.10.0/onessl-windows-amd64.exe
+        chmod +x onessl.exe
+        export ONESSL=./onessl.exe
+        ;;
+      *)
+        echo 'other OS'
+        ;;
+    esac
+  fi
 }
 
 # ref: https://stackoverflow.com/a/7069755/244009

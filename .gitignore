@@ -20,13 +20,15 @@ _testmain.go
 *.test
 *.prof
 
-.idea/
-dist/
-*.pyc
-*.DS_Store
-.vscode/
-apiserver.local.config/
-hack/configs/.env
-test/e2e/report.xml
-.markdownlint.json
-coverage.txt
+/bin
+/.go
+
+/.idea
+/.markdownlint.json
+/.vscode
+/apiserver.local.config
+/coverage.txt
+/dist
+/hack/configs/.env
+/test/e2e/junit.xml
+/test/e2e/report.xml
