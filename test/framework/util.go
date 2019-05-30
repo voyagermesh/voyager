@@ -4,7 +4,7 @@ import (
 	"net"
 
 	"github.com/appscode/go/crypto/rand"
-	"k8s.io/client-go/util/cert"
+	"gomodules.xyz/cert"
 )
 
 func (r *rootInvocation) UniqueName() string {

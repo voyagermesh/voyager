@@ -14,6 +14,7 @@ import (
 	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
+	"gomodules.xyz/cert"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,7 +22,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/util/cert"
 )
 
 func (i *ingressInvocation) GetSkeleton() *api_v1beta1.Ingress {

@@ -16,7 +16,7 @@ mkdir -p "$REPO_ROOT"/api/api-rules
 docker run --rm -ti -u $(id -u):$(id -g) \
   -v "$REPO_ROOT":"$DOCKER_REPO_ROOT" \
   -w "$DOCKER_REPO_ROOT" \
-  appscode/gengo:release-1.13 "$DOCKER_CODEGEN_PKG"/generate-groups.sh all \
+  appscode/gengo:release-1.14 "$DOCKER_CODEGEN_PKG"/generate-groups.sh all \
   github.com/appscode/voyager/client \
   github.com/appscode/voyager/apis \
   voyager:v1beta1 \
@@ -26,7 +26,7 @@ docker run --rm -ti -u $(id -u):$(id -g) \
 docker run --rm -ti -u $(id -u):$(id -g) \
   -v "$REPO_ROOT":"$DOCKER_REPO_ROOT" \
   -w "$DOCKER_REPO_ROOT" \
-  appscode/gengo:release-1.13 openapi-gen \
+  appscode/gengo:release-1.14 openapi-gen \
   --v 1 --logtostderr \
   --go-header-file "hack/gengo/boilerplate.go.txt" \
   --input-dirs "$PACKAGE_NAME/apis/voyager/v1beta1,k8s.io/apimachinery/pkg/apis/meta/v1,k8s.io/apimachinery/pkg/api/resource,k8s.io/apimachinery/pkg/runtime,k8s.io/apimachinery/pkg/util/intstr,k8s.io/apimachinery/pkg/version,k8s.io/api/core/v1,github.com/appscode/go/encoding/json/types" \

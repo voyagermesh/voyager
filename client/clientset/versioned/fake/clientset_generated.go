@@ -75,8 +75,3 @@ var _ clientset.Interface = &Clientset{}
 func (c *Clientset) VoyagerV1beta1() voyagerv1beta1.VoyagerV1beta1Interface {
 	return &fakevoyagerv1beta1.FakeVoyagerV1beta1{Fake: &c.Fake}
 }
-
-// Voyager retrieves the VoyagerV1beta1Client
-func (c *Clientset) Voyager() voyagerv1beta1.VoyagerV1beta1Interface {
-	return &fakevoyagerv1beta1.FakeVoyagerV1beta1{Fake: &c.Fake}
-}

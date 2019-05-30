@@ -129,13 +129,7 @@ __%[1]s_handle_reply()
     fi
 
     if [[ ${#COMPREPLY[@]} -eq 0 ]]; then
-		if declare -F __%[1]s_custom_func >/dev/null; then
-			# try command name qualified custom func
-			__%[1]s_custom_func
-		else
-			# otherwise fall back to unqualified for compatibility
-			declare -F __custom_func >/dev/null && __custom_func
-		fi
+        declare -F __custom_func >/dev/null && __custom_func
     fi
 
     # available in bash-completion >= 2, not always present on macOS
@@ -199,8 +193,7 @@ __%[1]s_handle_flag()
     fi
 
     # skip the argument to a two word flag
-    if [[ ${words[c]} != *"="* ]] && __%[1]s_contains_word "${words[c]}" "${two_word_flags[@]}"; then
-			  __%[1]s_debug "${FUNCNAME[0]}: found a flag ${words[c]}, skip the next argument"
+    if __%[1]s_contains_word "${words[c]}" "${two_word_flags[@]}"; then
         c=$((c+1))
         # if we are looking for a flags value, don't show commands
         if [[ $c -eq $cword ]]; then
@@ -380,10 +373,6 @@ func writeFlag(buf *bytes.Buffer, flag *pflag.Flag, cmd *Command) {
 	}
 	format += "\")\n"
 	buf.WriteString(fmt.Sprintf(format, name))
-	if len(flag.NoOptDefVal) == 0 {
-		format = "    two_word_flags+=(\"--%s\")\n"
-		buf.WriteString(fmt.Sprintf(format, name))
-	}
 	writeFlagHandler(buf, "--"+name, flag.Annotations, cmd)
 }
 

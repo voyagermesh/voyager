@@ -107,7 +107,7 @@ version:
 	@echo commit_timestamp=$(commit_timestamp)
 
 gen:
-	@true
+	./hack/codegen.sh
 
 fmt: $(BUILD_DIRS)
 	@docker run                                                 \
@@ -242,6 +242,18 @@ lint: $(BUILD_DIRS)
 
 $(BUILD_DIRS):
 	@mkdir -p $@
+
+.PHONY: install
+install:
+	APPSCODE_ENV=dev  DOCKER_REGISTRY=$(REGISTRY) VOYAGER_IMAGE_TAG=$(TAG) ./deploy/voyager.sh
+
+.PHONY: uninstall
+uninstall:
+	./deploy/voyager.sh --uninstall
+
+.PHONY: purge
+purge:
+	./deploy/voyager.sh --uninstall --purge
 
 .PHONY: dev
 dev: gen fmt push

@@ -28,8 +28,6 @@ import (
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	VoyagerV1beta1() voyagerv1beta1.VoyagerV1beta1Interface
-	// Deprecated: please explicitly pick a version if possible.
-	Voyager() voyagerv1beta1.VoyagerV1beta1Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
@@ -41,12 +39,6 @@ type Clientset struct {
 
 // VoyagerV1beta1 retrieves the VoyagerV1beta1Client
 func (c *Clientset) VoyagerV1beta1() voyagerv1beta1.VoyagerV1beta1Interface {
-	return c.voyagerV1beta1
-}
-
-// Deprecated: Voyager retrieves the default version of VoyagerClient.
-// Please explicitly pick a version.
-func (c *Clientset) Voyager() voyagerv1beta1.VoyagerV1beta1Interface {
 	return c.voyagerV1beta1
 }
 
