@@ -171,6 +171,7 @@ $ helm install appscode/voyager --name voyager-operator --version 10.0.0 \
 To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/10.0.0/chart/voyager).
 
 </div>
+</div>
 
 ### Installing in GKE Cluster
 
