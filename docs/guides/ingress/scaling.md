@@ -19,8 +19,11 @@ section_menu_id: guides
 For each Ingress resource, Voyager deploys HAProxy in a Deployment prefixed by
 `voyager-` and the name of the Ingress.
 
-This Deployment has `.spec.replicas = 1` by default. To change the desired
+This Deployment has `.spec.replicas = 1` by default. To start the ingress with the desired
 number of replicas, use the `ingress.appscode.com/replicas` annotation.
+
+Note that, you can only use this annotation once - while creating the ingress. If you change this annotation again,
+it will have no effect. This regulation is followed so that HPA on ingress deployment does not experience any conflicts.
 
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
@@ -39,6 +42,11 @@ spec:
 $ kubectl get deploy voyager-my-app
 NAME               DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
 voyager-my-app     2         2         2            2           1d
+```
+
+If you need to change number of replicas, you can alternatively change `replicas` field in that ingress deployment.
+```yaml
+kubectl scale deploy/voyager-my-app --replicas=3
 ```
 
 ## Horizontal Pod Autoscaling
