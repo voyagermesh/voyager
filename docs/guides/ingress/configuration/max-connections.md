@@ -78,7 +78,7 @@ defaults
 	# Timeout values
 	timeout client 50s
 	timeout client-fin 50s
-	timeout connect 50s
+	timeout connect 5s
 	timeout server 50s
 	timeout tunnel 50s
 	# Configure error files
@@ -135,7 +135,7 @@ defaults
 	# Timeout values
 	timeout client 50s
 	timeout client-fin 50s
-	timeout connect 50s
+	timeout connect 5s
 	timeout server 50s
 	timeout tunnel 50s
 	# Configure error files

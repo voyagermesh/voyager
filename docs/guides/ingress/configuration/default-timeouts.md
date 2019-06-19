@@ -89,7 +89,7 @@ backend test-server.default:80
 If any required timeouts is not provided timeouts will be populated with the following values.
 
 ```ini
-	timeout  connect         50s
+	timeout  connect         5s
 	timeout  client          50s
 	timeout  client-fin      50s
 	timeout  server          50s
