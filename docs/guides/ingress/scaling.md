@@ -51,7 +51,7 @@ kubectl scale deploy/voyager-my-app --replicas=3
 
 ## Horizontal Pod Autoscaling
 
-[Kubernetes has the HorizontalPodAutoscaler object for autoscaling pods](https://kubernetes.io/docs/guides/run-application/horizontal-pod-autoscale/).
+[Kubernetes has the HorizontalPodAutoscaler object for autoscaling pods](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/).
 
 > With Horizontal Pod Autoscaling, Kubernetes automatically scales the number
 > of pods in a replication controller, deployment or replica set based on
