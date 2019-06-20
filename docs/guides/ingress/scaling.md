@@ -78,7 +78,7 @@ spec:
     name: voyager-my-app
   minReplicas: 2
   maxReplicas: 10
-targetCPUUtilizationPercentage: 20%
+  targetCPUUtilizationPercentage: 20
 ```
 
 ```
