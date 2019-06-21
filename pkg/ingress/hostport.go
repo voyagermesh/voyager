@@ -407,8 +407,8 @@ func (c *hostPortController) ensurePods() (kutil.VerbType, error) {
 			MatchLabels: c.Ingress.OffshootSelector(),
 		}
 
-		// assign number of replicas for initial creation only
-		if obj.Spec.Replicas == nil {
+		// assign number of replicas only when there's no controlling hpa
+		if obj.Spec.Replicas == nil || !c.isHPAControlled() {
 			obj.Spec.Replicas = types.Int32P(c.Ingress.Replicas())
 		}
 
@@ -560,4 +560,18 @@ func (c *hostPortController) ensurePods() (kutil.VerbType, error) {
 		return obj
 	})
 	return vt, err
+}
+
+func (c *hostPortController) isHPAControlled() bool {
+	list, err := c.KubeClient.AutoscalingV1().HorizontalPodAutoscalers(c.Ingress.Namespace).List(metav1.ListOptions{})
+	if err != nil {
+		// in case an error happen when getting hpa, deciding to update replicas
+		return false
+	}
+	for _, hpa := range list.Items {
+		if hpa.Spec.ScaleTargetRef.Kind == c.Ingress.WorkloadKind() && hpa.Spec.ScaleTargetRef.Name == c.Ingress.OffshootName() {
+			return true
+		}
+	}
+	return false
 }
