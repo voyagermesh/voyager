@@ -34,7 +34,7 @@ namespace/demo created
 ### Deploy gRPC Test Server
 
 ```yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -204,7 +204,7 @@ $ kubectl create secret tls haproxy-secret -n demo --cert=bundle.crt --key=serve
 Deploy the gRPC server and mount the `server-secret`.
 
 ```yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:

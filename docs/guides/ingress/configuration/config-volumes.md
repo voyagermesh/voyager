@@ -32,7 +32,7 @@ namespace/demo created
 Deploy a TLS enabled test server.
 
 ```yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
