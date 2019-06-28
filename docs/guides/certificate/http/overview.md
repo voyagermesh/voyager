@@ -48,7 +48,7 @@ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/10.0.0/hack/deploy
     kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/10.0.0/docs/examples/certificate/http/ing.yaml
     ```
 
-4. Wait for the LoadBlanacer ip to be assigned. Once the IP is assigned update your DNS provider to set the LoadBlancer IP as the A record for test domain `kiteci.com`
+4. Wait for the LoadBalancer ip to be assigned. Once the IP is assigned update your DNS provider to set the LoadBlancer IP as the A record for test domain `kiteci.com`
 
     ```console
     $ kubectl get svc  voyager-test-ingress
@@ -56,7 +56,7 @@ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/10.0.0/hack/deploy
     voyager-test-ingress   10.39.243.239   104.198.234.66   80:32266/TCP,443:31282/TCP   19m
     ```
 
-5. Now wait a bit for DNs to propagate. Run the following command to confirm DNS propagation.
+5. Now wait a bit for DNS to propagate. Run the following command to confirm DNS propagation.
 
     ```console
     $ dig +short kiteci.com
