@@ -19,8 +19,11 @@ section_menu_id: guides
 For each Ingress resource, Voyager deploys HAProxy in a Deployment prefixed by
 `voyager-` and the name of the Ingress.
 
-This Deployment has `.spec.replicas = 1` by default. To change the desired
+This Deployment has `.spec.replicas = 1` by default. To start the ingress with the desired
 number of replicas, use the `ingress.appscode.com/replicas` annotation.
+
+Note that, Voyager won't sync with this annotation if there is a HPA controlling the ingress deployment.
+This regulation is followed so that HPA on ingress deployment does not experience any conflicts.
 
 ```yaml
 apiVersion: voyager.appscode.com/v1beta1
@@ -43,7 +46,7 @@ voyager-my-app     2         2         2            2           1d
 
 ## Horizontal Pod Autoscaling
 
-[Kubernetes has the HorizontalPodAutoscaler object for autoscaling pods](https://kubernetes.io/docs/guides/run-application/horizontal-pod-autoscale/).
+[Kubernetes has the HorizontalPodAutoscaler object for autoscaling pods](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/).
 
 > With Horizontal Pod Autoscaling, Kubernetes automatically scales the number
 > of pods in a replication controller, deployment or replica set based on
@@ -70,7 +73,7 @@ spec:
     name: voyager-my-app
   minReplicas: 2
   maxReplicas: 10
-targetCPUUtilizationPercentage: 20%
+  targetCPUUtilizationPercentage: 20
 ```
 
 ```
