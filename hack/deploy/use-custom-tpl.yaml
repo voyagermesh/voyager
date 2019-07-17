@@ -6,7 +6,6 @@ spec:
       - args:
         - run
         - --v=3
-        - --rbac=${VOYAGER_ENABLE_RBAC}
         - --cloud-provider=${VOYAGER_CLOUD_PROVIDER}
         - --cloud-config=${VOYAGER_CLOUD_CONFIG} # ie. /etc/kubernetes/azure.json for azure
         - --ingress-class=${VOYAGER_INGRESS_CLASS}

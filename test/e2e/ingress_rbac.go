@@ -41,10 +41,6 @@ var _ = Describe("IngressWithRBACEnabled", func() {
 
 	Describe("With RBAC", func() {
 		BeforeEach(func() {
-			if !options.EnableRBAC {
-				Skip("RBAC is Not enabled")
-			}
-
 			if !meta.PossiblyInCluster() {
 				Skip("RBAC can only be work in 'in-cluster' mode")
 			}

@@ -148,20 +148,19 @@ func (c *controller) IsExists() bool {
 	if kerr.IsNotFound(err) {
 		return false
 	}
-	if c.cfg.EnableRBAC {
-		_, err = c.KubeClient.CoreV1().ServiceAccounts(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-		if kerr.IsNotFound(err) {
-			return false
-		}
-		_, err = c.KubeClient.RbacV1().Roles(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-		if kerr.IsNotFound(err) {
-			return false
-		}
-		_, err = c.KubeClient.RbacV1().RoleBindings(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-		if kerr.IsNotFound(err) {
-			return false
-		}
+	_, err = c.KubeClient.CoreV1().ServiceAccounts(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+	if kerr.IsNotFound(err) {
+		return false
 	}
+	_, err = c.KubeClient.RbacV1().Roles(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+	if kerr.IsNotFound(err) {
+		return false
+	}
+	_, err = c.KubeClient.RbacV1().RoleBindings(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+	if kerr.IsNotFound(err) {
+		return false
+	}
+
 	return true
 }
 

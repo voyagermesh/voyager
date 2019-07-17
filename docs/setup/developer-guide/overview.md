@@ -172,7 +172,6 @@ Following configurations can be enabled for test via flags in `./hack/make.py te
 | in-cluster | false | Operator is running inside cluster. Helps with running operator testing. |
 | daemon-host-name | master | Daemon host name to run daemon hosts |
 | lb-ip| Check load balancer IP with Static IP address | LoadBalancer persistent IP |
-| rbac| false | Cluster have RBAC enabled. |
 | cert | false | Run tests regarding certificates |
 | dump | os.TempDir() | Dump all Certificates and CA files for TLS ingress tests |
 

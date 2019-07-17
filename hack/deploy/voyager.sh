@@ -113,7 +113,6 @@ onessl_found || {
 
 export VOYAGER_NAMESPACE=kube-system
 export VOYAGER_SERVICE_ACCOUNT=voyager-operator
-export VOYAGER_ENABLE_RBAC=true
 export VOYAGER_RUN_ON_MASTER=0
 export VOYAGER_ENABLE_VALIDATING_WEBHOOK=false
 export VOYAGER_RESTRICT_TO_NAMESPACE=false
@@ -157,7 +156,6 @@ show_help() {
   echo "-h, --help                             show brief help"
   echo "-n, --namespace=NAMESPACE              specify namespace (default: kube-system)"
   echo "-p, --provider=PROVIDER                specify a cloud provider"
-  echo "    --rbac                             create RBAC roles and bindings (default: true)"
   echo "    --docker-registry                  docker registry used to pull voyager images (default: appscode)"
   echo "    --haproxy-image-tag                tag of Docker image containing HAProxy binary (default: 1.9.6-10.0.0-alpine)"
   echo "    --image-pull-secret                name of secret used to pull voyager operator images"
@@ -261,14 +259,6 @@ while test $# -gt 0; do
       fi
       shift
       ;;
-    --rbac*)
-      val=$(echo $1 | sed -e 's/^[^=]*=//g')
-      if [ "$val" = "false" ]; then
-        export VOYAGER_SERVICE_ACCOUNT=default
-        export VOYAGER_ENABLE_RBAC=false
-      fi
-      shift
-      ;;
     --run-on-master)
       export VOYAGER_RUN_ON_MASTER=1
       shift
@@ -310,7 +300,7 @@ if [ "$VOYAGER_UNINSTALL" -eq 1 ]; then
   kubectl delete deployment -l app=voyager --namespace $VOYAGER_NAMESPACE
   kubectl delete service -l app=voyager --namespace $VOYAGER_NAMESPACE
   kubectl delete secret -l app=voyager --namespace $VOYAGER_NAMESPACE
-  # delete RBAC objects, if --rbac flag was used.
+  # delete RBAC objects
   kubectl delete serviceaccount -l app=voyager --namespace $VOYAGER_NAMESPACE
   # skip deleting clusterrole & clusterrolebinding in case used by --restrict-to-namespace mode
   # kubectl delete clusterrolebindings -l app=voyager
@@ -463,11 +453,9 @@ if [ -n "$VOYAGER_TEMPLATE_CONFIGMAP" ]; then
     --patch="$(${SCRIPT_LOCATION}hack/deploy/use-custom-tpl.yaml | $ONESSL envsubst)"
 fi
 
-if [ "$VOYAGER_ENABLE_RBAC" = true ]; then
-  ${SCRIPT_LOCATION}hack/deploy/service-account.yaml | $ONESSL envsubst | kubectl apply -f -
-  ${SCRIPT_LOCATION}hack/deploy/rbac-list.yaml | $ONESSL envsubst | kubectl auth reconcile -f -
-  ${SCRIPT_LOCATION}hack/deploy/user-roles.yaml | $ONESSL envsubst | kubectl auth reconcile -f -
-fi
+${SCRIPT_LOCATION}hack/deploy/service-account.yaml | $ONESSL envsubst | kubectl apply -f -
+${SCRIPT_LOCATION}hack/deploy/rbac-list.yaml | $ONESSL envsubst | kubectl auth reconcile -f -
+${SCRIPT_LOCATION}hack/deploy/user-roles.yaml | $ONESSL envsubst | kubectl auth reconcile -f -
 
 if [ "$VOYAGER_RUN_ON_MASTER" -eq 1 ]; then
   kubectl patch deploy voyager-operator -n $VOYAGER_NAMESPACE \
