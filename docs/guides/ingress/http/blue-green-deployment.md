@@ -127,3 +127,5 @@ spec:
           servicePort: 80
         path: /testpath
 ```
+
+The default [weight](http://cbonte.github.io/haproxy-dconv/1.8/configuration.html#weight) is 1, and the maximal value is 256. A value of 0 means the server will not participate in load-balancing but will still accept persistent connections.
