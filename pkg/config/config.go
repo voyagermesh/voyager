@@ -23,7 +23,6 @@ type Config struct {
 	Burst                       int
 	CloudConfigFile             string
 	CloudProvider               string
-	EnableRBAC                  bool
 	HAProxyImage                string
 	ExporterImage               string
 	IngressClass                string

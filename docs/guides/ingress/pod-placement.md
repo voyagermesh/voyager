@@ -24,7 +24,6 @@ Now, install Voyager operator in your `minikube` cluster following the steps [he
 
 ```console
 minikube start
-# install without RBAC
 curl -fsSL https://raw.githubusercontent.com/appscode/voyager/10.0.0/hack/deploy/voyager.sh \
   | bash -s -- minikube
 ```

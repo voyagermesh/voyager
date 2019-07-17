@@ -27,7 +27,6 @@ type OperatorOptions struct {
 	CloudProvider               string
 	CloudConfigFile             string
 	IngressClass                string
-	EnableRBAC                  bool
 	OperatorNamespace           string
 	OperatorService             string
 	RestrictToOperatorNamespace bool
@@ -71,7 +70,6 @@ func NewOperatorOptions() *OperatorOptions {
 		ExporterImageTag:  "10.0.0",
 		OperatorNamespace: meta.Namespace(),
 		OperatorService:   "voyager-operator",
-		EnableRBAC:        false,
 		ResyncPeriod:      10 * time.Minute,
 		MaxNumRequeues:    5,
 		NumThreads:        2,
@@ -97,7 +95,6 @@ func (s *OperatorOptions) AddGoFlags(fs *flag.FlagSet) {
 	fs.StringVar(&s.CloudProvider, "cloud-provider", s.CloudProvider, "Name of cloud provider")
 	fs.StringVar(&s.CloudConfigFile, "cloud-config", s.CloudConfigFile, "The path to the cloud provider configuration file.  Empty string for no configuration file.")
 	fs.StringVar(&s.IngressClass, "ingress-class", s.IngressClass, "Ingress class handled by voyager. Unset by default. Set to voyager to only handle ingress with annotation kubernetes.io/ingress.class=voyager.")
-	fs.BoolVar(&s.EnableRBAC, "rbac", s.EnableRBAC, "Enable RBAC for operator & offshoot Kubernetes objects")
 	fs.StringVar(&s.customTemplates, "custom-templates", s.customTemplates, "Glob pattern of custom HAProxy template files used to override built-in templates")
 
 	fs.StringVar(&s.DockerRegistry, "docker-registry", s.DockerRegistry, "Docker image registry for HAProxy and Prometheus exporter")
@@ -133,7 +130,6 @@ func (s *OperatorOptions) ApplyTo(cfg *operator.OperatorConfig) error {
 	cfg.Burst = s.Burst
 	cfg.CloudConfigFile = s.CloudConfigFile
 	cfg.CloudProvider = s.CloudProvider
-	cfg.EnableRBAC = s.EnableRBAC
 	cfg.ExporterImage = s.ExporterImage()
 	cfg.HAProxyImage = s.HAProxyImage()
 	cfg.IngressClass = s.IngressClass

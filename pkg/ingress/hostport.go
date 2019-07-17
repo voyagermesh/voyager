@@ -136,10 +136,8 @@ func (c *hostPortController) Reconcile() error {
 		)
 	}
 
-	// If RBAC is enabled we need to ensure service account
-	if c.cfg.EnableRBAC {
-		c.reconcileRBAC()
-	}
+	// Ensure service account
+	c.reconcileRBAC()
 
 	if vt, err := c.ensurePods(); err != nil {
 		c.recorder.Eventf(
@@ -295,10 +293,8 @@ func (c *hostPortController) Delete() {
 	if err := c.deleteConfigMap(); err != nil {
 		c.logger.Errorln(err)
 	}
-	if c.cfg.EnableRBAC {
-		if err := c.ensureRBACDeleted(); err != nil {
-			c.logger.Errorln(err)
-		}
+	if err := c.ensureRBACDeleted(); err != nil {
+		c.logger.Errorln(err)
 	}
 	if err := c.ensureServiceDeleted(); err != nil {
 		c.logger.Errorln(err)
@@ -444,9 +440,7 @@ func (c *hostPortController) ensurePods() (kutil.VerbType, error) {
 		obj.Spec.Template.Spec.HostNetwork = true
 		obj.Spec.Template.Spec.DNSPolicy = core.DNSClusterFirstWithHostNet
 		obj.Spec.Template.Spec.TerminationGracePeriodSeconds = c.Ingress.Spec.TerminationGracePeriodSeconds
-		if c.cfg.EnableRBAC {
-			obj.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
-		}
+		obj.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
 
 		// volume spec
 		obj.Spec.Template.Spec.Volumes = core_util.UpsertVolume(

@@ -71,7 +71,6 @@ options:
 -h, --help                             show brief help
 -n, --namespace=NAMESPACE              specify namespace (default: kube-system)
 -p, --provider=PROVIDER                specify a cloud provider
-    --rbac                             create RBAC roles and bindings (default: true)
     --docker-registry                  docker registry used to pull voyager images (default: appscode)
     --haproxy-image-tag                tag of Docker image containing HAProxy binary (default: 1.9.6-10.0.0-alpine)
     --image-pull-secret                name of secret used to pull voyager operator images
@@ -91,7 +90,7 @@ If you would like to run Voyager operator pod in `master` instances, pass the `-
 
 ```console
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/10.0.0/hack/deploy/voyager.sh \
-    | bash -s -- --provider=$provider --run-on-master [--rbac]
+    | bash -s -- --provider=$provider --run-on-master
 ```
 
 Voyager operator will be installed in a `kube-system` namespace by default. If you would like to run Voyager operator pod in `voyager` namespace, pass the `--namespace=voyager` flag:
@@ -99,7 +98,7 @@ Voyager operator will be installed in a `kube-system` namespace by default. If y
 ```console
 $ kubectl create namespace voyager
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/10.0.0/hack/deploy/voyager.sh \
-    | bash -s -- --provider=$provider --namespace=voyager [--run-on-master] [--rbac]
+    | bash -s -- --provider=$provider --namespace=voyager [--run-on-master]
 ```
 
 By default, Voyager operator will watch Ingress objects in any namespace. If you would like to restrict Voyager to Ingress and Services in its own namespace, pass the `--restrict-to-namespace` flag:
@@ -107,7 +106,7 @@ By default, Voyager operator will watch Ingress objects in any namespace. If you
 ```console
 $ kubectl create namespace voyager
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/10.0.0/hack/deploy/voyager.sh \
-    | bash -s -- --provider=$provider --namespace=voyager --restrict-to-namespace [--run-on-master] [--rbac]
+    | bash -s -- --provider=$provider --namespace=voyager --restrict-to-namespace [--run-on-master]
 ```
 
 If you are using a private Docker registry, you need to pull the following 2 docker images:
@@ -120,7 +119,7 @@ To pass the address of your private registry and optionally a image pull secret 
 ```console
 $ kubectl create namespace voyager
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/10.0.0/hack/deploy/voyager.sh \
-    | bash -s -- --provider=$provider --docker-registry=MY_REGISTRY [--image-pull-secret=SECRET_NAME] [--rbac]
+    | bash -s -- --provider=$provider --docker-registry=MY_REGISTRY [--image-pull-secret=SECRET_NAME]
 ```
 
 By default, Voyager uses Alpine based HAProxy image (1.9.6-10.0.0-alpine). But you can also Debian based image for HAProxy by setting --haproxy-image-tag=1.9.6-10.0.0 flag.
@@ -129,7 +128,7 @@ Voyager implements a [validating admission webhook](https://kubernetes.io/docs/a
 
 ```console
 $ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/10.0.0/hack/deploy/voyager.sh \
-    | bash -s -- --provider=$provider --enable-validating-webhook [--rbac]
+    | bash -s -- --provider=$provider --enable-validating-webhook
 ```
 
 Voyager 10.0.0 or later releases can use status sub resource for CustomResourceDefintions. This is enabled by default for Kubernetes 1.11.0 or later releases. To disable this feature, pass the `--enable-status-subresource=false` flag.

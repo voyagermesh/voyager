@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	rbac "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
@@ -45,6 +46,27 @@ func TestNodePortController_IsExists(t *testing.T) {
 							Namespace: "bar",
 						},
 					},
+
+					&core.ServiceAccount{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      api.VoyagerPrefix + "foo",
+							Namespace: "bar",
+						},
+					},
+
+					&rbac.Role{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      api.VoyagerPrefix + "foo",
+							Namespace: "bar",
+						},
+					},
+
+					&rbac.RoleBinding{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      api.VoyagerPrefix + "foo",
+							Namespace: "bar",
+						},
+					},
 				),
 			},
 		}: true,
@@ -76,6 +98,27 @@ func TestNodePortController_IsExists(t *testing.T) {
 					},
 
 					&core.ConfigMap{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      api.VoyagerPrefix + "foo",
+							Namespace: "bar",
+						},
+					},
+
+					&core.ServiceAccount{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      api.VoyagerPrefix + "foo",
+							Namespace: "bar",
+						},
+					},
+
+					&rbac.Role{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      api.VoyagerPrefix + "foo",
+							Namespace: "bar",
+						},
+					},
+
+					&rbac.RoleBinding{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      api.VoyagerPrefix + "foo",
 							Namespace: "bar",
