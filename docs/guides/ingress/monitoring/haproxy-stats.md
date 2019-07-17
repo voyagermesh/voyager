@@ -67,7 +67,29 @@ Now create Ingress `ing.yaml`
 ```console
 $ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/10.0.0/docs/examples/monitoring/stats-ing.yaml
 ingress "stats-ing" created
+```
 
+```yaml
+apiVersion: voyager.appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: stats-ing
+  namespace: demo
+  annotations:
+    ingress.appscode.com/type: 'NodePort'
+    ingress.appscode.com/stats: 'true'
+spec:
+  rules:
+  - host: voyager.appscode.test
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: web
+          servicePort: 80
+```
+
+```console
 $ kubectl get pods,svc -n demo
 NAME                                    READY     STATUS    RESTARTS   AGE
 po/nginx-8586cf59-6hbx8                 1/1       Running   0          4m
