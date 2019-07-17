@@ -1325,29 +1325,12 @@ func (i *ingressInvocation) GetNodePortServiceURLForSpecificPort(svcName string,
 
 	var err error
 
-	// get the k8s core.service
-	var svc *core.Service
-	Eventually(func() error {
-		svc, err = i.KubeClient.CoreV1().Services(i.TestNamespace).Get(svcName, metav1.GetOptions{})
-		return err
-	}, "10m", "10s").Should(BeNil())
-
-	// get pods containing labels as same as this service's selector
-	label := svc.Spec.Selector
-
-	var pods *core.PodList
-	Eventually(func() error {
-		pods, err = i.KubeClient.CoreV1().Pods(i.TestNamespace).List(metav1.ListOptions{
-			LabelSelector: labels.SelectorFromSet(label).String(),
-		})
-		return err
-	}, "10m", "10s").Should(BeNil())
-
-	// select the first pod and get the node in which this pod is assigned
-	node, err := i.KubeClient.CoreV1().Nodes().Get(pods.Items[0].Spec.NodeName, metav1.GetOptions{})
+	nodeList, err := i.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
 		return "", err
 	}
+
+	node := nodeList.Items[0]
 
 	var nodeIP string
 	if node.Name == "minikube" {
@@ -1362,6 +1345,13 @@ func (i *ingressInvocation) GetNodePortServiceURLForSpecificPort(svcName string,
 			nodeIP = addr.Address
 		}
 	}
+
+	// get the k8s core.service
+	var svc *core.Service
+	Eventually(func() error {
+		svc, err = i.KubeClient.CoreV1().Services(i.TestNamespace).Get(svcName, metav1.GetOptions{})
+		return err
+	}, "10m", "10s").Should(BeNil())
 
 	for _, svcPort := range svc.Spec.Ports {
 		if svcPort.Port == port {

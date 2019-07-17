@@ -68,18 +68,13 @@ var _ = Describe("With Agent Check", func() {
 				return Expect(r.Body).Should(HavePrefix("up"))
 			})
 			Expect(err).NotTo(HaveOccurred())
-		})
 
-		It("Should Response HTTP", func() {
-			By("Getting HTTP Endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
 			err = f.Ingress.DoHTTP(5, "", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
-				return Expect(r.Status).Should(Equal(http.StatusOK)) &&
-					Expect(r.Method).Should(Equal("GET")) &&
-					Expect(r.Path).Should(Equal("/testpath/ok"))
+				return Expect(r.Status).Should(Equal(http.StatusOK))
 			})
 			Expect(err).NotTo(HaveOccurred())
 		})
@@ -117,6 +112,8 @@ var _ = Describe("With Agent Check", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
+			// apache bench until agent server responses "drain"
+
 			for req := 1; ; req++ {
 
 				// check agent response
@@ -139,6 +136,12 @@ var _ = Describe("With Agent Check", func() {
 				}
 			}
 
+			// https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#5.2-agent-check
+			// The word "drain". This will turn the server's administrative state to the
+			// DRAIN mode, thus it will not accept any new connections other than those
+			// that are accepted via persistence.
+			// So, traffic using cooking persistence will be OK
+
 			By("Requesting Without Cookie Should Not Respond")
 			err = f.Ingress.DoHTTPStatus(5, ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusServiceUnavailable))
@@ -154,6 +157,7 @@ var _ = Describe("With Agent Check", func() {
 	})
 
 	Describe("With Wrong Port and Default Agent Inter", func() {
+
 		BeforeEach(func() {
 			svcAnnotation = map[string]string{
 				api.AgentPort: "5553",
@@ -165,6 +169,11 @@ var _ = Describe("With Agent Check", func() {
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
+
+			// https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#5.2-agent-check
+			// Failure to connect to the agent is not considered an error as connectivity
+			// is tested by the regular health check which is enabled by the "check"
+			// parameter.
 
 			err = f.Ingress.DoHTTPStatus(5, ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK))
@@ -181,7 +190,7 @@ var _ = Describe("With Agent Check", func() {
 			}
 		})
 
-		It("Should Response HTTP", func() {
+		It("Should Response HTTP OK", func() {
 			By("Getting Backend Service URL for Agent Check Port")
 			svcURL, err := f.Ingress.GetNodePortServiceURLForSpecificPort(meta.Name, 5555)
 			Expect(err).NotTo(HaveOccurred())
@@ -191,10 +200,7 @@ var _ = Describe("With Agent Check", func() {
 				return Expect(r.Body).Should(HavePrefix("up"))
 			})
 			Expect(err).NotTo(HaveOccurred())
-		})
 
-		It("Should Response HTTP", func() {
-			By("Getting HTTP endpoints")
 			eps, err := f.Ingress.GetHTTPEndpoints(ing)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
