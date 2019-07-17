@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Agent Check
 
-[haproxy-agent-check](http://cbonte.github.io/haproxy-dconv/1.8/configuration.html#5.2-agent-check) can be enabled for a specific backend server by applying the agent server port in `ingress.appscode.com/agent-port` annotations to the corresponding service. You can also add [agent-inter](http://cbonte.github.io/haproxy-dconv/1.8/configuration.html#agent-inter) in `ingress.appscode.com/agent-interval` annotations to the same service, which defaults to 2000ms if not mentioned.
+[haproxy-agent-check](http://cbonte.github.io/haproxy-dconv/1.8/configuration.html#5.2-agent-check) can be enabled for a specific backend server by assigning the agent server port in `ingress.appscode.com/agent-port` annotations to the corresponding service. You can also add [agent-inter](http://cbonte.github.io/haproxy-dconv/1.8/configuration.html#agent-inter) in `ingress.appscode.com/agent-interval` annotations to the same service, which defaults to 2000ms if not mentioned.
 
 ## Example
 
