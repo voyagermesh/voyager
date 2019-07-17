@@ -35,6 +35,7 @@ Below is the full list of supported annotations:
 | [ingress.appscode.com/cors-allow-origin](/docs/guides/ingress/http/cors.md) | string | `*` |
 | [ingress.appscode.com/default-option](/docs/guides/ingress/configuration/default-options.md) | map | `{"http-server-close": "true", "dontlognull": "true"}` |
 | [ingress.appscode.com/default-timeout](/docs/guides/ingress/configuration/default-timeouts.md) | map | `{"connect": "5s", "server": "50s", "client": "50s", "client-fin": "50s", "tunnel": "50s"}` |
+| [ingress.appscode.com/hard-stop-after](/docs/guides/ingress/configuration/hard-stop-after.md) | string | `30s` |
 | [ingress.appscode.com/auth-type](/docs/guides/ingress/security/basic-auth.md) | `basic` | |
 | [ingress.appscode.com/auth-realm](/docs/guides/ingress/security/basic-auth.md) | string | |
 | [ingress.appscode.com/auth-secret](/docs/guides/ingress/security/basic-auth.md) | string | |
