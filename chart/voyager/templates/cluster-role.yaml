@@ -82,4 +82,9 @@ rules:
   - rolebindings
   - roles
   verbs: ["get", "create", "delete", "patch"]
+- apiGroups:
+  - autoscaling
+  resources:
+  - horizontalpodautoscalers
+  verbs: ["get", "list"]
 {{ end }}

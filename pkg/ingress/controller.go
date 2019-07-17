@@ -180,3 +180,17 @@ func (c *controller) deletePods() error {
 	}
 	return core_util.RestartPods(c.KubeClient, c.Ingress.Namespace, &metav1.LabelSelector{MatchLabels: c.Ingress.OffshootSelector()})
 }
+
+func (c *controller) isHPAControlled() bool {
+	list, err := c.KubeClient.AutoscalingV1().HorizontalPodAutoscalers(c.Ingress.Namespace).List(metav1.ListOptions{})
+	if err != nil {
+		// in case an error happen when getting hpa, deciding to update replicas
+		return false
+	}
+	for _, hpa := range list.Items {
+		if hpa.Spec.ScaleTargetRef.Kind == c.Ingress.WorkloadKind() && hpa.Spec.ScaleTargetRef.Name == c.Ingress.OffshootName() {
+			return true
+		}
+	}
+	return false
+}

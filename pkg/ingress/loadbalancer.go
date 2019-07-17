@@ -376,8 +376,8 @@ func (c *loadBalancerController) ensurePods() (kutil.VerbType, error) {
 			MatchLabels: c.Ingress.OffshootSelector(),
 		}
 
-		// assign number of replicas for initial creation only
-		if obj.Spec.Replicas == nil {
+		// assign number of replicas only when there's no controlling hpa
+		if obj.Spec.Replicas == nil || !c.isHPAControlled() {
 			obj.Spec.Replicas = types.Int32P(c.Ingress.Replicas())
 		}
 
