@@ -86,7 +86,6 @@ voyager run [flags]
       --operator-service string                                 Name of service used to expose voyager operator (default "voyager-operator")
       --profiling                                               Enable profiling via web interface host:port/debug/pprof/ (default true)
       --qps float                                               The maximum QPS to the master from this client (default 1e+06)
-      --rbac                                                    Enable RBAC for operator & offshoot Kubernetes objects
       --requestheader-allowed-names strings                     List of client certificate common names to allow to provide usernames in headers specified by --requestheader-username-headers. If empty, any client certificate validated by the authorities in --requestheader-client-ca-file is allowed.
       --requestheader-client-ca-file string                     Root certificate bundle to use to verify client certificates on incoming requests before trusting usernames in headers specified by --requestheader-username-headers. WARNING: generally do not depend on authorization being already done for incoming requests.
       --requestheader-extra-headers-prefix strings              List of request header prefixes to inspect. X-Remote-Extra- is suggested. (default [x-remote-extra-])

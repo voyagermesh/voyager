@@ -33,17 +33,8 @@ Server Version: v1.8.8
 Deploy Voyager operator following instructions [here](/docs/setup/install.md).
 
 ```console
-# install without RBAC
 curl -fsSL https://raw.githubusercontent.com/appscode/voyager/10.0.0/hack/deploy/voyager.sh \
   | bash -s -- --provider=aws --run-on-master
-```
-
-If you are trying this on a RBAC enabled cluster, pass the flag `--rbac` to installer script.
-
-```console
-# install with RBAC
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/10.0.0/hack/deploy/voyager.sh \
-  | bash -s -- --provider=aws --run-on-master --rbac
 ```
 
 ## Setup Route53 Hosted Zone
