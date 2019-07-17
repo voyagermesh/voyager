@@ -65,6 +65,7 @@ type SharedInfo struct {
 	MaxConnections        int
 	UseNodePort           bool
 	Limit                 *Limit
+	HardStopAfter         string
 }
 
 type CORSConfig struct {

@@ -110,6 +110,11 @@ const (
 	// timeout  tunnel          50s
 	DefaultsTimeOut = EngressKey + "/" + "default-timeout"
 
+	// Defines the maximum time allowed to perform a clean soft-stop.
+	// https://cbonte.github.io/haproxy-dconv/1.9/configuration.html#hard-stop-after
+	HardStopAfter        = EngressKey + "/" + "hard-stop-after"
+	DefaultHardStopAfter = "30s"
+
 	// https://github.com/appscode/voyager/issues/343
 	// Supports all valid options for defaults section of HAProxy config
 	// https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.2-option%20abortonclose
@@ -290,6 +295,7 @@ func init() {
 	registerParser(AuthTLSVerifyClient, meta.GetString)
 	registerParser(AuthTLSErrorPage, meta.GetString)
 	registerParser(ErrorFiles, meta.GetString)
+	registerParser(HardStopAfter, meta.GetString)
 	registerParser(CORSEnabled, meta.GetBool)
 	registerParser(UseNodePort, meta.GetBool)
 	registerParser(EnableHSTS, meta.GetBool)
@@ -783,4 +789,11 @@ func (r Ingress) LimitRPM() int {
 func (r Ingress) LimitConnections() int {
 	value, _ := get[LimitConnection](r.Annotations)
 	return value.(int)
+}
+
+func (r Ingress) HardStopAfter() string {
+	if v, _ := get[HardStopAfter](r.Annotations); v != "" {
+		return v.(string)
+	}
+	return DefaultHardStopAfter
 }
