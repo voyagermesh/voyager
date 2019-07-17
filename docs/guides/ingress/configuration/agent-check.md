@@ -107,4 +107,3 @@ numeric value. Supported units are :
 - m  : minutes. 1m = 60s = 60000ms
 - h  : hours.   1h = 60m = 3600s = 3600000ms
 - d  : days.    1d = 24h = 1440m = 86400s = 86400000ms
-
