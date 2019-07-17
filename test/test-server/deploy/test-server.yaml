@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: server
-          image: appscode/test-server:2.3
+          image: appscode/test-server:2.4
           args:
           - --ca
           # get CA: kubectl exec -it test-server-64855d98cc-njc4w cat cert.pem > ca.pem
@@ -43,6 +43,8 @@ spec:
               containerPort: 6443
             - name: https-2
               containerPort: 3443
+            - name: agent-check-tcp
+              containerPort: 5555
 ---
 apiVersion: v1
 kind: Service
@@ -88,5 +90,9 @@ spec:
     name: https-2
     protocol: TCP
     targetPort: 3443
+  - port: 5555
+    name: agent-check-tcp
+    protocol: TCP
+    targetPort: 5555
   selector:
     app: test-server

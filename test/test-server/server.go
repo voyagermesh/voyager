@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -12,8 +13,12 @@ import (
 	"syscall"
 	"time"
 
-	proxyproto "github.com/pires/go-proxyproto"
+	"github.com/pires/go-proxyproto"
+	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/load"
 )
+
+const LOADMAX = 80
 
 type Response struct {
 	Type       string             `json:"type,omitempty"`
@@ -84,8 +89,17 @@ func runHTTPS(port string) {
 	http.ListenAndServeTLS(port, "cert.pem", "key.pem", HTTPSHandler{port})
 }
 
+type TCPServer interface {
+	getPort() string
+	ServeTCP(net.Conn)
+}
+
 type TCPHandler struct {
 	port string
+}
+
+func (h TCPHandler) getPort() string {
+	return h.port
 }
 
 func (h TCPHandler) ServeTCP(conn net.Conn) {
@@ -100,6 +114,10 @@ func (h TCPHandler) ServeTCP(conn net.Conn) {
 
 type ProxyAwareHandler struct {
 	port string
+}
+
+func (h ProxyAwareHandler) getPort() string {
+	return h.port
 }
 
 func (h ProxyAwareHandler) ServeTCP(conn net.Conn) {
@@ -117,7 +135,46 @@ func (h ProxyAwareHandler) ServeTCP(conn net.Conn) {
 	json.NewEncoder(conn).Encode(resp)
 }
 
-func runTCP(port string) {
+type agentTCPHandler struct {
+	port string
+}
+
+func (h agentTCPHandler) getPort() string {
+	return h.port
+}
+
+func (h agentTCPHandler) ServeTCP(conn net.Conn) {
+	fmt.Println("request on", conn.LocalAddr().String())
+
+	ctx := context.Background()
+	v, _ := load.AvgWithContext(ctx)
+
+	//totalCPU denotes total number of logical cpus
+	totalCPU, _ := cpu.Counts(true)
+
+	//calculate cpu load percentage based on last 5 minutes stats
+	load5util := (v.Load5 / float64(totalCPU)) * 100
+	fmt.Println("CPU Load Percentage: ", load5util)
+
+	// Rules: if cpu load is less than 80%
+	// agent sever output = up 100%
+	// if it is 80% to less than 100%, output = drain
+	// if 100%, this server will be marked as down
+
+	resp := ""
+	if load5util < LOADMAX {
+		resp = "up 100%"
+	} else if load5util >= LOADMAX && load5util < 100 {
+		resp = "drain"
+	} else {
+		resp = "down#CPU overload"
+	}
+
+	conn.Write([]byte(resp + "\n"))
+}
+
+func runTCP(h TCPServer) {
+	port := h.getPort()
 	ln, err := net.Listen("tcp", port)
 	if err != nil {
 		fmt.Println(err)
@@ -130,25 +187,6 @@ func runTCP(port string) {
 			fmt.Println(err)
 			return
 		}
-		h := TCPHandler{port}
-		go h.ServeTCP(con)
-	}
-}
-
-func runProxy(port string) {
-	ln, err := net.Listen("tcp", port)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println("proxy server listening on port", port)
-	for {
-		con, err := ln.Accept()
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		h := ProxyAwareHandler{port}
 		go h.ServeTCP(con)
 	}
 }
@@ -160,15 +198,19 @@ func main() {
 	go runHTTP(":8989")
 	go runHTTP(":9090")
 
-	go runTCP(":4343")
-	go runTCP(":4545")
-	go runTCP(":5656")
+	go runTCP(TCPHandler{":4343"})
+	go runTCP(TCPHandler{":4545"})
+	go runTCP(TCPHandler{":5656"})
 
-	go runProxy(":6767")
+	// run proxy
+	go runTCP(ProxyAwareHandler{":6767"})
 
 	GenCert("http.appscode.test,ssl.appscode.test")
 	go runHTTPS(":6443")
 	go runHTTPS(":3443")
+
+	// run agent-check server
+	go runTCP(agentTCPHandler{":5555"})
 
 	hold()
 }

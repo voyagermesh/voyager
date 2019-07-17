@@ -7,6 +7,7 @@ require (
 	github.com/Azure/azure-sdk-for-go v21.3.0+incompatible
 	github.com/Azure/go-autorest v11.1.0+incompatible
 	github.com/JamesClonk/vultr v2.0.0+incompatible // indirect
+	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v0.0.0-20190507234932-3d34267ed5e4 // indirect
 	github.com/appscode/go v0.0.0-20190523031839-1468ee3a76e8
 	github.com/appscode/hello-grpc v0.0.0-20190207041230-eea009cbf42e
@@ -14,6 +15,7 @@ require (
 	github.com/aws/aws-sdk-go v1.14.12
 	github.com/benbjohnson/clock v0.0.0-20161215174838-7dc76406b6d3
 	github.com/cloudflare/cloudflare-go v0.8.5 // indirect
+	github.com/codeskyblue/go-sh v0.0.0-20190412065543-76bd3d59ff27
 	github.com/coreos/prometheus-operator v0.29.0
 	github.com/cpuguy83/go-md2man v1.0.10 // indirect
 	github.com/dimchansky/utfbom v1.1.0 // indirect
@@ -21,6 +23,7 @@ require (
 	github.com/evanphx/json-patch v4.2.0+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-ini/ini v1.42.0 // indirect
+	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/go-openapi/spec v0.19.0
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/google/go-cmp v0.3.0
@@ -40,6 +43,7 @@ require (
 	github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829
 	github.com/prometheus/common v0.4.0
 	github.com/prometheus/haproxy_exporter v0.0.0-00010101000000-000000000000
+	github.com/shirou/gopsutil v2.18.12+incompatible
 	github.com/smartystreets/assertions v0.0.0-20190401211740-f487f9de1cd3 // indirect
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v0.0.3

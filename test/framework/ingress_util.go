@@ -1108,10 +1108,17 @@ func (i *ingressInvocation) CreateResourceWithServiceAnnotation(svcAnnotation ma
 					TargetPort: intstr.FromInt(8080),
 					Protocol:   "TCP",
 				},
+				{
+					Name:       "agent-check-tcp",
+					Port:       5555,
+					TargetPort: intstr.FromInt(5555),
+					Protocol:   "TCP",
+				},
 			},
 			Selector: map[string]string{
 				"app": meta.Name,
 			},
+			Type: core.ServiceTypeNodePort,
 		},
 	})
 	if err != nil {
@@ -1157,6 +1164,10 @@ func (i *ingressInvocation) CreateResourceWithServiceAnnotation(svcAnnotation ma
 								{
 									Name:          "http-1",
 									ContainerPort: 8080,
+								},
+								{
+									Name:          "agent-check-tcp",
+									ContainerPort: 5555,
 								},
 							},
 						},
@@ -1308,4 +1319,49 @@ func (i *ingressInvocation) GetServiceWithLoadBalancerStatus(name, namespace str
 		return nil, errors.Errorf("failed to get Status.LoadBalancer.Ingress for service %s/%s", name, namespace)
 	}
 	return svc, nil
+}
+
+func (i *ingressInvocation) GetNodePortServiceURLForSpecificPort(svcName string, port int32) (string, error) {
+
+	var err error
+
+	nodeList, err := i.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
+	if err != nil {
+		return "", err
+	}
+
+	node := nodeList.Items[0]
+
+	var nodeIP string
+	if node.Name == "minikube" {
+		nodeIPURL, err := getMinikubeIP()
+		if err != nil {
+			return "", err
+		}
+		nodeIP = nodeIPURL.String()
+	}
+	for _, addr := range node.Status.Addresses {
+		if addr.Type == core.NodeExternalIP {
+			nodeIP = addr.Address
+		}
+	}
+
+	// get the k8s core.service
+	var svc *core.Service
+	Eventually(func() error {
+		svc, err = i.KubeClient.CoreV1().Services(i.TestNamespace).Get(svcName, metav1.GetOptions{})
+		return err
+	}, "10m", "10s").Should(BeNil())
+
+	for _, svcPort := range svc.Spec.Ports {
+		if svcPort.Port == port {
+			u, err := url.Parse(fmt.Sprintf("http://%s:%d", nodeIP, svcPort.NodePort))
+			if err != nil {
+				return "", err
+			}
+			return u.String(), nil
+		}
+	}
+
+	return "", errors.New("Port not found\n")
 }

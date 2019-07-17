@@ -1,7 +1,7 @@
 language: go
 go:
- - 1.x
- - tip
+  - 1.x
+  - tip
 
 cache:
   directories:
@@ -11,6 +11,7 @@ cache:
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y haproxy
+  - sudo apt-get install apache2-utils
 
 install: true
 

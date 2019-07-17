@@ -255,6 +255,11 @@ const (
 	// ref: https://github.com/appscode/voyager/issues/1054
 	NodeSelector = EngressKey + "/" + "node-selector"
 	Tolerations  = EngressKey + "/" + "tolerations"
+
+	// https://github.com/appscode/voyager/issues/1210
+	// http://cbonte.github.io/haproxy-dconv/1.8/configuration.html#agent-check
+	AgentPort     = EngressKey + "/" + "agent-port"
+	AgentInterval = EngressKey + "/" + "agent-interval"
 )
 
 var (

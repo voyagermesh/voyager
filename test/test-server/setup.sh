@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-VERSION=2.3
+DOCKER_REGISTRY=appscode
+VERSION=2.4
 
 build() {
     rm -rf dist/*
@@ -9,11 +10,11 @@ build() {
 
 build_docker() {
     cp Dockerfile dist/
-    docker build --pull -t appscode/test-server:${VERSION} ./dist
+    docker build --pull -t ${DOCKER_REGISTRY}/test-server:${VERSION} ./dist
 }
 
 docker_push() {
-    docker push appscode/test-server:${VERSION}
+    docker push ${DOCKER_REGISTRY}/test-server:${VERSION}
 }
 
 all() {

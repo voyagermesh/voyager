@@ -79,3 +79,5 @@ Below is the full list of supported annotations:
 | [ingress.appscode.com/tolerations](/docs/guides/ingress/pod-placement.md#using-taints-and-toleration) | array | |
 | [ingress.appscode.com/check](/docs/guides/ingress/configuration/health-check.md) | bool | `false` |
 | [ingress.appscode.com/check-port](/docs/guides/ingress/configuration/health-check.md) | int | |
+| [ingress.appscode.com/agent-port](/docs/guides/ingress/configuration/agent-check.md) | int | |
+| [ingress.appscode.com/agent-interval](/docs/guides/ingress/configuration/agent-check.md) | string | "2000ms" |
