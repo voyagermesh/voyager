@@ -23,7 +23,7 @@ First deploy and expose a test server:
 ```yaml
 $ kubectl apply -f test-server.yaml
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:

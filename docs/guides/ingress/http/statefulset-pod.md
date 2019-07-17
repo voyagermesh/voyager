@@ -20,7 +20,7 @@ There is the usual way of forwarding traffic to a Service matching a StatefulSet
 selector, and use the service name as Backend ServiceName.
 
 ```yaml
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: http

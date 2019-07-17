@@ -36,7 +36,7 @@ Configure, deploy and expose oauth2-proxy:
 ```yaml
 $ kubectl apply -f oauth2-proxy.yaml
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -165,7 +165,7 @@ Configure, deploy and expose oauth2-proxy:
 ```yaml
 $ kubectl apply -f oauth2-proxy.yaml
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:

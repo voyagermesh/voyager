@@ -40,7 +40,7 @@ Set `Authorization callback URL` to `https://<host:port>/oauth2/callback`. In th
 ```yaml
 $ kubectl apply -f oauth2-proxy.yaml
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:

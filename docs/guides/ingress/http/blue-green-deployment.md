@@ -17,7 +17,7 @@ section_menu_id: guides
 Voayger supports Blue Green deployments using weighted loadbalancing for backend pods. Following example illustrates a weighted loadbalance scenario.
 
 ```yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -54,7 +54,7 @@ spec:
           name: http-1
           protocol: TCP
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
