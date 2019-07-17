@@ -79,7 +79,8 @@ kubectl create secret generic acme-account --from-literal=ACME_EMAIL=me@example.
 kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/10.0.0/docs/examples/certificate/http/crt.yaml
 ```
 
-8. Now wait a bit and you should see a new secret named `tls-kitecicom`. This contains the `tls.crt` and `tls.key` .
+8. Now wait a bit and you should see a new secret named `tls-kitecicom`. This contains the `tls.crt` and `tls.key`.
+This secret must not have any dashes or other special characters.
 
 ```console
 $ kubectl get secrets
