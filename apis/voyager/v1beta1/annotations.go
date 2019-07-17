@@ -103,7 +103,7 @@ const (
 	//
 	// If the annotation is not set default values used to config defaults section will be:
 	//
-	// timeout  connect         50s
+	// timeout  connect         5s
 	// timeout  client          50s
 	// timeout  client-fin      50s
 	// timeout  server          50s
@@ -662,7 +662,7 @@ var timeoutKeys = []string{
 
 var timeoutDefaults = map[string]string{
 	// Maximum time to wait for a connection attempt to a server to succeed.
-	"connect": "50s",
+	"connect": "5s",
 
 	// Maximum inactivity time on the client side.
 	// Applies when the client is expected to acknowledge or send data.
