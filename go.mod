@@ -74,7 +74,7 @@ require (
 	kmodules.xyz/client-go v0.0.0-20190508091620-0d215c04352f
 	kmodules.xyz/monitoring-agent-api v0.0.0-20190508125842-489150794b9b
 	kmodules.xyz/openshift v0.0.0-20190508141315-99ec9fc946bf // indirect
-	kmodules.xyz/webhook-runtime v0.0.0-20190508093950-b721b4eba5e5
+	kmodules.xyz/webhook-runtime v0.0.0-20190624053948-102161a0392e
 	sigs.k8s.io/yaml v1.1.0
 )
 

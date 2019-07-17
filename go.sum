@@ -591,6 +591,8 @@ kmodules.xyz/openshift v0.0.0-20190508141315-99ec9fc946bf h1:UyVK/KyL2O7XNV+1c7Z
 kmodules.xyz/openshift v0.0.0-20190508141315-99ec9fc946bf/go.mod h1:5l0No0OizfJ55sjDDpi0TgtGYWgmhy+F+i4+6DN61Ak=
 kmodules.xyz/webhook-runtime v0.0.0-20190508093950-b721b4eba5e5 h1:40MH6o6EshW4z/8W2W5GEd56qzSpPrxVgpmZL+tsVPQ=
 kmodules.xyz/webhook-runtime v0.0.0-20190508093950-b721b4eba5e5/go.mod h1:/8Kc9q3fttdmMwzxuQkiUJ1UNhvRbLDxNWwXgsaMUgU=
+kmodules.xyz/webhook-runtime v0.0.0-20190624053948-102161a0392e h1:0AZeh0iTO+CSAQwFrMtVgvC15Nlzxof+JcKK4j3sCk8=
+kmodules.xyz/webhook-runtime v0.0.0-20190624053948-102161a0392e/go.mod h1:/8Kc9q3fttdmMwzxuQkiUJ1UNhvRbLDxNWwXgsaMUgU=
 sigs.k8s.io/kustomize v2.0.3+incompatible h1:JUufWFNlI44MdtnjUqVnvh29rR37PQFzPbLXqhyOyX0=
 sigs.k8s.io/kustomize v2.0.3+incompatible/go.mod h1:MkjgH3RdOWrievjo6c9T245dYlB5QeXV4WCbnt/PEpU=
 sigs.k8s.io/structured-merge-diff v0.0.0-20190302045857-e85c7b244fd2 h1:9r5DY45ef9LtcA6BnkhW8MPV7OKAfbf2AUwUhq3LeRk=
