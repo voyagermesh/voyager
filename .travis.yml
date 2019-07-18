@@ -3,6 +3,11 @@ go:
   - 1.x
   - tip
 
+env:
+  global:
+  - GOFLAGS=-mod=vendor
+  - GO111MODULE=on
+
 cache:
   directories:
   - $HOME/.cache/go-build
