@@ -16,9 +16,10 @@ aliases:
 
 # Guides
 
-Guides show you how to use jetstack/cert-manager to issue free TLS/SSL certificates from Let's Encrypt.
+Guides show you how to use [jetstack/cert-manager](https://github.com/jetstack/cert-manager) with Voyager to issue free TLS/SSL certificates from Let's Encrypt.
 
 ## Features
+
 - Provision free TLS certificates (including wildcard certificates) from Let's Encrypt.
 - Manage certificates declaratively using a Kubernetes Custom Resource Definition (CRD).
 - Domain validation using ACME http-01 and dns-01 challenges.
@@ -27,6 +28,7 @@ Guides show you how to use jetstack/cert-manager to issue free TLS/SSL certifica
 - Use issued certificates with Ingress to secure communications.
 
 ## Next Steps
+
 - [Issue Let's Encrypt certificate using HTTP-01 challenge](/docs/guides/cert-manager/http01_challenge/overview.md)
 - DNS-01 challenge providers
   - [Issue Let's Encrypt certificate using AWS Route53](/docs/guides/cert-manager/dns01_challenge/aws-route53.md)

@@ -11,6 +11,7 @@ product_name: voyager
 menu_name: product_voyager_10.0.0
 section_menu_id: guides
 ---
+
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
 
 # Issue Let's Encrypt certificate using Google Cloud DNS
@@ -35,13 +36,13 @@ Now create a service account from your Google Cloud Console
 
 Then create a Kubernetes Secret with this Service Account:
 
-```
+```console
 kubectl create secret generic clouddns-service-account --from-file=service-account.json=<path-to-json-file>
 ```
 
 Setup Let's Encrypt Issuer with this yaml:
 
-```
+```yaml
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Issuer
 metadata:
@@ -55,27 +56,28 @@ spec:
     privateKeySecretRef:
       name: example-issuer-account-key
     solvers:
-    - dns01:
-        clouddns:
-          # A secretKeyRef to a google cloud json service account
-          serviceAccountSecretRef:
-            name: clouddns-service-account
-            key: service-account.json
-          # The project in which to update the DNS zone
-          project: test-cert
+      - dns01:
+          clouddns:
+            # A secretKeyRef to a google cloud json service account
+            serviceAccountSecretRef:
+              name: clouddns-service-account
+              key: service-account.json
+            # The project in which to update the DNS zone
+            project: test-cert
 ```
 
 ## 2. Create Ingress
 
 We are going to use a nginx server as the backend. To deploy nginx server, run the following commands:
-```
+
+```console
 kubectl run nginx --image=nginx
 kubectl expose deployment nginx --name=web --port=80 --target-port=80
 ```
 
 Create your ingress:
 
-```
+```yaml
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -87,23 +89,22 @@ metadata:
     certmanager.k8s.io/acme-challenge-type: dns01
 spec:
   tls:
-  - hosts:
-    - kiteci-dns.appscode.ninja
-    secretName: kiteci-dns-tls
+    - hosts:
+        - kiteci-dns.appscode.ninja
+      secretName: kiteci-dns-tls
   rules:
-  - host: kiteci-dns.appscode.ninja
-    http:
-      paths:
-      - backend:
-          serviceName: web
-          servicePort: 80
-        path: /
-
+    - host: kiteci-dns.appscode.ninja
+      http:
+        paths:
+          - backend:
+              serviceName: web
+              servicePort: 80
+            path: /
 ```
 
 Then take the `EXTERNAL-IP` from the corresponding service:
 
-```
+```console
 kubectl get svc
 ```
 
@@ -115,7 +116,8 @@ voyager-test-ingress-deploy-k8s-route53-dns   LoadBalancer   10.7.248.189   35.2
 Create an A-record for `kiteci-dns.appscode.ninja` mapped to `35.225.111.106` with Google DNS.
 
 Wait until you can see it resolved:
-```
+
+```console
 dig +short kiteci-dns.appscode.ninja
 ```
 
@@ -123,7 +125,7 @@ dig +short kiteci-dns.appscode.ninja
 
 Then create this `Certificate` crd:
 
-```
+```yaml
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
@@ -134,7 +136,7 @@ spec:
   issuerRef:
     name: letsencrypt-staging-dns
   dnsNames:
-  - kiteci-dns.appscode.ninja
+    - kiteci-dns.appscode.ninja
 ```
 
 Now, List the certificates and describe that certificate and wait until you see `Certificate issued successfully` when you describe the certificate.

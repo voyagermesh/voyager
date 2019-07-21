@@ -11,6 +11,7 @@ product_name: voyager
 menu_name: product_voyager_10.0.0
 section_menu_id: guides
 ---
+
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
 
 # Issue Let's Encrypt certificate using Azure DNS
@@ -31,7 +32,7 @@ Go to your DNS Zone page:
 
 ![a-record](/docs/images/cert-manager/azure/a-record.png)
 
-You'll need this `Subcription id` and `Resource group` later while creating issuer.
+You'll need this `Subscription id` and `Resource group` later while creating issuer.
 
 Go to Azure Active Directory -> App registrations and click on `New Registration`
 
@@ -42,12 +43,13 @@ You'll need the `Application (client) ID` and `Directory (tenant) ID` later for 
 
 ![client-tenant](/docs/images/cert-manager/azure/client-tenant.png)
 
-Now create a new client-secret
+Now, create a new client-secret.
 
 ![client-secret](/docs/images/cert-manager/azure/client-secret.png)
 
 Copy the password for this client-secret and create a kubernetes secret:
-```
+
+```console
 kubectl create secret generic azuredns-secret --from-literal=client-secret="sdfsdfTEser@k3casdfbsdfsdf_m[4"
 ```
 
@@ -68,7 +70,7 @@ Now that you have access to this, go to Subscriptions -> Access control (IAM) ->
 
 Now create this issuer by `kubectl apply -f issuer.yaml`
 
-```
+```yaml
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Issuer
 metadata:
@@ -82,34 +84,35 @@ spec:
     privateKeySecretRef:
       name: example-issuer-account-key
     solvers:
-    - dns01:
-        azuredns:
-          # Service principal clientId (also called appId)
-          clientID: riu478u-486ij8-uiu487j-468rjg8
-          # A secretKeyRef to a service principal ClientSecret (password)
-          clientSecretSecretRef:
-            name: azuredns-secret
-            key: client-secret
-          # Azure subscription Id
-          subscriptionID: 45ji8t4-rgi4859-g845jg-9jjf9945r
-          # Azure AD tenant Id
-          tenantID: 348585ej-4358fdg8-f4588fg-45889fg
-          # ResourceGroup name where dns zone is provisioned
-          resourceGroupName: dev
-          hostedZoneName: appscode.info
+      - dns01:
+          azuredns:
+            # Service principal clientId (also called appId)
+            clientID: riu478u-486ij8-uiu487j-468rjg8
+            # A secretKeyRef to a service principal ClientSecret (password)
+            clientSecretSecretRef:
+              name: azuredns-secret
+              key: client-secret
+            # Azure subscription Id
+            subscriptionID: 45ji8t4-rgi4859-g845jg-9jjf9945r
+            # Azure AD tenant Id
+            tenantID: 348585ej-4358fdg8-f4588fg-45889fg
+            # ResourceGroup name where dns zone is provisioned
+            resourceGroupName: dev
+            hostedZoneName: appscode.info
 ```
 
 ## 2. Create Ingress
 
 We are going to use a nginx server as the backend. To deploy nginx server, run the following commands:
-```
+
+```console
 kubectl run nginx --image=nginx
 kubectl expose deployment nginx --name=web --port=80 --target-port=80
 ```
 
 Now, Create your ingress:
 
-```
+```yaml
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -121,23 +124,22 @@ metadata:
     certmanager.k8s.io/acme-challenge-type: dns01
 spec:
   tls:
-  - hosts:
-    - kiteci-azure-dns.appscode.info
-    secretName: kiteci-azure-dns-tls
+    - hosts:
+        - kiteci-azure-dns.appscode.info
+      secretName: kiteci-azure-dns-tls
   rules:
-  - host: kiteci-azure-dns.appscode.info
-    http:
-      paths:
-      - backend:
-          serviceName: web
-          servicePort: 80
-        path: /
-
+    - host: kiteci-azure-dns.appscode.info
+      http:
+        paths:
+          - backend:
+              serviceName: web
+              servicePort: 80
+            path: /
 ```
 
 Then take the `EXTERNAL-IP` from the corresponding service and add a A-record in Azure DNS:
 
-```
+```console
 kubectl get svc
 ```
 
@@ -149,7 +151,8 @@ voyager-test-ingress-deploy-k8s-azure-dns     LoadBalancer   10.7.254.246   35.1
 ## 3. Create Certificate
 
 Then create this `Certificate`
-```
+
+```yaml
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
@@ -160,7 +163,7 @@ spec:
   issuerRef:
     name: letsencrypt-staging-dns
   dnsNames:
-  - kiteci-azure-dns.appscode.info
+    - kiteci-azure-dns.appscode.info
 ```
 
 Now, List the certificates and describe that certificate and wait until you see `Certificate issued successfully` when you describe the certificate.
