@@ -1,9 +1,9 @@
 ---
-title: Avoid 503 with Server Graceful Shutdown | Voyager
+title: Avoid 503 with Graceful Server Shutdown | Voyager
 menu:
   product_voyager_10.0.0:
     identifier: avoid-503-with-server-graceful-shutdown
-    name: Avoid 503 with Server Graceful Shutdown
+    name: Avoid 503 with Graceful Server Shutdown
     parent: ingress-guides
     weight: 50
 product_name: voyager
@@ -12,7 +12,7 @@ section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
 
-# Avoid 503 with Server Graceful Shutdown
+# Avoid 503 with Graceful Server Shutdown
 
 Multiple voyager users have been facing an issue regarding getting 503 response
 randomly after requesting through ingress. So we tried to look into what was going wrong and here's
