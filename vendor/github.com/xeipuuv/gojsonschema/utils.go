@@ -35,7 +35,7 @@ import (
 
 func isKind(what interface{}, kinds ...reflect.Kind) bool {
 	target := what
-	if isJSONNumber(what) {
+	if isJsonNumber(what) {
 		// JSON Numbers are strings!
 		target = *mustBeNumber(what)
 	}
@@ -72,7 +72,7 @@ func indexStringInSlice(s []string, what string) int {
 	return -1
 }
 
-func marshalToJSONString(value interface{}) (*string, error) {
+func marshalToJsonString(value interface{}) (*string, error) {
 
 	mBytes, err := json.Marshal(value)
 	if err != nil {
@@ -90,7 +90,7 @@ func marshalWithoutNumber(value interface{}) (*string, error) {
 	// One way to eliminate these differences is to decode and encode the JSON one more time without Decoder.UseNumber
 	// so that these differences in representation are removed
 
-	jsonString, err := marshalToJSONString(value)
+	jsonString, err := marshalToJsonString(value)
 	if err != nil {
 		return nil, err
 	}
@@ -102,10 +102,10 @@ func marshalWithoutNumber(value interface{}) (*string, error) {
 		return nil, err
 	}
 
-	return marshalToJSONString(document)
+	return marshalToJsonString(document)
 }
 
-func isJSONNumber(what interface{}) bool {
+func isJsonNumber(what interface{}) bool {
 
 	switch what.(type) {
 
@@ -116,7 +116,7 @@ func isJSONNumber(what interface{}) bool {
 	return false
 }
 
-func checkJSONInteger(what interface{}) (isInt bool) {
+func checkJsonInteger(what interface{}) (isInt bool) {
 
 	jsonNumber := what.(json.Number)
 
@@ -128,13 +128,13 @@ func checkJSONInteger(what interface{}) (isInt bool) {
 
 // same as ECMA Number.MAX_SAFE_INTEGER and Number.MIN_SAFE_INTEGER
 const (
-	maxJSONFloat = float64(1<<53 - 1)  // 9007199254740991.0 	 2^53 - 1
-	minJSONFloat = -float64(1<<53 - 1) //-9007199254740991.0	-2^53 - 1
+	max_json_float = float64(1<<53 - 1)  // 9007199254740991.0 	 2^53 - 1
+	min_json_float = -float64(1<<53 - 1) //-9007199254740991.0	-2^53 - 1
 )
 
 func isFloat64AnInteger(f float64) bool {
 
-	if math.IsNaN(f) || math.IsInf(f, 0) || f < minJSONFloat || f > maxJSONFloat {
+	if math.IsNaN(f) || math.IsInf(f, 0) || f < min_json_float || f > max_json_float {
 		return false
 	}
 
@@ -143,11 +143,11 @@ func isFloat64AnInteger(f float64) bool {
 
 func mustBeInteger(what interface{}) *int {
 
-	if isJSONNumber(what) {
+	if isJsonNumber(what) {
 
 		number := what.(json.Number)
 
-		isInt := checkJSONInteger(number)
+		isInt := checkJsonInteger(number)
 
 		if isInt {
 
@@ -158,6 +158,9 @@ func mustBeInteger(what interface{}) *int {
 
 			int32Value := int(int64Value)
 			return &int32Value
+
+		} else {
+			return nil
 		}
 
 	}
@@ -167,12 +170,15 @@ func mustBeInteger(what interface{}) *int {
 
 func mustBeNumber(what interface{}) *big.Rat {
 
-	if isJSONNumber(what) {
+	if isJsonNumber(what) {
 		number := what.(json.Number)
 		float64Value, success := new(big.Rat).SetString(string(number))
 		if success {
 			return float64Value
+		} else {
+			return nil
 		}
+
 	}
 
 	return nil
@@ -180,7 +186,7 @@ func mustBeNumber(what interface{}) *big.Rat {
 }
 
 // formats a number so that it is displayed as the smallest string possible
-func resultErrorFormatJSONNumber(n json.Number) string {
+func resultErrorFormatJsonNumber(n json.Number) string {
 
 	if int64Value, err := n.Int64(); err == nil {
 		return fmt.Sprintf("%d", int64Value)

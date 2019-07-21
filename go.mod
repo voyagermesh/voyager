@@ -11,7 +11,7 @@ require (
 	github.com/Azure/go-autorest/autorest/to v0.2.0
 	github.com/JamesClonk/vultr v2.0.0+incompatible // indirect
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
-	github.com/akamai/AkamaiOPEN-edgegrid-golang v0.0.0-20190507234932-3d34267ed5e4 // indirect
+	github.com/akamai/AkamaiOPEN-edgegrid-golang v0.8.0 // indirect
 	github.com/appscode/go v0.0.0-20190621064509-6b292c9166e3
 	github.com/appscode/hello-grpc v0.0.0-20190207041230-eea009cbf42e
 	github.com/appscode/pat v0.0.0-20170521084856-48ff78925b79
@@ -24,7 +24,6 @@ require (
 	github.com/dnsimple/dnsimple-go v0.0.0-20180703121714-35bcc6b47c20 // indirect
 	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/ghodss/yaml v1.0.0
-	github.com/go-ini/ini v1.42.0 // indirect
 	github.com/go-openapi/spec v0.19.0
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/google/go-cmp v0.3.0
@@ -52,16 +51,12 @@ require (
 	github.com/stretchr/testify v1.3.0
 	github.com/timewasted/linode v0.0.0-20160829202747-37e84520dcf7 // indirect
 	github.com/tredoe/osutil v0.0.0-20161130133508-7d3ee1afa71c
-	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
-	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
-	github.com/xeipuuv/gojsonschema v0.0.0-20190423132807-354ad34c2300 // indirect
 	github.com/xenolf/lego v2.5.0+incompatible
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	gomodules.xyz/cert v1.0.0
 	google.golang.org/api v0.7.0
 	google.golang.org/grpc v1.21.1
 	gopkg.in/gcfg.v1 v1.2.3
-	gopkg.in/h2non/gock.v1 v1.0.14 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/warnings.v0 v0.1.1 // indirect
 	k8s.io/api v0.0.0-20190503110853-61630f889b3c
@@ -82,7 +77,6 @@ require (
 replace (
 	bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest/autorest v0.5.0
-	github.com/akamai/AkamaiOPEN-edgegrid-golang => github.com/tamalsaha/AkamaiOPEN-edgegrid-golang v0.7.5-0.20190507234932-3d34267ed5e4
 	github.com/grpc-ecosystem/grpc-gateway => github.com/gomodules/grpc-gateway v1.3.1-ac
 	github.com/miekg/dns => github.com/miekg/dns v1.0.7
 	github.com/prometheus/haproxy_exporter => github.com/appscode/haproxy_exporter v0.7.2-0.20190508003714-b4abf52090e2
