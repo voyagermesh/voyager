@@ -45,12 +45,10 @@ var (
 	ErrorTemplateFuncs template.FuncMap
 )
 
-// NewSchema instances a schema using the given JSONLoader
 func NewSchema(l JSONLoader) (*Schema, error) {
 	return NewSchemaLoader().Compile(l)
 }
 
-// Schema holds a schema
 type Schema struct {
 	documentReference gojsonreference.JsonReference
 	rootSchema        *subSchema
@@ -63,7 +61,6 @@ func (d *Schema) parse(document interface{}, draft Draft) error {
 	return d.parseSchema(document, d.rootSchema)
 }
 
-// SetRootSchemaName sets the root-schema name
 func (d *Schema) SetRootSchemaName(name string) {
 	d.rootSchema.property = name
 }
@@ -270,9 +267,8 @@ func (d *Schema) parseSchema(documentNode interface{}, currentSchema *subSchema)
 								"given":    KEY_TYPE,
 							},
 						))
-					}
-					if err := currentSchema.types.Add(typeInArray.(string)); err != nil {
-						return err
+					} else {
+						currentSchema.types.Add(typeInArray.(string))
 					}
 				}
 
@@ -511,7 +507,7 @@ func (d *Schema) parseSchema(documentNode interface{}, currentSchema *subSchema)
 					currentSchema.exclusiveMinimum = currentSchema.minimum
 					currentSchema.minimum = nil
 				}
-			} else if isJSONNumber(m[KEY_EXCLUSIVE_MINIMUM]) {
+			} else if isJsonNumber(m[KEY_EXCLUSIVE_MINIMUM]) {
 				currentSchema.exclusiveMinimum = mustBeNumber(m[KEY_EXCLUSIVE_MINIMUM])
 			} else {
 				return errors.New(formatErrorDescription(
@@ -523,7 +519,7 @@ func (d *Schema) parseSchema(documentNode interface{}, currentSchema *subSchema)
 				))
 			}
 		default:
-			if isJSONNumber(m[KEY_EXCLUSIVE_MINIMUM]) {
+			if isJsonNumber(m[KEY_EXCLUSIVE_MINIMUM]) {
 				currentSchema.exclusiveMinimum = mustBeNumber(m[KEY_EXCLUSIVE_MINIMUM])
 			} else {
 				return errors.New(formatErrorDescription(
@@ -582,7 +578,7 @@ func (d *Schema) parseSchema(documentNode interface{}, currentSchema *subSchema)
 					currentSchema.exclusiveMaximum = currentSchema.maximum
 					currentSchema.maximum = nil
 				}
-			} else if isJSONNumber(m[KEY_EXCLUSIVE_MAXIMUM]) {
+			} else if isJsonNumber(m[KEY_EXCLUSIVE_MAXIMUM]) {
 				currentSchema.exclusiveMaximum = mustBeNumber(m[KEY_EXCLUSIVE_MAXIMUM])
 			} else {
 				return errors.New(formatErrorDescription(
@@ -594,7 +590,7 @@ func (d *Schema) parseSchema(documentNode interface{}, currentSchema *subSchema)
 				))
 			}
 		default:
-			if isJSONNumber(m[KEY_EXCLUSIVE_MAXIMUM]) {
+			if isJsonNumber(m[KEY_EXCLUSIVE_MAXIMUM]) {
 				currentSchema.exclusiveMaximum = mustBeNumber(m[KEY_EXCLUSIVE_MAXIMUM])
 			} else {
 				return errors.New(formatErrorDescription(
@@ -1046,8 +1042,9 @@ func (d *Schema) parseDependencies(documentNode interface{}, currentSchema *subS
 							"type": STRING_SCHEMA_OR_ARRAY_OF_STRINGS,
 						},
 					))
+				} else {
+					valuesToRegister = append(valuesToRegister, value.(string))
 				}
-				valuesToRegister = append(valuesToRegister, value.(string))
 				currentSchema.dependencies[k] = valuesToRegister
 			}
 

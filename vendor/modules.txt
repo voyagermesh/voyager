@@ -36,7 +36,7 @@ github.com/PuerkitoBio/purell
 github.com/PuerkitoBio/urlesc
 # github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d
 github.com/StackExchange/wmi
-# github.com/akamai/AkamaiOPEN-edgegrid-golang v0.0.0-20190507234932-3d34267ed5e4 => github.com/tamalsaha/AkamaiOPEN-edgegrid-golang v0.7.5-0.20190507234932-3d34267ed5e4
+# github.com/akamai/AkamaiOPEN-edgegrid-golang v0.8.0
 github.com/akamai/AkamaiOPEN-edgegrid-golang/configdns-v1
 github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid
 github.com/akamai/AkamaiOPEN-edgegrid-golang/client-v1
@@ -156,7 +156,7 @@ github.com/fatih/structs
 github.com/fsnotify/fsnotify
 # github.com/ghodss/yaml v1.0.0
 github.com/ghodss/yaml
-# github.com/go-ini/ini v1.42.0
+# github.com/go-ini/ini v1.44.0
 github.com/go-ini/ini
 # github.com/go-ole/go-ole v1.2.4
 github.com/go-ole/go-ole
@@ -425,7 +425,7 @@ github.com/tredoe/osutil/user/crypt/common
 github.com/xeipuuv/gojsonpointer
 # github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415
 github.com/xeipuuv/gojsonreference
-# github.com/xeipuuv/gojsonschema v0.0.0-20190423132807-354ad34c2300
+# github.com/xeipuuv/gojsonschema v1.1.0
 github.com/xeipuuv/gojsonschema
 # github.com/xenolf/lego v2.5.0+incompatible => github.com/appscode/lego v1.2.2-0.20181215093553-e57a0a1b7259
 github.com/xenolf/lego/acme
@@ -616,7 +616,7 @@ gopkg.in/gcfg.v1/token
 gopkg.in/gcfg.v1/types
 # gopkg.in/inf.v0 v0.9.1
 gopkg.in/inf.v0
-# gopkg.in/ini.v1 v1.42.0
+# gopkg.in/ini.v1 v1.44.0
 gopkg.in/ini.v1
 # gopkg.in/natefinch/lumberjack.v2 v2.0.0
 gopkg.in/natefinch/lumberjack.v2

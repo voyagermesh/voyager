@@ -796,18 +796,17 @@ func (zone *Zone) removeCnameName(host string) {
 	var ncn []name
 	for _, v := range cnameNames {
 		if v.name != host {
-			ncn =append(ncn, v)
+			ncn = append(ncn, v)
 		}
 	}
 	cnameNames = ncn
 }
 
-
 func (zone *Zone) removeNonCnameName(host string) {
 	var ncn []name
 	for _, v := range nonCnameNames {
 		if v.name != host {
-			ncn =append(ncn, v)
+			ncn = append(ncn, v)
 		}
 	}
 	nonCnameNames = ncn
