@@ -57,3 +57,4 @@ Guides show you how to use Voyager as a Kubernetes Ingress controller.
   - [Exposing HAProxy Stats](/docs/guides/ingress/monitoring/haproxy-stats.md)
 - [Scaling Ingress](/docs/guides/ingress/scaling.md)
 - [Placement of Ingress Pods](/docs/guides/ingress/pod-placement.md)
+- [Avoid 503 with Graceful Server Shutdown](/docs/guides/ingress/graceful-reload.md)
