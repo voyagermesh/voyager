@@ -1,0 +1,21 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Issuer
+metadata:
+  name: letsencrypt-staging-dns
+  namespace: default
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: example@kite.com
+    # Name of a secret used to store the ACME account private key
+    privateKeySecretRef:
+      name: example-issuer-account-key
+    solvers:
+      - dns01:
+          clouddns:
+            # A secretKeyRef to a google cloud json service account
+            serviceAccountSecretRef:
+              name: clouddns-service-account
+              key: service-account.json
+            # The project in which to update the DNS zone
+            project: test-cert
