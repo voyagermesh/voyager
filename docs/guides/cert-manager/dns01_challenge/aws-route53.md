@@ -87,7 +87,7 @@ Copy `Access key ID` from this same page and `hostedZoneID` from the following p
 
 ![hosted-zone-id](/docs/images/cert-manager/route53/hosted-zone-id.png)
 
-And put them in `issuer.yaml`
+And put them in [issuer.yaml](/docs/examples/cert-manager/route53/issuer.yaml)
 
 ```yaml
 apiVersion: certmanager.k8s.io/v1alpha1
@@ -123,7 +123,7 @@ kubectl run nginx --image=nginx
 kubectl expose deployment nginx --name=web --port=80 --target-port=80
 ```
 
-Now create Ingress:
+Now create [ingress.yaml](/docs/examples/cert-manager/route53/ingress.yaml):
 
 ```yaml
 apiVersion: extensions/v1beta1
@@ -165,7 +165,7 @@ voyager-test-ingress-deploy-k8s-route53-dns   LoadBalancer   10.7.248.189   35.2
 
 ## 3. Create Certificate
 
-Then create this `Certificate`
+Then create this [certificate.yaml](/docs/examples/cert-manager/route53/certificate.yaml)
 
 ```yaml
 apiVersion: certmanager.k8s.io/v1alpha1

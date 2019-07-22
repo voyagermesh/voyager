@@ -40,7 +40,7 @@ Then create a Kubernetes Secret with this Service Account:
 kubectl create secret generic clouddns-service-account --from-file=service-account.json=<path-to-json-file>
 ```
 
-Setup Let's Encrypt Issuer with this yaml:
+Now create this issuer by applying [issuer.yaml](/docs/examples/cert-manager/google_cloud/issuer.yaml)
 
 ```yaml
 apiVersion: certmanager.k8s.io/v1alpha1
@@ -75,7 +75,7 @@ kubectl run nginx --image=nginx
 kubectl expose deployment nginx --name=web --port=80 --target-port=80
 ```
 
-Create your ingress:
+Now, Create [ingress.yaml](/docs/examples/cert-manager/google_cloud/ingress.yaml)
 
 ```yaml
 apiVersion: extensions/v1beta1
@@ -123,7 +123,7 @@ dig +short kiteci-dns.appscode.ninja
 
 ## 3. Create Certificate
 
-Then create this `Certificate` crd:
+Then create this [certificate.yaml](/docs/examples/cert-manager/google_cloud/certificate.yaml)
 
 ```yaml
 apiVersion: certmanager.k8s.io/v1alpha1

@@ -49,7 +49,10 @@ The ACME Issuer type represents a single Account registered with the ACME server
 
 ### [Issuer](https://docs.cert-manager.io/en/latest/reference/issuers.html)
 
-Issuers (and ClusterIssuers) represent a certificate authority from which signed x509 certificates can be obtained, such as Let’s Encrypt. You will need at least one Issuer or ClusterIssuer in order to begin issuing certificates within your cluster.
+Issuers (and ClusterIssuers) represent a certificate authority from which signed x509 certificates can be obtained, 
+such as Let’s Encrypt. You will need at least one Issuer or ClusterIssuer in order to begin issuing certificates within your cluster.
+
+Like this [issuer.yaml](/docs/examples/cert-manager/issuer.yaml)
 
 ```yaml
 apiVersion: certmanager.k8s.io/v1alpha1
@@ -74,7 +77,9 @@ The `spec.email` will be used to register for your let's encrypt account and `pr
 
 #### [ClusterIssuer](https://docs.cert-manager.io/en/latest/reference/clusterissuers.html)
 
-An Issuer is a namespaced resource, and it is not possible to issue certificates from an Issuer in a different namespace. If you want to create a single issuer than can be consumed in multiple namespaces, you should consider creating a ClusterIssuer resource.
+An Issuer is a namespaced resource, and it is not possible to issue certificates from an Issuer in a different 
+namespace. If you want to create a single issuer than can be consumed in multiple namespaces, you should consider 
+creating a ClusterIssuer resource.
 
 ```yaml
 apiVersion: certmanager.k8s.io/v1alpha1
@@ -104,7 +109,7 @@ For more to know, visit [here](https://letsencrypt.org/docs/rate-limits/)
 
 The default duration for all certificates is 90 days and the default renewal windows is 30 days. This means that certificates are considered valid for 3 months and renewal will be attempted within 1 month of expiration.
 
-You can change that value using `duration` and `renewBefore` field in Certificate crd,
+You can change that value using `duration` and `renewBefore` field in [certificate.yaml](/docs/examples/cert-manager/certificate.yaml),
 
 ```yaml
 apiVersion: certmanager.k8s.io/v1alpha1

@@ -68,7 +68,7 @@ Now that you have access to this, go to Subscriptions -> Access control (IAM) ->
 
 ![dns-zone-contributor](/docs/images/cert-manager/azure/dns-zone-contributor.png)
 
-Now create this issuer by `kubectl apply -f issuer.yaml`
+Now create this issuer by applying [issuer.yaml](/docs/examples/cert-manager/azure/issuer.yaml)
 
 ```yaml
 apiVersion: certmanager.k8s.io/v1alpha1
@@ -110,7 +110,7 @@ kubectl run nginx --image=nginx
 kubectl expose deployment nginx --name=web --port=80 --target-port=80
 ```
 
-Now, Create your ingress:
+Now, Create [ingress.yaml](/docs/examples/cert-manager/azure/ingress.yaml)
 
 ```yaml
 apiVersion: extensions/v1beta1
@@ -150,7 +150,7 @@ voyager-test-ingress-deploy-k8s-azure-dns     LoadBalancer   10.7.254.246   35.1
 
 ## 3. Create Certificate
 
-Then create this `Certificate`
+Then create this [certificate.yaml](/docs/examples/cert-manager/azure/certificate.yaml)
 
 ```yaml
 apiVersion: certmanager.k8s.io/v1alpha1

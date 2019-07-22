@@ -18,7 +18,8 @@ section_menu_id: guides
 
 ## 1. Setup Issuer/ClusterIssuer
 
-Setup a [ClusterIssuer (Or Issuer)](/docs/guides/cert-manager/get-started.md) for your Ingress:
+Setup a [ClusterIssuer (Or Issuer)](/docs/guides/cert-manager/get-started.md) for your Ingress by applying
+this [clusterissuer.yaml](/docs/examples/cert-manager/http/clusterissuer.yaml)
 
 <!-- https://docs.cert-manager.io/en/latest/tasks/issuers/setup-acme/http01/index.html -->
 
@@ -59,7 +60,7 @@ kubectl run nginx --image=nginx
 kubectl expose deployment nginx --name=web --port=80 --target-port=80
 ```
 
-Now create your ingress:
+Now create your ingress by applying [ingress.yaml](/docs/examples/cert-manager/http/ingress.yaml)
 
 ```yaml
 apiVersion: extensions/v1beta1
