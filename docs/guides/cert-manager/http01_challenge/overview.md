@@ -14,7 +14,7 @@ section_menu_id: guides
 
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
 
-# Issue Let's Encrypt certificate using HTTP-01 challenge with cert-maanger
+# Issue Let's Encrypt certificate using HTTP-01 challenge with cert-manager
 
 ## 1. Setup Issuer/ClusterIssuer
 
