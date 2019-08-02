@@ -3,7 +3,7 @@ module github.com/appscode/voyager
 go 1.12
 
 require (
-	cloud.google.com/go v0.41.0
+	cloud.google.com/go v0.39.0
 	github.com/Azure/azure-sdk-for-go v31.1.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.5.0
 	github.com/Azure/go-autorest/autorest/adal v0.2.0
@@ -12,7 +12,7 @@ require (
 	github.com/JamesClonk/vultr v2.0.0+incompatible // indirect
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v0.8.0 // indirect
-	github.com/appscode/go v0.0.0-20190621064509-6b292c9166e3
+	github.com/appscode/go v0.0.0-20190722173419-e454bf744023
 	github.com/appscode/hello-grpc v0.0.0-20190207041230-eea009cbf42e
 	github.com/appscode/pat v0.0.0-20170521084856-48ff78925b79
 	github.com/aws/aws-sdk-go v1.20.20
@@ -67,20 +67,23 @@ require (
 	k8s.io/kube-aggregator v0.0.0-20190508104018-6d3d96b06d29 // indirect
 	k8s.io/kube-openapi v0.0.0-20190502190224-411b2483e503
 	k8s.io/utils v0.0.0-20190506122338-8fab8cb257d5
-	kmodules.xyz/client-go v0.0.0-20190715080709-7162a6c90b04
-	kmodules.xyz/monitoring-agent-api v0.0.0-20190513065523-186af167f817
-	kmodules.xyz/openshift v0.0.0-20190508141315-99ec9fc946bf // indirect
-	kmodules.xyz/webhook-runtime v0.0.0-20190715115250-a84fbf77dd30
+	kmodules.xyz/client-go v0.0.0-20190802200916-043217632b6a
+	kmodules.xyz/monitoring-agent-api v0.0.0-20190802203207-a87aa5b2e057
+	kmodules.xyz/webhook-runtime v0.0.0-20190802202019-9e77ee949266
 	sigs.k8s.io/yaml v1.1.0
 )
 
 replace (
 	bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d
-	github.com/Azure/go-autorest => github.com/Azure/go-autorest/autorest v0.5.0
+	contrib.go.opencensus.io/exporter/ocagent => contrib.go.opencensus.io/exporter/ocagent v0.3.0
+	github.com/Azure/go-autorest => github.com/Azure/go-autorest v12.3.0+incompatible
+	github.com/census-instrumentation/opencensus-proto => github.com/census-instrumentation/opencensus-proto v0.1.0
+	github.com/golang/protobuf => github.com/golang/protobuf v1.2.0
 	github.com/grpc-ecosystem/grpc-gateway => github.com/gomodules/grpc-gateway v1.3.1-ac
 	github.com/miekg/dns => github.com/miekg/dns v1.0.7
 	github.com/prometheus/haproxy_exporter => github.com/appscode/haproxy_exporter v0.7.2-0.20190508003714-b4abf52090e2
 	github.com/xenolf/lego => github.com/appscode/lego v1.2.2-0.20181215093553-e57a0a1b7259
+	go.opencensus.io => go.opencensus.io v0.21.0
 	k8s.io/api => k8s.io/api v0.0.0-20190313235455-40a48860b5ab
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20190315093550-53c4693659ed
 	k8s.io/apimachinery => github.com/kmodules/apimachinery v0.0.0-20190508045248-a52a97a7a2bf
