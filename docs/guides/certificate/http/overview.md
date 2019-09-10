@@ -2,13 +2,13 @@
 title: Issue Let's Encrypt certificate using HTTP-01 challenge
 description: Issue Let's Encrypt certificate using HTTP-01 challenge in Kubernetes
 menu:
-  product_voyager_10.0.0:
+  product_voyager_v11.0.0:
     identifier: overview-http
     name: Overview
     parent: http-certificate
     weight: 10
 product_name: voyager
-menu_name: product_voyager_10.0.0
+menu_name: product_voyager_v11.0.0
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
@@ -20,7 +20,7 @@ section_menu_id: guides
 Deploy Voyager operator following instructions [here](/docs/setup/install.md).
 
 ```console
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/10.0.0/hack/deploy/voyager.sh \
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/v11.0.0/hack/deploy/voyager.sh \
   | bash -s -- --provider=gke
 ```
 
@@ -36,7 +36,7 @@ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/10.0.0/hack/deploy
 3. Now create Ingress `ing.yaml`
 
     ```console
-    kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/10.0.0/docs/examples/certificate/http/ing.yaml
+    kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/v11.0.0/docs/examples/certificate/http/ing.yaml
     ```
 
 4. Wait for the LoadBalancer ip to be assigned. Once the IP is assigned update your DNS provider to set the LoadBlancer IP as the A record for test domain `kiteci.com`
@@ -67,7 +67,7 @@ curl -fsSL https://raw.githubusercontent.com/appscode/voyager/10.0.0/hack/deploy
 8. Create the Certificate CRD to issue TLS certificate from Let's Encrypt using HTTP challenge.
 
     ```console
-    kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/10.0.0/docs/examples/certificate/http/crt.yaml
+    kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/v11.0.0/docs/examples/certificate/http/crt.yaml
     ```
 
 8. Now wait a bit and you should see a new secret named `tls-kitecicom`. This contains the `tls.crt` and `tls.key`.

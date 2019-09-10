@@ -1,13 +1,13 @@
 ---
 title: Multiple TLS Certificates | Kubernetes Ingress
 menu:
-  product_voyager_10.0.0:
+  product_voyager_v11.0.0:
     identifier: multiple-tls-certs
     name: Multiple TLS Certificates
     parent: tls-ingress
     weight: 10
 product_name: voyager
-menu_name: product_voyager_10.0.0
+menu_name: product_voyager_v11.0.0
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
@@ -149,7 +149,7 @@ Visit `http://aa.appscode.ninja` and `http://bb.appscode.ninja` in your browser:
 
 ## Create Certificate
 
-In this tutorial we will issue free SSL certificates from Let’s Encrypt via DNS challenge for domains using Google Cloud DNS service. If you like to use HTTP challenge or other DNS service provider, please follow the docs [here](https://appscode.com/products/voyager/10.0.0/guides/certificate/).
+In this tutorial we will issue free SSL certificates from Let’s Encrypt via DNS challenge for domains using Google Cloud DNS service. If you like to use HTTP challenge or other DNS service provider, please follow the docs [here](https://appscode.com/products/voyager/v11.0.0/guides/certificate/).
 
 Create a secret with Google service account JSON key. Note that, this service account must have DNS Administrator permission.
 

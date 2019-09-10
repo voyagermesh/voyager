@@ -1,17 +1,17 @@
 ---
 title: cert-manager | Voyager
 menu:
-  product_voyager_10.0.0:
+  product_voyager_v11.0.0:
     identifier: readme-cert-manager
     name: Readme
     parent: cert-manager-guides
     weight: -1
 product_name: voyager
-menu_name: product_voyager_10.0.0
+menu_name: product_voyager_v11.0.0
 section_menu_id: guides
-url: /products/voyager/10.0.0/guides/cert-manager/
+url: /products/voyager/v11.0.0/guides/cert-manager/
 aliases:
-  - /products/voyager/10.0.0/guides/cert-manager/README/
+  - /products/voyager/v11.0.0/guides/cert-manager/README/
 ---
 
 # Guides
