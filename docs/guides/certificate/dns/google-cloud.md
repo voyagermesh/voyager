@@ -132,7 +132,7 @@ If your domains are hosted in the same Google Cloud project as your GKE cluster,
 ![gke-permissions](/docs/images/certificate/google-cloud/gke-permissions.png)
 
 **NB**:
-- I don't know how to apply these permission for an existing GKE cluster. If you know how to do that, please send me to pr.
+- You can change scopes on a running gke kubernetes cluster by following this guide written by Adilson Carvalho. [Changing a running Kubernetes Cluster Permissions (a.k.a. Scopes)](https://adilsoncarvalho.com/changing-a-running-kubernetes-cluster-permissions-a-k-a-scopes-3e90a3b95636)
 
 ### option 3: Use `GOOGLE_APPLICATION_CREDENTIALS`
 Voyager operator can load a json key file whose path is specified by the GOOGLE_APPLICATION_CREDENTIALS environment variable. To use this option, mount a json key file into voyager operator deployment.
