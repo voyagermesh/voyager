@@ -4,11 +4,10 @@ go 1.12
 
 require (
 	cloud.google.com/go v0.39.0
-	github.com/Azure/azure-pipeline-go v0.1.9 // indirect
+	contrib.go.opencensus.io/exporter/ocagent v0.4.12 // indirect
 	github.com/Azure/azure-sdk-for-go v31.1.0+incompatible
-	github.com/Azure/azure-storage-blob-go v0.6.0 // indirect
-	github.com/Azure/go-autorest/autorest v0.5.0
-	github.com/Azure/go-autorest/autorest/adal v0.2.0
+	github.com/Azure/go-autorest/autorest v0.7.0
+	github.com/Azure/go-autorest/autorest/adal v0.4.0
 	github.com/Azure/go-autorest/autorest/azure/auth v0.1.0 // indirect
 	github.com/Azure/go-autorest/autorest/to v0.2.0
 	github.com/JamesClonk/vultr v2.0.0+incompatible // indirect
@@ -22,7 +21,7 @@ require (
 	github.com/census-instrumentation/opencensus-proto v0.2.0 // indirect
 	github.com/cloudflare/cloudflare-go v0.8.5 // indirect
 	github.com/codeskyblue/go-sh v0.0.0-20190412065543-76bd3d59ff27
-	github.com/coreos/prometheus-operator v0.31.1
+	github.com/coreos/prometheus-operator v0.30.1
 	github.com/cpuguy83/go-md2man v1.0.10 // indirect
 	github.com/dnsimple/dnsimple-go v0.0.0-20180703121714-35bcc6b47c20 // indirect
 	github.com/evanphx/json-patch v4.5.0+incompatible
@@ -30,13 +29,10 @@ require (
 	github.com/go-openapi/spec v0.19.0
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/google/go-cmp v0.3.0
-	github.com/google/martian v2.1.1-0.20190517191504-25dcb96d9e51+incompatible // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20190430165422-3e4dfb77656c // indirect
 	github.com/hashicorp/vault/api v1.0.1
-	github.com/jackc/pgx v3.3.0+incompatible // indirect
 	github.com/json-iterator/go v1.1.6
 	github.com/juju/ratelimit v0.0.0-20151125201925-77ed1c8a0121 // indirect
-	github.com/lib/pq v1.1.0 // indirect
 	github.com/mitchellh/go-ps v0.0.0-20170309133038-4fdf99ab2936
 	github.com/moul/http2curl v1.0.0
 	github.com/onsi/ginkgo v1.8.0
@@ -45,8 +41,8 @@ require (
 	github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014 // indirect
 	github.com/pires/go-proxyproto v0.0.0-20190111085350-4d51b51e3bfc
 	github.com/pkg/errors v0.8.1
-	github.com/prometheus/client_golang v0.9.4
-	github.com/prometheus/common v0.4.1
+	github.com/prometheus/client_golang v0.9.2
+	github.com/prometheus/common v0.3.0
 	github.com/prometheus/haproxy_exporter v0.10.1-0.20190712143102-4cebda7ab705
 	github.com/shirou/gopsutil v2.18.12+incompatible
 	github.com/smartystreets/assertions v0.0.0-20190401211740-f487f9de1cd3 // indirect
@@ -65,7 +61,6 @@ require (
 	google.golang.org/grpc v1.21.1
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/gcfg.v1 v1.2.3
-	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/warnings.v0 v0.1.1 // indirect
 	k8s.io/api v0.0.0-20190503110853-61630f889b3c
 	k8s.io/apiextensions-apiserver v0.0.0-20190516231611-bf6753f2aa24
@@ -75,9 +70,9 @@ require (
 	k8s.io/kube-aggregator v0.0.0-20190508104018-6d3d96b06d29 // indirect
 	k8s.io/kube-openapi v0.0.0-20190502190224-411b2483e503
 	k8s.io/utils v0.0.0-20190506122338-8fab8cb257d5
-	kmodules.xyz/client-go v0.0.0-20190802200916-043217632b6a
-	kmodules.xyz/monitoring-agent-api v0.0.0-20190802203207-a87aa5b2e057
-	kmodules.xyz/webhook-runtime v0.0.0-20190802202019-9e77ee949266
+	kmodules.xyz/client-go v0.0.0-20190808141354-bbb9e14f60ab
+	kmodules.xyz/monitoring-agent-api v0.0.0-20190808150221-601a4005b7f7
+	kmodules.xyz/webhook-runtime v0.0.0-20190808145328-4186c470d56b
 	sigs.k8s.io/yaml v1.1.0
 )
 

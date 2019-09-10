@@ -38,10 +38,6 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.BasicAuth":             schema_pkg_apis_monitoring_v1_BasicAuth(ref),
 		"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.Endpoint":              schema_pkg_apis_monitoring_v1_Endpoint(ref),
 		"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.NamespaceSelector":     schema_pkg_apis_monitoring_v1_NamespaceSelector(ref),
-		"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.PodMetricsEndpoint":    schema_pkg_apis_monitoring_v1_PodMetricsEndpoint(ref),
-		"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.PodMonitor":            schema_pkg_apis_monitoring_v1_PodMonitor(ref),
-		"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.PodMonitorList":        schema_pkg_apis_monitoring_v1_PodMonitorList(ref),
-		"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.PodMonitorSpec":        schema_pkg_apis_monitoring_v1_PodMonitorSpec(ref),
 		"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.Prometheus":            schema_pkg_apis_monitoring_v1_Prometheus(ref),
 		"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.PrometheusList":        schema_pkg_apis_monitoring_v1_PrometheusList(ref),
 		"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.PrometheusRule":        schema_pkg_apis_monitoring_v1_PrometheusRule(ref),
@@ -63,6 +59,8 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.ServiceMonitorSpec":    schema_pkg_apis_monitoring_v1_ServiceMonitorSpec(ref),
 		"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.StorageSpec":           schema_pkg_apis_monitoring_v1_StorageSpec(ref),
 		"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.TLSConfig":             schema_pkg_apis_monitoring_v1_TLSConfig(ref),
+		"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.ThanosGCSSpec":         schema_pkg_apis_monitoring_v1_ThanosGCSSpec(ref),
+		"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.ThanosS3Spec":          schema_pkg_apis_monitoring_v1_ThanosS3Spec(ref),
 		"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.ThanosSpec":            schema_pkg_apis_monitoring_v1_ThanosSpec(ref),
 		"k8s.io/api/core/v1.AWSElasticBlockStoreVolumeSource":                                schema_k8sio_api_core_v1_AWSElasticBlockStoreVolumeSource(ref),
 		"k8s.io/api/core/v1.Affinity":                                    schema_k8sio_api_core_v1_Affinity(ref),
@@ -1030,278 +1028,6 @@ func schema_pkg_apis_monitoring_v1_NamespaceSelector(ref common.ReferenceCallbac
 	}
 }
 
-func schema_pkg_apis_monitoring_v1_PodMetricsEndpoint(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Description: "PodMetricsEndpoint defines a scrapeable endpoint of a Kubernetes Pod serving Prometheus metrics.",
-				Type:        []string{"object"},
-				Properties: map[string]spec.Schema{
-					"port": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Name of the port this endpoint refers to. Mutually exclusive with targetPort.",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"targetPort": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Name or number of the target port of the endpoint. Mutually exclusive with port.",
-							Ref:         ref("k8s.io/apimachinery/pkg/util/intstr.IntOrString"),
-						},
-					},
-					"path": {
-						SchemaProps: spec.SchemaProps{
-							Description: "HTTP path to scrape for metrics.",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"scheme": {
-						SchemaProps: spec.SchemaProps{
-							Description: "HTTP scheme to use for scraping.",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"params": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Optional HTTP URL parameters",
-							Type:        []string{"object"},
-							AdditionalProperties: &spec.SchemaOrBool{
-								Allows: true,
-								Schema: &spec.Schema{
-									SchemaProps: spec.SchemaProps{
-										Type: []string{"array"},
-										Items: &spec.SchemaOrArray{
-											Schema: &spec.Schema{
-												SchemaProps: spec.SchemaProps{
-													Type:   []string{"string"},
-													Format: "",
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-					"interval": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Interval at which metrics should be scraped",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"scrapeTimeout": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Timeout after which the scrape is ended",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"honorLabels": {
-						SchemaProps: spec.SchemaProps{
-							Description: "HonorLabels chooses the metric's labels on collisions with target labels.",
-							Type:        []string{"boolean"},
-							Format:      "",
-						},
-					},
-					"metricRelabelings": {
-						SchemaProps: spec.SchemaProps{
-							Description: "MetricRelabelConfigs to apply to samples before ingestion.",
-							Type:        []string{"array"},
-							Items: &spec.SchemaOrArray{
-								Schema: &spec.Schema{
-									SchemaProps: spec.SchemaProps{
-										Ref: ref("github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.RelabelConfig"),
-									},
-								},
-							},
-						},
-					},
-					"relabelings": {
-						SchemaProps: spec.SchemaProps{
-							Description: "RelabelConfigs to apply to samples before ingestion. More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config",
-							Type:        []string{"array"},
-							Items: &spec.SchemaOrArray{
-								Schema: &spec.Schema{
-									SchemaProps: spec.SchemaProps{
-										Ref: ref("github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.RelabelConfig"),
-									},
-								},
-							},
-						},
-					},
-					"proxyUrl": {
-						SchemaProps: spec.SchemaProps{
-							Description: "ProxyURL eg http://proxyserver:2195 Directs scrapes to proxy through this endpoint.",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-				},
-			},
-		},
-		Dependencies: []string{
-			"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.RelabelConfig", "k8s.io/apimachinery/pkg/util/intstr.IntOrString"},
-	}
-}
-
-func schema_pkg_apis_monitoring_v1_PodMonitor(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Description: "PodMonitor defines monitoring for a set of pods.",
-				Type:        []string{"object"},
-				Properties: map[string]spec.Schema{
-					"kind": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"apiVersion": {
-						SchemaProps: spec.SchemaProps{
-							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"spec": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Specification of desired Pod selection for target discovery by Prometheus.",
-							Ref:         ref("github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.PodMonitorSpec"),
-						},
-					},
-				},
-				Required: []string{"spec"},
-			},
-		},
-		Dependencies: []string{
-			"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.PodMonitorSpec"},
-	}
-}
-
-func schema_pkg_apis_monitoring_v1_PodMonitorList(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Description: "PodMonitorList is a list of PodMonitors.",
-				Type:        []string{"object"},
-				Properties: map[string]spec.Schema{
-					"kind": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"apiVersion": {
-						SchemaProps: spec.SchemaProps{
-							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"metadata": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Standard list metadata More info: https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#metadata",
-							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
-						},
-					},
-					"items": {
-						SchemaProps: spec.SchemaProps{
-							Description: "List of PodMonitors",
-							Type:        []string{"array"},
-							Items: &spec.SchemaOrArray{
-								Schema: &spec.Schema{
-									SchemaProps: spec.SchemaProps{
-										Ref: ref("github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.PodMonitor"),
-									},
-								},
-							},
-						},
-					},
-				},
-				Required: []string{"items"},
-			},
-		},
-		Dependencies: []string{
-			"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.PodMonitor", "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
-	}
-}
-
-func schema_pkg_apis_monitoring_v1_PodMonitorSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Description: "PodMonitorSpec contains specification parameters for a PodMonitor.",
-				Type:        []string{"object"},
-				Properties: map[string]spec.Schema{
-					"jobLabel": {
-						SchemaProps: spec.SchemaProps{
-							Description: "The label to use to retrieve the job name from.",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"podTargetLabels": {
-						SchemaProps: spec.SchemaProps{
-							Description: "PodTargetLabels transfers labels on the Kubernetes Pod onto the target.",
-							Type:        []string{"array"},
-							Items: &spec.SchemaOrArray{
-								Schema: &spec.Schema{
-									SchemaProps: spec.SchemaProps{
-										Type:   []string{"string"},
-										Format: "",
-									},
-								},
-							},
-						},
-					},
-					"podMetricsEndpoints": {
-						SchemaProps: spec.SchemaProps{
-							Description: "A list of endpoints allowed as part of this PodMonitor.",
-							Type:        []string{"array"},
-							Items: &spec.SchemaOrArray{
-								Schema: &spec.Schema{
-									SchemaProps: spec.SchemaProps{
-										Ref: ref("github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.PodMetricsEndpoint"),
-									},
-								},
-							},
-						},
-					},
-					"selector": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Selector to select Pod objects.",
-							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector"),
-						},
-					},
-					"namespaceSelector": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Selector to select which namespaces the Endpoints objects are discovered from.",
-							Ref:         ref("github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.NamespaceSelector"),
-						},
-					},
-					"sampleLimit": {
-						SchemaProps: spec.SchemaProps{
-							Description: "SampleLimit defines per-scrape limit on number of scraped samples that will be accepted.",
-							Type:        []string{"integer"},
-							Format:      "int64",
-						},
-					},
-				},
-				Required: []string{"podMetricsEndpoints", "selector"},
-			},
-		},
-		Dependencies: []string{
-			"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.NamespaceSelector", "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.PodMetricsEndpoint", "k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector"},
-	}
-}
-
 func schema_pkg_apis_monitoring_v1_Prometheus(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
@@ -1537,18 +1263,6 @@ func schema_pkg_apis_monitoring_v1_PrometheusSpec(ref common.ReferenceCallback) 
 							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector"),
 						},
 					},
-					"podMonitorSelector": {
-						SchemaProps: spec.SchemaProps{
-							Description: "*Experimental* PodMonitors to be selected for target discovery.",
-							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector"),
-						},
-					},
-					"podMonitorNamespaceSelector": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Namespaces to be selected for PodMonitor discovery. If nil, only check own namespace.",
-							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector"),
-						},
-					},
 					"version": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Version of Prometheus to be deployed.",
@@ -1628,13 +1342,6 @@ func schema_pkg_apis_monitoring_v1_PrometheusSpec(ref common.ReferenceCallback) 
 					"retention": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Time duration Prometheus shall retain data for. Default is '24h', and must match the regular expression `[0-9]+(ms|s|m|h|d|w|y)` (milliseconds seconds minutes hours days weeks years).",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"retentionSize": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Maximum amount of disk space used by blocks.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -2710,6 +2417,96 @@ func schema_pkg_apis_monitoring_v1_TLSConfig(ref common.ReferenceCallback) commo
 	}
 }
 
+func schema_pkg_apis_monitoring_v1_ThanosGCSSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "Deprecated: ThanosGCSSpec should be configured with an ObjectStorageConfig secret starting with Thanos v0.2.0. ThanosGCSSpec will be removed.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"bucket": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Google Cloud Storage bucket name for stored blocks. If empty it won't store any block inside Google Cloud Storage.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"credentials": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Secret to access our Bucket.",
+							Ref:         ref("k8s.io/api/core/v1.SecretKeySelector"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/core/v1.SecretKeySelector"},
+	}
+}
+
+func schema_pkg_apis_monitoring_v1_ThanosS3Spec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "Deprecated: ThanosS3Spec should be configured with an ObjectStorageConfig secret starting with Thanos v0.2.0. ThanosS3Spec will be removed.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"bucket": {
+						SchemaProps: spec.SchemaProps{
+							Description: "S3-Compatible API bucket name for stored blocks.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"endpoint": {
+						SchemaProps: spec.SchemaProps{
+							Description: "S3-Compatible API endpoint for stored blocks.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"accessKey": {
+						SchemaProps: spec.SchemaProps{
+							Description: "AccessKey for an S3-Compatible API.",
+							Ref:         ref("k8s.io/api/core/v1.SecretKeySelector"),
+						},
+					},
+					"secretKey": {
+						SchemaProps: spec.SchemaProps{
+							Description: "SecretKey for an S3-Compatible API.",
+							Ref:         ref("k8s.io/api/core/v1.SecretKeySelector"),
+						},
+					},
+					"insecure": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Whether to use an insecure connection with an S3-Compatible API.",
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
+					"signatureVersion2": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Whether to use S3 Signature Version 2; otherwise Signature Version 4 will be used.",
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
+					"encryptsse": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Whether to use Server Side Encryption",
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/core/v1.SecretKeySelector"},
+	}
+}
+
 func schema_pkg_apis_monitoring_v1_ThanosSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
@@ -2717,6 +2514,13 @@ func schema_pkg_apis_monitoring_v1_ThanosSpec(ref common.ReferenceCallback) comm
 				Description: "ThanosSpec defines parameters for a Prometheus server within a Thanos deployment.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
+					"peers": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Peers is a DNS name for Thanos to discover peers through.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 					"image": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Image if specified has precedence over baseImage, tag and sha combinations. Specifying the version is still necessary to ensure the Prometheus Operator knows what version of Thanos is being configured.",
@@ -2758,17 +2562,43 @@ func schema_pkg_apis_monitoring_v1_ThanosSpec(ref common.ReferenceCallback) comm
 							Ref:         ref("k8s.io/api/core/v1.ResourceRequirements"),
 						},
 					},
+					"gcs": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Deprecated: GCS should be configured with an ObjectStorageConfig secret starting with Thanos v0.2.0. This field will be removed.",
+							Ref:         ref("github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.ThanosGCSSpec"),
+						},
+					},
+					"s3": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Deprecated: S3 should be configured with an ObjectStorageConfig secret starting with Thanos v0.2.0. This field will be removed.",
+							Ref:         ref("github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.ThanosS3Spec"),
+						},
+					},
 					"objectStorageConfig": {
 						SchemaProps: spec.SchemaProps{
 							Description: "ObjectStorageConfig configures object storage in Thanos.",
 							Ref:         ref("k8s.io/api/core/v1.SecretKeySelector"),
 						},
 					},
+					"grpcAdvertiseAddress": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Explicit (external) host:port address to advertise for gRPC StoreAPI in gossip cluster. If empty, 'grpc-address' will be used.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"clusterAdvertiseAddress": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Explicit (external) ip:port address to advertise for gossip in gossip cluster. Used internally for membership only.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"k8s.io/api/core/v1.ResourceRequirements", "k8s.io/api/core/v1.SecretKeySelector"},
+			"github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.ThanosGCSSpec", "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1.ThanosS3Spec", "k8s.io/api/core/v1.ResourceRequirements", "k8s.io/api/core/v1.SecretKeySelector"},
 	}
 }
 
