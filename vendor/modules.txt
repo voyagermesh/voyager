@@ -1,4 +1,4 @@
-# cloud.google.com/go v0.39.0
+# cloud.google.com/go v0.39.0 => cloud.google.com/go v0.34.0
 cloud.google.com/go/compute/metadata
 # contrib.go.opencensus.io/exporter/ocagent v0.4.12 => contrib.go.opencensus.io/exporter/ocagent v0.3.0
 contrib.go.opencensus.io/exporter/ocagent
@@ -46,7 +46,7 @@ github.com/alecthomas/template
 github.com/alecthomas/template/parse
 # github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf
 github.com/alecthomas/units
-# github.com/appscode/go v0.0.0-20190722173419-e454bf744023
+# github.com/appscode/go v0.0.0-20190808133642-1d4ef1f1c1e0
 github.com/appscode/go/version
 github.com/appscode/go/encoding/json/types
 github.com/appscode/go/log
@@ -727,7 +727,7 @@ k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/pkg/util/framer
 k8s.io/apimachinery/pkg/util/rand
 k8s.io/apimachinery/pkg/apis/meta/v1/unstructured/unstructuredscheme
-# k8s.io/apiserver v0.0.0-20190516230822-f89599b3f645 => github.com/kmodules/apiserver v0.0.0-20190508082252-8397d761d4b5
+# k8s.io/apiserver v0.0.0-20190516230822-f89599b3f645 => github.com/kmodules/apiserver v0.0.0-20190811223248-5a95b2df4348
 k8s.io/apiserver/pkg/server
 k8s.io/apiserver/pkg/server/options
 k8s.io/apiserver/pkg/registry/rest
@@ -1119,7 +1119,7 @@ sigs.k8s.io/kustomize/pkg/image
 sigs.k8s.io/kustomize/pkg/patch
 sigs.k8s.io/kustomize/pkg/expansion
 sigs.k8s.io/kustomize/pkg/transformers/config/defaultconfig
-# sigs.k8s.io/structured-merge-diff v0.0.0-20190302045857-e85c7b244fd2
+# sigs.k8s.io/structured-merge-diff v0.0.0-20190302045857-e85c7b244fd2 => sigs.k8s.io/structured-merge-diff v0.0.0-20190302045857-e85c7b244fd2
 sigs.k8s.io/structured-merge-diff/fieldpath
 sigs.k8s.io/structured-merge-diff/merge
 sigs.k8s.io/structured-merge-diff/typed
