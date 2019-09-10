@@ -85,6 +85,8 @@ spec:
         secret:
           defaultMode: 420
           secretName: voyager-apiserver-cert
+      securityContext:
+        fsGroup: 65535
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists

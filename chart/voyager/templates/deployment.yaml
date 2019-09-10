@@ -126,6 +126,8 @@ spec:
           name: {{ .Values.templates.cfgmap }}
         name: templates
 {{- end -}}
+      securityContext:
+        fsGroup: 65535
 {{- if or .Values.tolerations (and .Values.criticalAddon (eq .Release.Namespace "kube-system")) }}
       tolerations:
 {{- if .Values.tolerations }}
