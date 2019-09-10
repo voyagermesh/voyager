@@ -14,7 +14,7 @@ section_menu_id: guides
 
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
 
-# Multiple solver type
+# Multiple Solver Type
 
 A number of different DNS providers are supported for the ACME issuer. Below is a listing of available providers, their .yaml configurations, along with additional Kubernetes and provider specific notes regarding their usage.
 
