@@ -1,13 +1,13 @@
 ---
 title: Avoid 503 with Graceful Server Shutdown | Voyager
 menu:
-  product_Voyager_10.0.0:
+  product_Voyager_v11.0.0:
     identifier: avoid-503-with-server-graceful-shutdown
     name: Avoid 503 with Graceful Server Shutdown
     parent: ingress-guides
     weight: 50
 product_name: Voyager
-menu_name: product_Voyager_10.0.0
+menu_name: product_Voyager_v11.0.0
 section_menu_id: guides
 ---
 
