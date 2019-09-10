@@ -17,7 +17,47 @@ aliases:
 
 # Change Log
 
-## [10.0.0](https://github.com/appscode/voyager/tree/10.0.0) (2019-04-28)
+## [v11.0.0](https://github.com/appscode/voyager/tree/v11.0.0) (2019-09-10)
+[Full Changelog](https://github.com/appscode/voyager/compare/10.0.0...v11.0.0)
+
+**Closed issues:**
+
+- Integration issue with Jenkins [\#1403](https://github.com/appscode/voyager/issues/1403)
+- TLS on backend communication [\#1401](https://github.com/appscode/voyager/issues/1401)
+- Remove --rbac flag [\#1388](https://github.com/appscode/voyager/issues/1388)
+- Allow Backend Weight to be 0 [\#1387](https://github.com/appscode/voyager/issues/1387)
+- Voyager Let's Encrypt fails when using HTTP-01 challenge with multiple domains [\#1385](https://github.com/appscode/voyager/issues/1385)
+- Drain a backend in terminating status? [\#1196](https://github.com/appscode/voyager/issues/1196)
+
+**Merged pull requests:**
+
+- Prepare docs for v11.0.0 release [\#1432](https://github.com/appscode/voyager/pull/1432) ([tamalsaha](https://github.com/tamalsaha))
+- Update dependencies [\#1431](https://github.com/appscode/voyager/pull/1431) ([tamalsaha](https://github.com/tamalsaha))
+- Add --ingress-class to hack/deploy/voyager.sh [\#1430](https://github.com/appscode/voyager/pull/1430) ([mildred](https://github.com/mildred))
+- How to change scopes on a running kubernetes cluster. [\#1428](https://github.com/appscode/voyager/pull/1428) ([sniip-code](https://github.com/sniip-code))
+- Use github.com/akamai/AkamaiOPEN-edgegrid-golang@v0.8.0 [\#1421](https://github.com/appscode/voyager/pull/1421) ([tamalsaha](https://github.com/tamalsaha))
+- Add license header for Makefile [\#1420](https://github.com/appscode/voyager/pull/1420) ([tamalsaha](https://github.com/tamalsaha))
+- Update azure-sdk-for-go to v31.1.0 [\#1419](https://github.com/appscode/voyager/pull/1419) ([tamalsaha](https://github.com/tamalsaha))
+- Add cert-manager docs [\#1417](https://github.com/appscode/voyager/pull/1417) ([kfoozminus](https://github.com/kfoozminus))
+- Docs: notice about tls secret special characters [\#1416](https://github.com/appscode/voyager/pull/1416) ([mkozjak](https://github.com/mkozjak))
+- Update .yaml apps/v1 and Update Vendor to Fix DaemonSet Issue  [\#1410](https://github.com/appscode/voyager/pull/1410) ([kfoozminus](https://github.com/kfoozminus))
+- Allow replica change when no hpa [\#1409](https://github.com/appscode/voyager/pull/1409) ([kfoozminus](https://github.com/kfoozminus))
+- Fix Docs and Example Files [\#1408](https://github.com/appscode/voyager/pull/1408) ([kfoozminus](https://github.com/kfoozminus))
+- Avoid 503 Error Doc [\#1407](https://github.com/appscode/voyager/pull/1407) ([kfoozminus](https://github.com/kfoozminus))
+- Change timeout connect to 5s [\#1406](https://github.com/appscode/voyager/pull/1406) ([kfoozminus](https://github.com/kfoozminus))
+- Add hard-stop-after [\#1405](https://github.com/appscode/voyager/pull/1405) ([kfoozminus](https://github.com/kfoozminus))
+- Add Makefile [\#1398](https://github.com/appscode/voyager/pull/1398) ([tamalsaha](https://github.com/tamalsaha))
+- Remove --rbac flag [\#1397](https://github.com/appscode/voyager/pull/1397) ([kfoozminus](https://github.com/kfoozminus))
+- Allow Backend Weight to be 0 [\#1396](https://github.com/appscode/voyager/pull/1396) ([kfoozminus](https://github.com/kfoozminus))
+- Add HAProxy Agent Check [\#1395](https://github.com/appscode/voyager/pull/1395) ([kfoozminus](https://github.com/kfoozminus))
+- Use absolute path as aliases for reference docs [\#1394](https://github.com/appscode/voyager/pull/1394) ([tamalsaha](https://github.com/tamalsaha))
+- Update to k8s client libraries to 1.14.0 [\#1392](https://github.com/appscode/voyager/pull/1392) ([tamalsaha](https://github.com/tamalsaha))
+- Use GO Modules [\#1391](https://github.com/appscode/voyager/pull/1391) ([tamalsaha](https://github.com/tamalsaha))
+- Revendor dependencies in preparation for go module support [\#1390](https://github.com/appscode/voyager/pull/1390) ([tamalsaha](https://github.com/tamalsaha))
+- Fix Typo [\#1384](https://github.com/appscode/voyager/pull/1384) ([kfoozminus](https://github.com/kfoozminus))
+- remove single quotes from servicePort [\#1365](https://github.com/appscode/voyager/pull/1365) ([fatelgit](https://github.com/fatelgit))
+
+## [10.0.0](https://github.com/appscode/voyager/tree/10.0.0) (2019-04-29)
 [Full Changelog](https://github.com/appscode/voyager/compare/9.0.0...10.0.0)
 
 **Closed issues:**
@@ -30,6 +70,7 @@ aliases:
 
 **Merged pull requests:**
 
+- Prepare docs for 10.0.0 release [\#1383](https://github.com/appscode/voyager/pull/1383) ([tamalsaha](https://github.com/tamalsaha))
 - Update Kubernetes client libraries to 1.13.5 [\#1379](https://github.com/appscode/voyager/pull/1379) ([tamalsaha](https://github.com/tamalsaha))
 - Get id-token from Authorization header [\#1376](https://github.com/appscode/voyager/pull/1376) ([diptadas](https://github.com/diptadas))
 - Update haproxy version to 1.9.6 [\#1374](https://github.com/appscode/voyager/pull/1374) ([diptadas](https://github.com/diptadas))
