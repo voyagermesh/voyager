@@ -130,6 +130,7 @@ export VOYAGER_ENABLE_STATUS_SUBRESOURCE=false
 export VOYAGER_BYPASS_VALIDATING_WEBHOOK_XRAY=false
 export VOYAGER_USE_KUBEAPISERVER_FQDN_FOR_AKS=true
 export VOYAGER_PRIORITY_CLASS=system-cluster-critical
+export VOYAGER_INGRESS_CLASS_OVERRIDE=
 
 export SCRIPT_LOCATION="curl -fsSL https://raw.githubusercontent.com/appscode/voyager/v11.0.0/"
 if [[ "$APPSCODE_ENV" == "dev" ]]; then
@@ -156,6 +157,7 @@ show_help() {
   echo "-h, --help                             show brief help"
   echo "-n, --namespace=NAMESPACE              specify namespace (default: kube-system)"
   echo "-p, --provider=PROVIDER                specify a cloud provider"
+  echo "    --ingress-class=CLASS              specify an ingress class"
   echo "    --docker-registry                  docker registry used to pull voyager images (default: appscode)"
   echo "    --haproxy-image-tag                tag of Docker image containing HAProxy binary (default: 1.9.6-v11.0.0-alpine)"
   echo "    --image-pull-secret                name of secret used to pull voyager operator images"
@@ -203,6 +205,10 @@ while test $# -gt 0; do
       ;;
     --provider*)
       export VOYAGER_CLOUD_PROVIDER=$(echo $1 | sed -e 's/^[^=]*=//g')
+      shift
+      ;;
+    --ingress-class*)
+      export VOYAGER_INGRESS_CLASS_OVERRIDE="$(echo $1 | sed -e 's/^[^=]*=//g')"
       shift
       ;;
     --docker-registry*)
@@ -428,6 +434,10 @@ case "$VOYAGER_CLOUD_PROVIDER" in
     exit 1
     ;;
 esac
+
+if [ -n "$VOYAGER_INGRESS_CLASS_OVERRIDE" ]; then
+  export VOYAGER_INGRESS_CLASS="$VOYAGER_INGRESS_CLASS_OVERRIDE"
+fi
 
 env | sort | grep VOYAGER*
 echo ""
