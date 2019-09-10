@@ -78,8 +78,8 @@ BUILD_DIRS  := bin/$(OS)_$(ARCH)     \
                .go/bin/$(OS)_$(ARCH) \
                .go/cache
 
-DOCKERFILE_PROD  = Dockerfile.in
-DOCKERFILE_DBG   = Dockerfile.dbg
+DOCKERFILE_PROD  = hack/docker/voyager/Dockerfile.in
+DOCKERFILE_DBG   = hack/docker/voyager/Dockerfile.dbg
 
 # If you want to build all binaries, see the 'all-build' rule.
 # If you want to build all containers, see the 'all-container' rule.
