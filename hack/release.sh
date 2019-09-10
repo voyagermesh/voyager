@@ -10,8 +10,7 @@ pushd $REPO_ROOT
 
 rm -rf dist
 
-./hack/docker/voyager/setup.sh
-./hack/docker/voyager/setup.sh release
+./hack/make.py build voyager
 
 ./hack/docker/haproxy/1.9.6/setup.sh
 ./hack/docker/haproxy/1.9.6/setup.sh release
