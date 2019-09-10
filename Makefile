@@ -65,7 +65,7 @@ TAG              := $(VERSION)_$(OS)_$(ARCH)
 TAG_PROD         := $(TAG)
 TAG_DBG          := $(VERSION)-dbg_$(OS)_$(ARCH)
 
-GO_VERSION       ?= 1.12.7
+GO_VERSION       ?= 1.12.9
 BUILD_IMAGE      ?= appscode/golang-dev:$(GO_VERSION)-stretch
 
 OUTBIN = bin/$(OS)_$(ARCH)/$(BIN)
@@ -205,12 +205,12 @@ bin/.container-$(DOTFILE_IMAGE)-%: bin/$(OS)_$(ARCH)/$(BIN) $(DOCKERFILE_%)
 	@echo "container: $(IMAGE):$(TAG_$*)"
 	@curl -fsSL -o bin/auth-request.lua https://raw.githubusercontent.com/appscode/haproxy-auth-request/v1.9.6/auth-request.lua
 	@sed                                    \
-	    -e 's|{ARG_BIN}|$(BIN)|g'           \
-	    -e 's|{ARG_ARCH}|$(ARCH)|g'         \
-	    -e 's|{ARG_OS}|$(OS)|g'             \
-	    -e 's|{ARG_FROM}|$(BASEIMAGE_$*)|g' \
-	    ./hack/docker/voyager/$(DOCKERFILE_$*) > bin/.dockerfile-$*-$(OS)_$(ARCH)
-	@docker build -t $(IMAGE):$(TAG_$*) -f bin/.dockerfile-$*-$(OS)_$(ARCH) .
+		-e 's|{ARG_BIN}|$(BIN)|g'           \
+		-e 's|{ARG_ARCH}|$(ARCH)|g'         \
+		-e 's|{ARG_OS}|$(OS)|g'             \
+		-e 's|{ARG_FROM}|$(BASEIMAGE_$*)|g' \
+		$(DOCKERFILE_$*) > bin/.dockerfile-$*-$(OS)_$(ARCH)
+	@DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform $(OS)/$(ARCH) --load --pull -t $(IMAGE):$(TAG_$*) -f bin/.dockerfile-$*-$(OS)_$(ARCH) .
 	@docker images -q $(IMAGE):$(TAG_$*) > $@
 	@echo
 
