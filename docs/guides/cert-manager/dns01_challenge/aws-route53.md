@@ -2,13 +2,13 @@
 title: Issue Let's Encrypt certificate using Amazon Route53
 description: Issue Let's Encrypt certificate using Amazon Route53 in Kubernetes
 menu:
-  product_voyager_10.0.0:
+  product_voyager_v11.0.0:
     identifier: amazon-route53-cert-manager
     name: Google Cloud DNS
     parent: dns01-cert-manager
     weight: 15
 product_name: voyager
-menu_name: product_voyager_10.0.0
+menu_name: product_voyager_v11.0.0
 section_menu_id: guides
 ---
 

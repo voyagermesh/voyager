@@ -2,13 +2,13 @@
 title: Multiple Solver Type
 description: Multiple Solver Type
 menu:
-  product_voyager_10.0.0:
+  product_voyager_v11.0.0:
     identifier: multiple-solver-type
     name: Multiple Solver Type
     parent: dns01-cert-manager
     weight: 15
 product_name: voyager
-menu_name: product_voyager_10.0.0
+menu_name: product_voyager_v11.0.0
 section_menu_id: guides
 ---
 

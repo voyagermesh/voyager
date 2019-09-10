@@ -2,17 +2,17 @@
 title: Contributing | Voyager
 description: Contributing
 menu:
-  product_voyager_10.0.0:
+  product_voyager_v11.0.0:
     identifier: contributing-voyager
     name: Contributing
     parent: welcome
     weight: 10
 product_name: voyager
-menu_name: product_voyager_10.0.0
+menu_name: product_voyager_v11.0.0
 section_menu_id: welcome
-url: /products/voyager/10.0.0/welcome/contributing/
+url: /products/voyager/v11.0.0/welcome/contributing/
 aliases:
-  - /products/voyager/10.0.0/CONTRIBUTING/
+  - /products/voyager/v11.0.0/CONTRIBUTING/
 ---
 
 # Contribution Guidelines
