@@ -2,13 +2,13 @@
 title: Issue Let's Encrypt certificate using AWS Route53
 description: Issue Let's Encrypt certificate using AWS Route53 in Kubernetes
 menu:
-  product_voyager_v11.0.0:
+  product_voyager_{{ .version }}:
     identifier: route53-dns
     name: AWS Route53
     parent: dns-certificate
     weight: 10
 product_name: voyager
-menu_name: product_voyager_v11.0.0
+menu_name: product_voyager_{{ .version }}
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
@@ -33,7 +33,7 @@ Server Version: v1.8.8
 Deploy Voyager operator following instructions [here](/docs/setup/install.md).
 
 ```console
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/v11.0.0/hack/deploy/voyager.sh \
+curl -fsSL https://raw.githubusercontent.com/appscode/voyager/{{< param "info.version" >}}/hack/deploy/voyager.sh \
   | bash -s -- --provider=aws --run-on-master
 ```
 

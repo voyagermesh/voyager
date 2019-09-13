@@ -2,13 +2,13 @@
 title: Issue Let's Encrypt certificate using Azure DNS
 description: Issue Let's Encrypt certificate using Azure DNS in Kubernetes
 menu:
-  product_voyager_v11.0.0:
+  product_voyager_{{ .version }}:
     identifier: azure-dns-cert-manager
     name: Azure DNS
     parent: dns01-cert-manager
     weight: 15
 product_name: voyager
-menu_name: product_voyager_v11.0.0
+menu_name: product_voyager_{{ .version }}
 section_menu_id: guides
 ---
 
