@@ -1,13 +1,13 @@
 ---
 title: Get Started with cert-manager | Voyager
 menu:
-  product_voyager_v11.0.0:
+  product_voyager_{{ .version }}:
     identifier: get-started-cert-manager
     name: Get Started
     parent: cert-manager-guides
     weight: 10
 product_name: voyager
-menu_name: product_voyager_v11.0.0
+menu_name: product_voyager_{{ .version }}
 section_menu_id: guides
 ---
 

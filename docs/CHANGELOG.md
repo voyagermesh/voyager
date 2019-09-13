@@ -2,17 +2,17 @@
 title: Changelog | Voyager
 description: Changelog
 menu:
-  product_voyager_v11.0.0:
+  product_voyager_{{ .version }}:
     identifier: changelog-voyager
     name: Changelog
     parent: welcome
     weight: 10
 product_name: voyager
-menu_name: product_voyager_v11.0.0
+menu_name: product_voyager_{{ .version }}
 section_menu_id: welcome
-url: /products/voyager/v11.0.0/welcome/changelog/
+url: /products/voyager/{{ .version }}/welcome/changelog/
 aliases:
-  - /products/voyager/v11.0.0/CHANGELOG/
+  - /products/voyager/{{ .version }}/CHANGELOG/
 ---
 
 # Change Log

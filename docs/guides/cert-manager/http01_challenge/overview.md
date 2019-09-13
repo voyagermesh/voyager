@@ -2,13 +2,13 @@
 title: Issue Let's Encrypt certificate using HTTP-01 challenge with cert-manager
 description: Issue Let's Encrypt certificate using HTTP-01 challenge with cert-manager in Kubernetes
 menu:
-  product_voyager_v11.0.0:
+  product_voyager_{{ .version }}:
     identifier: overview-http-cert-manager
     name: Overview
     parent: http01-cert-manager
     weight: 10
 product_name: voyager
-menu_name: product_voyager_v11.0.0
+menu_name: product_voyager_{{ .version }}
 section_menu_id: guides
 ---
 
