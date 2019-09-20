@@ -17,6 +17,15 @@ aliases:
 
 # Change Log
 
+## [v11.0.1](https://github.com/appscode/voyager/tree/v11.0.1) (2019-09-20)
+[Full Changelog](https://github.com/appscode/voyager/compare/v11.0.0...v11.0.1)
+
+**Merged pull requests:**
+
+- Download onessl version v0.13.1 for Kubernetes 1.16 fix [\#1437](https://github.com/appscode/voyager/pull/1437) ([tamalsaha](https://github.com/tamalsaha))
+- Fix broken helm chart: unexpected end definition in cluster-role.yaml [\#1436](https://github.com/appscode/voyager/pull/1436) ([kirrmann](https://github.com/kirrmann))
+- Templatize front matter [\#1434](https://github.com/appscode/voyager/pull/1434) ([tamalsaha](https://github.com/tamalsaha))
+
 ## [v11.0.0](https://github.com/appscode/voyager/tree/v11.0.0) (2019-09-10)
 [Full Changelog](https://github.com/appscode/voyager/compare/10.0.0...v11.0.0)
 
