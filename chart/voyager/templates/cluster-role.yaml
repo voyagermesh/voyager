@@ -86,4 +86,3 @@ rules:
   resources:
   - horizontalpodautoscalers
   verbs: ["get", "list"]
-{{ end }}
