@@ -158,8 +158,8 @@ export VOYAGER_ENABLE_VALIDATING_WEBHOOK=false
 export VOYAGER_RESTRICT_TO_NAMESPACE=false
 export VOYAGER_ROLE_TYPE=ClusterRole
 export VOYAGER_DOCKER_REGISTRY=${DOCKER_REGISTRY:-appscode}
-export VOYAGER_IMAGE_TAG=${VOYAGER_IMAGE_TAG:-v11.0.0}
-export VOYAGER_HAPROXY_IMAGE_TAG=1.9.6-v11.0.0-alpine
+export VOYAGER_IMAGE_TAG=${VOYAGER_IMAGE_TAG:-v11.0.1}
+export VOYAGER_HAPROXY_IMAGE_TAG=1.9.6-v11.0.1-alpine
 export VOYAGER_IMAGE_PULL_SECRET=
 export VOYAGER_IMAGE_PULL_POLICY=IfNotPresent
 export VOYAGER_ENABLE_ANALYTICS=true
@@ -172,7 +172,7 @@ export VOYAGER_USE_KUBEAPISERVER_FQDN_FOR_AKS=true
 export VOYAGER_PRIORITY_CLASS=system-cluster-critical
 export VOYAGER_INGRESS_CLASS_OVERRIDE=
 
-export SCRIPT_LOCATION="curl -fsSL https://raw.githubusercontent.com/appscode/voyager/v11.0.0/"
+export SCRIPT_LOCATION="curl -fsSL https://raw.githubusercontent.com/appscode/voyager/v11.0.1/"
 if [[ "$APPSCODE_ENV" == "dev" ]]; then
   detect_tag
   export SCRIPT_LOCATION="cat "
@@ -199,7 +199,7 @@ show_help() {
   echo "-p, --provider=PROVIDER                specify a cloud provider"
   echo "    --ingress-class=CLASS              specify an ingress class"
   echo "    --docker-registry                  docker registry used to pull voyager images (default: appscode)"
-  echo "    --haproxy-image-tag                tag of Docker image containing HAProxy binary (default: 1.9.6-v11.0.0-alpine)"
+  echo "    --haproxy-image-tag                tag of Docker image containing HAProxy binary (default: 1.9.6-v11.0.1-alpine)"
   echo "    --image-pull-secret                name of secret used to pull voyager operator images"
   echo "    --restrict-to-namespace            restrict voyager to its own namespace"
   echo "    --run-on-master                    run voyager operator on master"
