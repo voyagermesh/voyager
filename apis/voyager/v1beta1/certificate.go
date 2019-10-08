@@ -12,12 +12,18 @@ const (
 	ResourceCertificates    = "certificates"
 )
 
+// Certificate is a collection of domains for which a SSL certificate is
+// issued from Let's Encrypt.
+
 // +genclient
 // +k8s:openapi-gen=true
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// Certificate is a collection of domains for which a SSL certificate is
-// issued from Let's Encrypt.
+// +kubebuilder:object:root=true
+// +kubebuilder:resource:path=certificates,singular=certificate,shortName=cert,categories={networking,appscode,all}
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Domains",type="string",JSONPath=".spec.domains[0]"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 type Certificate struct {
 	metav1.TypeMeta   `json:",inline,omitempty"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

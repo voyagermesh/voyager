@@ -11,9 +11,10 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.1.0 // indirect
 	github.com/Azure/go-autorest/autorest/to v0.2.0
 	github.com/JamesClonk/vultr v2.0.0+incompatible // indirect
+	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v0.8.0 // indirect
-	github.com/appscode/go v0.0.0-20190920081029-7b75ec783e2e
+	github.com/appscode/go v0.0.0-20191006073906-e3d193d493fc
 	github.com/appscode/hello-grpc v0.0.0-20190207041230-eea009cbf42e
 	github.com/appscode/pat v0.0.0-20170521084856-48ff78925b79
 	github.com/aws/aws-sdk-go v1.20.20
@@ -22,7 +23,6 @@ require (
 	github.com/cloudflare/cloudflare-go v0.8.5 // indirect
 	github.com/codeskyblue/go-sh v0.0.0-20190412065543-76bd3d59ff27
 	github.com/coreos/prometheus-operator v0.30.1
-	github.com/cpuguy83/go-md2man v1.0.10 // indirect
 	github.com/dnsimple/dnsimple-go v0.0.0-20180703121714-35bcc6b47c20 // indirect
 	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/ghodss/yaml v1.0.0
@@ -41,13 +41,13 @@ require (
 	github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014 // indirect
 	github.com/pires/go-proxyproto v0.0.0-20190111085350-4d51b51e3bfc
 	github.com/pkg/errors v0.8.1
-	github.com/prometheus/client_golang v0.9.2
+	github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829
 	github.com/prometheus/common v0.3.0
 	github.com/prometheus/haproxy_exporter v0.10.1-0.20190712143102-4cebda7ab705
 	github.com/shirou/gopsutil v2.18.12+incompatible
 	github.com/smartystreets/assertions v0.0.0-20190401211740-f487f9de1cd3 // indirect
 	github.com/spf13/afero v1.2.2
-	github.com/spf13/cobra v0.0.3
+	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.3.0
@@ -66,11 +66,13 @@ require (
 	k8s.io/apiextensions-apiserver v0.0.0-20190516231611-bf6753f2aa24
 	k8s.io/apimachinery v0.0.0-20190508063446-a3da69d3723c
 	k8s.io/apiserver v0.0.0-20190516230822-f89599b3f645
+	k8s.io/cli-runtime v0.0.0-20190516231937-17bc0b7fcef5 // indirect
 	k8s.io/client-go v11.0.0+incompatible
+	k8s.io/component-base v0.0.0-20190424053038-9fe063da3132 // indirect
 	k8s.io/kube-aggregator v0.0.0-20190508104018-6d3d96b06d29 // indirect
 	k8s.io/kube-openapi v0.0.0-20190502190224-411b2483e503
 	k8s.io/utils v0.0.0-20190506122338-8fab8cb257d5
-	kmodules.xyz/client-go v0.0.0-20190808141354-bbb9e14f60ab
+	kmodules.xyz/client-go v0.0.0-20191006173540-91f8ee6b6b4b
 	kmodules.xyz/monitoring-agent-api v0.0.0-20190808150221-601a4005b7f7
 	kmodules.xyz/webhook-runtime v0.0.0-20190808145328-4186c470d56b
 	sigs.k8s.io/yaml v1.1.0

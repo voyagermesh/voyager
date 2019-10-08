@@ -3,47 +3,18 @@ package main
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
-	"github.com/appscode/go/log"
 	gort "github.com/appscode/go/runtime"
 	"github.com/appscode/voyager/apis/voyager/install"
 	v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/go-openapi/spec"
 	"github.com/golang/glog"
-	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/kube-openapi/pkg/common"
-	crdutils "kmodules.xyz/client-go/apiextensions/v1beta1"
 	"kmodules.xyz/client-go/openapi"
-	"path/filepath"
 )
-
-func generateCRDDefinitions() {
-	v1beta1.EnableStatusSubresource = true
-
-	filename := gort.GOPath() + "/src/github.com/appscode/voyager/apis/voyager/v1beta1/crds.yaml"
-	os.Remove(filename)
-
-	err := os.MkdirAll(filepath.Join(gort.GOPath(), "/src/github.com/appscode/voyager/api/crds"), 0755)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	crds := []*crd_api.CustomResourceDefinition{
-		v1beta1.Ingress{}.CustomResourceDefinition(),
-		v1beta1.Certificate{}.CustomResourceDefinition(),
-	}
-	for _, crd := range crds {
-		filename := filepath.Join(gort.GOPath(), "/src/github.com/appscode/voyager/api/crds", crd.Spec.Names.Singular+".yaml")
-		f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-		if err != nil {
-			log.Fatal(err)
-		}
-		crdutils.MarshallCrd(f, crd, "yaml")
-		f.Close()
-	}
-}
 
 func generateSwaggerJson() {
 	var (
@@ -93,6 +64,5 @@ func generateSwaggerJson() {
 }
 
 func main() {
-	generateCRDDefinitions()
 	generateSwaggerJson()
 }
