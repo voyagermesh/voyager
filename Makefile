@@ -16,13 +16,15 @@
 SHELL=/bin/bash -o pipefail
 
 # The binary to build (just the basename).
+GO_PKG   := github.com/appscode
+REPO     := $(notdir $(shell pwd))
 BIN      := voyager
 COMPRESS ?= no
 
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS          ?= "crd:trivialVersions=true"
 CODE_GENERATOR_IMAGE ?= appscode/gengo:release-1.14
-API_GROUPS           ?= repositories:v1alpha1 stash:v1alpha1 stash:v1beta1
+API_GROUPS           ?= voyager:v1beta1
 
 # Where to push the docker image.
 REGISTRY ?= appscode
@@ -52,7 +54,7 @@ endif
 ###
 
 SRC_PKGS := apis client pkg
-SRC_DIRS := $(SRC_PKGS) *.go test third_party hack/gendocs # directories which hold app source (not vendored)
+SRC_DIRS := $(SRC_PKGS) *.go test third_party hack/gendocs hack/gencrd # directories which hold app source (not vendored)
 
 DOCKER_PLATFORMS := linux/amd64 linux/arm linux/arm64
 BIN_PLATFORMS    := $(DOCKER_PLATFORMS) windows/amd64 darwin/amd64
@@ -135,37 +137,19 @@ DOCKER_REPO_ROOT := /go/src/$(GO_PKG)/$(REPO)
 # Generate a typed clientset
 .PHONY: clientset
 clientset:
-	# for EAS types
-	@docker run --rm -ti                                          \
-		-u $$(id -u):$$(id -g)                                    \
-		-v /tmp:/.cache                                           \
-		-v $$(pwd):$(DOCKER_REPO_ROOT)                            \
-		-w $(DOCKER_REPO_ROOT)                                    \
-		--env HTTP_PROXY=$(HTTP_PROXY)                            \
-		--env HTTPS_PROXY=$(HTTPS_PROXY)                          \
-		$(CODE_GENERATOR_IMAGE)                                   \
-		/go/src/k8s.io/code-generator/generate-internal-groups.sh \
-			"deepcopy,defaulter,conversion"                       \
-			$(GO_PKG)/$(REPO)/client                              \
-			$(GO_PKG)/$(REPO)/apis                                \
-			$(GO_PKG)/$(REPO)/apis                                \
-			repositories:v1alpha1                                 \
-			--go-header-file "./hack/boilerplate.go.txt"
-
-	# for both CRD and EAS types
-	@docker run --rm -ti                                          \
-		-u $$(id -u):$$(id -g)                                    \
-		-v /tmp:/.cache                                           \
-		-v $$(pwd):$(DOCKER_REPO_ROOT)                            \
-		-w $(DOCKER_REPO_ROOT)                                    \
-		--env HTTP_PROXY=$(HTTP_PROXY)                            \
-		--env HTTPS_PROXY=$(HTTPS_PROXY)                          \
-		$(CODE_GENERATOR_IMAGE)                                   \
-		/go/src/k8s.io/code-generator/generate-groups.sh          \
-			all                                                   \
-			$(GO_PKG)/$(REPO)/client                              \
-			$(GO_PKG)/$(REPO)/apis                                \
-			"$(API_GROUPS)"                                       \
+	@docker run --rm -ti                                 \
+		-u $$(id -u):$$(id -g)                           \
+		-v /tmp:/.cache                                  \
+		-v $$(pwd):$(DOCKER_REPO_ROOT)                   \
+		-w $(DOCKER_REPO_ROOT)                           \
+		--env HTTP_PROXY=$(HTTP_PROXY)                   \
+		--env HTTPS_PROXY=$(HTTPS_PROXY)                 \
+		$(CODE_GENERATOR_IMAGE)                          \
+		/go/src/k8s.io/code-generator/generate-groups.sh \
+			all                                          \
+			$(GO_PKG)/$(REPO)/client                     \
+			$(GO_PKG)/$(REPO)/apis                       \
+			"$(API_GROUPS)" \
 			--go-header-file "./hack/boilerplate.go.txt"
 
 # Generate openapi schema
@@ -196,7 +180,7 @@ openapi-%:
 		openapi-gen                                      \
 			--v 1 --logtostderr                          \
 			--go-header-file "./hack/boilerplate.go.txt" \
-			--input-dirs "$(GO_PKG)/$(REPO)/apis/$(subst _,/,$*),k8s.io/apimachinery/pkg/apis/meta/v1,k8s.io/apimachinery/pkg/api/resource,k8s.io/apimachinery/pkg/runtime,k8s.io/apimachinery/pkg/util/intstr,k8s.io/apimachinery/pkg/version,k8s.io/api/core/v1,k8s.io/api/apps/v1,kmodules.xyz/offshoot-api/api/v1,github.com/appscode/go/encoding/json/types,kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1,k8s.io/api/rbac/v1,kmodules.xyz/objectstore-api/api/v1" \
+			--input-dirs "$(GO_PKG)/$(REPO)/apis/$(subst _,/,$*),k8s.io/apimachinery/pkg/apis/meta/v1,k8s.io/apimachinery/pkg/api/resource,k8s.io/apimachinery/pkg/runtime,k8s.io/apimachinery/pkg/util/intstr,k8s.io/apimachinery/pkg/version,k8s.io/api/core/v1,k8s.io/api/apps/v1,github.com/appscode/go/encoding/json/types,kmodules.xyz/monitoring-agent-api/api/v1,k8s.io/api/rbac/v1" \
 			--output-package "$(GO_PKG)/$(REPO)/apis/$(subst _,/,$*)" \
 			--report-filename api/api-rules/violation_exceptions.list
 
@@ -217,16 +201,25 @@ gen-crds:
 			paths="./apis/..."              \
 			output:crd:artifacts:config=api/crds
 
+crds_to_patch := voyager.appscode.com_ingresses.yaml
+
+.PHONY: patch-crds
+patch-crds: $(addprefix patch-crd-, $(crds_to_patch))
+patch-crd-%:
+	@echo "patching $*"
+	@kubectl patch -f api/crds/$* -p "$$(cat hack/crd-patch.json)" --type=json --local=true -o yaml > bin/$*
+	@mv bin/$* api/crds/$*
+
 .PHONY: label-crds
 label-crds: $(BUILD_DIRS)
 	@for f in api/crds/*.yaml; do \
-		echo "applying app=stash label to $$f"; \
-		kubectl label --overwrite -f $$f --local=true -o yaml app=stash > bin/crd.yaml; \
+		echo "applying app=voyager label to $$f"; \
+		kubectl label --overwrite -f $$f --local=true -o yaml app=voyager > bin/crd.yaml; \
 		mv bin/crd.yaml $$f; \
 	done
 
 .PHONY: manifests
-manifests: gen-crds label-crds
+manifests: gen-crds patch-crds label-crds
 
 .PHONY: gen
 gen: clientset openapi manifests
@@ -395,7 +388,7 @@ e2e-tests: $(BUILD_DIRS)
 	        TAG=$(TAG)                                          \
 	        KUBECONFIG=$${KUBECONFIG#$(HOME)}                   \
 	        GINKGO_ARGS='$(GINKGO_ARGS)'                        \
-	        TEST_ARGS='$(TEST_ARGS) --image-tag=$(TAG)'         \
+	        TEST_ARGS='$(TEST_ARGS)'                            \
 	        ./hack/e2e.sh                                       \
 	    "
 
@@ -429,7 +422,7 @@ $(BUILD_DIRS):
 
 .PHONY: install
 install:
-	APPSCODE_ENV=dev  DOCKER_REGISTRY=$(REGISTRY) VOYAGER_IMAGE_TAG=$(TAG) ./deploy/voyager.sh
+	APPSCODE_ENV=dev  VOYAGER_IMAGE_TAG=$(TAG) ./deploy/voyager.sh --docker-registry=$(REGISTRY) --image-pull-secret=$(REGISTRY_SECRET)
 
 .PHONY: uninstall
 uninstall:

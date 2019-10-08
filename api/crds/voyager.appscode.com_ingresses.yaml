@@ -1,4 +1,3 @@
----
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -9,13 +8,13 @@ metadata:
 spec:
   additionalPrinterColumns:
   - JSONPath: .spec.rules[0].host
-    name: HOSTS
+    name: Hosts
     type: string
   - JSONPath: .status.loadBalancer.ingress
     name: LOAD_BALANCER_IP
     type: string
   - JSONPath: .metadata.creationTimestamp
-    name: AGE
+    name: Age
     type: date
   group: voyager.appscode.com
   names:
@@ -45,10 +44,11 @@ spec:
             submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
           type: string
         metadata:
-          description: ObjectMeta is metadata that all persisted resources must have,
-            which includes all objects users must create.
+          description: 'Standard object''s metadata. More info: http://releases.k8s.io/release-1.2/docs/devel/api-conventions.md#metadata'
           properties:
             annotations:
+              additionalProperties:
+                type: string
               description: 'Annotations is an unstructured key value map stored with
                 a resource that may be set by external tools to store and retrieve
                 arbitrary metadata. They are not queryable and should be preserved
@@ -61,9 +61,11 @@ spec:
                 going to ignore it if set in create or update request.
               type: string
             creationTimestamp:
-              description: Time is a wrapper around time.Time which supports correct
-                marshaling to YAML and JSON.  Wrappers are provided for many of the
-                factory methods that the time package offers.
+              description: "CreationTimestamp is a timestamp representing the server
+                time when this object was created. It is not guaranteed to be set
+                in happens-before order across separate operations. Clients may not
+                set this value. It is represented in RFC3339 form and is in UTC. \n
+                Populated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata"
               format: date-time
               type: string
             deletionGracePeriodSeconds:
@@ -73,9 +75,25 @@ spec:
               format: int64
               type: integer
             deletionTimestamp:
-              description: Time is a wrapper around time.Time which supports correct
-                marshaling to YAML and JSON.  Wrappers are provided for many of the
-                factory methods that the time package offers.
+              description: "DeletionTimestamp is RFC 3339 date and time at which this
+                resource will be deleted. This field is set by the server when a graceful
+                deletion is requested by the user, and is not directly settable by
+                a client. The resource is expected to be deleted (no longer visible
+                from resource lists, and not reachable by name) after the time in
+                this field, once the finalizers list is empty. As long as the finalizers
+                list contains items, deletion is blocked. Once the deletionTimestamp
+                is set, this value may not be unset or be set further into the future,
+                although it may be shortened or the resource may be deleted prior
+                to this time. For example, a user may request that a pod is deleted
+                in 30 seconds. The Kubelet will react by sending a graceful termination
+                signal to the containers in the pod. After that 30 seconds, the Kubelet
+                will send a hard termination signal (SIGKILL) to the container and
+                after cleanup, remove the pod from the API. In the presence of network
+                partitions, this object may still exist after this timestamp, until
+                an administrator or automated process can determine the resource is
+                fully terminated. If not set, graceful deletion of the object has
+                not been requested. \n Populated by the system when a graceful deletion
+                is requested. Read-only. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata"
               format: date-time
               type: string
             finalizers:
@@ -87,12 +105,19 @@ spec:
                 type: string
               type: array
             generateName:
-              description: |-
-                GenerateName is an optional prefix, used by the server, to generate a unique name ONLY IF the Name field has not been provided. If this field is used, the name returned to the client will be different than the name passed. This value will also be combined with a unique suffix. The provided value has the same validation rules as the Name field, and may be truncated by the length of the suffix required to make the value unique on the server.
-
-                If this field is specified and the generated name exists, the server will NOT return a 409 - instead, it will either return 201 Created or 500 with Reason ServerTimeout indicating a unique name could not be found in the time allotted, and the client should retry (optionally after the time indicated in the Retry-After header).
-
-                Applied only if Name is not specified. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#idempotency
+              description: "GenerateName is an optional prefix, used by the server,
+                to generate a unique name ONLY IF the Name field has not been provided.
+                If this field is used, the name returned to the client will be different
+                than the name passed. This value will also be combined with a unique
+                suffix. The provided value has the same validation rules as the Name
+                field, and may be truncated by the length of the suffix required to
+                make the value unique on the server. \n If this field is specified
+                and the generated name exists, the server will NOT return a 409 -
+                instead, it will either return 201 Created or 500 with Reason ServerTimeout
+                indicating a unique name could not be found in the time allotted,
+                and the client should retry (optionally after the time indicated in
+                the Retry-After header). \n Applied only if Name is not specified.
+                More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#idempotency"
               type: string
             generation:
               description: A sequence number representing a specific generation of
@@ -100,7 +125,17 @@ spec:
               format: int64
               type: integer
             initializers:
-              description: Initializers tracks the progress of initialization.
+              description: "An initializer is a controller which enforces some system
+                invariant at object creation time. This field is a list of initializers
+                that have not yet acted on this object. If nil or empty, this object
+                has been completely initialized. Otherwise, the object is considered
+                uninitialized and is hidden (in list/watch and get calls) from clients
+                that haven't explicitly asked to observe uninitialized objects. \n
+                When an object is created, the system will populate this list with
+                the current set of initializers. Only privileged users may set or
+                modify this list. Once it is empty, it may not be modified further
+                by any user. \n DEPRECATED - initializers are an alpha field and will
+                be removed in v1.15."
               properties:
                 pending:
                   description: Pending is a list of initializers that must execute
@@ -121,8 +156,9 @@ spec:
                     type: object
                   type: array
                 result:
-                  description: Status is a return value for calls that don't return
-                    other objects.
+                  description: If result is set with the Failure field, the object
+                    will be persisted to storage and then deleted, ensuring that other
+                    clients can observe the deletion.
                   properties:
                     apiVersion:
                       description: 'APIVersion defines the versioned schema of this
@@ -136,13 +172,10 @@ spec:
                       format: int32
                       type: integer
                     details:
-                      description: StatusDetails is a set of additional properties
-                        that MAY be set by the server to provide additional information
-                        about a response. The Reason field of a Status object defines
-                        what attributes will be set. Clients must ignore fields that
-                        do not match the defined type of each attribute, and should
-                        assume that any attribute may be empty, invalid, or under
-                        defined.
+                      description: Extended data associated with the reason.  Each
+                        reason may define its own extended details. This field is
+                        optional and the data returned is not guaranteed to conform
+                        to any schema except that defined by the reason type.
                       properties:
                         causes:
                           description: The Causes array includes more details associated
@@ -154,12 +187,15 @@ spec:
                               errors are encountered.
                             properties:
                               field:
-                                description: |-
-                                  The field of the resource that has caused this error, as named by its JSON serialization. May include dot and postfix notation for nested attributes. Arrays are zero-indexed.  Fields may appear more than once in an array of causes due to fields having multiple errors. Optional.
-
-                                  Examples:
-                                    "name" - the field "name" on the current resource
-                                    "items[0].name" - the field "name" on the first array entry in "items"
+                                description: "The field of the resource that has caused
+                                  this error, as named by its JSON serialization.
+                                  May include dot and postfix notation for nested
+                                  attributes. Arrays are zero-indexed.  Fields may
+                                  appear more than once in an array of causes due
+                                  to fields having multiple errors. Optional. \n Examples:
+                                  \  \"name\" - the field \"name\" on the current
+                                  resource   \"items[0].name\" - the field \"name\"
+                                  on the first array entry in \"items\""
                                 type: string
                               message:
                                 description: A human-readable description of the cause
@@ -211,9 +247,7 @@ spec:
                         operation.
                       type: string
                     metadata:
-                      description: ListMeta describes metadata that synthetic resources
-                        must have, including lists and various status objects. A resource
-                        may have only one of {ObjectMeta, ListMeta}.
+                      description: 'Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
                       properties:
                         continue:
                           description: continue may be set if the user set a limit
@@ -256,15 +290,21 @@ spec:
               - pending
               type: object
             labels:
+              additionalProperties:
+                type: string
               description: 'Map of string keys and values that can be used to organize
                 and categorize (scope and select) objects. May match selectors of
                 replication controllers and services. More info: http://kubernetes.io/docs/user-guide/labels'
               type: object
             managedFields:
-              description: |-
-                ManagedFields maps workflow-id and version to the set of fields that are managed by that workflow. This is mostly for internal housekeeping, and users typically shouldn't need to set or understand this field. A workflow can be the user's name, a controller's name, or the name of a specific apply path like "ci-cd". The set of fields is always in the version that the workflow used when modifying the object.
-
-                This field is alpha and can be changed or removed without notice.
+              description: "ManagedFields maps workflow-id and version to the set
+                of fields that are managed by that workflow. This is mostly for internal
+                housekeeping, and users typically shouldn't need to set or understand
+                this field. A workflow can be the user's name, a controller's name,
+                or the name of a specific apply path like \"ci-cd\". The set of fields
+                is always in the version that the workflow used when modifying the
+                object. \n This field is alpha and can be changed or removed without
+                notice."
               items:
                 description: ManagedFieldsEntry is a workflow-id, a FieldSet and the
                   group version of the resource that the fieldset applies to.
@@ -277,8 +317,8 @@ spec:
                       converted.
                     type: string
                   fields:
-                    description: 'Fields stores a set of fields in a data structure
-                      like a Trie. To understand how this is used, see: https://github.com/kubernetes-sigs/structured-merge-diff'
+                    additionalProperties: true
+                    description: Fields identifies a set of fields.
                     type: object
                   manager:
                     description: Manager is an identifier of the workflow managing
@@ -290,9 +330,8 @@ spec:
                       for this field are 'Apply' and 'Update'.
                     type: string
                   time:
-                    description: Time is a wrapper around time.Time which supports
-                      correct marshaling to YAML and JSON.  Wrappers are provided
-                      for many of the factory methods that the time package offers.
+                    description: Time is timestamp of when these fields were set.
+                      It should always be empty if Operation is 'Apply'
                     format: date-time
                     type: string
                 type: object
@@ -307,10 +346,12 @@ spec:
               pattern: ^[a-z]([-a-z0-9]*[a-z0-9])?$
               type: string
             namespace:
-              description: |-
-                Namespace defines the space within each name must be unique. An empty namespace is equivalent to the "default" namespace, but "default" is the canonical representation. Not all objects are required to be scoped to a namespace - the value of this field for those objects will be empty.
-
-                Must be a DNS_LABEL. Cannot be updated. More info: http://kubernetes.io/docs/user-guide/namespaces
+              description: "Namespace defines the space within each name must be unique.
+                An empty namespace is equivalent to the \"default\" namespace, but
+                \"default\" is the canonical representation. Not all objects are required
+                to be scoped to a namespace - the value of this field for those objects
+                will be empty. \n Must be a DNS_LABEL. Cannot be updated. More info:
+                http://kubernetes.io/docs/user-guide/namespaces"
               type: string
             ownerReferences:
               description: List of objects depended by this object. If ALL objects
@@ -354,31 +395,34 @@ spec:
                 type: object
               type: array
             resourceVersion:
-              description: |-
-                An opaque value that represents the internal version of this object that can be used by clients to determine when objects have changed. May be used for optimistic concurrency, change detection, and the watch operation on a resource or set of resources. Clients must treat these values as opaque and passed unmodified back to the server. They may only be valid for a particular resource or set of resources.
-
-                Populated by the system. Read-only. Value must be treated as opaque by clients and . More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#concurrency-control-and-consistency
+              description: "An opaque value that represents the internal version of
+                this object that can be used by clients to determine when objects
+                have changed. May be used for optimistic concurrency, change detection,
+                and the watch operation on a resource or set of resources. Clients
+                must treat these values as opaque and passed unmodified back to the
+                server. They may only be valid for a particular resource or set of
+                resources. \n Populated by the system. Read-only. Value must be treated
+                as opaque by clients and . More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#concurrency-control-and-consistency"
               type: string
             selfLink:
               description: SelfLink is a URL representing this object. Populated by
                 the system. Read-only.
               type: string
             uid:
-              description: |-
-                UID is the unique in time and space value for this object. It is typically generated by the server on successful creation of a resource and is not allowed to change on PUT operations.
-
-                Populated by the system. Read-only. More info: http://kubernetes.io/docs/user-guide/identifiers#uids
+              description: "UID is the unique in time and space value for this object.
+                It is typically generated by the server on successful creation of
+                a resource and is not allowed to change on PUT operations. \n Populated
+                by the system. Read-only. More info: http://kubernetes.io/docs/user-guide/identifiers#uids"
               type: string
           type: object
         spec:
-          description: IngressSpec describes the Ingress the user wishes to exist.
+          description: 'Spec is the desired state of the Ingress. More info: http://releases.k8s.io/release-1.2/docs/devel/api-conventions.md#spec-and-status'
           properties:
             affinity:
-              description: Affinity is a group of affinity scheduling rules.
+              description: If specified, the pod's scheduling constraints
               properties:
                 nodeAffinity:
-                  description: Node affinity is a group of node affinity scheduling
-                    rules.
+                  description: Describes node affinity scheduling rules for the pod.
                   properties:
                     preferredDuringSchedulingIgnoredDuringExecution:
                       description: The scheduler will prefer to schedule pods to nodes
@@ -398,10 +442,8 @@ spec:
                           a no-op).
                         properties:
                           preference:
-                            description: A null or empty node selector term matches
-                              no objects. The requirements of them are ANDed. The
-                              TopologySelectorTerm type implements a subset of the
-                              NodeSelectorTerm.
+                            description: A node selector term, associated with the
+                              corresponding weight.
                             properties:
                               matchExpressions:
                                 description: A list of node selector requirements
@@ -478,15 +520,17 @@ spec:
                             format: int32
                             type: integer
                         required:
-                        - weight
                         - preference
+                        - weight
                         type: object
                       type: array
                     requiredDuringSchedulingIgnoredDuringExecution:
-                      description: A node selector represents the union of the results
-                        of one or more label queries over a set of nodes; that is,
-                        it represents the OR of the selectors represented by the node
-                        selector terms.
+                      description: If the affinity requirements specified by this
+                        field are not met at scheduling time, the pod will not be
+                        scheduled onto the node. If the affinity requirements specified
+                        by this field cease to be met at some point during pod execution
+                        (e.g. due to an update), the system may or may not try to
+                        eventually evict the pod from its node.
                       properties:
                         nodeSelectorTerms:
                           description: Required. A list of node selector terms. The
@@ -572,8 +616,8 @@ spec:
                       type: object
                   type: object
                 podAffinity:
-                  description: Pod affinity is a group of inter pod affinity scheduling
-                    rules.
+                  description: Describes pod affinity scheduling rules (e.g. co-locate
+                    this pod in the same node, zone, etc. as some other pod(s)).
                   properties:
                     preferredDuringSchedulingIgnoredDuringExecution:
                       description: The scheduler will prefer to schedule pods to nodes
@@ -591,20 +635,12 @@ spec:
                           fields are added per-node to find the most preferred node(s)
                         properties:
                           podAffinityTerm:
-                            description: Defines a set of pods (namely those matching
-                              the labelSelector relative to the given namespace(s))
-                              that this pod should be co-located (affinity) or not
-                              co-located (anti-affinity) with, where co-located is
-                              defined as running on a node whose value of the label
-                              with key <topologyKey> matches that of any node on which
-                              a pod of the set of pods is running
+                            description: Required. A pod affinity term, associated
+                              with the corresponding weight.
                             properties:
                               labelSelector:
-                                description: A label selector is a label query over
-                                  a set of resources. The result of matchLabels and
-                                  matchExpressions are ANDed. An empty label selector
-                                  matches all objects. A null label selector matches
-                                  no objects.
+                                description: A label query over a set of resources,
+                                  in this case pods.
                                 properties:
                                   matchExpressions:
                                     description: matchExpressions is a list of label
@@ -640,6 +676,8 @@ spec:
                                       type: object
                                     type: array
                                   matchLabels:
+                                    additionalProperties:
+                                      type: string
                                     description: matchLabels is a map of {key,value}
                                       pairs. A single {key,value} in the matchLabels
                                       map is equivalent to an element of matchExpressions,
@@ -673,8 +711,8 @@ spec:
                             format: int32
                             type: integer
                         required:
-                        - weight
                         - podAffinityTerm
+                        - weight
                         type: object
                       type: array
                     requiredDuringSchedulingIgnoredDuringExecution:
@@ -697,10 +735,8 @@ spec:
                           is running
                         properties:
                           labelSelector:
-                            description: A label selector is a label query over a
-                              set of resources. The result of matchLabels and matchExpressions
-                              are ANDed. An empty label selector matches all objects.
-                              A null label selector matches no objects.
+                            description: A label query over a set of resources, in
+                              this case pods.
                             properties:
                               matchExpressions:
                                 description: matchExpressions is a list of label selector
@@ -735,6 +771,8 @@ spec:
                                   type: object
                                 type: array
                               matchLabels:
+                                additionalProperties:
+                                  type: string
                                 description: matchLabels is a map of {key,value} pairs.
                                   A single {key,value} in the matchLabels map is equivalent
                                   to an element of matchExpressions, whose key field
@@ -764,8 +802,9 @@ spec:
                       type: array
                   type: object
                 podAntiAffinity:
-                  description: Pod anti affinity is a group of inter pod anti affinity
-                    scheduling rules.
+                  description: Describes pod anti-affinity scheduling rules (e.g.
+                    avoid putting this pod in the same node, zone, etc. as some other
+                    pod(s)).
                   properties:
                     preferredDuringSchedulingIgnoredDuringExecution:
                       description: The scheduler will prefer to schedule pods to nodes
@@ -784,20 +823,12 @@ spec:
                           fields are added per-node to find the most preferred node(s)
                         properties:
                           podAffinityTerm:
-                            description: Defines a set of pods (namely those matching
-                              the labelSelector relative to the given namespace(s))
-                              that this pod should be co-located (affinity) or not
-                              co-located (anti-affinity) with, where co-located is
-                              defined as running on a node whose value of the label
-                              with key <topologyKey> matches that of any node on which
-                              a pod of the set of pods is running
+                            description: Required. A pod affinity term, associated
+                              with the corresponding weight.
                             properties:
                               labelSelector:
-                                description: A label selector is a label query over
-                                  a set of resources. The result of matchLabels and
-                                  matchExpressions are ANDed. An empty label selector
-                                  matches all objects. A null label selector matches
-                                  no objects.
+                                description: A label query over a set of resources,
+                                  in this case pods.
                                 properties:
                                   matchExpressions:
                                     description: matchExpressions is a list of label
@@ -833,6 +864,8 @@ spec:
                                       type: object
                                     type: array
                                   matchLabels:
+                                    additionalProperties:
+                                      type: string
                                     description: matchLabels is a map of {key,value}
                                       pairs. A single {key,value} in the matchLabels
                                       map is equivalent to an element of matchExpressions,
@@ -866,8 +899,8 @@ spec:
                             format: int32
                             type: integer
                         required:
-                        - weight
                         - podAffinityTerm
+                        - weight
                         type: object
                       type: array
                     requiredDuringSchedulingIgnoredDuringExecution:
@@ -890,10 +923,8 @@ spec:
                           is running
                         properties:
                           labelSelector:
-                            description: A label selector is a label query over a
-                              set of resources. The result of matchLabels and matchExpressions
-                              are ANDed. An empty label selector matches all objects.
-                              A null label selector matches no objects.
+                            description: A label query over a set of resources, in
+                              this case pods.
                             properties:
                               matchExpressions:
                                 description: matchExpressions is a list of label selector
@@ -928,6 +959,8 @@ spec:
                                   type: object
                                 type: array
                               matchLabels:
+                                additionalProperties:
+                                  type: string
                                 description: matchLabels is a map of {key,value} pairs.
                                   A single {key,value} in the matchLabels map is equivalent
                                   to an element of matchExpressions, whose key field
@@ -958,6 +991,10 @@ spec:
                   type: object
               type: object
             backend:
+              description: A default backend capable of servicing requests that don't
+                match any rule. At least one of 'backend' or 'rules' must be specified.
+                This field is optional to allow the loadbalancer controller or defaulting
+                logic to specify a global default.
               properties:
                 alpn:
                   description: Application-Layer Protocol Negotiation (ALPN) is a
@@ -985,10 +1022,8 @@ spec:
                     type: string
                   type: array
                 headerRules:
-                  description: |-
-                    Header rules to modifies the header.
-
-                    Deprecated: Use backendRule, will be removed.
+                  description: "Header rules to modifies the header. \n Deprecated:
+                    Use backendRule, will be removed."
                   items:
                     type: string
                   type: array
@@ -1014,10 +1049,8 @@ spec:
                     http-use-htx" will be added to enable HTX mode https://www.haproxy.com/blog/haproxy-1-9-2-adds-grpc-support/
                   type: string
                 rewriteRules:
-                  description: |-
-                    Path rewrite rules with haproxy formatted regex.
-
-                    Deprecated: Use backendRule, will be removed.
+                  description: "Path rewrite rules with haproxy formatted regex. \n
+                    Deprecated: Use backendRule, will be removed."
                   items:
                     type: string
                   type: array
@@ -1025,9 +1058,10 @@ spec:
                   description: Specifies the name of the referenced service.
                   type: string
                 servicePort:
-                  oneOf:
+                  anyOf:
                   - type: string
                   - type: integer
+                  description: Specifies the port of the referenced service.
               type: object
             configVolumes:
               description: Config volumes are used to mount any secret or configmap
@@ -1037,10 +1071,8 @@ spec:
                   of its members may be specified.
                 properties:
                   configMap:
-                    description: |-
-                      Adapts a ConfigMap into a volume.
-
-                      The contents of the target ConfigMap's Data field will be presented in a volume as files using the keys in the Data field as the file names, unless the items element is populated with specific mappings of keys to paths. ConfigMap volumes support ownership management and SELinux relabeling.
+                    description: ConfigMap represents a configMap that should populate
+                      this volume
                     properties:
                       defaultMode:
                         description: 'Optional: mode bits to use on created files
@@ -1088,7 +1120,8 @@ spec:
                           type: object
                         type: array
                       name:
-                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
                         type: string
                       optional:
                         description: Specify whether the ConfigMap or it's keys must
@@ -1102,7 +1135,8 @@ spec:
                   name:
                     type: string
                   projected:
-                    description: Represents a projected volume source
+                    description: Items for all in one resources secrets, configmaps,
+                      and downward API
                     properties:
                       defaultMode:
                         description: Mode bits to use on created files by default.
@@ -1119,10 +1153,8 @@ spec:
                             other supported volume types
                           properties:
                             configMap:
-                              description: |-
-                                Adapts a ConfigMap into a projected volume.
-
-                                The contents of the target ConfigMap's Data field will be presented in a projected volume as files using the keys in the Data field as the file names, unless the items element is populated with specific mappings of keys to paths. Note that this is identical to a configmap volume source without the default mode.
+                              description: information about the configMap data to
+                                project
                               properties:
                                 items:
                                   description: If unspecified, each key-value pair
@@ -1165,7 +1197,9 @@ spec:
                                     type: object
                                   type: array
                                 name:
-                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
                                   type: string
                                 optional:
                                   description: Specify whether the ConfigMap or it's
@@ -1173,10 +1207,8 @@ spec:
                                   type: boolean
                               type: object
                             downwardAPI:
-                              description: Represents downward API info for projecting
-                                into a projected volume. Note that this is identical
-                                to a downwardAPI volume source without the default
-                                mode.
+                              description: information about the downwardAPI data
+                                to project
                               properties:
                                 items:
                                   description: Items is a list of DownwardAPIVolume
@@ -1187,8 +1219,9 @@ spec:
                                       pod field
                                     properties:
                                       fieldRef:
-                                        description: ObjectFieldSelector selects an
-                                          APIVersioned field of an object.
+                                        description: 'Required: Selects a field of
+                                          the pod: only annotations, labels, name
+                                          and namespace are supported.'
                                         properties:
                                           apiVersion:
                                             description: Version of the schema the
@@ -1220,47 +1253,19 @@ spec:
                                           the relative path must not start with ''..'''
                                         type: string
                                       resourceFieldRef:
-                                        description: ResourceFieldSelector represents
-                                          container resources (cpu, memory) and their
-                                          output format
+                                        description: 'Selects a resource of the container:
+                                          only resources limits and requests (limits.cpu,
+                                          limits.memory, requests.cpu and requests.memory)
+                                          are currently supported.'
                                         properties:
                                           containerName:
                                             description: 'Container name: required
                                               for volumes, optional for env vars'
                                             type: string
                                           divisor:
-                                            description: |-
-                                              Quantity is a fixed-point representation of a number. It provides convenient marshaling/unmarshaling in JSON and YAML, in addition to String() and Int64() accessors.
-
-                                              The serialization format is:
-
-                                              <quantity>        ::= <signedNumber><suffix>
-                                                (Note that <suffix> may be empty, from the "" case in <decimalSI>.)
-                                              <digit>           ::= 0 | 1 | ... | 9 <digits>          ::= <digit> | <digit><digits> <number>          ::= <digits> | <digits>.<digits> | <digits>. | .<digits> <sign>            ::= "+" | "-" <signedNumber>    ::= <number> | <sign><number> <suffix>          ::= <binarySI> | <decimalExponent> | <decimalSI> <binarySI>        ::= Ki | Mi | Gi | Ti | Pi | Ei
-                                                (International System of units; See: http://physics.nist.gov/cuu/Units/binary.html)
-                                              <decimalSI>       ::= m | "" | k | M | G | T | P | E
-                                                (Note that 1024 = 1Ki but 1000 = 1k; I didn't choose the capitalization.)
-                                              <decimalExponent> ::= "e" <signedNumber> | "E" <signedNumber>
-
-                                              No matter which of the three exponent forms is used, no quantity may represent a number greater than 2^63-1 in magnitude, nor may it have more than 3 decimal places. Numbers larger or more precise will be capped or rounded up. (E.g.: 0.1m will rounded up to 1m.) This may be extended in the future if we require larger or smaller quantities.
-
-                                              When a Quantity is parsed from a string, it will remember the type of suffix it had, and will use the same type again when it is serialized.
-
-                                              Before serializing, Quantity will be put in "canonical form". This means that Exponent/suffix will be adjusted up or down (with a corresponding increase or decrease in Mantissa) such that:
-                                                a. No precision is lost
-                                                b. No fractional digits will be emitted
-                                                c. The exponent (or suffix) is as large as possible.
-                                              The sign will be omitted unless the number is negative.
-
-                                              Examples:
-                                                1.5 will be serialized as "1500m"
-                                                1.5Gi will be serialized as "1536Mi"
-
-                                              Note that the quantity will NEVER be internally represented by a floating point number. That is the whole point of this exercise.
-
-                                              Non-canonical values will still parse as long as they are well formed, but will be re-emitted in their canonical form. (So always use canonical form, or don't diff.)
-
-                                              This format is intended to make it difficult to use these numbers without writing some sort of special handling code in the hopes that that will cause implementors to also use a fixed point implementation.
+                                            description: Specifies the output format
+                                              of the exposed resources, defaults to
+                                              "1"
                                             type: string
                                           resource:
                                             description: 'Required: resource to select'
@@ -1274,10 +1279,7 @@ spec:
                                   type: array
                               type: object
                             secret:
-                              description: |-
-                                Adapts a secret into a projected volume.
-
-                                The contents of the target Secret's Data field will be presented in a projected volume as files using the keys in the Data field as the file names. Note that this is identical to a secret volume source without the default mode.
+                              description: information about the secret data to project
                               properties:
                                 items:
                                   description: If unspecified, each key-value pair
@@ -1320,7 +1322,9 @@ spec:
                                     type: object
                                   type: array
                                 name:
-                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
                                   type: string
                                 optional:
                                   description: Specify whether the Secret or its key
@@ -1328,11 +1332,8 @@ spec:
                                   type: boolean
                               type: object
                             serviceAccountToken:
-                              description: ServiceAccountTokenProjection represents
-                                a projected service account token volume. This projection
-                                can be used to insert a service account token into
-                                the pods runtime filesystem for use against APIs (Kubernetes
-                                API Server or otherwise).
+                              description: information about the serviceAccountToken
+                                data to project
                               properties:
                                 audience:
                                   description: Audience is the intended audience of
@@ -1367,10 +1368,8 @@ spec:
                     - sources
                     type: object
                   secret:
-                    description: |-
-                      Adapts a Secret into a volume.
-
-                      The contents of the target Secret's Data field will be presented in a volume as files using the keys in the Data field as the file names. Secret volumes support ownership management and SELinux relabeling.
+                    description: 'Secret represents a secret that should populate
+                      this volume. More info: https://kubernetes.io/docs/concepts/storage/volumes#secret'
                     properties:
                       defaultMode:
                         description: 'Optional: mode bits to use on created files
@@ -1480,6 +1479,8 @@ spec:
                           errorPage:
                             type: string
                           headers:
+                            additionalProperties:
+                              type: string
                             type: object
                           secretName:
                             type: string
@@ -1488,9 +1489,11 @@ spec:
                         type: object
                     type: object
                   port:
-                    oneOf:
+                    anyOf:
                     - type: string
                     - type: integer
+                    description: Port indicates the frontend port where HAProxy is
+                      listening for connection
                   rules:
                     description: Serialized rules
                     items:
@@ -1510,16 +1513,18 @@ spec:
                   you locate the referenced object inside the same namespace.
                 properties:
                   name:
-                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                      TODO: Add other useful fields. apiVersion, kind, uid?'
                     type: string
                 type: object
               type: array
             livenessProbe:
-              description: Probe describes a health check to be performed against
-                a container to determine whether it is alive or ready to receive traffic.
+              description: Periodic probe of container liveness. Container will be
+                restarted if the probe fails. Cannot be updated.
               properties:
                 exec:
-                  description: ExecAction describes a "run in container" action.
+                  description: One and only one of the following should be specified.
+                    Exec specifies the action to take.
                   properties:
                     command:
                       description: Command is the command line to execute inside the
@@ -1540,8 +1545,7 @@ spec:
                   format: int32
                   type: integer
                 httpGet:
-                  description: HTTPGetAction describes an action based on HTTP Get
-                    requests.
+                  description: HTTPGet specifies the http request to perform.
                   properties:
                     host:
                       description: Host name to connect to, defaults to the pod IP.
@@ -1569,9 +1573,11 @@ spec:
                       description: Path to access on the HTTP server.
                       type: string
                     port:
-                      oneOf:
+                      anyOf:
                       - type: string
                       - type: integer
+                      description: Name or number of the port to access on the container.
+                        Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
                     scheme:
                       description: Scheme to use for connecting to the host. Defaults
                         to HTTP.
@@ -1596,17 +1602,20 @@ spec:
                   format: int32
                   type: integer
                 tcpSocket:
-                  description: TCPSocketAction describes an action based on opening
-                    a socket
+                  description: 'TCPSocket specifies an action involving a TCP port.
+                    TCP hooks not yet supported TODO: implement a realistic TCP lifecycle
+                    hook'
                   properties:
                     host:
                       description: 'Optional: Host name to connect to, defaults to
                         the pod IP.'
                       type: string
                     port:
-                      oneOf:
+                      anyOf:
                       - type: string
                       - type: integer
+                      description: Number or name of the port to access on the container.
+                        Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
                   required:
                   - port
                   type: object
@@ -1625,6 +1634,8 @@ spec:
                 type: string
               type: array
             nodeSelector:
+              additionalProperties:
+                type: string
               description: 'NodeSelector is a selector which must be true for the
                 pod to fit on a node. Selector which must match a node''s labels for
                 the pod to be scheduled on that node. More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/'
@@ -1646,11 +1657,13 @@ spec:
                 or zero if there is no default.
               type: string
             readinessProbe:
-              description: Probe describes a health check to be performed against
-                a container to determine whether it is alive or ready to receive traffic.
+              description: Periodic probe of container service readiness. Container
+                will be removed from service endpoints if the probe fails. Cannot
+                be updated.
               properties:
                 exec:
-                  description: ExecAction describes a "run in container" action.
+                  description: One and only one of the following should be specified.
+                    Exec specifies the action to take.
                   properties:
                     command:
                       description: Command is the command line to execute inside the
@@ -1671,8 +1684,7 @@ spec:
                   format: int32
                   type: integer
                 httpGet:
-                  description: HTTPGetAction describes an action based on HTTP Get
-                    requests.
+                  description: HTTPGet specifies the http request to perform.
                   properties:
                     host:
                       description: Host name to connect to, defaults to the pod IP.
@@ -1700,9 +1712,11 @@ spec:
                       description: Path to access on the HTTP server.
                       type: string
                     port:
-                      oneOf:
+                      anyOf:
                       - type: string
                       - type: integer
+                      description: Name or number of the port to access on the container.
+                        Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
                     scheme:
                       description: Scheme to use for connecting to the host. Defaults
                         to HTTP.
@@ -1727,17 +1741,20 @@ spec:
                   format: int32
                   type: integer
                 tcpSocket:
-                  description: TCPSocketAction describes an action based on opening
-                    a socket
+                  description: 'TCPSocket specifies an action involving a TCP port.
+                    TCP hooks not yet supported TODO: implement a realistic TCP lifecycle
+                    hook'
                   properties:
                     host:
                       description: 'Optional: Host name to connect to, defaults to
                         the pod IP.'
                       type: string
                     port:
-                      oneOf:
+                      anyOf:
                       - type: string
                       - type: integer
+                      description: Number or name of the port to access on the container.
+                        Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
                   required:
                   - port
                   type: object
@@ -1748,13 +1765,17 @@ spec:
                   type: integer
               type: object
             resources:
-              description: ResourceRequirements describes the compute resource requirements.
+              description: Compute Resources required by the sidecar container.
               properties:
                 limits:
+                  additionalProperties:
+                    type: string
                   description: 'Limits describes the maximum amount of compute resources
                     allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                   type: object
                 requests:
+                  additionalProperties:
+                    type: string
                   description: 'Requests describes the minimum amount of compute resources
                     required. If Requests is omitted for a container, it defaults
                     to Limits if that is explicitly specified, otherwise to an implementation-defined
@@ -1776,10 +1797,10 @@ spec:
                       host, as defined by RFC 3986. Note the following deviations
                       from the \"host\" part of the URI as defined in the RFC: 1.
                       IPs are not allowed. Currently an IngressRuleValue can only
-                      apply to the\n\t  IP in the Spec of the parent Ingress.\n2.
-                      The `:` delimiter is not respected because ports are not allowed.\n\t
-                      \ Currently the port of an Ingress is implicitly :80 for http
-                      and\n\t  :443 for https.\nBoth these may change in the future.
+                      apply to the \t  IP in the Spec of the parent Ingress. 2. The
+                      `:` delimiter is not respected because ports are not allowed.
+                      \t  Currently the port of an Ingress is implicitly :80 for http
+                      and \t  :443 for https. Both these may change in the future.
                       Incoming requests are matched against the host before the IngressRuleValue.
                       If the host is unspecified, the Ingress routes all traffic based
                       on the specified IngressRuleValue."
@@ -1819,9 +1840,10 @@ spec:
                           detect like present
                         type: boolean
                       nodePort:
-                        oneOf:
+                        anyOf:
                         - type: string
                         - type: integer
+                        description: Specifies the node port of the referenced service.
                       paths:
                         description: A collection of paths that map requests to backends.
                         items:
@@ -1830,6 +1852,8 @@ spec:
                             to the backend.
                           properties:
                             backend:
+                              description: Backend defines the referenced service
+                                endpoint to which the traffic will be forwarded to.
                               properties:
                                 alpn:
                                   description: Application-Layer Protocol Negotiation
@@ -1860,10 +1884,8 @@ spec:
                                     type: string
                                   type: array
                                 headerRules:
-                                  description: |-
-                                    Header rules to modifies the header.
-
-                                    Deprecated: Use backendRule, will be removed.
+                                  description: "Header rules to modifies the header.
+                                    \n Deprecated: Use backendRule, will be removed."
                                   items:
                                     type: string
                                   type: array
@@ -1892,10 +1914,9 @@ spec:
                                     enable HTX mode https://www.haproxy.com/blog/haproxy-1-9-2-adds-grpc-support/
                                   type: string
                                 rewriteRules:
-                                  description: |-
-                                    Path rewrite rules with haproxy formatted regex.
-
-                                    Deprecated: Use backendRule, will be removed.
+                                  description: "Path rewrite rules with haproxy formatted
+                                    regex. \n Deprecated: Use backendRule, will be
+                                    removed."
                                   items:
                                     type: string
                                   type: array
@@ -1904,9 +1925,11 @@ spec:
                                     service.
                                   type: string
                                 servicePort:
-                                  oneOf:
+                                  anyOf:
                                   - type: string
                                   - type: integer
+                                  description: Specifies the port of the referenced
+                                    service.
                               type: object
                             path:
                               description: Path is a extended POSIX regex as defined
@@ -1921,9 +1944,10 @@ spec:
                           type: object
                         type: array
                       port:
-                        oneOf:
+                        anyOf:
                         - type: string
                         - type: integer
+                        description: port to listen http(s) connections.
                       proto:
                         description: HTTP protocol to use If the Proto contains "h2",  "option
                           http-use-htx" will be added to enable HTX mode https://www.haproxy.com/blog/haproxy-1-9-2-adds-grpc-support/
@@ -1957,8 +1981,7 @@ spec:
                           type: string
                         type: array
                       backend:
-                        description: IngressBackend describes all endpoints for a
-                          given service and port.
+                        description: Backend to forward the requests.
                         properties:
                           alpn:
                             description: Application-Layer Protocol Negotiation (ALPN)
@@ -2013,22 +2036,25 @@ spec:
                             description: Specifies the name of the referenced service.
                             type: string
                           servicePort:
-                            oneOf:
+                            anyOf:
                             - type: string
                             - type: integer
+                            description: Specifies the port of the referenced service.
                         type: object
                       noTLS:
                         description: Set noTLS = true to force plain text. Else, auto
                           detect like present
                         type: boolean
                       nodePort:
-                        oneOf:
+                        anyOf:
                         - type: string
                         - type: integer
+                        description: Specifies the node port of the referenced service.
                       port:
-                        oneOf:
+                        anyOf:
                         - type: string
                         - type: integer
+                        description: port to listen tcp connections.
                       proto:
                         description: HTTP protocol to use If the Proto contains "h2",  "option
                           http-use-htx" will be added to enable HTX mode https://www.haproxy.com/blog/haproxy-1-9-2-adds-grpc-support/
@@ -2041,18 +2067,18 @@ spec:
                 If not specified, the pod will be dispatched by default scheduler.
               type: string
             securityContext:
-              description: PodSecurityContext holds pod-level security attributes
-                and common container settings. Some fields are also present in container.securityContext.  Field
-                values of container.securityContext take precedence over field values
-                of PodSecurityContext.
+              description: 'SecurityContext holds pod-level security attributes and
+                common container settings. Optional: Defaults to empty.  See type
+                description for default values of each field.'
               properties:
                 fsGroup:
-                  description: |-
-                    A special supplemental group that applies to all containers in a pod. Some volume types allow the Kubelet to change the ownership of that volume to be owned by the pod:
-
-                    1. The owning GID will be the FSGroup 2. The setgid bit is set (new files created in the volume will be owned by FSGroup) 3. The permission bits are OR'd with rw-rw----
-
-                    If unset, the Kubelet will not modify the ownership and permissions of any volume.
+                  description: "A special supplemental group that applies to all containers
+                    in a pod. Some volume types allow the Kubelet to change the ownership
+                    of that volume to be owned by the pod: \n 1. The owning GID will
+                    be the FSGroup 2. The setgid bit is set (new files created in
+                    the volume will be owned by FSGroup) 3. The permission bits are
+                    OR'd with rw-rw---- \n If unset, the Kubelet will not modify the
+                    ownership and permissions of any volume."
                   format: int64
                   type: integer
                 runAsGroup:
@@ -2080,8 +2106,11 @@ spec:
                   format: int64
                   type: integer
                 seLinuxOptions:
-                  description: SELinuxOptions are the labels to be applied to the
-                    container
+                  description: The SELinux context to be applied to all containers.
+                    If unspecified, the container runtime will allocate a random SELinux
+                    context for each container.  May also be set in SecurityContext.  If
+                    set in both SecurityContext and PodSecurityContext, the value
+                    specified in SecurityContext takes precedence for that container.
                   properties:
                     level:
                       description: Level is SELinux level label that applies to the
@@ -2151,8 +2180,7 @@ spec:
                       type: string
                     type: array
                   ref:
-                    description: LocalTypedReference contains enough information to
-                      let you inspect or modify the referred object.
+                    description: Ref to used tls termination.
                     properties:
                       apiVersion:
                         description: API version of the referent.
@@ -2216,10 +2244,10 @@ spec:
               type: array
           type: object
         status:
-          description: IngressStatus describe the current state of the Ingress.
+          description: 'Status is the current state of the Ingress. More info: http://releases.k8s.io/release-1.2/docs/devel/api-conventions.md#spec-and-status'
           properties:
             loadBalancer:
-              description: LoadBalancerStatus represents the status of a load-balancer.
+              description: LoadBalancer contains the current status of the load-balancer.
               properties:
                 ingress:
                   description: Ingress is a list containing ingress points for the
@@ -2242,13 +2270,12 @@ spec:
                   type: array
               type: object
             observedGeneration:
-              oneOf:
-              - type: string
-              - format: int64
-                type: integer
+              description: observedGeneration is the most recent generation observed
+                for this resource. It corresponds to the resource's generation, which
+                is updated on mutation by the API Server.
+              type: string
           type: object
       type: object
-  version: v1beta1
   versions:
   - name: v1beta1
     served: true

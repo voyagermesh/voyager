@@ -13,14 +13,21 @@ const (
 	ResourceIngresses   = "ingresses"
 )
 
-// +genclient
-// +k8s:openapi-gen=true
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
 // Ingress is a collection of rules that allow inbound connections to reach the
 // endpoints defined by a backend. An Ingress can be configured to give services
 // externally-reachable urls, load balance traffic, terminate SSL, offer name
 // based virtual hosting etc.
+
+// +genclient
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// +kubebuilder:object:root=true
+// +kubebuilder:resource:path=ingresses,singular=ingress,shortName=ing,categories={networking,appscode,all}
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Hosts",type="string",JSONPath=".spec.rules[0].host"
+// +kubebuilder:printcolumn:name="LOAD_BALANCER_IP",type="string",JSONPath=".status.loadBalancer.ingress"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 type Ingress struct {
 	metav1.TypeMeta `json:",inline"`
 	// Standard object's metadata.
