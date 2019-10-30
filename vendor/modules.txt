@@ -49,8 +49,8 @@ github.com/alecthomas/units
 # github.com/appscode/go v0.0.0-20191006073906-e3d193d493fc
 github.com/appscode/go/version
 github.com/appscode/go/encoding/json/types
-github.com/appscode/go/log
 github.com/appscode/go/runtime
+github.com/appscode/go/log
 github.com/appscode/go/log/golog
 github.com/appscode/go/ioutil
 github.com/appscode/go/types

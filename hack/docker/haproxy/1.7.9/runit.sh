@@ -1,7 +1,21 @@
 #!/bin/bash
 
+# Copyright The Voyager Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 export HAPROXY_CONTROLLER_ARGS="$@"
-export > /etc/envvars
+export >/etc/envvars
 
 [[ $DEBUG == true ]] && set -x
 
@@ -14,7 +28,8 @@ mkdir -p /etc/ssl/private/haproxy
 cmd="voyager haproxy-controller --init-only $HAPROXY_CONTROLLER_ARGS"
 echo $cmd
 $cmd
-rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+rc=$?
+if [[ $rc != 0 ]]; then exit $rc; fi
 
 echo "Starting runit..."
 exec /usr/sbin/runsvdir-start

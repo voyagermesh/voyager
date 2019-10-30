@@ -14,17 +14,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+    - name: Set up Go 1.12
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.12
+      id: go
+
     - name: Check out code into the Go module directory
       uses: actions/checkout@v1
 
     - name: Set up Docker Buildx
       id: buildx
-      uses: crazy-max/ghaction-docker-buildx@master
+      uses: crazy-max/ghaction-docker-buildx@v1
       with:
         version: latest
 
     - name: Available platforms
       run: echo ${{ steps.buildx.outputs.platforms }}
+
+    - name: Run checks
+      run: |
+        sudo apt-get -qq update
+        sudo apt-get install -y bzr
+        make ci
 
     - name: Build
       env:
@@ -34,6 +46,26 @@ jobs:
       run: |
         docker login --username ${USERNAME} --password ${DOCKER_TOKEN}
         make push
+
+    - name: Install link checker
+      env:
+        GO111MODULE: on
+      run: |
+        export GOPATH=$(go env GOPATH)
+        export GOBIN=$GOPATH/bin
+        mkdir -p $GOBIN
+        mkdir -p $GOPATH/github.com/raviqqe
+        pushd $GOPATH/github.com/raviqqe
+        git clone https://github.com/appscodelabs/liche
+        cd liche
+        git checkout master
+        go install -v ./...
+        sudo mv $GOBIN/* /usr/local/bin
+        popd
+
+    - name: Check links
+      run: |
+        liche -r docs -d $(pwd) -c 10 -p -h -l
 
     - name: Create Kubernetes cluster
       id: kind
@@ -63,12 +95,22 @@ jobs:
         echo "create docker-registry secret"
         kubectl create secret docker-registry ${REGISTRY_SECRET} --namespace=kube-system --docker-server=https://index.docker.io/v1/ --docker-username=${USERNAME} --docker-password=${DOCKER_TOKEN}
 
-    - name: Check out installer
+    - name: Test charts
       run: |
-        cd ..
-        git clone https://github.com/stashed/installer.git
-        cd installer
-        git checkout master
+        export KUBECONFIG="$(kind get kubeconfig-path)"
+        make ct
+
+    - name: Test script installer
+      run: |
+        export KUBECONFIG="$(kind get kubeconfig-path)"
+        echo "installing operator"
+        ./hack/deploy/voyager.sh --provider=minikube
+        echo
+        echo "uninstalling operator"
+        ./hack/deploy/voyager.sh --uninstall
+        echo
+        echo "purging operator"
+        ./hack/deploy/voyager.sh --uninstall --purge
 
     - name: Run e2e tests
       env:
