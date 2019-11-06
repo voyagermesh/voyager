@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright 2019 AppsCode Inc.
-# Copyright 2016 The Kubernetes Authors.
+# Copyright The Voyager Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,8 +35,8 @@ export GOOS="${OS}"
 export GO111MODULE=on
 export GOFLAGS="-mod=vendor"
 
-go install                                              \
-    -installsuffix "static"                             \
+go install \
+    -installsuffix "static" \
     -ldflags "                                          \
       -X main.Version=${VERSION}                        \
       -X main.VersionStrategy=${version_strategy:-}     \
@@ -48,5 +47,5 @@ go install                                              \
       -X main.GoVersion=$(go version | cut -d " " -f 3) \
       -X main.Compiler=$(go env CC)                     \
       -X main.Platform=${OS}/${ARCH}                    \
-    "                                                   \
+    " \
     ./...

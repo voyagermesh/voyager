@@ -27,8 +27,9 @@ import (
 	"time"
 	"unicode"
 
-	"cloud.google.com/go/compute/metadata"
 	"github.com/appscode/voyager/third_party/forked/cloudprovider"
+
+	"cloud.google.com/go/compute/metadata"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"

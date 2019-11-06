@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Voyager Authors.
+Copyright The Voyager Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import (
 	clientset "github.com/appscode/voyager/client/clientset/versioned"
 	voyagerv1beta1 "github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1"
 	fakevoyagerv1beta1 "github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1/fake"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"

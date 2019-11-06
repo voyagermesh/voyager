@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Voyager Authors.
+Copyright The Voyager Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package v1beta1
 
 import (
 	v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
+
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"

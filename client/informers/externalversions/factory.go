@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Voyager Authors.
+Copyright The Voyager Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import (
 	versioned "github.com/appscode/voyager/client/clientset/versioned"
 	internalinterfaces "github.com/appscode/voyager/client/informers/externalversions/internalinterfaces"
 	voyager "github.com/appscode/voyager/client/informers/externalversions/voyager"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

@@ -1,7 +1,7 @@
 # Voyager
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/appscode/voyager)](https://goreportcard.com/report/github.com/appscode/voyager)
-[![Build Status](https://travis-ci.org/appscode/voyager.svg?branch=master)](https://travis-ci.org/appscode/voyager)
+[![Build Status](https://github.com/appscode/voyager/workflows/CI/badge.svg)](https://github.com/appscode/voyager/actions?workflow=CI)
 [![codecov](https://codecov.io/gh/appscode/voyager/branch/master/graph/badge.svg)](https://codecov.io/gh/appscode/voyager)
 [![Docker Pulls](https://img.shields.io/docker/pulls/appscode/voyager.svg)](https://hub.docker.com/r/appscode/voyager/)
 [![Slack](https://slack.appscode.com/badge.svg)](https://slack.appscode.com)
