@@ -68,10 +68,7 @@ func (c *Controller) isCertificateUsedInIngress(s *api.Certificate) bool {
 	return false
 }
 
-// syncToStdout is the business logic of the controller. In this controller it simply prints
-// information about the deployment to stdout. In case an error happened, it has to simply return the error.
-// The retry logic should not be part of the business logic.
-func (c *Controller) syncCertificate(key string) error {
+func (c *Controller) syncCertificate(_ string) error {
 	key, err := cache.MetaNamespaceKeyFunc(cache.ExplicitKey(c.options.IngressRef.Namespace + "/" + c.options.IngressRef.Name))
 	if err != nil {
 		return err

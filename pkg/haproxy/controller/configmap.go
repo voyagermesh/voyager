@@ -55,10 +55,7 @@ func (c *Controller) isConfigMapUsedInIngress(s *core.ConfigMap) bool {
 	return s.Name == api.VoyagerPrefix+c.options.IngressRef.Name // Ingress.OffshootName()
 }
 
-// syncToStdout is the business logic of the controller. In this controller it simply prints
-// information about the configmap to stdout. In case an error happened, it has to simply return the error.
-// The retry logic should not be part of the business logic.
-func (c *Controller) syncConfigMap(key string) error {
+func (c *Controller) syncConfigMap(_ string) error {
 	key, err := cache.MetaNamespaceKeyFunc(cache.ExplicitKey(c.options.IngressRef.Namespace + "/" + c.options.IngressRef.Name))
 	if err != nil {
 		return err
