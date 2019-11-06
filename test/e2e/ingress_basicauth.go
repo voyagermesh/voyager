@@ -76,8 +76,8 @@ var _ = Describe("IngressWithBasicAuth", func() {
 
 	AfterEach(func() {
 		if options.Cleanup {
-			f.Ingress.Delete(ing)
-			f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{})
+			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
+			Expect(f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		}
 	})
 
@@ -288,7 +288,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 
 		AfterEach(func() {
 			if options.Cleanup {
-				f.KubeClient.CoreV1().Secrets(sec.Namespace).Delete(sec.Name, &metav1.DeleteOptions{})
+				Expect(f.KubeClient.CoreV1().Secrets(sec.Namespace).Delete(sec.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 			}
 		})
 
@@ -800,10 +800,11 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Updating service annotations")
-			core_util.CreateOrPatchService(f.KubeClient, meta, func(in *core.Service) *core.Service {
+			_, _, err = core_util.CreateOrPatchService(f.KubeClient, meta, func(in *core.Service) *core.Service {
 				in.Annotations[api.AuthSecret] = secretNew.Name
 				return in
 			})
+			Expect(err).NotTo(HaveOccurred())
 
 			By("Waiting for operator to process service update")
 			time.Sleep(5 * time.Second)
@@ -827,12 +828,13 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Removing service annotations")
-			core_util.CreateOrPatchService(f.KubeClient, meta, func(in *core.Service) *core.Service {
+			_, _, err = core_util.CreateOrPatchService(f.KubeClient, meta, func(in *core.Service) *core.Service {
 				delete(in.Annotations, api.AuthType)
 				delete(in.Annotations, api.AuthRealm)
 				delete(in.Annotations, api.AuthSecret)
 				return in
 			})
+			Expect(err).NotTo(HaveOccurred())
 
 			By("Waiting for operator to process service update")
 			time.Sleep(5 * time.Second)

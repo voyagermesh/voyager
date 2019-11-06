@@ -138,48 +138,31 @@ func (op *Operator) reconcileCertificate(key string) error {
 
 func (op *Operator) CheckCertificates() {
 	Time := clock.New()
-	for {
-		select {
-		case <-Time.After(time.Minute * 5):
-			result, err := op.crtLister.List(labels.Everything())
-			if err != nil {
-				log.Error(err)
+	for range Time.After(time.Minute * 5) {
+		result, err := op.crtLister.List(labels.Everything())
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+		for i := range result {
+			cert := result[i]
+			if cert.Spec.Paused {
+				glog.Infof("Skipping paused Certificate %s/%s", cert.Namespace, cert.Name)
 				continue
 			}
-			for i := range result {
-				cert := result[i]
-				if cert.Spec.Paused {
-					glog.Infof("Skipping paused Certificate %s/%s", cert.Namespace, cert.Name)
-					continue
-				}
 
-				if cert.IsRateLimited() {
-					// get a new account and retry
-					s := metav1.ObjectMeta{
-						Namespace: cert.Namespace,
-						Name:      cert.Spec.ACMEUserSecretName,
-					}
-					_, _, err := core_util.CreateOrPatchSecret(op.KubeClient, s, func(in *core.Secret) *core.Secret {
-						if _, ok := in.Data[api.ACMEUserPrivatekey]; ok {
-							delete(in.Data, api.ACMEUserPrivatekey)
-						}
-						if _, ok := in.Data[api.ACMERegistrationData]; ok {
-							delete(in.Data, api.ACMERegistrationData)
-						}
-						return in
-					})
-					if err != nil {
-						op.recorder.Event(
-							cert.ObjectReference(),
-							core.EventTypeWarning,
-							eventer.EventReasonCertificateInvalid,
-							err.Error(),
-						)
-						return
-					}
+			if cert.IsRateLimited() {
+				// get a new account and retry
+				s := metav1.ObjectMeta{
+					Namespace: cert.Namespace,
+					Name:      cert.Spec.ACMEUserSecretName,
 				}
+				_, _, err := core_util.CreateOrPatchSecret(op.KubeClient, s, func(in *core.Secret) *core.Secret {
+					delete(in.Data, api.ACMEUserPrivatekey)
+					delete(in.Data, api.ACMERegistrationData)
 
-				ctrl, err := certificate.NewController(op.KubeClient, op.VoyagerClient, op.Config, cert, op.recorder)
+					return in
+				})
 				if err != nil {
 					op.recorder.Event(
 						cert.ObjectReference(),
@@ -189,14 +172,25 @@ func (op *Operator) CheckCertificates() {
 					)
 					return
 				}
-				if err := ctrl.Process(); err != nil {
-					op.recorder.Event(
-						cert.ObjectReference(),
-						core.EventTypeWarning,
-						eventer.EventReasonCertificateInvalid,
-						err.Error(),
-					)
-				}
+			}
+
+			ctrl, err := certificate.NewController(op.KubeClient, op.VoyagerClient, op.Config, cert, op.recorder)
+			if err != nil {
+				op.recorder.Event(
+					cert.ObjectReference(),
+					core.EventTypeWarning,
+					eventer.EventReasonCertificateInvalid,
+					err.Error(),
+				)
+				return
+			}
+			if err := ctrl.Process(); err != nil {
+				op.recorder.Event(
+					cert.ObjectReference(),
+					core.EventTypeWarning,
+					eventer.EventReasonCertificateInvalid,
+					err.Error(),
+				)
 			}
 		}
 	}

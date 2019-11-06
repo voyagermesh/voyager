@@ -23,6 +23,8 @@ import (
 	"fmt"
 	"strings"
 	"text/template"
+
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 )
 
 /*
@@ -63,7 +65,7 @@ func HostACLs(host string, port int, nodePort int32, useNodePort bool) []string 
 	if useNodePort && nodePort <= 0 {
 		panic(fmt.Sprintf("nodeport expected to be > 0, found %d. must wait for nodeport assignment", nodePort))
 	}
-	if host == `*` {
+	if host == api.MatchAll {
 		panic("wildcard host must be empty, found *")
 	}
 

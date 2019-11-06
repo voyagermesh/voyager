@@ -590,7 +590,7 @@ func (r Ingress) ServiceAnnotations(provider string) (map[string]string, bool) {
 		}
 		if r.LBType() == LBTypeLoadBalancer && r.KeepSourceIP() {
 			switch provider {
-			case "aws":
+			case ProviderAWS:
 				// ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
 				filteredMap["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
 			}

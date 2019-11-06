@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// nolint:goconst
 package e2e
 
 import (
@@ -64,8 +65,8 @@ var _ = Describe("IngressTLS", func() {
 
 	AfterEach(func() {
 		if options.Cleanup {
-			f.Ingress.Delete(ing)
-			f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{})
+			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
+			Expect(f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		}
 	})
 
@@ -217,7 +218,7 @@ var _ = Describe("IngressTLS", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 		AfterEach(func() {
-			f.KubeClient.CoreV1().Secrets(alterSecret.Namespace).Delete(alterSecret.Name, &metav1.DeleteOptions{})
+			Expect(f.KubeClient.CoreV1().Secrets(alterSecret.Namespace).Delete(alterSecret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		})
 
 		BeforeEach(func() {

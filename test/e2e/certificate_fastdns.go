@@ -108,9 +108,14 @@ var _ = Describe("CertificateWithDNSProviderFastDNS", func() {
 
 	AfterEach(func() {
 		if options.Cleanup {
-			f.KubeClient.CoreV1().Secrets(userSecret.Namespace).Delete(userSecret.Name, &metav1.DeleteOptions{})
-			f.KubeClient.CoreV1().Secrets(credentialSecret.Namespace).Delete(credentialSecret.Name, &metav1.DeleteOptions{})
-			f.Certificate.Delete(cert)
+			err := f.KubeClient.CoreV1().Secrets(userSecret.Namespace).Delete(userSecret.Name, &metav1.DeleteOptions{})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.KubeClient.CoreV1().Secrets(credentialSecret.Namespace).Delete(credentialSecret.Name, &metav1.DeleteOptions{})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Certificate.Delete(cert)
+			Expect(err).NotTo(HaveOccurred())
 		}
 	})
 

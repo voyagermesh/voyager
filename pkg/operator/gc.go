@@ -29,24 +29,33 @@ func (op *Operator) PurgeOffshootsWithDeprecatedLabels() error {
 	if err == nil {
 		for _, ing := range ingresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
-				op.KubeClient.AppsV1().DaemonSets(ing.Namespace).DeleteCollection(
+				err = op.KubeClient.AppsV1().DaemonSets(ing.Namespace).DeleteCollection(
 					&metav1.DeleteOptions{},
 					metav1.ListOptions{
 						LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
 					})
+				if err != nil {
+					return err
+				}
 			} else {
-				op.KubeClient.AppsV1().Deployments(ing.Namespace).DeleteCollection(
+				err = op.KubeClient.AppsV1().Deployments(ing.Namespace).DeleteCollection(
 					&metav1.DeleteOptions{},
 					metav1.ListOptions{
 						LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
 					})
+				if err != nil {
+					return err
+				}
 			}
 
 			if services, err := op.KubeClient.CoreV1().Services(ing.Namespace).List(metav1.ListOptions{
 				LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
 			}); err == nil {
 				for _, svc := range services.Items {
-					op.KubeClient.CoreV1().Services(ing.Namespace).Delete(svc.Name, &metav1.DeleteOptions{})
+					err = op.KubeClient.CoreV1().Services(ing.Namespace).Delete(svc.Name, &metav1.DeleteOptions{})
+					if err != nil {
+						return err
+					}
 				}
 			}
 		}
@@ -57,24 +66,33 @@ func (op *Operator) PurgeOffshootsWithDeprecatedLabels() error {
 	if err == nil {
 		for _, ing := range engresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
-				op.KubeClient.AppsV1().DaemonSets(ing.Namespace).DeleteCollection(
+				err = op.KubeClient.AppsV1().DaemonSets(ing.Namespace).DeleteCollection(
 					&metav1.DeleteOptions{},
 					metav1.ListOptions{
 						LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
 					})
+				if err != nil {
+					return err
+				}
 			} else {
-				op.KubeClient.AppsV1().Deployments(ing.Namespace).DeleteCollection(
+				err = op.KubeClient.AppsV1().Deployments(ing.Namespace).DeleteCollection(
 					&metav1.DeleteOptions{},
 					metav1.ListOptions{
 						LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
 					})
+				if err != nil {
+					return err
+				}
 			}
 
 			if services, err := op.KubeClient.CoreV1().Services(ing.Namespace).List(metav1.ListOptions{
 				LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
 			}); err == nil {
 				for _, svc := range services.Items {
-					op.KubeClient.CoreV1().Services(ing.Namespace).Delete(svc.Name, &metav1.DeleteOptions{})
+					err = op.KubeClient.CoreV1().Services(ing.Namespace).Delete(svc.Name, &metav1.DeleteOptions{})
+					if err != nil {
+						return err
+					}
 				}
 			}
 		}
@@ -110,7 +128,10 @@ func (op *Operator) PurgeOffshootsDaemonSet() error {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
 				name := api.VoyagerPrefix + ing.Name
 				log.Infof("Deleting DaemonSet %s/%s", ing.Namespace, name)
-				op.KubeClient.AppsV1().DaemonSets(ing.Namespace).Delete(name, &metav1.DeleteOptions{})
+				err = op.KubeClient.AppsV1().DaemonSets(ing.Namespace).Delete(name, &metav1.DeleteOptions{})
+				if err != nil {
+					return err
+				}
 			}
 		}
 		return err
@@ -131,7 +152,10 @@ func (op *Operator) PurgeOffshootsDaemonSet() error {
 						}
 					}
 					log.Infof("Deleting DaemonSet %s/%s", ing.Namespace, name)
-					op.KubeClient.AppsV1().DaemonSets(ing.Namespace).Delete(name, &metav1.DeleteOptions{})
+					err = op.KubeClient.AppsV1().DaemonSets(ing.Namespace).Delete(name, &metav1.DeleteOptions{})
+					if err != nil {
+						return err
+					}
 				}
 			}
 		}

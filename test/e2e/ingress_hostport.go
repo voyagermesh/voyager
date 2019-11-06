@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// nolint:goconst
 package e2e
 
 import (
@@ -43,7 +44,7 @@ var _ = Describe("IngressHostPort", func() {
 		ing = f.Ingress.GetSkeleton()
 		f.Ingress.SetDaemonSkeletonRule(ing)
 
-		if !meta.PossiblyInCluster() && options.CloudProvider != "minikube" {
+		if !meta.PossiblyInCluster() && options.CloudProvider != api.ProviderMinikube {
 			Skip("Test is Running from outside of cluster skipping test")
 		}
 	})
@@ -61,7 +62,7 @@ var _ = Describe("IngressHostPort", func() {
 
 	AfterEach(func() {
 		if options.Cleanup {
-			f.Ingress.Delete(ing)
+			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
 		}
 	})
 
@@ -180,7 +181,7 @@ var _ = Describe("IngressHostPort", func() {
 				return errors.New("TCP port not found")
 			}, "5m", "20s").Should(BeNil())
 
-			if options.CloudProvider != "minikube" {
+			if options.CloudProvider != api.ProviderMinikube {
 				eps, err := f.Ingress.GetHTTPEndpoints(ing)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(eps)).Should(BeNumerically(">=", 1))

@@ -131,24 +131,3 @@ func (c *controller) ensureStatsService() (*core.Service, kutil.VerbType, error)
 		return in
 	})
 }
-
-func (c *controller) ensureOriginAnnotations(annotation map[string]string) (map[string]string, bool) {
-	needsUpdate := false
-
-	// Copy the given map to avoid updating the original annotations
-	ret := annotation
-	if ret == nil {
-		ret = make(map[string]string)
-	}
-
-	if val := ret[api.OriginAPISchema]; val != c.Ingress.APISchema() {
-		needsUpdate = true
-		ret[api.OriginAPISchema] = c.Ingress.APISchema()
-	}
-
-	if val := ret[api.OriginName]; val != c.Ingress.GetName() {
-		needsUpdate = true
-		ret[api.OriginName] = c.Ingress.GetName()
-	}
-	return ret, needsUpdate
-}

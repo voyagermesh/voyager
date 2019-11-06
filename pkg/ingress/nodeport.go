@@ -89,7 +89,7 @@ func NewNodePortController(
 		},
 	}
 	c.logger.Infoln("Initializing cloud manager for provider", cfg.CloudProvider)
-	if cfg.CloudProvider == "aws" || cfg.CloudProvider == "gce" || cfg.CloudProvider == "azure" {
+	if cfg.CloudProvider == api.ProviderAWS || cfg.CloudProvider == api.ProviderGCE || cfg.CloudProvider == api.ProviderAzure {
 		cloudInterface, err := cloudprovider.InitCloudProvider(cfg.CloudProvider, cfg.CloudConfigFile)
 		if err != nil {
 			c.logger.Errorln("Failed to initialize cloud provider:"+cfg.CloudProvider, err)
@@ -97,23 +97,23 @@ func NewNodePortController(
 			c.logger.Infoln("Initialized cloud provider: "+cfg.CloudProvider, cloudInterface)
 			c.CloudManager = cloudInterface
 		}
-	} else if cfg.CloudProvider == "gke" {
-		cloudInterface, err := cloudprovider.InitCloudProvider("gce", cfg.CloudConfigFile)
+	} else if cfg.CloudProvider == api.ProviderGKE {
+		cloudInterface, err := cloudprovider.InitCloudProvider(api.ProviderGCE, cfg.CloudConfigFile)
 		if err != nil {
 			c.logger.Errorln("Failed to initialize cloud provider:"+cfg.CloudProvider, err)
 		} else {
 			c.logger.Infoln("Initialized cloud provider: "+cfg.CloudProvider, cloudInterface)
 			c.CloudManager = cloudInterface
 		}
-	} else if cfg.CloudProvider == "azure" {
-		cloudInterface, err := cloudprovider.InitCloudProvider("azure", cfg.CloudConfigFile)
+	} else if cfg.CloudProvider == api.ProviderAzure {
+		cloudInterface, err := cloudprovider.InitCloudProvider(api.ProviderAzure, cfg.CloudConfigFile)
 		if err != nil {
 			c.logger.Errorln("Failed to initialize cloud provider:"+cfg.CloudProvider, err)
 		} else {
 			c.logger.Infoln("Initialized cloud provider: "+cfg.CloudProvider, cloudInterface)
 			c.CloudManager = cloudInterface
 		}
-	} else if cfg.CloudProvider == "minikube" {
+	} else if cfg.CloudProvider == api.ProviderMinikube {
 		c.CloudManager = &fakecloudprovider.FakeCloud{}
 	} else {
 		c.logger.Infoln("No cloud manager found for provider", cfg.CloudProvider)
@@ -197,7 +197,10 @@ func (c *nodePortController) Reconcile() error {
 	}
 
 	// Ensure service account
-	c.reconcileRBAC()
+	err := c.reconcileRBAC()
+	if err != nil {
+		return err
+	}
 
 	if vt, err := c.ensurePods(); err != nil {
 		c.recorder.Eventf(
@@ -347,7 +350,6 @@ func (c *nodePortController) Delete() {
 	if err := c.ensureStatsServiceDeleted(); err != nil {
 		c.logger.Errorln(err)
 	}
-	return
 }
 
 func (c *nodePortController) waitForNodePortAssignment() error {

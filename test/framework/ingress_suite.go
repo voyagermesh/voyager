@@ -56,21 +56,21 @@ func (i *ingressInvocation) Setup() error {
 
 func (i *ingressInvocation) Teardown() {
 	if i.Cleanup {
-		i.KubeClient.CoreV1().Services(i.Namespace()).Delete(testServerResourceName, &metav1.DeleteOptions{})
-		i.KubeClient.CoreV1().Services(i.Namespace()).Delete(testServerHTTPSResourceName, &metav1.DeleteOptions{})
-		i.KubeClient.CoreV1().Services(i.Namespace()).Delete(emptyServiceName, &metav1.DeleteOptions{})
+		Expect(i.KubeClient.CoreV1().Services(i.Namespace()).Delete(testServerResourceName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+		Expect(i.KubeClient.CoreV1().Services(i.Namespace()).Delete(testServerHTTPSResourceName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+		Expect(i.KubeClient.CoreV1().Services(i.Namespace()).Delete(emptyServiceName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		rc, err := i.KubeClient.CoreV1().ReplicationControllers(i.Namespace()).Get(testServerResourceName, metav1.GetOptions{})
 		if err == nil {
 			rc.Spec.Replicas = types.Int32P(0)
-			i.KubeClient.CoreV1().ReplicationControllers(i.Namespace()).Update(rc)
+			Expect(i.KubeClient.CoreV1().ReplicationControllers(i.Namespace()).Update(rc)).NotTo(HaveOccurred())
 			time.Sleep(time.Second * 5)
 		}
-		i.KubeClient.CoreV1().ReplicationControllers(i.Namespace()).Delete(testServerResourceName, &metav1.DeleteOptions{})
+		Expect(i.KubeClient.CoreV1().ReplicationControllers(i.Namespace()).Delete(testServerResourceName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 
 		list, err := i.VoyagerClient.VoyagerV1beta1().Ingresses(metav1.NamespaceAll).List(metav1.ListOptions{})
 		if err == nil {
 			for _, ing := range list.Items {
-				i.VoyagerClient.VoyagerV1beta1().Ingresses(ing.Namespace).Delete(ing.Name, &metav1.DeleteOptions{})
+				Expect(i.VoyagerClient.VoyagerV1beta1().Ingresses(ing.Namespace).Delete(ing.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 			}
 		}
 	}
@@ -129,17 +129,13 @@ func (i *ingressInvocation) Delete(ing *api.Ingress) error {
 }
 
 func (i *ingressInvocation) IsExistsEventually(ing *api.Ingress) bool {
-	if Eventually(func() error {
+	return Eventually(func() error {
 		err := i.IsExists(ing)
 		if err != nil {
 			log.Errorln("IsExistsEventually failed with error,", err)
 		}
 		return err
-	}, "5m", "10s").Should(BeNil()) {
-		return true
-	}
-
-	return false
+	}, "5m", "10s").Should(BeNil())
 }
 
 func (i *ingressInvocation) IsExists(ing *api.Ingress) error {

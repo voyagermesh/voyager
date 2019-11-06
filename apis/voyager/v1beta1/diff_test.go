@@ -72,7 +72,7 @@ func TestShouldHandleIngress(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Annotations: map[string]string{
 				APISchema:                 APISchemaIngress,
-				ingressClassAnnotationKey: "gce",
+				ingressClassAnnotationKey: ProviderGCE,
 			},
 		},
 	}] = map[string]bool{

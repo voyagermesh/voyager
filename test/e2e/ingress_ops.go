@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// nolint:goconst
 package e2e
 
 import (
@@ -59,7 +60,7 @@ var _ = Describe("IngressOperations", func() {
 
 	AfterEach(func() {
 		if options.Cleanup {
-			f.Ingress.Delete(ing)
+			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
 		}
 	})
 
@@ -92,7 +93,7 @@ var _ = Describe("IngressOperations", func() {
 	Describe("Create", func() {
 		It("Should create Loadbalancer entry", func() {
 			By("Checking StatusIP for provider: " + options.CloudProvider)
-			if options.CloudProvider == "minikube" {
+			if options.CloudProvider == api.ProviderMinikube {
 				Skip("Minikube do not support this")
 			}
 

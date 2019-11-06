@@ -34,6 +34,7 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 )
 
 var _ = Describe("IngressGRPC", func() {
@@ -95,9 +96,9 @@ var _ = Describe("IngressGRPC", func() {
 
 	AfterEach(func() {
 		if options.Cleanup {
-			f.Ingress.Delete(ing)
-			f.KubeClient.CoreV1().Services(f.Ingress.Namespace()).Delete(grpcService.Name, &metav1.DeleteOptions{})
-			f.KubeClient.CoreV1().ReplicationControllers(f.Ingress.Namespace()).Delete(grpcController.Name, &metav1.DeleteOptions{})
+			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
+			Expect(f.KubeClient.CoreV1().Services(f.Ingress.Namespace()).Delete(grpcService.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+			Expect(f.KubeClient.CoreV1().ReplicationControllers(f.Ingress.Namespace()).Delete(grpcController.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		}
 	})
 
@@ -162,7 +163,9 @@ func doGRPC(address, crtPath string, request *hello.IntroRequest) (*hello.IntroR
 	if err != nil {
 		return nil, fmt.Errorf("did not connect, %v", err)
 	}
-	defer conn.Close()
+	defer func() {
+		utilruntime.Must(conn.Close())
+	}()
 
 	client := hello.NewHelloServiceClient(conn)
 	return client.Intro(context.Background(), request)
@@ -186,7 +189,10 @@ func doGRPCStream(address, crtPath string, request *hello.IntroRequest) (*hello.
 	if err != nil {
 		return nil, fmt.Errorf("did not connect, %v", err)
 	}
-	defer conn.Close()
+
+	defer func() {
+		utilruntime.Must(conn.Close())
+	}()
 
 	streamClient, err := hello.NewHelloServiceClient(conn).Stream(context.Background(), request)
 	if err != nil {

@@ -328,7 +328,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 		addrs["*:80"] = &address{Protocol: "http", Address: "*", PodPort: 80}
 	}
 	// ref: https://github.com/appscode/voyager/issues/188
-	if cloudProvider == "aws" && r.LBType() == LBTypeLoadBalancer {
+	if cloudProvider == ProviderAWS && r.LBType() == LBTypeLoadBalancer {
 		if ans, ok := r.ServiceAnnotations(cloudProvider); ok {
 			if v, usesAWSCertManager := ans["service.beta.kubernetes.io/aws-load-balancer-ssl-cert"]; usesAWSCertManager && v != "" {
 				var tp80, sp443 bool
@@ -391,14 +391,14 @@ func (r Ingress) IsValid(cloudProvider string) error {
 func (r Ingress) SupportsLBType(cloudProvider string) bool {
 	switch r.LBType() {
 	case LBTypeLoadBalancer:
-		return cloudProvider == "aws" ||
-			cloudProvider == "gce" ||
-			cloudProvider == "gke" ||
-			cloudProvider == "azure" ||
-			cloudProvider == "acs" ||
-			cloudProvider == "aks" ||
+		return cloudProvider == ProviderAWS ||
+			cloudProvider == ProviderGCE ||
+			cloudProvider == ProviderGKE ||
+			cloudProvider == ProviderAzure ||
+			cloudProvider == ProviderACS ||
+			cloudProvider == ProviderAKS ||
 			cloudProvider == "openstack" ||
-			cloudProvider == "minikube" ||
+			cloudProvider == ProviderMinikube ||
 			cloudProvider == "metallb" ||
 			cloudProvider == "digitalocean" ||
 			cloudProvider == "linode"
@@ -407,11 +407,11 @@ func (r Ingress) SupportsLBType(cloudProvider string) bool {
 			cloudProvider != "aks"
 	case LBTypeHostPort:
 		// TODO: https://github.com/appscode/voyager/issues/374
-		return cloudProvider != "acs" &&
-			cloudProvider != "aks" &&
-			cloudProvider != "azure" &&
-			cloudProvider != "gce" &&
-			cloudProvider != "gke"
+		return cloudProvider != ProviderACS &&
+			cloudProvider != ProviderAKS &&
+			cloudProvider != ProviderAzure &&
+			cloudProvider != ProviderGCE &&
+			cloudProvider != ProviderGKE
 	case LBTypeInternal:
 		return true
 	default:
@@ -512,8 +512,8 @@ func (c Certificate) IsValid(cloudProvider string) error {
 			return errors.Errorf("no dns provider name specified")
 		}
 		if c.Spec.ChallengeProvider.DNS.CredentialSecretName == "" {
-			useCredentialFromEnv := (cloudProvider == "aws" && sets.NewString("aws", "route53").Has(c.Spec.ChallengeProvider.DNS.Provider) && c.Spec.ChallengeProvider.DNS.CredentialSecretName == "") ||
-				(sets.NewString("gce", "gke").Has(cloudProvider) && sets.NewString("googlecloud", "gcloud", "gce", "gke").Has(c.Spec.ChallengeProvider.DNS.Provider) && c.Spec.ChallengeProvider.DNS.CredentialSecretName == "")
+			useCredentialFromEnv := (cloudProvider == ProviderAWS && sets.NewString("aws", "route53").Has(c.Spec.ChallengeProvider.DNS.Provider) && c.Spec.ChallengeProvider.DNS.CredentialSecretName == "") ||
+				(sets.NewString("gce", ProviderGKE).Has(cloudProvider) && sets.NewString("googlecloud", "gcloud", "gce", ProviderGKE).Has(c.Spec.ChallengeProvider.DNS.Provider) && c.Spec.ChallengeProvider.DNS.CredentialSecretName == "")
 			if !useCredentialFromEnv {
 				return errors.Errorf("missing dns challenge provider credential")
 			}

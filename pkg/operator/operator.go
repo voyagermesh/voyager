@@ -193,9 +193,16 @@ func (w *Operator) Run(stopCh <-chan struct{}) {
 	}
 
 	// https://github.com/appscode/voyager/issues/229
-	w.PurgeOffshootsWithDeprecatedLabels()
+	err = w.PurgeOffshootsWithDeprecatedLabels()
+	if err != nil {
+		log.Errorln(err)
+	}
+
 	// https://github.com/appscode/voyager/issues/446
-	w.PurgeOffshootsDaemonSet()
+	err = w.PurgeOffshootsDaemonSet()
+	if err != nil {
+		log.Errorln(err)
+	}
 
 	w.RunInformers(stopCh)
 }

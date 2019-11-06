@@ -174,11 +174,8 @@ func (c *controller) IsExists() bool {
 		return false
 	}
 	_, err = c.KubeClient.RbacV1().RoleBindings(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
-	if kerr.IsNotFound(err) {
-		return false
-	}
 
-	return true
+	return kerr.IsNotFound(err)
 }
 
 func (c *controller) deletePods() error {

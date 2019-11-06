@@ -62,7 +62,10 @@ func TestFound(t *testing.T) {
 		t.Fatalf("invalid test server url %s", err)
 	}
 
-	defaultHTTPProvider.Present(u.Host, "token", "key")
+	err = defaultHTTPProvider.Present(u.Host, "token", "key")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	u.Path = "/.well-known/acme-challenge/token"
 	resp, err := http.Get(u.String())

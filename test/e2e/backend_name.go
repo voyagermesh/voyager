@@ -52,7 +52,8 @@ var _ = Describe("Haproxy backend names", func() {
 
 	AfterEach(func() {
 		if options.Cleanup {
-			f.Ingress.Delete(ing)
+			err := f.Ingress.Delete(ing)
+			Expect(err).NotTo(HaveOccurred())
 		}
 	})
 

@@ -35,7 +35,7 @@ var _ = Describe("With health-check-nodeport annotation", func() {
 		f = root.Invoke()
 
 		switch options.CloudProvider {
-		case "gce", "gke", "azure", "acs", "aks", "metallb":
+		case "gce", api.ProviderGKE, "azure", "acs", "aks", "metallb":
 		default:
 			Skip(options.CloudProvider + " do not support this")
 		}
@@ -61,7 +61,7 @@ var _ = Describe("With health-check-nodeport annotation", func() {
 
 	AfterEach(func() {
 		if options.Cleanup {
-			f.Ingress.Delete(ing)
+			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
 		}
 	})
 

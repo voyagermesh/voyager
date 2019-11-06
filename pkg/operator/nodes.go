@@ -49,11 +49,12 @@ func (op *Operator) initNodeWatcher() {
 	// Warm up the cache for initial synchronization
 	if nodes, err := op.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{}); err == nil {
 		for _, node := range nodes.Items {
-			op.nodeInformer.GetIndexer().Add(&core.Node{
+			err = op.nodeInformer.GetIndexer().Add(&core.Node{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: node.Name,
 				},
 			})
+			log.Error(err)
 		}
 	}
 }

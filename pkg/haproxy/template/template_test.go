@@ -35,10 +35,13 @@ func TestHeaderNameFilter(t *testing.T) {
 {{ .val2 | header_name }}
 `))
 	var buf bytes.Buffer
-	tpl.Execute(&buf, map[string]string{
+	err := tpl.Execute(&buf, map[string]string{
 		"val":  "hello world",
 		"val2": "hello   world",
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
 	exp := `
 hello
 hello
@@ -76,14 +79,14 @@ func TestTemplate(t *testing.T) {
 			},
 		},
 		TimeoutDefaults: []hpi.TimeoutConfig{
-			{"client", "2s"},
-			{"fin", "1d"},
+			{Phase: "client", Duration: "2s"},
+			{Phase: "fin", Duration: "1d"},
 		},
 		OptionsDefaults: []hpi.OptionConfig{
-			{"full-value", true},
-			{"full-value-two", true},
-			{"with-no", false},
-			{"with-no-two", false},
+			{Option: "full-value", Enabled: true},
+			{Option: "full-value-two", Enabled: true},
+			{Option: "with-no"},
+			{Option: "with-no-two"},
 		},
 		Stats: &hpi.StatsInfo{Port: 1234},
 		DNSResolvers: []*api.DNSResolver{
@@ -479,8 +482,8 @@ func TestTemplateAuth(t *testing.T) {
 	testParsedConfig := hpi.TemplateData{
 		SharedInfo: si,
 		TimeoutDefaults: []hpi.TimeoutConfig{
-			{"client", "2s"},
-			{"fin", "1d"},
+			{Phase: "client", Duration: "2s"},
+			{Phase: "fin", Duration: "1d"},
 		},
 		UserLists: []hpi.UserList{
 			{
@@ -702,8 +705,8 @@ func TestTLSAuth(t *testing.T) {
 				TLSAuth: &hpi.TLSAuth{
 					VerifyClient: "required",
 					Headers: []hpi.TLSHeader{
-						{"X-TEST", "add"},
-						{"X-TEST-NONE", "none"},
+						{Header: "X-TEST", Value: "add"},
+						{Header: "X-TEST-NONE", Value: "none"},
 					},
 					ErrorPage: "google.com",
 				},

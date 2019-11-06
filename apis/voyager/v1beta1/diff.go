@@ -47,7 +47,7 @@ func (r Ingress) ShouldHandleIngress(ingressClass string) bool {
 		// Resource Type is Extended Ingress So we should always Handle this
 		return true
 	}
-	kubeAnnotation, _ := r.Annotations[ingressClassAnnotationKey]
+	kubeAnnotation := r.Annotations[ingressClassAnnotationKey]
 	return kubeAnnotation == ingressClass || kubeAnnotation == ingressClassAnnotationValue
 }
 
@@ -160,7 +160,7 @@ func (r Ingress) IsStatsSecretChanged(o Ingress) bool {
 }
 
 func (r Ingress) IsKeepSourceChanged(o Ingress, cloudProvider string) bool {
-	return cloudProvider == "aws" &&
+	return cloudProvider == ProviderAWS &&
 		o.LBType() == LBTypeLoadBalancer &&
 		(isMapKeyChanged(r.Annotations, o.Annotations, KeepSourceIP) || isMapKeyChanged(r.Annotations, o.Annotations, HealthCheckNodeport))
 }
@@ -291,7 +291,7 @@ func (r Ingress) UsesAuthSecret(namespace, name string) bool {
 // but TLS will be matched separately
 func (r IngressRule) GetHost() string {
 	host := strings.TrimSpace(r.Host)
-	if host == `` || host == `*` {
+	if host == `` || host == MatchAll {
 		return ``
 	}
 	return host
