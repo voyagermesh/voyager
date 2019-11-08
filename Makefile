@@ -73,7 +73,7 @@ TAG_PROD         := $(TAG)
 TAG_DBG          := $(VERSION)-dbg_$(OS)_$(ARCH)
 
 GO_VERSION       ?= 1.12.12
-BUILD_IMAGE      ?= appscode/golang-dev:$(GO_VERSION)-stretch
+BUILD_IMAGE      ?= appscode/golang-dev:$(GO_VERSION)
 CHART_TEST_IMAGE ?= quay.io/helmpack/chart-testing:v2.4.0
 
 OUTBIN = bin/$(OS)_$(ARCH)/$(BIN)
@@ -164,6 +164,8 @@ openapi: $(addprefix openapi-, $(subst :,_, $(API_GROUPS)))
 		-w $(DOCKER_REPO_ROOT)                           \
 		--env HTTP_PROXY=$(HTTP_PROXY)                   \
 		--env HTTPS_PROXY=$(HTTPS_PROXY)                 \
+		--env GO111MODULE=on                             \
+		--env GOFLAGS="-mod=vendor"                      \
 		$(BUILD_IMAGE)                                   \
 		go run hack/gencrd/main.go
 
