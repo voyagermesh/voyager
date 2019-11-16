@@ -16,8 +16,6 @@ limitations under the License.
 package v1beta1
 
 import (
-	"github.com/appscode/go/encoding/json/types"
-
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -207,7 +205,7 @@ type IngressStatus struct {
 	// observedGeneration is the most recent generation observed for this resource. It corresponds to the
 	// resource's generation, which is updated on mutation by the API Server.
 	// +optional
-	ObservedGeneration *types.IntHash `json:"observedGeneration,omitempty"`
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 
 	// LoadBalancer contains the current status of the load-balancer.
 	LoadBalancer core.LoadBalancerStatus `json:"loadBalancer,omitempty"`

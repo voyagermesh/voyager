@@ -219,11 +219,28 @@ label-crds: $(BUILD_DIRS)
 		mv bin/crd.yaml $$f; \
 	done
 
+.PHONY: gen-crd-protos
+gen-crd-protos: $(addprefix gen-crd-protos-, $(subst :,_, $(API_GROUPS)))
+
+.PHONY: gen-bindata
+gen-bindata:
+	@docker run                                                 \
+	    -i                                                      \
+	    --rm                                                    \
+	    -u $$(id -u):$$(id -g)                                  \
+	    -v $$(pwd):/src                                         \
+	    -w /src/api/crds                                        \
+		-v /tmp:/.cache                                         \
+	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
+	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
+	    $(BUILD_IMAGE)                                          \
+	    go-bindata -ignore=\\.go -ignore=\\.DS_Store -mode=0644 -modtime=1573722179 -o bindata.go -pkg crds ./...
+
 .PHONY: manifests
-manifests: gen-crds patch-crds label-crds
+manifests: gen-crds label-crds gen-bindata
 
 .PHONY: gen
-gen: clientset openapi manifests
+gen: clientset manifests openapi
 
 fmt: $(BUILD_DIRS)
 	@docker run                                                 \
@@ -539,3 +556,14 @@ release:
 .PHONY: clean
 clean:
 	rm -rf .go bin
+
+.PHONY: run
+run:
+	GO111MODULE=on go run -mod=vendor *.go run \
+		--v=3 \
+		--secure-port=8443 \
+		--kubeconfig=$(KUBECONFIG) \
+		--authorization-kubeconfig=$(KUBECONFIG) \
+		--authentication-kubeconfig=$(KUBECONFIG) \
+		--authentication-skip-lookup \
+		--docker-registry=$(REGISTRY)
