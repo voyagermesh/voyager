@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package certificate
 
 import (
@@ -315,7 +316,7 @@ func (c *Controller) processError(err error) error {
 			})
 		}
 		return in
-	}, api.EnableStatusSubresource)
+	}, true)
 	return err
 }
 

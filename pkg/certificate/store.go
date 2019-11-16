@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package certificate
 
 import (
@@ -171,6 +172,6 @@ func (s *CertStore) Save(crd *api.Certificate, cert *acme.CertificateResource) e
 			})
 		}
 		return in
-	}, api.EnableStatusSubresource)
+	}, true)
 	return err
 }

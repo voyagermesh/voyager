@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package ingress
 
 import (
@@ -570,7 +571,7 @@ func (c *loadBalancerController) updateStatus() error {
 			_, err = util.UpdateIngressStatus(c.VoyagerClient.VoyagerV1beta1(), ing, func(in *api.IngressStatus) *api.IngressStatus {
 				in.LoadBalancer.Ingress = statuses
 				return in
-			}, api.EnableStatusSubresource)
+			}, true)
 			if err != nil {
 				return errors.WithStack(err)
 			}

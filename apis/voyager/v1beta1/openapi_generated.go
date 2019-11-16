@@ -720,7 +720,8 @@ func schema_voyager_apis_voyager_v1beta1_CertificateStatus(ref common.ReferenceC
 					"observedGeneration": {
 						SchemaProps: spec.SchemaProps{
 							Description: "observedGeneration is the most recent generation observed for this resource. It corresponds to the resource's generation, which is updated on mutation by the API Server.",
-							Ref:         ref("github.com/appscode/go/encoding/json/types.IntHash"),
+							Type:        []string{"integer"},
+							Format:      "int64",
 						},
 					},
 					"creationTime": {
@@ -749,7 +750,7 @@ func schema_voyager_apis_voyager_v1beta1_CertificateStatus(ref common.ReferenceC
 			},
 		},
 		Dependencies: []string{
-			"github.com/appscode/go/encoding/json/types.IntHash", "github.com/appscode/voyager/apis/voyager/v1beta1.CertificateCondition", "github.com/appscode/voyager/apis/voyager/v1beta1.CertificateDetails", "k8s.io/apimachinery/pkg/apis/meta/v1.Time"},
+			"github.com/appscode/voyager/apis/voyager/v1beta1.CertificateCondition", "github.com/appscode/voyager/apis/voyager/v1beta1.CertificateDetails", "k8s.io/apimachinery/pkg/apis/meta/v1.Time"},
 	}
 }
 
@@ -1662,7 +1663,8 @@ func schema_voyager_apis_voyager_v1beta1_IngressStatus(ref common.ReferenceCallb
 					"observedGeneration": {
 						SchemaProps: spec.SchemaProps{
 							Description: "observedGeneration is the most recent generation observed for this resource. It corresponds to the resource's generation, which is updated on mutation by the API Server.",
-							Ref:         ref("github.com/appscode/go/encoding/json/types.IntHash"),
+							Type:        []string{"integer"},
+							Format:      "int64",
 						},
 					},
 					"loadBalancer": {
@@ -1675,7 +1677,7 @@ func schema_voyager_apis_voyager_v1beta1_IngressStatus(ref common.ReferenceCallb
 			},
 		},
 		Dependencies: []string{
-			"github.com/appscode/go/encoding/json/types.IntHash", "k8s.io/api/core/v1.LoadBalancerStatus"},
+			"k8s.io/api/core/v1.LoadBalancerStatus"},
 	}
 }
 
