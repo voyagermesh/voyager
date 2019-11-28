@@ -7,13 +7,16 @@ nodes:
     - containerPath: /opt/local-path-provisioner
       hostPath: /mnt
       readOnly: false
-- role: worker
-  extraMounts:
-    - containerPath: /opt/local-path-provisioner
-      hostPath: /mnt
-      readOnly: false
-- role: worker
-  extraMounts:
-    - containerPath: /opt/local-path-provisioner
-      hostPath: /mnt
-      readOnly: false
+  extraPortMappings:
+  - containerPort: 31000
+    hostPort: 31000
+  - containerPort: 31001
+    hostPort: 31001
+  - containerPort: 31002
+    hostPort: 31002
+  - containerPort: 31003
+    hostPort: 31003
+  - containerPort: 31004
+    hostPort: 31004
+  - containerPort: 31005
+    hostPort: 31005

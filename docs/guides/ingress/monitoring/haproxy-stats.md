@@ -150,5 +150,5 @@ namespace "demo" deleted
 ## Next Steps
 
 - To monitor your HAProxy pods using builtin [Prometheus](https://prometheus.io/) scraper, visit [here](/docs/guides/ingress/monitoring/using-builtin-prometheus.md).
-- To monitor your HAProxy pods using [CoreOS Prometheus Operator](/docs/guides/mongodb/monitoring/using-coreos-prometheus-operator.md), visit [here](/docs/guides/ingress/monitoring/using-coreos-prometheus-operator.md).
+- To monitor your HAProxy pods using [CoreOS Prometheus Operator](/docs/guides/ingress/monitoring/using-coreos-prometheus-operator.md), visit [here](/docs/guides/ingress/monitoring/using-coreos-prometheus-operator.md).
 - To monitor Voyager operator using Prometheus, visit [here](/docs/guides/ingress/monitoring/operator-stats.md).

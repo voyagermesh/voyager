@@ -68,7 +68,7 @@ jobs:
 
     - name: Check links
       run: |
-        liche -r docs -d $(pwd) -c 10 -p -h -l
+        liche -r docs -d $(pwd) -c 10 -p -h -l -x '^*(voyager.appscode.ninja|www.kiteci.pro)*$'
 
     - name: Create Kubernetes ${{ matrix.k8s }} cluster
       id: kind

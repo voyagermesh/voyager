@@ -93,7 +93,7 @@ apiserver:
   useKubeapiserverFqdnForAks: true
   # healthcheck configures the readiness and liveliness probes for the operator pod.
   healthcheck:
-    enabled: true
+    enabled: false
 
 # Send usage events to Google Analytics
 enableAnalytics: true
