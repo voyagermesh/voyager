@@ -92,7 +92,7 @@ func NewController(kubeClient kubernetes.Interface, extClient cs.Interface, cfg 
 	}
 
 	if ctrl.crd.Spec.ChallengeProvider.HTTP != nil {
-		ctrl.ChallengeProvider = "http"
+		ctrl.ChallengeProvider = api.ProviderHTTP
 		switch ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.APIVersion {
 		case api.SchemeGroupVersion.String():
 			var err error
@@ -252,7 +252,7 @@ func (c *Controller) create() error {
 	if err := c.getACMEClient(); err != nil {
 		return err
 	}
-	if c.ChallengeProvider == "http" {
+	if c.ChallengeProvider == api.ProviderHTTP {
 		if err := c.updateIngress(); err != nil {
 			return err
 		}
@@ -270,7 +270,7 @@ func (c *Controller) renew() error {
 	if err := c.getACMEClient(); err != nil {
 		return err
 	}
-	if c.ChallengeProvider == "http" {
+	if c.ChallengeProvider == api.ProviderHTTP {
 		if err := c.updateIngress(); err != nil {
 			return err
 		}
@@ -293,7 +293,7 @@ func (c *Controller) renew() error {
 }
 
 func (c *Controller) processError(err error) error {
-	util.UpdateCertificateStatus(c.VoyagerClient.VoyagerV1beta1(), c.crd, func(in *api.CertificateStatus) *api.CertificateStatus {
+	_, err = util.UpdateCertificateStatus(c.VoyagerClient.VoyagerV1beta1(), c.crd, func(in *api.CertificateStatus) *api.CertificateStatus {
 		// Update certificate data to add Details Information
 		t := metav1.Now()
 		found := false

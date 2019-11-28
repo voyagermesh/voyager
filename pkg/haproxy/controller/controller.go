@@ -140,7 +140,7 @@ func (c *Controller) Setup() (err error) {
 	if err != nil {
 		return
 	}
-	err = c.initConfigCache(ing)
+	err = c.initConfigCache()
 	if err != nil {
 		return
 	}
@@ -163,8 +163,8 @@ func (c *Controller) initIngressIndexer() (*api.Ingress, error) {
 		if err != nil {
 			return nil, err
 		}
-		c.engInformer.GetIndexer().Add(obj)
-		return obj, nil
+
+		return obj, c.engInformer.GetIndexer().Add(obj)
 	}
 
 	obj, err := c.k8sClient.ExtensionsV1beta1().Ingresses(c.options.IngressRef.Namespace).Get(c.options.IngressRef.Name, metav1.GetOptions{})
@@ -179,11 +179,11 @@ func (c *Controller) initIngressIndexer() (*api.Ingress, error) {
 	if err != nil {
 		return nil, err
 	}
-	c.ingInformer.GetIndexer().Add(obj)
-	return ingress, nil
+
+	return ingress, c.ingInformer.GetIndexer().Add(obj)
 }
 
-func (c *Controller) initConfigCache(ing *api.Ingress) error {
+func (c *Controller) initConfigCache() error {
 	cm, err := c.k8sClient.CoreV1().ConfigMaps(c.options.IngressRef.Namespace).Get(api.VoyagerPrefix+c.options.IngressRef.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
@@ -289,7 +289,7 @@ func (c *Controller) Run(stopCh chan struct{}) {
 		for range ticker.C {
 			if _, err := checkHAProxyDaemon(); err != nil {
 				glog.Error(err)
-				if startHAProxy(); err != nil {
+				if err = startHAProxy(); err != nil {
 					glog.Error(err)
 				}
 			}

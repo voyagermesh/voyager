@@ -25,6 +25,7 @@ import (
 	"strings"
 	"time"
 
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate/providers"
 
 	"github.com/pkg/errors"
@@ -77,14 +78,14 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 	}
 
 	switch strings.ToLower(c.ChallengeProvider) {
-	case "http":
+	case api.ProviderHTTP:
 		if err := client.SetChallengeProvider(acme.HTTP01, providers.DefaultHTTPProvider()); err != nil {
 			return nil, err
 		}
 		client.ExcludeChallenges([]acme.Challenge{acme.DNS01})
 		return client, nil
-	case "aws", "route53":
-		if c.cfg.CloudProvider == "aws" && len(c.DNSCredentials) == 0 {
+	case api.ProviderAWS, "route53":
+		if c.cfg.CloudProvider == api.ProviderAWS && len(c.DNSCredentials) == 0 {
 			return newDNSProvider(route53.NewDNSProvider())
 		}
 		var accessKeyId, secretAccessKey, hostedZoneID string
@@ -101,7 +102,7 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 			hostedZoneID = zoneID
 		}
 		return newDNSProvider(route53.NewDNSProviderCredentials(accessKeyId, secretAccessKey, hostedZoneID))
-	case "azure", "acs", "aks":
+	case api.ProviderAzure, "acs", "aks":
 		var clientId, clientSecret, subscriptionId, tenantId, resourceGroup string
 		if clientId, found = dnsLoader("AZURE_CLIENT_ID"); !found {
 			return nil, errors.Errorf("dns provider credential missing key %s", "AZURE_CLIENT_ID")
@@ -230,8 +231,8 @@ func (c *Controller) newACMEClient() (*acme.Client, error) {
 			return nil, errors.Errorf("dns provider credential missing key %s", "GODADDY_API_SECRET")
 		}
 		return newDNSProvider(godaddy.NewDNSProviderCredentials(apiKey, apiSecret))
-	case "googlecloud", "google", "gce", "gke":
-		if (c.cfg.CloudProvider == "gce" || c.cfg.CloudProvider == "gke") && len(c.DNSCredentials) == 0 {
+	case "googlecloud", "google", "gce", api.ProviderGKE:
+		if (c.cfg.CloudProvider == api.ProviderGCE || c.cfg.CloudProvider == api.ProviderGKE) && len(c.DNSCredentials) == 0 {
 			// ref: https://cloud.google.com/compute/docs/storing-retrieving-metadata
 			// curl "http://metadata.google.internal/computeMetadata/v1/project/project-id" -H "Metadata-Flavor: Google"
 			req, err := http.NewRequest(http.MethodGet, "http://metadata.google.internal/computeMetadata/v1/project/project-id", nil)

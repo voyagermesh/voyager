@@ -53,7 +53,7 @@ var _ = Describe("IngressWithCustomPorts", func() {
 
 	AfterEach(func() {
 		if options.Cleanup {
-			f.Ingress.Delete(ing)
+			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
 		}
 	})
 
@@ -170,7 +170,7 @@ var _ = Describe("IngressWithCustomPorts", func() {
 		})
 
 		It("Should check update", func() {
-			if options.CloudProvider != "minikube" {
+			if options.CloudProvider != api.ProviderMinikube {
 				Skip("CloudProvider Needs to be configured for NodePort")
 			}
 
@@ -232,7 +232,7 @@ var _ = Describe("IngressWithCustomPorts", func() {
 		})
 
 		It("Should check update", func() {
-			if options.CloudProvider != "minikube" {
+			if options.CloudProvider != api.ProviderMinikube {
 				Skip("CloudProvider needs to be configured for NodePort")
 			}
 
@@ -275,7 +275,7 @@ var _ = Describe("IngressWithCustomPorts", func() {
 		})
 
 		It("Should check update", func() {
-			if options.CloudProvider != "minikube" {
+			if options.CloudProvider != api.ProviderMinikube {
 				Skip("CloudProvider needs to be configured for NodePort")
 			}
 

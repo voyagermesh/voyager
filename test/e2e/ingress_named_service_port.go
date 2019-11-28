@@ -81,7 +81,7 @@ var _ = Describe("Backend rule with named service port", func() {
 
 	AfterEach(func() {
 		if options.Cleanup {
-			f.Ingress.Delete(ing)
+			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
 		}
 	})
 

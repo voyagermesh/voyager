@@ -80,7 +80,7 @@ var _ = Describe("Ingress SSL Passthrough", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		if options.Cleanup {
-			f.Ingress.Delete(ing)
+			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
 		}
 	})
 

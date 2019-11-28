@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+//nolint:staticcheck
 package ingress
 
 import (
@@ -246,7 +247,7 @@ func getSpecifiedPort(ports []core.ServicePort, port intstr.IntOrString) (*core.
 
 func getFrontendName(proto, addr string, port int) string {
 	switch addr {
-	case ``, `*`:
+	case ``, api.MatchAll:
 		return fmt.Sprintf("%s-0_0_0_0-%d", proto, port)
 	default:
 		return fmt.Sprintf("%s-%s-%d", proto, strings.Replace(addr, ".", "_", 3), port)
@@ -312,9 +313,9 @@ func (c *controller) generateConfig() error {
 	// assign address
 	for _, rule := range c.Ingress.Spec.Rules {
 		if rule.HTTP != nil && rule.HTTP.Address == "" {
-			rule.HTTP.Address = `*`
+			rule.HTTP.Address = api.MatchAll
 		} else if rule.TCP != nil && rule.TCP.Address == "" {
-			rule.TCP.Address = `*`
+			rule.TCP.Address = api.MatchAll
 		}
 	}
 
@@ -350,7 +351,7 @@ func (c *controller) generateConfig() error {
 		si.Limit.Rate = val
 	}
 
-	if c.cfg.CloudProvider == "aws" && c.Ingress.LBType() == api.LBTypeLoadBalancer {
+	if c.cfg.CloudProvider == api.ProviderAWS && c.Ingress.LBType() == api.LBTypeLoadBalancer {
 		si.AcceptProxy = c.Ingress.KeepSourceIP()
 	}
 	if c.Ingress.AcceptProxy() {
@@ -630,9 +631,9 @@ func (c *controller) generateConfig() error {
 
 	// Must be checked after `ssl-redirect` annotation is processed
 	if len(httpServices) == 0 && // No HTTP rule used
-		!tcpBlocked80(`*`, tcpServices) && // Port 80 is not used in TCP mode
+		!tcpBlocked80(api.MatchAll, tcpServices) && // Port 80 is not used in TCP mode
 		td.DefaultBackend != nil { // Default backend is provided
-		httpServices[hostBinder{Address: `*`, Port: 80}] = &httpInfo{
+		httpServices[hostBinder{Address: api.MatchAll, Port: 80}] = &httpInfo{
 			Hosts: map[string][]*hpi.HTTPPath{
 				"": {
 					{
@@ -662,7 +663,7 @@ func (c *controller) generateConfig() error {
 		fr := getFrontendRulesForPort(c.Ingress.Spec.FrontendRules, binder.Port)
 		srv := &hpi.HTTPService{
 			SharedInfo:    si,
-			FrontendName:  getFrontendName("http", binder.Address, binder.Port),
+			FrontendName:  getFrontendName(api.ProviderHTTP, binder.Address, binder.Port),
 			Address:       binder.Address,
 			Port:          binder.Port,
 			FrontendRules: fr.Rules,
@@ -850,21 +851,21 @@ func addRedirectPaths(address, tlsHost string, tlsPaths []string, httpServices m
 
 // if HTTP mode uses port 80, so we can't setup 80 -> 443 redirection
 func httpBlocked80(address string, httpServices map[hostBinder]*httpInfo) bool {
-	if address == `*` {
+	if address == api.MatchAll {
 		for b := range httpServices {
-			if b.Port == 80 && b.Address != `*` {
+			if b.Port == 80 && b.Address != api.MatchAll {
 				return true
 			}
 		}
 		return false
 	}
-	_, ok := httpServices[hostBinder{Address: `*`, Port: 80}]
+	_, ok := httpServices[hostBinder{Address: api.MatchAll, Port: 80}]
 	return ok
 }
 
 // if TCP mode uses port 80, so we can't setup 80 -> 443 redirection
 func tcpBlocked80(address string, tcpServices map[hostBinder]*tcpInfo) bool {
-	if address == `*` {
+	if address == api.MatchAll {
 		for b := range tcpServices {
 			if b.Port == 80 {
 				return true
@@ -905,7 +906,7 @@ func getBasicAuthUsers(userLists map[string]hpi.UserList, sec *core.Secret) ([]s
 			if sep == len(line)-1 || line[sep:] == "::" {
 				return nil, errors.Errorf("missing '%v' password on userlist", userName)
 			}
-			user := hpi.AuthUser{}
+			var user hpi.AuthUser
 			// if usr::pwd
 			if string(line[sep+1]) == ":" {
 				pass, err := crypt.NewFromHash(sha512_crypt.MagicPrefix).Generate([]byte(line[sep+2:]), nil)
@@ -986,7 +987,10 @@ func (c *controller) getErrorFiles() ([]*hpi.ErrorFile, error) {
 
 		f := filepath.Join(ErrorFilesLocation, k)
 		if _, err := os.Stat(f); os.IsNotExist(err) {
-			ioutil.WriteFile(f, []byte(""), 0644)
+			err = ioutil.WriteFile(f, []byte(""), 0644)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 

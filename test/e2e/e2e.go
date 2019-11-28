@@ -27,6 +27,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/cli"
@@ -50,7 +51,7 @@ func RunE2ETestSuit(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
-	scheme.AddToScheme(clientsetscheme.Scheme)
+	utilruntime.Must(scheme.AddToScheme(clientsetscheme.Scheme))
 	cli.LoggerOptions.Verbosity = "5"
 
 	options.validate()
@@ -90,6 +91,6 @@ var _ = AfterSuite(func() {
 		invocation.Ingress.Teardown()
 	}
 	if root != nil {
-		root.DeleteNamespace()
+		Expect(root.DeleteNamespace()).NotTo(HaveOccurred())
 	}
 })

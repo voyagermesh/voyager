@@ -18,13 +18,10 @@ package operator
 
 import (
 	"github.com/appscode/go/log"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
 
 	"github.com/golang/glog"
-	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 	"kmodules.xyz/client-go/tools/queue"
 )
@@ -58,7 +55,6 @@ func (op *Operator) reconcileService(key string) error {
 		glog.Infof("Sync/Add/Update for Service %s\n", svc.GetName())
 		return op.updateHAProxyConfig(svc.Name, svc.Namespace)
 	}
-	return nil
 }
 
 // requeue ingress if offshoot-service deleted
@@ -102,27 +98,4 @@ func (op *Operator) updateHAProxyConfig(name, ns string) error {
 		}
 	}
 	return nil
-}
-
-func (op *Operator) findOrigin(meta metav1.ObjectMeta) (*api.Ingress, error) {
-	if meta.Annotations == nil {
-		return nil, nil
-	}
-
-	sourceName, sourceNameFound := meta.Annotations[api.OriginName]
-	sourceType, sourceTypeFound := meta.Annotations[api.OriginAPISchema]
-	if !sourceNameFound && !sourceTypeFound {
-		return nil, errors.New("no Types or Name found")
-	}
-
-	if sourceType == api.APISchemaIngress {
-		ingress, err := op.KubeClient.ExtensionsV1beta1().Ingresses(meta.Namespace).Get(sourceName, metav1.GetOptions{})
-		if err != nil {
-			return nil, err
-		}
-		return api.NewEngressFromIngress(ingress)
-	} else if sourceType == api.APISchemaEngress {
-		return op.VoyagerClient.VoyagerV1beta1().Ingresses(meta.Namespace).Get(sourceName, metav1.GetOptions{})
-	}
-	return nil, errors.Errorf("unknown ingress type %s", sourceType)
 }

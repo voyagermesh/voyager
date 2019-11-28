@@ -61,8 +61,8 @@ func generateSwaggerJson() {
 			v1beta1.GetOpenAPIDefinitions,
 		},
 		Resources: []openapi.TypeInfo{
-			{v1beta1.SchemeGroupVersion, v1beta1.ResourceCertificates, v1beta1.ResourceKindCertificate, true},
-			{v1beta1.SchemeGroupVersion, v1beta1.ResourceIngresses, v1beta1.ResourceKindIngress, true},
+			{GroupVersion: v1beta1.SchemeGroupVersion, Resource: v1beta1.ResourceCertificates, Kind: v1beta1.ResourceKindCertificate, NamespaceScoped: true},
+			{GroupVersion: v1beta1.SchemeGroupVersion, Resource: v1beta1.ResourceIngresses, Kind: v1beta1.ResourceKindIngress, NamespaceScoped: true},
 		},
 	})
 	if err != nil {

@@ -27,6 +27,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	_ "k8s.io/client-go/kubernetes/fake"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
@@ -45,7 +46,7 @@ func NewCmdVoyager() *cobra.Command {
 			})
 			cli.SendAnalytics(c, v.Version.Version)
 
-			scheme.AddToScheme(clientsetscheme.Scheme)
+			utilruntime.Must(scheme.AddToScheme(clientsetscheme.Scheme))
 			cli.LoggerOptions = golog.ParseFlags(c.Flags())
 		},
 	}

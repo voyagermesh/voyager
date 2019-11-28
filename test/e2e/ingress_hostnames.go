@@ -61,8 +61,8 @@ var _ = Describe("IngressWithHostName", func() {
 
 	AfterEach(func() {
 		if options.Cleanup {
-			f.Ingress.DeleteResourceWithHostNames(meta)
-			f.Ingress.Delete(ing)
+			Expect(f.Ingress.DeleteResourceWithHostNames(meta)).NotTo(HaveOccurred())
+			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
 		}
 	})
 
@@ -92,7 +92,7 @@ var _ = Describe("IngressWithHostName", func() {
 
 		It("Should create Ingress with hostname", func() {
 			By("Checking StatusIP for provider" + options.CloudProvider)
-			if options.CloudProvider == "minikube" {
+			if options.CloudProvider == api.ProviderMinikube {
 				Skip("Minikube do not support this")
 			}
 

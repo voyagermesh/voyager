@@ -132,8 +132,16 @@ func GenCert(host string) {
 	if err != nil {
 		log.Fatalf("failed to open cert.pem for writing: %s", err)
 	}
-	pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
-	certOut.Close()
+	err = pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = certOut.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	log.Print("written cert.pem\n")
 
 	keyOut, err := os.OpenFile("key.pem", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
@@ -141,7 +149,15 @@ func GenCert(host string) {
 		log.Print("failed to open key.pem for writing:", err)
 		return
 	}
-	pem.Encode(keyOut, pemBlockForKey(priv))
-	keyOut.Close()
+
+	err = pem.Encode(keyOut, pemBlockForKey(priv))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = keyOut.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
 	log.Print("written key.pem\n")
 }

@@ -23,6 +23,8 @@ import (
 	"sync"
 
 	"github.com/appscode/go/log"
+
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 )
 
 const (
@@ -86,11 +88,13 @@ func (s *HTTPProviderServer) NewServeMux() *http.ServeMux {
 
 		if ok && r.Method == "GET" {
 			w.Header().Add("Content-Type", "text/plain")
-			w.Write([]byte(keyAuth))
+			_, err := w.Write([]byte(keyAuth))
+			utilruntime.Must(err)
 			log.Infof("[%s] Served key authentication", r.Host)
 		} else {
 			log.Infof("Received request for domain %s with method %s but the domain did not match any challenge. Please ensure your are passing the HOST header properly.", r.Host, r.Method)
-			w.Write([]byte("TEST"))
+			_, err := w.Write([]byte("TEST"))
+			utilruntime.Must(err)
 		}
 	})
 	return mux
@@ -105,5 +109,5 @@ func (s *HTTPProviderServer) Serve() {
 	// connections, so disable KeepAlives.
 	log.Infoln("Running http server provider...")
 	srv.SetKeepAlivesEnabled(false)
-	srv.ListenAndServe()
+	log.Fatal(srv.ListenAndServe())
 }

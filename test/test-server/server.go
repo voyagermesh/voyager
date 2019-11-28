@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -32,6 +33,7 @@ import (
 	"github.com/pires/go-proxyproto"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/load"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 )
 
 const LOADMAX = 80
@@ -67,12 +69,12 @@ func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Headers:    r.Header,
 	}
 	fmt.Println("Request on url", r.URL.Path)
-	json.NewEncoder(w).Encode(resp)
+	utilruntime.Must(json.NewEncoder(w).Encode(resp))
 }
 
 func runHTTP(port string) {
 	fmt.Println("http server running on port", port)
-	http.ListenAndServe(port, HTTPHandler{port})
+	log.Fatal(http.ListenAndServe(port, HTTPHandler{port}))
 }
 
 type HTTPSHandler struct {
@@ -94,7 +96,7 @@ func (h HTTPSHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Headers:    r.Header,
 	}
 	fmt.Println("Request on url", r.URL.Path)
-	json.NewEncoder(w).Encode(resp)
+	utilruntime.Must(json.NewEncoder(w).Encode(resp))
 }
 
 // cd ~/go/src/github.com/appscode/voyager/test/test-server
@@ -102,7 +104,7 @@ func (h HTTPSHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // curl --cacert cert.pem 'https://ssl.appscode.test:6443' --resolve ssl.appscode.test:6443:127.0.0.1
 func runHTTPS(port string) {
 	fmt.Println("https server running on port", port)
-	http.ListenAndServeTLS(port, "cert.pem", "key.pem", HTTPSHandler{port})
+	utilruntime.Must(http.ListenAndServeTLS(port, "cert.pem", "key.pem", HTTPSHandler{port}))
 }
 
 type TCPServer interface {
@@ -125,7 +127,7 @@ func (h TCPHandler) ServeTCP(conn net.Conn) {
 		Host:       conn.LocalAddr().String(),
 		ServerPort: h.port,
 	}
-	json.NewEncoder(conn).Encode(resp)
+	utilruntime.Must(json.NewEncoder(conn).Encode(resp))
 }
 
 type ProxyAwareHandler struct {
@@ -148,7 +150,7 @@ func (h ProxyAwareHandler) ServeTCP(conn net.Conn) {
 		ServerPort: h.port,
 		Proxy:      header,
 	}
-	json.NewEncoder(conn).Encode(resp)
+	utilruntime.Must(json.NewEncoder(conn).Encode(resp))
 }
 
 type agentTCPHandler struct {
@@ -186,7 +188,7 @@ func (h agentTCPHandler) ServeTCP(conn net.Conn) {
 		resp = "down#CPU overload"
 	}
 
-	conn.Write([]byte(resp + "\n"))
+	_, _ = conn.Write([]byte(resp + "\n"))
 }
 
 func runTCP(h TCPServer) {

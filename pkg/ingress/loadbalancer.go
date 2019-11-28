@@ -123,7 +123,10 @@ func (c *loadBalancerController) Reconcile() error {
 	}
 
 	// Ensure service account
-	c.reconcileRBAC()
+	err := c.reconcileRBAC()
+	if err != nil {
+		return err
+	}
 
 	if vt, err := c.ensurePods(); err != nil {
 		c.recorder.Eventf(
@@ -167,7 +170,9 @@ func (c *loadBalancerController) Reconcile() error {
 		)
 	}
 
-	go c.updateStatus()
+	go func() {
+		log.Fatal(c.updateStatus())
+	}()
 
 	if c.Ingress.Stats() {
 		if _, vt, err := c.ensureStatsService(); err != nil { // Error ignored intentionally
@@ -263,7 +268,6 @@ func (c *loadBalancerController) Delete() {
 	if err := c.ensureStatsServiceDeleted(); err != nil {
 		c.logger.Errorln(err)
 	}
-	return
 }
 
 func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType, error) {
@@ -348,7 +352,7 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 		// ExternalTrafficPolicy
 		if c.Ingress.KeepSourceIP() {
 			switch c.cfg.CloudProvider {
-			case "gce", "gke", "azure", "acs", "aks", "metallb":
+			case "gce", api.ProviderGKE, "azure", "acs", "aks", "metallb":
 				// https://github.com/appscode/voyager/issues/276
 				// ref: https://kubernetes.io/docs/tasks/services/source-ip/#source-ip-for-services-with-typeloadbalancer
 				obj.Spec.ExternalTrafficPolicy = core.ServiceExternalTrafficPolicyTypeLocal
@@ -360,7 +364,7 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 
 		// LoadBalancerIP
 		switch c.cfg.CloudProvider {
-		case "gce", "gke", "azure", "acs", "aks", "openstack", "metallb", "digitalocean", "linode":
+		case "gce", api.ProviderGKE, "azure", "acs", "aks", "openstack", "metallb", "digitalocean", "linode":
 			if ip := c.Ingress.LoadBalancerIP(); ip != nil {
 				obj.Spec.LoadBalancerIP = ip.String()
 			}

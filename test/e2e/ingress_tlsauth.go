@@ -57,8 +57,8 @@ var _ = Describe("IngressWithTLSAuth", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		if len(options.DumpLocation) > 0 {
-			ioutil.WriteFile(options.DumpLocation+"/server.crt", crt, os.ModePerm)
-			ioutil.WriteFile(options.DumpLocation+"/server.key", key, os.ModePerm)
+			Expect(ioutil.WriteFile(options.DumpLocation+"/server.crt", crt, os.ModePerm)).NotTo(HaveOccurred())
+			Expect(ioutil.WriteFile(options.DumpLocation+"/server.key", key, os.ModePerm)).NotTo(HaveOccurred())
 		}
 
 		tlsSecret = &core.Secret{
@@ -101,15 +101,15 @@ var _ = Describe("IngressWithTLSAuth", func() {
 
 	AfterEach(func() {
 		if options.Cleanup {
-			f.Ingress.Delete(ing)
-			f.KubeClient.CoreV1().Secrets(tlsSecret.Namespace).Delete(tlsSecret.Name, &metav1.DeleteOptions{})
-			f.KubeClient.CoreV1().Secrets(caSecret.Namespace).Delete(caSecret.Name, &metav1.DeleteOptions{})
+			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
+			Expect(f.KubeClient.CoreV1().Secrets(tlsSecret.Namespace).Delete(tlsSecret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+			Expect(f.KubeClient.CoreV1().Secrets(caSecret.Namespace).Delete(caSecret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		}
 	})
 
 	Describe("Create Required Auth", func() {
 		BeforeEach(func() {
-			if options.CloudProvider == "minikube" {
+			if options.CloudProvider == api.ProviderMinikube {
 				ing.Annotations[api.LBType] = api.LBTypeHostPort
 			}
 			ing.Spec = api.IngressSpec{
@@ -167,9 +167,9 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			if len(options.DumpLocation) > 0 {
-				ioutil.WriteFile(options.DumpLocation+"/ca.crt", f.CertStore.CACertBytes(), os.ModePerm)
-				ioutil.WriteFile(options.DumpLocation+"/client.crt", ccrt, os.ModePerm)
-				ioutil.WriteFile(options.DumpLocation+"/client.key", ckey, os.ModePerm)
+				Expect(ioutil.WriteFile(options.DumpLocation+"/ca.crt", f.CertStore.CACertBytes(), os.ModePerm)).NotTo(HaveOccurred())
+				Expect(ioutil.WriteFile(options.DumpLocation+"/client.crt", ccrt, os.ModePerm)).NotTo(HaveOccurred())
+				Expect(ioutil.WriteFile(options.DumpLocation+"/client.key", ckey, os.ModePerm)).NotTo(HaveOccurred())
 			}
 
 			resolved := false
@@ -184,7 +184,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 
 		Outer:
 			for _, ep := range eps {
-				vep := strings.TrimLeft(ep[:strings.LastIndex(ep, ":")], "http://")
+				vep := strings.TrimPrefix(ep[:strings.LastIndex(ep, ":")], "http://")
 				for _, ip := range ips {
 					if vep == ip {
 						resolved = true
@@ -224,7 +224,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 
 	Describe("Create With Header", func() {
 		BeforeEach(func() {
-			if options.CloudProvider == "minikube" {
+			if options.CloudProvider == api.ProviderMinikube {
 				ing.Annotations[api.LBType] = api.LBTypeHostPort
 			}
 			ing.Spec = api.IngressSpec{
@@ -287,9 +287,9 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			if len(options.DumpLocation) > 0 {
-				ioutil.WriteFile(options.DumpLocation+"/ca.crt", f.CertStore.CACertBytes(), os.ModePerm)
-				ioutil.WriteFile(options.DumpLocation+"/client.crt", ccrt, os.ModePerm)
-				ioutil.WriteFile(options.DumpLocation+"/client.key", ckey, os.ModePerm)
+				Expect(ioutil.WriteFile(options.DumpLocation+"/ca.crt", f.CertStore.CACertBytes(), os.ModePerm)).NotTo(HaveOccurred())
+				Expect(ioutil.WriteFile(options.DumpLocation+"/client.crt", ccrt, os.ModePerm)).NotTo(HaveOccurred())
+				Expect(ioutil.WriteFile(options.DumpLocation+"/client.key", ckey, os.ModePerm)).NotTo(HaveOccurred())
 			}
 
 			resolved := false
@@ -304,7 +304,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 
 		Outer:
 			for _, ep := range eps {
-				vep := strings.TrimLeft(ep[:strings.LastIndex(ep, ":")], "http://")
+				vep := strings.TrimPrefix(ep[:strings.LastIndex(ep, ":")], "http://")
 				for _, ip := range ips {
 					if vep == ip {
 						resolved = true
@@ -337,7 +337,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 
 	Describe("Create Optional Auth", func() {
 		BeforeEach(func() {
-			if options.CloudProvider == "minikube" {
+			if options.CloudProvider == api.ProviderMinikube {
 				ing.Annotations[api.LBType] = api.LBTypeHostPort
 			}
 			ing.Spec = api.IngressSpec{
@@ -394,9 +394,9 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			if len(options.DumpLocation) > 0 {
-				ioutil.WriteFile(options.DumpLocation+"/ca.crt", f.CertStore.CACertBytes(), os.ModePerm)
-				ioutil.WriteFile(options.DumpLocation+"/client.crt", ccrt, os.ModePerm)
-				ioutil.WriteFile(options.DumpLocation+"/client.key", ckey, os.ModePerm)
+				Expect(ioutil.WriteFile(options.DumpLocation+"/ca.crt", f.CertStore.CACertBytes(), os.ModePerm)).NotTo(HaveOccurred())
+				Expect(ioutil.WriteFile(options.DumpLocation+"/client.crt", ccrt, os.ModePerm)).NotTo(HaveOccurred())
+				Expect(ioutil.WriteFile(options.DumpLocation+"/client.key", ckey, os.ModePerm)).NotTo(HaveOccurred())
 			}
 
 			resolved := false
@@ -411,7 +411,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 
 		Outer:
 			for _, ep := range eps {
-				vep := strings.TrimLeft(ep[:strings.LastIndex(ep, ":")], "http://")
+				vep := strings.TrimPrefix(ep[:strings.LastIndex(ep, ":")], "http://")
 				for _, ip := range ips {
 					if vep == ip {
 						resolved = true
@@ -452,7 +452,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 
 	Describe("CreateAnnotationAuth", func() {
 		BeforeEach(func() {
-			if options.CloudProvider == "minikube" {
+			if options.CloudProvider == api.ProviderMinikube {
 				ing.Annotations[api.LBType] = api.LBTypeHostPort
 			}
 
@@ -503,9 +503,9 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			if len(options.DumpLocation) > 0 {
-				ioutil.WriteFile(options.DumpLocation+"/ca.crt", f.CertStore.CACertBytes(), os.ModePerm)
-				ioutil.WriteFile(options.DumpLocation+"/client.crt", ccrt, os.ModePerm)
-				ioutil.WriteFile(options.DumpLocation+"/client.key", ckey, os.ModePerm)
+				Expect(ioutil.WriteFile(options.DumpLocation+"/ca.crt", f.CertStore.CACertBytes(), os.ModePerm)).NotTo(HaveOccurred())
+				Expect(ioutil.WriteFile(options.DumpLocation+"/client.crt", ccrt, os.ModePerm)).NotTo(HaveOccurred())
+				Expect(ioutil.WriteFile(options.DumpLocation+"/client.key", ckey, os.ModePerm)).NotTo(HaveOccurred())
 			}
 
 			resolved := false
@@ -520,7 +520,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 
 		Outer:
 			for _, ep := range eps {
-				vep := strings.TrimLeft(ep[:strings.LastIndex(ep, ":")], "http://")
+				vep := strings.TrimPrefix(ep[:strings.LastIndex(ep, ":")], "http://")
 				for _, ip := range ips {
 					if vep == ip {
 						resolved = true

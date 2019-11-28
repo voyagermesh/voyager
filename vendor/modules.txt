@@ -46,7 +46,7 @@ github.com/alecthomas/template
 github.com/alecthomas/template/parse
 # github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf
 github.com/alecthomas/units
-# github.com/appscode/go v0.0.0-20191006073906-e3d193d493fc
+# github.com/appscode/go v0.0.0-20191119085241-0887d8ec2ecc
 github.com/appscode/go/version
 github.com/appscode/go/encoding/json/types
 github.com/appscode/go/runtime
@@ -533,7 +533,7 @@ golang.org/x/text/internal/language/compact
 golang.org/x/text/internal/tag
 # golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 golang.org/x/time/rate
-# gomodules.xyz/cert v1.0.0
+# gomodules.xyz/cert v1.0.1
 gomodules.xyz/cert
 gomodules.xyz/cert/certstore
 # gomodules.xyz/jsonpatch/v2 v2.0.0

@@ -116,24 +116,33 @@ func (op *Operator) reconcileIngress(key string) error {
 		if core_util.HasFinalizer(ing.ObjectMeta, voyager.GroupName) {
 			glog.Infof("Delete for engress %s\n", key)
 			ctrl.Delete()
-			ext_util.PatchIngress(op.KubeClient, ing, func(obj *extensions.Ingress) *extensions.Ingress {
+			_, _, err = ext_util.PatchIngress(op.KubeClient, ing, func(obj *extensions.Ingress) *extensions.Ingress {
 				obj.ObjectMeta = core_util.RemoveFinalizer(obj.ObjectMeta, voyager.GroupName)
 				return obj
 			})
+			if err != nil {
+				return err
+			}
 		}
 	} else {
 		glog.Infof("Sync/Add/Update for ingress %s\n", key)
 		if !core_util.HasFinalizer(ing.ObjectMeta, voyager.GroupName) && ctrl.FirewallSupported() {
-			ext_util.PatchIngress(op.KubeClient, ing, func(obj *extensions.Ingress) *extensions.Ingress {
+			_, _, err = ext_util.PatchIngress(op.KubeClient, ing, func(obj *extensions.Ingress) *extensions.Ingress {
 				obj.ObjectMeta = core_util.AddFinalizer(obj.ObjectMeta, voyager.GroupName)
 				return obj
 			})
+			if err != nil {
+				return err
+			}
 		}
 		if core_util.HasFinalizer(ing.ObjectMeta, voyager.GroupName) && !ctrl.FirewallSupported() {
-			ext_util.PatchIngress(op.KubeClient, ing, func(obj *extensions.Ingress) *extensions.Ingress {
+			_, _, err = ext_util.PatchIngress(op.KubeClient, ing, func(obj *extensions.Ingress) *extensions.Ingress {
 				obj.ObjectMeta = core_util.RemoveFinalizer(obj.ObjectMeta, voyager.GroupName)
 				return obj
 			})
+			if err != nil {
+				return err
+			}
 		}
 		if engress.ShouldHandleIngress(op.IngressClass) {
 			return ctrl.Reconcile()

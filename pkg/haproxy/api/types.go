@@ -171,7 +171,7 @@ type TCPService struct {
 }
 
 func (svc TCPService) sortKey() string {
-	return fmt.Sprintf("%s", svc.Port)
+	return svc.Port
 }
 
 type TCPHost struct {

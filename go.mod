@@ -14,7 +14,7 @@ require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v0.8.0 // indirect
-	github.com/appscode/go v0.0.0-20191006073906-e3d193d493fc
+	github.com/appscode/go v0.0.0-20191119085241-0887d8ec2ecc
 	github.com/appscode/hello-grpc v0.0.0-20190207041230-eea009cbf42e
 	github.com/appscode/pat v0.0.0-20170521084856-48ff78925b79
 	github.com/aws/aws-sdk-go v1.20.20
@@ -55,7 +55,7 @@ require (
 	github.com/tredoe/osutil v0.0.0-20161130133508-7d3ee1afa71c
 	github.com/xenolf/lego v2.5.0+incompatible
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	gomodules.xyz/cert v1.0.0
+	gomodules.xyz/cert v1.0.1
 	google.golang.org/api v0.7.0
 	google.golang.org/genproto v0.0.0-20190508193815-b515fa19cec8 // indirect
 	google.golang.org/grpc v1.21.1

@@ -27,6 +27,7 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
 
 	. "github.com/onsi/gomega"
@@ -356,7 +357,7 @@ func (i *ingressInvocation) waitForTestServer() error {
 }
 
 func (i *ingressInvocation) NodeSelector() map[string]string {
-	if i.Operator.CloudProvider == "minikube" {
+	if i.Operator.CloudProvider == api.ProviderMinikube {
 		return map[string]string{"kubernetes.io/hostname": "minikube"}
 	}
 	log.Warningln("No node selector provided for daemon ingress")
@@ -364,7 +365,7 @@ func (i *ingressInvocation) NodeSelector() map[string]string {
 }
 
 func getMinikubeIP() (ip net.IP, err error) {
-	wait.PollImmediate(2*time.Second, 3*time.Minute, func() (bool, error) {
+	err = wait.PollImmediate(2*time.Second, 3*time.Minute, func() (bool, error) {
 		var outputs []byte
 		if outputs, err = exec.Command("minikube", "ip").CombinedOutput(); err != nil {
 			return false, nil // retry
@@ -391,7 +392,7 @@ func getMinikubeURLs(k kubernetes.Interface, ing *api_v1beta1.Ingress) ([]string
 
 	// get offshoot service
 	var svc *core.Service
-	wait.PollImmediate(2*time.Second, 3*time.Minute, func() (bool, error) {
+	err = wait.PollImmediate(2*time.Second, 3*time.Minute, func() (bool, error) {
 		svc, err = k.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 		if err != nil {
 			return false, nil // retry
@@ -422,7 +423,7 @@ func getMinikubeURLs(k kubernetes.Interface, ing *api_v1beta1.Ingress) ([]string
 }
 
 func (i *ingressInvocation) getLoadBalancerURLs(ing *api_v1beta1.Ingress) ([]string, error) {
-	if i.Operator.CloudProvider == "minikube" {
+	if i.Operator.CloudProvider == api.ProviderMinikube {
 		return getMinikubeURLs(i.KubeClient, ing)
 	}
 
@@ -433,7 +434,7 @@ func (i *ingressInvocation) getLoadBalancerURLs(ing *api_v1beta1.Ingress) ([]str
 
 	ips := make([]string, 0)
 	for _, ingress := range svc.Status.LoadBalancer.Ingress {
-		if i.Operator.CloudProvider == "aws" {
+		if i.Operator.CloudProvider == api.ProviderAWS {
 			ips = append(ips, ingress.Hostname)
 		} else {
 			ips = append(ips, ingress.IP)
@@ -463,7 +464,7 @@ func (i *ingressInvocation) getLoadBalancerURLs(ing *api_v1beta1.Ingress) ([]str
 }
 
 func (i *ingressInvocation) getHostPortURLs(ing *api_v1beta1.Ingress) ([]string, error) {
-	if i.Operator.CloudProvider == "minikube" {
+	if i.Operator.CloudProvider == api.ProviderMinikube {
 		return getMinikubeURLs(i.KubeClient, ing)
 	}
 
@@ -519,7 +520,7 @@ func (i *ingressInvocation) getHostPortURLs(ing *api_v1beta1.Ingress) ([]string,
 }
 
 func (i *ingressInvocation) getNodePortURLs(ing *api_v1beta1.Ingress) ([]string, error) {
-	if i.Operator.CloudProvider == "minikube" {
+	if i.Operator.CloudProvider == api.ProviderMinikube {
 		return getMinikubeURLs(i.KubeClient, ing)
 	}
 
@@ -583,7 +584,11 @@ func (i *ingressInvocation) CheckTestServersPortAssignments(ing *api_v1beta1.Ing
 
 	// Removing pods so that endpoints get updated
 	rc.Spec.Replicas = types.Int32P(0)
-	i.KubeClient.CoreV1().ReplicationControllers(rc.Namespace).Update(rc)
+	_, err = i.KubeClient.CoreV1().ReplicationControllers(rc.Namespace).Update(rc)
+	if err != nil {
+		return err
+	}
+
 	for {
 		pods, _ := i.KubeClient.CoreV1().Pods(rc.Namespace).List(metav1.ListOptions{
 			LabelSelector: labels.SelectorFromSet(rc.Spec.Selector).String(),
@@ -614,7 +619,7 @@ func (i *ingressInvocation) CheckTestServersPortAssignments(ing *api_v1beta1.Ing
 		return err
 	}
 	rc.Spec.Replicas = types.Int32P(2)
-	rc, err = i.KubeClient.CoreV1().ReplicationControllers(rc.Namespace).Update(rc)
+	_, err = i.KubeClient.CoreV1().ReplicationControllers(rc.Namespace).Update(rc)
 	if err != nil {
 		return err
 	}
@@ -636,10 +641,10 @@ func (i *ingressInvocation) CheckTestServersPortAssignments(ing *api_v1beta1.Ing
 }
 
 func (i *ingressInvocation) SupportsServiceIP() bool {
-	return i.Operator.CloudProvider == "aws" ||
-		i.Operator.CloudProvider == "gce" ||
-		i.Operator.CloudProvider == "gke" ||
-		i.Operator.CloudProvider == "azure" ||
+	return i.Operator.CloudProvider == api.ProviderAWS ||
+		i.Operator.CloudProvider == api.ProviderGCE ||
+		i.Operator.CloudProvider == api.ProviderGKE ||
+		i.Operator.CloudProvider == api.ProviderAzure ||
 		i.Operator.CloudProvider == "acs" ||
 		i.Operator.CloudProvider == "aks" ||
 		i.Operator.CloudProvider == "openstack"
@@ -921,26 +926,26 @@ func (i *ingressInvocation) DeleteResourceWithBackendWeight(meta metav1.ObjectMe
 	dp1, err := i.KubeClient.AppsV1().Deployments(meta.Namespace).Get("dep-1-"+meta.Name, metav1.GetOptions{})
 	if err == nil {
 		dp1.Spec.Replicas = types.Int32P(0)
-		i.KubeClient.AppsV1().Deployments(dp1.Namespace).Update(dp1)
+		Expect(i.KubeClient.AppsV1().Deployments(dp1.Namespace).Update(dp1)).NotTo(HaveOccurred())
 	}
 	dp2, err := i.KubeClient.AppsV1().Deployments(meta.Namespace).Get("dep-2-"+meta.Name, metav1.GetOptions{})
 	if err == nil {
 		dp2.Spec.Replicas = types.Int32P(0)
-		i.KubeClient.AppsV1().Deployments(dp2.Namespace).Update(dp2)
+		Expect(i.KubeClient.AppsV1().Deployments(dp2.Namespace).Update(dp2)).NotTo(HaveOccurred())
 	}
 	time.Sleep(time.Second * 5)
 	orphan := false
-	i.KubeClient.AppsV1().Deployments(dp1.Namespace).Delete(dp1.Name, &metav1.DeleteOptions{
+	Expect(i.KubeClient.AppsV1().Deployments(dp1.Namespace).Delete(dp1.Name, &metav1.DeleteOptions{
 		OrphanDependents: &orphan,
-	})
+	})).NotTo(HaveOccurred())
 
-	i.KubeClient.AppsV1().Deployments(dp2.Namespace).Delete(dp2.Name, &metav1.DeleteOptions{
+	Expect(i.KubeClient.AppsV1().Deployments(dp2.Namespace).Delete(dp2.Name, &metav1.DeleteOptions{
 		OrphanDependents: &orphan,
-	})
+	})).NotTo(HaveOccurred())
 
-	i.KubeClient.CoreV1().Services(meta.Namespace).Delete(meta.Name, &metav1.DeleteOptions{
+	Expect(i.KubeClient.CoreV1().Services(meta.Namespace).Delete(meta.Name, &metav1.DeleteOptions{
 		OrphanDependents: &orphan,
-	})
+	})).NotTo(HaveOccurred())
 }
 
 func (i *ingressInvocation) CreateResourceWithBackendMaxConn(maxconn int) (metav1.ObjectMeta, error) {
@@ -1305,7 +1310,7 @@ func (i *ingressInvocation) GetIngressWithLoadBalancerStatus(name, namespace str
 		ing *api_v1beta1.Ingress
 		err error
 	)
-	wait.PollImmediate(2*time.Second, 20*time.Minute, func() (bool, error) {
+	err = wait.PollImmediate(2*time.Second, 20*time.Minute, func() (bool, error) {
 		ing, err = i.VoyagerClient.VoyagerV1beta1().Ingresses(namespace).Get(name, metav1.GetOptions{})
 		if err != nil || len(ing.Status.LoadBalancer.Ingress) == 0 { // retry
 			return false, nil
@@ -1324,7 +1329,7 @@ func (i *ingressInvocation) GetServiceWithLoadBalancerStatus(name, namespace str
 		svc *core.Service
 		err error
 	)
-	wait.PollImmediate(2*time.Second, 20*time.Minute, func() (bool, error) {
+	err = wait.PollImmediate(2*time.Second, 20*time.Minute, func() (bool, error) {
 		svc, err = i.KubeClient.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
 		if err != nil || len(svc.Status.LoadBalancer.Ingress) == 0 { // retry
 			return false, nil
@@ -1350,7 +1355,7 @@ func (i *ingressInvocation) GetNodePortServiceURLForSpecificPort(svcName string,
 	node := nodeList.Items[0]
 
 	var nodeIP string
-	if node.Name == "minikube" {
+	if node.Name == api.ProviderMinikube {
 		nodeIPURL, err := getMinikubeIP()
 		if err != nil {
 			return "", err

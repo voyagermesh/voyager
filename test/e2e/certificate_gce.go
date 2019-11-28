@@ -107,8 +107,8 @@ var _ = Describe("CertificateWithDNSProvider", func() {
 
 	AfterEach(func() {
 		if options.Cleanup {
-			f.KubeClient.CoreV1().Secrets(userSecret.Namespace).Delete(userSecret.Name, &metav1.DeleteOptions{})
-			f.KubeClient.CoreV1().Secrets(credentialSecret.Namespace).Delete(credentialSecret.Name, &metav1.DeleteOptions{})
+			Expect(f.KubeClient.CoreV1().Secrets(userSecret.Namespace).Delete(userSecret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+			Expect(f.KubeClient.CoreV1().Secrets(credentialSecret.Namespace).Delete(credentialSecret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		}
 	})
 

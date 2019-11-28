@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/pkg/certificate/providers"
 
 	"github.com/pkg/errors"
@@ -42,7 +43,7 @@ func (td *TemplateData) Canonicalize() {
 func (td *TemplateData) convertWildcardHostToEmpty() {
 	for i, svc := range td.HTTPService {
 		for j, host := range svc.Hosts {
-			if host.Host == `*` {
+			if host.Host == api.MatchAll {
 				host.Host = ""
 			}
 			svc.Hosts[j] = host // remove the acme path

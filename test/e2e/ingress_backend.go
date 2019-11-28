@@ -114,7 +114,7 @@ var _ = Describe("Frontend rule using specified backend", func() {
 
 	AfterEach(func() {
 		if options.Cleanup {
-			f.Ingress.Delete(ing)
+			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
 		}
 	})
 

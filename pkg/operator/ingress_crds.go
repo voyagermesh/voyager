@@ -103,24 +103,33 @@ func (op *Operator) reconcileEngress(key string) error {
 		if core_util.HasFinalizer(engress.ObjectMeta, voyager.GroupName) {
 			glog.Infof("Delete for engress %s\n", key)
 			ctrl.Delete()
-			util.PatchIngress(op.VoyagerClient.VoyagerV1beta1(), engress, func(obj *api.Ingress) *api.Ingress {
+			_, _, err = util.PatchIngress(op.VoyagerClient.VoyagerV1beta1(), engress, func(obj *api.Ingress) *api.Ingress {
 				obj.ObjectMeta = core_util.RemoveFinalizer(obj.ObjectMeta, voyager.GroupName)
 				return obj
 			})
+			if err != nil {
+				return err
+			}
 		}
 	} else {
 		glog.Infof("Sync/Add/Update for engress %s\n", key)
 		if !core_util.HasFinalizer(engress.ObjectMeta, voyager.GroupName) && ctrl.FirewallSupported() {
-			util.PatchIngress(op.VoyagerClient.VoyagerV1beta1(), engress, func(obj *api.Ingress) *api.Ingress {
+			_, _, err = util.PatchIngress(op.VoyagerClient.VoyagerV1beta1(), engress, func(obj *api.Ingress) *api.Ingress {
 				obj.ObjectMeta = core_util.AddFinalizer(obj.ObjectMeta, voyager.GroupName)
 				return obj
 			})
+			if err != nil {
+				return err
+			}
 		}
 		if core_util.HasFinalizer(engress.ObjectMeta, voyager.GroupName) && !ctrl.FirewallSupported() {
-			util.PatchIngress(op.VoyagerClient.VoyagerV1beta1(), engress, func(obj *api.Ingress) *api.Ingress {
+			_, _, err = util.PatchIngress(op.VoyagerClient.VoyagerV1beta1(), engress, func(obj *api.Ingress) *api.Ingress {
 				obj.ObjectMeta = core_util.RemoveFinalizer(obj.ObjectMeta, voyager.GroupName)
 				return obj
 			})
+			if err != nil {
+				return err
+			}
 		}
 		if engress.ShouldHandleIngress(op.IngressClass) {
 			return ctrl.Reconcile()

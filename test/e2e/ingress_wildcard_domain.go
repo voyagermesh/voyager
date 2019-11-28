@@ -59,7 +59,7 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 
 	AfterEach(func() {
 		if options.Cleanup {
-			f.Ingress.Delete(ing)
+			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
 		}
 	})
 
@@ -146,12 +146,12 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 
 		AfterEach(func() {
 			if options.Cleanup {
-				f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{})
+				Expect(f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 			}
 		})
 
 		BeforeEach(func() {
-			if options.CloudProvider == "minikube" {
+			if options.CloudProvider == api.ProviderMinikube {
 				ing.Annotations[api.LBType] = api.LBTypeHostPort
 			}
 			ing.Annotations[api.SSLRedirect] = "false"
@@ -203,7 +203,7 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 
 		Outer:
 			for _, ep := range eps {
-				vep := strings.TrimLeft(ep[:strings.LastIndex(ep, ":")], "http://")
+				vep := strings.TrimPrefix(ep[:strings.LastIndex(ep, ":")], "http://")
 				for _, ip := range ips {
 					if vep == ip {
 						resolved = true

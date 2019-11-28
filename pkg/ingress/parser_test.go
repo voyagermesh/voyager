@@ -71,7 +71,7 @@ func TestConvertRulesForSSLPassthrough(t *testing.T) {
 	c := &controller{
 		Ingress: &api.Ingress{},
 		cfg: config.Config{
-			CloudProvider: "minikube",
+			CloudProvider: api.ProviderMinikube,
 		},
 	}
 	var err error

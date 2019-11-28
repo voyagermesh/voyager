@@ -82,7 +82,7 @@ var _ = Describe("Ingress TCP SNI", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		if options.Cleanup {
-			f.Ingress.Delete(ing)
+			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
 		}
 	})
 
@@ -149,7 +149,7 @@ var _ = Describe("Ingress TCP SNI", func() {
 		})
 		AfterEach(func() {
 			if options.Cleanup {
-				f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{})
+				Expect(f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 			}
 		})
 		BeforeEach(func() {
@@ -226,8 +226,8 @@ var _ = Describe("Ingress TCP SNI", func() {
 		})
 		AfterEach(func() {
 			if options.Cleanup {
-				f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{})
-				f.KubeClient.CoreV1().Secrets(wildcardSecret.Namespace).Delete(wildcardSecret.Name, &metav1.DeleteOptions{})
+				Expect(f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+				Expect(f.KubeClient.CoreV1().Secrets(wildcardSecret.Namespace).Delete(wildcardSecret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 			}
 		})
 

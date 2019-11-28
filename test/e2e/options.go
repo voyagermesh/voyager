@@ -28,6 +28,7 @@ import (
 	logs "github.com/appscode/go/log/golog"
 	"github.com/appscode/voyager/pkg/cmds/server"
 
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/util/homedir"
 )
 
@@ -77,7 +78,7 @@ func enableLogging() {
 		logs.InitLogs()
 		defer logs.FlushLogs()
 	}()
-	flag.Set("logtostderr", "true")
+	utilruntime.Must(flag.Set("logtostderr", "true"))
 	logLevelFlag := flag.Lookup("v")
 	if logLevelFlag != nil {
 		if len(logLevelFlag.Value.String()) > 0 && logLevelFlag.Value.String() != "0" {

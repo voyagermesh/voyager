@@ -119,7 +119,10 @@ func (c *internalController) Reconcile() error {
 	}
 
 	// Ensure service account
-	c.reconcileRBAC()
+	err := c.reconcileRBAC()
+	if err != nil {
+		return err
+	}
 
 	if vt, err := c.ensurePods(); err != nil {
 		c.recorder.Eventf(
@@ -257,7 +260,6 @@ func (c *internalController) Delete() {
 	if err := c.ensureStatsServiceDeleted(); err != nil {
 		c.logger.Errorln(err)
 	}
-	return
 }
 
 func (c *internalController) ensureService() (*core.Service, kutil.VerbType, error) {
