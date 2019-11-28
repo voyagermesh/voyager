@@ -1,8 +1,30 @@
+/*
+Copyright The Kmodules Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package v1beta1
 
 import (
 	"fmt"
 	"strings"
+
+	apireg_util "kmodules.xyz/client-go/apiregistration/v1beta1"
+	core_util "kmodules.xyz/client-go/core/v1"
+	"kmodules.xyz/client-go/discovery"
+	dynamic_util "kmodules.xyz/client-go/dynamic"
+	meta_util "kmodules.xyz/client-go/meta"
 
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/golang/glog"
@@ -23,11 +45,6 @@ import (
 	apiregistration "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1beta1"
 	apireg_cs "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset"
 	kutil "kmodules.xyz/client-go"
-	apireg_util "kmodules.xyz/client-go/apiregistration/v1beta1"
-	core_util "kmodules.xyz/client-go/core/v1"
-	"kmodules.xyz/client-go/discovery"
-	dynamic_util "kmodules.xyz/client-go/dynamic"
-	meta_util "kmodules.xyz/client-go/meta"
 )
 
 func init() {
@@ -108,7 +125,7 @@ func (d ValidatingWebhookXray) IsActive() error {
 	if bypassValidatingWebhookXray {
 		apisvc, err := apireg.ApiregistrationV1beta1().APIServices().Get(d.apisvc, metav1.GetOptions{})
 		if err == nil {
-			d.updateAPIService(apireg, apisvc, nil)
+			_ = d.updateAPIService(apireg, apisvc, nil)
 		}
 		return nil
 	}
@@ -152,7 +169,7 @@ func (d ValidatingWebhookXray) IsActive() error {
 				}
 				err = retry(err)
 				if active || err != nil {
-					d.updateAPIService(apireg, apisvc, err)
+					_ = d.updateAPIService(apireg, apisvc, err)
 				}
 				if err != nil {
 					// log failures only if xray fails, otherwise don't confuse users with intermediate failures.
@@ -263,7 +280,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 			return false, err
 		}
 
-		dynamic_util.WaitUntilDeleted(ri, d.stopCh, accessor.GetName())
+		_ = dynamic_util.WaitUntilDeleted(ri, d.stopCh, accessor.GetName())
 		return false, ErrWebhookNotActivated
 	} else if d.op == v1beta1.Update {
 		_, err := ri.Create(&u, metav1.CreateOptions{})
@@ -284,7 +301,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 		}
 
 		_, err = ri.Patch(accessor.GetName(), types.MergePatchType, patch, metav1.PatchOptions{})
-		defer dynamic_util.WaitUntilDeleted(ri, d.stopCh, accessor.GetName())
+		defer func() { _ = dynamic_util.WaitUntilDeleted(ri, d.stopCh, accessor.GetName()) }()
 
 		if kutil.AdmissionWebhookDeniedRequest(err) {
 			glog.V(10).Infof("failed to update test object as expected with error: %s", err)
@@ -316,10 +333,10 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 					return
 				}
 
-				ri.Patch(accessor.GetName(), types.MergePatchType, patch, metav1.PatchOptions{})
+				_, _ = ri.Patch(accessor.GetName(), types.MergePatchType, patch, metav1.PatchOptions{})
 
 				// delete
-				dynamic_util.WaitUntilDeleted(ri, d.stopCh, accessor.GetName())
+				_ = dynamic_util.WaitUntilDeleted(ri, d.stopCh, accessor.GetName())
 			}()
 
 			glog.V(10).Infof("failed to delete test object as expected with error: %s", err)

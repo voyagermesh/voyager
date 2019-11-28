@@ -1,8 +1,27 @@
+/*
+Copyright The Kmodules Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package coreosprometheusoperator
 
 import (
 	"errors"
 	"reflect"
+
+	kutil "kmodules.xyz/client-go"
+	api "kmodules.xyz/monitoring-agent-api/api/v1"
 
 	"github.com/appscode/go/types"
 	promapi "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
@@ -13,8 +32,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
-	kutil "kmodules.xyz/client-go"
-	api "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 // PrometheusCoreosOperator creates `ServiceMonitor` so that CoreOS Prometheus operator can generate necessary config for Prometheus.
@@ -47,9 +64,12 @@ func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new 
 			api.KeyService: sp.ServiceName() + "." + sp.GetNamespace(),
 		}.String(),
 	})
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
 
 	vt := kutil.VerbUnchanged
-		for _, item := range old.Items {
+	for _, item := range old.Items {
 		if item != nil && (new == nil || item.Namespace != new.Prometheus.Namespace) {
 			err := agent.promClient.ServiceMonitors(item.Namespace).Delete(sp.ServiceMonitorName(), nil)
 			if err != nil && !kerr.IsNotFound(err) {
@@ -191,10 +211,7 @@ func (agent *PrometheusCoreosOperator) supportsCoreOSOperator() bool {
 		return false
 	}
 	_, err = agent.extClient.CustomResourceDefinitions().Get(promapi.ServiceMonitorName+"."+promapi.SchemeGroupVersion.Group, metav1.GetOptions{})
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }
 
 func (agent *PrometheusCoreosOperator) ensureOwnerReference(in metav1.ObjectMeta, svc corev1.Service) metav1.ObjectMeta {

@@ -146,7 +146,7 @@ func parseVersion2(reader *bufio.Reader) (header *Header, err error) {
 	return header, nil
 }
 
-func (header *Header) writeVersion2(w io.Writer) (int64, error) {
+func (header *Header) formatVersion2() ([]byte, error) {
 	var buf bytes.Buffer
 	buf.Write(SIGV2)
 	buf.WriteByte(header.Command.toByte())
@@ -187,7 +187,7 @@ func (header *Header) writeVersion2(w io.Writer) (int64, error) {
 
 	}
 
-	return buf.WriteTo(w)
+	return buf.Bytes(), nil
 }
 
 func (header *Header) validateLength(length uint16) bool {

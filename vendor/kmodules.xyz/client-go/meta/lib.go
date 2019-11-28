@@ -1,12 +1,30 @@
+/*
+Copyright The Kmodules Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package meta
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 
 	"github.com/spf13/pflag"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/validation"
 )
 
 // https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/#labels
@@ -74,4 +92,37 @@ func FilterKeys(domainKey string, out, in map[string]string) map[string]string {
 		}
 	}
 	return out
+}
+
+func ValidNameWithPrefix(prefix, name string) string {
+	out := fmt.Sprintf("%s-%s", prefix, name)
+	return strings.Trim(out[:min(validation.DNS1123LabelMaxLength, len(out))], "-")
+}
+
+func ValidNameWithSuffix(name, suffix string) string {
+	out := fmt.Sprintf("%s-%s", name, suffix)
+	return strings.Trim(out[max(0, len(out)-validation.DNS1123LabelMaxLength):], "-")
+}
+
+func ValidNameWithPefixNSuffix(prefix, name, suffix string) string {
+	out := strings.Trim(fmt.Sprintf("%s-%s-%s", prefix, name, suffix), "-")
+	n := len(out)
+	if n <= validation.DNS1123LabelMaxLength {
+		return out
+	}
+	return out[:validation.DNS1123LabelMaxLength/2+1] + out[(n-validation.DNS1123LabelMaxLength/2):]
+}
+
+func min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+func max(x, y int) int {
+	if x > y {
+		return x
+	}
+	return y
 }

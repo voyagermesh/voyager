@@ -1,6 +1,23 @@
+/*
+Copyright The Kmodules Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package meta
 
 import (
+	"fmt"
 	"hash"
 	"hash/fnv"
 	"reflect"
@@ -12,6 +29,7 @@ import (
 	"github.com/fatih/structs"
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 // ObjectHash includes all top label fields (like data, spec) except TypeMeta, ObjectMeta and Status
@@ -81,6 +99,32 @@ func DeepHashObject(hasher hash.Hash, objectToWrite interface{}) {
 	printer.Fprintf(hasher, "%#v", objectToWrite)
 }
 
+func AlreadyReconciled(o interface{}) bool {
+	var generation, observedGeneration *types.IntHash
+	var err error
+
+	switch obj := o.(type) {
+	case *unstructured.Unstructured:
+		generation = types.IntHashForGeneration(obj.GetGeneration())
+		var val interface{}
+		val, _, err = unstructured.NestedFieldNoCopy(obj.Object, "status", "observedGeneration")
+		if err == nil {
+			observedGeneration, err = types.ParseIntHash(val)
+		}
+	case metav1.Object:
+		st := structs.New(o)
+		generation = types.IntHashForGeneration(obj.GetGeneration())
+		observedGeneration, err = types.ParseIntHash(st.Field("Status").Field("ObservedGeneration").Value())
+	default:
+		err = fmt.Errorf("unknown object type %s", reflect.TypeOf(o).String())
+	}
+	if err != nil {
+		panic("failed to extract status.observedGeneration field due to err:" + err.Error())
+	}
+	return observedGeneration.MatchGeneration(generation)
+}
+
+// Deprecated, should not be used after we drop support for Kubernetes 1.10. Use AlreadyReconciled
 func AlreadyObserved(o interface{}, enableStatusSubresource bool) bool {
 	if !enableStatusSubresource {
 		return false
@@ -97,6 +141,7 @@ func AlreadyObserved(o interface{}, enableStatusSubresource bool) bool {
 	return observed.Equal(cur)
 }
 
+// Deprecated, should not be used after we drop support for Kubernetes 1.10. Use AlreadyReconciled
 func AlreadyObserved2(old, nu interface{}, enableStatusSubresource bool) bool {
 	if old == nil {
 		return nu == nil

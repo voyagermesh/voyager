@@ -22,7 +22,6 @@ import (
 	"testing"
 	"text/template"
 
-	"github.com/appscode/go/runtime"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	hpi "github.com/appscode/voyager/pkg/haproxy/api"
 
@@ -459,7 +458,7 @@ func TestTemplate(t *testing.T) {
 			},
 		},
 	}
-	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
+	err := LoadTemplates("/srv/voyager/templates/*.cfg", "")
 	if assert.Nil(t, err) {
 		config, err := RenderConfig(testParsedConfig)
 		assert.Nil(t, err)
@@ -594,7 +593,7 @@ func TestTemplateAuth(t *testing.T) {
 			},
 		},
 	}
-	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
+	err := LoadTemplates("/srv/voyager/templates/*.cfg", "")
 	if assert.Nil(t, err) {
 		config, err := RenderConfig(testParsedConfig)
 		assert.Nil(t, err)
@@ -659,7 +658,7 @@ func TestTemplateServiceAuth(t *testing.T) {
 			},
 		},
 	}
-	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
+	err := LoadTemplates("/srv/voyager/templates/*.cfg", "")
 	if assert.Nil(t, err) {
 		config, err := RenderConfig(testParsedConfig)
 		assert.Nil(t, err)
@@ -681,7 +680,7 @@ func TestDefaultFrontend(t *testing.T) {
 			},
 		},
 	}
-	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
+	err := LoadTemplates("/srv/voyager/templates/*.cfg", "")
 	if assert.Nil(t, err) {
 		config, err := RenderConfig(testParsedConfig)
 		assert.Nil(t, err)
@@ -755,7 +754,7 @@ func TestTLSAuth(t *testing.T) {
 			},
 		},
 	}
-	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
+	err := LoadTemplates("/srv/voyager/templates/*.cfg", "")
 	if assert.Nil(t, err) {
 		config, err := RenderConfig(testParsedConfig)
 		assert.Nil(t, err)
@@ -827,7 +826,7 @@ func TestHealthCheck(t *testing.T) {
 			},
 		},
 	}
-	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
+	err := LoadTemplates("/srv/voyager/templates/*.cfg", "")
 	if assert.Nil(t, err) {
 		config, err := RenderConfig(testParsedConfig)
 		assert.Nil(t, err)
@@ -886,7 +885,7 @@ func TestTcpSni(t *testing.T) {
 			},
 		},
 	}
-	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
+	err := LoadTemplates("/srv/voyager/templates/*.cfg", "")
 	if assert.Nil(t, err) {
 		config, err := RenderConfig(testParsedConfig)
 		assert.Nil(t, err)
@@ -952,7 +951,7 @@ func TestOauth(t *testing.T) {
 			},
 		},
 	}
-	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
+	err := LoadTemplates("/srv/voyager/templates/*.cfg", "")
 	if assert.Nil(t, err) {
 		config, err := RenderConfig(testParsedConfig)
 		assert.Nil(t, err)
@@ -1049,7 +1048,7 @@ func TestProtoAndALPN(t *testing.T) {
 			},
 		},
 	}
-	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
+	err := LoadTemplates("/srv/voyager/templates/*.cfg", "")
 	if assert.Nil(t, err) {
 		config, err := RenderConfig(testParsedConfig)
 		assert.Nil(t, err)
@@ -1112,7 +1111,7 @@ func TestBackendLoadBalance(t *testing.T) {
 			},
 		},
 	}
-	err := LoadTemplates(runtime.GOPath()+"/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg", "")
+	err := LoadTemplates("/srv/voyager/templates/*.cfg", "")
 	if assert.Nil(t, err) {
 		config, err := RenderConfig(testParsedConfig)
 		assert.Nil(t, err)

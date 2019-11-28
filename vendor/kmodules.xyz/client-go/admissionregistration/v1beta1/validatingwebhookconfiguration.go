@@ -1,3 +1,19 @@
+/*
+Copyright The Kmodules Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package v1beta1
 
 import (
@@ -12,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
@@ -167,32 +184,35 @@ func SyncValidatingWebhookCABundle(config *rest.Config, webhookConfigName string
 		},
 	}
 
-	go watchtools.UntilWithSync(
-		ctx,
-		lw,
-		&reg.ValidatingWebhookConfiguration{},
-		nil,
-		func(event watch.Event) (bool, error) {
-			switch event.Type {
-			case watch.Deleted:
-				return false, nil
-			case watch.Error:
-				return false, errors.New("error watching")
-			case watch.Added, watch.Modified:
-				cur := event.Object.(*reg.ValidatingWebhookConfiguration)
-				_, _, err := PatchValidatingWebhookConfiguration(kc, cur, func(in *reg.ValidatingWebhookConfiguration) *reg.ValidatingWebhookConfiguration {
-					for i := range in.Webhooks {
-						in.Webhooks[i].ClientConfig.CABundle = config.CAData
+	go func() {
+		_, err := watchtools.UntilWithSync(
+			ctx,
+			lw,
+			&reg.ValidatingWebhookConfiguration{},
+			nil,
+			func(event watch.Event) (bool, error) {
+				switch event.Type {
+				case watch.Deleted:
+					return false, nil
+				case watch.Error:
+					return false, errors.New("error watching")
+				case watch.Added, watch.Modified:
+					cur := event.Object.(*reg.ValidatingWebhookConfiguration)
+					_, _, err := PatchValidatingWebhookConfiguration(kc, cur, func(in *reg.ValidatingWebhookConfiguration) *reg.ValidatingWebhookConfiguration {
+						for i := range in.Webhooks {
+							in.Webhooks[i].ClientConfig.CABundle = config.CAData
+						}
+						return in
+					})
+					if err != nil {
+						glog.Warning(err)
 					}
-					return in
-				})
-				if err != nil {
-					glog.Warning(err)
+					return false, nil // continue
+				default:
+					return false, fmt.Errorf("unexpected event type: %v", event.Type)
 				}
-				return false, nil // continue
-			default:
-				return false, fmt.Errorf("unexpected event type: %v", event.Type)
-			}
-		})
+			})
+		utilruntime.Must(err)
+	}()
 	return
 }

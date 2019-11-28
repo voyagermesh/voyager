@@ -50,7 +50,7 @@ func (x ResourceDescriptor_History) String() string {
 	return proto.EnumName(ResourceDescriptor_History_name, int32(x))
 }
 func (ResourceDescriptor_History) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_resource_8ecf418b4524f3f1, []int{0, 0}
+	return fileDescriptor_resource_1953877c7bf00bf4, []int{0, 0}
 }
 
 // A simple descriptor of a resource type.
@@ -134,7 +134,7 @@ func (m *ResourceDescriptor) Reset()         { *m = ResourceDescriptor{} }
 func (m *ResourceDescriptor) String() string { return proto.CompactTextString(m) }
 func (*ResourceDescriptor) ProtoMessage()    {}
 func (*ResourceDescriptor) Descriptor() ([]byte, []int) {
-	return fileDescriptor_resource_8ecf418b4524f3f1, []int{0}
+	return fileDescriptor_resource_1953877c7bf00bf4, []int{0}
 }
 func (m *ResourceDescriptor) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ResourceDescriptor.Unmarshal(m, b)
@@ -227,7 +227,7 @@ func (m *ResourceReference) Reset()         { *m = ResourceReference{} }
 func (m *ResourceReference) String() string { return proto.CompactTextString(m) }
 func (*ResourceReference) ProtoMessage()    {}
 func (*ResourceReference) Descriptor() ([]byte, []int) {
-	return fileDescriptor_resource_8ecf418b4524f3f1, []int{1}
+	return fileDescriptor_resource_1953877c7bf00bf4, []int{1}
 }
 func (m *ResourceReference) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ResourceReference.Unmarshal(m, b)
@@ -287,9 +287,9 @@ func init() {
 	proto.RegisterExtension(E_Resource)
 }
 
-func init() { proto.RegisterFile("google/api/resource.proto", fileDescriptor_resource_8ecf418b4524f3f1) }
+func init() { proto.RegisterFile("google/api/resource.proto", fileDescriptor_resource_1953877c7bf00bf4) }
 
-var fileDescriptor_resource_8ecf418b4524f3f1 = []byte{
+var fileDescriptor_resource_1953877c7bf00bf4 = []byte{
 	// 430 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x52, 0x41, 0x6f, 0xd3, 0x30,
 	0x18, 0x25, 0x59, 0x45, 0xd7, 0x0f, 0x31, 0x6d, 0x06, 0x89, 0x0c, 0x29, 0x10, 0xf5, 0x80, 0x7a,

@@ -22,7 +22,7 @@ COMPRESS ?= no
 
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS          ?= "crd:trivialVersions=true"
-CODE_GENERATOR_IMAGE ?= appscode/gengo:release-1.14
+CODE_GENERATOR_IMAGE ?= appscode/gengo:release-1.16
 API_GROUPS           ?= voyager:v1beta1
 
 # Where to push the docker image.
@@ -72,8 +72,9 @@ TAG              := $(VERSION)_$(OS)_$(ARCH)
 TAG_PROD         := $(TAG)
 TAG_DBG          := $(VERSION)-dbg_$(OS)_$(ARCH)
 
-GO_VERSION       ?= 1.12.12
+GO_VERSION       ?= 1.13.4
 BUILD_IMAGE      ?= appscode/golang-dev:$(GO_VERSION)
+TEST_IMAGE       ?= appscode/golang-dev:$(GO_VERSION)-voyager
 CHART_TEST_IMAGE ?= quay.io/helmpack/chart-testing:v2.4.0
 
 OUTBIN = bin/$(OS)_$(ARCH)/$(BIN)
@@ -92,6 +93,7 @@ BUILD_DIRS  := bin/$(OS)_$(ARCH)     \
 
 DOCKERFILE_PROD  = hack/docker/voyager/Dockerfile.in
 DOCKERFILE_DBG   = hack/docker/voyager/Dockerfile.dbg
+DOCKERFILE_TEST  = hack/docker/voyager/Dockerfile.test
 
 DOCKER_REPO_ROOT := /go/src/$(GO_PKG)/$(REPO)
 
@@ -352,7 +354,19 @@ docker-manifest-%:
 .PHONY: test
 test: unit-tests e2e-tests
 
-unit-tests: $(BUILD_DIRS)
+bin/.container-$(DOTFILE_IMAGE)-TEST:
+	@echo "container: $(TEST_IMAGE)"
+	@sed                                            \
+	    -e 's|{ARG_BIN}|$(BIN)|g'                   \
+	    -e 's|{ARG_ARCH}|$(ARCH)|g'                 \
+	    -e 's|{ARG_OS}|$(OS)|g'                     \
+	    -e 's|{ARG_FROM}|$(BUILD_IMAGE)|g'          \
+	    $(DOCKERFILE_TEST) > bin/.dockerfile-TEST-$(OS)_$(ARCH)
+	@DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform $(OS)/$(ARCH) --load --pull -t $(TEST_IMAGE) -f bin/.dockerfile-TEST-$(OS)_$(ARCH) .
+	@docker images -q $(TEST_IMAGE) > $@
+	@echo
+
+unit-tests: $(BUILD_DIRS) bin/.container-$(DOTFILE_IMAGE)-TEST
 	@docker run                                                 \
 	    -i                                                      \
 	    --rm                                                    \
@@ -364,7 +378,7 @@ unit-tests: $(BUILD_DIRS)
 	    -v $$(pwd)/.go/cache:/.cache                            \
 	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
 	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
-	    $(BUILD_IMAGE)                                          \
+	    $(TEST_IMAGE)                                          \
 	    /bin/bash -c "                                          \
 	        ARCH=$(ARCH)                                        \
 	        OS=$(OS)                                            \
