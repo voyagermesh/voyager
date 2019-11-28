@@ -2,6 +2,7 @@ package lib
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -14,12 +15,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/juju/ratelimit"
+	"golang.org/x/time/rate"
 )
 
 const (
 	// Version of this libary
-	Version = "2.0.0"
+	Version = "2.0.1"
 
 	// APIVersion of Vultr
 	APIVersion = "v1"
@@ -55,7 +56,7 @@ type Client struct {
 	MaxAttempts int
 
 	// Throttling struct
-	bucket *ratelimit.Bucket
+	limiter *rate.Limiter
 
 	// Optional function called after every successful request made to the API
 	onRequestCompleted RequestCompletionCallback
@@ -91,7 +92,7 @@ func NewClient(apiKey string, options *Options) *Client {
 	client := http.DefaultClient
 	client.Transport = transport
 	endpoint, _ := url.Parse(DefaultEndpoint)
-	rate := 505 * time.Millisecond
+	rateLimit := 505 * time.Millisecond
 	attempts := 1
 
 	if options != nil {
@@ -105,7 +106,7 @@ func NewClient(apiKey string, options *Options) *Client {
 			endpoint, _ = url.Parse(options.Endpoint)
 		}
 		if options.RateLimitation != 0 {
-			rate = options.RateLimitation
+			rateLimit = options.RateLimitation
 		}
 		if options.MaxRetries != 0 {
 			attempts = options.MaxRetries + 1
@@ -118,7 +119,8 @@ func NewClient(apiKey string, options *Options) *Client {
 		Endpoint:    endpoint,
 		APIKey:      apiKey,
 		MaxAttempts: attempts,
-		bucket:      ratelimit.NewBucket(rate, 1),
+		// rate limit is req/s
+		limiter: rate.NewLimiter(rate.Limit(float64(time.Second)/float64(rateLimit)), 1),
 	}
 }
 
@@ -172,7 +174,7 @@ func (c *Client) newRequest(method string, path string, body io.Reader) (*http.R
 
 func (c *Client) do(req *http.Request, data interface{}) error {
 	// Throttle http requests to avoid hitting Vultr's API rate-limit
-	c.bucket.Wait(1)
+	c.limiter.Wait(context.Background()) // ignore error on ratelimiter
 
 	// Request body gets drained on each read so we
 	// need to save it's content for retrying requests

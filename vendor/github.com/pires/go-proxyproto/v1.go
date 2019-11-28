@@ -3,7 +3,6 @@ package proxyproto
 import (
 	"bufio"
 	"bytes"
-	"io"
 	"net"
 	"strconv"
 	"strings"
@@ -65,7 +64,7 @@ func parseVersion1(reader *bufio.Reader) (*Header, error) {
 	return header, nil
 }
 
-func (header *Header) writeVersion1(w io.Writer) (int64, error) {
+func (header *Header) formatVersion1() ([]byte, error) {
 	// As of version 1, only "TCP4" ( \x54 \x43 \x50 \x34 ) for TCP over IPv4,
 	// and "TCP6" ( \x54 \x43 \x50 \x36 ) for TCP over IPv6 are allowed.
 	proto := "UNKNOWN"
@@ -89,21 +88,22 @@ func (header *Header) writeVersion1(w io.Writer) (int64, error) {
 	buf.WriteString(strconv.Itoa(int(header.DestinationPort)))
 	buf.WriteString(CRLF)
 
-	return buf.WriteTo(w)
+	return buf.Bytes(), nil
 }
 
-func parseV1PortNumber(portStr string) (uint16, error) {
-	var port uint16
-
-	_port, err := strconv.Atoi(portStr)
-	if err == nil {
-		if port < 0 || port > 65535 {
+func parseV1PortNumber(portStr string) (port uint16, err error) {
+	_port, _err := strconv.Atoi(portStr)
+	if _err == nil {
+		if _port < 0 || _port > 65535 {
 			err = ErrInvalidPortNumber
+		} else {
+			port = uint16(_port)
 		}
-		port = uint16(_port)
+	} else {
+		err = ErrInvalidPortNumber
 	}
 
-	return port, err
+	return
 }
 
 func parseV1IPAddress(protocol AddressFamilyAndProtocol, addrStr string) (addr net.IP, err error) {
