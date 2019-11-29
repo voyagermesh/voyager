@@ -175,7 +175,7 @@ export VOYAGER_ROLE_TYPE=ClusterRole
 export VOYAGER_DOCKER_REGISTRY=${DOCKER_REGISTRY:-appscode}
 export VOYAGER_IMAGE_TAG=${VOYAGER_IMAGE_TAG:-v11.0.1}
 export VOYAGER_HAPROXY_IMAGE_TAG=1.9.6-v11.0.1-alpine
-export VOYAGER_IMAGE_PULL_SECRET=
+export VOYAGER_IMAGE_PULL_SECRET_NAME=
 export VOYAGER_IMAGE_PULL_POLICY=IfNotPresent
 export VOYAGER_ENABLE_ANALYTICS=true
 export VOYAGER_UNINSTALL=0
@@ -275,8 +275,7 @@ while test $# -gt 0; do
             shift
             ;;
         --image-pull-secret*)
-            secret=$(echo $1 | sed -e 's/^[^=]*=//g')
-            export VOYAGER_IMAGE_PULL_SECRET="name: '$secret'"
+            export VOYAGER_IMAGE_PULL_SECRET_NAME=$(echo $1 | sed -e 's/^[^=]*=//g')
             shift
             ;;
         --enable-validating-webhook*)
@@ -347,6 +346,11 @@ while test $# -gt 0; do
             ;;
     esac
 done
+
+export VOYAGER_IMAGE_PULL_SECRET=
+if [ -n "$VOYAGER_IMAGE_PULL_SECRET_NAME" ]; then
+    export VOYAGER_IMAGE_PULL_SECRET="name: '$VOYAGER_IMAGE_PULL_SECRET_NAME'"
+fi
 
 if [ "$VOYAGER_NAMESPACE" != "kube-system" ]; then
     export VOYAGER_PRIORITY_CLASS=""
