@@ -80,7 +80,7 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `apiserver.disableStatusSubresource` | If true, disables status sub resource for crds. Otherwise enables based on Kubernetes version | `false`            |
 | `apiserver.bypassValidatingWebhookXray` | If true, bypasses validating webhook xray checks           | `false`               |
 | `apiserver.useKubeapiserverFqdnForAks`  | If true, uses kube-apiserver FQDN for AKS cluster to workaround https://github.com/Azure/AKS/issues/522 | `true`             |
-| `apiserver.healthcheck.enabled`         | Enable readiness and liveliness probes                     | `true`                |
+| `apiserver.healthcheck.enabled`         | Enable readiness and liveliness probes                     | `false`               |
 | `enableAnalytics`                       | Send usage events to Google Analytics                      | `true`                |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
