@@ -21,7 +21,7 @@ BIN      := voyager
 COMPRESS ?= no
 
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
-CRD_OPTIONS          ?= "crd:trivialVersions=true"
+CRD_OPTIONS          ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 CODE_GENERATOR_IMAGE ?= appscode/gengo:release-1.16
 API_GROUPS           ?= voyager:v1beta1
 
@@ -486,15 +486,15 @@ $(BUILD_DIRS):
 
 .PHONY: install
 install:
-	APPSCODE_ENV=dev  VOYAGER_IMAGE_TAG=$(TAG) ./deploy/voyager.sh --docker-registry=$(REGISTRY) --image-pull-secret=$(REGISTRY_SECRET)
+	APPSCODE_ENV=dev  VOYAGER_IMAGE_TAG=$(TAG) ./hack/deploy/voyager.sh --docker-registry=$(REGISTRY) --image-pull-secret=$(REGISTRY_SECRET) --provider=minikube
 
 .PHONY: uninstall
 uninstall:
-	./deploy/voyager.sh --uninstall
+	./hack/deploy/voyager.sh --uninstall
 
 .PHONY: purge
 purge:
-	./deploy/voyager.sh --uninstall --purge
+	./hack/deploy/voyager.sh --uninstall --purge
 
 .PHONY: dev
 dev: gen fmt push
