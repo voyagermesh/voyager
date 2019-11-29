@@ -2,6 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: {{ .Release.Name }}-cleaner
+  namespace: {{ .Release.Namespace }}
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     app: "{{ template "voyager.name" . }}"
