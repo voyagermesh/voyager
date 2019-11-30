@@ -90,6 +90,8 @@ jobs:
         kubectl wait --for=condition=Ready nodes --all --timeout=5m
         kubectl get nodes
         echo
+        kubectl version
+        echo
         echo "installing local-path provisioner ..."
         kubectl delete storageclass --all
         kubectl apply -f https://github.com/rancher/local-path-provisioner/raw/v0.0.11/deploy/local-path-storage.yaml
@@ -103,6 +105,7 @@ jobs:
       run: |
         export KUBECONFIG="$(kind get kubeconfig-path)"
         make ct
+        kubectl delete crd --all
 
     - name: Test script installer
       run: |

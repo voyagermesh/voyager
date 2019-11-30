@@ -27,6 +27,7 @@ require (
 	github.com/go-openapi/spec v0.19.2
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/google/go-cmp v0.3.0
+	github.com/google/gofuzz v1.0.0
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/json-iterator/go v1.1.7
 	github.com/mitchellh/go-ps v0.0.0-20190716172923-621e5597135b
@@ -62,6 +63,7 @@ require (
 	k8s.io/kube-openapi v0.0.0-20190816220812-743ec37842bf
 	k8s.io/utils v0.0.0-20190801114015-581e00157fb1
 	kmodules.xyz/client-go v0.0.0-20191127054604-26981530831d
+	kmodules.xyz/crd-schema-fuzz v0.0.0-20191129174258-81f984340891
 	kmodules.xyz/monitoring-agent-api v0.0.0-20191127151826-1eac40b764dc
 	kmodules.xyz/openshift v0.0.0-20191127145035-f6c48a90dbb7 // indirect
 	kmodules.xyz/webhook-runtime v0.0.0-20191127075323-d4bfdee6974d

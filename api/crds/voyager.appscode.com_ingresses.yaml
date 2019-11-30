@@ -28,6 +28,7 @@ spec:
     shortNames:
     - ing
     singular: ingress
+  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}
