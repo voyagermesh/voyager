@@ -120,7 +120,7 @@ spec:
       - hostPath:
           path: {{ .Values.persistence.hostPath | quote }}
         name: cloudconfig
-{{- end -}}
+{{- end }}
 {{- if .Values.templates.cfgmap }}
       - configMap:
           name: {{ .Values.templates.cfgmap }}
