@@ -1088,7 +1088,7 @@ k8s.io/utils/net
 k8s.io/utils/path
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# kmodules.xyz/client-go v0.0.0-20191127054604-26981530831d
+# kmodules.xyz/client-go v0.0.0-20191211192817-f1dcd02124ba
 kmodules.xyz/client-go
 kmodules.xyz/client-go/admissionregistration/v1beta1
 kmodules.xyz/client-go/apiextensions/v1beta1
@@ -1107,7 +1107,7 @@ kmodules.xyz/client-go/tools/clientcmd
 kmodules.xyz/client-go/tools/queue
 # kmodules.xyz/crd-schema-fuzz v0.0.0-20191129174258-81f984340891
 kmodules.xyz/crd-schema-fuzz
-# kmodules.xyz/monitoring-agent-api v0.0.0-20191127151826-1eac40b764dc
+# kmodules.xyz/monitoring-agent-api v0.0.0-20191209232713-25b3711f847f
 kmodules.xyz/monitoring-agent-api/agents
 kmodules.xyz/monitoring-agent-api/agents/coreosprometheusoperator
 kmodules.xyz/monitoring-agent-api/agents/prometheusbuiltin

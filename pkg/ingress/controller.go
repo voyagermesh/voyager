@@ -23,7 +23,6 @@ import (
 	"sync"
 
 	"github.com/appscode/go/log"
-	"github.com/appscode/go/types"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	"github.com/appscode/voyager/pkg/config"
@@ -98,26 +97,6 @@ func NewController(
 		return NewInternalController(ctx, kubeClient, workloadClient, crdClient, extClient, promClient, serviceLister, endpointsLister, cfg, ingress, recorder)
 	}
 	return nil
-}
-
-func (c *controller) ensureOwnerReference(in metav1.ObjectMeta) metav1.ObjectMeta {
-	fi := -1
-	for i, ref := range in.OwnerReferences {
-		if ref.Kind == "Ingress" && ref.Name == c.Ingress.Name {
-			fi = i
-			break
-		}
-	}
-	if fi == -1 {
-		in.OwnerReferences = append(in.OwnerReferences, metav1.OwnerReference{})
-		fi = len(in.OwnerReferences) - 1
-	}
-	in.OwnerReferences[fi].APIVersion = c.Ingress.APISchema()
-	in.OwnerReferences[fi].Kind = "Ingress"
-	in.OwnerReferences[fi].Name = c.Ingress.Name
-	in.OwnerReferences[fi].UID = c.Ingress.UID
-	in.OwnerReferences[fi].BlockOwnerDeletion = types.TrueP()
-	return in
 }
 
 func (c *controller) ensureEnvVars(vars []core.EnvVar) []core.EnvVar {

@@ -275,45 +275,45 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 		Name:      c.Ingress.OffshootName(),
 		Namespace: c.Ingress.Namespace,
 	}
-	return core_util.CreateOrPatchService(c.KubeClient, meta, func(obj *core.Service) *core.Service {
-		obj.ObjectMeta = c.ensureOwnerReference(obj.ObjectMeta)
-		obj.Spec.Type = core.ServiceTypeLoadBalancer
-		obj.Spec.Selector = c.Ingress.OffshootSelector()
+	return core_util.CreateOrPatchService(c.KubeClient, meta, func(in *core.Service) *core.Service {
+		core_util.EnsureOwnerReference(in, metav1.NewControllerRef(c.Ingress, api.SchemeGroupVersion.WithKind(api.ResourceKindIngress)))
+		in.Spec.Type = core.ServiceTypeLoadBalancer
+		in.Spec.Selector = c.Ingress.OffshootSelector()
 
-		obj.Labels = c.Ingress.OffshootLabels()
+		in.Labels = c.Ingress.OffshootLabels()
 		// Annotations
-		if obj.Annotations == nil {
-			obj.Annotations = make(map[string]string)
+		if in.Annotations == nil {
+			in.Annotations = make(map[string]string)
 		}
-		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
-		obj.Annotations[api.OriginName] = c.Ingress.GetName()
+		in.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
+		in.Annotations[api.OriginName] = c.Ingress.GetName()
 
 		// delete last applied ServiceAnnotations
 		// add new ServiceAnnotations
 		// store new ServiceAnnotations keys
-		lastAppliedKeys, _ := meta_util.GetStringValue(obj.Annotations, api.LastAppliedAnnotationKeys)
+		lastAppliedKeys, _ := meta_util.GetStringValue(in.Annotations, api.LastAppliedAnnotationKeys)
 		for _, key := range strings.Split(lastAppliedKeys, ",") {
-			delete(obj.Annotations, key)
+			delete(in.Annotations, key)
 		}
 		newKeys := make([]string, 0)
 		if ans, ok := c.Ingress.ServiceAnnotations(c.cfg.CloudProvider); ok {
 			for k, v := range ans {
-				obj.Annotations[k] = v
+				in.Annotations[k] = v
 				newKeys = append(newKeys, k)
 			}
 		}
 		sort.Strings(newKeys)
-		obj.Annotations[api.LastAppliedAnnotationKeys] = strings.Join(newKeys, ",")
+		in.Annotations[api.LastAppliedAnnotationKeys] = strings.Join(newKeys, ",")
 
 		// Remove old annotations from 3.2.x release.
 		// ref: https://github.com/appscode/voyager/issues/527
 		// https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/
-		delete(obj.Annotations, "service.beta.kubernetes.io/external-traffic")
-		delete(obj.Annotations, "service.beta.kubernetes.io/healthcheck-nodeport")
+		delete(in.Annotations, "service.beta.kubernetes.io/external-traffic")
+		delete(in.Annotations, "service.beta.kubernetes.io/healthcheck-nodeport")
 
 		// LoadBalancer ranges
 		curRanges := sets.NewString()
-		for _, ips := range obj.Spec.LoadBalancerSourceRanges {
+		for _, ips := range in.Spec.LoadBalancerSourceRanges {
 			if k, ok := ipnet(ips); ok {
 				curRanges.Insert(k)
 			}
@@ -325,13 +325,13 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 			}
 		}
 		if !curRanges.Equal(desiredRanges) {
-			obj.Spec.LoadBalancerSourceRanges = c.Ingress.Spec.LoadBalancerSourceRanges
+			in.Spec.LoadBalancerSourceRanges = c.Ingress.Spec.LoadBalancerSourceRanges
 		}
 
 		// ExternalIPs
-		obj.Spec.ExternalIPs = c.Ingress.Spec.ExternalIPs
-		if len(obj.Spec.ExternalIPs) > 0 {
-			sort.Strings(obj.Spec.ExternalIPs)
+		in.Spec.ExternalIPs = c.Ingress.Spec.ExternalIPs
+		if len(in.Spec.ExternalIPs) > 0 {
+			sort.Strings(in.Spec.ExternalIPs)
 		}
 
 		// opening other tcp ports
@@ -347,7 +347,7 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 			}
 			desiredPorts = append(desiredPorts, p)
 		}
-		obj.Spec.Ports = core_util.MergeServicePorts(obj.Spec.Ports, desiredPorts)
+		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, desiredPorts)
 
 		// ExternalTrafficPolicy
 		if c.Ingress.KeepSourceIP() {
@@ -355,9 +355,9 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 			case "gce", api.ProviderGKE, "azure", "acs", "aks", "metallb":
 				// https://github.com/appscode/voyager/issues/276
 				// ref: https://kubernetes.io/docs/tasks/services/source-ip/#source-ip-for-services-with-typeloadbalancer
-				obj.Spec.ExternalTrafficPolicy = core.ServiceExternalTrafficPolicyTypeLocal
+				in.Spec.ExternalTrafficPolicy = core.ServiceExternalTrafficPolicyTypeLocal
 				if c.Ingress.HealthCheckNodeport() > 0 {
-					obj.Spec.HealthCheckNodePort = int32(c.Ingress.HealthCheckNodeport())
+					in.Spec.HealthCheckNodePort = int32(c.Ingress.HealthCheckNodeport())
 				}
 			}
 		}
@@ -366,11 +366,11 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 		switch c.cfg.CloudProvider {
 		case "gce", api.ProviderGKE, "azure", "acs", "aks", "openstack", "metallb", "digitalocean", "linode":
 			if ip := c.Ingress.LoadBalancerIP(); ip != nil {
-				obj.Spec.LoadBalancerIP = ip.String()
+				in.Spec.LoadBalancerIP = ip.String()
 			}
 		}
 
-		return obj
+		return in
 	})
 }
 
@@ -379,60 +379,60 @@ func (c *loadBalancerController) ensurePods() (kutil.VerbType, error) {
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	_, vt, err := c.WorkloadClient.Workloads(c.Ingress.Namespace).CreateOrPatch(obj, func(obj *wpi.Workload) *wpi.Workload {
+	_, vt, err := c.WorkloadClient.Workloads(c.Ingress.Namespace).CreateOrPatch(obj, func(in *wpi.Workload) *wpi.Workload {
 		// deployment annotations
-		if obj.Annotations == nil {
-			obj.Annotations = make(map[string]string)
+		if in.Annotations == nil {
+			in.Annotations = make(map[string]string)
 		}
-		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
-		obj.Annotations[api.OriginName] = c.Ingress.GetName()
+		in.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
+		in.Annotations[api.OriginName] = c.Ingress.GetName()
 
-		obj.Labels = c.Ingress.OffshootLabels()
-		obj.ObjectMeta = c.ensureOwnerReference(obj.ObjectMeta)
-		obj.Spec.Selector = &metav1.LabelSelector{
+		in.Labels = c.Ingress.OffshootLabels()
+		core_util.EnsureOwnerReference(in, metav1.NewControllerRef(c.Ingress, api.SchemeGroupVersion.WithKind(api.ResourceKindIngress)))
+		in.Spec.Selector = &metav1.LabelSelector{
 			MatchLabels: c.Ingress.OffshootSelector(),
 		}
 
 		// assign number of replicas only when there's no controlling hpa
-		if obj.Spec.Replicas == nil || !c.isHPAControlled() {
-			obj.Spec.Replicas = types.Int32P(c.Ingress.Replicas())
+		if in.Spec.Replicas == nil || !c.isHPAControlled() {
+			in.Spec.Replicas = types.Int32P(c.Ingress.Replicas())
 		}
 
 		// pod annotations
 		// delete last-applied-annotations, add new-annotations, store new-annotations keys
-		if obj.Spec.Template.Annotations == nil {
-			obj.Spec.Template.Annotations = make(map[string]string)
+		if in.Spec.Template.Annotations == nil {
+			in.Spec.Template.Annotations = make(map[string]string)
 		}
-		lastAppliedKeys, _ := meta_util.GetStringValue(obj.Spec.Template.Annotations, api.LastAppliedAnnotationKeys)
+		lastAppliedKeys, _ := meta_util.GetStringValue(in.Spec.Template.Annotations, api.LastAppliedAnnotationKeys)
 		for _, key := range strings.Split(lastAppliedKeys, ",") {
-			delete(obj.Spec.Template.Annotations, key)
+			delete(in.Spec.Template.Annotations, key)
 		}
 		newKeys := make([]string, 0)
 		if ans, ok := c.Ingress.PodsAnnotations(); ok {
 			for k, v := range ans {
-				obj.Spec.Template.Annotations[k] = v
+				in.Spec.Template.Annotations[k] = v
 				newKeys = append(newKeys, k)
 			}
 		}
 		sort.Strings(newKeys)
-		obj.Spec.Template.Annotations[api.LastAppliedAnnotationKeys] = strings.Join(newKeys, ",")
+		in.Spec.Template.Annotations[api.LastAppliedAnnotationKeys] = strings.Join(newKeys, ",")
 
 		// pod spec
-		obj.Spec.Template.ObjectMeta.Labels = c.Ingress.OffshootSelector()
-		obj.Spec.Template.Spec.Affinity = c.Ingress.Spec.Affinity
-		obj.Spec.Template.Spec.SchedulerName = c.Ingress.Spec.SchedulerName
-		obj.Spec.Template.Spec.Tolerations = c.Ingress.Spec.Tolerations
-		obj.Spec.Template.Spec.NodeSelector = c.Ingress.Spec.NodeSelector
-		obj.Spec.Template.Spec.ImagePullSecrets = c.Ingress.Spec.ImagePullSecrets
-		obj.Spec.Template.Spec.PriorityClassName = c.Ingress.Spec.PriorityClassName
-		obj.Spec.Template.Spec.Priority = c.Ingress.Spec.Priority
-		obj.Spec.Template.Spec.SecurityContext = c.Ingress.Spec.SecurityContext
-		obj.Spec.Template.Spec.TerminationGracePeriodSeconds = c.Ingress.Spec.TerminationGracePeriodSeconds
-		obj.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
+		in.Spec.Template.ObjectMeta.Labels = c.Ingress.OffshootSelector()
+		in.Spec.Template.Spec.Affinity = c.Ingress.Spec.Affinity
+		in.Spec.Template.Spec.SchedulerName = c.Ingress.Spec.SchedulerName
+		in.Spec.Template.Spec.Tolerations = c.Ingress.Spec.Tolerations
+		in.Spec.Template.Spec.NodeSelector = c.Ingress.Spec.NodeSelector
+		in.Spec.Template.Spec.ImagePullSecrets = c.Ingress.Spec.ImagePullSecrets
+		in.Spec.Template.Spec.PriorityClassName = c.Ingress.Spec.PriorityClassName
+		in.Spec.Template.Spec.Priority = c.Ingress.Spec.Priority
+		in.Spec.Template.Spec.SecurityContext = c.Ingress.Spec.SecurityContext
+		in.Spec.Template.Spec.TerminationGracePeriodSeconds = c.Ingress.Spec.TerminationGracePeriodSeconds
+		in.Spec.Template.Spec.ServiceAccountName = c.Ingress.OffshootName()
 
 		// volume spec
-		obj.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
-			obj.Spec.Template.Spec.Volumes,
+		in.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
+			in.Spec.Template.Spec.Volumes,
 			core.Volume{
 				Name: TLSCertificateVolumeName,
 				VolumeSource: core.VolumeSource{
@@ -441,8 +441,8 @@ func (c *loadBalancerController) ensurePods() (kutil.VerbType, error) {
 			},
 		)
 		if len(c.Ingress.ErrorFilesConfigMapName()) > 0 {
-			obj.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
-				obj.Spec.Template.Spec.Volumes,
+			in.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
+				in.Spec.Template.Spec.Volumes,
 				core.Volume{
 					Name: ErrorFilesVolumeName,
 					VolumeSource: core.VolumeSource{
@@ -456,8 +456,8 @@ func (c *loadBalancerController) ensurePods() (kutil.VerbType, error) {
 			)
 		}
 		for _, configVolume := range c.Ingress.Spec.ConfigVolumes {
-			obj.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
-				obj.Spec.Template.Spec.Volumes,
+			in.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
+				in.Spec.Template.Spec.Volumes,
 				core.Volume{
 					Name: configVolume.Name,
 					VolumeSource: core.VolumeSource{
@@ -533,12 +533,12 @@ func (c *loadBalancerController) ensurePods() (kutil.VerbType, error) {
 		}
 
 		// upsert haproxy and exporter containers
-		obj.Spec.Template.Spec.Containers = core_util.UpsertContainer(obj.Spec.Template.Spec.Containers, haproxyContainer)
+		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, haproxyContainer)
 		if exporter, _ := c.getExporterSidecar(); exporter != nil {
-			obj.Spec.Template.Spec.Containers = core_util.UpsertContainer(obj.Spec.Template.Spec.Containers, *exporter)
+			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, *exporter)
 		}
 
-		return obj
+		return in
 	})
 	return vt, err
 }

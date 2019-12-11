@@ -101,7 +101,7 @@ func (c *controller) reconcileServiceAccount() (kutil.VerbType, error) {
 		Name:      c.Ingress.OffshootName(),
 	}
 	_, vt, err := core_util.CreateOrPatchServiceAccount(c.KubeClient, meta, func(in *core.ServiceAccount) *core.ServiceAccount {
-		in.ObjectMeta = c.ensureOwnerReference(in.ObjectMeta)
+		core_util.EnsureOwnerReference(in, metav1.NewControllerRef(c.Ingress, api.SchemeGroupVersion.WithKind(api.ResourceKindIngress)))
 
 		in.Labels = c.Ingress.OffshootLabels()
 		if in.Annotations == nil {
@@ -120,7 +120,7 @@ func (c *controller) reconcileRoles() (kutil.VerbType, error) {
 		Name:      c.Ingress.OffshootName(),
 	}
 	_, vt, err := rbac_util.CreateOrPatchRole(c.KubeClient, meta, func(in *rbac.Role) *rbac.Role {
-		in.ObjectMeta = c.ensureOwnerReference(in.ObjectMeta)
+		core_util.EnsureOwnerReference(in, metav1.NewControllerRef(c.Ingress, api.SchemeGroupVersion.WithKind(api.ResourceKindIngress)))
 
 		in.Labels = c.Ingress.OffshootLabels()
 		if in.Annotations == nil {
@@ -168,7 +168,7 @@ func (c *controller) reconcileRoleBinding() (kutil.VerbType, error) {
 		Name:      c.Ingress.OffshootName(),
 	}
 	_, vt, err := rbac_util.CreateOrPatchRoleBinding(c.KubeClient, meta, func(in *rbac.RoleBinding) *rbac.RoleBinding {
-		in.ObjectMeta = c.ensureOwnerReference(in.ObjectMeta)
+		core_util.EnsureOwnerReference(in, metav1.NewControllerRef(c.Ingress, api.SchemeGroupVersion.WithKind(api.ResourceKindIngress)))
 
 		in.Labels = c.Ingress.OffshootLabels()
 		if in.Annotations == nil {

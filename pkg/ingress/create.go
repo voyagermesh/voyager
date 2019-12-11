@@ -43,17 +43,17 @@ func (c *controller) ensureConfigMap() (*core.ConfigMap, kutil.VerbType, error) 
 		Name:      c.Ingress.OffshootName(),
 		Namespace: c.Ingress.Namespace,
 	}
-	return core_util.CreateOrPatchConfigMap(c.KubeClient, meta, func(obj *core.ConfigMap) *core.ConfigMap {
-		obj.ObjectMeta = c.ensureOwnerReference(obj.ObjectMeta)
-		if obj.Annotations == nil {
-			obj.Annotations = make(map[string]string)
+	return core_util.CreateOrPatchConfigMap(c.KubeClient, meta, func(in *core.ConfigMap) *core.ConfigMap {
+		core_util.EnsureOwnerReference(in, metav1.NewControllerRef(c.Ingress, api.SchemeGroupVersion.WithKind(api.ResourceKindIngress)))
+		if in.Annotations == nil {
+			in.Annotations = make(map[string]string)
 		}
-		obj.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
-		obj.Annotations[api.OriginName] = c.Ingress.GetName()
-		obj.Data = map[string]string{
+		in.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
+		in.Annotations[api.OriginName] = c.Ingress.GetName()
+		in.Data = map[string]string{
 			"haproxy.cfg": c.HAProxyConfig,
 		}
-		return obj
+		return in
 	})
 }
 
@@ -100,7 +100,7 @@ func (c *controller) ensureStatsService() (*core.Service, kutil.VerbType, error)
 	}
 
 	return core_util.CreateOrPatchService(c.KubeClient, meta, func(in *core.Service) *core.Service {
-		in.ObjectMeta = c.ensureOwnerReference(in.ObjectMeta)
+		core_util.EnsureOwnerReference(in, metav1.NewControllerRef(c.Ingress, api.SchemeGroupVersion.WithKind(api.ResourceKindIngress)))
 		in.Labels = c.Ingress.StatsLabels()
 		if in.Annotations == nil {
 			in.Annotations = map[string]string{}
