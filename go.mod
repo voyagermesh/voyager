@@ -62,9 +62,9 @@ require (
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/kube-openapi v0.0.0-20190816220812-743ec37842bf
 	k8s.io/utils v0.0.0-20190801114015-581e00157fb1
-	kmodules.xyz/client-go v0.0.0-20191127054604-26981530831d
+	kmodules.xyz/client-go v0.0.0-20191211192817-f1dcd02124ba
 	kmodules.xyz/crd-schema-fuzz v0.0.0-20191129174258-81f984340891
-	kmodules.xyz/monitoring-agent-api v0.0.0-20191127151826-1eac40b764dc
+	kmodules.xyz/monitoring-agent-api v0.0.0-20191209232713-25b3711f847f
 	kmodules.xyz/openshift v0.0.0-20191127145035-f6c48a90dbb7 // indirect
 	kmodules.xyz/webhook-runtime v0.0.0-20191127075323-d4bfdee6974d
 	sigs.k8s.io/yaml v1.1.0
@@ -87,7 +87,6 @@ replace (
 	github.com/Azure/go-autorest/logger => github.com/Azure/go-autorest/logger v0.1.0
 	github.com/Azure/go-autorest/tracing => github.com/Azure/go-autorest/tracing v0.5.0
 	github.com/grpc-ecosystem/grpc-gateway => github.com/gomodules/grpc-gateway v1.3.1-ac
-	github.com/kubernetes-csi/external-snapshotter => github.com/kmodules/external-snapshotter v1.2.1-0.20191128100451-0265c5fa679a
 	github.com/miekg/dns => github.com/miekg/dns v1.0.7
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang v0.9.2
 	github.com/prometheus/haproxy_exporter => github.com/appscode/haproxy_exporter v0.7.2-0.20190508003714-b4abf52090e2
