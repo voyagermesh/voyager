@@ -36,7 +36,7 @@ const (
 
 	APISchema        = EngressKey + "/" + "api-schema" // APISchema = {APIGroup}/{APIVersion}
 	APISchemaEngress = voyager.GroupName + "/v1beta1"
-	APISchemaIngress = "extension/v1beta1"
+	APISchemaIngress = "extensions/v1beta1"
 
 	VoyagerPrefix = "voyager-"
 
