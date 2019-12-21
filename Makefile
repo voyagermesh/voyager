@@ -72,10 +72,10 @@ TAG              := $(VERSION)_$(OS)_$(ARCH)
 TAG_PROD         := $(TAG)
 TAG_DBG          := $(VERSION)-dbg_$(OS)_$(ARCH)
 
-GO_VERSION       ?= 1.13.4
+GO_VERSION       ?= 1.13.5
 BUILD_IMAGE      ?= appscode/golang-dev:$(GO_VERSION)
 TEST_IMAGE       ?= appscode/golang-dev:$(GO_VERSION)-voyager
-CHART_TEST_IMAGE ?= quay.io/helmpack/chart-testing:v2.4.0
+CHART_TEST_IMAGE ?= quay.io/helmpack/chart-testing:v3.0.0-beta.1
 
 OUTBIN = bin/$(OS)_$(ARCH)/$(BIN)
 ifeq ($(OS),windows)
@@ -452,13 +452,7 @@ ct: $(BUILD_DIRS)
 	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
 	    --env KUBECONFIG=$(subst $(HOME),,$(KUBECONFIG))        \
 	    $(CHART_TEST_IMAGE)                                     \
-	    /bin/sh -c "                                            \
-		    kubectl -n kube-system create sa tiller;            \
-			kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller;   \
-			helm init --service-account tiller;                 \
-			kubectl wait --for=condition=Ready pods -n kube-system --all --timeout=5m;  \
-			ct lint-and-install --all;                          \
-	    "
+		ct lint-and-install --all
 
 ADDTL_LINTERS   := goconst,gofmt,goimports,unparam
 
@@ -484,17 +478,35 @@ lint: $(BUILD_DIRS)
 $(BUILD_DIRS):
 	@mkdir -p $@
 
+REGISTRY_SECRET ?=
+
+ifeq ($(strip $(REGISTRY_SECRET)),)
+	IMAGE_PULL_SECRETS =
+else
+	IMAGE_PULL_SECRETS = --set imagePullSecrets[0]=$(REGISTRY_SECRET)
+endif
+
 .PHONY: install
 install:
-	APPSCODE_ENV=dev  VOYAGER_IMAGE_TAG=$(TAG) ./hack/deploy/voyager.sh --docker-registry=$(REGISTRY) --image-pull-secret=$(REGISTRY_SECRET) --provider=minikube
+	@cd ../installer; \
+	helm install voyager-operator  charts/voyager \
+		--namespace=kube-system \
+		--set voyager.registry=$(REGISTRY) \
+		--set voyager.tag=$(TAG) \
+		--set imagePullPolicy=Always \
+		--set cloudProvider=minikube \
+		$(IMAGE_PULL_SECRETS); \
+	kubectl wait --for=condition=Ready pods -n kube-system -l app=voyager-operator --timeout=5m; \
+	kubectl wait --for=condition=Available apiservice -l app=voyager-operator --timeout=5m
 
 .PHONY: uninstall
 uninstall:
-	./hack/deploy/voyager.sh --uninstall
+	@cd ../installer; \
+	helm uninstall voyager-operator --namespace=kube-system || true
 
 .PHONY: purge
-purge:
-	./hack/deploy/voyager.sh --uninstall --purge
+purge: uninstall
+	kubectl delete crds -l app=voyager
 
 .PHONY: dev
 dev: gen fmt push
