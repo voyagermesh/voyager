@@ -6,7 +6,7 @@
 ```console
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
-$ helm install appscode/voyager
+$ helm install voyager-operator appscode/voyager -n kube-system
 ```
 
 ## Introduction
@@ -16,13 +16,13 @@ This chart bootstraps an [ingress controller](https://github.com/appscode/voyage
 
 ## Prerequisites
 
-- Kubernetes 1.8+
+- Kubernetes 1.12+
 
 ## Installing the Chart
 To install the chart with the release name `my-release`:
 
 ```console
-$ helm install --name my-release appscode/voyager
+$ helm install my-release appscode/voyager -n kube-system
 ```
 
 The command deploys Voyager Controller on the Kubernetes cluster in the default configuration. The [configuration](#configuration) section lists the parameters that can be configured during installation.
@@ -34,7 +34,7 @@ The command deploys Voyager Controller on the Kubernetes cluster in the default 
 To uninstall/delete the `my-release`:
 
 ```console
-$ helm delete my-release
+$ helm delete my-release -n kube-system
 ```
 
 The command removes all the Kubernetes components associated with the chart and deletes the release.
@@ -49,14 +49,14 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `replicaCount`                       | Number of operator replicas to create (only 1 is supported)   | `1`                   |
 | `voyager.registry`                   | Docker registry used to pull Voyager image                    | `appscode`            |
 | `voyager.repository`                 | Voyager container image                                       | `voyager`             |
-| `voyager.tag`                        | Voyager container image tag                                   | `v11.0.1`          |
+| `voyager.tag`                        | Voyager container image tag                                   | `v11.0.1`             |
 | `haproxy.registry`                   | Docker registry used to pull HAProxy image                    | `appscode`            |
 | `haproxy.repository`                 | HAProxy container image                                       | `haproxy`             |
 | `haproxy.tag`                        | HAProxy container image tag                                   | `1.9.6-v11.0.1-alpine` |
 | `cleaner.registry`                   | Docker registry used to pull Webhook cleaner image            | `appscode`            |
 | `cleaner.repository`                 | Webhook cleaner container image                               | `kubectl`             |
 | `cleaner.tag`                        | Webhook cleaner container image tag                           | `v1.11`               |
-| `imagePullSecrets`                   | Specify image pull secrets                                    | `nil` (does not add image pull secrets to deployed pods) |
+| `imagePullSecrets`                   | Specify image pull secrets                                    | `[]`                  |
 | `imagePullPolicy`                    | Image pull policy                                             | `IfNotPresent`        |
 | `cloudProvider`                      | Name of cloud provider                                        | `nil`                 |
 | `cloudConfig`                        | Path to cloud config                                          | ``                    |
@@ -86,33 +86,12 @@ The following tables lists the configurable parameters of the Voyager chart and 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
 
 ```console
-$ helm install --name my-release --set image.tag=v0.2.1 appscode/voyager
+$ helm install my-release --set image.tag=v0.2.1 appscode/voyager -n kube-system
 ```
 
 Alternatively, a YAML file that specifies the values for the parameters can be provided while
 installing the chart. For example:
 
 ```console
-$ helm install --name my-release --values values.yaml appscode/voyager
-```
-
-## RBAC
-By default the chart will not install the recommended RBAC roles and rolebindings.
-
-You need to have the flag `--authorization-mode=RBAC` on the api server. See the following document for how to enable [RBAC](https://kubernetes.io/docs/admin/authorization/rbac/).
-
-To determine if your cluster supports RBAC, run the the following command:
-
-```console
-$ kubectl api-versions | grep rbac
-```
-
-If the output contains "beta", you may install the chart with RBAC enabled (see below).
-
-### Enable RBAC role/rolebinding creation
-
-To enable the creation of RBAC resources (On clusters with RBAC). Do the following:
-
-```console
-$ helm install --name my-release appscode/voyager --set rbac.create=true
+$ helm install my-release --values values.yaml appscode/voyager -n kube-system
 ```

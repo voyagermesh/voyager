@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        k8s: [v1.12.10, v1.14.6, v1.16.3]
+        k8s: [v1.12.10, v1.14.6, v1.16.3, v1.17.0]
     steps:
 
     - name: Set up Go 1.13
@@ -37,7 +37,7 @@ jobs:
 
     - name: Run checks
       run: |
-        sudo apt-get -qq update
+        sudo apt-get -qq update || true
         sudo apt-get install -y bzr
         make ci
 
@@ -74,6 +74,7 @@ jobs:
       id: kind
       uses: engineerd/setup-kind@v0.1.0
       with:
+        version: v0.6.1
         config: hack/kubernetes/kind.yaml
         image: kindest/node:${{ matrix.k8s }}
 
@@ -106,18 +107,6 @@ jobs:
         export KUBECONFIG="$(kind get kubeconfig-path)"
         make ct
         kubectl delete crd --all
-
-    - name: Test script installer
-      run: |
-        export KUBECONFIG="$(kind get kubeconfig-path)"
-        echo "installing operator"
-        ./hack/deploy/voyager.sh --provider=minikube
-        echo
-        echo "uninstalling operator"
-        ./hack/deploy/voyager.sh --uninstall
-        echo
-        echo "purging operator"
-        ./hack/deploy/voyager.sh --uninstall --purge
 
     - name: Run e2e tests
       env:

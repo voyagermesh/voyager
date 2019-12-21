@@ -18,9 +18,10 @@ cleaner:
 ## Optionally specify an array of imagePullSecrets.
 ## Secrets must be manually created in the namespace.
 ## ref: https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod
-##
-# imagePullSecrets:
-#   - name: myRegistryKeySecretName
+## example: helm template charts/voyager \
+##            --set imagePullSecrets[0]=abc \
+##            --set imagePullSecrets[1]=xyz
+imagePullSecrets: []
 ## Specify a imagePullPolicy
 ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
 ##
