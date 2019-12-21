@@ -815,8 +815,8 @@ k8s.io/utils v0.0.0-20190801114015-581e00157fb1 h1:+ySTxfHnfzZb9ys375PXNlLhkJPLK
 k8s.io/utils v0.0.0-20190801114015-581e00157fb1/go.mod h1:sZAwmy6armz5eXlNoLmJcl4F1QuKu7sr+mFQ0byX7Ew=
 kmodules.xyz/client-go v0.0.0-20191127054604-26981530831d h1:hcgo8g2vWx3jVEcbWyeOBZHpWKjS99WPH3Iboik/OIE=
 kmodules.xyz/client-go v0.0.0-20191127054604-26981530831d/go.mod h1:OFxuKCiVR+MYlR2a08FkfaF+IbXkLe0xBetu2LTUuGI=
-kmodules.xyz/client-go v0.0.0-20191211192817-f1dcd02124ba h1:167+cDonVeZSmfbterebD6SofCnpjaiDS9St2RGhRug=
-kmodules.xyz/client-go v0.0.0-20191211192817-f1dcd02124ba/go.mod h1:OFxuKCiVR+MYlR2a08FkfaF+IbXkLe0xBetu2LTUuGI=
+kmodules.xyz/client-go v0.0.0-20191219184245-880ab4b0e5db h1:6ucciOzNh6nKC5uN3DetZ/rLtp/mgc3SfFSFL+sZEX0=
+kmodules.xyz/client-go v0.0.0-20191219184245-880ab4b0e5db/go.mod h1:OFxuKCiVR+MYlR2a08FkfaF+IbXkLe0xBetu2LTUuGI=
 kmodules.xyz/crd-schema-fuzz v0.0.0-20191129174258-81f984340891 h1:2W/fqLbAurvupIZL3TEFrlb7DnOIhlOXpNgzgcFFSmA=
 kmodules.xyz/crd-schema-fuzz v0.0.0-20191129174258-81f984340891/go.mod h1:9NXNZ4xhqof0WngtIuo4vl+WoCQpLJEJcyuEo3mPpiM=
 kmodules.xyz/monitoring-agent-api v0.0.0-20191209232713-25b3711f847f h1:6Nx6TOdEorxFB2THg2TuWJLpp13/ue2BIa0p72L57ok=
