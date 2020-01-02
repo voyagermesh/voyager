@@ -59,13 +59,13 @@ func (i *ingressInvocation) Teardown() {
 		Expect(i.KubeClient.CoreV1().Services(i.Namespace()).Delete(testServerResourceName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		Expect(i.KubeClient.CoreV1().Services(i.Namespace()).Delete(testServerHTTPSResourceName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		Expect(i.KubeClient.CoreV1().Services(i.Namespace()).Delete(emptyServiceName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
-		rc, err := i.KubeClient.CoreV1().ReplicationControllers(i.Namespace()).Get(testServerResourceName, metav1.GetOptions{})
+		rc, err := i.KubeClient.AppsV1().Deployments(i.Namespace()).Get(testServerResourceName, metav1.GetOptions{})
 		if err == nil {
 			rc.Spec.Replicas = types.Int32P(0)
-			Expect(i.KubeClient.CoreV1().ReplicationControllers(i.Namespace()).Update(rc)).NotTo(HaveOccurred())
+			Expect(i.KubeClient.AppsV1().Deployments(i.Namespace()).Update(rc)).NotTo(HaveOccurred())
 			time.Sleep(time.Second * 5)
 		}
-		Expect(i.KubeClient.CoreV1().ReplicationControllers(i.Namespace()).Delete(testServerResourceName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+		Expect(i.KubeClient.AppsV1().Deployments(i.Namespace()).Delete(testServerResourceName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 
 		list, err := i.VoyagerClient.VoyagerV1beta1().Ingresses(metav1.NamespaceAll).List(metav1.ListOptions{})
 		if err == nil {

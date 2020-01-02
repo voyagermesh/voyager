@@ -31,6 +31,7 @@ import (
 	. "github.com/onsi/gomega"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -41,7 +42,7 @@ var _ = Describe("IngressGRPC", func() {
 	var (
 		f              *framework.Invocation
 		ing            *api.Ingress
-		grpcController *core.ReplicationController
+		grpcController *apps.Deployment
 		grpcService    *core.Service
 		err            error
 	)
@@ -98,7 +99,7 @@ var _ = Describe("IngressGRPC", func() {
 		if options.Cleanup {
 			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
 			Expect(f.KubeClient.CoreV1().Services(f.Ingress.Namespace()).Delete(grpcService.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
-			Expect(f.KubeClient.CoreV1().ReplicationControllers(f.Ingress.Namespace()).Delete(grpcController.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+			Expect(f.KubeClient.AppsV1().Deployments(f.Ingress.Namespace()).Delete(grpcController.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		}
 	})
 
@@ -203,8 +204,8 @@ func doGRPCStream(address, crtPath string, request *hello.IntroRequest) (*hello.
 	return streamClient.Recv()
 }
 
-func createGRPCController(f *framework.Invocation) (*core.ReplicationController, error) {
-	return f.KubeClient.CoreV1().ReplicationControllers(f.Namespace()).Create(&core.ReplicationController{
+func createGRPCController(f *framework.Invocation) (*apps.Deployment, error) {
+	return f.KubeClient.AppsV1().Deployments(f.Namespace()).Create(&apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      f.UniqueName(),
 			Namespace: f.Namespace(),
@@ -212,12 +213,14 @@ func createGRPCController(f *framework.Invocation) (*core.ReplicationController,
 				"app": "hello-grpc-" + f.App(),
 			},
 		},
-		Spec: core.ReplicationControllerSpec{
+		Spec: apps.DeploymentSpec{
 			Replicas: types.Int32P(1),
-			Selector: map[string]string{
-				"app": "hello-grpc-" + f.App(),
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"app": "hello-grpc-" + f.App(),
+				},
 			},
-			Template: &core.PodTemplateSpec{
+			Template: core.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						"app": "hello-grpc-" + f.App(),

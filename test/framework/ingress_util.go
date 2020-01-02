@@ -133,7 +133,7 @@ func (i *ingressInvocation) setupTestServers() error {
 }
 
 func (i *ingressInvocation) createTestServerController() error {
-	_, err := i.KubeClient.CoreV1().ReplicationControllers(i.Namespace()).Create(&core.ReplicationController{
+	_, err := i.KubeClient.AppsV1().Deployments(i.Namespace()).Create(&apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      testServerResourceName,
 			Namespace: i.Namespace(),
@@ -141,12 +141,14 @@ func (i *ingressInvocation) createTestServerController() error {
 				"app": "test-server-" + i.app,
 			},
 		},
-		Spec: core.ReplicationControllerSpec{
+		Spec: apps.DeploymentSpec{
 			Replicas: types.Int32P(2),
-			Selector: map[string]string{
-				"app": "test-server-" + i.app,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"app": "test-server-" + i.app,
+				},
 			},
-			Template: &core.PodTemplateSpec{
+			Template: core.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						"app": "test-server-" + i.app,
@@ -572,7 +574,7 @@ func (i *ingressInvocation) CheckTestServersPortAssignments(ing *api_v1beta1.Ing
 	i.Lock.Lock()
 	defer i.Lock.Unlock()
 
-	rc, err := i.KubeClient.CoreV1().ReplicationControllers(i.TestNamespace).Get(i.TestServerName(), metav1.GetOptions{})
+	dep, err := i.KubeClient.AppsV1().Deployments(i.TestNamespace).Get(i.TestServerName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -583,15 +585,21 @@ func (i *ingressInvocation) CheckTestServersPortAssignments(ing *api_v1beta1.Ing
 	}
 
 	// Removing pods so that endpoints get updated
-	rc.Spec.Replicas = types.Int32P(0)
-	_, err = i.KubeClient.CoreV1().ReplicationControllers(rc.Namespace).Update(rc)
+	dep.Spec.Replicas = types.Int32P(0)
+	_, err = i.KubeClient.AppsV1().Deployments(dep.Namespace).Update(dep)
+	if err != nil {
+		return err
+	}
+
+	sel, err := metav1.LabelSelectorAsSelector(dep.Spec.Selector)
 	if err != nil {
 		return err
 	}
 
 	for {
-		pods, _ := i.KubeClient.CoreV1().Pods(rc.Namespace).List(metav1.ListOptions{
-			LabelSelector: labels.SelectorFromSet(rc.Spec.Selector).String(),
+
+		pods, _ := i.KubeClient.CoreV1().Pods(dep.Namespace).List(metav1.ListOptions{
+			LabelSelector: sel.String(),
 		})
 		if len(pods.Items) <= 0 {
 			break
@@ -614,12 +622,12 @@ func (i *ingressInvocation) CheckTestServersPortAssignments(ing *api_v1beta1.Ing
 		}
 	}
 
-	rc, err = i.KubeClient.CoreV1().ReplicationControllers(i.TestNamespace).Get(i.TestServerName(), metav1.GetOptions{})
+	dep, err = i.KubeClient.AppsV1().Deployments(i.TestNamespace).Get(i.TestServerName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	rc.Spec.Replicas = types.Int32P(2)
-	_, err = i.KubeClient.CoreV1().ReplicationControllers(rc.Namespace).Update(rc)
+	dep.Spec.Replicas = types.Int32P(2)
+	_, err = i.KubeClient.AppsV1().Deployments(dep.Namespace).Update(dep)
 	if err != nil {
 		return err
 	}
