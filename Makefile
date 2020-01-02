@@ -395,7 +395,7 @@ unit-tests: $(BUILD_DIRS) bin/.container-$(DOTFILE_IMAGE)-TEST
 # NB: -t is used to catch ctrl-c interrupt from keyboard and -t will be problematic for CI.
 
 GINKGO_ARGS ?=
-TEST_ARGS   ?=
+TEST_ARGS   ?= -cloud-provider=minikube -v=5
 
 .PHONY: e2e-tests
 e2e-tests: $(BUILD_DIRS)
@@ -488,21 +488,19 @@ endif
 
 .PHONY: install
 install:
-	@cd ../installer; \
-	helm install voyager-operator  charts/voyager \
+	@helm install voyager-operator  charts/voyager \
 		--namespace=kube-system \
 		--set voyager.registry=$(REGISTRY) \
 		--set voyager.tag=$(TAG) \
 		--set imagePullPolicy=Always \
 		--set cloudProvider=minikube \
+		--set apiserver.enableValidatingWebhook=false \
 		$(IMAGE_PULL_SECRETS); \
-	kubectl wait --for=condition=Ready pods -n kube-system -l app=voyager-operator --timeout=5m; \
-	kubectl wait --for=condition=Available apiservice -l app=voyager-operator --timeout=5m
+	kubectl wait --for=condition=Ready pods -n kube-system -l app=voyager --timeout=5m
 
 .PHONY: uninstall
 uninstall:
-	@cd ../installer; \
-	helm uninstall voyager-operator --namespace=kube-system || true
+	@helm uninstall voyager-operator --namespace=kube-system || true
 
 .PHONY: purge
 purge: uninstall

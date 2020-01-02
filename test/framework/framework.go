@@ -41,7 +41,7 @@ type Framework struct {
 	VoyagerClient cs.Interface
 	CRDClient     kext_cs.ApiextensionsV1beta1Interface
 
-	Operator      *operator.Operator
+	Operator      *operator.OperatorConfig
 	CertStore     *certstore.CertStore
 	TestNamespace string
 	Cleanup       bool
@@ -69,9 +69,6 @@ type certificateInvocation struct {
 }
 
 func New(cfg *operator.OperatorConfig, testNamespace string, cleanup bool) *Framework {
-	op, err := cfg.New()
-	Expect(err).NotTo(HaveOccurred())
-
 	cm, err := certstore.NewCertStore(afero.NewMemMapFs(), "/pki")
 	Expect(err).NotTo(HaveOccurred())
 
@@ -82,7 +79,7 @@ func New(cfg *operator.OperatorConfig, testNamespace string, cleanup bool) *Fram
 		KubeClient:    cfg.KubeClient,
 		VoyagerClient: cfg.VoyagerClient,
 		CRDClient:     cfg.CRDClient,
-		Operator:      op,
+		Operator:      cfg,
 		CertStore:     cm,
 		TestNamespace: testNamespace,
 		Cleanup:       cleanup,

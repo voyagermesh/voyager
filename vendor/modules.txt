@@ -49,7 +49,6 @@ github.com/appscode/go/analytics
 github.com/appscode/go/context
 github.com/appscode/go/crypto/rand
 github.com/appscode/go/encoding/json/types
-github.com/appscode/go/flags
 github.com/appscode/go/homedir
 github.com/appscode/go/ioutil
 github.com/appscode/go/log

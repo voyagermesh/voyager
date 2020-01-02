@@ -20,9 +20,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
-	"os/exec"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/appscode/go/log"
@@ -133,7 +131,7 @@ func (i *ingressInvocation) setupTestServers() error {
 }
 
 func (i *ingressInvocation) createTestServerController() error {
-	_, err := i.KubeClient.CoreV1().ReplicationControllers(i.Namespace()).Create(&core.ReplicationController{
+	_, err := i.KubeClient.AppsV1().Deployments(i.Namespace()).Create(&apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      testServerResourceName,
 			Namespace: i.Namespace(),
@@ -141,12 +139,14 @@ func (i *ingressInvocation) createTestServerController() error {
 				"app": "test-server-" + i.app,
 			},
 		},
-		Spec: core.ReplicationControllerSpec{
+		Spec: apps.DeploymentSpec{
 			Replicas: types.Int32P(2),
-			Selector: map[string]string{
-				"app": "test-server-" + i.app,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"app": "test-server-" + i.app,
+				},
 			},
-			Template: &core.PodTemplateSpec{
+			Template: core.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						"app": "test-server-" + i.app,
@@ -364,35 +364,13 @@ func (i *ingressInvocation) NodeSelector() map[string]string {
 	return map[string]string{}
 }
 
-func getMinikubeIP() (ip net.IP, err error) {
-	err = wait.PollImmediate(2*time.Second, 3*time.Minute, func() (bool, error) {
-		var outputs []byte
-		if outputs, err = exec.Command("minikube", "ip").CombinedOutput(); err != nil {
-			return false, nil // retry
-		} else {
-			output := strings.TrimSpace(string(outputs))
-			if ip = net.ParseIP(output); ip == nil {
-				err = errors.Errorf("failed to parse minikube ip: %s", output)
-				return false, nil // retry
-			} else {
-				return true, nil
-			}
-		}
-	})
-	return
-}
-
 func getMinikubeURLs(k kubernetes.Interface, ing *api_v1beta1.Ingress) ([]string, error) {
 	serverAddr := make([]string, 0)
 
-	minikubeIP, err := getMinikubeIP()
-	if err != nil {
-		return nil, err
-	}
-
 	// get offshoot service
 	var svc *core.Service
-	err = wait.PollImmediate(2*time.Second, 3*time.Minute, func() (bool, error) {
+	err := wait.PollImmediate(2*time.Second, 3*time.Minute, func() (bool, error) {
+		var err error
 		svc, err = k.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 		if err != nil {
 			return false, nil // retry
@@ -412,7 +390,7 @@ func getMinikubeURLs(k kubernetes.Interface, ing *api_v1beta1.Ingress) ([]string
 			accessPort = p.NodePort
 		}
 		if accessPort > 0 {
-			u, err := url.Parse(fmt.Sprintf("http://%s:%d", minikubeIP, accessPort))
+			u, err := url.Parse(fmt.Sprintf("http://%s:%d", MinikubeIP, accessPort))
 			if err != nil {
 				return nil, err
 			}
@@ -572,7 +550,7 @@ func (i *ingressInvocation) CheckTestServersPortAssignments(ing *api_v1beta1.Ing
 	i.Lock.Lock()
 	defer i.Lock.Unlock()
 
-	rc, err := i.KubeClient.CoreV1().ReplicationControllers(i.TestNamespace).Get(i.TestServerName(), metav1.GetOptions{})
+	dep, err := i.KubeClient.AppsV1().Deployments(i.TestNamespace).Get(i.TestServerName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -583,15 +561,21 @@ func (i *ingressInvocation) CheckTestServersPortAssignments(ing *api_v1beta1.Ing
 	}
 
 	// Removing pods so that endpoints get updated
-	rc.Spec.Replicas = types.Int32P(0)
-	_, err = i.KubeClient.CoreV1().ReplicationControllers(rc.Namespace).Update(rc)
+	dep.Spec.Replicas = types.Int32P(0)
+	_, err = i.KubeClient.AppsV1().Deployments(dep.Namespace).Update(dep)
+	if err != nil {
+		return err
+	}
+
+	sel, err := metav1.LabelSelectorAsSelector(dep.Spec.Selector)
 	if err != nil {
 		return err
 	}
 
 	for {
-		pods, _ := i.KubeClient.CoreV1().Pods(rc.Namespace).List(metav1.ListOptions{
-			LabelSelector: labels.SelectorFromSet(rc.Spec.Selector).String(),
+
+		pods, _ := i.KubeClient.CoreV1().Pods(dep.Namespace).List(metav1.ListOptions{
+			LabelSelector: sel.String(),
 		})
 		if len(pods.Items) <= 0 {
 			break
@@ -614,12 +598,12 @@ func (i *ingressInvocation) CheckTestServersPortAssignments(ing *api_v1beta1.Ing
 		}
 	}
 
-	rc, err = i.KubeClient.CoreV1().ReplicationControllers(i.TestNamespace).Get(i.TestServerName(), metav1.GetOptions{})
+	dep, err = i.KubeClient.AppsV1().Deployments(i.TestNamespace).Get(i.TestServerName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	rc.Spec.Replicas = types.Int32P(2)
-	_, err = i.KubeClient.CoreV1().ReplicationControllers(rc.Namespace).Update(rc)
+	dep.Spec.Replicas = types.Int32P(2)
+	_, err = i.KubeClient.AppsV1().Deployments(dep.Namespace).Update(dep)
 	if err != nil {
 		return err
 	}
@@ -1356,11 +1340,7 @@ func (i *ingressInvocation) GetNodePortServiceURLForSpecificPort(svcName string,
 
 	var nodeIP string
 	if node.Name == api.ProviderMinikube {
-		nodeIPURL, err := getMinikubeIP()
-		if err != nil {
-			return "", err
-		}
-		nodeIP = nodeIPURL.String()
+		nodeIP = MinikubeIP
 	}
 	for _, addr := range node.Status.Addresses {
 		if addr.Type == core.NodeExternalIP {

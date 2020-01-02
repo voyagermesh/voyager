@@ -19,8 +19,6 @@ package config
 import (
 	"time"
 
-	"github.com/appscode/go/runtime"
-
 	"kmodules.xyz/client-go/meta"
 )
 
@@ -32,7 +30,8 @@ func init() {
 	if meta.PossiblyInCluster() {
 		BuiltinTemplates = "/srv/voyager/templates/*.cfg"
 	} else {
-		BuiltinTemplates = runtime.GOPath() + "/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg"
+		BuiltinTemplates = "/src/hack/docker/voyager/templates/*.cfg"
+		// BuiltinTemplates = "/home/tamal/go/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg"
 	}
 }
 

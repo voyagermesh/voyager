@@ -39,7 +39,8 @@ const (
 // +kubebuilder:printcolumn:name="Domains",type="string",JSONPath=".spec.domains[0]"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 type Certificate struct {
-	metav1.TypeMeta   `json:",inline,omitempty"`
+	metav1.TypeMeta `json:",inline"`
+	// +optional
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 	Spec              CertificateSpec   `json:"spec,omitempty"`
 	Status            CertificateStatus `json:"status,omitempty"`
