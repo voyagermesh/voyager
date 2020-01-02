@@ -85,9 +85,6 @@ apiserver:
   enableValidatingWebhook: true
   # CA certificate used by main Kubernetes api server
   ca: not-ca-cert
-  # If true, disables status sub resource for crds.
-  # Otherwise, enables status sub resource for Kubernetes version >= 1.11 and disables for other versions.
-  disableStatusSubresource: false
   # If true, bypasses validating webhook xray checks
   bypassValidatingWebhookXray: false
   # If true, uses kube-apiserver FQDN for AKS cluster to workaround https://github.com/Azure/AKS/issues/522 (default true)

@@ -77,7 +77,6 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `apiserver.versionPriority`          | The ordering of this API inside of the group.                 | 15                    |
 | `apiserver.enableValidatingWebhook`  | Configure apiserver as admission webhooks for Voyager CRDs     | `true`                |
 | `apiserver.ca`                       | CA certificate used by main Kubernetes api server             | `not-ca-cert`         |
-| `apiserver.disableStatusSubresource` | If true, disables status sub resource for crds. Otherwise enables based on Kubernetes version | `false`            |
 | `apiserver.bypassValidatingWebhookXray` | If true, bypasses validating webhook xray checks           | `false`               |
 | `apiserver.useKubeapiserverFqdnForAks`  | If true, uses kube-apiserver FQDN for AKS cluster to workaround https://github.com/Azure/AKS/issues/522 | `true`             |
 | `apiserver.healthcheck.enabled`         | Enable readiness and liveliness probes                     | `false`               |
