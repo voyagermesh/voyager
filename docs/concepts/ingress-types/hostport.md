@@ -17,12 +17,7 @@ In `HostPort` type Ingress, HAProxy pods are run via a Kubernetes deployment nam
 
 ## How It Works
 
-- First, deploy voyager operator.
-
-```console
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/{{< param "info.version" >}}/hack/deploy/voyager.sh \
-    | bash -s -- --provider=minikube
-```
+- First, install Voyager operator in your cluster following the steps [here](/docs/setup/install.md).
 
 - Now, deploy test servers using [this script](/docs/examples/ingress/types/hostport/deploy-servers.sh) script.
 

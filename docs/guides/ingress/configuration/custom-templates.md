@@ -49,11 +49,13 @@ Now create a ConfigMap using the defaults.cfg as key and the file content as the
 $ kubectl create configmap -n kube-system voyager-templates --from-file=/tmp/defaults.cfg
 ```
 
-Now, the ConfigMap `voyager-templates` has to be mounted in the voyager operator pod and `--custom-templates` flag has to be set. To do this pass the `--template-cfgmap` flag to the Voyager installer script.
+Now, the ConfigMap `voyager-templates` has to be mounted in the voyager operator pod and `--custom-templates` flag has to be set. To do this, set `templates.cfgmap` value to Voyager operator chart.
 
 ```console
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/{{< param "info.version" >}}/hack/deploy/voyager.sh \
-  | bash -s -- --provider=minikube --template-cfgmap=voyager-templates
+$ helm install voyager-operator appscode/voyager --version {{< param "info.version" >}} \
+  --namespace kube-system \
+  --set cloudProvider=minikube \
+  --set templates.cfgmap=voyager-templates
 ```
 
 ![installer](/docs/images/ingress/configuration/custom-template/installer.png)

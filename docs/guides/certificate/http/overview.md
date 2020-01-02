@@ -17,12 +17,7 @@ section_menu_id: guides
 
 ## Deploy Voyager operator
 
-Deploy Voyager operator following instructions [here](/docs/setup/install.md).
-
-```console
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/{{< param "info.version" >}}/hack/deploy/voyager.sh \
-  | bash -s -- --provider=gke
-```
+Install Voyager operator in your cluster following the steps [here](/docs/setup/install.md).
 
 ## Create Ingress
 
