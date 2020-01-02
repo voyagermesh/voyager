@@ -17,12 +17,7 @@ In `LoadBalancer` type Ingress, HAProxy pods are exposed via a LoadBalancer type
 
 ## How It Works
 
-- First, deploy voyager operator.
-
-```console
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/{{< param "info.version" >}}/hack/deploy/voyager.sh \
-    | bash -s -- --provider=gke
-```
+- First, install Voyager operator in your cluster following the steps [here](/docs/setup/install.md).
 
 - Now, deploy test servers using [this script](/docs/examples/ingress/types/loadbalancer/deploy-servers.sh) script.
 

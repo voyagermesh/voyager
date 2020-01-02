@@ -17,12 +17,7 @@ In `NodePort` type Ingress, HAProxy pods are exposed via a NodePort type Kuberne
 
 ## How It Works
 
-- First, deploy voyager operator.
-
-```console
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/{{< param "info.version" >}}/hack/deploy/voyager.sh \
-    | bash -s -- --provider=minikube
-```
+- First, install Voyager operator in your cluster following the steps [here](/docs/setup/install.md).
 
 - Then, deploy and expose a test server.
 

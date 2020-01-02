@@ -30,12 +30,7 @@ Server Version: v1.8.8
 
 ## Deploy Voyager operator
 
-Deploy Voyager operator following instructions [here](/docs/setup/install.md).
-
-```console
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/{{< param "info.version" >}}/hack/deploy/voyager.sh \
-  | bash -s -- --provider=aws --run-on-master
-```
+Install Voyager operator in your cluster following the steps [here](/docs/setup/install.md).
 
 ## Setup Route53 Hosted Zone
 
