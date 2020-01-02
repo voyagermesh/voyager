@@ -394,8 +394,8 @@ unit-tests: $(BUILD_DIRS) bin/.container-$(DOTFILE_IMAGE)-TEST
 #
 # NB: -t is used to catch ctrl-c interrupt from keyboard and -t will be problematic for CI.
 
-GINKGO_ARGS ?=
-TEST_ARGS   ?=
+GINKGO_ARGS ?= "--flakeAttempts=2"
+TEST_ARGS   ?= --selfhosted-operator --cloud-provider=minikube
 
 .PHONY: e2e-tests
 e2e-tests: $(BUILD_DIRS)
