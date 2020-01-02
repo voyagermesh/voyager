@@ -2480,15 +2480,12 @@
           "type": "string"
         },
         "metadata": {
-          "description": "Standard object's metadata. More info: http://releases.k8s.io/release-1.2/docs/devel/api-conventions.md#metadata",
           "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.ObjectMeta"
         },
         "spec": {
-          "description": "Spec is the desired state of the Ingress. More info: http://releases.k8s.io/release-1.2/docs/devel/api-conventions.md#spec-and-status",
           "$ref": "#/definitions/com.github.appscode.voyager.apis.voyager.v1beta1.IngressSpec"
         },
         "status": {
-          "description": "Status is the current state of the Ingress. More info: http://releases.k8s.io/release-1.2/docs/devel/api-conventions.md#spec-and-status",
           "$ref": "#/definitions/com.github.appscode.voyager.apis.voyager.v1beta1.IngressStatus"
         }
       },

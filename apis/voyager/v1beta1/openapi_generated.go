@@ -1213,20 +1213,17 @@ func schema_voyager_apis_voyager_v1beta1_Ingress(ref common.ReferenceCallback) c
 					},
 					"metadata": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Standard object's metadata. More info: http://releases.k8s.io/release-1.2/docs/devel/api-conventions.md#metadata",
-							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
 						},
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Spec is the desired state of the Ingress. More info: http://releases.k8s.io/release-1.2/docs/devel/api-conventions.md#spec-and-status",
-							Ref:         ref("github.com/appscode/voyager/apis/voyager/v1beta1.IngressSpec"),
+							Ref: ref("github.com/appscode/voyager/apis/voyager/v1beta1.IngressSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Status is the current state of the Ingress. More info: http://releases.k8s.io/release-1.2/docs/devel/api-conventions.md#spec-and-status",
-							Ref:         ref("github.com/appscode/voyager/apis/voyager/v1beta1.IngressStatus"),
+							Ref: ref("github.com/appscode/voyager/apis/voyager/v1beta1.IngressStatus"),
 						},
 					},
 				},

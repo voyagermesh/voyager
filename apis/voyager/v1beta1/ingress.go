@@ -44,17 +44,10 @@ const (
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 type Ingress struct {
 	metav1.TypeMeta `json:",inline"`
-	// Standard object's metadata.
-	// More info: http://releases.k8s.io/release-1.2/docs/devel/api-conventions.md#metadata
+	// +optional
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	// Spec is the desired state of the Ingress.
-	// More info: http://releases.k8s.io/release-1.2/docs/devel/api-conventions.md#spec-and-status
-	Spec IngressSpec `json:"spec,omitempty"`
-
-	// Status is the current state of the Ingress.
-	// More info: http://releases.k8s.io/release-1.2/docs/devel/api-conventions.md#spec-and-status
-	Status IngressStatus `json:"status,omitempty"`
+	Spec              IngressSpec   `json:"spec,omitempty"`
+	Status            IngressStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

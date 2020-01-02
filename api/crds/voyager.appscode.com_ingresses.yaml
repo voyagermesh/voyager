@@ -46,10 +46,9 @@ spec:
             submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
           type: string
         metadata:
-          description: 'Standard object''s metadata. More info: http://releases.k8s.io/release-1.2/docs/devel/api-conventions.md#metadata'
           type: object
         spec:
-          description: 'Spec is the desired state of the Ingress. More info: http://releases.k8s.io/release-1.2/docs/devel/api-conventions.md#spec-and-status'
+          description: IngressSpec describes the Ingress the user wishes to exist.
           properties:
             affinity:
               description: If specified, the pod's scheduling constraints
@@ -1918,7 +1917,7 @@ spec:
               type: array
           type: object
         status:
-          description: 'Status is the current state of the Ingress. More info: http://releases.k8s.io/release-1.2/docs/devel/api-conventions.md#spec-and-status'
+          description: IngressStatus describe the current state of the Ingress.
           properties:
             loadBalancer:
               description: LoadBalancer contains the current status of the load-balancer.
