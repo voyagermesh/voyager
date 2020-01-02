@@ -907,28 +907,24 @@ func (i *ingressInvocation) CreateResourceWithBackendWeight() (metav1.ObjectMeta
 }
 
 func (i *ingressInvocation) DeleteResourceWithBackendWeight(meta metav1.ObjectMeta) {
+	deletePolicy := metav1.DeletePropagationForeground
+
 	dp1, err := i.KubeClient.AppsV1().Deployments(meta.Namespace).Get("dep-1-"+meta.Name, metav1.GetOptions{})
 	if err == nil {
-		dp1.Spec.Replicas = types.Int32P(0)
-		Expect(i.KubeClient.AppsV1().Deployments(dp1.Namespace).Update(dp1)).NotTo(HaveOccurred())
+		Expect(i.KubeClient.AppsV1().Deployments(dp1.Namespace).Delete(dp1.Name, &metav1.DeleteOptions{
+			PropagationPolicy: &deletePolicy,
+		})).NotTo(HaveOccurred())
 	}
+
 	dp2, err := i.KubeClient.AppsV1().Deployments(meta.Namespace).Get("dep-2-"+meta.Name, metav1.GetOptions{})
 	if err == nil {
-		dp2.Spec.Replicas = types.Int32P(0)
-		Expect(i.KubeClient.AppsV1().Deployments(dp2.Namespace).Update(dp2)).NotTo(HaveOccurred())
+		Expect(i.KubeClient.AppsV1().Deployments(dp2.Namespace).Delete(dp2.Name, &metav1.DeleteOptions{
+			PropagationPolicy: &deletePolicy,
+		})).NotTo(HaveOccurred())
 	}
-	time.Sleep(time.Second * 5)
-	orphan := false
-	Expect(i.KubeClient.AppsV1().Deployments(dp1.Namespace).Delete(dp1.Name, &metav1.DeleteOptions{
-		OrphanDependents: &orphan,
-	})).NotTo(HaveOccurred())
-
-	Expect(i.KubeClient.AppsV1().Deployments(dp2.Namespace).Delete(dp2.Name, &metav1.DeleteOptions{
-		OrphanDependents: &orphan,
-	})).NotTo(HaveOccurred())
 
 	Expect(i.KubeClient.CoreV1().Services(meta.Namespace).Delete(meta.Name, &metav1.DeleteOptions{
-		OrphanDependents: &orphan,
+		PropagationPolicy: &deletePolicy,
 	})).NotTo(HaveOccurred())
 }
 

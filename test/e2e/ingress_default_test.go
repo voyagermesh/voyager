@@ -88,7 +88,7 @@ var _ = Describe("IngressCoreOperations", func() {
 
 	AfterEach(func() {
 		if options.Cleanup {
-			Expect(f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Delete(ext.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+			_ = f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Delete(ext.Name, &metav1.DeleteOptions{})
 		}
 	})
 
