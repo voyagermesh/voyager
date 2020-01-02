@@ -394,8 +394,8 @@ unit-tests: $(BUILD_DIRS) bin/.container-$(DOTFILE_IMAGE)-TEST
 #
 # NB: -t is used to catch ctrl-c interrupt from keyboard and -t will be problematic for CI.
 
-GINKGO_ARGS ?= "--flakeAttempts=2"
-TEST_ARGS   ?= --selfhosted-operator --cloud-provider=minikube
+GINKGO_ARGS ?= # --flakeAttempts=2
+TEST_ARGS   ?= -cloud-provider=minikube -v=5
 
 .PHONY: e2e-tests
 e2e-tests: $(BUILD_DIRS)
@@ -494,9 +494,10 @@ install:
 		--set voyager.tag=$(TAG) \
 		--set imagePullPolicy=Always \
 		--set cloudProvider=minikube \
+		--set apiserver.enableValidatingWebhook=false \
 		$(IMAGE_PULL_SECRETS); \
-	kubectl wait --for=condition=Ready pods -n kube-system -l app=voyager --timeout=5m; \
-	kubectl wait --for=condition=Available apiservice -l app=voyager --timeout=5m
+	kubectl wait --for=condition=Ready pods -n kube-system -l app=voyager --timeout=5m
+	# kubectl wait --for=condition=Available apiservice -l app=voyager --timeout=5m
 
 .PHONY: uninstall
 uninstall:

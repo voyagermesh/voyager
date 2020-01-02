@@ -29,7 +29,7 @@ import (
 	. "github.com/onsi/gomega"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"kmodules.xyz/client-go/meta"
+	"kmodules.xyz/client-go/logs"
 	"kmodules.xyz/client-go/tools/cli"
 	"kmodules.xyz/client-go/tools/clientcmd"
 )
@@ -44,6 +44,8 @@ var (
 )
 
 func TestE2E(t *testing.T) {
+	logs.InitLogs()
+	defer logs.FlushLogs()
 	RegisterFailHandler(Fail)
 	SetDefaultEventuallyTimeout(TestTimeout)
 	junitReporter := reporters.NewJUnitReporter("report.xml")
@@ -66,20 +68,11 @@ var _ = BeforeSuite(func() {
 
 	root = framework.New(operatorConfig, options.TestNamespace, options.Cleanup)
 
-	if options.OperatorOnly { // run operator locally without running tests
-		root.Operator.RunInformers(nil)
-	}
-
 	By("Ensuring Test Namespace " + options.TestNamespace)
 	err = root.EnsureNamespace()
 	Expect(err).NotTo(HaveOccurred())
 
 	invocation = root.Invoke()
-
-	if !meta.PossiblyInCluster() && !options.SelfHostedOperator {
-		go root.Operator.RunInformers(nil)
-	}
-
 	Eventually(invocation.Ingress.Setup).Should(BeNil())
 })
 

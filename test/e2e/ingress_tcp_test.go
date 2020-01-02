@@ -165,7 +165,7 @@ var _ = Describe("IngressTCP", func() {
 
 	Describe("With Whitelist Specified", func() {
 		BeforeEach(func() {
-			ing.Annotations[api.WhitelistSourceRange] = "192.168.99.100"
+			ing.Annotations[api.WhitelistSourceRange] = framework.MinikubeIP
 			ing.Spec.Rules = []api.IngressRule{
 				{
 					IngressRuleValue: api.IngressRuleValue{

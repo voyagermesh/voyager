@@ -209,7 +209,7 @@ func (t *httpClient) do(parse bool) (*Response, error) {
 	*reqCopy = *req
 	reqCopy.Body = nil
 	command, _ := http2curl.GetCurlCommand(reqCopy)
-	log.Warningln("Request:", command)
+	log.Infoln("Request:", command)
 
 	resp, err := t.client.Do(req)
 	if err != nil {

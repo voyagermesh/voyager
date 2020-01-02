@@ -20,9 +20,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
-	"os/exec"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/appscode/go/log"
@@ -366,35 +364,13 @@ func (i *ingressInvocation) NodeSelector() map[string]string {
 	return map[string]string{}
 }
 
-func getMinikubeIP() (ip net.IP, err error) {
-	err = wait.PollImmediate(2*time.Second, 3*time.Minute, func() (bool, error) {
-		var outputs []byte
-		if outputs, err = exec.Command("minikube", "ip").CombinedOutput(); err != nil {
-			return false, nil // retry
-		} else {
-			output := strings.TrimSpace(string(outputs))
-			if ip = net.ParseIP(output); ip == nil {
-				err = errors.Errorf("failed to parse minikube ip: %s", output)
-				return false, nil // retry
-			} else {
-				return true, nil
-			}
-		}
-	})
-	return
-}
-
 func getMinikubeURLs(k kubernetes.Interface, ing *api_v1beta1.Ingress) ([]string, error) {
 	serverAddr := make([]string, 0)
 
-	minikubeIP, err := getMinikubeIP()
-	if err != nil {
-		return nil, err
-	}
-
 	// get offshoot service
 	var svc *core.Service
-	err = wait.PollImmediate(2*time.Second, 3*time.Minute, func() (bool, error) {
+	err := wait.PollImmediate(2*time.Second, 3*time.Minute, func() (bool, error) {
+		var err error
 		svc, err = k.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
 		if err != nil {
 			return false, nil // retry
@@ -414,7 +390,7 @@ func getMinikubeURLs(k kubernetes.Interface, ing *api_v1beta1.Ingress) ([]string
 			accessPort = p.NodePort
 		}
 		if accessPort > 0 {
-			u, err := url.Parse(fmt.Sprintf("http://%s:%d", minikubeIP, accessPort))
+			u, err := url.Parse(fmt.Sprintf("http://%s:%d", MinikubeIP, accessPort))
 			if err != nil {
 				return nil, err
 			}
@@ -1364,11 +1340,7 @@ func (i *ingressInvocation) GetNodePortServiceURLForSpecificPort(svcName string,
 
 	var nodeIP string
 	if node.Name == api.ProviderMinikube {
-		nodeIPURL, err := getMinikubeIP()
-		if err != nil {
-			return "", err
-		}
-		nodeIP = nodeIPURL.String()
+		nodeIP = MinikubeIP
 	}
 	for _, addr := range node.Status.Addresses {
 		if addr.Type == core.NodeExternalIP {

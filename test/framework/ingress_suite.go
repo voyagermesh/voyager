@@ -25,7 +25,6 @@ import (
 
 	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/go/log"
-	"github.com/appscode/go/types"
 	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	"github.com/appscode/voyager/test/test-server/client"
 
@@ -39,6 +38,7 @@ import (
 
 const (
 	testServerImage = "appscode/test-server:2.4"
+	MinikubeIP      = "192.168.99.100"
 )
 
 var (
@@ -59,14 +59,10 @@ func (i *ingressInvocation) Teardown() {
 		Expect(i.KubeClient.CoreV1().Services(i.Namespace()).Delete(testServerResourceName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		Expect(i.KubeClient.CoreV1().Services(i.Namespace()).Delete(testServerHTTPSResourceName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		Expect(i.KubeClient.CoreV1().Services(i.Namespace()).Delete(emptyServiceName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
-		rc, err := i.KubeClient.AppsV1().Deployments(i.Namespace()).Get(testServerResourceName, metav1.GetOptions{})
+		_, err := i.KubeClient.AppsV1().Deployments(i.Namespace()).Get(testServerResourceName, metav1.GetOptions{})
 		if err == nil {
-			rc.Spec.Replicas = types.Int32P(0)
-			Expect(i.KubeClient.AppsV1().Deployments(i.Namespace()).Update(rc)).NotTo(HaveOccurred())
-			time.Sleep(time.Second * 5)
+			Expect(i.KubeClient.AppsV1().Deployments(i.Namespace()).Delete(testServerResourceName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		}
-		Expect(i.KubeClient.AppsV1().Deployments(i.Namespace()).Delete(testServerResourceName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
-
 		list, err := i.VoyagerClient.VoyagerV1beta1().Ingresses(metav1.NamespaceAll).List(metav1.ListOptions{})
 		if err == nil {
 			for _, ing := range list.Items {
