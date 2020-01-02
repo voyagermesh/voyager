@@ -1,4 +1,5 @@
 # Voyager
+
 [Voyager by AppsCode](https://github.com/appscode/voyager) - Secure HAProxy Ingress Controller for Kubernetes
 
 ## TL;DR;
@@ -13,12 +14,12 @@ $ helm install voyager-operator appscode/voyager -n kube-system
 
 This chart bootstraps an [ingress controller](https://github.com/appscode/voyager) deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
 
-
 ## Prerequisites
 
 - Kubernetes 1.12+
 
 ## Installing the Chart
+
 To install the chart with the release name `my-release`:
 
 ```console
@@ -85,12 +86,12 @@ The following tables lists the configurable parameters of the Voyager chart and 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
 
 ```console
-$ helm install my-release --set image.tag=v0.2.1 appscode/voyager -n kube-system
+$ helm install my-release appscode/voyager -n kube-system --set image.tag=v0.2.1
 ```
 
 Alternatively, a YAML file that specifies the values for the parameters can be provided while
 installing the chart. For example:
 
 ```console
-$ helm install my-release --values values.yaml appscode/voyager -n kube-system
+$ helm install my-release appscode/voyager -n kube-system --values values.yaml
 ```

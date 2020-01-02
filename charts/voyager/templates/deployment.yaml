@@ -1,6 +1,3 @@
-# GKE returns Major:"1", Minor:"10+"
-{{- $major := default "0" .Capabilities.KubeVersion.Major | trimSuffix "+" | int64 }}
-{{- $minor := default "0" .Capabilities.KubeVersion.Minor | trimSuffix "+" | int64 }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
