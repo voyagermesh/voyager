@@ -38,7 +38,7 @@ Voyager can be installed via [Helm](https://helm.sh/) 3.x or later versions usin
 ```console
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
-$ helm search repo appscode/voyager
+$ helm search repo appscode/voyager --version {{< param "info.version" >}}
 NAME              CHART VERSION APP VERSION DESCRIPTION
 appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  Voyager by AppsCode - Secure HAProxy Ingress Controller...
 
@@ -72,7 +72,7 @@ Voyager can be installed via [Helm](https://helm.sh/) 2.9.x or later versions us
 ```console
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
-$ helm search appscode/voyager
+$ helm search appscode/voyager --version {{< param "info.version" >}}
 NAME              CHART VERSION APP VERSION DESCRIPTION
 appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  Voyager by AppsCode - Secure HAProxy Ingress Controller...
 
@@ -106,7 +106,7 @@ If you prefer to not use Helm, you can generate YAMLs from Voyager operator char
 ```console
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
-$ helm search repo appscode/voyager
+$ helm search repo appscode/voyager --version {{< param "info.version" >}}
 NAME              CHART VERSION APP VERSION DESCRIPTION
 appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  Voyager by AppsCode - Secure HAProxy Ingress Controller...
 
