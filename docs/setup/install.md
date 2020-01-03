@@ -97,7 +97,7 @@ $ helm install appscode/voyager --name voyager-operator --version {{< param "inf
 To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/{{< param "info.version" >}}/charts/voyager).
 
 </div>
-<div class="tab-pane fade show active" id="script" role="tabpanel" aria-labelledby="script-tab">
+<div class="tab-pane fade" id="script" role="tabpanel" aria-labelledby="script-tab">
 
 ## Using YAML
 
