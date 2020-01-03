@@ -40,6 +40,7 @@ import (
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	core_listers "k8s.io/client-go/listers/core/v1"
@@ -171,7 +172,7 @@ func (c *loadBalancerController) Reconcile() error {
 	}
 
 	go func() {
-		log.Fatal(c.updateStatus())
+		utilruntime.Must(c.updateStatus())
 	}()
 
 	if c.Ingress.Stats() {
