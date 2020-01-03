@@ -1,8 +1,8 @@
 apiVersion: v1
 description: 'Voyager by AppsCode - Secure HAProxy Ingress Controller for Kubernetes'
 name: voyager
-version: v12.0.0-rc.0
-appVersion: v12.0.0-rc.0
+version: v12.0.0-rc.1
+appVersion: v12.0.0-rc.1
 home: https://appscode.com/products/voyager/
 icon: https://cdn.appscode.com/images/products/voyager/icons/android-icon-192x192.png
 sources:
