@@ -108,8 +108,6 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 		if options.Cleanup {
 			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
 			Expect(f.KubeClient.CoreV1().Services(svcResolveDNSWithNS.Namespace).Delete(svcResolveDNSWithNS.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
-			Expect(f.KubeClient.CoreV1().Services(svcResolveDNSWithNS.Namespace).Delete(svcResolveDNSWithNS.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
-			Expect(f.KubeClient.CoreV1().Services(svcResolveDNSWithNS.Namespace).Delete(svcResolveDNSWithNS.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		}
 	})
 

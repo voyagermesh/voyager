@@ -222,7 +222,8 @@ var _ = Describe("With Agent Check", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			err = f.Ingress.DoHTTPStatus(5, ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
+			By("Checking /testpath/ok for " + eps[0])
+			err = f.Ingress.DoHTTPStatus(framework.MaxRetry, ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {
 				return Expect(r.Status).Should(Equal(http.StatusOK))
 			})
 			Expect(err).NotTo(HaveOccurred())

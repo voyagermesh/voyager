@@ -62,7 +62,7 @@ var _ = Describe("IngressHostPort", func() {
 
 	AfterEach(func() {
 		if options.Cleanup {
-			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
+			_ = f.Ingress.Delete(ing)
 		}
 	})
 
