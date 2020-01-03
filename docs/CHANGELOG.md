@@ -17,6 +17,21 @@ aliases:
 
 # Change Log
 
+## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
+
+[Full Changelog](https://github.com/appscode/voyager/compare/v12.0.0-rc.0...HEAD)
+
+**Closed issues:**
+
+- Voyager stops with Fatal [\#1471](https://github.com/appscode/voyager/issues/1471)
+- Helm Chart v11.0.1 errors on install [\#1438](https://github.com/appscode/voyager/issues/1438)
+- Voyager 10 fails to deploy with Helm installer [\#1400](https://github.com/appscode/voyager/issues/1400)
+- RBAC issue with helm install [\#1333](https://github.com/appscode/voyager/issues/1333)
+
+**Merged pull requests:**
+
+- Exit only if UpdateStatus returns error. [\#1472](https://github.com/appscode/voyager/pull/1472) ([tamalsaha](https://github.com/tamalsaha))
+
 ## [v12.0.0-rc.0](https://github.com/appscode/voyager/tree/v12.0.0-rc.0) (2020-01-03)
 [Full Changelog](https://github.com/appscode/voyager/compare/v11.0.1...v12.0.0-rc.0)
 
@@ -30,6 +45,7 @@ aliases:
 
 **Merged pull requests:**
 
+- Fix css class for helm 3 tab [\#1470](https://github.com/appscode/voyager/pull/1470) ([tamalsaha](https://github.com/tamalsaha))
 - Prepare release v12.0.0-rc.0 [\#1469](https://github.com/appscode/voyager/pull/1469) ([tamalsaha](https://github.com/tamalsaha))
 - Fix failed e2e tests [\#1468](https://github.com/appscode/voyager/pull/1468) ([tamalsaha](https://github.com/tamalsaha))
 - Update installation instructions [\#1467](https://github.com/appscode/voyager/pull/1467) ([tamalsaha](https://github.com/tamalsaha))
