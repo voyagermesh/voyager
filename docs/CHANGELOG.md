@@ -17,9 +17,8 @@ aliases:
 
 # Change Log
 
-## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
-
-[Full Changelog](https://github.com/appscode/voyager/compare/v11.0.1...HEAD)
+## [v12.0.0-rc.0](https://github.com/appscode/voyager/tree/v12.0.0-rc.0) (2020-01-03)
+[Full Changelog](https://github.com/appscode/voyager/compare/v11.0.1...v12.0.0-rc.0)
 
 **Closed issues:**
 
@@ -31,6 +30,8 @@ aliases:
 
 **Merged pull requests:**
 
+- Prepare release v12.0.0-rc.0 [\#1469](https://github.com/appscode/voyager/pull/1469) ([tamalsaha](https://github.com/tamalsaha))
+- Fix failed e2e tests [\#1468](https://github.com/appscode/voyager/pull/1468) ([tamalsaha](https://github.com/tamalsaha))
 - Update installation instructions [\#1467](https://github.com/appscode/voyager/pull/1467) ([tamalsaha](https://github.com/tamalsaha))
 - Run e2e tests in minikube [\#1466](https://github.com/appscode/voyager/pull/1466) ([tamalsaha](https://github.com/tamalsaha))
 - Various fixes to chart [\#1465](https://github.com/appscode/voyager/pull/1465) ([tamalsaha](https://github.com/tamalsaha))
