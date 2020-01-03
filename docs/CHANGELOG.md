@@ -17,6 +17,39 @@ aliases:
 
 # Change Log
 
+## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
+
+[Full Changelog](https://github.com/appscode/voyager/compare/v11.0.1...HEAD)
+
+**Closed issues:**
+
+- Voyager with GKE HTTP\(S\) -L7 Load balancer [\#1453](https://github.com/appscode/voyager/issues/1453)
+- Voyager Installation Issue [\#1452](https://github.com/appscode/voyager/issues/1452)
+- ServiceMonitor endpoint path created with the wrong APISchemaIngress \(typo?\) [\#1451](https://github.com/appscode/voyager/issues/1451)
+- Problem with lets encrypt certificates [\#1444](https://github.com/appscode/voyager/issues/1444)
+- Helm Chart v11.0.0 errors on install [\#1433](https://github.com/appscode/voyager/issues/1433)
+
+**Merged pull requests:**
+
+- Update installation instructions [\#1467](https://github.com/appscode/voyager/pull/1467) ([tamalsaha](https://github.com/tamalsaha))
+- Run e2e tests in minikube [\#1466](https://github.com/appscode/voyager/pull/1466) ([tamalsaha](https://github.com/tamalsaha))
+- Various fixes to chart [\#1465](https://github.com/appscode/voyager/pull/1465) ([tamalsaha](https://github.com/tamalsaha))
+- Delete script based installer [\#1464](https://github.com/appscode/voyager/pull/1464) ([tamalsaha](https://github.com/tamalsaha))
+- Revendor [\#1463](https://github.com/appscode/voyager/pull/1463) ([tamalsaha](https://github.com/tamalsaha))
+- Fix typo for APISchemaIngress [\#1461](https://github.com/appscode/voyager/pull/1461) ([ttauveron](https://github.com/ttauveron))
+- Use OwnerReference helpers from kmodules [\#1460](https://github.com/appscode/voyager/pull/1460) ([tamalsaha](https://github.com/tamalsaha))
+- Fix helm v3.0.0 chart error on install [\#1459](https://github.com/appscode/voyager/pull/1459) ([bg-master](https://github.com/bg-master))
+- Run fuzz tests for and set `preserveUnknownFields: false [\#1458](https://github.com/appscode/voyager/pull/1458) ([tamalsaha](https://github.com/tamalsaha))
+- Properly handle empty image pull secret name in installer [\#1457](https://github.com/appscode/voyager/pull/1457) ([tamalsaha](https://github.com/tamalsaha))
+- Fix broken links and chart validation [\#1456](https://github.com/appscode/voyager/pull/1456) ([tamalsaha](https://github.com/tamalsaha))
+- Update client-go to kubernetes-1.16.3 [\#1455](https://github.com/appscode/voyager/pull/1455) ([tamalsaha](https://github.com/tamalsaha))
+- Use controller-tools@v0.2.2 to generate structural schema [\#1450](https://github.com/appscode/voyager/pull/1450) ([tamalsaha](https://github.com/tamalsaha))
+- Fix Linter Issues [\#1448](https://github.com/appscode/voyager/pull/1448) ([faem](https://github.com/faem))
+- Various Makefile improvements [\#1447](https://github.com/appscode/voyager/pull/1447) ([tamalsaha](https://github.com/tamalsaha))
+- Typo fix [\#1445](https://github.com/appscode/voyager/pull/1445) ([jwenz723](https://github.com/jwenz723))
+- Use kubebuilder to generate crd manifests [\#1442](https://github.com/appscode/voyager/pull/1442) ([tamalsaha](https://github.com/tamalsaha))
+- Fix helm chart install v11.0.1 [\#1441](https://github.com/appscode/voyager/pull/1441) ([soosap](https://github.com/soosap))
+
 ## [v11.0.1](https://github.com/appscode/voyager/tree/v11.0.1) (2019-09-20)
 [Full Changelog](https://github.com/appscode/voyager/compare/v11.0.0...v11.0.1)
 
@@ -905,7 +938,7 @@ aliases:
 - Prepare docs for 5.0.0-rc.11 [\#799](https://github.com/appscode/voyager/pull/799) ([tamalsaha](https://github.com/tamalsaha))
 - Reorganize docs for hosting on product site [\#798](https://github.com/appscode/voyager/pull/798) ([tamalsaha](https://github.com/tamalsaha))
 - Detect client id from ENV [\#795](https://github.com/appscode/voyager/pull/795) ([tamalsaha](https://github.com/tamalsaha))
-- Update dead links [\#794](https://github.com/appscode/voyager/pull/794) ([petedreizehn](https://github.com/petedreizehn))
+- Update dead links [\#794](https://github.com/appscode/voyager/pull/794) ([ghost](https://github.com/ghost))
 - Support additional CORS headers [\#793](https://github.com/appscode/voyager/pull/793) ([diptadas](https://github.com/diptadas))
 - Support ingress.appscode.com key for all annotations [\#792](https://github.com/appscode/voyager/pull/792) ([diptadas](https://github.com/diptadas))
 - Use CertStore from kutil [\#789](https://github.com/appscode/voyager/pull/789) ([tamalsaha](https://github.com/tamalsaha))
@@ -2026,7 +2059,7 @@ aliases:
 
 - Enable GKE [\#45](https://github.com/appscode/voyager/pull/45) ([tamalsaha](https://github.com/tamalsaha))
 - Fix Typos [\#42](https://github.com/appscode/voyager/pull/42) ([sunkuet02](https://github.com/sunkuet02))
-- update README [\#41](https://github.com/appscode/voyager/pull/41) ([ben-st](https://github.com/ben-st))
+- update README [\#41](https://github.com/appscode/voyager/pull/41) ([utf18](https://github.com/utf18))
 
 ## [1.5.0](https://github.com/appscode/voyager/tree/1.5.0) (2017-03-01)
 **Implemented enhancements:**
