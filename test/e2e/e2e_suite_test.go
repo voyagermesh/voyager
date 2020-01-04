@@ -48,7 +48,7 @@ func TestE2E(t *testing.T) {
 	defer logs.FlushLogs()
 	RegisterFailHandler(Fail)
 	SetDefaultEventuallyTimeout(TestTimeout)
-	junitReporter := reporters.NewJUnitReporter("report.xml")
+	junitReporter := reporters.NewJUnitReporter("junit.xml")
 	RunSpecsWithDefaultAndCustomReporters(t, "Voyager E2E Suite", []Reporter{junitReporter})
 }
 

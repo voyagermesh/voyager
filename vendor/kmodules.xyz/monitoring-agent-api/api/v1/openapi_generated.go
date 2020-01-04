@@ -29,8 +29,9 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec":      schema_kmodulesxyz_monitoring_agent_api_api_v1_AgentSpec(ref),
-		"kmodules.xyz/monitoring-agent-api/api/v1.PrometheusSpec": schema_kmodulesxyz_monitoring_agent_api_api_v1_PrometheusSpec(ref),
+		"kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec":              schema_kmodulesxyz_monitoring_agent_api_api_v1_AgentSpec(ref),
+		"kmodules.xyz/monitoring-agent-api/api/v1.PrometheusExporterSpec": schema_kmodulesxyz_monitoring_agent_api_api_v1_PrometheusExporterSpec(ref),
+		"kmodules.xyz/monitoring-agent-api/api/v1.PrometheusSpec":         schema_kmodulesxyz_monitoring_agent_api_api_v1_PrometheusSpec(ref),
 	}
 }
 
@@ -49,6 +50,72 @@ func schema_kmodulesxyz_monitoring_agent_api_api_v1_AgentSpec(ref common.Referen
 					"prometheus": {
 						SchemaProps: spec.SchemaProps{
 							Ref: ref("kmodules.xyz/monitoring-agent-api/api/v1.PrometheusSpec"),
+						},
+					},
+					"args": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Arguments to the entrypoint. The docker image's CMD is used if this is not provided. Variable references $(VAR_NAME) are expanded using the container's environment. If a variable cannot be resolved, the reference in the input string will be unchanged. The $(VAR_NAME) syntax can be escaped with a double $$, ie: $$(VAR_NAME). Escaped references will never be expanded, regardless of whether the variable exists or not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell Deprecated: use prometheus.exporter.args",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Type:   []string{"string"},
+										Format: "",
+									},
+								},
+							},
+						},
+					},
+					"env": {
+						VendorExtensible: spec.VendorExtensible{
+							Extensions: spec.Extensions{
+								"x-kubernetes-patch-merge-key": "name",
+								"x-kubernetes-patch-strategy":  "merge",
+							},
+						},
+						SchemaProps: spec.SchemaProps{
+							Description: "List of environment variables to set in the container. Cannot be updated. Deprecated Deprecated: use prometheus.exporter.env",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("k8s.io/api/core/v1.EnvVar"),
+									},
+								},
+							},
+						},
+					},
+					"resources": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Compute Resources required by exporter container. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/ Deprecated: use prometheus.exporter.resources",
+							Ref:         ref("k8s.io/api/core/v1.ResourceRequirements"),
+						},
+					},
+					"securityContext": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Security options the pod should run with. More info: https://kubernetes.io/docs/concepts/policy/security-context/ More info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/ Deprecated: use prometheus.exporter.securityContext",
+							Ref:         ref("k8s.io/api/core/v1.SecurityContext"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/core/v1.EnvVar", "k8s.io/api/core/v1.ResourceRequirements", "k8s.io/api/core/v1.SecurityContext", "kmodules.xyz/monitoring-agent-api/api/v1.PrometheusSpec"},
+	}
+}
+
+func schema_kmodulesxyz_monitoring_agent_api_api_v1_PrometheusExporterSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"port": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Port number for the exporter side car.",
+							Type:        []string{"integer"},
+							Format:      "int32",
 						},
 					},
 					"args": {
@@ -100,7 +167,7 @@ func schema_kmodulesxyz_monitoring_agent_api_api_v1_AgentSpec(ref common.Referen
 			},
 		},
 		Dependencies: []string{
-			"k8s.io/api/core/v1.EnvVar", "k8s.io/api/core/v1.ResourceRequirements", "k8s.io/api/core/v1.SecurityContext", "kmodules.xyz/monitoring-agent-api/api/v1.PrometheusSpec"},
+			"k8s.io/api/core/v1.EnvVar", "k8s.io/api/core/v1.ResourceRequirements", "k8s.io/api/core/v1.SecurityContext"},
 	}
 }
 
@@ -112,21 +179,21 @@ func schema_kmodulesxyz_monitoring_agent_api_api_v1_PrometheusSpec(ref common.Re
 				Properties: map[string]spec.Schema{
 					"port": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Port number for the exporter side car.",
+							Description: "Port number for the exporter side car. Deprecated: use exporter.port",
 							Type:        []string{"integer"},
 							Format:      "int32",
 						},
 					},
 					"namespace": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Namespace of Prometheus. Service monitors will be created in this namespace.",
+							Description: "Namespace of Prometheus. Service monitors will be created in this namespace. Deprecated: will be removed in a future release",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"labels": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Labels are key value pairs that is used to select Prometheus instance via ServiceMonitor labels.",
+							Description: "Labels are key value pairs that is used to select Prometheus instance via ServiceMonitor labels. Deprecated: will be removed in a future release",
 							Type:        []string{"object"},
 							AdditionalProperties: &spec.SchemaOrBool{
 								Allows: true,
@@ -141,13 +208,20 @@ func schema_kmodulesxyz_monitoring_agent_api_api_v1_PrometheusSpec(ref common.Re
 					},
 					"interval": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Interval at which metrics should be scraped",
+							Description: "Interval at which metrics should be scraped Deprecated: will be removed in a future release",
 							Type:        []string{"string"},
 							Format:      "",
+						},
+					},
+					"exporter": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/monitoring-agent-api/api/v1.PrometheusExporterSpec"),
 						},
 					},
 				},
 			},
 		},
+		Dependencies: []string{
+			"kmodules.xyz/monitoring-agent-api/api/v1.PrometheusExporterSpec"},
 	}
 }
