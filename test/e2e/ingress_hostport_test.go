@@ -201,7 +201,7 @@ var _ = Describe("IngressHostPort", func() {
 	Describe("Frontend bind address (http)", func() {
 		BeforeEach(func() {
 			ing.Spec.Rules[0].HTTP.Port = intstr.FromInt(2001)
-			ing.Spec.Rules[0].HTTP.Address = framework.MinikubeIP
+			ing.Spec.Rules[0].HTTP.Address = f.MinikubeIP()
 		})
 
 		It("Should response HTTP", func() {
@@ -227,7 +227,7 @@ var _ = Describe("IngressHostPort", func() {
 					IngressRuleValue: api.IngressRuleValue{
 						TCP: &api.TCPIngressRuleValue{
 							Port:    intstr.FromInt(4001),
-							Address: framework.MinikubeIP,
+							Address: f.MinikubeIP(),
 							Backend: api.IngressBackend{
 								ServiceName: svcName,
 								ServicePort: intstr.FromInt(4545),

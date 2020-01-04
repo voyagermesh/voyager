@@ -20,13 +20,16 @@ import (
 	"sync"
 
 	"github.com/appscode/go/crypto/rand"
+	api "github.com/appscode/voyager/apis/voyager/v1beta1"
 	cs "github.com/appscode/voyager/client/clientset/versioned"
 	"github.com/appscode/voyager/pkg/operator"
 
 	. "github.com/onsi/gomega"
 	"github.com/spf13/afero"
 	"gomodules.xyz/cert/certstore"
+	core "k8s.io/api/core/v1"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -41,7 +44,7 @@ type Framework struct {
 	VoyagerClient cs.Interface
 	CRDClient     kext_cs.ApiextensionsV1beta1Interface
 
-	Operator      *operator.OperatorConfig
+	Config        *operator.OperatorConfig
 	CertStore     *certstore.CertStore
 	TestNamespace string
 	Cleanup       bool
@@ -79,7 +82,7 @@ func New(cfg *operator.OperatorConfig, testNamespace string, cleanup bool) *Fram
 		KubeClient:    cfg.KubeClient,
 		VoyagerClient: cfg.VoyagerClient,
 		CRDClient:     cfg.CRDClient,
-		Operator:      cfg,
+		Config:        cfg,
 		CertStore:     cm,
 		TestNamespace: testNamespace,
 		Cleanup:       cleanup,
@@ -98,6 +101,19 @@ func (f *Framework) Invoke() *Invocation {
 	}
 }
 
-func (f *rootInvocation) App() string {
-	return f.app
+func (f *Framework) MinikubeIP() string {
+	if f.Config.CloudProvider == api.ProviderMinikube {
+		nodes, err := f.Config.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
+		Expect(err).NotTo(HaveOccurred())
+		for _, addr := range nodes.Items[0].Status.Addresses {
+			if addr.Type == core.NodeInternalIP {
+				return addr.Address
+			}
+		}
+	}
+	panic("MinikubeIP can't be determined when cloud provider is " + f.Config.CloudProvider)
+}
+
+func (ri *rootInvocation) App() string {
+	return ri.app
 }

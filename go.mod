@@ -62,9 +62,9 @@ require (
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/kube-openapi v0.0.0-20190816220812-743ec37842bf
 	k8s.io/utils v0.0.0-20190801114015-581e00157fb1
-	kmodules.xyz/client-go v0.0.0-20191219184245-880ab4b0e5db
+	kmodules.xyz/client-go v0.0.0-20200101081724-6b136a38d486
 	kmodules.xyz/crd-schema-fuzz v0.0.0-20191129174258-81f984340891
-	kmodules.xyz/monitoring-agent-api v0.0.0-20191209232713-25b3711f847f
+	kmodules.xyz/monitoring-agent-api v0.0.0-20191224204126-ee69caffab6c
 	kmodules.xyz/openshift v0.0.0-20191127145035-f6c48a90dbb7 // indirect
 	kmodules.xyz/webhook-runtime v0.0.0-20191127075323-d4bfdee6974d
 	sigs.k8s.io/yaml v1.1.0

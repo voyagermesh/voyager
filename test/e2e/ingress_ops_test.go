@@ -672,7 +672,7 @@ var _ = Describe("IngressOperations", func() {
 				},
 			}
 			f.Ingress.SetSkeletonFrontendRule(ing)
-			ing.Annotations[api.WhitelistSourceRange] = framework.MinikubeIP
+			ing.Annotations[api.WhitelistSourceRange] = f.MinikubeIP()
 		})
 
 		It("Should Add Whitelisted Ips", func() {
