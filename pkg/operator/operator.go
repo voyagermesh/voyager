@@ -127,7 +127,7 @@ func (op *Operator) ensureCustomResourceDefinitions() error {
 		api.Ingress{}.CustomResourceDefinition(),
 		api.Certificate{}.CustomResourceDefinition(),
 	}
-	return apiext_util.RegisterCRDs(op.CRDClient, crds)
+	return apiext_util.RegisterCRDs(op.KubeClient.Discovery(), op.CRDClient, crds)
 }
 
 func (op *Operator) RunInformers(stopCh <-chan struct{}) {
