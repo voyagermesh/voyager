@@ -16,7 +16,7 @@ This chart bootstraps an [ingress controller](https://github.com/appscode/voyage
 
 ## Prerequisites
 
-- Kubernetes 1.12+
+- Kubernetes 1.11+
 
 ## Installing the Chart
 
