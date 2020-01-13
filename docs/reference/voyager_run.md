@@ -72,11 +72,10 @@ voyager run [flags]
       --contention-profiling                                    Enable lock contention profiling, if profiling is enabled
       --custom-templates string                                 Glob pattern of custom HAProxy template files used to override built-in templates
       --docker-registry string                                  Docker image registry for HAProxy and Prometheus exporter (default "appscode")
-      --enable-status-subresource                               If true, uses sub resource for Voyager crds.
-      --enable-swagger-ui                                       Enables swagger ui on the apiserver at /swagger-ui
+      --egress-selector-config-file string                      File with apiserver egress selector configuration.
       --enable-validating-webhook                               If true, enables validating webhooks for Voyager CRDs.
-      --exporter-image-tag string                               Tag of Docker image containing Prometheus exporter (default "{{< param "info.version" >}}")
-      --haproxy-image-tag string                                Tag of Docker image containing HAProxy binary (default "1.9.6-{{< param "info.version" >}}-alpine")
+      --exporter-image-tag string                               Tag of Docker image containing Prometheus exporter (default "v12.0.0-rc.1")
+      --haproxy-image-tag string                                Tag of Docker image containing HAProxy binary (default "1.9.6-v12.0.0-rc.1-alpine")
       --haproxy.server-metric-fields string                     Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1 (default "2,3,4,5,6,7,8,9,13,14,15,16,17,18,21,24,33,35,38,39,40,41,42,43,44")
       --haproxy.timeout duration                                Timeout for trying to get stats from HAProxy. (default 5s)
   -h, --help                                                    help for run
@@ -96,7 +95,7 @@ voyager run [flags]
       --secure-port int                                         The port on which to serve HTTPS with authentication and authorization.If 0, don't serve HTTPS at all. (default 443)
       --tls-cert-file string                                    File containing the default x509 Certificate for HTTPS. (CA cert, if any, concatenated after server cert). If HTTPS serving is enabled, and --tls-cert-file and --tls-private-key-file are not provided, a self-signed certificate and key are generated for the public address and saved to the directory specified by --cert-dir.
       --tls-cipher-suites strings                               Comma-separated list of cipher suites for the server. If omitted, the default Go cipher suites will be use.  Possible values: TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_RC4_128_SHA,TLS_RSA_WITH_3DES_EDE_CBC_SHA,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_RC4_128_SHA
-      --tls-min-version string                                  Minimum TLS version supported. Possible values: VersionTLS10, VersionTLS11, VersionTLS12
+      --tls-min-version string                                  Minimum TLS version supported. Possible values: VersionTLS10, VersionTLS11, VersionTLS12, VersionTLS13
       --tls-private-key-file string                             File containing the default x509 private key matching --tls-cert-file.
       --tls-sni-cert-key namedCertKey                           A pair of x509 certificate and private key file paths, optionally suffixed with a list of domain patterns which are fully qualified domain names, possibly with prefixed wildcard segments. If no domain patterns are provided, the names of the certificate are extracted. Non-wildcard matches trump over wildcard matches, explicit domain patterns trump over extracted names. For multiple key/certificate pairs, use the --tls-sni-cert-key multiple times. Examples: "example.crt,example.key" or "foo.crt,foo.key:*.foo.com,foo.com". (default [])
       --validate-haproxy-config                                 If true, validates generated haproxy.cfg before sending to HAProxy pods. (default true)

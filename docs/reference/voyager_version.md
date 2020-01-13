@@ -24,8 +24,9 @@ voyager version [flags]
 ### Options
 
 ```
-  -h, --help    help for version
-      --short   Print just the version number.
+      --check string   Check version constraint
+  -h, --help           help for version
+      --short          Print just the version number.
 ```
 
 ### Options inherited from parent commands
