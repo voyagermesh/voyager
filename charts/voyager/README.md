@@ -81,6 +81,7 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `apiserver.bypassValidatingWebhookXray` | If true, bypasses validating webhook xray checks           | `false`               |
 | `apiserver.useKubeapiserverFqdnForAks`  | If true, uses kube-apiserver FQDN for AKS cluster to workaround https://github.com/Azure/AKS/issues/522 | `true`             |
 | `apiserver.healthcheck.enabled`         | Enable readiness and liveliness probes                     | `false`               |
+| `apiserver.servingCerts.generate`       | If true, generate on install/upgrade the certs that allow the kube-apiserver (and potentially ServiceMonitor) to authenticate Stash operator pods. Otherwise specify in `apiserver.servingCerts.{caCrt, serverCrt, serverKey}`.  | `true`                                                    |
 | `enableAnalytics`                       | Send usage events to Google Analytics                      | `true`                |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
