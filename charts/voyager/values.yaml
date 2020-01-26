@@ -92,6 +92,13 @@ apiserver:
   # healthcheck configures the readiness and liveliness probes for the operator pod.
   healthcheck:
     enabled: false
+  servingCerts:
+    # If true, generate on install/upgrade the certs that allow the kube-apiserver (and potentially ServiceMonitor) to authenticate vault-operator pods.
+    # Otherwise specify in `apiserver.servingCerts.{caCrt, serverCrt, serverKey}`.
+    generate: true
+    caCrt: ""
+    serverCrt: ""
+    serverKey: ""
 
 # Send usage events to Google Analytics
 enableAnalytics: true

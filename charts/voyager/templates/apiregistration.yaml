@@ -1,8 +1,20 @@
+{{- $caCrt := "" }}
+{{- $serverCrt := "" }}
+{{- $serverKey := "" }}
+{{- if .Values.apiserver.servingCerts.generate }}
 {{- $ca := genCA "ca" 3650 }}
 {{- $cn := include "voyager.fullname" . -}}
 {{- $altName1 := printf "%s.%s" $cn .Release.Namespace }}
 {{- $altName2 := printf "%s.%s.svc" $cn .Release.Namespace }}
-{{- $cert := genSignedCert $cn nil (list $altName1 $altName2) 3650 $ca }}
+{{- $server := genSignedCert $cn nil (list $altName1 $altName2) 3650 $ca }}
+{{- $caCrt =  b64enc $ca.Cert }}
+{{- $serverCrt = b64enc $server.Cert }}
+{{- $serverKey = b64enc $server.Key }}
+{{- else }}
+{{- $caCrt = required "Required when apiserver.servingCerts.generate is false" .Values.apiserver.servingCerts.caCrt }}
+{{- $serverCrt = required "Required when apiserver.servingCerts.generate is false" .Values.apiserver.servingCerts.serverCrt }}
+{{- $serverKey = required "Required when apiserver.servingCerts.generate is false" .Values.apiserver.servingCerts.serverKey }}
+{{- end }}
 {{- if .Values.apiserver.enableValidatingWebhook }}
 apiVersion: apiregistration.k8s.io/v1beta1
 kind: APIService
@@ -19,7 +31,7 @@ spec:
   service:
     namespace: {{ .Release.Namespace }}
     name: {{ template "voyager.fullname" . }}
-  caBundle: {{ b64enc $ca.Cert }}
+  caBundle: {{ $caCrt }}
   groupPriorityMinimum: {{ .Values.apiserver.groupPriorityMinimum }}
   versionPriority: {{ .Values.apiserver.versionPriority }}
 {{ end }}
@@ -36,8 +48,8 @@ metadata:
     release: "{{ .Release.Name }}"
 type: Opaque
 data:
-  tls.crt: {{ b64enc $cert.Cert }}
-  tls.key: {{ b64enc $cert.Key }}
+  tls.crt: {{ $serverCrt }}
+  tls.key: {{ $serverKey }}
 ---
 # to read the config for terminating authentication
 apiVersion: rbac.authorization.k8s.io/v1
