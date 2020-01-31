@@ -56,6 +56,9 @@ spec:
         - --bypass-validating-webhook-xray={{ .Values.apiserver.bypassValidatingWebhookXray }}
         - --use-kubeapiserver-fqdn-for-aks={{ .Values.apiserver.useKubeapiserverFqdnForAks }}
         - --enable-analytics={{ .Values.enableAnalytics }}
+        {{- if .Values.restrictToOperatorNamespace }}
+        - --restrict-to-operator-namespace={{ .Values.restrictToOperatorNamespace }}
+        {{- end }}
         {{- if .Values.templates.cfgmap }}
         - --custom-templates=/srv/voyager/custom/*.cfg
         {{- end }}

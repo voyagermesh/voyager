@@ -83,6 +83,8 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `apiserver.healthcheck.enabled`         | Enable readiness and liveliness probes                     | `false`               |
 | `apiserver.servingCerts.generate`       | If true, generate on install/upgrade the certs that allow the kube-apiserver (and potentially ServiceMonitor) to authenticate Stash operator pods. Otherwise specify in `apiserver.servingCerts.{caCrt, serverCrt, serverKey}`.  | `true`                                                    |
 | `enableAnalytics`                       | Send usage events to Google Analytics                      | `true`                |
+| `restrictToOperatorNamespace`           | If true, voyager operator will only handle Kubernetes objects in its own namespace.   | `false`                |
+
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
 
