@@ -170,7 +170,7 @@ func (op *Operator) CheckCertificates() {
 						eventer.EventReasonCertificateInvalid,
 						err.Error(),
 					)
-					return
+					continue
 				}
 			}
 
@@ -182,7 +182,7 @@ func (op *Operator) CheckCertificates() {
 					eventer.EventReasonCertificateInvalid,
 					err.Error(),
 				)
-				return
+				continue
 			}
 			if err := ctrl.Process(); err != nil {
 				op.recorder.Event(
