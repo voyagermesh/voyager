@@ -43,6 +43,7 @@ rules:
   - extensions
   resources:
   - ingresses
+  - ingresses/status
   verbs: ["*"]
 - apiGroups: [""]
   resources:
