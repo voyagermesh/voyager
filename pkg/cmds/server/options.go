@@ -53,7 +53,9 @@ type OperatorOptions struct {
 	NumThreads                  int
 	DockerRegistry              string
 	HAProxyImageTag             string
+	HAProxyImageRepository      string
 	ExporterImageTag            string
+	ExporterImageRepository     string
 
 	customTemplates           string
 	haProxyServerMetricFields string
@@ -65,11 +67,11 @@ type OperatorOptions struct {
 }
 
 func (s OperatorOptions) HAProxyImage() string {
-	return fmt.Sprintf("%s/haproxy:%s", s.DockerRegistry, s.HAProxyImageTag)
+	return fmt.Sprintf("%s/%s:%s", s.DockerRegistry, s.HAProxyImageRepository, s.HAProxyImageTag)
 }
 
 func (s OperatorOptions) ExporterImage() string {
-	return fmt.Sprintf("%s/voyager:%s", s.DockerRegistry, s.ExporterImageTag)
+	return fmt.Sprintf("%s/%s:%s", s.DockerRegistry, s.ExporterImageRepository, s.ExporterImageTag)
 }
 
 func (s OperatorOptions) WatchNamespace() string {
@@ -81,14 +83,16 @@ func (s OperatorOptions) WatchNamespace() string {
 
 func NewOperatorOptions() *OperatorOptions {
 	return &OperatorOptions{
-		DockerRegistry:    "appscode",
-		HAProxyImageTag:   "1.9.6-v12.0.0-rc.1-alpine",
-		ExporterImageTag:  "v12.0.0-rc.1",
-		OperatorNamespace: meta.Namespace(),
-		OperatorService:   "voyager-operator",
-		ResyncPeriod:      10 * time.Minute,
-		MaxNumRequeues:    5,
-		NumThreads:        2,
+		DockerRegistry:          "appscode",
+		HAProxyImageTag:         "1.9.6-v12.0.0-rc.1-alpine",
+		ExporterImageTag:        "v12.0.0-rc.1",
+		HAProxyImageRepository:  "haproxy",
+		ExporterImageRepository: "voyager",
+		OperatorNamespace:       meta.Namespace(),
+		OperatorService:         "voyager-operator",
+		ResyncPeriod:            10 * time.Minute,
+		MaxNumRequeues:          5,
+		NumThreads:              2,
 		// ref: https://github.com/kubernetes/ingress-nginx/blob/e4d53786e771cc6bdd55f180674b79f5b692e552/pkg/ingress/controller/launch.go#L252-L259
 		// High enough QPS to fit all expected use cases. QPS=0 is not set here, because client code is overriding it.
 		QPS: 1e6,
@@ -115,7 +119,9 @@ func (s *OperatorOptions) AddGoFlags(fs *flag.FlagSet) {
 
 	fs.StringVar(&s.DockerRegistry, "docker-registry", s.DockerRegistry, "Docker image registry for HAProxy and Prometheus exporter")
 	fs.StringVar(&s.HAProxyImageTag, "haproxy-image-tag", s.HAProxyImageTag, "Tag of Docker image containing HAProxy binary")
+	fs.StringVar(&s.HAProxyImageTag, "haproxy-image-repository", s.HAProxyImageRepository, "Repository of Docker image containing HAProxy binary")
 	fs.StringVar(&s.ExporterImageTag, "exporter-image-tag", s.ExporterImageTag, "Tag of Docker image containing Prometheus exporter")
+	fs.StringVar(&s.ExporterImageTag, "exporter-image-repository", s.ExporterImageRepository, "Repository of Docker image containing Prometheus exporter")
 
 	fs.StringVar(&s.OperatorService, "operator-service", s.OperatorService, "Name of service used to expose voyager operator")
 	fs.BoolVar(&s.RestrictToOperatorNamespace, "restrict-to-operator-namespace", s.RestrictToOperatorNamespace, "If true, voyager operator will only handle Kubernetes objects in its own namespace.")
