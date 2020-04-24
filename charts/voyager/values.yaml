@@ -103,6 +103,8 @@ apiserver:
 # Send usage events to Google Analytics
 enableAnalytics: true
 
+restrictToOperatorNamespace: false
+
 # Customization of templates
 templates:
   # name of configmap with custom templates
