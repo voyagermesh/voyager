@@ -15,10 +15,10 @@ jobs:
 
     steps:
 
-    - name: Set up Go 1.13
+    - name: Set up Go 1.14
       uses: actions/setup-go@v1
       with:
-        go-version: 1.13
+        go-version: 1.14
       id: go
 
     - name: Check out code into the Go module directory
@@ -37,6 +37,15 @@ jobs:
       run: |
         sudo apt-get -qq update || true
         sudo apt-get install -y bzr
+        # install yq
+        curl -fsSL -o yq https://github.com/mikefarah/yq/releases/download/3.3.0/yq_linux_amd64
+        chmod +x yq
+        sudo mv yq /usr/local/bin/yq
+        # install kubectl
+        curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl
+        chmod +x ./kubectl
+        sudo mv ./kubectl /usr/local/bin/kubectl
+        # run checks
         make ci
 
     - name: Build
@@ -74,25 +83,19 @@ jobs:
     needs: build
     strategy:
       matrix:
-        cluster:
-        - {"version": "v1.11.10", "config": "kind-1.11.yaml"}
-        - {"version": "v1.12.10", "config": "kind.yaml"}
-        - {"version": "v1.14.6", "config": "kind.yaml"}
-        - {"version": "v1.16.3", "config": "kind.yaml"}
-        - {"version": "v1.17.0", "config": "kind.yaml"}
-
+        k8s: [v1.11.10, v1.12.10, v1.14.10, v1.16.4, v1.18.0]
     steps:
 
     - name: Check out code into the Go module directory
       uses: actions/checkout@v1
 
-    - name: Create Kubernetes ${{ matrix.cluster.version }} cluster
+    - name: Create Kubernetes ${{ matrix.k8s }} cluster
       id: kind
       uses: engineerd/setup-kind@v0.1.0
       with:
-        version: v0.6.1
-        config: hack/kubernetes/${{ matrix.cluster.config }}
-        image: kindest/node:${{ matrix.cluster.version }}
+        version: v0.7.0
+        config: hack/kubernetes/kind.yaml
+        image: kindest/node:${{ matrix.k8s }}
 
     - name: Prepare cluster for testing
       id: local-path
@@ -105,9 +108,11 @@ jobs:
         kubectl wait --for=condition=Ready nodes --all --timeout=5m
         kubectl get nodes
         echo
+        kubectl version
+        echo
         echo "installing local-path provisioner ..."
         kubectl delete storageclass --all
-        kubectl apply -f https://github.com/kmodules/local-path-provisioner/raw/k-1.11/deploy/local-path-storage.yaml
+        kubectl apply -f https://github.com/rancher/local-path-provisioner/raw/v0.0.12/deploy/local-path-storage.yaml
         kubectl wait --for=condition=Ready pods -n local-path-storage --all --timeout=5m
         kubectl apply -f hack/kubernetes/storageclass/standard.yaml
         echo
@@ -119,7 +124,7 @@ jobs:
 
     - name: Test charts
       run: |
-        export KUBECONFIG="$(kind get kubeconfig-path)"
+        export KUBECONFIG="${HOME}/.kube/config"
         make ct
         kubectl delete crd --all
 
@@ -130,7 +135,7 @@ jobs:
         TEST_CREDENTIALS: ${{ secrets.TEST_CREDENTIALS }}
         GOOGLE_SERVICE_ACCOUNT_JSON_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON_KEY }}
       run: |
-        export KUBECONFIG="$(kind get kubeconfig-path)"
+        export KUBECONFIG="${HOME}/.kube/config"
         echo "preparing test credentials"
         mkdir -p hack/config
         echo -n "$TEST_CREDENTIALS" > hack/config/.env

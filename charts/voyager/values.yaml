@@ -1,12 +1,19 @@
-##
-## Voyager chart configuration
-##
+# Default values for voyager.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
 replicaCount: 1
+
 # Docker registry containing Voyager & HAProxy images
 voyager:
   registry: appscode
   repository: voyager
   tag: v12.0.0-rc.1
+  resources: {}
+  securityContext: {}
 haproxy:
   registry: appscode
   repository: haproxy
@@ -14,23 +21,27 @@ haproxy:
 cleaner:
   registry: appscode
   repository: kubectl
-  tag: v1.11
+  tag: v1.16
+
 ## Optionally specify an array of imagePullSecrets.
 ## Secrets must be manually created in the namespace.
 ## ref: https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod
 ## example: helm template charts/voyager \
-##            --set imagePullSecrets[0]=abc \
-##            --set imagePullSecrets[1]=xyz
+##            --set imagePullSecrets[0].name=abc,imagePullSecrets[1].name=xyz
 imagePullSecrets: []
+
 ## Specify a imagePullPolicy
 ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
 ##
 imagePullPolicy: IfNotPresent
+
 ## Use cloud provider here.
 cloudProvider:
+
 ## The path to the cloud provider configuration file. Empty string for no configuration file.
 ## ie. for azure use /etc/kubernetes/azure.json
 cloudConfig: ''
+
 ## Installs voyager operator as critical addon
 ## https://kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/
 criticalAddon: false
@@ -40,9 +51,13 @@ persistence:
   enabled: false
   hostPath: /etc/kubernetes
 
-## Annotations passed to operator pod(s).
+## Annotations passed to operator deployment.
 ##
 annotations: {}
+
+## Annotations passed to operator pod(s).
+##
+podAnnotations: {}
 
 ## Node labels for pod assignment
 ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
@@ -54,17 +69,22 @@ nodeSelector:
 ## Tolerations for pod assignment
 ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 ##
-tolerations: {}
+tolerations: []
 
 ## Affinity for pod assignment
 ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
 ##
 affinity: {}
 
+podSecurityContext:
+  fsGroup: 65535
+
 serviceAccount:
-  # Specifies whether a ServiceAccount should be created
+  # Specifies whether a service account should be created
   create: true
-  # The name of the ServiceAccount to use.
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name:
 

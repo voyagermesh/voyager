@@ -2,4 +2,4 @@ Set cloudProvider for installing Voyager
 
 To verify that Voyager has started, run:
 
-  kubectl --namespace={{ .Release.Namespace }} get deployments -l "release={{ .Release.Name }}, app={{ template "voyager.name" . }}"
+  kubectl get deployment --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "voyager.name" . }},app.kubernetes.io/instance={{ .Release.Name }}"

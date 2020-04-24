@@ -21,16 +21,13 @@ kind: APIService
 metadata:
   name: v1beta1.admission.voyager.appscode.com
   labels:
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-    app: "{{ template "voyager.name" . }}"
-    heritage: "{{ .Release.Service }}"
-    release: "{{ .Release.Name }}"
+    {{- include "voyager.labels" . | nindent 4 }}
 spec:
   group: admission.voyager.appscode.com
   version: v1beta1
   service:
     namespace: {{ .Release.Namespace }}
-    name: {{ template "voyager.fullname" . }}
+    name: {{ include "voyager.fullname" . }}
   caBundle: {{ $caCrt }}
   groupPriorityMinimum: {{ .Values.apiserver.groupPriorityMinimum }}
   versionPriority: {{ .Values.apiserver.versionPriority }}
@@ -39,13 +36,10 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ template "voyager.fullname" . }}-apiserver-cert
+  name: {{ include "voyager.fullname" . }}-apiserver-cert
   namespace: {{ .Release.Namespace }}
   labels:
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-    app: "{{ template "voyager.name" . }}"
-    heritage: "{{ .Release.Service }}"
-    release: "{{ .Release.Name }}"
+    {{- include "voyager.labels" . | nindent 4 }}
 type: Opaque
 data:
   tls.crt: {{ $serverCrt }}
@@ -55,37 +49,31 @@ data:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ template "voyager.fullname" . }}-apiserver-extension-server-authentication-reader
+  name: {{ include "voyager.fullname" . }}-apiserver-extension-server-authentication-reader
   namespace: kube-system
   labels:
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-    app: "{{ template "voyager.name" . }}"
-    heritage: "{{ .Release.Service }}"
-    release: "{{ .Release.Name }}"
+    {{- include "voyager.labels" . | nindent 4 }}
 roleRef:
   kind: Role
   apiGroup: rbac.authorization.k8s.io
   name: extension-apiserver-authentication-reader
 subjects:
 - kind: ServiceAccount
-  name: {{ template "voyager.serviceAccountName" . }}
+  name: {{ include "voyager.serviceAccountName" . }}
   namespace: {{ .Release.Namespace }}
 ---
 # to delegate authentication and authorization
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ template "voyager.fullname" . }}-apiserver-auth-delegator
+  name: {{ include "voyager.fullname" . }}-apiserver-auth-delegator
   labels:
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-    app: "{{ template "voyager.name" . }}"
-    heritage: "{{ .Release.Service }}"
-    release: "{{ .Release.Name }}"
+    {{- include "voyager.labels" . | nindent 4 }}
 roleRef:
   kind: ClusterRole
   apiGroup: rbac.authorization.k8s.io
   name: system:auth-delegator
 subjects:
 - kind: ServiceAccount
-  name: {{ template "voyager.serviceAccountName" . }}
+  name: {{ include "voyager.serviceAccountName" . }}
   namespace: {{ .Release.Namespace }}
