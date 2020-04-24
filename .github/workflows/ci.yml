@@ -124,7 +124,7 @@ jobs:
 
     - name: Test charts
       run: |
-        export KUBECONFIG="$(kind get kubeconfig-path)"
+        export KUBECONFIG="${HOME}/.kube/config"
         make ct
         kubectl delete crd --all
 
@@ -135,7 +135,7 @@ jobs:
         TEST_CREDENTIALS: ${{ secrets.TEST_CREDENTIALS }}
         GOOGLE_SERVICE_ACCOUNT_JSON_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON_KEY }}
       run: |
-        export KUBECONFIG="$(kind get kubeconfig-path)"
+        export KUBECONFIG="${HOME}/.kube/config"
         echo "preparing test credentials"
         mkdir -p hack/config
         echo -n "$TEST_CREDENTIALS" > hack/config/.env
