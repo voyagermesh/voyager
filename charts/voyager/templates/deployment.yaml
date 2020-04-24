@@ -16,8 +16,7 @@ spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: "{{ include "voyager.name" . }}"
-      release: "{{ .Release.Name }}"
+      {{- include "voyager.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
