@@ -570,7 +570,6 @@ func getTransportForCert(ca, ccrt, ckey []byte) *http.Transport {
 		Certificates: []tls.Certificate{clientCert},
 		RootCAs:      caCertPool,
 	}
-	tlsConfig.BuildNameToCertificate()
 	return &http.Transport{
 		TLSClientConfig: tlsConfig,
 	}
