@@ -50,7 +50,7 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `replicaCount`                       | Number of operator replicas to create (only 1 is supported)   | `1`                   |
 | `voyager.registry`                   | Docker registry used to pull Voyager image                    | `appscode`            |
 | `voyager.repository`                 | Voyager container image                                       | `voyager`             |
-| `voyager.tag`                        | Voyager container image tag                                   | `v12.0.0-rc.1`             |
+| `voyager.tag`                        | Voyager container image tag                                   | `v12.0.0-rc.1`        |
 | `haproxy.registry`                   | Docker registry used to pull HAProxy image                    | `appscode`            |
 | `haproxy.repository`                 | HAProxy container image                                       | `haproxy`             |
 | `haproxy.tag`                        | HAProxy container image tag                                   | `1.9.6-v12.0.0-rc.1-alpine` |
@@ -66,7 +66,8 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `persistence.enabled`                | Enable mounting cloud config                                  | `false`               |
 | `persistence.hostPath`               | Host mount path for cloud config                              | `/etc/kubernetes`     |
 | `affinity`                           | Affinity rules for pod assignment                             | `{}`                  |
-| `annotations`                        | Annotations applied to operator pod(s)                        | `{}`                  |
+| `annotations`                        | Annotations applied to operator deployment                    | `{}`                  |
+| `podAnnotations`                     | Annotations applied to operator pod(s)                        | `{}`                  |
 | `nodeSelector`                       | Node labels for pod assignment                                | `{}`                  |
 | `tolerations`                        | Tolerations used pod assignment                               | `{}`                  |
 | `rbac.create`                        | If `true`, create and use RBAC resources                      | `true`                |
@@ -76,7 +77,7 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `templates.cfgmap`                   | Name of configmap with custom templates                       | ``                    |
 | `apiserver.groupPriorityMinimum`     | The minimum priority the group should have.                   | 10000                 |
 | `apiserver.versionPriority`          | The ordering of this API inside of the group.                 | 15                    |
-| `apiserver.enableValidatingWebhook`  | Configure apiserver as admission webhooks for Voyager CRDs     | `true`                |
+| `apiserver.enableValidatingWebhook`  | Configure apiserver as admission webhooks for Voyager CRDs    | `true`                |
 | `apiserver.ca`                       | CA certificate used by main Kubernetes api server             | `not-ca-cert`         |
 | `apiserver.bypassValidatingWebhookXray` | If true, bypasses validating webhook xray checks           | `false`               |
 | `apiserver.useKubeapiserverFqdnForAks`  | If true, uses kube-apiserver FQDN for AKS cluster to workaround https://github.com/Azure/AKS/issues/522 | `true`             |

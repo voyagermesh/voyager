@@ -1,13 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "voyager.fullname" . }}
+  name: {{ include "voyager.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app: "{{ template "voyager.name" . }}"
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-    release: "{{ .Release.Name }}"
-    heritage: "{{ .Release.Service }}"
+    {{- include "voyager.labels" . | nindent 4 }}
 spec:
   ports:
   # Port used to expose admission webhook apiserver
@@ -19,5 +16,4 @@ spec:
     port: 56791
     targetPort: 56791
   selector:
-    app: "{{ template "voyager.name" . }}"
-    release: "{{ .Release.Name }}"
+    {{- include "voyager.selectorLabels" . | nindent 4 }}
