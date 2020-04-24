@@ -47,7 +47,9 @@ spec:
         - --operator-service={{ template "voyager.fullname" . }}
         - --docker-registry={{ .Values.haproxy.registry }}
         - --haproxy-image-tag={{ .Values.haproxy.tag }}
+        - --haproxy-image-repository={{ .Values.haproxy.repository }}
         - --exporter-image-tag={{ .Values.voyager.tag }}
+        - --exporter-image-repository={{ .Values.voyager.repository }}
         - --secure-port=8443
         - --audit-log-path=-
         - --tls-cert-file=/var/serving-cert/tls.crt
