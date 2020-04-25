@@ -19,7 +19,31 @@ aliases:
 
 ## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
 
-[Full Changelog](https://github.com/appscode/voyager/compare/v12.0.0-rc.0...HEAD)
+[Full Changelog](https://github.com/appscode/voyager/compare/v12.0.0-rc.1...HEAD)
+
+**Closed issues:**
+
+- Voyager operator continue crash forbidden permission [\#1483](https://github.com/appscode/voyager/issues/1483)
+- Allow option to set Docker repository for HAProxy and Exporter images [\#1449](https://github.com/appscode/voyager/issues/1449)
+
+**Merged pull requests:**
+
+- Security: Upgrade to HAProxy 1.19.15 [\#1495](https://github.com/appscode/voyager/pull/1495) ([tamalsaha](https://github.com/tamalsaha))
+- Add rbac permissions for statefulset [\#1494](https://github.com/appscode/voyager/pull/1494) ([tamalsaha](https://github.com/tamalsaha))
+- Apply various fixes to chart [\#1493](https://github.com/appscode/voyager/pull/1493) ([tamalsaha](https://github.com/tamalsaha))
+- Haproxy exporter image repository [\#1491](https://github.com/appscode/voyager/pull/1491) ([RobertKirk](https://github.com/RobertKirk))
+- Add missing ingresses/status resource to operator ClusterRole [\#1488](https://github.com/appscode/voyager/pull/1488) ([aletundo](https://github.com/aletundo))
+- Bump cloud.google.com/go to get timeout fix [\#1487](https://github.com/appscode/voyager/pull/1487) ([joshk0](https://github.com/joshk0))
+- Never exit certificates renewal infinite loop [\#1486](https://github.com/appscode/voyager/pull/1486) ([jayjun](https://github.com/jayjun))
+- workload-kind support StatefulSet [\#1482](https://github.com/appscode/voyager/pull/1482) ([kuring](https://github.com/kuring))
+- Add restrict-to-operator-namespace flag [\#1481](https://github.com/appscode/voyager/pull/1481) ([mazzy89](https://github.com/mazzy89))
+- Allow specifying rather than generating certs [\#1479](https://github.com/appscode/voyager/pull/1479) ([tamalsaha](https://github.com/tamalsaha))
+- Refactor CI pipeline to build once. [\#1476](https://github.com/appscode/voyager/pull/1476) ([tamalsaha](https://github.com/tamalsaha))
+- Bring back support for k8s 1.11 [\#1475](https://github.com/appscode/voyager/pull/1475) ([tamalsaha](https://github.com/tamalsaha))
+- Use node\[0\]'s internal ip as minikube ip [\#1474](https://github.com/appscode/voyager/pull/1474) ([tamalsaha](https://github.com/tamalsaha))
+
+## [v12.0.0-rc.1](https://github.com/appscode/voyager/tree/v12.0.0-rc.1) (2020-01-03)
+[Full Changelog](https://github.com/appscode/voyager/compare/v12.0.0-rc.0...v12.0.0-rc.1)
 
 **Closed issues:**
 
@@ -30,6 +54,7 @@ aliases:
 
 **Merged pull requests:**
 
+- Prepare v12.0.0-rc.1 [\#1473](https://github.com/appscode/voyager/pull/1473) ([tamalsaha](https://github.com/tamalsaha))
 - Exit only if UpdateStatus returns error. [\#1472](https://github.com/appscode/voyager/pull/1472) ([tamalsaha](https://github.com/tamalsaha))
 
 ## [v12.0.0-rc.0](https://github.com/appscode/voyager/tree/v12.0.0-rc.0) (2020-01-03)
