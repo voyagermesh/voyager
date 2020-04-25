@@ -17,9 +17,8 @@ aliases:
 
 # Change Log
 
-## [Unreleased](https://github.com/appscode/voyager/tree/HEAD)
-
-[Full Changelog](https://github.com/appscode/voyager/compare/v12.0.0-rc.1...HEAD)
+## [v12.0.0-rc.2](https://github.com/appscode/voyager/tree/v12.0.0-rc.2) (2020-04-25)
+[Full Changelog](https://github.com/appscode/voyager/compare/v12.0.0-rc.1...v12.0.0-rc.2)
 
 **Closed issues:**
 
@@ -28,6 +27,9 @@ aliases:
 
 **Merged pull requests:**
 
+- Build HAProxy images from Makefile [\#1498](https://github.com/appscode/voyager/pull/1498) ([tamalsaha](https://github.com/tamalsaha))
+- Use BASH\_SOURCE to calculate $REPO\_ROOT [\#1497](https://github.com/appscode/voyager/pull/1497) ([tamalsaha](https://github.com/tamalsaha))
+- Update CHANGELOG.md [\#1496](https://github.com/appscode/voyager/pull/1496) ([tamalsaha](https://github.com/tamalsaha))
 - Security: Upgrade to HAProxy 1.19.15 [\#1495](https://github.com/appscode/voyager/pull/1495) ([tamalsaha](https://github.com/tamalsaha))
 - Add rbac permissions for statefulset [\#1494](https://github.com/appscode/voyager/pull/1494) ([tamalsaha](https://github.com/tamalsaha))
 - Apply various fixes to chart [\#1493](https://github.com/appscode/voyager/pull/1493) ([tamalsaha](https://github.com/tamalsaha))
