@@ -44,6 +44,9 @@ jobs:
     needs: build
     steps:
 
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v1
+
     - name: Clone charts repository
       env:
         GITHUB_TOKEN: ${{ secrets.LGTM_GITHUB_TOKEN }}
