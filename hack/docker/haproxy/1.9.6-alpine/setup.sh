@@ -16,8 +16,7 @@
 
 set -eou pipefail
 
-GOPATH=$(go env GOPATH)
-REPO_ROOT=$GOPATH/src/github.com/appscode/voyager
+REPO_ROOT=$(dirname "${BASH_SOURCE[0]}")/../../../..
 
 source "$REPO_ROOT/hack/libbuild/common/public_image.sh"
 
