@@ -12,6 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+FROM debian:buster
+
+ENV DEBIAN_FRONTEND noninteractive
+ENV DEBCONF_NONINTERACTIVE_SEEN true
+
+RUN set -x \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends apt-transport-https ca-certificates curl
+
+RUN set -x \
+  && curl -fsSL -o auth-request.lua https://raw.githubusercontent.com/appscode/haproxy-auth-request/v{ARG_HAPROXY}/auth-request.lua
+
+
+
 FROM {ARG_FROM}
 
 RUN set -x \
@@ -19,7 +33,7 @@ RUN set -x \
   && ln -sf /usr/share/lua/ /usr/local/share/ \
   && ln -sf /usr/lib/lua/ /usr/local/lib/
 
-COPY bin/auth-request.lua /etc/auth-request.lua
+COPY --from=0 /auth-request.lua /etc/auth-request.lua
 COPY hack/docker/voyager/templates /srv/voyager/templates/
 ADD  bin/{ARG_OS}_{ARG_ARCH}/{ARG_BIN} /{ARG_BIN}
 

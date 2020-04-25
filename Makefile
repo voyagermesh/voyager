@@ -52,25 +52,39 @@ endif
 ### These variables should not need tweaking.
 ###
 
+REPO_ROOT := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
+
 SRC_PKGS := *.go apis client pkg third_party
 SRC_DIRS := $(SRC_PKGS) test hack/gencrd hack/gendocs # directories which hold app source (not vendored)
 
-DOCKER_PLATFORMS := linux/amd64 linux/arm linux/arm64
+DOCKER_PLATFORMS := linux/amd64 linux/arm64
 BIN_PLATFORMS    := $(DOCKER_PLATFORMS)
 
 # Used internally.  Users should pass GOOS and/or GOARCH.
 OS   := $(if $(GOOS),$(GOOS),$(shell go env GOOS))
 ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
 
-BASEIMAGE_PROD   ?= haproxy:1.9.15-alpine
-BASEIMAGE_DBG    ?= haproxy:1.9.15-alpine
+HAPROXY_VERSION  ?= 1.9.15
 
-IMAGE            := $(REGISTRY)/$(BIN)
-VERSION_PROD     := $(VERSION)
-VERSION_DBG      := $(VERSION)-dbg
-TAG              := $(VERSION)_$(OS)_$(ARCH)
-TAG_PROD         := $(TAG)
-TAG_DBG          := $(VERSION)-dbg_$(OS)_$(ARCH)
+BASEIMAGE_PROD   ?= haproxy:$(HAPROXY_VERSION)-alpine
+BASEIMAGE_DBG    ?= haproxy:$(HAPROXY_VERSION)-alpine
+
+IMAGE           := $(REGISTRY)/$(BIN)
+VERSION_PROD    := $(VERSION)
+VERSION_DBG     := $(VERSION)-dbg
+
+TAG             := $(VERSION)_$(OS)_$(ARCH)
+TAG_PROD        := $(TAG)
+TAG_DBG         := $(VERSION)-dbg_$(OS)_$(ARCH)
+
+
+HAPROXY_DEB     := $(HAPROXY_VERSION)-$(VERSION)
+HAPROXY_ALP     := $(HAPROXY_VERSION)-$(VERSION)-alpine
+
+TAG_HAPROXY     := $(HAPROXY_VERSION)-$(TAG)
+TAG_HAPROXY_DEB := $(TAG_HAPROXY)
+TAG_HAPROXY_ALP := $(TAG_HAPROXY)-alpine
+
 
 GO_VERSION       ?= 1.14.2
 BUILD_IMAGE      ?= appscode/golang-dev:$(GO_VERSION)
@@ -91,9 +105,11 @@ BUILD_DIRS  := bin/$(OS)_$(ARCH)     \
                $(HOME)/.kube         \
                $(HOME)/.minikube
 
-DOCKERFILE_PROD  = hack/docker/voyager/Dockerfile.in
-DOCKERFILE_DBG   = hack/docker/voyager/Dockerfile.dbg
-DOCKERFILE_TEST  = hack/docker/voyager/Dockerfile.test
+DOCKERFILE_PROD        = hack/docker/voyager/Dockerfile.in
+DOCKERFILE_DBG         = hack/docker/voyager/Dockerfile.dbg
+DOCKERFILE_TEST        = hack/docker/voyager/Dockerfile.test
+DOCKERFILE_HAPROXY_DEB = hack/docker/haproxy/$(HAPROXY_VERSION)/Dockerfile
+DOCKERFILE_HAPROXY_ALP = hack/docker/haproxy/$(HAPROXY_VERSION)-alpine/Dockerfile
 
 DOCKER_REPO_ROOT := /go/src/$(GO_PKG)/$(REPO)
 
@@ -128,6 +144,24 @@ all-build: $(addprefix build-, $(subst /,_, $(BIN_PLATFORMS)))
 all-container: $(addprefix container-, $(subst /,_, $(DOCKER_PLATFORMS)))
 
 all-push: $(addprefix push-, $(subst /,_, $(DOCKER_PLATFORMS)))
+
+
+haproxy-container-%:
+	@$(MAKE) haproxy-container            \
+	    --no-print-directory              \
+	    GOOS=$(firstword $(subst _, ,$*)) \
+	    GOARCH=$(lastword $(subst _, ,$*))
+
+haproxy-push-%:
+	@$(MAKE) haproxy-push                 \
+	    --no-print-directory              \
+	    GOOS=$(firstword $(subst _, ,$*)) \
+	    GOARCH=$(lastword $(subst _, ,$*))
+
+all-haproxy-container: $(addprefix haproxy-container-, $(subst /,_, $(DOCKER_PLATFORMS)))
+
+all-haproxy-push: $(addprefix haproxy-push-, $(subst /,_, $(DOCKER_PLATFORMS)))
+
 
 version:
 	@echo ::set-output name=version::$(VERSION)
@@ -328,12 +362,12 @@ DOTFILE_IMAGE    = $(subst /,_,$(IMAGE))-$(TAG)
 container: bin/.container-$(DOTFILE_IMAGE)-PROD bin/.container-$(DOTFILE_IMAGE)-DBG
 bin/.container-$(DOTFILE_IMAGE)-%: bin/$(OS)_$(ARCH)/$(BIN) $(DOCKERFILE_%)
 	@echo "container: $(IMAGE):$(TAG_$*)"
-	@curl -fsSL -o bin/auth-request.lua https://raw.githubusercontent.com/appscode/haproxy-auth-request/v1.9.15/auth-request.lua
 	@sed                                    \
 		-e 's|{ARG_BIN}|$(BIN)|g'           \
 		-e 's|{ARG_ARCH}|$(ARCH)|g'         \
 		-e 's|{ARG_OS}|$(OS)|g'             \
 		-e 's|{ARG_FROM}|$(BASEIMAGE_$*)|g' \
+		-e 's|{ARG_HAPROXY}|$(HAPROXY_VERSION)|g' \
 		$(DOCKERFILE_$*) > bin/.dockerfile-$*-$(OS)_$(ARCH)
 	@DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform $(OS)/$(ARCH) --load --pull -t $(IMAGE):$(TAG_$*) -f bin/.dockerfile-$*-$(OS)_$(ARCH) .
 	@docker images -q $(IMAGE):$(TAG_$*) > $@
@@ -350,6 +384,36 @@ docker-manifest: docker-manifest-PROD docker-manifest-DBG
 docker-manifest-%:
 	DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create -a $(IMAGE):$(VERSION_$*) $(foreach PLATFORM,$(DOCKER_PLATFORMS),$(IMAGE):$(VERSION_$*)_$(subst /,_,$(PLATFORM)))
 	DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push $(IMAGE):$(VERSION_$*)
+
+
+DOTFILE_HAPROXY  = $(REGISTRY)_haproxy-$(TAG_HAPROXY)
+
+haproxy-container: bin/.container-$(DOTFILE_HAPROXY)-DEB bin/.container-$(DOTFILE_HAPROXY)-ALP
+bin/.container-$(DOTFILE_HAPROXY)-%: bin/.container-$(DOTFILE_IMAGE)-PROD
+	@echo "haproxy: $(REGISTRY)/haproxy:$(TAG_HAPROXY_$*)"
+	@sed                                    \
+		-e 's|{ARG_BIN}|$(BIN)|g'           \
+		-e 's|{ARG_ARCH}|$(ARCH)|g'         \
+		-e 's|{ARG_OS}|$(OS)|g'             \
+		-e 's|{ARG_FROM}|$(BASEIMAGE_$*)|g' \
+		-e 's|{ARG_HAPROXY}|$(HAPROXY_VERSION)|g' \
+		$(DOCKERFILE_HAPROXY_$*) > bin/.dockerfile-$*-$(OS)_$(ARCH)
+	@DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform $(OS)/$(ARCH) --load --pull -t $(REGISTRY)/haproxy:$(TAG_HAPROXY_$*) -f bin/.dockerfile-$*-$(OS)_$(ARCH) .
+	@docker images -q $(REGISTRY)/haproxy:$(TAG_HAPROXY_$*) > $@
+	@echo
+
+haproxy-push: bin/.push-$(DOTFILE_HAPROXY)-DEB bin/.push-$(DOTFILE_HAPROXY)-ALP
+bin/.push-$(DOTFILE_HAPROXY)-%: bin/.container-$(DOTFILE_HAPROXY)-%
+	@docker push $(REGISTRY)/haproxy:$(TAG_HAPROXY_$*)
+	@echo "pushed: $(REGISTRY)/haproxy:$(TAG_HAPROXY_$*)"
+	@echo
+
+.PHONY: haproxy-manifest
+haproxy-manifest: haproxy-manifest-DEB haproxy-manifest-ALP
+haproxy-manifest-%:
+	DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create -a $(REGISTRY)/haproxy:$(HAPROXY_$*) $(foreach PLATFORM,$(DOCKER_PLATFORMS),$(REGISTRY)/haproxy:$(HAPROXY_$*)_$(subst /,_,$(PLATFORM)))
+	DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push $(REGISTRY)/haproxy:$(HAPROXY_$*)
+
 
 .PHONY: test
 test: unit-tests e2e-tests
@@ -564,7 +628,7 @@ qa:
 		echo "Are you trying to 'release' binaries to prod?"; \
 		exit 1;                                               \
 	fi
-	@$(MAKE) clean all-push docker-manifest --no-print-directory
+	@$(MAKE) clean all-push docker-manifest all-haproxy-push haproxy-manifest --no-print-directory
 
 .PHONY: release
 release:
@@ -576,7 +640,7 @@ release:
 		echo "apply tag to release binaries and/or docker images."; \
 		exit 1;                                                     \
 	fi
-	@$(MAKE) clean all-push docker-manifest --no-print-directory
+	@$(MAKE) clean all-push docker-manifest all-haproxy-push haproxy-manifest --no-print-directory
 
 .PHONY: clean
 clean:

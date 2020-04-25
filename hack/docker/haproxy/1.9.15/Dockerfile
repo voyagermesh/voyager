@@ -12,6 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+FROM debian:buster
+
+ENV DEBIAN_FRONTEND noninteractive
+ENV DEBCONF_NONINTERACTIVE_SEEN true
+
+RUN set -x \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends apt-transport-https ca-certificates curl
+
+RUN set -x \
+  && curl -L -o socklog.deb http://ftp.us.debian.org/debian/pool/main/s/socklog/socklog_2.1.0-8_amd64.deb \
+  && curl -fsSL -o auth-request.lua https://raw.githubusercontent.com/appscode/haproxy-auth-request/v1.9.15/auth-request.lua
+
+
+
 FROM haproxy:1.9.15
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -26,18 +41,18 @@ RUN set -x \
   && echo 'Etc/UTC' > /etc/timezone
 
 # Install socklog
-COPY socklog.deb .
+COPY --from=0 /socklog.deb .
 RUN set -x && apt install ./socklog.deb && rm socklog.deb
 
 ENV TZ     :/etc/localtime
 ENV LANG   en_US.utf8
 
-COPY voyager /usr/bin/voyager
-COPY auth-request.lua /etc/auth-request.lua
+COPY  bin/{ARG_OS}_{ARG_ARCH}/{ARG_BIN} /usr/bin/{ARG_BIN}
+COPY --from=0 /auth-request.lua /etc/auth-request.lua
 
 # Setup runit scripts
-COPY sv /etc/sv/
+COPY hack/docker/haproxy/1.9.15/sv /etc/sv/
 RUN ln -s /etc/sv /etc/service
 
-COPY runit.sh /runit.sh
+COPY hack/docker/haproxy/1.9.15/runit.sh /runit.sh
 ENTRYPOINT ["/runit.sh"]
