@@ -29,10 +29,6 @@ jobs:
     - name: Available platforms
       run: echo ${{ steps.buildx.outputs.platforms }}
 
-    - name: Prepare build host
-      run: |
-        ./hack/builddeps.sh
-
     - name: Build
       env:
         DOCKER_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -41,7 +37,6 @@ jobs:
       run: |
         docker login --username ${USERNAME} --password ${DOCKER_TOKEN}
         make release
-        ./hack/release.sh
 
   helm:
     name: Helm
