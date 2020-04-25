@@ -73,7 +73,8 @@ jobs:
         echo $PR_BRANCH
         cd $HOME/charts
         git checkout -b $PR_BRANCH
-        git commit -a -s -m "Push voyager chart for $GITHUB_REF"
+        git add --all
+        git commit -a -s -m "Push Voyager charts for $GITHUB_REF"
         git push origin $PR_BRANCH -f
         curl -fsSL https://github.com/github/hub/raw/master/script/get | bash -s 2.14.1
-        bin/hub pull-request -m "Push voyager chart for $GITHUB_REF"
+        bin/hub pull-request -m "Push Voyager charts for $GITHUB_REF"
