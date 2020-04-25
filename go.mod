@@ -12,7 +12,7 @@ require (
 	github.com/JamesClonk/vultr v2.0.1+incompatible // indirect
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v0.8.0 // indirect
-	github.com/appscode/go v0.0.0-20191119085241-0887d8ec2ecc
+	github.com/appscode/go v0.0.0-20200323182826-54e98e09185a
 	github.com/appscode/hello-grpc v0.0.0-20190207041230-eea009cbf42e
 	github.com/appscode/pat v0.0.0-20170521084856-48ff78925b79
 	github.com/aws/aws-sdk-go v1.20.20
@@ -62,9 +62,9 @@ require (
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/kube-openapi v0.0.0-20190816220812-743ec37842bf
 	k8s.io/utils v0.0.0-20190801114015-581e00157fb1
-	kmodules.xyz/client-go v0.0.0-20200105092743-4b797c0c0802
+	kmodules.xyz/client-go v0.0.0-20200305091010-36ee6a593ed3
 	kmodules.xyz/crd-schema-fuzz v0.0.0-20191129174258-81f984340891
-	kmodules.xyz/monitoring-agent-api v0.0.0-20191224204126-ee69caffab6c
+	kmodules.xyz/monitoring-agent-api v0.0.0-20200125202117-d3b3e33ce41f
 	kmodules.xyz/openshift v0.0.0-20191127145035-f6c48a90dbb7 // indirect
 	kmodules.xyz/webhook-runtime v0.0.0-20191127075323-d4bfdee6974d
 	sigs.k8s.io/yaml v1.1.0

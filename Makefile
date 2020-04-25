@@ -62,8 +62,8 @@ BIN_PLATFORMS    := $(DOCKER_PLATFORMS)
 OS   := $(if $(GOOS),$(GOOS),$(shell go env GOOS))
 ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
 
-BASEIMAGE_PROD   ?= haproxy:1.9.6-alpine
-BASEIMAGE_DBG    ?= haproxy:1.9.6-alpine
+BASEIMAGE_PROD   ?= haproxy:1.9.15-alpine
+BASEIMAGE_DBG    ?= haproxy:1.9.15-alpine
 
 IMAGE            := $(REGISTRY)/$(BIN)
 VERSION_PROD     := $(VERSION)
@@ -328,7 +328,7 @@ DOTFILE_IMAGE    = $(subst /,_,$(IMAGE))-$(TAG)
 container: bin/.container-$(DOTFILE_IMAGE)-PROD bin/.container-$(DOTFILE_IMAGE)-DBG
 bin/.container-$(DOTFILE_IMAGE)-%: bin/$(OS)_$(ARCH)/$(BIN) $(DOCKERFILE_%)
 	@echo "container: $(IMAGE):$(TAG_$*)"
-	@curl -fsSL -o bin/auth-request.lua https://raw.githubusercontent.com/appscode/haproxy-auth-request/v1.9.6/auth-request.lua
+	@curl -fsSL -o bin/auth-request.lua https://raw.githubusercontent.com/appscode/haproxy-auth-request/v1.9.15/auth-request.lua
 	@sed                                    \
 		-e 's|{ARG_BIN}|$(BIN)|g'           \
 		-e 's|{ARG_ARCH}|$(ARCH)|g'         \

@@ -14,25 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -xeou pipefail
+export HAPROXY_CONTROLLER_ARGS="$@"
+export >/etc/envvars
 
-GOPATH=$(go env GOPATH)
-REPO_ROOT="$GOPATH/src/github.com/appscode/voyager"
+[[ $DEBUG == true ]] && set -x
 
-export APPSCODE_ENV=prod
+# create haproxy.cfg dir
+mkdir /etc/haproxy
+touch /var/run/haproxy.pid
+mkdir -p /etc/ssl/private/haproxy
 
-pushd $REPO_ROOT
-
-rm -rf dist
-
-./hack/make.py build voyager
-
-./hack/docker/haproxy/1.9.15/setup.sh
-./hack/docker/haproxy/1.9.15/setup.sh release
-
-./hack/docker/haproxy/1.9.15-alpine/setup.sh
-./hack/docker/haproxy/1.9.15-alpine/setup.sh release
-
-rm dist/.tag
-
-popd
+echo "Starting runit..."
+exec /usr/bin/runsvdir -P /etc/service

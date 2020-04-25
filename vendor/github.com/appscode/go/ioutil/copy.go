@@ -76,10 +76,34 @@ func CopyFile(dst, src string) (err error) {
 	return
 }
 
+type options struct {
+	IgnoreDestination  bool
+	ReplaceDestination bool
+}
+
+type CopyDirFn func(*options)
+
+func IgnoreDestination() CopyDirFn {
+	return func(opts *options) {
+		opts.IgnoreDestination = true
+	}
+}
+
+func ReplaceDestination() CopyDirFn {
+	return func(opts *options) {
+		opts.ReplaceDestination = true
+	}
+}
+
 // CopyDir recursively copies a directory tree, attempting to preserve permissions.
 // Source directory must exist, destination directory must *not* exist.
 // Symlinks are ignored and skipped.
-func CopyDir(dst, src string) (err error) {
+func CopyDir(dst, src string, fns ...CopyDirFn) (err error) {
+	var opts options
+	for _, fn := range fns {
+		fn(&opts)
+	}
+
 	src = filepath.Clean(src)
 	dst = filepath.Clean(dst)
 
@@ -96,7 +120,14 @@ func CopyDir(dst, src string) (err error) {
 		return
 	}
 	if err == nil {
-		return fmt.Errorf("destination already exists")
+		if opts.ReplaceDestination {
+			err = os.RemoveAll(dst)
+			if err != nil {
+				return err
+			}
+		} else if !opts.IgnoreDestination {
+			return fmt.Errorf("destination already exists")
+		}
 	}
 
 	err = os.MkdirAll(dst, si.Mode())

@@ -245,7 +245,7 @@ elif [ "${ClusterProvider}" = "aks" ]; then
     CredProvider=Azure
     ZONE=eastus
     NODE=Standard_DS2_v2
-    K8S_VERSION=${K8S_VERSION:-1.9.6}
+    K8S_VERSION=${K8S_VERSION:-1.9.15}
 
     prepare_aks
 elif [ "${ClusterProvider}" = "acs" ]; then

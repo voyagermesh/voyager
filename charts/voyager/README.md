@@ -50,10 +50,10 @@ The following tables lists the configurable parameters of the Voyager chart and 
 | `replicaCount`                       | Number of operator replicas to create (only 1 is supported)   | `1`                   |
 | `voyager.registry`                   | Docker registry used to pull Voyager image                    | `appscode`            |
 | `voyager.repository`                 | Voyager container image                                       | `voyager`             |
-| `voyager.tag`                        | Voyager container image tag                                   | `v12.0.0-rc.1`        |
+| `voyager.tag`                        | Voyager container image tag                                   | `v12.0.0-rc.2`        |
 | `haproxy.registry`                   | Docker registry used to pull HAProxy image                    | `appscode`            |
 | `haproxy.repository`                 | HAProxy container image                                       | `haproxy`             |
-| `haproxy.tag`                        | HAProxy container image tag                                   | `1.9.6-v12.0.0-rc.1-alpine` |
+| `haproxy.tag`                        | HAProxy container image tag                                   | `1.9.15-v12.0.0-rc.2-alpine` |
 | `cleaner.registry`                   | Docker registry used to pull Webhook cleaner image            | `appscode`            |
 | `cleaner.repository`                 | Webhook cleaner container image                               | `kubectl`             |
 | `cleaner.tag`                        | Webhook cleaner container image tag                           | `v1.11`               |

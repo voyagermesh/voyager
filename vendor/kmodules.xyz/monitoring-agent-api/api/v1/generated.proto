@@ -108,19 +108,34 @@ message PrometheusSpec {
   optional int32 port = 1;
 
   // Namespace of Prometheus. Service monitors will be created in this namespace.
-  // Deprecated: will be removed in a future release
+  // Deprecated: use prometheus.serviceMonitor.namespace
   optional string namespace = 2;
 
   // Labels are key value pairs that is used to select Prometheus instance via ServiceMonitor labels.
   // +optional
-  // Deprecated: will be removed in a future release
+  // Deprecated: use prometheus.serviceMonitor.labels
   map<string, string> labels = 3;
 
   // Interval at which metrics should be scraped
   // +optional
-  // Deprecated: will be removed in a future release
+  // Deprecated: use prometheus.serviceMonitor.interval
   optional string interval = 4;
 
-  optional PrometheusExporterSpec exporter = 5;
+  optional ServiceMonitorSpec serviceMonitor = 5;
+
+  optional PrometheusExporterSpec exporter = 6;
+}
+
+message ServiceMonitorSpec {
+  // Namespace of Prometheus. Service monitors will be created in this namespace.
+  optional string namespace = 1;
+
+  // Labels are key value pairs that is used to select Prometheus instance via ServiceMonitor labels.
+  // +optional
+  map<string, string> labels = 2;
+
+  // Interval at which metrics should be scraped
+  // +optional
+  optional string interval = 3;
 }
 

@@ -44,7 +44,7 @@ github.com/alecthomas/template
 github.com/alecthomas/template/parse
 # github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf
 github.com/alecthomas/units
-# github.com/appscode/go v0.0.0-20191119085241-0887d8ec2ecc
+# github.com/appscode/go v0.0.0-20200323182826-54e98e09185a
 github.com/appscode/go/analytics
 github.com/appscode/go/context
 github.com/appscode/go/crypto/rand
@@ -1087,7 +1087,7 @@ k8s.io/utils/net
 k8s.io/utils/path
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# kmodules.xyz/client-go v0.0.0-20200105092743-4b797c0c0802
+# kmodules.xyz/client-go v0.0.0-20200305091010-36ee6a593ed3
 kmodules.xyz/client-go
 kmodules.xyz/client-go/admissionregistration/v1beta1
 kmodules.xyz/client-go/apiextensions/v1beta1
@@ -1106,7 +1106,7 @@ kmodules.xyz/client-go/tools/clientcmd
 kmodules.xyz/client-go/tools/queue
 # kmodules.xyz/crd-schema-fuzz v0.0.0-20191129174258-81f984340891
 kmodules.xyz/crd-schema-fuzz
-# kmodules.xyz/monitoring-agent-api v0.0.0-20191224204126-ee69caffab6c
+# kmodules.xyz/monitoring-agent-api v0.0.0-20200125202117-d3b3e33ce41f
 kmodules.xyz/monitoring-agent-api/agents
 kmodules.xyz/monitoring-agent-api/agents/coreosprometheusoperator
 kmodules.xyz/monitoring-agent-api/agents/prometheus
