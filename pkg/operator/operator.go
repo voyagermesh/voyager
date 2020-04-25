@@ -74,6 +74,11 @@ type Operator struct {
 	dpInformer cache.SharedIndexInformer
 	dpLister   apps_listers.DeploymentLister
 
+	// StatefulSet
+	stsQueue    *queue.Worker
+	stsInformer cache.SharedIndexInformer
+	stsLister   apps_listers.StatefulSetLister
+
 	// DaemonSet
 	dmQueue    *queue.Worker
 	dmInformer cache.SharedIndexInformer

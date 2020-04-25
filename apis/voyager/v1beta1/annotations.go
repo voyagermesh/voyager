@@ -646,8 +646,8 @@ func getWorkload(m map[string]string, key string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if w != wpi.KindDeployment && w != wpi.KindDaemonSet {
-		return nil, errors.Errorf("%s must be either Deployment or DaemonSet, found %s", WorkloadKind, w)
+	if w != wpi.KindDeployment && w != wpi.KindDaemonSet && w != wpi.KindStatefulSet {
+		return nil, errors.Errorf("%s must be either Deployment or DaemonSet or StatefulSet, found %s", WorkloadKind, w)
 	}
 	return w, nil
 }

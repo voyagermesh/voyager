@@ -129,6 +129,11 @@ func (c *controller) IsExists() bool {
 		if kerr.IsNotFound(err) {
 			return false
 		}
+	} else if wk == wpi.KindStatefulSet {
+		_, err := c.KubeClient.AppsV1().StatefulSets(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		if kerr.IsNotFound(err) {
+			return false
+		}
 	} else if wk == wpi.KindDaemonSet {
 		_, err := c.KubeClient.AppsV1().DaemonSets(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
