@@ -16,8 +16,7 @@
 
 set -eou pipefail
 
-GOPATH=$(go env GOPATH)
-REPO_ROOT="$GOPATH/src/kubevault.dev/operator"
+REPO_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
 
 pushd $REPO_ROOT
 

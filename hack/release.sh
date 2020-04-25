@@ -14,10 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -xeou pipefail
+set -eou pipefail
 
-GOPATH=$(go env GOPATH)
-REPO_ROOT="$GOPATH/src/github.com/appscode/voyager"
+REPO_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
 
 export APPSCODE_ENV=prod
 
