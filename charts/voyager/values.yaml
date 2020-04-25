@@ -11,13 +11,13 @@ replicaCount: 1
 voyager:
   registry: appscode
   repository: voyager
-  tag: v12.0.0-rc.1
+  tag: v12.0.0-rc.2
   resources: {}
   securityContext: {}
 haproxy:
   registry: appscode
   repository: haproxy
-  tag: 1.9.6-v12.0.0-rc.1-alpine
+  tag: 1.9.15-v12.0.0-rc.2-alpine
 cleaner:
   registry: appscode
   repository: kubectl

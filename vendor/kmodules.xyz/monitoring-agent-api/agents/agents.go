@@ -31,7 +31,7 @@ func New(at api.AgentType, k8sClient kubernetes.Interface, extClient ecs.Apiexte
 	switch at {
 	case api.AgentPrometheus:
 		return prometheus.New()
-	case api.AgentCoreOSPrometheus, api.DeprecatedAgentCoreOSPrometheus:
+	case api.AgentPrometheusOperator, api.AgentCoreOSPrometheus, api.DeprecatedAgentCoreOSPrometheus:
 		return coreosprometheusoperator.New(at, k8sClient, extClient, promClient)
 	case api.AgentPrometheusBuiltin:
 		return prometheusbuiltin.New(k8sClient)

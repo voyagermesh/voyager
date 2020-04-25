@@ -17,6 +17,8 @@ limitations under the License.
 package v1
 
 import (
+	"sort"
+
 	"github.com/imdario/mergo"
 	jsoniter "github.com/json-iterator/go"
 	core "k8s.io/api/core/v1"
@@ -218,6 +220,7 @@ func MergeLocalObjectReferences(l1, l2 []core.LocalObjectReference) []core.Local
 			result = append(result, ref)
 		}
 	}
+	sort.Slice(result, func(i, j int) bool { return result[i].Name < result[j].Name })
 	return result
 }
 
@@ -295,4 +298,23 @@ func IsOwnedBy(dependent metav1.Object, owner metav1.Object) (owned bool, contro
 		}
 	}
 	return false, false
+}
+
+func UpsertToleration(tolerations []core.Toleration, upsert core.Toleration) []core.Toleration {
+	for i, toleration := range tolerations {
+		if toleration.Key == upsert.Key {
+			tolerations[i] = upsert
+			return tolerations
+		}
+	}
+	return append(tolerations, upsert)
+}
+
+func RemoveToleration(tolerations []core.Toleration, key string) []core.Toleration {
+	for i, toleration := range tolerations {
+		if toleration.Key == key {
+			return append(tolerations[:i], tolerations[i+1:]...)
+		}
+	}
+	return tolerations
 }

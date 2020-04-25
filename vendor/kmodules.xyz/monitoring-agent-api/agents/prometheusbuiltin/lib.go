@@ -59,8 +59,8 @@ func (agent *PrometheusBuiltin) CreateOrUpdate(sp api.StatsAccessor, new *api.Ag
 			delete(in.Annotations, "prometheus.io/scheme")
 		}
 		in.Annotations["prometheus.io/path"] = sp.Path()
-		if new.Prometheus.Port > 0 {
-			in.Annotations["prometheus.io/port"] = fmt.Sprintf("%d", new.Prometheus.Port)
+		if new.Prometheus.Exporter.Port > 0 {
+			in.Annotations["prometheus.io/port"] = fmt.Sprintf("%d", new.Prometheus.Exporter.Port)
 		} else {
 			delete(in.Annotations, "prometheus.io/port")
 		}

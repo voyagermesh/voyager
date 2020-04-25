@@ -70,7 +70,7 @@ func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new 
 
 	vt := kutil.VerbUnchanged
 	for _, item := range old.Items {
-		if item != nil && (new == nil || item.Namespace != new.Prometheus.Namespace) {
+		if item != nil && (new == nil || item.Namespace != new.Prometheus.ServiceMonitor.Namespace) {
 			err := agent.promClient.ServiceMonitors(item.Namespace).Delete(sp.ServiceMonitorName(), nil)
 			if err != nil && !kerr.IsNotFound(err) {
 				return kutil.VerbUnchanged, err
@@ -84,12 +84,12 @@ func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new 
 	}
 
 	// Unique Label Selector for ServiceMonitor
-	if new.Prometheus.Labels == nil {
-		new.Prometheus.Labels = map[string]string{}
+	if new.Prometheus.ServiceMonitor.Labels == nil {
+		new.Prometheus.ServiceMonitor.Labels = map[string]string{}
 	}
-	new.Prometheus.Labels[api.KeyService] = sp.ServiceName() + "." + sp.GetNamespace()
+	new.Prometheus.ServiceMonitor.Labels[api.KeyService] = sp.ServiceName() + "." + sp.GetNamespace()
 
-	actual, err := agent.promClient.ServiceMonitors(new.Prometheus.Namespace).Get(sp.ServiceMonitorName(), metav1.GetOptions{})
+	actual, err := agent.promClient.ServiceMonitors(new.Prometheus.ServiceMonitor.Namespace).Get(sp.ServiceMonitorName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		return agent.createServiceMonitor(sp, new)
 	} else if err != nil {
@@ -97,13 +97,13 @@ func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new 
 	}
 
 	update := false
-	if !reflect.DeepEqual(actual.Labels, new.Prometheus.Labels) {
+	if !reflect.DeepEqual(actual.Labels, new.Prometheus.ServiceMonitor.Labels) {
 		update = true
 	}
 
 	if !update {
 		for _, e := range actual.Spec.Endpoints {
-			if e.Interval != new.Prometheus.Interval {
+			if e.Interval != new.Prometheus.ServiceMonitor.Interval {
 				update = true
 				break
 			}
@@ -116,7 +116,7 @@ func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new 
 			return vt, err
 		}
 
-		actual.Labels = new.Prometheus.Labels
+		actual.Labels = new.Prometheus.ServiceMonitor.Labels
 		actual.ObjectMeta = agent.ensureOwnerReference(actual.ObjectMeta, *svc)
 		actual.Spec.Selector = metav1.LabelSelector{
 			MatchLabels: svc.Labels,
@@ -125,9 +125,9 @@ func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new 
 			MatchNames: []string{sp.GetNamespace()},
 		}
 		for i := range actual.Spec.Endpoints {
-			actual.Spec.Endpoints[i].Interval = new.Prometheus.Interval
+			actual.Spec.Endpoints[i].Interval = new.Prometheus.ServiceMonitor.Interval
 		}
-		_, err = agent.promClient.ServiceMonitors(new.Prometheus.Namespace).Update(actual)
+		_, err = agent.promClient.ServiceMonitors(new.Prometheus.ServiceMonitor.Namespace).Update(actual)
 		return kutil.VerbUpdated, err
 	}
 
@@ -141,7 +141,7 @@ func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor
 	}
 	var portName string
 	for _, p := range svc.Spec.Ports {
-		if p.Port == spec.Prometheus.Port {
+		if p.Port == spec.Prometheus.Exporter.Port {
 			portName = p.Name
 		}
 	}
@@ -152,8 +152,8 @@ func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor
 	sm := &promapi.ServiceMonitor{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      sp.ServiceMonitorName(),
-			Namespace: spec.Prometheus.Namespace,
-			Labels:    spec.Prometheus.Labels,
+			Namespace: spec.Prometheus.ServiceMonitor.Namespace,
+			Labels:    spec.Prometheus.ServiceMonitor.Labels,
 		},
 		Spec: promapi.ServiceMonitorSpec{
 			NamespaceSelector: promapi.NamespaceSelector{
@@ -162,7 +162,7 @@ func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor
 			Endpoints: []promapi.Endpoint{
 				{
 					Port:        portName,
-					Interval:    spec.Prometheus.Interval,
+					Interval:    spec.Prometheus.ServiceMonitor.Interval,
 					Path:        sp.Path(),
 					HonorLabels: true,
 				},
@@ -173,7 +173,7 @@ func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor
 		},
 	}
 	sm.ObjectMeta = agent.ensureOwnerReference(sm.ObjectMeta, *svc)
-	if _, err := agent.promClient.ServiceMonitors(spec.Prometheus.Namespace).Create(sm); err != nil && !kerr.IsAlreadyExists(err) {
+	if _, err := agent.promClient.ServiceMonitors(spec.Prometheus.ServiceMonitor.Namespace).Create(sm); err != nil && !kerr.IsAlreadyExists(err) {
 		return kutil.VerbUnchanged, err
 	}
 	return kutil.VerbCreated, nil
