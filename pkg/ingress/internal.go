@@ -23,14 +23,14 @@ import (
 	"strconv"
 	"strings"
 
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	cs "voyagermesh.dev/voyager/client/clientset/versioned"
+	"voyagermesh.dev/voyager/pkg/config"
+	"voyagermesh.dev/voyager/pkg/eventer"
+	_ "voyagermesh.dev/voyager/third_party/forked/cloudprovider/providers"
+
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client/clientset/versioned"
-	"github.com/appscode/voyager/pkg/config"
-	"github.com/appscode/voyager/pkg/eventer"
-	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
-
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"

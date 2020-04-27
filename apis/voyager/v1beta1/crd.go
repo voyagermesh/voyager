@@ -17,7 +17,7 @@ limitations under the License.
 package v1beta1
 
 import (
-	"github.com/appscode/voyager/api/crds"
+	"voyagermesh.dev/voyager/api/crds"
 
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 )

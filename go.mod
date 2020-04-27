@@ -1,4 +1,4 @@
-module github.com/appscode/voyager
+module voyagermesh.dev/voyager
 
 go 1.12
 

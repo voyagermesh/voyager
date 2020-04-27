@@ -17,7 +17,7 @@ limitations under the License.
 package framework
 
 import (
-	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
+	api_v1beta1 "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

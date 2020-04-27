@@ -22,12 +22,12 @@ import (
 	_ "net/http/pprof"
 	"time"
 
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	api_v1beta1 "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	cs "voyagermesh.dev/voyager/client/clientset/versioned"
+
 	"github.com/appscode/go/log"
 	"github.com/appscode/pat"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client/clientset/versioned"
-
 	cmap "github.com/orcaman/concurrent-map"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"

@@ -16,4 +16,4 @@ limitations under the License.
 
 // Package fake is a test-double implementation of cloudprovider
 // Interface, LoadBalancer and Instances. It is useful for testing.
-package fake // import "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
+package fake // import "voyagermesh.dev/voyager/third_party/forked/cloudprovider/providers/fake"

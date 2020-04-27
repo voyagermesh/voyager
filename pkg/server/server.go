@@ -21,9 +21,9 @@ import (
 	"os"
 	"strings"
 
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/eventer"
-	"github.com/appscode/voyager/pkg/operator"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	"voyagermesh.dev/voyager/pkg/eventer"
+	"voyagermesh.dev/voyager/pkg/operator"
 
 	admission "k8s.io/api/admission/v1beta1"
 	core "k8s.io/api/core/v1"

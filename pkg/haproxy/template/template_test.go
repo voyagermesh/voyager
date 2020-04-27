@@ -22,8 +22,8 @@ import (
 	"testing"
 	"text/template"
 
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	hpi "github.com/appscode/voyager/pkg/haproxy/api"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	hpi "voyagermesh.dev/voyager/pkg/haproxy/api"
 
 	"github.com/stretchr/testify/assert"
 )

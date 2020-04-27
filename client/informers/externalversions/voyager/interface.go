@@ -19,8 +19,8 @@ limitations under the License.
 package voyager
 
 import (
-	internalinterfaces "github.com/appscode/voyager/client/informers/externalversions/internalinterfaces"
-	v1beta1 "github.com/appscode/voyager/client/informers/externalversions/voyager/v1beta1"
+	internalinterfaces "voyagermesh.dev/voyager/client/informers/externalversions/internalinterfaces"
+	v1beta1 "voyagermesh.dev/voyager/client/informers/externalversions/voyager/v1beta1"
 )
 
 // Interface provides access to each of this group's versions.

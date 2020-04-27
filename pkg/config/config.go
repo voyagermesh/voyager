@@ -31,7 +31,7 @@ func init() {
 		BuiltinTemplates = "/srv/voyager/templates/*.cfg"
 	} else {
 		BuiltinTemplates = "/src/hack/docker/voyager/templates/*.cfg"
-		// BuiltinTemplates = "/home/tamal/go/src/github.com/appscode/voyager/hack/docker/voyager/templates/*.cfg"
+		// BuiltinTemplates = "/home/tamal/go/src/voyagermesh.dev/voyager/hack/docker/voyager/templates/*.cfg"
 	}
 }
 

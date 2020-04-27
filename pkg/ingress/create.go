@@ -19,7 +19,7 @@ package ingress
 import (
 	"fmt"
 
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

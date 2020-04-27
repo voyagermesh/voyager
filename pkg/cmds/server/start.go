@@ -20,8 +20,8 @@ import (
 	"io"
 	"net"
 
-	"github.com/appscode/voyager/pkg/operator"
-	"github.com/appscode/voyager/pkg/server"
+	"voyagermesh.dev/voyager/pkg/operator"
+	"voyagermesh.dev/voyager/pkg/server"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/pflag"

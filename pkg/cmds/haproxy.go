@@ -19,11 +19,11 @@ package cmds
 import (
 	"time"
 
+	cs "voyagermesh.dev/voyager/client/clientset/versioned"
+	hpc "voyagermesh.dev/voyager/pkg/haproxy/controller"
+
 	"github.com/appscode/go/log"
 	v "github.com/appscode/go/version"
-	cs "github.com/appscode/voyager/client/clientset/versioned"
-	hpc "github.com/appscode/voyager/pkg/haproxy/controller"
-
 	"github.com/spf13/cobra"
 	core "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"

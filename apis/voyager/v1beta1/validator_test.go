@@ -833,7 +833,7 @@ var dataTables = map[*Ingress]bool{
 	}: true,
 	{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "https://github.com/appscode/voyager/issues/420",
+			Name:      "https://github.com/voyagermesh/voyager/issues/420",
 			Namespace: "default",
 			Annotations: map[string]string{
 				"ingress.appscode.com/type": "HostPort",
@@ -923,7 +923,7 @@ var dataTables = map[*Ingress]bool{
 	}: true,
 	{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "https://github.com/appscode/voyager/pull/768",
+			Name:      "https://github.com/voyagermesh/voyager/pull/768",
 			Namespace: "default",
 			Annotations: map[string]string{
 				"ingress.appscode.com/type": "Internal",

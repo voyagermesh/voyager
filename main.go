@@ -21,7 +21,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/appscode/voyager/pkg/cmds"
+	"voyagermesh.dev/voyager/pkg/cmds"
 
 	_ "k8s.io/api/core/v1"
 	_ "k8s.io/client-go/kubernetes/fake"

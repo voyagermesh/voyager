@@ -15,4 +15,4 @@ limitations under the License.
 */
 
 // Package cloudprovider supplies interfaces and implementations for cloud service providers.
-package cloudprovider // import "github.com/appscode/voyager/third_party/forked/cloudprovider"
+package cloudprovider // import "voyagermesh.dev/voyager/third_party/forked/cloudprovider"

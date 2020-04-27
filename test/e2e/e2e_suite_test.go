@@ -20,9 +20,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/appscode/voyager/client/clientset/versioned/scheme"
-	"github.com/appscode/voyager/pkg/operator"
-	"github.com/appscode/voyager/test/framework"
+	"voyagermesh.dev/voyager/client/clientset/versioned/scheme"
+	"voyagermesh.dev/voyager/pkg/operator"
+	"voyagermesh.dev/voyager/test/framework"
 
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"

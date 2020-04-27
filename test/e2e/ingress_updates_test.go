@@ -19,8 +19,8 @@ package e2e_test
 import (
 	"time"
 
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/test/framework"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	"voyagermesh.dev/voyager/test/framework"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

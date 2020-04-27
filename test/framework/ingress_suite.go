@@ -23,11 +23,11 @@ import (
 	"strings"
 	"time"
 
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	"voyagermesh.dev/voyager/test/test-server/client"
+
 	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/go/log"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/test/test-server/client"
-
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"

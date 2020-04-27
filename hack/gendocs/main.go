@@ -26,9 +26,9 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/appscode/go/runtime"
-	"github.com/appscode/voyager/pkg/cmds"
+	"voyagermesh.dev/voyager/pkg/cmds"
 
+	"github.com/appscode/go/runtime"
 	"github.com/spf13/cobra/doc"
 )
 
@@ -69,7 +69,7 @@ aliases:
 // ref: https://github.com/spf13/cobra/blob/master/doc/md_docs.md
 func main() {
 	rootCmd := cmds.NewCmdVoyager()
-	dir := runtime.GOPath() + "/src/github.com/appscode/voyager/docs/reference"
+	dir := runtime.GOPath() + "/src/voyagermesh.dev/voyager/docs/reference"
 	fmt.Printf("Generating cli markdown tree in: %v\n", dir)
 	err := os.RemoveAll(dir)
 	if err != nil {

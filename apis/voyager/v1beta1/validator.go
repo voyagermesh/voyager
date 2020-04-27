@@ -327,7 +327,7 @@ func (r Ingress) IsValid(cloudProvider string) error {
 		}
 		addrs["*:80"] = &address{Protocol: "http", Address: "*", PodPort: 80}
 	}
-	// ref: https://github.com/appscode/voyager/issues/188
+	// ref: https://github.com/voyagermesh/voyager/issues/188
 	if cloudProvider == ProviderAWS && r.LBType() == LBTypeLoadBalancer {
 		if ans, ok := r.ServiceAnnotations(cloudProvider); ok {
 			if v, usesAWSCertManager := ans["service.beta.kubernetes.io/aws-load-balancer-ssl-cert"]; usesAWSCertManager && v != "" {
@@ -406,7 +406,7 @@ func (r Ingress) SupportsLBType(cloudProvider string) bool {
 		return cloudProvider != "acs" &&
 			cloudProvider != "aks"
 	case LBTypeHostPort:
-		// TODO: https://github.com/appscode/voyager/issues/374
+		// TODO: https://github.com/voyagermesh/voyager/issues/374
 		return cloudProvider != ProviderACS &&
 			cloudProvider != ProviderAKS &&
 			cloudProvider != ProviderAzure &&

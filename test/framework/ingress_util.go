@@ -23,11 +23,11 @@ import (
 	"strconv"
 	"time"
 
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	api_v1beta1 "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	api_v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
-
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
 	"gomodules.xyz/cert"

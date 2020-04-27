@@ -65,7 +65,7 @@ func (r Ingress) PortMappings(cloudProvider string) (map[int]Target, error) {
 	if !uses80 && uses443 && r.SSLRedirect() {
 		mappings[80] = Target{PodPort: 80}
 	}
-	// ref: https://github.com/appscode/voyager/issues/188
+	// ref: https://github.com/voyagermesh/voyager/issues/188
 	if cloudProvider == ProviderAWS && r.LBType() == LBTypeLoadBalancer {
 		if ans, ok := r.ServiceAnnotations(cloudProvider); ok {
 			if v, usesAWSCertManager := ans["service.beta.kubernetes.io/aws-load-balancer-ssl-cert"]; usesAWSCertManager && v != "" {

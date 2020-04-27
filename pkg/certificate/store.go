@@ -23,9 +23,9 @@ import (
 	"os"
 	"path"
 
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client/clientset/versioned"
-	"github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1/util"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	cs "voyagermesh.dev/voyager/client/clientset/versioned"
+	"voyagermesh.dev/voyager/client/clientset/versioned/typed/voyager/v1beta1/util"
 
 	vault "github.com/hashicorp/vault/api"
 	"github.com/pkg/errors"

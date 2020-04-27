@@ -19,9 +19,9 @@ limitations under the License.
 package fake
 
 import (
-	clientset "github.com/appscode/voyager/client/clientset/versioned"
-	voyagerv1beta1 "github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1"
-	fakevoyagerv1beta1 "github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1/fake"
+	clientset "voyagermesh.dev/voyager/client/clientset/versioned"
+	voyagerv1beta1 "voyagermesh.dev/voyager/client/clientset/versioned/typed/voyager/v1beta1"
+	fakevoyagerv1beta1 "voyagermesh.dev/voyager/client/clientset/versioned/typed/voyager/v1beta1/fake"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"

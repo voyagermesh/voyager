@@ -20,10 +20,10 @@ import (
 	"io"
 	_ "net/http/pprof"
 
+	"voyagermesh.dev/voyager/pkg/cmds/server"
+
 	"github.com/appscode/go/log"
 	v "github.com/appscode/go/version"
-	"github.com/appscode/voyager/pkg/cmds/server"
-
 	"github.com/spf13/cobra"
 	"kmodules.xyz/client-go/tools/cli"
 )

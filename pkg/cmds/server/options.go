@@ -21,11 +21,11 @@ import (
 	"fmt"
 	"time"
 
-	cs "github.com/appscode/voyager/client/clientset/versioned"
-	"github.com/appscode/voyager/pkg/admission/plugin"
-	"github.com/appscode/voyager/pkg/config"
-	"github.com/appscode/voyager/pkg/haproxy/template"
-	"github.com/appscode/voyager/pkg/operator"
+	cs "voyagermesh.dev/voyager/client/clientset/versioned"
+	"voyagermesh.dev/voyager/pkg/admission/plugin"
+	"voyagermesh.dev/voyager/pkg/config"
+	"voyagermesh.dev/voyager/pkg/haproxy/template"
+	"voyagermesh.dev/voyager/pkg/operator"
 
 	prom "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"github.com/pkg/errors"

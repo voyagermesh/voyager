@@ -19,8 +19,8 @@ package util
 import (
 	"fmt"
 
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	cs "voyagermesh.dev/voyager/client/clientset/versioned/typed/voyager/v1beta1"
 
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/golang/glog"

@@ -18,7 +18,6 @@ package ingress
 
 import (
 	"github.com/appscode/go/log"
-
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"

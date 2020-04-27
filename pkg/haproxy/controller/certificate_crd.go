@@ -19,9 +19,9 @@ package controller
 import (
 	"strings"
 
-	ioutilz "github.com/appscode/go/ioutil"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
+	ioutilz "github.com/appscode/go/ioutil"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/cache"

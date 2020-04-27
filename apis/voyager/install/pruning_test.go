@@ -19,8 +19,8 @@ package install
 import (
 	"testing"
 
-	"github.com/appscode/voyager/apis/voyager/fuzzer"
-	"github.com/appscode/voyager/apis/voyager/v1beta1"
+	"voyagermesh.dev/voyager/apis/voyager/fuzzer"
+	"voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	crdfuzz "kmodules.xyz/crd-schema-fuzz"

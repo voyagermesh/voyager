@@ -20,7 +20,6 @@ import (
 	"reflect"
 
 	"github.com/appscode/go/log"
-
 	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	"kmodules.xyz/client-go/tools/queue"

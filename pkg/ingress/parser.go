@@ -28,11 +28,11 @@ import (
 	"strconv"
 	"strings"
 
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/eventer"
-	hpi "github.com/appscode/voyager/pkg/haproxy/api"
-	"github.com/appscode/voyager/pkg/haproxy/template"
-	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	"voyagermesh.dev/voyager/pkg/eventer"
+	hpi "voyagermesh.dev/voyager/pkg/haproxy/api"
+	"voyagermesh.dev/voyager/pkg/haproxy/template"
+	_ "voyagermesh.dev/voyager/third_party/forked/cloudprovider/providers"
 
 	"github.com/pkg/errors"
 	"github.com/tredoe/osutil/user/crypt"
@@ -804,7 +804,7 @@ func (c *controller) generateConfig() error {
 		c.HAProxyConfig = cfg
 		c.logger.Debugf("Generated haproxy.cfg for Ingress %s/%s", c.Ingress.Namespace, c.Ingress.Name)
 	}
-	// ref: https://github.com/appscode/voyager/pull/1038
+	// ref: https://github.com/voyagermesh/voyager/pull/1038
 	// do not verify haproxy-config when configVolumes are used
 	if meta.PossiblyInCluster() && c.cfg.ValidateHAProxyConfig && !td.UsesTLSAuth() && len(c.Ingress.Spec.ConfigVolumes) == 0 {
 		if err := template.ValidateConfig(c.HAProxyConfig); err != nil {

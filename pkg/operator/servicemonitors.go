@@ -17,9 +17,9 @@ limitations under the License.
 package operator
 
 import (
-	"github.com/appscode/go/log"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
+	"github.com/appscode/go/log"
 	promapi "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

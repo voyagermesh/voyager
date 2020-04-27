@@ -24,16 +24,16 @@ import (
 	"strings"
 	"time"
 
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	cs "voyagermesh.dev/voyager/client/clientset/versioned"
+	"voyagermesh.dev/voyager/pkg/config"
+	"voyagermesh.dev/voyager/pkg/eventer"
+	"voyagermesh.dev/voyager/third_party/forked/cloudprovider"
+	_ "voyagermesh.dev/voyager/third_party/forked/cloudprovider/providers"
+	fakecloudprovider "voyagermesh.dev/voyager/third_party/forked/cloudprovider/providers/fake"
+
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client/clientset/versioned"
-	"github.com/appscode/voyager/pkg/config"
-	"github.com/appscode/voyager/pkg/eventer"
-	"github.com/appscode/voyager/third_party/forked/cloudprovider"
-	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
-	fakecloudprovider "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/fake"
-
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
@@ -431,7 +431,7 @@ func (c *nodePortController) ensureService() (*core.Service, kutil.VerbType, err
 
 		// ExternalTrafficPolicy
 		if c.Ingress.KeepSourceIP() {
-			// https://github.com/appscode/voyager/issues/276
+			// https://github.com/voyagermesh/voyager/issues/276
 			// ref: https://kubernetes.io/docs/tasks/services/source-ip/#source-ip-for-services-with-typeloadbalancer
 			in.Spec.ExternalTrafficPolicy = core.ServiceExternalTrafficPolicyTypeLocal
 		}

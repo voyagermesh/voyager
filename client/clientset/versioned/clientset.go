@@ -21,7 +21,7 @@ package versioned
 import (
 	"fmt"
 
-	voyagerv1beta1 "github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1"
+	voyagerv1beta1 "voyagermesh.dev/voyager/client/clientset/versioned/typed/voyager/v1beta1"
 
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"

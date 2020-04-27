@@ -19,7 +19,7 @@ limitations under the License.
 package fake
 
 import (
-	v1beta1 "github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1"
+	v1beta1 "voyagermesh.dev/voyager/client/clientset/versioned/typed/voyager/v1beta1"
 
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"

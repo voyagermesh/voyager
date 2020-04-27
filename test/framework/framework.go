@@ -19,11 +19,11 @@ package framework
 import (
 	"sync"
 
-	"github.com/appscode/go/crypto/rand"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client/clientset/versioned"
-	"github.com/appscode/voyager/pkg/operator"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	cs "voyagermesh.dev/voyager/client/clientset/versioned"
+	"voyagermesh.dev/voyager/pkg/operator"
 
+	"github.com/appscode/go/crypto/rand"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/afero"
 	"gomodules.xyz/cert/certstore"

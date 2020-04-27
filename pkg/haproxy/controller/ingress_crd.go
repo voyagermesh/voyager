@@ -21,12 +21,12 @@ import (
 	"strings"
 	"time"
 
-	ioutilz "github.com/appscode/go/ioutil"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client/clientset/versioned"
-	voyager_informers "github.com/appscode/voyager/client/informers/externalversions/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/eventer"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	cs "voyagermesh.dev/voyager/client/clientset/versioned"
+	voyager_informers "voyagermesh.dev/voyager/client/informers/externalversions/voyager/v1beta1"
+	"voyagermesh.dev/voyager/pkg/eventer"
 
+	ioutilz "github.com/appscode/go/ioutil"
 	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"

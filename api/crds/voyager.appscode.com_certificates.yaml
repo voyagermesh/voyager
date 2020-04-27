@@ -63,7 +63,7 @@ spec:
                     credentialSecretName:
                       type: string
                     provider:
-                      description: DNS Provider from the list https://github.com/appscode/voyager/blob/master/docs/tasks/certificate/providers.md
+                      description: DNS Provider from the list https://github.com/voyagermesh/voyager/blob/master/docs/tasks/certificate/providers.md
                       type: string
                   type: object
                 http:

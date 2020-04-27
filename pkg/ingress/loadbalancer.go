@@ -25,15 +25,15 @@ import (
 	"strings"
 	"time"
 
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	cs "voyagermesh.dev/voyager/client/clientset/versioned"
+	"voyagermesh.dev/voyager/client/clientset/versioned/typed/voyager/v1beta1/util"
+	"voyagermesh.dev/voyager/pkg/config"
+	"voyagermesh.dev/voyager/pkg/eventer"
+	_ "voyagermesh.dev/voyager/third_party/forked/cloudprovider/providers"
+
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client/clientset/versioned"
-	"github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1/util"
-	"github.com/appscode/voyager/pkg/config"
-	"github.com/appscode/voyager/pkg/eventer"
-	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
-
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
@@ -307,7 +307,7 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 		in.Annotations[api.LastAppliedAnnotationKeys] = strings.Join(newKeys, ",")
 
 		// Remove old annotations from 3.2.x release.
-		// ref: https://github.com/appscode/voyager/issues/527
+		// ref: https://github.com/voyagermesh/voyager/issues/527
 		// https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/
 		delete(in.Annotations, "service.beta.kubernetes.io/external-traffic")
 		delete(in.Annotations, "service.beta.kubernetes.io/healthcheck-nodeport")
@@ -354,7 +354,7 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 		if c.Ingress.KeepSourceIP() {
 			switch c.cfg.CloudProvider {
 			case "gce", api.ProviderGKE, "azure", "acs", "aks", "metallb":
-				// https://github.com/appscode/voyager/issues/276
+				// https://github.com/voyagermesh/voyager/issues/276
 				// ref: https://kubernetes.io/docs/tasks/services/source-ip/#source-ip-for-services-with-typeloadbalancer
 				in.Spec.ExternalTrafficPolicy = core.ServiceExternalTrafficPolicyTypeLocal
 				if c.Ingress.HealthCheckNodeport() > 0 {

@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/appscode/voyager/apis/voyager"
+	"voyagermesh.dev/voyager/apis/voyager"
 
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
@@ -64,7 +64,7 @@ const (
 	// Traffic will be forwarded according to there weight.
 	BackendWeight = EngressKey + "/" + "backend-weight"
 
-	// https://github.com/appscode/voyager/issues/103
+	// https://github.com/voyagermesh/voyager/issues/103
 	// ServiceAnnotations is user provided annotations map that will be
 	// applied to the service of that LoadBalancer.
 	// ex: "ingress.appscode.com/annotations-service": {"key": "val"}
@@ -98,7 +98,7 @@ const (
 	// Ref: https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L79
 	KeepSourceIP = EngressKey + "/" + "keep-source-ip"
 
-	// https://github.com/appscode/voyager/issues/1128
+	// https://github.com/voyagermesh/voyager/issues/1128
 	HealthCheckNodeport = EngressKey + "/" + "health-check-nodeport"
 
 	// Enforces the use of the PROXY protocol over any connection accepted by HAProxy.
@@ -112,7 +112,7 @@ const (
 	OriginAPISchema = EngressKey + "/" + "origin-api-schema" // APISchema = {APIGroup}/{APIVersion}
 	OriginName      = EngressKey + "/" + "origin-name"
 
-	// https://github.com/appscode/voyager/issues/280
+	// https://github.com/voyagermesh/voyager/issues/280
 	// Supports all valid timeout option for defaults section of HAProxy
 	// https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.2-timeout%20check
 	// expects a json encoded map
@@ -132,7 +132,7 @@ const (
 	HardStopAfter        = EngressKey + "/" + "hard-stop-after"
 	DefaultHardStopAfter = "30s"
 
-	// https://github.com/appscode/voyager/issues/343
+	// https://github.com/voyagermesh/voyager/issues/343
 	// Supports all valid options for defaults section of HAProxy config
 	// https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.2-option%20abortonclose
 	// from the list from here
@@ -242,12 +242,12 @@ const (
 	WhitelistSourceRange = EngressKey + "/whitelist-source-range"
 	MaxConnections       = EngressKey + "/max-connections"
 
-	// https://github.com/appscode/voyager/issues/552
+	// https://github.com/voyagermesh/voyager/issues/552
 	UseNodePort      = EngressKey + "/use-node-port"
 	SSLRedirect      = EngressKey + "/ssl-redirect"
 	ForceSSLRedirect = EngressKey + "/force-ssl-redirect"
 
-	// https://github.com/appscode/voyager/issues/525
+	// https://github.com/voyagermesh/voyager/issues/525
 	ErrorFiles = EngressKey + "/errorfiles"
 
 	// Limit requests per second per IP address
@@ -263,7 +263,7 @@ const (
 	// https://www.haproxy.com/blog/use-a-load-balancer-as-a-first-row-of-defense-against-ddos/
 	LimitConnection = EngressKey + "/limit-connection"
 
-	// https://github.com/appscode/voyager/issues/683
+	// https://github.com/voyagermesh/voyager/issues/683
 	// https://www.haproxy.com/documentation/aloha/7-0/haproxy/healthchecks/
 	CheckHealth     = EngressKey + "/" + "check"
 	CheckHealthPort = EngressKey + "/" + "check-port"
@@ -274,11 +274,11 @@ const (
 	// Workload controller to use run HAProxy pods
 	WorkloadKind = EngressKey + "/" + "workload-kind"
 
-	// ref: https://github.com/appscode/voyager/issues/1054
+	// ref: https://github.com/voyagermesh/voyager/issues/1054
 	NodeSelector = EngressKey + "/" + "node-selector"
 	Tolerations  = EngressKey + "/" + "tolerations"
 
-	// https://github.com/appscode/voyager/issues/1210
+	// https://github.com/voyagermesh/voyager/issues/1210
 	// http://cbonte.github.io/haproxy-dconv/1.8/configuration.html#agent-check
 	AgentPort     = EngressKey + "/" + "agent-port"
 	AgentInterval = EngressKey + "/" + "agent-interval"

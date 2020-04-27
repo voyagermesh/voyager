@@ -17,9 +17,9 @@ limitations under the License.
 package e2e_test
 
 import (
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/test/framework"
-	"github.com/appscode/voyager/test/test-server/client"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	"voyagermesh.dev/voyager/test/framework"
+	"voyagermesh.dev/voyager/test/test-server/client"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

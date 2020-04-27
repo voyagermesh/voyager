@@ -21,10 +21,10 @@ package v1beta1
 import (
 	time "time"
 
-	voyagerv1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
-	versioned "github.com/appscode/voyager/client/clientset/versioned"
-	internalinterfaces "github.com/appscode/voyager/client/informers/externalversions/internalinterfaces"
-	v1beta1 "github.com/appscode/voyager/client/listers/voyager/v1beta1"
+	voyagerv1beta1 "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	versioned "voyagermesh.dev/voyager/client/clientset/versioned"
+	internalinterfaces "voyagermesh.dev/voyager/client/informers/externalversions/internalinterfaces"
+	v1beta1 "voyagermesh.dev/voyager/client/listers/voyager/v1beta1"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"

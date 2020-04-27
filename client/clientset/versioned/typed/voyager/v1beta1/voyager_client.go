@@ -19,8 +19,8 @@ limitations under the License.
 package v1beta1
 
 import (
-	v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/client/clientset/versioned/scheme"
+	v1beta1 "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	"voyagermesh.dev/voyager/client/clientset/versioned/scheme"
 
 	rest "k8s.io/client-go/rest"
 )
