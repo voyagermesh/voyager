@@ -33,7 +33,7 @@ jobs:
     - name: Available platforms
       run: echo ${{ steps.buildx.outputs.platforms }}
 
-    - name: Run checks
+    - name: Prepare Host
       run: |
         sudo apt-get -qq update || true
         sudo apt-get install -y bzr
@@ -45,7 +45,9 @@ jobs:
         curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl
         chmod +x ./kubectl
         sudo mv ./kubectl /usr/local/bin/kubectl
-        # run checks
+
+    - name: Run checks
+      run: |
         make ci
 
     - name: Build
@@ -56,26 +58,6 @@ jobs:
       run: |
         docker login --username ${USERNAME} --password ${DOCKER_TOKEN}
         make push
-
-    - name: Install link checker
-      env:
-        GO111MODULE: on
-      run: |
-        export GOPATH=$(go env GOPATH)
-        export GOBIN=$GOPATH/bin
-        mkdir -p $GOBIN
-        mkdir -p $GOPATH/github.com/raviqqe
-        pushd $GOPATH/github.com/raviqqe
-        git clone https://github.com/appscodelabs/liche
-        cd liche
-        git checkout master
-        go install -v ./...
-        sudo mv $GOBIN/* /usr/local/bin
-        popd
-
-    - name: Check links
-      run: |
-        liche -r docs -d $(pwd) -c 10 -p -h -l -x '^*(voyager.appscode.ninja|www.kiteci.pro)*$'
 
   kubernetes:
     name: Kubernetes
@@ -122,11 +104,12 @@ jobs:
         echo "create docker-registry secret"
         kubectl create secret docker-registry ${REGISTRY_SECRET} --namespace=kube-system --docker-server=https://index.docker.io/v1/ --docker-username=${USERNAME} --docker-password=${DOCKER_TOKEN}
 
-    - name: Test charts
+    - name: Check out installer
       run: |
-        export KUBECONFIG="${HOME}/.kube/config"
-        make ct
-        kubectl delete crd --all
+        cd ..
+        git clone https://github.com/voyagermesh/installer.git
+        cd installer
+        git checkout master
 
     - name: Run e2e tests
       env:
