@@ -19,14 +19,14 @@ package operator
 import (
 	"context"
 
+	"voyagermesh.dev/voyager/apis/voyager"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	"voyagermesh.dev/voyager/client/clientset/versioned/typed/voyager/v1beta1/util"
+	"voyagermesh.dev/voyager/pkg/eventer"
+	"voyagermesh.dev/voyager/pkg/ingress"
+
 	. "github.com/appscode/go/context"
 	"github.com/appscode/go/log"
-	"github.com/appscode/voyager/apis/voyager"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1/util"
-	"github.com/appscode/voyager/pkg/eventer"
-	"github.com/appscode/voyager/pkg/ingress"
-
 	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/cache"

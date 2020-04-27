@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/appscode/voyager/third_party/forked/cloudprovider"
+	"voyagermesh.dev/voyager/third_party/forked/cloudprovider"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 	"github.com/pkg/errors"

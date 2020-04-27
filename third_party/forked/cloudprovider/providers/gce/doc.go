@@ -16,4 +16,4 @@ limitations under the License.
 
 // Package gce is an implementation of Interface, LoadBalancer
 // and Instances for Google Compute Engine.
-package gce // import "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/gce"
+package gce // import "voyagermesh.dev/voyager/third_party/forked/cloudprovider/providers/gce"

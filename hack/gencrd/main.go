@@ -21,10 +21,10 @@ import (
 	"os"
 	"path/filepath"
 
-	gort "github.com/appscode/go/runtime"
-	"github.com/appscode/voyager/apis/voyager/install"
-	v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
+	"voyagermesh.dev/voyager/apis/voyager/install"
+	v1beta1 "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
+	gort "github.com/appscode/go/runtime"
 	"github.com/go-openapi/spec"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -69,7 +69,7 @@ func generateSwaggerJson() {
 		glog.Fatal(err)
 	}
 
-	filename := gort.GOPath() + "/src/github.com/appscode/voyager/api/openapi-spec/swagger.json"
+	filename := gort.GOPath() + "/src/voyagermesh.dev/voyager/api/openapi-spec/swagger.json"
 	err = os.MkdirAll(filepath.Dir(filename), 0755)
 	if err != nil {
 		glog.Fatal(err)

@@ -20,7 +20,7 @@ set -eou pipefail
 # $ ./dev-test.sh --provider=minikube --docker-registry=appscodeci build|push|install|e2e|uninstall
 # $ ./dev-test.sh --provider=minikube --docker-registry=appscodeci
 
-pushd ${GOPATH}/src/github.com/appscode/voyager
+pushd ${GOPATH}/src/voyagermesh.dev/voyager
 
 export APPSCODE_ENV=dev
 

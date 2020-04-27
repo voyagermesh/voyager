@@ -18,7 +18,6 @@ package operator
 
 import (
 	"github.com/appscode/go/log"
-
 	"github.com/golang/glog"
 	"k8s.io/client-go/tools/cache"
 	"kmodules.xyz/client-go/tools/queue"

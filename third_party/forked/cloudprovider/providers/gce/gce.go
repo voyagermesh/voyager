@@ -27,7 +27,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/appscode/voyager/third_party/forked/cloudprovider"
+	"voyagermesh.dev/voyager/third_party/forked/cloudprovider"
 
 	"cloud.google.com/go/compute/metadata"
 	"github.com/golang/glog"

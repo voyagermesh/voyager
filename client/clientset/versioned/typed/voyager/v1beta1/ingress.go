@@ -21,8 +21,8 @@ package v1beta1
 import (
 	"time"
 
-	v1beta1 "github.com/appscode/voyager/apis/voyager/v1beta1"
-	scheme "github.com/appscode/voyager/client/clientset/versioned/scheme"
+	v1beta1 "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	scheme "voyagermesh.dev/voyager/client/clientset/versioned/scheme"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"

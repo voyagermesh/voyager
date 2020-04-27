@@ -99,7 +99,7 @@ func (h HTTPSHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	utilruntime.Must(json.NewEncoder(w).Encode(resp))
 }
 
-// cd ~/go/src/github.com/appscode/voyager/test/test-server
+// cd ~/go/src/voyagermesh.dev/voyager/test/test-server
 // go run *.go --ca
 // curl --cacert cert.pem 'https://ssl.appscode.test:6443' --resolve ssl.appscode.test:6443:127.0.0.1
 func runHTTPS(port string) {

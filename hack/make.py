@@ -36,7 +36,7 @@ import sys
 import yaml
 from os.path import expandvars, join, dirname
 
-libbuild.REPO_ROOT = libbuild.GOPATH + '/src/github.com/appscode/voyager'
+libbuild.REPO_ROOT = libbuild.GOPATH + '/src/voyagermesh.dev/voyager'
 BUILD_METADATA = libbuild.metadata(libbuild.REPO_ROOT)
 libbuild.BIN_MATRIX = {
     'voyager': {

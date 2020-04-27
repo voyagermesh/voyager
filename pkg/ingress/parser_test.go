@@ -19,8 +19,8 @@ package ingress
 import (
 	"testing"
 
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/config"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	"voyagermesh.dev/voyager/pkg/config"
 
 	"github.com/stretchr/testify/assert"
 	"k8s.io/api/extensions/v1beta1"

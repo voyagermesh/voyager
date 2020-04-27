@@ -23,10 +23,10 @@ import (
 	"strings"
 	"testing"
 
+	"voyagermesh.dev/voyager/pkg/cmds/server"
+
 	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/go/log"
-	"github.com/appscode/voyager/pkg/cmds/server"
-
 	"k8s.io/client-go/util/homedir"
 )
 

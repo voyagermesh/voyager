@@ -20,7 +20,6 @@ import (
 	"testing"
 
 	"github.com/appscode/go/log"
-
 	"github.com/stretchr/testify/assert"
 )
 

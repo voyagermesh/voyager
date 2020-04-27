@@ -22,8 +22,8 @@ import (
 	"strconv"
 	"strings"
 
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/certificate/providers"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	"voyagermesh.dev/voyager/pkg/certificate/providers"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/util/sets"

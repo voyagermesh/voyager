@@ -17,7 +17,7 @@ limitations under the License.
 package fuzzer
 
 import (
-	"github.com/appscode/voyager/apis/voyager/v1beta1"
+	"voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
 	fuzz "github.com/google/gofuzz"
 	runtimeserializer "k8s.io/apimachinery/pkg/runtime/serializer"

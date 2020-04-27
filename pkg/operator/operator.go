@@ -17,14 +17,14 @@ limitations under the License.
 package operator
 
 import (
-	"github.com/appscode/go/log"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client/clientset/versioned"
-	voyagerinformers "github.com/appscode/voyager/client/informers/externalversions"
-	api_listers "github.com/appscode/voyager/client/listers/voyager/v1beta1"
-	"github.com/appscode/voyager/pkg/certificate/providers"
-	"github.com/appscode/voyager/pkg/config"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	cs "voyagermesh.dev/voyager/client/clientset/versioned"
+	voyagerinformers "voyagermesh.dev/voyager/client/informers/externalversions"
+	api_listers "voyagermesh.dev/voyager/client/listers/voyager/v1beta1"
+	"voyagermesh.dev/voyager/pkg/certificate/providers"
+	"voyagermesh.dev/voyager/pkg/config"
 
+	"github.com/appscode/go/log"
 	prom "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	kext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
@@ -191,19 +191,19 @@ func (op *Operator) RunInformers(stopCh <-chan struct{}) {
 }
 
 func (w *Operator) Run(stopCh <-chan struct{}) {
-	// https://github.com/appscode/voyager/issues/346
+	// https://github.com/voyagermesh/voyager/issues/346
 	err := w.ValidateIngress()
 	if err != nil {
 		log.Errorln(err)
 	}
 
-	// https://github.com/appscode/voyager/issues/229
+	// https://github.com/voyagermesh/voyager/issues/229
 	err = w.PurgeOffshootsWithDeprecatedLabels()
 	if err != nil {
 		log.Errorln(err)
 	}
 
-	// https://github.com/appscode/voyager/issues/446
+	// https://github.com/voyagermesh/voyager/issues/446
 	err = w.PurgeOffshootsDaemonSet()
 	if err != nil {
 		log.Errorln(err)

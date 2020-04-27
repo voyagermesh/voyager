@@ -19,7 +19,7 @@ package cloudprovider
 import (
 	// Cloud providers
 
-	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/aws"
-	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/azure"
-	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers/gce"
+	_ "voyagermesh.dev/voyager/third_party/forked/cloudprovider/providers/aws"
+	_ "voyagermesh.dev/voyager/third_party/forked/cloudprovider/providers/azure"
+	_ "voyagermesh.dev/voyager/third_party/forked/cloudprovider/providers/gce"
 )

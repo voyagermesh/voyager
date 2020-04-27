@@ -17,7 +17,7 @@ limitations under the License.
 package install
 
 import (
-	"github.com/appscode/voyager/apis/voyager/v1beta1"
+	"voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"

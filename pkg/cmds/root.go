@@ -21,10 +21,10 @@ import (
 	"log"
 	"os"
 
+	"voyagermesh.dev/voyager/client/clientset/versioned/scheme"
+
 	"github.com/appscode/go/log/golog"
 	v "github.com/appscode/go/version"
-	"github.com/appscode/voyager/client/clientset/versioned/scheme"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"

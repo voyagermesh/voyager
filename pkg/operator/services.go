@@ -17,9 +17,9 @@ limitations under the License.
 package operator
 
 import (
-	"github.com/appscode/go/log"
-	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
+	_ "voyagermesh.dev/voyager/third_party/forked/cloudprovider/providers"
 
+	"github.com/appscode/go/log"
 	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/cache"

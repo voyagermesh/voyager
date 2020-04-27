@@ -17,10 +17,10 @@ limitations under the License.
 package operator
 
 import (
-	cs "github.com/appscode/voyager/client/clientset/versioned"
-	voyagerinformers "github.com/appscode/voyager/client/informers/externalversions"
-	"github.com/appscode/voyager/pkg/config"
-	"github.com/appscode/voyager/pkg/eventer"
+	cs "voyagermesh.dev/voyager/client/clientset/versioned"
+	voyagerinformers "voyagermesh.dev/voyager/client/informers/externalversions"
+	"voyagermesh.dev/voyager/pkg/config"
+	"voyagermesh.dev/voyager/pkg/eventer"
 
 	prom "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"

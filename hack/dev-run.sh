@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-REPOROOT="$GOPATH/src/github.com/appscode/voyager"
+REPOROOT="$GOPATH/src/voyagermesh.dev/voyager"
 
 tls-mounter() {
     echo "Running tls-mounter for dev mode"

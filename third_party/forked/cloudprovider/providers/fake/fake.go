@@ -21,7 +21,7 @@ import (
 	"regexp"
 	"sync"
 
-	"github.com/appscode/voyager/third_party/forked/cloudprovider"
+	"voyagermesh.dev/voyager/third_party/forked/cloudprovider"
 
 	"github.com/pkg/errors"
 	apiv1 "k8s.io/api/core/v1"

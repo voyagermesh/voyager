@@ -23,9 +23,9 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/appscode/go/log"
-	hpi "github.com/appscode/voyager/pkg/haproxy/api"
+	hpi "voyagermesh.dev/voyager/pkg/haproxy/api"
 
+	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 )
 

@@ -22,12 +22,12 @@ import (
 	"os"
 	"sync"
 
-	"github.com/appscode/go/log"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client/clientset/versioned"
-	"github.com/appscode/voyager/pkg/config"
-	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	cs "voyagermesh.dev/voyager/client/clientset/versioned"
+	"voyagermesh.dev/voyager/pkg/config"
+	_ "voyagermesh.dev/voyager/third_party/forked/cloudprovider/providers"
 
+	"github.com/appscode/go/log"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	vault "github.com/hashicorp/vault/api"
 	core "k8s.io/api/core/v1"

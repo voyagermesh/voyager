@@ -24,14 +24,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/appscode/go/log"
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
-	cs "github.com/appscode/voyager/client/clientset/versioned"
-	"github.com/appscode/voyager/client/clientset/versioned/typed/voyager/v1beta1/util"
-	"github.com/appscode/voyager/pkg/certificate/providers"
-	"github.com/appscode/voyager/pkg/config"
-	"github.com/appscode/voyager/pkg/eventer"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	cs "voyagermesh.dev/voyager/client/clientset/versioned"
+	"voyagermesh.dev/voyager/client/clientset/versioned/typed/voyager/v1beta1/util"
+	"voyagermesh.dev/voyager/pkg/certificate/providers"
+	"voyagermesh.dev/voyager/pkg/config"
+	"voyagermesh.dev/voyager/pkg/eventer"
 
+	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	"github.com/xenolf/lego/acme"
 	"gomodules.xyz/cert"
@@ -153,7 +153,7 @@ func (c *Controller) Process() error {
 	// Scenario:
 	// - s1: Certificate not found
 	// - s2: Certificate found, but user run `kubectl apply` in such a way that status.LastIssuedCertificate is gone.
-	// ref: https://github.com/appscode/voyager/issues/744
+	// ref: https://github.com/voyagermesh/voyager/issues/744
 	if pemCrt == nil ||
 		!c.crd.MatchesDomains(c.curCert) ||
 		c.crd.Status.LastIssuedCertificate == nil {

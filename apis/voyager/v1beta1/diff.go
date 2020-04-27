@@ -24,7 +24,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/appscode/voyager/apis/voyager"
+	"voyagermesh.dev/voyager/apis/voyager"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
@@ -42,7 +42,7 @@ const (
 // if ingressClass == "voyager", then only handle ingress that has voyager annotation
 // if ingressClass == "", then handle no annotation or voyager annotation
 func (r Ingress) ShouldHandleIngress(ingressClass string) bool {
-	// https://github.com/appscode/voyager/blob/master/api/conversion_v1beta1.go#L44
+	// https://github.com/voyagermesh/voyager/blob/master/api/conversion_v1beta1.go#L44
 	if r.APISchema() == APISchemaEngress {
 		// Resource Type is Extended Ingress So we should always Handle this
 		return true

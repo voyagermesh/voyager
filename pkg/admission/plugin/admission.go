@@ -20,7 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
 	admission "k8s.io/api/admission/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime/schema"

@@ -14,6 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-pushd $GOPATH/src/github.com/appscode/voyager/hack/gendocs
+pushd $GOPATH/src/voyagermesh.dev/voyager/hack/gendocs
 go run main.go
 popd

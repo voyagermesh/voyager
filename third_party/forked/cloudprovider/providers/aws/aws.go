@@ -24,7 +24,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/appscode/voyager/third_party/forked/cloudprovider"
+	"voyagermesh.dev/voyager/third_party/forked/cloudprovider"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -51,7 +51,7 @@ const ProviderName = "aws"
 const TagNameKubernetesCluster = "KubernetesCluster"
 
 // TagNameVoyagerCluster is Voyager's version of `TagNameKubernetesCluster`. This is kept separate to avoid
-// errors like: https://github.com/appscode/voyager/pull/397
+// errors like: https://github.com/voyagermesh/voyager/pull/397
 const TagNameVoyagerCluster = "VoyagerCluster"
 
 // MaxReadThenCreateRetries sets the maximum number of attempts we will make when
@@ -1369,7 +1369,7 @@ func (c *Cloud) EnsureFirewallDeleted(ctx context.Context, service *apiv1.Servic
 
 			attempt++
 			if attempt >= 10 {
-				return errors.Errorf("error while deleting ingress security group (%s). Please file a bug report with voyager operator logs here: https://github.com/appscode/voyager/issues/new", securityGroupID)
+				return errors.Errorf("error while deleting ingress security group (%s). Please file a bug report with voyager operator logs here: https://github.com/voyagermesh/voyager/issues/new", securityGroupID)
 			}
 			time.Sleep(3 * time.Second)
 			continue

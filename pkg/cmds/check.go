@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	api "github.com/appscode/voyager/apis/voyager/v1beta1"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"

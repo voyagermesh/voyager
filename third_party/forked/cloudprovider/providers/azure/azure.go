@@ -21,7 +21,7 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/appscode/voyager/third_party/forked/cloudprovider"
+	"voyagermesh.dev/voyager/third_party/forked/cloudprovider"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2017-12-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"

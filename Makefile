@@ -15,7 +15,7 @@
 
 SHELL=/bin/bash -o pipefail
 
-GO_PKG   := github.com/appscode
+GO_PKG   := voyagermesh.dev
 REPO     := $(notdir $(shell pwd))
 BIN      := voyager
 COMPRESS ?= no

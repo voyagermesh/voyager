@@ -19,10 +19,10 @@ package operator
 import (
 	"reflect"
 
-	"github.com/appscode/go/log"
-	tapi "github.com/appscode/voyager/apis/voyager/v1beta1"
-	_ "github.com/appscode/voyager/third_party/forked/cloudprovider/providers"
+	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
+	_ "voyagermesh.dev/voyager/third_party/forked/cloudprovider/providers"
 
+	"github.com/appscode/go/log"
 	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -74,7 +74,7 @@ func (op *Operator) reconcileSecret(key string) error {
 	return nil
 }
 
-func (op *Operator) IngressServiceUsesAuthSecret(ing *tapi.Ingress, secret *core.Secret) bool {
+func (op *Operator) IngressServiceUsesAuthSecret(ing *api.Ingress, secret *core.Secret) bool {
 	svcs, err := op.svcLister.List(labels.Everything())
 	if err != nil {
 		log.Errorln(err)
@@ -84,7 +84,7 @@ func (op *Operator) IngressServiceUsesAuthSecret(ing *tapi.Ingress, secret *core
 	for _, svc := range svcs {
 		if ing.HasBackendService(svc.Name, svc.Namespace) {
 			if svc.Annotations != nil {
-				if svc.Annotations[tapi.AuthSecret] == secret.Name && svc.Namespace == secret.Namespace {
+				if svc.Annotations[api.AuthSecret] == secret.Name && svc.Namespace == secret.Namespace {
 					return true
 				}
 			}
