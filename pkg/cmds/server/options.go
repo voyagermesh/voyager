@@ -119,9 +119,9 @@ func (s *OperatorOptions) AddGoFlags(fs *flag.FlagSet) {
 
 	fs.StringVar(&s.DockerRegistry, "docker-registry", s.DockerRegistry, "Docker image registry for HAProxy and Prometheus exporter")
 	fs.StringVar(&s.HAProxyImageTag, "haproxy-image-tag", s.HAProxyImageTag, "Tag of Docker image containing HAProxy binary")
-	fs.StringVar(&s.HAProxyImageTag, "haproxy-image-repository", s.HAProxyImageRepository, "Repository of Docker image containing HAProxy binary")
+	fs.StringVar(&s.HAProxyImageRepository, "haproxy-image-repository", s.HAProxyImageRepository, "Repository of Docker image containing HAProxy binary")
 	fs.StringVar(&s.ExporterImageTag, "exporter-image-tag", s.ExporterImageTag, "Tag of Docker image containing Prometheus exporter")
-	fs.StringVar(&s.ExporterImageTag, "exporter-image-repository", s.ExporterImageRepository, "Repository of Docker image containing Prometheus exporter")
+	fs.StringVar(&s.ExporterImageRepository, "exporter-image-repository", s.ExporterImageRepository, "Repository of Docker image containing Prometheus exporter")
 
 	fs.StringVar(&s.OperatorService, "operator-service", s.OperatorService, "Name of service used to expose voyager operator")
 	fs.BoolVar(&s.RestrictToOperatorNamespace, "restrict-to-operator-namespace", s.RestrictToOperatorNamespace, "If true, voyager operator will only handle Kubernetes objects in its own namespace.")
