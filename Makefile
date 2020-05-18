@@ -252,8 +252,8 @@ patch-crd-%: $(BUILD_DIRS)
 .PHONY: label-crds
 label-crds: $(BUILD_DIRS)
 	@for f in api/crds/*.yaml; do \
-		echo "applying app=voyager label to $$f"; \
-		kubectl label --overwrite -f $$f --local=true -o yaml app=voyager > bin/crd.yaml; \
+		echo "applying app.kubernetes.io/name=voyager label to $$f"; \
+		kubectl label --overwrite -f $$f --local=true -o yaml app.kubernetes.io/name=voyager > bin/crd.yaml; \
 		mv bin/crd.yaml $$f; \
 	done
 
@@ -569,7 +569,7 @@ uninstall:
 
 .PHONY: purge
 purge: uninstall
-	kubectl delete crds -l app=voyager
+	kubectl delete crds -l app.kubernetes.io/name=voyager
 
 .PHONY: dev
 dev: gen fmt push

@@ -3,7 +3,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    app: voyager
+    app.kubernetes.io/name: voyager
   name: certificates.voyager.appscode.com
 spec:
   additionalPrinterColumns:
