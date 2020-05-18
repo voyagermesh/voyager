@@ -23,7 +23,7 @@ Please pick a version of Voyager that matches your Kubernetes installation.
 
 | Voyager Version                                                                             | Docs                                                                 | Kubernetes Version | Prometheus operator Version |
 |---------------------------------------------------------------------------------------------|----------------------------------------------------------------------|--------------------|-----------------------------|
-| [v12.0.0-rc.2](https://github.com/voyagermesh/voyager/releases/tag/v12.0.0-rc.2) (uses CRD) | [User Guide](https://voyagermesh.com/docs/v12.0.0-rc.2/)             | 1.11.x+            | 0.34.0+                     |
+| [v12.0.0](https://github.com/voyagermesh/voyager/releases/tag/v12.0.0) (uses CRD)           | [User Guide](https://voyagermesh.com/docs/v12.0.0/)                  | 1.11.x+            | 0.34.0+                     |
 | [v11.0.1](https://github.com/voyagermesh/voyager/releases/tag/v11.0.1) (uses CRD)           | [User Guide](https://voyagermesh.com/docs/v11.0.1/)                  | 1.9.x+             | 0.30.0+                     |
 | [10.0.0](https://github.com/voyagermesh/voyager/releases/tag/10.0.0) (uses CRD)             | [User Guide](https://voyagermesh.com/docs/10.0.0/)                   | 1.9.x+             | 0.16.0+                     |
 | [7.4.0](https://github.com/voyagermesh/voyager/releases/tag/7.4.0) (uses CRD)               | [User Guide](https://voyagermesh.com/docs/7.4.0/)                    | 1.8.x - 1.11.x     | 0.16.0+                     |
