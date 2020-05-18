@@ -146,7 +146,7 @@ func (s *CertStore) Save(crd *api.Certificate, cert *acme.CertificateResource) e
 	if err != nil {
 		return errors.Errorf("failed to parse tls.crt for Certificate %s/%s. Reason: %s", crd.Namespace, crd.Name, err)
 	}
-	_, err = util.UpdateCertificateStatus(s.VoyagerClient.VoyagerV1beta1(), crd, func(in *api.CertificateStatus) *api.CertificateStatus {
+	_, err = util.UpdateCertificateStatus(s.VoyagerClient.VoyagerV1beta1(), crd.ObjectMeta, func(in *api.CertificateStatus) *api.CertificateStatus {
 		// Update certificate data to add Details Information
 		t := metav1.Now()
 		in.LastIssuedCertificate = &api.CertificateDetails{
@@ -172,6 +172,6 @@ func (s *CertStore) Save(crd *api.Certificate, cert *acme.CertificateResource) e
 			})
 		}
 		return in
-	}, true)
+	})
 	return err
 }

@@ -573,10 +573,10 @@ func (c *loadBalancerController) updateStatus() error {
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			_, err = util.UpdateIngressStatus(c.VoyagerClient.VoyagerV1beta1(), ing, func(in *api.IngressStatus) *api.IngressStatus {
+			_, err = util.UpdateIngressStatus(c.VoyagerClient.VoyagerV1beta1(), ing.ObjectMeta, func(in *api.IngressStatus) *api.IngressStatus {
 				in.LoadBalancer.Ingress = statuses
 				return in
-			}, true)
+			})
 			if err != nil {
 				return errors.WithStack(err)
 			}

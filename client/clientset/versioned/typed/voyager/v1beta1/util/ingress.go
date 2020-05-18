@@ -100,53 +100,47 @@ func TryUpdateIngress(c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, tran
 
 func UpdateIngressStatus(
 	c cs.VoyagerV1beta1Interface,
-	in *api.Ingress,
+	meta metav1.ObjectMeta,
 	transform func(*api.IngressStatus) *api.IngressStatus,
-	useSubresource ...bool,
 ) (result *api.Ingress, err error) {
-	if len(useSubresource) > 1 {
-		return nil, errors.Errorf("invalid value passed for useSubresource: %v", useSubresource)
-	}
 	apply := func(x *api.Ingress) *api.Ingress {
 		out := &api.Ingress{
 			TypeMeta:   x.TypeMeta,
 			ObjectMeta: x.ObjectMeta,
 			Spec:       x.Spec,
-			Status:     *transform(in.Status.DeepCopy()),
+			Status:     *transform(x.Status.DeepCopy()),
 		}
 		return out
 	}
 
-	if len(useSubresource) == 1 && useSubresource[0] {
-		attempt := 0
-		cur := in.DeepCopy()
-		err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
-			attempt++
-			var e2 error
-			result, e2 = c.Ingresses(in.Namespace).UpdateStatus(apply(cur))
-			if kerr.IsConflict(e2) {
-				latest, e3 := c.Ingresses(in.Namespace).Get(in.Name, metav1.GetOptions{})
-				switch {
-				case e3 == nil:
-					cur = latest
-					return false, nil
-				case kutil.IsRequestRetryable(e3):
-					return false, nil
-				default:
-					return false, e3
-				}
-			} else if err != nil && !kutil.IsRequestRetryable(e2) {
-				return false, e2
-			}
-			return e2 == nil, nil
-		})
-
-		if err != nil {
-			err = fmt.Errorf("failed to update status of Ingress %s/%s after %d attempts due to %v", in.Namespace, in.Name, attempt, err)
-		}
-		return
+	attempt := 0
+	cur, err := c.Ingresses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
 	}
+	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+		attempt++
+		var e2 error
+		result, e2 = c.Ingresses(meta.Namespace).UpdateStatus(apply(cur))
+		if kerr.IsConflict(e2) {
+			latest, e3 := c.Ingresses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+			switch {
+			case e3 == nil:
+				cur = latest
+				return false, nil
+			case kutil.IsRequestRetryable(e3):
+				return false, nil
+			default:
+				return false, e3
+			}
+		} else if err != nil && !kutil.IsRequestRetryable(e2) {
+			return false, e2
+		}
+		return e2 == nil, nil
+	})
 
-	result, _, err = PatchIngressObject(c, in, apply(in))
+	if err != nil {
+		err = fmt.Errorf("failed to update status of Ingress %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
+	}
 	return
 }

@@ -293,7 +293,7 @@ func (c *Controller) renew() error {
 }
 
 func (c *Controller) processError(err error) error {
-	_, err = util.UpdateCertificateStatus(c.VoyagerClient.VoyagerV1beta1(), c.crd, func(in *api.CertificateStatus) *api.CertificateStatus {
+	_, err = util.UpdateCertificateStatus(c.VoyagerClient.VoyagerV1beta1(), c.crd.ObjectMeta, func(in *api.CertificateStatus) *api.CertificateStatus {
 		// Update certificate data to add Details Information
 		t := metav1.Now()
 		found := false
@@ -316,7 +316,7 @@ func (c *Controller) processError(err error) error {
 			})
 		}
 		return in
-	}, true)
+	})
 	return err
 }
 
