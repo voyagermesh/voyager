@@ -12,7 +12,7 @@
 Voyager is a [HAProxy](http://www.haproxy.org/) backed [secure](#certificate) L7 and L4 [ingress](#ingress) controller for Kubernetes developed by [AppsCode](https://appscode.com). This can be used with any Kubernetes cloud providers including aws, gce, gke, azure, acs. This can also be used with bare metal Kubernetes clusters.
 
 ## Ingress
-Voyager provides L7 and L4 loadbalancing using a custom Kubernetes [Ingress](https://voyagermesh.com/latest/guides/ingress/) resource. This is built on top of the [HAProxy](http://www.haproxy.org/) to support high availability, sticky sessions, name and path-based virtual hosting.
+Voyager provides L7 and L4 loadbalancing using a custom Kubernetes [Ingress](https://voyagermesh.com/docs/latest/guides/ingress/) resource. This is built on top of the [HAProxy](http://www.haproxy.org/) to support high availability, sticky sessions, name and path-based virtual hosting.
 This also support configurable application ports with all the options available in a standard Kubernetes [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/).
 
 ## Certificate
@@ -31,10 +31,10 @@ Please pick a version of Voyager that matches your Kubernetes installation.
 | [3.2.2](https://github.com/voyagermesh/voyager/releases/tag/3.2.2) (uses TPR)               | [User Guide](https://github.com/voyagermesh/voyager/tree/3.2.2/docs) | 1.5.x - 1.7.x      | < 0.12.0                    |
 
 ## Installation
-To install Voyager, please follow the guide [here](https://voyagermesh.com/latest/setup/install/).
+To install Voyager, please follow the guide [here](https://voyagermesh.com/docs/latest/setup/install/).
 
 ## Using Voyager
-Want to learn how to use Voyager? Please start [here](https://voyagermesh.com/latest/welcome/).
+Want to learn how to use Voyager? Please start [here](https://voyagermesh.com/docs/latest/welcome/).
 
 ## Voyager API Clients
 You can use Voyager api clients to programmatically access its CRD objects. Here are the supported clients:
@@ -43,7 +43,7 @@ You can use Voyager api clients to programmatically access its CRD objects. Here
 - Java: https://github.com/voyagermesh/java
 
 ## Contribution guidelines
-Want to help improve Voyager? Please start [here](https://voyagermesh.com/latest/welcome/contributing/).
+Want to help improve Voyager? Please start [here](https://voyagermesh.com/docs/latest/welcome/contributing/).
 
 ---
 
