@@ -17,6 +17,7 @@ limitations under the License.
 package util
 
 import (
+	"context"
 	"fmt"
 
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
@@ -32,29 +33,32 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchCertificate(c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(alert *api.Certificate) *api.Certificate) (*api.Certificate, kutil.VerbType, error) {
-	cur, err := c.Certificates(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+func CreateOrPatchCertificate(ctx context.Context, c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(alert *api.Certificate) *api.Certificate, opts metav1.PatchOptions) (*api.Certificate, kutil.VerbType, error) {
+	cur, err := c.Certificates(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Certificate %s/%s.", meta.Namespace, meta.Name)
-		out, err := c.Certificates(meta.Namespace).Create(transform(&api.Certificate{
+		out, err := c.Certificates(meta.Namespace).Create(ctx, transform(&api.Certificate{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Certificate",
 				APIVersion: api.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
-		}))
+		}), metav1.CreateOptions{
+			DryRun:       opts.DryRun,
+			FieldManager: opts.FieldManager,
+		})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return PatchCertificate(c, cur, transform)
+	return PatchCertificate(ctx, c, cur, transform, opts)
 }
 
-func PatchCertificate(c cs.VoyagerV1beta1Interface, cur *api.Certificate, transform func(*api.Certificate) *api.Certificate) (*api.Certificate, kutil.VerbType, error) {
-	return PatchCertificateObject(c, cur, transform(cur.DeepCopy()))
+func PatchCertificate(ctx context.Context, c cs.VoyagerV1beta1Interface, cur *api.Certificate, transform func(*api.Certificate) *api.Certificate, opts metav1.PatchOptions) (*api.Certificate, kutil.VerbType, error) {
+	return PatchCertificateObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
 }
 
-func PatchCertificateObject(c cs.VoyagerV1beta1Interface, cur, mod *api.Certificate) (*api.Certificate, kutil.VerbType, error) {
+func PatchCertificateObject(ctx context.Context, c cs.VoyagerV1beta1Interface, cur, mod *api.Certificate, opts metav1.PatchOptions) (*api.Certificate, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -73,19 +77,19 @@ func PatchCertificateObject(c cs.VoyagerV1beta1Interface, cur, mod *api.Certific
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching Certificate %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
-	out, err := c.Certificates(cur.Namespace).Patch(cur.Name, types.MergePatchType, patch)
+	out, err := c.Certificates(cur.Namespace).Patch(ctx, cur.Name, types.MergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateCertificate(c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(*api.Certificate) *api.Certificate) (result *api.Certificate, err error) {
+func TryUpdateCertificate(ctx context.Context, c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(*api.Certificate) *api.Certificate, opts metav1.UpdateOptions) (result *api.Certificate, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := c.Certificates(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+		cur, e2 := c.Certificates(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.Certificates(cur.Namespace).Update(transform(cur.DeepCopy()))
+			result, e2 = c.Certificates(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update Certificate %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
@@ -99,9 +103,11 @@ func TryUpdateCertificate(c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, 
 }
 
 func UpdateCertificateStatus(
+	ctx context.Context,
 	c cs.VoyagerV1beta1Interface,
 	meta metav1.ObjectMeta,
 	transform func(*api.CertificateStatus) *api.CertificateStatus,
+	opts metav1.UpdateOptions,
 ) (result *api.Certificate, err error) {
 	apply := func(x *api.Certificate) *api.Certificate {
 		out := &api.Certificate{
@@ -114,16 +120,16 @@ func UpdateCertificateStatus(
 	}
 
 	attempt := 0
-	cur, err := c.Certificates(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	cur, err := c.Certificates(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
 		var e2 error
-		result, e2 = c.Certificates(meta.Namespace).UpdateStatus(apply(cur))
+		result, e2 = c.Certificates(meta.Namespace).UpdateStatus(ctx, apply(cur), opts)
 		if kerr.IsConflict(e2) {
-			latest, e3 := c.Certificates(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+			latest, e3 := c.Certificates(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 			switch {
 			case e3 == nil:
 				cur = latest
