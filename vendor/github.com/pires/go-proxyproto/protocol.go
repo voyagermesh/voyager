@@ -11,23 +11,36 @@ import (
 // whose connections may be using the HAProxy Proxy Protocol.
 // If the connection is using the protocol, the RemoteAddr() will return
 // the correct client address.
-//
-// Optionally define ProxyHeaderTimeout to set a maximum time to
-// receive the Proxy Protocol Header. Zero means no timeout.
 type Listener struct {
-	Listener           net.Listener
-	ProxyHeaderTimeout time.Duration
+	Listener       net.Listener
+	Policy         PolicyFunc
+	ValidateHeader Validator
 }
 
 // Conn is used to wrap and underlying connection which
 // may be speaking the Proxy Protocol. If it is, the RemoteAddr() will
 // return the address of the client instead of the proxy address.
 type Conn struct {
-	bufReader          *bufio.Reader
-	conn               net.Conn
-	header             *Header
-	once               sync.Once
-	proxyHeaderTimeout time.Duration
+	bufReader         *bufio.Reader
+	conn              net.Conn
+	header            *Header
+	once              sync.Once
+	ProxyHeaderPolicy Policy
+	Validate          Validator
+	readErr           error
+}
+
+// Validator receives a header and decides whether it is a valid one
+// In case the header is not deemed valid it should return an error.
+type Validator func(*Header) error
+
+// ValidateHeader adds given validator for proxy headers to a connection when passed as option to NewConn()
+func ValidateHeader(v Validator) func(*Conn) {
+	return func(c *Conn) {
+		if v != nil {
+			c.Validate = v
+		}
+	}
 }
 
 // Accept waits for and returns the next connection to the listener.
@@ -37,7 +50,23 @@ func (p *Listener) Accept() (net.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewConn(conn, p.ProxyHeaderTimeout), nil
+
+	proxyHeaderPolicy := USE
+	if p.Policy != nil {
+		proxyHeaderPolicy, err = p.Policy(conn.RemoteAddr())
+		if err != nil {
+			// can't decide the policy, we can't accept the connection
+			conn.Close()
+			return nil, err
+		}
+	}
+
+	newConn := NewConn(
+		conn,
+		WithPolicy(proxyHeaderPolicy),
+		ValidateHeader(p.ValidateHeader),
+	)
+	return newConn, nil
 }
 
 // Close closes the underlying listener.
@@ -52,12 +81,16 @@ func (p *Listener) Addr() net.Addr {
 
 // NewConn is used to wrap a net.Conn that may be speaking
 // the proxy protocol into a proxyproto.Conn
-func NewConn(conn net.Conn, timeout time.Duration) *Conn {
+func NewConn(conn net.Conn, opts ...func(*Conn)) *Conn {
 	pConn := &Conn{
-		bufReader:          bufio.NewReader(conn),
-		conn:               conn,
-		proxyHeaderTimeout: timeout,
+		bufReader: bufio.NewReader(conn),
+		conn:      conn,
 	}
+
+	for _, opt := range opts {
+		opt(pConn)
+	}
+
 	return pConn
 }
 
@@ -65,12 +98,11 @@ func NewConn(conn net.Conn, timeout time.Duration) *Conn {
 // the initial scan. If there is an error parsing the header,
 // it is returned and the socket is closed.
 func (p *Conn) Read(b []byte) (int, error) {
-	var err error
 	p.once.Do(func() {
-		err = p.readHeader()
+		p.readErr = p.readHeader()
 	})
-	if err != nil {
-		return 0, err
+	if p.readErr != nil {
+		return 0, p.readErr
 	}
 	return p.bufReader.Read(b)
 }
@@ -87,10 +119,13 @@ func (p *Conn) Close() error {
 
 // LocalAddr returns the address of the server if the proxy
 // protocol is being used, otherwise just returns the address of
-// the socket server.
+// the socket server. In case an error happens on reading the
+// proxy header the original LocalAddr is returned, not the one
+// from the proxy header even if the proxy header itself is
+// syntactically correct.
 func (p *Conn) LocalAddr() net.Addr {
-	p.once.Do(func() { p.readHeader() })
-	if p.header == nil {
+	p.once.Do(func() { p.readErr = p.readHeader() })
+	if p.header == nil || p.header.Command.IsLocal() || p.readErr != nil {
 		return p.conn.LocalAddr()
 	}
 
@@ -99,10 +134,13 @@ func (p *Conn) LocalAddr() net.Addr {
 
 // RemoteAddr returns the address of the client if the proxy
 // protocol is being used, otherwise just returns the address of
-// the socket peer.
+// the socket peer. In case an error happens on reading the
+// proxy header the original RemoteAddr is returned, not the one
+// from the proxy header even if the proxy header itself is
+// syntactically correct.
 func (p *Conn) RemoteAddr() net.Addr {
-	p.once.Do(func() { p.readHeader() })
-	if p.header == nil {
+	p.once.Do(func() { p.readErr = p.readHeader() })
+	if p.header == nil || p.header.Command.IsLocal() || p.readErr != nil {
 		return p.conn.RemoteAddr()
 	}
 
@@ -124,13 +162,36 @@ func (p *Conn) SetWriteDeadline(t time.Time) error {
 	return p.conn.SetWriteDeadline(t)
 }
 
-func (p *Conn) readHeader() (err error) {
-	p.header, err = Read(p.bufReader)
+func (p *Conn) readHeader() error {
+	header, err := Read(p.bufReader)
 	// For the purpose of this wrapper shamefully stolen from armon/go-proxyproto
 	// let's act as if there was no error when PROXY protocol is not present.
 	if err == ErrNoProxyProtocol {
-		err = nil
+		// but not if it is required that the connection has one
+		if p.ProxyHeaderPolicy == REQUIRE {
+			return err
+		}
+
+		return nil
 	}
 
-	return
+	// proxy protocol header was found
+	if err == nil && header != nil {
+		switch p.ProxyHeaderPolicy {
+		case REJECT:
+			// this connection is not allowed to send one
+			return ErrSuperfluousProxyHeader
+		case USE, REQUIRE:
+			if p.Validate != nil {
+				err = p.Validate(header)
+				if err != nil {
+					return err
+				}
+			}
+
+			p.header = header
+		}
+	}
+
+	return err
 }

@@ -49,6 +49,11 @@ func NewRequest(config edgegrid.Config, method, path string, body io.Reader) (*h
 	}
 
 	u := baseURL.ResolveReference(rel)
+	if config.AccountKey != "" {
+		q := u.Query()
+		q.Add("accountSwitchKey", config.AccountKey)
+		u.RawQuery = q.Encode()
+	}
 
 	req, err := http.NewRequest(method, u.String(), body)
 	if err != nil {

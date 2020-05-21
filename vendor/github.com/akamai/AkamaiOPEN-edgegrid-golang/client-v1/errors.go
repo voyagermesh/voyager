@@ -65,7 +65,7 @@ func NewAPIError(response *http.Response) APIError {
 // other purposes.
 func NewAPIErrorFromBody(response *http.Response, body []byte) APIError {
 	error := APIError{}
-	if err := jsonhooks.Unmarshal(body, &error); err == nil {
+	if err := jsonhooks.Unmarshal(body, &error); err != nil {
 		error.Status = response.StatusCode
 		error.Title = response.Status
 	}

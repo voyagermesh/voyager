@@ -183,7 +183,7 @@ func signingData(config Config, req *http.Request, authHeader string) string {
 		req.Method,
 		req.URL.Scheme,
 		req.URL.Host,
-		concatPathQuery(req.URL.Path, req.URL.RawQuery),
+		concatPathQuery(req.URL.EscapedPath(), req.URL.RawQuery),
 		canonicalizeHeaders(config, req),
 		createContentHash(config, req),
 		authHeader,

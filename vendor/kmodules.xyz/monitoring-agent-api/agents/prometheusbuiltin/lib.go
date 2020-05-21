@@ -17,6 +17,7 @@ limitations under the License.
 package prometheusbuiltin
 
 import (
+	"context"
 	"fmt"
 
 	kutil "kmodules.xyz/client-go"
@@ -44,11 +45,11 @@ func (agent *PrometheusBuiltin) GetType() api.AgentType {
 }
 
 func (agent *PrometheusBuiltin) CreateOrUpdate(sp api.StatsAccessor, new *api.AgentSpec) (kutil.VerbType, error) {
-	svc, e2 := agent.k8sClient.CoreV1().Services(sp.GetNamespace()).Get(sp.ServiceName(), metav1.GetOptions{})
+	svc, e2 := agent.k8sClient.CoreV1().Services(sp.GetNamespace()).Get(context.TODO(), sp.ServiceName(), metav1.GetOptions{})
 	if kerr.IsNotFound(e2) {
 		return kutil.VerbUnchanged, e2
 	}
-	_, vt, err := core_util.PatchService(agent.k8sClient, svc, func(in *core.Service) *core.Service {
+	_, vt, err := core_util.PatchService(context.TODO(), agent.k8sClient, svc, func(in *core.Service) *core.Service {
 		if in.Annotations == nil {
 			in.Annotations = map[string]string{}
 		}
@@ -65,16 +66,16 @@ func (agent *PrometheusBuiltin) CreateOrUpdate(sp api.StatsAccessor, new *api.Ag
 			delete(in.Annotations, "prometheus.io/port")
 		}
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return vt, err
 }
 
 func (agent *PrometheusBuiltin) Delete(sp api.StatsAccessor) (kutil.VerbType, error) {
-	svc, e2 := agent.k8sClient.CoreV1().Services(sp.GetNamespace()).Get(sp.ServiceName(), metav1.GetOptions{})
+	svc, e2 := agent.k8sClient.CoreV1().Services(sp.GetNamespace()).Get(context.TODO(), sp.ServiceName(), metav1.GetOptions{})
 	if kerr.IsNotFound(e2) {
 		return kutil.VerbUnchanged, e2
 	}
-	_, vt, err := core_util.PatchService(agent.k8sClient, svc, func(in *core.Service) *core.Service {
+	_, vt, err := core_util.PatchService(context.TODO(), agent.k8sClient, svc, func(in *core.Service) *core.Service {
 		if in.Annotations != nil {
 			delete(in.Annotations, "prometheus.io/scrape")
 			delete(in.Annotations, "prometheus.io/scheme")
@@ -82,6 +83,6 @@ func (agent *PrometheusBuiltin) Delete(sp api.StatsAccessor) (kutil.VerbType, er
 			delete(in.Annotations, "prometheus.io/port")
 		}
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return vt, err
 }

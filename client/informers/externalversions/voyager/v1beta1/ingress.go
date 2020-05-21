@@ -19,6 +19,7 @@ limitations under the License.
 package v1beta1
 
 import (
+	"context"
 	time "time"
 
 	voyagerv1beta1 "voyagermesh.dev/voyager/apis/voyager/v1beta1"
@@ -62,13 +63,13 @@ func NewFilteredIngressInformer(client versioned.Interface, namespace string, re
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.VoyagerV1beta1().Ingresses(namespace).List(options)
+				return client.VoyagerV1beta1().Ingresses(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.VoyagerV1beta1().Ingresses(namespace).Watch(options)
+				return client.VoyagerV1beta1().Ingresses(namespace).Watch(context.TODO(), options)
 			},
 		},
 		&voyagerv1beta1.Ingress{},

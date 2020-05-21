@@ -22,7 +22,7 @@ COMPRESS ?= no
 
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS          ?= "crd:trivialVersions=true,preserveUnknownFields=false"
-CODE_GENERATOR_IMAGE ?= appscode/gengo:release-1.16
+CODE_GENERATOR_IMAGE ?= appscode/gengo:release-1.18
 API_GROUPS           ?= voyager:v1beta1
 
 # Where to push the docker image.
@@ -86,7 +86,7 @@ TAG_HAPROXY_DEB := $(TAG_HAPROXY)
 TAG_HAPROXY_ALP := $(HAPROXY_VERSION)-$(VERSION)-alpine_$(OS)_$(ARCH)
 
 
-GO_VERSION       ?= 1.14.3
+GO_VERSION       ?= 1.14
 BUILD_IMAGE      ?= appscode/golang-dev:$(GO_VERSION)
 TEST_IMAGE       ?= appscode/golang-dev:$(GO_VERSION)-voyager
 CHART_TEST_IMAGE ?= quay.io/helmpack/chart-testing:v3.0.0-rc.1
