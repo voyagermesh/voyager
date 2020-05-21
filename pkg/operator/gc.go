@@ -27,7 +27,7 @@ import (
 )
 
 func (op *Operator) PurgeOffshootsWithDeprecatedLabels() error {
-	ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.WatchNamespace).List(context.TODO(), metav1.ListOptions{})
+	ingresses, err := op.KubeClient.NetworkingV1beta1().Ingresses(op.WatchNamespace).List(context.TODO(), metav1.ListOptions{})
 	if err == nil {
 		for _, ing := range ingresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
@@ -128,7 +128,7 @@ func deprecatedLabelsFor(name string) map[string]string {
 }
 
 func (op *Operator) PurgeOffshootsDaemonSet() error {
-	ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.WatchNamespace).List(context.TODO(), metav1.ListOptions{})
+	ingresses, err := op.KubeClient.NetworkingV1beta1().Ingresses(op.WatchNamespace).List(context.TODO(), metav1.ListOptions{})
 	if err == nil {
 		for _, ing := range ingresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {

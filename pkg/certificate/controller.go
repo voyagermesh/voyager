@@ -37,7 +37,7 @@ import (
 	"github.com/xenolf/lego/acme"
 	"gomodules.xyz/cert"
 	core "k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
+	extensions "k8s.io/api/networking/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
@@ -103,7 +103,7 @@ func NewController(kubeClient kubernetes.Interface, extClient cs.Interface, cfg 
 				return nil, err
 			}
 		case "extensions/v1beta1":
-			ing, err := ctrl.KubeClient.ExtensionsV1beta1().Ingresses(ctrl.crd.Namespace).
+			ing, err := ctrl.KubeClient.NetworkingV1beta1().Ingresses(ctrl.crd.Namespace).
 				Get(context.TODO(), ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 			if err != nil {
 				return nil, err
@@ -367,7 +367,7 @@ func (c *Controller) updateIngress() error {
 		}
 		time.Sleep(time.Second * 5)
 	case "extensions/v1beta1":
-		i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.crd.Namespace).
+		i, err := c.KubeClient.NetworkingV1beta1().Ingresses(c.crd.Namespace).
 			Get(context.TODO(), c.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.WithStack(err)
@@ -401,7 +401,7 @@ func (c *Controller) updateIngress() error {
 		}
 		i.Spec.Rules = append([]extensions.IngressRule{rule}, i.Spec.Rules...)
 
-		_, err = c.KubeClient.ExtensionsV1beta1().Ingresses(c.crd.Namespace).Update(context.TODO(), i, metav1.UpdateOptions{})
+		_, err = c.KubeClient.NetworkingV1beta1().Ingresses(c.crd.Namespace).Update(context.TODO(), i, metav1.UpdateOptions{})
 		if err != nil {
 			return errors.WithStack(err)
 		}

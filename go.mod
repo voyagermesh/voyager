@@ -59,7 +59,7 @@ require (
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/kube-openapi v0.0.0-20200410145947-61e04a5be9a6
 	k8s.io/utils v0.0.0-20200324210504-a9aa75ae1b89
-	kmodules.xyz/client-go v0.0.0-20200521065424-173e32c78a20
+	kmodules.xyz/client-go v0.0.0-20200521181834-92024b192ae7
 	kmodules.xyz/crd-schema-fuzz v0.0.0-20200521005638-2433a187de95
 	kmodules.xyz/monitoring-agent-api v0.0.0-20200521105700-6eb8ff8e7be9
 	kmodules.xyz/openshift v0.0.0-20200521065736-da9980848f70 // indirect

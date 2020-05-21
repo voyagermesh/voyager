@@ -801,10 +801,10 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Updating service annotations")
-			_, _, err = core_util.CreateOrPatchService(f.KubeClient, meta, func(in *core.Service) *core.Service {
+			_, _, err = core_util.CreateOrPatchService(context.TODO(), f.KubeClient, meta, func(in *core.Service) *core.Service {
 				in.Annotations[api.AuthSecret] = secretNew.Name
 				return in
-			})
+			}, metav1.PatchOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Waiting for operator to process service update")
@@ -829,12 +829,12 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Removing service annotations")
-			_, _, err = core_util.CreateOrPatchService(f.KubeClient, meta, func(in *core.Service) *core.Service {
+			_, _, err = core_util.CreateOrPatchService(context.TODO(), f.KubeClient, meta, func(in *core.Service) *core.Service {
 				delete(in.Annotations, api.AuthType)
 				delete(in.Annotations, api.AuthRealm)
 				delete(in.Annotations, api.AuthSecret)
 				return in
-			})
+			}, metav1.PatchOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Waiting for operator to process service update")

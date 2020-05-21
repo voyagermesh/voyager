@@ -23,7 +23,7 @@ import (
 	"voyagermesh.dev/voyager/pkg/config"
 
 	"github.com/stretchr/testify/assert"
-	"k8s.io/api/extensions/v1beta1"
+	"k8s.io/api/networking/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )

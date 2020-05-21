@@ -168,7 +168,7 @@ func (c *Controller) initIngressIndexer() (*api.Ingress, error) {
 		return obj, c.engInformer.GetIndexer().Add(obj)
 	}
 
-	obj, err := c.k8sClient.ExtensionsV1beta1().Ingresses(c.options.IngressRef.Namespace).Get(context.TODO(), c.options.IngressRef.Name, metav1.GetOptions{})
+	obj, err := c.k8sClient.NetworkingV1beta1().Ingresses(c.options.IngressRef.Namespace).Get(context.TODO(), c.options.IngressRef.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}

@@ -559,12 +559,12 @@ func (c *loadBalancerController) updateStatus() error {
 
 	if len(statuses) > 0 {
 		if c.Ingress.APISchema() == api.APISchemaIngress {
-			ing, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.Ingress.Namespace).Get(context.TODO(), c.Ingress.Name, metav1.GetOptions{})
+			ing, err := c.KubeClient.NetworkingV1beta1().Ingresses(c.Ingress.Namespace).Get(context.TODO(), c.Ingress.Name, metav1.GetOptions{})
 			if err != nil {
 				return errors.WithStack(err)
 			}
 			ing.Status.LoadBalancer.Ingress = statuses
-			_, err = c.KubeClient.ExtensionsV1beta1().Ingresses(c.Ingress.Namespace).UpdateStatus(context.TODO(), ing, metav1.UpdateOptions{})
+			_, err = c.KubeClient.NetworkingV1beta1().Ingresses(c.Ingress.Namespace).UpdateStatus(context.TODO(), ing, metav1.UpdateOptions{})
 			if err != nil {
 				return errors.WithStack(err)
 			}

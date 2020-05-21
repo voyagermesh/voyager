@@ -27,7 +27,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	extensions "k8s.io/api/extensions/v1beta1"
+	extensions "k8s.io/api/networking/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -78,7 +78,7 @@ var _ = Describe("IngressCoreOperations", func() {
 	})
 
 	JustBeforeEach(func() {
-		_, err := f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Create(context.TODO(), ext, metav1.CreateOptions{})
+		_, err := f.KubeClient.NetworkingV1beta1().Ingresses(ext.Namespace).Create(context.TODO(), ext, metav1.CreateOptions{})
 		Expect(err).NotTo(HaveOccurred())
 
 		f.Ingress.EventuallyStarted(ing).Should(BeTrue())
@@ -89,7 +89,7 @@ var _ = Describe("IngressCoreOperations", func() {
 
 	AfterEach(func() {
 		if options.Cleanup {
-			_ = f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Delete(context.TODO(), ext.Name, metav1.DeleteOptions{})
+			_ = f.KubeClient.NetworkingV1beta1().Ingresses(ext.Namespace).Delete(context.TODO(), ext.Name, metav1.DeleteOptions{})
 		}
 	})
 
@@ -112,7 +112,7 @@ var _ = Describe("IngressCoreOperations", func() {
 	Describe("Delete", func() {
 		It("Should delete Ingress resource", func() {
 			By("Deleting Ingress resource")
-			err := f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Delete(context.TODO(), ext.Name, metav1.DeleteOptions{})
+			err := f.KubeClient.NetworkingV1beta1().Ingresses(ext.Namespace).Delete(context.TODO(), ext.Name, metav1.DeleteOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() bool {
@@ -124,11 +124,11 @@ var _ = Describe("IngressCoreOperations", func() {
 	Describe("Update", func() {
 		It("Should update Loadbalancer", func() {
 			By("Updating Ingress resource")
-			uing, err := f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Get(context.TODO(), ext.Name, metav1.GetOptions{})
+			uing, err := f.KubeClient.NetworkingV1beta1().Ingresses(ext.Namespace).Get(context.TODO(), ext.Name, metav1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			uing.Spec.Rules[0].HTTP.Paths[0].Path = "/newTestPath"
-			_, err = f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Update(context.TODO(), uing, metav1.UpdateOptions{})
+			_, err = f.KubeClient.NetworkingV1beta1().Ingresses(ext.Namespace).Update(context.TODO(), uing, metav1.UpdateOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Waiting some time for update to be applied")

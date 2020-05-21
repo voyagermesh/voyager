@@ -21,7 +21,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
-	extensions "k8s.io/api/extensions/v1beta1"
+	networking "k8s.io/api/networking/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -31,14 +31,14 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchIngress(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*extensions.Ingress) *extensions.Ingress, opts metav1.PatchOptions) (*extensions.Ingress, kutil.VerbType, error) {
-	cur, err := c.ExtensionsV1beta1().Ingresses(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
+func CreateOrPatchIngress(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*networking.Ingress) *networking.Ingress, opts metav1.PatchOptions) (*networking.Ingress, kutil.VerbType, error) {
+	cur, err := c.NetworkingV1beta1().Ingresses(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Ingress %s/%s.", meta.Namespace, meta.Name)
-		out, err := c.ExtensionsV1beta1().Ingresses(meta.Namespace).Create(ctx, transform(&extensions.Ingress{
+		out, err := c.NetworkingV1beta1().Ingresses(meta.Namespace).Create(ctx, transform(&networking.Ingress{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Ingress",
-				APIVersion: extensions.SchemeGroupVersion.String(),
+				APIVersion: networking.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}), metav1.CreateOptions{
@@ -52,11 +52,11 @@ func CreateOrPatchIngress(ctx context.Context, c kubernetes.Interface, meta meta
 	return PatchIngress(ctx, c, cur, transform, opts)
 }
 
-func PatchIngress(ctx context.Context, c kubernetes.Interface, cur *extensions.Ingress, transform func(*extensions.Ingress) *extensions.Ingress, opts metav1.PatchOptions) (*extensions.Ingress, kutil.VerbType, error) {
+func PatchIngress(ctx context.Context, c kubernetes.Interface, cur *networking.Ingress, transform func(*networking.Ingress) *networking.Ingress, opts metav1.PatchOptions) (*networking.Ingress, kutil.VerbType, error) {
 	return PatchIngressObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
 }
 
-func PatchIngressObject(ctx context.Context, c kubernetes.Interface, cur, mod *extensions.Ingress, opts metav1.PatchOptions) (*extensions.Ingress, kutil.VerbType, error) {
+func PatchIngressObject(ctx context.Context, c kubernetes.Interface, cur, mod *networking.Ingress, opts metav1.PatchOptions) (*networking.Ingress, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -67,7 +67,7 @@ func PatchIngressObject(ctx context.Context, c kubernetes.Interface, cur, mod *e
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	patch, err := strategicpatch.CreateTwoWayMergePatch(curJson, modJson, extensions.Ingress{})
+	patch, err := strategicpatch.CreateTwoWayMergePatch(curJson, modJson, networking.Ingress{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -75,19 +75,19 @@ func PatchIngressObject(ctx context.Context, c kubernetes.Interface, cur, mod *e
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching Ingress %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
-	out, err := c.ExtensionsV1beta1().Ingresses(cur.Namespace).Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, opts)
+	out, err := c.NetworkingV1beta1().Ingresses(cur.Namespace).Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateIngress(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*extensions.Ingress) *extensions.Ingress, opts metav1.UpdateOptions) (result *extensions.Ingress, err error) {
+func TryUpdateIngress(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*networking.Ingress) *networking.Ingress, opts metav1.UpdateOptions) (result *networking.Ingress, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := c.ExtensionsV1beta1().Ingresses(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
+		cur, e2 := c.NetworkingV1beta1().Ingresses(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.ExtensionsV1beta1().Ingresses(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), opts)
+			result, e2 = c.NetworkingV1beta1().Ingresses(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update Ingress %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
