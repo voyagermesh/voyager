@@ -17,6 +17,7 @@ limitations under the License.
 package e2e_test
 
 import (
+	"context"
 	"net"
 	"net/http"
 	"strings"
@@ -146,7 +147,7 @@ var _ = Describe("IngressWithWildCardDomain", func() {
 
 		AfterEach(func() {
 			if options.Cleanup {
-				Expect(f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+				Expect(f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(context.TODO(), secret.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
 			}
 		})
 

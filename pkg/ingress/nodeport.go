@@ -299,7 +299,7 @@ func (c *nodePortController) FirewallSupported() bool {
 func (c *nodePortController) EnsureFirewall(svc *core.Service) error {
 	if c.CloudManager != nil {
 		if fw, ok := c.CloudManager.Firewall(); ok {
-			nodes, err := c.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
+			nodes, err := c.KubeClient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 			if err != nil {
 				return err
 			}
@@ -356,7 +356,7 @@ func (c *nodePortController) waitForNodePortAssignment() error {
 	return wait.Poll(time.Second*5, time.Minute*5, wait.ConditionFunc(func() (bool, error) {
 		svc, err := c.KubeClient.CoreV1().
 			Services(c.Ingress.Namespace).
-			Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+			Get(context.TODO(), c.Ingress.OffshootName(), metav1.GetOptions{})
 		if err != nil {
 			return false, err
 		}

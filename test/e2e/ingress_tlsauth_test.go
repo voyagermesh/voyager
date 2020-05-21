@@ -17,6 +17,7 @@ limitations under the License.
 package e2e_test
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"io/ioutil"
@@ -72,7 +73,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			},
 			Type: core.SecretTypeTLS,
 		}
-		_, err = f.KubeClient.CoreV1().Secrets(tlsSecret.Namespace).Create(tlsSecret)
+		_, err = f.KubeClient.CoreV1().Secrets(tlsSecret.Namespace).Create(context.TODO(), tlsSecret, metav1.CreateOptions{})
 		Expect(err).NotTo(HaveOccurred())
 
 		caSecret = &core.Secret{
@@ -84,7 +85,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 				"ca.crt": f.CertStore.CACertBytes(),
 			},
 		}
-		_, err = f.KubeClient.CoreV1().Secrets(caSecret.Namespace).Create(caSecret)
+		_, err = f.KubeClient.CoreV1().Secrets(caSecret.Namespace).Create(context.TODO(), caSecret, metav1.CreateOptions{})
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -102,8 +103,8 @@ var _ = Describe("IngressWithTLSAuth", func() {
 	AfterEach(func() {
 		if options.Cleanup {
 			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
-			Expect(f.KubeClient.CoreV1().Secrets(tlsSecret.Namespace).Delete(tlsSecret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
-			Expect(f.KubeClient.CoreV1().Secrets(caSecret.Namespace).Delete(caSecret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+			Expect(f.KubeClient.CoreV1().Secrets(tlsSecret.Namespace).Delete(context.TODO(), tlsSecret.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
+			Expect(f.KubeClient.CoreV1().Secrets(caSecret.Namespace).Delete(context.TODO(), caSecret.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		}
 	})
 

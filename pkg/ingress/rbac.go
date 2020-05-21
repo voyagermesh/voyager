@@ -17,6 +17,7 @@ limitations under the License.
 package ingress
 
 import (
+	"context"
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 	"voyagermesh.dev/voyager/pkg/eventer"
 
@@ -198,19 +199,19 @@ func (c *controller) ensureRoleBindingDeleted() error {
 	c.logger.Infof("Deleting RoleBinding %s/%s", c.Ingress.Namespace, c.Ingress.OffshootName())
 	return c.KubeClient.RbacV1().
 		RoleBindings(c.Ingress.Namespace).
-		Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
+		Delete(context.TODO(), c.Ingress.OffshootName(), metav1.DeleteOptions{})
 }
 
 func (c *controller) ensureRolesDeleted() error {
 	c.logger.Infof("Deleting Role %s/%s", c.Ingress.Namespace, c.Ingress.OffshootName())
 	return c.KubeClient.RbacV1().
 		Roles(c.Ingress.Namespace).
-		Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
+		Delete(context.TODO(), c.Ingress.OffshootName(), metav1.DeleteOptions{})
 }
 
 func (c *controller) ensureServiceAccountDeleted() error {
 	c.logger.Infof("Deleting ServiceAccount %s/%s", c.Ingress.Namespace, c.Ingress.OffshootName())
 	return c.KubeClient.CoreV1().
 		ServiceAccounts(c.Ingress.Namespace).
-		Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
+		Delete(context.TODO(), c.Ingress.OffshootName(), metav1.DeleteOptions{})
 }

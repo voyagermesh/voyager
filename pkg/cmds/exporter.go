@@ -17,6 +17,7 @@ limitations under the License.
 package cmds
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
@@ -102,7 +103,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 				reg = r2.(*prometheus.Registry)
 			} else {
 				log.Infof("Configuring exporter for standard ingress %s in namespace %s", name, namespace)
-				ingress, err := kubeClient.ExtensionsV1beta1().Ingresses(namespace).Get(name, metav1.GetOptions{})
+				ingress, err := kubeClient.ExtensionsV1beta1().Ingresses(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 				if kerr.IsNotFound(err) {
 					http.NotFound(w, r)
 					return
@@ -177,7 +178,7 @@ func getScrapeURL(r *api_v1beta1.Ingress, podIP string) (string, error) {
 	if r.StatsSecretName() == "" {
 		return fmt.Sprintf("http://%s:%d?stats;csv", podIP, r.StatsPort()), nil
 	}
-	secret, err := kubeClient.CoreV1().Secrets(r.Namespace).Get(r.StatsSecretName(), metav1.GetOptions{})
+	secret, err := kubeClient.CoreV1().Secrets(r.Namespace).Get(context.TODO(), r.StatsSecretName(), metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}

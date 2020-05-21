@@ -17,6 +17,7 @@ limitations under the License.
 package e2e_test
 
 import (
+	"context"
 	"net/http"
 
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
@@ -58,7 +59,7 @@ Content-Type: text/html
 {"body": "haproxy-errorfile"}`,
 			},
 		}
-		_, err := f.KubeClient.CoreV1().ConfigMaps(configMap.Namespace).Create(configMap)
+		_, err := f.KubeClient.CoreV1().ConfigMaps(configMap.Namespace).Create(context.TODO(), configMap, metav1.CreateOptions{})
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -76,7 +77,7 @@ Content-Type: text/html
 	AfterEach(func() {
 		if options.Cleanup {
 			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
-			Expect(f.KubeClient.CoreV1().ConfigMaps(configMap.Namespace).Delete(configMap.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+			Expect(f.KubeClient.CoreV1().ConfigMaps(configMap.Namespace).Delete(context.TODO(), configMap.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		}
 	})
 
@@ -186,7 +187,7 @@ Content-Type: text/html
 					"503": "errorloc http://echo.jsontest.com/status/200/body/haproxy-errorloc",
 				},
 			}
-			_, err := f.KubeClient.CoreV1().ConfigMaps(configMap.Namespace).Create(configMap)
+			_, err := f.KubeClient.CoreV1().ConfigMaps(configMap.Namespace).Create(context.TODO(), configMap, metav1.CreateOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			ing.Annotations[api.ErrorFiles] = configMap.Name

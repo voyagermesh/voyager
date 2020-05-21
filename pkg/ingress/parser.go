@@ -20,6 +20,7 @@ package ingress
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/url"
@@ -106,7 +107,7 @@ func (c *controller) getEndpoints(svc *core.Service, servicePort *core.ServicePo
 		return nil, err
 	}
 
-	podList, err := c.KubeClient.CoreV1().Pods(svc.Namespace).List(metav1.ListOptions{
+	podList, err := c.KubeClient.CoreV1().Pods(svc.Namespace).List(context.TODO(), metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector).String(),
 	})
 	if err != nil {
@@ -364,7 +365,7 @@ func (c *controller) generateConfig() error {
 		globalBasic = &hpi.BasicAuth{
 			Realm: c.Ingress.AuthRealm(),
 		}
-		secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(c.Ingress.AuthSecretName(), metav1.GetOptions{})
+		secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(context.TODO(), c.Ingress.AuthSecretName(), metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
@@ -448,7 +449,7 @@ func (c *controller) generateConfig() error {
 		stats := &hpi.StatsInfo{}
 		stats.Port = c.Ingress.StatsPort()
 		if name := c.Ingress.StatsSecretName(); len(name) > 0 {
-			secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.ObjectMeta.Namespace).Get(name, metav1.GetOptions{})
+			secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.ObjectMeta.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
 			if err == nil {
 				stats.Username = string(secret.Data["username"])
 				stats.PassWord = string(secret.Data["password"])
@@ -688,7 +689,7 @@ func (c *controller) generateConfig() error {
 			srv.BasicAuth = &hpi.BasicAuth{
 				Realm: fr.Auth.Basic.Realm,
 			}
-			secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(fr.Auth.Basic.SecretName, metav1.GetOptions{})
+			secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(context.TODO(), fr.Auth.Basic.SecretName, metav1.GetOptions{})
 			if err != nil {
 				return err
 			}
@@ -774,7 +775,7 @@ func (c *controller) generateConfig() error {
 
 	// assign node-ports
 	if c.Ingress.UseNodePort() {
-		nodePortSvc, err := c.KubeClient.CoreV1().Services(c.Ingress.GetNamespace()).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		nodePortSvc, err := c.KubeClient.CoreV1().Services(c.Ingress.GetNamespace()).Get(context.TODO(), c.Ingress.OffshootName(), metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
@@ -959,7 +960,7 @@ func (c *controller) getServiceAuth(userLists map[string]hpi.UserList, svc *core
 	if !ok {
 		return nil
 	}
-	secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(authSecret, metav1.GetOptions{})
+	secret, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(context.TODO(), authSecret, metav1.GetOptions{})
 	if err != nil || secret.Data == nil {
 		return nil
 	}
@@ -975,7 +976,7 @@ func (c *controller) getServiceAuth(userLists map[string]hpi.UserList, svc *core
 }
 
 func (c *controller) getErrorFiles() ([]*hpi.ErrorFile, error) {
-	configMap, err := c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Get(c.Ingress.ErrorFilesConfigMapName(), metav1.GetOptions{})
+	configMap, err := c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Get(context.TODO(), c.Ingress.ErrorFilesConfigMapName(), metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -1023,7 +1024,7 @@ func (c *controller) getErrorFiles() ([]*hpi.ErrorFile, error) {
 }
 
 func (c *controller) getTLSAuth(cfg *api.TLSAuth) (*hpi.TLSAuth, error) {
-	tlsAuthSec, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(cfg.SecretName, metav1.GetOptions{})
+	tlsAuthSec, err := c.KubeClient.CoreV1().Secrets(c.Ingress.Namespace).Get(context.TODO(), cfg.SecretName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}

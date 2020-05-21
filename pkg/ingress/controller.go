@@ -125,39 +125,39 @@ func (c *controller) ensureEnvVars(vars []core.EnvVar) []core.EnvVar {
 func (c *controller) IsExists() bool {
 	wk := c.Ingress.WorkloadKind()
 	if wk == wpi.KindDeployment {
-		_, err := c.KubeClient.AppsV1().Deployments(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		_, err := c.KubeClient.AppsV1().Deployments(c.Ingress.Namespace).Get(context.TODO(), c.Ingress.OffshootName(), metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
 			return false
 		}
 	} else if wk == wpi.KindStatefulSet {
-		_, err := c.KubeClient.AppsV1().StatefulSets(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		_, err := c.KubeClient.AppsV1().StatefulSets(c.Ingress.Namespace).Get(context.TODO(), c.Ingress.OffshootName(), metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
 			return false
 		}
 	} else if wk == wpi.KindDaemonSet {
-		_, err := c.KubeClient.AppsV1().DaemonSets(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+		_, err := c.KubeClient.AppsV1().DaemonSets(c.Ingress.Namespace).Get(context.TODO(), c.Ingress.OffshootName(), metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
 			return false
 		}
 	}
 
-	_, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+	_, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(context.TODO(), c.Ingress.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		return false
 	}
-	_, err = c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+	_, err = c.KubeClient.CoreV1().ConfigMaps(c.Ingress.Namespace).Get(context.TODO(), c.Ingress.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		return false
 	}
-	_, err = c.KubeClient.CoreV1().ServiceAccounts(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+	_, err = c.KubeClient.CoreV1().ServiceAccounts(c.Ingress.Namespace).Get(context.TODO(), c.Ingress.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		return false
 	}
-	_, err = c.KubeClient.RbacV1().Roles(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+	_, err = c.KubeClient.RbacV1().Roles(c.Ingress.Namespace).Get(context.TODO(), c.Ingress.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		return false
 	}
-	_, err = c.KubeClient.RbacV1().RoleBindings(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{})
+	_, err = c.KubeClient.RbacV1().RoleBindings(c.Ingress.Namespace).Get(context.TODO(), c.Ingress.OffshootName(), metav1.GetOptions{})
 
 	return !kerr.IsNotFound(err)
 }
@@ -179,7 +179,7 @@ func (c *controller) deletePods() error {
 }
 
 func (c *controller) isHPAControlled() bool {
-	list, err := c.KubeClient.AutoscalingV1().HorizontalPodAutoscalers(c.Ingress.Namespace).List(metav1.ListOptions{})
+	list, err := c.KubeClient.AutoscalingV1().HorizontalPodAutoscalers(c.Ingress.Namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		// in case an error happen when getting hpa, deciding to update replicas
 		return false

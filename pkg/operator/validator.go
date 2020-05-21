@@ -17,6 +17,7 @@ limitations under the License.
 package operator
 
 import (
+	"context"
 	"strings"
 
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
@@ -30,7 +31,7 @@ import (
 
 func (op *Operator) ValidateIngress() error {
 	var invalidIngresses []string
-	ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.WatchNamespace).List(metav1.ListOptions{})
+	ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.WatchNamespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return err
 	}

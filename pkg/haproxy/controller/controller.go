@@ -18,6 +18,7 @@ package controller
 
 import (
 	"bytes"
+	"context"
 	"strings"
 	"time"
 
@@ -167,7 +168,7 @@ func (c *Controller) initIngressIndexer() (*api.Ingress, error) {
 		return obj, c.engInformer.GetIndexer().Add(obj)
 	}
 
-	obj, err := c.k8sClient.ExtensionsV1beta1().Ingresses(c.options.IngressRef.Namespace).Get(c.options.IngressRef.Name, metav1.GetOptions{})
+	obj, err := c.k8sClient.ExtensionsV1beta1().Ingresses(c.options.IngressRef.Namespace).Get(context.TODO(), c.options.IngressRef.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +185,7 @@ func (c *Controller) initIngressIndexer() (*api.Ingress, error) {
 }
 
 func (c *Controller) initConfigCache() error {
-	cm, err := c.k8sClient.CoreV1().ConfigMaps(c.options.IngressRef.Namespace).Get(api.VoyagerPrefix+c.options.IngressRef.Name, metav1.GetOptions{})
+	cm, err := c.k8sClient.CoreV1().ConfigMaps(c.options.IngressRef.Namespace).Get(context.TODO(), api.VoyagerPrefix+c.options.IngressRef.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -203,7 +204,7 @@ func (c *Controller) initTLSCache(ing *api.Ingress) error {
 				return err
 			}
 		} else {
-			sc, err := c.k8sClient.CoreV1().Secrets(c.options.IngressRef.Namespace).Get(tls.Ref.Name, metav1.GetOptions{})
+			sc, err := c.k8sClient.CoreV1().Secrets(c.options.IngressRef.Namespace).Get(context.TODO(), tls.Ref.Name, metav1.GetOptions{})
 			if err != nil {
 				return err
 			}
@@ -215,7 +216,7 @@ func (c *Controller) initTLSCache(ing *api.Ingress) error {
 	}
 
 	if name := ing.AuthTLSSecret(); name != "" {
-		stls, err := c.k8sClient.CoreV1().Secrets(c.options.IngressRef.Namespace).Get(name, metav1.GetOptions{})
+		stls, err := c.k8sClient.CoreV1().Secrets(c.options.IngressRef.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
@@ -226,7 +227,7 @@ func (c *Controller) initTLSCache(ing *api.Ingress) error {
 	} else {
 		for _, fr := range ing.Spec.FrontendRules {
 			if fr.Auth != nil && fr.Auth.TLS != nil {
-				stls, err := c.k8sClient.CoreV1().Secrets(c.options.IngressRef.Namespace).Get(fr.Auth.TLS.SecretName, metav1.GetOptions{})
+				stls, err := c.k8sClient.CoreV1().Secrets(c.options.IngressRef.Namespace).Get(context.TODO(), fr.Auth.TLS.SecretName, metav1.GetOptions{})
 				if err != nil {
 					return err
 				}

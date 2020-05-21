@@ -18,6 +18,7 @@ limitations under the License.
 package e2e_test
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -177,7 +178,7 @@ var _ = Describe("IngressOperations", func() {
 				Expect(svc.Annotations).Should(HaveKey("service-annotation"))
 				Expect(svc.Annotations["service-annotation"]).Should(Equal("set"))
 
-				pods, err := f.Ingress.KubeClient.CoreV1().Pods(svc.Namespace).List(metav1.ListOptions{
+				pods, err := f.Ingress.KubeClient.CoreV1().Pods(svc.Namespace).List(context.TODO(), metav1.ListOptions{
 					LabelSelector: labels.SelectorFromSet(svc.Spec.Selector).String(),
 				})
 				Expect(err).NotTo(HaveOccurred())
@@ -210,7 +211,7 @@ var _ = Describe("IngressOperations", func() {
 				Expect(err).NotTo(HaveOccurred())
 				time.Sleep(time.Second * 10)
 				Eventually(func() bool {
-					pods, err = f.Ingress.KubeClient.CoreV1().Pods(svc.Namespace).List(metav1.ListOptions{
+					pods, err = f.Ingress.KubeClient.CoreV1().Pods(svc.Namespace).List(context.TODO(), metav1.ListOptions{
 						LabelSelector: labels.SelectorFromSet(svc.Spec.Selector).String(),
 					})
 					return err == nil &&
@@ -230,7 +231,7 @@ var _ = Describe("IngressOperations", func() {
 				var svc *core.Service
 				Eventually(func() error {
 					var err error
-					svc, err = f.KubeClient.CoreV1().Services(ing.GetNamespace()).Get(ing.StatsServiceName(), metav1.GetOptions{})
+					svc, err = f.KubeClient.CoreV1().Services(ing.GetNamespace()).Get(context.TODO(), ing.StatsServiceName(), metav1.GetOptions{})
 					return err
 				}, "10m", "5s").Should(BeNil())
 				Expect(svc).ShouldNot(BeNil())
@@ -247,7 +248,7 @@ var _ = Describe("IngressOperations", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(func() bool {
-					_, err := f.KubeClient.CoreV1().Services(ing.GetNamespace()).Get(ing.StatsServiceName(), metav1.GetOptions{})
+					_, err := f.KubeClient.CoreV1().Services(ing.GetNamespace()).Get(context.TODO(), ing.StatsServiceName(), metav1.GetOptions{})
 					return err != nil
 				}, "2m", "20s").Should(BeTrue())
 			})
@@ -507,7 +508,7 @@ var _ = Describe("IngressOperations", func() {
 
 			By("Waiting some time for update to be applied")
 			Eventually(func() error {
-				svc, err := f.KubeClient.CoreV1().Services(ing.GetNamespace()).Get(ing.OffshootName(), metav1.GetOptions{})
+				svc, err := f.KubeClient.CoreV1().Services(ing.GetNamespace()).Get(context.TODO(), ing.OffshootName(), metav1.GetOptions{})
 				if err != nil {
 					return err
 				}

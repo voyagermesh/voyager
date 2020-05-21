@@ -549,7 +549,7 @@ func (c *loadBalancerController) updateStatus() error {
 
 	for i := 0; i < 50; i++ {
 		time.Sleep(time.Second * 10)
-		if svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.OffshootName(), metav1.GetOptions{}); err == nil {
+		if svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(context.TODO(), c.Ingress.OffshootName(), metav1.GetOptions{}); err == nil {
 			if len(svc.Status.LoadBalancer.Ingress) >= 1 {
 				statuses = svc.Status.LoadBalancer.Ingress
 				break
@@ -559,12 +559,12 @@ func (c *loadBalancerController) updateStatus() error {
 
 	if len(statuses) > 0 {
 		if c.Ingress.APISchema() == api.APISchemaIngress {
-			ing, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.Ingress.Namespace).Get(c.Ingress.Name, metav1.GetOptions{})
+			ing, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.Ingress.Namespace).Get(context.TODO(), c.Ingress.Name, metav1.GetOptions{})
 			if err != nil {
 				return errors.WithStack(err)
 			}
 			ing.Status.LoadBalancer.Ingress = statuses
-			_, err = c.KubeClient.ExtensionsV1beta1().Ingresses(c.Ingress.Namespace).UpdateStatus(ing)
+			_, err = c.KubeClient.ExtensionsV1beta1().Ingresses(c.Ingress.Namespace).UpdateStatus(context.TODO(), ing, metav1.UpdateOptions{})
 			if err != nil {
 				return errors.WithStack(err)
 			}

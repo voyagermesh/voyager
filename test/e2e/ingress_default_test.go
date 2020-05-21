@@ -17,6 +17,7 @@ limitations under the License.
 package e2e_test
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -77,7 +78,7 @@ var _ = Describe("IngressCoreOperations", func() {
 	})
 
 	JustBeforeEach(func() {
-		_, err := f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Create(ext)
+		_, err := f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Create(context.TODO(), ext, metav1.CreateOptions{})
 		Expect(err).NotTo(HaveOccurred())
 
 		f.Ingress.EventuallyStarted(ing).Should(BeTrue())
@@ -88,7 +89,7 @@ var _ = Describe("IngressCoreOperations", func() {
 
 	AfterEach(func() {
 		if options.Cleanup {
-			_ = f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Delete(ext.Name, &metav1.DeleteOptions{})
+			_ = f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Delete(context.TODO(), ext.Name, metav1.DeleteOptions{})
 		}
 	})
 
@@ -111,7 +112,7 @@ var _ = Describe("IngressCoreOperations", func() {
 	Describe("Delete", func() {
 		It("Should delete Ingress resource", func() {
 			By("Deleting Ingress resource")
-			err := f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Delete(ext.Name, &metav1.DeleteOptions{})
+			err := f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Delete(context.TODO(), ext.Name, metav1.DeleteOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() bool {
@@ -123,11 +124,11 @@ var _ = Describe("IngressCoreOperations", func() {
 	Describe("Update", func() {
 		It("Should update Loadbalancer", func() {
 			By("Updating Ingress resource")
-			uing, err := f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Get(ext.Name, metav1.GetOptions{})
+			uing, err := f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Get(context.TODO(), ext.Name, metav1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			uing.Spec.Rules[0].HTTP.Paths[0].Path = "/newTestPath"
-			_, err = f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Update(uing)
+			_, err = f.KubeClient.ExtensionsV1beta1().Ingresses(ext.Namespace).Update(context.TODO(), uing, metav1.UpdateOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Waiting some time for update to be applied")

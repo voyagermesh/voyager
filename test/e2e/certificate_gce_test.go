@@ -17,6 +17,7 @@ limitations under the License.
 package e2e_test
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -57,7 +58,7 @@ var _ = Describe("CertificateWithDNSProvider", func() {
 			},
 		}
 
-		_, err := f.KubeClient.CoreV1().Secrets(userSecret.Namespace).Create(userSecret)
+		_, err := f.KubeClient.CoreV1().Secrets(userSecret.Namespace).Create(context.TODO(), userSecret, metav1.CreateOptions{})
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -78,7 +79,7 @@ var _ = Describe("CertificateWithDNSProvider", func() {
 			},
 		}
 
-		_, err := f.KubeClient.CoreV1().Secrets(credentialSecret.Namespace).Create(credentialSecret)
+		_, err := f.KubeClient.CoreV1().Secrets(credentialSecret.Namespace).Create(context.TODO(), credentialSecret, metav1.CreateOptions{})
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -107,15 +108,15 @@ var _ = Describe("CertificateWithDNSProvider", func() {
 
 	AfterEach(func() {
 		if options.Cleanup {
-			Expect(f.KubeClient.CoreV1().Secrets(userSecret.Namespace).Delete(userSecret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
-			Expect(f.KubeClient.CoreV1().Secrets(credentialSecret.Namespace).Delete(credentialSecret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+			Expect(f.KubeClient.CoreV1().Secrets(userSecret.Namespace).Delete(context.TODO(), userSecret.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
+			Expect(f.KubeClient.CoreV1().Secrets(credentialSecret.Namespace).Delete(context.TODO(), credentialSecret.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		}
 	})
 
 	Describe("Create", func() {
 		It("Should check secret", func() {
 			Eventually(func() bool {
-				secret, err := f.KubeClient.CoreV1().Secrets(cert.Namespace).Get(cert.SecretName(), metav1.GetOptions{})
+				secret, err := f.KubeClient.CoreV1().Secrets(cert.Namespace).Get(context.TODO(), cert.SecretName(), metav1.GetOptions{})
 				if err != nil {
 					return false
 				}

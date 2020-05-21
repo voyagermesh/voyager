@@ -286,7 +286,7 @@ func (c *hostPortController) FirewallSupported() bool {
 func (c *hostPortController) EnsureFirewall(svc *core.Service) error {
 	if c.CloudManager != nil {
 		if fw, ok := c.CloudManager.Firewall(); ok {
-			nodes, err := c.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{
+			nodes, err := c.KubeClient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{
 				LabelSelector: labels.SelectorFromSet(c.Ingress.Spec.NodeSelector).String(),
 			})
 			if err != nil {

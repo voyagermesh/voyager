@@ -17,6 +17,7 @@ limitations under the License.
 package e2e_test
 
 import (
+	"context"
 	"time"
 
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
@@ -63,7 +64,7 @@ var _ = Describe("IngressTCP", func() {
 	AfterEach(func() {
 		if options.Cleanup {
 			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
-			Expect(f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+			Expect(f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(context.TODO(), secret.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		}
 	})
 

@@ -17,6 +17,7 @@ limitations under the License.
 package certificate
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -73,7 +74,7 @@ func NewController(kubeClient kubernetes.Interface, extClient cs.Interface, cfg 
 		return nil, err
 	}
 
-	ctrl.UserSecret, err = ctrl.KubeClient.CoreV1().Secrets(ctrl.crd.Namespace).Get(ctrl.crd.Spec.ACMEUserSecretName, metav1.GetOptions{})
+	ctrl.UserSecret, err = ctrl.KubeClient.CoreV1().Secrets(ctrl.crd.Namespace).Get(context.TODO(), ctrl.crd.Spec.ACMEUserSecretName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +104,7 @@ func NewController(kubeClient kubernetes.Interface, extClient cs.Interface, cfg 
 			}
 		case "extensions/v1beta1":
 			ing, err := ctrl.KubeClient.ExtensionsV1beta1().Ingresses(ctrl.crd.Namespace).
-				Get(ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
+				Get(context.TODO(), ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 			if err != nil {
 				return nil, err
 			}
@@ -117,7 +118,7 @@ func NewController(kubeClient kubernetes.Interface, extClient cs.Interface, cfg 
 	} else if ctrl.crd.Spec.ChallengeProvider.DNS != nil {
 		ctrl.ChallengeProvider = ctrl.crd.Spec.ChallengeProvider.DNS.Provider
 		if ctrl.crd.Spec.ChallengeProvider.DNS.CredentialSecretName != "" {
-			dnsSecret, err := ctrl.KubeClient.CoreV1().Secrets(ctrl.crd.Namespace).Get(ctrl.crd.Spec.ChallengeProvider.DNS.CredentialSecretName, metav1.GetOptions{})
+			dnsSecret, err := ctrl.KubeClient.CoreV1().Secrets(ctrl.crd.Namespace).Get(context.TODO(), ctrl.crd.Spec.ChallengeProvider.DNS.CredentialSecretName, metav1.GetOptions{})
 			if err != nil {
 				return nil, err
 			}
@@ -367,7 +368,7 @@ func (c *Controller) updateIngress() error {
 		time.Sleep(time.Second * 5)
 	case "extensions/v1beta1":
 		i, err := c.KubeClient.ExtensionsV1beta1().Ingresses(c.crd.Namespace).
-			Get(c.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
+			Get(context.TODO(), c.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.WithStack(err)
 		}
@@ -400,7 +401,7 @@ func (c *Controller) updateIngress() error {
 		}
 		i.Spec.Rules = append([]extensions.IngressRule{rule}, i.Spec.Rules...)
 
-		_, err = c.KubeClient.ExtensionsV1beta1().Ingresses(c.crd.Namespace).Update(i)
+		_, err = c.KubeClient.ExtensionsV1beta1().Ingresses(c.crd.Namespace).Update(context.TODO(), i, metav1.UpdateOptions{})
 		if err != nil {
 			return errors.WithStack(err)
 		}

@@ -17,6 +17,7 @@ limitations under the License.
 package certificate
 
 import (
+	"context"
 	"crypto/x509"
 	"encoding/pem"
 	"io/ioutil"
@@ -91,7 +92,7 @@ func (s *CertStore) Get(crd *api.Certificate) (pemCrt, pemKey []byte, err error)
 		}
 	} else {
 		var secret *core.Secret
-		secret, err = s.KubeClient.CoreV1().Secrets(crd.Namespace).Get(crd.SecretName(), metav1.GetOptions{})
+		secret, err = s.KubeClient.CoreV1().Secrets(crd.Namespace).Get(context.TODO(), crd.SecretName(), metav1.GetOptions{})
 		if k8serror.IsNotFound(err) {
 			return nil, nil, nil
 		}

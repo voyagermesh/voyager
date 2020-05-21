@@ -17,6 +17,7 @@ limitations under the License.
 package e2e_test
 
 import (
+	"context"
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 	"voyagermesh.dev/voyager/test/framework"
 	"voyagermesh.dev/voyager/test/test-server/client"
@@ -61,7 +62,7 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 			},
 		}
 
-		_, err = f.KubeClient.CoreV1().Services(svcResolveDNSWithNS.Namespace).Create(svcResolveDNSWithNS)
+		_, err = f.KubeClient.CoreV1().Services(svcResolveDNSWithNS.Namespace).Create(context.TODO(), svcResolveDNSWithNS, metav1.CreateOptions{})
 		Expect(err).NotTo(HaveOccurred())
 
 		svcNotResolvesRedirect = &core.Service{
@@ -75,7 +76,7 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 			},
 		}
 
-		_, err = f.KubeClient.CoreV1().Services(svcNotResolvesRedirect.Namespace).Create(svcNotResolvesRedirect)
+		_, err = f.KubeClient.CoreV1().Services(svcNotResolvesRedirect.Namespace).Create(context.TODO(), svcNotResolvesRedirect, metav1.CreateOptions{})
 		Expect(err).NotTo(HaveOccurred())
 
 		svcResolveDNSWithoutNS = &core.Service{
@@ -89,7 +90,7 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 			},
 		}
 
-		_, err = f.KubeClient.CoreV1().Services(svcResolveDNSWithoutNS.Namespace).Create(svcResolveDNSWithoutNS)
+		_, err = f.KubeClient.CoreV1().Services(svcResolveDNSWithoutNS.Namespace).Create(context.TODO(), svcResolveDNSWithoutNS, metav1.CreateOptions{})
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -107,7 +108,7 @@ var _ = Describe("IngressWithDNSResolvers", func() {
 	AfterEach(func() {
 		if options.Cleanup {
 			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
-			Expect(f.KubeClient.CoreV1().Services(svcResolveDNSWithNS.Namespace).Delete(svcResolveDNSWithNS.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+			Expect(f.KubeClient.CoreV1().Services(svcResolveDNSWithNS.Namespace).Delete(context.TODO(), svcResolveDNSWithNS.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		}
 	})
 

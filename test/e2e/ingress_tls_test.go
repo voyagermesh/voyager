@@ -18,6 +18,7 @@ limitations under the License.
 package e2e_test
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -66,7 +67,7 @@ var _ = Describe("IngressTLS", func() {
 	AfterEach(func() {
 		if options.Cleanup {
 			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
-			Expect(f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+			Expect(f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(context.TODO(), secret.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		}
 	})
 
@@ -218,7 +219,7 @@ var _ = Describe("IngressTLS", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 		AfterEach(func() {
-			Expect(f.KubeClient.CoreV1().Secrets(alterSecret.Namespace).Delete(alterSecret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+			Expect(f.KubeClient.CoreV1().Secrets(alterSecret.Namespace).Delete(context.TODO(), alterSecret.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		})
 
 		BeforeEach(func() {

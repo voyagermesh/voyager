@@ -17,6 +17,8 @@ limitations under the License.
 package e2e_test
 
 import (
+	"context"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 	"voyagermesh.dev/voyager/test/framework"
 
@@ -55,7 +57,7 @@ var _ = Describe("Restore ingress offshoots", func() {
 
 	It("Should restore configmap", func() {
 		By("Deleting offshoot configmap")
-		err := f.KubeClient.CoreV1().ConfigMaps(ing.Namespace).Delete(ing.OffshootName(), nil)
+		err := f.KubeClient.CoreV1().ConfigMaps(ing.Namespace).Delete(context.TODO(), ing.OffshootName(), metav1.DeleteOptions{})
 		Expect(err).NotTo(HaveOccurred())
 
 		By("Checking configmap restored")
@@ -64,7 +66,7 @@ var _ = Describe("Restore ingress offshoots", func() {
 
 	It("Should restore service", func() {
 		By("Deleting offshoot service")
-		err := f.KubeClient.CoreV1().Services(ing.Namespace).Delete(ing.OffshootName(), nil)
+		err := f.KubeClient.CoreV1().Services(ing.Namespace).Delete(context.TODO(), ing.OffshootName(), metav1.DeleteOptions{})
 		Expect(err).NotTo(HaveOccurred())
 
 		By("Checking service restored")
@@ -73,7 +75,7 @@ var _ = Describe("Restore ingress offshoots", func() {
 
 	It("Should restore deployment", func() {
 		By("Deleting haproxy deployment")
-		err := f.KubeClient.AppsV1().Deployments(ing.Namespace).Delete(ing.OffshootName(), nil)
+		err := f.KubeClient.AppsV1().Deployments(ing.Namespace).Delete(context.TODO(), ing.OffshootName(), metav1.DeleteOptions{})
 		Expect(err).NotTo(HaveOccurred())
 
 		By("Checking deployment restored")
