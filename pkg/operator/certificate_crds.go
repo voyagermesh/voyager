@@ -17,6 +17,7 @@ limitations under the License.
 package operator
 
 import (
+	"context"
 	"reflect"
 	"time"
 
@@ -157,12 +158,12 @@ func (op *Operator) CheckCertificates() {
 					Namespace: cert.Namespace,
 					Name:      cert.Spec.ACMEUserSecretName,
 				}
-				_, _, err := core_util.CreateOrPatchSecret(op.KubeClient, s, func(in *core.Secret) *core.Secret {
+				_, _, err := core_util.CreateOrPatchSecret(context.TODO(), op.KubeClient, s, func(in *core.Secret) *core.Secret {
 					delete(in.Data, api.ACMEUserPrivatekey)
 					delete(in.Data, api.ACMERegistrationData)
 
 					return in
-				})
+				}, metav1.PatchOptions{})
 				if err != nil {
 					op.recorder.Event(
 						cert.ObjectReference(),

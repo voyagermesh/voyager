@@ -98,7 +98,7 @@ func NewController(kubeClient kubernetes.Interface, extClient cs.Interface, cfg 
 		case api.SchemeGroupVersion.String():
 			var err error
 			_, err = ctrl.VoyagerClient.VoyagerV1beta1().Ingresses(ctrl.crd.Namespace).
-				Get(ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
+				Get(context.TODO(), ctrl.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 			if err != nil {
 				return nil, err
 			}
@@ -235,7 +235,7 @@ func (c *Controller) getACMEClient() error {
 			return errors.Errorf("failed to register user %s. Reason: %s", c.acmeUser.Email, err)
 		}
 		c.acmeUser.Registration = registration
-		c.UserSecret, _, err = v1u.PatchSecret(c.KubeClient, c.UserSecret, func(in *core.Secret) *core.Secret {
+		c.UserSecret, _, err = v1u.PatchSecret(context.TODO(), c.KubeClient, c.UserSecret, func(in *core.Secret) *core.Secret {
 			if in.Data == nil {
 				in.Data = make(map[string][]byte)
 			}
@@ -243,7 +243,7 @@ func (c *Controller) getACMEClient() error {
 			regBytes, _ := json.Marshal(c.acmeUser.Registration)
 			in.Data[api.ACMERegistrationData] = regBytes
 			return in
-		})
+		}, metav1.PatchOptions{})
 		return err
 	}
 	return nil
@@ -294,7 +294,7 @@ func (c *Controller) renew() error {
 }
 
 func (c *Controller) processError(err error) error {
-	_, err = util.UpdateCertificateStatus(c.VoyagerClient.VoyagerV1beta1(), c.crd.ObjectMeta, func(in *api.CertificateStatus) *api.CertificateStatus {
+	_, err = util.UpdateCertificateStatus(context.TODO(), c.VoyagerClient.VoyagerV1beta1(), c.crd.ObjectMeta, func(in *api.CertificateStatus) *api.CertificateStatus {
 		// Update certificate data to add Details Information
 		t := metav1.Now()
 		found := false
@@ -317,7 +317,7 @@ func (c *Controller) processError(err error) error {
 			})
 		}
 		return in
-	})
+	}, metav1.UpdateOptions{})
 	return err
 }
 
@@ -326,7 +326,7 @@ func (c *Controller) updateIngress() error {
 	case api.SchemeGroupVersion.String():
 		i, err := c.VoyagerClient.VoyagerV1beta1().
 			Ingresses(c.crd.Namespace).
-			Get(c.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
+			Get(context.TODO(), c.crd.Spec.ChallengeProvider.HTTP.Ingress.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.WithStack(err)
 		}
@@ -361,7 +361,7 @@ func (c *Controller) updateIngress() error {
 		}
 		i.Spec.Rules = append([]api.IngressRule{rule}, i.Spec.Rules...)
 
-		_, err = c.VoyagerClient.VoyagerV1beta1().Ingresses(c.crd.Namespace).Update(i)
+		_, err = c.VoyagerClient.VoyagerV1beta1().Ingresses(c.crd.Namespace).Update(context.TODO(), i, metav1.UpdateOptions{})
 		if err != nil {
 			return errors.WithStack(err)
 		}

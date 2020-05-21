@@ -1,14 +1,13 @@
 package dnsimple
 
 import (
-	"context"
 	"fmt"
 )
 
 // CertificatesService handles communication with the certificate related
 // methods of the DNSimple API.
 //
-// See https://developer.dnsimple.com/v2/certificates/
+// See https://developer.dnsimple.com/v2/certificates
 type CertificatesService struct {
 	client *Client
 }
@@ -85,32 +84,32 @@ func letsencryptCertificatePath(accountID, domainIdentifier string, certificateI
 	return
 }
 
-// CertificateResponse represents a response from an API method that returns a Certificate struct.
-type CertificateResponse struct {
+// certificateResponse represents a response from an API method that returns a Certificate struct.
+type certificateResponse struct {
 	Response
 	Data *Certificate `json:"data"`
 }
 
-// CertificateBundleResponse represents a response from an API method that returns a CertificatBundle struct.
-type CertificateBundleResponse struct {
+// certificateBundleResponse represents a response from an API method that returns a CertificatBundle struct.
+type certificateBundleResponse struct {
 	Response
 	Data *CertificateBundle `json:"data"`
 }
 
-// CertificatesResponse represents a response from an API method that returns a collection of Certificate struct.
-type CertificatesResponse struct {
+// certificatesResponse represents a response from an API method that returns a collection of Certificate struct.
+type certificatesResponse struct {
 	Response
 	Data []Certificate `json:"data"`
 }
 
-// CertificatePurchaseResponse represents a response from an API method that returns a CertificatePurchase struct.
-type CertificatePurchaseResponse struct {
+// certificatePurchaseResponse represents a response from an API method that returns a CertificatePurchase struct.
+type certificatePurchaseResponse struct {
 	Response
 	Data *CertificatePurchase `json:"data"`
 }
 
-// CertificateRenewalResponse represents a response from an API method that returns a CertificateRenewal struct.
-type CertificateRenewalResponse struct {
+// certificateRenewalResponse represents a response from an API method that returns a CertificateRenewal struct.
+type certificateRenewalResponse struct {
 	Response
 	Data *CertificateRenewal `json:"data"`
 }
@@ -118,37 +117,37 @@ type CertificateRenewalResponse struct {
 // ListCertificates lists the certificates for a domain in the account.
 //
 // See https://developer.dnsimple.com/v2/certificates#listCertificates
-func (s *CertificatesService) ListCertificates(ctx context.Context, accountID, domainIdentifier string, options *ListOptions) (*CertificatesResponse, error) {
+func (s *CertificatesService) ListCertificates(accountID, domainIdentifier string, options *ListOptions) (*certificatesResponse, error) {
 	path := versioned(certificatePath(accountID, domainIdentifier, 0))
-	certificatesResponse := &CertificatesResponse{}
+	certificatesResponse := &certificatesResponse{}
 
 	path, err := addURLQueryOptions(path, options)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := s.client.get(ctx, path, certificatesResponse)
+	resp, err := s.client.get(path, certificatesResponse)
 	if err != nil {
 		return certificatesResponse, err
 	}
 
-	certificatesResponse.HTTPResponse = resp
+	certificatesResponse.HttpResponse = resp
 	return certificatesResponse, nil
 }
 
 // GetCertificate gets the details of a certificate.
 //
 // See https://developer.dnsimple.com/v2/certificates#getCertificate
-func (s *CertificatesService) GetCertificate(ctx context.Context, accountID, domainIdentifier string, certificateID int64) (*CertificateResponse, error) {
+func (s *CertificatesService) GetCertificate(accountID, domainIdentifier string, certificateID int64) (*certificateResponse, error) {
 	path := versioned(certificatePath(accountID, domainIdentifier, certificateID))
-	certificateResponse := &CertificateResponse{}
+	certificateResponse := &certificateResponse{}
 
-	resp, err := s.client.get(ctx, path, certificateResponse)
+	resp, err := s.client.get(path, certificateResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	certificateResponse.HTTPResponse = resp
+	certificateResponse.HttpResponse = resp
 	return certificateResponse, nil
 }
 
@@ -156,95 +155,95 @@ func (s *CertificatesService) GetCertificate(ctx context.Context, accountID, dom
 // along with the root certificate and intermediate chain.
 //
 // See https://developer.dnsimple.com/v2/certificates#downloadCertificate
-func (s *CertificatesService) DownloadCertificate(ctx context.Context, accountID, domainIdentifier string, certificateID int64) (*CertificateBundleResponse, error) {
+func (s *CertificatesService) DownloadCertificate(accountID, domainIdentifier string, certificateID int64) (*certificateBundleResponse, error) {
 	path := versioned(certificatePath(accountID, domainIdentifier, certificateID) + "/download")
-	certificateBundleResponse := &CertificateBundleResponse{}
+	certificateBundleResponse := &certificateBundleResponse{}
 
-	resp, err := s.client.get(ctx, path, certificateBundleResponse)
+	resp, err := s.client.get(path, certificateBundleResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	certificateBundleResponse.HTTPResponse = resp
+	certificateBundleResponse.HttpResponse = resp
 	return certificateBundleResponse, nil
 }
 
 // GetCertificatePrivateKey gets the PEM-encoded certificate private key.
 //
 // See https://developer.dnsimple.com/v2/certificates#getCertificatePrivateKey
-func (s *CertificatesService) GetCertificatePrivateKey(ctx context.Context, accountID, domainIdentifier string, certificateID int64) (*CertificateBundleResponse, error) {
+func (s *CertificatesService) GetCertificatePrivateKey(accountID, domainIdentifier string, certificateID int64) (*certificateBundleResponse, error) {
 	path := versioned(certificatePath(accountID, domainIdentifier, certificateID) + "/private_key")
-	certificateBundleResponse := &CertificateBundleResponse{}
+	certificateBundleResponse := &certificateBundleResponse{}
 
-	resp, err := s.client.get(ctx, path, certificateBundleResponse)
+	resp, err := s.client.get(path, certificateBundleResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	certificateBundleResponse.HTTPResponse = resp
+	certificateBundleResponse.HttpResponse = resp
 	return certificateBundleResponse, nil
 }
 
 // PurchaseLetsencryptCertificate purchases a Let's Encrypt certificate.
 //
 // See https://developer.dnsimple.com/v2/certificates/#purchaseLetsencryptCertificate
-func (s *CertificatesService) PurchaseLetsencryptCertificate(ctx context.Context, accountID, domainIdentifier string, certificateAttributes LetsencryptCertificateAttributes) (*CertificatePurchaseResponse, error) {
+func (s *CertificatesService) PurchaseLetsencryptCertificate(accountID, domainIdentifier string, certificateAttributes LetsencryptCertificateAttributes) (*certificatePurchaseResponse, error) {
 	path := versioned(letsencryptCertificatePath(accountID, domainIdentifier, 0))
-	certificatePurchaseResponse := &CertificatePurchaseResponse{}
+	certificatePurchaseResponse := &certificatePurchaseResponse{}
 
-	resp, err := s.client.post(ctx, path, certificateAttributes, certificatePurchaseResponse)
+	resp, err := s.client.post(path, certificateAttributes, certificatePurchaseResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	certificatePurchaseResponse.HTTPResponse = resp
+	certificatePurchaseResponse.HttpResponse = resp
 	return certificatePurchaseResponse, nil
 }
 
 // IssueLetsencryptCertificate issues a pending Let's Encrypt certificate purchase order.
 //
 // See https://developer.dnsimple.com/v2/certificates/#issueLetsencryptCertificate
-func (s *CertificatesService) IssueLetsencryptCertificate(ctx context.Context, accountID, domainIdentifier string, certificateID int64) (*CertificateResponse, error) {
+func (s *CertificatesService) IssueLetsencryptCertificate(accountID, domainIdentifier string, certificateID int64) (*certificateResponse, error) {
 	path := versioned(letsencryptCertificatePath(accountID, domainIdentifier, certificateID) + "/issue")
-	certificateResponse := &CertificateResponse{}
+	certificateResponse := &certificateResponse{}
 
-	resp, err := s.client.post(ctx, path, nil, certificateResponse)
+	resp, err := s.client.post(path, nil, certificateResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	certificateResponse.HTTPResponse = resp
+	certificateResponse.HttpResponse = resp
 	return certificateResponse, nil
 }
 
 // PurchaseLetsencryptCertificateRenewal purchases a Let's Encrypt certificate renewal.
 //
 // See https://developer.dnsimple.com/v2/certificates/#purchaseRenewalLetsencryptCertificate
-func (s *CertificatesService) PurchaseLetsencryptCertificateRenewal(ctx context.Context, accountID, domainIdentifier string, certificateID int64, certificateAttributes LetsencryptCertificateAttributes) (*CertificateRenewalResponse, error) {
+func (s *CertificatesService) PurchaseLetsencryptCertificateRenewal(accountID, domainIdentifier string, certificateID int64, certificateAttributes LetsencryptCertificateAttributes) (*certificateRenewalResponse, error) {
 	path := versioned(letsencryptCertificatePath(accountID, domainIdentifier, certificateID) + "/renewals")
-	certificateRenewalResponse := &CertificateRenewalResponse{}
+	certificateRenewalResponse := &certificateRenewalResponse{}
 
-	resp, err := s.client.post(ctx, path, certificateAttributes, certificateRenewalResponse)
+	resp, err := s.client.post(path, certificateAttributes, certificateRenewalResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	certificateRenewalResponse.HTTPResponse = resp
+	certificateRenewalResponse.HttpResponse = resp
 	return certificateRenewalResponse, nil
 }
 
 // IssueLetsencryptCertificateRenewal issues a pending Let's Encrypt certificate renewal order.
 //
 // See https://developer.dnsimple.com/v2/certificates/#issueRenewalLetsencryptCertificate
-func (s *CertificatesService) IssueLetsencryptCertificateRenewal(ctx context.Context, accountID, domainIdentifier string, certificateID, certificateRenewalID int64) (*CertificateResponse, error) {
+func (s *CertificatesService) IssueLetsencryptCertificateRenewal(accountID, domainIdentifier string, certificateID, certificateRenewalID int64) (*certificateResponse, error) {
 	path := versioned(letsencryptCertificatePath(accountID, domainIdentifier, certificateID) + fmt.Sprintf("/renewals/%d/issue", certificateRenewalID))
-	certificateResponse := &CertificateResponse{}
+	certificateResponse := &certificateResponse{}
 
-	resp, err := s.client.post(ctx, path, nil, certificateResponse)
+	resp, err := s.client.post(path, nil, certificateResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	certificateResponse.HTTPResponse = resp
+	certificateResponse.HttpResponse = resp
 	return certificateResponse, nil
 }

@@ -1292,7 +1292,7 @@ func (ni *ingressInvocation) GetIngressWithLoadBalancerStatus(name, namespace st
 		err error
 	)
 	err = wait.PollImmediate(2*time.Second, 20*time.Minute, func() (bool, error) {
-		ing, err = ni.VoyagerClient.VoyagerV1beta1().Ingresses(namespace).Get(name, metav1.GetOptions{})
+		ing, err = ni.VoyagerClient.VoyagerV1beta1().Ingresses(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 		if err != nil || len(ing.Status.LoadBalancer.Ingress) == 0 { // retry
 			return false, nil
 		} else {

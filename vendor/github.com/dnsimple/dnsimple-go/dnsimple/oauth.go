@@ -49,7 +49,7 @@ type ExchangeAuthorizationRequest struct {
 // an authorization code for an access token.
 type ExchangeAuthorizationError struct {
 	// HTTP response
-	HTTPResponse *http.Response
+	HttpResponse *http.Response
 
 	ErrorCode        string `json:"error"`
 	ErrorDescription string `json:"error_description"`
@@ -58,7 +58,7 @@ type ExchangeAuthorizationError struct {
 // Error implements the error interface.
 func (r *ExchangeAuthorizationError) Error() string {
 	return fmt.Sprintf("%v %v: %v %v",
-		r.HTTPResponse.Request.Method, r.HTTPResponse.Request.URL,
+		r.HttpResponse.Request.Method, r.HttpResponse.Request.URL,
 		r.ErrorCode, r.ErrorDescription)
 }
 
@@ -67,12 +67,12 @@ func (r *ExchangeAuthorizationError) Error() string {
 func (s *OauthService) ExchangeAuthorizationForToken(authorization *ExchangeAuthorizationRequest) (*AccessToken, error) {
 	path := versioned("/oauth/access_token")
 
-	req, err := s.client.newRequest("POST", path, authorization)
+	req, err := s.client.NewRequest("POST", path, authorization)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := s.client.httpClient.Do(req)
+	resp, err := s.client.HttpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -80,11 +80,8 @@ func (s *OauthService) ExchangeAuthorizationForToken(authorization *ExchangeAuth
 
 	if resp.StatusCode != 200 {
 		errorResponse := &ExchangeAuthorizationError{}
-		err = json.NewDecoder(resp.Body).Decode(errorResponse)
-		if err != nil {
-			return nil, err
-		}
-		errorResponse.HTTPResponse = resp
+		errorResponse.HttpResponse = resp
+		json.NewDecoder(resp.Body).Decode(errorResponse)
 		return nil, errorResponse
 	}
 

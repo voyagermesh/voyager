@@ -276,7 +276,7 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 		Name:      c.Ingress.OffshootName(),
 		Namespace: c.Ingress.Namespace,
 	}
-	return core_util.CreateOrPatchService(c.KubeClient, meta, func(in *core.Service) *core.Service {
+	return core_util.CreateOrPatchService(context.TODO(), c.KubeClient, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(in, metav1.NewControllerRef(c.Ingress, api.SchemeGroupVersion.WithKind(api.ResourceKindIngress)))
 		in.Spec.Type = core.ServiceTypeLoadBalancer
 		in.Spec.Selector = c.Ingress.OffshootSelector()
@@ -372,7 +372,7 @@ func (c *loadBalancerController) ensureService() (*core.Service, kutil.VerbType,
 		}
 
 		return in
-	})
+	}, metav1.PatchOptions{})
 }
 
 func (c *loadBalancerController) ensurePods() (kutil.VerbType, error) {
@@ -380,7 +380,7 @@ func (c *loadBalancerController) ensurePods() (kutil.VerbType, error) {
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	_, vt, err := c.WorkloadClient.Workloads(c.Ingress.Namespace).CreateOrPatch(obj, func(in *wpi.Workload) *wpi.Workload {
+	_, vt, err := c.WorkloadClient.Workloads(c.Ingress.Namespace).CreateOrPatch(context.TODO(), obj, func(in *wpi.Workload) *wpi.Workload {
 		// deployment annotations
 		if in.Annotations == nil {
 			in.Annotations = make(map[string]string)
@@ -540,7 +540,7 @@ func (c *loadBalancerController) ensurePods() (kutil.VerbType, error) {
 		}
 
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return vt, err
 }
 
@@ -569,14 +569,14 @@ func (c *loadBalancerController) updateStatus() error {
 				return errors.WithStack(err)
 			}
 		} else {
-			ing, err := c.VoyagerClient.VoyagerV1beta1().Ingresses(c.Ingress.Namespace).Get(c.Ingress.Name, metav1.GetOptions{})
+			ing, err := c.VoyagerClient.VoyagerV1beta1().Ingresses(c.Ingress.Namespace).Get(context.TODO(), c.Ingress.Name, metav1.GetOptions{})
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			_, err = util.UpdateIngressStatus(c.VoyagerClient.VoyagerV1beta1(), ing.ObjectMeta, func(in *api.IngressStatus) *api.IngressStatus {
+			_, err = util.UpdateIngressStatus(context.TODO(), c.VoyagerClient.VoyagerV1beta1(), ing.ObjectMeta, func(in *api.IngressStatus) *api.IngressStatus {
 				in.LoadBalancer.Ingress = statuses
 				return in
-			})
+			}, metav1.UpdateOptions{})
 			if err != nil {
 				return errors.WithStack(err)
 			}

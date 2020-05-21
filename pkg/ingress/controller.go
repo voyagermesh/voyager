@@ -164,18 +164,18 @@ func (c *controller) IsExists() bool {
 
 func (c *controller) deletePods() error {
 	policy := metav1.DeletePropagationForeground
-	options := &metav1.DeleteOptions{
+	options := metav1.DeleteOptions{
 		PropagationPolicy: &policy,
 	}
 	obj, err := wcs.NewObject(c.Ingress.WorkloadKind(), c.Ingress.OffshootName(), c.Ingress.Namespace)
 	if err != nil {
 		return err
 	}
-	err = c.WorkloadClient.Workloads(c.Ingress.Namespace).Delete(obj, options)
+	err = c.WorkloadClient.Workloads(c.Ingress.Namespace).Delete(context.TODO(), obj, options)
 	if err != nil {
 		return err
 	}
-	return core_util.RestartPods(c.KubeClient, c.Ingress.Namespace, &metav1.LabelSelector{MatchLabels: c.Ingress.OffshootSelector()})
+	return core_util.RestartPods(context.TODO(), c.KubeClient, c.Ingress.Namespace, &metav1.LabelSelector{MatchLabels: c.Ingress.OffshootSelector()})
 }
 
 func (c *controller) isHPAControlled() bool {

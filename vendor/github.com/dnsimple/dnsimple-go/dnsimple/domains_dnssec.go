@@ -1,7 +1,6 @@
 package dnsimple
 
 import (
-	"context"
 	"fmt"
 )
 
@@ -15,56 +14,57 @@ func dnssecPath(accountID string, domainIdentifier string) (path string) {
 	return
 }
 
-// DnssecResponse represents a response from an API method that returns a Dnssec struct.
-type DnssecResponse struct {
+// dnssecResponse represents a response from an API method that returns a Dnssec struct.
+type dnssecResponse struct {
 	Response
 	Data *Dnssec `json:"data"`
 }
 
 // EnableDnssec enables DNSSEC on the domain.
 //
-// See https://developer.dnsimple.com/v2/domains/dnssec/#enableDomainDnssec
-func (s *DomainsService) EnableDnssec(ctx context.Context, accountID string, domainIdentifier string) (*DnssecResponse, error) {
-	path := versioned(dnssecPath(accountID, domainIdentifier))
-	dnssecResponse := &DnssecResponse{}
+// See https://developer.dnsimple.com/v2/domains/dnssec/#enable
 
-	resp, err := s.client.post(ctx, path, dnssecResponse, nil)
+func (s *DomainsService) EnableDnssec(accountID string, domainIdentifier string) (*dnssecResponse, error) {
+	path := versioned(dnssecPath(accountID, domainIdentifier))
+	dnssecResponse := &dnssecResponse{}
+
+	resp, err := s.client.post(path, dnssecResponse, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	dnssecResponse.HTTPResponse = resp
+	dnssecResponse.HttpResponse = resp
 	return dnssecResponse, nil
 }
 
 // DisableDnssec disables DNSSEC on the domain.
 //
-// See https://developer.dnsimple.com/v2/domains/dnssec/#disableDomainDnssec
-func (s *DomainsService) DisableDnssec(ctx context.Context, accountID string, domainIdentifier string) (*DnssecResponse, error) {
+// See https://developer.dnsimple.com/v2/domains/dnssec/#disable
+func (s *DomainsService) DisableDnssec(accountID string, domainIdentifier string) (*dnssecResponse, error) {
 	path := versioned(dnssecPath(accountID, domainIdentifier))
-	dnssecResponse := &DnssecResponse{}
+	dnssecResponse := &dnssecResponse{}
 
-	resp, err := s.client.delete(ctx, path, dnssecResponse, nil)
+	resp, err := s.client.delete(path, dnssecResponse, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	dnssecResponse.HTTPResponse = resp
+	dnssecResponse.HttpResponse = resp
 	return dnssecResponse, nil
 }
 
 // GetDnssec retrieves the current status of DNSSEC on the domain.
 //
-// See https://developer.dnsimple.com/v2/domains/dnssec/#getDomainDnssec
-func (s *DomainsService) GetDnssec(ctx context.Context, accountID string, domainIdentifier string) (*DnssecResponse, error) {
+// See https://developer.dnsimple.com/v2/domains/dnssec/#get
+func (s *DomainsService) GetDnssec(accountID string, domainIdentifier string) (*dnssecResponse, error) {
 	path := versioned(dnssecPath(accountID, domainIdentifier))
-	dnssecResponse := &DnssecResponse{}
+	dnssecResponse := &dnssecResponse{}
 
-	resp, err := s.client.get(ctx, path, dnssecResponse)
+	resp, err := s.client.get(path, dnssecResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	dnssecResponse.HTTPResponse = resp
+	dnssecResponse.HttpResponse = resp
 	return dnssecResponse, nil
 }

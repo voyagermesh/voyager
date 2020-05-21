@@ -17,13 +17,15 @@ limitations under the License.
 package framework
 
 import (
+	"context"
+
 	api_v1beta1 "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func (ci *certificateInvocation) Create(cert *api_v1beta1.Certificate) error {
-	_, err := ci.VoyagerClient.VoyagerV1beta1().Certificates(ci.Namespace()).Create(cert)
+	_, err := ci.VoyagerClient.VoyagerV1beta1().Certificates(ci.Namespace()).Create(context.TODO(), cert, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
@@ -31,16 +33,16 @@ func (ci *certificateInvocation) Create(cert *api_v1beta1.Certificate) error {
 }
 
 func (ci *certificateInvocation) Get(cert *api_v1beta1.Certificate) (*api_v1beta1.Certificate, error) {
-	return ci.VoyagerClient.VoyagerV1beta1().Certificates(ci.Namespace()).Get(cert.Name, metav1.GetOptions{})
+	return ci.VoyagerClient.VoyagerV1beta1().Certificates(ci.Namespace()).Get(context.TODO(), cert.Name, metav1.GetOptions{})
 }
 
 func (ci *certificateInvocation) Update(cert *api_v1beta1.Certificate) error {
-	_, err := ci.VoyagerClient.VoyagerV1beta1().Certificates(ci.Namespace()).Update(cert)
+	_, err := ci.VoyagerClient.VoyagerV1beta1().Certificates(ci.Namespace()).Update(context.TODO(), cert, metav1.UpdateOptions{})
 	return err
 }
 
 func (ci *certificateInvocation) Delete(cert *api_v1beta1.Certificate) error {
-	return ci.VoyagerClient.VoyagerV1beta1().Certificates(ci.Namespace()).Delete(cert.Name, &metav1.DeleteOptions{})
+	return ci.VoyagerClient.VoyagerV1beta1().Certificates(ci.Namespace()).Delete(context.TODO(), cert.Name, metav1.DeleteOptions{})
 }
 
 func (ci *certificateInvocation) GetSkeleton() *api_v1beta1.Certificate {

@@ -29,6 +29,7 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/meta"
@@ -103,10 +104,10 @@ func (op *Operator) reconcileEngress(key string) error {
 		if core_util.HasFinalizer(engress.ObjectMeta, voyager.GroupName) {
 			glog.Infof("Delete for engress %s\n", key)
 			ctrl.Delete()
-			_, _, err = util.PatchIngress(op.VoyagerClient.VoyagerV1beta1(), engress, func(obj *api.Ingress) *api.Ingress {
+			_, _, err = util.PatchIngress(context.TODO(), op.VoyagerClient.VoyagerV1beta1(), engress, func(obj *api.Ingress) *api.Ingress {
 				obj.ObjectMeta = core_util.RemoveFinalizer(obj.ObjectMeta, voyager.GroupName)
 				return obj
-			})
+			}, metav1.PatchOptions{})
 			if err != nil {
 				return err
 			}
@@ -114,19 +115,19 @@ func (op *Operator) reconcileEngress(key string) error {
 	} else {
 		glog.Infof("Sync/Add/Update for engress %s\n", key)
 		if !core_util.HasFinalizer(engress.ObjectMeta, voyager.GroupName) && ctrl.FirewallSupported() {
-			_, _, err = util.PatchIngress(op.VoyagerClient.VoyagerV1beta1(), engress, func(obj *api.Ingress) *api.Ingress {
+			_, _, err = util.PatchIngress(context.TODO(), op.VoyagerClient.VoyagerV1beta1(), engress, func(obj *api.Ingress) *api.Ingress {
 				obj.ObjectMeta = core_util.AddFinalizer(obj.ObjectMeta, voyager.GroupName)
 				return obj
-			})
+			}, metav1.PatchOptions{})
 			if err != nil {
 				return err
 			}
 		}
 		if core_util.HasFinalizer(engress.ObjectMeta, voyager.GroupName) && !ctrl.FirewallSupported() {
-			_, _, err = util.PatchIngress(op.VoyagerClient.VoyagerV1beta1(), engress, func(obj *api.Ingress) *api.Ingress {
+			_, _, err = util.PatchIngress(context.TODO(), op.VoyagerClient.VoyagerV1beta1(), engress, func(obj *api.Ingress) *api.Ingress {
 				obj.ObjectMeta = core_util.RemoveFinalizer(obj.ObjectMeta, voyager.GroupName)
 				return obj
-			})
+			}, metav1.PatchOptions{})
 			if err != nil {
 				return err
 			}

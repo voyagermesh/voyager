@@ -1,7 +1,6 @@
 package dnsimple
 
 import (
-	"context"
 	"fmt"
 )
 
@@ -24,14 +23,14 @@ func domainPushPath(accountID string, pushID int64) (path string) {
 	return
 }
 
-// DomainPushResponse represents a response from an API method that returns a DomainPush struct.
-type DomainPushResponse struct {
+// domainPushResponse represents a response from an API method that returns a DomainPush struct.
+type domainPushResponse struct {
 	Response
 	Data *DomainPush `json:"data"`
 }
 
-// DomainPushesResponse represents a response from an API method that returns a collection of DomainPush struct.
-type DomainPushesResponse struct {
+// domainPushesResponse represents a response from an API method that returns a collection of DomainPush struct.
+type domainPushesResponse struct {
 	Response
 	Data []DomainPush `json:"data"`
 }
@@ -44,69 +43,69 @@ type DomainPushAttributes struct {
 
 // InitiatePush initiate a new domain push.
 //
-// See https://developer.dnsimple.com/v2/domains/pushes/#initiateDomainPush
-func (s *DomainsService) InitiatePush(ctx context.Context, accountID, domainID string, pushAttributes DomainPushAttributes) (*DomainPushResponse, error) {
+// See https://developer.dnsimple.com/v2/domains/pushes/#initiate
+func (s *DomainsService) InitiatePush(accountID, domainID string, pushAttributes DomainPushAttributes) (*domainPushResponse, error) {
 	path := versioned(fmt.Sprintf("/%v/pushes", domainPath(accountID, domainID)))
-	pushResponse := &DomainPushResponse{}
+	pushResponse := &domainPushResponse{}
 
-	resp, err := s.client.post(ctx, path, pushAttributes, pushResponse)
+	resp, err := s.client.post(path, pushAttributes, pushResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	pushResponse.HTTPResponse = resp
+	pushResponse.HttpResponse = resp
 	return pushResponse, nil
 }
 
 // ListPushes lists the pushes for an account.
 //
-// See https://developer.dnsimple.com/v2/domains/pushes/#listPushes
-func (s *DomainsService) ListPushes(ctx context.Context, accountID string, options *ListOptions) (*DomainPushesResponse, error) {
+// See https://developer.dnsimple.com/v2/domains/pushes/#list
+func (s *DomainsService) ListPushes(accountID string, options *ListOptions) (*domainPushesResponse, error) {
 	path := versioned(domainPushPath(accountID, 0))
-	pushesResponse := &DomainPushesResponse{}
+	pushesResponse := &domainPushesResponse{}
 
 	path, err := addURLQueryOptions(path, options)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := s.client.get(ctx, path, pushesResponse)
+	resp, err := s.client.get(path, pushesResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	pushesResponse.HTTPResponse = resp
+	pushesResponse.HttpResponse = resp
 	return pushesResponse, nil
 }
 
 // AcceptPush accept a push for a domain.
 //
-// See https://developer.dnsimple.com/v2/domains/pushes/#acceptPush
-func (s *DomainsService) AcceptPush(ctx context.Context, accountID string, pushID int64, pushAttributes DomainPushAttributes) (*DomainPushResponse, error) {
+// See https://developer.dnsimple.com/v2/domains/pushes/#accept
+func (s *DomainsService) AcceptPush(accountID string, pushID int64, pushAttributes DomainPushAttributes) (*domainPushResponse, error) {
 	path := versioned(domainPushPath(accountID, pushID))
-	pushResponse := &DomainPushResponse{}
+	pushResponse := &domainPushResponse{}
 
-	resp, err := s.client.post(ctx, path, pushAttributes, nil)
+	resp, err := s.client.post(path, pushAttributes, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	pushResponse.HTTPResponse = resp
+	pushResponse.HttpResponse = resp
 	return pushResponse, nil
 }
 
 // RejectPush reject a push for a domain.
 //
-// See https://developer.dnsimple.com/v2/domains/pushes/#rejectPush
-func (s *DomainsService) RejectPush(ctx context.Context, accountID string, pushID int64) (*DomainPushResponse, error) {
+// See https://developer.dnsimple.com/v2/domains/pushes/#reject
+func (s *DomainsService) RejectPush(accountID string, pushID int64) (*domainPushResponse, error) {
 	path := versioned(domainPushPath(accountID, pushID))
-	pushResponse := &DomainPushResponse{}
+	pushResponse := &domainPushResponse{}
 
-	resp, err := s.client.delete(ctx, path, nil, nil)
+	resp, err := s.client.delete(path, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	pushResponse.HTTPResponse = resp
+	pushResponse.HttpResponse = resp
 	return pushResponse, nil
 }

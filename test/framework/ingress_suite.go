@@ -63,10 +63,10 @@ func (ni *ingressInvocation) Teardown() {
 		if err == nil {
 			Expect(ni.KubeClient.AppsV1().Deployments(ni.Namespace()).Delete(context.TODO(), testServerResourceName, metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		}
-		list, err := ni.VoyagerClient.VoyagerV1beta1().Ingresses(metav1.NamespaceAll).List(metav1.ListOptions{})
+		list, err := ni.VoyagerClient.VoyagerV1beta1().Ingresses(metav1.NamespaceAll).List(context.TODO(), metav1.ListOptions{})
 		if err == nil {
 			for _, ing := range list.Items {
-				Expect(ni.VoyagerClient.VoyagerV1beta1().Ingresses(ing.Namespace).Delete(ing.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+				Expect(ni.VoyagerClient.VoyagerV1beta1().Ingresses(ing.Namespace).Delete(context.TODO(), ing.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
 			}
 		}
 	}
@@ -85,7 +85,7 @@ func (ni *ingressInvocation) TestServerHTTPSName() string {
 }
 
 func (ni *ingressInvocation) Create(ing *api.Ingress) error {
-	_, err := ni.VoyagerClient.VoyagerV1beta1().Ingresses(ni.Namespace()).Create(ing)
+	_, err := ni.VoyagerClient.VoyagerV1beta1().Ingresses(ni.Namespace()).Create(context.TODO(), ing, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
@@ -112,16 +112,16 @@ func (ni *ingressInvocation) printInfoForDebug(ing *api.Ingress) {
 }
 
 func (ni *ingressInvocation) Get(ing *api.Ingress) (*api.Ingress, error) {
-	return ni.VoyagerClient.VoyagerV1beta1().Ingresses(ni.Namespace()).Get(ing.Name, metav1.GetOptions{})
+	return ni.VoyagerClient.VoyagerV1beta1().Ingresses(ni.Namespace()).Get(context.TODO(), ing.Name, metav1.GetOptions{})
 }
 
 func (ni *ingressInvocation) Update(ing *api.Ingress) error {
-	_, err := ni.VoyagerClient.VoyagerV1beta1().Ingresses(ni.Namespace()).Update(ing)
+	_, err := ni.VoyagerClient.VoyagerV1beta1().Ingresses(ni.Namespace()).Update(context.TODO(), ing, metav1.UpdateOptions{})
 	return err
 }
 
 func (ni *ingressInvocation) Delete(ing *api.Ingress) error {
-	return ni.VoyagerClient.VoyagerV1beta1().Ingresses(ni.Namespace()).Delete(ing.Name, &metav1.DeleteOptions{})
+	return ni.VoyagerClient.VoyagerV1beta1().Ingresses(ni.Namespace()).Delete(context.TODO(), ing.Name, metav1.DeleteOptions{})
 }
 
 func (ni *ingressInvocation) IsExistsEventually(ing *api.Ingress) bool {

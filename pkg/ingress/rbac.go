@@ -18,6 +18,7 @@ package ingress
 
 import (
 	"context"
+
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 	"voyagermesh.dev/voyager/pkg/eventer"
 
@@ -101,7 +102,7 @@ func (c *controller) reconcileServiceAccount() (kutil.VerbType, error) {
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	_, vt, err := core_util.CreateOrPatchServiceAccount(c.KubeClient, meta, func(in *core.ServiceAccount) *core.ServiceAccount {
+	_, vt, err := core_util.CreateOrPatchServiceAccount(context.TODO(), c.KubeClient, meta, func(in *core.ServiceAccount) *core.ServiceAccount {
 		core_util.EnsureOwnerReference(in, metav1.NewControllerRef(c.Ingress, api.SchemeGroupVersion.WithKind(api.ResourceKindIngress)))
 
 		in.Labels = c.Ingress.OffshootLabels()
@@ -111,7 +112,7 @@ func (c *controller) reconcileServiceAccount() (kutil.VerbType, error) {
 		in.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
 		in.Annotations[api.OriginName] = c.Ingress.GetName()
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return vt, err
 }
 
@@ -120,7 +121,7 @@ func (c *controller) reconcileRoles() (kutil.VerbType, error) {
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	_, vt, err := rbac_util.CreateOrPatchRole(c.KubeClient, meta, func(in *rbac.Role) *rbac.Role {
+	_, vt, err := rbac_util.CreateOrPatchRole(context.TODO(), c.KubeClient, meta, func(in *rbac.Role) *rbac.Role {
 		core_util.EnsureOwnerReference(in, metav1.NewControllerRef(c.Ingress, api.SchemeGroupVersion.WithKind(api.ResourceKindIngress)))
 
 		in.Labels = c.Ingress.OffshootLabels()
@@ -159,7 +160,7 @@ func (c *controller) reconcileRoles() (kutil.VerbType, error) {
 			},
 		}
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return vt, err
 }
 
@@ -168,7 +169,7 @@ func (c *controller) reconcileRoleBinding() (kutil.VerbType, error) {
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	_, vt, err := rbac_util.CreateOrPatchRoleBinding(c.KubeClient, meta, func(in *rbac.RoleBinding) *rbac.RoleBinding {
+	_, vt, err := rbac_util.CreateOrPatchRoleBinding(context.TODO(), c.KubeClient, meta, func(in *rbac.RoleBinding) *rbac.RoleBinding {
 		core_util.EnsureOwnerReference(in, metav1.NewControllerRef(c.Ingress, api.SchemeGroupVersion.WithKind(api.ResourceKindIngress)))
 
 		in.Labels = c.Ingress.OffshootLabels()
@@ -191,7 +192,7 @@ func (c *controller) reconcileRoleBinding() (kutil.VerbType, error) {
 			},
 		}
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return vt, err
 }
 

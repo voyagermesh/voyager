@@ -1,7 +1,6 @@
 package dnsimple
 
 import (
-	"context"
 	"fmt"
 )
 
@@ -37,14 +36,14 @@ func domainPath(accountID string, domainIdentifier string) (path string) {
 	return
 }
 
-// DomainResponse represents a response from an API method that returns a Domain struct.
-type DomainResponse struct {
+// domainResponse represents a response from an API method that returns a Domain struct.
+type domainResponse struct {
 	Response
 	Data *Domain `json:"data"`
 }
 
-// DomainsResponse represents a response from an API method that returns a collection of Domain struct.
-type DomainsResponse struct {
+// domainsResponse represents a response from an API method that returns a collection of Domain struct.
+type domainsResponse struct {
 	Response
 	Data []Domain `json:"data"`
 }
@@ -53,10 +52,10 @@ type DomainsResponse struct {
 // to customize the DomainsService.ListDomains method.
 type DomainListOptions struct {
 	// Select domains where the name contains given string.
-	NameLike *string `url:"name_like,omitempty"`
+	NameLike string `url:"name_like,omitempty"`
 
 	// Select domains where the registrant matches given ID.
-	RegistrantID *int `url:"registrant_id,omitempty"`
+	RegistrantID int `url:"registrant_id,omitempty"`
 
 	ListOptions
 }
@@ -64,68 +63,84 @@ type DomainListOptions struct {
 // ListDomains lists the domains for an account.
 //
 // See https://developer.dnsimple.com/v2/domains/#list
-func (s *DomainsService) ListDomains(ctx context.Context, accountID string, options *DomainListOptions) (*DomainsResponse, error) {
+func (s *DomainsService) ListDomains(accountID string, options *DomainListOptions) (*domainsResponse, error) {
 	path := versioned(domainPath(accountID, ""))
-	domainsResponse := &DomainsResponse{}
+	domainsResponse := &domainsResponse{}
 
 	path, err := addURLQueryOptions(path, options)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := s.client.get(ctx, path, domainsResponse)
+	resp, err := s.client.get(path, domainsResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	domainsResponse.HTTPResponse = resp
+	domainsResponse.HttpResponse = resp
 	return domainsResponse, nil
 }
 
 // CreateDomain creates a new domain in the account.
 //
 // See https://developer.dnsimple.com/v2/domains/#create
-func (s *DomainsService) CreateDomain(ctx context.Context, accountID string, domainAttributes Domain) (*DomainResponse, error) {
+func (s *DomainsService) CreateDomain(accountID string, domainAttributes Domain) (*domainResponse, error) {
 	path := versioned(domainPath(accountID, ""))
-	domainResponse := &DomainResponse{}
+	domainResponse := &domainResponse{}
 
-	resp, err := s.client.post(ctx, path, domainAttributes, domainResponse)
+	resp, err := s.client.post(path, domainAttributes, domainResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	domainResponse.HTTPResponse = resp
+	domainResponse.HttpResponse = resp
 	return domainResponse, nil
 }
 
 // GetDomain fetches a domain.
 //
 // See https://developer.dnsimple.com/v2/domains/#get
-func (s *DomainsService) GetDomain(ctx context.Context, accountID string, domainIdentifier string) (*DomainResponse, error) {
+func (s *DomainsService) GetDomain(accountID string, domainIdentifier string) (*domainResponse, error) {
 	path := versioned(domainPath(accountID, domainIdentifier))
-	domainResponse := &DomainResponse{}
+	domainResponse := &domainResponse{}
 
-	resp, err := s.client.get(ctx, path, domainResponse)
+	resp, err := s.client.get(path, domainResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	domainResponse.HTTPResponse = resp
+	domainResponse.HttpResponse = resp
 	return domainResponse, nil
 }
 
 // DeleteDomain PERMANENTLY deletes a domain from the account.
 //
 // See https://developer.dnsimple.com/v2/domains/#delete
-func (s *DomainsService) DeleteDomain(ctx context.Context, accountID string, domainIdentifier string) (*DomainResponse, error) {
+func (s *DomainsService) DeleteDomain(accountID string, domainIdentifier string) (*domainResponse, error) {
 	path := versioned(domainPath(accountID, domainIdentifier))
-	domainResponse := &DomainResponse{}
+	domainResponse := &domainResponse{}
 
-	resp, err := s.client.delete(ctx, path, nil, nil)
+	resp, err := s.client.delete(path, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	domainResponse.HTTPResponse = resp
+	domainResponse.HttpResponse = resp
+	return domainResponse, nil
+}
+
+// ResetDomainToken resets the domain token.
+//
+// See https://developer.dnsimple.com/v2/domains/#reset-token
+func (s *DomainsService) ResetDomainToken(accountID string, domainIdentifier string) (*domainResponse, error) {
+	path := versioned(domainPath(accountID, domainIdentifier) + "/token")
+	domainResponse := &domainResponse{}
+
+	resp, err := s.client.post(path, nil, domainResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	domainResponse.HttpResponse = resp
 	return domainResponse, nil
 }

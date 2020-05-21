@@ -1,7 +1,6 @@
 package dnsimple
 
 import (
-	"context"
 	"fmt"
 )
 
@@ -45,21 +44,21 @@ type TldExtendedAttributeOption struct {
 	Description string `json:"description"`
 }
 
-// TldResponse represents a response from an API method that returns a Tld struct.
-type TldResponse struct {
+// tldResponse represents a response from an API method that returns a Tld struct.
+type tldResponse struct {
 	Response
 	Data *Tld `json:"data"`
 }
 
-// TldsResponse represents a response from an API method that returns a collection of Tld struct.
-type TldsResponse struct {
+// tldsResponse represents a response from an API method that returns a collection of Tld struct.
+type tldsResponse struct {
 	Response
 	Data []Tld `json:"data"`
 }
 
-// TldExtendedAttributesResponse represents a response from an API method that returns
+// tldExtendedAttributesResponse represents a response from an API method that returns
 // a collection of Tld extended attributes.
-type TldExtendedAttributesResponse struct {
+type tldExtendedAttributesResponse struct {
 	Response
 	Data []TldExtendedAttribute `json:"data"`
 }
@@ -67,52 +66,52 @@ type TldExtendedAttributesResponse struct {
 // ListTlds lists the supported TLDs.
 //
 // See https://developer.dnsimple.com/v2/tlds/#list
-func (s *TldsService) ListTlds(ctx context.Context, options *ListOptions) (*TldsResponse, error) {
+func (s *TldsService) ListTlds(options *ListOptions) (*tldsResponse, error) {
 	path := versioned("/tlds")
-	tldsResponse := &TldsResponse{}
+	tldsResponse := &tldsResponse{}
 
 	path, err := addURLQueryOptions(path, options)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := s.client.get(ctx, path, tldsResponse)
+	resp, err := s.client.get(path, tldsResponse)
 	if err != nil {
 		return tldsResponse, err
 	}
 
-	tldsResponse.HTTPResponse = resp
+	tldsResponse.HttpResponse = resp
 	return tldsResponse, nil
 }
 
 // GetTld fetches a TLD.
 //
 // See https://developer.dnsimple.com/v2/tlds/#get
-func (s *TldsService) GetTld(ctx context.Context, tld string) (*TldResponse, error) {
+func (s *TldsService) GetTld(tld string) (*tldResponse, error) {
 	path := versioned(fmt.Sprintf("/tlds/%s", tld))
-	tldResponse := &TldResponse{}
+	tldResponse := &tldResponse{}
 
-	resp, err := s.client.get(ctx, path, tldResponse)
+	resp, err := s.client.get(path, tldResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	tldResponse.HTTPResponse = resp
+	tldResponse.HttpResponse = resp
 	return tldResponse, nil
 }
 
-// GetTldExtendedAttributes fetches the extended attributes of a TLD.
+// GetTld fetches the extended attributes of a TLD.
 //
 // See https://developer.dnsimple.com/v2/tlds/#get
-func (s *TldsService) GetTldExtendedAttributes(ctx context.Context, tld string) (*TldExtendedAttributesResponse, error) {
+func (s *TldsService) GetTldExtendedAttributes(tld string) (*tldExtendedAttributesResponse, error) {
 	path := versioned(fmt.Sprintf("/tlds/%s/extended_attributes", tld))
-	tldResponse := &TldExtendedAttributesResponse{}
+	tldResponse := &tldExtendedAttributesResponse{}
 
-	resp, err := s.client.get(ctx, path, tldResponse)
+	resp, err := s.client.get(path, tldResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	tldResponse.HTTPResponse = resp
+	tldResponse.HttpResponse = resp
 	return tldResponse, nil
 }

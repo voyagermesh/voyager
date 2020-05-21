@@ -125,7 +125,7 @@ func (s *CertStore) Save(crd *api.Certificate, cert *acme.CertificateResource) e
 			return err
 		}
 	} else {
-		_, _, err := core_util.CreateOrPatchSecret(s.KubeClient,
+		_, _, err := core_util.CreateOrPatchSecret(context.TODO(), s.KubeClient,
 			metav1.ObjectMeta{Namespace: crd.Namespace, Name: crd.SecretName()},
 			func(in *core.Secret) *core.Secret {
 				in.Type = core.SecretTypeTLS
@@ -135,7 +135,7 @@ func (s *CertStore) Save(crd *api.Certificate, cert *acme.CertificateResource) e
 				in.Data[core.TLSCertKey] = cert.Certificate
 				in.Data[core.TLSPrivateKeyKey] = cert.PrivateKey
 				return in
-			})
+			}, metav1.PatchOptions{})
 		if err != nil {
 			return err
 		}
@@ -147,7 +147,7 @@ func (s *CertStore) Save(crd *api.Certificate, cert *acme.CertificateResource) e
 	if err != nil {
 		return errors.Errorf("failed to parse tls.crt for Certificate %s/%s. Reason: %s", crd.Namespace, crd.Name, err)
 	}
-	_, err = util.UpdateCertificateStatus(s.VoyagerClient.VoyagerV1beta1(), crd.ObjectMeta, func(in *api.CertificateStatus) *api.CertificateStatus {
+	_, err = util.UpdateCertificateStatus(context.TODO(), s.VoyagerClient.VoyagerV1beta1(), crd.ObjectMeta, func(in *api.CertificateStatus) *api.CertificateStatus {
 		// Update certificate data to add Details Information
 		t := metav1.Now()
 		in.LastIssuedCertificate = &api.CertificateDetails{
@@ -173,6 +173,6 @@ func (s *CertStore) Save(crd *api.Certificate, cert *acme.CertificateResource) e
 			})
 		}
 		return in
-	})
+	}, metav1.UpdateOptions{})
 	return err
 }

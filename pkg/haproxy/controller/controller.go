@@ -155,7 +155,7 @@ func (c *Controller) Setup() (err error) {
 
 func (c *Controller) initIngressIndexer() (*api.Ingress, error) {
 	if c.options.UsesEngress() {
-		obj, err := c.VoyagerClient.VoyagerV1beta1().Ingresses(c.options.IngressRef.Namespace).Get(c.options.IngressRef.Name, metav1.GetOptions{})
+		obj, err := c.VoyagerClient.VoyagerV1beta1().Ingresses(c.options.IngressRef.Namespace).Get(context.TODO(), c.options.IngressRef.Name, metav1.GetOptions{})
 		if err != nil {
 			return nil, err
 		}
@@ -195,7 +195,7 @@ func (c *Controller) initConfigCache() error {
 func (c *Controller) initTLSCache(ing *api.Ingress) error {
 	for _, tls := range ing.Spec.TLS {
 		if strings.EqualFold(tls.Ref.Kind, api.ResourceKindCertificate) {
-			crd, err := c.VoyagerClient.VoyagerV1beta1().Certificates(c.options.IngressRef.Namespace).Get(tls.Ref.Name, metav1.GetOptions{})
+			crd, err := c.VoyagerClient.VoyagerV1beta1().Certificates(c.options.IngressRef.Namespace).Get(context.TODO(), tls.Ref.Name, metav1.GetOptions{})
 			if err != nil {
 				return err
 			}

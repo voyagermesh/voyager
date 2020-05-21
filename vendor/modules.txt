@@ -134,7 +134,7 @@ github.com/davecgh/go-spew/spew
 github.com/dgrijalva/jwt-go
 # github.com/dimchansky/utfbom v1.1.0
 github.com/dimchansky/utfbom
-# github.com/dnsimple/dnsimple-go v0.62.0
+# github.com/dnsimple/dnsimple-go v0.62.0 => github.com/dnsimple/dnsimple-go v0.0.0-20180703121714-35bcc6b47c20
 github.com/dnsimple/dnsimple-go/dnsimple
 # github.com/emicklei/go-restful v2.9.5+incompatible
 github.com/emicklei/go-restful
@@ -276,7 +276,7 @@ github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
-# github.com/miekg/dns v1.1.22
+# github.com/miekg/dns v1.1.22 => github.com/miekg/dns v1.0.7
 github.com/miekg/dns
 # github.com/mitchellh/go-homedir v1.1.0
 github.com/mitchellh/go-homedir

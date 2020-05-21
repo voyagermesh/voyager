@@ -18,6 +18,7 @@ package operator
 
 import (
 	"context"
+
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
 	"github.com/appscode/go/log"
@@ -65,7 +66,7 @@ func (op *Operator) PurgeOffshootsWithDeprecatedLabels() error {
 		return err
 	}
 
-	engresses, err := op.VoyagerClient.VoyagerV1beta1().Ingresses(op.WatchNamespace).List(metav1.ListOptions{})
+	engresses, err := op.VoyagerClient.VoyagerV1beta1().Ingresses(op.WatchNamespace).List(context.TODO(), metav1.ListOptions{})
 	if err == nil {
 		for _, ing := range engresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
@@ -142,7 +143,7 @@ func (op *Operator) PurgeOffshootsDaemonSet() error {
 		return err
 	}
 
-	engresses, err := op.VoyagerClient.VoyagerV1beta1().Ingresses(op.WatchNamespace).List(metav1.ListOptions{})
+	engresses, err := op.VoyagerClient.VoyagerV1beta1().Ingresses(op.WatchNamespace).List(context.TODO(), metav1.ListOptions{})
 	if err == nil {
 		for _, ing := range engresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
@@ -151,7 +152,7 @@ func (op *Operator) PurgeOffshootsDaemonSet() error {
 					if ds.Spec.Template.Spec.Affinity != nil && ing.Spec.Affinity == nil {
 						log.Infof("Updating Ingress %s/%s to add `spec.affinity`", ing.Namespace, ing.Name)
 						ing.Spec.Affinity = ds.Spec.Template.Spec.Affinity
-						_, err = op.VoyagerClient.VoyagerV1beta1().Ingresses(ing.Namespace).Update(&ing)
+						_, err = op.VoyagerClient.VoyagerV1beta1().Ingresses(ing.Namespace).Update(context.TODO(), &ing, metav1.UpdateOptions{})
 						if err != nil {
 							return err
 						}

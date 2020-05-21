@@ -17,6 +17,8 @@ limitations under the License.
 package operator
 
 import (
+	"context"
+
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 	cs "voyagermesh.dev/voyager/client/clientset/versioned"
 	voyagerinformers "voyagermesh.dev/voyager/client/informers/externalversions"
@@ -132,7 +134,7 @@ func (op *Operator) ensureCustomResourceDefinitions() error {
 		api.Ingress{}.CustomResourceDefinition(),
 		api.Certificate{}.CustomResourceDefinition(),
 	}
-	return apiext_util.RegisterCRDs(op.KubeClient.Discovery(), op.CRDClient, crds)
+	return apiext_util.RegisterCRDs(context.TODO(), op.KubeClient.Discovery(), op.CRDClient, crds)
 }
 
 func (op *Operator) RunInformers(stopCh <-chan struct{}) {

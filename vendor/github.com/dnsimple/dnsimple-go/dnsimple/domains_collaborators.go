@@ -1,7 +1,6 @@
 package dnsimple
 
 import (
-	"context"
 	"fmt"
 )
 
@@ -31,14 +30,14 @@ type CollaboratorAttributes struct {
 	Email string `json:"email,omitempty"`
 }
 
-// CollaboratorResponse represents a response from an API method that returns a Collaborator struct.
-type CollaboratorResponse struct {
+// collaboratorResponse represents a response from an API method that returns a Collaborator struct.
+type collaboratorResponse struct {
 	Response
 	Data *Collaborator `json:"data"`
 }
 
-// CollaboratorsResponse represents a response from an API method that returns a collection of Collaborator struct.
-type CollaboratorsResponse struct {
+// collaboratorsResponse represents a response from an API method that returns a collection of Collaborator struct.
+type collaboratorsResponse struct {
 	Response
 	Data []Collaborator `json:"data"`
 }
@@ -46,52 +45,52 @@ type CollaboratorsResponse struct {
 // ListCollaborators list the collaborators for a domain.
 //
 // See https://developer.dnsimple.com/v2/domains/collaborators#list
-func (s *DomainsService) ListCollaborators(ctx context.Context, accountID, domainIdentifier string, options *ListOptions) (*CollaboratorsResponse, error) {
+func (s *DomainsService) ListCollaborators(accountID, domainIdentifier string, options *ListOptions) (*collaboratorsResponse, error) {
 	path := versioned(collaboratorPath(accountID, domainIdentifier, 0))
-	collaboratorsResponse := &CollaboratorsResponse{}
+	collaboratorsResponse := &collaboratorsResponse{}
 
 	path, err := addURLQueryOptions(path, options)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := s.client.get(ctx, path, collaboratorsResponse)
+	resp, err := s.client.get(path, collaboratorsResponse)
 	if err != nil {
 		return collaboratorsResponse, err
 	}
 
-	collaboratorsResponse.HTTPResponse = resp
+	collaboratorsResponse.HttpResponse = resp
 	return collaboratorsResponse, nil
 }
 
 // AddCollaborator adds a new collaborator to the domain in the account.
 //
 // See https://developer.dnsimple.com/v2/domains/collaborators#add
-func (s *DomainsService) AddCollaborator(ctx context.Context, accountID string, domainIdentifier string, attributes CollaboratorAttributes) (*CollaboratorResponse, error) {
+func (s *DomainsService) AddCollaborator(accountID string, domainIdentifier string, attributes CollaboratorAttributes) (*collaboratorResponse, error) {
 	path := versioned(collaboratorPath(accountID, domainIdentifier, 0))
-	collaboratorResponse := &CollaboratorResponse{}
+	collaboratorResponse := &collaboratorResponse{}
 
-	resp, err := s.client.post(ctx, path, attributes, collaboratorResponse)
+	resp, err := s.client.post(path, attributes, collaboratorResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	collaboratorResponse.HTTPResponse = resp
+	collaboratorResponse.HttpResponse = resp
 	return collaboratorResponse, nil
 }
 
 // RemoveCollaborator PERMANENTLY deletes a domain from the account.
 //
 // See https://developer.dnsimple.com/v2/domains/collaborators#remove
-func (s *DomainsService) RemoveCollaborator(ctx context.Context, accountID string, domainIdentifier string, collaboratorID int64) (*CollaboratorResponse, error) {
+func (s *DomainsService) RemoveCollaborator(accountID string, domainIdentifier string, collaboratorID int64) (*collaboratorResponse, error) {
 	path := versioned(collaboratorPath(accountID, domainIdentifier, collaboratorID))
-	collaboratorResponse := &CollaboratorResponse{}
+	collaboratorResponse := &collaboratorResponse{}
 
-	resp, err := s.client.delete(ctx, path, nil, nil)
+	resp, err := s.client.delete(path, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	collaboratorResponse.HTTPResponse = resp
+	collaboratorResponse.HttpResponse = resp
 	return collaboratorResponse, nil
 }

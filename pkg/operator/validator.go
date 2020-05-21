@@ -57,7 +57,7 @@ func (op *Operator) ValidateIngress() error {
 		}
 	}
 
-	engresses, err := op.VoyagerClient.VoyagerV1beta1().Ingresses(op.WatchNamespace).List(metav1.ListOptions{})
+	engresses, err := op.VoyagerClient.VoyagerV1beta1().Ingresses(op.WatchNamespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return err
 	}

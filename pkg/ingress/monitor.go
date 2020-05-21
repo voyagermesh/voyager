@@ -18,6 +18,7 @@ package ingress
 
 import (
 	"context"
+
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
@@ -81,11 +82,11 @@ func (c *controller) setNewAgentType(agentType mona.AgentType) error {
 	if err != nil {
 		return errors.Errorf("failed to get stat service %s, reason: %s", c.Ingress.StatsServiceName(), err.Error())
 	}
-	_, _, err = core_util.PatchService(c.KubeClient, svc, func(in *core.Service) *core.Service {
+	_, _, err = core_util.PatchService(context.TODO(), c.KubeClient, svc, func(in *core.Service) *core.Service {
 		in.Annotations = core_util.UpsertMap(in.Annotations, map[string]string{
 			mona.KeyAgent: string(agentType),
 		})
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return err
 }
