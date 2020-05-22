@@ -17,6 +17,7 @@ limitations under the License.
 package e2e_test
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -59,7 +60,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 				auth2-jane:E5BrlrQ5IXYK2`,
 			},
 		}
-		_, err := f.KubeClient.CoreV1().Secrets(secret.Namespace).Create(secret)
+		_, err := f.KubeClient.CoreV1().Secrets(secret.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{})
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -77,7 +78,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 	AfterEach(func() {
 		if options.Cleanup {
 			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
-			Expect(f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+			Expect(f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(context.TODO(), secret.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		}
 	})
 
@@ -282,13 +283,13 @@ var _ = Describe("IngressWithBasicAuth", func() {
 					"auth": `foo::bar-from-secret-frontend`,
 				},
 			}
-			_, err := f.KubeClient.CoreV1().Secrets(sec.Namespace).Create(sec)
+			_, err := f.KubeClient.CoreV1().Secrets(sec.Namespace).Create(context.TODO(), sec, metav1.CreateOptions{})
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		AfterEach(func() {
 			if options.Cleanup {
-				Expect(f.KubeClient.CoreV1().Secrets(sec.Namespace).Delete(sec.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+				Expect(f.KubeClient.CoreV1().Secrets(sec.Namespace).Delete(context.TODO(), sec.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
 			}
 		})
 
@@ -737,7 +738,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 					"auth": "foo::new-bar",
 				},
 			}
-			_, err := f.KubeClient.CoreV1().Secrets(secretNew.Namespace).Create(secretNew)
+			_, err := f.KubeClient.CoreV1().Secrets(secretNew.Namespace).Create(context.TODO(), secretNew, metav1.CreateOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			// at first service will point `secret` and after update it will point `secretNew`
@@ -767,7 +768,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 
 		AfterEach(func() {
 			By("Deleting new secret")
-			err := f.KubeClient.CoreV1().Secrets(secretNew.Namespace).Delete(secretNew.Name, &metav1.DeleteOptions{})
+			err := f.KubeClient.CoreV1().Secrets(secretNew.Namespace).Delete(context.TODO(), secretNew.Name, metav1.DeleteOptions{})
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -800,10 +801,10 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Updating service annotations")
-			_, _, err = core_util.CreateOrPatchService(f.KubeClient, meta, func(in *core.Service) *core.Service {
+			_, _, err = core_util.CreateOrPatchService(context.TODO(), f.KubeClient, meta, func(in *core.Service) *core.Service {
 				in.Annotations[api.AuthSecret] = secretNew.Name
 				return in
-			})
+			}, metav1.PatchOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Waiting for operator to process service update")
@@ -828,12 +829,12 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Removing service annotations")
-			_, _, err = core_util.CreateOrPatchService(f.KubeClient, meta, func(in *core.Service) *core.Service {
+			_, _, err = core_util.CreateOrPatchService(context.TODO(), f.KubeClient, meta, func(in *core.Service) *core.Service {
 				delete(in.Annotations, api.AuthType)
 				delete(in.Annotations, api.AuthRealm)
 				delete(in.Annotations, api.AuthSecret)
 				return in
-			})
+			}, metav1.PatchOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Waiting for operator to process service update")
@@ -864,7 +865,7 @@ var _ = Describe("IngressWithBasicAuth", func() {
 					"auth3": `auth3-foo::bar`,
 				},
 			}
-			_, err := f.KubeClient.CoreV1().Secrets(secret.Namespace).Create(secret2)
+			_, err := f.KubeClient.CoreV1().Secrets(secret.Namespace).Create(context.TODO(), secret2, metav1.CreateOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			meta, err := f.Ingress.CreateResourceWithServiceAuth(secret2)
@@ -1027,11 +1028,11 @@ var _ = Describe("IngressWithBasicAuth", func() {
 			)
 			Expect(err).NotTo(HaveOccurred())
 
-			sec, err := f.KubeClient.CoreV1().Secrets(secret.Namespace).Get(secret.Name, metav1.GetOptions{})
+			sec, err := f.KubeClient.CoreV1().Secrets(secret.Namespace).Get(context.TODO(), secret.Name, metav1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			sec.Data["auth3"] = []byte(`foo3::bar3`)
-			_, err = f.KubeClient.CoreV1().Secrets(secret.Namespace).Update(sec)
+			_, err = f.KubeClient.CoreV1().Secrets(secret.Namespace).Update(context.TODO(), sec, metav1.UpdateOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			// Wait for update to be done

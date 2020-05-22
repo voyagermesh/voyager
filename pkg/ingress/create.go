@@ -17,6 +17,7 @@ limitations under the License.
 package ingress
 
 import (
+	"context"
 	"fmt"
 
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
@@ -43,7 +44,7 @@ func (c *controller) ensureConfigMap() (*core.ConfigMap, kutil.VerbType, error) 
 		Name:      c.Ingress.OffshootName(),
 		Namespace: c.Ingress.Namespace,
 	}
-	return core_util.CreateOrPatchConfigMap(c.KubeClient, meta, func(in *core.ConfigMap) *core.ConfigMap {
+	return core_util.CreateOrPatchConfigMap(context.TODO(), c.KubeClient, meta, func(in *core.ConfigMap) *core.ConfigMap {
 		core_util.EnsureOwnerReference(in, metav1.NewControllerRef(c.Ingress, api.SchemeGroupVersion.WithKind(api.ResourceKindIngress)))
 		if in.Annotations == nil {
 			in.Annotations = make(map[string]string)
@@ -54,7 +55,7 @@ func (c *controller) ensureConfigMap() (*core.ConfigMap, kutil.VerbType, error) 
 			"haproxy.cfg": c.HAProxyConfig,
 		}
 		return in
-	})
+	}, metav1.PatchOptions{})
 }
 
 func (c *controller) getExporterSidecar() (*core.Container, error) {
@@ -99,7 +100,7 @@ func (c *controller) ensureStatsService() (*core.Service, kutil.VerbType, error)
 		Namespace: c.Ingress.Namespace,
 	}
 
-	return core_util.CreateOrPatchService(c.KubeClient, meta, func(in *core.Service) *core.Service {
+	return core_util.CreateOrPatchService(context.TODO(), c.KubeClient, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(in, metav1.NewControllerRef(c.Ingress, api.SchemeGroupVersion.WithKind(api.ResourceKindIngress)))
 		in.Labels = c.Ingress.StatsLabels()
 		if in.Annotations == nil {
@@ -129,5 +130,5 @@ func (c *controller) ensureStatsService() (*core.Service, kutil.VerbType, error)
 		}
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, desired)
 		return in
-	})
+	}, metav1.PatchOptions{})
 }

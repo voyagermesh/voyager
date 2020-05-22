@@ -17,6 +17,8 @@ limitations under the License.
 package operator
 
 import (
+	"context"
+
 	"github.com/appscode/go/log"
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -49,15 +51,15 @@ func (op *Operator) reconcileNamespace(key string) error {
 }
 
 func (op *Operator) deleteCRDs(ns string) {
-	if resources, err := op.VoyagerClient.VoyagerV1beta1().Certificates(ns).List(metav1.ListOptions{}); err == nil {
+	if resources, err := op.VoyagerClient.VoyagerV1beta1().Certificates(ns).List(context.TODO(), metav1.ListOptions{}); err == nil {
 		for _, resource := range resources.Items {
-			err := op.VoyagerClient.VoyagerV1beta1().Certificates(resource.Namespace).Delete(resource.Name, &metav1.DeleteOptions{})
+			err := op.VoyagerClient.VoyagerV1beta1().Certificates(resource.Namespace).Delete(context.TODO(), resource.Name, metav1.DeleteOptions{})
 			log.Error(err)
 		}
 	}
-	if resources, err := op.VoyagerClient.VoyagerV1beta1().Ingresses(ns).List(metav1.ListOptions{}); err == nil {
+	if resources, err := op.VoyagerClient.VoyagerV1beta1().Ingresses(ns).List(context.TODO(), metav1.ListOptions{}); err == nil {
 		for _, resource := range resources.Items {
-			err := op.VoyagerClient.VoyagerV1beta1().Ingresses(resource.Namespace).Delete(resource.Name, &metav1.DeleteOptions{})
+			err := op.VoyagerClient.VoyagerV1beta1().Ingresses(resource.Namespace).Delete(context.TODO(), resource.Name, metav1.DeleteOptions{})
 			log.Error(err)
 		}
 	}

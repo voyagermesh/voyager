@@ -29,7 +29,7 @@ import (
 	ioutilz "github.com/appscode/go/ioutil"
 	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
+	extensions "k8s.io/api/networking/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/cache"
 	"kmodules.xyz/client-go/tools/queue"

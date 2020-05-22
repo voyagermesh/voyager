@@ -17,6 +17,7 @@ limitations under the License.
 package util
 
 import (
+	"context"
 	"fmt"
 
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
@@ -32,29 +33,32 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchIngress(c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(alert *api.Ingress) *api.Ingress) (*api.Ingress, kutil.VerbType, error) {
-	cur, err := c.Ingresses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+func CreateOrPatchIngress(ctx context.Context, c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(alert *api.Ingress) *api.Ingress, opts metav1.PatchOptions) (*api.Ingress, kutil.VerbType, error) {
+	cur, err := c.Ingresses(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Ingress %s/%s.", meta.Namespace, meta.Name)
-		out, err := c.Ingresses(meta.Namespace).Create(transform(&api.Ingress{
+		out, err := c.Ingresses(meta.Namespace).Create(ctx, transform(&api.Ingress{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Ingress",
 				APIVersion: api.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
-		}))
+		}), metav1.CreateOptions{
+			DryRun:       opts.DryRun,
+			FieldManager: opts.FieldManager,
+		})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return PatchIngress(c, cur, transform)
+	return PatchIngress(ctx, c, cur, transform, opts)
 }
 
-func PatchIngress(c cs.VoyagerV1beta1Interface, cur *api.Ingress, transform func(*api.Ingress) *api.Ingress) (*api.Ingress, kutil.VerbType, error) {
-	return PatchIngressObject(c, cur, transform(cur.DeepCopy()))
+func PatchIngress(ctx context.Context, c cs.VoyagerV1beta1Interface, cur *api.Ingress, transform func(*api.Ingress) *api.Ingress, opts metav1.PatchOptions) (*api.Ingress, kutil.VerbType, error) {
+	return PatchIngressObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
 }
 
-func PatchIngressObject(c cs.VoyagerV1beta1Interface, cur, mod *api.Ingress) (*api.Ingress, kutil.VerbType, error) {
+func PatchIngressObject(ctx context.Context, c cs.VoyagerV1beta1Interface, cur, mod *api.Ingress, opts metav1.PatchOptions) (*api.Ingress, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -73,19 +77,19 @@ func PatchIngressObject(c cs.VoyagerV1beta1Interface, cur, mod *api.Ingress) (*a
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching Ingress %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
-	out, err := c.Ingresses(cur.Namespace).Patch(cur.Name, types.MergePatchType, patch)
+	out, err := c.Ingresses(cur.Namespace).Patch(ctx, cur.Name, types.MergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateIngress(c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(*api.Ingress) *api.Ingress) (result *api.Ingress, err error) {
+func TryUpdateIngress(ctx context.Context, c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, transform func(*api.Ingress) *api.Ingress, opts metav1.UpdateOptions) (result *api.Ingress, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := c.Ingresses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+		cur, e2 := c.Ingresses(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.Ingresses(cur.Namespace).Update(transform(cur.DeepCopy()))
+			result, e2 = c.Ingresses(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update Ingress %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
@@ -99,9 +103,11 @@ func TryUpdateIngress(c cs.VoyagerV1beta1Interface, meta metav1.ObjectMeta, tran
 }
 
 func UpdateIngressStatus(
+	ctx context.Context,
 	c cs.VoyagerV1beta1Interface,
 	meta metav1.ObjectMeta,
 	transform func(*api.IngressStatus) *api.IngressStatus,
+	opts metav1.UpdateOptions,
 ) (result *api.Ingress, err error) {
 	apply := func(x *api.Ingress) *api.Ingress {
 		out := &api.Ingress{
@@ -114,16 +120,16 @@ func UpdateIngressStatus(
 	}
 
 	attempt := 0
-	cur, err := c.Ingresses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	cur, err := c.Ingresses(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
 		var e2 error
-		result, e2 = c.Ingresses(meta.Namespace).UpdateStatus(apply(cur))
+		result, e2 = c.Ingresses(meta.Namespace).UpdateStatus(ctx, apply(cur), opts)
 		if kerr.IsConflict(e2) {
-			latest, e3 := c.Ingresses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+			latest, e3 := c.Ingresses(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 			switch {
 			case e3 == nil:
 				cur = latest

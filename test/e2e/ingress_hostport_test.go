@@ -18,6 +18,7 @@ limitations under the License.
 package e2e_test
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -169,7 +170,7 @@ var _ = Describe("IngressHostPort", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() error {
-				svc, err := f.KubeClient.CoreV1().Services(ing.GetNamespace()).Get(ing.OffshootName(), metav1.GetOptions{})
+				svc, err := f.KubeClient.CoreV1().Services(ing.GetNamespace()).Get(context.TODO(), ing.OffshootName(), metav1.GetOptions{})
 				if err != nil {
 					return err
 				}

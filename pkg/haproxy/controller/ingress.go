@@ -25,7 +25,7 @@ import (
 
 	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
-	extension "k8s.io/api/extensions/v1beta1"
+	extension "k8s.io/api/networking/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	ext_informers "k8s.io/client-go/informers/extensions/v1beta1"

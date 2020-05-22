@@ -17,6 +17,7 @@ limitations under the License.
 package framework
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/url"
@@ -131,7 +132,7 @@ func (ni *ingressInvocation) setupTestServers() error {
 }
 
 func (ni *ingressInvocation) createTestServerController() error {
-	_, err := ni.KubeClient.AppsV1().Deployments(ni.Namespace()).Create(&apps.Deployment{
+	_, err := ni.KubeClient.AppsV1().Deployments(ni.Namespace()).Create(context.TODO(), &apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      testServerResourceName,
 			Namespace: ni.Namespace(),
@@ -155,12 +156,12 @@ func (ni *ingressInvocation) createTestServerController() error {
 				Spec: ni.testServerPodSpec(),
 			},
 		},
-	})
+	}, metav1.CreateOptions{})
 	return err
 }
 
 func (ni *ingressInvocation) createTestServerService() error {
-	_, err := ni.KubeClient.CoreV1().Services(ni.Namespace()).Create(&core.Service{
+	_, err := ni.KubeClient.CoreV1().Services(ni.Namespace()).Create(context.TODO(), &core.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      testServerResourceName,
 			Namespace: ni.Namespace(),
@@ -174,12 +175,12 @@ func (ni *ingressInvocation) createTestServerService() error {
 				"app": "test-server-" + ni.app,
 			},
 		},
-	})
+	}, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
 
-	_, err = ni.KubeClient.CoreV1().Services(ni.Namespace()).Create(&core.Service{
+	_, err = ni.KubeClient.CoreV1().Services(ni.Namespace()).Create(context.TODO(), &core.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      testServerHTTPSResourceName,
 			Namespace: ni.Namespace(),
@@ -209,12 +210,12 @@ func (ni *ingressInvocation) createTestServerService() error {
 				"app": "test-server-" + ni.app,
 			},
 		},
-	})
+	}, metav1.CreateOptions{})
 	return err
 }
 
 func (ni *ingressInvocation) createEmptyService() error {
-	_, err := ni.KubeClient.CoreV1().Services(ni.Namespace()).Create(&core.Service{
+	_, err := ni.KubeClient.CoreV1().Services(ni.Namespace()).Create(context.TODO(), &core.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      emptyServiceName,
 			Namespace: ni.Namespace(),
@@ -228,7 +229,7 @@ func (ni *ingressInvocation) createEmptyService() error {
 				"invalid": "test-server-" + ni.app,
 			},
 		},
-	})
+	}, metav1.CreateOptions{})
 	return err
 }
 
@@ -342,7 +343,7 @@ func (ni *ingressInvocation) waitForTestServer() error {
 	var err error
 	var ep *core.Endpoints
 	for it := 0; it < MaxRetry; it++ {
-		ep, err = ni.KubeClient.CoreV1().Endpoints(ni.Namespace()).Get(testServerResourceName, metav1.GetOptions{})
+		ep, err = ni.KubeClient.CoreV1().Endpoints(ni.Namespace()).Get(context.TODO(), testServerResourceName, metav1.GetOptions{})
 		if err == nil {
 			if len(ep.Subsets) > 0 {
 				if len(ep.Subsets[0].Addresses) > 0 {
@@ -371,7 +372,7 @@ func (ni *ingressInvocation) getMinikubeURLs(k kubernetes.Interface, ing *api_v1
 	var svc *core.Service
 	err := wait.PollImmediate(2*time.Second, 3*time.Minute, func() (bool, error) {
 		var err error
-		svc, err = k.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+		svc, err = k.CoreV1().Services(ing.Namespace).Get(context.TODO(), ing.OffshootName(), metav1.GetOptions{})
 		if err != nil {
 			return false, nil // retry
 		} else {
@@ -454,7 +455,7 @@ func (ni *ingressInvocation) getHostPortURLs(ing *api_v1beta1.Ingress) ([]string
 	)
 
 	Eventually(func() error {
-		svc, err = ni.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+		svc, err = ni.KubeClient.CoreV1().Services(ing.Namespace).Get(context.TODO(), ing.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			if len(svc.Spec.Ports) > 0 {
 				for _, port := range svc.Spec.Ports {
@@ -469,7 +470,7 @@ func (ni *ingressInvocation) getHostPortURLs(ing *api_v1beta1.Ingress) ([]string
 		return nil, err
 	}
 
-	pods, err := ni.KubeClient.CoreV1().Pods(ing.Namespace).List(metav1.ListOptions{
+	pods, err := ni.KubeClient.CoreV1().Pods(ing.Namespace).List(context.TODO(), metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector).String(),
 	})
 	if err != nil {
@@ -477,7 +478,7 @@ func (ni *ingressInvocation) getHostPortURLs(ing *api_v1beta1.Ingress) ([]string
 	}
 
 	for _, pod := range pods.Items {
-		node, err := ni.KubeClient.CoreV1().Nodes().Get(pod.Spec.NodeName, metav1.GetOptions{})
+		node, err := ni.KubeClient.CoreV1().Nodes().Get(context.TODO(), pod.Spec.NodeName, metav1.GetOptions{})
 		if err != nil {
 			return nil, err
 		}
@@ -503,7 +504,7 @@ func (ni *ingressInvocation) getNodePortURLs(ing *api_v1beta1.Ingress) ([]string
 	}
 
 	serverAddr := make([]string, 0)
-	nodes, err := ni.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{
+	nodes, err := ni.KubeClient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(ing.Spec.NodeSelector).String(),
 	})
 	if err != nil {
@@ -514,7 +515,7 @@ func (ni *ingressInvocation) getNodePortURLs(ing *api_v1beta1.Ingress) ([]string
 	var ports []int32
 
 	Eventually(func() error {
-		svc, err = ni.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+		svc, err = ni.KubeClient.CoreV1().Services(ing.Namespace).Get(context.TODO(), ing.OffshootName(), metav1.GetOptions{})
 		if err == nil {
 			if len(svc.Spec.Ports) > 0 {
 				for _, port := range svc.Spec.Ports {
@@ -550,19 +551,19 @@ func (ni *ingressInvocation) CheckTestServersPortAssignments(ing *api_v1beta1.In
 	ni.Lock.Lock()
 	defer ni.Lock.Unlock()
 
-	dep, err := ni.KubeClient.AppsV1().Deployments(ni.TestNamespace).Get(ni.TestServerName(), metav1.GetOptions{})
+	dep, err := ni.KubeClient.AppsV1().Deployments(ni.TestNamespace).Get(context.TODO(), ni.TestServerName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
-	svc, err := ni.KubeClient.CoreV1().Services(ing.GetNamespace()).Get(ing.OffshootName(), metav1.GetOptions{})
+	svc, err := ni.KubeClient.CoreV1().Services(ing.GetNamespace()).Get(context.TODO(), ing.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
 	// Removing pods so that endpoints get updated
 	dep.Spec.Replicas = types.Int32P(0)
-	_, err = ni.KubeClient.AppsV1().Deployments(dep.Namespace).Update(dep)
+	_, err = ni.KubeClient.AppsV1().Deployments(dep.Namespace).Update(context.TODO(), dep, metav1.UpdateOptions{})
 	if err != nil {
 		return err
 	}
@@ -574,7 +575,7 @@ func (ni *ingressInvocation) CheckTestServersPortAssignments(ing *api_v1beta1.In
 
 	for {
 
-		pods, _ := ni.KubeClient.CoreV1().Pods(dep.Namespace).List(metav1.ListOptions{
+		pods, _ := ni.KubeClient.CoreV1().Pods(dep.Namespace).List(context.TODO(), metav1.ListOptions{
 			LabelSelector: sel.String(),
 		})
 		if len(pods.Items) <= 0 {
@@ -583,7 +584,7 @@ func (ni *ingressInvocation) CheckTestServersPortAssignments(ing *api_v1beta1.In
 		time.Sleep(time.Second * 1)
 	}
 
-	svcUpdated, err := ni.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+	svcUpdated, err := ni.KubeClient.CoreV1().Services(ing.Namespace).Get(context.TODO(), ing.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -598,16 +599,16 @@ func (ni *ingressInvocation) CheckTestServersPortAssignments(ing *api_v1beta1.In
 		}
 	}
 
-	dep, err = ni.KubeClient.AppsV1().Deployments(ni.TestNamespace).Get(ni.TestServerName(), metav1.GetOptions{})
+	dep, err = ni.KubeClient.AppsV1().Deployments(ni.TestNamespace).Get(context.TODO(), ni.TestServerName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 	dep.Spec.Replicas = types.Int32P(2)
-	_, err = ni.KubeClient.AppsV1().Deployments(dep.Namespace).Update(dep)
+	_, err = ni.KubeClient.AppsV1().Deployments(dep.Namespace).Update(context.TODO(), dep, metav1.UpdateOptions{})
 	if err != nil {
 		return err
 	}
-	svcUpdated, err = ni.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+	svcUpdated, err = ni.KubeClient.CoreV1().Services(ing.Namespace).Get(context.TODO(), ing.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -643,7 +644,7 @@ func (ni *ingressInvocation) CreateResourceWithHostNames() (metav1.ObjectMeta, e
 			"v":   ni.UniqueName(),
 		},
 	}
-	_, err := ni.KubeClient.CoreV1().Services(ni.Namespace()).Create(&core.Service{
+	_, err := ni.KubeClient.CoreV1().Services(ni.Namespace()).Create(context.TODO(), &core.Service{
 		ObjectMeta: meta,
 		Spec: core.ServiceSpec{
 			ClusterIP: "None",
@@ -687,12 +688,12 @@ func (ni *ingressInvocation) CreateResourceWithHostNames() (metav1.ObjectMeta, e
 			},
 			Selector: meta.Labels,
 		},
-	})
+	}, metav1.CreateOptions{})
 	if err != nil {
 		return meta, err
 	}
 
-	_, err = ni.KubeClient.AppsV1().StatefulSets(ni.Namespace()).Create(&apps.StatefulSet{
+	_, err = ni.KubeClient.AppsV1().StatefulSets(ni.Namespace()).Create(context.TODO(), &apps.StatefulSet{
 		ObjectMeta: meta,
 		Spec: apps.StatefulSetSpec{
 			Replicas:    types.Int32P(2),
@@ -750,7 +751,7 @@ func (ni *ingressInvocation) CreateResourceWithHostNames() (metav1.ObjectMeta, e
 				},
 			},
 		},
-	})
+	}, metav1.CreateOptions{})
 	if err != nil {
 		return meta, err
 	}
@@ -759,11 +760,11 @@ func (ni *ingressInvocation) CreateResourceWithHostNames() (metav1.ObjectMeta, e
 
 func (ni *ingressInvocation) DeleteResourceWithHostNames(meta metav1.ObjectMeta) error {
 	policy := metav1.DeletePropagationBackground
-	if err := ni.KubeClient.AppsV1().StatefulSets(meta.Namespace).Delete(meta.Name, &metav1.DeleteOptions{PropagationPolicy: &policy}); err != nil {
+	if err := ni.KubeClient.AppsV1().StatefulSets(meta.Namespace).Delete(context.TODO(), meta.Name, metav1.DeleteOptions{PropagationPolicy: &policy}); err != nil {
 		return err
 	}
 
-	if err := ni.KubeClient.CoreV1().Services(meta.Namespace).Delete(meta.Name, &metav1.DeleteOptions{}); err != nil {
+	if err := ni.KubeClient.CoreV1().Services(meta.Namespace).Delete(context.TODO(), meta.Name, metav1.DeleteOptions{}); err != nil {
 		return err
 	}
 
@@ -775,7 +776,7 @@ func (ni *ingressInvocation) CreateResourceWithBackendWeight() (metav1.ObjectMet
 		Name:      ni.UniqueName(),
 		Namespace: ni.Namespace(),
 	}
-	_, err := ni.KubeClient.CoreV1().Services(ni.Namespace()).Create(&core.Service{
+	_, err := ni.KubeClient.CoreV1().Services(ni.Namespace()).Create(context.TODO(), &core.Service{
 		ObjectMeta: meta,
 		Spec: core.ServiceSpec{
 			Ports: []core.ServicePort{
@@ -790,12 +791,12 @@ func (ni *ingressInvocation) CreateResourceWithBackendWeight() (metav1.ObjectMet
 				"app": "deployment",
 			},
 		},
-	})
+	}, metav1.CreateOptions{})
 	if err != nil {
 		return meta, err
 	}
 
-	_, err = ni.KubeClient.AppsV1().Deployments(ni.Namespace()).Create(&apps.Deployment{
+	_, err = ni.KubeClient.AppsV1().Deployments(ni.Namespace()).Create(context.TODO(), &apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "dep-1-" + meta.Name,
 			Namespace: meta.Namespace,
@@ -844,12 +845,12 @@ func (ni *ingressInvocation) CreateResourceWithBackendWeight() (metav1.ObjectMet
 				},
 			},
 		},
-	})
+	}, metav1.CreateOptions{})
 	if err != nil {
 		return meta, err
 	}
 
-	_, err = ni.KubeClient.AppsV1().Deployments(ni.Namespace()).Create(&apps.Deployment{
+	_, err = ni.KubeClient.AppsV1().Deployments(ni.Namespace()).Create(context.TODO(), &apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "dep-2-" + meta.Name,
 			Namespace: meta.Namespace,
@@ -898,7 +899,7 @@ func (ni *ingressInvocation) CreateResourceWithBackendWeight() (metav1.ObjectMet
 				},
 			},
 		},
-	})
+	}, metav1.CreateOptions{})
 	if err != nil {
 		return meta, err
 	}
@@ -909,21 +910,21 @@ func (ni *ingressInvocation) CreateResourceWithBackendWeight() (metav1.ObjectMet
 func (ni *ingressInvocation) DeleteResourceWithBackendWeight(meta metav1.ObjectMeta) {
 	deletePolicy := metav1.DeletePropagationForeground
 
-	dp1, err := ni.KubeClient.AppsV1().Deployments(meta.Namespace).Get("dep-1-"+meta.Name, metav1.GetOptions{})
+	dp1, err := ni.KubeClient.AppsV1().Deployments(meta.Namespace).Get(context.TODO(), "dep-1-"+meta.Name, metav1.GetOptions{})
 	if err == nil {
-		Expect(ni.KubeClient.AppsV1().Deployments(dp1.Namespace).Delete(dp1.Name, &metav1.DeleteOptions{
+		Expect(ni.KubeClient.AppsV1().Deployments(dp1.Namespace).Delete(context.TODO(), dp1.Name, metav1.DeleteOptions{
 			PropagationPolicy: &deletePolicy,
 		})).NotTo(HaveOccurred())
 	}
 
-	dp2, err := ni.KubeClient.AppsV1().Deployments(meta.Namespace).Get("dep-2-"+meta.Name, metav1.GetOptions{})
+	dp2, err := ni.KubeClient.AppsV1().Deployments(meta.Namespace).Get(context.TODO(), "dep-2-"+meta.Name, metav1.GetOptions{})
 	if err == nil {
-		Expect(ni.KubeClient.AppsV1().Deployments(dp2.Namespace).Delete(dp2.Name, &metav1.DeleteOptions{
+		Expect(ni.KubeClient.AppsV1().Deployments(dp2.Namespace).Delete(context.TODO(), dp2.Name, metav1.DeleteOptions{
 			PropagationPolicy: &deletePolicy,
 		})).NotTo(HaveOccurred())
 	}
 
-	Expect(ni.KubeClient.CoreV1().Services(meta.Namespace).Delete(meta.Name, &metav1.DeleteOptions{
+	Expect(ni.KubeClient.CoreV1().Services(meta.Namespace).Delete(context.TODO(), meta.Name, metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	})).NotTo(HaveOccurred())
 }
@@ -933,7 +934,7 @@ func (ni *ingressInvocation) CreateResourceWithBackendMaxConn(maxconn int) (meta
 		Name:      ni.UniqueName(),
 		Namespace: ni.Namespace(),
 	}
-	_, err := ni.KubeClient.CoreV1().Services(ni.Namespace()).Create(&core.Service{
+	_, err := ni.KubeClient.CoreV1().Services(ni.Namespace()).Create(context.TODO(), &core.Service{
 		ObjectMeta: meta,
 		Spec: core.ServiceSpec{
 			Ports: []core.ServicePort{
@@ -948,12 +949,12 @@ func (ni *ingressInvocation) CreateResourceWithBackendMaxConn(maxconn int) (meta
 				"app": "deployment",
 			},
 		},
-	})
+	}, metav1.CreateOptions{})
 	if err != nil {
 		return meta, err
 	}
 
-	_, err = ni.KubeClient.AppsV1().Deployments(ni.Namespace()).Create(&apps.Deployment{
+	_, err = ni.KubeClient.AppsV1().Deployments(ni.Namespace()).Create(context.TODO(), &apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "dep-1-" + meta.Name,
 			Namespace: meta.Namespace,
@@ -1002,7 +1003,7 @@ func (ni *ingressInvocation) CreateResourceWithBackendMaxConn(maxconn int) (meta
 				},
 			},
 		},
-	})
+	}, metav1.CreateOptions{})
 	if err != nil {
 		return meta, err
 	}
@@ -1020,7 +1021,7 @@ func (ni *ingressInvocation) CreateResourceWithServiceAuth(secret *core.Secret) 
 			api_v1beta1.AuthSecret: secret.Name,
 		},
 	}
-	_, err := ni.KubeClient.CoreV1().Services(ni.Namespace()).Create(&core.Service{
+	_, err := ni.KubeClient.CoreV1().Services(ni.Namespace()).Create(context.TODO(), &core.Service{
 		ObjectMeta: meta,
 		Spec: core.ServiceSpec{
 			Ports: []core.ServicePort{
@@ -1035,12 +1036,12 @@ func (ni *ingressInvocation) CreateResourceWithServiceAuth(secret *core.Secret) 
 				"app": "deployment",
 			},
 		},
-	})
+	}, metav1.CreateOptions{})
 	if err != nil {
 		return meta, err
 	}
 
-	_, err = ni.KubeClient.AppsV1().Deployments(ni.Namespace()).Create(&apps.Deployment{
+	_, err = ni.KubeClient.AppsV1().Deployments(ni.Namespace()).Create(context.TODO(), &apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "dep-1-" + meta.Name,
 			Namespace: meta.Namespace,
@@ -1086,7 +1087,7 @@ func (ni *ingressInvocation) CreateResourceWithServiceAuth(secret *core.Secret) 
 				},
 			},
 		},
-	})
+	}, metav1.CreateOptions{})
 	if err != nil {
 		return meta, err
 	}
@@ -1100,7 +1101,7 @@ func (ni *ingressInvocation) CreateResourceWithServiceAnnotation(svcAnnotation m
 		Namespace:   ni.Namespace(),
 		Annotations: svcAnnotation,
 	}
-	_, err := ni.KubeClient.CoreV1().Services(ni.Namespace()).Create(&core.Service{
+	_, err := ni.KubeClient.CoreV1().Services(ni.Namespace()).Create(context.TODO(), &core.Service{
 		ObjectMeta: meta,
 		Spec: core.ServiceSpec{
 			Ports: []core.ServicePort{
@@ -1122,12 +1123,12 @@ func (ni *ingressInvocation) CreateResourceWithServiceAnnotation(svcAnnotation m
 			},
 			Type: core.ServiceTypeNodePort,
 		},
-	})
+	}, metav1.CreateOptions{})
 	if err != nil {
 		return meta, err
 	}
 
-	_, err = ni.KubeClient.AppsV1().Deployments(ni.Namespace()).Create(&apps.Deployment{
+	_, err = ni.KubeClient.AppsV1().Deployments(ni.Namespace()).Create(context.TODO(), &apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "dep-1-" + meta.Name,
 			Namespace: meta.Namespace,
@@ -1177,7 +1178,7 @@ func (ni *ingressInvocation) CreateResourceWithServiceAnnotation(svcAnnotation m
 				},
 			},
 		},
-	})
+	}, metav1.CreateOptions{})
 
 	return meta, err
 }
@@ -1190,7 +1191,7 @@ func (ni *ingressInvocation) CreateResourceWithSendProxy(version string) (metav1
 			api_v1beta1.SendProxy: version,
 		},
 	}
-	_, err := ni.KubeClient.CoreV1().Services(ni.Namespace()).Create(&core.Service{
+	_, err := ni.KubeClient.CoreV1().Services(ni.Namespace()).Create(context.TODO(), &core.Service{
 		ObjectMeta: meta,
 		Spec: core.ServiceSpec{
 			Ports: []core.ServicePort{
@@ -1205,12 +1206,12 @@ func (ni *ingressInvocation) CreateResourceWithSendProxy(version string) (metav1
 				"app": meta.Name,
 			},
 		},
-	})
+	}, metav1.CreateOptions{})
 	if err != nil {
 		return meta, err
 	}
 
-	_, err = ni.KubeClient.AppsV1().Deployments(ni.Namespace()).Create(&apps.Deployment{
+	_, err = ni.KubeClient.AppsV1().Deployments(ni.Namespace()).Create(context.TODO(), &apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "dep-1-" + meta.Name,
 			Namespace: meta.Namespace,
@@ -1256,7 +1257,7 @@ func (ni *ingressInvocation) CreateResourceWithSendProxy(version string) (metav1
 				},
 			},
 		},
-	})
+	}, metav1.CreateOptions{})
 
 	return meta, err
 }
@@ -1282,7 +1283,7 @@ func (ni *ingressInvocation) CreateTLSSecretForHost(name string, hosts []string)
 			core.TLSPrivateKeyKey: key,
 		},
 	}
-	return ni.KubeClient.CoreV1().Secrets(secret.Namespace).Create(secret)
+	return ni.KubeClient.CoreV1().Secrets(secret.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{})
 }
 
 func (ni *ingressInvocation) GetIngressWithLoadBalancerStatus(name, namespace string) (*api_v1beta1.Ingress, error) {
@@ -1291,7 +1292,7 @@ func (ni *ingressInvocation) GetIngressWithLoadBalancerStatus(name, namespace st
 		err error
 	)
 	err = wait.PollImmediate(2*time.Second, 20*time.Minute, func() (bool, error) {
-		ing, err = ni.VoyagerClient.VoyagerV1beta1().Ingresses(namespace).Get(name, metav1.GetOptions{})
+		ing, err = ni.VoyagerClient.VoyagerV1beta1().Ingresses(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 		if err != nil || len(ing.Status.LoadBalancer.Ingress) == 0 { // retry
 			return false, nil
 		} else {
@@ -1310,7 +1311,7 @@ func (ni *ingressInvocation) GetServiceWithLoadBalancerStatus(name, namespace st
 		err error
 	)
 	err = wait.PollImmediate(2*time.Second, 20*time.Minute, func() (bool, error) {
-		svc, err = ni.KubeClient.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
+		svc, err = ni.KubeClient.CoreV1().Services(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 		if err != nil || len(svc.Status.LoadBalancer.Ingress) == 0 { // retry
 			return false, nil
 		} else {
@@ -1327,7 +1328,7 @@ func (ni *ingressInvocation) GetNodePortServiceURLForSpecificPort(svcName string
 
 	var err error
 
-	nodeList, err := ni.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodeList, err := ni.KubeClient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return "", err
 	}
@@ -1347,7 +1348,7 @@ func (ni *ingressInvocation) GetNodePortServiceURLForSpecificPort(svcName string
 	// get the k8s core.service
 	var svc *core.Service
 	Eventually(func() error {
-		svc, err = ni.KubeClient.CoreV1().Services(ni.TestNamespace).Get(svcName, metav1.GetOptions{})
+		svc, err = ni.KubeClient.CoreV1().Services(ni.TestNamespace).Get(context.TODO(), svcName, metav1.GetOptions{})
 		return err
 	}, "10m", "10s").Should(BeNil())
 

@@ -17,6 +17,7 @@ limitations under the License.
 package framework
 
 import (
+	"context"
 	"crypto/tls"
 	"net/http"
 	"strconv"
@@ -55,17 +56,17 @@ func (ni *ingressInvocation) Setup() error {
 
 func (ni *ingressInvocation) Teardown() {
 	if ni.Cleanup {
-		Expect(ni.KubeClient.CoreV1().Services(ni.Namespace()).Delete(testServerResourceName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
-		Expect(ni.KubeClient.CoreV1().Services(ni.Namespace()).Delete(testServerHTTPSResourceName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
-		Expect(ni.KubeClient.CoreV1().Services(ni.Namespace()).Delete(emptyServiceName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
-		_, err := ni.KubeClient.AppsV1().Deployments(ni.Namespace()).Get(testServerResourceName, metav1.GetOptions{})
+		Expect(ni.KubeClient.CoreV1().Services(ni.Namespace()).Delete(context.TODO(), testServerResourceName, metav1.DeleteOptions{})).NotTo(HaveOccurred())
+		Expect(ni.KubeClient.CoreV1().Services(ni.Namespace()).Delete(context.TODO(), testServerHTTPSResourceName, metav1.DeleteOptions{})).NotTo(HaveOccurred())
+		Expect(ni.KubeClient.CoreV1().Services(ni.Namespace()).Delete(context.TODO(), emptyServiceName, metav1.DeleteOptions{})).NotTo(HaveOccurred())
+		_, err := ni.KubeClient.AppsV1().Deployments(ni.Namespace()).Get(context.TODO(), testServerResourceName, metav1.GetOptions{})
 		if err == nil {
-			Expect(ni.KubeClient.AppsV1().Deployments(ni.Namespace()).Delete(testServerResourceName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+			Expect(ni.KubeClient.AppsV1().Deployments(ni.Namespace()).Delete(context.TODO(), testServerResourceName, metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		}
-		list, err := ni.VoyagerClient.VoyagerV1beta1().Ingresses(metav1.NamespaceAll).List(metav1.ListOptions{})
+		list, err := ni.VoyagerClient.VoyagerV1beta1().Ingresses(metav1.NamespaceAll).List(context.TODO(), metav1.ListOptions{})
 		if err == nil {
 			for _, ing := range list.Items {
-				Expect(ni.VoyagerClient.VoyagerV1beta1().Ingresses(ing.Namespace).Delete(ing.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+				Expect(ni.VoyagerClient.VoyagerV1beta1().Ingresses(ing.Namespace).Delete(context.TODO(), ing.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
 			}
 		}
 	}
@@ -84,7 +85,7 @@ func (ni *ingressInvocation) TestServerHTTPSName() string {
 }
 
 func (ni *ingressInvocation) Create(ing *api.Ingress) error {
-	_, err := ni.VoyagerClient.VoyagerV1beta1().Ingresses(ni.Namespace()).Create(ing)
+	_, err := ni.VoyagerClient.VoyagerV1beta1().Ingresses(ni.Namespace()).Create(context.TODO(), ing, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
@@ -94,7 +95,7 @@ func (ni *ingressInvocation) Create(ing *api.Ingress) error {
 
 func (ni *ingressInvocation) printInfoForDebug(ing *api.Ingress) {
 	for {
-		pods, err := ni.KubeClient.CoreV1().Pods(ing.Namespace).List(metav1.ListOptions{
+		pods, err := ni.KubeClient.CoreV1().Pods(ing.Namespace).List(context.TODO(), metav1.ListOptions{
 			LabelSelector: labels.SelectorFromSet(labels.Set(ing.OffshootSelector())).String(),
 		})
 		if err == nil {
@@ -111,16 +112,16 @@ func (ni *ingressInvocation) printInfoForDebug(ing *api.Ingress) {
 }
 
 func (ni *ingressInvocation) Get(ing *api.Ingress) (*api.Ingress, error) {
-	return ni.VoyagerClient.VoyagerV1beta1().Ingresses(ni.Namespace()).Get(ing.Name, metav1.GetOptions{})
+	return ni.VoyagerClient.VoyagerV1beta1().Ingresses(ni.Namespace()).Get(context.TODO(), ing.Name, metav1.GetOptions{})
 }
 
 func (ni *ingressInvocation) Update(ing *api.Ingress) error {
-	_, err := ni.VoyagerClient.VoyagerV1beta1().Ingresses(ni.Namespace()).Update(ing)
+	_, err := ni.VoyagerClient.VoyagerV1beta1().Ingresses(ni.Namespace()).Update(context.TODO(), ing, metav1.UpdateOptions{})
 	return err
 }
 
 func (ni *ingressInvocation) Delete(ing *api.Ingress) error {
-	return ni.VoyagerClient.VoyagerV1beta1().Ingresses(ni.Namespace()).Delete(ing.Name, &metav1.DeleteOptions{})
+	return ni.VoyagerClient.VoyagerV1beta1().Ingresses(ni.Namespace()).Delete(context.TODO(), ing.Name, metav1.DeleteOptions{})
 }
 
 func (ni *ingressInvocation) IsExistsEventually(ing *api.Ingress) bool {
@@ -135,17 +136,17 @@ func (ni *ingressInvocation) IsExistsEventually(ing *api.Ingress) bool {
 
 func (ni *ingressInvocation) IsExists(ing *api.Ingress) error {
 	var err error
-	_, err = ni.KubeClient.AppsV1().Deployments(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+	_, err = ni.KubeClient.AppsV1().Deployments(ing.Namespace).Get(context.TODO(), ing.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		return err
 	}
 
-	_, err = ni.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+	_, err = ni.KubeClient.CoreV1().Services(ing.Namespace).Get(context.TODO(), ing.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		return err
 	}
 
-	_, err = ni.KubeClient.CoreV1().ConfigMaps(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+	_, err = ni.KubeClient.CoreV1().ConfigMaps(ing.Namespace).Get(context.TODO(), ing.OffshootName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		return err
 	}
@@ -154,13 +155,13 @@ func (ni *ingressInvocation) IsExists(ing *api.Ingress) error {
 
 func (ni *ingressInvocation) EventuallyStarted(ing *api.Ingress) GomegaAsyncAssertion {
 	return Eventually(func() bool {
-		_, err := ni.KubeClient.CoreV1().Services(ni.Namespace()).Get(ing.OffshootName(), metav1.GetOptions{})
+		_, err := ni.KubeClient.CoreV1().Services(ni.Namespace()).Get(context.TODO(), ing.OffshootName(), metav1.GetOptions{})
 		if err != nil {
 			return false
 		}
 
 		if ing.LBType() != api.LBTypeHostPort {
-			_, err = ni.KubeClient.CoreV1().Endpoints(ni.Namespace()).Get(ing.OffshootName(), metav1.GetOptions{})
+			_, err = ni.KubeClient.CoreV1().Endpoints(ni.Namespace()).Get(context.TODO(), ing.OffshootName(), metav1.GetOptions{})
 			if err != nil {
 				return false
 			}
@@ -193,11 +194,11 @@ func (ni *ingressInvocation) FilterEndpointsForPort(eps []string, port core.Serv
 }
 
 func (ni *ingressInvocation) GetOffShootService(ing *api.Ingress) (*core.Service, error) {
-	return ni.KubeClient.CoreV1().Services(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+	return ni.KubeClient.CoreV1().Services(ing.Namespace).Get(context.TODO(), ing.OffshootName(), metav1.GetOptions{})
 }
 
 func (ni *ingressInvocation) GetFreeNodePort(p int32) int {
-	svc, err := ni.KubeClient.CoreV1().Services(core.NamespaceAll).List(metav1.ListOptions{})
+	svc, err := ni.KubeClient.CoreV1().Services(core.NamespaceAll).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return int(p)
 	}

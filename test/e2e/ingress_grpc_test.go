@@ -98,8 +98,8 @@ var _ = Describe("IngressGRPC", func() {
 	AfterEach(func() {
 		if options.Cleanup {
 			Expect(f.Ingress.Delete(ing)).NotTo(HaveOccurred())
-			Expect(f.KubeClient.CoreV1().Services(f.Ingress.Namespace()).Delete(grpcService.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
-			Expect(f.KubeClient.AppsV1().Deployments(f.Ingress.Namespace()).Delete(grpcController.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+			Expect(f.KubeClient.CoreV1().Services(f.Ingress.Namespace()).Delete(context.TODO(), grpcService.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
+			Expect(f.KubeClient.AppsV1().Deployments(f.Ingress.Namespace()).Delete(context.TODO(), grpcController.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
 		}
 	})
 
@@ -205,7 +205,7 @@ func doGRPCStream(address, crtPath string, request *hello.IntroRequest) (*hello.
 }
 
 func createGRPCController(f *framework.Invocation) (*apps.Deployment, error) {
-	return f.KubeClient.AppsV1().Deployments(f.Namespace()).Create(&apps.Deployment{
+	return f.KubeClient.AppsV1().Deployments(f.Namespace()).Create(context.TODO(), &apps.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      f.UniqueName(),
 			Namespace: f.Namespace(),
@@ -245,11 +245,11 @@ func createGRPCController(f *framework.Invocation) (*apps.Deployment, error) {
 				},
 			},
 		},
-	})
+	}, metav1.CreateOptions{})
 }
 
 func createGRPCService(f *framework.Invocation) (*core.Service, error) {
-	return f.KubeClient.CoreV1().Services(f.Namespace()).Create(&core.Service{
+	return f.KubeClient.CoreV1().Services(f.Namespace()).Create(context.TODO(), &core.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      f.UniqueName(),
 			Namespace: f.Namespace(),
@@ -271,5 +271,5 @@ func createGRPCService(f *framework.Invocation) (*core.Service, error) {
 				"app": "hello-grpc-" + f.App(),
 			},
 		},
-	})
+	}, metav1.CreateOptions{})
 }

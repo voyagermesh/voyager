@@ -17,6 +17,8 @@ limitations under the License.
 package operator
 
 import (
+	"context"
+
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
 	"github.com/appscode/go/log"
@@ -47,7 +49,7 @@ func (op *Operator) initNodeWatcher() {
 	op.nodeLister = op.kubeInformerFactory.Core().V1().Nodes().Lister()
 
 	// Warm up the cache for initial synchronization
-	if nodes, err := op.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{}); err == nil {
+	if nodes, err := op.KubeClient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{}); err == nil {
 		for _, node := range nodes.Items {
 			err = op.nodeInformer.GetIndexer().Add(&core.Node{
 				ObjectMeta: metav1.ObjectMeta{

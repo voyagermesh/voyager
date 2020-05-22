@@ -17,6 +17,8 @@ limitations under the License.
 package operator
 
 import (
+	"context"
+
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
 	"github.com/appscode/go/log"
@@ -25,12 +27,13 @@ import (
 )
 
 func (op *Operator) PurgeOffshootsWithDeprecatedLabels() error {
-	ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.WatchNamespace).List(metav1.ListOptions{})
+	ingresses, err := op.KubeClient.NetworkingV1beta1().Ingresses(op.WatchNamespace).List(context.TODO(), metav1.ListOptions{})
 	if err == nil {
 		for _, ing := range ingresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
 				err = op.KubeClient.AppsV1().DaemonSets(ing.Namespace).DeleteCollection(
-					&metav1.DeleteOptions{},
+					context.TODO(),
+					metav1.DeleteOptions{},
 					metav1.ListOptions{
 						LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
 					})
@@ -39,7 +42,8 @@ func (op *Operator) PurgeOffshootsWithDeprecatedLabels() error {
 				}
 			} else {
 				err = op.KubeClient.AppsV1().Deployments(ing.Namespace).DeleteCollection(
-					&metav1.DeleteOptions{},
+					context.TODO(),
+					metav1.DeleteOptions{},
 					metav1.ListOptions{
 						LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
 					})
@@ -48,11 +52,11 @@ func (op *Operator) PurgeOffshootsWithDeprecatedLabels() error {
 				}
 			}
 
-			if services, err := op.KubeClient.CoreV1().Services(ing.Namespace).List(metav1.ListOptions{
+			if services, err := op.KubeClient.CoreV1().Services(ing.Namespace).List(context.TODO(), metav1.ListOptions{
 				LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
 			}); err == nil {
 				for _, svc := range services.Items {
-					err = op.KubeClient.CoreV1().Services(ing.Namespace).Delete(svc.Name, &metav1.DeleteOptions{})
+					err = op.KubeClient.CoreV1().Services(ing.Namespace).Delete(context.TODO(), svc.Name, metav1.DeleteOptions{})
 					if err != nil {
 						return err
 					}
@@ -62,12 +66,13 @@ func (op *Operator) PurgeOffshootsWithDeprecatedLabels() error {
 		return err
 	}
 
-	engresses, err := op.VoyagerClient.VoyagerV1beta1().Ingresses(op.WatchNamespace).List(metav1.ListOptions{})
+	engresses, err := op.VoyagerClient.VoyagerV1beta1().Ingresses(op.WatchNamespace).List(context.TODO(), metav1.ListOptions{})
 	if err == nil {
 		for _, ing := range engresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
 				err = op.KubeClient.AppsV1().DaemonSets(ing.Namespace).DeleteCollection(
-					&metav1.DeleteOptions{},
+					context.TODO(),
+					metav1.DeleteOptions{},
 					metav1.ListOptions{
 						LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
 					})
@@ -76,7 +81,8 @@ func (op *Operator) PurgeOffshootsWithDeprecatedLabels() error {
 				}
 			} else {
 				err = op.KubeClient.AppsV1().Deployments(ing.Namespace).DeleteCollection(
-					&metav1.DeleteOptions{},
+					context.TODO(),
+					metav1.DeleteOptions{},
 					metav1.ListOptions{
 						LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
 					})
@@ -85,11 +91,11 @@ func (op *Operator) PurgeOffshootsWithDeprecatedLabels() error {
 				}
 			}
 
-			if services, err := op.KubeClient.CoreV1().Services(ing.Namespace).List(metav1.ListOptions{
+			if services, err := op.KubeClient.CoreV1().Services(ing.Namespace).List(context.TODO(), metav1.ListOptions{
 				LabelSelector: labels.SelectorFromSet(deprecatedLabelsFor(ing.Name)).String(),
 			}); err == nil {
 				for _, svc := range services.Items {
-					err = op.KubeClient.CoreV1().Services(ing.Namespace).Delete(svc.Name, &metav1.DeleteOptions{})
+					err = op.KubeClient.CoreV1().Services(ing.Namespace).Delete(context.TODO(), svc.Name, metav1.DeleteOptions{})
 					if err != nil {
 						return err
 					}
@@ -122,13 +128,13 @@ func deprecatedLabelsFor(name string) map[string]string {
 }
 
 func (op *Operator) PurgeOffshootsDaemonSet() error {
-	ingresses, err := op.KubeClient.ExtensionsV1beta1().Ingresses(op.WatchNamespace).List(metav1.ListOptions{})
+	ingresses, err := op.KubeClient.NetworkingV1beta1().Ingresses(op.WatchNamespace).List(context.TODO(), metav1.ListOptions{})
 	if err == nil {
 		for _, ing := range ingresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
 				name := api.VoyagerPrefix + ing.Name
 				log.Infof("Deleting DaemonSet %s/%s", ing.Namespace, name)
-				err = op.KubeClient.AppsV1().DaemonSets(ing.Namespace).Delete(name, &metav1.DeleteOptions{})
+				err = op.KubeClient.AppsV1().DaemonSets(ing.Namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
 				if err != nil {
 					return err
 				}
@@ -137,22 +143,22 @@ func (op *Operator) PurgeOffshootsDaemonSet() error {
 		return err
 	}
 
-	engresses, err := op.VoyagerClient.VoyagerV1beta1().Ingresses(op.WatchNamespace).List(metav1.ListOptions{})
+	engresses, err := op.VoyagerClient.VoyagerV1beta1().Ingresses(op.WatchNamespace).List(context.TODO(), metav1.ListOptions{})
 	if err == nil {
 		for _, ing := range engresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
 				name := api.VoyagerPrefix + ing.Name
-				if ds, err := op.KubeClient.AppsV1().DaemonSets(ing.Namespace).Get(name, metav1.GetOptions{}); err == nil {
+				if ds, err := op.KubeClient.AppsV1().DaemonSets(ing.Namespace).Get(context.TODO(), name, metav1.GetOptions{}); err == nil {
 					if ds.Spec.Template.Spec.Affinity != nil && ing.Spec.Affinity == nil {
 						log.Infof("Updating Ingress %s/%s to add `spec.affinity`", ing.Namespace, ing.Name)
 						ing.Spec.Affinity = ds.Spec.Template.Spec.Affinity
-						_, err = op.VoyagerClient.VoyagerV1beta1().Ingresses(ing.Namespace).Update(&ing)
+						_, err = op.VoyagerClient.VoyagerV1beta1().Ingresses(ing.Namespace).Update(context.TODO(), &ing, metav1.UpdateOptions{})
 						if err != nil {
 							return err
 						}
 					}
 					log.Infof("Deleting DaemonSet %s/%s", ing.Namespace, name)
-					err = op.KubeClient.AppsV1().DaemonSets(ing.Namespace).Delete(name, &metav1.DeleteOptions{})
+					err = op.KubeClient.AppsV1().DaemonSets(ing.Namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
 					if err != nil {
 						return err
 					}

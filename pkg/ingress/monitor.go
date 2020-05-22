@@ -17,6 +17,8 @@ limitations under the License.
 package ingress
 
 import (
+	"context"
+
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
@@ -64,7 +66,7 @@ func (c *controller) ensureMonitoringAgentDeleted(newAgent mona.Agent) error {
 
 func (c *controller) getOldAgent() (mona.Agent, error) {
 	// get stat service
-	svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.StatsServiceName(), metav1.GetOptions{})
+	svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(context.TODO(), c.Ingress.StatsServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -76,15 +78,15 @@ func (c *controller) getOldAgent() (mona.Agent, error) {
 }
 
 func (c *controller) setNewAgentType(agentType mona.AgentType) error {
-	svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(c.Ingress.StatsServiceName(), metav1.GetOptions{})
+	svc, err := c.KubeClient.CoreV1().Services(c.Ingress.Namespace).Get(context.TODO(), c.Ingress.StatsServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return errors.Errorf("failed to get stat service %s, reason: %s", c.Ingress.StatsServiceName(), err.Error())
 	}
-	_, _, err = core_util.PatchService(c.KubeClient, svc, func(in *core.Service) *core.Service {
+	_, _, err = core_util.PatchService(context.TODO(), c.KubeClient, svc, func(in *core.Service) *core.Service {
 		in.Annotations = core_util.UpsertMap(in.Annotations, map[string]string{
 			mona.KeyAgent: string(agentType),
 		})
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return err
 }

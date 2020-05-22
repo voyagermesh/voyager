@@ -17,6 +17,7 @@ limitations under the License.
 package framework
 
 import (
+	"context"
 	"sync"
 
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
@@ -103,7 +104,7 @@ func (f *Framework) Invoke() *Invocation {
 
 func (f *Framework) MinikubeIP() string {
 	if f.Config.CloudProvider == api.ProviderMinikube {
-		nodes, err := f.Config.KubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
+		nodes, err := f.Config.KubeClient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 		Expect(err).NotTo(HaveOccurred())
 		for _, addr := range nodes.Items[0].Status.Addresses {
 			if addr.Type == core.NodeInternalIP {

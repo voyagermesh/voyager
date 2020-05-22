@@ -17,6 +17,8 @@ limitations under the License.
 package e2e_test
 
 import (
+	"context"
+
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 	"voyagermesh.dev/voyager/test/framework"
 	"voyagermesh.dev/voyager/test/test-server/client"
@@ -49,10 +51,10 @@ var _ = Describe("Ingress TCP SNI", func() {
 			Name:      f.Ingress.TestServerHTTPSName(),
 			Namespace: f.Namespace(),
 		}
-		_, _, err := core_util.CreateOrPatchService(f.KubeClient, meta, func(obj *core.Service) *core.Service {
+		_, _, err := core_util.CreateOrPatchService(context.TODO(), f.KubeClient, meta, func(obj *core.Service) *core.Service {
 			delete(obj.Annotations, "ingress.appscode.com/backend-tls")
 			return obj
-		})
+		}, metav1.PatchOptions{})
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -73,12 +75,12 @@ var _ = Describe("Ingress TCP SNI", func() {
 			Name:      f.Ingress.TestServerHTTPSName(),
 			Namespace: f.Namespace(),
 		}
-		_, _, err := core_util.CreateOrPatchService(f.KubeClient, meta, func(obj *core.Service) *core.Service {
+		_, _, err := core_util.CreateOrPatchService(context.TODO(), f.KubeClient, meta, func(obj *core.Service) *core.Service {
 			obj.Annotations = map[string]string{
 				"ingress.appscode.com/backend-tls": "ssl verify none",
 			}
 			return obj
-		})
+		}, metav1.PatchOptions{})
 		Expect(err).NotTo(HaveOccurred())
 
 		if options.Cleanup {
@@ -149,7 +151,7 @@ var _ = Describe("Ingress TCP SNI", func() {
 		})
 		AfterEach(func() {
 			if options.Cleanup {
-				Expect(f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+				Expect(f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(context.TODO(), secret.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
 			}
 		})
 		BeforeEach(func() {
@@ -226,8 +228,8 @@ var _ = Describe("Ingress TCP SNI", func() {
 		})
 		AfterEach(func() {
 			if options.Cleanup {
-				Expect(f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
-				Expect(f.KubeClient.CoreV1().Secrets(wildcardSecret.Namespace).Delete(wildcardSecret.Name, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
+				Expect(f.KubeClient.CoreV1().Secrets(secret.Namespace).Delete(context.TODO(), secret.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
+				Expect(f.KubeClient.CoreV1().Secrets(wildcardSecret.Namespace).Delete(context.TODO(), wildcardSecret.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
 			}
 		})
 

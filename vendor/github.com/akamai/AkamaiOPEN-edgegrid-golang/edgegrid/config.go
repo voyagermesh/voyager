@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-ini/ini"
 	"github.com/mitchellh/go-homedir"
+	"gopkg.in/ini.v1"
 )
 
 // Config struct provides all the necessary fields to
@@ -17,6 +17,7 @@ type Config struct {
 	ClientToken  string   `ini:"client_token"`
 	ClientSecret string   `ini:"client_secret"`
 	AccessToken  string   `ini:"access_token"`
+	AccountKey   string   `ini:"account_key"`
 	HeaderToSign []string `ini:"headers_to_sign"`
 	MaxBody      int      `ini:"max_body"`
 	Debug        bool     `ini:"debug"`

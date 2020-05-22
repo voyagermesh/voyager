@@ -17,6 +17,8 @@ limitations under the License.
 package e2e_test
 
 import (
+	"context"
+
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 	"voyagermesh.dev/voyager/test/framework"
 	"voyagermesh.dev/voyager/test/test-server/client"
@@ -69,13 +71,13 @@ var _ = Describe("IngressWithRBACEnabled", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(eps)).Should(BeNumerically(">=", 1))
 
-			_, err = f.KubeClient.CoreV1().ServiceAccounts(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+			_, err = f.KubeClient.CoreV1().ServiceAccounts(ing.Namespace).Get(context.TODO(), ing.OffshootName(), metav1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
-			_, err = f.KubeClient.RbacV1beta1().Roles(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+			_, err = f.KubeClient.RbacV1beta1().Roles(ing.Namespace).Get(context.TODO(), ing.OffshootName(), metav1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
-			_, err = f.KubeClient.RbacV1beta1().RoleBindings(ing.Namespace).Get(ing.OffshootName(), metav1.GetOptions{})
+			_, err = f.KubeClient.RbacV1beta1().RoleBindings(ing.Namespace).Get(context.TODO(), ing.OffshootName(), metav1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
 			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET", "/testpath/ok", func(r *client.Response) bool {

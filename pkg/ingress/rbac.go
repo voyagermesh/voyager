@@ -17,11 +17,13 @@ limitations under the License.
 package ingress
 
 import (
+	"context"
+
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 	"voyagermesh.dev/voyager/pkg/eventer"
 
 	core "k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
+	extensions "k8s.io/api/networking/v1beta1"
 	rbac "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kutil "kmodules.xyz/client-go"
@@ -100,7 +102,7 @@ func (c *controller) reconcileServiceAccount() (kutil.VerbType, error) {
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	_, vt, err := core_util.CreateOrPatchServiceAccount(c.KubeClient, meta, func(in *core.ServiceAccount) *core.ServiceAccount {
+	_, vt, err := core_util.CreateOrPatchServiceAccount(context.TODO(), c.KubeClient, meta, func(in *core.ServiceAccount) *core.ServiceAccount {
 		core_util.EnsureOwnerReference(in, metav1.NewControllerRef(c.Ingress, api.SchemeGroupVersion.WithKind(api.ResourceKindIngress)))
 
 		in.Labels = c.Ingress.OffshootLabels()
@@ -110,7 +112,7 @@ func (c *controller) reconcileServiceAccount() (kutil.VerbType, error) {
 		in.Annotations[api.OriginAPISchema] = c.Ingress.APISchema()
 		in.Annotations[api.OriginName] = c.Ingress.GetName()
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return vt, err
 }
 
@@ -119,7 +121,7 @@ func (c *controller) reconcileRoles() (kutil.VerbType, error) {
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	_, vt, err := rbac_util.CreateOrPatchRole(c.KubeClient, meta, func(in *rbac.Role) *rbac.Role {
+	_, vt, err := rbac_util.CreateOrPatchRole(context.TODO(), c.KubeClient, meta, func(in *rbac.Role) *rbac.Role {
 		core_util.EnsureOwnerReference(in, metav1.NewControllerRef(c.Ingress, api.SchemeGroupVersion.WithKind(api.ResourceKindIngress)))
 
 		in.Labels = c.Ingress.OffshootLabels()
@@ -158,7 +160,7 @@ func (c *controller) reconcileRoles() (kutil.VerbType, error) {
 			},
 		}
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return vt, err
 }
 
@@ -167,7 +169,7 @@ func (c *controller) reconcileRoleBinding() (kutil.VerbType, error) {
 		Namespace: c.Ingress.Namespace,
 		Name:      c.Ingress.OffshootName(),
 	}
-	_, vt, err := rbac_util.CreateOrPatchRoleBinding(c.KubeClient, meta, func(in *rbac.RoleBinding) *rbac.RoleBinding {
+	_, vt, err := rbac_util.CreateOrPatchRoleBinding(context.TODO(), c.KubeClient, meta, func(in *rbac.RoleBinding) *rbac.RoleBinding {
 		core_util.EnsureOwnerReference(in, metav1.NewControllerRef(c.Ingress, api.SchemeGroupVersion.WithKind(api.ResourceKindIngress)))
 
 		in.Labels = c.Ingress.OffshootLabels()
@@ -190,7 +192,7 @@ func (c *controller) reconcileRoleBinding() (kutil.VerbType, error) {
 			},
 		}
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return vt, err
 }
 
@@ -198,19 +200,19 @@ func (c *controller) ensureRoleBindingDeleted() error {
 	c.logger.Infof("Deleting RoleBinding %s/%s", c.Ingress.Namespace, c.Ingress.OffshootName())
 	return c.KubeClient.RbacV1().
 		RoleBindings(c.Ingress.Namespace).
-		Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
+		Delete(context.TODO(), c.Ingress.OffshootName(), metav1.DeleteOptions{})
 }
 
 func (c *controller) ensureRolesDeleted() error {
 	c.logger.Infof("Deleting Role %s/%s", c.Ingress.Namespace, c.Ingress.OffshootName())
 	return c.KubeClient.RbacV1().
 		Roles(c.Ingress.Namespace).
-		Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
+		Delete(context.TODO(), c.Ingress.OffshootName(), metav1.DeleteOptions{})
 }
 
 func (c *controller) ensureServiceAccountDeleted() error {
 	c.logger.Infof("Deleting ServiceAccount %s/%s", c.Ingress.Namespace, c.Ingress.OffshootName())
 	return c.KubeClient.CoreV1().
 		ServiceAccounts(c.Ingress.Namespace).
-		Delete(c.Ingress.OffshootName(), &metav1.DeleteOptions{})
+		Delete(context.TODO(), c.Ingress.OffshootName(), metav1.DeleteOptions{})
 }

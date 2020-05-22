@@ -28,6 +28,7 @@ var (
 	ErrInvalidLength                        = errors.New("Invalid length")
 	ErrInvalidAddress                       = errors.New("Invalid address")
 	ErrInvalidPortNumber                    = errors.New("Invalid port number")
+	ErrSuperfluousProxyHeader               = errors.New("Upstream connection sent PROXY header but isn't allowed to send one")
 )
 
 // Header is the placeholder for proxy protocol header.
@@ -39,6 +40,7 @@ type Header struct {
 	DestinationAddress net.IP
 	SourcePort         uint16
 	DestinationPort    uint16
+	rawTLVs            []byte
 }
 
 // RemoteAddr returns the address of the remote endpoint of the connection.
@@ -71,6 +73,10 @@ func (header *Header) EqualsTo(otherHeader *Header) bool {
 	if header.Command.IsLocal() {
 		return true
 	}
+	// TLVs only exist for version 2
+	if header.Version == 0x02 && !bytes.Equal(header.rawTLVs, otherHeader.rawTLVs) {
+		return false
+	}
 	return header.Version == otherHeader.Version &&
 		header.TransportProtocol == otherHeader.TransportProtocol &&
 		header.SourceAddress.String() == otherHeader.SourceAddress.String() &&
@@ -101,6 +107,11 @@ func (header *Header) Format() ([]byte, error) {
 	}
 }
 
+// TLVs returns the TLVs stored into this header, if they exist.  TLVs are optional for v2 of the protocol.
+func (header *Header) TLVs() ([]TLV, error) {
+	return SplitTLVs(header.rawTLVs)
+}
+
 // Read identifies the proxy protocol version and reads the remaining of
 // the header, accordingly.
 //
@@ -112,10 +123,34 @@ func (header *Header) Format() ([]byte, error) {
 // Also, this operation will block until enough bytes are available for peeking.
 func Read(reader *bufio.Reader) (*Header, error) {
 	// In order to improve speed for small non-PROXYed packets, take a peek at the first byte alone.
-	if b1, err := reader.Peek(1); err == nil && (bytes.Equal(b1[:1], SIGV1[:1]) || bytes.Equal(b1[:1], SIGV2[:1])) {
-		if signature, err := reader.Peek(5); err == nil && bytes.Equal(signature[:5], SIGV1) {
+	b1, err := reader.Peek(1)
+	if err != nil {
+		if err == io.EOF {
+			return nil, ErrNoProxyProtocol
+		}
+		return nil, err
+	}
+
+	if bytes.Equal(b1[:1], SIGV1[:1]) || bytes.Equal(b1[:1], SIGV2[:1]) {
+		signature, err := reader.Peek(5)
+		if err != nil {
+			if err == io.EOF {
+				return nil, ErrNoProxyProtocol
+			}
+			return nil, err
+		}
+		if bytes.Equal(signature[:5], SIGV1) {
 			return parseVersion1(reader)
-		} else if signature, err := reader.Peek(12); err == nil && bytes.Equal(signature[:12], SIGV2) {
+		}
+
+		signature, err = reader.Peek(12)
+		if err != nil {
+			if err == io.EOF {
+				return nil, ErrNoProxyProtocol
+			}
+			return nil, err
+		}
+		if bytes.Equal(signature[:12], SIGV2) {
 			return parseVersion2(reader)
 		}
 	}

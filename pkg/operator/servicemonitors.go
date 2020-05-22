@@ -17,6 +17,8 @@ limitations under the License.
 package operator
 
 import (
+	"context"
+
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
 	"github.com/appscode/go/log"
@@ -24,6 +26,7 @@ import (
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 	"kmodules.xyz/client-go/discovery"
@@ -40,9 +43,11 @@ func (op *Operator) initServiceMonitorWatcher() {
 	op.smonInformer = cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return op.PromClient.ServiceMonitors(op.WatchNamespace).List(options)
+				return op.PromClient.ServiceMonitors(op.WatchNamespace).List(context.TODO(), options)
 			},
-			WatchFunc: op.PromClient.ServiceMonitors(op.WatchNamespace).Watch,
+			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+				return op.PromClient.ServiceMonitors(op.WatchNamespace).Watch(context.TODO(), options)
+			},
 		},
 		&promapi.ServiceMonitor{}, op.ResyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
 	)

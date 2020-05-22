@@ -69,6 +69,10 @@ func (r *StandardStorage) List(ctx context.Context, options *metainternalversion
 	return r.NewList(), nil
 }
 
+func (r *StandardStorage) ConvertToTable(ctx context.Context, object runtime.Object, tableOptions runtime.Object) (*metav1.Table, error) {
+	return new(metav1.Table), nil
+}
+
 // CreaterUpdater
 func (r *StandardStorage) Update(ctx context.Context, name string, objInfo rest.UpdatedObjectInfo, createValidation rest.ValidateObjectFunc, updateValidation rest.ValidateObjectUpdateFunc, forceAllowCreate bool, options *metav1.UpdateOptions) (runtime.Object, bool, error) {
 	return r.New(), true, nil

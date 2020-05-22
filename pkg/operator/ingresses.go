@@ -28,16 +28,17 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
+	extensions "k8s.io/api/networking/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 	core_util "kmodules.xyz/client-go/core/v1"
-	ext_util "kmodules.xyz/client-go/extensions/v1beta1"
 	"kmodules.xyz/client-go/meta"
+	ext_util "kmodules.xyz/client-go/networking/v1beta1"
 	"kmodules.xyz/client-go/tools/queue"
 )
 
 func (op *Operator) initIngressWatcher() {
-	op.ingInformer = op.kubeInformerFactory.Extensions().V1beta1().Ingresses().Informer()
+	op.ingInformer = op.kubeInformerFactory.Networking().V1beta1().Ingresses().Informer()
 	op.ingQueue = queue.New("Ingress", op.MaxNumRequeues, op.NumThreads, op.reconcileIngress)
 	op.ingInformer.AddEventHandler(&cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
@@ -89,7 +90,7 @@ func (op *Operator) initIngressWatcher() {
 			queue.Enqueue(op.ingQueue.GetQueue(), newObj)
 		},
 	})
-	op.ingLister = op.kubeInformerFactory.Extensions().V1beta1().Ingresses().Lister()
+	op.ingLister = op.kubeInformerFactory.Networking().V1beta1().Ingresses().Lister()
 }
 
 func (op *Operator) reconcileIngress(key string) error {
@@ -116,10 +117,10 @@ func (op *Operator) reconcileIngress(key string) error {
 		if core_util.HasFinalizer(ing.ObjectMeta, voyager.GroupName) {
 			glog.Infof("Delete for engress %s\n", key)
 			ctrl.Delete()
-			_, _, err = ext_util.PatchIngress(op.KubeClient, ing, func(obj *extensions.Ingress) *extensions.Ingress {
+			_, _, err = ext_util.PatchIngress(context.TODO(), op.KubeClient, ing, func(obj *extensions.Ingress) *extensions.Ingress {
 				obj.ObjectMeta = core_util.RemoveFinalizer(obj.ObjectMeta, voyager.GroupName)
 				return obj
-			})
+			}, metav1.PatchOptions{})
 			if err != nil {
 				return err
 			}
@@ -127,19 +128,19 @@ func (op *Operator) reconcileIngress(key string) error {
 	} else {
 		glog.Infof("Sync/Add/Update for ingress %s\n", key)
 		if !core_util.HasFinalizer(ing.ObjectMeta, voyager.GroupName) && ctrl.FirewallSupported() {
-			_, _, err = ext_util.PatchIngress(op.KubeClient, ing, func(obj *extensions.Ingress) *extensions.Ingress {
+			_, _, err = ext_util.PatchIngress(context.TODO(), op.KubeClient, ing, func(obj *extensions.Ingress) *extensions.Ingress {
 				obj.ObjectMeta = core_util.AddFinalizer(obj.ObjectMeta, voyager.GroupName)
 				return obj
-			})
+			}, metav1.PatchOptions{})
 			if err != nil {
 				return err
 			}
 		}
 		if core_util.HasFinalizer(ing.ObjectMeta, voyager.GroupName) && !ctrl.FirewallSupported() {
-			_, _, err = ext_util.PatchIngress(op.KubeClient, ing, func(obj *extensions.Ingress) *extensions.Ingress {
+			_, _, err = ext_util.PatchIngress(context.TODO(), op.KubeClient, ing, func(obj *extensions.Ingress) *extensions.Ingress {
 				obj.ObjectMeta = core_util.RemoveFinalizer(obj.ObjectMeta, voyager.GroupName)
 				return obj
-			})
+			}, metav1.PatchOptions{})
 			if err != nil {
 				return err
 			}

@@ -17,6 +17,7 @@ limitations under the License.
 package coreosprometheusoperator
 
 import (
+	"context"
 	"errors"
 	"reflect"
 
@@ -59,7 +60,7 @@ func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new 
 	if !agent.supportsCoreOSOperator() {
 		return kutil.VerbUnchanged, errors.New("cluster does not support CoreOS Prometheus operator")
 	}
-	old, err := agent.promClient.ServiceMonitors(metav1.NamespaceAll).List(metav1.ListOptions{
+	old, err := agent.promClient.ServiceMonitors(metav1.NamespaceAll).List(context.TODO(), metav1.ListOptions{
 		LabelSelector: labels.Set{
 			api.KeyService: sp.ServiceName() + "." + sp.GetNamespace(),
 		}.String(),
@@ -71,7 +72,7 @@ func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new 
 	vt := kutil.VerbUnchanged
 	for _, item := range old.Items {
 		if item != nil && (new == nil || item.Namespace != new.Prometheus.ServiceMonitor.Namespace) {
-			err := agent.promClient.ServiceMonitors(item.Namespace).Delete(sp.ServiceMonitorName(), nil)
+			err := agent.promClient.ServiceMonitors(item.Namespace).Delete(context.TODO(), sp.ServiceMonitorName(), metav1.DeleteOptions{})
 			if err != nil && !kerr.IsNotFound(err) {
 				return kutil.VerbUnchanged, err
 			} else if err == nil {
@@ -89,7 +90,7 @@ func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new 
 	}
 	new.Prometheus.ServiceMonitor.Labels[api.KeyService] = sp.ServiceName() + "." + sp.GetNamespace()
 
-	actual, err := agent.promClient.ServiceMonitors(new.Prometheus.ServiceMonitor.Namespace).Get(sp.ServiceMonitorName(), metav1.GetOptions{})
+	actual, err := agent.promClient.ServiceMonitors(new.Prometheus.ServiceMonitor.Namespace).Get(context.TODO(), sp.ServiceMonitorName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		return agent.createServiceMonitor(sp, new)
 	} else if err != nil {
@@ -111,7 +112,7 @@ func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new 
 	}
 
 	if update {
-		svc, err := agent.k8sClient.CoreV1().Services(sp.GetNamespace()).Get(sp.ServiceName(), metav1.GetOptions{})
+		svc, err := agent.k8sClient.CoreV1().Services(sp.GetNamespace()).Get(context.TODO(), sp.ServiceName(), metav1.GetOptions{})
 		if err != nil {
 			return vt, err
 		}
@@ -127,7 +128,7 @@ func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new 
 		for i := range actual.Spec.Endpoints {
 			actual.Spec.Endpoints[i].Interval = new.Prometheus.ServiceMonitor.Interval
 		}
-		_, err = agent.promClient.ServiceMonitors(new.Prometheus.ServiceMonitor.Namespace).Update(actual)
+		_, err = agent.promClient.ServiceMonitors(new.Prometheus.ServiceMonitor.Namespace).Update(context.TODO(), actual, metav1.UpdateOptions{})
 		return kutil.VerbUpdated, err
 	}
 
@@ -135,7 +136,7 @@ func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new 
 }
 
 func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor, spec *api.AgentSpec) (kutil.VerbType, error) {
-	svc, err := agent.k8sClient.CoreV1().Services(sp.GetNamespace()).Get(sp.ServiceName(), metav1.GetOptions{})
+	svc, err := agent.k8sClient.CoreV1().Services(sp.GetNamespace()).Get(context.TODO(), sp.ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -173,7 +174,7 @@ func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor
 		},
 	}
 	sm.ObjectMeta = agent.ensureOwnerReference(sm.ObjectMeta, *svc)
-	if _, err := agent.promClient.ServiceMonitors(spec.Prometheus.ServiceMonitor.Namespace).Create(sm); err != nil && !kerr.IsAlreadyExists(err) {
+	if _, err := agent.promClient.ServiceMonitors(spec.Prometheus.ServiceMonitor.Namespace).Create(context.TODO(), sm, metav1.CreateOptions{}); err != nil && !kerr.IsAlreadyExists(err) {
 		return kutil.VerbUnchanged, err
 	}
 	return kutil.VerbCreated, nil
@@ -184,7 +185,7 @@ func (agent *PrometheusCoreosOperator) Delete(sp api.StatsAccessor) (kutil.VerbT
 		return kutil.VerbUnchanged, errors.New("cluster does not support CoreOS Prometheus operator")
 	}
 
-	old, err := agent.promClient.ServiceMonitors(metav1.NamespaceAll).List(metav1.ListOptions{
+	old, err := agent.promClient.ServiceMonitors(metav1.NamespaceAll).List(context.TODO(), metav1.ListOptions{
 		LabelSelector: labels.Set{
 			api.KeyService: sp.GetNamespace() + "." + sp.ServiceName(),
 		}.String(),
@@ -195,7 +196,7 @@ func (agent *PrometheusCoreosOperator) Delete(sp api.StatsAccessor) (kutil.VerbT
 
 	vt := kutil.VerbUnchanged
 	for _, item := range old.Items {
-		err := agent.promClient.ServiceMonitors(item.Namespace).Delete(sp.ServiceMonitorName(), nil)
+		err := agent.promClient.ServiceMonitors(item.Namespace).Delete(context.TODO(), sp.ServiceMonitorName(), metav1.DeleteOptions{})
 		if err != nil && !kerr.IsNotFound(err) {
 			return kutil.VerbUnchanged, err
 		} else if err == nil {
@@ -206,11 +207,11 @@ func (agent *PrometheusCoreosOperator) Delete(sp api.StatsAccessor) (kutil.VerbT
 }
 
 func (agent *PrometheusCoreosOperator) supportsCoreOSOperator() bool {
-	_, err := agent.extClient.CustomResourceDefinitions().Get(promapi.PrometheusName+"."+promapi.SchemeGroupVersion.Group, metav1.GetOptions{})
+	_, err := agent.extClient.CustomResourceDefinitions().Get(context.TODO(), promapi.PrometheusName+"."+promapi.SchemeGroupVersion.Group, metav1.GetOptions{})
 	if err != nil {
 		return false
 	}
-	_, err = agent.extClient.CustomResourceDefinitions().Get(promapi.ServiceMonitorName+"."+promapi.SchemeGroupVersion.Group, metav1.GetOptions{})
+	_, err = agent.extClient.CustomResourceDefinitions().Get(context.TODO(), promapi.ServiceMonitorName+"."+promapi.SchemeGroupVersion.Group, metav1.GetOptions{})
 	return err == nil
 }
 
