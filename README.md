@@ -21,14 +21,14 @@ Voyager can automatically provision and refresh SSL certificates (including wild
 ## Supported Versions
 Please pick a version of Voyager that matches your Kubernetes installation.
 
-| Voyager Version                                                                             | Docs                                                                 | Kubernetes Version | Prometheus operator Version |
-|---------------------------------------------------------------------------------------------|----------------------------------------------------------------------|--------------------|-----------------------------|
-| [v12.0.0](https://github.com/voyagermesh/voyager/releases/tag/v12.0.0) (uses CRD)           | [User Guide](https://voyagermesh.com/docs/v12.0.0/)                  | 1.11.x+            | 0.34.0+                     |
-| [v11.0.1](https://github.com/voyagermesh/voyager/releases/tag/v11.0.1) (uses CRD)           | [User Guide](https://voyagermesh.com/docs/v11.0.1/)                  | 1.9.x+             | 0.30.0+                     |
-| [10.0.0](https://github.com/voyagermesh/voyager/releases/tag/10.0.0) (uses CRD)             | [User Guide](https://voyagermesh.com/docs/10.0.0/)                   | 1.9.x+             | 0.16.0+                     |
-| [7.4.0](https://github.com/voyagermesh/voyager/releases/tag/7.4.0) (uses CRD)               | [User Guide](https://voyagermesh.com/docs/7.4.0/)                    | 1.8.x - 1.11.x     | 0.16.0+                     |
-| [5.0.0](https://github.com/voyagermesh/voyager/releases/tag/5.0.0) (uses CRD)               | [User Guide](https://voyagermesh.com/docs/5.0.0/)                    | 1.7.x              | 0.12.0+                     |
-| [3.2.2](https://github.com/voyagermesh/voyager/releases/tag/3.2.2) (uses TPR)               | [User Guide](https://github.com/voyagermesh/voyager/tree/3.2.2/docs) | 1.5.x - 1.7.x      | < 0.12.0                    |
+| Voyager Version                                                                      | Docs                                                                 | Kubernetes Version | Prometheus operator Version |
+|--------------------------------------------------------------------------------------|----------------------------------------------------------------------|--------------------|-----------------------------|
+| [v13.0.0-beta.0](https://github.com/voyagermesh/voyager/releases/tag/v13.0.0-beta.0) | [User Guide](https://voyagermesh.com/docs/v13.0.0-beta.0/)           | 1.14.x+            | 0.34.0+                     |
+| [v12.0.0](https://github.com/voyagermesh/voyager/releases/tag/v12.0.0)               | [User Guide](https://voyagermesh.com/docs/v12.0.0/)                  | 1.11.x - 1.17.x    | 0.34.0+                     |
+| [v11.0.1](https://github.com/voyagermesh/voyager/releases/tag/v11.0.1)               | [User Guide](https://voyagermesh.com/docs/v11.0.1/)                  | 1.9.x+             | 0.30.0+                     |
+| [10.0.0](https://github.com/voyagermesh/voyager/releases/tag/10.0.0)                 | [User Guide](https://voyagermesh.com/docs/10.0.0/)                   | 1.9.x+             | 0.16.0+                     |
+| [7.4.0](https://github.com/voyagermesh/voyager/releases/tag/7.4.0)                   | [User Guide](https://voyagermesh.com/docs/7.4.0/)                    | 1.8.x - 1.11.x     | 0.16.0+                     |
+| [5.0.0](https://github.com/voyagermesh/voyager/releases/tag/5.0.0)                   | [User Guide](https://voyagermesh.com/docs/5.0.0/)                    | 1.7.x              | 0.12.0+                     |
 
 ## Installation
 To install Voyager, please follow the guide [here](https://voyagermesh.com/docs/latest/setup/install/).
