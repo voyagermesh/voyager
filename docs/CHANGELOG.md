@@ -17,6 +17,20 @@ aliases:
 
 # Change Log
 
+## [v13.0.0-beta.0](https://github.com/voyagermesh/voyager/tree/v13.0.0-beta.0) (2020-05-22)
+[Full Changelog](https://github.com/voyagermesh/voyager/compare/v12.0.0...v13.0.0-beta.0)
+
+**Closed issues:**
+
+- README.md documentation links are broken [\#1506](https://github.com/voyagermesh/voyager/issues/1506)
+- v12 release? [\#1492](https://github.com/voyagermesh/voyager/issues/1492)
+
+**Merged pull requests:**
+
+- Prepare release v13.0.0-beta.0 [\#1510](https://github.com/voyagermesh/voyager/pull/1510) ([tamalsaha](https://github.com/tamalsaha))
+- Update to Kubernetes v1.18.3 [\#1509](https://github.com/voyagermesh/voyager/pull/1509) ([tamalsaha](https://github.com/tamalsaha))
+- Fix README.md documentation links [\#1507](https://github.com/voyagermesh/voyager/pull/1507) ([RobertKirk](https://github.com/RobertKirk))
+
 ## [v12.0.0](https://github.com/voyagermesh/voyager/tree/v12.0.0) (2020-05-18)
 [Full Changelog](https://github.com/voyagermesh/voyager/compare/v12.0.0-rc.2...v12.0.0)
 
