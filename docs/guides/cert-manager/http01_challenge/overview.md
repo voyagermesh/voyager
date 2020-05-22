@@ -63,7 +63,7 @@ kubectl expose deployment nginx --name=web --port=80 --target-port=80
 Now create your ingress by applying [ingress.yaml](/docs/examples/cert-manager/http/ingress.yaml)
 
 ```yaml
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: test-ingress
