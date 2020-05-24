@@ -31,7 +31,7 @@ import (
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	vault "github.com/hashicorp/vault/api"
 	core "k8s.io/api/core/v1"
-	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -54,7 +54,7 @@ type Controller interface {
 type controller struct {
 	KubeClient      kubernetes.Interface
 	WorkloadClient  wcs.Interface
-	CRDClient       kext_cs.ApiextensionsV1beta1Interface
+	CRDClient       crd_cs.Interface
 	VoyagerClient   cs.Interface
 	PromClient      pcm.MonitoringV1Interface
 	ServiceLister   core_listers.ServiceLister
@@ -78,7 +78,7 @@ func NewController(
 	ctx context.Context,
 	kubeClient kubernetes.Interface,
 	workloadClient wcs.Interface,
-	crdClient kext_cs.ApiextensionsV1beta1Interface,
+	crdClient crd_cs.Interface,
 	extClient cs.Interface,
 	promClient pcm.MonitoringV1Interface,
 	serviceLister core_listers.ServiceLister,

@@ -17,22 +17,21 @@ limitations under the License.
 package agents
 
 import (
-	"kmodules.xyz/monitoring-agent-api/agents/coreosprometheusoperator"
 	"kmodules.xyz/monitoring-agent-api/agents/prometheus"
 	"kmodules.xyz/monitoring-agent-api/agents/prometheusbuiltin"
+	"kmodules.xyz/monitoring-agent-api/agents/prometheusoperator"
 	api "kmodules.xyz/monitoring-agent-api/api/v1"
 
 	prom "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
-	ecs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
 )
 
-func New(at api.AgentType, k8sClient kubernetes.Interface, extClient ecs.ApiextensionsV1beta1Interface, promClient prom.MonitoringV1Interface) api.Agent {
+func New(at api.AgentType, k8sClient kubernetes.Interface, promClient prom.MonitoringV1Interface) api.Agent {
 	switch at {
 	case api.AgentPrometheus:
 		return prometheus.New()
 	case api.AgentPrometheusOperator, api.AgentCoreOSPrometheus, api.DeprecatedAgentCoreOSPrometheus:
-		return coreosprometheusoperator.New(at, k8sClient, extClient, promClient)
+		return prometheusoperator.New(at, k8sClient, promClient)
 	case api.AgentPrometheusBuiltin:
 		return prometheusbuiltin.New(k8sClient)
 	}

@@ -59,11 +59,10 @@ require (
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/kube-openapi v0.0.0-20200410145947-61e04a5be9a6
 	k8s.io/utils v0.0.0-20200324210504-a9aa75ae1b89
-	kmodules.xyz/client-go v0.0.0-20200521181834-92024b192ae7
+	kmodules.xyz/client-go v0.0.0-20200525195850-2fd180961371
 	kmodules.xyz/crd-schema-fuzz v0.0.0-20200521005638-2433a187de95
-	kmodules.xyz/monitoring-agent-api v0.0.0-20200521105700-6eb8ff8e7be9
-	kmodules.xyz/openshift v0.0.0-20200521065736-da9980848f70 // indirect
-	kmodules.xyz/webhook-runtime v0.0.0-20200521051441-6c051c487814
+	kmodules.xyz/monitoring-agent-api v0.0.0-20200525002655-2aa50cb10ce9
+	kmodules.xyz/webhook-runtime v0.0.0-20200522123600-ca70a7e28ed0
 	sigs.k8s.io/yaml v1.2.0
 )
 
@@ -87,6 +86,7 @@ replace (
 	github.com/miekg/dns => github.com/miekg/dns v1.0.7
 	github.com/prometheus/haproxy_exporter => github.com/appscode/haproxy_exporter v0.7.2-0.20190508003714-b4abf52090e2
 	github.com/xenolf/lego => github.com/appscode/lego v1.2.2-0.20181215093553-e57a0a1b7259
+	k8s.io/api => github.com/kmodules/api v0.18.4-0.20200524125823-c8bc107809b9
 	k8s.io/apimachinery => github.com/kmodules/apimachinery v0.19.0-alpha.0.0.20200520235721-10b58e57a423
 	k8s.io/apiserver => github.com/kmodules/apiserver v0.18.4-0.20200521000930-14c5f6df9625
 	k8s.io/client-go => k8s.io/client-go v0.18.3

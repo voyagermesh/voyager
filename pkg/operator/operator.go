@@ -17,8 +17,6 @@ limitations under the License.
 package operator
 
 import (
-	"context"
-
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 	cs "voyagermesh.dev/voyager/client/clientset/versioned"
 	voyagerinformers "voyagermesh.dev/voyager/client/informers/externalversions"
@@ -28,8 +26,7 @@ import (
 
 	"github.com/appscode/go/log"
 	prom "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
-	kext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/informers"
@@ -41,7 +38,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
-	apiext_util "kmodules.xyz/client-go/apiextensions/v1beta1"
+	"kmodules.xyz/client-go/apiextensions"
 	"kmodules.xyz/client-go/tools/queue"
 	wcs "kmodules.xyz/webhook-runtime/client/workload/v1"
 )
@@ -52,7 +49,7 @@ type Operator struct {
 	ClientConfig   *rest.Config
 	KubeClient     kubernetes.Interface
 	WorkloadClient wcs.Interface
-	CRDClient      kext_cs.ApiextensionsV1beta1Interface
+	CRDClient      crd_cs.Interface
 	VoyagerClient  cs.Interface
 	PromClient     prom.MonitoringV1Interface
 
@@ -130,11 +127,11 @@ type Operator struct {
 func (op *Operator) ensureCustomResourceDefinitions() error {
 	log.Infoln("Ensuring CRD registration")
 
-	crds := []*kext.CustomResourceDefinition{
+	crds := []*apiextensions.CustomResourceDefinition{
 		api.Ingress{}.CustomResourceDefinition(),
 		api.Certificate{}.CustomResourceDefinition(),
 	}
-	return apiext_util.RegisterCRDs(context.TODO(), op.KubeClient.Discovery(), op.CRDClient, crds)
+	return apiextensions.RegisterCRDs(op.CRDClient, crds)
 }
 
 func (op *Operator) RunInformers(stopCh <-chan struct{}) {

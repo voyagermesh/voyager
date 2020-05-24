@@ -57,9 +57,14 @@ func AddLabelBlacklistFlag(fs *pflag.FlagSet) {
 	fs.StringSliceVar(&labelKeyBlacklist, "label-key-blacklist", labelKeyBlacklist, "list of keys that are not propagated from a CRD object to its offshoots")
 }
 
-func DeleteInBackground() *metav1.DeleteOptions {
+func DeleteInBackground() metav1.DeleteOptions {
 	policy := metav1.DeletePropagationBackground
-	return &metav1.DeleteOptions{PropagationPolicy: &policy}
+	return metav1.DeleteOptions{PropagationPolicy: &policy}
+}
+
+func DeleteInForeground() metav1.DeleteOptions {
+	policy := metav1.DeletePropagationForeground
+	return metav1.DeleteOptions{PropagationPolicy: &policy}
 }
 
 func GetKind(v interface{}) string {
@@ -92,6 +97,20 @@ func FilterKeys(domainKey string, out, in map[string]string) map[string]string {
 		case idx > n && k[idx-n-1:idx] != "."+domainKey:
 			out[k] = v
 		}
+	}
+	return out
+}
+
+func MergeKeys(out, in map[string]string) map[string]string {
+	if in == nil {
+		return out
+	}
+	if out == nil {
+		out = make(map[string]string, len(in))
+	}
+
+	for k, v := range in {
+		out[k] = v
 	}
 	return out
 }

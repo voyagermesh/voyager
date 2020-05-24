@@ -32,7 +32,7 @@ import (
 )
 
 func (c *controller) ensureMonitoringAgent(monSpec *mona.AgentSpec) (kutil.VerbType, error) {
-	agent := agents.New(monSpec.Agent, c.KubeClient, c.CRDClient, c.PromClient)
+	agent := agents.New(monSpec.Agent, c.KubeClient, c.PromClient)
 
 	// if agent-type changed, delete old agent
 	// do this before applying new agent-type annotation
@@ -74,7 +74,7 @@ func (c *controller) getOldAgent() (mona.Agent, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get agent type")
 	}
-	return agents.New(mona.AgentType(agentType), c.KubeClient, c.CRDClient, c.PromClient), nil
+	return agents.New(mona.AgentType(agentType), c.KubeClient, c.PromClient), nil
 }
 
 func (c *controller) setNewAgentType(agentType mona.AgentType) error {

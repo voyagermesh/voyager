@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package coreosprometheusoperator
+package prometheusoperator
 
 import (
 	"context"
@@ -28,10 +28,11 @@ import (
 	promapi "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	prom "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	corev1 "k8s.io/api/core/v1"
-	ecs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -40,14 +41,12 @@ type PrometheusCoreosOperator struct {
 	at         api.AgentType
 	k8sClient  kubernetes.Interface
 	promClient prom.MonitoringV1Interface
-	extClient  ecs.ApiextensionsV1beta1Interface
 }
 
-func New(at api.AgentType, k8sClient kubernetes.Interface, extClient ecs.ApiextensionsV1beta1Interface, promClient prom.MonitoringV1Interface) api.Agent {
+func New(at api.AgentType, k8sClient kubernetes.Interface, promClient prom.MonitoringV1Interface) api.Agent {
 	return &PrometheusCoreosOperator{
 		at:         at,
 		k8sClient:  k8sClient,
-		extClient:  extClient,
 		promClient: promClient,
 	}
 }
@@ -57,7 +56,7 @@ func (agent *PrometheusCoreosOperator) GetType() api.AgentType {
 }
 
 func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new *api.AgentSpec) (kutil.VerbType, error) {
-	if !agent.supportsCoreOSOperator() {
+	if !agent.isOperatorInstalled() {
 		return kutil.VerbUnchanged, errors.New("cluster does not support CoreOS Prometheus operator")
 	}
 	old, err := agent.promClient.ServiceMonitors(metav1.NamespaceAll).List(context.TODO(), metav1.ListOptions{
@@ -181,7 +180,7 @@ func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor
 }
 
 func (agent *PrometheusCoreosOperator) Delete(sp api.StatsAccessor) (kutil.VerbType, error) {
-	if !agent.supportsCoreOSOperator() {
+	if !agent.isOperatorInstalled() {
 		return kutil.VerbUnchanged, errors.New("cluster does not support CoreOS Prometheus operator")
 	}
 
@@ -206,13 +205,24 @@ func (agent *PrometheusCoreosOperator) Delete(sp api.StatsAccessor) (kutil.VerbT
 	return vt, nil
 }
 
-func (agent *PrometheusCoreosOperator) supportsCoreOSOperator() bool {
-	_, err := agent.extClient.CustomResourceDefinitions().Get(context.TODO(), promapi.PrometheusName+"."+promapi.SchemeGroupVersion.Group, metav1.GetOptions{})
-	if err != nil {
-		return false
+func (agent *PrometheusCoreosOperator) isOperatorInstalled() bool {
+	if resourceList, err := agent.k8sClient.Discovery().ServerPreferredResources(); discovery.IsGroupDiscoveryFailedError(err) || err == nil {
+		for _, resources := range resourceList {
+			gv, err := schema.ParseGroupVersion(resources.GroupVersion)
+			if err != nil {
+				return false
+			}
+			if gv.Group != promapi.SchemeGroupVersion.Group {
+				continue
+			}
+			for _, resource := range resources.APIResources {
+				if resource.Kind == promapi.PrometheusesKind || resource.Kind == promapi.ServiceMonitorsKind {
+					return true
+				}
+			}
+		}
 	}
-	_, err = agent.extClient.CustomResourceDefinitions().Get(context.TODO(), promapi.ServiceMonitorName+"."+promapi.SchemeGroupVersion.Group, metav1.GetOptions{})
-	return err == nil
+	return false
 }
 
 func (agent *PrometheusCoreosOperator) ensureOwnerReference(in metav1.ObjectMeta, svc corev1.Service) metav1.ObjectMeta {
