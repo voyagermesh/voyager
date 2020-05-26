@@ -29,7 +29,7 @@ import (
 	"github.com/spf13/afero"
 	"gomodules.xyz/cert/certstore"
 	core "k8s.io/api/core/v1"
-	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -43,7 +43,7 @@ const (
 type Framework struct {
 	KubeClient    kubernetes.Interface
 	VoyagerClient cs.Interface
-	CRDClient     kext_cs.ApiextensionsV1beta1Interface
+	CRDClient     crd_cs.Interface
 
 	Config        *operator.OperatorConfig
 	CertStore     *certstore.CertStore

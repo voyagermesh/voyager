@@ -32,7 +32,7 @@ import (
 	"github.com/prometheus/haproxy_exporter/collector"
 	"github.com/spf13/pflag"
 	core "k8s.io/api/core/v1"
-	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"
 	"kmodules.xyz/client-go/meta"
 	hooks "kmodules.xyz/webhook-runtime/admission/v1beta1"
@@ -177,7 +177,7 @@ func (s *OperatorOptions) ApplyTo(cfg *operator.OperatorConfig) error {
 	if cfg.VoyagerClient, err = cs.NewForConfig(cfg.ClientConfig); err != nil {
 		return err
 	}
-	if cfg.CRDClient, err = kext_cs.NewForConfig(cfg.ClientConfig); err != nil {
+	if cfg.CRDClient, err = crd_cs.NewForConfig(cfg.ClientConfig); err != nil {
 		return err
 	}
 	if cfg.PromClient, err = prom.NewForConfig(cfg.ClientConfig); err != nil {

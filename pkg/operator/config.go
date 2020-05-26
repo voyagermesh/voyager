@@ -23,7 +23,7 @@ import (
 	"voyagermesh.dev/voyager/pkg/eventer"
 
 	prom "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
-	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -43,7 +43,7 @@ type OperatorConfig struct {
 	ClientConfig   *rest.Config
 	KubeClient     kubernetes.Interface
 	WorkloadClient wcs.Interface
-	CRDClient      kext_cs.ApiextensionsV1beta1Interface
+	CRDClient      crd_cs.Interface
 	VoyagerClient  cs.Interface
 	PromClient     prom.MonitoringV1Interface
 	AdmissionHooks []hooks.AdmissionHook

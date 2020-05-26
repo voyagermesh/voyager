@@ -34,7 +34,7 @@ import (
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
-	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
@@ -60,7 +60,7 @@ func NewInternalController(
 	ctx context.Context,
 	kubeClient kubernetes.Interface,
 	workloadClient wcs.Interface,
-	crdClient kext_cs.ApiextensionsV1beta1Interface,
+	crdClient crd_cs.Interface,
 	extClient cs.Interface,
 	promClient pcm.MonitoringV1Interface,
 	serviceLister core_listers.ServiceLister,
