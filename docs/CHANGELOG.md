@@ -17,6 +17,14 @@ aliases:
 
 # Change Log
 
+## [v13.0.0-beta.1](https://github.com/voyagermesh/voyager/tree/v13.0.0-beta.1) (2020-05-26)
+[Full Changelog](https://github.com/voyagermesh/voyager/compare/v13.0.0-beta.0...v13.0.0-beta.1)
+
+**Merged pull requests:**
+
+- Prepare release v13.0.0-beta.1 [\#1512](https://github.com/voyagermesh/voyager/pull/1512) ([tamalsaha](https://github.com/tamalsaha))
+- Generate both v1beta1 and v1 CRD YAML [\#1511](https://github.com/voyagermesh/voyager/pull/1511) ([tamalsaha](https://github.com/tamalsaha))
+
 ## [v13.0.0-beta.0](https://github.com/voyagermesh/voyager/tree/v13.0.0-beta.0) (2020-05-22)
 [Full Changelog](https://github.com/voyagermesh/voyager/compare/v12.0.0...v13.0.0-beta.0)
 
