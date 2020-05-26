@@ -11,7 +11,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "version": "v13.0.0-beta.0"
+    "version": "v13.0.0-beta.1"
   },
   "paths": {
     "/apis/": {

@@ -23,7 +23,7 @@ Please pick a version of Voyager that matches your Kubernetes installation.
 
 | Voyager Version                                                                      | Docs                                                                 | Kubernetes Version | Prometheus operator Version |
 |--------------------------------------------------------------------------------------|----------------------------------------------------------------------|--------------------|-----------------------------|
-| [v13.0.0-beta.0](https://github.com/voyagermesh/voyager/releases/tag/v13.0.0-beta.0) | [User Guide](https://voyagermesh.com/docs/v13.0.0-beta.0/)           | 1.14.x+            | 0.34.0+                     |
+| [v13.0.0-beta.1](https://github.com/voyagermesh/voyager/releases/tag/v13.0.0-beta.1) | [User Guide](https://voyagermesh.com/docs/v13.0.0-beta.1/)           | 1.14.x+            | 0.34.0+                     |
 | [v12.0.0](https://github.com/voyagermesh/voyager/releases/tag/v12.0.0)               | [User Guide](https://voyagermesh.com/docs/v12.0.0/)                  | 1.11.x - 1.17.x    | 0.34.0+                     |
 | [v11.0.1](https://github.com/voyagermesh/voyager/releases/tag/v11.0.1)               | [User Guide](https://voyagermesh.com/docs/v11.0.1/)                  | 1.9.x+             | 0.30.0+                     |
 | [10.0.0](https://github.com/voyagermesh/voyager/releases/tag/10.0.0)                 | [User Guide](https://voyagermesh.com/docs/10.0.0/)                   | 1.9.x+             | 0.16.0+                     |
