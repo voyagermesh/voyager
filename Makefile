@@ -552,15 +552,14 @@ endif
 .PHONY: install
 install:
 	@cd ../installer; \
-	helm install voyager-operator charts/voyager \
+	helm install voyager-operator charts/voyager --wait \
 		--namespace=kube-system \
 		--set voyager.registry=$(REGISTRY) \
 		--set voyager.tag=$(TAG) \
 		--set imagePullPolicy=Always \
 		--set cloudProvider=minikube \
 		--set apiserver.enableValidatingWebhook=false \
-		$(IMAGE_PULL_SECRETS); \
-	kubectl wait --for=condition=Ready pods -n kube-system -l 'app.kubernetes.io/name=voyager,app.kubernetes.io/instance=voyager-operator' --timeout=5m
+		$(IMAGE_PULL_SECRETS)
 
 .PHONY: uninstall
 uninstall:
