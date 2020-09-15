@@ -1,5 +1,5 @@
 /*
-Copyright The Kmodules Authors.
+Copyright AppsCode Inc. and Contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,48 +24,54 @@ func (agent *AgentSpec) SetDefaults() {
 	if agent == nil {
 		return
 	}
+
 	if agent.Prometheus == nil {
 		return
-	}
-
-	if agent.Agent == AgentPrometheusOperator || agent.Agent == AgentCoreOSPrometheus || agent.Agent == DeprecatedAgentCoreOSPrometheus {
-		agent.Prometheus.ServiceMonitor = &ServiceMonitorSpec{}
-	}
-	if agent.Prometheus.Namespace != "" && agent.Prometheus.ServiceMonitor.Namespace == "" {
-		agent.Prometheus.ServiceMonitor.Namespace = agent.Prometheus.Namespace
-		agent.Prometheus.Namespace = ""
-	}
-	if len(agent.Prometheus.Labels) > 0 && len(agent.Prometheus.ServiceMonitor.Labels) == 0 {
-		agent.Prometheus.ServiceMonitor.Labels = agent.Prometheus.Labels
-		agent.Prometheus.Labels = nil
-	}
-	if agent.Prometheus.Interval != "" && agent.Prometheus.ServiceMonitor.Interval == "" {
-		agent.Prometheus.ServiceMonitor.Namespace = agent.Prometheus.Interval
-		agent.Prometheus.Interval = ""
 	}
 
 	if agent.Prometheus.Exporter == nil {
 		agent.Prometheus.Exporter = &PrometheusExporterSpec{}
 	}
+
 	if agent.Prometheus.Port > 0 && agent.Prometheus.Exporter.Port == 0 {
 		agent.Prometheus.Exporter.Port = agent.Prometheus.Port
-		agent.Prometheus.Port = 0
 	}
+	agent.Prometheus.Port = 0
+
 	if len(agent.Args) > 0 && len(agent.Prometheus.Exporter.Args) == 0 {
 		agent.Prometheus.Exporter.Args = agent.Args
-		agent.Args = nil
 	}
+	agent.Args = nil
+
 	if len(agent.Env) > 0 && len(agent.Prometheus.Exporter.Env) == 0 {
 		agent.Prometheus.Exporter.Env = agent.Env
-		agent.Env = nil
 	}
+	agent.Env = nil
+
 	if !resourceIsZero(agent.Resources) && resourceIsZero(agent.Prometheus.Exporter.Resources) {
 		agent.Prometheus.Exporter.Resources = agent.Resources
-		agent.Resources = core.ResourceRequirements{}
 	}
+	agent.Resources = core.ResourceRequirements{}
+
 	if agent.SecurityContext != nil && agent.Prometheus.Exporter.SecurityContext == nil {
 		agent.Prometheus.Exporter.SecurityContext = agent.SecurityContext
-		agent.SecurityContext = nil
+	}
+	agent.SecurityContext = nil
+
+	if agent.Agent == AgentPrometheusOperator || agent.Agent == AgentCoreOSPrometheus || agent.Agent == DeprecatedAgentCoreOSPrometheus {
+		if agent.Prometheus.ServiceMonitor == nil {
+			agent.Prometheus.ServiceMonitor = &ServiceMonitorSpec{}
+		}
+
+		if len(agent.Prometheus.Labels) > 0 && len(agent.Prometheus.ServiceMonitor.Labels) == 0 {
+			agent.Prometheus.ServiceMonitor.Labels = agent.Prometheus.Labels
+		}
+		agent.Prometheus.Labels = nil
+
+		if agent.Prometheus.Interval != "" && agent.Prometheus.ServiceMonitor.Interval == "" {
+			agent.Prometheus.ServiceMonitor.Interval = agent.Prometheus.Interval
+		}
+		agent.Prometheus.Interval = ""
 	}
 }
 

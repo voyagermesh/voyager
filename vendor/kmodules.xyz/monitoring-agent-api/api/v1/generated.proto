@@ -1,5 +1,5 @@
 /*
-Copyright The Kmodules Authors.
+Copyright AppsCode Inc. and Contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -107,35 +107,28 @@ message PrometheusSpec {
   // Deprecated: use exporter.port
   optional int32 port = 1;
 
-  // Namespace of Prometheus. Service monitors will be created in this namespace.
-  // Deprecated: use prometheus.serviceMonitor.namespace
-  optional string namespace = 2;
-
   // Labels are key value pairs that is used to select Prometheus instance via ServiceMonitor labels.
   // +optional
   // Deprecated: use prometheus.serviceMonitor.labels
-  map<string, string> labels = 3;
-
-  // Interval at which metrics should be scraped
-  // +optional
-  // Deprecated: use prometheus.serviceMonitor.interval
-  optional string interval = 4;
-
-  optional ServiceMonitorSpec serviceMonitor = 5;
-
-  optional PrometheusExporterSpec exporter = 6;
-}
-
-message ServiceMonitorSpec {
-  // Namespace of Prometheus. Service monitors will be created in this namespace.
-  optional string namespace = 1;
-
-  // Labels are key value pairs that is used to select Prometheus instance via ServiceMonitor labels.
-  // +optional
   map<string, string> labels = 2;
 
   // Interval at which metrics should be scraped
   // +optional
+  // Deprecated: use prometheus.serviceMonitor.interval
   optional string interval = 3;
+
+  optional ServiceMonitorSpec serviceMonitor = 4;
+
+  optional PrometheusExporterSpec exporter = 5;
+}
+
+message ServiceMonitorSpec {
+  // Labels are key value pairs that is used to select Prometheus instance via ServiceMonitor labels.
+  // +optional
+  map<string, string> labels = 1;
+
+  // Interval at which metrics should be scraped
+  // +optional
+  optional string interval = 2;
 }
 

@@ -36,6 +36,10 @@ type statsService struct {
 	ing Ingress
 }
 
+func (s statsService) ServiceMonitorAdditionalLabels() map[string]string {
+	return s.ing.OffshootLabels()
+}
+
 func (s statsService) GetNamespace() string {
 	return s.ing.Namespace
 }
@@ -45,7 +49,7 @@ func (s statsService) ServiceName() string {
 }
 
 func (s statsService) ServiceMonitorName() string {
-	return VoyagerPrefix + s.ing.Namespace + "-" + s.ing.Name
+	return s.ServiceName()
 }
 
 func (s statsService) Path() string {

@@ -1,5 +1,5 @@
 /*
-Copyright The Kmodules Authors.
+Copyright AppsCode Inc. and Contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import (
 
 const (
 	monitoringAgent              = "monitoring-agent"                         // Name of monitoring agent
-	serviceMonitorNamespace      = "service-monitor-namespace"                // Kube NS where service monitors will be created
 	serviceMonitorLabels         = "service-monitor-labels"                   // map[string]string used to select Prometheus instance
 	serviceMonitorPort           = "service-monitor-endpoint-port"            // Port on stats service used to expose metrics
 	serviceMonitorScrapeInterval = "service-monitor-endpoint-scrape-interval" // scrape interval
@@ -43,11 +42,6 @@ func Parse(annotations map[string]string, keyPrefix string, defaultExporterPort 
 	switch agent {
 	case api.AgentPrometheusOperator, api.AgentCoreOSPrometheus, api.DeprecatedAgentCoreOSPrometheus:
 		var prom api.PrometheusSpec
-
-		prom.Namespace, _ = meta.GetStringValue(annotations, path.Join(keyPrefix, serviceMonitorNamespace))
-		if prom.Namespace == "" {
-			return nil, fmt.Errorf("missing %s annotation", path.Join(keyPrefix, serviceMonitorNamespace))
-		}
 
 		prom.Labels, err = meta.GetMapValue(annotations, path.Join(keyPrefix, serviceMonitorLabels))
 		if err != nil && err != kutil.ErrNotFound {

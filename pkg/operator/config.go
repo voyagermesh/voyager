@@ -22,7 +22,7 @@ import (
 	"voyagermesh.dev/voyager/pkg/config"
 	"voyagermesh.dev/voyager/pkg/eventer"
 
-	prom "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
+	prom "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"

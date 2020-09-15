@@ -33,8 +33,8 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
-	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"github.com/pkg/errors"
+	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	core "k8s.io/api/core/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

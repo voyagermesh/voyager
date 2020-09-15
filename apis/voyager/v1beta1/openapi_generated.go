@@ -15719,13 +15719,6 @@ func schema_kmodulesxyz_monitoring_agent_api_api_v1_PrometheusSpec(ref common.Re
 							Format:      "int32",
 						},
 					},
-					"namespace": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Namespace of Prometheus. Service monitors will be created in this namespace. Deprecated: use prometheus.serviceMonitor.namespace",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
 					"labels": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Labels are key value pairs that is used to select Prometheus instance via ServiceMonitor labels. Deprecated: use prometheus.serviceMonitor.labels",
@@ -15772,13 +15765,6 @@ func schema_kmodulesxyz_monitoring_agent_api_api_v1_ServiceMonitorSpec(ref commo
 			SchemaProps: spec.SchemaProps{
 				Type: []string{"object"},
 				Properties: map[string]spec.Schema{
-					"namespace": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Namespace of Prometheus. Service monitors will be created in this namespace.",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
 					"labels": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Labels are key value pairs that is used to select Prometheus instance via ServiceMonitor labels.",
