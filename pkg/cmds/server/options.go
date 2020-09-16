@@ -27,8 +27,8 @@ import (
 	"voyagermesh.dev/voyager/pkg/haproxy/template"
 	"voyagermesh.dev/voyager/pkg/operator"
 
-	prom "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"github.com/pkg/errors"
+	prom "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"github.com/prometheus/haproxy_exporter/collector"
 	"github.com/spf13/pflag"
 	core "k8s.io/api/core/v1"
