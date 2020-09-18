@@ -63,7 +63,7 @@ require (
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/kube-openapi v0.0.0-20200410145947-61e04a5be9a6
 	k8s.io/utils v0.0.0-20200414100711-2df71ebbae66
-	kmodules.xyz/client-go v0.0.0-20200915091229-7df16c29f4e8
+	kmodules.xyz/client-go v0.0.0-20200917200341-3f5fe7b6c182
 	kmodules.xyz/crd-schema-fuzz v0.0.0-20200521005638-2433a187de95
 	kmodules.xyz/monitoring-agent-api v0.0.0-20200915181828-7e94cbcaa0f3
 	kmodules.xyz/webhook-runtime v0.0.0-20200522123600-ca70a7e28ed0
