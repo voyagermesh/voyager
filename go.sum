@@ -1474,8 +1474,8 @@ kmodules.xyz/client-go v0.0.0-20200521065424-173e32c78a20/go.mod h1:sY/eoe4ktxZE
 kmodules.xyz/client-go v0.0.0-20200522120609-c6430d66212f/go.mod h1:sY/eoe4ktxZEoHpr5NpAQ5s22VSwTE8psJtKVeVgLRY=
 kmodules.xyz/client-go v0.0.0-20200524205059-e986bc44c91b h1:2ylkWuybCgj1FzQ62BdonjACgXQ2jm3FEf0crrnKTns=
 kmodules.xyz/client-go v0.0.0-20200524205059-e986bc44c91b/go.mod h1:sY/eoe4ktxZEoHpr5NpAQ5s22VSwTE8psJtKVeVgLRY=
-kmodules.xyz/client-go v0.0.0-20200917200341-3f5fe7b6c182 h1:G/R4rl6XIgKMbiId5F6unK43nj2wlbYeWReVNWVgegk=
-kmodules.xyz/client-go v0.0.0-20200917200341-3f5fe7b6c182/go.mod h1:sY/eoe4ktxZEoHpr5NpAQ5s22VSwTE8psJtKVeVgLRY=
+kmodules.xyz/client-go v0.0.0-20200922032108-ef86d97ea367 h1:VxbLTEZ9HNTxwt0URUpSQvra1HNFokBI9CatzeEe7oo=
+kmodules.xyz/client-go v0.0.0-20200922032108-ef86d97ea367/go.mod h1:sY/eoe4ktxZEoHpr5NpAQ5s22VSwTE8psJtKVeVgLRY=
 kmodules.xyz/crd-schema-fuzz v0.0.0-20200521005638-2433a187de95 h1:v0S/+ftzL6Xrs9XevgchAOJyPKlRQXPiZf87xotj3X4=
 kmodules.xyz/crd-schema-fuzz v0.0.0-20200521005638-2433a187de95/go.mod h1:jpu8xFsDKd6kAWUAKk8oTu/GQGBWqhrcaDeOJdaCJnk=
 kmodules.xyz/monitoring-agent-api v0.0.0-20200915181828-7e94cbcaa0f3 h1:MAWWNvZ7ESi2gkcxqNvqshz02yTBwn4Aw3DLQNIUKv8=
