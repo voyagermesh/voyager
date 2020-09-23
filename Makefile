@@ -54,8 +54,8 @@ endif
 
 REPO_ROOT := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 
-SRC_PKGS := *.go apis client pkg third_party
-SRC_DIRS := $(SRC_PKGS) test hack/gencrd hack/gendocs # directories which hold app source (not vendored)
+SRC_PKGS := apis client pkg third_party
+SRC_DIRS := $(SRC_PKGS) *.go test hack/gencrd hack/gendocs # directories which hold app source (not vendored)
 
 DOCKER_PLATFORMS := linux/amd64 linux/arm64
 BIN_PLATFORMS    := $(DOCKER_PLATFORMS)
@@ -86,7 +86,7 @@ TAG_HAPROXY_DEB := $(TAG_HAPROXY)
 TAG_HAPROXY_ALP := $(HAPROXY_VERSION)-$(VERSION)-alpine_$(OS)_$(ARCH)
 
 
-GO_VERSION       ?= 1.14
+GO_VERSION       ?= 1.15
 BUILD_IMAGE      ?= appscode/golang-dev:$(GO_VERSION)
 TEST_IMAGE       ?= appscode/golang-dev:$(GO_VERSION)-voyager
 CHART_TEST_IMAGE ?= quay.io/helmpack/chart-testing:v3.0.0-rc.1
@@ -442,7 +442,7 @@ unit-tests: $(BUILD_DIRS) bin/.container-$(DOTFILE_IMAGE)-TEST
 	    -v $$(pwd)/.go/cache:/.cache                            \
 	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
 	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
-	    $(TEST_IMAGE)                                          \
+	    $(TEST_IMAGE)                                           \
 	    /bin/bash -c "                                          \
 	        ARCH=$(ARCH)                                        \
 	        OS=$(OS)                                            \
