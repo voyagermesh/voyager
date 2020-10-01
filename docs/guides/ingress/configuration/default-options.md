@@ -68,7 +68,7 @@ global
 defaults
 	log global
 	# https://cbonte.github.io/haproxy-dconv/1.7/configuration.html#4.2-option%20abortonclose
-	# https://github.com/appscode/voyager/pull/403
+	# https://github.com/voyagermesh/voyager/pull/403
 	no option clitcpka
 	option dontlognull
 	option http-keep-alive

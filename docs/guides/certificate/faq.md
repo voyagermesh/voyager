@@ -17,7 +17,7 @@ section_menu_id: guides
 ## Let's Encrypt FAQs
 
 ### How do I renew my LE certificates?
-LE issues certificates that are valid for 90 days. Since 10.0.0 release, Voyager operator will try renewing your certificate 15 days (was 7 days in prior releases) prior to expiration. You can also [configure](https://github.com/appscode/voyager/pull/1316/files) how soon Voyager should try to renew the certificate by setting the `spec.renewalBufferDays` field in `Certificate` crd. Once renewed certificates are issued, HAProxy will be automatically updated to use the new certificates.
+LE issues certificates that are valid for 90 days. Since 10.0.0 release, Voyager operator will try renewing your certificate 15 days (was 7 days in prior releases) prior to expiration. You can also [configure](https://github.com/voyagermesh/voyager/pull/1316/files) how soon Voyager should try to renew the certificate by setting the `spec.renewalBufferDays` field in `Certificate` crd. Once renewed certificates are issued, HAProxy will be automatically updated to use the new certificates.
 
 ### I think I did everything according to this doc but my certificate is not issuing? How do I debug?
 To debug, describe the certificate object and check the events listed under it. Voyager will report any warning events under the certificate object.
@@ -84,4 +84,4 @@ The above example shows how to issue a SANS certificate with multiple domains. T
 Voyager supports issuing wildcard certificates using Let's Encrypt since version 7.0.0. To issue wildcard domain, set the domain name in your certificate crd as `"*.yourdomain.com"`. Please note that wildcard domain is only supported with DNS challenges and can't be issued via HTTP challenge.
 
 ### Does Voyager support OCSP stapling?
-Voyager currently does not issue certificates that use OCSP stapling. See [here](https://github.com/appscode/voyager/issues/531) for prior discussions.
+Voyager currently does not issue certificates that use OCSP stapling. See [here](https://github.com/voyagermesh/voyager/issues/531) for prior discussions.

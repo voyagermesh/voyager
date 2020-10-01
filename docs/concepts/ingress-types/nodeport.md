@@ -150,7 +150,7 @@ When you are using `NodePort` type Ingress, your external clients (example, web 
  - You may expose the NodePort service using an external hardware loadbalancer (like F5) or software loadbalancer like ALB in AWS. In these scenarios, the front loadbalancer will receive connections on service port from external clients (like web browser) and connect to the HAProxy NodePorts. So, HAProxy will see that incoming traffic is using Host like `domain:ing-port`. To ensure that HAProxy matches against the NodePort, use the annotation `ingress.appscode.com/use-node-port: "false"`. This is also considered the the default value for this annotation. So, if you do not provide this annotation, it will be considered set to `false`.
 
  - Using the `NodePort` assigned to the HAProxy service. In this scenarios, external traffic directly hits the HAProxy NodePort service. So, HAProxy will see that incoming traffic is using Host like `domain:node-port`. To ensure that HAProxy matches against the NodePort, use the annotation `ingress.appscode.com/use-node-port: "true"` .
-To ensure that HAProxy service ports stay fixed, define them in the Ingress YAML following: https://github.com/appscode/voyager/blob/master/docs/guides/ingress/configuration/node-port.md
+To ensure that HAProxy service ports stay fixed, define them in the Ingress YAML following: https://github.com/voyagermesh/docs/blob/master/docs/guides/ingress/configuration/node-port.md
 
 Below is an example Ingress with `ingress.appscode.com/use-node-port` annotation:
 
