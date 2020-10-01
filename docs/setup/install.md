@@ -33,7 +33,7 @@ Voyager operator can be installed via a script or as a Helm chart.
 
 ## Using Helm 3
 
-Voyager can be installed via [Helm](https://helm.sh/) 3.x or later versions using the [chart](https://github.com/appscode/voyager/tree/{{< param "info.version" >}}/charts/voyager) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
+Voyager can be installed via [Helm](https://helm.sh/) 3.x or later versions using the [chart](https://github.com/voyagermesh/installer/tree/{{< param "info.version" >}}/charts/voyager) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
 
 ```console
 $ helm repo add appscode https://charts.appscode.com/stable/
@@ -60,14 +60,14 @@ $ helm install voyager-operator appscode/voyager --version {{< param "info.versi
   --set cloudProvider=$provider
 ```
 
-To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/{{< param "info.version" >}}/charts/voyager).
+To see the detailed configuration options, visit [here](https://github.com/voyagermesh/installer/tree/{{< param "info.version" >}}/charts/voyager).
 
 </div>
 <div class="tab-pane fade" id="helm2" role="tabpanel" aria-labelledby="helm2-tab">
 
 ## Using Helm 2
 
-Voyager can be installed via [Helm](https://helm.sh/) 2.9.x or later versions using the [chart](https://github.com/appscode/voyager/tree/{{< param "info.version" >}}/charts/voyager) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
+Voyager can be installed via [Helm](https://helm.sh/) 2.9.x or later versions using the [chart](https://github.com/voyagermesh/installer/tree/{{< param "info.version" >}}/charts/voyager) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
 
 ```console
 $ helm repo add appscode https://charts.appscode.com/stable/
@@ -94,7 +94,7 @@ $ helm install appscode/voyager --name voyager-operator --version {{< param "inf
   --set cloudProvider=$provider
 ```
 
-To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/{{< param "info.version" >}}/charts/voyager).
+To see the detailed configuration options, visit [here](https://github.com/voyagermesh/installer/tree/{{< param "info.version" >}}/charts/voyager).
 
 </div>
 <div class="tab-pane fade" id="script" role="tabpanel" aria-labelledby="script-tab">
@@ -129,7 +129,7 @@ $ helm template voyager-operator appscode/voyager --version {{< param "info.vers
   --set cloudProvider=$provider | kubectl apply -f -
 ```
 
-To see the detailed configuration options, visit [here](https://github.com/appscode/voyager/tree/{{< param "info.version" >}}/charts/voyager).
+To see the detailed configuration options, visit [here](https://github.com/voyagermesh/installer/tree/{{< param "info.version" >}}/charts/voyager).
 
 </div>
 </div>

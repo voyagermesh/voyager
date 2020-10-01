@@ -34,7 +34,7 @@ is where you can learn about what Voyager does and how it does it.
 command-line options, configuration options, API definitions, and procedures.
 
 We're always looking for help improving our documentation, so please don't hesitate to
-[file an issue](https://github.com/appscode/voyager/issues/new) if you see some problem.
+[file an issue](https://github.com/voyagermesh/voyager/issues/new) if you see some problem.
 Or better yet, submit your own [contributions](/docs/CONTRIBUTING.md) to help
 make our docs better.
 

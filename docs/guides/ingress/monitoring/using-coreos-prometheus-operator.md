@@ -36,7 +36,7 @@ kube-public   Active    45m
 kube-system   Active    45m
 ```
 
-Note that the yaml files that are used in this tutorial, stored in [docs/examples](https://github.com/appscode/voyager/tree/master/docs/examples/monitoring) folder in GitHub repository [appscode/voyager](https://github.com/appscode/voyager).
+Note that the yaml files that are used in this tutorial, stored in [docs/examples](https://github.com/voyagermesh/docs/tree/master/docs/examples/monitoring) folder in GitHub repository [voyagermesh/docs](https://github.com/voyagermesh/docs).
 
 ## Deploy CoreOS-Prometheus Operator
 

@@ -37,7 +37,7 @@ At first, you need to have a Kubernetes cluster, and the kubectl command-line to
 
 Now, deploy Voyager operator following instructions [here](/docs/setup/install.md).
 
-Note that the yaml files that are used in this tutorial, stored in [docs/examples](https://github.com/appscode/voyager/tree/master/docs/examples/monitoring) folder in GitHub repository [appscode/voyager](https://github.com/appscode/voyager).
+Note that the yaml files that are used in this tutorial, stored in [docs/examples](https://github.com/voyagermesh/docs/tree/master/docs/examples/monitoring) folder in GitHub repository [voyagermesh/docs](https://github.com/voyagermesh/docs).
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
