@@ -1,9 +1,6 @@
 kind: Cluster
-apiVersion: kind.sigs.k8s.io/v1alpha3
+apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
-# the control plane node
 - role: control-plane
-  extraMounts:
-    - containerPath: /opt/local-path-provisioner
-      hostPath: /mnt
-      readOnly: false
+- role: worker
+- role: worker
