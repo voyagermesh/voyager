@@ -71,7 +71,7 @@ func (c *controller) getExporterSidecar() (*core.Container, error) {
 			Name: "exporter",
 			Args: append([]string{
 				"export",
-				fmt.Sprintf("--address=:%d", monSpec.Prometheus.Port),
+				fmt.Sprintf("--address=:%d", monSpec.Prometheus.Exporter.Port),
 				fmt.Sprintf("--enable-analytics=%v", cli.EnableAnalytics),
 			}, cli.LoggerOptions.ToFlags()...),
 			Env: []core.EnvVar{
@@ -86,7 +86,7 @@ func (c *controller) getExporterSidecar() (*core.Container, error) {
 				{
 					Name:          api.ExporterPortName,
 					Protocol:      core.ProtocolTCP,
-					ContainerPort: int32(monSpec.Prometheus.Port),
+					ContainerPort: int32(monSpec.Prometheus.Exporter.Port),
 				},
 			},
 		}, nil
@@ -124,7 +124,7 @@ func (c *controller) ensureStatsService() (*core.Service, kutil.VerbType, error)
 			desired = append(desired, core.ServicePort{
 				Name:       api.ExporterPortName,
 				Protocol:   core.ProtocolTCP,
-				Port:       int32(monSpec.Prometheus.Port),
+				Port:       int32(monSpec.Prometheus.Exporter.Port),
 				TargetPort: intstr.FromString(api.ExporterPortName),
 			})
 		}
