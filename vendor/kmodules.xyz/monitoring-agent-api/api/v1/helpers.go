@@ -16,65 +16,17 @@ limitations under the License.
 
 package v1
 
-import (
-	core "k8s.io/api/core/v1"
-)
-
 func (agent *AgentSpec) SetDefaults() {
 	if agent == nil {
 		return
 	}
 
-	if agent.Prometheus == nil {
-		return
-	}
-
-	if agent.Prometheus.Exporter == nil {
-		agent.Prometheus.Exporter = &PrometheusExporterSpec{}
-	}
-
-	if agent.Prometheus.Port > 0 && agent.Prometheus.Exporter.Port == 0 {
-		agent.Prometheus.Exporter.Port = agent.Prometheus.Port
-	}
-	agent.Prometheus.Port = 0
-
-	if len(agent.Args) > 0 && len(agent.Prometheus.Exporter.Args) == 0 {
-		agent.Prometheus.Exporter.Args = agent.Args
-	}
-	agent.Args = nil
-
-	if len(agent.Env) > 0 && len(agent.Prometheus.Exporter.Env) == 0 {
-		agent.Prometheus.Exporter.Env = agent.Env
-	}
-	agent.Env = nil
-
-	if !resourceIsZero(agent.Resources) && resourceIsZero(agent.Prometheus.Exporter.Resources) {
-		agent.Prometheus.Exporter.Resources = agent.Resources
-	}
-	agent.Resources = core.ResourceRequirements{}
-
-	if agent.SecurityContext != nil && agent.Prometheus.Exporter.SecurityContext == nil {
-		agent.Prometheus.Exporter.SecurityContext = agent.SecurityContext
-	}
-	agent.SecurityContext = nil
-
-	if agent.Agent == AgentPrometheusOperator || agent.Agent == AgentCoreOSPrometheus || agent.Agent == DeprecatedAgentCoreOSPrometheus {
-		if agent.Prometheus.ServiceMonitor == nil {
-			agent.Prometheus.ServiceMonitor = &ServiceMonitorSpec{}
+	if agent.Agent.Vendor() == VendorPrometheus {
+		if agent.Prometheus == nil {
+			agent.Prometheus = &PrometheusSpec{}
 		}
-
-		if len(agent.Prometheus.Labels) > 0 && len(agent.Prometheus.ServiceMonitor.Labels) == 0 {
-			agent.Prometheus.ServiceMonitor.Labels = agent.Prometheus.Labels
+		if agent.Prometheus.Exporter.Port == 0 {
+			agent.Prometheus.Exporter.Port = PrometheusExporterPortNumber
 		}
-		agent.Prometheus.Labels = nil
-
-		if agent.Prometheus.Interval != "" && agent.Prometheus.ServiceMonitor.Interval == "" {
-			agent.Prometheus.ServiceMonitor.Interval = agent.Prometheus.Interval
-		}
-		agent.Prometheus.Interval = ""
 	}
-}
-
-func resourceIsZero(r core.ResourceRequirements) bool {
-	return len(r.Limits) == 0 && len(r.Requests) == 0
 }

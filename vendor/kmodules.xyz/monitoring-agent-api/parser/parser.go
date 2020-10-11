@@ -40,14 +40,17 @@ func Parse(annotations map[string]string, keyPrefix string, defaultExporterPort 
 	agent := api.AgentType(name)
 
 	switch agent {
-	case api.AgentPrometheusOperator, api.AgentCoreOSPrometheus, api.DeprecatedAgentCoreOSPrometheus:
-		var prom api.PrometheusSpec
+	case api.AgentPrometheusOperator:
+		prom := api.PrometheusSpec{
+			Exporter:       api.PrometheusExporterSpec{},
+			ServiceMonitor: &api.ServiceMonitorSpec{},
+		}
 
-		prom.Labels, err = meta.GetMapValue(annotations, path.Join(keyPrefix, serviceMonitorLabels))
+		prom.ServiceMonitor.Labels, err = meta.GetMapValue(annotations, path.Join(keyPrefix, serviceMonitorLabels))
 		if err != nil && err != kutil.ErrNotFound {
 			return nil, err
 		}
-		if len(prom.Labels) <= 0 {
+		if len(prom.ServiceMonitor.Labels) <= 0 {
 			return nil, fmt.Errorf("missing %s annotation", path.Join(keyPrefix, serviceMonitorLabels))
 		}
 
@@ -56,25 +59,27 @@ func Parse(annotations map[string]string, keyPrefix string, defaultExporterPort 
 			return nil, err
 		}
 		if port == 0 {
-			prom.Port = defaultExporterPort
+			prom.Exporter.Port = defaultExporterPort
 		} else {
-			prom.Port = int32(port)
+			prom.Exporter.Port = int32(port)
 		}
 
-		prom.Interval, _ = meta.GetStringValue(annotations, path.Join(keyPrefix, serviceMonitorScrapeInterval))
+		prom.ServiceMonitor.Interval, _ = meta.GetStringValue(annotations, path.Join(keyPrefix, serviceMonitorScrapeInterval))
 
 		return &api.AgentSpec{Agent: agent, Prometheus: &prom}, nil
 	case api.AgentPrometheusBuiltin:
-		var prom api.PrometheusSpec
+		prom := api.PrometheusSpec{
+			Exporter: api.PrometheusExporterSpec{},
+		}
 
 		port, err := meta.GetIntValue(annotations, path.Join(keyPrefix, serviceMonitorPort))
 		if err != nil && err != kutil.ErrNotFound {
 			return nil, err
 		}
 		if port == 0 {
-			prom.Port = defaultExporterPort
+			prom.Exporter.Port = defaultExporterPort
 		} else {
-			prom.Port = int32(port)
+			prom.Exporter.Port = int32(port)
 		}
 		return &api.AgentSpec{Agent: agent, Prometheus: &prom}, nil
 	default:
