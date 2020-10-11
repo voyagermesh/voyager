@@ -166,8 +166,6 @@ API rule violation: list_type_missing,k8s.io/apimachinery/pkg/apis/meta/v1,Table
 API rule violation: list_type_missing,k8s.io/apimachinery/pkg/apis/meta/v1,UpdateOptions,DryRun
 API rule violation: list_type_missing,k8s.io/apimachinery/pkg/runtime,RawExtension,Raw
 API rule violation: list_type_missing,k8s.io/apimachinery/pkg/runtime,Unknown,Raw
-API rule violation: list_type_missing,kmodules.xyz/monitoring-agent-api/api/v1,AgentSpec,Args
-API rule violation: list_type_missing,kmodules.xyz/monitoring-agent-api/api/v1,AgentSpec,Env
 API rule violation: list_type_missing,kmodules.xyz/monitoring-agent-api/api/v1,PrometheusExporterSpec,Args
 API rule violation: list_type_missing,kmodules.xyz/monitoring-agent-api/api/v1,PrometheusExporterSpec,Env
 API rule violation: list_type_missing,voyagermesh.dev/voyager/apis/voyager/v1beta1,AuthOption,OAuth
