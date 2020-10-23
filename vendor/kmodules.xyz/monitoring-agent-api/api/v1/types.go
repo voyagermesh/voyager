@@ -41,9 +41,6 @@ const (
 )
 
 func (at AgentType) Vendor() string {
-	if !strings.ContainsRune(string(at), '/') {
-		return ""
-	}
 	return strings.SplitN(string(at), "/", 2)[0]
 }
 
