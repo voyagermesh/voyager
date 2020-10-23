@@ -1473,13 +1473,12 @@ k8s.io/utils v0.0.0-20200324210504-a9aa75ae1b89 h1:d4vVOjXm687F1iLSP2q3lyPPuyvTU
 k8s.io/utils v0.0.0-20200324210504-a9aa75ae1b89/go.mod h1:sZAwmy6armz5eXlNoLmJcl4F1QuKu7sr+mFQ0byX7Ew=
 kmodules.xyz/client-go v0.0.0-20200922200830-63d86b6e5b63 h1:luKlEul8LMhyyftoZN34+vboL9MWAeQpSAUZxaLZBGg=
 kmodules.xyz/client-go v0.0.0-20200922200830-63d86b6e5b63/go.mod h1:JZN34jqk6ZlR+QOnBPpnUVBab4rmfamqxfSvLaulBMY=
-kmodules.xyz/client-go v0.0.0-20201007024140-3223988adf40/go.mod h1:pnRh7gtJ6ErPJQBkQeRlpD95KRtxhD4eGrYagZEU8RM=
-kmodules.xyz/client-go v0.0.0-20201013083546-b17c1e15f1a3 h1:vP8h3s+JdqXQHhhmvoTgKZOtpraF4X1NxA/y4OFTn+I=
-kmodules.xyz/client-go v0.0.0-20201013083546-b17c1e15f1a3/go.mod h1:pnRh7gtJ6ErPJQBkQeRlpD95KRtxhD4eGrYagZEU8RM=
+kmodules.xyz/client-go v0.0.0-20201021051118-03dac1aea508 h1:LjidyEzvw1rSlwRQLWNfElleLJ6vr9Uu5tn5H6JO+QA=
+kmodules.xyz/client-go v0.0.0-20201021051118-03dac1aea508/go.mod h1:pnRh7gtJ6ErPJQBkQeRlpD95KRtxhD4eGrYagZEU8RM=
 kmodules.xyz/crd-schema-fuzz v0.0.0-20200922204806-c1426cd7fcf4 h1:NWWv+Qju8xzHZT9hIk1+BbgQtIytNOoCU4g4vqUmh3M=
 kmodules.xyz/crd-schema-fuzz v0.0.0-20200922204806-c1426cd7fcf4/go.mod h1:WrO3fryNyFCgqqyWnwI89lnzWA7kN072Ehya7ELGfzE=
-kmodules.xyz/monitoring-agent-api v0.0.0-20201007104803-408a1ff2de8d h1:HFdWHhAkJZpoyMkp0kayKPf896IEkI7fWIpeJK4sY1o=
-kmodules.xyz/monitoring-agent-api v0.0.0-20201007104803-408a1ff2de8d/go.mod h1:ySvogFmyMVUNEFdUYnHp9T4njsB7o661ClfwNLcBWVo=
+kmodules.xyz/monitoring-agent-api v0.0.0-20201022103441-f51a42fb9ac8 h1:4WDb9Dt6/mLqLunbd+MseB7FtI8sO8334T8u1kCxZkI=
+kmodules.xyz/monitoring-agent-api v0.0.0-20201022103441-f51a42fb9ac8/go.mod h1:cfJEY2nsOqFF1tLzVqPj6n4KHWfbpRNf/WinOOD/bT4=
 kmodules.xyz/openshift v0.0.0-20200922211657-1ece16d36c18 h1:D1tzbwyrIPJBSmL3W/t2vT2aU3DVEYKf357a392REaY=
 kmodules.xyz/openshift v0.0.0-20200922211657-1ece16d36c18/go.mod h1:kOnEGdrj+DxTYJWHftqEHeYywCgh9tEiBOD5kPhVbCc=
 kmodules.xyz/webhook-runtime v0.0.0-20200922211931-8337935590de h1:uWgv78OoOWx9eQdu6SEkPopvbpnL8WxZEMNd3/Oye2w=
