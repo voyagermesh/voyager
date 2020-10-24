@@ -9,16 +9,16 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.8.3
 	github.com/Azure/go-autorest/autorest/azure/auth v0.0.0-00010101000000-000000000000 // indirect
 	github.com/Azure/go-autorest/autorest/to v0.3.1-0.20191028180845-3492b2aff503
-	github.com/JamesClonk/vultr v2.0.1+incompatible // indirect
-	github.com/akamai/AkamaiOPEN-edgegrid-golang v0.9.15 // indirect
+	github.com/JamesClonk/vultr v2.0.2+incompatible // indirect
+	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.0.0 // indirect
 	github.com/appscode/go v0.0.0-20200928211031-cc0c23082d91
 	github.com/appscode/hello-grpc v0.0.0-20190207041230-eea009cbf42e
 	github.com/appscode/pat v0.0.0-20170521084856-48ff78925b79
 	github.com/aws/aws-sdk-go v1.31.9
 	github.com/benbjohnson/clock v1.0.2
-	github.com/cloudflare/cloudflare-go v0.11.7 // indirect
+	github.com/cloudflare/cloudflare-go v0.13.4 // indirect
 	github.com/codeskyblue/go-sh v0.0.0-20190412065543-76bd3d59ff27
-	github.com/dnsimple/dnsimple-go v0.62.0 // indirect
+	github.com/dnsimple/dnsimple-go v0.0.0-00010101000000-000000000000 // indirect
 	github.com/evanphx/json-patch v4.9.0+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/spec v0.19.8
@@ -33,7 +33,7 @@ require (
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
-	github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014 // indirect
+	github.com/ovh/go-ovh v1.1.0 // indirect
 	github.com/pires/go-proxyproto v0.1.3
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus-operator/prometheus-operator v0.42.0
@@ -45,11 +45,10 @@ require (
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5
-	github.com/stretchr/testify v1.5.1
+	github.com/stretchr/testify v1.6.1
 	github.com/timewasted/linode v0.0.0-20160829202747-37e84520dcf7 // indirect
 	github.com/tredoe/osutil v1.0.4
 	github.com/xenolf/lego v0.0.0-00010101000000-000000000000
-	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79 // indirect
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	gomodules.xyz/cert v1.0.3

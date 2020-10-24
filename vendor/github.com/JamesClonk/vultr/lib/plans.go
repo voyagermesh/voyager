@@ -16,6 +16,8 @@ type Plan struct {
 	Disk      string `json:"disk"`
 	Bandwidth string `json:"bandwidth"`
 	Price     string `json:"price_per_month"`
+	PlanType  string `json:"plan_type"`
+	Windows   bool   `json:"windows"`
 	Regions   []int  `json:"available_locations"`
 }
 
