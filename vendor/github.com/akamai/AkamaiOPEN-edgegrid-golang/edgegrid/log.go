@@ -12,15 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package edgegrid 
+package edgegrid
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httputil"
 	"os"
 	"strings"
-        "net/http"
-        "net/http/httputil"
+
+	logstd "log"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -31,22 +36,22 @@ var EdgegridLog *log.Logger
 func SetupLogging() {
 
 	if EdgegridLog != nil {
-		return			// already configured
+		return // already configured
 	}
-	
-        EdgegridLog = log.New()
+
+	EdgegridLog = log.New()
 	EdgegridLog.SetFormatter(&log.TextFormatter{
 		DisableLevelTruncation:    true,
 		EnvironmentOverrideColors: true,
 	})
-        // Log file destination specified? If not, use default stdout
-        if logFileName := os.Getenv("AKAMAI_LOG_FILE"); logFileName != "" {
+	// Log file destination specified? If not, use default stdout
+	if logFileName := os.Getenv("AKAMAI_LOG_FILE"); logFileName != "" {
 		// If the file doesn't exist, create it, or append to the file
 		LogFile, err := os.OpenFile(logFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatal(err)
 		}
-                EdgegridLog.SetOutput(LogFile)
+		EdgegridLog.SetOutput(LogFile)
 	}
 
 	EdgegridLog.SetLevel(log.PanicLevel)
@@ -85,24 +90,72 @@ func LogMultilinef(f func(formatter string, args ...interface{}), formatter stri
 // Utility func to print http req
 func PrintHttpRequest(req *http.Request, body bool) {
 
-        if req == nil {
-                return
-        }
-        b, err := httputil.DumpRequestOut(req, body)
-        if err == nil {
-                LogMultiline(EdgegridLog.Traceln, string(b))
-        }
+	if req == nil {
+		return
+	}
+	b, err := httputil.DumpRequestOut(req, body)
+	if err == nil {
+		LogMultiline(EdgegridLog.Traceln, string(b))
+	}
+}
+
+func PrintHttpRequestCorrelation(req *http.Request, body bool, correlationid string) {
+
+	if req == nil {
+		return
+	}
+	b, err := httputil.DumpRequestOut(req, body)
+	if err == nil {
+		LogMultiline(EdgegridLog.Traceln, string(b))
+		PrintfCorrelation("[DEBUG] REQUEST", correlationid, prettyPrintJsonLines(b))
+	}
 }
 
 // Utility func to print http response
 func PrintHttpResponse(res *http.Response, body bool) {
 
-        if res == nil {
-                return
-        }
-        b, err := httputil.DumpResponse(res, body)
-        if err == nil {
-                LogMultiline(EdgegridLog.Traceln, string(b))
-        }
+	if res == nil {
+		return
+	}
+	b, err := httputil.DumpResponse(res, body)
+	if err == nil {
+		LogMultiline(EdgegridLog.Traceln, string(b))
+	}
 }
 
+func PrintHttpResponseCorrelation(res *http.Response, body bool, correlationid string) {
+
+	if res == nil {
+		return
+	}
+	b, err := httputil.DumpResponse(res, body)
+	if err == nil {
+		LogMultiline(EdgegridLog.Traceln, string(b))
+		PrintfCorrelation("[DEBUG] RESPONSE ", correlationid, prettyPrintJsonLines(b))
+	}
+}
+
+func PrintfCorrelation(level string, correlationid string, msg string) {
+
+	if correlationid == "" {
+		logstd.Printf("%s  %s\n", level, msg)
+	} else {
+		logstd.SetFlags(0)
+		logstd.Printf("%v %s\n", correlationid, msg)
+	}
+
+}
+
+// prettyPrintJsonLines iterates through a []byte line-by-line,
+// transforming any lines that are complete json into pretty-printed json.
+func prettyPrintJsonLines(b []byte) string {
+	parts := strings.Split(string(b), "\n")
+	for i, p := range parts {
+		if b := []byte(p); json.Valid(b) {
+			var out bytes.Buffer
+			json.Indent(&out, b, "", " ")
+			parts[i] = out.String()
+		}
+	}
+	return strings.Join(parts, "\n")
+}

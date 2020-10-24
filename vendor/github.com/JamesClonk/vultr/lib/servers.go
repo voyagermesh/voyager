@@ -692,9 +692,9 @@ func (c *Client) BackupSetSchedule(id string, bs BackupSchedule) error {
 	values := url.Values{
 		"SUBID":     {id},
 		"cron_type": {bs.CronType},
-		"hour":      {string(bs.Hour)},
-		"dow":       {string(bs.Dow)},
-		"dom":       {string(bs.Dom)},
+		"hour":      {fmt.Sprintf("%v", bs.Hour)},
+		"dow":       {fmt.Sprintf("%v", bs.Dow)},
+		"dom":       {fmt.Sprintf("%v", bs.Dom)},
 	}
 	return c.post(`server/backup_set_schedule`, values, nil)
 }

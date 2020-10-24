@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 )
 
 var (
@@ -23,6 +24,8 @@ var (
 	UserAgent = "Akamai-Open-Edgegrid-golang/" + libraryVersion + " golang/" + strings.TrimPrefix(runtime.Version(), "go")
 	// Client is the *http.Client to use
 	Client = http.DefaultClient
+
+	reqLock sync.Mutex
 )
 
 // NewRequest creates an HTTP request that can be sent to Akamai APIs. A relative URL can be provided in path, which will be resolved to the
@@ -32,6 +35,9 @@ func NewRequest(config edgegrid.Config, method, path string, body io.Reader) (*h
 		baseURL *url.URL
 		err     error
 	)
+
+	reqLock.Lock()
+	defer reqLock.Unlock()
 
 	if strings.HasPrefix(config.Host, "https://") {
 		baseURL, err = url.Parse(config.Host)
@@ -70,6 +76,7 @@ func NewRequest(config edgegrid.Config, method, path string, body io.Reader) (*h
 func NewJSONRequest(config edgegrid.Config, method, path string, body interface{}) (*http.Request, error) {
 	var req *http.Request
 	var err error
+
 	if body != nil {
 		jsonBody, err := jsonhooks.Marshal(body)
 		if err != nil {

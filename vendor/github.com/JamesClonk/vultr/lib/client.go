@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -19,8 +20,8 @@ import (
 )
 
 const (
-	// Version of this libary
-	Version = "2.0.1"
+	// Version of this library
+	Version = "2.0.2"
 
 	// APIVersion of Vultr
 	APIVersion = "v1"
@@ -86,9 +87,14 @@ type Options struct {
 // NewClient creates new Vultr API client. Options are optional and can be nil.
 func NewClient(apiKey string, options *Options) *Client {
 	userAgent := "vultr-go/" + Version
+
 	transport := &http.Transport{
 		TLSNextProto: make(map[string]func(string, *tls.Conn) http.RoundTripper),
 	}
+	if len(os.Getenv("http_proxy")) > 0 {
+		transport.Proxy = http.ProxyFromEnvironment
+	}
+
 	client := http.DefaultClient
 	client.Transport = transport
 	endpoint, _ := url.Parse(DefaultEndpoint)
