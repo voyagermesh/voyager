@@ -19,8 +19,8 @@ package operator
 import (
 	_ "voyagermesh.dev/voyager/third_party/forked/cloudprovider/providers"
 
-	"github.com/appscode/go/log"
 	"github.com/golang/glog"
+	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"kmodules.xyz/client-go/tools/queue"

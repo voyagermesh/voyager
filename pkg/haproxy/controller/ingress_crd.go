@@ -26,8 +26,8 @@ import (
 	voyager_informers "voyagermesh.dev/voyager/client/informers/externalversions/voyager/v1beta1"
 	"voyagermesh.dev/voyager/pkg/eventer"
 
-	ioutilz "github.com/appscode/go/ioutil"
 	"github.com/golang/glog"
+	ioutilz "gomodules.xyz/x/ioutil"
 	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/networking/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"

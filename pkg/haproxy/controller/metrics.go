@@ -19,7 +19,7 @@ package controller
 import (
 	"sync/atomic"
 
-	"github.com/appscode/go/log"
+	"gomodules.xyz/x/log"
 )
 
 var (

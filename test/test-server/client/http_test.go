@@ -22,8 +22,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/appscode/go/log"
 	"github.com/stretchr/testify/assert"
+	"gomodules.xyz/x/log"
 )
 
 func TestNewTestHTTPClient(t *testing.T) {

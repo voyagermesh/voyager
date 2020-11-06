@@ -14,7 +14,7 @@ _test
 *.cgo1.go
 *.cgo2.c
 _cgo_defun.c
-_cgo_gotypes.go
+_cgo_gopointer.go
 _cgo_export.*
 
 _testmain.go

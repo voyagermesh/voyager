@@ -25,9 +25,9 @@ import (
 	"voyagermesh.dev/voyager/pkg/certificate"
 	"voyagermesh.dev/voyager/pkg/eventer"
 
-	"github.com/appscode/go/log"
 	"github.com/benbjohnson/clock"
 	"github.com/golang/glog"
+	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"

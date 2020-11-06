@@ -193,8 +193,6 @@ API rule violation: list_type_missing,voyagermesh.dev/voyager/apis/voyager/v1bet
 API rule violation: list_type_missing,voyagermesh.dev/voyager/apis/voyager/v1beta1,IngressTLS,Hosts
 API rule violation: list_type_missing,voyagermesh.dev/voyager/apis/voyager/v1beta1,OAuth,Paths
 API rule violation: list_type_missing,voyagermesh.dev/voyager/apis/voyager/v1beta1,TCPIngressRuleValue,ALPN
-API rule violation: names_match,github.com/appscode/go/encoding/json/types,IntHash,generation
-API rule violation: names_match,github.com/appscode/go/encoding/json/types,IntHash,hash
 API rule violation: names_match,k8s.io/api/core/v1,AzureDiskVolumeSource,DataDiskURI
 API rule violation: names_match,k8s.io/api/core/v1,ContainerStatus,LastTerminationState
 API rule violation: names_match,k8s.io/api/core/v1,DaemonEndpoint,Port

@@ -32,10 +32,10 @@ import (
 	"voyagermesh.dev/voyager/pkg/eventer"
 	_ "voyagermesh.dev/voyager/third_party/forked/cloudprovider/providers"
 
-	"github.com/appscode/go/log"
-	"github.com/appscode/go/types"
 	"github.com/pkg/errors"
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
+	"gomodules.xyz/pointer"
+	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -396,7 +396,7 @@ func (c *loadBalancerController) ensurePods() (kutil.VerbType, error) {
 
 		// assign number of replicas only when there's no controlling hpa
 		if in.Spec.Replicas == nil || !c.isHPAControlled() {
-			in.Spec.Replicas = types.Int32P(c.Ingress.Replicas())
+			in.Spec.Replicas = pointer.Int32P(c.Ingress.Replicas())
 		}
 
 		// pod annotations
