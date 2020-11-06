@@ -21,9 +21,9 @@ import (
 
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
-	"github.com/appscode/go/log"
 	"github.com/golang/glog"
 	promapi "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	"gomodules.xyz/x/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"

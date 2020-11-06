@@ -22,9 +22,9 @@ import (
 
 	"voyagermesh.dev/voyager/pkg/cmds/server"
 
-	"github.com/appscode/go/log"
-	v "github.com/appscode/go/version"
 	"github.com/spf13/cobra"
+	"gomodules.xyz/x/log"
+	v "gomodules.xyz/x/version"
 	"kmodules.xyz/client-go/tools/cli"
 )
 

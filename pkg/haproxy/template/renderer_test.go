@@ -19,8 +19,8 @@ package template
 import (
 	"testing"
 
-	"github.com/appscode/go/log"
 	"github.com/stretchr/testify/assert"
+	"gomodules.xyz/x/log"
 )
 
 func TestValidateConfig(t *testing.T) {

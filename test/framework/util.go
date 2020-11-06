@@ -19,8 +19,8 @@ package framework
 import (
 	"net"
 
-	"github.com/appscode/go/crypto/rand"
 	"gomodules.xyz/cert"
+	"gomodules.xyz/x/crypto/rand"
 )
 
 func (ri *rootInvocation) UniqueName() string {

@@ -25,10 +25,10 @@ import (
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 	"voyagermesh.dev/voyager/test/framework"
 
-	"github.com/appscode/go/types"
 	hello "github.com/appscode/hello-grpc/pkg/apis/hello/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"gomodules.xyz/pointer"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	apps "k8s.io/api/apps/v1"
@@ -214,7 +214,7 @@ func createGRPCController(f *framework.Invocation) (*apps.Deployment, error) {
 			},
 		},
 		Spec: apps.DeploymentSpec{
-			Replicas: types.Int32P(1),
+			Replicas: pointer.Int32P(1),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
 					"app": "hello-grpc-" + f.App(),

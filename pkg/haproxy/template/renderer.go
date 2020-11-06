@@ -25,8 +25,8 @@ import (
 
 	hpi "voyagermesh.dev/voyager/pkg/haproxy/api"
 
-	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
+	"gomodules.xyz/x/log"
 )
 
 func RenderConfig(data hpi.TemplateData) (string, error) {

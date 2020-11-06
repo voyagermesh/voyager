@@ -27,7 +27,6 @@ import (
 	api_v1beta1 "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 	cs "voyagermesh.dev/voyager/client/clientset/versioned"
 
-	"github.com/appscode/go/log"
 	"github.com/appscode/pat"
 	cmap "github.com/orcaman/concurrent-map"
 	"github.com/pkg/errors"
@@ -36,6 +35,7 @@ import (
 	"github.com/prometheus/common/version"
 	"github.com/prometheus/haproxy_exporter/collector"
 	"github.com/spf13/cobra"
+	"gomodules.xyz/x/log"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"

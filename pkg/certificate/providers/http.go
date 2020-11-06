@@ -22,7 +22,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/appscode/go/log"
+	"gomodules.xyz/x/log"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 )
 

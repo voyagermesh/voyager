@@ -25,8 +25,8 @@ import (
 
 	"voyagermesh.dev/voyager/pkg/cmds/server"
 
-	"github.com/appscode/go/crypto/rand"
-	"github.com/appscode/go/log"
+	"gomodules.xyz/x/crypto/rand"
+	"gomodules.xyz/x/log"
 	"k8s.io/client-go/util/homedir"
 )
 

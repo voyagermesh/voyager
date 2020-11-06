@@ -25,9 +25,9 @@ import (
 	"voyagermesh.dev/voyager/pkg/eventer"
 	"voyagermesh.dev/voyager/pkg/ingress"
 
-	. "github.com/appscode/go/context"
-	"github.com/appscode/go/log"
 	"github.com/golang/glog"
+	. "gomodules.xyz/x/context"
+	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"

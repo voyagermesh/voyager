@@ -32,10 +32,10 @@ import (
 	"voyagermesh.dev/voyager/pkg/config"
 	"voyagermesh.dev/voyager/pkg/eventer"
 
-	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	"github.com/xenolf/lego/acme"
 	"gomodules.xyz/cert"
+	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/networking/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

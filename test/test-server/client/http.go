@@ -28,9 +28,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/appscode/go/log"
 	"github.com/moul/http2curl"
 	"github.com/pires/go-proxyproto"
+	"gomodules.xyz/x/log"
 )
 
 type httpClient struct {

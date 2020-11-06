@@ -26,9 +26,9 @@ import (
 	"voyagermesh.dev/voyager/test/framework"
 	"voyagermesh.dev/voyager/test/test-server/client"
 
-	"github.com/appscode/go/log"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"

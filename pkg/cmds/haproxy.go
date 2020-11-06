@@ -22,9 +22,9 @@ import (
 	cs "voyagermesh.dev/voyager/client/clientset/versioned"
 	hpc "voyagermesh.dev/voyager/pkg/haproxy/controller"
 
-	"github.com/appscode/go/log"
-	v "github.com/appscode/go/version"
 	"github.com/spf13/cobra"
+	"gomodules.xyz/x/log"
+	v "gomodules.xyz/x/version"
 	core "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"

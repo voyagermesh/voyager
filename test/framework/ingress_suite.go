@@ -27,10 +27,10 @@ import (
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 	"voyagermesh.dev/voyager/test/test-server/client"
 
-	"github.com/appscode/go/crypto/rand"
-	"github.com/appscode/go/log"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
+	"gomodules.xyz/x/crypto/rand"
+	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

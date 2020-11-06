@@ -19,8 +19,8 @@ package controller
 import (
 	"strings"
 
-	ioutilz "github.com/appscode/go/ioutil"
 	"github.com/pkg/errors"
+	ioutilz "gomodules.xyz/x/ioutil"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/cache"
