@@ -14,7 +14,7 @@ require (
 	github.com/appscode/pat v0.0.0-20170521084856-48ff78925b79
 	github.com/aws/aws-sdk-go v1.31.13
 	github.com/benbjohnson/clock v1.0.2
-	github.com/cloudflare/cloudflare-go v0.13.4 // indirect
+	github.com/cloudflare/cloudflare-go v0.13.5 // indirect
 	github.com/codeskyblue/go-sh v0.0.0-20200712050446-30169cf553fe
 	github.com/dnsimple/dnsimple-go v0.0.0-00010101000000-000000000000 // indirect
 	github.com/evanphx/json-patch v4.9.0+incompatible
