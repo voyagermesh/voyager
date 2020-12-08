@@ -14,7 +14,7 @@ require (
 	github.com/appscode/pat v0.0.0-20170521084856-48ff78925b79
 	github.com/aws/aws-sdk-go v1.31.13
 	github.com/benbjohnson/clock v1.0.2
-	github.com/cloudflare/cloudflare-go v0.13.5 // indirect
+	github.com/cloudflare/cloudflare-go v0.13.6 // indirect
 	github.com/codeskyblue/go-sh v0.0.0-20200712050446-30169cf553fe
 	github.com/dnsimple/dnsimple-go v0.0.0-00010101000000-000000000000 // indirect
 	github.com/evanphx/json-patch v4.9.0+incompatible
@@ -63,7 +63,7 @@ require (
 	k8s.io/client-go v0.18.9
 	k8s.io/kube-openapi v0.0.0-20200410145947-61e04a5be9a6
 	k8s.io/utils v0.0.0-20200414100711-2df71ebbae66
-	kmodules.xyz/client-go v0.0.0-20201105071625-0b277310b9b8
+	kmodules.xyz/client-go v0.0.0-20201208053851-a1d7be95e006
 	kmodules.xyz/crd-schema-fuzz v0.0.0-20200922204806-c1426cd7fcf4
 	kmodules.xyz/monitoring-agent-api v0.0.0-20201105074044-be7a1044891a
 	kmodules.xyz/webhook-runtime v0.0.0-20201105073856-2dc7382b88c6
