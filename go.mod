@@ -14,7 +14,7 @@ require (
 	github.com/appscode/pat v0.0.0-20170521084856-48ff78925b79
 	github.com/aws/aws-sdk-go v1.31.13
 	github.com/benbjohnson/clock v1.0.2
-	github.com/cloudflare/cloudflare-go v0.13.6 // indirect
+	github.com/cloudflare/cloudflare-go v0.13.7 // indirect
 	github.com/codeskyblue/go-sh v0.0.0-20200712050446-30169cf553fe
 	github.com/dnsimple/dnsimple-go v0.0.0-00010101000000-000000000000 // indirect
 	github.com/evanphx/json-patch v4.9.0+incompatible
@@ -46,6 +46,7 @@ require (
 	github.com/timewasted/linode v0.0.0-20160829202747-37e84520dcf7 // indirect
 	github.com/tredoe/osutil v1.0.4
 	github.com/xenolf/lego v0.0.0-00010101000000-000000000000
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	gomodules.xyz/blobfs v0.1.5
