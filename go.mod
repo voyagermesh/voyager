@@ -9,7 +9,7 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.8.3
 	github.com/Azure/go-autorest/autorest/to v0.3.1-0.20191028180845-3492b2aff503
 	github.com/JamesClonk/vultr v2.0.2+incompatible // indirect
-	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.0.0 // indirect
+	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.0.1 // indirect
 	github.com/appscode/hello-grpc v0.0.0-20190207041230-eea009cbf42e
 	github.com/appscode/pat v0.0.0-20170521084856-48ff78925b79
 	github.com/aws/aws-sdk-go v1.31.13
