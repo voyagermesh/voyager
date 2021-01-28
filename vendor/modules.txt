@@ -100,7 +100,7 @@ github.com/beorn7/perks/quantile
 github.com/blang/semver
 # github.com/cespare/xxhash/v2 v2.1.1
 github.com/cespare/xxhash/v2
-# github.com/cloudflare/cloudflare-go v0.13.7
+# github.com/cloudflare/cloudflare-go v0.13.8
 github.com/cloudflare/cloudflare-go
 # github.com/codegangsta/inject v0.0.0-20150114235600-33e0aa1cb7c0
 github.com/codegangsta/inject
@@ -377,7 +377,7 @@ github.com/spf13/cobra/doc
 github.com/spf13/pflag
 # github.com/stretchr/objx v0.2.0
 github.com/stretchr/objx
-# github.com/stretchr/testify v1.6.1
+# github.com/stretchr/testify v1.7.0
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/mock
 # github.com/timewasted/linode v0.0.0-20160829202747-37e84520dcf7
@@ -497,7 +497,7 @@ golang.org/x/crypto/ssh/terminal
 # golang.org/x/lint v0.0.0-20200302205851-738671d3881b
 golang.org/x/lint
 golang.org/x/lint/golint
-# golang.org/x/net v0.0.0-20201224014010-6772e930b67b
+# golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 golang.org/x/net/bpf
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
