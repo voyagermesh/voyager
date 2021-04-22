@@ -139,7 +139,8 @@ func (op *Operator) reconcileCertificate(key string) error {
 
 func (op *Operator) CheckCertificates() {
 	Time := clock.New()
-	for range Time.After(time.Minute * 5) {
+	for {
+		<-Time.After(time.Minute * 5)
 		result, err := op.crtLister.List(labels.Everything())
 		if err != nil {
 			log.Error(err)
