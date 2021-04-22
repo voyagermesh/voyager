@@ -21,6 +21,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"sync"
 
 	"github.com/golang/glog"
 	ps "github.com/mitchellh/go-ps"
@@ -32,6 +33,8 @@ const (
 	haproxyPID    = "/var/run/haproxy.pid"
 	haproxySocket = "/var/run/haproxy.sock"
 )
+
+var haproxyDaemonMux sync.Mutex
 
 func getHAProxyPid() (int, error) {
 	file, err := os.Open(haproxyPID)
@@ -109,9 +112,23 @@ func reloadHAProxy(pid int) error {
 
 // reload if old haproxy daemon exists, otherwise start
 func startOrReloadHaproxy() error {
+	haproxyDaemonMux.Lock()
+	defer haproxyDaemonMux.Unlock()
 	if pid, err := checkHAProxyDaemon(); err != nil {
 		return startHAProxy()
 	} else {
 		return reloadHAProxy(pid)
+	}
+}
+
+// start haproxy if daemon doesn't exist, otherwise do nothing
+func startHaproxyIfNeeded() {
+	haproxyDaemonMux.Lock()
+	defer haproxyDaemonMux.Unlock()
+	if _, err := checkHAProxyDaemon(); err != nil {
+		glog.Error(err)
+		if err = startHAProxy(); err != nil {
+			glog.Error(err)
+		}
 	}
 }
