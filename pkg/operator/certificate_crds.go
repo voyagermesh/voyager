@@ -153,6 +153,11 @@ func (op *Operator) CheckCertificates() {
 				continue
 			}
 
+			if cert.CreationTimestamp.Time.After(time.Now().Add(-5 * time.Minute)) {
+				glog.Infof("Cert %s created less than 5 min ago, skipping check", cert.Name)
+				continue
+			}
+
 			if cert.IsRateLimited() {
 				// get a new account and retry
 				s := metav1.ObjectMeta{
