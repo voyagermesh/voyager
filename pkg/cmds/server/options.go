@@ -64,6 +64,8 @@ type OperatorOptions struct {
 	ValidateHAProxyConfig bool
 
 	EnableValidatingWebhook bool
+
+	LicenseFile string
 }
 
 func (s OperatorOptions) HAProxyImage() string {
@@ -132,6 +134,8 @@ func (s *OperatorOptions) AddGoFlags(fs *flag.FlagSet) {
 	fs.BoolVar(&s.ValidateHAProxyConfig, "validate-haproxy-config", s.ValidateHAProxyConfig, "If true, validates generated haproxy.cfg before sending to HAProxy pods.")
 
 	fs.BoolVar(&s.EnableValidatingWebhook, "enable-validating-webhook", s.EnableValidatingWebhook, "If true, enables validating webhooks for Voyager CRDs.")
+
+	fs.StringVar(&s.LicenseFile, "license-file", s.LicenseFile, "Path to license file")
 }
 
 func (s *OperatorOptions) AddFlags(fs *pflag.FlagSet) {
@@ -164,6 +168,7 @@ func (s *OperatorOptions) ApplyTo(cfg *operator.OperatorConfig) error {
 	cfg.WatchNamespace = s.WatchNamespace()
 	cfg.ValidateHAProxyConfig = s.ValidateHAProxyConfig
 	cfg.EnableValidatingWebhook = s.EnableValidatingWebhook
+	cfg.LicenseFile = s.LicenseFile
 
 	cfg.ClientConfig.QPS = float32(s.QPS)
 	cfg.ClientConfig.Burst = s.Burst

@@ -46,7 +46,8 @@ require (
 	github.com/timewasted/linode v0.0.0-20160829202747-37e84520dcf7 // indirect
 	github.com/tredoe/osutil v1.0.4
 	github.com/xenolf/lego v0.0.0-00010101000000-000000000000
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
+	go.bytebuilders.dev/license-verifier v0.8.1
+	go.bytebuilders.dev/license-verifier/kubernetes v0.8.1
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	gomodules.xyz/blobfs v0.1.5

@@ -14,31 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package licenses
 
-import (
-	"log"
-	"os"
-	"runtime"
-
-	"voyagermesh.dev/voyager/pkg/cmds"
-
-	_ "go.bytebuilders.dev/license-verifier/info"
-	_ "k8s.io/api/core/v1"
-	_ "k8s.io/client-go/kubernetes/fake"
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"kmodules.xyz/client-go/logs"
-)
-
-func main() {
-	logs.InitLogs()
-	defer logs.FlushLogs()
-
-	if len(os.Getenv("GOMAXPROCS")) == 0 {
-		runtime.GOMAXPROCS(runtime.NumCPU())
-	}
-
-	if err := cmds.NewCmdVoyager().Execute(); err != nil {
-		log.Fatal(err)
-	}
-}
+// GroupName is the group name use in this package
+const GroupName = "licenses.appscode.com"
