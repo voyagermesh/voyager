@@ -398,7 +398,7 @@ docker-manifest-%:
 DOTFILE_HAPROXY  = $(REGISTRY)_haproxy-$(TAG_HAPROXY)
 
 haproxy-container: bin/.container-$(DOTFILE_HAPROXY)-DEB bin/.container-$(DOTFILE_HAPROXY)-ALP
-bin/.container-$(DOTFILE_HAPROXY)-%: bin/.container-$(DOTFILE_IMAGE)-PROD
+bin/.container-$(DOTFILE_HAPROXY)-%: bin/$(OS)_$(ARCH)/$(BIN)
 	@echo "haproxy: $(REGISTRY)/haproxy:$(TAG_HAPROXY_$*)"
 	@sed                                    \
 		-e 's|{ARG_BIN}|$(BIN)|g'           \

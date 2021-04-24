@@ -129,7 +129,7 @@ replace github.com/go-openapi/strfmt => github.com/go-openapi/strfmt v0.19.3
 
 replace github.com/go-openapi/swag => github.com/go-openapi/swag v0.19.5
 
-replace github.com/go-openapi/validate => github.com/go-openapi/validate v0.19.5
+replace github.com/go-openapi/validate => github.com/gomodules/validate v0.19.5-1.16
 
 replace github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
 
