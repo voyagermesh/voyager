@@ -14,6 +14,10 @@
 
 SHELL=/bin/bash -o pipefail
 
+PRODUCT_OWNER_NAME := appscode
+PRODUCT_NAME       := voyager-community
+ENFORCE_LICENSE    ?=
+
 GO_PKG   := voyagermesh.dev
 REPO     := $(notdir $(shell pwd))
 BIN      := voyager
@@ -116,6 +120,9 @@ DOCKER_REPO_ROOT := /go/src/$(GO_PKG)/$(REPO)
 # If you want to build all containers, see the 'all-container' rule.
 # If you want to build AND push all containers, see the 'all-push' rule.
 all: fmt build
+
+KUBE_NAMESPACE ?= kube-system
+LICENSE_FILE   ?=
 
 # For the following OS/ARCH expansions, we transform OS/ARCH into OS_ARCH
 # because make pattern rules don't match with embedded '/' characters.
@@ -323,6 +330,9 @@ $(OUTBIN): .go/$(OUTBIN).stamp
 	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
 	    $(BUILD_IMAGE)                                          \
 	    /bin/bash -c "                                          \
+	        PRODUCT_OWNER_NAME=$(PRODUCT_OWNER_NAME)            \
+	        PRODUCT_NAME=$(PRODUCT_NAME)                        \
+	        ENFORCE_LICENSE=$(ENFORCE_LICENSE)                  \
 	        ARCH=$(ARCH)                                        \
 	        OS=$(OS)                                            \
 	        VERSION=$(VERSION)                                  \
@@ -551,8 +561,9 @@ endif
 .PHONY: install
 install:
 	@cd ../installer; \
-	helm install voyager-operator charts/voyager --wait \
+	helm install voyager-community charts/voyager --wait \
 		--namespace=kube-system \
+		--set-file license=$(LICENSE_FILE) \
 		--set voyager.registry=$(REGISTRY) \
 		--set voyager.tag=$(TAG) \
 		--set imagePullPolicy=Always \
@@ -563,7 +574,7 @@ install:
 .PHONY: uninstall
 uninstall:
 	@cd ../installer; \
-	helm uninstall voyager-operator --namespace=kube-system || true
+	helm uninstall voyager-community --namespace=kube-system || true
 
 .PHONY: purge
 purge: uninstall

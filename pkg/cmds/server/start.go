@@ -25,6 +25,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
+	license "go.bytebuilders.dev/license-verifier/kubernetes"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	genericoptions "k8s.io/apiserver/pkg/server/options"
@@ -108,6 +109,10 @@ func (o VoyagerOptions) Run(stopCh <-chan struct{}) error {
 	if err != nil {
 		return err
 	}
+
+	// Start periodic license verification
+	//nolint:errcheck
+	go license.VerifyLicensePeriodically(config.OperatorConfig.ClientConfig, o.OperatorOptions.LicenseFile, stopCh)
 
 	return s.Run(stopCh)
 }

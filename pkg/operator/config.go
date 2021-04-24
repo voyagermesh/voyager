@@ -40,6 +40,7 @@ const (
 type OperatorConfig struct {
 	config.Config
 
+	LicenseFile    string
 	ClientConfig   *rest.Config
 	KubeClient     kubernetes.Interface
 	WorkloadClient wcs.Interface

@@ -14,31 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+// Package v1alpha1 is the v1alpha1 version of the API.
 
-import (
-	"log"
-	"os"
-	"runtime"
+// +k8s:deepcopy-gen=package,register
+// +k8s:conversion-gen=go.bytebuilders.dev/license-verifier/apis/licenses
+// +k8s:openapi-gen=true
+// +k8s:defaulter-gen=TypeMeta
 
-	"voyagermesh.dev/voyager/pkg/cmds"
-
-	_ "go.bytebuilders.dev/license-verifier/info"
-	_ "k8s.io/api/core/v1"
-	_ "k8s.io/client-go/kubernetes/fake"
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"kmodules.xyz/client-go/logs"
-)
-
-func main() {
-	logs.InitLogs()
-	defer logs.FlushLogs()
-
-	if len(os.Getenv("GOMAXPROCS")) == 0 {
-		runtime.GOMAXPROCS(runtime.NumCPU())
-	}
-
-	if err := cmds.NewCmdVoyager().Execute(); err != nil {
-		log.Fatal(err)
-	}
-}
+// +groupName=licenses.appscode.com
+package v1alpha1

@@ -1,5 +1,5 @@
 /*
-Copyright AppsCode Inc. and Contributors
+Copyright AppsCode Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,31 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package info
 
-import (
-	"log"
-	"os"
-	"runtime"
+import "strconv"
 
-	"voyagermesh.dev/voyager/pkg/cmds"
+var (
+	EnforceLicense string
+	LicenseCA      string
 
-	_ "go.bytebuilders.dev/license-verifier/info"
-	_ "k8s.io/api/core/v1"
-	_ "k8s.io/client-go/kubernetes/fake"
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"kmodules.xyz/client-go/logs"
+	ProductOwnerName string
+	ProductOwnerUID  string
+
+	ProductName string // This has been renamed to Features
+	ProductUID  string
 )
 
-func main() {
-	logs.InitLogs()
-	defer logs.FlushLogs()
-
-	if len(os.Getenv("GOMAXPROCS")) == 0 {
-		runtime.GOMAXPROCS(runtime.NumCPU())
-	}
-
-	if err := cmds.NewCmdVoyager().Execute(); err != nil {
-		log.Fatal(err)
-	}
+func SkipLicenseVerification() bool {
+	v, _ := strconv.ParseBool(EnforceLicense)
+	return !v
 }
