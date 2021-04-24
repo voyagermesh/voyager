@@ -264,7 +264,7 @@ Now to open prometheus dashboard on Browser:
 ```console
 $ kubectl get svc -n demo
 NAME                 TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)               AGE
-kubedb               ClusterIP      None             <none>        <none>                59m
+voyager              ClusterIP      None             <none>        <none>                59m
 mgo-mon-prometheus   ClusterIP      10.104.88.103    <none>        27017/TCP,56790/TCP   59m
 prometheus-service   LoadBalancer   10.103.201.246   <pending>     9090:30901/TCP        8s
 

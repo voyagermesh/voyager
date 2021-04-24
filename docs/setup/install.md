@@ -15,7 +15,40 @@ section_menu_id: setup
 
 # Installation Guide
 
-Voyager operator can be installed via a script or as a Helm chart.
+To use the Voyager, you can grab **1 year** free license from [here](https://license-issuer.appscode.com/). After that, you can issue another license for one more year. Typically we release a new version of the operator at least quarterly. So, you can just grab a new license every time you upgrade the operator.
+
+
+## Get a License
+
+In this section, we are going to show you how you can get a **1 year** free license for the Voyager Community edition. You can get a license for your Kubernetes cluster by going through the following steps:
+
+- At first, go to [AppsCode License Server](https://license-issuer.appscode.com/) and fill-up the form. It will ask for your Name, Email, the product you want to install, and your cluster ID (UID of the `kube-system` namespace).
+- Provide your name and email address. You can provide your personal or work email address.
+- Then, select `Voyager Community Edition` in the product field.
+- Now, provide your cluster-ID. You can get your cluster ID easily by running the following command:
+
+  ```bash
+  $ kubectl get ns kube-system -o=jsonpath='{.metadata.uid}'
+  ```
+
+- Then, you have to agree with the terms and conditions. We recommend reading it before checking the box.
+- Now, you can submit the form. After you submit the form, the AppsCode License server will send an email to the provided email address with a link to your license file.
+- Navigate to the provided link and save the license into a file. Here, we save the license to a `license.txt` file.
+
+Here is a screenshot of the license form.
+
+<figure align="center">
+  <img alt="Voyager Backend Overview" src="/docs/images/setup/community_license_form.png">
+  <figcaption align="center">Fig: Voyager License Form</figcaption>
+</figure>
+
+You can create licenses for as many clusters as you want. You can upgrade your license any time without re-installing Voyager by following the upgrading guide from [here](/docs/setup/upgrade/index.md#updating-license).
+
+> Voyager licensing process has been designed to work with CI/CD workflow. You can automatically obtain a license from your CI/CD pipeline by following the guide from [here](https://github.com/appscode/offline-license-server#offline-license-server).
+
+## Install
+
+Voyager operator can be installed as a Helm chart or simply as Kubernetes manifests.
 
 <ul class="nav nav-tabs" id="installerTab" role="tablist">
   <li class="nav-item">
@@ -38,6 +71,7 @@ Voyager can be installed via [Helm](https://helm.sh/) 3.x or later versions usin
 ```console
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
+
 $ helm search repo appscode/voyager --version {{< param "info.version" >}}
 NAME              CHART VERSION APP VERSION DESCRIPTION
 appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  Voyager by AppsCode - Secure HAProxy Ingress Controller...
@@ -55,9 +89,11 @@ appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  
 # provider=digitalocean
 # provider=linode
 
-$ helm install voyager-operator appscode/voyager --version {{< param "info.version" >}} \
+$ helm install voyager-operator appscode/voyager \
+  --version {{< param "info.version" >}} \
   --namespace kube-system \
-  --set cloudProvider=$provider
+  --set cloudProvider=$provider \
+  --set-file global.license=/path/to/the/license.txt
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/voyagermesh/installer/tree/{{< param "info.version" >}}/charts/voyager).
@@ -72,6 +108,7 @@ Voyager can be installed via [Helm](https://helm.sh/) 2.9.x or later versions us
 ```console
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
+
 $ helm search appscode/voyager --version {{< param "info.version" >}}
 NAME              CHART VERSION APP VERSION DESCRIPTION
 appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  Voyager by AppsCode - Secure HAProxy Ingress Controller...
@@ -89,9 +126,11 @@ appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  
 # provider=digitalocean
 # provider=linode
 
-$ helm install appscode/voyager --name voyager-operator --version {{< param "info.version" >}} \
+$ helm install appscode/voyager --name voyager-operator \
+  --version {{< param "info.version" >}} \
   --namespace kube-system \
-  --set cloudProvider=$provider
+  --set cloudProvider=$provider \
+  --set-file global.license=/path/to/the/license.txt
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/voyagermesh/installer/tree/{{< param "info.version" >}}/charts/voyager).
@@ -106,6 +145,7 @@ If you prefer to not use Helm, you can generate YAMLs from Voyager operator char
 ```console
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
+
 $ helm search repo appscode/voyager --version {{< param "info.version" >}}
 NAME              CHART VERSION APP VERSION DESCRIPTION
 appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  Voyager by AppsCode - Secure HAProxy Ingress Controller...
@@ -123,10 +163,12 @@ appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  
 # provider=digitalocean
 # provider=linode
 
-$ helm template voyager-operator appscode/voyager --version {{< param "info.version" >}} \
+$ helm template voyager-operator appscode/voyager \
+  --version {{< param "info.version" >}} \
   --namespace kube-system \
-  --no-hooks \
-  --set cloudProvider=$provider | kubectl apply -f -
+  --set cloudProvider=$provider \
+  --set-file global.license=/path/to/the/license.txt    \
+  --set global.skipCleaner=true | kubectl apply -f -
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/voyagermesh/installer/tree/{{< param "info.version" >}}/charts/voyager).

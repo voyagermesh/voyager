@@ -49,8 +49,7 @@ jobs:
           echo "install kubedb-crds chart"
           helm repo add appscode https://charts.appscode.com/stable/
           helm repo update
-          helm install kubedb-crds appscode/kubedb-crds
-          helm install kmodules-crds appscode/kmodules-crds
+          # helm install voyager-crds appscode/voyager-crds
 
       - name: Check codespan schema
         run: |
