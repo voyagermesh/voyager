@@ -22,7 +22,7 @@ RUN set -x \
   && apt-get install -y --no-install-recommends apt-transport-https ca-certificates curl
 
 RUN set -x \
-  && curl -L -o socklog.deb http://ftp.us.debian.org/debian/pool/main/s/socklog/socklog_2.1.0-8.1_{ARG_ARCH}.deb \
+  && curl -L -o socklog.deb http://ftp.us.debian.org/debian/pool/main/s/socklog/socklog_2.1.0+repack-4+b1_{ARG_ARCH}.deb \
   && curl -fsSL -o auth-request.lua https://raw.githubusercontent.com/appscode/haproxy-auth-request/v1.9.15/auth-request.lua
 
 
