@@ -84,6 +84,16 @@ kind: ClusterIssuer
 metadata:
   name: letsencrypt-prod
 spec:
+  acme:
+    # The ACME server URL
+    server: https://acme-v02.api.letsencrypt.org/directory
+    # Email address used for ACME registration
+    email: user@example.com
+    # Name of a secret used to store the ACME account private key
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    # Enable HTTP01 validations
+    http01: {}
 ```
 
 When referencing a Secret resource in ClusterIssuer resources (eg `spec.acme.solvers.dns01.cloudflare.apiKeySecretRef`) the Secret needs to be in the same namespace as the cert-manager controller pod. You can optionally override this by using the `--cluster-resource-namespace` argument to the controller.
@@ -113,6 +123,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: example
+  namespace: edge-services
 spec:
   secretName: example-tls
   duration: 24h

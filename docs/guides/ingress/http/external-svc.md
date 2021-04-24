@@ -25,6 +25,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: external-ip
+  namespace: default
 spec:
   ports:
   - name: app
@@ -38,6 +39,7 @@ apiVersion: v1
 kind: Endpoints
 metadata:
   name: external-ip
+  namespace: default
 subsets:
 - addresses:
   # list all external ips for this service
@@ -55,7 +57,7 @@ apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
   name: test-ings-rhvulnlb
-  namespace: test-x
+  namespace: default
 spec:
   backend:
     serviceName: external-ip
@@ -99,7 +101,7 @@ apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
   name: test-ings-rhvulnlb
-  namespace: test-x
+  namespace: default
 spec:
   backend:
     serviceName: external-ns

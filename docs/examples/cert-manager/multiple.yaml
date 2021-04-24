@@ -17,6 +17,7 @@ spec:
       - dns01:
           route53:
             accessKeyID: KIR2WO5YWT
+            region: us-east-1
             secretAccessKeySecretRef:
               name: route53-secret
               key: secret-access-key

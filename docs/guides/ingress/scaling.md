@@ -30,6 +30,7 @@ apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
   name: my-app
+  namespace: default
   annotations:
     ingress.appscode.com/replicas: '2'
 spec:
