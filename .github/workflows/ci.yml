@@ -3,13 +3,12 @@ name: CI
 on:
   pull_request:
     branches:
-      - '*'
+      - "*"
   push:
     branches:
       - master
 
 jobs:
-
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -22,6 +21,37 @@ jobs:
           chmod +x liche
           sudo mv liche /usr/local/bin/liche
 
+      - name: Install codespan schema checker
+        run: |
+          curl -fsSL -o codespan-schema-checker https://github.com/kmodules/codespan-schema-checker/releases/download/v0.0.1/codespan-schema-checker-linux-amd64
+          chmod +x codespan-schema-checker
+          sudo mv codespan-schema-checker /usr/local/bin/codespan-schema-checker
+
       - name: Check links
         run: |
           liche -r docs -d $(pwd) -c 10 -p -h -l -x '^*(voyager.appscode.ninja|www.kiteci.pro)*$'
+
+      - name: Create Kubernetes cluster
+        id: kind
+        uses: engineerd/setup-kind@v0.5.0
+        with:
+          version: v0.10.0
+
+      - name: Prepare cluster for testing
+        id: local-path
+        run: |
+          echo "waiting for nodes to be ready ..."
+          kubectl wait --for=condition=Ready nodes --all --timeout=5m
+          kubectl get nodes
+          echo
+          echo "install helm 3"
+          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+          echo "install kubedb-crds chart"
+          helm repo add appscode https://charts.appscode.com/stable/
+          helm repo update
+          helm install kubedb-crds appscode/kubedb-crds
+          helm install kmodules-crds appscode/kmodules-crds
+
+      - name: Check codespan schema
+        run: |
+          codespan-schema-checker --content=./docs
