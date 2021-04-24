@@ -1,4 +1,4 @@
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: letsencrypt-staging-dns
@@ -17,6 +17,7 @@ spec:
       - dns01:
           route53:
             accessKeyID: KIR2WO5YWT
+            region: us-east-1
             secretAccessKeySecretRef:
               name: route53-secret
               key: secret-access-key

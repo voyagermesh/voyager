@@ -41,6 +41,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: my-service
+  namespace: default
   annotations:
       ingress.appscode.com/backend-tls: ssl verify none
 spec:

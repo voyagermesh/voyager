@@ -1,7 +1,8 @@
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: example
+  namespace: default
 spec:
   secretName: example-tls
   duration: 24h

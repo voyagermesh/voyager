@@ -58,8 +58,8 @@ metadata:
   name: tls-secret
   namespace: demo
 data:
-  tls.crt: base64 encoded cert
-  tls.key: base64 encoded key
+  tls.crt: YmFzZTY0IGVuY29kZWQgY2VydA==
+  tls.key: YmFzZTY0IGVuY29kZWQga2V5
 ```
 
 ### Issue Certificates from Let's Encrypt

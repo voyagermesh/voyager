@@ -54,7 +54,7 @@ Issuers (and ClusterIssuers) represent a certificate authority from which signed
 Like this [issuer.yaml](/docs/examples/cert-manager/issuer.yaml)
 
 ```yaml
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: letsencrypt-prod
@@ -79,11 +79,21 @@ The `spec.email` will be used to register for your let's encrypt account and `pr
 An Issuer is a namespaced resource, and it is not possible to issue certificates from an Issuer in a different namespace. If you want to create a single issuer than can be consumed in multiple namespaces, you should consider creating a ClusterIssuer resource.
 
 ```yaml
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: letsencrypt-prod
 spec:
+  acme:
+    # The ACME server URL
+    server: https://acme-v02.api.letsencrypt.org/directory
+    # Email address used for ACME registration
+    email: user@example.com
+    # Name of a secret used to store the ACME account private key
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    # Enable HTTP01 validations
+    http01: {}
 ```
 
 When referencing a Secret resource in ClusterIssuer resources (eg `spec.acme.solvers.dns01.cloudflare.apiKeySecretRef`) the Secret needs to be in the same namespace as the cert-manager controller pod. You can optionally override this by using the `--cluster-resource-namespace` argument to the controller.
@@ -109,10 +119,11 @@ The default duration for all certificates is 90 days and the default renewal win
 You can change that value using `duration` and `renewBefore` field in [certificate.yaml](/docs/examples/cert-manager/certificate.yaml),
 
 ```yaml
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: example
+  namespace: edge-services
 spec:
   secretName: example-tls
   duration: 24h

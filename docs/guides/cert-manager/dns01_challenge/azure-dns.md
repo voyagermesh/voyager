@@ -71,7 +71,7 @@ Now that you have access to this, go to Subscriptions -> Access control (IAM) ->
 Now create this issuer by applying [issuer.yaml](/docs/examples/cert-manager/azure/issuer.yaml)
 
 ```yaml
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: letsencrypt-staging-dns
@@ -153,7 +153,7 @@ voyager-test-ingress-deploy-k8s-azure-dns     LoadBalancer   10.7.254.246   35.1
 Then create this [certificate.yaml](/docs/examples/cert-manager/azure/certificate.yaml)
 
 ```yaml
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: kiteci-azure-dns

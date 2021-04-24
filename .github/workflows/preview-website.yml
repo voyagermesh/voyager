@@ -1,0 +1,80 @@
+name: preview-website
+
+on:
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.16
+        id: go
+
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+
+      - name: Install yq
+        run: |
+          curl -fsSL -o yq https://github.com/mikefarah/yq/releases/download/3.3.0/yq_linux_amd64
+          chmod +x yq
+          sudo mv yq /usr/local/bin/yq
+
+      - name: Install Hugo
+        run: |
+          curl -fsSL -o hugo_extended.deb https://github.com/gohugoio/hugo/releases/download/v0.71.1/hugo_extended_0.71.1_Linux-64bit.deb
+          sudo dpkg -i hugo_extended.deb
+          rm hugo_extended.deb
+
+      - name: Install Hugo Tools
+        run: |
+          curl -fsSL -o hugo-tools https://github.com/appscodelabs/hugo-tools/releases/download/v0.2.21/hugo-tools-linux-amd64
+          chmod +x hugo-tools
+          sudo mv hugo-tools /usr/local/bin/hugo-tools
+
+      - name: Clone website repository
+        env:
+          GITHUB_USER: 1gtm
+          GITHUB_TOKEN: ${{ secrets.LGTM_GITHUB_TOKEN }}
+          WEBSITE_REPOSITORY: ${{ secrets.WEBSITE_REPOSITORY }}
+        run: |
+          url="https://${GITHUB_USER}:${GITHUB_TOKEN}@${WEBSITE_REPOSITORY}.git"
+          cd $RUNNER_WORKSPACE
+          git clone $url
+          cd $(basename $WEBSITE_REPOSITORY)
+          git config user.name "${GITHUB_USER}"
+          git config user.email "${GITHUB_USER}@appscode.com"
+
+      - name: Update docs
+        env:
+          GITHUB_USER: 1gtm
+          GITHUB_TOKEN: ${{ secrets.LGTM_GITHUB_TOKEN }}
+          WEBSITE_REPOSITORY: ${{ secrets.WEBSITE_REPOSITORY }}
+          GOOGLE_CUSTOM_SEARCH_API_KEY: ${{ secrets.GOOGLE_CUSTOM_SEARCH_API_KEY }}
+        run: |
+          set -x
+          export WEBSITE_ROOT=$RUNNER_WORKSPACE/$(basename $WEBSITE_REPOSITORY)
+          cd $WEBSITE_ROOT
+          npm install
+          hugo-tools update-branch --filename=./data/products/kubedb.json --branch=${{ github.event.pull_request.head.sha }}
+          make docs-skip-assets
+          make gen-prod
+
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_QA }}'
+          projectId: kubedb-new-e7965
+          # target: kubedb-new-e7965
+          entryPoint: '../website'
+        env:
+          FIREBASE_CLI_PREVIEWS: hostingchannels

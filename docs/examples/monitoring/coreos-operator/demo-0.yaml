@@ -79,6 +79,9 @@ metadata:
     operator: prometheus
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      operator: prometheus
   template:
     metadata:
       labels:

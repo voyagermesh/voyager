@@ -125,7 +125,7 @@ spec:
   - name: whitelist-vol
     configMap:
       name: whitelist-config
-      mountPath: /etc/haproxy
+    mountPath: /etc/haproxy
   frontendRules:
   - port: 80
     rules:

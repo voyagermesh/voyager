@@ -90,7 +90,7 @@ Copy `Access key ID` from this same page and `hostedZoneID` from the following p
 And put them in [issuer.yaml](/docs/examples/cert-manager/route53/issuer.yaml)
 
 ```yaml
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: letsencrypt-staging-dns
@@ -106,6 +106,7 @@ spec:
       - dns01:
           route53:
             accessKeyID: KIR2WO5YWT
+            region: us-east-1
             secretAccessKeySecretRef:
               name: route53-secret
               key: secret-access-key
@@ -168,7 +169,7 @@ voyager-test-ingress-deploy-k8s-route53-dns   LoadBalancer   10.7.248.189   35.2
 Then create this [certificate.yaml](/docs/examples/cert-manager/route53/certificate.yaml)
 
 ```yaml
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: kiteci-route53-dns

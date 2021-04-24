@@ -31,7 +31,7 @@ Additionally, you can create only one Issuer/ClusterIssuer for each of http01 or
 multiple dns providers, like [this](/docs/examples/cert-manager/multiple.yaml):
 
 ```yaml
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: letsencrypt-staging-dns
@@ -50,6 +50,7 @@ spec:
       - dns01:
           route53:
             accessKeyID: KIR2WO5YWT
+            region: us-east-1
             secretAccessKeySecretRef:
               name: route53-secret
               key: secret-access-key

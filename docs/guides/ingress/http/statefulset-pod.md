@@ -24,6 +24,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: http
+  namespace: default
 spec:
   serviceName: "nginx-set"
   replicas: 2
@@ -43,6 +44,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nginx-set
+  namespace: default
   labels:
     app: nginx
 spec:
@@ -61,6 +63,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nginx-service
+  namespace: default
   labels:
     app: nginx
 spec:

@@ -43,7 +43,7 @@ kubectl create secret generic clouddns-service-account --from-file=service-accou
 Now create this issuer by applying [issuer.yaml](/docs/examples/cert-manager/google_cloud/issuer.yaml)
 
 ```yaml
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: letsencrypt-staging-dns
@@ -126,7 +126,7 @@ dig +short kiteci-dns.appscode.ninja
 Then create this [certificate.yaml](/docs/examples/cert-manager/google_cloud/certificate.yaml)
 
 ```yaml
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: kiteci-dns
