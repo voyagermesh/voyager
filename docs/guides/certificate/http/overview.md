@@ -24,7 +24,7 @@ Install Voyager operator in your cluster following the steps [here](/docs/setup/
 2. We are going to use a nginx server as the backend. To deploy nginx server, run the following commands:
 
     ```console
-    kubectl run nginx --image=nginx
+    kubectl create deployment nginx --image=nginx
     kubectl expose deployment nginx --name=web --port=80 --target-port=80
     ```
 
