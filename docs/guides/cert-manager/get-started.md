@@ -54,7 +54,7 @@ Issuers (and ClusterIssuers) represent a certificate authority from which signed
 Like this [issuer.yaml](/docs/examples/cert-manager/issuer.yaml)
 
 ```yaml
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: letsencrypt-prod
@@ -79,7 +79,7 @@ The `spec.email` will be used to register for your let's encrypt account and `pr
 An Issuer is a namespaced resource, and it is not possible to issue certificates from an Issuer in a different namespace. If you want to create a single issuer than can be consumed in multiple namespaces, you should consider creating a ClusterIssuer resource.
 
 ```yaml
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: letsencrypt-prod
@@ -109,7 +109,7 @@ The default duration for all certificates is 90 days and the default renewal win
 You can change that value using `duration` and `renewBefore` field in [certificate.yaml](/docs/examples/cert-manager/certificate.yaml),
 
 ```yaml
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: example

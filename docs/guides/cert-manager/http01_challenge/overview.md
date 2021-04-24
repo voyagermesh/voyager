@@ -24,7 +24,7 @@ this [clusterissuer.yaml](/docs/examples/cert-manager/http/clusterissuer.yaml)
 <!-- https://docs.cert-manager.io/en/latest/tasks/issuers/setup-acme/http01/index.html -->
 
 ```yaml
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: letsencrypt-staging
