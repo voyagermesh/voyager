@@ -1,13 +1,13 @@
 ---
 title: Basic Authentication | Kubernetes Ingress
 menu:
-  product_voyager_{{ .version }}:
+  docs_{{ .version }}:
     identifier: basic-auth-security
     name: Basic Auth
     parent: security-ingress
     weight: 10
 product_name: voyager
-menu_name: product_voyager_{{ .version }}
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 aliases:
   - /products/voyager/{{ .version }}/guides/ingress/security/

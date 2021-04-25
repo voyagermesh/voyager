@@ -1,13 +1,13 @@
 ---
 title: HTTP2 | Kubernetes Ingress
 menu:
-  product_voyager_{{ .version }}:
+  docs_{{ .version }}:
     identifier: h2-http
     name: HTTP2
     parent: http-ingress
     weight: 26
 product_name: voyager
-menu_name: product_voyager_{{ .version }}
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 

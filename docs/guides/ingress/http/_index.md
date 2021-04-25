@@ -1,10 +1,10 @@
 ---
 title: HTTP
 menu:
-  product_voyager_{{ .version }}:
+  docs_{{ .version }}:
     identifier: http-ingress
     name: HTTP
     parent: ingress-guides
     weight: 10
-menu_name: product_voyager_{{ .version }}
+menu_name: docs_{{ .version }}
 ---

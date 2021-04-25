@@ -2,15 +2,16 @@
 title: Uninstall Voyager
 description: Voyager Uninstall
 menu:
-  product_voyager_{{ .version }}:
+  docs_{{ .version }}:
     identifier: uninstall-voyager
     name: Uninstall
     parent: setup
     weight: 20
 product_name: voyager
-menu_name: product_voyager_{{ .version }}
+menu_name: docs_{{ .version }}
 section_menu_id: setup
 ---
+
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
 
 # Uninstall Voyager

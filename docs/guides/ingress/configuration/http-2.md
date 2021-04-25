@@ -1,13 +1,13 @@
 ---
 title: Configure HTTP/2 and GRPC | Kubernetes Ingress
 menu:
-  product_voyager_{{ .version }}:
+  docs_{{ .version }}:
     identifier: enable-http-2
     name: Configure HTTP/2 and GRPC
     parent: config-ingress
     weight: 10
 product_name: voyager
-menu_name: product_voyager_{{ .version }}
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 

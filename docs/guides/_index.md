@@ -1,10 +1,10 @@
 ---
 title: Guides | Voyager
 menu:
-  product_voyager_{{ .version }}:
+  docs_{{ .version }}:
     identifier: guides
     name: Guides
     weight: 40
     pre: dropdown
-menu_name: product_voyager_{{ .version }}
+menu_name: docs_{{ .version }}
 ---

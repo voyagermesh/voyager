@@ -2,15 +2,16 @@
 title: Install Voyager
 description: Voyager Install
 menu:
-  product_voyager_{{ .version }}:
+  docs_{{ .version }}:
     identifier: install-voyager
     name: Install
     parent: setup
     weight: 10
 product_name: voyager
-menu_name: product_voyager_{{ .version }}
+menu_name: docs_{{ .version }}
 section_menu_id: setup
 ---
+
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
 
 # Installation Guide
@@ -93,7 +94,7 @@ $ helm install voyager-operator appscode/voyager \
   --version {{< param "info.version" >}} \
   --namespace kube-system \
   --set cloudProvider=$provider \
-  --set-file global.license=/path/to/the/license.txt
+  --set-file license=/path/to/the/license.txt
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/voyagermesh/installer/tree/{{< param "info.version" >}}/charts/voyager).
@@ -130,7 +131,7 @@ $ helm install appscode/voyager --name voyager-operator \
   --version {{< param "info.version" >}} \
   --namespace kube-system \
   --set cloudProvider=$provider \
-  --set-file global.license=/path/to/the/license.txt
+  --set-file license=/path/to/the/license.txt
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/voyagermesh/installer/tree/{{< param "info.version" >}}/charts/voyager).
@@ -167,8 +168,8 @@ $ helm template voyager-operator appscode/voyager \
   --version {{< param "info.version" >}} \
   --namespace kube-system \
   --set cloudProvider=$provider \
-  --set-file global.license=/path/to/the/license.txt    \
-  --set global.skipCleaner=true | kubectl apply -f -
+  --set-file license=/path/to/the/license.txt    \
+  --set cleaner.skip=true | kubectl apply -f -
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/voyagermesh/installer/tree/{{< param "info.version" >}}/charts/voyager).

@@ -1,13 +1,13 @@
 ---
 title: Configure Ingress Max Connections
 menu:
-  product_voyager_{{ .version }}:
+  docs_{{ .version }}:
     identifier: max-connections-configuration
     name: Max Connections
     parent: config-ingress
     weight: 10
 product_name: voyager
-menu_name: product_voyager_{{ .version }}
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).

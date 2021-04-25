@@ -2,13 +2,13 @@
 title: Table of Contents | Setup
 description: Table of Contents | Setup
 menu:
-  product_voyager_{{ .version }}:
+  docs_{{ .version }}:
     identifier: setup-readme
     name: Readme
     parent: setup
     weight: -1
 product_name: voyager
-menu_name: product_voyager_{{ .version }}
+menu_name: docs_{{ .version }}
 section_menu_id: setup
 url: /products/voyager/{{ .version }}/setup/
 aliases:

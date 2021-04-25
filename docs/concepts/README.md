@@ -1,13 +1,13 @@
 ---
 title: Concepts | Voyager
 menu:
-  product_voyager_{{ .version }}:
+  docs_{{ .version }}:
     identifier: concepts-readme
     name: Readme
     parent: concepts
     weight: -1
 product_name: voyager
-menu_name: product_voyager_{{ .version }}
+menu_name: docs_{{ .version }}
 section_menu_id: concepts
 url: /products/voyager/{{ .version }}/concepts/
 aliases:

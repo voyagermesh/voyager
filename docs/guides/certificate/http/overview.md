@@ -2,13 +2,13 @@
 title: Issue Let's Encrypt certificate using HTTP-01 challenge
 description: Issue Let's Encrypt certificate using HTTP-01 challenge in Kubernetes
 menu:
-  product_voyager_{{ .version }}:
+  docs_{{ .version }}:
     identifier: overview-http
     name: Overview
     parent: http-certificate
     weight: 10
 product_name: voyager
-menu_name: product_voyager_{{ .version }}
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).

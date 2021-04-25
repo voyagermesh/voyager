@@ -2,13 +2,13 @@
 title: Welcome | Voyager
 description: Welcome to Voyager
 menu:
-  product_voyager_{{ .version }}:
+  docs_{{ .version }}:
     identifier: readme-voyager
     name: Readme
     parent: welcome
     weight: -1
 product_name: voyager
-menu_name: product_voyager_{{ .version }}
+menu_name: docs_{{ .version }}
 section_menu_id: welcome
 url: /products/voyager/{{ .version }}/welcome/
 aliases:

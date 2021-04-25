@@ -1,14 +1,14 @@
 ---
 title: Voyager
 menu:
-  product_voyager_{{ .version }}:
+  docs_{{ .version }}:
     identifier: voyager
     name: Voyager
     parent: reference
     weight: 0
 
 product_name: voyager
-menu_name: product_voyager_{{ .version }}
+menu_name: docs_{{ .version }}
 section_menu_id: reference
 aliases:
   - /products/voyager/{{ .version }}/reference/

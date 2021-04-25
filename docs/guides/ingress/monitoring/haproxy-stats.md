@@ -1,13 +1,13 @@
 ---
 title: Exposing HAProxy Stats
 menu:
-  product_voyager_{{ .version }}:
+  docs_{{ .version }}:
     identifier: haproxy-stats-monitoring
     name: Exposing HAProxy Stats
     parent: monitoring-ingress
     weight: 10
 product_name: voyager
-menu_name: product_voyager_{{ .version }}
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).

@@ -1,13 +1,13 @@
 ---
 title: cert-manager | Voyager
 menu:
-  product_voyager_{{ .version }}:
+  docs_{{ .version }}:
     identifier: readme-cert-manager
     name: Readme
     parent: cert-manager-guides
     weight: -1
 product_name: voyager
-menu_name: product_voyager_{{ .version }}
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 url: /products/voyager/{{ .version }}/guides/cert-manager/
 aliases:

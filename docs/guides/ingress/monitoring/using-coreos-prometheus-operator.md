@@ -1,13 +1,13 @@
 ---
 title: Monitor HAProxy using CoreOS Prometheus operator
 menu:
-  product_voyager_{{ .version }}:
+  docs_{{ .version }}:
     identifier: coreos-operator-monitoring
     name: Monitor with CoreOS Prometheus operator
     parent: monitoring-ingress
     weight: 20
 product_name: voyager
-menu_name: product_voyager_{{ .version }}
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).

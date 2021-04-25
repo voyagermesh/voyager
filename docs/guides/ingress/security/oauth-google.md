@@ -1,13 +1,13 @@
 ---
 title: OAuth2 Authentication | Kubernetes Ingress
 menu:
-  product_voyager_{{ .version }}:
+  docs_{{ .version }}:
     identifier: oauth2-google
     name: OAuth2 Google
     parent: oauth2-security
     weight: 20
 product_name: voyager
-menu_name: product_voyager_{{ .version }}
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 

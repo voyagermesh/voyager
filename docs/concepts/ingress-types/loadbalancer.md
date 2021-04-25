@@ -1,13 +1,13 @@
 ---
 title: LoadBalancer Ingress | Voyager
 menu:
-  product_voyager_{{ .version }}:
+  docs_{{ .version }}:
     identifier: loadbalancer-ingress
     name: LoadBalancer
     parent: ingress-types-concepts
     weight: 10
 product_name: voyager
-menu_name: product_voyager_{{ .version }}
+menu_name: docs_{{ .version }}
 section_menu_id: concepts
 ---
 

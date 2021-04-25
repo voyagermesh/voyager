@@ -1,13 +1,13 @@
 ---
 title: Internal Ingress | Voyager
 menu:
-  product_voyager_{{ .version }}:
+  docs_{{ .version }}:
     identifier: internal-ingress
     name: Internal
     parent: ingress-types-concepts
     weight: 25
 product_name: voyager
-menu_name: product_voyager_{{ .version }}
+menu_name: docs_{{ .version }}
 section_menu_id: concepts
 ---
 
