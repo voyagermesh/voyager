@@ -17,39 +17,14 @@ This also support configurable application ports with all the options available 
 ## Certificate
 Voyager can automatically provision and refresh SSL certificates (including wildcard certificates) issued from Let's Encrypt using a custom Kubernetes [Certificate](https://voyagermesh.com/docs/latest/guides/certificate/) resource.
 
-## Supported Versions
-Please pick a version of Voyager that matches your Kubernetes installation.
-
-| Voyager Version                                                                      | Docs                                                                 | Kubernetes Version | Prometheus operator Version |
-|--------------------------------------------------------------------------------------|----------------------------------------------------------------------|--------------------|-----------------------------|
-| [v13.0.0-beta.1](https://github.com/voyagermesh/voyager/releases/tag/v13.0.0-beta.1) | [User Guide](https://voyagermesh.com/docs/v13.0.0-beta.1/)           | 1.14.x+            | 0.34.0+                     |
-| [v12.0.0](https://github.com/voyagermesh/voyager/releases/tag/v12.0.0)               | [User Guide](https://voyagermesh.com/docs/v12.0.0/)                  | 1.11.x - 1.17.x    | 0.34.0+                     |
-| [v11.0.1](https://github.com/voyagermesh/voyager/releases/tag/v11.0.1)               | [User Guide](https://voyagermesh.com/docs/v11.0.1/)                  | 1.9.x+             | 0.30.0+                     |
-| [10.0.0](https://github.com/voyagermesh/voyager/releases/tag/10.0.0)                 | [User Guide](https://voyagermesh.com/docs/10.0.0/)                   | 1.9.x+             | 0.16.0+                     |
-| [7.4.0](https://github.com/voyagermesh/voyager/releases/tag/7.4.0)                   | [User Guide](https://voyagermesh.com/docs/7.4.0/)                    | 1.8.x - 1.11.x     | 0.16.0+                     |
-| [5.0.0](https://github.com/voyagermesh/voyager/releases/tag/5.0.0)                   | [User Guide](https://voyagermesh.com/docs/5.0.0/)                    | 1.7.x              | 0.12.0+                     |
-
 ## Installation
 To install Voyager, please follow the guide [here](https://voyagermesh.com/docs/latest/setup/install/).
 
 ## Using Voyager
 Want to learn how to use Voyager? Please start [here](https://voyagermesh.com/docs/latest/welcome/).
 
-## Voyager API Clients
-You can use Voyager api clients to programmatically access its CRD objects. Here are the supported clients:
-
-- Go: [https://github.com/voyagermesh/voyager](/client/clientset/versioned)
-- Java: https://github.com/voyagermesh/java
-
 ## Contribution guidelines
 Want to help improve Voyager? Please start [here](https://voyagermesh.com/docs/latest/welcome/contributing/).
-
----
-
-**Voyager binaries collects anonymous usage statistics to help us learn how the software is being used and how we can improve it.
-To disable stats collection, run the operator with the flag** `--enable-analytics=false`.
-
----
 
 ## Acknowledgement
  - docker-library/haproxy https://github.com/docker-library/haproxy
