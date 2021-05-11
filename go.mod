@@ -45,6 +45,7 @@ require (
 	gomodules.xyz/runtime v0.2.0
 	gomodules.xyz/x v0.0.4
 	google.golang.org/api v0.26.0
+	google.golang.org/grpc v1.29.1
 	gopkg.in/gcfg.v1 v1.2.3
 	k8s.io/api v0.21.0
 	k8s.io/apiextensions-apiserver v0.21.0
@@ -59,6 +60,13 @@ require (
 	kmodules.xyz/monitoring-agent-api v0.0.0-20210504040241-261c2428d207
 	kmodules.xyz/webhook-runtime v0.0.0-20210504042742-3a9911e3dcdc
 	sigs.k8s.io/yaml v1.2.0
+	voyagermesh.dev/hello-grpc v0.0.0-20210511182131-5c4fe79f2aa3
+)
+
+replace (
+	github.com/grpc-ecosystem/go-grpc-middleware => github.com/tamalsaha/go-grpc-middleware v0.0.0-20180226223443-606e44dc6300
+	github.com/grpc-ecosystem/grpc-gateway => github.com/appscode/grpc-gateway v1.3.1-ac
+	gomodules.xyz/grpc-go-addons => gomodules.xyz/grpc-go-addons v0.2.2-0.20210218145105-321b2e13985f
 )
 
 replace bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d
