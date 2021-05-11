@@ -33,10 +33,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"gomodules.xyz/cert/certstore"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/klog/v2"
 )
 
 var _ = Describe("IngressWithTLSAuth", func() {
@@ -174,7 +174,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			}
 
 			resolved := false
-			log.Warningln("Domain 'http.appscode.test' must resolve to ips in", eps)
+			klog.Warningln("Domain 'http.appscode.test' must resolve to ips in", eps)
 
 			// Checking for the domain is pointing to the ips found in the endpoints
 			// The IPs and domain must be in /etc/hosts file
@@ -294,7 +294,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			}
 
 			resolved := false
-			log.Warningln("Domain 'http.appscode.test' must resolve to ips in", eps)
+			klog.Warningln("Domain 'http.appscode.test' must resolve to ips in", eps)
 
 			// Checking for the domain is pointing to the ips found in the endpoints
 			// The IPs and domain must be in /etc/hosts file
@@ -401,7 +401,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			}
 
 			resolved := false
-			log.Warningln("Domain 'http.appscode.test' must resolve to ips in", eps)
+			klog.Warningln("Domain 'http.appscode.test' must resolve to ips in", eps)
 
 			// Checking for the domain is pointing to the ips found in the endpoints
 			// The IPs and domain must be in /etc/hosts file
@@ -510,7 +510,7 @@ var _ = Describe("IngressWithTLSAuth", func() {
 			}
 
 			resolved := false
-			log.Warningln("Domain 'http.appscode.test' must resolve to ips in", eps)
+			klog.Warningln("Domain 'http.appscode.test' must resolve to ips in", eps)
 
 			// Checking for the domain is pointing to the ips found in the endpoints
 			// The IPs and domain must be in /etc/hosts file

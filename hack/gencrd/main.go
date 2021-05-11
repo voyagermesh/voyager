@@ -25,10 +25,10 @@ import (
 	v1beta1 "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
 	"github.com/go-openapi/spec"
-	"github.com/golang/glog"
 	gort "gomodules.xyz/runtime"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/klog/v2"
 	"k8s.io/kube-openapi/pkg/common"
 	"kmodules.xyz/client-go/openapi"
 )
@@ -61,22 +61,21 @@ func generateSwaggerJson() {
 			v1beta1.GetOpenAPIDefinitions,
 		},
 		Resources: []openapi.TypeInfo{
-			{GroupVersion: v1beta1.SchemeGroupVersion, Resource: v1beta1.ResourceCertificates, Kind: v1beta1.ResourceKindCertificate, NamespaceScoped: true},
 			{GroupVersion: v1beta1.SchemeGroupVersion, Resource: v1beta1.ResourceIngresses, Kind: v1beta1.ResourceKindIngress, NamespaceScoped: true},
 		},
 	})
 	if err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	}
 
-	filename := gort.GOPath() + "/src/voyagermesh.dev/voyager/api/openapi-spec/swagger.json"
+	filename := gort.GOPath() + "/src/voyagermesh.dev/voyager/openapi/swagger.json"
 	err = os.MkdirAll(filepath.Dir(filename), 0755)
 	if err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	}
 	err = ioutil.WriteFile(filename, []byte(apispec), 0644)
 	if err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	}
 }
 

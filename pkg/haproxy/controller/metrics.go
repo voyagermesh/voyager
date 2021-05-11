@@ -19,7 +19,7 @@ package controller
 import (
 	"sync/atomic"
 
-	"gomodules.xyz/x/log"
+	"k8s.io/klog/v2"
 )
 
 var (
@@ -30,15 +30,15 @@ var (
 
 func incConfigChangedCounter() {
 	atomic.AddUint64(&configChanged, 1)
-	log.Infoln("config changed:", atomic.LoadUint64(&configChanged))
+	klog.Infoln("config changed:", atomic.LoadUint64(&configChanged))
 }
 
 func incCertChangedCounter() {
 	atomic.AddUint64(&certChanged, 1)
-	log.Infoln("cert changed:", atomic.LoadUint64(&certChanged))
+	klog.Infoln("cert changed:", atomic.LoadUint64(&certChanged))
 }
 
 func incReloadCounter() {
 	atomic.AddUint64(&reloadPerformed, 1)
-	log.Infoln("HAProxy reloaded:", atomic.LoadUint64(&reloadPerformed))
+	klog.Infoln("HAProxy reloaded:", atomic.LoadUint64(&reloadPerformed))
 }

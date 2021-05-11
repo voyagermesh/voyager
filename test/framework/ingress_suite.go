@@ -30,11 +30,11 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
 	"gomodules.xyz/x/crypto/rand"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -101,8 +101,8 @@ func (ni *ingressInvocation) printInfoForDebug(ing *api.Ingress) {
 		if err == nil {
 			if len(pods.Items) > 0 {
 				for _, pod := range pods.Items {
-					log.Warningln("Log: $ kubectl logs -f", pod.Name, "-n", ing.Namespace)
-					log.Warningln("Exec: $ kubectl exec", pod.Name, "-n", ing.Namespace, "sh")
+					klog.Warningln("Log: $ kubectl logs -f", pod.Name, "-n", ing.Namespace)
+					klog.Warningln("Exec: $ kubectl exec", pod.Name, "-n", ing.Namespace, "sh")
 				}
 				return
 			}
@@ -128,7 +128,7 @@ func (ni *ingressInvocation) IsExistsEventually(ing *api.Ingress) bool {
 	return Eventually(func() error {
 		err := ni.IsExists(ing)
 		if err != nil {
-			log.Errorln("IsExistsEventually failed with error,", err)
+			klog.Errorln("IsExistsEventually failed with error,", err)
 		}
 		return err
 	}, "5m", "10s").Should(BeNil())
@@ -225,7 +225,7 @@ func (ni *ingressInvocation) DoHTTP(retryCount int, host string, ing *api.Ingres
 			return err
 		}
 
-		log.Infoln("HTTP Response received from server", *resp)
+		klog.Infoln("HTTP Response received from server", *resp)
 		if !matcher(resp) {
 			return errors.New("Failed to match")
 		}
@@ -240,7 +240,7 @@ func (ni *ingressInvocation) DoHTTPWithTimeout(retryCount int, timeout int, host
 			return err
 		}
 
-		log.Infoln("HTTP Response received from server", *resp)
+		klog.Infoln("HTTP Response received from server", *resp)
 		if !matcher(resp) {
 			return errors.New("Failed to match")
 		}
@@ -255,7 +255,7 @@ func (ni *ingressInvocation) DoHTTPWithHeader(retryCount int, ing *api.Ingress, 
 			return err
 		}
 
-		log.Infoln("HTTP Response received from server", *resp)
+		klog.Infoln("HTTP Response received from server", *resp)
 		if !matcher(resp) {
 			return errors.New("Failed to match")
 		}
@@ -281,7 +281,7 @@ func (ni *ingressInvocation) DoHTTPs(retryCount int, host, cert string, ing *api
 			return err
 		}
 
-		log.Infoln("HTTP Response received from server", *resp)
+		klog.Infoln("HTTP Response received from server", *resp)
 		if !matcher(resp) {
 			return errors.New("Failed to match")
 		}
@@ -301,7 +301,7 @@ func (ni *ingressInvocation) DoHTTPsWithTransport(retryCount int, host string, t
 			return err
 		}
 
-		log.Infoln("HTTP Response received from server", *resp)
+		klog.Infoln("HTTP Response received from server", *resp)
 		if !matcher(resp) {
 			return errors.New("Failed to match")
 		}
@@ -316,7 +316,7 @@ func (ni *ingressInvocation) DoHTTPTestRedirect(retryCount int, ing *api.Ingress
 			return err
 		}
 
-		log.Infoln("HTTP Response received from server", *resp)
+		klog.Infoln("HTTP Response received from server", *resp)
 		if !matcher(resp) {
 			return errors.New("Failed to match")
 		}
@@ -331,7 +331,7 @@ func (ni *ingressInvocation) DoHTTPTestRedirectWithHost(retryCount int, host str
 			return err
 		}
 
-		log.Infoln("HTTP Response received from server", *resp)
+		klog.Infoln("HTTP Response received from server", *resp)
 		if !matcher(resp) {
 			return errors.New("Failed to match")
 		}
@@ -347,7 +347,7 @@ func (ni *ingressInvocation) DoHTTPTestRedirectWithHeader(retryCount int, host s
 			return err
 		}
 
-		log.Infoln("HTTP Response received from server", *resp)
+		klog.Infoln("HTTP Response received from server", *resp)
 		if !matcher(resp) {
 			return errors.New("Failed to match")
 		}
@@ -362,7 +362,7 @@ func (ni *ingressInvocation) DoHTTPStatus(retryCount int, ing *api.Ingress, eps 
 			return err
 		}
 
-		log.Infoln("HTTP Response received from server", *resp)
+		klog.Infoln("HTTP Response received from server", *resp)
 		if !matcher(resp) {
 			return errors.New("Failed to match")
 		}
@@ -377,7 +377,7 @@ func (ni *ingressInvocation) DoHTTPStatusWithCookies(retryCount int, ing *api.In
 			return err
 		}
 
-		log.Infoln("HTTP Response received from server", *resp)
+		klog.Infoln("HTTP Response received from server", *resp)
 		if !matcher(resp) {
 			return errors.New("Failed to match")
 		}
@@ -392,7 +392,7 @@ func (ni *ingressInvocation) DoHTTPStatusWithHost(retryCount int, host string, i
 			return err
 		}
 
-		log.Infoln("HTTP Response received from server", *resp)
+		klog.Infoln("HTTP Response received from server", *resp)
 		if !matcher(resp) {
 			return errors.New("Failed to match")
 		}
@@ -410,7 +410,7 @@ func (ni *ingressInvocation) DoHTTPsStatus(retryCount int, host string, ing *api
 			return err
 		}
 
-		log.Infoln("HTTP Response received from server", *resp)
+		klog.Infoln("HTTP Response received from server", *resp)
 		if !matcher(resp) {
 			return errors.New("Failed to match")
 		}
@@ -428,7 +428,7 @@ func (ni *ingressInvocation) DoTestRedirectWithTransport(retryCount int, host st
 			return err
 		}
 
-		log.Infoln("HTTP Response received from server", *resp)
+		klog.Infoln("HTTP Response received from server", *resp)
 		if !matcher(resp) {
 			return errors.New("Failed to match")
 		}
@@ -443,7 +443,7 @@ func (ni *ingressInvocation) DoHTTPStatusWithHeader(retryCount int, ing *api.Ing
 			return err
 		}
 
-		log.Infoln("HTTP Response received from server", *resp)
+		klog.Infoln("HTTP Response received from server", *resp)
 		if !matcher(resp) {
 			return errors.New("Failed to match")
 		}
@@ -469,7 +469,7 @@ func (ni *ingressInvocation) DoHTTPWithSNI(retryCount int, host string, eps []st
 			return err
 		}
 
-		log.Infoln("HTTP Response received from server", *resp)
+		klog.Infoln("HTTP Response received from server", *resp)
 		if !matcher(resp) {
 			return errors.New("Failed to match")
 		}
@@ -484,7 +484,7 @@ func (ni *ingressInvocation) DoTCP(retryCount int, ing *api.Ingress, eps []strin
 			return err
 		}
 
-		log.Infoln("TCP Response received from server", *resp)
+		klog.Infoln("TCP Response received from server", *resp)
 		if !matcher(resp) {
 			return errors.New("Failed to match")
 		}
@@ -499,7 +499,7 @@ func (ni *ingressInvocation) DoTCPWithSSL(retryCount int, cert string, ing *api.
 			return err
 		}
 
-		log.Infoln("TCP Response received from server", *resp)
+		klog.Infoln("TCP Response received from server", *resp)
 		if !matcher(resp) {
 			return errors.New("Failed to match")
 		}

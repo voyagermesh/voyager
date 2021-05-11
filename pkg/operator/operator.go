@@ -21,11 +21,9 @@ import (
 	cs "voyagermesh.dev/voyager/client/clientset/versioned"
 	voyagerinformers "voyagermesh.dev/voyager/client/informers/externalversions"
 	api_listers "voyagermesh.dev/voyager/client/listers/voyager/v1beta1"
-	"voyagermesh.dev/voyager/pkg/certificate/providers"
 	"voyagermesh.dev/voyager/pkg/config"
 
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
-	"gomodules.xyz/x/log"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/runtime"
@@ -37,6 +35,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/klog/v2"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	"kmodules.xyz/client-go/apiextensions"
 	"kmodules.xyz/client-go/tools/queue"
@@ -57,11 +56,6 @@ type Operator struct {
 	voyagerInformerFactory voyagerinformers.SharedInformerFactory
 
 	recorder record.EventRecorder
-
-	// Certificate CRD
-	crtQueue    *queue.Worker
-	crtInformer cache.SharedIndexInformer
-	crtLister   api_listers.CertificateLister
 
 	// ConfigMap
 	cfgQueue    *queue.Worker
@@ -125,11 +119,10 @@ type Operator struct {
 }
 
 func (op *Operator) ensureCustomResourceDefinitions() error {
-	log.Infoln("Ensuring CRD registration")
+	klog.Infoln("Ensuring CRD registration")
 
 	crds := []*apiextensions.CustomResourceDefinition{
 		api.Ingress{}.CustomResourceDefinition(),
-		api.Certificate{}.CustomResourceDefinition(),
 	}
 	return apiextensions.RegisterCRDs(op.CRDClient, crds)
 }
@@ -137,10 +130,7 @@ func (op *Operator) ensureCustomResourceDefinitions() error {
 func (op *Operator) RunInformers(stopCh <-chan struct{}) {
 	defer runtime.HandleCrash()
 
-	go providers.DefaultHTTPProvider().Serve()
-	go op.CheckCertificates()
-
-	log.Infoln("Starting Voyager controller")
+	klog.Infoln("Starting Voyager controller")
 	op.kubeInformerFactory.Start(stopCh)
 	op.voyagerInformerFactory.Start(stopCh)
 	if op.smonInformer != nil {
@@ -150,19 +140,19 @@ func (op *Operator) RunInformers(stopCh <-chan struct{}) {
 	// Wait for all involved caches to be synced, before processing items from the queue is started
 	for t, v := range op.kubeInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			log.Fatalf("%v timed out waiting for caches to sync\n", t)
+			klog.Fatalf("%v timed out waiting for caches to sync\n", t)
 			return
 		}
 	}
 	for t, v := range op.voyagerInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			log.Fatalf("%v timed out waiting for caches to sync\n", t)
+			klog.Fatalf("%v timed out waiting for caches to sync\n", t)
 			return
 		}
 	}
 	if op.smonInformer != nil {
 		if !cache.WaitForCacheSync(stopCh, op.smonInformer.HasSynced) {
-			log.Fatalln("service monitor informer timed out waiting for caches to sync")
+			klog.Fatalln("service monitor informer timed out waiting for caches to sync")
 			return
 		}
 	}
@@ -175,7 +165,6 @@ func (op *Operator) RunInformers(stopCh <-chan struct{}) {
 	op.epQueue.Run(stopCh)
 	op.secretQueue.Run(stopCh)
 	op.nsQueue.Run(stopCh)
-	op.crtQueue.Run(stopCh)
 	if op.smonInformer != nil {
 		op.smonQueue.Run(stopCh)
 	}
@@ -186,26 +175,26 @@ func (op *Operator) RunInformers(stopCh <-chan struct{}) {
 	}
 
 	<-stopCh
-	log.Infoln("Stopping Voyager controller")
+	klog.Infoln("Stopping Voyager controller")
 }
 
 func (w *Operator) Run(stopCh <-chan struct{}) {
 	// https://github.com/voyagermesh/voyager/issues/346
 	err := w.ValidateIngress()
 	if err != nil {
-		log.Errorln(err)
+		klog.Errorln(err)
 	}
 
 	// https://github.com/voyagermesh/voyager/issues/229
 	err = w.PurgeOffshootsWithDeprecatedLabels()
 	if err != nil {
-		log.Errorln(err)
+		klog.Errorln(err)
 	}
 
 	// https://github.com/voyagermesh/voyager/issues/446
 	err = w.PurgeOffshootsDaemonSet()
 	if err != nil {
-		log.Errorln(err)
+		klog.Errorln(err)
 	}
 
 	w.RunInformers(stopCh)

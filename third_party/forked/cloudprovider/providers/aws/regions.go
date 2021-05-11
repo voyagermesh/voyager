@@ -19,8 +19,8 @@ package aws
 import (
 	"sync"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog/v2"
 )
 
 // WellKnownRegions is the complete list of regions known to the AWS cloudprovider
@@ -67,11 +67,11 @@ func RecognizeRegion(region string) {
 	}
 
 	if awsRegions.Has(region) {
-		glog.V(6).Infof("found AWS region %q again - ignoring", region)
+		klog.V(6).Infof("found AWS region %q again - ignoring", region)
 		return
 	}
 
-	glog.V(4).Infof("found AWS region %q", region)
+	klog.V(4).Infof("found AWS region %q", region)
 
 	// awscredentialprovider.RegisterCredentialsProvider(region)
 

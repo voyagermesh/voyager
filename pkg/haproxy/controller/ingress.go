@@ -23,7 +23,6 @@ import (
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 	"voyagermesh.dev/voyager/pkg/eventer"
 
-	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	extension "k8s.io/api/networking/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -31,6 +30,7 @@ import (
 	ext_informers "k8s.io/client-go/informers/extensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/tools/queue"
 )
 
@@ -94,7 +94,7 @@ func (c *Controller) initIngressWatcher() {
 func (c *Controller) syncIngress(key string) error {
 	obj, exists, err := c.ingInformer.GetIndexer().GetByKey(key)
 	if err != nil {
-		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		klog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
 	}
 

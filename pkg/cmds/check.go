@@ -22,8 +22,8 @@ import (
 
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
-	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
+	"sigs.k8s.io/yaml"
 )
 
 func NewCmdCheck() *cobra.Command {

@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gomodules.xyz/x/log"
+	"k8s.io/klog/v2"
 )
 
 func TestNewTestHTTPClient(t *testing.T) {
@@ -48,6 +48,6 @@ func (h testHTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Method:         r.Method,
 		RequestHeaders: r.Header,
 	}
-	log.Infoln("Handling HTTP Request")
+	klog.Infoln("Handling HTTP Request")
 	json.NewEncoder(w).Encode(resp)
 }

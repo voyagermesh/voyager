@@ -19,9 +19,8 @@ package operator
 import (
 	"reflect"
 
-	"github.com/golang/glog"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/tools/queue"
 )
 
@@ -45,17 +44,17 @@ func (op *Operator) initEndpointWatcher() {
 func (op *Operator) reconcileEndpoint(key string) error {
 	obj, exists, err := op.epInformer.GetIndexer().GetByKey(key)
 	if err != nil {
-		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		klog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
 	}
 	if exists {
-		glog.Infof("Sync/Add/Update for Endpoints %s\n", key)
+		klog.Infof("Sync/Add/Update for Endpoints %s\n", key)
 		ep := obj.(*core.Endpoints).DeepCopy()
 		// Checking if this endpoint have a service or not. If
 		// this do not have a Service we do not want to update our ingress
 		svc, err := op.svcLister.Services(ep.Namespace).Get(ep.Name)
 		if err != nil {
-			log.Warningf("Skipping Endpoints %s/%s, as it has no matching service", ep.Namespace, ep.Name)
+			klog.Warningf("Skipping Endpoints %s/%s, as it has no matching service", ep.Namespace, ep.Name)
 			return nil
 		}
 		return op.updateHAProxyConfig(svc.Name, svc.Namespace)

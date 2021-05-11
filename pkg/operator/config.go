@@ -96,7 +96,6 @@ func (c *OperatorConfig) New() (*Operator, error) {
 	op.initNodeWatcher()
 	op.initServiceMonitorWatcher()
 	op.initNamespaceWatcher()
-	op.initCertificateCRDWatcher()
 
 	return op, nil
 }

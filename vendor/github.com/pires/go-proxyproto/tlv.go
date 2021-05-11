@@ -6,35 +6,38 @@ package proxyproto
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
+	"math"
 )
 
 const (
 	// Section 2.2
 	PP2_TYPE_ALPN           PP2Type = 0x01
-	PP2_TYPE_AUTHORITY              = 0x02
-	PP2_TYPE_CRC32C                 = 0x03
-	PP2_TYPE_NOOP                   = 0x04
-	PP2_TYPE_SSL                    = 0x20
-	PP2_SUBTYPE_SSL_VERSION         = 0x21
-	PP2_SUBTYPE_SSL_CN              = 0x22
-	PP2_SUBTYPE_SSL_CIPHER          = 0x23
-	PP2_SUBTYPE_SSL_SIG_ALG         = 0x24
-	PP2_SUBTYPE_SSL_KEY_ALG         = 0x25
-	PP2_TYPE_NETNS                  = 0x30
+	PP2_TYPE_AUTHORITY      PP2Type = 0x02
+	PP2_TYPE_CRC32C         PP2Type = 0x03
+	PP2_TYPE_NOOP           PP2Type = 0x04
+	PP2_TYPE_UNIQUE_ID      PP2Type = 0x05
+	PP2_TYPE_SSL            PP2Type = 0x20
+	PP2_SUBTYPE_SSL_VERSION PP2Type = 0x21
+	PP2_SUBTYPE_SSL_CN      PP2Type = 0x22
+	PP2_SUBTYPE_SSL_CIPHER  PP2Type = 0x23
+	PP2_SUBTYPE_SSL_SIG_ALG PP2Type = 0x24
+	PP2_SUBTYPE_SSL_KEY_ALG PP2Type = 0x25
+	PP2_TYPE_NETNS          PP2Type = 0x30
 
 	// Section 2.2.7, reserved types
-	PP2_TYPE_MIN_CUSTOM     = 0xE0
-	PP2_TYPE_MAX_CUSTOM     = 0xEF
-	PP2_TYPE_MIN_EXPERIMENT = 0xF0
-	PP2_TYPE_MAX_EXPERIMENT = 0xF7
-	PP2_TYPE_MIN_FUTURE     = 0xF8
-	PP2_TYPE_MAX_FUTURE     = 0xFF
+	PP2_TYPE_MIN_CUSTOM     PP2Type = 0xE0
+	PP2_TYPE_MAX_CUSTOM     PP2Type = 0xEF
+	PP2_TYPE_MIN_EXPERIMENT PP2Type = 0xF0
+	PP2_TYPE_MAX_EXPERIMENT PP2Type = 0xF7
+	PP2_TYPE_MIN_FUTURE     PP2Type = 0xF8
+	PP2_TYPE_MAX_FUTURE     PP2Type = 0xFF
 )
 
 var (
-	ErrTruncatedTLV    = errors.New("Truncated TLV")
-	ErrMalformedTLV    = errors.New("Malformed TLV Value")
-	ErrIncompatibleTLV = errors.New("Incompatible TLV type")
+	ErrTruncatedTLV    = errors.New("proxyproto: truncated TLV")
+	ErrMalformedTLV    = errors.New("proxyproto: malformed TLV Value")
+	ErrIncompatibleTLV = errors.New("proxyproto: incompatible TLV type")
 )
 
 // PP2Type is the proxy protocol v2 type
@@ -42,9 +45,8 @@ type PP2Type byte
 
 // TLV is a uninterpreted Type-Length-Value for V2 protocol, see section 2.2
 type TLV struct {
-	Type   PP2Type
-	Length int
-	Value  []byte
+	Type  PP2Type
+	Value []byte
 }
 
 // SplitTLVs splits the Type-Length-Value vector, returns the vector or an error.
@@ -54,23 +56,39 @@ func SplitTLVs(raw []byte) ([]TLV, error) {
 		tlv := TLV{
 			Type: PP2Type(raw[i]),
 		}
-		if len(raw)-i <= 3 {
+		if len(raw)-i <= 2 {
 			return nil, ErrTruncatedTLV
 		}
-		tlv.Length = int(binary.BigEndian.Uint16(raw[i+1 : i+3])) // Max length = 65K
+		tlvLen := int(binary.BigEndian.Uint16(raw[i+1 : i+3])) // Max length = 65K
 		i += 3
-		if i+tlv.Length > len(raw) {
+		if i+tlvLen > len(raw) {
 			return nil, ErrTruncatedTLV
 		}
 		// Ignore no-op padding
 		if tlv.Type != PP2_TYPE_NOOP {
-			tlv.Value = make([]byte, tlv.Length)
-			copy(tlv.Value, raw[i:i+tlv.Length])
+			tlv.Value = make([]byte, tlvLen)
+			copy(tlv.Value, raw[i:i+tlvLen])
 		}
-		i += tlv.Length
+		i += tlvLen
 		tlvs = append(tlvs, tlv)
 	}
 	return tlvs, nil
+}
+
+// JoinTLVs joins multiple Type-Length-Value records.
+func JoinTLVs(tlvs []TLV) ([]byte, error) {
+	var raw []byte
+	for _, tlv := range tlvs {
+		if len(tlv.Value) > math.MaxUint16 {
+			return nil, fmt.Errorf("proxyproto: cannot format TLV %v with length %d", tlv.Type, len(tlv.Value))
+		}
+		var length [2]byte
+		binary.BigEndian.PutUint16(length[:], uint16(len(tlv.Value)))
+		raw = append(raw, byte(tlv.Type))
+		raw = append(raw, length[:]...)
+		raw = append(raw, tlv.Value...)
+	}
+	return raw, nil
 }
 
 // Registered is true if the type is registered in the spec, see section 2.2
@@ -80,6 +98,7 @@ func (p PP2Type) Registered() bool {
 		PP2_TYPE_AUTHORITY,
 		PP2_TYPE_CRC32C,
 		PP2_TYPE_NOOP,
+		PP2_TYPE_UNIQUE_ID,
 		PP2_TYPE_SSL,
 		PP2_SUBTYPE_SSL_VERSION,
 		PP2_SUBTYPE_SSL_CN,

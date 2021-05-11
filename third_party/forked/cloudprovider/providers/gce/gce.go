@@ -30,7 +30,6 @@ import (
 	"voyagermesh.dev/voyager/third_party/forked/cloudprovider"
 
 	"cloud.google.com/go/compute/metadata"
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -44,6 +43,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/util/flowcontrol"
+	"k8s.io/klog/v2"
 	utilnet "k8s.io/utils/net"
 )
 
@@ -187,10 +187,10 @@ func newGCECloud(config io.Reader) (*GCECloud, error) {
 	if config != nil {
 		var cfg Config
 		if err := gcfg.ReadInto(&cfg, config); err != nil {
-			glog.Errorf("Couldn't read config: %v", err)
+			klog.Errorf("Couldn't read config: %v", err)
 			return nil, err
 		}
-		glog.Infof("Using GCE provider config %+v", cfg)
+		klog.Infof("Using GCE provider config %+v", cfg)
 		if cfg.Global.ProjectID != "" {
 			projectID = cfg.Global.ProjectID
 		}
@@ -225,17 +225,17 @@ func CreateGCECloud(projectID, region, zone string, managedZones []string, netwo
 			oauth2.NoContext,
 			compute.CloudPlatformScope,
 			compute.ComputeScope)
-		glog.Infof("Using DefaultTokenSource %#v", tokenSource)
+		klog.Infof("Using DefaultTokenSource %#v", tokenSource)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		glog.Infof("Using existing Token Source %#v", tokenSource)
+		klog.Infof("Using existing Token Source %#v", tokenSource)
 	}
 
 	if err := wait.PollImmediate(5*time.Second, 30*time.Second, func() (bool, error) {
 		if _, err := tokenSource.Token(); err != nil {
-			glog.Errorf("error fetching initial token: %v", err)
+			klog.Errorf("error fetching initial token: %v", err)
 			return false, nil
 		}
 		return true, nil
@@ -269,7 +269,7 @@ func CreateGCECloud(projectID, region, zone string, managedZones []string, netwo
 		}
 	}
 	if len(managedZones) != 1 {
-		glog.Infof("managing multiple zones: %v", managedZones)
+		klog.Infof("managing multiple zones: %v", managedZones)
 	}
 
 	operationPollRateLimiter := flowcontrol.NewTokenBucketRateLimiter(10, 100) // 10 qps, 100 bucket size.
@@ -315,11 +315,11 @@ func (gce *GCECloud) waitForOp(op *compute.Operation, getOperation func(operatio
 		gce.operationPollRateLimiter.Accept()
 		duration := time.Now().Sub(start)
 		if duration > 5*time.Second {
-			glog.Infof("pollOperation: throttled %v for %v", duration, opName)
+			klog.Infof("pollOperation: throttled %v for %v", duration, opName)
 		}
 		pollOp, err := getOperation(opName)
 		if err != nil {
-			glog.Warningf("GCE poll operation %s failed: pollOp: [%v] err: [%v] getErrorFromOp: [%v]", opName, pollOp, err, getErrorFromOp(pollOp))
+			klog.Warningf("GCE poll operation %s failed: pollOp: [%v] err: [%v] getErrorFromOp: [%v]", opName, pollOp, err, getErrorFromOp(pollOp))
 		}
 		done := opIsDone(pollOp)
 		if done {
@@ -328,9 +328,9 @@ func (gce *GCECloud) waitForOp(op *compute.Operation, getOperation func(operatio
 				// Log the JSON. It's cleaner than the %v structure.
 				enc, err := pollOp.MarshalJSON()
 				if err != nil {
-					glog.Warningf("waitForOperation: long operation (%v): %v (failed to encode to JSON: %v)", duration, pollOp, err)
+					klog.Warningf("waitForOperation: long operation (%v): %v (failed to encode to JSON: %v)", duration, pollOp, err)
 				} else {
-					glog.Infof("waitForOperation: long operation (%v): %v", duration, string(enc))
+					klog.Infof("waitForOperation: long operation (%v): %v", duration, string(enc))
 				}
 			}
 		}
@@ -348,7 +348,7 @@ func getErrorFromOp(op *compute.Operation) error {
 			Code:    int(op.HttpErrorStatusCode),
 			Message: op.Error.Errors[0].Message,
 		}
-		glog.Errorf("GCE operation failed: %v", err)
+		klog.Errorf("GCE operation failed: %v", err)
 		return err
 	}
 
@@ -428,7 +428,7 @@ func (gce *GCECloud) EnsureFirewall(ctx context.Context, apiService *apiv1.Servi
 	}
 
 	serviceName := types.NamespacedName{Namespace: apiService.Namespace, Name: apiService.Name}
-	glog.V(2).Infof("EnsureFirewall(%v, %v, %v, %v, %v)", fwName, gce.region, portStr, hosts, serviceName)
+	klog.V(2).Infof("EnsureFirewall(%v, %v, %v, %v, %v)", fwName, gce.region, portStr, hosts, serviceName)
 
 	// Deal with the firewall next. The reason we do this here rather than last
 	// is because the forwarding rule is used as the indicator that the load
@@ -438,17 +438,17 @@ func (gce *GCECloud) EnsureFirewall(ctx context.Context, apiService *apiv1.Servi
 	if err != nil {
 		return err
 	}
-	glog.V(6).Infof("EnsureFirewall = %v, sourceRanges = %v", fwName, sourceRanges)
+	klog.V(6).Infof("EnsureFirewall = %v, sourceRanges = %v", fwName, sourceRanges)
 
 	firewallExists, firewallNeedsUpdate, err := gce.firewallNeedsUpdate(fwName, serviceName.String(), gce.region, "", apiService, sourceRanges)
 	if err != nil {
 		return err
 	}
-	glog.V(6).Infof("EnsureFirewall = %v, firewallExists = %v, firewallNeedsUpdate = %v", fwName, firewallExists, firewallNeedsUpdate)
+	klog.V(6).Infof("EnsureFirewall = %v, firewallExists = %v, firewallNeedsUpdate = %v", fwName, firewallExists, firewallNeedsUpdate)
 
 	if firewallNeedsUpdate {
 		desc := makeFirewallDescription(serviceName.String(), "")
-		glog.V(6).Infof("EnsureFirewall = %v, desc = %v", fwName, desc)
+		klog.V(6).Infof("EnsureFirewall = %v, desc = %v", fwName, desc)
 
 		// Unlike forwarding rules and target pools, firewalls can be updated
 		// without needing to be deleted and recreated.
@@ -456,12 +456,12 @@ func (gce *GCECloud) EnsureFirewall(ctx context.Context, apiService *apiv1.Servi
 			if err := gce.updateFirewall(fwName, gce.region, desc, sourceRanges, ports, hosts); err != nil {
 				return err
 			}
-			glog.V(4).Infof("EnsureFirewall(%v(%v)): updated firewall", fwName, serviceName)
+			klog.V(4).Infof("EnsureFirewall(%v(%v)): updated firewall", fwName, serviceName)
 		} else {
 			if err := gce.createFirewall(fwName, gce.region, desc, sourceRanges, ports, hosts); err != nil {
 				return err
 			}
-			glog.V(4).Infof("EnsureFirewall(%v(%v)): created firewall", fwName, serviceName)
+			klog.V(4).Infof("EnsureFirewall(%v(%v)): created firewall", fwName, serviceName)
 		}
 	}
 
@@ -488,7 +488,7 @@ func (gce *GCECloud) firewallNeedsUpdate(name, serviceName, region, ipAddress st
 		port := svc.Spec.Ports[ix]
 		if svc.Spec.Type == apiv1.ServiceTypeNodePort {
 			if port.NodePort == 0 {
-				glog.Errorf("Ignoring port without NodePort defined: %v", port)
+				klog.Errorf("Ignoring port without NodePort defined: %v", port)
 				continue
 			}
 			allowedPorts[ix] = strconv.Itoa(int(port.NodePort))
@@ -504,7 +504,7 @@ func (gce *GCECloud) firewallNeedsUpdate(name, serviceName, region, ipAddress st
 	actualSourceRanges, err := utilnet.ParseIPNets(fw.SourceRanges...)
 	if err != nil {
 		// This really shouldn't happen... GCE has returned something unexpected
-		glog.Warningf("Error parsing firewall SourceRanges: %v", fw.SourceRanges)
+		klog.Warningf("Error parsing firewall SourceRanges: %v", fw.SourceRanges)
 		// We don't return the error, because we can hopefully recover from this by reconfiguring the firewall
 		return true, true, nil
 	}
@@ -622,7 +622,7 @@ func (gce *GCECloud) computeHostTags(hosts []*gceInstance) ([]string, error) {
 	nodeInstancePrefix := gce.nodeInstancePrefix
 	for _, host := range hosts {
 		if !strings.HasPrefix(host.Name, gce.nodeInstancePrefix) {
-			glog.Warningf("instance '%s' does not conform to prefix '%s', ignoring filter", host.Name, gce.nodeInstancePrefix)
+			klog.Warningf("instance '%s' does not conform to prefix '%s', ignoring filter", host.Name, gce.nodeInstancePrefix)
 			nodeInstancePrefix = ""
 		}
 
@@ -679,7 +679,7 @@ func (gce *GCECloud) computeHostTags(hosts []*gceInstance) ([]string, error) {
 			}
 		}
 		if page >= maxPages {
-			glog.Errorf("computeHostTags exceeded maxPages=%d for Instances.List: truncating.", maxPages)
+			klog.Errorf("computeHostTags exceeded maxPages=%d for Instances.List: truncating.", maxPages)
 		}
 	}
 	if len(tags) == 0 {
@@ -691,7 +691,7 @@ func (gce *GCECloud) computeHostTags(hosts []*gceInstance) ([]string, error) {
 // EnsureFirewallDeleted is an implementation of Firewall.EnsureFirewallDeleted.
 func (gce *GCECloud) EnsureFirewallDeleted(ctx context.Context, service *apiv1.Service) error {
 	fwName := gce.GetSecurityGroupName(service)
-	glog.V(2).Infof("EnsureFirewallDeleted(%v, %v, %v, %v)", service.Namespace, service.Name, fwName,
+	klog.V(2).Infof("EnsureFirewallDeleted(%v, %v, %v, %v)", service.Namespace, service.Name, fwName,
 		gce.region)
 
 	errs := utilerrors.AggregateGoroutines(
@@ -706,13 +706,13 @@ func (gce *GCECloud) EnsureFirewallDeleted(ctx context.Context, service *apiv1.S
 func (gce *GCECloud) deleteFirewall(fwName, region string) error {
 	op, err := gce.service.Firewalls.Delete(gce.projectID, fwName).Do()
 	if err != nil && isHTTPErrorCode(err, http.StatusNotFound) {
-		glog.Infof("Firewall %s already deleted. Continuing to delete other resources.", fwName)
+		klog.Infof("Firewall %s already deleted. Continuing to delete other resources.", fwName)
 	} else if err != nil {
-		glog.Warningf("Failed to delete firewall %s, got error %v", fwName, err)
+		klog.Warningf("Failed to delete firewall %s, got error %v", fwName, err)
 		return err
 	} else {
 		if err := gce.waitForGlobalOp(op); err != nil {
-			glog.Warningf("Failed waiting for Firewall %s to be deleted.  Got error: %v", fwName, err)
+			klog.Warningf("Failed waiting for Firewall %s to be deleted.  Got error: %v", fwName, err)
 			return err
 		}
 	}
@@ -769,7 +769,7 @@ func (gce *GCECloud) getInstancesByNames(names []string) ([]*gceInstance, error)
 	for _, name := range names {
 		name = canonicalizeInstanceName(name)
 		if !strings.HasPrefix(name, gce.nodeInstancePrefix) {
-			glog.Warningf("instance '%s' does not conform to prefix '%s', removing filter", name, gce.nodeInstancePrefix)
+			klog.Warningf("instance '%s' does not conform to prefix '%s', removing filter", name, gce.nodeInstancePrefix)
 			nodeInstancePrefix = ""
 		}
 		instances[name] = nil
@@ -819,7 +819,7 @@ func (gce *GCECloud) getInstancesByNames(names []string) ([]*gceInstance, error)
 			}
 		}
 		if page >= maxPages {
-			glog.Errorf("getInstancesByNames exceeded maxPages=%d for Instances.List: truncating.", maxPages)
+			klog.Errorf("getInstancesByNames exceeded maxPages=%d for Instances.List: truncating.", maxPages)
 		}
 	}
 
@@ -828,7 +828,7 @@ func (gce *GCECloud) getInstancesByNames(names []string) ([]*gceInstance, error)
 		name = canonicalizeInstanceName(name)
 		instance := instances[name]
 		if instance == nil {
-			glog.Errorf("Failed to retrieve instance: %q", name)
+			klog.Errorf("Failed to retrieve instance: %q", name)
 			return nil, cloudprovider.InstanceNotFound
 		}
 		instanceArray[i] = instances[name]

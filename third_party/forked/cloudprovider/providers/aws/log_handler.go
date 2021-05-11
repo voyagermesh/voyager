@@ -18,7 +18,7 @@ package aws
 
 import (
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/golang/glog"
+	"k8s.io/klog/v2"
 )
 
 // Handler for aws-sdk-go that logs all requests
@@ -30,5 +30,5 @@ func awsHandlerLogger(req *request.Request) {
 		name = req.Operation.Name
 	}
 
-	glog.V(4).Infof("AWS request: %s %s", service, name)
+	klog.V(4).Infof("AWS request: %s %s", service, name)
 }

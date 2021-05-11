@@ -22,11 +22,10 @@ import (
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 	_ "voyagermesh.dev/voyager/third_party/forked/cloudprovider/providers"
 
-	"github.com/golang/glog"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/tools/queue"
 )
 
@@ -44,11 +43,11 @@ func (op *Operator) initSecretWatcher() {
 func (op *Operator) reconcileSecret(key string) error {
 	obj, exists, err := op.secretInformer.GetIndexer().GetByKey(key)
 	if err != nil {
-		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		klog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
 	}
 	if exists {
-		glog.Infof("Sync/Add/Update for Secret %s\n", key)
+		klog.Infof("Sync/Add/Update for Secret %s\n", key)
 		secret := obj.(*core.Secret).DeepCopy()
 		// Secret DataChanged. We need to list all Ingress and check which of
 		// those ingress uses this secret as basic auth secret.
@@ -65,7 +64,7 @@ func (op *Operator) reconcileSecret(key string) error {
 						return err
 					} else {
 						op.getIngressQueue(ing.APISchema()).Add(key)
-						log.Infof("Add/Delete/Update of secret %s/%s, Ingress %s re-queued for update", secret.Namespace, secret.Name, key)
+						klog.Infof("Add/Delete/Update of secret %s/%s, Ingress %s re-queued for update", secret.Namespace, secret.Name, key)
 					}
 				}
 			}
@@ -77,7 +76,7 @@ func (op *Operator) reconcileSecret(key string) error {
 func (op *Operator) IngressServiceUsesAuthSecret(ing *api.Ingress, secret *core.Secret) bool {
 	svcs, err := op.svcLister.List(labels.Everything())
 	if err != nil {
-		log.Errorln(err)
+		klog.Errorln(err)
 		return false
 	}
 

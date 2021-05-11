@@ -21,9 +21,9 @@ import (
 
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
-	"gomodules.xyz/x/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/klog/v2"
 )
 
 func (op *Operator) PurgeOffshootsWithDeprecatedLabels() error {
@@ -133,7 +133,7 @@ func (op *Operator) PurgeOffshootsDaemonSet() error {
 		for _, ing := range ingresses.Items {
 			if getLBType(ing.Annotations) == api.LBTypeHostPort {
 				name := api.VoyagerPrefix + ing.Name
-				log.Infof("Deleting DaemonSet %s/%s", ing.Namespace, name)
+				klog.Infof("Deleting DaemonSet %s/%s", ing.Namespace, name)
 				err = op.KubeClient.AppsV1().DaemonSets(ing.Namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
 				if err != nil {
 					return err
@@ -150,14 +150,14 @@ func (op *Operator) PurgeOffshootsDaemonSet() error {
 				name := api.VoyagerPrefix + ing.Name
 				if ds, err := op.KubeClient.AppsV1().DaemonSets(ing.Namespace).Get(context.TODO(), name, metav1.GetOptions{}); err == nil {
 					if ds.Spec.Template.Spec.Affinity != nil && ing.Spec.Affinity == nil {
-						log.Infof("Updating Ingress %s/%s to add `spec.affinity`", ing.Namespace, ing.Name)
+						klog.Infof("Updating Ingress %s/%s to add `spec.affinity`", ing.Namespace, ing.Name)
 						ing.Spec.Affinity = ds.Spec.Template.Spec.Affinity
 						_, err = op.VoyagerClient.VoyagerV1beta1().Ingresses(ing.Namespace).Update(context.TODO(), &ing, metav1.UpdateOptions{})
 						if err != nil {
 							return err
 						}
 					}
-					log.Infof("Deleting DaemonSet %s/%s", ing.Namespace, name)
+					klog.Infof("Deleting DaemonSet %s/%s", ing.Namespace, name)
 					err = op.KubeClient.AppsV1().DaemonSets(ing.Namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
 					if err != nil {
 						return err

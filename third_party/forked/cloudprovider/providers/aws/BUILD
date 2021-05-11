@@ -44,7 +44,7 @@ go_library(
         "//vendor:github.com/aws/aws-sdk-go/service/autoscaling",
         "//vendor:github.com/aws/aws-sdk-go/service/ec2",
         "//vendor:github.com/aws/aws-sdk-go/service/elb",
-        "//vendor:github.com/golang/glog",
+        "//vendor:k8s.io/klog/v2",
         "//vendor:gopkg.in/gcfg.v1",
     ],
 )
@@ -67,7 +67,7 @@ go_test(
         "//vendor:github.com/aws/aws-sdk-go/service/autoscaling",
         "//vendor:github.com/aws/aws-sdk-go/service/ec2",
         "//vendor:github.com/aws/aws-sdk-go/service/elb",
-        "//vendor:github.com/golang/glog",
+        "//vendor:k8s.io/klog/v2",
         "//vendor:github.com/stretchr/testify/assert",
         "//vendor:github.com/stretchr/testify/mock",
     ],

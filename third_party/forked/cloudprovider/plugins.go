@@ -21,8 +21,8 @@ import (
 	"os"
 	"sync"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"k8s.io/klog/v2"
 )
 
 // Factory is a function that returns a cloudprovider.Interface.
@@ -43,9 +43,9 @@ func RegisterCloudProvider(name string, cloud Factory) {
 	providersMutex.Lock()
 	defer providersMutex.Unlock()
 	if _, found := providers[name]; found {
-		glog.Fatalf("Cloud provider %q was registered twice", name)
+		klog.Fatalf("Cloud provider %q was registered twice", name)
 	}
-	glog.V(1).Infof("Registered cloud provider %q", name)
+	klog.V(1).Infof("Registered cloud provider %q", name)
 	providers[name] = cloud
 }
 
@@ -91,7 +91,7 @@ func InitCloudProvider(name string, configFilePath string) (Interface, error) {
 	var err error
 
 	if name == "" {
-		glog.Info("No cloud provider specified.")
+		klog.Info("No cloud provider specified.")
 		return nil, nil
 	}
 
@@ -99,7 +99,7 @@ func InitCloudProvider(name string, configFilePath string) (Interface, error) {
 		var config *os.File
 		config, err = os.Open(configFilePath)
 		if err != nil {
-			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v",
+			klog.Fatalf("Couldn't open cloud provider configuration %s: %#v",
 				configFilePath, err)
 		}
 

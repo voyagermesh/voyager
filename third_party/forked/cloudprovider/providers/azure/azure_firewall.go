@@ -10,16 +10,16 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/klog/v2"
 )
 
 // EnsureFirewall creates and/or update firewall rules.
 func (az *Cloud) EnsureFirewall(ctx context.Context, service *apiv1.Service, hostnames []string) error {
 	serviceName := getServiceName(service)
-	glog.V(2).Infof("ensure(%s): START EnsureFirewall", serviceName)
+	klog.V(2).Infof("ensure(%s): START EnsureFirewall", serviceName)
 	hostname := hostnames[0]
 
 	machine, exists, err := az.getVirtualMachine(ctx, types.NodeName(hostname))
@@ -57,14 +57,14 @@ func (az *Cloud) EnsureFirewall(ctx context.Context, service *apiv1.Service, hos
 		return err
 	}
 	if sgNeedsUpdate {
-		glog.V(3).Infof("ensure(%s): sg(%s) - updating", serviceName, *sg.Name)
+		klog.V(3).Infof("ensure(%s): sg(%s) - updating", serviceName, *sg.Name)
 		_, err := az.SecurityGroupsClient.CreateOrUpdate(ctx, az.ResourceGroup, *sg.Name, sg)
 		if err != nil {
 			return err
 		}
 	}
 
-	glog.V(2).Infof("ensure(%s): FINISH EnsureFirewall", service.Name)
+	klog.V(2).Infof("ensure(%s): FINISH EnsureFirewall", service.Name)
 	return nil
 }
 
@@ -74,7 +74,7 @@ func (az *Cloud) EnsureFirewall(ctx context.Context, service *apiv1.Service, hos
 func (az *Cloud) EnsureFirewallDeleted(ctx context.Context, service *apiv1.Service) error {
 	serviceName := getServiceName(service)
 
-	glog.V(2).Infof("delete(%s): START EnsureFirewallDeleted", serviceName)
+	klog.V(2).Infof("delete(%s): START EnsureFirewallDeleted", serviceName)
 
 	// reconcile logic is capable of fully reconcile, so we can use this to delete
 	service.Spec.Ports = []apiv1.ServicePort{}
@@ -90,7 +90,7 @@ func (az *Cloud) EnsureFirewallDeleted(ctx context.Context, service *apiv1.Servi
 			return reconcileErr
 		}
 		if sgNeedsUpdate {
-			glog.V(3).Infof("delete(%s): sg(%s) - updating", serviceName, az.SecurityGroupName)
+			klog.V(3).Infof("delete(%s): sg(%s) - updating", serviceName, az.SecurityGroupName)
 			_, err := az.SecurityGroupsClient.CreateOrUpdate(ctx, az.ResourceGroup, *reconciledSg.Name, reconciledSg)
 			if err != nil {
 				return err
@@ -98,7 +98,7 @@ func (az *Cloud) EnsureFirewallDeleted(ctx context.Context, service *apiv1.Servi
 		}
 	}
 
-	glog.V(2).Infof("delete(%s): FINISH EnsureFirewallDeleted", serviceName)
+	klog.V(2).Infof("delete(%s): FINISH EnsureFirewallDeleted", serviceName)
 	return nil
 }
 
@@ -139,14 +139,14 @@ func (az *Cloud) reconcileFirewall(sg network.SecurityGroup, service *apiv1.Serv
 	for i := len(updatedRules) - 1; i >= 0; i-- {
 		existingRule := updatedRules[i]
 		if serviceOwnsRule(service, *existingRule.Name) {
-			glog.V(10).Infof("reconcile(%s)(%t): sg rule(%s) - considering evicting", serviceName, wantLb, *existingRule.Name)
+			klog.V(10).Infof("reconcile(%s)(%t): sg rule(%s) - considering evicting", serviceName, wantLb, *existingRule.Name)
 			keepRule := false
 			if findSecurityRule(expectedSecurityRules, existingRule) {
-				glog.V(10).Infof("reconcile(%s)(%t): sg rule(%s) - keeping", serviceName, wantLb, *existingRule.Name)
+				klog.V(10).Infof("reconcile(%s)(%t): sg rule(%s) - keeping", serviceName, wantLb, *existingRule.Name)
 				keepRule = true
 			}
 			if !keepRule {
-				glog.V(10).Infof("reconcile(%s)(%t): sg rule(%s) - dropping", serviceName, wantLb, *existingRule.Name)
+				klog.V(10).Infof("reconcile(%s)(%t): sg rule(%s) - dropping", serviceName, wantLb, *existingRule.Name)
 				updatedRules = append(updatedRules[:i], updatedRules[i+1:]...)
 				dirtySg = true
 			}
@@ -156,11 +156,11 @@ func (az *Cloud) reconcileFirewall(sg network.SecurityGroup, service *apiv1.Serv
 	for _, expectedRule := range expectedSecurityRules {
 		foundRule := false
 		if findSecurityRule(updatedRules, expectedRule) {
-			glog.V(10).Infof("reconcile(%s)(%t): sg rule(%s) - already exists", serviceName, wantLb, *expectedRule.Name)
+			klog.V(10).Infof("reconcile(%s)(%t): sg rule(%s) - already exists", serviceName, wantLb, *expectedRule.Name)
 			foundRule = true
 		}
 		if !foundRule {
-			glog.V(10).Infof("reconcile(%s)(%t): sg rule(%s) - adding", serviceName, wantLb, *expectedRule.Name)
+			klog.V(10).Infof("reconcile(%s)(%t): sg rule(%s) - adding", serviceName, wantLb, *expectedRule.Name)
 
 			nextAvailablePriority, err := getNextAvailablePriority(updatedRules)
 			if err != nil {

@@ -18,6 +18,4 @@ limitations under the License.
 
 package v1beta1
 
-type CertificateExpansion interface{}
-
 type IngressExpansion interface{}

@@ -29,7 +29,6 @@ import (
 
 	"github.com/pkg/errors"
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
-	"github.com/prometheus/haproxy_exporter/collector"
 	"github.com/spf13/pflag"
 	core "k8s.io/api/core/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -56,16 +55,10 @@ type OperatorOptions struct {
 	HAProxyImageRepository      string
 	ExporterImageTag            string
 	ExporterImageRepository     string
-
-	customTemplates           string
-	haProxyServerMetricFields string
-	haProxyTimeout            time.Duration
-
-	ValidateHAProxyConfig bool
-
-	EnableValidatingWebhook bool
-
-	LicenseFile string
+	customTemplates             string
+	ValidateHAProxyConfig       bool
+	EnableValidatingWebhook     bool
+	LicenseFile                 string
 }
 
 func (s OperatorOptions) HAProxyImage() string {
@@ -101,9 +94,7 @@ func NewOperatorOptions() *OperatorOptions {
 		// High enough Burst to fit all expected use cases. Burst=0 is not set here, because client code is overriding it.
 		Burst: 1e6,
 
-		customTemplates:           "",
-		haProxyServerMetricFields: collector.ServerMetrics.String(),
-		haProxyTimeout:            5 * time.Second,
+		customTemplates: "",
 
 		ValidateHAProxyConfig: true,
 	}
@@ -127,9 +118,6 @@ func (s *OperatorOptions) AddGoFlags(fs *flag.FlagSet) {
 
 	fs.StringVar(&s.OperatorService, "operator-service", s.OperatorService, "Name of service used to expose voyager operator")
 	fs.BoolVar(&s.RestrictToOperatorNamespace, "restrict-to-operator-namespace", s.RestrictToOperatorNamespace, "If true, voyager operator will only handle Kubernetes objects in its own namespace.")
-
-	fs.StringVar(&s.haProxyServerMetricFields, "haproxy.server-metric-fields", s.haProxyServerMetricFields, "Comma-separated list of exported server metrics. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.1")
-	fs.DurationVar(&s.haProxyTimeout, "haproxy.timeout", s.haProxyTimeout, "Timeout for trying to get stats from HAProxy.")
 
 	fs.BoolVar(&s.ValidateHAProxyConfig, "validate-haproxy-config", s.ValidateHAProxyConfig, "If true, validates generated haproxy.cfg before sending to HAProxy pods.")
 

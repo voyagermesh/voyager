@@ -17,12 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
-	"crypto/x509"
 	"fmt"
 	"net"
 	"reflect"
 	"strings"
-	"time"
 
 	"voyagermesh.dev/voyager/apis/voyager"
 
@@ -30,7 +28,6 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
 	core_util "kmodules.xyz/client-go/core/v1"
 )
 
@@ -234,45 +231,6 @@ func (r Ingress) HasBackendService(name, namespace string) bool {
 		}
 	}
 	return false
-}
-
-func (c Certificate) MatchesDomains(crt *x509.Certificate) bool {
-	crtDomains := sets.NewString()
-	if crt != nil {
-		crtDomains.Insert(crt.Subject.CommonName)
-		crtDomains.Insert(crt.DNSNames...)
-	}
-	return crtDomains.Equal(sets.NewString(c.Spec.Domains...))
-}
-
-func (c Certificate) ShouldRenew(crt *x509.Certificate) bool {
-	bufferDays := c.Spec.RenewalBufferDays
-	if bufferDays <= 0 {
-		bufferDays = 15 // default 15 days
-	}
-	return !crt.NotAfter.After(time.Now().Add(time.Duration(bufferDays) * 24 * time.Hour))
-}
-
-func (c Certificate) IsRateLimited() bool {
-	for _, cond := range c.Status.Conditions {
-		if cond.Type == CertificateRateLimited {
-			return time.Now().Add(-60 * time.Minute).Before(cond.LastUpdateTime.Time)
-		}
-	}
-	return false
-}
-
-func (c Certificate) SecretName() string {
-	if c.Spec.Storage.Vault != nil {
-		if c.Spec.Storage.Vault.Name != "" {
-			return c.Spec.Storage.Vault.Name
-		}
-		return "tls-" + c.Name
-	}
-	if c.Spec.Storage.Secret != nil && c.Spec.Storage.Secret.Name != "" {
-		return c.Spec.Storage.Secret.Name
-	}
-	return "tls-" + c.Name
 }
 
 func (r Ingress) UsesAuthSecret(namespace, name string) bool {

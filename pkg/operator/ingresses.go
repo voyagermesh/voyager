@@ -24,13 +24,12 @@ import (
 	"voyagermesh.dev/voyager/pkg/eventer"
 	"voyagermesh.dev/voyager/pkg/ingress"
 
-	"github.com/golang/glog"
 	. "gomodules.xyz/x/context"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/networking/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog/v2"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/meta"
 	ext_util "kmodules.xyz/client-go/networking/v1beta1"
@@ -44,7 +43,7 @@ func (op *Operator) initIngressWatcher() {
 		AddFunc: func(obj interface{}) {
 			engress, err := api.NewEngressFromIngress(obj.(*extensions.Ingress))
 			if err != nil {
-				log.Errorf("Failed to convert Ingress %s/%s into Ingress. Reason %v", engress.Namespace, engress.Name, err)
+				klog.Errorf("Failed to convert Ingress %s/%s into Ingress. Reason %v", engress.Namespace, engress.Name, err)
 				return
 			}
 			if err := engress.IsValid(op.CloudProvider); err != nil {
@@ -62,12 +61,12 @@ func (op *Operator) initIngressWatcher() {
 		UpdateFunc: func(oldObj, newObj interface{}) {
 			old, err := api.NewEngressFromIngress(oldObj.(*extensions.Ingress))
 			if err != nil {
-				log.Errorf("Failed to convert Ingress %s/%s into Engress. Reason %v", old.Namespace, old.Name, err)
+				klog.Errorf("Failed to convert Ingress %s/%s into Engress. Reason %v", old.Namespace, old.Name, err)
 				return
 			}
 			nu, err := api.NewEngressFromIngress(newObj.(*extensions.Ingress))
 			if err != nil {
-				log.Errorf("Failed to convert Ingress %s/%s into Engress. Reason %v", nu.Namespace, nu.Name, err)
+				klog.Errorf("Failed to convert Ingress %s/%s into Engress. Reason %v", nu.Namespace, nu.Name, err)
 				return
 			}
 
@@ -75,7 +74,7 @@ func (op *Operator) initIngressWatcher() {
 				return
 			}
 			diff := meta.Diff(old, nu)
-			log.Infof("%s %s/%s has changed. Diff: %s", nu.GroupVersionKind(), nu.Namespace, nu.Name, diff)
+			klog.Infof("%s %s/%s has changed. Diff: %s", nu.GroupVersionKind(), nu.Namespace, nu.Name, diff)
 
 			if err := nu.IsValid(op.CloudProvider); err != nil {
 				op.recorder.Eventf(
@@ -96,18 +95,18 @@ func (op *Operator) initIngressWatcher() {
 func (op *Operator) reconcileIngress(key string) error {
 	obj, exists, err := op.ingInformer.GetIndexer().GetByKey(key)
 	if err != nil {
-		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		klog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
 	}
 	if !exists {
-		glog.Warningf("Ingress %s does not exist anymore\n", key)
+		klog.Warningf("Ingress %s does not exist anymore\n", key)
 		return nil
 	}
 
 	ing := obj.(*extensions.Ingress).DeepCopy()
 	engress, err := api.NewEngressFromIngress(ing)
 	if err != nil {
-		log.Errorf("Failed to convert Ingress %s/%s into Ingress. Reason %v", engress.Namespace, engress.Name, err)
+		klog.Errorf("Failed to convert Ingress %s/%s into Ingress. Reason %v", engress.Namespace, engress.Name, err)
 		return nil
 	}
 
@@ -115,7 +114,7 @@ func (op *Operator) reconcileIngress(key string) error {
 
 	if ing.DeletionTimestamp != nil {
 		if core_util.HasFinalizer(ing.ObjectMeta, voyager.GroupName) {
-			glog.Infof("Delete for engress %s\n", key)
+			klog.Infof("Delete for engress %s\n", key)
 			ctrl.Delete()
 			_, _, err = ext_util.PatchIngress(context.TODO(), op.KubeClient, ing, func(obj *extensions.Ingress) *extensions.Ingress {
 				obj.ObjectMeta = core_util.RemoveFinalizer(obj.ObjectMeta, voyager.GroupName)
@@ -126,7 +125,7 @@ func (op *Operator) reconcileIngress(key string) error {
 			}
 		}
 	} else {
-		glog.Infof("Sync/Add/Update for ingress %s\n", key)
+		klog.Infof("Sync/Add/Update for ingress %s\n", key)
 		if !core_util.HasFinalizer(ing.ObjectMeta, voyager.GroupName) && ctrl.FirewallSupported() {
 			_, _, err = ext_util.PatchIngress(context.TODO(), op.KubeClient, ing, func(obj *extensions.Ingress) *extensions.Ingress {
 				obj.ObjectMeta = core_util.AddFinalizer(obj.ObjectMeta, voyager.GroupName)
@@ -148,7 +147,7 @@ func (op *Operator) reconcileIngress(key string) error {
 		if engress.ShouldHandleIngress(op.IngressClass) {
 			return ctrl.Reconcile()
 		} else {
-			log.Infof("%s %s/%s does not match ingress class", engress.APISchema(), engress.Namespace, engress.Name)
+			klog.Infof("%s %s/%s does not match ingress class", engress.APISchema(), engress.Namespace, engress.Name)
 			ctrl.Delete()
 		}
 	}

@@ -26,8 +26,8 @@ import (
 	"voyagermesh.dev/voyager/pkg/cmds/server"
 
 	"gomodules.xyz/x/crypto/rand"
-	"gomodules.xyz/x/log"
 	"k8s.io/client-go/util/homedir"
+	"k8s.io/klog/v2"
 )
 
 type E2EOptions struct {
@@ -75,9 +75,9 @@ func TestMain(m *testing.M) {
 
 func (c *E2EOptions) validate() {
 	if c.CloudProvider == "" {
-		log.Fatal("Provider name required, not provided")
+		klog.Fatal("Provider name required, not provided")
 	}
 	if !strings.HasPrefix(c.TestNamespace, "test-") {
-		log.Fatal("Namespace is not a Test namespace")
+		klog.Fatal("Namespace is not a Test namespace")
 	}
 }

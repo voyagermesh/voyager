@@ -18,14 +18,6 @@ limitations under the License.
 
 package v1beta1
 
-// CertificateListerExpansion allows custom methods to be added to
-// CertificateLister.
-type CertificateListerExpansion interface{}
-
-// CertificateNamespaceListerExpansion allows custom methods to be added to
-// CertificateNamespaceLister.
-type CertificateNamespaceListerExpansion interface{}
-
 // IngressListerExpansion allows custom methods to be added to
 // IngressLister.
 type IngressListerExpansion interface{}

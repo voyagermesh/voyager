@@ -29,7 +29,6 @@ import (
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	genericoptions "k8s.io/apiserver/pkg/server/options"
-	"kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/clientcmd"
 )
 
@@ -49,7 +48,6 @@ func NewVoyagerOptions(out, errOut io.Writer) *VoyagerOptions {
 		RecommendedOptions: genericoptions.NewRecommendedOptions(
 			defaultEtcdPathPrefix,
 			server.Codecs.LegacyCodec(admissionv1beta1.SchemeGroupVersion),
-			genericoptions.NewProcessInfo("voyager-operator", meta.Namespace()),
 		),
 		OperatorOptions: NewOperatorOptions(),
 		StdOut:          out,

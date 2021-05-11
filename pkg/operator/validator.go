@@ -24,9 +24,9 @@ import (
 	"voyagermesh.dev/voyager/pkg/eventer"
 
 	"github.com/pkg/errors"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 )
 
 func (op *Operator) ValidateIngress() error {
@@ -41,10 +41,10 @@ func (op *Operator) ValidateIngress() error {
 			return err
 		}
 		if !engress.ShouldHandleIngress(op.IngressClass) {
-			log.Warningf("Skipping ingress %s/%s, as it is not handled by Voyager.", ing.Namespace, ing.Name)
+			klog.Warningf("Skipping ingress %s/%s, as it is not handled by Voyager.", ing.Namespace, ing.Name)
 			continue
 		}
-		log.Warningf("Checking ingress %s/%s", ing.Namespace, ing.Name)
+		klog.Warningf("Checking ingress %s/%s", ing.Namespace, ing.Name)
 		if err := engress.IsValid(op.CloudProvider); err != nil {
 			op.recorder.Eventf(
 				engress.ObjectReference(),
@@ -64,10 +64,10 @@ func (op *Operator) ValidateIngress() error {
 	for _, ing := range engresses.Items {
 		ing.Migrate()
 		if !ing.ShouldHandleIngress(op.IngressClass) {
-			log.Warningf("Skipping ingress %s/%s, as it is not handled by Voyager.", ing.Namespace, ing.Name)
+			klog.Warningf("Skipping ingress %s/%s, as it is not handled by Voyager.", ing.Namespace, ing.Name)
 			continue
 		}
-		log.Warningf("Checking ingress %s/%s", ing.Namespace, ing.Name)
+		klog.Warningf("Checking ingress %s/%s", ing.Namespace, ing.Name)
 		if err := ing.IsValid(op.CloudProvider); err != nil {
 			op.recorder.Eventf(
 				ing.ObjectReference(),

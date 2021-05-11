@@ -25,9 +25,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
-	"github.com/golang/glog"
 	"github.com/stretchr/testify/mock"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog/v2"
 )
 
 const TestClusterId = "clusterid.test"
@@ -289,7 +289,7 @@ func (self *FakeEC2) DescribeInstances(request *ec2.DescribeInstancesInput) ([]*
 	for _, instance := range self.aws.instances {
 		if request.InstanceIds != nil {
 			if instance.InstanceId == nil {
-				glog.Warning("Instance with no instance id: ", instance)
+				klog.Warning("Instance with no instance id: ", instance)
 				continue
 			}
 

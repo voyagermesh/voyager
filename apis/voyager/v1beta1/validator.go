@@ -487,50 +487,6 @@ func checkExclusiveWildcard(address string, port int, defined map[string]*addres
 	return nil
 }
 
-func (c Certificate) IsValid(cloudProvider string) error {
-	if len(c.Spec.Domains) == 0 {
-		return errors.Errorf("domain list is empty")
-	}
-
-	if c.Spec.ChallengeProvider.HTTP == nil && c.Spec.ChallengeProvider.DNS == nil {
-		return errors.Errorf("certificate has no valid challenge provider")
-	}
-
-	if c.Spec.ChallengeProvider.HTTP != nil && c.Spec.ChallengeProvider.DNS != nil {
-		return errors.Errorf("invalid provider specification, used both http and dns provider")
-	}
-
-	if c.Spec.ChallengeProvider.HTTP != nil {
-		if len(c.Spec.ChallengeProvider.HTTP.Ingress.Name) == 0 ||
-			(c.Spec.ChallengeProvider.HTTP.Ingress.APIVersion != SchemeGroupVersion.String() && c.Spec.ChallengeProvider.HTTP.Ingress.APIVersion != "extensions/v1beta1") {
-			return errors.Errorf("invalid ingress reference")
-		}
-	}
-
-	if c.Spec.ChallengeProvider.DNS != nil {
-		if len(c.Spec.ChallengeProvider.DNS.Provider) == 0 {
-			return errors.Errorf("no dns provider name specified")
-		}
-		if c.Spec.ChallengeProvider.DNS.CredentialSecretName == "" {
-			useCredentialFromEnv := (cloudProvider == ProviderAWS && sets.NewString("aws", "route53").Has(c.Spec.ChallengeProvider.DNS.Provider) && c.Spec.ChallengeProvider.DNS.CredentialSecretName == "") ||
-				(sets.NewString("gce", ProviderGKE).Has(cloudProvider) && sets.NewString("googlecloud", "gcloud", "gce", ProviderGKE).Has(c.Spec.ChallengeProvider.DNS.Provider) && c.Spec.ChallengeProvider.DNS.CredentialSecretName == "")
-			if !useCredentialFromEnv {
-				return errors.Errorf("missing dns challenge provider credential")
-			}
-		}
-	}
-
-	if len(c.Spec.ACMEUserSecretName) == 0 {
-		return errors.Errorf("no user secret name specified")
-	}
-
-	if c.Spec.Storage.Secret != nil && c.Spec.Storage.Vault != nil {
-		return errors.Errorf("invalid storage specification, used both storage")
-	}
-
-	return nil
-}
-
 func checkMapKeys(m map[string]string, keys sets.String) error {
 	diff := sets.StringKeySet(m).Difference(keys)
 	if diff.Len() != 0 {

@@ -197,21 +197,21 @@ func (c *controller) reconcileRoleBinding() (kutil.VerbType, error) {
 }
 
 func (c *controller) ensureRoleBindingDeleted() error {
-	c.logger.Infof("Deleting RoleBinding %s/%s", c.Ingress.Namespace, c.Ingress.OffshootName())
+	c.logger.Info("Deleting", "RoleBinding", c.Ingress.OffshootName())
 	return c.KubeClient.RbacV1().
 		RoleBindings(c.Ingress.Namespace).
 		Delete(context.TODO(), c.Ingress.OffshootName(), metav1.DeleteOptions{})
 }
 
 func (c *controller) ensureRolesDeleted() error {
-	c.logger.Infof("Deleting Role %s/%s", c.Ingress.Namespace, c.Ingress.OffshootName())
+	c.logger.Info("Deleting", "Role", c.Ingress.OffshootName())
 	return c.KubeClient.RbacV1().
 		Roles(c.Ingress.Namespace).
 		Delete(context.TODO(), c.Ingress.OffshootName(), metav1.DeleteOptions{})
 }
 
 func (c *controller) ensureServiceAccountDeleted() error {
-	c.logger.Infof("Deleting ServiceAccount %s/%s", c.Ingress.Namespace, c.Ingress.OffshootName())
+	c.logger.Info("Deleting", "ServiceAccount", c.Ingress.OffshootName())
 	return c.KubeClient.CoreV1().
 		ServiceAccounts(c.Ingress.Namespace).
 		Delete(context.TODO(), c.Ingress.OffshootName(), metav1.DeleteOptions{})

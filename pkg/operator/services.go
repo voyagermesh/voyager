@@ -19,10 +19,9 @@ package operator
 import (
 	_ "voyagermesh.dev/voyager/third_party/forked/cloudprovider/providers"
 
-	"github.com/golang/glog"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/tools/queue"
 )
 
@@ -36,11 +35,11 @@ func (op *Operator) initServiceWatcher() {
 func (op *Operator) reconcileService(key string) error {
 	obj, exists, err := op.svcInformer.GetIndexer().GetByKey(key)
 	if err != nil {
-		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		klog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
 	}
 	if !exists {
-		glog.Warningf("Service %s does not exist anymore\n", key)
+		klog.Warningf("Service %s does not exist anymore\n", key)
 		ns, name, err := cache.SplitMetaNamespaceKey(key)
 		if err != nil {
 			return err
@@ -52,7 +51,7 @@ func (op *Operator) reconcileService(key string) error {
 		}
 	} else {
 		svc := obj.(*core.Service).DeepCopy()
-		glog.Infof("Sync/Add/Update for Service %s\n", svc.GetName())
+		klog.Infof("Sync/Add/Update for Service %s\n", svc.GetName())
 		return op.updateHAProxyConfig(svc.Name, svc.Namespace)
 	}
 }
@@ -71,7 +70,7 @@ func (op *Operator) restoreIngressService(name, ns string) (bool, error) {
 				key, err := cache.MetaNamespaceKeyFunc(ing)
 				if err == nil {
 					op.getIngressQueue(ing.APISchema()).Add(key)
-					log.Infof("Add/Delete/Update of offshoot service %s/%s, Ingress %s re-queued for update", ns, name, key)
+					klog.Infof("Add/Delete/Update of offshoot service %s/%s, Ingress %s re-queued for update", ns, name, key)
 				}
 				return true, err
 			}
@@ -93,7 +92,7 @@ func (op *Operator) updateHAProxyConfig(name, ns string) error {
 			ing.HasBackendService(name, ns) {
 			if key, err := cache.MetaNamespaceKeyFunc(ing); err == nil {
 				op.getIngressQueue(ing.APISchema()).Add(key)
-				log.Infof("Add/Delete/Update of backend service %s/%s, Ingress %s re-queued for update", ns, name, key)
+				klog.Infof("Add/Delete/Update of backend service %s/%s, Ingress %s re-queued for update", ns, name, key)
 			}
 		}
 	}

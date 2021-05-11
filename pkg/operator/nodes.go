@@ -21,11 +21,11 @@ import (
 
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog/v2"
 )
 
 func (op *Operator) initNodeWatcher() {
@@ -56,7 +56,7 @@ func (op *Operator) initNodeWatcher() {
 					Name: node.Name,
 				},
 			})
-			log.Error(err)
+			klog.Error(err)
 		}
 	}
 }
@@ -77,8 +77,8 @@ func (op *Operator) updateFirewall(ing *api.Ingress, node *core.Node) {
 
 	if key, err := cache.MetaNamespaceKeyFunc(ing); err == nil {
 		op.getIngressQueue(ing.APISchema()).Add(key)
-		log.Infof("Add/Delete/Update of Node %s, Ingress %s re-queued for update", node.Name, key)
+		klog.Infof("Add/Delete/Update of Node %s, Ingress %s re-queued for update", node.Name, key)
 	} else {
-		log.Infof("Add/Delete/Update of Node %s, failed to re-queue Ingress %s, reason %s", node.Name, ing.Name, err)
+		klog.Infof("Add/Delete/Update of Node %s, failed to re-queue Ingress %s, reason %s", node.Name, ing.Name, err)
 	}
 }

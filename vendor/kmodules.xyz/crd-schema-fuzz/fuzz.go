@@ -39,7 +39,7 @@ func init() {
 func SchemaFuzzTestForObject(t *testing.T, scheme *runtime.Scheme, obj runtime.Object, schema *structuralschema.Structural, fuzzingFuncs fuzzer.FuzzerFuncs) {
 	codecFactory := serializer.NewCodecFactory(scheme)
 	fuzzer := fuzzer.FuzzerFor(
-		fuzzer.MergeFuzzerFuncs(metafuzzer.Funcs, fuzzingFuncs),
+		SafeFuzzerFuncs(metafuzzer.Funcs, fuzzingFuncs),
 		rand.NewSource(rand.Int63()),
 		codecFactory,
 	)
@@ -60,7 +60,12 @@ func SchemaFuzzTestForObject(t *testing.T, scheme *runtime.Scheme, obj runtime.O
 			return
 		}
 		structuralpruning.Prune(pruned, schema, true)
-		if !cmp.Equal(unstructuredFuzzed, pruned) {
+		if !cmp.Equal(unstructuredFuzzed, pruned, cmp.Transformer("ObjectMeta", func(m map[string]interface{}) map[string]interface{} {
+			if m["creationTimestamp"] == nil {
+				delete(m, "creationTimestamp")
+			}
+			return m
+		})) {
 			t.Errorf("Failed fuzz test, difference: %v", cmp.Diff(unstructuredFuzzed, pruned))
 		}
 		t.Logf("Passed fuzz test iteration %d", i)

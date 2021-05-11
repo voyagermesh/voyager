@@ -39,8 +39,8 @@ go_library(
         "//vendor:github.com/Azure/go-autorest/autorest",
         "//vendor:github.com/Azure/go-autorest/autorest/azure",
         "//vendor:github.com/Azure/go-autorest/autorest/to",
-        "//vendor:github.com/ghodss/yaml",
-        "//vendor:github.com/golang/glog",
+        "//vendor:sigs.k8s.io/yaml",
+        "//vendor:k8s.io/klog/v2",
         "//vendor:github.com/rubiojr/go-vhd/vhd",
     ],
 )

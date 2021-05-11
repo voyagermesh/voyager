@@ -19,18 +19,18 @@ package controller
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"os"
 	"strings"
 	"time"
 
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 	cs "voyagermesh.dev/voyager/client/clientset/versioned"
 	voyagerinformers "voyagermesh.dev/voyager/client/informers/externalversions"
-	"voyagermesh.dev/voyager/pkg/certificate"
 	"voyagermesh.dev/voyager/pkg/eventer"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
-	ioutilz "gomodules.xyz/x/ioutil"
+	atomic_writer "gomodules.xyz/atomic-writer"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"
@@ -38,6 +38,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/tools/queue"
 )
 
@@ -66,10 +67,8 @@ type Controller struct {
 	voyagerInformerFactory voyagerinformers.SharedInformerFactory
 	recorder               record.EventRecorder
 
-	store *certificate.CertStore
-
-	cfgWriter  *ioutilz.AtomicWriter
-	certWriter *ioutilz.AtomicWriter
+	cfgWriter  *atomic_writer.AtomicWriter
+	certWriter *atomic_writer.AtomicWriter
 
 	cfgQueue    *queue.Worker
 	cfgInformer cache.SharedIndexInformer
@@ -82,17 +81,14 @@ type Controller struct {
 
 	engQueue    *queue.Worker
 	engInformer cache.SharedIndexInformer
-
-	crtQueue    *queue.Worker
-	crtInformer cache.SharedIndexInformer
 }
 
 func New(client kubernetes.Interface, voyagerClient cs.Interface, opt Options) *Controller {
 	return &Controller{
 		k8sClient:              client,
-		kubeInformerFactory:    informers.NewFilteredSharedInformerFactory(client, opt.ResyncPeriod, opt.IngressRef.Namespace, nil),
+		kubeInformerFactory:    informers.NewSharedInformerFactoryWithOptions(client, opt.ResyncPeriod, informers.WithNamespace(opt.IngressRef.Namespace)),
 		VoyagerClient:          voyagerClient,
-		voyagerInformerFactory: voyagerinformers.NewFilteredSharedInformerFactory(voyagerClient, opt.ResyncPeriod, opt.IngressRef.Namespace, nil),
+		voyagerInformerFactory: voyagerinformers.NewSharedInformerFactoryWithOptions(voyagerClient, opt.ResyncPeriod, voyagerinformers.WithNamespace(opt.IngressRef.Namespace)),
 		options:                opt,
 		recorder:               eventer.NewEventRecorder(client, "haproxy-controller"),
 	}
@@ -122,16 +118,12 @@ func (c *Controller) Setup() (err error) {
 	}
 	c.initConfigMapWatcher()
 	c.initSecretWatcher()
-	c.initCertificateCRDWatcher()
-	c.store, err = certificate.NewCertStore(c.k8sClient, c.VoyagerClient)
+	writerContext := fmt.Sprintf("%s Ingress %v/%v pod %v", c.options.IngressRef.APIVersion, c.options.IngressRef.Namespace, c.options.IngressRef.Name, os.Getenv("HOSTNAME"))
+	c.cfgWriter, err = atomic_writer.NewAtomicWriter(strings.TrimSuffix(c.options.ConfigDir, "/"), writerContext)
 	if err != nil {
 		return
 	}
-	c.cfgWriter, err = ioutilz.NewAtomicWriter(strings.TrimSuffix(c.options.ConfigDir, "/"))
-	if err != nil {
-		return
-	}
-	c.certWriter, err = ioutilz.NewAtomicWriter(strings.TrimSuffix(c.options.CertDir, "/"))
+	c.certWriter, err = atomic_writer.NewAtomicWriter(strings.TrimSuffix(c.options.CertDir, "/"), writerContext)
 	if err != nil {
 		return
 	}
@@ -194,24 +186,13 @@ func (c *Controller) initConfigCache() error {
 
 func (c *Controller) initTLSCache(ing *api.Ingress) error {
 	for _, tls := range ing.Spec.TLS {
-		if strings.EqualFold(tls.Ref.Kind, api.ResourceKindCertificate) {
-			crd, err := c.VoyagerClient.VoyagerV1beta1().Certificates(c.options.IngressRef.Namespace).Get(context.TODO(), tls.Ref.Name, metav1.GetOptions{})
-			if err != nil {
-				return err
-			}
-			err = c.crtInformer.GetIndexer().Add(crd)
-			if err != nil {
-				return err
-			}
-		} else {
-			sc, err := c.k8sClient.CoreV1().Secrets(c.options.IngressRef.Namespace).Get(context.TODO(), tls.Ref.Name, metav1.GetOptions{})
-			if err != nil {
-				return err
-			}
-			err = c.secretInformer.GetIndexer().Add(sc)
-			if err != nil {
-				return err
-			}
+		sc, err := c.k8sClient.CoreV1().Secrets(c.options.IngressRef.Namespace).Get(context.TODO(), tls.Ref.Name, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		err = c.secretInformer.GetIndexer().Add(sc)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -250,7 +231,7 @@ func certificateToPEMData(crt, key []byte) []byte {
 }
 
 func runCmd() error {
-	glog.Info("Running haproxy start/reload...")
+	klog.Info("Running haproxy start/reload...")
 	if err := startOrReloadHaproxy(); err != nil {
 		return err
 	}
@@ -261,7 +242,7 @@ func runCmd() error {
 func (c *Controller) Run(stopCh chan struct{}) {
 	defer runtime.HandleCrash()
 
-	glog.Info("Starting haproxy-controller")
+	klog.Info("Starting haproxy-controller")
 	c.kubeInformerFactory.Start(stopCh)
 	c.voyagerInformerFactory.Start(stopCh)
 
@@ -282,7 +263,6 @@ func (c *Controller) Run(stopCh chan struct{}) {
 	c.cfgQueue.Run(stopCh)
 	c.secretQueue.Run(stopCh)
 	c.getIngressWorker().Run(stopCh)
-	c.crtQueue.Run(stopCh)
 
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
@@ -293,5 +273,5 @@ func (c *Controller) Run(stopCh chan struct{}) {
 	}()
 
 	<-stopCh
-	glog.Info("Stopping haproxy-controller")
+	klog.Info("Stopping haproxy-controller")
 }
