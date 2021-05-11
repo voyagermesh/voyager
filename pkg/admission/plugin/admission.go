@@ -46,7 +46,7 @@ func (a *CRDValidator) Resource() (plural schema.GroupVersionResource, singular 
 
 func (a *CRDValidator) Admit(req *admission.AdmissionRequest) *admission.AdmissionResponse {
 	status := &admission.AdmissionResponse{}
-	supportedKinds := sets.NewString(api.ResourceKindCertificate, api.ResourceKindIngress)
+	supportedKinds := sets.NewString(api.ResourceKindIngress)
 
 	if (req.Operation != admission.Create && req.Operation != admission.Update) ||
 		len(req.SubResource) != 0 ||
@@ -57,16 +57,6 @@ func (a *CRDValidator) Admit(req *admission.AdmissionRequest) *admission.Admissi
 	}
 
 	switch req.Kind.Kind {
-	case api.ResourceKindCertificate:
-		obj := &api.Certificate{}
-		err := json.Unmarshal(req.Object.Raw, obj)
-		if err != nil {
-			return hooks.StatusBadRequest(err)
-		}
-		err = obj.IsValid(a.CloudProvider)
-		if err != nil {
-			return hooks.StatusForbidden(err)
-		}
 	case api.ResourceKindIngress:
 		obj := &api.Ingress{}
 		err := json.Unmarshal(req.Object.Raw, obj)

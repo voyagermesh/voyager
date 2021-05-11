@@ -21,14 +21,13 @@ import (
 
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
-	"github.com/golang/glog"
 	promapi "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	"gomodules.xyz/x/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
+	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/discovery"
 	"kmodules.xyz/client-go/tools/queue"
 	prom_util "kmodules.xyz/monitoring-agent-api/prometheus/v1"
@@ -36,7 +35,7 @@ import (
 
 func (op *Operator) initServiceMonitorWatcher() {
 	if !discovery.IsPreferredAPIResource(op.KubeClient.Discovery(), prom_util.SchemeGroupVersion.String(), promapi.ServiceMonitorsKind) {
-		log.Warningf("Skipping watching non-preferred GroupVersion:%s Kind:%s", prom_util.SchemeGroupVersion.String(), promapi.ServiceMonitorsKind)
+		klog.Warningf("Skipping watching non-preferred GroupVersion:%s Kind:%s", prom_util.SchemeGroupVersion.String(), promapi.ServiceMonitorsKind)
 		return
 	}
 
@@ -58,11 +57,11 @@ func (op *Operator) initServiceMonitorWatcher() {
 func (op *Operator) reconcileServiceMonitor(key string) error {
 	_, exists, err := op.smonInformer.GetIndexer().GetByKey(key)
 	if err != nil {
-		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		klog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
 	}
 	if !exists {
-		glog.Warningf("ServiceMonitor %s does not exist anymore\n", key)
+		klog.Warningf("ServiceMonitor %s does not exist anymore\n", key)
 		if ns, name, err := cache.SplitMetaNamespaceKey(key); err != nil {
 			return err
 		} else {
@@ -88,7 +87,7 @@ func (op *Operator) restoreServiceMonitor(name, ns string) error {
 				return err
 			} else {
 				op.getIngressQueue(ing.APISchema()).Add(key)
-				log.Infof("Add/Delete/Update of service-monitor %s/%s, Ingress %s re-queued for update", ns, name, key)
+				klog.Infof("Add/Delete/Update of service-monitor %s/%s, Ingress %s re-queued for update", ns, name, key)
 				break
 			}
 		}

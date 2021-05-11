@@ -18,7 +18,6 @@ package controller
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
@@ -26,12 +25,12 @@ import (
 	voyager_informers "voyagermesh.dev/voyager/client/informers/externalversions/voyager/v1beta1"
 	"voyagermesh.dev/voyager/pkg/eventer"
 
-	"github.com/golang/glog"
-	ioutilz "gomodules.xyz/x/ioutil"
+	atomic_writer "gomodules.xyz/atomic-writer"
 	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/networking/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/tools/queue"
 )
 
@@ -86,7 +85,7 @@ func (c *Controller) initIngressCRDWatcher() {
 func (c *Controller) syncIngressCRD(key string) error {
 	obj, exists, err := c.engInformer.GetIndexer().GetByKey(key)
 	if err != nil {
-		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		klog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
 	}
 
@@ -148,7 +147,7 @@ func (c *Controller) getIngress() (*api.Ingress, error) {
 	return i, nil
 }
 
-func (c *Controller) projectConfig(ing *api.Ingress, projections map[string]ioutilz.FileProjection) error {
+func (c *Controller) projectConfig(ing *api.Ingress, projections map[string]atomic_writer.FileProjection) error {
 	r, err := c.getConfigMap(api.VoyagerPrefix + ing.Name)
 	if err != nil {
 		return err
@@ -156,7 +155,7 @@ func (c *Controller) projectConfig(ing *api.Ingress, projections map[string]iout
 	return c.projectHAProxyConfig(r, projections)
 }
 
-func (c *Controller) projectCerts(ing *api.Ingress, projections map[string]ioutilz.FileProjection) error {
+func (c *Controller) projectCerts(ing *api.Ingress, projections map[string]atomic_writer.FileProjection) error {
 	r, err := c.getConfigMap(api.VoyagerPrefix + ing.Name)
 	if err != nil {
 		return err
@@ -167,24 +166,13 @@ func (c *Controller) projectCerts(ing *api.Ingress, projections map[string]iouti
 	}
 
 	for _, tls := range ing.Spec.TLS {
-		if strings.EqualFold(tls.Ref.Kind, api.ResourceKindCertificate) {
-			r, err := c.getCertificate(tls.Ref.Name)
-			if err != nil {
-				return err
-			}
-			err = c.projectCertificate(r, projections)
-			if err != nil {
-				return err
-			}
-		} else {
-			r, err := c.getSecret(tls.Ref.Name)
-			if err != nil {
-				return err
-			}
-			err = c.projectTLSSecret(r, projections)
-			if err != nil {
-				return err
-			}
+		r, err := c.getSecret(tls.Ref.Name)
+		if err != nil {
+			return err
+		}
+		err = c.projectTLSSecret(r, projections)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -215,7 +203,7 @@ func (c *Controller) projectCerts(ing *api.Ingress, projections map[string]iouti
 }
 
 func (c *Controller) mountIngress(ing *api.Ingress) error {
-	cfgProjections := map[string]ioutilz.FileProjection{}
+	cfgProjections := map[string]atomic_writer.FileProjection{}
 	err := c.projectConfig(ing, cfgProjections)
 	if err != nil {
 		return err
@@ -228,7 +216,7 @@ func (c *Controller) mountIngress(ing *api.Ingress) error {
 		incConfigChangedCounter()
 	}
 
-	certProjections := map[string]ioutilz.FileProjection{}
+	certProjections := map[string]atomic_writer.FileProjection{}
 	err = c.projectCerts(ing, certProjections)
 	if err != nil {
 		return err

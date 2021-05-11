@@ -25,12 +25,13 @@ import (
 	"encoding/pem"
 	"flag"
 	"fmt"
-	"log"
 	"math/big"
 	"net"
 	"os"
 	"strings"
 	"time"
+
+	"k8s.io/klog/v2"
 )
 
 var (
@@ -69,12 +70,12 @@ func pemBlockForKey(priv interface{}) *pem.Block {
 
 func GenCert(host string) {
 	if len(host) == 0 {
-		log.Fatalf("Missing required --host parameter")
+		klog.Fatalf("Missing required --host parameter")
 	}
 
 	priv, err := rsa.GenerateKey(rand.Reader, *rsaBits)
 	if err != nil {
-		log.Fatalf("failed to generate private key: %s", err)
+		klog.Fatalf("failed to generate private key: %s", err)
 	}
 
 	var notBefore time.Time
@@ -93,7 +94,7 @@ func GenCert(host string) {
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
-		log.Fatalf("failed to generate serial number: %s", err)
+		klog.Fatalf("failed to generate serial number: %s", err)
 	}
 
 	template := x509.Certificate{
@@ -125,39 +126,39 @@ func GenCert(host string) {
 
 	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, publicKey(priv), priv)
 	if err != nil {
-		log.Fatalf("Failed to create certificate: %s", err)
+		klog.Fatalf("Failed to create certificate: %s", err)
 	}
 
 	certOut, err := os.Create("cert.pem")
 	if err != nil {
-		log.Fatalf("failed to open cert.pem for writing: %s", err)
+		klog.Fatalf("failed to open cert.pem for writing: %s", err)
 	}
 	err = pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
 	if err != nil {
-		log.Fatal(err)
+		klog.Fatal(err)
 	}
 
 	err = certOut.Close()
 	if err != nil {
-		log.Fatal(err)
+		klog.Fatal(err)
 	}
 
-	log.Print("written cert.pem\n")
+	klog.Info("written cert.pem\n")
 
 	keyOut, err := os.OpenFile("key.pem", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
-		log.Print("failed to open key.pem for writing:", err)
+		klog.Info("failed to open key.pem for writing:", err)
 		return
 	}
 
 	err = pem.Encode(keyOut, pemBlockForKey(priv))
 	if err != nil {
-		log.Fatal(err)
+		klog.Fatal(err)
 	}
 
 	err = keyOut.Close()
 	if err != nil {
-		log.Fatal(err)
+		klog.Fatal(err)
 	}
-	log.Print("written key.pem\n")
+	klog.Info("written key.pem\n")
 }

@@ -2,6 +2,7 @@ package proxyproto
 
 import (
 	"bufio"
+	"io"
 	"net"
 	"sync"
 	"time"
@@ -117,6 +118,13 @@ func (p *Conn) Close() error {
 	return p.conn.Close()
 }
 
+// ProxyHeader returns the proxy protocol header, if any. If an error occurs
+// while reading the proxy header, nil is returned.
+func (p *Conn) ProxyHeader() *Header {
+	p.once.Do(func() { p.readErr = p.readHeader() })
+	return p.header
+}
+
 // LocalAddr returns the address of the server if the proxy
 // protocol is being used, otherwise just returns the address of
 // the socket server. In case an error happens on reading the
@@ -129,7 +137,7 @@ func (p *Conn) LocalAddr() net.Addr {
 		return p.conn.LocalAddr()
 	}
 
-	return p.header.LocalAddr()
+	return p.header.DestinationAddr
 }
 
 // RemoteAddr returns the address of the client if the proxy
@@ -144,7 +152,42 @@ func (p *Conn) RemoteAddr() net.Addr {
 		return p.conn.RemoteAddr()
 	}
 
-	return p.header.RemoteAddr()
+	return p.header.SourceAddr
+}
+
+// Raw returns the underlying connection which can be casted to
+// a concrete type, allowing access to specialized functions.
+//
+// Use this ONLY if you know exactly what you are doing.
+func (p *Conn) Raw() net.Conn {
+	return p.conn
+}
+
+// TCPConn returns the underlying TCP connection,
+// allowing access to specialized functions.
+//
+// Use this ONLY if you know exactly what you are doing.
+func (p *Conn) TCPConn() (conn *net.TCPConn, ok bool) {
+	conn, ok = p.conn.(*net.TCPConn)
+	return
+}
+
+// UnixConn returns the underlying Unix socket connection,
+// allowing access to specialized functions.
+//
+// Use this ONLY if you know exactly what you are doing.
+func (p *Conn) UnixConn() (conn *net.UnixConn, ok bool) {
+	conn, ok = p.conn.(*net.UnixConn)
+	return
+}
+
+// UDPConn returns the underlying UDP connection,
+// allowing access to specialized functions.
+//
+// Use this ONLY if you know exactly what you are doing.
+func (p *Conn) UDPConn() (conn *net.UDPConn, ok bool) {
+	conn, ok = p.conn.(*net.UDPConn)
+	return
 }
 
 // SetDeadline wraps original conn.SetDeadline
@@ -194,4 +237,21 @@ func (p *Conn) readHeader() error {
 	}
 
 	return err
+}
+
+// ReadFrom implements the io.ReaderFrom ReadFrom method
+func (p *Conn) ReadFrom(r io.Reader) (int64, error) {
+	if rf, ok := p.conn.(io.ReaderFrom); ok {
+		return rf.ReadFrom(r)
+	}
+	return io.Copy(p.conn, r)
+}
+
+// WriteTo implements io.WriterTo
+func (p *Conn) WriteTo(w io.Writer) (int64, error) {
+	p.once.Do(func() { p.readErr = p.readHeader() })
+	if p.readErr != nil {
+		return 0, p.readErr
+	}
+	return p.bufReader.WriteTo(w)
 }

@@ -1,5 +1,5 @@
 // Package proxyproto implements Proxy Protocol (v1 and v2) parser and writer, as per specification:
-// http://www.haproxy.org/download/1.5/doc/proxy-protocol.txt
+// https://www.haproxy.org/download/2.3/doc/proxy-protocol.txt
 package proxyproto
 
 import (
@@ -16,46 +16,131 @@ var (
 	SIGV1 = []byte{'\x50', '\x52', '\x4F', '\x58', '\x59'}
 	SIGV2 = []byte{'\x0D', '\x0A', '\x0D', '\x0A', '\x00', '\x0D', '\x0A', '\x51', '\x55', '\x49', '\x54', '\x0A'}
 
-	ErrCantReadProtocolVersionAndCommand    = errors.New("Can't read proxy protocol version and command")
-	ErrCantReadAddressFamilyAndProtocol     = errors.New("Can't read address family or protocol")
-	ErrCantReadLength                       = errors.New("Can't read length")
-	ErrCantResolveSourceUnixAddress         = errors.New("Can't resolve source Unix address")
-	ErrCantResolveDestinationUnixAddress    = errors.New("Can't resolve destination Unix address")
-	ErrNoProxyProtocol                      = errors.New("Proxy protocol signature not present")
-	ErrUnknownProxyProtocolVersion          = errors.New("Unknown proxy protocol version")
-	ErrUnsupportedProtocolVersionAndCommand = errors.New("Unsupported proxy protocol version and command")
-	ErrUnsupportedAddressFamilyAndProtocol  = errors.New("Unsupported address family and protocol")
-	ErrInvalidLength                        = errors.New("Invalid length")
-	ErrInvalidAddress                       = errors.New("Invalid address")
-	ErrInvalidPortNumber                    = errors.New("Invalid port number")
-	ErrSuperfluousProxyHeader               = errors.New("Upstream connection sent PROXY header but isn't allowed to send one")
+	ErrCantReadVersion1Header               = errors.New("proxyproto: can't read version 1 header")
+	ErrVersion1HeaderTooLong                = errors.New("proxyproto: version 1 header must be 107 bytes or less")
+	ErrLineMustEndWithCrlf                  = errors.New("proxyproto: version 1 header is invalid, must end with \\r\\n")
+	ErrCantReadProtocolVersionAndCommand    = errors.New("proxyproto: can't read proxy protocol version and command")
+	ErrCantReadAddressFamilyAndProtocol     = errors.New("proxyproto: can't read address family or protocol")
+	ErrCantReadLength                       = errors.New("proxyproto: can't read length")
+	ErrCantResolveSourceUnixAddress         = errors.New("proxyproto: can't resolve source Unix address")
+	ErrCantResolveDestinationUnixAddress    = errors.New("proxyproto: can't resolve destination Unix address")
+	ErrNoProxyProtocol                      = errors.New("proxyproto: proxy protocol signature not present")
+	ErrUnknownProxyProtocolVersion          = errors.New("proxyproto: unknown proxy protocol version")
+	ErrUnsupportedProtocolVersionAndCommand = errors.New("proxyproto: unsupported proxy protocol version and command")
+	ErrUnsupportedAddressFamilyAndProtocol  = errors.New("proxyproto: unsupported address family and protocol")
+	ErrInvalidLength                        = errors.New("proxyproto: invalid length")
+	ErrInvalidAddress                       = errors.New("proxyproto: invalid address")
+	ErrInvalidPortNumber                    = errors.New("proxyproto: invalid port number")
+	ErrSuperfluousProxyHeader               = errors.New("proxyproto: upstream connection sent PROXY header but isn't allowed to send one")
 )
 
 // Header is the placeholder for proxy protocol header.
 type Header struct {
-	Version            byte
-	Command            ProtocolVersionAndCommand
-	TransportProtocol  AddressFamilyAndProtocol
-	SourceAddress      net.IP
-	DestinationAddress net.IP
-	SourcePort         uint16
-	DestinationPort    uint16
-	rawTLVs            []byte
+	Version           byte
+	Command           ProtocolVersionAndCommand
+	TransportProtocol AddressFamilyAndProtocol
+	SourceAddr        net.Addr
+	DestinationAddr   net.Addr
+	rawTLVs           []byte
 }
 
-// RemoteAddr returns the address of the remote endpoint of the connection.
-func (header *Header) RemoteAddr() net.Addr {
-	return &net.TCPAddr{
-		IP:   header.SourceAddress,
-		Port: int(header.SourcePort),
+// HeaderProxyFromAddrs creates a new PROXY header from a source and a
+// destination address. If version is zero, the latest protocol version is
+// used.
+//
+// The header is filled on a best-effort basis: if hints cannot be inferred
+// from the provided addresses, the header will be left unspecified.
+func HeaderProxyFromAddrs(version byte, sourceAddr, destAddr net.Addr) *Header {
+	if version < 1 || version > 2 {
+		version = 2
+	}
+	h := &Header{
+		Version:           version,
+		Command:           LOCAL,
+		TransportProtocol: UNSPEC,
+	}
+	switch sourceAddr := sourceAddr.(type) {
+	case *net.TCPAddr:
+		if _, ok := destAddr.(*net.TCPAddr); !ok {
+			break
+		}
+		if len(sourceAddr.IP.To4()) == net.IPv4len {
+			h.TransportProtocol = TCPv4
+		} else if len(sourceAddr.IP) == net.IPv6len {
+			h.TransportProtocol = TCPv6
+		}
+	case *net.UDPAddr:
+		if _, ok := destAddr.(*net.UDPAddr); !ok {
+			break
+		}
+		if len(sourceAddr.IP.To4()) == net.IPv4len {
+			h.TransportProtocol = UDPv4
+		} else if len(sourceAddr.IP) == net.IPv6len {
+			h.TransportProtocol = UDPv6
+		}
+	case *net.UnixAddr:
+		if _, ok := destAddr.(*net.UnixAddr); !ok {
+			break
+		}
+		switch sourceAddr.Net {
+		case "unix":
+			h.TransportProtocol = UnixStream
+		case "unixgram":
+			h.TransportProtocol = UnixDatagram
+		}
+	}
+	if h.TransportProtocol != UNSPEC {
+		h.Command = PROXY
+		h.SourceAddr = sourceAddr
+		h.DestinationAddr = destAddr
+	}
+	return h
+}
+
+func (header *Header) TCPAddrs() (sourceAddr, destAddr *net.TCPAddr, ok bool) {
+	if !header.TransportProtocol.IsStream() {
+		return nil, nil, false
+	}
+	sourceAddr, sourceOK := header.SourceAddr.(*net.TCPAddr)
+	destAddr, destOK := header.DestinationAddr.(*net.TCPAddr)
+	return sourceAddr, destAddr, sourceOK && destOK
+}
+
+func (header *Header) UDPAddrs() (sourceAddr, destAddr *net.UDPAddr, ok bool) {
+	if !header.TransportProtocol.IsDatagram() {
+		return nil, nil, false
+	}
+	sourceAddr, sourceOK := header.SourceAddr.(*net.UDPAddr)
+	destAddr, destOK := header.DestinationAddr.(*net.UDPAddr)
+	return sourceAddr, destAddr, sourceOK && destOK
+}
+
+func (header *Header) UnixAddrs() (sourceAddr, destAddr *net.UnixAddr, ok bool) {
+	if !header.TransportProtocol.IsUnix() {
+		return nil, nil, false
+	}
+	sourceAddr, sourceOK := header.SourceAddr.(*net.UnixAddr)
+	destAddr, destOK := header.DestinationAddr.(*net.UnixAddr)
+	return sourceAddr, destAddr, sourceOK && destOK
+}
+
+func (header *Header) IPs() (sourceIP, destIP net.IP, ok bool) {
+	if sourceAddr, destAddr, ok := header.TCPAddrs(); ok {
+		return sourceAddr.IP, destAddr.IP, true
+	} else if sourceAddr, destAddr, ok := header.UDPAddrs(); ok {
+		return sourceAddr.IP, destAddr.IP, true
+	} else {
+		return nil, nil, false
 	}
 }
 
-// LocalAddr returns the address of the local endpoint of the connection.
-func (header *Header) LocalAddr() net.Addr {
-	return &net.TCPAddr{
-		IP:   header.DestinationAddress,
-		Port: int(header.DestinationPort),
+func (header *Header) Ports() (sourcePort, destPort int, ok bool) {
+	if sourceAddr, destAddr, ok := header.TCPAddrs(); ok {
+		return sourceAddr.Port, destAddr.Port, true
+	} else if sourceAddr, destAddr, ok := header.UDPAddrs(); ok {
+		return sourceAddr.Port, destAddr.Port, true
+	} else {
+		return 0, 0, false
 	}
 }
 
@@ -70,19 +155,19 @@ func (header *Header) EqualsTo(otherHeader *Header) bool {
 	if otherHeader == nil {
 		return false
 	}
-	if header.Command.IsLocal() {
-		return true
-	}
 	// TLVs only exist for version 2
-	if header.Version == 0x02 && !bytes.Equal(header.rawTLVs, otherHeader.rawTLVs) {
+	if header.Version == 2 && !bytes.Equal(header.rawTLVs, otherHeader.rawTLVs) {
 		return false
 	}
-	return header.Version == otherHeader.Version &&
-		header.TransportProtocol == otherHeader.TransportProtocol &&
-		header.SourceAddress.String() == otherHeader.SourceAddress.String() &&
-		header.DestinationAddress.String() == otherHeader.DestinationAddress.String() &&
-		header.SourcePort == otherHeader.SourcePort &&
-		header.DestinationPort == otherHeader.DestinationPort
+	if header.Version != otherHeader.Version || header.Command != otherHeader.Command || header.TransportProtocol != otherHeader.TransportProtocol {
+		return false
+	}
+	// Return early for header with LOCAL command, which contains no address information
+	if header.Command == LOCAL {
+		return true
+	}
+	return header.SourceAddr.String() == otherHeader.SourceAddr.String() &&
+		header.DestinationAddr.String() == otherHeader.DestinationAddr.String()
 }
 
 // WriteTo renders a proxy protocol header in a format and writes it to an io.Writer.
@@ -110,6 +195,17 @@ func (header *Header) Format() ([]byte, error) {
 // TLVs returns the TLVs stored into this header, if they exist.  TLVs are optional for v2 of the protocol.
 func (header *Header) TLVs() ([]TLV, error) {
 	return SplitTLVs(header.rawTLVs)
+}
+
+// SetTLVs sets the TLVs stored in this header. This method replaces any
+// previous TLV.
+func (header *Header) SetTLVs(tlvs []TLV) error {
+	raw, err := JoinTLVs(tlvs)
+	if err != nil {
+		return err
+	}
+	header.rawTLVs = raw
+	return nil
 }
 
 // Read identifies the proxy protocol version and reads the remaining of

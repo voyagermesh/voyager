@@ -27,17 +27,12 @@ import (
 
 type VoyagerV1beta1Interface interface {
 	RESTClient() rest.Interface
-	CertificatesGetter
 	IngressesGetter
 }
 
 // VoyagerV1beta1Client is used to interact with features provided by the voyager.appscode.com group.
 type VoyagerV1beta1Client struct {
 	restClient rest.Interface
-}
-
-func (c *VoyagerV1beta1Client) Certificates(namespace string) CertificateInterface {
-	return newCertificates(c, namespace)
 }
 
 func (c *VoyagerV1beta1Client) Ingresses(namespace string) IngressInterface {

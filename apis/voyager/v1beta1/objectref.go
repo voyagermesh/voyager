@@ -40,14 +40,3 @@ func (r Ingress) ObjectReference() *core.ObjectReference {
 		ResourceVersion: r.ResourceVersion,
 	}
 }
-
-func (c Certificate) ObjectReference() *core.ObjectReference {
-	return &core.ObjectReference{
-		APIVersion:      SchemeGroupVersion.String(),
-		Kind:            ResourceKindCertificate,
-		Namespace:       c.Namespace,
-		Name:            c.Name,
-		UID:             c.UID,
-		ResourceVersion: c.ResourceVersion,
-	}
-}

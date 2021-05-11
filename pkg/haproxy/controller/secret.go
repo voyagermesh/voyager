@@ -20,7 +20,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	ioutilz "gomodules.xyz/x/ioutil"
+	atomic_writer "gomodules.xyz/atomic-writer"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/cache"
@@ -111,7 +111,7 @@ func (c *Controller) getSecret(name string) (*core.Secret, error) {
 	return obj.(*core.Secret), nil
 }
 
-func (c *Controller) projectTLSSecret(r *core.Secret, projections map[string]ioutilz.FileProjection) error {
+func (c *Controller) projectTLSSecret(r *core.Secret, projections map[string]atomic_writer.FileProjection) error {
 	pemKey, found := r.Data[core.TLSPrivateKeyKey]
 	if !found {
 		return errors.Errorf("secret %s/%s is missing tls.key", c.options.IngressRef.Namespace, r.Name)
@@ -122,20 +122,20 @@ func (c *Controller) projectTLSSecret(r *core.Secret, projections map[string]iou
 		return errors.Errorf("secret %s/%s is missing tls.crt", c.options.IngressRef.Namespace, r.Name)
 	}
 
-	projections["tls/"+r.Name+".pem"] = ioutilz.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
+	projections["tls/"+r.Name+".pem"] = atomic_writer.FileProjection{Mode: 0755, Data: certificateToPEMData(pemCrt, pemKey)}
 	return nil
 }
 
-func (c *Controller) projectAuthSecret(r *core.Secret, projections map[string]ioutilz.FileProjection) error {
+func (c *Controller) projectAuthSecret(r *core.Secret, projections map[string]atomic_writer.FileProjection) error {
 	ca, found := r.Data["ca.crt"]
 	if !found {
 		return errors.Errorf("secret %s/%s is missing ca.crt", c.options.IngressRef.Namespace, r.Name)
 	}
-	projections["ca/"+r.Name+"-ca.crt"] = ioutilz.FileProjection{Mode: 0755, Data: ca}
+	projections["ca/"+r.Name+"-ca.crt"] = atomic_writer.FileProjection{Mode: 0755, Data: ca}
 
 	crl, found := r.Data["crl.pem"]
 	if found {
-		projections["ca/"+r.Name+"-crl.pem"] = ioutilz.FileProjection{Mode: 0755, Data: crl}
+		projections["ca/"+r.Name+"-crl.pem"] = atomic_writer.FileProjection{Mode: 0755, Data: crl}
 	}
 	return nil
 }

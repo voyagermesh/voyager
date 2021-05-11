@@ -21,6 +21,6 @@ go_library(
     deps = [
         "//pkg/api:go_default_library",
         "//pkg/types:go_default_library",
-        "//vendor:github.com/golang/glog",
+        "//vendor:k8s.io/klog/v2",
     ],
 )

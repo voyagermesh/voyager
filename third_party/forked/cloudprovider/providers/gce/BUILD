@@ -31,7 +31,7 @@ go_library(
         "//pkg/util/wait:go_default_library",
         "//pkg/volume:go_default_library",
         "//vendor:cloud.google.com/go/compute/metadata",
-        "//vendor:github.com/golang/glog",
+        "//vendor:k8s.io/klog/v2",
         "//vendor:github.com/prometheus/client_golang/prometheus",
         "//vendor:golang.org/x/oauth2",
         "//vendor:golang.org/x/oauth2/google",

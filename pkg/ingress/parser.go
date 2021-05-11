@@ -48,7 +48,7 @@ import (
 )
 
 func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, userLists map[string]hpi.UserList, bkSvc string, port intstr.IntOrString, hostNames []string) (*hpi.Backend, error) {
-	c.logger.Infoln("getting endpoints for ", c.Ingress.Namespace, bkSvc, "port", port)
+	c.logger.Info("getting endpoints", "service", bkSvc, "port", port)
 
 	name := bkSvc
 	namespace := c.Ingress.Namespace
@@ -61,7 +61,7 @@ func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, 
 		return nil, errors.Errorf("can't use service %s as backend, since voyager operator is restricted namespace %s", bkSvc, c.cfg.OperatorNamespace)
 	}
 
-	c.logger.Infoln("looking for services in namespace", namespace, "with name", name)
+	c.logger.Info("looking for services", "service_namespace", namespace, "service_name", name)
 	service, err := c.ServiceLister.Services(namespace).Get(name)
 	if kerr.IsNotFound(err) {
 		return nil, kerr.NewNotFound(core.Resource("service"), namespace+"/"+name)
@@ -70,7 +70,7 @@ func (c *controller) serviceEndpoints(dnsResolvers map[string]*api.DNSResolver, 
 	}
 
 	if service.Spec.Type == core.ServiceTypeExternalName {
-		c.logger.Infof("Found ServiceType ExternalName for service %s, Checking DNS resolver options", service.Name)
+		c.logger.Info("Found ServiceType ExternalName, Checking DNS resolver options", "service", service.Name)
 		// https://kubernetes.io/docs/concepts/services-networking/service/#services-without-selectors
 		ep := hpi.Endpoint{
 			Name:         "external",
@@ -141,12 +141,12 @@ func (c *controller) getEndpoints(svc *core.Service, servicePort *core.ServicePo
 				if len(ss.Ports) == 1 {
 					targetPort = strconv.Itoa(int(epPort.Port))
 				} else {
-					c.logger.Debugf("Target port %s empty for service %s. skipping.", servicePort.String(), svc.Name)
+					c.logger.V(5).Info("Target port empty. skipping.", "port", servicePort.String(), "service", svc.Name)
 					continue
 				}
 			}
 
-			c.logger.Infof("Found target port %s for service %s", targetPort, svc.Name)
+			c.logger.Info("Found target port", "port", targetPort, "service", svc.Name)
 			for _, epAddress := range ss.Addresses {
 				if isForwardable(hostNames, epAddress.Hostname) {
 					ep := &hpi.Endpoint{
@@ -159,7 +159,7 @@ func (c *controller) getEndpoints(svc *core.Service, servicePort *core.ServicePo
 						// Use PodList via service selector
 						pod, ok := pods[epAddress.TargetRef.Name]
 						if !ok {
-							c.logger.Errorln("Error getting endpoint pod", err)
+							c.logger.Error(err, "Error getting endpoint pod")
 						} else {
 							if pod.Annotations != nil {
 								if val, ok := pod.Annotations[api.BackendWeight]; ok {
@@ -798,18 +798,18 @@ func (c *controller) generateConfig() error {
 		}
 	}
 
-	c.logger.Debugf("Rendering haproxy.cfg for Ingress %s/%s using data: %s", c.Ingress.Namespace, c.Ingress.Name, td)
+	c.logger.V(5).Info("Rendering haproxy.cfg", "data", td)
 	if cfg, err := template.RenderConfig(td); err != nil {
 		return err
 	} else {
 		c.HAProxyConfig = cfg
-		c.logger.Debugf("Generated haproxy.cfg for Ingress %s/%s", c.Ingress.Namespace, c.Ingress.Name)
+		c.logger.V(5).Info("Generated haproxy.cfg")
 	}
 	// ref: https://github.com/voyagermesh/voyager/pull/1038
 	// do not verify haproxy-config when configVolumes are used
 	if meta.PossiblyInCluster() && c.cfg.ValidateHAProxyConfig && !td.UsesTLSAuth() && len(c.Ingress.Spec.ConfigVolumes) == 0 {
 		if err := template.ValidateConfig(c.HAProxyConfig); err != nil {
-			c.logger.Warningf("haproxy.cfg is invalid for Ingress %s/%s: \n%s", c.Ingress.Namespace, c.Ingress.Name, err)
+			c.logger.Error(err, "haproxy.cfg is invalid")
 			return err
 		}
 	}

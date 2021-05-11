@@ -25,7 +25,7 @@ COMPRESS ?= no
 
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS          ?= "crd:trivialVersions=true,preserveUnknownFields=false,crdVersions={v1beta1,v1}"
-CODE_GENERATOR_IMAGE ?= appscode/gengo:release-1.18
+CODE_GENERATOR_IMAGE ?= appscode/gengo:release-1.21
 API_GROUPS           ?= voyager:v1beta1
 
 # Where to push the docker image.
@@ -266,22 +266,8 @@ label-crds: $(BUILD_DIRS)
 .PHONY: gen-crd-protos
 gen-crd-protos: $(addprefix gen-crd-protos-, $(subst :,_, $(API_GROUPS)))
 
-.PHONY: gen-bindata
-gen-bindata:
-	@docker run                                                 \
-	    -i                                                      \
-	    --rm                                                    \
-	    -u $$(id -u):$$(id -g)                                  \
-	    -v $$(pwd):/src                                         \
-	    -w /src/crds                                        \
-		-v /tmp:/.cache                                         \
-	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
-	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
-	    $(BUILD_IMAGE)                                          \
-	    go-bindata -ignore=\\.go -ignore=\\.DS_Store -mode=0644 -modtime=1573722179 -o bindata.go -pkg crds ./...
-
 .PHONY: manifests
-manifests: gen-crds label-crds gen-bindata
+manifests: gen-crds label-crds
 
 .PHONY: gen
 gen: clientset manifests openapi

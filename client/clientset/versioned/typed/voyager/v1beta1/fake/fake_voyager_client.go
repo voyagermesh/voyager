@@ -29,10 +29,6 @@ type FakeVoyagerV1beta1 struct {
 	*testing.Fake
 }
 
-func (c *FakeVoyagerV1beta1) Certificates(namespace string) v1beta1.CertificateInterface {
-	return &FakeCertificates{c, namespace}
-}
-
 func (c *FakeVoyagerV1beta1) Ingresses(namespace string) v1beta1.IngressInterface {
 	return &FakeIngresses{c, namespace}
 }

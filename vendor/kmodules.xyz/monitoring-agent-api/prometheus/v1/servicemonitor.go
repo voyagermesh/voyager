@@ -22,7 +22,6 @@ import (
 	kutil "kmodules.xyz/client-go"
 
 	jsonpatch "github.com/evanphx/json-patch"
-	"github.com/golang/glog"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/pkg/errors"
 	promapi "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -31,6 +30,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 )
 
 var json = jsoniter.ConfigFastest
@@ -38,7 +38,7 @@ var json = jsoniter.ConfigFastest
 func CreateOrPatchServiceMonitor(ctx context.Context, c prom.MonitoringV1Interface, meta metav1.ObjectMeta, transform func(monitor *promapi.ServiceMonitor) *promapi.ServiceMonitor, opts metav1.PatchOptions) (*promapi.ServiceMonitor, kutil.VerbType, error) {
 	cur, err := c.ServiceMonitors(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating ServiceMonitor %s/%s.", meta.Namespace, meta.Name)
+		klog.V(3).Infof("Creating ServiceMonitor %s/%s.", meta.Namespace, meta.Name)
 		out, err := c.ServiceMonitors(meta.Namespace).Create(ctx, transform(&promapi.ServiceMonitor{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       promapi.PrometheusesKind,
@@ -78,7 +78,7 @@ func PatchServiceMonitorObject(ctx context.Context, c prom.MonitoringV1Interface
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, kutil.VerbUnchanged, nil
 	}
-	glog.V(3).Infof("Patching ServiceMonitor %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
+	klog.V(3).Infof("Patching ServiceMonitor %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
 	out, err := c.ServiceMonitors(cur.Namespace).Patch(ctx, cur.Name, types.MergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
@@ -94,7 +94,7 @@ func TryUpdateMonitorObject(ctx context.Context, c prom.MonitoringV1Interface, m
 			result, e2 = c.ServiceMonitors(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update ServiceMonitor %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
+		klog.Errorf("Attempt %d failed to update ServiceMonitor %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
 		return false, nil
 	})
 

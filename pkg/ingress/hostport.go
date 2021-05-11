@@ -34,7 +34,6 @@ import (
 	"github.com/pkg/errors"
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"gomodules.xyz/pointer"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -43,6 +42,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 	core_listers "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/klog/v2"
+	"k8s.io/klog/v2/klogr"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
@@ -74,7 +75,7 @@ func NewHostPortController(
 	recorder record.EventRecorder) Controller {
 	c := &hostPortController{
 		controller: &controller{
-			logger:          log.New(ctx),
+			logger:          klogr.New().WithName("hostport").WithValues("namespace", ingress.Namespace, "name", ingress.Name),
 			KubeClient:      kubeClient,
 			WorkloadClient:  workloadClient,
 			CRDClient:       crdClient,
@@ -87,35 +88,35 @@ func NewHostPortController(
 			recorder:        recorder,
 		},
 	}
-	c.logger.Infoln("Initializing cloud manager for provider", cfg.CloudProvider)
+	c.logger.Info("Initializing cloud manager", "provider", cfg.CloudProvider)
 	if cfg.CloudProvider == api.ProviderAWS || cfg.CloudProvider == api.ProviderGCE || cfg.CloudProvider == api.ProviderAzure {
 		cloudInterface, err := cloudprovider.InitCloudProvider(cfg.CloudProvider, cfg.CloudConfigFile)
 		if err != nil {
-			c.logger.Errorln("Failed to initialize cloud provider:"+cfg.CloudProvider, err)
+			c.logger.Error(err, "Failed to initialize cloud provider", cfg.CloudProvider)
 		} else {
-			c.logger.Infoln("Initialized cloud provider: "+cfg.CloudProvider, cloudInterface)
+			c.logger.Info("Initialized cloud manager", "provider", cfg.CloudProvider)
 			c.CloudManager = cloudInterface
 		}
 	} else if cfg.CloudProvider == api.ProviderGKE {
-		cloudInterface, err := cloudprovider.InitCloudProvider("gce", cfg.CloudConfigFile)
+		cloudInterface, err := cloudprovider.InitCloudProvider(api.ProviderGCE, cfg.CloudConfigFile)
 		if err != nil {
-			c.logger.Errorln("Failed to initialize cloud provider:"+cfg.CloudProvider, err)
+			c.logger.Error(err, "Failed to initialize cloud provider", "provider", cfg.CloudProvider)
 		} else {
-			c.logger.Infoln("Initialized cloud provider: "+cfg.CloudProvider, cloudInterface)
+			c.logger.Info("Initialized cloud provider", "provider", cfg.CloudProvider)
 			c.CloudManager = cloudInterface
 		}
 	} else if cfg.CloudProvider == api.ProviderAzure {
 		cloudInterface, err := cloudprovider.InitCloudProvider(api.ProviderAzure, cfg.CloudConfigFile)
 		if err != nil {
-			c.logger.Errorln("Failed to initialize cloud provider:"+cfg.CloudProvider, err)
+			c.logger.Error(err, "Failed to initialize cloud provider", "provider", cfg.CloudProvider)
 		} else {
-			c.logger.Infoln("Initialized cloud provider: "+cfg.CloudProvider, cloudInterface)
+			c.logger.Info("Initialized cloud provider", "provider", cfg.CloudProvider)
 			c.CloudManager = cloudInterface
 		}
 	} else if cfg.CloudProvider == api.ProviderMinikube {
 		c.CloudManager = &fakecloudprovider.FakeCloud{}
 	} else {
-		c.logger.Infoln("No cloud manager found for provider", cfg.CloudProvider)
+		c.logger.Info("No cloud manager found", "provider", cfg.CloudProvider)
 	}
 	return c
 }
@@ -232,7 +233,7 @@ func (c *hostPortController) Reconcile() error {
 		}
 	} else {
 		if err := c.ensureStatsServiceDeleted(); err != nil { // Error ignored intentionally
-			log.Warningf("failed to delete stats Service %s, reason: %s", c.Ingress.StatsServiceName(), err)
+			klog.Warningf("failed to delete stats Service %s, reason: %s", c.Ingress.StatsServiceName(), err)
 		} else {
 			c.recorder.Eventf(
 				c.Ingress.ObjectReference(),
@@ -268,7 +269,7 @@ func (c *hostPortController) Reconcile() error {
 		}
 	} else { // monitoring disabled, delete old agent, ignore error here
 		if err := c.ensureMonitoringAgentDeleted(nil); err != nil {
-			log.Warningf("failed to delete old monitoring agent, reason: %s", err)
+			klog.Warningf("failed to delete old monitoring agent, reason: %s", err)
 		}
 	}
 
@@ -308,16 +309,16 @@ func (c *hostPortController) EnsureFirewall(svc *core.Service) error {
 // make sure all delete calls require only ingress name and namespace
 func (c *hostPortController) Delete() {
 	if err := c.deletePods(); err != nil {
-		c.logger.Errorln(err)
+		c.logger.Error(err, "failed to delete pods")
 	}
 	if err := c.deleteConfigMap(); err != nil {
-		c.logger.Errorln(err)
+		c.logger.Error(err, "failed to delete configmap")
 	}
 	if err := c.ensureRBACDeleted(); err != nil {
-		c.logger.Errorln(err)
+		c.logger.Error(err, "failed to delete rbac")
 	}
 	if err := c.ensureServiceDeleted(); err != nil {
-		c.logger.Errorln(err)
+		c.logger.Error(err, "failed to delete service")
 	}
 	if c.CloudManager != nil { // TODO @ Dipta: fix this
 		if fw, ok := c.CloudManager.Firewall(); ok {
@@ -328,16 +329,16 @@ func (c *hostPortController) Delete() {
 				},
 			})
 			if err != nil {
-				c.logger.Errorln(err)
+				c.logger.Error(err, "failed to delete firewall")
 			}
 		}
 	}
 	// delete agent before deleting stat service
 	if err := c.ensureMonitoringAgentDeleted(nil); err != nil {
-		c.logger.Errorln(err)
+		c.logger.Error(err, "failed to delete monitoring agent")
 	}
 	if err := c.ensureStatsServiceDeleted(); err != nil {
-		c.logger.Errorln(err)
+		c.logger.Error(err, "failed to delete stats service")
 	}
 }
 

@@ -29,8 +29,5 @@ var Funcs = func(codecs runtimeserializer.CodecFactory) []interface{} {
 		func(s *v1beta1.Ingress, c fuzz.Continue) {
 			c.FuzzNoCustom(s) // fuzz self without calling this function again
 		},
-		func(s *v1beta1.Certificate, c fuzz.Continue) {
-			c.FuzzNoCustom(s) // fuzz self without calling this function again
-		},
 	}
 }

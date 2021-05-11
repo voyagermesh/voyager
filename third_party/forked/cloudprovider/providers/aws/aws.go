@@ -35,12 +35,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	gcfg "gopkg.in/gcfg.v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog/v2"
 )
 
 // ProviderName is the name of this cloud provider.
@@ -460,7 +460,7 @@ func readAWSCloudConfig(config io.Reader, metadata EC2Metadata) (*CloudConfig, e
 
 	if cfg.Global.Zone == "" {
 		if metadata != nil {
-			glog.Info("Zone not specified in configuration file; querying AWS metadata service")
+			klog.Info("Zone not specified in configuration file; querying AWS metadata service")
 			cfg.Global.Zone, err = getAvailabilityZone(metadata)
 			if err != nil {
 				return nil, err
@@ -493,7 +493,7 @@ func azToRegion(az string) (string, error) {
 func newAWSCloud(config io.Reader, awsServices Services) (*Cloud, error) {
 	// We have some state in the Cloud object - in particular the attaching map
 	// Log so that if we are building multiple Cloud objects, it is obvious!
-	glog.Infof("Building AWS cloudprovider")
+	klog.Infof("Building AWS cloudprovider")
 
 	// Register handler for ECR credentials
 	// Register regions, in particular for ECR credentials
@@ -526,7 +526,7 @@ func newAWSCloud(config io.Reader, awsServices Services) (*Cloud, error) {
 			return nil, errors.Errorf("not a valid AWS zone (unknown region): %s", zone)
 		}
 	} else {
-		glog.Warningf("Strict AWS zone checking is disabled.  Proceeding with zone: %s", zone)
+		klog.Warningf("Strict AWS zone checking is disabled.  Proceeding with zone: %s", zone)
 	}
 
 	ec2, err := awsServices.Compute(regionName)
@@ -572,14 +572,14 @@ func newAWSCloud(config io.Reader, awsServices Services) (*Cloud, error) {
 	}
 
 	if filterTags[TagNameKubernetesCluster] == "" {
-		glog.Errorf("Tag %q not found; Kubernetes may behave unexpectedly.", TagNameKubernetesCluster)
+		klog.Errorf("Tag %q not found; Kubernetes may behave unexpectedly.", TagNameKubernetesCluster)
 	}
 
 	awsCloud.filterTags = filterTags
 	if len(filterTags) > 0 {
-		glog.Infof("AWS cloud filtering on tags: %v", filterTags)
+		klog.Infof("AWS cloud filtering on tags: %v", filterTags)
 	} else {
-		glog.Infof("AWS cloud - no tag filtering")
+		klog.Infof("AWS cloud - no tag filtering")
 	}
 
 	return awsCloud, nil
@@ -707,7 +707,7 @@ func (c *Cloud) findSecurityGroup(securityGroupID string) (*ec2.SecurityGroup, e
 
 	groups, err := c.ec2.DescribeSecurityGroups(describeSecurityGroupsRequest)
 	if err != nil {
-		glog.Warningf("Error retrieving security group: %q", err)
+		klog.Warningf("Error retrieving security group: %q", err)
 		return nil, err
 	}
 
@@ -754,7 +754,7 @@ func ipPermissionExists(newPermission, existing *ec2.IpPermission, compareGroupU
 	}
 	// Check only if newPermission is a subset of existing. Usually it has zero or one elements.
 	// Not doing actual CIDR math yet; not clear it's needed, either.
-	glog.V(4).Infof("Comparing %v to %v", newPermission, existing)
+	klog.V(4).Infof("Comparing %v to %v", newPermission, existing)
 	if len(newPermission.IpRanges) > len(existing.IpRanges) {
 		return false
 	}
@@ -784,7 +784,7 @@ func ipPermissionExists(newPermission, existing *ec2.IpPermission, compareGroupU
 }
 
 func isEqualUserGroupPair(l, r *ec2.UserIdGroupPair, compareGroupUserIDs bool) bool {
-	glog.V(2).Infof("Comparing %v to %v", *l.GroupId, *r.GroupId)
+	klog.V(2).Infof("Comparing %v to %v", *l.GroupId, *r.GroupId)
 	if isEqualStringPointer(l.GroupId, r.GroupId) {
 		if compareGroupUserIDs {
 			if isEqualStringPointer(l.UserId, r.UserId) {
@@ -804,7 +804,7 @@ func isEqualUserGroupPair(l, r *ec2.UserIdGroupPair, compareGroupUserIDs bool) b
 func (c *Cloud) setSecurityGroupIngress(securityGroupID string, permissions IPPermissionSet) (bool, error) {
 	group, err := c.findSecurityGroup(securityGroupID)
 	if err != nil {
-		glog.Warning("Error retrieving security group", err)
+		klog.Warning("Error retrieving security group", err)
 		return false, err
 	}
 
@@ -812,7 +812,7 @@ func (c *Cloud) setSecurityGroupIngress(securityGroupID string, permissions IPPe
 		return false, errors.Errorf("security group not found: %s", securityGroupID)
 	}
 
-	glog.V(2).Infof("Existing security group ingress: %s %v", securityGroupID, group.IpPermissions)
+	klog.V(2).Infof("Existing security group ingress: %s %v", securityGroupID, group.IpPermissions)
 
 	actual := NewIPPermissionSet(group.IpPermissions...)
 
@@ -843,7 +843,7 @@ func (c *Cloud) setSecurityGroupIngress(securityGroupID string, permissions IPPe
 	// don't want to accidentally open more than intended while we're
 	// applying changes.
 	if add.Len() != 0 {
-		glog.V(2).Infof("Adding security group ingress: %s %v", securityGroupID, add.List())
+		klog.V(2).Infof("Adding security group ingress: %s %v", securityGroupID, add.List())
 
 		request := &ec2.AuthorizeSecurityGroupIngressInput{}
 		request.GroupId = &securityGroupID
@@ -854,7 +854,7 @@ func (c *Cloud) setSecurityGroupIngress(securityGroupID string, permissions IPPe
 		}
 	}
 	if remove.Len() != 0 {
-		glog.V(2).Infof("Remove security group ingress: %s %v", securityGroupID, remove.List())
+		klog.V(2).Infof("Remove security group ingress: %s %v", securityGroupID, remove.List())
 
 		request := &ec2.RevokeSecurityGroupIngressInput{}
 		request.GroupId = &securityGroupID
@@ -874,7 +874,7 @@ func (c *Cloud) setSecurityGroupIngress(securityGroupID string, permissions IPPe
 func (c *Cloud) addSecurityGroupIngress(securityGroupID string, addPermissions []*ec2.IpPermission) (bool, error) {
 	group, err := c.findSecurityGroup(securityGroupID)
 	if err != nil {
-		glog.Warningf("Error retrieving security group: %v", err)
+		klog.Warningf("Error retrieving security group: %v", err)
 		return false, err
 	}
 
@@ -882,7 +882,7 @@ func (c *Cloud) addSecurityGroupIngress(securityGroupID string, addPermissions [
 		return false, errors.Errorf("security group not found: %s", securityGroupID)
 	}
 
-	glog.V(2).Infof("Existing security group ingress: %s %v", securityGroupID, group.IpPermissions)
+	klog.V(2).Infof("Existing security group ingress: %s %v", securityGroupID, group.IpPermissions)
 
 	changes := []*ec2.IpPermission{}
 	for _, addPermission := range addPermissions {
@@ -910,14 +910,14 @@ func (c *Cloud) addSecurityGroupIngress(securityGroupID string, addPermissions [
 		return false, nil
 	}
 
-	glog.V(2).Infof("Adding security group ingress: %s %v", securityGroupID, changes)
+	klog.V(2).Infof("Adding security group ingress: %s %v", securityGroupID, changes)
 
 	request := &ec2.AuthorizeSecurityGroupIngressInput{}
 	request.GroupId = &securityGroupID
 	request.IpPermissions = changes
 	_, err = c.ec2.AuthorizeSecurityGroupIngress(request)
 	if err != nil {
-		glog.Warning("Error authorizing security group ingress", err)
+		klog.Warning("Error authorizing security group ingress", err)
 		return false, errors.Errorf("error authorizing security group ingress: %v", err)
 	}
 
@@ -930,12 +930,12 @@ func (c *Cloud) addSecurityGroupIngress(securityGroupID string, addPermissions [
 func (c *Cloud) removeSecurityGroupIngress(securityGroupID string, removePermissions []*ec2.IpPermission) (bool, error) {
 	group, err := c.findSecurityGroup(securityGroupID)
 	if err != nil {
-		glog.Warningf("Error retrieving security group: %v", err)
+		klog.Warningf("Error retrieving security group: %v", err)
 		return false, err
 	}
 
 	if group == nil {
-		glog.Warning("Security group not found: ", securityGroupID)
+		klog.Warning("Security group not found: ", securityGroupID)
 		return false, nil
 	}
 
@@ -965,14 +965,14 @@ func (c *Cloud) removeSecurityGroupIngress(securityGroupID string, removePermiss
 		return false, nil
 	}
 
-	glog.V(2).Infof("Removing security group ingress: %s %v", securityGroupID, changes)
+	klog.V(2).Infof("Removing security group ingress: %s %v", securityGroupID, changes)
 
 	request := &ec2.RevokeSecurityGroupIngressInput{}
 	request.GroupId = &securityGroupID
 	request.IpPermissions = changes
 	_, err = c.ec2.RevokeSecurityGroupIngress(request)
 	if err != nil {
-		glog.Warningf("Error revoking security group ingress: %v", err)
+		klog.Warningf("Error revoking security group ingress: %v", err)
 		return false, err
 	}
 
@@ -998,7 +998,7 @@ func (c *Cloud) ensureVoyagerTags(resourceID string, tags []*ec2.Tag) error {
 			continue
 		}
 		if actual == "" {
-			glog.Warningf("Resource %q was missing expected cluster tag %q.  Will add (with value %q)", resourceID, k, expected)
+			klog.Warningf("Resource %q was missing expected cluster tag %q.  Will add (with value %q)", resourceID, k, expected)
 			addTags[k] = expected
 		} else {
 			return errors.Errorf("resource %q has tag belonging to another cluster: %q=%q (expected %q)", resourceID, k, actual, expected)
@@ -1043,7 +1043,7 @@ func (c *Cloud) ensureSecurityGroup(name string, description string) (string, er
 
 		if len(securityGroups) >= 1 {
 			if len(securityGroups) > 1 {
-				glog.Warningf("Found multiple security groups with name: %q", name)
+				klog.Warningf("Found multiple security groups with name: %q", name)
 			}
 			err := c.ensureVoyagerTags(aws.StringValue(securityGroups[0].GroupId), securityGroups[0].Tags)
 			if err != nil {
@@ -1064,12 +1064,12 @@ func (c *Cloud) ensureSecurityGroup(name string, description string) (string, er
 			switch err := err.(type) {
 			case awserr.Error:
 				if err.Code() == "InvalidGroup.Duplicate" && attempt < MaxReadThenCreateRetries {
-					glog.V(2).Infof("Got InvalidGroup.Duplicate while creating security group (race?); will retry")
+					klog.V(2).Infof("Got InvalidGroup.Duplicate while creating security group (race?); will retry")
 					ignore = true
 				}
 			}
 			if !ignore {
-				glog.Error("Error creating security group: ", err)
+				klog.Error("Error creating security group: ", err)
 				return "", err
 			}
 			time.Sleep(1 * time.Second)
@@ -1128,10 +1128,10 @@ func (c *Cloud) createTags(resourceID string, tags map[string]string) error {
 		// SecurityGroup: InvalidGroup.NotFound
 		attempt++
 		if attempt > maxAttempts {
-			glog.Warningf("Failed to create tags (too many attempts): %v", err)
+			klog.Warningf("Failed to create tags (too many attempts): %v", err)
 			return err
 		}
-		glog.V(2).Infof("Failed to create tags; will retry.  Error was %v", err)
+		klog.V(2).Infof("Failed to create tags; will retry.  Error was %v", err)
 		time.Sleep(1 * time.Second)
 	}
 }
@@ -1152,7 +1152,7 @@ func (c *Cloud) GetSecurityGroupName(service *apiv1.Service) string {
 
 // EnsureFirewall implements Firewall.EnsureFirewall
 func (c *Cloud) EnsureFirewall(ctx context.Context, apiService *apiv1.Service, hostnames []string) error {
-	glog.V(2).Infof("EnsureFirewall(%v, %v, %v, %v, %v)",
+	klog.V(2).Infof("EnsureFirewall(%v, %v, %v, %v, %v)",
 		apiService.Namespace, apiService.Name, c.region, apiService.Spec.Ports, hostnames)
 
 	if apiService.Spec.SessionAffinity != apiv1.ServiceAffinityNone {
@@ -1185,7 +1185,7 @@ func (c *Cloud) EnsureFirewall(ctx context.Context, apiService *apiv1.Service, h
 		sgDescription := fmt.Sprintf("Security group for Voyager HostPort Ingress %v", serviceName)
 		securityGroupID, err = c.ensureSecurityGroup(sgName, sgDescription)
 		if err != nil {
-			glog.Error("Error creating Voyager security group: ", err)
+			klog.Error("Error creating Voyager security group: ", err)
 			return err
 		}
 		ec2SourceRanges := []*ec2.IpRange{}
@@ -1198,7 +1198,7 @@ func (c *Cloud) EnsureFirewall(ctx context.Context, apiService *apiv1.Service, h
 			var portInt64 int64
 			if apiService.Spec.Type == apiv1.ServiceTypeNodePort {
 				if port.NodePort == 0 {
-					glog.Errorf("Ignoring port without NodePort defined: %v", port)
+					klog.Errorf("Ignoring port without NodePort defined: %v", port)
 					continue
 				}
 				portInt64 = int64(port.NodePort)
@@ -1223,7 +1223,7 @@ func (c *Cloud) EnsureFirewall(ctx context.Context, apiService *apiv1.Service, h
 
 	err = c.updateInstanceSecurityGroups(securityGroupID, instances)
 	if err != nil {
-		glog.Warning("Error opening firewall of the instances: ", err)
+		klog.Warning("Error opening firewall of the instances: ", err)
 		return err
 	}
 
@@ -1249,12 +1249,12 @@ func (c *Cloud) updateInstanceSecurityGroups(ingressSecurityGroupId string, inst
 
 		exposedInstances, err := c.ec2.DescribeInstances(request)
 		if err != nil {
-			glog.Warningf("error querying instances with security group %v: %v", ingressSecurityGroupId, err)
+			klog.Warningf("error querying instances with security group %v: %v", ingressSecurityGroupId, err)
 			return err
 		}
 		for _, instance := range exposedInstances {
 			if instance.PrivateDnsName == nil || !hostSet.Has(*instance.PrivateDnsName) {
-				glog.Infof("Removing voyager security group %s from instance %s", ingressSecurityGroupId, *instance.PrivateDnsName)
+				klog.Infof("Removing voyager security group %s from instance %s", ingressSecurityGroupId, *instance.PrivateDnsName)
 				// Remove Ingress SG from remaining instances
 				attrRequest := &ec2.ModifyInstanceAttributeInput{}
 				attrRequest.InstanceId = instance.InstanceId
@@ -1266,7 +1266,7 @@ func (c *Cloud) updateInstanceSecurityGroups(ingressSecurityGroupId string, inst
 				}
 				_, err := c.ec2.ModifyInstanceAttribute(attrRequest)
 				if err != nil {
-					glog.Warning("Error adding security group to the instance: ", instance.InstanceId, err)
+					klog.Warning("Error adding security group to the instance: ", instance.InstanceId, err)
 					return err
 				}
 
@@ -1277,7 +1277,7 @@ func (c *Cloud) updateInstanceSecurityGroups(ingressSecurityGroupId string, inst
 	{
 		// Add to network interface
 		for _, instance := range instances {
-			glog.Infof("Adding voyager security group %s to instance %s", ingressSecurityGroupId, *instance.PrivateDnsName)
+			klog.Infof("Adding voyager security group %s to instance %s", ingressSecurityGroupId, *instance.PrivateDnsName)
 			// Get the actual list of groups that allow ingress from the load-balancer
 			attrRequest := &ec2.ModifyInstanceAttributeInput{}
 			attrRequest.InstanceId = instance.InstanceId
@@ -1287,7 +1287,7 @@ func (c *Cloud) updateInstanceSecurityGroups(ingressSecurityGroupId string, inst
 			}
 			_, err := c.ec2.ModifyInstanceAttribute(attrRequest)
 			if err != nil {
-				glog.Warning("Error adding security group to the instance: ", instance.InstanceId, err)
+				klog.Warning("Error adding security group to the instance: ", instance.InstanceId, err)
 				return err
 			}
 		}
@@ -1317,14 +1317,14 @@ func (c *Cloud) EnsureFirewallDeleted(ctx context.Context, service *apiv1.Servic
 		request := &ec2.DescribeSecurityGroupsInput{
 			Filters: filters,
 		}
-		glog.V(3).Infof("[%s/%s]: Looking up security group %v to delete", service.Namespace, service.Name, request)
+		klog.V(3).Infof("[%s/%s]: Looking up security group %v to delete", service.Namespace, service.Name, request)
 		securityGroups, err := c.ec2.DescribeSecurityGroups(request)
-		glog.V(3).Infof("[%s/%s]: Found security group: %v", service.Namespace, service.Name, securityGroups)
+		klog.V(3).Infof("[%s/%s]: Found security group: %v", service.Namespace, service.Name, securityGroups)
 		if err != nil {
 			ignore := false
 			if awsError, ok := err.(awserr.Error); ok {
 				if awsError.Code() == "DependencyViolation" {
-					glog.V(2).Infof("Ignoring DependencyViolation while describing ingress security group (%s), assuming because Voyager security group is in process of deleting", securityGroupID)
+					klog.V(2).Infof("Ignoring DependencyViolation while describing ingress security group (%s), assuming because Voyager security group is in process of deleting", securityGroupID)
 					ignore = true
 				}
 			}
@@ -1345,7 +1345,7 @@ func (c *Cloud) EnsureFirewallDeleted(ctx context.Context, service *apiv1.Servic
 		// De-authorize the ingress security group from the instances security group
 		err := c.updateInstanceSecurityGroups(securityGroupID, nil)
 		if err != nil {
-			glog.Error("Error deregistering voyager security group from instance security groups: ", err)
+			klog.Error("Error deregistering voyager security group from instance security groups: ", err)
 			return err
 		}
 	}
@@ -1359,7 +1359,7 @@ func (c *Cloud) EnsureFirewallDeleted(ctx context.Context, service *apiv1.Servic
 			ignore := false
 			if awsError, ok := err.(awserr.Error); ok {
 				if awsError.Code() == "DependencyViolation" {
-					glog.V(2).Infof("[%s/%s] Attempt %d: Ignoring DependencyViolation while deleting ingress security group (%s), assuming because SG is in process of deleting", service.Namespace, service.Name, attempt, securityGroupID)
+					klog.V(2).Infof("[%s/%s] Attempt %d: Ignoring DependencyViolation while deleting ingress security group (%s), assuming because SG is in process of deleting", service.Namespace, service.Name, attempt, securityGroupID)
 					ignore = true
 				}
 			}
@@ -1432,7 +1432,7 @@ func (c *Cloud) getInstancesByNodeNamesCached(nodeNames sets.String) ([]*ec2.Ins
 		if len(c.lastInstancesByNodeNames) > 0 {
 			// We assume that if the list of nodes is the same, the underlying
 			// instances have not changed. Later we might guard this with TTLs.
-			glog.V(2).Infof("Returning cached instances for %v", nodeNames)
+			klog.V(2).Infof("Returning cached instances for %v", nodeNames)
 			return c.lastInstancesByNodeNames, nil
 		}
 	}
@@ -1455,16 +1455,16 @@ func (c *Cloud) getInstancesByNodeNamesCached(nodeNames sets.String) ([]*ec2.Ins
 
 	instances, err := c.ec2.DescribeInstances(request)
 	if err != nil {
-		glog.V(2).Infof("Failed to describe instances %v", nodeNames)
+		klog.V(2).Infof("Failed to describe instances %v", nodeNames)
 		return nil, err
 	}
 
 	if len(instances) == 0 {
-		glog.V(3).Infof("Failed to find any instances %v", nodeNames)
+		klog.V(3).Infof("Failed to find any instances %v", nodeNames)
 		return nil, nil
 	}
 
-	glog.V(2).Infof("Caching instances for %v", nodeNames)
+	klog.V(2).Infof("Caching instances for %v", nodeNames)
 	c.lastNodeNames = nodeNames
 	c.lastInstancesByNodeNames = instances
 	return instances, nil

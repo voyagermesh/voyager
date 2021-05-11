@@ -17,9 +17,8 @@ limitations under the License.
 package operator
 
 import (
-	"github.com/golang/glog"
-	"gomodules.xyz/x/log"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/tools/queue"
 	wpi "kmodules.xyz/webhook-runtime/apis/workload/v1"
 )
@@ -34,11 +33,11 @@ func (op *Operator) initDeploymentWatcher() {
 func (op *Operator) reconcileDeployment(key string) error {
 	_, exists, err := op.dpInformer.GetIndexer().GetByKey(key)
 	if err != nil {
-		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		klog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
 	}
 	if !exists {
-		glog.Warningf("Deployment %s does not exist anymore\n", key)
+		klog.Warningf("Deployment %s does not exist anymore\n", key)
 		if ns, name, err := cache.SplitMetaNamespaceKey(key); err != nil {
 			return err
 		} else {
@@ -65,7 +64,7 @@ func (op *Operator) restoreDeployment(name, ns string) error {
 				return err
 			} else {
 				op.getIngressQueue(ing.APISchema()).Add(key)
-				log.Infof("Add/Delete/Update of haproxy deployment %s/%s, Ingress %s re-queued for update", ns, name, key)
+				klog.Infof("Add/Delete/Update of haproxy deployment %s/%s, Ingress %s re-queued for update", ns, name, key)
 				break
 			}
 		}

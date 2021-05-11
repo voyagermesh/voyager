@@ -31,7 +31,6 @@ import (
 	"github.com/pkg/errors"
 	"gomodules.xyz/cert"
 	"gomodules.xyz/pointer"
-	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -39,6 +38,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog/v2"
 )
 
 func (ni *ingressInvocation) GetSkeleton() *api_v1beta1.Ingress {
@@ -351,7 +351,7 @@ func (ni *ingressInvocation) waitForTestServer() error {
 				}
 			}
 		}
-		log.Infoln("Waiting for TestServer to be ready")
+		klog.Infoln("Waiting for TestServer to be ready")
 		time.Sleep(time.Second * 5)
 	}
 	return err
@@ -361,7 +361,7 @@ func (ni *ingressInvocation) NodeSelector() map[string]string {
 	if ni.Config.CloudProvider == api.ProviderMinikube {
 		return map[string]string{"kubernetes.io/hostname": "minikube"}
 	}
-	log.Warningln("No node selector provided for daemon ingress")
+	klog.Warningln("No node selector provided for daemon ingress")
 	return map[string]string{}
 }
 

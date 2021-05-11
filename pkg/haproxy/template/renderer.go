@@ -26,7 +26,7 @@ import (
 	hpi "voyagermesh.dev/voyager/pkg/haproxy/api"
 
 	"github.com/pkg/errors"
-	"gomodules.xyz/x/log"
+	"k8s.io/klog/v2"
 )
 
 func RenderConfig(data hpi.TemplateData) (string, error) {
@@ -38,7 +38,7 @@ func RenderConfig(data hpi.TemplateData) (string, error) {
 	var buf bytes.Buffer
 	err := haproxyTemplate.ExecuteTemplate(&buf, "haproxy.cfg", data)
 	if err != nil {
-		log.Error(err)
+		klog.Error(err)
 		return "", err
 	}
 	lines := strings.Split(buf.String(), "\n")

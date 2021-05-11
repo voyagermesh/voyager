@@ -81,8 +81,9 @@ func schema_kmodulesxyz_monitoring_agent_api_api_v1_PrometheusExporterSpec(ref c
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
-										Type:   []string{"string"},
-										Format: "",
+										Default: "",
+										Type:    []string{"string"},
+										Format:  "",
 									},
 								},
 							},
@@ -101,7 +102,8 @@ func schema_kmodulesxyz_monitoring_agent_api_api_v1_PrometheusExporterSpec(ref c
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
-										Ref: ref("k8s.io/api/core/v1.EnvVar"),
+										Default: map[string]interface{}{},
+										Ref:     ref("k8s.io/api/core/v1.EnvVar"),
 									},
 								},
 							},
@@ -110,6 +112,7 @@ func schema_kmodulesxyz_monitoring_agent_api_api_v1_PrometheusExporterSpec(ref c
 					"resources": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Compute Resources required by exporter container. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/",
+							Default:     map[string]interface{}{},
 							Ref:         ref("k8s.io/api/core/v1.ResourceRequirements"),
 						},
 					},
@@ -135,7 +138,8 @@ func schema_kmodulesxyz_monitoring_agent_api_api_v1_PrometheusSpec(ref common.Re
 				Properties: map[string]spec.Schema{
 					"exporter": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("kmodules.xyz/monitoring-agent-api/api/v1.PrometheusExporterSpec"),
+							Default: map[string]interface{}{},
+							Ref:     ref("kmodules.xyz/monitoring-agent-api/api/v1.PrometheusExporterSpec"),
 						},
 					},
 					"serviceMonitor": {
@@ -165,8 +169,9 @@ func schema_kmodulesxyz_monitoring_agent_api_api_v1_ServiceMonitorSpec(ref commo
 								Allows: true,
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
-										Type:   []string{"string"},
-										Format: "",
+										Default: "",
+										Type:    []string{"string"},
+										Format:  "",
 									},
 								},
 							},

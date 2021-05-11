@@ -29,11 +29,11 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/klog/v2"
 )
 
 var _ = Describe("IngressOperations", func() {
@@ -944,9 +944,9 @@ var _ = Describe("IngressOperations", func() {
 			)
 			Expect(err).To(HaveOccurred())
 
-			log.Warningln("Waiting 2 minute for timer to be reset")
+			klog.Warningln("Waiting 2 minute for timer to be reset")
 			time.Sleep(time.Minute * 2)
-			log.Warningln("Request should response")
+			klog.Warningln("Request should response")
 			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET",
 				"/testpath/ok",
 				func(r *client.Response) bool {
@@ -1001,9 +1001,9 @@ var _ = Describe("IngressOperations", func() {
 			Expect(<-errChan).NotTo(HaveOccurred())
 			Expect(<-errChan).NotTo(HaveOccurred())
 
-			log.Warningln("Waiting 2 minute for timer to be reset")
+			klog.Warningln("Waiting 2 minute for timer to be reset")
 			time.Sleep(time.Minute * 1)
-			log.Warningln("Request should response")
+			klog.Warningln("Request should response")
 			err = f.Ingress.DoHTTP(framework.MaxRetry, "", ing, eps, "GET",
 				"/testpath/ok",
 				func(r *client.Response) bool {

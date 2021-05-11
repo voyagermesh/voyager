@@ -23,11 +23,11 @@ import (
 	hpc "voyagermesh.dev/voyager/pkg/haproxy/controller"
 
 	"github.com/spf13/cobra"
-	"gomodules.xyz/x/log"
 	v "gomodules.xyz/x/version"
 	core "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/cli"
 )
@@ -66,7 +66,7 @@ func NewCmdHAProxyController() *cobra.Command {
 			// creates the connection
 			config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
 			if err != nil {
-				log.Fatal(err)
+				klog.Fatal(err)
 			}
 			config.Burst = opt.Burst
 			config.QPS = opt.QPS
@@ -77,7 +77,7 @@ func NewCmdHAProxyController() *cobra.Command {
 
 			ctrl := hpc.New(k8sClient, voyagerClient, opt)
 			if err := ctrl.Setup(); err != nil {
-				log.Fatalln(err)
+				klog.Fatalln(err)
 			}
 
 			// Now let's start the controller

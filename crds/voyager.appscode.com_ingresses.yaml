@@ -318,10 +318,68 @@ spec:
                                       The requirements are ANDed.
                                     type: object
                                 type: object
+                              namespaceSelector:
+                                description: A label query over the set of namespaces
+                                  that the term applies to. The term is applied to
+                                  the union of the namespaces selected by this field
+                                  and the ones listed in the namespaces field. null
+                                  selector and null or empty namespaces list means
+                                  "this pod's namespace". An empty selector ({}) matches
+                                  all namespaces. This field is alpha-level and is
+                                  only honored when PodAffinityNamespaceSelector feature
+                                  is enabled.
+                                properties:
+                                  matchExpressions:
+                                    description: matchExpressions is a list of label
+                                      selector requirements. The requirements are
+                                      ANDed.
+                                    items:
+                                      description: A label selector requirement is
+                                        a selector that contains values, a key, and
+                                        an operator that relates the key and values.
+                                      properties:
+                                        key:
+                                          description: key is the label key that the
+                                            selector applies to.
+                                          type: string
+                                        operator:
+                                          description: operator represents a key's
+                                            relationship to a set of values. Valid
+                                            operators are In, NotIn, Exists and DoesNotExist.
+                                          type: string
+                                        values:
+                                          description: values is an array of string
+                                            values. If the operator is In or NotIn,
+                                            the values array must be non-empty. If
+                                            the operator is Exists or DoesNotExist,
+                                            the values array must be empty. This array
+                                            is replaced during a strategic merge patch.
+                                          items:
+                                            type: string
+                                          type: array
+                                      required:
+                                      - key
+                                      - operator
+                                      type: object
+                                    type: array
+                                  matchLabels:
+                                    additionalProperties:
+                                      type: string
+                                    description: matchLabels is a map of {key,value}
+                                      pairs. A single {key,value} in the matchLabels
+                                      map is equivalent to an element of matchExpressions,
+                                      whose key field is "key", the operator is "In",
+                                      and the values array contains only "value".
+                                      The requirements are ANDed.
+                                    type: object
+                                type: object
                               namespaces:
-                                description: namespaces specifies which namespaces
-                                  the labelSelector applies to (matches against);
-                                  null or empty list means "this pod's namespace"
+                                description: namespaces specifies a static list of
+                                  namespace names that the term applies to. The term
+                                  is applied to the union of the namespaces listed
+                                  in this field and the ones selected by namespaceSelector.
+                                  null or empty namespaces list and null namespaceSelector
+                                  means "this pod's namespace"
                                 items:
                                   type: string
                                 type: array
@@ -412,10 +470,65 @@ spec:
                                   contains only "value". The requirements are ANDed.
                                 type: object
                             type: object
+                          namespaceSelector:
+                            description: A label query over the set of namespaces
+                              that the term applies to. The term is applied to the
+                              union of the namespaces selected by this field and the
+                              ones listed in the namespaces field. null selector and
+                              null or empty namespaces list means "this pod's namespace".
+                              An empty selector ({}) matches all namespaces. This
+                              field is alpha-level and is only honored when PodAffinityNamespaceSelector
+                              feature is enabled.
+                            properties:
+                              matchExpressions:
+                                description: matchExpressions is a list of label selector
+                                  requirements. The requirements are ANDed.
+                                items:
+                                  description: A label selector requirement is a selector
+                                    that contains values, a key, and an operator that
+                                    relates the key and values.
+                                  properties:
+                                    key:
+                                      description: key is the label key that the selector
+                                        applies to.
+                                      type: string
+                                    operator:
+                                      description: operator represents a key's relationship
+                                        to a set of values. Valid operators are In,
+                                        NotIn, Exists and DoesNotExist.
+                                      type: string
+                                    values:
+                                      description: values is an array of string values.
+                                        If the operator is In or NotIn, the values
+                                        array must be non-empty. If the operator is
+                                        Exists or DoesNotExist, the values array must
+                                        be empty. This array is replaced during a
+                                        strategic merge patch.
+                                      items:
+                                        type: string
+                                      type: array
+                                  required:
+                                  - key
+                                  - operator
+                                  type: object
+                                type: array
+                              matchLabels:
+                                additionalProperties:
+                                  type: string
+                                description: matchLabels is a map of {key,value} pairs.
+                                  A single {key,value} in the matchLabels map is equivalent
+                                  to an element of matchExpressions, whose key field
+                                  is "key", the operator is "In", and the values array
+                                  contains only "value". The requirements are ANDed.
+                                type: object
+                            type: object
                           namespaces:
-                            description: namespaces specifies which namespaces the
-                              labelSelector applies to (matches against); null or
-                              empty list means "this pod's namespace"
+                            description: namespaces specifies a static list of namespace
+                              names that the term applies to. The term is applied
+                              to the union of the namespaces listed in this field
+                              and the ones selected by namespaceSelector. null or
+                              empty namespaces list and null namespaceSelector means
+                              "this pod's namespace"
                             items:
                               type: string
                             type: array
@@ -506,10 +619,68 @@ spec:
                                       The requirements are ANDed.
                                     type: object
                                 type: object
+                              namespaceSelector:
+                                description: A label query over the set of namespaces
+                                  that the term applies to. The term is applied to
+                                  the union of the namespaces selected by this field
+                                  and the ones listed in the namespaces field. null
+                                  selector and null or empty namespaces list means
+                                  "this pod's namespace". An empty selector ({}) matches
+                                  all namespaces. This field is alpha-level and is
+                                  only honored when PodAffinityNamespaceSelector feature
+                                  is enabled.
+                                properties:
+                                  matchExpressions:
+                                    description: matchExpressions is a list of label
+                                      selector requirements. The requirements are
+                                      ANDed.
+                                    items:
+                                      description: A label selector requirement is
+                                        a selector that contains values, a key, and
+                                        an operator that relates the key and values.
+                                      properties:
+                                        key:
+                                          description: key is the label key that the
+                                            selector applies to.
+                                          type: string
+                                        operator:
+                                          description: operator represents a key's
+                                            relationship to a set of values. Valid
+                                            operators are In, NotIn, Exists and DoesNotExist.
+                                          type: string
+                                        values:
+                                          description: values is an array of string
+                                            values. If the operator is In or NotIn,
+                                            the values array must be non-empty. If
+                                            the operator is Exists or DoesNotExist,
+                                            the values array must be empty. This array
+                                            is replaced during a strategic merge patch.
+                                          items:
+                                            type: string
+                                          type: array
+                                      required:
+                                      - key
+                                      - operator
+                                      type: object
+                                    type: array
+                                  matchLabels:
+                                    additionalProperties:
+                                      type: string
+                                    description: matchLabels is a map of {key,value}
+                                      pairs. A single {key,value} in the matchLabels
+                                      map is equivalent to an element of matchExpressions,
+                                      whose key field is "key", the operator is "In",
+                                      and the values array contains only "value".
+                                      The requirements are ANDed.
+                                    type: object
+                                type: object
                               namespaces:
-                                description: namespaces specifies which namespaces
-                                  the labelSelector applies to (matches against);
-                                  null or empty list means "this pod's namespace"
+                                description: namespaces specifies a static list of
+                                  namespace names that the term applies to. The term
+                                  is applied to the union of the namespaces listed
+                                  in this field and the ones selected by namespaceSelector.
+                                  null or empty namespaces list and null namespaceSelector
+                                  means "this pod's namespace"
                                 items:
                                   type: string
                                 type: array
@@ -600,10 +771,65 @@ spec:
                                   contains only "value". The requirements are ANDed.
                                 type: object
                             type: object
+                          namespaceSelector:
+                            description: A label query over the set of namespaces
+                              that the term applies to. The term is applied to the
+                              union of the namespaces selected by this field and the
+                              ones listed in the namespaces field. null selector and
+                              null or empty namespaces list means "this pod's namespace".
+                              An empty selector ({}) matches all namespaces. This
+                              field is alpha-level and is only honored when PodAffinityNamespaceSelector
+                              feature is enabled.
+                            properties:
+                              matchExpressions:
+                                description: matchExpressions is a list of label selector
+                                  requirements. The requirements are ANDed.
+                                items:
+                                  description: A label selector requirement is a selector
+                                    that contains values, a key, and an operator that
+                                    relates the key and values.
+                                  properties:
+                                    key:
+                                      description: key is the label key that the selector
+                                        applies to.
+                                      type: string
+                                    operator:
+                                      description: operator represents a key's relationship
+                                        to a set of values. Valid operators are In,
+                                        NotIn, Exists and DoesNotExist.
+                                      type: string
+                                    values:
+                                      description: values is an array of string values.
+                                        If the operator is In or NotIn, the values
+                                        array must be non-empty. If the operator is
+                                        Exists or DoesNotExist, the values array must
+                                        be empty. This array is replaced during a
+                                        strategic merge patch.
+                                      items:
+                                        type: string
+                                      type: array
+                                  required:
+                                  - key
+                                  - operator
+                                  type: object
+                                type: array
+                              matchLabels:
+                                additionalProperties:
+                                  type: string
+                                description: matchLabels is a map of {key,value} pairs.
+                                  A single {key,value} in the matchLabels map is equivalent
+                                  to an element of matchExpressions, whose key field
+                                  is "key", the operator is "In", and the values array
+                                  contains only "value". The requirements are ANDed.
+                                type: object
+                            type: object
                           namespaces:
-                            description: namespaces specifies which namespaces the
-                              labelSelector applies to (matches against); null or
-                              empty list means "this pod's namespace"
+                            description: namespaces specifies a static list of namespace
+                              names that the term applies to. The term is applied
+                              to the union of the namespaces listed in this field
+                              and the ones selected by namespaceSelector. null or
+                              empty namespaces list and null namespaceSelector means
+                              "this pod's namespace"
                             items:
                               type: string
                             type: array
@@ -708,12 +934,14 @@ spec:
                       this volume
                     properties:
                       defaultMode:
-                        description: 'Optional: mode bits to use on created files
-                          by default. Must be a value between 0 and 0777. Defaults
-                          to 0644. Directories within the path are not affected by
-                          this setting. This might be in conflict with other options
-                          that affect the file mode, like fsGroup, and the result
-                          can be other mode bits set.'
+                        description: 'Optional: mode bits used to set permissions
+                          on created files by default. Must be an octal value between
+                          0000 and 0777 or a decimal value between 0 and 511. YAML
+                          accepts both octal and decimal values, JSON requires decimal
+                          values for mode bits. Defaults to 0644. Directories within
+                          the path are not affected by this setting. This might be
+                          in conflict with other options that affect the file mode,
+                          like fsGroup, and the result can be other mode bits set.'
                         format: int32
                         type: integer
                       items:
@@ -733,12 +961,15 @@ spec:
                               description: The key to project.
                               type: string
                             mode:
-                              description: 'Optional: mode bits to use on this file,
-                                must be a value between 0 and 0777. If not specified,
-                                the volume defaultMode will be used. This might be
-                                in conflict with other options that affect the file
-                                mode, like fsGroup, and the result can be other mode
-                                bits set.'
+                              description: 'Optional: mode bits used to set permissions
+                                on this file. Must be an octal value between 0000
+                                and 0777 or a decimal value between 0 and 511. YAML
+                                accepts both octal and decimal values, JSON requires
+                                decimal values for mode bits. If not specified, the
+                                volume defaultMode will be used. This might be in
+                                conflict with other options that affect the file mode,
+                                like fsGroup, and the result can be other mode bits
+                                set.'
                               format: int32
                               type: integer
                             path:
@@ -772,11 +1003,14 @@ spec:
                       and downward API
                     properties:
                       defaultMode:
-                        description: Mode bits to use on created files by default.
-                          Must be a value between 0 and 0777. Directories within the
-                          path are not affected by this setting. This might be in
-                          conflict with other options that affect the file mode, like
-                          fsGroup, and the result can be other mode bits set.
+                        description: Mode bits used to set permissions on created
+                          files by default. Must be an octal value between 0000 and
+                          0777 or a decimal value between 0 and 511. YAML accepts
+                          both octal and decimal values, JSON requires decimal values
+                          for mode bits. Directories within the path are not affected
+                          by this setting. This might be in conflict with other options
+                          that affect the file mode, like fsGroup, and the result
+                          can be other mode bits set.
                         format: int32
                         type: integer
                       sources:
@@ -809,13 +1043,16 @@ spec:
                                         description: The key to project.
                                         type: string
                                       mode:
-                                        description: 'Optional: mode bits to use on
-                                          this file, must be a value between 0 and
-                                          0777. If not specified, the volume defaultMode
-                                          will be used. This might be in conflict
-                                          with other options that affect the file
-                                          mode, like fsGroup, and the result can be
-                                          other mode bits set.'
+                                        description: 'Optional: mode bits used to
+                                          set permissions on this file. Must be an
+                                          octal value between 0000 and 0777 or a decimal
+                                          value between 0 and 511. YAML accepts both
+                                          octal and decimal values, JSON requires
+                                          decimal values for mode bits. If not specified,
+                                          the volume defaultMode will be used. This
+                                          might be in conflict with other options
+                                          that affect the file mode, like fsGroup,
+                                          and the result can be other mode bits set.'
                                         format: int32
                                         type: integer
                                       path:
@@ -869,13 +1106,16 @@ spec:
                                         - fieldPath
                                         type: object
                                       mode:
-                                        description: 'Optional: mode bits to use on
-                                          this file, must be a value between 0 and
-                                          0777. If not specified, the volume defaultMode
-                                          will be used. This might be in conflict
-                                          with other options that affect the file
-                                          mode, like fsGroup, and the result can be
-                                          other mode bits set.'
+                                        description: 'Optional: mode bits used to
+                                          set permissions on this file, must be an
+                                          octal value between 0000 and 0777 or a decimal
+                                          value between 0 and 511. YAML accepts both
+                                          octal and decimal values, JSON requires
+                                          decimal values for mode bits. If not specified,
+                                          the volume defaultMode will be used. This
+                                          might be in conflict with other options
+                                          that affect the file mode, like fsGroup,
+                                          and the result can be other mode bits set.'
                                         format: int32
                                         type: integer
                                       path:
@@ -938,13 +1178,16 @@ spec:
                                         description: The key to project.
                                         type: string
                                       mode:
-                                        description: 'Optional: mode bits to use on
-                                          this file, must be a value between 0 and
-                                          0777. If not specified, the volume defaultMode
-                                          will be used. This might be in conflict
-                                          with other options that affect the file
-                                          mode, like fsGroup, and the result can be
-                                          other mode bits set.'
+                                        description: 'Optional: mode bits used to
+                                          set permissions on this file. Must be an
+                                          octal value between 0000 and 0777 or a decimal
+                                          value between 0 and 511. YAML accepts both
+                                          octal and decimal values, JSON requires
+                                          decimal values for mode bits. If not specified,
+                                          the volume defaultMode will be used. This
+                                          might be in conflict with other options
+                                          that affect the file mode, like fsGroup,
+                                          and the result can be other mode bits set.'
                                         format: int32
                                         type: integer
                                       path:
@@ -1001,20 +1244,20 @@ spec:
                               type: object
                           type: object
                         type: array
-                    required:
-                    - sources
                     type: object
                   secret:
                     description: 'Secret represents a secret that should populate
                       this volume. More info: https://kubernetes.io/docs/concepts/storage/volumes#secret'
                     properties:
                       defaultMode:
-                        description: 'Optional: mode bits to use on created files
-                          by default. Must be a value between 0 and 0777. Defaults
-                          to 0644. Directories within the path are not affected by
-                          this setting. This might be in conflict with other options
-                          that affect the file mode, like fsGroup, and the result
-                          can be other mode bits set.'
+                        description: 'Optional: mode bits used to set permissions
+                          on created files by default. Must be an octal value between
+                          0000 and 0777 or a decimal value between 0 and 511. YAML
+                          accepts both octal and decimal values, JSON requires decimal
+                          values for mode bits. Defaults to 0644. Directories within
+                          the path are not affected by this setting. This might be
+                          in conflict with other options that affect the file mode,
+                          like fsGroup, and the result can be other mode bits set.'
                         format: int32
                         type: integer
                       items:
@@ -1034,12 +1277,15 @@ spec:
                               description: The key to project.
                               type: string
                             mode:
-                              description: 'Optional: mode bits to use on this file,
-                                must be a value between 0 and 0777. If not specified,
-                                the volume defaultMode will be used. This might be
-                                in conflict with other options that affect the file
-                                mode, like fsGroup, and the result can be other mode
-                                bits set.'
+                              description: 'Optional: mode bits used to set permissions
+                                on this file. Must be an octal value between 0000
+                                and 0777 or a decimal value between 0 and 511. YAML
+                                accepts both octal and decimal values, JSON requires
+                                decimal values for mode bits. If not specified, the
+                                volume defaultMode will be used. This might be in
+                                conflict with other options that affect the file mode,
+                                like fsGroup, and the result can be other mode bits
+                                set.'
                               format: int32
                               type: integer
                             path:
@@ -1259,6 +1505,20 @@ spec:
                   required:
                   - port
                   type: object
+                terminationGracePeriodSeconds:
+                  description: Optional duration in seconds the pod needs to terminate
+                    gracefully upon probe failure. The grace period is the duration
+                    in seconds after the processes running in the pod are sent a termination
+                    signal and the time when the processes are forcibly halted with
+                    a kill signal. Set this value longer than the expected cleanup
+                    time for your process. If this value is nil, the pod's terminationGracePeriodSeconds
+                    will be used. Otherwise, this value overrides the value provided
+                    by the pod spec. Value must be non-negative integer. The value
+                    zero indicates stop immediately via the kill signal (no opportunity
+                    to shut down). This is an alpha field and requires enabling ProbeTerminationGracePeriod
+                    feature gate.
+                  format: int64
+                  type: integer
                 timeoutSeconds:
                   description: 'Number of seconds after which the probe times out.
                     Defaults to 1 second. Minimum value is 1. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
@@ -1400,6 +1660,20 @@ spec:
                   required:
                   - port
                   type: object
+                terminationGracePeriodSeconds:
+                  description: Optional duration in seconds the pod needs to terminate
+                    gracefully upon probe failure. The grace period is the duration
+                    in seconds after the processes running in the pod are sent a termination
+                    signal and the time when the processes are forcibly halted with
+                    a kill signal. Set this value longer than the expected cleanup
+                    time for your process. If this value is nil, the pod's terminationGracePeriodSeconds
+                    will be used. Otherwise, this value overrides the value provided
+                    by the pod spec. Value must be non-negative integer. The value
+                    zero indicates stop immediately via the kill signal (no opportunity
+                    to shut down). This is an alpha field and requires enabling ProbeTerminationGracePeriod
+                    feature gate.
+                  format: int64
+                  type: integer
                 timeoutSeconds:
                   description: 'Number of seconds after which the probe times out.
                     Defaults to 1 second. Minimum value is 1. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
@@ -1417,7 +1691,7 @@ spec:
                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                     x-kubernetes-int-or-string: true
                   description: 'Limits describes the maximum amount of compute resources
-                    allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                    allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                   type: object
                 requests:
                   additionalProperties:
@@ -1429,7 +1703,7 @@ spec:
                   description: 'Requests describes the minimum amount of compute resources
                     required. If Requests is omitted for a container, it defaults
                     to Limits if that is explicitly specified, otherwise to an implementation-defined
-                    value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                    value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                   type: object
               type: object
             rules:
@@ -1743,8 +2017,8 @@ spec:
                     This field will only apply to volume types which support fsGroup
                     based ownership(and permissions). It will have no effect on ephemeral
                     volume types such as: secret, configmaps and emptydir. Valid values
-                    are "OnRootMismatch" and "Always". If not specified defaults to
-                    "Always".'
+                    are "OnRootMismatch" and "Always". If not specified, "Always"
+                    is used.'
                   type: string
                 runAsGroup:
                   description: The GID to run the entrypoint of the container process.
@@ -1793,6 +2067,27 @@ spec:
                       description: User is a SELinux user label that applies to the
                         container.
                       type: string
+                  type: object
+                seccompProfile:
+                  description: The seccomp options to use by the containers in this
+                    pod.
+                  properties:
+                    localhostProfile:
+                      description: localhostProfile indicates a profile defined in
+                        a file on the node should be used. The profile must be preconfigured
+                        on the node to work. Must be a descending path, relative to
+                        the kubelet's configured seccomp profile location. Must only
+                        be set if type is "Localhost".
+                      type: string
+                    type:
+                      description: "type indicates which kind of seccomp profile will
+                        be applied. Valid options are: \n Localhost - a profile defined
+                        in a file on the node should be used. RuntimeDefault - the
+                        container runtime default profile should be used. Unconfined
+                        - no profile should be applied."
+                      type: string
+                  required:
+                  - type
                   type: object
                 supplementalGroups:
                   description: A list of groups applied to the first process run in
@@ -1955,6 +2250,39 @@ spec:
                         description: IP is set for load-balancer ingress points that
                           are IP based (typically GCE or OpenStack load-balancers)
                         type: string
+                      ports:
+                        description: Ports is a list of records of service ports If
+                          used, every port defined in the service should have an entry
+                          in it
+                        items:
+                          properties:
+                            error:
+                              description: 'Error is to record the problem with the
+                                service port The format of the error shall comply
+                                with the following rules: - built-in error values
+                                shall be specified in this file and those shall use   CamelCase
+                                names - cloud provider specific error values must
+                                have names that comply with the   format foo.example.com/CamelCase.
+                                --- The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)'
+                              maxLength: 316
+                              pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                              type: string
+                            port:
+                              description: Port is the port number of the service
+                                port of which status is recorded here
+                              format: int32
+                              type: integer
+                            protocol:
+                              description: 'Protocol is the protocol of the service
+                                port of which status is recorded here The supported
+                                values are: "TCP", "UDP", "SCTP"'
+                              type: string
+                          required:
+                          - port
+                          - protocol
+                          type: object
+                        type: array
+                        x-kubernetes-list-type: atomic
                     type: object
                   type: array
               type: object

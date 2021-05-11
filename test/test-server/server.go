@@ -22,7 +22,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"os"
@@ -34,6 +33,7 @@ import (
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/load"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/klog/v2"
 )
 
 const LOADMAX = 80
@@ -74,7 +74,7 @@ func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func runHTTP(port string) {
 	fmt.Println("http server running on port", port)
-	log.Fatal(http.ListenAndServe(port, HTTPHandler{port}))
+	klog.Fatal(http.ListenAndServe(port, HTTPHandler{port}))
 }
 
 type HTTPSHandler struct {

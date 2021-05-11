@@ -117,14 +117,14 @@ func parse(allowed []string) ([]func(net.IP) bool, error) {
 		if strings.LastIndex(allowFrom, "/") > 0 {
 			_, ipRange, err := net.ParseCIDR(allowFrom)
 			if err != nil {
-				return nil, fmt.Errorf("Given string %q is not a valid IP range: %v", allowFrom, err)
+				return nil, fmt.Errorf("proxyproto: given string %q is not a valid IP range: %v", allowFrom, err)
 			}
 
 			a[i] = ipRange.Contains
 		} else {
 			allowed := net.ParseIP(allowFrom)
 			if allowed == nil {
-				return nil, fmt.Errorf("Given string %q is not a valid IP address", allowFrom)
+				return nil, fmt.Errorf("proxyproto: given string %q is not a valid IP address", allowFrom)
 			}
 
 			a[i] = allowed.Equal
@@ -142,7 +142,7 @@ func ipFromAddr(upstream net.Addr) (net.IP, error) {
 
 	upstreamIP := net.ParseIP(upstreamString)
 	if nil == upstreamIP {
-		return nil, fmt.Errorf("invalid IP address")
+		return nil, fmt.Errorf("proxyproto: invalid IP address")
 	}
 
 	return upstreamIP, nil

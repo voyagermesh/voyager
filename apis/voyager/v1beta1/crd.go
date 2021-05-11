@@ -25,7 +25,3 @@ import (
 func (r Ingress) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
 	return crds.MustCustomResourceDefinition(SchemeGroupVersion.WithResource(ResourceIngresses))
 }
-
-func (c Certificate) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
-	return crds.MustCustomResourceDefinition(SchemeGroupVersion.WithResource(ResourceCertificates))
-}

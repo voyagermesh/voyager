@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gomodules.xyz/x/log"
+	"k8s.io/klog/v2"
 )
 
 func TestValidateConfig(t *testing.T) {
@@ -40,7 +40,7 @@ listen http-in
 	for cfg, result := range data {
 		err := ValidateConfig(cfg)
 		if err != nil {
-			log.Errorln(err)
+			klog.Errorln(err)
 		}
 		assert.Equal(t, result, err == nil)
 	}
