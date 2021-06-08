@@ -34,6 +34,7 @@ import (
 
 	"github.com/pkg/errors"
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
+	"gomodules.xyz/flags"
 	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -547,7 +548,7 @@ func (c *nodePortController) ensurePods() (kutil.VerbType, error) {
 				fmt.Sprintf("--ingress-api-version=%s", c.Ingress.APISchema()),
 				fmt.Sprintf("--ingress-name=%s", c.Ingress.Name),
 				fmt.Sprintf("--qps=%v", c.cfg.QPS),
-			}, cli.LoggerOptions.ToFlags()...),
+			}, flags.LoggerOptions.ToFlags()...),
 			Env: c.ensureEnvVars([]core.EnvVar{
 				{
 					Name:  analytics.Key,

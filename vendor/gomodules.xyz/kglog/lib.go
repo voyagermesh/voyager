@@ -20,11 +20,13 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/golang/glog"
+	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	utilruntime "gomodules.xyz/runtime"
+	"gomodules.xyz/flags"
 	"gomodules.xyz/wait"
 	"k8s.io/klog/v2"
 )
@@ -56,6 +58,63 @@ func (writer KlogWriter) Write(data []byte) (n int, err error) {
 	return len(data), nil
 }
 
+// Init initializes logs the way we want for AppsCode codebase.
+func Init(rootCmd *cobra.Command, printFlags bool) {
+	pflag.CommandLine.SetNormalizeFunc(WordSepNormalizeFunc)
+	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
+	InitLogs()
+
+	if rootCmd == nil {
+		// This branch only makes sense if Cobra is NOT used
+		// If Cobra is used, set the rootCmd
+		pflag.Parse()
+		fs := pflag.CommandLine
+		InitKlog(fs)
+		if printFlags {
+			flags.PrintFlags(fs)
+		}
+		flags.LoggerOptions = flags.GetOptions(fs)
+		return
+	}
+
+	fs := rootCmd.Flags()
+	if fn := rootCmd.PersistentPreRunE; fn != nil {
+		rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+			InitKlog(fs)
+			if printFlags {
+				flags.PrintFlags(fs)
+			}
+			flags.LoggerOptions = flags.GetOptions(fs)
+			return fn(cmd, args)
+		}
+	} else if fn := rootCmd.PersistentPreRun; fn != nil {
+		rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
+			InitKlog(fs)
+			if printFlags {
+				flags.PrintFlags(fs)
+			}
+			flags.LoggerOptions = flags.GetOptions(fs)
+			fn(cmd, args)
+		}
+	} else {
+		rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
+			InitKlog(fs)
+			if printFlags {
+				flags.PrintFlags(fs)
+			}
+			flags.LoggerOptions = flags.GetOptions(fs)
+		}
+	}
+}
+
+// WordSepNormalizeFunc changes all flags that contain "_" separators
+func WordSepNormalizeFunc(f *pflag.FlagSet, name string) pflag.NormalizedName {
+	if strings.Contains(name, "_") {
+		return pflag.NormalizedName(strings.Replace(name, "_", "-", -1))
+	}
+	return pflag.NormalizedName(name)
+}
+
 // InitLogs initializes logs the way we want for kubernetes.
 func InitLogs() {
 	log.SetOutput(KlogWriter{})
@@ -64,15 +123,12 @@ func InitLogs() {
 	go wait.Forever(klog.Flush, *logFlushFreq)
 }
 
-func ParseFlags() {
-	// ref: https://github.com/kubernetes/kubernetes/issues/17162#issuecomment-225596212
-	utilruntime.Must(flag.CommandLine.Parse([]string{}))
-
+func InitKlog(fs *pflag.FlagSet) {
 	klogFlags := flag.NewFlagSet("klog", flag.ExitOnError)
 	klog.InitFlags(klogFlags)
 
 	// Sync the glog and klog flags.
-	flag.CommandLine.VisitAll(func(f1 *flag.Flag) {
+	fs.VisitAll(func(f1 *pflag.Flag) {
 		f2 := klogFlags.Lookup(f1.Name)
 		if f2 != nil {
 			value := f1.Value.String()

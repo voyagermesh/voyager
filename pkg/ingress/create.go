@@ -22,6 +22,7 @@ import (
 
 	api "voyagermesh.dev/voyager/apis/voyager/v1beta1"
 
+	"gomodules.xyz/flags"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -73,7 +74,7 @@ func (c *controller) getExporterSidecar() (*core.Container, error) {
 				"export",
 				fmt.Sprintf("--address=:%d", monSpec.Prometheus.Exporter.Port),
 				fmt.Sprintf("--enable-analytics=%v", cli.EnableAnalytics),
-			}, cli.LoggerOptions.ToFlags()...),
+			}, flags.LoggerOptions.ToFlags()...),
 			Env: []core.EnvVar{
 				{
 					Name:  analytics.Key,

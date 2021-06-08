@@ -14,32 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
-
-import (
-	"os"
-	"runtime"
-
-	"voyagermesh.dev/voyager/pkg/cmds"
-
-	_ "go.bytebuilders.dev/license-verifier/info"
-	logs "gomodules.xyz/kglog"
-	_ "k8s.io/api/core/v1"
-	_ "k8s.io/client-go/kubernetes/fake"
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"k8s.io/klog/v2"
-)
-
-func main() {
-	rootCmd := cmds.NewCmdVoyager()
-	logs.Init(rootCmd, true)
-	defer logs.FlushLogs()
-
-	if len(os.Getenv("GOMAXPROCS")) == 0 {
-		runtime.GOMAXPROCS(runtime.NumCPU())
-	}
-
-	if err := rootCmd.Execute(); err != nil {
-		klog.Fatal(err)
-	}
-}
+// +k8s:deepcopy-gen=package
+// +k8s:openapi-gen=true
+package v1 // import "kmodules.xyz/client-go/api/v1"
