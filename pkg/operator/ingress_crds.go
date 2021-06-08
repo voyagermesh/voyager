@@ -38,6 +38,9 @@ import (
 func (op *Operator) initIngressCRDWatcher() {
 	op.engInformer = op.voyagerInformerFactory.Voyager().V1beta1().Ingresses().Informer()
 	op.engQueue = queue.New("IngressCRD", op.MaxNumRequeues, op.NumThreads, op.reconcileEngress)
+	if op.auditor != nil {
+		op.engInformer.AddEventHandler(op.auditor)
+	}
 	op.engInformer.AddEventHandler(&cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			engress := obj.(*api.Ingress).DeepCopy()

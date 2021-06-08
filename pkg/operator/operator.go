@@ -56,6 +56,7 @@ type Operator struct {
 	voyagerInformerFactory voyagerinformers.SharedInformerFactory
 
 	recorder record.EventRecorder
+	auditor  cache.ResourceEventHandler
 
 	// ConfigMap
 	cfgQueue    *queue.Worker

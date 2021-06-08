@@ -23,10 +23,12 @@ import (
 	"voyagermesh.dev/voyager/pkg/eventer"
 
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
+	auditlib "go.bytebuilders.dev/audit/lib"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	"kmodules.xyz/client-go/discovery"
 	hooks "kmodules.xyz/webhook-runtime/admission/v1beta1"
@@ -61,6 +63,22 @@ func (c *OperatorConfig) New() (*Operator, error) {
 		return nil, err
 	}
 
+	// audit event publisher
+	// WARNING: https://stackoverflow.com/a/46275411/244009
+	var auditor cache.ResourceEventHandler
+	if c.LicenseFile != "" {
+		natscfg, err := auditlib.NewNatsConfig(c.KubeClient.CoreV1().Namespaces(), c.LicenseFile)
+		if err != nil {
+			return nil, err
+		}
+		mapper := discovery.NewResourceMapper(discovery.NewRestMapper(c.KubeClient.Discovery()))
+		fn := auditlib.BillingEventCreator{
+			Mapper:    mapper,
+			LicenseID: natscfg.LicenseID,
+		}
+		auditor = auditlib.NewEventPublisher(natscfg, mapper, fn.CreateEvent)
+	}
+
 	op := &Operator{
 		Config:                 c.Config,
 		ClientConfig:           c.ClientConfig,
@@ -72,6 +90,7 @@ func (c *OperatorConfig) New() (*Operator, error) {
 		voyagerInformerFactory: voyagerinformers.NewFilteredSharedInformerFactory(c.VoyagerClient, c.ResyncPeriod, c.WatchNamespace, nil),
 		PromClient:             c.PromClient,
 		recorder:               eventer.NewEventRecorder(c.KubeClient, "voyager-operator"),
+		auditor:                auditor,
 	}
 
 	if err := op.ensureCustomResourceDefinitions(); err != nil {

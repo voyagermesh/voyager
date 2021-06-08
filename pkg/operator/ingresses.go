@@ -39,6 +39,9 @@ import (
 func (op *Operator) initIngressWatcher() {
 	op.ingInformer = op.kubeInformerFactory.Networking().V1beta1().Ingresses().Informer()
 	op.ingQueue = queue.New("Ingress", op.MaxNumRequeues, op.NumThreads, op.reconcileIngress)
+	if op.auditor != nil {
+		op.ingInformer.AddEventHandler(op.auditor)
+	}
 	op.ingInformer.AddEventHandler(&cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			engress, err := api.NewEngressFromIngress(obj.(*extensions.Ingress))

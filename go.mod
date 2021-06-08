@@ -16,26 +16,27 @@ require (
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/go-openapi/spec v0.19.5
 	github.com/google/go-cmp v0.5.4
-	github.com/google/gofuzz v1.1.0
+	github.com/google/gofuzz v1.2.0
 	github.com/hashicorp/vault/api v1.1.0
 	github.com/json-iterator/go v1.1.10
 	github.com/mitchellh/go-ps v1.0.0
 	github.com/moul/http2curl v1.0.0
-	github.com/onsi/ginkgo v1.11.0
-	github.com/onsi/gomega v1.8.1
+	github.com/onsi/ginkgo v1.16.2
+	github.com/onsi/gomega v1.12.0
 	github.com/pires/go-proxyproto v0.5.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.47.0
 	github.com/prometheus-operator/prometheus-operator/pkg/client v0.47.0
-	github.com/prometheus/client_golang v1.7.1
+	github.com/prometheus/client_golang v1.10.0
 	github.com/shirou/gopsutil v3.21.4+incompatible
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0
 	github.com/tklauser/go-sysconf v0.3.5 // indirect
 	github.com/tredoe/osutil v1.0.4
-	go.bytebuilders.dev/license-verifier v0.9.1
-	go.bytebuilders.dev/license-verifier/kubernetes v0.9.1
+	go.bytebuilders.dev/audit v0.0.1
+	go.bytebuilders.dev/license-verifier v0.9.2
+	go.bytebuilders.dev/license-verifier/kubernetes v0.9.2
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	gomodules.xyz/atomic-writer v0.0.2
 	gomodules.xyz/blobfs v0.1.7
@@ -46,16 +47,16 @@ require (
 	gomodules.xyz/runtime v0.2.0
 	gomodules.xyz/x v0.0.5
 	google.golang.org/api v0.26.0
-	google.golang.org/grpc v1.29.1
+	google.golang.org/grpc v1.35.0
 	gopkg.in/gcfg.v1 v1.2.3
-	k8s.io/api v0.21.0
-	k8s.io/apiextensions-apiserver v0.21.0
-	k8s.io/apimachinery v0.21.0
-	k8s.io/apiserver v0.21.0
-	k8s.io/client-go v0.21.0
+	k8s.io/api v0.21.1
+	k8s.io/apiextensions-apiserver v0.21.1
+	k8s.io/apimachinery v0.21.1
+	k8s.io/apiserver v0.21.1
+	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.8.0
 	k8s.io/kube-openapi v0.0.0-20210305001622-591a79e4bda7
-	k8s.io/utils v0.0.0-20210111153108-fddb29f9d009
+	k8s.io/utils v0.0.0-20210517184530-5a248b5acedc
 	kmodules.xyz/client-go v0.0.0-20210605021217-cabaee7b953e
 	kmodules.xyz/crd-schema-fuzz v0.0.0-20210503192455-da44af375c4c
 	kmodules.xyz/monitoring-agent-api v0.0.0-20210504040241-261c2428d207
