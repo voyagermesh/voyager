@@ -31,6 +31,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	"kmodules.xyz/client-go/discovery"
+	"kmodules.xyz/client-go/tools/cli"
 	hooks "kmodules.xyz/webhook-runtime/admission/v1beta1"
 	wcs "kmodules.xyz/webhook-runtime/client/workload/v1"
 )
@@ -66,7 +67,7 @@ func (c *OperatorConfig) New() (*Operator, error) {
 	// audit event publisher
 	// WARNING: https://stackoverflow.com/a/46275411/244009
 	var auditor cache.ResourceEventHandler
-	if c.LicenseFile != "" {
+	if c.LicenseFile != "" && cli.EnableAnalytics {
 		natscfg, err := auditlib.NewNatsConfig(c.KubeClient.CoreV1().Namespaces(), c.LicenseFile)
 		if err != nil {
 			return nil, err

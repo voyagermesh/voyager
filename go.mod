@@ -34,7 +34,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/tklauser/go-sysconf v0.3.5 // indirect
 	github.com/tredoe/osutil v1.0.4
-	go.bytebuilders.dev/audit v0.0.1
+	go.bytebuilders.dev/audit v0.0.2
 	go.bytebuilders.dev/license-verifier v0.9.2
 	go.bytebuilders.dev/license-verifier/kubernetes v0.9.2
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
@@ -57,7 +57,7 @@ require (
 	k8s.io/klog/v2 v2.8.0
 	k8s.io/kube-openapi v0.0.0-20210305001622-591a79e4bda7
 	k8s.io/utils v0.0.0-20210517184530-5a248b5acedc
-	kmodules.xyz/client-go v0.0.0-20210605021217-cabaee7b953e
+	kmodules.xyz/client-go v0.0.0-20210614094429-affdb80e35c8
 	kmodules.xyz/crd-schema-fuzz v0.0.0-20210503192455-da44af375c4c
 	kmodules.xyz/monitoring-agent-api v0.0.0-20210504040241-261c2428d207
 	kmodules.xyz/webhook-runtime v0.0.0-20210504042742-3a9911e3dcdc
