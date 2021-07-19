@@ -37,10 +37,3 @@ We're always looking for help improving our documentation, so please don't hesit
 [file an issue](https://github.com/voyagermesh/voyager/issues/new) if you see some problem.
 Or better yet, submit your own [contributions](/docs/CONTRIBUTING.md) to help
 make our docs better.
-
----
-
-**The voyager operator collects anonymous usage statistics to help us learn how the software is being used and how we can improve it.
-To disable stats collection, run the operator with the flag** `--enable-analytics=false`.
-
----
