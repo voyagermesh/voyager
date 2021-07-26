@@ -36,7 +36,7 @@ kube-public   Active    45m
 kube-system   Active    45m
 ```
 
-Note that the yaml files that are used in this tutorial, stored in [docs/examples](https://github.com/voyagermesh/docs/tree/master/docs/examples/monitoring) folder in GitHub repository [voyagermesh/docs](https://github.com/voyagermesh/docs).
+Note that the yaml files that are used in this tutorial, stored in [docs/examples](https://github.com/voyagermesh/voyager/tree/master/docs/examples/monitoring) folder in GitHub repository [voyagermesh/voyager](https://github.com/voyagermesh/voyager).
 
 ## Create Ingress
 
@@ -50,7 +50,7 @@ kubectl expose deployment nginx --name=web --port=80 --target-port=80 -n demo
 Now create Ingress `ing.yaml`
 
 ```console
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/{{< param "info.version" >}}/docs/examples/monitoring/builtin-prometheus/ing.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/monitoring/builtin-prometheus/ing.yaml
 ingress "stats-ing" created
 ```
 
@@ -202,7 +202,7 @@ data:
 ```
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/{{< param "info.version" >}}/docs/examples/monitoring/builtin-prometheus/demo-1.yaml
+$ kubectl create -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/monitoring/builtin-prometheus/demo-1.yaml
 configmap "prometheus-server-conf" created
 ```
 
@@ -249,7 +249,7 @@ spec:
 Now, run the following command to deploy prometheus in kubernetes:
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/{{< param "info.version" >}}/docs/examples/monitoring/builtin-prometheus/demo-2.yaml
+$ kubectl create -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/monitoring/builtin-prometheus/demo-2.yaml
 clusterrole "prometheus-server" created
 serviceaccount "prometheus-server" created
 clusterrolebinding "prometheus-server" created

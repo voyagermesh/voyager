@@ -37,7 +37,7 @@ At first, you need to have a Kubernetes cluster, and the kubectl command-line to
 
 Now, deploy Voyager operator following instructions [here](/docs/setup/install.md).
 
-Note that the yaml files that are used in this tutorial, stored in [docs/examples](https://github.com/voyagermesh/docs/tree/master/docs/examples/monitoring) folder in GitHub repository [voyagermesh/docs](https://github.com/voyagermesh/docs).
+Note that the yaml files that are used in this tutorial, stored in [docs/examples](https://github.com/voyagermesh/voyager/tree/master/docs/examples/monitoring) folder in GitHub repository [voyagermesh/voyager](https://github.com/voyagermesh/voyager).
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
@@ -65,7 +65,7 @@ kubectl expose deployment nginx --name=web --port=80 --target-port=80 -n demo
 Now create Ingress `ing.yaml`
 
 ```console
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/{{< param "info.version" >}}/docs/examples/monitoring/stats-ing.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/monitoring/stats-ing.yaml
 ingress "stats-ing" created
 ```
 

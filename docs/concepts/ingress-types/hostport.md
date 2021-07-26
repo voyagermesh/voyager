@@ -22,7 +22,7 @@ In `HostPort` type Ingress, HAProxy pods are run via a Kubernetes deployment nam
 - Now, deploy test servers using [this script](/docs/examples/ingress/types/hostport/deploy-servers.sh) script.
 
 ```console
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/{{< param "info.version" >}}/docs/examples/ingress/types/hostport/deploy-servers.sh | bash
+curl -fsSL https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/ingress/types/hostport/deploy-servers.sh | bash
 
 deployment "nginx" created
 service "web" exposed
@@ -33,7 +33,7 @@ service "rest" exposed
 - Now, create an Ingress object running
 
 ```console
-kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/{{< param "info.version" >}}/docs/examples/ingress/types/hostport/ing.yaml
+kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/ingress/types/hostport/ing.yaml
 ```
 
 Please note the annotaiton on ingress:

@@ -22,7 +22,7 @@ In `LoadBalancer` type Ingress, HAProxy pods are exposed via a LoadBalancer type
 - Now, deploy test servers using [this script](/docs/examples/ingress/types/loadbalancer/deploy-servers.sh) script.
 
 ```console
-curl -fsSL https://raw.githubusercontent.com/appscode/voyager/{{< param "info.version" >}}/docs/examples/ingress/types/loadbalancer/deploy-servers.sh | bash
+curl -fsSL https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/ingress/types/loadbalancer/deploy-servers.sh | bash
 
 deployment "nginx" created
 service "web" exposed
@@ -33,7 +33,7 @@ service "rest" exposed
 - Now, create an Ingress object running
 
 ```console
-kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/{{< param "info.version" >}}/docs/examples/ingress/types/loadbalancer/ing.yaml
+kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/ingress/types/loadbalancer/ing.yaml
 ```
 
 Please note the annotaiton on ingress:

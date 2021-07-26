@@ -36,14 +36,14 @@ kube-public   Active    45m
 kube-system   Active    45m
 ```
 
-Note that the yaml files that are used in this tutorial, stored in [docs/examples](https://github.com/voyagermesh/docs/tree/master/docs/examples/monitoring) folder in GitHub repository [voyagermesh/docs](https://github.com/voyagermesh/docs).
+Note that the yaml files that are used in this tutorial, stored in [docs/examples](https://github.com/voyagermesh/voyager/tree/master/docs/examples/monitoring) folder in GitHub repository [voyagermesh/voyager](https://github.com/voyagermesh/voyager).
 
 ## Deploy CoreOS-Prometheus Operator
 
 Now, run the following command to prepare your cluster for this tutorial:
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/{{< param "info.version" >}}/docs/examples/monitoring/coreos-operator/demo-0.yaml
+$ kubectl create -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/monitoring/coreos-operator/demo-0.yaml
 clusterrole "prometheus-operator" created
 serviceaccount "prometheus-operator" created
 clusterrolebinding "prometheus-operator" created
@@ -64,7 +64,7 @@ servicemonitors.monitoring.coreos.com   11m
 Once the Prometheus operator CRDs are registered, run the following command to create a Prometheus.
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/appscode/voyager/{{< param "info.version" >}}/docs/examples/monitoring/coreos-operator/demo-1.yaml
+$ kubectl create -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/monitoring/coreos-operator/demo-1.yaml
 clusterrole "prometheus" created
 serviceaccount "prometheus" created
 clusterrolebinding "prometheus" created
@@ -103,7 +103,7 @@ kubectl expose deployment nginx --name=web --port=80 --target-port=80 -n demo
 Now create Ingress `ing.yaml`
 
 ```console
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/{{< param "info.version" >}}/docs/examples/monitoring/coreos-operator/ing.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/monitoring/coreos-operator/ing.yaml
 ingress "stats-ing" created
 ```
 

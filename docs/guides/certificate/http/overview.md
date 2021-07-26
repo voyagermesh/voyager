@@ -31,7 +31,7 @@ Install Voyager operator in your cluster following the steps [here](/docs/setup/
 3. Now create Ingress `ing.yaml`
 
     ```console
-    kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/{{< param "info.version" >}}/docs/examples/certificate/http/ing.yaml
+    kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/certificate/http/ing.yaml
     ```
 
 4. Wait for the LoadBalancer ip to be assigned. Once the IP is assigned update your DNS provider to set the LoadBlancer IP as the A record for test domain `kiteci.com`
@@ -62,7 +62,7 @@ Install Voyager operator in your cluster following the steps [here](/docs/setup/
 8. Create the Certificate CRD to issue TLS certificate from Let's Encrypt using HTTP challenge.
 
     ```console
-    kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/{{< param "info.version" >}}/docs/examples/certificate/http/crt.yaml
+    kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/certificate/http/crt.yaml
     ```
 
 8. Now wait a bit and you should see a new secret named `tls-kitecicom`. This contains the `tls.crt` and `tls.key`.
