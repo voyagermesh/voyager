@@ -86,10 +86,10 @@ spec:
           servicePort: 80
 ```
 
-If you are using official `networking.k8s.io/v1beta1` ingress api group, use `ingress.appscode.com/node-selector` annotation to provide the selectors. For example:
+If you are using official `networking.k8s.io/v1` ingress api group, use `ingress.appscode.com/node-selector` annotation to provide the selectors. For example:
 
 ```
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress-w-node-selector
@@ -199,10 +199,10 @@ spec:
     effect: NoSchedule
 ```
 
-If you are using official `networking.k8s.io/v1beta1` ingress api group, use `ingress.appscode.com/tolerations` annotation to provide the toleration information. For example:
+If you are using official `networking.k8s.io/v1` ingress api group, use `ingress.appscode.com/tolerations` annotation to provide the toleration information. For example:
 
 ```
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress-w-toleration
