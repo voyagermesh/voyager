@@ -56,9 +56,6 @@ Voyager operator can be installed as a Helm chart or simply as Kubernetes manife
     <a class="nav-link active" id="helm3-tab" data-toggle="tab" href="#helm3" role="tab" aria-controls="helm3" aria-selected="true">Helm 3 (Recommended)</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link" id="helm2-tab" data-toggle="tab" href="#helm2" role="tab" aria-controls="helm2" aria-selected="false">Helm 2</a>
-  </li>
-  <li class="nav-item">
     <a class="nav-link" id="script-tab" data-toggle="tab" href="#script" role="tab" aria-controls="script" aria-selected="false">YAML</a>
   </li>
 </ul>
@@ -91,43 +88,6 @@ appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  
 # provider=linode
 
 $ helm install voyager-operator appscode/voyager \
-  --version {{< param "info.version" >}} \
-  --namespace kube-system \
-  --set cloudProvider=$provider \
-  --set-file license=/path/to/the/license.txt
-```
-
-To see the detailed configuration options, visit [here](https://github.com/voyagermesh/installer/tree/{{< param "info.version" >}}/charts/voyager).
-
-</div>
-<div class="tab-pane fade" id="helm2" role="tabpanel" aria-labelledby="helm2-tab">
-
-## Using Helm 2
-
-Voyager can be installed via [Helm](https://helm.sh/) 2.9.x or later versions using the [chart](https://github.com/voyagermesh/installer/tree/{{< param "info.version" >}}/charts/voyager) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
-
-```console
-$ helm repo add appscode https://charts.appscode.com/stable/
-$ helm repo update
-
-$ helm search appscode/voyager --version {{< param "info.version" >}}
-NAME              CHART VERSION APP VERSION DESCRIPTION
-appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  Voyager by AppsCode - Secure HAProxy Ingress Controller...
-
-# provider=acs
-# provider=aks
-# provider=aws
-# provider=azure
-# provider=baremetal
-# provider=gce
-# provider=gke
-# provider=minikube
-# provider=openstack
-# provider=metallb
-# provider=digitalocean
-# provider=linode
-
-$ helm install appscode/voyager --name voyager-operator \
   --version {{< param "info.version" >}} \
   --namespace kube-system \
   --set cloudProvider=$provider \

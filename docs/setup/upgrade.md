@@ -55,9 +55,6 @@ Follow the below instructions to update the license:
     <a class="nav-link active" id="lu-helm3-tab" data-toggle="tab" href="#lu-helm3" role="tab" aria-controls="lu-helm3" aria-selected="true">Helm 3</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link" id="lu-helm2-tab" data-toggle="tab" href="#lu-helm2" role="tab" aria-controls="lu-helm2" aria-selected="false">Helm 2</a>
-  </li>
-  <li class="nav-item">
     <a class="nav-link" id="lu-yaml-tab" data-toggle="tab" href="#lu-yaml" role="tab" aria-controls="lu-yaml" aria-selected="false">YAML</a>
   </li>
 </ul>
@@ -68,17 +65,6 @@ Follow the below instructions to update the license:
 
 ```bash
 helm upgrade voyager-operator -n kube-system appscode/voyager \
-  --reuse-values \
-  --set-file license=/path/to/new/license.txt
-```
-
-</div>
-<div class="tab-pane fade" id="lu-helm2" role="tabpanel" aria-labelledby="lu-helm2">
-
-#### Using Helm 2
-
-```bash
-helm upgrade voyager-operator appscode/voyager \
   --reuse-values \
   --set-file license=/path/to/new/license.txt
 ```
