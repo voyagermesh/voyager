@@ -29,8 +29,10 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: test-service
-          servicePort: '80'
+          service:
+            name: test-service
+            port:
+              number: 80
           headerRules:
           - X-Forwarded-Host %[base]
           rewriteRules:

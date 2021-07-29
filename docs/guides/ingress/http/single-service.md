@@ -25,8 +25,10 @@ metadata:
   namespace: default
 spec:
   backend:
-    serviceName: test-service
-    servicePort: 80
+    service:
+      name: test-service
+      port:
+        number: 80
 ```
 
 This will create a load balancer forwarding all traffic to `test-service` service, unconditionally. The
@@ -44,21 +46,27 @@ metadata:
   namespace: default
 spec:
   backend:
-    serviceName: default-service
-    servicePort: 80
+    service:
+      name: default-service
+      port:
+        number: 80
   rules:
   - host: appscode.example.com
     http:
       paths:
       - backend:
-          serviceName: test-service
-          servicePort: 80
+          service:
+            name: test-service
+            port:
+              number: 80
   - host: default.example.com
     http:
       paths:
       - backend:
-          serviceName: default-service
-          servicePort: 80
+          service:
+            name: default-service
+            port:
+              number: 80
 ```
 **Default Backend**: An Ingress with no rules, like the one shown in the previous section, sends all
 traffic to a single default backend. You can use the same technique to tell a loadbalancer

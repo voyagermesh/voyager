@@ -71,8 +71,10 @@ spec:
       paths:
       - path: /testpath
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+            name: test-server
+            port:
+              number: 80
 ```
 
 Test without certificates:
@@ -132,7 +134,7 @@ metadata:
   namespace: default
 spec:
   frontendRules:
-  - port: '8080'
+  - port: 8080
     auth:
       tls:
         secretName: server
@@ -153,17 +155,20 @@ spec:
       paths:
       - path: /no-auth
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+            name: test-server
+            port:
+              number: 80
   - host: auth.example.com
     http:
-      port: '8080'
+      port: 8080
       paths:
       - path: /auth
         backend:
-          serviceName: test-svc
-          servicePort: 80
-
+          service:
+            name: test-svc
+            port:
+              number: 80
 ```
 
 Request in non-tls port:

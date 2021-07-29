@@ -115,8 +115,10 @@ spec:
       paths:
       - path: /apis
         backend:
-          serviceName: test-server
-          servicePort: 6443
+          service:
+            name: test-server
+            port:
+              number: 6443
 ```
 
 ### Generated haproxy.cfg

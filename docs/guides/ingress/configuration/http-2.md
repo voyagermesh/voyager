@@ -93,8 +93,10 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: grpc-server
-          servicePort: 3000
+          service:
+            name: grpc-server
+            port:
+              number: 3000
           proto: h2
 ```
 
@@ -291,8 +293,10 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: grpc-server
-          servicePort: 3000
+          service:
+            name: grpc-server
+            port:
+              number: 3000
           alpn:
           - h2
           - http/1.1

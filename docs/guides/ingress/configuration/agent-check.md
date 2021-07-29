@@ -80,8 +80,10 @@ spec:
       paths:
       - path: /app
         backend:
-          serviceName: test-server
-          servicePort: 8080
+          service:
+            name: test-server
+            port:
+              number: 8080
 ```
 
 Now we need to annotate the backend service to enable agent-check for that backend.

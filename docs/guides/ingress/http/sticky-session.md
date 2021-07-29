@@ -37,20 +37,26 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: s1
-          servicePort: '80'
+          service:
+            name: s1
+            port:
+              number: 80
   - host: bar.foo.com
     http:
       paths:
       - backend:
-          serviceName: s2
-          servicePort: '80'
+          service:
+            name: s2
+            port:
+              number: 80
   - host: tcp.bar.com
     tcp:
-      port: '9898'
+      port: 9898
       backend:
-        serviceName: tcp-service
-        servicePort: '50077'
+        service:
+          name: tcp-service
+          port:
+            number: 50077
 ```
 
 For the above ingress, all three backend connections will be sticky.
@@ -96,24 +102,32 @@ spec:
       paths:
       - path: /admin
         backend:
-          serviceName: s1   # Sticky, since service s1 is annotated
-          servicePort: '5050'
+          service:
+            name: s1   # Sticky, since service s1 is annotated
+            port:
+              number: 5050
       - path: /
         backend:
-          serviceName: s1   # Sticky, since service s1 is annotated
-          servicePort: '80'
+          service:
+            name: s1   # Sticky, since service s1 is annotated
+            port:
+              number: 80
   - host: bar.foo.com
     http:
       paths:
       - backend:
-          serviceName: s2   # Not sticky
-          servicePort: '80'
+          service:
+            name: s2   # Not sticky
+            port:
+              number: 80
   - host: tcp.bar.com
     tcp:
-      port: '9898'
+      port: 9898
       backend:
-        serviceName: tcp-service # Not sticky
-        servicePort: '50077'
+        service:
+          name: tcp-service # Not sticky
+          port:
+            number: 50077
 ```
 
 ## Other Annotations

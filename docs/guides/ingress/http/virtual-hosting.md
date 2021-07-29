@@ -37,14 +37,18 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: s1
-          servicePort: '80'
+          service:
+            name: s1
+            port:
+              number: 80
   - host: bar.foo.com
     http:
       paths:
       - backend:
-          serviceName: s2
-          servicePort: '80'
+          service:
+            name: s2
+            port:
+              number: 80
 ```
 
 > AppsCode Ingress also support **wildcard** Name based virtual hosting.
@@ -66,8 +70,10 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: s1.bar # serviceName.Namespace
-          servicePort: '80'
+          service:
+            name: s1.bar # serviceName.Namespace
+            port:
+              number: 80
 ```
 
 ## Path based Routing
@@ -94,12 +100,16 @@ spec:
       paths:
       - path: "/foo"
         backend:
-          serviceName: s1
-          servicePort: '80'
+          service:
+            name: s1
+            port:
+              number: 80
       - path: "/bar"
         backend:
-          serviceName: s2
-          servicePort: '80'
+          service:
+            name: s2
+            port:
+              number: 80
 ```
 
 The Ingress controller will provision an implementation specific loadbalancer that satisfies the Ingress,

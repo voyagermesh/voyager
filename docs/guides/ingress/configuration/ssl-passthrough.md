@@ -44,8 +44,10 @@ spec:
       paths:
       - path: /foo
         backend:
-          serviceName: test-server
-          servicePort: 443
+          service:
+          	name: test-server
+            port:
+              number: 443
 ```
 
 Generated haproxy.cfg:

@@ -60,8 +60,10 @@ metadata:
   namespace: default
 spec:
   backend:
-    serviceName: external-ip
-    servicePort: "80"
+    service:
+      name: external-ip
+      port:
+        number: 80
 ```
 
 
@@ -104,8 +106,10 @@ metadata:
   namespace: default
 spec:
   backend:
-    serviceName: external-ns
-    servicePort: "80"
+    service:
+      name: external-ns
+      port:
+        number: 80
 ```
 
 ### HTTP Redirect
@@ -128,8 +132,10 @@ If No BackendRules are configured for the endpoint, Voyager will configure HAPro
 The redirect code will be 301 (permanent redirect). Scheme (http or https) used by endpoint is preserved on redirect.
 ```
 backend:
-  serviceName: external-svc-non-dns
-  servicePort: "80"
+  service:
+    name: external-svc-non-dns
+    port:
+      number: 80
 ```
 
 The generated redirect line in HAProxy config:
@@ -145,7 +151,8 @@ If Backendrules are configured, Voyager will not auto generate any redirect rule
 backend:
   backendRules:
   - http-request redirect location https://google.com code 302
-  serviceName: external-svc-non-dns
-  servicePort: "80"
+  service:
+    name: external-svc-non-dns
+    port:
+      number: 80
 ```
-

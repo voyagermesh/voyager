@@ -26,22 +26,28 @@ metadata:
   namespace: demo
 spec:
   backend:
-    serviceName: test-server
-    servicePort: 80
+    service:
+      name: test-server
+      port:
+        number: 80
     loadBalanceOn: roundrobin # configure for default backend
   rules:
   - http:
       port: 8989
       paths:
       - backend:
-          serviceName: test-server
-          servicePort: 8989
+          service:
+            name: test-server
+            port:
+              number: 8989
           loadBalanceOn: static-rr # configure for http backend
   - tcp:
       port: 4545
       backend:
-        serviceName: test-server
-        servicePort: 4545
+        service:
+          name: test-server
+          port:
+            number: 4545
         loadBalanceOn: leastconn # configure for tcp backend
 ```
 

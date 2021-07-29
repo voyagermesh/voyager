@@ -133,13 +133,17 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: kubernetes-dashboard
-          servicePort: 443
+          service:
+            name: kubernetes-dashboard
+            port:
+              number: 443
       - path: /oauth2
         backend:
           name: auth-be
-          serviceName: oauth2-proxy
-          servicePort: 4180
+          service:
+            name: oauth2-proxy
+            port:
+              number: 4180
 ```
 
 ## Access DashBoard

@@ -86,8 +86,10 @@ spec:
       paths:
       - path: /web
         backend:
-          serviceName: web
-          servicePort: 80
+          service:
+            name: web
+            port:
+              number: 80
 ```
 
 Test without user and password:
@@ -158,15 +160,18 @@ spec:
       paths:
       - path: /no-auth
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+            name: test-server
+            port:
+              number: 80
   - http:
       paths:
       - path: /auth
         backend:
-          serviceName: test-svc
-          servicePort: 80
-
+          service:
+            name: test-svc
+            port:
+              number: 80
 ```
 
 Test without user and password:
@@ -219,27 +224,30 @@ metadata:
   namespace: default
 spec:
   frontendRules:
-  - port: '8080'
+  - port: 8080
     auth:
       basic:
         secretName: mypasswd
         realm: My Server
   rules:
   - http:
-      port: '80'
+      port: 80
       paths:
       - path: /no-auth
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+            name: test-server
+            port:
+              number: 80
   - http:
-      port: '8080'
+      port: 8080
       paths:
       - path: /auth
         backend:
-          serviceName: test-svc
-          servicePort: 80
-
+          service:
+            name: test-svc
+            port:
+              number: 80
 ```
 
 Test without user and password:

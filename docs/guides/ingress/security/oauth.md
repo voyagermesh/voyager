@@ -40,17 +40,23 @@ spec:
       paths:
       - path: /health
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+            name: test-server
+            port:
+              number: 80
       - path: /app
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+            name: test-server
+            port:
+              number: 80
       - path: /oauth2
         backend:
           name: auth-be
-          serviceName: oauth2-proxy
-          servicePort: 4180
+          service:
+            name: oauth2-proxy
+            port:
+              number: 4180
 ```
 
 Please note the followings:
@@ -100,25 +106,33 @@ spec:
       paths:
       - path: /foo
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+            name: test-server
+            port:
+              number: 80
       - path: /google
         backend:
           name: google-auth
-          serviceName: oauth2-proxy-google
-          servicePort: 4180
+          service:
+            name: oauth2-proxy-google
+            port:
+              number: 4180
   - host: team02.example.com
     http:
       paths:
       - path: /bar
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+            name: test-server
+            port:
+              number: 80
       - path: /github
         backend:
           name: github-auth
-          serviceName: oauth2-proxy-github
-          servicePort: 4180
+          service:
+            name: oauth2-proxy-github
+            port:
+              number: 4180
 ```
 
 ## Next Steps

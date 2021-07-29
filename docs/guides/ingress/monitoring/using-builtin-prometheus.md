@@ -71,8 +71,10 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: web
-          servicePort: 80
+          service:
+            name: web
+            port:
+              number: 80
 ```
 
 Voyager operator watches for `Ingress` objects using Kubernetes api. When a `Ingress` object is created, Voyager operator will create a new HAProxy deployment and a NodePort Service with name `voyager-{ingress-name}`. Since `ingress.appscode.com/stats` annotation was configured, a stats service object is configured accordingly. Here,

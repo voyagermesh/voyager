@@ -99,8 +99,10 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: test-service
-          servicePort: '80'
+          service:
+            name: test-service
+            port:
+              number: 80
 ```
 This Ingress will open an `https` listener to secure the channel from the client to the loadbalancer,
 terminate TLS at load balancer with the secret retried via SNI and forward unencrypted traffic to the
@@ -125,10 +127,12 @@ spec:
   rules:
   - host: appscode.example.com
     tcp:
-      port: '9898'
+      port: 9898
       backend:
-        serviceName: tcp-service
-        servicePort: '50077'
+        service:
+          name: tcp-service
+          port:
+            number: 50077
 ```
 You need to set  the secretName field with the TCP rule to use a certificate.
 
@@ -154,28 +158,36 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: test-service
-          servicePort: '80'
+          service:
+            name: test-service
+            port:
+              number: 80
   - host: one.example.com
     http:
       noTLS: true
       paths:
       - backend:
-          serviceName: test-service
-          servicePort: '80'
+          service:
+            name: test-service
+            port:
+              number: 80
   - host: one.example.com
     tcp:
-      port: '7878'
+      port: 7878
       backend:
-        serviceName: tcp-service
-        servicePort: '50077'
+        service:
+          name: tcp-service
+          port:
+            number: 50077
   - host: one.example.com
     tcp:
-      port: '7800'
+      port: 7800
       noTLS: true
       backend:
-        serviceName: tcp-service
-        servicePort: '50077'
+        service:
+          name: tcp-service
+          port:
+            number: 50077
 ```
 
 For this Ingress, HAProxy will open up 3 separate ports:

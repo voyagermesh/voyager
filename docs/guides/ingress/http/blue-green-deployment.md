@@ -123,8 +123,10 @@ spec:
   - http:
       paths:
       - backend:
-          serviceName: deployment-svc
-          servicePort: 80
+          service:
+            name: deployment-svc
+            port:
+              number: 80
         path: /testpath
 ```
 

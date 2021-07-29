@@ -35,8 +35,10 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: test-service
-          servicePort: '80'
+          service:
+            name: test-service
+            port:
+              number: 80
   loadBalancerSourceRanges:
   - 10.0.0.0/8
 ```
@@ -56,8 +58,10 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: test-service
-          servicePort: '80'
+          service:
+            name: test-service
+            port:
+              number: 80
   loadBalancerSourceRanges:
   - 130.211.204.1/32
   - 130.211.204.2/32

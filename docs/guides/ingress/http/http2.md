@@ -41,8 +41,10 @@ spec:
       paths:
       - path: "/"
         backend:
-          serviceName: host-service
-          servicePort: '8000'
+          service:
+            name: host-service
+            port:
+              number: 8000
       alpn:
       - h2
       - http/1.1

@@ -44,32 +44,40 @@ spec:
   rules:
   - host: one.example.com
     http:
-      port: '8989'
-      nodePort: '32666'
+      port: 8989
+      nodePort: 32666
       paths:
       - path: /t1
         backend:
-          serviceName: test-server
-          servicePort: '80'
+          service:
+            name: test-server
+            port:
+              number: 80
       - path: /t2
         backend:
-          serviceName: test-server
-          servicePort: '80'
+          service:
+            name: test-server
+            port:
+              number: 80
   - host: other.example.com
     http:
-      port: '8989'
-      nodePort: '32666'
+      port: 8989
+      nodePort: 32666
       paths:
       - backend:
-          serviceName: test-server
-          servicePort: '80'
+          service:
+            name: test-server
+            port:
+              number: 80
   - host: appscode.example.com
     tcp:
-      port: '4343'
-      nodePort: '32667'
+      port: 4343
+      nodePort: 32667
       backend:
-        serviceName: test-server
-        servicePort: '80'
+        service:
+          name: test-server
+          port:
+            number: 80
 ```
 
 Since `ingress.appscode.com/type: NodePort` annotation is used, this Ingress is going to expose HAProxy pods via a `NodePort` Service. This service will listen to `8989` and `4343` port for incoming HTTP connections and these port will map to specified node ports, and will pass any request coming to it to the desired backend.

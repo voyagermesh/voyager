@@ -47,8 +47,10 @@ spec:
       paths:
       - path: /foo
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+          	name: test-server
+            port:
+              number: 80
 ```
 
 This will add `maxconn 1` in global section of generated haproxy.cfg.

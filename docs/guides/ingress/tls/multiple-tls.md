@@ -104,14 +104,18 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: test-server
-          servicePort: 8080
+          service:
+            name: test-server
+            port:
+              number: 8080
   - host: bb.appscode.ninja
     http:
       paths:
       - backend:
-          serviceName: test-server
-          servicePort: 8989
+          service:
+            name: test-server
+            port:
+              number: 8989
 ```
 
 ## Configure DNS
@@ -171,33 +175,29 @@ Create two Certificate CRDs to issue TLS certificates from Let’s Encrypt using
 ```yaml
 $ kubectl apply -f certificate.yaml
 
-apiVersion: voyager.appscode.com/v1
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: aa-ninja
   namespace: demo
 spec:
-  domains:
+  dnsNames:
   - aa.appscode.ninja
-  acmeUserSecretName: acme-account
-  challengeProvider:
-    dns:
-      provider: gce
-      credentialSecretName: voyager-gce
+  issuerRef:
+    name: letsencrypt-staging-dns
+  secretName: aa-ninja
 ---
-apiVersion: voyager.appscode.com/v1
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: bb-ninja
   namespace: demo
 spec:
-  domains:
+  dnsNames:
   - bb.appscode.ninja
-  acmeUserSecretName: acme-account
-  challengeProvider:
-    dns:
-      provider: gce
-      credentialSecretName: voyager-gce
+  issuerRef:
+    name: letsencrypt-staging-dns
+  secretName: bb-ninja
 ```
 
 After several minutes, you should see two new secrets named `tls-aa-ninja` and `tls-bb-ninja`. These secrets contains the `tls.crt` and `tls.key`.
@@ -230,27 +230,27 @@ spec:
   tls:
   - hosts:
     - aa.appscode.ninja
-    ref:
-      kind: Certificate
-      name: aa-ninja
+    secretName: aa-ninja
   - hosts:
     - bb.appscode.ninja
-    ref:
-      kind: Certificate
-      name: bb-ninja
+    secretName: bb-ninja
   rules:
   - host: aa.appscode.ninja
     http:
       paths:
       - backend:
-          serviceName: test-server
-          servicePort: 8080
+          service:
+            name: test-server
+            port:
+              number: 8080
   - host: bb.appscode.ninja
     http:
       paths:
       - backend:
-          serviceName: test-server
-          servicePort: 8989
+          service:
+            name: test-server
+            port:
+              number: 8989
 ```
 
 ## Check HTTPS Response

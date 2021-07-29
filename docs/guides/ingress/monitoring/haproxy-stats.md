@@ -85,8 +85,10 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: web
-          servicePort: 80
+          service:
+            name: web
+            port:
+              number: 80
 ```
 
 ```console

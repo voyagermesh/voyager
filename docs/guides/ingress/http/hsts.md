@@ -78,8 +78,10 @@ spec:
       paths:
       - path: /foo
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+          	name: test-server
+            port:
+              number: 80
 ```
 
 Generated haproxy.cfg:

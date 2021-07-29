@@ -61,15 +61,19 @@ metadata:
   namespace: default
 spec:
   backend:
-    serviceName: test-service
-    servicePort: '80'
+    service:
+      name: test-service
+      port:
+        number: 80
   rules:
   - host: appscode.example.com
     http:
       paths:
       - backend:
-          serviceName: my-service
-          servicePort: '80'
+          service:
+            name: my-service
+            port:
+              number: 80
 ```
 
 Reference:

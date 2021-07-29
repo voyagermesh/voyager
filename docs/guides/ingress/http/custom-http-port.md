@@ -30,26 +30,34 @@ spec:
       paths:
       - path: /admin
         backend:
-          serviceName: admin-service
-          servicePort: '80'
+          service:
+            name: admin-service
+            port:
+              number: 80
       - path: /
         backend:
-          serviceName: test-service
-          servicePort: '80'
+          service:
+            name: test-service
+            port:
+              number: 80
   - host: other.example.com
     http:
       port: '8989'
       paths:
       - backend:
-          serviceName: other-service
-          servicePort: '80'
+          service:
+            name: other-service
+            port:
+              number: 80
   - host: one.example.com
       http:
         port: '4343'
         paths:
         - backend:
-            serviceName: test-service
-            servicePort: '80'
+            service:
+              name: test-service
+              port:
+                number: 80
 
 ```
 

@@ -35,8 +35,10 @@ metadata:
     ingress.appscode.com/replicas: '2'
 spec:
   backend:
-    serviceName: my-app
-    servicePort: '80'
+    service:
+      name: my-app
+      port:
+        number: 80
 ```
 
 ```console

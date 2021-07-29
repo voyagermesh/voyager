@@ -123,17 +123,23 @@ spec:
       paths:
       - path: /health
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+            name: test-server
+            port:
+              number: 80
       - path: /app
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+            name: test-server
+            port:
+              number: 80
       - path: /oauth2
         backend:
           name: auth-be
-          serviceName: oauth2-proxy
-          servicePort: 4180
+          service:
+            name: oauth2-proxy
+            port:
+              number: 4180
 ```
 
 Now browse the followings:
@@ -254,17 +260,23 @@ spec:
       paths:
       - path: /health
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+            name: test-server
+            port:
+              number: 80
       - path: /app
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+            name: test-server
+            port:
+              number: 80
       - path: /oauth2
         backend:
           name: auth-be
-          serviceName: oauth2-proxy
-          servicePort: 4180
+          service:
+            name: oauth2-proxy
+            port:
+              number: 4180
 ```
 
 Now browse the followings:
