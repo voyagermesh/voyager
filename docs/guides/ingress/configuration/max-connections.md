@@ -33,7 +33,7 @@ Then create the ingress:
 ```yaml
 $ kubectl apply -f test-ingress.yaml
 
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress

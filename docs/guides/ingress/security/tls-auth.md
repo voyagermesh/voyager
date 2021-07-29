@@ -49,7 +49,7 @@ $ kubectl create secret generic ca --from-file=/path/to/ca.crt
 Create an Ingress with TLS Auth annotations:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   annotations:
@@ -125,7 +125,7 @@ Location: https://auth.example.com/errors.html
 Basic Auth can also be configured per frontend in voyager ingress via FrontendRules.
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: hello-basic-auth

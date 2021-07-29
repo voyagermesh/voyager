@@ -108,7 +108,7 @@ ingress "stats-ing" created
 ```
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: stats-ing
@@ -180,7 +180,7 @@ metadata:
   uid: 217225cb-1a7a-11e8-a133-080027640ad5
 spec:
   endpoints:
-  - path: /voyager.appscode.com/v1beta1/namespaces/demo/ingresses/stats-ing/metrics
+  - path: /voyager.appscode.com/v1/namespaces/demo/ingresses/stats-ing/metrics
     port: http
     targetPort: 0
   namespaceSelector:

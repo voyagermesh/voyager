@@ -19,7 +19,7 @@ You can configure a backend to use a specific [load balancing algorithm](https:/
 Ingress Example:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress

@@ -18,7 +18,7 @@ Voyager supports full spectrum of HAProxy backend rules via `backendRule`. Read 
 about HAProxy backend rules.
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress

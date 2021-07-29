@@ -21,7 +21,7 @@ Note that, if you change your backend pod's `terminationGracePeriodSeconds` (def
 Ingress Example:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress

@@ -21,7 +21,7 @@ Note that, this feature is supported for cloud providers GCE, GKE, Azure, ACS an
 ## Ingress Example
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress

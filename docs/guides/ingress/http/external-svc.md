@@ -53,7 +53,7 @@ subsets:
 Now, you can use this `external-ip` Service as a backend in your Ingress definition. For example:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ings-rhvulnlb
@@ -97,7 +97,7 @@ spec:
 If this service is used in ingress, the traffic will forward to google.com's address.
 
 ```
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ings-rhvulnlb

@@ -69,7 +69,7 @@ Then deploy the ingress:
 ```yaml
 $ kubectl apply test-ingress.yaml
 
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -94,7 +94,7 @@ $ kubectl annotate svc test-server ingress.appscode.com/check-port="9090"
 You can also specify the health-check behaviour using backend rules. For example:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress

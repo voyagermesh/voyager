@@ -99,7 +99,7 @@ Finally create the ingress:
 ```yaml
 $ kubectl apply -f auth-ingress.yaml
 
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: auth-ingress
@@ -226,7 +226,7 @@ Finally create the ingress:
 ```yaml
 $ kubectl apply -f auth-ingress.yaml
 
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: auth-ingress

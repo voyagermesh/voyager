@@ -26,7 +26,7 @@ Note that, Voyager won't sync with this annotation if there is a HPA controlling
 This regulation is followed so that HPA on ingress deployment does not experience any conflicts.
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: my-app

@@ -43,7 +43,7 @@ service "rest" exposed
 By default Voyager will run HAProxy pods using `Deployment`. Since 8.0.1 release, Voyager can run HAProxy pods using either Deployment or DaemonSet. Set the annotation `ingress.appscode.com/workload-kind` on an ingress object to either `Deployment` or `DaemonSet` to enable this feature. If this annotation is missing, HAProxy pods will be run using a `Deployment` as before.
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: ingress-w-node-selector
@@ -61,7 +61,7 @@ kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param
 ```
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: ingress-w-node-selector
@@ -122,7 +122,7 @@ kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param
 ```
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: ingress-w-pod-anti-affinity
@@ -171,7 +171,7 @@ kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param
 ```
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: ingress-w-toleration
@@ -229,7 +229,7 @@ spec:
 You can use these various option in combination with each other to achieve desired result. Say, you want to run your HAProxy pods on master instances. This can be done using an Ingress like below:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: ingress-w-node-selector

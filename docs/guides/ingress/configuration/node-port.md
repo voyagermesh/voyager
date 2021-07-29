@@ -33,7 +33,7 @@ service "test-server" exposed
 Then create the ingress:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -94,13 +94,13 @@ kind: Service
 metadata:
   annotations:
     ingress.appscode.com/last-applied-annotation-keys: ""
-    ingress.appscode.com/origin-api-schema: voyager.appscode.com/v1beta1
+    ingress.appscode.com/origin-api-schema: voyager.appscode.com/v1
     ingress.appscode.com/origin-name: test-ingress
   creationTimestamp: 2018-02-15T03:51:06Z
   name: voyager-test-ingress
   namespace: default
   ownerReferences:
-  - apiVersion: voyager.appscode.com/v1beta1
+  - apiVersion: voyager.appscode.com/v1
     blockOwnerDeletion: true
     kind: Ingress
     name: test-ingress

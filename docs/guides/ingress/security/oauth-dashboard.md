@@ -107,7 +107,7 @@ $ kubectl create secret tls tls-secret --key /tmp/tls.key --cert /tmp/tls.crt -n
 ```yaml
 $ kubectl apply -f auth-ingress.yaml
 
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: auth-ingress

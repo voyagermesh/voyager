@@ -19,7 +19,7 @@ In some scenarios the exposed URL in the backend service differs from the specif
 ## Ingress Example
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress

@@ -70,7 +70,7 @@ ingress "stats-ing" created
 ```
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: stats-ing

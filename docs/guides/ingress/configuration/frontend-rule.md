@@ -21,7 +21,7 @@ This allows acls or other options in frontend sections in HAProxy config. Fronte
 
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -63,7 +63,7 @@ will be applied to all the backends which listens to port 80.
 This example demonstrates How to whitelist some IP addresses for a backend using frontend rule.
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -113,7 +113,7 @@ data:
 Then mount this configmap using `spec.configVolumes` and specify the file path using frontend rules.
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress

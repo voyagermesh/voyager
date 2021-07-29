@@ -79,7 +79,7 @@ spec:
 ### Create Ingress
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -266,7 +266,7 @@ Here, `ingress.appscode.com/backend-tls` will be used by voyager to configure ba
 Create ingress and specify the `spec.tls` and `spec.configVolumes`.
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress

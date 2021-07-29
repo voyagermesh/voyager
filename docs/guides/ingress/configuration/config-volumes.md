@@ -98,7 +98,7 @@ secret/ca-secret created
 Create the ingress and specify the secret in `spec.configVolumes`.
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress

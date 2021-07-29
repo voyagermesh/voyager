@@ -18,7 +18,7 @@ AppsCode Ingress support header and URL modification at the loadbalancer level. 
 the header and rewrite rules follow the HAProxy syntax as it is. To add some rewrite rules for a HTTP path, follow the example below:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress

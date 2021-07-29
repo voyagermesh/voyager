@@ -26,7 +26,7 @@ For `NodePort` type ingresses, it sets `ExternalTrafficPolicy` to `Local` regard
 ## Ingress Example
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress

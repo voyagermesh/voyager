@@ -19,7 +19,7 @@ You can specify annotations applied to HAProxy pods through ingress annotation `
 ## Ingress Example
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress

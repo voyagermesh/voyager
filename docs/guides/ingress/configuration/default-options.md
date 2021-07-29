@@ -31,7 +31,7 @@ If you don't set the annotation `{"http-server-close": "true", "dontlognull": "t
 Ingress Example:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress

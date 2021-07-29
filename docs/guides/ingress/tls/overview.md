@@ -84,7 +84,7 @@ For handling wildcard domains use **"\*"** as hostname ( [Example](https://githu
 Referencing this secret in an Ingress will tell the Voyager to secure the channel from client to the loadbalancer using TLS:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -112,7 +112,7 @@ Adding a TCP TLS termination at Voyager Ingress is slightly different than HTTP,
 SNI support. A TCP endpoint with TLS termination, will look like this in Voyager Ingress:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -139,7 +139,7 @@ You need to set  the secretName field with the TCP rule to use a certificate.
 Voyager Ingress can support for TLS and non-TLS traffic for same host in both HTTP and TCP mode. To do that you need to specify `noTLS: true` for the corresponding rule. Here is an example:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress

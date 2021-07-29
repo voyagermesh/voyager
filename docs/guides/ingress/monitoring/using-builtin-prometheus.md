@@ -55,7 +55,7 @@ ingress "stats-ing" created
 ```
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: stats-ing
@@ -103,10 +103,10 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    ingress.appscode.com/origin-api-schema: voyager.appscode.com/v1beta1
+    ingress.appscode.com/origin-api-schema: voyager.appscode.com/v1
     ingress.appscode.com/origin-name: stats-ing
     monitoring.appscode.com/agent: prometheus.io/builtin
-    prometheus.io/path: /voyager.appscode.com/v1beta1/namespaces/demo/ingresses/stats-ing/metrics
+    prometheus.io/path: /voyager.appscode.com/v1/namespaces/demo/ingresses/stats-ing/metrics
     prometheus.io/port: "56790"
     prometheus.io/scrape: "true"
   creationTimestamp: 2018-02-25T21:48:24Z

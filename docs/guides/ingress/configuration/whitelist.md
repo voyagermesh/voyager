@@ -19,7 +19,7 @@ You can specify the allowed client IP source ranges through the `ingress.appscod
 ## Ingress Example
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress

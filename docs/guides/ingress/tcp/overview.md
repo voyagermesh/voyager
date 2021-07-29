@@ -20,7 +20,7 @@ TCP load balancing is one of the core features of Voyager Ingress. Voyager can h
 One Simple TCP Rule Would be:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress

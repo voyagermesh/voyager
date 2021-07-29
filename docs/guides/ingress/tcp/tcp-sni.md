@@ -32,7 +32,7 @@ $ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/master/tes
 ```yaml
 $ kubectl apply -f tcp-sni.yaml
 
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress

@@ -69,7 +69,7 @@ $ kubectl expose deployment nginx --name=web --port=80 --target-port=80
 Create an Ingress with Basic Auth annotations
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   annotations:
@@ -147,7 +147,7 @@ spec:
 Create an Ingress with Basic Auth only on path `/auth`
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: hello-basic-auth
@@ -212,7 +212,7 @@ Content-Type: text/plain; charset=utf-8
 Basic Auth can also be configured per frontend in voyager ingress via FrontendRules.
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: hello-basic-auth

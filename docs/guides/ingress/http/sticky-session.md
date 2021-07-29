@@ -24,7 +24,7 @@ backends using that service to use sticky session.
 Applying annotation `ingress.appscode.com/affinity` to Ingress will configure all backends to support sticky session.
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -84,7 +84,7 @@ spec:
 ```
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress

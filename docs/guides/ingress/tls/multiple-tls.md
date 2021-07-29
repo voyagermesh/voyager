@@ -93,7 +93,7 @@ Create a ingress that points to the different port of the test server for differ
 ```yaml
 $ kubectl apply -f ingress.yaml
 
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -171,7 +171,7 @@ Create two Certificate CRDs to issue TLS certificates from Let’s Encrypt using
 ```yaml
 $ kubectl apply -f certificate.yaml
 
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Certificate
 metadata:
   name: aa-ninja
@@ -185,7 +185,7 @@ spec:
       provider: gce
       credentialSecretName: voyager-gce
 ---
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Certificate
 metadata:
   name: bb-ninja
@@ -221,7 +221,7 @@ Update the previously created ingress and specify the certificates in the TLS se
  ```yaml
 $ kubectl apply -f ingress-tls.yaml
  
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress

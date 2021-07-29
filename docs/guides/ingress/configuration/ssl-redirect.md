@@ -21,7 +21,7 @@ When using SSL offloading outside of cluster (e.g. AWS ELB) it may be useful to 
 ## Ingress Example
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -98,7 +98,7 @@ backend test-server.default:80
 ### With force redirect
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
