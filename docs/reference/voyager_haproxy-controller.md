@@ -54,5 +54,5 @@ voyager haproxy-controller [command] [flags]
 
 ### SEE ALSO
 
-* [voyager](/docs/reference/voyager.md)	 - Voyager by Appscode - Secure HAProxy Ingress Controller for Kubernetes
+* [voyager](/docs/reference/voyager.md)	 - Voyager by Appscode - Secure L7/L4 Ingress Controller for Kubernetes
 

@@ -16,20 +16,19 @@ section_menu_id: setup
 
 # Installation Guide
 
-To use the Voyager, you can grab **1 year** free license from [here](https://license-issuer.appscode.com/). After that, you can issue another license for one more year. Typically we release a new version of the operator at least quarterly. So, you can just grab a new license every time you upgrade the operator.
-
+Voyager Enterprise Edition requires a license to operate. If you are willing to try Voyager Enterprise Edition, you can grab a **30 days trial** license from [here](https://license-issuer.appscode.com/). To purchase an Enterprise license, please contact us from [here](https://appscode.com/contact).
 
 ## Get a License
 
-In this section, we are going to show you how you can get a **1 year** free license for the Voyager Community edition. You can get a license for your Kubernetes cluster by going through the following steps:
+In this section, we are going to show you how you can get a free trial license for the Voyager Enterprise edition. You can get a license for your Kubernetes cluster by going through the following steps:
 
-- At first, go to [AppsCode License Server](https://license-issuer.appscode.com/) and fill-up the form. It will ask for your Name, Email, the product you want to install, and your cluster ID (UID of the `voyager` namespace).
+- At first, go to [AppsCode License Server](https://license-issuer.appscode.com/) and fill-up the form. It will ask for your Name, Email, the product you want to install, and your cluster ID (UID of the `kube-system` namespace).
 - Provide your name and email address. You can provide your personal or work email address.
-- Then, select `Voyager Community Edition` in the product field.
+- Then, select `Voyager Enterprise Edition` in the product field.
 - Now, provide your cluster-ID. You can get your cluster ID easily by running the following command:
 
   ```bash
-  $ kubectl get ns voyager -o=jsonpath='{.metadata.uid}'
+  $ kubectl get ns kube-system -o=jsonpath='{.metadata.uid}'
   ```
 
 - Then, you have to agree with the terms and conditions. We recommend reading it before checking the box.
@@ -39,7 +38,7 @@ In this section, we are going to show you how you can get a **1 year** free lice
 Here is a screenshot of the license form.
 
 <figure align="center">
-  <img alt="Voyager Backend Overview" src="/docs/images/setup/community_license_form.png">
+  <img alt="Voyager License Form" src="/docs/images/setup/license_form.png">
   <figcaption align="center">Fig: Voyager License Form</figcaption>
 </figure>
 
@@ -72,7 +71,7 @@ $ helm repo update
 
 $ helm search repo appscode/voyager --version {{< param "info.version" >}}
 NAME              CHART VERSION APP VERSION DESCRIPTION
-appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  Voyager by AppsCode - Secure HAProxy Ingress Controller...
+appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  Voyager by AppsCode - Secure L7/L4 Ingress Controller...
 
 # provider=acs
 # provider=aks
@@ -109,7 +108,7 @@ $ helm repo update
 
 $ helm search repo appscode/voyager --version {{< param "info.version" >}}
 NAME              CHART VERSION APP VERSION DESCRIPTION
-appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  Voyager by AppsCode - Secure HAProxy Ingress Controller...
+appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  Voyager by AppsCode - Secure L7/L4 Ingress Controller...
 
 # provider=acs
 # provider=aks
