@@ -10,10 +10,10 @@ menu:
 product_name: voyager
 menu_name: docs_{{ .version }}
 section_menu_id: welcome
-url: /products/voyager/{{ .version }}/welcome/
+url: /docs/{{ .version }}/welcome/
 aliases:
-  - /products/voyager/{{ .version }}/
-  - /products/voyager/{{ .version }}/README/
+  - /docs/{{ .version }}/
+  - /docs/{{ .version }}/README/
 ---
 
 # Voyager

@@ -10,9 +10,9 @@ menu:
 product_name: voyager
 menu_name: docs_{{ .version }}
 section_menu_id: welcome
-url: /products/voyager/{{ .version }}/welcome/acknowledgement/
+url: /docs/{{ .version }}/welcome/acknowledgement/
 aliases:
-  - /products/voyager/{{ .version }}/acknowledgement/
+  - /docs/{{ .version }}/acknowledgement/
 ---
 
 # Acknowledgement

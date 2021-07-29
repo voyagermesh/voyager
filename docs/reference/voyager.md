@@ -11,7 +11,7 @@ product_name: voyager
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 aliases:
-  - /products/voyager/{{ .version }}/reference/
+  - /docs/{{ .version }}/reference/
 
 ---
 ## voyager

@@ -10,7 +10,7 @@ product_name: voyager
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 aliases:
-  - /products/voyager/{{ .version }}/guides/ingress/security/
+  - /docs/{{ .version }}/guides/ingress/security/
 ---
 
 > New to Voyager? Please start [here](/docs/concepts/overview.md).

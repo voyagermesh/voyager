@@ -10,9 +10,9 @@ menu:
 product_name: voyager
 menu_name: docs_{{ .version }}
 section_menu_id: setup
-url: /products/voyager/{{ .version }}/setup/
+url: /docs/{{ .version }}/setup/
 aliases:
-  - /products/voyager/{{ .version }}/setup/README/
+  - /docs/{{ .version }}/setup/README/
 ---
 # Setup
 
