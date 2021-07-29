@@ -20,13 +20,7 @@ https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html
 ```console
 kubectl create namespace cert-manager
 kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
-kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v0.10.0/cert-manager.yaml
-```
-
-Add `--validate=false` to the last command if your kubectl version is <= v1.12, like this:
-
-```console
-kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v0.10.0/cert-manager.yaml --validate=false
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.4.1/cert-manager.yaml
 ```
 
 ## 2. Setup Issuer/ClusterIssuer
