@@ -33,7 +33,7 @@ NAME          STATUS    AGE
 default       Active    45m
 demo          Active    10s
 kube-public   Active    45m
-kube-system   Active    45m
+voyager   Active    45m
 ```
 
 Note that the yaml files that are used in this tutorial, stored in [docs/examples](https://github.com/voyagermesh/voyager/tree/master/docs/examples/monitoring) folder in GitHub repository [voyagermesh/voyager](https://github.com/voyagermesh/voyager).

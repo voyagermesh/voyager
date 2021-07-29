@@ -23,13 +23,13 @@ To use the Voyager, you can grab **1 year** free license from [here](https://lic
 
 In this section, we are going to show you how you can get a **1 year** free license for the Voyager Community edition. You can get a license for your Kubernetes cluster by going through the following steps:
 
-- At first, go to [AppsCode License Server](https://license-issuer.appscode.com/) and fill-up the form. It will ask for your Name, Email, the product you want to install, and your cluster ID (UID of the `kube-system` namespace).
+- At first, go to [AppsCode License Server](https://license-issuer.appscode.com/) and fill-up the form. It will ask for your Name, Email, the product you want to install, and your cluster ID (UID of the `voyager` namespace).
 - Provide your name and email address. You can provide your personal or work email address.
 - Then, select `Voyager Community Edition` in the product field.
 - Now, provide your cluster-ID. You can get your cluster ID easily by running the following command:
 
   ```bash
-  $ kubectl get ns kube-system -o=jsonpath='{.metadata.uid}'
+  $ kubectl get ns voyager -o=jsonpath='{.metadata.uid}'
   ```
 
 - Then, you have to agree with the terms and conditions. We recommend reading it before checking the box.
@@ -89,7 +89,7 @@ appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  
 
 $ helm install voyager-operator appscode/voyager \
   --version {{< param "info.version" >}} \
-  --namespace kube-system \
+  --namespace voyager --create-namespace \
   --set cloudProvider=$provider \
   --set-file license=/path/to/the/license.txt
 ```
@@ -124,9 +124,10 @@ appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  
 # provider=digitalocean
 # provider=linode
 
+$ kubectl create ns voyager
 $ helm template voyager-operator appscode/voyager \
   --version {{< param "info.version" >}} \
-  --namespace kube-system \
+  --namespace voyager \
   --set cloudProvider=$provider \
   --set-file license=/path/to/the/license.txt    \
   --set cleaner.skip=true | kubectl apply -f -
@@ -218,7 +219,7 @@ $ kubectl describe ingress.voyager.appscode.com -n <namespace> <ingress-name>
 To detect Voyager version, exec into the operator pod and run `voyager version` command.
 
 ```console
-$ POD_NAMESPACE=kube-system
+$ POD_NAMESPACE=voyager
 $ POD_NAME=$(kubectl get pods -n $POD_NAMESPACE -l app=voyager -o jsonpath={.items[0].metadata.name})
 $ kubectl exec -it $POD_NAME -n $POD_NAMESPACE voyager version
 

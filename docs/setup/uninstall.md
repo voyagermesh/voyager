@@ -34,7 +34,7 @@ To uninstall Voyager operator, run the following command:
 In Helm 3, release names are [scoped to a namespace](https://v3.helm.sh/docs/faq/#release-names-are-now-scoped-to-the-namespace). So, provide the namespace you used to install the operator when installing.
 
 ```console
-$ helm uninstall voyager-operator --namespace kube-system
+$ helm uninstall voyager-operator --namespace voyager
 ```
 
 </div>
@@ -45,7 +45,7 @@ $ helm uninstall voyager-operator --namespace kube-system
 If you prefer to not use Helm, you can generate YAMLs from Voyager operator chart and uninstall using `kubectl`.
 
 ```console
-$ helm template voyager-operator appscode/voyager --namespace kube-system | kubectl delete -f -
+$ helm template voyager-operator appscode/voyager --namespace voyager | kubectl delete -f -
 ```
 
 </div>

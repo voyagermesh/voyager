@@ -35,7 +35,7 @@ kubectl apply -f https://github.com/voyagermesh/installer/raw/{{< param "info.ve
 Now, upgrade the Voyager helm chart using the following command. You can find the latest installation guide [here](/docs/setup/README.md).
 
 ```bash
-helm upgrade voyager-operator -n kube-system appscode/voyager \
+helm upgrade voyager-operator -n voyager appscode/voyager \
   --reuse-values \
   --version {{< param "info.version" >}}
 ```
@@ -64,7 +64,7 @@ Follow the below instructions to update the license:
 #### Using Helm 3
 
 ```bash
-helm upgrade voyager-operator -n kube-system appscode/voyager \
+helm upgrade voyager-operator -n voyager appscode/voyager \
   --reuse-values \
   --set-file license=/path/to/new/license.txt
 ```
@@ -75,7 +75,7 @@ helm upgrade voyager-operator -n kube-system appscode/voyager \
 #### Using YAML (with helm 3)
 
 ```bash
-helm template voyager-operator -n kube-system appscode/voyager \
+helm template voyager-operator -n voyager appscode/voyager \
   --set cleaner.skip=true \
   --set-file license=/path/to/new/license.txt | kubectl apply -f -
 ```

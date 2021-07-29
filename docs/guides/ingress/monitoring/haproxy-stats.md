@@ -50,7 +50,7 @@ NAME          STATUS    AGE
 default       Active    45m
 demo          Active    10s
 kube-public   Active    45m
-kube-system   Active    45m
+voyager   Active    45m
 ```
 
 ### Create Ingress
