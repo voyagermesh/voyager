@@ -65,6 +65,7 @@ jobs:
           export WEBSITE_ROOT=$RUNNER_WORKSPACE/$(basename $WEBSITE_REPOSITORY)
           cd $WEBSITE_ROOT
           npm install
+          make assets
           hugo-tools update-branch --filename=./data/products/voyager.json --branch=${{ github.event.pull_request.head.sha }}
           make docs-skip-assets
           make gen-prod
