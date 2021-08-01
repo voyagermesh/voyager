@@ -35,7 +35,7 @@ kubectl apply -f https://github.com/voyagermesh/installer/raw/{{< param "info.ve
 Now, upgrade the Voyager helm chart using the following command. You can find the latest installation guide [here](/docs/setup/README.md).
 
 ```bash
-helm upgrade voyager-operator -n kube-system appscode/voyager \
+helm upgrade voyager-operator -n voyager appscode/voyager \
   --reuse-values \
   --version {{< param "info.version" >}}
 ```
@@ -55,9 +55,6 @@ Follow the below instructions to update the license:
     <a class="nav-link active" id="lu-helm3-tab" data-toggle="tab" href="#lu-helm3" role="tab" aria-controls="lu-helm3" aria-selected="true">Helm 3</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link" id="lu-helm2-tab" data-toggle="tab" href="#lu-helm2" role="tab" aria-controls="lu-helm2" aria-selected="false">Helm 2</a>
-  </li>
-  <li class="nav-item">
     <a class="nav-link" id="lu-yaml-tab" data-toggle="tab" href="#lu-yaml" role="tab" aria-controls="lu-yaml" aria-selected="false">YAML</a>
   </li>
 </ul>
@@ -67,18 +64,7 @@ Follow the below instructions to update the license:
 #### Using Helm 3
 
 ```bash
-helm upgrade voyager-operator -n kube-system appscode/voyager \
-  --reuse-values \
-  --set-file license=/path/to/new/license.txt
-```
-
-</div>
-<div class="tab-pane fade" id="lu-helm2" role="tabpanel" aria-labelledby="lu-helm2">
-
-#### Using Helm 2
-
-```bash
-helm upgrade voyager-operator appscode/voyager \
+helm upgrade voyager-operator -n voyager appscode/voyager \
   --reuse-values \
   --set-file license=/path/to/new/license.txt
 ```
@@ -89,7 +75,7 @@ helm upgrade voyager-operator appscode/voyager \
 #### Using YAML (with helm 3)
 
 ```bash
-helm template voyager-operator -n kube-system appscode/voyager \
+helm template voyager-operator -n voyager appscode/voyager \
   --set cleaner.skip=true \
   --set-file license=/path/to/new/license.txt | kubectl apply -f -
 ```

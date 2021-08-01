@@ -24,7 +24,7 @@ that is only accessible to cluster internal ips. This will not allow clients fro
 Kubernetes cluster to access the load balancer.
 
 ```
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -35,8 +35,10 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: test-service
-          servicePort: '80'
+          service:
+            name: test-service
+            port:
+              number: 80
   loadBalancerSourceRanges:
   - 10.0.0.0/8
 ```
@@ -45,7 +47,7 @@ In the following example, a load balancer will be created that is only accessibl
 IP addresses from 130.211.204.1 and 130.211.204.2.
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -56,8 +58,10 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: test-service
-          servicePort: '80'
+          service:
+            name: test-service
+            port:
+              number: 80
   loadBalancerSourceRanges:
   - 130.211.204.1/32
   - 130.211.204.2/32

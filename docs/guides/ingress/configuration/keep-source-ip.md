@@ -26,7 +26,7 @@ For `NodePort` type ingresses, it sets `ExternalTrafficPolicy` to `Local` regard
 ## Ingress Example
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -41,8 +41,10 @@ spec:
       paths:
       - path: /foo
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+            name: test-server
+            port:
+              number: 80
 ```
 
 Here `health-check-nodeport` annotation specifies `HealthCheckNodePort` field for services used to expose HAProxy. If not specified, it will be auto-assigned by kubernetes. Note that, it is only effective when `keep-source-ip` is `true` and ingress type is `LoadBalancer`.

@@ -16,16 +16,15 @@ section_menu_id: setup
 
 # Installation Guide
 
-To use the Voyager, you can grab **1 year** free license from [here](https://license-issuer.appscode.com/). After that, you can issue another license for one more year. Typically we release a new version of the operator at least quarterly. So, you can just grab a new license every time you upgrade the operator.
-
+Voyager Enterprise Edition requires a license to operate. If you are willing to try Voyager Enterprise Edition, you can grab a **30 days trial** license from [here](https://license-issuer.appscode.com/). To purchase an Enterprise license, please contact us from [here](https://appscode.com/contact).
 
 ## Get a License
 
-In this section, we are going to show you how you can get a **1 year** free license for the Voyager Community edition. You can get a license for your Kubernetes cluster by going through the following steps:
+In this section, we are going to show you how you can get a free trial license for the Voyager Enterprise edition. You can get a license for your Kubernetes cluster by going through the following steps:
 
 - At first, go to [AppsCode License Server](https://license-issuer.appscode.com/) and fill-up the form. It will ask for your Name, Email, the product you want to install, and your cluster ID (UID of the `kube-system` namespace).
 - Provide your name and email address. You can provide your personal or work email address.
-- Then, select `Voyager Community Edition` in the product field.
+- Then, select `Voyager Enterprise Edition` in the product field.
 - Now, provide your cluster-ID. You can get your cluster ID easily by running the following command:
 
   ```bash
@@ -39,7 +38,7 @@ In this section, we are going to show you how you can get a **1 year** free lice
 Here is a screenshot of the license form.
 
 <figure align="center">
-  <img alt="Voyager Backend Overview" src="/docs/images/setup/community_license_form.png">
+  <img alt="Voyager License Form" src="/docs/images/setup/license_form.png">
   <figcaption align="center">Fig: Voyager License Form</figcaption>
 </figure>
 
@@ -54,9 +53,6 @@ Voyager operator can be installed as a Helm chart or simply as Kubernetes manife
 <ul class="nav nav-tabs" id="installerTab" role="tablist">
   <li class="nav-item">
     <a class="nav-link active" id="helm3-tab" data-toggle="tab" href="#helm3" role="tab" aria-controls="helm3" aria-selected="true">Helm 3 (Recommended)</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" id="helm2-tab" data-toggle="tab" href="#helm2" role="tab" aria-controls="helm2" aria-selected="false">Helm 2</a>
   </li>
   <li class="nav-item">
     <a class="nav-link" id="script-tab" data-toggle="tab" href="#script" role="tab" aria-controls="script" aria-selected="false">YAML</a>
@@ -75,7 +71,7 @@ $ helm repo update
 
 $ helm search repo appscode/voyager --version {{< param "info.version" >}}
 NAME              CHART VERSION APP VERSION DESCRIPTION
-appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  Voyager by AppsCode - Secure HAProxy Ingress Controller...
+appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  Voyager by AppsCode - Secure L7/L4 Ingress Controller...
 
 # provider=acs
 # provider=aks
@@ -92,44 +88,7 @@ appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  
 
 $ helm install voyager-operator appscode/voyager \
   --version {{< param "info.version" >}} \
-  --namespace kube-system \
-  --set cloudProvider=$provider \
-  --set-file license=/path/to/the/license.txt
-```
-
-To see the detailed configuration options, visit [here](https://github.com/voyagermesh/installer/tree/{{< param "info.version" >}}/charts/voyager).
-
-</div>
-<div class="tab-pane fade" id="helm2" role="tabpanel" aria-labelledby="helm2-tab">
-
-## Using Helm 2
-
-Voyager can be installed via [Helm](https://helm.sh/) 2.9.x or later versions using the [chart](https://github.com/voyagermesh/installer/tree/{{< param "info.version" >}}/charts/voyager) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
-
-```console
-$ helm repo add appscode https://charts.appscode.com/stable/
-$ helm repo update
-
-$ helm search appscode/voyager --version {{< param "info.version" >}}
-NAME              CHART VERSION APP VERSION DESCRIPTION
-appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  Voyager by AppsCode - Secure HAProxy Ingress Controller...
-
-# provider=acs
-# provider=aks
-# provider=aws
-# provider=azure
-# provider=baremetal
-# provider=gce
-# provider=gke
-# provider=minikube
-# provider=openstack
-# provider=metallb
-# provider=digitalocean
-# provider=linode
-
-$ helm install appscode/voyager --name voyager-operator \
-  --version {{< param "info.version" >}} \
-  --namespace kube-system \
+  --namespace voyager --create-namespace \
   --set cloudProvider=$provider \
   --set-file license=/path/to/the/license.txt
 ```
@@ -149,7 +108,7 @@ $ helm repo update
 
 $ helm search repo appscode/voyager --version {{< param "info.version" >}}
 NAME              CHART VERSION APP VERSION DESCRIPTION
-appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  Voyager by AppsCode - Secure HAProxy Ingress Controller...
+appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  Voyager by AppsCode - Secure L7/L4 Ingress Controller...
 
 # provider=acs
 # provider=aks
@@ -164,9 +123,10 @@ appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  
 # provider=digitalocean
 # provider=linode
 
+$ kubectl create ns voyager
 $ helm template voyager-operator appscode/voyager \
   --version {{< param "info.version" >}} \
-  --namespace kube-system \
+  --namespace voyager \
   --set cloudProvider=$provider \
   --set-file license=/path/to/the/license.txt    \
   --set cleaner.skip=true | kubectl apply -f -
@@ -258,7 +218,7 @@ $ kubectl describe ingress.voyager.appscode.com -n <namespace> <ingress-name>
 To detect Voyager version, exec into the operator pod and run `voyager version` command.
 
 ```console
-$ POD_NAMESPACE=kube-system
+$ POD_NAMESPACE=voyager
 $ POD_NAME=$(kubectl get pods -n $POD_NAMESPACE -l app=voyager -o jsonpath={.items[0].metadata.name})
 $ kubectl exec -it $POD_NAME -n $POD_NAMESPACE voyager version
 

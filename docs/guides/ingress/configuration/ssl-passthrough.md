@@ -29,7 +29,7 @@ Voyager will not modify your existing TCP rules. Instead it will cause a validat
 ## Ingress Example
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -44,8 +44,10 @@ spec:
       paths:
       - path: /foo
         backend:
-          serviceName: test-server
-          servicePort: 443
+          service:
+          	name: test-server
+            port:
+              number: 443
 ```
 
 Generated haproxy.cfg:

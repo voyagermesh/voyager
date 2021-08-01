@@ -50,7 +50,7 @@ NAME          STATUS    AGE
 default       Active    45m
 demo          Active    10s
 kube-public   Active    45m
-kube-system   Active    45m
+voyager   Active    45m
 ```
 
 ### Create Ingress
@@ -70,7 +70,7 @@ ingress "stats-ing" created
 ```
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: stats-ing
@@ -85,8 +85,10 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: web
-          servicePort: 80
+          service:
+            name: web
+            port:
+              number: 80
 ```
 
 ```console

@@ -84,7 +84,7 @@ For handling wildcard domains use **"\*"** as hostname ( [Example](https://githu
 Referencing this secret in an Ingress will tell the Voyager to secure the channel from client to the loadbalancer using TLS:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -99,8 +99,10 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: test-service
-          servicePort: '80'
+          service:
+            name: test-service
+            port:
+              number: 80
 ```
 This Ingress will open an `https` listener to secure the channel from the client to the loadbalancer,
 terminate TLS at load balancer with the secret retried via SNI and forward unencrypted traffic to the
@@ -112,7 +114,7 @@ Adding a TCP TLS termination at Voyager Ingress is slightly different than HTTP,
 SNI support. A TCP endpoint with TLS termination, will look like this in Voyager Ingress:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -125,10 +127,12 @@ spec:
   rules:
   - host: appscode.example.com
     tcp:
-      port: '9898'
+      port: 9898
       backend:
-        serviceName: tcp-service
-        servicePort: '50077'
+        service:
+          name: tcp-service
+          port:
+            number: 50077
 ```
 You need to set  the secretName field with the TCP rule to use a certificate.
 
@@ -139,7 +143,7 @@ You need to set  the secretName field with the TCP rule to use a certificate.
 Voyager Ingress can support for TLS and non-TLS traffic for same host in both HTTP and TCP mode. To do that you need to specify `noTLS: true` for the corresponding rule. Here is an example:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -154,28 +158,36 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: test-service
-          servicePort: '80'
+          service:
+            name: test-service
+            port:
+              number: 80
   - host: one.example.com
     http:
       noTLS: true
       paths:
       - backend:
-          serviceName: test-service
-          servicePort: '80'
+          service:
+            name: test-service
+            port:
+              number: 80
   - host: one.example.com
     tcp:
-      port: '7878'
+      port: 7878
       backend:
-        serviceName: tcp-service
-        servicePort: '50077'
+        service:
+          name: tcp-service
+          port:
+            number: 50077
   - host: one.example.com
     tcp:
-      port: '7800'
+      port: 7800
       noTLS: true
       backend:
-        serviceName: tcp-service
-        servicePort: '50077'
+        service:
+          name: tcp-service
+          port:
+            number: 50077
 ```
 
 For this Ingress, HAProxy will open up 3 separate ports:

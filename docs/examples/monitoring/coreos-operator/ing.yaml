@@ -1,4 +1,4 @@
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: stats-ing
@@ -16,5 +16,7 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: web
-          servicePort: 80
+          service:
+            name: web
+            port:
+              number: 80

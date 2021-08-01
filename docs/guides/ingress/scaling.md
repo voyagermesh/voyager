@@ -26,7 +26,7 @@ Note that, Voyager won't sync with this annotation if there is a HPA controlling
 This regulation is followed so that HPA on ingress deployment does not experience any conflicts.
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: my-app
@@ -35,8 +35,10 @@ metadata:
     ingress.appscode.com/replicas: '2'
 spec:
   backend:
-    serviceName: my-app
-    servicePort: '80'
+    service:
+      name: my-app
+      port:
+        number: 80
 ```
 
 ```console

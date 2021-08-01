@@ -21,7 +21,7 @@ section_menu_id: guides
 For a [LoadBalancer](/docs/concepts/ingress-types/loadbalancer.md) type Ingress, apply `"external-dns.alpha.kubernetes.io/hostname"` annotation on the **service** that exposes HAProxy pods. This service should have a name like `voyager-{ingress-name}` in the same namespace of the Ingress object. Since, Voyager uses its own CRD for Ingress, `external-dns` project must use the service to discover loadbalancer ip.
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress-voyager
@@ -38,8 +38,10 @@ spec:
     http:
       paths:
        - backend:
-          serviceName: web
-          servicePort: '80'
+          service:
+            name: web
+            port:
+              number: 80
 ```
 
 ## NodePort Ingress
@@ -52,7 +54,7 @@ Since [v0.5.3](https://github.com/kubernetes-incubator/external-dns/releases/tag
 [HostPort](/docs/concepts/ingress-types/hostport.md) type Ingress is [supported by external-dns](https://github.com/kubernetes-incubator/external-dns/blob/v0.5.2/docs/tutorials/hostport.md). Here, apply `"external-dns.alpha.kubernetes.io/hostname"` annotation on the HAProxy **services**.
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress-voyager
@@ -70,8 +72,10 @@ spec:
     http:
       paths:
        - backend:
-          serviceName: web
-          servicePort: '80'
+          service:
+            name: web
+            port:
+              number: 80
 ```
 
 ## Internal Ingress

@@ -9,9 +9,9 @@ menu:
 product_name: voyager
 menu_name: docs_{{ .version }}
 section_menu_id: concepts
-url: /products/voyager/{{ .version }}/concepts/
+url: /docs/{{ .version }}/concepts/
 aliases:
-  - /products/voyager/{{ .version }}/concepts/README/
+  - /docs/{{ .version }}/concepts/README/
 ---
 # Concepts
 

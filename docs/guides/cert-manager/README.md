@@ -9,9 +9,9 @@ menu:
 product_name: voyager
 menu_name: docs_{{ .version }}
 section_menu_id: guides
-url: /products/voyager/{{ .version }}/guides/cert-manager/
+url: /docs/{{ .version }}/guides/cert-manager/
 aliases:
-  - /products/voyager/{{ .version }}/guides/cert-manager/README/
+  - /docs/{{ .version }}/guides/cert-manager/README/
 ---
 
 # Guides

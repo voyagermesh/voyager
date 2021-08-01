@@ -79,8 +79,10 @@ And Use the service in the ingress Backend service name, as:
 
 ```yaml
 backend:
-  serviceName: nginx-service
-  servicePort: '80'
+  service:
+    name: nginx-service
+    port:
+      number: 80
 ```
 
 That will forward traffic to your StatefulSets Pods.
@@ -98,7 +100,7 @@ Those are the host names.
 
 Now Create a ingress that will only forward traffic to web-0
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -112,8 +114,10 @@ spec:
         backend:
           hostNames:
           - web-0
-          serviceName: nginx-set #! There is no extra service. This
-          servicePort: '80'      # is the Statefulset's Headless Service
+          service:
+            name: nginx-set #! There is no extra service. This
+            port:
+              number: 80    # is the Statefulset's Headless Service
 ```
 
 Viola. Now all `/testPath` traffic will be sent to pod web-0 only. There is no extra service also.

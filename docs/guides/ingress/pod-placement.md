@@ -43,7 +43,7 @@ service "rest" exposed
 By default Voyager will run HAProxy pods using `Deployment`. Since 8.0.1 release, Voyager can run HAProxy pods using either Deployment or DaemonSet. Set the annotation `ingress.appscode.com/workload-kind` on an ingress object to either `Deployment` or `DaemonSet` to enable this feature. If this annotation is missing, HAProxy pods will be run using a `Deployment` as before.
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: ingress-w-node-selector
@@ -61,7 +61,7 @@ kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param
 ```
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: ingress-w-node-selector
@@ -78,18 +78,22 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: rest
-          servicePort: 80
+          service:
+            name: rest
+            port:
+              number: 80
       - path: /web
         backend:
-          serviceName: web
-          servicePort: 80
+          service:
+            name: web
+            port:
+              number: 80
 ```
 
-If you are using official `networking.k8s.io/v1beta1` ingress api group, use `ingress.appscode.com/node-selector` annotation to provide the selectors. For example:
+If you are using official `networking.k8s.io/v1` ingress api group, use `ingress.appscode.com/node-selector` annotation to provide the selectors. For example:
 
 ```
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress-w-node-selector
@@ -105,12 +109,16 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: rest
-          servicePort: 80
+          service:
+            name: rest
+            port:
+              number: 80
       - path: /web
         backend:
-          serviceName: web
-          servicePort: 80
+          service:
+            name: web
+            port:
+              number: 80
 ```
 
 ### Using Pod Anti-affinity
@@ -122,7 +130,7 @@ kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param
 ```
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: ingress-w-pod-anti-affinity
@@ -137,12 +145,16 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: rest
-          servicePort: 80
+          service:
+            name: rest
+            port:
+              number: 80
       - path: /web
         backend:
-          serviceName: web
-          servicePort: 80
+          service:
+            name: web
+            port:
+              number: 80
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -171,7 +183,7 @@ kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param
 ```
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: ingress-w-toleration
@@ -186,12 +198,16 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: rest
-          servicePort: 80
+          service:
+            name: rest
+            port:
+              number: 80
       - path: /web
         backend:
-          serviceName: web
-          servicePort: 80
+          service:
+            name: web
+            port:
+              number: 80
   tolerations:
   - key: IngressOnly
     operator: Equal
@@ -199,10 +215,10 @@ spec:
     effect: NoSchedule
 ```
 
-If you are using official `networking.k8s.io/v1beta1` ingress api group, use `ingress.appscode.com/tolerations` annotation to provide the toleration information. For example:
+If you are using official `networking.k8s.io/v1` ingress api group, use `ingress.appscode.com/tolerations` annotation to provide the toleration information. For example:
 
 ```
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress-w-toleration
@@ -218,18 +234,22 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: rest
-          servicePort: 80
+          service:
+            name: rest
+            port:
+              number: 80
       - path: /web
         backend:
-          serviceName: web
-          servicePort: 80
+          service:
+            name: web
+            port:
+              number: 80
 ```
 
 You can use these various option in combination with each other to achieve desired result. Say, you want to run your HAProxy pods on master instances. This can be done using an Ingress like below:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: ingress-w-node-selector
@@ -246,12 +266,16 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: rest
-          servicePort: 80
+          service:
+            name: rest
+            port:
+              number: 80
       - path: /web
         backend:
-          serviceName: web
-          servicePort: 80
+          service:
+            name: web
+            port:
+              number: 80
   tolerations:
   - effect: NoSchedule
     key: node-role.kubernetes.io/master

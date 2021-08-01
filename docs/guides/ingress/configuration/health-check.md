@@ -69,7 +69,7 @@ Then deploy the ingress:
 ```yaml
 $ kubectl apply test-ingress.yaml
 
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -80,8 +80,10 @@ spec:
       paths:
       - path: /app
         backend:
-          serviceName: test-server
-          servicePort: 8080
+          service:
+            name: test-server
+            port:
+              number: 8080
 ```
 
 Now we need to annotate the backend service to enable health check for that backend.
@@ -94,7 +96,7 @@ $ kubectl annotate svc test-server ingress.appscode.com/check-port="9090"
 You can also specify the health-check behaviour using backend rules. For example:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -105,8 +107,10 @@ spec:
       paths:
       - path: /app
         backend:
-          serviceName: test-server
-          servicePort: 8080
+          service:
+            name: test-server
+            port:
+              number: 8080
           backendRules:
           - 'option httpchk GET /testpath/ok'
           - 'http-check expect rstring (testpath/ok)'

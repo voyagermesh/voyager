@@ -10,7 +10,7 @@ product_name: voyager
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 aliases:
-  - /products/voyager/{{ .version }}/guides/ingress/security/
+  - /docs/{{ .version }}/guides/ingress/security/
 ---
 
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
@@ -69,7 +69,7 @@ $ kubectl expose deployment nginx --name=web --port=80 --target-port=80
 Create an Ingress with Basic Auth annotations
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   annotations:
@@ -86,8 +86,10 @@ spec:
       paths:
       - path: /web
         backend:
-          serviceName: web
-          servicePort: 80
+          service:
+            name: web
+            port:
+              number: 80
 ```
 
 Test without user and password:
@@ -147,7 +149,7 @@ spec:
 Create an Ingress with Basic Auth only on path `/auth`
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: hello-basic-auth
@@ -158,15 +160,18 @@ spec:
       paths:
       - path: /no-auth
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+            name: test-server
+            port:
+              number: 80
   - http:
       paths:
       - path: /auth
         backend:
-          serviceName: test-svc
-          servicePort: 80
-
+          service:
+            name: test-svc
+            port:
+              number: 80
 ```
 
 Test without user and password:
@@ -212,34 +217,37 @@ Content-Type: text/plain; charset=utf-8
 Basic Auth can also be configured per frontend in voyager ingress via FrontendRules.
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: hello-basic-auth
   namespace: default
 spec:
   frontendRules:
-  - port: '8080'
+  - port: 8080
     auth:
       basic:
         secretName: mypasswd
         realm: My Server
   rules:
   - http:
-      port: '80'
+      port: 80
       paths:
       - path: /no-auth
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+            name: test-server
+            port:
+              number: 80
   - http:
-      port: '8080'
+      port: 8080
       paths:
       - path: /auth
         backend:
-          serviceName: test-svc
-          servicePort: 80
-
+          service:
+            name: test-svc
+            port:
+              number: 80
 ```
 
 Test without user and password:

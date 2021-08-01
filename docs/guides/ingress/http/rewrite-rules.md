@@ -18,7 +18,7 @@ AppsCode Ingress support header and URL modification at the loadbalancer level. 
 the header and rewrite rules follow the HAProxy syntax as it is. To add some rewrite rules for a HTTP path, follow the example below:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -29,8 +29,10 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: test-service
-          servicePort: '80'
+          service:
+            name: test-service
+            port:
+              number: 80
           headerRules:
           - X-Forwarded-Host %[base]
           rewriteRules:

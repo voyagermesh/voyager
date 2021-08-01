@@ -26,7 +26,7 @@ $ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.8.3
 By default the dashboard configures HTTPS with a self signed certificate. We need to apply `ingress.appscode.com/backend-tls: ssl verify none` annotation to `kubernetes-dashboard` service so that haproxy pod can establish HTTPS connection with dashboard pod.
 
 ```
-$ kubectl annotate service kubernetes-dashboard -n kube-system ingress.appscode.com/backend-tls='ssl verify none'
+$ kubectl annotate service kubernetes-dashboard -n voyager ingress.appscode.com/backend-tls='ssl verify none'
 ```
 
 ## Configure Github Oauth App
@@ -46,7 +46,7 @@ metadata:
   labels:
     k8s-app: oauth2-proxy
   name: oauth2-proxy
-  namespace: kube-system
+  namespace: voyager
 spec:
   replicas: 1
   selector:
@@ -84,7 +84,7 @@ metadata:
   labels:
     k8s-app: oauth2-proxy
   name: oauth2-proxy
-  namespace: kube-system
+  namespace: voyager
 spec:
   ports:
   - name: http
@@ -99,7 +99,7 @@ spec:
 
 ```console
 $ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /tmp/tls.key -out /tmp/tls.crt -subj "/CN=voyager.appscode.ninja"
-$ kubectl create secret tls tls-secret --key /tmp/tls.key --cert /tmp/tls.crt -n kube-system
+$ kubectl create secret tls tls-secret --key /tmp/tls.key --cert /tmp/tls.crt -n voyager
 ```
 
 ## Deploy Ingress
@@ -107,11 +107,11 @@ $ kubectl create secret tls tls-secret --key /tmp/tls.key --cert /tmp/tls.crt -n
 ```yaml
 $ kubectl apply -f auth-ingress.yaml
 
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: auth-ingress
-  namespace: kube-system
+  namespace: voyager
 spec:
   tls:
   - secretName: tls-secret
@@ -133,13 +133,17 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: kubernetes-dashboard
-          servicePort: 443
+          service:
+            name: kubernetes-dashboard
+            port:
+              number: 443
       - path: /oauth2
         backend:
           name: auth-be
-          serviceName: oauth2-proxy
-          servicePort: 4180
+          service:
+            name: oauth2-proxy
+            port:
+              number: 4180
 ```
 
 ## Access DashBoard
@@ -149,10 +153,10 @@ Now browse https://voyager.appscode.ninja, it will redirect you to Github login 
 We will use token of an existing service-account `replicaset-controller` to login dashboard. It should have permissions to see Replica Sets in the cluster. You can also create your own service-account with different roles.
 
 ```
-$ kubectl describe serviceaccount -n kube-system replicaset-controller
+$ kubectl describe serviceaccount -n voyager replicaset-controller
 
 Name:                replicaset-controller
-Namespace:           kube-system
+Namespace:           voyager
 Labels:              <none>
 Annotations:         <none>
 Image pull secrets:  <none>
@@ -162,10 +166,10 @@ Events:              <none>
 ```
 
 ```
-$ kubectl describe secret replicaset-controller-token-b5mgw -n kube-system
+$ kubectl describe secret replicaset-controller-token-b5mgw -n voyager
 
 Name:         replicaset-controller-token-b5mgw
-Namespace:    kube-system
+Namespace:    voyager
 Labels:       <none>
 Annotations:  kubernetes.io/service-account.name=replicaset-controller
               kubernetes.io/service-account.uid=b53b12b6-693c-11e8-9cb8-8ee164da275a

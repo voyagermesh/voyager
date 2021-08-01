@@ -56,7 +56,7 @@ when `X-Forwarded-Proto` header value is `HTTPS`. Please see the following ingre
 [example rules](https://www.exratione.com/2014/10/managing-haproxy-configuration-when-your-server-may-or-may-not-be-behind-an-ssl-terminating-proxy/).
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-aws-ingress
@@ -67,8 +67,10 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: test-service
-          servicePort: '80'
+          service:
+            name: test-service
+            port:
+              number: 80
           backendRules:
             - 'acl is_proxy_https hdr(X-Forwarded-Proto) https'
             - 'redirect scheme https code 301 if ! is_proxy_https'

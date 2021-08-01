@@ -34,7 +34,7 @@ service "test-server" exposed
 ```yaml
 $ kubectl apply -f test-ingress.yaml
 
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -48,8 +48,10 @@ spec:
       paths:
       - path: /foo
         backend:
-          serviceName: test-server
-          servicePort: '80'
+          service:
+            name: test-server
+            port:
+              number: 80
 ```
 
 ```console
@@ -123,7 +125,7 @@ If you are running Voyager as Ingress controller in your `baremetal` cluster and
 Below is an example Ingress yaml that shows how to specify externalIPs:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -139,8 +141,10 @@ spec:
       paths:
       - path: /foo
         backend:
-          serviceName: test-server
-          servicePort: '80'
+          service:
+            name: test-server
+            port:
+              number: 80
 ```
 
 ## Understanding `ingress.appscode.com/use-node-port` annotation
@@ -157,7 +161,7 @@ Below is an example Ingress with `ingress.appscode.com/use-node-port` annotation
 ```yaml
 $ kubectl apply -f test-ingress.yaml
 
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -172,8 +176,10 @@ spec:
       paths:
       - path: /foo
         backend:
-          serviceName: test-server
-          servicePort: '80'
+          service:
+            name: test-server
+            port:
+              number: 80
 ```
 
 ```console

@@ -19,7 +19,7 @@ Below is the full list of supported annotations:
 |  Keys  |   Value   |  Default |
 |--------|-----------|----------|
 | [ingress.appscode.com/type](/docs/concepts/README.md) | LoadBalancer, HostPort, NodePort, Internal | `LoadBalancer` |
-| [ingress.appscode.com/api-schema](/docs/concepts/overview.md) | {APIGroup}/{APIVersion} | `voyager.appscode.com/v1beta1` |
+| [ingress.appscode.com/api-schema](/docs/concepts/overview.md) | {APIGroup}/{APIVersion} | `voyager.appscode.com/v1` |
 | [ingress.appscode.com/accept-proxy](/docs/guides/ingress/configuration/accept-proxy.md) | bool | `false` |
 | [ingress.appscode.com/affinity](/docs/guides/ingress/http/sticky-session.md) | `cookie` | |
 | [ingress.appscode.com/session-cookie-hash](/docs/guides/ingress/http/sticky-session.md) | string | |

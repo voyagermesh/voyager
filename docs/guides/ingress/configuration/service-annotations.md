@@ -19,7 +19,7 @@ You can specify annotations applied to HAProxy services through ingress annotati
 ## Ingress Example
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -33,8 +33,10 @@ spec:
       paths:
       - path: /foo
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+            name: test-server
+            port:
+              number: 80
 ```
 
 It will add following annotations to HAProxy pods:
@@ -52,6 +54,6 @@ $ kubectl get svc voyager-test-ingress -o=jsonpath='{.metadata.annotations}' | t
 map[foo:bar
 bar:foo
 ingress.appscode.com/last-applied-annotation-keys:foo,bar
-ingress.appscode.com/origin-api-schema:voyager.appscode.com/v1beta1
+ingress.appscode.com/origin-api-schema:voyager.appscode.com/v1
 ingress.appscode.com/origin-name:test-ingress]
 ```

@@ -33,7 +33,7 @@ NAME          STATUS    AGE
 default       Active    45m
 demo          Active    10s
 kube-public   Active    45m
-kube-system   Active    45m
+voyager   Active    45m
 ```
 
 Note that the yaml files that are used in this tutorial, stored in [docs/examples](https://github.com/voyagermesh/voyager/tree/master/docs/examples/monitoring) folder in GitHub repository [voyagermesh/voyager](https://github.com/voyagermesh/voyager).
@@ -55,7 +55,7 @@ ingress "stats-ing" created
 ```
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: stats-ing
@@ -71,8 +71,10 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: web
-          servicePort: 80
+          service:
+            name: web
+            port:
+              number: 80
 ```
 
 Voyager operator watches for `Ingress` objects using Kubernetes api. When a `Ingress` object is created, Voyager operator will create a new HAProxy deployment and a NodePort Service with name `voyager-{ingress-name}`. Since `ingress.appscode.com/stats` annotation was configured, a stats service object is configured accordingly. Here,
@@ -103,10 +105,10 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    ingress.appscode.com/origin-api-schema: voyager.appscode.com/v1beta1
+    ingress.appscode.com/origin-api-schema: voyager.appscode.com/v1
     ingress.appscode.com/origin-name: stats-ing
     monitoring.appscode.com/agent: prometheus.io/builtin
-    prometheus.io/path: /voyager.appscode.com/v1beta1/namespaces/demo/ingresses/stats-ing/metrics
+    prometheus.io/path: /voyager.appscode.com/v1/namespaces/demo/ingresses/stats-ing/metrics
     prometheus.io/port: "56790"
     prometheus.io/scrape: "true"
   creationTimestamp: 2018-02-25T21:48:24Z

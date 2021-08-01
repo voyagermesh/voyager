@@ -9,9 +9,9 @@ menu:
 product_name: voyager
 menu_name: docs_{{ .version }}
 section_menu_id: guides
-url: /products/voyager/{{ .version }}/guides/ingress/
+url: /docs/{{ .version }}/guides/ingress/
 aliases:
-  - /products/voyager/{{ .version }}/guides/ingress/README/
+  - /docs/{{ .version }}/guides/ingress/README/
 ---
 
 # Guides

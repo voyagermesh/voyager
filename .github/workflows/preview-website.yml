@@ -25,9 +25,10 @@ jobs:
 
       - name: Install yq
         run: |
-          curl -fsSL -o yq https://github.com/mikefarah/yq/releases/download/3.3.0/yq_linux_amd64
-          chmod +x yq
-          sudo mv yq /usr/local/bin/yq
+          curl -fsSL -o yqq https://github.com/mikefarah/yq/releases/download/3.3.0/yq_linux_amd64
+          chmod +x yqq
+          sudo mv yqq /usr/local/bin/yqq
+          pip3 install yq
 
       - name: Install Hugo
         run: |

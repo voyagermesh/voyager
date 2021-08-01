@@ -32,7 +32,7 @@ $ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/master/tes
 ```yaml
 $ kubectl apply -f tcp-sni.yaml
 
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -47,15 +47,19 @@ spec:
       nodePort: 32666
       port: 8443
       backend:
-        serviceName: test-server
-        servicePort: 6443
+        service:
+        	name: test-server
+          port:
+            number: 6443
   - host: voyager.appscode.com
     tcp:
       nodePort: 32666
       port: 8443
       backend:
-        serviceName: test-server
-        servicePort: 3443
+        service:
+        	name: test-server
+          port:
+            number: 3443
 ```
 
 ### Generated haproxy.cfg
@@ -167,14 +171,18 @@ spec:
     tcp:
       port: 8443
       backend:
-        serviceName: test-server
-        servicePort: 6443
+        service:
+        	name: test-server
+          port:
+            number: 6443
   - host: voyager.appscode.com
     tcp:
       port: 8443
       backend:
-        serviceName: test-server
-        servicePort: 3443
+        service:
+        	name: test-server
+          port:
+            number: 3443
 ```
 
 ## References

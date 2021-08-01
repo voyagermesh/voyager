@@ -20,7 +20,7 @@ TCP load balancing is one of the core features of Voyager Ingress. Voyager can h
 One Simple TCP Rule Would be:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -33,23 +33,29 @@ spec:
   rules:
   - host: one.example.com
     tcp:
-      port: '9898'
+      port: 9898
       backend:
-        serviceName: tcp-service
-        servicePort: '50077'
+        service:
+          name: tcp-service
+          port:
+            number: 50077
   - host: other.example.com
     tcp:
-      port: '7878'
+      port: 7878
       backend:
-        serviceName: tcp-service
-        servicePort: '50077'
+        service:
+          name: tcp-service
+          port:
+            number: 50077
   - host: other.example.com
     tcp:
-      port: '7800'
+      port: 7800
       noTLS: true
       backend:
-        serviceName: tcp-service
-        servicePort: '50077'
+        service:
+          name: tcp-service
+          port:
+            number: 50077
 ```
 
 For this Ingress, HAProxy will open up 3 separate ports:

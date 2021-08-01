@@ -10,9 +10,9 @@ menu:
 product_name: voyager
 menu_name: docs_{{ .version }}
 section_menu_id: setup
-url: /products/voyager/{{ .version }}/setup/
+url: /docs/{{ .version }}/setup/
 aliases:
-  - /products/voyager/{{ .version }}/setup/README/
+  - /docs/{{ .version }}/setup/README/
 ---
 # Setup
 
@@ -20,6 +20,3 @@ Setup contains instructions for installing the Voyager and its various component
 
 - [Install Voyager](/docs/setup/install.md). Installation instructions for Voyager.
 - [Uninstall Voyager](/docs/setup/uninstall.md). Instructions for uninstallating Voyager.
-- Developer Guide
-  - [Overview](/docs/setup/developer-guide/overview.md). Outlines everything you need to know from setting up your dev environment to how to build and test Voyager.
-  - [Release process](/docs/setup/developer-guide/release.md). Steps for releasing a new version of Voyager.

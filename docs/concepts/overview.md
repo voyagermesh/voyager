@@ -21,7 +21,7 @@ Voyager provides L7 and L4 loadbalancing using Kubernetes standard [Ingress](htt
 
 ![voyager-ingress](/docs/images/ingress/voyager-ingress.png)
 
-The above diagram shows how the Voyager operator works. When Voyager is [installed](/docs/setup/install.md) in a Kubernetes cluster, a pod named `voyager-operator-***` starts running in `kube-system` namespace by default. This operator pod watches for Kubernetes Ingress resources and Voyager's own Ingress CRD. When an Ingress object is created, Voyager operator creates 3 Kubernetes resources in the same namespace of the Ingress:
+The above diagram shows how the Voyager operator works. When Voyager is [installed](/docs/setup/install.md) in a Kubernetes cluster, a pod named `voyager-operator-***` starts running in `voyager` namespace by default. This operator pod watches for Kubernetes Ingress resources and Voyager's own Ingress CRD. When an Ingress object is created, Voyager operator creates 3 Kubernetes resources in the same namespace of the Ingress:
 
 - a Configmap named `voyager-${ingress-name}`: This contains the auto generated HAProxy configuration under `haproxy.cfg` key.
 
@@ -47,9 +47,9 @@ Voyager can automagically provision and refresh SSL certificates issued from Let
 
 **How do I run Voyager with other Ingress controllers in the same cluster?**
 
-Yes, Voyager can be used to manager Ingress objects alongside with other ingress controller. Voyager comes with its own CRD called `Ingress` under api version `voyager.appscode.com/v1beta1` . This CRD is not recongnized by other ingress controllers that works with the Kubernetes official Ingress object under `networking.k8s.io/v1beta1` api version.
+Yes, Voyager can be used to manager Ingress objects alongside with other ingress controller. Voyager comes with its own CRD called `Ingress` under api version `voyager.appscode.com/v1` . This CRD is not recongnized by other ingress controllers that works with the Kubernetes official Ingress object under `networking.k8s.io/v1` api version.
 
-By default, Voyager will also manage Kubernetes Ingress objects under `networking.k8s.io/v1beta1` api version. Voyager can be configured to only handle default Kubernetes Ingress objects with ingress.class `voyager` . To do that, pass the flag `--ingress-class=voyager` in operator pod. After that 
+By default, Voyager will also manage Kubernetes Ingress objects under `networking.k8s.io/v1` api version. Voyager can be configured to only handle default Kubernetes Ingress objects with ingress.class `voyager` . To do that, pass the flag `--ingress-class=voyager` in operator pod. After that 
 
 ```yaml
   annotations:

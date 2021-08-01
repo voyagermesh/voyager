@@ -21,7 +21,7 @@ When using SSL offloading outside of cluster (e.g. AWS ELB) it may be useful to 
 ## Ingress Example
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -39,8 +39,10 @@ spec:
       paths:
       - path: /foo
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+          	name: test-server
+            port:
+              number: 80
 ```
 
 Since TLS enabled for `voyager.appscode.test`, by default it will add `redirect scheme https` for that host in generated haproxy.cfg. But as we disabled ssl-redirect through annotation, no redirect rule generated.
@@ -98,7 +100,7 @@ backend test-server.default:80
 ### With force redirect
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -112,8 +114,10 @@ spec:
       paths:
       - path: /foo
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+          	name: test-server
+            port:
+              number: 80
 ```
 
 Although no TLS specified, `redirect scheme https` added for all port 80 HTTP paths as we enabled force-redirect.

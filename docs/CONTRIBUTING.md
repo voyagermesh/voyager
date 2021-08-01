@@ -10,9 +10,9 @@ menu:
 product_name: voyager
 menu_name: docs_{{ .version }}
 section_menu_id: welcome
-url: /products/voyager/{{ .version }}/welcome/contributing/
+url: /docs/{{ .version }}/welcome/contributing/
 aliases:
-  - /products/voyager/{{ .version }}/CONTRIBUTING/
+  - /docs/{{ .version }}/CONTRIBUTING/
 ---
 
 # Contribution Guidelines

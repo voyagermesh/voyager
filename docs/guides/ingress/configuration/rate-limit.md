@@ -27,7 +27,7 @@ These rules will be applied globally to all frontends. Note that, `limit-rpm` wi
 ## Ingress Example
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -42,8 +42,10 @@ spec:
       paths:
       - path: /foo
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+          	name: test-server
+            port:
+              number: 80
 ```
 
 Generated haproxy.cfg:

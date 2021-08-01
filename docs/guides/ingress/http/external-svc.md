@@ -53,15 +53,17 @@ subsets:
 Now, you can use this `external-ip` Service as a backend in your Ingress definition. For example:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ings-rhvulnlb
   namespace: default
 spec:
   backend:
-    serviceName: external-ip
-    servicePort: "80"
+    service:
+      name: external-ip
+      port:
+        number: 80
 ```
 
 
@@ -97,15 +99,17 @@ spec:
 If this service is used in ingress, the traffic will forward to google.com's address.
 
 ```
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ings-rhvulnlb
   namespace: default
 spec:
   backend:
-    serviceName: external-ns
-    servicePort: "80"
+    service:
+      name: external-ns
+      port:
+        number: 80
 ```
 
 ### HTTP Redirect
@@ -128,8 +132,10 @@ If No BackendRules are configured for the endpoint, Voyager will configure HAPro
 The redirect code will be 301 (permanent redirect). Scheme (http or https) used by endpoint is preserved on redirect.
 ```
 backend:
-  serviceName: external-svc-non-dns
-  servicePort: "80"
+  service:
+    name: external-svc-non-dns
+    port:
+      number: 80
 ```
 
 The generated redirect line in HAProxy config:
@@ -145,7 +151,8 @@ If Backendrules are configured, Voyager will not auto generate any redirect rule
 backend:
   backendRules:
   - http-request redirect location https://google.com code 302
-  serviceName: external-svc-non-dns
-  servicePort: "80"
+  service:
+    name: external-svc-non-dns
+    port:
+      number: 80
 ```
-

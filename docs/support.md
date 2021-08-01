@@ -10,9 +10,9 @@ menu:
 product_name: voyager
 menu_name: docs_{{ .version }}
 section_menu_id: welcome
-url: /products/voyager/{{ .version }}/welcome/support/
+url: /docs/{{ .version }}/welcome/support/
 aliases:
-  - /products/voyager/{{ .version }}/support/
+  - /docs/{{ .version }}/support/
 ---
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
 

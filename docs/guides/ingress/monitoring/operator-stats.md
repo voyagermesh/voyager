@@ -54,10 +54,10 @@ clusterrolebinding.rbac.authorization.k8s.io "appscode:system:metrics-collector"
 2. Now, forward the port `:8443` to your workstation.
 
 ```
-$ kubectl get pods -n kube-system | grep voyager
+$ kubectl get pods -n voyager | grep voyager
 voyager-operator-f89dcccdb-plvmt        1/1       Running   0          27m
 
-$ kubectl port-forward -n kube-system voyager-operator-f89dcccdb-plvmt 8443
+$ kubectl port-forward -n voyager voyager-operator-f89dcccdb-plvmt 8443
 Forwarding from 127.0.0.1:8443 -> 8443
 Forwarding from [::1]:8443 -> 8443
 ```

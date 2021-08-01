@@ -21,7 +21,7 @@ This allows acls or other options in frontend sections in HAProxy config. Fronte
 
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -39,20 +39,26 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: s1
-          servicePort: '80'
+          service:
+            name: s1
+            port:
+              number: 80
   - host: bar.foo.com
     http:
       paths:
       - backend:
-          serviceName: s2
-          servicePort: '80'
+          service:
+            name: s2
+            port:
+              number: 80
   - host: tcp.bar.com
     tcp:
-      port: '9898'
+      port: 9898
       backend:
-        serviceName: tcp-service
-        servicePort: '50077'
+        service:
+          name: tcp-service
+          port:
+            number: 50077
 ```
 
 This example ingress shows how to configure frontend rules in ingress resource. All the frontend rules for port 80
@@ -63,7 +69,7 @@ will be applied to all the backends which listens to port 80.
 This example demonstrates How to whitelist some IP addresses for a backend using frontend rule.
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -86,14 +92,18 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: s1
-          servicePort: '80'
+          service:
+            name: s1
+            port:
+              number: 80
   - host: tcp.bar.com
     tcp:
-      port: '9898'
+      port: 9898
       backend:
-        serviceName: tcp-service
-        servicePort: '50077'
+        service:
+          name: tcp-service
+          port:
+            number: 50077
 ```
 
 ## Example: ACL from file
@@ -113,7 +123,7 @@ data:
 Then mount this configmap using `spec.configVolumes` and specify the file path using frontend rules.
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -136,8 +146,10 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: s1
-          servicePort: '80'
+          service:
+            name: s1
+            port:
+              number: 80
 ```
 
 See [here](/docs/guides/ingress/configuration/config-volumes.md) for complete example of `configVolumes`.

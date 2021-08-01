@@ -54,22 +54,26 @@ spec:
 ```
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
   namespace: default
 spec:
   backend:
-    serviceName: test-service
-    servicePort: '80'
+    service:
+      name: test-service
+      port:
+        number: 80
   rules:
   - host: appscode.example.com
     http:
       paths:
       - backend:
-          serviceName: my-service
-          servicePort: '80'
+          service:
+            name: my-service
+            port:
+              number: 80
 ```
 
 Reference:

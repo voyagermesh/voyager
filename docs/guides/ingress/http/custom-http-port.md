@@ -17,7 +17,7 @@ section_menu_id: guides
 Voyager 3.2+ supports using any non-standard port (beyond 80 and 443) for L7 traffic. If no port is specified, port 80 or 443 will be used depending on whether TLS is used or not.
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ingress
@@ -30,26 +30,34 @@ spec:
       paths:
       - path: /admin
         backend:
-          serviceName: admin-service
-          servicePort: '80'
+          service:
+            name: admin-service
+            port:
+              number: 80
       - path: /
         backend:
-          serviceName: test-service
-          servicePort: '80'
+          service:
+            name: test-service
+            port:
+              number: 80
   - host: other.example.com
     http:
       port: '8989'
       paths:
       - backend:
-          serviceName: other-service
-          servicePort: '80'
+          service:
+            name: other-service
+            port:
+              number: 80
   - host: one.example.com
       http:
         port: '4343'
         paths:
         - backend:
-            serviceName: test-service
-            servicePort: '80'
+            service:
+              name: test-service
+              port:
+                number: 80
 
 ```
 

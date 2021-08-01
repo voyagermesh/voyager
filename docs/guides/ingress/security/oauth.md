@@ -18,7 +18,7 @@ section_menu_id: guides
 You can configure [external authentication / oauth](https://oauth.net/2/) on Voyager Ingress controller via `frontendrules`. For this you have to configure and expose [oauth2-proxy](https://github.com/bitly/oauth2_proxy) and specify it as a backend under same host. For example:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: auth-ingress
@@ -40,17 +40,23 @@ spec:
       paths:
       - path: /health
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+            name: test-server
+            port:
+              number: 80
       - path: /app
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+            name: test-server
+            port:
+              number: 80
       - path: /oauth2
         backend:
           name: auth-be
-          serviceName: oauth2-proxy
-          servicePort: 4180
+          service:
+            name: oauth2-proxy
+            port:
+              number: 4180
 ```
 
 Please note the followings:
@@ -72,7 +78,7 @@ $ python -c 'import os,base64; print base64.b64encode(os.urandom(16))'
 - You can not use different auth backends for different paths under same host and port. However, it is possible to configure different auth backends for different hosts under same port. For example:
 
 ```yaml
-apiVersion: voyager.appscode.com/v1beta1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: auth-ingress
@@ -100,25 +106,33 @@ spec:
       paths:
       - path: /foo
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+            name: test-server
+            port:
+              number: 80
       - path: /google
         backend:
           name: google-auth
-          serviceName: oauth2-proxy-google
-          servicePort: 4180
+          service:
+            name: oauth2-proxy-google
+            port:
+              number: 4180
   - host: team02.example.com
     http:
       paths:
       - path: /bar
         backend:
-          serviceName: test-server
-          servicePort: 80
+          service:
+            name: test-server
+            port:
+              number: 80
       - path: /github
         backend:
           name: github-auth
-          serviceName: oauth2-proxy-github
-          servicePort: 4180
+          service:
+            name: oauth2-proxy-github
+            port:
+              number: 4180
 ```
 
 ## Next Steps
