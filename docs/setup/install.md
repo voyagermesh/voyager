@@ -22,7 +22,7 @@ Voyager Enterprise Edition requires a license to operate. If you are willing to 
 
 In this section, we are going to show you how you can get a free trial license for the Voyager Enterprise edition. You can get a license for your Kubernetes cluster by going through the following steps:
 
-- At first, go to [AppsCode License Server](https://license-issuer.appscode.com/) and fill-up the form. It will ask for your Name, Email, the product you want to install, and your cluster ID (UID of the `kube-system` namespace).
+- At first, go to [AppsCode License Server](https://license-issuer.appscode.com/?p=voyager-enterprise) and fill-up the form. It will ask for your Name, Email, the product you want to install, and your cluster ID (UID of the `kube-system` namespace).
 - Provide your name and email address. You can provide your personal or work email address.
 - Then, select `Voyager Enterprise Edition` in the product field.
 - Now, provide your cluster-ID. You can get your cluster ID easily by running the following command:
