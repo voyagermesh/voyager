@@ -14,7 +14,7 @@ section_menu_id: setup
 
 # Install Voyager Enterprise Edition
 
-Voyager Enterprise edition is the open core version of [Voyager](https://github.com/voyagermesh/operator). `Enterprise Edition` can be used to manage Voyager custom resources in any Kubernetes namespace. A full features comparison between the Voyager Community edition and Enterprise edition can be found [here](https://voyagermesh.com/pricing/).
+Voyager Enterprise edition is the open core version of [Voyager](https://github.com/voyagermesh). `Enterprise Edition` can be used to manage Voyager custom resources in any Kubernetes namespace. A full features comparison between the Voyager Community edition and Enterprise edition can be found [here](https://voyagermesh.com/pricing/).
 
 If you are willing to try Voyager Enterprise Edition, you can grab a **30 days trial** license from [here](https://license-issuer.appscode.com/?p=voyager-enterprise). To purchase an Enterprise license, please contact us from [here](https://appscode.com/contact).
 
