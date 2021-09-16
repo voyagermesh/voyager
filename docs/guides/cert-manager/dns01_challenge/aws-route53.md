@@ -20,7 +20,7 @@ This tutorial shows how to issue free SSL certificate from Let's Encrypt via DNS
 
 This article has been tested with a GKE cluster.
 
-```console
+```bash
 $ kubectl version --short
 Client Version: v1.8.8
 Server Version: v1.8.8-gke.0
@@ -79,7 +79,7 @@ Click on next (tags are optional - you can ignore this) and finish the process. 
 
 Create a secret with the `Secret Access Key`
 
-```console
+```bash
 kubectl create secret generic route53-secret --from-literal=secret-access-key="skjdflk4598sf/dkfj490jdfg/dlfjk59lkj"
 ```
 
@@ -119,7 +119,7 @@ Then create this issuer by `kubectl apply -f issuer.yaml`
 
 We are going to use a nginx server as the backend. To deploy nginx server, run the following commands:
 
-```console
+```bash
 kubectl run nginx --image=nginx
 kubectl expose deployment nginx --name=web --port=80 --target-port=80
 ```
@@ -155,11 +155,11 @@ spec:
 
 Then take the `EXTERNAL-IP` from the corresponding service and add a A-record in AWS Route53:
 
-```console
+```bash
 kubectl get svc
 ```
 
-```console
+```bash
 NAME                                          TYPE           CLUSTER-IP     EXTERNAL-IP       PORT(S)                      AGE
 voyager-test-ingress-deploy-k8s-route53-dns   LoadBalancer   10.7.248.189   35.225.111.106    443:30713/TCP,80:31137/TCP   21m
 ```
@@ -186,17 +186,17 @@ spec:
 
 List the certificates and describe that certificate and wait until you see `Certificate issued successfully` when you describe the certificate.
 
-```console
+```bash
 kubectl get certificates.certmanager.k8s.io --all-namespaces
 
 default        kiteci-route53-dns                 True   kiteci-route53-dns-tls             1m
 ```
 
-```console
+```bash
 kubectl describe certificates.certmanager.k8s.io kiteci-route53-dns
 ```
 
-```console
+```bash
 ...
 Events:
   Type    Reason              Age   From          Message

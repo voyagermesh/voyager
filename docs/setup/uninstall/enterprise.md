@@ -1,22 +1,20 @@
 ---
-title: Uninstall Voyager
-description: Voyager Uninstall
+title: Uninstall Voyager Enterprise Edition
+description: Uninstallation guide for Voyager Enterprise edition
 menu:
   docs_{{ .version }}:
-    identifier: uninstall-voyager
-    name: Uninstall
-    parent: setup
+    identifier: uninstall-voyager-enterprise
+    name: Enterprise Edition
+    parent: uninstallation-guide
     weight: 20
 product_name: voyager
 menu_name: docs_{{ .version }}
 section_menu_id: setup
 ---
 
-> New to Voyager? Please start [here](/docs/concepts/overview.md).
+# Uninstall Voyager Enterprise Edition
 
-# Uninstall Voyager
-
-To uninstall Voyager operator, run the following command:
+To uninstall Voyager Enterprise edition, run the following command:
 
 <ul class="nav nav-tabs" id="installerTab" role="tablist">
   <li class="nav-item">
@@ -33,7 +31,7 @@ To uninstall Voyager operator, run the following command:
 
 In Helm 3, release names are [scoped to a namespace](https://v3.helm.sh/docs/faq/#release-names-are-now-scoped-to-the-namespace). So, provide the namespace you used to install the operator when installing.
 
-```console
+```bash
 $ helm uninstall voyager-operator --namespace voyager
 ```
 
@@ -42,9 +40,9 @@ $ helm uninstall voyager-operator --namespace voyager
 
 ## Using YAML (with helm 3)
 
-If you prefer to not use Helm, you can generate YAMLs from Voyager operator chart and uninstall using `kubectl`.
+If you prefer to not use Helm, you can generate YAMLs from Voyager chart and uninstall using `kubectl`.
 
-```console
+```bash
 $ helm template voyager-operator appscode/voyager --namespace voyager | kubectl delete -f -
 ```
 

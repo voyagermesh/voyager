@@ -20,7 +20,7 @@ This tutorial shows how to issue free SSL certificate from Let's Encrypt via DNS
 
 This article has been tested with a GKE cluster.
 
-```console
+```bash
 $ kubectl version --short
 Client Version: v1.8.8
 Server Version: v1.8.8-gke.0
@@ -49,7 +49,7 @@ Now, create a new client-secret.
 
 Copy the password for this client-secret and create a kubernetes secret:
 
-```console
+```bash
 kubectl create secret generic azuredns-secret --from-literal=client-secret="sdfsdfTEser@k3casdfbsdfsdf_m[4"
 ```
 
@@ -105,7 +105,7 @@ spec:
 
 We are going to use a nginx server as the backend. To deploy nginx server, run the following commands:
 
-```console
+```bash
 kubectl run nginx --image=nginx
 kubectl expose deployment nginx --name=web --port=80 --target-port=80
 ```
@@ -141,11 +141,11 @@ spec:
 
 Then take the `EXTERNAL-IP` from the corresponding service and add a A-record in Azure DNS:
 
-```console
+```bash
 kubectl get svc
 ```
 
-```console
+```bash
 NAME                                          TYPE           CLUSTER-IP     EXTERNAL-IP       PORT(S)                      AGE
 voyager-test-ingress-deploy-k8s-azure-dns     LoadBalancer   10.7.254.246   35.192.150.216    443:31233/TCP,80:32271/TCP   26h
 ```
@@ -170,7 +170,7 @@ spec:
 
 Now, List the certificates and describe that certificate and wait until you see `Certificate issued successfully` when you describe the certificate.
 
-```console
+```bash
 kubectl get certificates.certmanager.k8s.io --all-namespaces
 ```
 

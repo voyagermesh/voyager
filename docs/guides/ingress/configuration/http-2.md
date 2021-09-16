@@ -151,7 +151,7 @@ backend grpc-server.demo:3000
 
 ### Check Response
 
-```console
+```bash
 $ minikube service --url voyager-test-ingress -n demo
 http://192.168.99.100:30652
 ```
@@ -357,7 +357,7 @@ backend grpc-server.demo:3000
 
 ### Check Response
 
-```console
+```bash
 $ minikube service --url voyager-test-ingress -n demo
 http://192.168.99.100:30446
 ```

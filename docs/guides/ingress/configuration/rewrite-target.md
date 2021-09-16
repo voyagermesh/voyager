@@ -94,14 +94,14 @@ backend test-server.default:80
 
 Get url for ingress service:
 
-```console
+```bash
 $ minikube service --url voyager-test-ingress
 http://192.168.99.100:31228
 ```
 
 Send request with path `/foo`:
 
-```console
+```bash
 $ curl -v -H 'Host: voyager.appscode.test' 192.168.99.100:31228/foo
 *   Trying 192.168.99.100...
 * Connected to 192.168.99.100 (192.168.99.100) port 31228 (#0)

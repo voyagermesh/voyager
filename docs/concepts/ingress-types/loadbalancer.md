@@ -21,7 +21,7 @@ In `LoadBalancer` type Ingress, HAProxy pods are exposed via a LoadBalancer type
 
 - Now, deploy test servers using [this script](/docs/examples/ingress/types/loadbalancer/deploy-servers.sh) script.
 
-```console
+```bash
 curl -fsSL https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/ingress/types/loadbalancer/deploy-servers.sh | bash
 
 deployment "nginx" created
@@ -32,7 +32,7 @@ service "rest" exposed
 
 - Now, create an Ingress object running
 
-```console
+```bash
 kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/ingress/types/loadbalancer/ing.yaml
 ```
 
@@ -43,7 +43,7 @@ Please note the annotaiton on ingress:
     ingress.appscode.com/type: LoadBalancer
 ```
 
-```console
+```bash
 $ kubectl get pods,svc
 NAME                                       READY     STATUS    RESTARTS   AGE
 po/echoserver-848b75d85-wxdrz              1/1       Running   0          2m
@@ -57,7 +57,7 @@ svc/voyager-test-ingress   LoadBalancer   10.11.248.185   35.226.114.148   80:30
 svc/web                    ClusterIP      10.11.253.33    <none>           80/TCP         2m
 ```
 
-```console
+```bash
 $ curl -vv 35.226.114.148 -H "Host: web.example.com"
 * Rebuilt URL to: 35.226.114.148/
 *   Trying 35.226.114.148...
@@ -104,7 +104,7 @@ Commercial support is available at
 * Connection #0 to host 35.226.114.148 left intact
 ```
 
-```console
+```bash
 $ curl -vv 35.226.114.148 -H "Host: app.example.com"
 * Rebuilt URL to: 35.226.114.148/
 *   Trying 35.226.114.148...
@@ -182,7 +182,7 @@ Minikube clusters do not support service type `LoadBalancer`. So, you can try th
 
 - You can set the `Host` header is your http request to match the expected domain and port. This will ensure HAProxy matches the rules properly.
 
-```console
+```bash
 $ curl -vv <minikube-ip>:<node-port> -H "Host: app.example.com"
 ```
 
@@ -190,7 +190,7 @@ $ curl -vv <minikube-ip>:<node-port> -H "Host: app.example.com"
 
 **_Minikube on Mac with virtualbox/vmware providers_**
 
-```console
+```bash
 sudo route -n delete ${K8S_NETWORK} > /dev/null 2>&1
 sudo route -n add ${K8S_NETWORK} $(minikube ip)
 interface=$(ifconfig 'bridge0' | grep member | awk '{print $2}' | xargs | awk '{print $1}')
@@ -199,7 +199,7 @@ sudo ifconfig bridge0 -hostfilter ${interface}
 
 **_Minikube on Linux_**
 
-```console
+```bash
 sudo ip route del ${K8S_NETWORK}
 sudo ip route add ${K8S_NETWORK} via $(minikube ip)
 ```

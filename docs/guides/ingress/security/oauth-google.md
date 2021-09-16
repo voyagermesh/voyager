@@ -26,7 +26,7 @@ and `Authorized redirect URIs` is set to `http://voyager.appscode.ninja/oauth2/c
 
 Now deploy and expose a test server:
 
-```console
+```bash
 $ kubectl run test-server --image=gcr.io/google_containers/echoserver:1.8
 $ kubectl expose deployment test-server --port=80 --target-port=8080
 ```
@@ -156,14 +156,14 @@ and `Authorized redirect URIs` is set to `https://voyager.appscode.ninja/oauth2/
 
 Now deploy and expose a test server:
 
-```console
+```bash
 $ kubectl run test-server --image=gcr.io/google_containers/echoserver:1.8
 $ kubectl expose deployment test-server --port=80 --target-port=8080
 ```
 
 Create TLS secret:
 
-```console
+```bash
 $ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /tmp/tls.key -out /tmp/tls.crt -subj "/CN=voyager.appscode.ninja"
 $ kubectl create secret tls tls-secret --key /tmp/tls.key --cert /tmp/tls.crt
 ```

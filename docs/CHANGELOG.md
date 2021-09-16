@@ -1858,7 +1858,7 @@ aliases:
 - Add command reference docs [\#265](https://github.com/voyagermesh/voyager/pull/265) ([tamalsaha](https://github.com/tamalsaha))
 - Point to HPA example on readme pages. [\#254](https://github.com/voyagermesh/voyager/pull/254) ([tamalsaha](https://github.com/tamalsaha))
 - Add example with hpa [\#253](https://github.com/voyagermesh/voyager/pull/253) ([julianvmodesto](https://github.com/julianvmodesto))
-- Use ```console instead of ```sh syntax highlighting [\#309](https://github.com/voyagermesh/voyager/pull/309) ([tamalsaha](https://github.com/tamalsaha))
+- Use ```bash instead of ```sh syntax highlighting [\#309](https://github.com/voyagermesh/voyager/pull/309) ([tamalsaha](https://github.com/tamalsaha))
 - Install Voyager as critical addon [\#301](https://github.com/voyagermesh/voyager/pull/301) ([tamalsaha](https://github.com/tamalsaha))
 - Add Stats Service events [\#299](https://github.com/voyagermesh/voyager/pull/299) ([sadlil](https://github.com/sadlil))
 - Recover ServiceMonitor [\#294](https://github.com/voyagermesh/voyager/pull/294) ([tamalsaha](https://github.com/tamalsaha))

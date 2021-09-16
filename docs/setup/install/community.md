@@ -1,30 +1,30 @@
 ---
-title: Install Voyager
-description: Voyager Install
+title: Install Voyager Community Edition
+description: Installation guide for Voyager Community edition
 menu:
   docs_{{ .version }}:
-    identifier: install-voyager
-    name: Install
-    parent: setup
+    identifier: install-voyager-operator
+    name: Community Edition
+    parent: installation-guide
     weight: 10
 product_name: voyager
 menu_name: docs_{{ .version }}
 section_menu_id: setup
 ---
 
-> New to Voyager? Please start [here](/docs/concepts/overview.md).
+# Install Voyager Community Edition
 
-# Installation Guide
+Voyager Community edition is available under [AppsCode-Community-1.0.0](https://github.com/appscode/licenses/raw/1.0.0/AppsCode-Community-1.0.0.md) license and free to use for both commercial and non-commercial purposes. `Community Edition` only manages Voyager custom resources in the `demo` Kubernetes namespace. A full features comparison between the Voyager Community edition and Enterprise edition can be found [here](https://voyagermesh.com/pricing/).
 
-Voyager Enterprise Edition requires a license to operate. If you are willing to try Voyager Enterprise Edition, you can grab a **30 days trial** license from [here](https://license-issuer.appscode.com/). To purchase an Enterprise license, please contact us from [here](https://appscode.com/contact).
+To use the Voyager Community edition, you can grab **1 year** free license from [here](https://license-issuer.appscode.com/?p=voyager-community). After that, you can issue another license for one more year. Typically we release a new version of the operator at least quarterly. So, you can just grab a new license every time you upgrade the operator.
 
 ## Get a License
 
-In this section, we are going to show you how you can get a free trial license for the Voyager Enterprise edition. You can get a license for your Kubernetes cluster by going through the following steps:
+In this section, we are going to show you how you can get a **1 year** free license for the Voyager Community edition. You can get a license for your Kubernetes cluster by going through the following steps:
 
-- At first, go to [AppsCode License Server](https://license-issuer.appscode.com/?p=voyager-enterprise) and fill-up the form. It will ask for your Name, Email, the product you want to install, and your cluster ID (UID of the `kube-system` namespace).
+- At first, go to [AppsCode License Server](https://license-issuer.appscode.com/?p=voyager-community) and fill-up the form. It will ask for your Name, Email, the product you want to install, and your cluster ID (UID of the `kube-system` namespace).
 - Provide your name and email address. You can provide your personal or work email address.
-- Then, select `Voyager Enterprise Edition` in the product field.
+- Then, select `Voyager Community Edition` in the product field.
 - Now, provide your cluster-ID. You can get your cluster ID easily by running the following command:
 
   ```bash
@@ -38,13 +38,13 @@ In this section, we are going to show you how you can get a free trial license f
 Here is a screenshot of the license form.
 
 <figure align="center">
-  <img alt="Voyager License Form" src="/docs/images/setup/license_form.png">
+  <img alt="Voyager License Form" src="/docs/images/setup/community_license_form.png">
   <figcaption align="center">Fig: Voyager License Form</figcaption>
 </figure>
 
 You can create licenses for as many clusters as you want. You can upgrade your license any time without re-installing Voyager by following the upgrading guide from [here](/docs/setup/upgrade/index.md#updating-license).
 
-> Voyager licensing process has been designed to work with CI/CD workflow. You can automatically obtain a license from your CI/CD pipeline by following the guide from [here](https://github.com/appscode/offline-license-server#offline-license-server).
+> Voyager licensing process has been designed to work with CI/CD workflow. You can automatically obtain a license from your CI/CD pipeline by following the guide from [here](https://github.com/appscode/offline-license-server#api-reference).
 
 ## Install
 
@@ -63,15 +63,16 @@ Voyager operator can be installed as a Helm chart or simply as Kubernetes manife
 
 ## Using Helm 3
 
-Voyager can be installed via [Helm](https://helm.sh/) 3.x or later versions using the [chart](https://github.com/voyagermesh/installer/tree/{{< param "info.version" >}}/charts/voyager) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
+Voyager can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/voyagermesh/installer/tree/{{< param "info.version" >}}/charts/voyager) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install, follow the steps below:
 
-```console
+```bash
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
 
 $ helm search repo appscode/voyager --version {{< param "info.version" >}}
-NAME              CHART VERSION APP VERSION DESCRIPTION
-appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  Voyager by AppsCode - Secure L7/L4 Ingress Controller...
+NAME                  CHART VERSION APP VERSION DESCRIPTION
+appscode/voyager      {{< param "info.version" >}}   {{< param "info.version" >}}     Voyager by AppsCode - Secure L7/L4 Ingress Cont...
+appscode/voyager-crds {{< param "info.version" >}}   {{< param "info.version" >}}     Voyager Custom Resource Definitions
 
 # provider=acs
 # provider=aks
@@ -100,15 +101,16 @@ To see the detailed configuration options, visit [here](https://github.com/voyag
 
 ## Using YAML
 
-If you prefer to not use Helm, you can generate YAMLs from Voyager operator chart and deploy using `kubectl`. Here we are going to show the prodecure using Helm 3.
+If you prefer to not use Helm, you can generate YAMLs from Voyager chart and deploy using `kubectl`. Here we are going to show the prodecure using Helm 3.
 
-```console
+```bash
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
 
 $ helm search repo appscode/voyager --version {{< param "info.version" >}}
-NAME              CHART VERSION APP VERSION DESCRIPTION
-appscode/voyager  {{< param "info.version" >}}    {{< param "info.version" >}}  Voyager by AppsCode - Secure L7/L4 Ingress Controller...
+NAME                  CHART VERSION APP VERSION DESCRIPTION
+appscode/voyager      {{< param "info.version" >}}   {{< param "info.version" >}}     Voyager by AppsCode - Secure L7/L4 Ingress Cont...
+appscode/voyager-crds {{< param "info.version" >}}   {{< param "info.version" >}}     Voyager Custom Resource Definitions
 
 # provider=acs
 # provider=aks
@@ -137,56 +139,31 @@ To see the detailed configuration options, visit [here](https://github.com/voyag
 </div>
 </div>
 
-### Installing in GKE Cluster
-
-If you are installing Voyager on a GKE cluster, you will need cluster admin permissions to install Voyager operator. Run the following command to grant admin permision to the cluster.
-
-```console
-$ kubectl create clusterrolebinding "cluster-admin-$(whoami)" \
-  --clusterrole=cluster-admin \
-  --user="$(gcloud config get-value core/account)"
-```
-
-### Installing in Minikube
-
-Voyager can be used in minikube using `--provider=minikube`. In Minikube, a `LoadBalancer` type ingress will only assigned a NodePort.
-
-### Installing in Baremetal Cluster
-
-Voyager works great in baremetal cluster. To install, set `--provider=baremetal`. In baremetal cluster, `LoadBalancer` type ingress in not supported. You can use [NodePort](/docs/concepts/ingress-types/nodeport.md), [HostPort](/docs/concepts/ingress-types/hostport.md) or [Internal](/docs/concepts/ingress-types/internal.md) ingress objects.
-
-### Installing in Baremetal Cluster with MetalLB
-
-Follow the instructions for installing on baremetal cluster but specify `metallb` as provider. Then install MetalLB following the instructions [here](https://metallb.universe.tf/installation/). Now, you can use `LoadBalancer` type ingress in baremetal clusters.
-
-### Installing in DigitalOcean Cluster
-
-To use `LoadBalancer` type ingress in [DigitalOcean](https://www.digitalocean.com/) cluster, install Kubernetes [cloud controller manager for DigitalOcean](https://github.com/digitalocean/digitalocean-cloud-controller-manager). Otherwise set cloud provider to `barematal`.
-
-### Installing in Linode Cluster
-
-To use `LoadBalancer` type ingress in [Linode](https://www.linode.com/) cluster, install Kubernetes [cloud controller manager for Linode](https://github.com/pharmer/cloud-controller-manager). Otherwise set cloud provider to `barematal`.
-
 ## Verify installation
+
 To check if Voyager operator pods have started, run the following command:
 
-```console
-$ kubectl get pods --all-namespaces -l app=voyager --watch
+```bash
+$ kubectl get pods --all-namespaces -l app.kubernetes.io/name=voyager --watch
+
+NAMESPACE   NAME                               READY   STATUS    RESTARTS   AGE
+voyager     voyager-operator-84d575d55-5lphm   1/1     Running   0          6m42s
 ```
 
 Once the operator pods are running, you can cancel the above command by typing `Ctrl+C`.
 
 Now, to confirm CRD groups have been registered by the operator, run the following command:
 
-```console
-$ kubectl get crd -l app=voyager
+```bash
+$ kubectl get crd -l app.kubernetes.io/name=voyager
 ```
 
 Now, you are ready to create your first ingress using Voyager.
 
 
 ## Configuring RBAC
-Voyager creates two CRDs: `Ingress` and `Certificate`. Voyager installer will create 2 user facing cluster roles:
+
+Voyager creates an `Ingress` CRD. Voyager installer will create 2 user facing cluster roles:
 
 | ClusterRole           | Aggregates To | Desription                            |
 |-----------------------|---------------|---------------------------------------|
@@ -197,9 +174,10 @@ These user facing roles supports [ClusterRole Aggregation](https://kubernetes.io
 
 
 ## Using kubectl
+
 Since Voyager uses its own TPR/CRD, you need to use full resource kind to find it with kubectl.
 
-```console
+```bash
 # List all voyager ingress
 $ kubectl get ingress.voyager.appscode.com --all-namespaces
 
@@ -211,23 +189,4 @@ $ kubectl get ingress.voyager.appscode.com -n <namespace> <ingress-name> -o yaml
 
 # Describe Ingress. Very useful to debug problems.
 $ kubectl describe ingress.voyager.appscode.com -n <namespace> <ingress-name>
-```
-
-
-## Detect Voyager version
-To detect Voyager version, exec into the operator pod and run `voyager version` command.
-
-```console
-$ POD_NAMESPACE=voyager
-$ POD_NAME=$(kubectl get pods -n $POD_NAMESPACE -l app=voyager -o jsonpath={.items[0].metadata.name})
-$ kubectl exec -it $POD_NAME -n $POD_NAMESPACE voyager version
-
-Version = {{< param "info.version" >}}
-VersionStrategy = tag
-Os = alpine
-Arch = amd64
-CommitHash = ab0b38d8f5d5b4b4508768a594a9d98f2c76abd8
-GitBranch = release-4.0
-GitTag = {{< param "info.version" >}}
-CommitTimestamp = 2017-10-08T12:45:26
 ```

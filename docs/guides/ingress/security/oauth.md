@@ -69,7 +69,7 @@ Please note the followings:
 
 - You can use any random string as `OAUTH2_PROXY_COOKIE_SECRET` while configuring `oauth2-proxy`. You can generate one using following command:
 
-```console
+```bash
 $ python -c 'import os,base64; print base64.b64encode(os.urandom(16))'
 ```
  

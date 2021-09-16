@@ -20,7 +20,7 @@ You can specify the maximum number of concurrent connections through the `ingres
 
 First create a test-server and expose it via service:
 
-```console
+```bash
 $ kubectl run test-server --image=gcr.io/google_containers/echoserver:1.8
 deployment "test-server" created
 
@@ -106,7 +106,7 @@ backend test-server.default:80
 
 To apply it for specific backend let's patch the deployment and add the annotation to pod template:
 
-```console
+```bash
 $ kubectl patch deployment test-server -p '{"spec":{"template":{"metadata":{"annotations":{"ingress.appscode.com/max-connections": "3"}}}}}'
 deployment "test-server" patched
 ```

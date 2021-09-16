@@ -24,14 +24,14 @@ At first, you need to have a Kubernetes cluster, and the kubectl command-line to
 
 Now, install Voyager operator in your `minikube` cluster following the steps [here](/docs/setup/install.md).
 
-```console
+```bash
 minikube start
 ./hack/deploy/minikube.sh
 ```
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-```console
+```bash
 $ kubectl create namespace demo
 namespace "demo" created
 ```
@@ -44,7 +44,7 @@ You can use an existing TLS certificate/key pair or use Voyager to issue free SS
 
 To import an existing TLS certificate/key pair into a Kubernetes cluster, run the following command.
 
-```console
+```bash
 $ kubectl create secret tls tls-secret --namespace=demo --cert=path/to/tls.cert --key=path/to/tls.key
 secret "tls-secret" created
 ```
@@ -204,7 +204,7 @@ For this Ingress, HAProxy will open up 3 separate ports:
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl delete ns demo
 ```
 

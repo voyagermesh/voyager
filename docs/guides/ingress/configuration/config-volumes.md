@@ -172,7 +172,7 @@ backend test-server.demo:6443
 
 ### Check Response
 
-```console
+```bash
 $ minikube service --url voyager-test-ingress -n demo
 http://192.168.99.100:32598
 

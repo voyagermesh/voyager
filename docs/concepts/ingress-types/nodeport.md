@@ -21,7 +21,7 @@ In `NodePort` type Ingress, HAProxy pods are exposed via a NodePort type Kuberne
 
 - Then, deploy and expose a test server.
 
-```console
+```bash
 $ kubectl run test-server --image=gcr.io/google_containers/echoserver:1.8
 deployment "test-server" created
 
@@ -54,7 +54,7 @@ spec:
               number: 80
 ```
 
-```console
+```bash
 $ kubectl get pods,svc
 NAME                                       READY     STATUS    RESTARTS   AGE
 po/test-server-68ddc845cd-x7dtv            1/1       Running   0          4h
@@ -66,12 +66,12 @@ svc/test-server            LoadBalancer   10.105.13.31     <pending>     80:3039
 svc/voyager-test-ingress   NodePort       10.107.182.219   <none>        80:30800/TCP   39m
 ```
 
-```console
+```bash
 $ minikube service --url voyager-test-ingress
 http://192.168.99.100:30800
 ```
 
-```console
+```bash
 $ curl -v -H 'Host: voyager.appscode.test' 192.168.99.100:30800/foo
 *   Trying 192.168.99.100...
 * Connected to 192.168.99.100 (192.168.99.100) port 30800 (#0)
@@ -182,7 +182,7 @@ spec:
               number: 80
 ```
 
-```console
+```bash
 $ curl -v -H 'Host: voyager.appscode.test:30800' 192.168.99.100:30800/foo
 *   Trying 192.168.99.100...
 * Connected to 192.168.99.100 (192.168.99.100) port 30800 (#0)
