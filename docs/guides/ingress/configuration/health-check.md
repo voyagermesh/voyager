@@ -88,7 +88,7 @@ spec:
 
 Now we need to annotate the backend service to enable health check for that backend.
 
-```console
+```bash
 $ kubectl annotate svc test-server ingress.appscode.com/check="true"
 $ kubectl annotate svc test-server ingress.appscode.com/check-port="9090"
 ```

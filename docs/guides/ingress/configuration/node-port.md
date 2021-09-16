@@ -22,7 +22,7 @@ Since 3.2.0, you have the option to specify a NodePort for each HAProxy Service 
 
 First create a test-server and expose it via service:
 
-```console
+```bash
 $ kubectl run test-server --image=gcr.io/google_containers/echoserver:1.8
 deployment "test-server" created
 
@@ -82,7 +82,7 @@ spec:
 
 Since `ingress.appscode.com/type: NodePort` annotation is used, this Ingress is going to expose HAProxy pods via a `NodePort` Service. This service will listen to `8989` and `4343` port for incoming HTTP connections and these port will map to specified node ports, and will pass any request coming to it to the desired backend.
 
-```console
+```bash
 $ kubectl get pods,svc
 NAME                                      READY     STATUS    RESTARTS   AGE
 po/test-server-68ddc845cd-x7dtv           1/1       Running   0          23h

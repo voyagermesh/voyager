@@ -48,7 +48,7 @@ Create a secret to our users:
 * `john` and password `admin` using insecure plain text password
 * `jane` and password `guest` using encrypted password
 
-```console
+```bash
 $ mkpasswd -m des ## a short, des encryption, syntax from Busybox on Alpine Linux
 Password: (type 'guest' and press Enter)
 E5BrlrQ5IXYK2
@@ -94,7 +94,7 @@ spec:
 
 Test without user and password:
 
-```console
+```bash
 $ curl -i ip:port
 HTTP/1.0 401 Unauthorized
 Cache-Control: no-cache
@@ -110,7 +110,7 @@ You need a valid user and password to access this content.
 
 Send a valid user:
 
-```console
+```bash
 $ curl -i -u 'john:admin' ip:port
 HTTP/1.1 200 OK
 Date: Fri, 08 Sep 2017 09:31:43 GMT
@@ -176,7 +176,7 @@ spec:
 
 Test without user and password:
 
-```console
+```bash
 $ curl -i ip:port/auth
 HTTP/1.0 401 Unauthorized
 Cache-Control: no-cache
@@ -192,7 +192,7 @@ You need a valid user and password to access this content.
 
 Send a valid user:
 
-```console
+```bash
 $ curl -i -u 'john:admin' ip:port/auth
 HTTP/1.1 200 OK
 Date: Fri, 08 Sep 2017 09:31:43 GMT
@@ -203,7 +203,7 @@ Content-Type: text/plain; charset=utf-8
 
 No auth enabled Backend
 
-```console
+```bash
 $ curl -i ip:port/no-auth
 HTTP/1.1 200 OK
 Date: Fri, 08 Sep 2017 09:31:43 GMT
@@ -252,7 +252,7 @@ spec:
 
 Test without user and password:
 
-```console
+```bash
 $ curl -i ip:8080/auth
 HTTP/1.0 401 Unauthorized
 Cache-Control: no-cache
@@ -268,7 +268,7 @@ You need a valid user and password to access this content.
 
 Send a valid user:
 
-```console
+```bash
 $ curl -i -u 'john:admin' ip:8080/auth
 HTTP/1.1 200 OK
 Date: Fri, 08 Sep 2017 09:31:43 GMT
@@ -278,7 +278,7 @@ Content-Type: text/plain; charset=utf-8
 ```
 
 No auth enabled Backend
-```console
+```bash
 $ curl -i ip:9090/no-auth
 HTTP/1.1 200 OK
 Date: Fri, 08 Sep 2017 09:31:43 GMT

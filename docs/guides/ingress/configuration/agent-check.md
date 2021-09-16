@@ -88,12 +88,12 @@ spec:
 
 Now we need to annotate the backend service to enable agent-check for that backend.
 
-```console
+```bash
 $ kubectl annotate svc test-server ingress.appscode.com/agent-port="5555"
 ```
 
 To change the default agent-interval value, annotate the same service with:
-```console
+```bash
 $ kubectl annotate svc test-server ingress.appscode.com/agent-interval="3s"
 ```
 

@@ -36,13 +36,13 @@ Voyager Ingress read ca certificates from files stored on secrets with `ca.crt` 
 
 Create tls secret for enable ssl termination:
 
-```console
+```bash
 $ kubectl create secret tls server --cert=/path/to/cert/file --key=/path/to/key/file
 ```
 
 Create ca cert secret:
 
-```console
+```bash
 $ kubectl create secret generic ca --from-file=/path/to/ca.crt
 ```
 
@@ -79,7 +79,7 @@ spec:
 
 Test without certificates:
 
-```console
+```bash
 $ curl -i -vvv 'https://auth.example.com'
 * Hostname was NOT found in DNS cache
 *   Trying 192.168.99.100...
@@ -105,7 +105,7 @@ curl: (35) error:14094410:SSL routines:SSL3_READ_BYTES:sslv3 alert handshake fai
 
 Send a valid client certificate:
 
-```console
+```bash
 $ curl -v -s --key client.key --cert client.crt https://auth.example.com
 HTTP/1.1 200 OK
 Date: Fri, 08 Sep 2017 09:31:43 GMT
@@ -116,7 +116,7 @@ Content-Type: text/plain; charset=utf-8
 
 Send a invalid client certificate, that will redirect to error page if provided:
 
-```console
+```bash
 $ curl -v -s --key invalidclient.key --cert invalidclient.crt https://auth.example.com
 HTTP/1.1 302
 Location: https://auth.example.com/errors.html
@@ -173,7 +173,7 @@ spec:
 
 Request in non-tls port:
 
-```console
+```bash
 $ curl -v -s https://auth.example.com
 HTTP/1.1 200 OK
 Date: Fri, 08 Sep 2017 09:31:43 GMT
@@ -184,7 +184,7 @@ Content-Type: text/plain; charset=utf-8
 
 Test without certificates:
 
-```console
+```bash
 $ curl -i -vvv 'https://auth.example.com:8080'
 * Hostname was NOT found in DNS cache
 *   Trying 192.168.99.100...
@@ -210,7 +210,7 @@ curl: (35) error:14094410:SSL routines:SSL3_READ_BYTES:sslv3 alert handshake fai
 
 Send a valid client certificate:
 
-```console
+```bash
 $ curl -v -s --key client.key --cert client.crt https://auth.example.com:8080
 HTTP/1.1 200 OK
 Date: Fri, 08 Sep 2017 09:31:43 GMT
@@ -222,7 +222,7 @@ Backend server will receive Headers `X-SSL` and `X-SSL-Client-CN`.
 
 Send a invalid client certificate, that will redirect to error page if provided:
 
-```console
+```bash
 $ curl -v -s --key invalidclient.key --cert invalidclient.crt https://auth.example.com:8080
 HTTP/1.1 302
 Location: https://auth.example.com/errors.html

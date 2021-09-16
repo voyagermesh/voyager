@@ -41,7 +41,7 @@ Note that the yaml files that are used in this tutorial, stored in [docs/example
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-```console
+```bash
 $ kubectl create namespace demo
 namespace "demo" created
 
@@ -57,14 +57,14 @@ voyager   Active    45m
 
 We are going to use a nginx server as the backend. To deploy nginx server, run the following commands:
 
-```console
+```bash
 kubectl run nginx --image=nginx -n demo
 kubectl expose deployment nginx --name=web --port=80 --target-port=80 -n demo
 ```
 
 Now create Ingress `ing.yaml`
 
-```console
+```bash
 $ kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/monitoring/stats-ing.yaml
 ingress "stats-ing" created
 ```
@@ -91,7 +91,7 @@ spec:
               number: 80
 ```
 
-```console
+```bash
 $ kubectl get pods,svc -n demo
 NAME                                    READY     STATUS    RESTARTS   AGE
 po/nginx-8586cf59-6hbx8                 1/1       Running   0          4m
@@ -144,7 +144,7 @@ Handling connection for 56789
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 $ kubectl delete ns demo
 namespace "demo" deleted
 ```

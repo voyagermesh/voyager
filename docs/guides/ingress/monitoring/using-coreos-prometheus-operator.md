@@ -24,7 +24,7 @@ Now, deploy Voyager operator following instructions [here](/docs/setup/install.m
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-```console
+```bash
 $ kubectl create namespace demo
 namespace "demo" created
 
@@ -42,7 +42,7 @@ Note that the yaml files that are used in this tutorial, stored in [docs/example
 
 Now, run the following command to prepare your cluster for this tutorial:
 
-```console
+```bash
 $ kubectl create -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/monitoring/coreos-operator/demo-0.yaml
 clusterrole "prometheus-operator" created
 serviceaccount "prometheus-operator" created
@@ -63,7 +63,7 @@ servicemonitors.monitoring.coreos.com   11m
 
 Once the Prometheus operator CRDs are registered, run the following command to create a Prometheus.
 
-```console
+```bash
 $ kubectl create -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/monitoring/coreos-operator/demo-1.yaml
 clusterrole "prometheus" created
 serviceaccount "prometheus" created
@@ -76,7 +76,7 @@ service "prometheus" created
 
 Now to open prometheus dashboard on Browser:
 
-```console
+```bash
 $ kubectl get svc -n demo
 NAME                  TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
 prometheus            LoadBalancer   10.99.201.154   <pending>     9090:30900/TCP   5m
@@ -95,14 +95,14 @@ Now, open your browser and go to the following URL: _http://{minikube-ip}:{prome
 
 We are going to use a nginx server as the backend. To deploy nginx server, run the following commands:
 
-```console
+```bash
 kubectl run nginx --image=nginx -n demo
 kubectl expose deployment nginx --name=web --port=80 --target-port=80 -n demo
 ```
 
 Now create Ingress `ing.yaml`
 
-```console
+```bash
 $ kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/monitoring/coreos-operator/ing.yaml
 ingress "stats-ing" created
 ```
@@ -145,7 +145,7 @@ Voyager operator watches for `Ingress` objects using Kubernetes api. When a `Ing
 
 You can verify it running the following commands:
 
-```console
+```bash
 $ kubectl get pods,svc -n demo
 NAME                                      READY     STATUS    RESTARTS   AGE
 po/nginx-8586cf59-rbc7x                   1/1       Running   0          5m
@@ -206,7 +206,7 @@ __Known Limitations:__ If the database password is updated, exporter must be res
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 $ kubectl delete ns demo
 namespace "demo" deleted
 ```

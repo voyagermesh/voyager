@@ -21,7 +21,7 @@ In `HostPort` type Ingress, HAProxy pods are run via a Kubernetes deployment nam
 
 - Now, deploy test servers using [this script](/docs/examples/ingress/types/hostport/deploy-servers.sh) script.
 
-```console
+```bash
 curl -fsSL https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/ingress/types/hostport/deploy-servers.sh | bash
 
 deployment "nginx" created
@@ -32,7 +32,7 @@ service "rest" exposed
 
 - Now, create an Ingress object running
 
-```console
+```bash
 kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/ingress/types/hostport/ing.yaml
 ```
 
@@ -43,7 +43,7 @@ Please note the annotaiton on ingress:
     ingress.appscode.com/type: HostPort
 ```
 
-```console
+```bash
 $ kubectl get pods,svc
 NAME                                       READY     STATUS    RESTARTS   AGE
 po/echoserver-566fcc4fdb-7fth7             1/1       Running   0          6m
@@ -59,7 +59,7 @@ svc/web                    ClusterIP   10.99.232.60   <none>        80/TCP    6m
 
 - Now, ssh into the minikube vm and run the following commands from host:
 
-```console
+```bash
 $ minikube ssh
 
 $ curl -vv 127.0.0.1 -H "Host: web.example.com"
@@ -104,7 +104,7 @@ Commercial support is available at
 </html>
 ```
 
-```console
+```bash
 $ curl -vv 127.0.0.1 -H "Host: app.example.com"
 > GET / HTTP/1.1
 > Host: app.example.com
@@ -139,7 +139,7 @@ BODY:
 
 Now, if you run `netstat`, you should port 80 is listened on by haproxy.
 
-```console
+```bash
 $ netstat -tuln | grep 80
 tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN
 tcp        0      0 127.0.0.1:2380          0.0.0.0:*               LISTEN

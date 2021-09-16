@@ -41,7 +41,7 @@ spec:
         number: 80
 ```
 
-```console
+```bash
 $ kubectl get deploy voyager-my-app
 NAME               DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
 voyager-my-app     2         2         2            2           1d
@@ -59,7 +59,7 @@ To set up a HorizontalPodAutoscaler for a Voyager HAPRoxy deployment, you can
 use the `kubectl autoscale` command or defining a HorizontalPodAutoscaler
 resource.
 
-```console
+```bash
 kubectl autoscale deployment voyager-my-app --cpu-percent=20 --min=2 --max=10
 ```
 

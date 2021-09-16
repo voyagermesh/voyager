@@ -31,7 +31,7 @@ Voyager can insert HSTS headers in http response if configured via following ing
 
 First create a test-server and expose it via service:
 
-```console
+```bash
 $ kubectl run test-server --image=gcr.io/google_containers/echoserver:1.8
 deployment "test-server" created
 
@@ -41,7 +41,7 @@ service "test-server" exposed
 
 Then create required tls-certificates:
 
-```console
+```bash
 $ ./onessl-linux-amd64 create ca-cert
 Wrote ca certificates in  /home/appscode
 
@@ -146,7 +146,7 @@ backend test-server.default:80
 
 Get url for offshoot voyager service:
 
-```console
+```bash
 $ kubectl get service voyager-test-ingress
 NAME                   TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)                      AGE
 voyager-test-ingress   LoadBalancer   10.106.67.91   <pending>     443:32273/TCP,80:31129/TCP   21m
@@ -158,7 +158,7 @@ http://192.168.99.100:31129
 
 Applying the annotation in ingress will have the following effects, will add the HSTS Header in the response.
 
-```console
+```bash
 $ curl -v -k -H 'Host: voyager.appscode.test' https://192.168.99.100:32273/foo
 
 *   Trying 192.168.99.100...

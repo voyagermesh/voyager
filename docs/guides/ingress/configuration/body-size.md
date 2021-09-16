@@ -94,14 +94,14 @@ backend test-server.default:80
 
 Get url for ingress service:
 
-```console
+```bash
 $ minikube service --url voyager-test-ingress
 http://192.168.99.100:31996
 ```
 
 Send request with content-length smaller than allowed size:
 
-```console
+```bash
 $ curl -X POST -v -H 'Host: voyager.appscode.test' --data "hello" 192.168.99.100:31996/foo
 Note: Unnecessary use of -X or --request, POST is already inferred.
 *   Trying 192.168.99.100...
@@ -155,7 +155,7 @@ hello
 
 Send another request with content-length larger than allowed size:
 
-```console
+```bash
 $ curl -X POST -v -H 'Host: voyager.appscode.test' --data "this is raw data" 192.168.99.100:31996/foo
 Note: Unnecessary use of -X or --request, POST is already inferred.
 *   Trying 192.168.99.100...

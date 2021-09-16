@@ -23,7 +23,7 @@ This example demonstrates how to configure Voyager to choose backends based on S
 
 ### Deploy test server
 
-```console
+```bash
 $ kubectl apply -f https://raw.githubusercontent.com/appscode/voyager/master/test/test-server/deploy/test-server.yaml
 ```
 
@@ -111,7 +111,7 @@ backend test-server.default:3443
 
 ### Get service url
 
-```console
+```bash
 $ minikube service --url voyager-test-ingress
 
 http://192.168.99.100:32666
@@ -119,7 +119,7 @@ http://192.168.99.100:32666
 
 ### Update /etc/hosts
 
-```console
+```bash
 $ nano /etc/hosts
 
 192.168.99.100   voyager.appscode.test
@@ -129,7 +129,7 @@ $ nano /etc/hosts
 
 ### Send requests
 
-```console
+```bash
 $ curl -k http://voyager.appscode.test:32666
 curl: (52) Empty reply from server
 

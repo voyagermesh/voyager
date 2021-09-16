@@ -20,7 +20,7 @@ This tutorial shows how to issue free SSL certificate from Let's Encrypt via DNS
 
 This article has been tested with a GKE cluster.
 
-```console
+```bash
 $ kubectl version --short
 Client Version: v1.8.8
 Server Version: v1.8.8-gke.0
@@ -36,7 +36,7 @@ Now create a service account from your Google Cloud Console
 
 Then create a Kubernetes Secret with this Service Account:
 
-```console
+```bash
 kubectl create secret generic clouddns-service-account --from-file=service-account.json=<path-to-json-file>
 ```
 
@@ -70,7 +70,7 @@ spec:
 
 We are going to use a nginx server as the backend. To deploy nginx server, run the following commands:
 
-```console
+```bash
 kubectl run nginx --image=nginx
 kubectl expose deployment nginx --name=web --port=80 --target-port=80
 ```
@@ -106,11 +106,11 @@ spec:
 
 Then take the `EXTERNAL-IP` from the corresponding service:
 
-```console
+```bash
 kubectl get svc
 ```
 
-```console
+```bash
 NAME                                          TYPE           CLUSTER-IP     EXTERNAL-IP       PORT(S)                      AGE
 voyager-test-ingress-deploy-k8s-route53-dns   LoadBalancer   10.7.248.189   35.225.111.106    443:30713/TCP,80:31137/TCP   21m
 ```
@@ -119,7 +119,7 @@ Create an A-record for `kiteci-dns.appscode.ninja` mapped to `35.225.111.106` wi
 
 Wait until you can see it resolved:
 
-```console
+```bash
 dig +short kiteci-dns.appscode.ninja
 ```
 
@@ -143,7 +143,7 @@ spec:
 
 Now, List the certificates and describe that certificate and wait until you see `Certificate issued successfully` when you describe the certificate.
 
-```console
+```bash
 kubectl get certificates.certmanager.k8s.io --all-namespaces
 ```
 

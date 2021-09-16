@@ -21,7 +21,7 @@ In `Internal` type Ingress, HAProxy pods are exposed via a ClusterIP type Kubern
 
 - Now, deploy test servers using [this script](/docs/examples/ingress/types/internal/deploy-servers.sh) script.
 
-```console
+```bash
 curl -fsSL https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/ingress/types/internal/deploy-servers.sh | bash
 
 deployment "nginx" created
@@ -32,7 +32,7 @@ service "rest" exposed
 
 - Now, create an Ingress object running
 
-```console
+```bash
 kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/ingress/types/internal/ing.yaml
 ```
 
@@ -43,7 +43,7 @@ Please note the annotaiton on ingress:
     ingress.appscode.com/type: Internal
 ```
 
-```console
+```bash
 $ kubectl get pods,svc
 NAME                                       READY     STATUS    RESTARTS   AGE
 po/echoserver-566fcc4fdb-bw4xm             1/1       Running   0          1m
@@ -62,7 +62,7 @@ $ minikube ip
 
 - Now, ssh into the minikube vm and run the following commands from host:
 
-```console
+```bash
 $ minikube ssh
 
 $ curl -vv 10.97.153.185 -H "Host: web.example.com"
@@ -107,7 +107,7 @@ Commercial support is available at
 </html>
 ```
 
-```console
+```bash
 $ curl -vv 10.97.153.185 -H "Host: app.example.com"
 > GET / HTTP/1.1
 > Host: app.example.com

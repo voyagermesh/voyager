@@ -93,7 +93,7 @@ backend test-server.default:443
 
 Now check the response:
 
-```console
+```bash
 $ minikube service --url voyager-test-ingress
 http://192.168.99.100:31692
 

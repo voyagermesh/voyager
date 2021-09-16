@@ -18,7 +18,7 @@ Since 3.2.0, Voyager can use custom templates provided by users to render HAProx
 
 In this example, we are going to overwrite the [defaults.cfg](https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/hack/docker/voyager/templates/defaults.cfg) template which is used to render the [`defaults`](https://github.com/voyagermesh/voyager/blob/3ae30cd023ff8fa6301d2656bf9fbc5765529691/hack/docker/voyager/templates/haproxy.cfg#L6) section of HAProxy config.
 
-```console
+```bash
 $ cat /tmp/defaults.cfg
 
 defaults
@@ -45,13 +45,13 @@ defaults
 
 Now create a ConfigMap using the defaults.cfg as key and the file content as the value.
 
-```console
+```bash
 $ kubectl create configmap -n voyager voyager-templates --from-file=/tmp/defaults.cfg
 ```
 
 Now, the ConfigMap `voyager-templates` has to be mounted in the voyager operator pod and `--custom-templates` flag has to be set. To do this, set `templates.cfgmap` value to Voyager operator chart.
 
-```console
+```bash
 $ helm install voyager-operator appscode/voyager --version {{< param "info.version" >}} \
   --namespace voyager \
   --set cloudProvider=minikube \

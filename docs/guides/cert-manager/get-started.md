@@ -17,7 +17,7 @@ section_menu_id: guides
 
 https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html
 
-```console
+```bash
 kubectl create namespace cert-manager
 kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
 kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.4.1/cert-manager.yaml

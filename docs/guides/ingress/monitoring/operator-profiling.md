@@ -43,7 +43,7 @@ subjects:
   name: system:anonymous
 ```
 
-```console
+```bash
 $ kubectl auth reconcile -f docs/examples/monitoring/profiler.yaml
 clusterrole.rbac.authorization.k8s.io "appscode:system:profiler" reconciled
 clusterrolebinding.rbac.authorization.k8s.io "appscode:system:profiler" reconciled
@@ -66,7 +66,7 @@ Forwarding from [::1]:8443 -> 8443
 
 To look at a 30-second CPU profile:
 
-```console
+```bash
 $ go tool pprof https+insecure://localhost:8443/debug/pprof/profile
 Entering interactive mode (type "help" for commands, "o" for options)
 (pprof) top10
@@ -75,7 +75,7 @@ Entering interactive mode (type "help" for commands, "o" for options)
 
 To look at the heap profile:
 
-```console
+```bash
 $ go tool pprof https+insecure://localhost:8443/debug/pprof/heap
 (pprof) top10
 (pprof) pdf
@@ -83,7 +83,7 @@ $ go tool pprof https+insecure://localhost:8443/debug/pprof/heap
 
 4. Once you are done, remove access to `system:anonymous` user.
 
-```console
+```bash
 $ kubectl delete -f docs/examples/monitoring/profiler.yaml
 clusterrole.rbac.authorization.k8s.io "appscode:system:profiler" deleted
 clusterrolebinding.rbac.authorization.k8s.io "appscode:system:profiler" deleted

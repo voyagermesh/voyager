@@ -55,7 +55,7 @@ If the ingressClass field is specified, cert-manager will create new Ingress res
 
 We are going to use a nginx server as the backend. To deploy nginx server, run the following commands:
 
-```console
+```bash
 kubectl run nginx --image=nginx
 kubectl expose deployment nginx --name=web --port=80 --target-port=80
 ```
@@ -90,7 +90,7 @@ spec:
 
 Then you'll see that a Certificate crd is created automatically for this ingress
 
-```console
+```bash
 kubectl get certificates.certmanager.k8s.io --all-namespaces
 ```
 
@@ -98,11 +98,11 @@ But the certificate is still invalid.
 
 Now take the `EXTERNAL-IP` from the corresponding service:
 
-```console
+```bash
 kubectl get svc
 ```
 
-```console
+```bash
 NAMESPACE       NAME                                          TYPE           CLUSTER-IP     EXTERNAL-IP       PORT(S)                      AGE
 default         voyager-test-ingress                        LoadBalancer   10.7.249.7     35.239.22.162     80:31919/TCP,443:32751/TCP   44s
 ```
@@ -111,13 +111,13 @@ Create an A-record for `kiteci-dns.appscode.ninja` mapped to `35.239.22.162`.
 
 Wait till this is resolved:
 
-```console
+```bash
 dig +short kiteci-dns.appscode.ninja
 ```
 
 Describe that certificate and wait until you see `Certificate issued successfully` when you describe the certificate.
 
-```console
+```bash
 kubectl describe certificates.certmanager.k8s.io quickstart-kiteci-tls
 ```
 

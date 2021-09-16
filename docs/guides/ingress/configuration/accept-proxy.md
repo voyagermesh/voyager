@@ -21,7 +21,7 @@ It will add the `accept-proxy` keyword on the `bind` line of the generated `hapr
 
 First create a test-server and expose it via service:
 
-```console
+```bash
 $ kubectl run test-server --image=gcr.io/google_containers/echoserver:1.8
 deployment "test-server" created
 
@@ -54,7 +54,7 @@ spec:
               number: 80
 ```
 
-```console
+```bash
 $ kubectl get pods,svc
 NAME                                       READY     STATUS    RESTARTS   AGE
 po/test-server-68ddc845cd-x7dtv            1/1       Running   0          23h

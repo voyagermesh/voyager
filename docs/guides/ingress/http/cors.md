@@ -25,7 +25,7 @@ Voyager can enable and configure CORS for all HTTP frontends via following ingre
 
 First create a test-server and expose it via service:
 
-```console
+```bash
 $ kubectl run test-server --image=gcr.io/google_containers/echoserver:1.8
 deployment "test-server" created
 
@@ -61,7 +61,7 @@ spec:
               number: 80
 ```
 
-```console
+```bash
 $ kubectl get pods,svc
 NAME                                       READY     STATUS    RESTARTS   AGE
 po/test-server-68ddc845cd-x7dtv            1/1       Running   0          1d
@@ -78,7 +78,7 @@ http://192.168.99.100:32218
 
 Applying the annotation in ingress will have the following effects, will add the CORS Header in the response.
 
-```console
+```bash
 $ curl -v -H 'Host: voyager.appscode.test' 192.168.99.100:32218/foo
 *   Trying 192.168.99.100...
 * Connected to 192.168.99.100 (192.168.99.100) port 32218 (#0)

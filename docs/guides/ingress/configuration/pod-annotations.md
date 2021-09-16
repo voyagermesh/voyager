@@ -48,7 +48,7 @@ annotations:
     ingress.appscode.com/last-applied-annotation-keys: bar,foo
 ```
 
-```console
+```bash
 $ kubectl get pods voyager-test-ingress-6dbdbdf4f7-9f6w7 -o=jsonpath='{.metadata.annotations}' | tr " " "\n"
 
 map[foo:bar
