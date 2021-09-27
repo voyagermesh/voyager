@@ -24,7 +24,7 @@ metadata:
   name: test-ingress
   namespace: default
 spec:
-  backend:
+  defaultBackend:
     service:
       name: test-service
       port:
@@ -45,7 +45,7 @@ metadata:
   name: test-ingress
   namespace: default
 spec:
-  backend:
+  defaultBackend:
     service:
       name: default-service
       port:

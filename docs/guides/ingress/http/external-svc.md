@@ -59,7 +59,7 @@ metadata:
   name: test-ings-rhvulnlb
   namespace: default
 spec:
-  backend:
+  defaultBackend:
     service:
       name: external-ip
       port:
@@ -98,14 +98,14 @@ spec:
 
 If this service is used in ingress, the traffic will forward to google.com's address.
 
-```
+```yaml
 apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
   name: test-ings-rhvulnlb
   namespace: default
 spec:
-  backend:
+  defaultBackend:
     service:
       name: external-ns
       port:
@@ -130,6 +130,7 @@ spec:
 #### Default redirect
 If No BackendRules are configured for the endpoint, Voyager will configure HAProxy to redirect traffic to provided domain and port.
 The redirect code will be 301 (permanent redirect). Scheme (http or https) used by endpoint is preserved on redirect.
+
 ```
 backend:
   service:
@@ -145,6 +146,7 @@ http-request redirect location http[s]://{{e.ExternalName}}:{{ e.Port }} code 30
 ```
 
 #### Backend Rule
+
 If Backendrules are configured, Voyager will not auto generate any redirect rule. This allows users to use full spectrum of HTTP redirection options available in HAProxy. To learn about these option, consult [HAProxy documentation](https://www.haproxy.com/doc/aloha/7.0/haproxy/http_redirection.html#redirection-examples).
 
 ```

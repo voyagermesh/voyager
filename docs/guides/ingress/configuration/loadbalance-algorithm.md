@@ -25,7 +25,7 @@ metadata:
   name: test-ingress
   namespace: demo
 spec:
-  backend:
+  defaultBackend:
     service:
       name: test-server
       port:

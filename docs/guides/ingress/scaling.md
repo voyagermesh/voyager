@@ -34,7 +34,7 @@ metadata:
   annotations:
     ingress.appscode.com/replicas: '2'
 spec:
-  backend:
+  defaultBackend:
     service:
       name: my-app
       port:

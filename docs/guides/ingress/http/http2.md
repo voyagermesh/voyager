@@ -32,9 +32,7 @@ spec:
   tls:
   - hosts:
     - host.example.com
-    ref:
-      kind: Secret
-      name: tls-host
+    secretName: tls-host
   rules:
   - host: host.example.com
     http:

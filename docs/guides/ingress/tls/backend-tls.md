@@ -60,7 +60,7 @@ metadata:
   name: test-ingress
   namespace: default
 spec:
-  backend:
+  defaultBackend:
     service:
       name: test-service
       port:
