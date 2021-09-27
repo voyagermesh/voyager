@@ -15,7 +15,7 @@ section_menu_id: guides
 # Header and URL Rewriting
 
 AppsCode Ingress support header and URL modification at the loadbalancer level. To ensure simplicity,
-the header and rewrite rules follow the HAProxy syntax as it is. To add some rewrite rules for a HTTP path, follow the example below:
+the backend rules follow the HAProxy syntax as it is. To add some rewrite rules for a HTTP path, follow the example below:
 
 ```yaml
 apiVersion: voyager.appscode.com/v1
@@ -33,15 +33,15 @@ spec:
             name: test-service
             port:
               number: 80
-          headerRules:
-          - X-Forwarded-Host %[base]
-          rewriteRules:
-          - "^([^\\ :]*)\\ /(.*)$ \\1\\ /testings/\\2"
+          backendRules:
+          - http-request replace-uri ^/(.*)$ /testings/\\1
+          - http-request set-header X-Forwarded-Host %[base]
 ```
-The rules specified in `headerRules` will be applicable to the request header before going to the backend.
-those rules will be added in the request header if the header is already not present in the request header.
+
+The first rule specified in `backendRules` is used to modify the request url including the host. Current example
+will add an `/testings` prefix in every request URI before forwarding it to backend.
+
+The second rule specified in `backendRules` will be applicable before going to the backend.
+These rule will add header in the request if the header is already not present in the request header.
 In the example `X-Forwarded-Host` header is added to the request if it is not already there, `%[base]` indicates
 the base URL the load balancer received the requests.
-
-The rules specified in `rewriteRules` are used to modify the request url including the host. Current example
-will add an `/testings` prefix in every request URI before forwarding it to backend.
