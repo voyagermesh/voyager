@@ -81,7 +81,7 @@ appscode/voyager-crds {{< param "info.version" >}}   {{< param "info.version" >}
 # provider=baremetal
 # provider=gce
 # provider=gke
-# provider=minikube
+# provider=kind
 # provider=openstack
 # provider=metallb
 # provider=digitalocean
@@ -119,7 +119,7 @@ appscode/voyager-crds {{< param "info.version" >}}   {{< param "info.version" >}
 # provider=baremetal
 # provider=gce
 # provider=gke
-# provider=minikube
+# provider=kind
 # provider=openstack
 # provider=metallb
 # provider=digitalocean

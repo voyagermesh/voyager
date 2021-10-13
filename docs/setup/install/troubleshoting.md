@@ -24,9 +24,9 @@ $ kubectl create clusterrolebinding "cluster-admin-$(whoami)" \
 
 In addition, if your GKE cluster is a [private cluster](https://cloud.google.com/kubernetes-engine/docs/how-to/private-clusters), you will need to either add an additional firewall rule that allows master nodes access port `8443/tcp` on worker nodes, or change the existing rule that allows access to ports `443/tcp` and `10250/tcp` to also allow access to port `8443/tcp`. The procedure to add or modify firewall rules is described in the official GKE documentation for private clusters mentioned before.
 
-### Installing in Minikube
+### Installing in kind
 
-Voyager can be used in minikube using `--provider=minikube`. In Minikube, a `LoadBalancer` type ingress will only assigned a NodePort.
+Voyager can be used in kind using `--provider=kind`. In kind, a `LoadBalancer` type ingress will only assigned a NodePort.
 
 ### Installing in Baremetal Cluster
 
