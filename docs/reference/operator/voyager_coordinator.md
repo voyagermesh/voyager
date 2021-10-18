@@ -1,24 +1,20 @@
 ---
-title: Voyager Haproxy-Controller
+title: Voyager Coordinator
 menu:
   docs_{{ .version }}:
-    identifier: voyager-haproxy-controller
-    name: Voyager Haproxy-Controller
-    parent: reference
+    identifier: voyager-coordinator
+    name: Voyager Coordinator
+    parent: reference-operator
 product_name: voyager
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## voyager haproxy-controller
-
-Synchronizes HAProxy config
-
-### Synopsis
+## voyager coordinator
 
 Synchronizes HAProxy config
 
 ```
-voyager haproxy-controller [command] [flags]
+voyager coordinator [command] [flags]
 ```
 
 ### Options
@@ -27,32 +23,25 @@ voyager haproxy-controller [command] [flags]
       --burst int                    The maximum burst for throttle (default 1000000)
       --cert-dir string              Path where tls certificates are stored for HAProxy (default "/etc/ssl/private/haproxy")
   -c, --cloud-provider string        Name of cloud provider
-  -h, --help                         help for haproxy-controller
+      --config-dir string            Path where HAProxy config is stored (default "/shared/etc/haproxy")
+  -h, --help                         help for coordinator
       --ingress-api-version string   API version of ingress resource
       --ingress-name string          Name of ingress resource
       --kubeconfig string            Path to kubeconfig file with authorization information (the master location is set by the master flag).
       --master string                The address of the Kubernetes API server (overrides any value in kubeconfig)
       --qps float32                  The maximum QPS to the master from this client (default 1e+06)
-      --resync-period duration       If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out. (default 10m0s)
+      --resync-period duration       If non-zero, will re-list this often. Otherwise, re-list will be delayed as long as possible (until the upstream source closes the watch or times out. (default 10m0s)
 ```
 
 ### Options inherited from parent commands
 
 ```
-      --alsologtostderr                  log to standard error as well as files
       --bypass-validating-webhook-xray   if true, bypasses validating webhook xray checks
       --enable-analytics                 Send analytical events to Google Analytics (default true)
-      --log-flush-frequency duration     Maximum number of seconds between log flushes (default 5s)
-      --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
-      --log_dir string                   If non-empty, write log files in this directory
-      --logtostderr                      log to standard error instead of files
-      --stderrthreshold severity         logs at or above this threshold go to stderr
       --use-kubeapiserver-fqdn-for-aks   if true, uses kube-apiserver FQDN for AKS cluster to workaround https://github.com/Azure/AKS/issues/522 (default true)
-  -v, --v Level                          log level for V logs
-      --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```
 
 ### SEE ALSO
 
-* [voyager](/docs/reference/voyager.md)	 - Voyager by Appscode - Secure L7/L4 Ingress Controller for Kubernetes
+* [voyager](/docs/reference/operator/voyager.md)	 - Voyager by AppsCode - Secure L7/L4 Ingress Controller for Kubernetes
 
