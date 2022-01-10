@@ -141,7 +141,7 @@ Follow the below instructions to update the license:
 helm upgrade voyager-operator appscode/voyager \
   --namespace voyager \
   --reuse-values \
-  --set-file global.license=/path/to/new/license.txt
+  --set-file license=/path/to/new/license.txt
 ```
 
 </div>
