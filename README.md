@@ -8,6 +8,8 @@
 
 > Secure L7/L4 Ingress Controller for Kubernetes
 
+>>> PSA: [As previously announced](https://blog.byte.builders/post/voyager-v2021.10.18/), we have removed the deprecated Voyager v11.x and v12.x images. Please update to the latest v2022.01.10 release!
+
 Voyager is a [HAProxy](http://www.haproxy.org/) backed [secure](#certificate) L7 and L4 [ingress](#ingress) controller for Kubernetes developed by [AppsCode](https://appscode.com). This can be used with any Kubernetes cloud providers including aws, gce, gke, azure, acs. This can also be used with bare metal Kubernetes clusters.
 
 ## Ingress
