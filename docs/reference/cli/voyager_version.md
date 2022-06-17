@@ -24,12 +24,6 @@ voyager version [flags]
       --short          Print just the version number.
 ```
 
-### Options inherited from parent commands
-
-```
-      --enable-analytics   Send analytical events to Google Analytics (default true)
-```
-
 ### SEE ALSO
 
 * [voyager](/docs/reference/cli/voyager.md)	 - Voyager cli by AppsCode

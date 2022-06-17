@@ -20,8 +20,7 @@ Voyager cli by AppsCode
 ### Options
 
 ```
-      --enable-analytics   Send analytical events to Google Analytics (default true)
-  -h, --help               help for voyager
+  -h, --help   help for voyager
 ```
 
 ### SEE ALSO
