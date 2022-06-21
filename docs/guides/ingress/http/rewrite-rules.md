@@ -1,5 +1,5 @@
 ---
-title: Header and URL Rewriting | Voayger
+title: Header and URL Rewriting | Voyager
 menu:
   docs_{{ .version }}:
     identifier: rewrite-http
