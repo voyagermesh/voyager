@@ -298,7 +298,7 @@ aliases:
 - [d2b42cc1](https://github.com/voyagermesh/apimachinery/commit/d2b42cc1) Use kubernetes-1.11.3 (#1240)
 - [a4a80e0c](https://github.com/voyagermesh/apimachinery/commit/a4a80e0c) Update CertStore (#1239)
 - [2b997095](https://github.com/voyagermesh/apimachinery/commit/2b997095) Support pod annotations in chart (#1236)
-- [39e66108](https://github.com/voyagermesh/apimachinery/commit/39e66108) Set serviceAccount for clearner job (#1235)
+- [39e66108](https://github.com/voyagermesh/apimachinery/commit/39e66108) Set serviceAccount for cleaner job (#1235)
 - [5ce5adf4](https://github.com/voyagermesh/apimachinery/commit/5ce5adf4) Cleanup webhooks when chart is deleted (#1233)
 - [0de886e1](https://github.com/voyagermesh/apimachinery/commit/0de886e1) Use IntHash as status.observedGeneration (#1231)
 - [bf939eb8](https://github.com/voyagermesh/apimachinery/commit/bf939eb8) Update pipeline (#1230)

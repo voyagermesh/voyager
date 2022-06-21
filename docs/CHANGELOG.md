@@ -350,7 +350,7 @@ aliases:
 - Update CertStore [\#1239](https://github.com/voyagermesh/voyager/pull/1239) ([tamalsaha](https://github.com/tamalsaha))
 - Touch custom errorfiles provided in configmap [\#1237](https://github.com/voyagermesh/voyager/pull/1237) ([tamalsaha](https://github.com/tamalsaha))
 - Support pod annotations in chart [\#1236](https://github.com/voyagermesh/voyager/pull/1236) ([tamalsaha](https://github.com/tamalsaha))
-- Set serviceAccount for clearner job [\#1235](https://github.com/voyagermesh/voyager/pull/1235) ([tamalsaha](https://github.com/tamalsaha))
+- Set serviceAccount for cleaner job [\#1235](https://github.com/voyagermesh/voyager/pull/1235) ([tamalsaha](https://github.com/tamalsaha))
 - Cleanup webhooks when chart is deleted [\#1233](https://github.com/voyagermesh/voyager/pull/1233) ([tamalsaha](https://github.com/tamalsaha))
 - Fix log formatting [\#1232](https://github.com/voyagermesh/voyager/pull/1232) ([tamalsaha](https://github.com/tamalsaha))
 - Use IntHash as status.observedGeneration [\#1231](https://github.com/voyagermesh/voyager/pull/1231) ([tamalsaha](https://github.com/tamalsaha))
