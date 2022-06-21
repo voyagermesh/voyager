@@ -533,7 +533,7 @@ aliases:
 - [d0c81173](https://github.com/voyagermesh/apimachinery/commit/d0c81173) Update docs for supported annotations (#871)
 - [d82251f8](https://github.com/voyagermesh/apimachinery/commit/d82251f8) Skip generating UpdateStatus method (#887)
 - [44a9317b](https://github.com/voyagermesh/apimachinery/commit/44a9317b) Delete internal types (#886)
-- [a832b2c9](https://github.com/voyagermesh/apimachinery/commit/a832b2c9) List CRD resoruces in user roles
+- [a832b2c9](https://github.com/voyagermesh/apimachinery/commit/a832b2c9) List CRD resources in user roles
 - [063d58a1](https://github.com/voyagermesh/apimachinery/commit/063d58a1) Use official code generator scripts (#885)
 - [9a4b652d](https://github.com/voyagermesh/apimachinery/commit/9a4b652d) Use HAProxy 1.7.10 (#884)
 - [500b02e4](https://github.com/voyagermesh/apimachinery/commit/500b02e4) Move node selector to Ingress spec (#883)
