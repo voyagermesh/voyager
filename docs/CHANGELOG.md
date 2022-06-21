@@ -1603,7 +1603,7 @@ aliases:
 **Merged pull requests:**
 
 - Document noTLS feature [\#485](https://github.com/voyagermesh/voyager/pull/485) ([tamalsaha](https://github.com/tamalsaha))
-- Keep whitespae from end to templates in haproxy.cfg [\#483](https://github.com/voyagermesh/voyager/pull/483) ([tamalsaha](https://github.com/tamalsaha))
+- Keep whitespace from end to templates in haproxy.cfg [\#483](https://github.com/voyagermesh/voyager/pull/483) ([tamalsaha](https://github.com/tamalsaha))
 - Fix stats auth indentation when auth is omitted [\#481](https://github.com/voyagermesh/voyager/pull/481) ([julianvmodesto](https://github.com/julianvmodesto))
 - Fix typo in doc [\#479](https://github.com/voyagermesh/voyager/pull/479) ([pierreozoux](https://github.com/pierreozoux))
 - Fix links in docs [\#478](https://github.com/voyagermesh/voyager/pull/478) ([pierreozoux](https://github.com/pierreozoux))
