@@ -914,7 +914,7 @@ aliases:
 
 **Closed issues:**
 
-- LoadBalancer vs NodePort with manualy setup LB \(haproxy.cfg difference\) [\#867](https://github.com/voyagermesh/voyager/issues/867)
+- LoadBalancer vs NodePort with manually setup LB \(haproxy.cfg difference\) [\#867](https://github.com/voyagermesh/voyager/issues/867)
 - Ignore Rule if backend service is missing [\#848](https://github.com/voyagermesh/voyager/issues/848)
 - Failed to list ServiceMonitor [\#847](https://github.com/voyagermesh/voyager/issues/847)
 - Uninstall deletes object only from kube-system namespace [\#846](https://github.com/voyagermesh/voyager/issues/846)
