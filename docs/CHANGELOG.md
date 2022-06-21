@@ -928,7 +928,7 @@ aliases:
 - Panic in runtime.go when using TLS [\#814](https://github.com/voyagermesh/voyager/issues/814)
 - ACL generation: Support multiple path matching per rule [\#813](https://github.com/voyagermesh/voyager/issues/813)
 - ACL in haproxy not created correctly when an ingress has a single host rule [\#807](https://github.com/voyagermesh/voyager/issues/807)
-- Constant "Back-off restarting failed container" for a non existing bad ingress. [\#797](https://github.com/voyagermesh/voyager/issues/797)
+- Constant "Back-off restarting failed container" for a nonexistent bad ingress. [\#797](https://github.com/voyagermesh/voyager/issues/797)
 - When a pod linked to a service is deleted, Voyager Operator crashes and does not update ConfigMap [\#790](https://github.com/voyagermesh/voyager/issues/790)
 - Pod reboot loop with "One or more Ingress objects are invalid" [\#779](https://github.com/voyagermesh/voyager/issues/779)
 - Using Voyager and Let's Encrypt in multiple Kubernetes clusters in different regions [\#687](https://github.com/voyagermesh/voyager/issues/687)
