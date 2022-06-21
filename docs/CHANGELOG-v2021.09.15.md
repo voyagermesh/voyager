@@ -681,7 +681,7 @@ aliases:
 - [82b18b8f](https://github.com/voyagermesh/apimachinery/commit/82b18b8f) Fix build (#700)
 - [a050189d](https://github.com/voyagermesh/apimachinery/commit/a050189d) Support ExternalIPs (#690)
 - [a876af52](https://github.com/voyagermesh/apimachinery/commit/a876af52) Enable server health check using service annotations and backend rules (#695)
-- [d1c53533](https://github.com/voyagermesh/apimachinery/commit/d1c53533) Send copied object for trasformation
+- [d1c53533](https://github.com/voyagermesh/apimachinery/commit/d1c53533) Send copied object for transformation
 - [173e961b](https://github.com/voyagermesh/apimachinery/commit/173e961b) Change pkg alias
 - [116bf6e2](https://github.com/voyagermesh/apimachinery/commit/116bf6e2) Revendor kutil
 - [0df6c52b](https://github.com/voyagermesh/apimachinery/commit/0df6c52b) Support PROXY protocol in test server (#699)
