@@ -101,7 +101,7 @@ To see the detailed configuration options, visit [here](https://github.com/voyag
 
 ## Using YAML
 
-If you prefer to not use Helm, you can generate YAMLs from Voyager chart and deploy using `kubectl`. Here we are going to show the prodecure using Helm 3.
+If you prefer to not use Helm, you can generate YAMLs from Voyager chart and deploy using `kubectl`. Here we are going to show the procedure using Helm 3.
 
 ```bash
 $ helm repo add appscode https://charts.appscode.com/stable/
