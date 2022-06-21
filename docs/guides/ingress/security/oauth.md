@@ -137,6 +137,6 @@ spec:
 
 ## Next Steps
 
-- Learn how to configure Github as auth provider [here](oauth-github.md).
+- Learn how to configure GitHub as auth provider [here](oauth-github.md).
 - Learn how to configure Google as auth provider [here](oauth-google.md).
 - Learn how to secure Kubernetes Dashboard using voyager external auth [here](oauth-dashboard.md).

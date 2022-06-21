@@ -13,7 +13,7 @@ section_menu_id: guides
 
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
 
-# Securing Kubernetes Dashboard Using Github Oauth
+# Securing Kubernetes Dashboard Using GitHub Oauth
 
 In this example we will deploy kubernetes dashboard and access it through ingress. Also secure the access with voyager external auth using github as auth provider.
 
@@ -29,7 +29,7 @@ By default the dashboard configures HTTPS with a self signed certificate. We nee
 $ kubectl annotate service kubernetes-dashboard -n voyager ingress.appscode.com/backend-tls='ssl verify none'
 ```
 
-## Configure Github Oauth App
+## Configure GitHub Oauth App
 
 Configure github auth provider by following instructions provided [here](https://github.com/bitly/oauth2_proxy#github-auth-provider) and generate client-id and client-secret.
 
@@ -148,7 +148,7 @@ spec:
 
 ## Access DashBoard
 
-Now browse https://voyager.appscode.ninja, it will redirect you to Github login page. After successful login, it will redirect you to dashboard login page.
+Now browse https://voyager.appscode.ninja, it will redirect you to GitHub login page. After successful login, it will redirect you to dashboard login page.
 
 We will use token of an existing service-account `replicaset-controller` to login dashboard. It should have permissions to see Replica Sets in the cluster. You can also create your own service-account with different roles.
 
