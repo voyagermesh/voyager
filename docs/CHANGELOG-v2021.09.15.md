@@ -287,7 +287,7 @@ aliases:
 - [c8d8431c](https://github.com/voyagermesh/apimachinery/commit/c8d8431c) Enable webhooks by default in chart (#1254)
 - [7aaad11f](https://github.com/voyagermesh/apimachinery/commit/7aaad11f) Update README.md
 - [92cc3169](https://github.com/voyagermesh/apimachinery/commit/92cc3169) Update values.yaml
-- [fbffb9cf](https://github.com/voyagermesh/apimachinery/commit/fbffb9cf) Support configuring cleaner image via vaules in chart (#1253)
+- [fbffb9cf](https://github.com/voyagermesh/apimachinery/commit/fbffb9cf) Support configuring cleaner image via values in chart (#1253)
 - [d1b00ca6](https://github.com/voyagermesh/apimachinery/commit/d1b00ca6) add support for custom templates from config map to chart (#1246)
 - [a94d5a8f](https://github.com/voyagermesh/apimachinery/commit/a94d5a8f) Remove support for Go 1.9 compiler
 - [ab5da7d9](https://github.com/voyagermesh/apimachinery/commit/ab5da7d9) Merge commit 'ad6658c7954fdb859b71234edee0ac7d182ae042'

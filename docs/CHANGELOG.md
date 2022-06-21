@@ -340,7 +340,7 @@ aliases:
 - Check if Kubernetes version is supported before running operator [\#1256](https://github.com/voyagermesh/voyager/pull/1256) ([tamalsaha](https://github.com/tamalsaha))
 - Format user roles [\#1255](https://github.com/voyagermesh/voyager/pull/1255) ([tamalsaha](https://github.com/tamalsaha))
 - Enable webhooks by default in chart [\#1254](https://github.com/voyagermesh/voyager/pull/1254) ([tamalsaha](https://github.com/tamalsaha))
-- Support configuring cleaner image via vaules in chart [\#1253](https://github.com/voyagermesh/voyager/pull/1253) ([tamalsaha](https://github.com/tamalsaha))
+- Support configuring cleaner image via values in chart [\#1253](https://github.com/voyagermesh/voyager/pull/1253) ([tamalsaha](https://github.com/tamalsaha))
 - Sort pod annotations to avoid template changes [\#1252](https://github.com/voyagermesh/voyager/pull/1252) ([lbernail](https://github.com/lbernail))
 - Use --pull flag with docker build [\#1248](https://github.com/voyagermesh/voyager/pull/1248) ([tamalsaha](https://github.com/tamalsaha))
 - add support for custom templates from config map to chart [\#1246](https://github.com/voyagermesh/voyager/pull/1246) ([bodewig](https://github.com/bodewig))
