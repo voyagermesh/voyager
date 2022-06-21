@@ -178,7 +178,7 @@ If you need to create an internal LB in Openstack, you can do so using `ingress.
 
 **How to use LoadBalancer type ingress in Minikube cluster?**
 
-Minikube clusters do not support service type `LoadBalancer`. So, you can try the following work arounds:
+Minikube clusters do not support service type `LoadBalancer`. So, you can try the following workarounds:
 
 - You can set the `Host` header is your http request to match the expected domain and port. This will ensure HAProxy matches the rules properly.
 
