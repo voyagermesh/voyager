@@ -1991,7 +1991,7 @@ aliases:
 **Merged pull requests:**
 
 - Fix chart path [\#191](https://github.com/voyagermesh/voyager/pull/191) ([tamalsaha](https://github.com/tamalsaha))
--  ./hack/make.py test\_deploy to generate deploymnts yaml [\#184](https://github.com/voyagermesh/voyager/pull/184) ([ashiquzzaman33](https://github.com/ashiquzzaman33))
+-  ./hack/make.py test\_deploy to generate deployments yaml [\#184](https://github.com/voyagermesh/voyager/pull/184) ([ashiquzzaman33](https://github.com/ashiquzzaman33))
 - Disable analytics for test runs [\#182](https://github.com/voyagermesh/voyager/pull/182) ([tamalsaha](https://github.com/tamalsaha))
 - Prepare docs for 1.5.6 [\#178](https://github.com/voyagermesh/voyager/pull/178) ([tamalsaha](https://github.com/tamalsaha))
 - Remove cluster name flag [\#177](https://github.com/voyagermesh/voyager/pull/177) ([tamalsaha](https://github.com/tamalsaha))

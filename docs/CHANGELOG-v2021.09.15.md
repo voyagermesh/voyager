@@ -1006,7 +1006,7 @@ aliases:
 - [fe69629e](https://github.com/voyagermesh/apimachinery/commit/fe69629e) Create deployments.yaml
 - [23abc80b](https://github.com/voyagermesh/apimachinery/commit/23abc80b) Add various comments in chart review
 - [dd54134b](https://github.com/voyagermesh/apimachinery/commit/dd54134b) Merge commit 'dc0c1dee9a4f2c9faf611eac3456de866e4402f0'
-- [b89e4161](https://github.com/voyagermesh/apimachinery/commit/b89e4161)  ./hack/make.py test_deploy to generate deploymnts yaml (#184)
+- [b89e4161](https://github.com/voyagermesh/apimachinery/commit/b89e4161)  ./hack/make.py test_deploy to generate deployments yaml (#184)
 - [b7cf38da](https://github.com/voyagermesh/apimachinery/commit/b7cf38da) Install voyager operator in kube-system namespace
 - [bc6a37ca](https://github.com/voyagermesh/apimachinery/commit/bc6a37ca) Merge commit '1dfe6c897bf277f03152548a968b2681c1d7413f'
 - [abcbdf65](https://github.com/voyagermesh/apimachinery/commit/abcbdf65) Set metrics port to :8080 by default (#180)
