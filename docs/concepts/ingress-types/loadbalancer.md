@@ -145,7 +145,7 @@ BODY:
 
 **How do I ensure that IP assigned my Ingress does not change?**
 
-You can allocate a static IP to a LoadBalancer Ingress managed by Voyager. Say for example, you are using GKE. When you create an Ingress object, Voyager will create a Kubernetes Service of type LoadBalancer. This service will will automatically get a regional IP. If you want to keep that IP, you can mark that IP as static in Google cloud console
+You can allocate a static IP to a LoadBalancer Ingress managed by Voyager. Say for example, you are using GKE. When you create an Ingress object, Voyager will create a Kubernetes Service of type LoadBalancer. This service will automatically get a regional IP. If you want to keep that IP, you can mark that IP as static in Google cloud console
 and the apply the annotation to your Ingress.
 
 ```yaml
