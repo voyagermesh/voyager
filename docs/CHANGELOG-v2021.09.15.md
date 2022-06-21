@@ -1098,7 +1098,7 @@ aliases:
 - [8429c4a4](https://github.com/voyagermesh/apimachinery/commit/8429c4a4) Add acknowledgements (#7)
 - [3a9bef41](https://github.com/voyagermesh/apimachinery/commit/3a9bef41) Documentation for voyager (#6)
 - [3e44b51b](https://github.com/voyagermesh/apimachinery/commit/3e44b51b) Revendor to remove DeleteOptions
-- [29be74c8](https://github.com/voyagermesh/apimachinery/commit/29be74c8) Revendor k8s-adddons
+- [29be74c8](https://github.com/voyagermesh/apimachinery/commit/29be74c8) Revendor k8s-addons
 - [91e70955](https://github.com/voyagermesh/apimachinery/commit/91e70955) Set default HAproxy to 1.7.2-k8s
 - [909ea91f](https://github.com/voyagermesh/apimachinery/commit/909ea91f) Revendor.
 - [94def797](https://github.com/voyagermesh/apimachinery/commit/94def797) Update README.md
