@@ -476,7 +476,7 @@ aliases:
 - [f0ac9e30](https://github.com/voyagermesh/apimachinery/commit/f0ac9e30) Add CRD Validation (#962)
 - [f585cf50](https://github.com/voyagermesh/apimachinery/commit/f585cf50) Hard to copy line (#960)
 - [f1fd111a](https://github.com/voyagermesh/apimachinery/commit/f1fd111a) Add missing RBAC for service monitors in chart (#958)
-- [02fac19a](https://github.com/voyagermesh/apimachinery/commit/02fac19a) Revendor depenencies (#957)
+- [02fac19a](https://github.com/voyagermesh/apimachinery/commit/02fac19a) Revendor dependencies (#957)
 - [49600ee8](https://github.com/voyagermesh/apimachinery/commit/49600ee8) Fix install instruction for minikube 0.24.x (Kube 1.8.0) (#956)
 - [37668930](https://github.com/voyagermesh/apimachinery/commit/37668930) Skip downloading onessl if already exists (#953)
 - [eeec2d38](https://github.com/voyagermesh/apimachinery/commit/eeec2d38) Revendor jsonpatch library (#952)
@@ -1055,7 +1055,7 @@ aliases:
 - [3dc3133d](https://github.com/voyagermesh/apimachinery/commit/3dc3133d) Use https git url for our lego fork
 - [f29012c8](https://github.com/voyagermesh/apimachinery/commit/f29012c8) Prepare docs for 1.5.4 release
 - [7904d56f](https://github.com/voyagermesh/apimachinery/commit/7904d56f) Rename operator deployment to voyager-operator (#71)
-- [f634810b](https://github.com/voyagermesh/apimachinery/commit/f634810b) Revendor depenencies.
+- [f634810b](https://github.com/voyagermesh/apimachinery/commit/f634810b) Revendor dependencies.
 - [5c727011](https://github.com/voyagermesh/apimachinery/commit/5c727011) Update statefulset-pod.md
 - [e7611829](https://github.com/voyagermesh/apimachinery/commit/e7611829) Prepare docs for 1.5.3 release (#67)
 - [a91fb2ae](https://github.com/voyagermesh/apimachinery/commit/a91fb2ae) Ingress Hostname based traffic forwarding (#66)

@@ -815,7 +815,7 @@ aliases:
 
 **Merged pull requests:**
 
-- Revendor depenencies [\#957](https://github.com/voyagermesh/voyager/pull/957) ([tamalsaha](https://github.com/tamalsaha))
+- Revendor dependencies [\#957](https://github.com/voyagermesh/voyager/pull/957) ([tamalsaha](https://github.com/tamalsaha))
 - Fix install instruction for minikube 0.24.x \(Kube 1.8.0\) [\#956](https://github.com/voyagermesh/voyager/pull/956) ([tamalsaha](https://github.com/tamalsaha))
 - Skip downloading onessl if already exists [\#953](https://github.com/voyagermesh/voyager/pull/953) ([tamalsaha](https://github.com/tamalsaha))
 - Revendor jsonpatch library [\#952](https://github.com/voyagermesh/voyager/pull/952) ([tamalsaha](https://github.com/tamalsaha))
