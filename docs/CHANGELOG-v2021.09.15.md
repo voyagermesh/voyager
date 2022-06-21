@@ -1232,7 +1232,7 @@ aliases:
 - [d06bf03](https://github.com/voyagermesh/installer/commit/d06bf03) Switch to AppsCode Community License
 - [8ea7f8a](https://github.com/voyagermesh/installer/commit/8ea7f8a) Update README.md
 - [e44a1c6](https://github.com/voyagermesh/installer/commit/e44a1c6) Stop using api versions removed in k8s 1.22 (#79)
-- [a9822dd](https://github.com/voyagermesh/installer/commit/a9822dd) Add regsitryFQDN support (#78)
+- [a9822dd](https://github.com/voyagermesh/installer/commit/a9822dd) Add registryFQDN support (#78)
 - [7db2985](https://github.com/voyagermesh/installer/commit/7db2985) Use Kubernetes v1.21.0 toolchain (#77)
 - [2920e4c](https://github.com/voyagermesh/installer/commit/2920e4c) Use Kubernetes v1.21.0 toolchain (#76)
 - [8d822e2](https://github.com/voyagermesh/installer/commit/8d822e2) Use Kubernetes v1.21.0 toolchain (#75)
