@@ -1,6 +1,6 @@
 ---
 title: Uninstallation Guide | Voyager
-description: Voyager Unistallation Guide
+description: Voyager Uninstallation Guide
 menu:
   docs_{{ .version }}:
     identifier: uninstallation-guide
