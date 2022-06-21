@@ -330,7 +330,7 @@ aliases:
 - Set SideEffects to None for webhooks [\#1270](https://github.com/voyagermesh/voyager/pull/1270) ([tamalsaha](https://github.com/tamalsaha))
 - Prepare docs for 8.0.0 release [\#1269](https://github.com/voyagermesh/voyager/pull/1269) ([tamalsaha](https://github.com/tamalsaha))
 - Detect failure quickly. [\#1268](https://github.com/voyagermesh/voyager/pull/1268) ([tamalsaha](https://github.com/tamalsaha))
-- Check webhooks are activated in insaller script [\#1266](https://github.com/voyagermesh/voyager/pull/1266) ([tamalsaha](https://github.com/tamalsaha))
+- Check webhooks are activated in installer script [\#1266](https://github.com/voyagermesh/voyager/pull/1266) ([tamalsaha](https://github.com/tamalsaha))
 - Write webhook xray event to operator workload [\#1265](https://github.com/voyagermesh/voyager/pull/1265) ([tamalsaha](https://github.com/tamalsaha))
 - Support readinessProbe and livenessProbe [\#1263](https://github.com/voyagermesh/voyager/pull/1263) ([bpineau](https://github.com/bpineau))
 - Update error-files.md [\#1260](https://github.com/voyagermesh/voyager/pull/1260) ([simnyc](https://github.com/simnyc))

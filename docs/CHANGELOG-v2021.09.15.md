@@ -274,7 +274,7 @@ aliases:
 - [aec30bad](https://github.com/voyagermesh/apimachinery/commit/aec30bad) Prepare docs for 8.0.0 release (#1269)
 - [ab4145d8](https://github.com/voyagermesh/apimachinery/commit/ab4145d8) Set SideEffects to None for webhooks (#1270)
 - [b17d76ea](https://github.com/voyagermesh/apimachinery/commit/b17d76ea) Detect failure quickly. (#1268)
-- [1074eb18](https://github.com/voyagermesh/apimachinery/commit/1074eb18) Check webhooks are activated in insaller script (#1266)
+- [1074eb18](https://github.com/voyagermesh/apimachinery/commit/1074eb18) Check webhooks are activated in installer script (#1266)
 - [07d9b36b](https://github.com/voyagermesh/apimachinery/commit/07d9b36b) Support readinessProbe and livenessProbe (#1263)
 - [781756c5](https://github.com/voyagermesh/apimachinery/commit/781756c5) Write webhook xray event to operator workload (#1265)
 - [45c3f24f](https://github.com/voyagermesh/apimachinery/commit/45c3f24f) Add validation webhook xray (#1261)
