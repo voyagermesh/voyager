@@ -1567,7 +1567,7 @@ aliases:
 - Ingress validation error [\#420](https://github.com/voyagermesh/voyager/issues/420)
 - Fix ACL for host:port in non-standard ports. [\#418](https://github.com/voyagermesh/voyager/issues/418)
 - Update operations delete HAProxy pods gets reverted [\#386](https://github.com/voyagermesh/voyager/issues/386)
-- Deleting and re-createing a Voyager Ingress in AWS fails due to leaked security groups [\#372](https://github.com/voyagermesh/voyager/issues/372)
+- Deleting and re-creating a Voyager Ingress in AWS fails due to leaked security groups [\#372](https://github.com/voyagermesh/voyager/issues/372)
 - LE cert failed to issue with route53 [\#371](https://github.com/voyagermesh/voyager/issues/371)
 - Restart HAProxy when new cert is issued. [\#340](https://github.com/voyagermesh/voyager/issues/340)
 - Cert controller issues [\#124](https://github.com/voyagermesh/voyager/issues/124)
