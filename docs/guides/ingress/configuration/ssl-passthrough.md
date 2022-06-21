@@ -16,9 +16,9 @@ section_menu_id: guides
 
 The annotation `ingress.appscode.com/ssl-passthrough` allows to configure TLS termination in the backend and not in haproxy. When set to `true`, passes TLS connections directly to backend.
 
-If `ssl-passthrough` is used, HAProxy will use `tcp`. For more details see  [here](https://www.haproxy.com/documentation/haproxy/deployment-guides/tls-infrastructure/). When `ssl-pasthrough` is enabled, Voyager automatically converts your HTTP ingress rules to TCP rules.
+If `ssl-passthrough` is used, HAProxy will use `tcp`. For more details see  [here](https://www.haproxy.com/documentation/haproxy/deployment-guides/tls-infrastructure/). When `ssl-passthrough` is enabled, Voyager automatically converts your HTTP ingress rules to TCP rules.
 
-Please note that following features are not supported when using `ssl-pasthrough`:
+Please note that following features are not supported when using `ssl-passthrough`:
 
 - Multiple paths for HTTP rules.
 - `headerRules` and `rewriteRules` for backends.
