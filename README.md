@@ -3,7 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/voyagermesh.dev/voyager)](https://goreportcard.com/report/voyagermesh.dev/voyager)
 [![Build Status](https://github.com/voyagermesh/voyager/workflows/CI/badge.svg)](https://github.com/voyagermesh/voyager/actions?workflow=CI)
 [![Docker Pulls](https://img.shields.io/docker/pulls/appscode/voyager.svg)](https://hub.docker.com/r/appscode/voyager/)
-[![Slack](https://shields.io/badge/Join_Slack-salck?color=4A154B&logo=slack)](https://slack.appscode.com)
+[![Slack](https://shields.io/badge/Join_Slack-slack?color=4A154B&logo=slack)](https://slack.appscode.com)
 [![Twitter](https://img.shields.io/twitter/follow/voyagermesh.svg?style=social&logo=twitter&label=Follow)](https://twitter.com/intent/follow?screen_name=voyagermesh)
 
 > Secure L7/L4 Ingress Controller for Kubernetes
