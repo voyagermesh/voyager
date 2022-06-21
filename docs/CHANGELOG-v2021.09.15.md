@@ -964,7 +964,7 @@ aliases:
 - [b5efcfb2](https://github.com/voyagermesh/apimachinery/commit/b5efcfb2) Fix labels import
 - [417025f6](https://github.com/voyagermesh/apimachinery/commit/417025f6) Update ***Getter interfaces match form (#231)
 - [fb2aff62](https://github.com/voyagermesh/apimachinery/commit/fb2aff62) Delete pods & services matching old labels before starting operator (#230)
-- [e51d86c6](https://github.com/voyagermesh/apimachinery/commit/e51d86c6) Add dns-resovler-check-health annotation to for ExternalName service (#226)
+- [e51d86c6](https://github.com/voyagermesh/apimachinery/commit/e51d86c6) Add dns-resolver-check-health annotation to for ExternalName service (#226)
 - [763a98f7](https://github.com/voyagermesh/apimachinery/commit/763a98f7) Use PreRun & PostRun to send analytics. (#224)
 - [6325a235](https://github.com/voyagermesh/apimachinery/commit/6325a235) Update metric endpoints documentation (#223)
 - [447bc444](https://github.com/voyagermesh/apimachinery/commit/447bc444) Fix port used for exposing metrics from operator. (#222)

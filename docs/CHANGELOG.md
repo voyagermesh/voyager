@@ -1889,7 +1889,7 @@ aliases:
 - Fix Bugs [\#247](https://github.com/voyagermesh/voyager/pull/247) ([sadlil](https://github.com/sadlil))
 - Correctly parse target port [\#245](https://github.com/voyagermesh/voyager/pull/245) ([tamalsaha](https://github.com/tamalsaha))
 - Fix testframework for aws and update docs. [\#237](https://github.com/voyagermesh/voyager/pull/237) ([sadlil](https://github.com/sadlil))
-- Add dns-resovler-check-health annotation to for ExternalName service [\#226](https://github.com/voyagermesh/voyager/pull/226) ([tamalsaha](https://github.com/tamalsaha))
+- Add dns-resolver-check-health annotation to for ExternalName service [\#226](https://github.com/voyagermesh/voyager/pull/226) ([tamalsaha](https://github.com/tamalsaha))
 - Add cloud config file  [\#218](https://github.com/voyagermesh/voyager/pull/218) ([sadlil](https://github.com/sadlil))
 - Fix bugs [\#217](https://github.com/voyagermesh/voyager/pull/217) ([sadlil](https://github.com/sadlil))
 
