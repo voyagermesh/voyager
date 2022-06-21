@@ -13,7 +13,7 @@ section_menu_id: concepts
 
 # LoadBalancer
 
-In `LoadBalancer` type Ingress, HAProxy pods are exposed via a LoadBalancer type Kubernetes service named `voyager-${ingress-name}`. You can apply the `ingress.appscode.com/type: LoadBalancer` annotation on a Ingress object to enable this type of Ingress. This is also the default type for Ingress objects. So, this annotaion is not required to enable this type.
+In `LoadBalancer` type Ingress, HAProxy pods are exposed via a LoadBalancer type Kubernetes service named `voyager-${ingress-name}`. You can apply the `ingress.appscode.com/type: LoadBalancer` annotation on a Ingress object to enable this type of Ingress. This is also the default type for Ingress objects. So, this annotation is not required to enable this type.
 
 ## How It Works
 
@@ -36,7 +36,7 @@ service "rest" exposed
 kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/ingress/types/loadbalancer/ing.yaml
 ```
 
-Please note the annotaiton on ingress:
+Please note the annotation on ingress:
 
 ```yaml
   annotations:
