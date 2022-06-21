@@ -559,7 +559,7 @@ aliases:
 - [3d8f3c6b](https://github.com/voyagermesh/apimachinery/commit/3d8f3c6b) Fixed e2e tests (#863)
 - [c18f41ec](https://github.com/voyagermesh/apimachinery/commit/c18f41ec) Modify remaining ${} forms
 - [1997f7c7](https://github.com/voyagermesh/apimachinery/commit/1997f7c7) Delete all voyager resources while uninstalling
-- [b5009dea](https://github.com/voyagermesh/apimachinery/commit/b5009dea) Use binary operator for checking stauts of semver command
+- [b5009dea](https://github.com/voyagermesh/apimachinery/commit/b5009dea) Use binary operator for checking status of semver command
 - [262e5f4d](https://github.com/voyagermesh/apimachinery/commit/262e5f4d) Modify remaining ${} forms
 - [1a1455dd](https://github.com/voyagermesh/apimachinery/commit/1a1455dd) Use ${} form for onessl envsubst (#861)
 - [43703b0b](https://github.com/voyagermesh/apimachinery/commit/43703b0b) Make operator run locally (#859)
