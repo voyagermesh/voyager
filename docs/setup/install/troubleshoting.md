@@ -14,7 +14,7 @@ section_menu_id: setup
 
 ## Installing in GKE Cluster
 
-If you are installing Voyager on a GKE cluster, you will need cluster admin permissions to install Voyager operator. Run the following command to grant admin permision to the cluster.
+If you are installing Voyager on a GKE cluster, you will need cluster admin permissions to install Voyager operator. Run the following command to grant admin permission to the cluster.
 
 ```bash
 $ kubectl create clusterrolebinding "cluster-admin-$(whoami)" \
