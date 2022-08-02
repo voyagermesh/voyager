@@ -24,12 +24,6 @@ voyager check [flags]
   -h, --help                    help for check
 ```
 
-### Options inherited from parent commands
-
-```
-      --enable-analytics   Send analytical events to Google Analytics (default true)
-```
-
 ### SEE ALSO
 
 * [voyager](/docs/reference/cli/voyager.md)	 - Voyager cli by AppsCode
