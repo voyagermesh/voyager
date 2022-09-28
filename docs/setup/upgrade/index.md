@@ -138,7 +138,11 @@ Follow the below instructions to update the license:
 #### Using Helm 3
 
 ```bash
-helm upgrade voyager-operator appscode/voyager \
+# detect current version
+helm ls -A | grep kubedb
+
+# update license key keeping the current version
+helm upgrade voyager-operator appscode/voyager --version=<cur_version> \
   --namespace voyager \
   --reuse-values \
   --set-file license=/path/to/new/license.txt
@@ -150,7 +154,11 @@ helm upgrade voyager-operator appscode/voyager \
 #### Using YAML (with helm 3)
 
 ```bash
-helm template voyager appscode/voyager \
+# detect current version
+helm ls -A | grep kubedb
+
+# update license key keeping the current version
+helm template voyager appscode/voyager --version=<cur_version> \
   --namespace voyager --create-namespace \
   --set cleaner.skip=true \
   --set-file license=/path/to/new/license.txt | kubectl apply -f -
