@@ -139,7 +139,7 @@ Follow the below instructions to update the license:
 
 ```bash
 # detect current version
-helm ls -A | grep kubedb
+helm ls -A | grep voyager
 
 # update license key keeping the current version
 helm upgrade voyager-operator appscode/voyager --version=<cur_version> \
@@ -155,7 +155,7 @@ helm upgrade voyager-operator appscode/voyager --version=<cur_version> \
 
 ```bash
 # detect current version
-helm ls -A | grep kubedb
+helm ls -A | grep voyager
 
 # update license key keeping the current version
 helm template voyager appscode/voyager --version=<cur_version> \
