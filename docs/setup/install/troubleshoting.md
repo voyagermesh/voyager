@@ -22,7 +22,10 @@ $ kubectl create clusterrolebinding "cluster-admin-$(whoami)" \
   --user="$(gcloud config get-value core/account)"
 ```
 
-In addition, if your GKE cluster is a [private cluster](https://cloud.google.com/kubernetes-engine/docs/how-to/private-clusters), you will need to either add an additional firewall rule that allows master nodes access port `8443/tcp` on worker nodes, or change the existing rule that allows access to ports `443/tcp` and `10250/tcp` to also allow access to port `8443/tcp`. The procedure to add or modify firewall rules is described in the official GKE documentation for private clusters mentioned before.
+In addition, if your GKE cluster is a [private cluster](https://cloud.google.com/kubernetes-engine/docs/how-to/private-clusters), you will need to either add an additional firewall rule that allows master nodes access port `8443/tcp` on worker nodes, or change the existing rule that allows access to ports `443/tcp` and `10250/tcp` to also allow access to port `8443/tcp`. The procedure to add or modify firewall rules is described in the official GKE documentation for private clusters mentioned before. See the links below for details:
+
+- https://github.com/kubernetes/kubernetes/issues/79739
+- https://cloud.google.com/kubernetes-engine/docs/how-to/private-clusters#add_firewall_rules
 
 ### Installing in kind
 
