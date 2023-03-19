@@ -29,7 +29,7 @@ The setup section contains instructions for installing the Voyager and its vario
 - **Install Voyager:** Installation instructions for Voyager and its various components.
   - [Community Edition](/docs/setup/install/community.md): Installation instructions for Voyager Community Edition.
   - [Enterprise Edition](/docs/setup/install/enterprise.md): Installation instructions for Voyager Enterprise Edition.
-  - [Troubleshooting](/docs/setup/install/troubleshoting.md): Troubleshooting guide for various installation problems.
+  - [Troubleshooting](/docs/setup/install/troubleshooting.md): Troubleshooting guide for various installation problems.
 - **Uninstall Voyager:** Uninstallation instructions for Voyager and its various components.
   - [Community Edition](/docs/setup/uninstall/community.md): Uninstallation instructions for Voyager Community Edition.
   - [Enterprise Edition](/docs/setup/uninstall/enterprise.md): Uninstallation instructions for Voyager Enterprise Edition.

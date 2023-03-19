@@ -25,7 +25,7 @@ parse_url() {
     IFS='/'                  # / is set as delimiter
     read -ra PARTS <<<"$url" # str is read into an array as tokens separated by IFS
     if [ ${PARTS[0]} != 'github.com' ] || [ ${#PARTS[@]} -ne 5 ]; then
-        echo "failed to parse relase-tracker: $url"
+        echo "failed to parse release-tracker: $url"
         exit 1
     fi
     export RELEASE_TRACKER_OWNER=${PARTS[1]}

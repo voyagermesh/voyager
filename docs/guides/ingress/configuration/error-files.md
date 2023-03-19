@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Error Files
 
-Using voayger you can configure haproxy to return a file-content or, execute a command instead of returning generated errors. To achieve this you need to create a `configmap` specifying the file-content or, command for different status codes. Then you have to specify the `configmap` name using `ingress.appscode.com/errorfiles` annotation. Then contents of the configmap will be mounted in the haproxy pod in path `/srv/voyager/errorfiles`.
+Using voyager you can configure haproxy to return a file-content or, execute a command instead of returning generated errors. To achieve this you need to create a `configmap` specifying the file-content or, command for different status codes. Then you have to specify the `configmap` name using `ingress.appscode.com/errorfiles` annotation. Then contents of the configmap will be mounted in the haproxy pod in path `/srv/voyager/errorfiles`.
 
 Supported commands are: `errorfile, errorloc, errorloc302, errorloc303`.
 And supported status codes are: `200, 400, 403, 405, 408, 429, 500, 502, 503, 504`.

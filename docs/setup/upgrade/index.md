@@ -24,7 +24,7 @@ In order to upgrade from Voyager `v2021.x.x` to `{{< param "info.version" >}}`, 
 
 #### 1. Update Voyager Catalog CRDs
 
-Helm [does not upgrade the CRDs](https://github.com/helm/helm/issues/6581) bundled in a Helm chart if the CRDs already exist. So, to upgrde the Voyager catalog CRD, please run the command below:
+Helm [does not upgrade the CRDs](https://github.com/helm/helm/issues/6581) bundled in a Helm chart if the CRDs already exist. So, to upgrade the Voyager catalog CRD, please run the command below:
 
 ```bash
 kubectl apply -f https://github.com/voyagermesh/installer/raw/{{< param "info.version" >}}/crds/voyager-crds.yaml

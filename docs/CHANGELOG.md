@@ -330,7 +330,7 @@ aliases:
 - Set SideEffects to None for webhooks [\#1270](https://github.com/voyagermesh/voyager/pull/1270) ([tamalsaha](https://github.com/tamalsaha))
 - Prepare docs for 8.0.0 release [\#1269](https://github.com/voyagermesh/voyager/pull/1269) ([tamalsaha](https://github.com/tamalsaha))
 - Detect failure quickly. [\#1268](https://github.com/voyagermesh/voyager/pull/1268) ([tamalsaha](https://github.com/tamalsaha))
-- Check webhooks are activated in insaller script [\#1266](https://github.com/voyagermesh/voyager/pull/1266) ([tamalsaha](https://github.com/tamalsaha))
+- Check webhooks are activated in installer script [\#1266](https://github.com/voyagermesh/voyager/pull/1266) ([tamalsaha](https://github.com/tamalsaha))
 - Write webhook xray event to operator workload [\#1265](https://github.com/voyagermesh/voyager/pull/1265) ([tamalsaha](https://github.com/tamalsaha))
 - Support readinessProbe and livenessProbe [\#1263](https://github.com/voyagermesh/voyager/pull/1263) ([bpineau](https://github.com/bpineau))
 - Update error-files.md [\#1260](https://github.com/voyagermesh/voyager/pull/1260) ([simnyc](https://github.com/simnyc))
@@ -340,7 +340,7 @@ aliases:
 - Check if Kubernetes version is supported before running operator [\#1256](https://github.com/voyagermesh/voyager/pull/1256) ([tamalsaha](https://github.com/tamalsaha))
 - Format user roles [\#1255](https://github.com/voyagermesh/voyager/pull/1255) ([tamalsaha](https://github.com/tamalsaha))
 - Enable webhooks by default in chart [\#1254](https://github.com/voyagermesh/voyager/pull/1254) ([tamalsaha](https://github.com/tamalsaha))
-- Support configuring cleaner image via vaules in chart [\#1253](https://github.com/voyagermesh/voyager/pull/1253) ([tamalsaha](https://github.com/tamalsaha))
+- Support configuring cleaner image via values in chart [\#1253](https://github.com/voyagermesh/voyager/pull/1253) ([tamalsaha](https://github.com/tamalsaha))
 - Sort pod annotations to avoid template changes [\#1252](https://github.com/voyagermesh/voyager/pull/1252) ([lbernail](https://github.com/lbernail))
 - Use --pull flag with docker build [\#1248](https://github.com/voyagermesh/voyager/pull/1248) ([tamalsaha](https://github.com/tamalsaha))
 - add support for custom templates from config map to chart [\#1246](https://github.com/voyagermesh/voyager/pull/1246) ([bodewig](https://github.com/bodewig))
@@ -350,7 +350,7 @@ aliases:
 - Update CertStore [\#1239](https://github.com/voyagermesh/voyager/pull/1239) ([tamalsaha](https://github.com/tamalsaha))
 - Touch custom errorfiles provided in configmap [\#1237](https://github.com/voyagermesh/voyager/pull/1237) ([tamalsaha](https://github.com/tamalsaha))
 - Support pod annotations in chart [\#1236](https://github.com/voyagermesh/voyager/pull/1236) ([tamalsaha](https://github.com/tamalsaha))
-- Set serviceAccount for clearner job [\#1235](https://github.com/voyagermesh/voyager/pull/1235) ([tamalsaha](https://github.com/tamalsaha))
+- Set serviceAccount for cleaner job [\#1235](https://github.com/voyagermesh/voyager/pull/1235) ([tamalsaha](https://github.com/tamalsaha))
 - Cleanup webhooks when chart is deleted [\#1233](https://github.com/voyagermesh/voyager/pull/1233) ([tamalsaha](https://github.com/tamalsaha))
 - Fix log formatting [\#1232](https://github.com/voyagermesh/voyager/pull/1232) ([tamalsaha](https://github.com/tamalsaha))
 - Use IntHash as status.observedGeneration [\#1231](https://github.com/voyagermesh/voyager/pull/1231) ([tamalsaha](https://github.com/tamalsaha))
@@ -815,7 +815,7 @@ aliases:
 
 **Merged pull requests:**
 
-- Revendor depenencies [\#957](https://github.com/voyagermesh/voyager/pull/957) ([tamalsaha](https://github.com/tamalsaha))
+- Revendor dependencies [\#957](https://github.com/voyagermesh/voyager/pull/957) ([tamalsaha](https://github.com/tamalsaha))
 - Fix install instruction for minikube 0.24.x \(Kube 1.8.0\) [\#956](https://github.com/voyagermesh/voyager/pull/956) ([tamalsaha](https://github.com/tamalsaha))
 - Skip downloading onessl if already exists [\#953](https://github.com/voyagermesh/voyager/pull/953) ([tamalsaha](https://github.com/tamalsaha))
 - Revendor jsonpatch library [\#952](https://github.com/voyagermesh/voyager/pull/952) ([tamalsaha](https://github.com/tamalsaha))
@@ -914,7 +914,7 @@ aliases:
 
 **Closed issues:**
 
-- LoadBalancer vs NodePort with manualy setup LB \(haproxy.cfg difference\) [\#867](https://github.com/voyagermesh/voyager/issues/867)
+- LoadBalancer vs NodePort with manually setup LB \(haproxy.cfg difference\) [\#867](https://github.com/voyagermesh/voyager/issues/867)
 - Ignore Rule if backend service is missing [\#848](https://github.com/voyagermesh/voyager/issues/848)
 - Failed to list ServiceMonitor [\#847](https://github.com/voyagermesh/voyager/issues/847)
 - Uninstall deletes object only from kube-system namespace [\#846](https://github.com/voyagermesh/voyager/issues/846)
@@ -928,7 +928,7 @@ aliases:
 - Panic in runtime.go when using TLS [\#814](https://github.com/voyagermesh/voyager/issues/814)
 - ACL generation: Support multiple path matching per rule [\#813](https://github.com/voyagermesh/voyager/issues/813)
 - ACL in haproxy not created correctly when an ingress has a single host rule [\#807](https://github.com/voyagermesh/voyager/issues/807)
-- Constant "Back-off restarting failed container" for a non existing bad ingress. [\#797](https://github.com/voyagermesh/voyager/issues/797)
+- Constant "Back-off restarting failed container" for a nonexistent bad ingress. [\#797](https://github.com/voyagermesh/voyager/issues/797)
 - When a pod linked to a service is deleted, Voyager Operator crashes and does not update ConfigMap [\#790](https://github.com/voyagermesh/voyager/issues/790)
 - Pod reboot loop with "One or more Ingress objects are invalid" [\#779](https://github.com/voyagermesh/voyager/issues/779)
 - Using Voyager and Let's Encrypt in multiple Kubernetes clusters in different regions [\#687](https://github.com/voyagermesh/voyager/issues/687)
@@ -1567,7 +1567,7 @@ aliases:
 - Ingress validation error [\#420](https://github.com/voyagermesh/voyager/issues/420)
 - Fix ACL for host:port in non-standard ports. [\#418](https://github.com/voyagermesh/voyager/issues/418)
 - Update operations delete HAProxy pods gets reverted [\#386](https://github.com/voyagermesh/voyager/issues/386)
-- Deleting and re-createing a Voyager Ingress in AWS fails due to leaked security groups [\#372](https://github.com/voyagermesh/voyager/issues/372)
+- Deleting and re-creating a Voyager Ingress in AWS fails due to leaked security groups [\#372](https://github.com/voyagermesh/voyager/issues/372)
 - LE cert failed to issue with route53 [\#371](https://github.com/voyagermesh/voyager/issues/371)
 - Restart HAProxy when new cert is issued. [\#340](https://github.com/voyagermesh/voyager/issues/340)
 - Cert controller issues [\#124](https://github.com/voyagermesh/voyager/issues/124)
@@ -1603,7 +1603,7 @@ aliases:
 **Merged pull requests:**
 
 - Document noTLS feature [\#485](https://github.com/voyagermesh/voyager/pull/485) ([tamalsaha](https://github.com/tamalsaha))
-- Keep whitespae from end to templates in haproxy.cfg [\#483](https://github.com/voyagermesh/voyager/pull/483) ([tamalsaha](https://github.com/tamalsaha))
+- Keep whitespace from end to templates in haproxy.cfg [\#483](https://github.com/voyagermesh/voyager/pull/483) ([tamalsaha](https://github.com/tamalsaha))
 - Fix stats auth indentation when auth is omitted [\#481](https://github.com/voyagermesh/voyager/pull/481) ([julianvmodesto](https://github.com/julianvmodesto))
 - Fix typo in doc [\#479](https://github.com/voyagermesh/voyager/pull/479) ([pierreozoux](https://github.com/pierreozoux))
 - Fix links in docs [\#478](https://github.com/voyagermesh/voyager/pull/478) ([pierreozoux](https://github.com/pierreozoux))
@@ -1889,7 +1889,7 @@ aliases:
 - Fix Bugs [\#247](https://github.com/voyagermesh/voyager/pull/247) ([sadlil](https://github.com/sadlil))
 - Correctly parse target port [\#245](https://github.com/voyagermesh/voyager/pull/245) ([tamalsaha](https://github.com/tamalsaha))
 - Fix testframework for aws and update docs. [\#237](https://github.com/voyagermesh/voyager/pull/237) ([sadlil](https://github.com/sadlil))
-- Add dns-resovler-check-health annotation to for ExternalName service [\#226](https://github.com/voyagermesh/voyager/pull/226) ([tamalsaha](https://github.com/tamalsaha))
+- Add dns-resolver-check-health annotation to for ExternalName service [\#226](https://github.com/voyagermesh/voyager/pull/226) ([tamalsaha](https://github.com/tamalsaha))
 - Add cloud config file  [\#218](https://github.com/voyagermesh/voyager/pull/218) ([sadlil](https://github.com/sadlil))
 - Fix bugs [\#217](https://github.com/voyagermesh/voyager/pull/217) ([sadlil](https://github.com/sadlil))
 
@@ -1991,7 +1991,7 @@ aliases:
 **Merged pull requests:**
 
 - Fix chart path [\#191](https://github.com/voyagermesh/voyager/pull/191) ([tamalsaha](https://github.com/tamalsaha))
--  ./hack/make.py test\_deploy to generate deploymnts yaml [\#184](https://github.com/voyagermesh/voyager/pull/184) ([ashiquzzaman33](https://github.com/ashiquzzaman33))
+-  ./hack/make.py test\_deploy to generate deployments yaml [\#184](https://github.com/voyagermesh/voyager/pull/184) ([ashiquzzaman33](https://github.com/ashiquzzaman33))
 - Disable analytics for test runs [\#182](https://github.com/voyagermesh/voyager/pull/182) ([tamalsaha](https://github.com/tamalsaha))
 - Prepare docs for 1.5.6 [\#178](https://github.com/voyagermesh/voyager/pull/178) ([tamalsaha](https://github.com/tamalsaha))
 - Remove cluster name flag [\#177](https://github.com/voyagermesh/voyager/pull/177) ([tamalsaha](https://github.com/tamalsaha))
@@ -2186,4 +2186,4 @@ aliases:
 
 
 
-\* *This Change Log was automatically generated by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator)*
+\* *This Change Log was automatically generated by [github_changelog_generator](https://github.com/skywinder/GitHub-Changelog-Generator)*

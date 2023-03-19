@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Blue Green Deployments
 
-Voayger supports Blue Green deployments using weighted loadbalancing for backend pods. Following example illustrates a weighted loadbalance scenario.
+Voyager supports Blue Green deployments using weighted loadbalancing for backend pods. Following example illustrates a weighted loadbalancer scenario.
 
 ```yaml
 apiVersion: apps/v1

@@ -101,7 +101,7 @@ To see the detailed configuration options, visit [here](https://github.com/voyag
 
 ## Using YAML
 
-If you prefer to not use Helm, you can generate YAMLs from Voyager chart and deploy using `kubectl`. Here we are going to show the prodecure using Helm 3.
+If you prefer to not use Helm, you can generate YAMLs from Voyager chart and deploy using `kubectl`. Here we are going to show the procedure using Helm 3.
 
 ```bash
 $ helm repo add appscode https://charts.appscode.com/stable/
@@ -165,7 +165,7 @@ Now, you are ready to create your first ingress using Voyager.
 
 Voyager creates an `Ingress` CRD. Voyager installer will create 2 user facing cluster roles:
 
-| ClusterRole           | Aggregates To | Desription                            |
+| ClusterRole           | Aggregates To | Description                           |
 |-----------------------|---------------|---------------------------------------|
 | appscode:voyager:edit | admin, edit   | Allows edit access to Voyager CRDs, intended to be granted within a namespace using a RoleBinding. |
 | appscode:voyager:view | view          | Allows read-only access to Voyager CRDs, intended to be granted within a namespace using a RoleBinding. |

@@ -36,7 +36,7 @@ service "rest" exposed
 kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/ingress/types/hostport/ing.yaml
 ```
 
-Please note the annotaiton on ingress:
+Please note the annotation on ingress:
 
 ```yaml
   annotations:
@@ -151,7 +151,7 @@ tcp        0      0 127.0.0.1:2380          0.0.0.0:*               LISTEN
 
 Voyager operator will configure firewall rules for HostPort Ingress for the following cloud providers: AWS, GCE/GKE .
 
-## What IAM permissions are reuired for Voyager operator to configure firewalls for HostPort Ingress in AWS?
+## What IAM permissions are required for Voyager operator to configure firewalls for HostPort Ingress in AWS?
 
  - Master: For aws clusters provisioned via [Kops](https://github.com/kubernetes/kops/blob/master/docs/iam_roles.md), no additional permission should be needed. Master instances already has `ec2:*` iam permissions.
 

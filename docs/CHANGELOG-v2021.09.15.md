@@ -274,7 +274,7 @@ aliases:
 - [aec30bad](https://github.com/voyagermesh/apimachinery/commit/aec30bad) Prepare docs for 8.0.0 release (#1269)
 - [ab4145d8](https://github.com/voyagermesh/apimachinery/commit/ab4145d8) Set SideEffects to None for webhooks (#1270)
 - [b17d76ea](https://github.com/voyagermesh/apimachinery/commit/b17d76ea) Detect failure quickly. (#1268)
-- [1074eb18](https://github.com/voyagermesh/apimachinery/commit/1074eb18) Check webhooks are activated in insaller script (#1266)
+- [1074eb18](https://github.com/voyagermesh/apimachinery/commit/1074eb18) Check webhooks are activated in installer script (#1266)
 - [07d9b36b](https://github.com/voyagermesh/apimachinery/commit/07d9b36b) Support readinessProbe and livenessProbe (#1263)
 - [781756c5](https://github.com/voyagermesh/apimachinery/commit/781756c5) Write webhook xray event to operator workload (#1265)
 - [45c3f24f](https://github.com/voyagermesh/apimachinery/commit/45c3f24f) Add validation webhook xray (#1261)
@@ -287,7 +287,7 @@ aliases:
 - [c8d8431c](https://github.com/voyagermesh/apimachinery/commit/c8d8431c) Enable webhooks by default in chart (#1254)
 - [7aaad11f](https://github.com/voyagermesh/apimachinery/commit/7aaad11f) Update README.md
 - [92cc3169](https://github.com/voyagermesh/apimachinery/commit/92cc3169) Update values.yaml
-- [fbffb9cf](https://github.com/voyagermesh/apimachinery/commit/fbffb9cf) Support configuring cleaner image via vaules in chart (#1253)
+- [fbffb9cf](https://github.com/voyagermesh/apimachinery/commit/fbffb9cf) Support configuring cleaner image via values in chart (#1253)
 - [d1b00ca6](https://github.com/voyagermesh/apimachinery/commit/d1b00ca6) add support for custom templates from config map to chart (#1246)
 - [a94d5a8f](https://github.com/voyagermesh/apimachinery/commit/a94d5a8f) Remove support for Go 1.9 compiler
 - [ab5da7d9](https://github.com/voyagermesh/apimachinery/commit/ab5da7d9) Merge commit 'ad6658c7954fdb859b71234edee0ac7d182ae042'
@@ -298,7 +298,7 @@ aliases:
 - [d2b42cc1](https://github.com/voyagermesh/apimachinery/commit/d2b42cc1) Use kubernetes-1.11.3 (#1240)
 - [a4a80e0c](https://github.com/voyagermesh/apimachinery/commit/a4a80e0c) Update CertStore (#1239)
 - [2b997095](https://github.com/voyagermesh/apimachinery/commit/2b997095) Support pod annotations in chart (#1236)
-- [39e66108](https://github.com/voyagermesh/apimachinery/commit/39e66108) Set serviceAccount for clearner job (#1235)
+- [39e66108](https://github.com/voyagermesh/apimachinery/commit/39e66108) Set serviceAccount for cleaner job (#1235)
 - [5ce5adf4](https://github.com/voyagermesh/apimachinery/commit/5ce5adf4) Cleanup webhooks when chart is deleted (#1233)
 - [0de886e1](https://github.com/voyagermesh/apimachinery/commit/0de886e1) Use IntHash as status.observedGeneration (#1231)
 - [bf939eb8](https://github.com/voyagermesh/apimachinery/commit/bf939eb8) Update pipeline (#1230)
@@ -476,7 +476,7 @@ aliases:
 - [f0ac9e30](https://github.com/voyagermesh/apimachinery/commit/f0ac9e30) Add CRD Validation (#962)
 - [f585cf50](https://github.com/voyagermesh/apimachinery/commit/f585cf50) Hard to copy line (#960)
 - [f1fd111a](https://github.com/voyagermesh/apimachinery/commit/f1fd111a) Add missing RBAC for service monitors in chart (#958)
-- [02fac19a](https://github.com/voyagermesh/apimachinery/commit/02fac19a) Revendor depenencies (#957)
+- [02fac19a](https://github.com/voyagermesh/apimachinery/commit/02fac19a) Revendor dependencies (#957)
 - [49600ee8](https://github.com/voyagermesh/apimachinery/commit/49600ee8) Fix install instruction for minikube 0.24.x (Kube 1.8.0) (#956)
 - [37668930](https://github.com/voyagermesh/apimachinery/commit/37668930) Skip downloading onessl if already exists (#953)
 - [eeec2d38](https://github.com/voyagermesh/apimachinery/commit/eeec2d38) Revendor jsonpatch library (#952)
@@ -533,7 +533,7 @@ aliases:
 - [d0c81173](https://github.com/voyagermesh/apimachinery/commit/d0c81173) Update docs for supported annotations (#871)
 - [d82251f8](https://github.com/voyagermesh/apimachinery/commit/d82251f8) Skip generating UpdateStatus method (#887)
 - [44a9317b](https://github.com/voyagermesh/apimachinery/commit/44a9317b) Delete internal types (#886)
-- [a832b2c9](https://github.com/voyagermesh/apimachinery/commit/a832b2c9) List CRD resoruces in user roles
+- [a832b2c9](https://github.com/voyagermesh/apimachinery/commit/a832b2c9) List CRD resources in user roles
 - [063d58a1](https://github.com/voyagermesh/apimachinery/commit/063d58a1) Use official code generator scripts (#885)
 - [9a4b652d](https://github.com/voyagermesh/apimachinery/commit/9a4b652d) Use HAProxy 1.7.10 (#884)
 - [500b02e4](https://github.com/voyagermesh/apimachinery/commit/500b02e4) Move node selector to Ingress spec (#883)
@@ -559,7 +559,7 @@ aliases:
 - [3d8f3c6b](https://github.com/voyagermesh/apimachinery/commit/3d8f3c6b) Fixed e2e tests (#863)
 - [c18f41ec](https://github.com/voyagermesh/apimachinery/commit/c18f41ec) Modify remaining ${} forms
 - [1997f7c7](https://github.com/voyagermesh/apimachinery/commit/1997f7c7) Delete all voyager resources while uninstalling
-- [b5009dea](https://github.com/voyagermesh/apimachinery/commit/b5009dea) Use binary operator for checking stauts of semver command
+- [b5009dea](https://github.com/voyagermesh/apimachinery/commit/b5009dea) Use binary operator for checking status of semver command
 - [262e5f4d](https://github.com/voyagermesh/apimachinery/commit/262e5f4d) Modify remaining ${} forms
 - [1a1455dd](https://github.com/voyagermesh/apimachinery/commit/1a1455dd) Use ${} form for onessl envsubst (#861)
 - [43703b0b](https://github.com/voyagermesh/apimachinery/commit/43703b0b) Make operator run locally (#859)
@@ -681,7 +681,7 @@ aliases:
 - [82b18b8f](https://github.com/voyagermesh/apimachinery/commit/82b18b8f) Fix build (#700)
 - [a050189d](https://github.com/voyagermesh/apimachinery/commit/a050189d) Support ExternalIPs (#690)
 - [a876af52](https://github.com/voyagermesh/apimachinery/commit/a876af52) Enable server health check using service annotations and backend rules (#695)
-- [d1c53533](https://github.com/voyagermesh/apimachinery/commit/d1c53533) Send copied object for trasformation
+- [d1c53533](https://github.com/voyagermesh/apimachinery/commit/d1c53533) Send copied object for transformation
 - [173e961b](https://github.com/voyagermesh/apimachinery/commit/173e961b) Change pkg alias
 - [116bf6e2](https://github.com/voyagermesh/apimachinery/commit/116bf6e2) Revendor kutil
 - [0df6c52b](https://github.com/voyagermesh/apimachinery/commit/0df6c52b) Support PROXY protocol in test server (#699)
@@ -964,7 +964,7 @@ aliases:
 - [b5efcfb2](https://github.com/voyagermesh/apimachinery/commit/b5efcfb2) Fix labels import
 - [417025f6](https://github.com/voyagermesh/apimachinery/commit/417025f6) Update ***Getter interfaces match form (#231)
 - [fb2aff62](https://github.com/voyagermesh/apimachinery/commit/fb2aff62) Delete pods & services matching old labels before starting operator (#230)
-- [e51d86c6](https://github.com/voyagermesh/apimachinery/commit/e51d86c6) Add dns-resovler-check-health annotation to for ExternalName service (#226)
+- [e51d86c6](https://github.com/voyagermesh/apimachinery/commit/e51d86c6) Add dns-resolver-check-health annotation to for ExternalName service (#226)
 - [763a98f7](https://github.com/voyagermesh/apimachinery/commit/763a98f7) Use PreRun & PostRun to send analytics. (#224)
 - [6325a235](https://github.com/voyagermesh/apimachinery/commit/6325a235) Update metric endpoints documentation (#223)
 - [447bc444](https://github.com/voyagermesh/apimachinery/commit/447bc444) Fix port used for exposing metrics from operator. (#222)
@@ -1006,7 +1006,7 @@ aliases:
 - [fe69629e](https://github.com/voyagermesh/apimachinery/commit/fe69629e) Create deployments.yaml
 - [23abc80b](https://github.com/voyagermesh/apimachinery/commit/23abc80b) Add various comments in chart review
 - [dd54134b](https://github.com/voyagermesh/apimachinery/commit/dd54134b) Merge commit 'dc0c1dee9a4f2c9faf611eac3456de866e4402f0'
-- [b89e4161](https://github.com/voyagermesh/apimachinery/commit/b89e4161)  ./hack/make.py test_deploy to generate deploymnts yaml (#184)
+- [b89e4161](https://github.com/voyagermesh/apimachinery/commit/b89e4161)  ./hack/make.py test_deploy to generate deployments yaml (#184)
 - [b7cf38da](https://github.com/voyagermesh/apimachinery/commit/b7cf38da) Install voyager operator in kube-system namespace
 - [bc6a37ca](https://github.com/voyagermesh/apimachinery/commit/bc6a37ca) Merge commit '1dfe6c897bf277f03152548a968b2681c1d7413f'
 - [abcbdf65](https://github.com/voyagermesh/apimachinery/commit/abcbdf65) Set metrics port to :8080 by default (#180)
@@ -1055,7 +1055,7 @@ aliases:
 - [3dc3133d](https://github.com/voyagermesh/apimachinery/commit/3dc3133d) Use https git url for our lego fork
 - [f29012c8](https://github.com/voyagermesh/apimachinery/commit/f29012c8) Prepare docs for 1.5.4 release
 - [7904d56f](https://github.com/voyagermesh/apimachinery/commit/7904d56f) Rename operator deployment to voyager-operator (#71)
-- [f634810b](https://github.com/voyagermesh/apimachinery/commit/f634810b) Revendor depenencies.
+- [f634810b](https://github.com/voyagermesh/apimachinery/commit/f634810b) Revendor dependencies.
 - [5c727011](https://github.com/voyagermesh/apimachinery/commit/5c727011) Update statefulset-pod.md
 - [e7611829](https://github.com/voyagermesh/apimachinery/commit/e7611829) Prepare docs for 1.5.3 release (#67)
 - [a91fb2ae](https://github.com/voyagermesh/apimachinery/commit/a91fb2ae) Ingress Hostname based traffic forwarding (#66)
@@ -1098,7 +1098,7 @@ aliases:
 - [8429c4a4](https://github.com/voyagermesh/apimachinery/commit/8429c4a4) Add acknowledgements (#7)
 - [3a9bef41](https://github.com/voyagermesh/apimachinery/commit/3a9bef41) Documentation for voyager (#6)
 - [3e44b51b](https://github.com/voyagermesh/apimachinery/commit/3e44b51b) Revendor to remove DeleteOptions
-- [29be74c8](https://github.com/voyagermesh/apimachinery/commit/29be74c8) Revendor k8s-adddons
+- [29be74c8](https://github.com/voyagermesh/apimachinery/commit/29be74c8) Revendor k8s-addons
 - [91e70955](https://github.com/voyagermesh/apimachinery/commit/91e70955) Set default HAproxy to 1.7.2-k8s
 - [909ea91f](https://github.com/voyagermesh/apimachinery/commit/909ea91f) Revendor.
 - [94def797](https://github.com/voyagermesh/apimachinery/commit/94def797) Update README.md
@@ -1232,7 +1232,7 @@ aliases:
 - [d06bf03](https://github.com/voyagermesh/installer/commit/d06bf03) Switch to AppsCode Community License
 - [8ea7f8a](https://github.com/voyagermesh/installer/commit/8ea7f8a) Update README.md
 - [e44a1c6](https://github.com/voyagermesh/installer/commit/e44a1c6) Stop using api versions removed in k8s 1.22 (#79)
-- [a9822dd](https://github.com/voyagermesh/installer/commit/a9822dd) Add regsitryFQDN support (#78)
+- [a9822dd](https://github.com/voyagermesh/installer/commit/a9822dd) Add registryFQDN support (#78)
 - [7db2985](https://github.com/voyagermesh/installer/commit/7db2985) Use Kubernetes v1.21.0 toolchain (#77)
 - [2920e4c](https://github.com/voyagermesh/installer/commit/2920e4c) Use Kubernetes v1.21.0 toolchain (#76)
 - [8d822e2](https://github.com/voyagermesh/installer/commit/8d822e2) Use Kubernetes v1.21.0 toolchain (#75)

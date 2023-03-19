@@ -1,9 +1,9 @@
 ---
-title: OAuth2 Authentication Using Github | Kubernetes Ingress
+title: OAuth2 Authentication Using GitHub | Kubernetes Ingress
 menu:
   docs_{{ .version }}:
     identifier: oauth2-github
-    name: OAuth2 Github
+    name: OAuth2 GitHub
     parent: oauth2-security
     weight: 20
 product_name: voyager
@@ -13,11 +13,11 @@ section_menu_id: guides
 
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
 
-# OAuth2 Authentication Using Github
+# OAuth2 Authentication Using GitHub
 
-This example will demonstrate how to configure external authentication in both TLS and non-TLS mode using Github as auth provider.
+This example will demonstrate how to configure external authentication in both TLS and non-TLS mode using GitHub as auth provider.
 
-## Example using Github (no TLS)
+## Example using GitHub (no TLS)
 
 First configure github auth provider by following instructions provided [here](https://github.com/bitly/oauth2_proxy#github-auth-provider) and generate client-id and client-secret.
 
@@ -145,7 +145,7 @@ Now browse the followings:
 - http://voyager.appscode.ninja/app (external-auth required)
 - http://voyager.appscode.ninja/health (external-auth not required)
 
-## Example using Github (with TLS)
+## Example using GitHub (with TLS)
 
 First configure github auth provider by following instructions provided [here](https://github.com/bitly/oauth2_proxy#github-auth-provider) and generate client-id and client-secret.
 

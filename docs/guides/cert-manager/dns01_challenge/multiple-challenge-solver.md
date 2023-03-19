@@ -27,7 +27,7 @@ A number of different DNS providers are supported for the ACME issuer. Below is 
 - [DigitalOcean](https://docs.cert-manager.io/en/latest/tasks/issuers/setup-acme/dns01/digitalocean.html)
 - [RFC-2136](https://docs.cert-manager.io/en/latest/tasks/issuers/setup-acme/dns01/rfc2136.html)
 
-Additionally, you can create only one Issuer/ClusterIssuer for each of http01 or dns01 challange or even for 
+Additionally, you can create only one Issuer/ClusterIssuer for each of http01 or dns01 challenge or even for 
 multiple dns providers, like [this](/docs/examples/cert-manager/multiple.yaml):
 
 ```yaml

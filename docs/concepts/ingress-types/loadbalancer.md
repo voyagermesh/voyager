@@ -13,7 +13,7 @@ section_menu_id: concepts
 
 # LoadBalancer
 
-In `LoadBalancer` type Ingress, HAProxy pods are exposed via a LoadBalancer type Kubernetes service named `voyager-${ingress-name}`. You can apply the `ingress.appscode.com/type: LoadBalancer` annotation on a Ingress object to enable this type of Ingress. This is also the default type for Ingress objects. So, this annotaion is not required to enable this type.
+In `LoadBalancer` type Ingress, HAProxy pods are exposed via a LoadBalancer type Kubernetes service named `voyager-${ingress-name}`. You can apply the `ingress.appscode.com/type: LoadBalancer` annotation on a Ingress object to enable this type of Ingress. This is also the default type for Ingress objects. So, this annotation is not required to enable this type.
 
 ## How It Works
 
@@ -36,7 +36,7 @@ service "rest" exposed
 kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/ingress/types/loadbalancer/ing.yaml
 ```
 
-Please note the annotaiton on ingress:
+Please note the annotation on ingress:
 
 ```yaml
   annotations:
@@ -145,7 +145,7 @@ BODY:
 
 **How do I ensure that IP assigned my Ingress does not change?**
 
-You can allocate a static IP to a LoadBalancer Ingress managed by Voyager. Say for example, you are using GKE. When you create an Ingress object, Voyager will create a Kubernetes Service of type LoadBalancer. This service will will automatically get a regional IP. If you want to keep that IP, you can mark that IP as static in Google cloud console
+You can allocate a static IP to a LoadBalancer Ingress managed by Voyager. Say for example, you are using GKE. When you create an Ingress object, Voyager will create a Kubernetes Service of type LoadBalancer. This service will automatically get a regional IP. If you want to keep that IP, you can mark that IP as static in Google cloud console
 and the apply the annotation to your Ingress.
 
 ```yaml
@@ -178,7 +178,7 @@ If you need to create an internal LB in Openstack, you can do so using `ingress.
 
 **How to use LoadBalancer type ingress in Minikube cluster?**
 
-Minikube clusters do not support service type `LoadBalancer`. So, you can try the following work arounds:
+Minikube clusters do not support service type `LoadBalancer`. So, you can try the following workarounds:
 
 - You can set the `Host` header is your http request to match the expected domain and port. This will ensure HAProxy matches the rules properly.
 

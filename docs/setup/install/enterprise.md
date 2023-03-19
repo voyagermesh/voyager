@@ -54,7 +54,7 @@ If you are willing to purchasing Enterprise license but need more time to test i
 
 ## Install
 
-To activate the Enterprise features, you need to install both Voyager Community operator and Enterprise operator chart. These operators can be installed as a Helm chart or simply as Kubernetes manifests. If you have already installed the Community operator, only install the Enterprise operator (step 4 in the following secttion).
+To activate the Enterprise features, you need to install both Voyager Community operator and Enterprise operator chart. These operators can be installed as a Helm chart or simply as Kubernetes manifests. If you have already installed the Community operator, only install the Enterprise operator (step 4 in the following section).
 
 <ul class="nav nav-tabs" id="installerTab" role="tablist">
   <li class="nav-item">
@@ -170,7 +170,7 @@ Now, you are ready to create your first ingress using Voyager.
 
 Voyager creates an `Ingress` CRD. Voyager installer will create 2 user facing cluster roles:
 
-| ClusterRole           | Aggregates To | Desription                            |
+| ClusterRole           | Aggregates To | Description                           |
 |-----------------------|---------------|---------------------------------------|
 | appscode:voyager:edit | admin, edit   | Allows edit access to Voyager CRDs, intended to be granted within a namespace using a RoleBinding. |
 | appscode:voyager:view | view          | Allows read-only access to Voyager CRDs, intended to be granted within a namespace using a RoleBinding. |

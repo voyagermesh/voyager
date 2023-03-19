@@ -45,7 +45,7 @@ Guides show you how to use Voyager as a Kubernetes Ingress controller.
   - [Specify NodePort](/docs/guides/ingress/configuration/node-port.md)
   - [Configure global options](/docs/guides/ingress/configuration/default-options.md)
   - [Configure Custom Timeouts for HAProxy](/docs/guides/ingress/configuration/default-timeouts.md)
-  - [Configure Load balancing algorithm](/docs/guides/ingress/configuration/loadbalance-algorithm.md)
+  - [Configure Load balancing algorithm](/docs/guides/ingress/configuration/loadbalancing-algorithm.md)
   - [Using Custom HAProxy Templates](/docs/guides/ingress/configuration/custom-templates.md)
   - [Using Additional Configuration Files](/docs/guides/ingress/configuration/config-volumes.md)
   - [Using HTTP/2 and gRPC](/docs/guides/ingress/configuration/http-2.md)

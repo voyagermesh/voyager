@@ -36,7 +36,7 @@ service "rest" exposed
 kubectl apply -f https://raw.githubusercontent.com/voyagermesh/voyager/{{< param "info.version" >}}/docs/examples/ingress/types/internal/ing.yaml
 ```
 
-Please note the annotaiton on ingress:
+Please note the annotation on ingress:
 
 ```yaml
   annotations:

@@ -29,7 +29,7 @@ If you have found a bug with Voyager or want to request for new features, please
 
 ## Submit PR
 
-If you fix a bug or developed a new feature, feel free to submit a PR. In either case, please file a [Github issue]((https://github.com/voyagermesh/voyager/issues/new)) first, so that we can have a discussion on it. This is a rough outline of what a contributor's workflow looks like:
+If you fix a bug or developed a new feature, feel free to submit a PR. In either case, please file a [GitHub issue]((https://github.com/voyagermesh/voyager/issues/new)) first, so that we can have a discussion on it. This is a rough outline of what a contributor's workflow looks like:
 
 - Create a topic branch from where you want to base your work (usually master).
 - Make commits of logical units.
