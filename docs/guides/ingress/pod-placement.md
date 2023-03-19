@@ -10,6 +10,7 @@ product_name: voyager
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
+
 > New to Voyager? Please start [here](/docs/concepts/overview.md).
 
 # Placement of Ingress Pods
@@ -108,12 +109,14 @@ spec:
   - http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
           service:
             name: rest
             port:
               number: 80
       - path: /web
+        pathType: Prefix
         backend:
           service:
             name: web
@@ -233,12 +236,14 @@ spec:
   - http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
           service:
             name: rest
             port:
               number: 80
       - path: /web
+        pathType: Prefix
         backend:
           service:
             name: web

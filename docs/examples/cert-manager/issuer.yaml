@@ -13,4 +13,7 @@ spec:
     privateKeySecretRef:
       name: letsencrypt-prod
     # Enable HTTP01 validations
-    http01: {}
+    solvers:
+    - http01:
+        ingress:
+          class: voyager

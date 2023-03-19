@@ -12,7 +12,7 @@ spec:
       name: example-issuer-account-key
     solvers:
       - dns01:
-          clouddns:
+          cloudDNS:
             # A secretKeyRef to a google cloud json service account
             serviceAccountSecretRef:
               name: clouddns-service-account
