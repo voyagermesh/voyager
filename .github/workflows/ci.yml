@@ -46,10 +46,8 @@ jobs:
           echo
           echo "install helm 3"
           curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-          echo "install kubedb-crds chart"
-          helm repo add appscode https://charts.appscode.com/stable/
-          helm repo update
-          # helm install voyager-crds appscode/voyager-crds
+          kubectl create -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.crds.yaml
+          kubectl create -f https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.60.1/stripped-down-crds.yaml
           kubectl create -f https://github.com/voyagermesh/installer/raw/master/crds/voyager-crds.yaml
 
       - name: Check codespan schema

@@ -63,7 +63,10 @@ spec:
     privateKeySecretRef:
       name: letsencrypt-prod
     # Enable HTTP01 validations
-    http01: {}
+    solvers:
+    - http01:
+        ingress:
+          class: voyager
 ```
 
 The `spec.email` will be used to register for your let's encrypt account and `privateKeySecretRef` will contain the private key of this account.
@@ -87,7 +90,10 @@ spec:
     privateKeySecretRef:
       name: letsencrypt-prod
     # Enable HTTP01 validations
-    http01: {}
+    solvers:
+    - http01:
+        ingress:
+          class: voyager
 ```
 
 When referencing a Secret resource in ClusterIssuer resources (eg `spec.acme.solvers.dns01.cloudflare.apiKeySecretRef`) the Secret needs to be in the same namespace as the cert-manager controller pod. You can optionally override this by using the `--cluster-resource-namespace` argument to the controller.

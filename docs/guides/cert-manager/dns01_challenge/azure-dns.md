@@ -85,7 +85,7 @@ spec:
       name: example-issuer-account-key
     solvers:
       - dns01:
-          azuredns:
+          azureDNS:
             # Service principal clientId (also called appId)
             clientID: riu478u-486ij8-uiu487j-468rjg8
             # A secretKeyRef to a service principal ClientSecret (password)
@@ -137,6 +137,7 @@ spec:
                 port:
                   number: 80
             path: /
+            pathType: Prefix
 ```
 
 Then take the `EXTERNAL-IP` from the corresponding service and add a A-record in Azure DNS:

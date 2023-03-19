@@ -151,6 +151,7 @@ spec:
                 port:
                   number: 80
             path: /
+            pathType: Prefix
 ```
 
 Then take the `EXTERNAL-IP` from the corresponding service and add a A-record in AWS Route53:

@@ -57,7 +57,7 @@ spec:
       name: example-issuer-account-key
     solvers:
       - dns01:
-          clouddns:
+          cloudDNS:
             # A secretKeyRef to a google cloud json service account
             serviceAccountSecretRef:
               name: clouddns-service-account
@@ -102,6 +102,7 @@ spec:
                 port:
                   number: 80
             path: /
+            pathType: Prefix
 ```
 
 Then take the `EXTERNAL-IP` from the corresponding service:

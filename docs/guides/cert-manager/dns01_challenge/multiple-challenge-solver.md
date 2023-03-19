@@ -56,7 +56,7 @@ spec:
               key: secret-access-key
             hostedZoneID: J13B3AB
       - dns01:
-          azuredns:
+          azureDNS:
             # Service principal clientId (also called appId)
             clientID: riu478u-486ij8-uiu487j-468rjg8
             # A secretKeyRef to a service principal ClientSecret (password)
@@ -71,7 +71,7 @@ spec:
             resourceGroupName: dev
             hostedZoneName: appscode.info
       - dns01:
-          clouddns:
+          cloudDNS:
             # A secretKeyRef to a google cloud json service account
             serviceAccountSecretRef:
               name: clouddns-service-account

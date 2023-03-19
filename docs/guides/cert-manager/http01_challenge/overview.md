@@ -86,6 +86,7 @@ spec:
                 port:
                   number: 80
             path: /
+            pathType: Prefix
 ```
 
 Then you'll see that a Certificate crd is created automatically for this ingress
