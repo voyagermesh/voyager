@@ -93,7 +93,7 @@ appscode/voyager-crds {{< param "info.version" >}}   {{< param "info.version" >}
 # provider=digitalocean
 # provider=linode
 
-$ helm install voyager-operator appscode/voyager \
+$ helm install voyager appscode/voyager \
   --version {{< param "info.version" >}} \
   --namespace voyager --create-namespace \
   --set cloudProvider=$provider \
@@ -132,7 +132,7 @@ appscode/voyager-crds {{< param "info.version" >}}   {{< param "info.version" >}
 # provider=linode
 
 $ kubectl create ns voyager
-$ helm template voyager-operator appscode/voyager \
+$ helm template voyager appscode/voyager \
   --version {{< param "info.version" >}} \
   --namespace voyager \
   --set cloudProvider=$provider \

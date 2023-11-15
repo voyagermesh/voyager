@@ -35,7 +35,7 @@ kubectl apply -f https://github.com/voyagermesh/installer/raw/{{< param "info.ve
 Now, upgrade the Voyager helm chart using the following command. You can find the latest installation guide [here](/docs/setup/README.md).
 
 ```bash
-helm upgrade voyager-operator appscode/voyager \
+helm upgrade voyager appscode/voyager \
   --version {{< param "info.version" >}} \
   --namespace voyager \
   --set cloudProvider=$provider \
@@ -64,7 +64,7 @@ Voyager supports seamless migration between community edition and enterprise edi
 In order to migrate from Voyager community edition to Voyager enterprise edition, please run the following command,
 
 ```bash
-helm upgrade voyager-operator appscode/voyager \
+helm upgrade voyager appscode/voyager \
   --namespace voyager \
   --reuse-values \
   --set-file license=/path/to/voyager-enterprise-license.txt
@@ -75,7 +75,7 @@ helm upgrade voyager-operator appscode/voyager \
 In order to migrate from Voyager enterprise edition to Voyager community edition, please run the following command,
 
 ```bash
-helm upgrade voyager-operator appscode/voyager \
+helm upgrade voyager appscode/voyager \
   --namespace voyager \
   --reuse-values \
   --set-file license=/path/to/voyager-community-license.txt
@@ -142,7 +142,7 @@ Follow the below instructions to update the license:
 helm ls -A | grep voyager
 
 # update license key keeping the current version
-helm upgrade voyager-operator appscode/voyager --version=<cur_version> \
+helm upgrade voyager appscode/voyager --version=<cur_version> \
   --namespace voyager \
   --reuse-values \
   --set-file license=/path/to/new/license.txt

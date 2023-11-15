@@ -43,7 +43,7 @@ $ helm uninstall voyager-operator --namespace voyager
 If you prefer to not use Helm, you can generate YAMLs from Voyager chart and uninstall using `kubectl`.
 
 ```bash
-$ helm template voyager-operator appscode/voyager --namespace voyager | kubectl delete -f -
+$ helm template voyager appscode/voyager --namespace voyager | kubectl delete -f -
 ```
 
 </div>
