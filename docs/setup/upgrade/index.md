@@ -14,7 +14,7 @@ section_menu_id: setup
 
 # Upgrading Voyager
 
-This guide will show you how to upgrade various Voyager components. Here, we are going to show how to upgrade from an old Voyager version to the new version, how to migrate between the enterprise edition and community edition, and how to update the license, etc.
+This guide will show you how to upgrade various Voyager components. Here, we are going to show how to upgrade from an old Voyager version to the new version, and how to update the license, etc.
 
 ## Upgrading Voyager from `v2021.x.x` to `{{< param "info.version" >}}`
 
@@ -35,85 +35,12 @@ kubectl apply -f https://github.com/voyagermesh/installer/raw/{{< param "info.ve
 Now, upgrade the Voyager helm chart using the following command. You can find the latest installation guide [here](/docs/setup/README.md).
 
 ```bash
-helm upgrade voyager appscode/voyager \
+helm upgrade voyager oci://ghcr.io/appscode-charts/voyager \
   --version {{< param "info.version" >}} \
-  --namespace voyager \
+  --namespace voyager --create-namespace \
   --set cloudProvider=$provider \
   --set-file license=/path/to/the/license.txt
 ```
-
-## Migration Between Community Edition and Enterprise Edition
-
-Voyager supports seamless migration between community edition and enterprise edition. You can run the following commands to migrate between them.
-
-<ul class="nav nav-tabs" id="migrationTab" role="tablist">
-  <li class="nav-item">
-    <a class="nav-link active" id="mgr-helm3-tab" data-toggle="tab" href="#mgr-helm3" role="tab" aria-controls="mgr-helm3" aria-selected="true">Helm 3</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" id="mgr-yaml-tab" data-toggle="tab" href="#mgr-yaml" role="tab" aria-controls="mgr-yaml" aria-selected="false">YAML</a>
-  </li>
-</ul>
-<div class="tab-content" id="migrationTabContent">
-  <div class="tab-pane fade show active" id="mgr-helm3" role="tabpanel" aria-labelledby="mgr-helm3">
-
-#### Using Helm 3
-
-**From Community Edition to Enterprise Edition:**
-
-In order to migrate from Voyager community edition to Voyager enterprise edition, please run the following command,
-
-```bash
-helm upgrade voyager appscode/voyager \
-  --namespace voyager \
-  --reuse-values \
-  --set-file license=/path/to/voyager-enterprise-license.txt
-```
-
-**From Enterprise Edition to Community Edition:**
-
-In order to migrate from Voyager enterprise edition to Voyager community edition, please run the following command,
-
-```bash
-helm upgrade voyager appscode/voyager \
-  --namespace voyager \
-  --reuse-values \
-  --set-file license=/path/to/voyager-community-license.txt
-```
-
-</div>
-<div class="tab-pane fade" id="mgr-yaml" role="tabpanel" aria-labelledby="mgr-yaml">
-
-**Using YAML (with helm 3)**
-
-**From Community Edition to Enterprise Edition:**
-
-In order to migrate from Voyager community edition to Voyager enterprise edition, please run the following command,
-
-```bash
-# Install Voyager enterprise edition
-helm template voyager appscode/voyager \
-  --namespace voyager --create-namespace \
-  --version {{< param "info.version" >}} \
-  --set cleaner.skip=true \
-  --set-file license=/path/to/voyager-enterprise-license.txt | kubectl apply -f -
-```
-
-**From Enterprise Edition to Community Edition:**
-
-In order to migrate from Voyager enterprise edition to Voyager community edition, please run the following command,
-
-```bash
-# Install Voyager community edition
-helm template voyager appscode/voyager \
-  --namespace voyager --create-namespace \
-  --version {{< param "info.version" >}} \
-  --set cleaner.skip=true \
-  --set-file license=/path/to/voyager-community-license.txt | kubectl apply -f -
-```
-
-</div>
-</div>
 
 ## Updating License
 
@@ -142,8 +69,9 @@ Follow the below instructions to update the license:
 helm ls -A | grep voyager
 
 # update license key keeping the current version
-helm upgrade voyager appscode/voyager --version=<cur_version> \
-  --namespace voyager \
+helm upgrade voyager oci://ghcr.io/appscode-charts/voyager \
+  --version=<cur_version> \
+  --namespace voyager --create-namespace \
   --reuse-values \
   --set-file license=/path/to/new/license.txt
 ```
@@ -158,7 +86,8 @@ helm upgrade voyager appscode/voyager --version=<cur_version> \
 helm ls -A | grep voyager
 
 # update license key keeping the current version
-helm template voyager appscode/voyager --version=<cur_version> \
+helm template voyager oci://ghcr.io/appscode-charts/voyager \
+  --version=<cur_version> \
   --namespace voyager --create-namespace \
   --set cleaner.skip=true \
   --set-file license=/path/to/new/license.txt | kubectl apply -f -
