@@ -20,7 +20,8 @@ Voyager cli by AppsCode
 ### Options
 
 ```
-  -h, --help   help for voyager
+      --default-seccomp-profile-type string   Default seccomp profile
+  -h, --help                                  help for voyager
 ```
 
 ### SEE ALSO
