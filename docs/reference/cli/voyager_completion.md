@@ -56,6 +56,12 @@ voyager completion [bash|zsh|fish|powershell]
   -h, --help   help for completion
 ```
 
+### Options inherited from parent commands
+
+```
+      --default-seccomp-profile-type string   Default seccomp profile
+```
+
 ### SEE ALSO
 
 * [voyager](/docs/reference/cli/voyager.md)	 - Voyager cli by AppsCode
