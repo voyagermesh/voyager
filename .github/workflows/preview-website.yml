@@ -50,7 +50,7 @@ jobs:
         run: |
           url="https://${GITHUB_USER}:${GITHUB_TOKEN}@${WEBSITE_REPOSITORY}.git"
           cd $RUNNER_WORKSPACE
-          git clone $url
+          git clone --recurse-submodules $url
           cd $(basename $WEBSITE_REPOSITORY)
           git config user.name "${GITHUB_USER}"
           git config user.email "${GITHUB_USER}@appscode.com"
