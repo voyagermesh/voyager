@@ -8,14 +8,14 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v1
 
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
         with:
-          go-version: '1.22'
+          go-version: '1.23'
         id: go
 
       - name: Use Node.js
@@ -28,7 +28,7 @@ jobs:
           curl -fsSL -o yqq https://github.com/mikefarah/yq/releases/download/3.3.0/yq_linux_amd64
           chmod +x yqq
           sudo mv yqq /usr/local/bin/yqq
-          pip3 install yq
+          pipx install yq
 
       - name: Install Hugo
         run: |
