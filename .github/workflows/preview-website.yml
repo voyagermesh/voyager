@@ -44,8 +44,8 @@ jobs:
 
       - name: Clone website repository
         env:
-          GITHUB_USER: 1gtm
-          GITHUB_TOKEN: ${{ secrets.LGTM_GITHUB_TOKEN }}
+          GITHUB_USER: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WEBSITE_REPOSITORY: ${{ secrets.WEBSITE_REPOSITORY }}
         run: |
           url="https://${GITHUB_USER}:${GITHUB_TOKEN}@${WEBSITE_REPOSITORY}.git"
@@ -57,8 +57,8 @@ jobs:
 
       - name: Update docs
         env:
-          GITHUB_USER: 1gtm
-          GITHUB_TOKEN: ${{ secrets.LGTM_GITHUB_TOKEN }}
+          GITHUB_USER: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WEBSITE_REPOSITORY: ${{ secrets.WEBSITE_REPOSITORY }}
           GOOGLE_CUSTOM_SEARCH_API_KEY: ${{ secrets.GOOGLE_CUSTOM_SEARCH_API_KEY }}
         run: |
