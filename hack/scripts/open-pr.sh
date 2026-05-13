@@ -36,7 +36,7 @@ pr_branch=${GITHUB_REPOSITORY}@${GITHUB_SHA:0:8}
 git checkout -b $pr_branch
 git commit -a -s -m "Update docs for $pr_branch"
 git push -u origin HEAD
-hub pull-request \
-    --labels automerge \
-    --message "Update docs for $pr_branch" \
-    --message "$(git show -s --format=%b)"
+gh pr create \
+    --label automerge \
+    --title "Update docs for $pr_branch" \
+    --body "$(git show -s --format=%b)"
